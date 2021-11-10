@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_volume",
             "name": "outscale_volume",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -25,17 +25,18 @@
                         "subregion_name": "###region###a",
                         "tags": [
                             {
-                                "key": "Key",
-                                "value": "value-tags"
-                            },
-                            {
                                 "key": "name",
                                 "value": "test-Volume"
+                            },
+                            {
+                                "key": "Key",
+                                "value": "value-tags"
                             }
                         ],
                         "volume_id": "##id-0##",
                         "volume_type": "io1"
-                    }
+                    },
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -43,7 +44,7 @@
             "mode": "managed",
             "type": "outscale_volume",
             "name": "outscale_volume",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -69,6 +70,7 @@
                         "volume_id": "##id-0##",
                         "volume_type": "io1"
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]

@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_security_group",
             "name": "outscale_security_group",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "index_key": 0,
@@ -27,6 +27,7 @@
                         "tag": null,
                         "tags": []
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]

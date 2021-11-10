@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_load_balancer_vm_health",
             "name": "outscale_load_balancer_vm_health",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -29,7 +29,8 @@
                         "id": "##id-1##",
                         "load_balancer_name": "lbu-TF-92",
                         "request_id": "########"
-                    }
+                    },
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -37,7 +38,7 @@
             "mode": "managed",
             "type": "outscale_keypair",
             "name": "my_keypair",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -50,6 +51,7 @@
                         "request_id": "########",
                         "timeouts": null
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJyZWFkIjo2MDAwMDAwMDAwMDB9fQ=="
                 }
             ]
@@ -58,7 +60,7 @@
             "mode": "managed",
             "type": "outscale_load_balancer",
             "name": "public_lbu2",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -113,6 +115,7 @@
                             }
                         ]
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]
@@ -121,7 +124,7 @@
             "mode": "managed",
             "type": "outscale_load_balancer_attributes",
             "name": "attributes-1",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -182,6 +185,7 @@
                             }
                         ]
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_load_balancer.public_lbu2"
@@ -193,7 +197,7 @@
             "mode": "managed",
             "type": "outscale_load_balancer_vms",
             "name": "outscale_load_balancer_vms",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -205,6 +209,7 @@
                         "load_balancer_name": "lbu-TF-92",
                         "request_id": "########"
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_keypair.my_keypair",
@@ -219,7 +224,7 @@
             "mode": "managed",
             "type": "outscale_security_group",
             "name": "public_sg",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -236,6 +241,7 @@
                         "tag": null,
                         "tags": []
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]
@@ -244,7 +250,7 @@
             "mode": "managed",
             "type": "outscale_security_group_rule",
             "name": "outscale_security_group_rule",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -255,7 +261,7 @@
                         "inbound_rules": [
                             {
                                 "from_port_range": 8080,
-                                "ip_protocol": "6",
+                                "ip_protocol": "tcp",
                                 "ip_ranges": [
                                     "0.0.0.0/0"
                                 ],
@@ -276,6 +282,7 @@
                         "security_group_name_to_link": null,
                         "to_port_range": 8080
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_security_group.public_sg"
@@ -287,7 +294,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "outscale_vm-1",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -309,6 +316,7 @@
                         "bsu_optimized": false,
                         "client_token": "",
                         "deletion_protection": false,
+                        "get_admin_password": null,
                         "hypervisor": "xen",
                         "id": "##id-0##",
                         "image_id": "##id-9##",
@@ -353,6 +361,7 @@
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
                     "dependencies": [
                         "outscale_keypair.my_keypair",

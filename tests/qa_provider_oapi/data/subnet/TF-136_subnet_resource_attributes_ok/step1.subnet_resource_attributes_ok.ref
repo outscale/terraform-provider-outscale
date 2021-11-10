@@ -14,7 +14,7 @@
             "mode": "managed",
             "type": "outscale_net",
             "name": "outscale_net",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -28,6 +28,7 @@
                         "tags": [],
                         "tenancy": "default"
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]
@@ -36,7 +37,7 @@
             "mode": "managed",
             "type": "outscale_subnet",
             "name": "outscale_subnet",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -58,6 +59,7 @@
                         ],
                         "timeouts": null
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
                         "outscale_net.outscale_net"

@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_load_balancer",
             "name": "public_lbu1",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -76,6 +76,7 @@
                             }
                         ]
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]
@@ -84,7 +85,7 @@
             "mode": "managed",
             "type": "outscale_load_balancer_attributes",
             "name": "attributes-policy",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -165,6 +166,7 @@
                             }
                         ]
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_load_balancer.public_lbu1",
@@ -177,7 +179,7 @@
             "mode": "managed",
             "type": "outscale_load_balancer_policy",
             "name": "policy-1",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -251,6 +253,7 @@
                             }
                         ]
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_load_balancer.public_lbu1"

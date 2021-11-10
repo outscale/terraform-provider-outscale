@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_access_key",
             "name": "my_access_key_1",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -22,6 +22,7 @@
                         "secret_key": "########",
                         "state": "ACTIVE"
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]

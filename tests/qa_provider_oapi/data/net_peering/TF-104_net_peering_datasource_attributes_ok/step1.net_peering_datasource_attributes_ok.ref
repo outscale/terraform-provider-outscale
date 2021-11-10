@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_net_peering",
             "name": "outscale_net_peering",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -42,7 +42,8 @@
                                 "value": "test-net-peering"
                             }
                         ]
-                    }
+                    },
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -50,7 +51,7 @@
             "mode": "managed",
             "type": "outscale_net",
             "name": "outscale_net",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -64,6 +65,7 @@
                         "tags": [],
                         "tenancy": "default"
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]
@@ -72,7 +74,7 @@
             "mode": "managed",
             "type": "outscale_net",
             "name": "outscale_net2",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -86,6 +88,7 @@
                         "tags": [],
                         "tenancy": "default"
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]
@@ -94,7 +97,7 @@
             "mode": "managed",
             "type": "outscale_net_peering",
             "name": "outscale_net_peering",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -130,6 +133,7 @@
                             }
                         ]
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net",

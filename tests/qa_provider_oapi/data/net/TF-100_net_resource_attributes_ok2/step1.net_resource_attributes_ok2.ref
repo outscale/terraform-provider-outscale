@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_net",
             "name": "outscale_net",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "index_key": 0,
@@ -29,6 +29,7 @@
                         ],
                         "tenancy": "default"
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 },
                 {
@@ -49,6 +50,7 @@
                         ],
                         "tenancy": "default"
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]

@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_net_attributes",
             "name": "outscale_net_attributes",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -22,7 +22,8 @@
                         "state": "available",
                         "tags": [],
                         "tenancy": "default"
-                    }
+                    },
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -30,23 +31,23 @@
             "mode": "managed",
             "type": "outscale_dhcp_option",
             "name": "dhcp_option_1",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "default": false,
-                        "dhcp_options_name": null,
-                        "dhcp_options_set_id": "##id-0##",
+                        "dhcp_options_set_id": "##id-2##",
                         "domain_name": "test",
                         "domain_name_servers": [
                             "OutscaleProvidedDNS"
                         ],
-                        "id": "##id-0##",
+                        "id": "##id-2##",
                         "ntp_servers": [],
                         "request_id": "########",
                         "tags": []
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]
@@ -55,7 +56,30 @@
             "mode": "managed",
             "type": "outscale_net",
             "name": "outscale_net",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "dhcp_options_set_id": "##id-0##",
+                        "id": "##id-1##",
+                        "ip_range": "10.0.0.0/16",
+                        "net_id": "##id-1##",
+                        "request_id": "########",
+                        "state": "available",
+                        "tags": [],
+                        "tenancy": "default"
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_net_attributes",
+            "name": "outscale_net_attributes",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -69,28 +93,7 @@
                         "tags": [],
                         "tenancy": "default"
                     },
-                    "private": "bnVsbA=="
-                }
-            ]
-        },
-        {
-            "mode": "managed",
-            "type": "outscale_net_attributes",
-            "name": "outscale_net_attributes",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
-            "instances": [
-                {
-                    "schema_version": 0,
-                    "attributes": {
-                        "dhcp_options_set_id": "##id-0##",
-                        "id": "##id-1##",
-                        "ip_range": "10.0.0.0/16",
-                        "net_id": "##id-1##",
-                        "request_id": "########",
-                        "state": "available",
-                        "tags": [],
-                        "tenancy": "default"
-                    },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_dhcp_option.dhcp_option_1",

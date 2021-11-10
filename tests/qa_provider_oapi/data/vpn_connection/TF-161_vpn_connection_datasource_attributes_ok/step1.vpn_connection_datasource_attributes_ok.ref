@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_vpn_connection",
             "name": "data_vpn_connection_1",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -25,17 +25,228 @@
                         "static_routes_only": false,
                         "tags": [
                             {
-                                "key": "Type",
-                                "value": "Dynamic"
+                                "key": "Test",
+                                "value": "Terraform-TF161"
                             },
                             {
-                                "key": "Project",
-                                "value": "Terraform"
+                                "key": "Type",
+                                "value": "Dynamic-TF161"
                             }
                         ],
                         "virtual_gateway_id": "##id-2##",
                         "vpn_connection_id": "##id-1##"
-                    }
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_vpn_connection",
+            "name": "data_vpn_connection_2",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "client_gateway_configuration": "########",
+                        "client_gateway_id": "##id-0##",
+                        "connection_type": "ipsec.1",
+                        "filter": "########",
+                        "id": "##id-1##",
+                        "request_id": "########",
+                        "routes": [],
+                        "state": "available",
+                        "static_routes_only": false,
+                        "tags": [
+                            {
+                                "key": "Test",
+                                "value": "Terraform-TF161"
+                            },
+                            {
+                                "key": "Type",
+                                "value": "Dynamic-TF161"
+                            }
+                        ],
+                        "virtual_gateway_id": "##id-2##",
+                        "vpn_connection_id": "##id-1##"
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_vpn_connection",
+            "name": "data_vpn_connection_3",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "client_gateway_configuration": "########",
+                        "client_gateway_id": "##id-0##",
+                        "connection_type": "ipsec.1",
+                        "filter": "########",
+                        "id": "##id-1##",
+                        "request_id": "########",
+                        "routes": [],
+                        "state": "available",
+                        "static_routes_only": false,
+                        "tags": [
+                            {
+                                "key": "Test",
+                                "value": "Terraform-TF161"
+                            },
+                            {
+                                "key": "Type",
+                                "value": "Dynamic-TF161"
+                            }
+                        ],
+                        "virtual_gateway_id": "##id-2##",
+                        "vpn_connection_id": "##id-1##"
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_vpn_connection",
+            "name": "data_vpn_connection_4",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "client_gateway_configuration": "########",
+                        "client_gateway_id": "##id-0##",
+                        "connection_type": "ipsec.1",
+                        "filter": "########",
+                        "id": "##id-1##",
+                        "request_id": "########",
+                        "routes": [],
+                        "state": "available",
+                        "static_routes_only": false,
+                        "tags": [
+                            {
+                                "key": "Test",
+                                "value": "Terraform-TF161"
+                            },
+                            {
+                                "key": "Type",
+                                "value": "Dynamic-TF161"
+                            }
+                        ],
+                        "virtual_gateway_id": "##id-2##",
+                        "vpn_connection_id": "##id-1##"
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_vpn_connection",
+            "name": "data_vpn_connection_5",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "client_gateway_configuration": "########",
+                        "client_gateway_id": "##id-0##",
+                        "connection_type": "ipsec.1",
+                        "filter": "########",
+                        "id": "##id-1##",
+                        "request_id": "########",
+                        "routes": [],
+                        "state": "available",
+                        "static_routes_only": false,
+                        "tags": [
+                            {
+                                "key": "Test",
+                                "value": "Terraform-TF161"
+                            },
+                            {
+                                "key": "Type",
+                                "value": "Dynamic-TF161"
+                            }
+                        ],
+                        "virtual_gateway_id": "##id-2##",
+                        "vpn_connection_id": "##id-1##"
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_vpn_connection",
+            "name": "data_vpn_connection_6",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "client_gateway_configuration": "########",
+                        "client_gateway_id": "##id-0##",
+                        "connection_type": "ipsec.1",
+                        "filter": "########",
+                        "id": "##id-1##",
+                        "request_id": "########",
+                        "routes": [],
+                        "state": "available",
+                        "static_routes_only": false,
+                        "tags": [
+                            {
+                                "key": "Test",
+                                "value": "Terraform-TF161"
+                            },
+                            {
+                                "key": "Type",
+                                "value": "Dynamic-TF161"
+                            }
+                        ],
+                        "virtual_gateway_id": "##id-2##",
+                        "vpn_connection_id": "##id-1##"
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_vpn_connection",
+            "name": "data_vpn_connection_7",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "client_gateway_configuration": "########",
+                        "client_gateway_id": "##id-0##",
+                        "connection_type": "ipsec.1",
+                        "filter": "########",
+                        "id": "##id-1##",
+                        "request_id": "########",
+                        "routes": [],
+                        "state": "available",
+                        "static_routes_only": false,
+                        "tags": [
+                            {
+                                "key": "Test",
+                                "value": "Terraform-TF161"
+                            },
+                            {
+                                "key": "Type",
+                                "value": "Dynamic-TF161"
+                            }
+                        ],
+                        "virtual_gateway_id": "##id-2##",
+                        "vpn_connection_id": "##id-1##"
+                    },
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -43,7 +254,7 @@
             "mode": "managed",
             "type": "outscale_client_gateway",
             "name": "My_CGW",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -57,6 +268,7 @@
                         "state": "available",
                         "tags": []
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]
@@ -65,7 +277,7 @@
             "mode": "managed",
             "type": "outscale_virtual_gateway",
             "name": "My_VGW",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -78,6 +290,7 @@
                         "tags": [],
                         "virtual_gateway_id": "##id-2##"
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]
@@ -86,7 +299,7 @@
             "mode": "managed",
             "type": "outscale_vpn_connection",
             "name": "vpn_connection_1",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -101,18 +314,19 @@
                         "static_routes_only": false,
                         "tags": [
                             {
-                                "key": "Project",
-                                "value": "Terraform"
+                                "key": "Test",
+                                "value": "Terraform-TF161"
                             },
                             {
                                 "key": "Type",
-                                "value": "Dynamic"
+                                "value": "Dynamic-TF161"
                             }
                         ],
                         "timeouts": null,
                         "virtual_gateway_id": "##id-2##",
                         "vpn_connection_id": "##id-1##"
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
                     "dependencies": [
                         "outscale_client_gateway.My_CGW",

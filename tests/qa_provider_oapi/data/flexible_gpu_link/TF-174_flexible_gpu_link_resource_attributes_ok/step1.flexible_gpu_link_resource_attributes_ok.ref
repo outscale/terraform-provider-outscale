@@ -9,14 +9,14 @@
             "mode": "managed",
             "type": "outscale_flexible_gpu",
             "name": "fGPU-1",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "delete_on_vm_deletion": true,
                         "flexible_gpu_id": "##id-0##",
-                        "generation": "v3",
+                        "generation": "v4",
                         "id": "##id-0##",
                         "model_name": "nvidia-k2",
                         "request_id": "########",
@@ -24,6 +24,7 @@
                         "subregion_name": "###region###a",
                         "vm_id": ""
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]
@@ -32,7 +33,7 @@
             "mode": "managed",
             "type": "outscale_flexible_gpu_link",
             "name": "link_fGPU",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -42,6 +43,7 @@
                         "request_id": "########",
                         "vm_id": "##id-1##"
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_flexible_gpu.fGPU-1",
@@ -55,7 +57,7 @@
             "mode": "managed",
             "type": "outscale_keypair",
             "name": "my_keypair",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -68,6 +70,7 @@
                         "request_id": "########",
                         "timeouts": null
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJyZWFkIjo2MDAwMDAwMDAwMDB9fQ=="
                 }
             ]
@@ -76,7 +79,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "MaVM",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -98,6 +101,7 @@
                         "bsu_optimized": false,
                         "client_token": "",
                         "deletion_protection": false,
+                        "get_admin_password": null,
                         "hypervisor": "xen",
                         "id": "##id-1##",
                         "image_id": "##id-4##",
@@ -138,8 +142,9 @@
                         "user_data": "",
                         "vm_id": "##id-1##",
                         "vm_initiated_shutdown_behavior": "restart",
-                        "vm_type": "tinav3.c2r2p2"
+                        "vm_type": "###vm_type###"
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
                     "dependencies": [
                         "outscale_keypair.my_keypair"

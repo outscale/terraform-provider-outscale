@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_load_balancer",
             "name": "public_lbu1",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -76,6 +76,7 @@
                             }
                         ]
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]
@@ -84,7 +85,7 @@
             "mode": "managed",
             "type": "outscale_load_balancer_attributes",
             "name": "attributes-access-logs",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -92,7 +93,7 @@
                         "access_log": [
                             {
                                 "is_enabled": true,
-                                "osu_bucket_name": "terraform-test-access-logs",
+                                "osu_bucket_name": "###osu_bucket_name###",
                                 "osu_bucket_prefix": "access-logs-test",
                                 "publication_interval": 5
                             }
@@ -157,6 +158,7 @@
                             }
                         ]
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_load_balancer.public_lbu1"

@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_load_balancer",
             "name": "public_lbu1",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -64,6 +64,7 @@
                             }
                         ]
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]
@@ -72,7 +73,7 @@
             "mode": "managed",
             "type": "outscale_load_balancer_policy",
             "name": "policy-1",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -134,6 +135,7 @@
                             }
                         ]
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_load_balancer.public_lbu1"
@@ -145,7 +147,7 @@
             "mode": "managed",
             "type": "outscale_load_balancer_policy",
             "name": "policy-2",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -157,10 +159,6 @@
                             "publication_interval": "60"
                         },
                         "application_sticky_cookie_policies": [
-                            {
-                                "cookie_name": "########",
-                                "policy_name": "policy-lbu-terraform-4"
-                            },
                             {
                                 "cookie_name": "########",
                                 "policy_name": "policy-lbu-terraform-2"
@@ -216,6 +214,7 @@
                             }
                         ]
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_load_balancer.public_lbu1",
@@ -228,7 +227,7 @@
             "mode": "managed",
             "type": "outscale_load_balancer_policy",
             "name": "policy-3",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -240,10 +239,6 @@
                             "publication_interval": "60"
                         },
                         "application_sticky_cookie_policies": [
-                            {
-                                "cookie_name": "########",
-                                "policy_name": "policy-lbu-terraform-4"
-                            },
                             {
                                 "cookie_name": "########",
                                 "policy_name": "policy-lbu-terraform-2"
@@ -302,6 +297,7 @@
                             }
                         ]
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_load_balancer.public_lbu1",
@@ -315,7 +311,7 @@
             "mode": "managed",
             "type": "outscale_load_balancer_policy",
             "name": "policy-4",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -327,6 +323,10 @@
                             "publication_interval": "60"
                         },
                         "application_sticky_cookie_policies": [
+                            {
+                                "cookie_name": "########",
+                                "policy_name": "policy-lbu-terraform-2"
+                            },
                             {
                                 "cookie_name": "########",
                                 "policy_name": "policy-lbu-terraform-4"
@@ -359,6 +359,9 @@
                         "load_balancer_sticky_cookie_policies": [
                             {
                                 "policy_name": "policy-lbu-terraform-1"
+                            },
+                            {
+                                "policy_name": "policy-lbu-terraform-3"
                             }
                         ],
                         "load_balancer_type": "internet-facing",
@@ -382,9 +385,13 @@
                             }
                         ]
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
-                        "outscale_load_balancer.public_lbu1"
+                        "outscale_load_balancer.public_lbu1",
+                        "outscale_load_balancer_policy.policy-1",
+                        "outscale_load_balancer_policy.policy-2",
+                        "outscale_load_balancer_policy.policy-3"
                     ]
                 }
             ]

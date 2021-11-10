@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_image",
             "name": "outscale_image",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -33,7 +33,196 @@
                         ],
                         "creation_date": "########",
                         "description": null,
-                        "file_location": "###account_id###/terraform-image-1",
+                        "file_location": "###account_id###/image-TF66",
+                        "filter": "########",
+                        "id": "##id-2##",
+                        "image_id": "##id-2##",
+                        "image_name": "########",
+                        "image_type": "machine",
+                        "is_public": null,
+                        "permission": null,
+                        "permissions_to_launch": [],
+                        "product_codes": [
+                            "0001"
+                        ],
+                        "request_id": "########",
+                        "root_device_name": "/dev/sda1",
+                        "root_device_type": "bsu",
+                        "state": "available",
+                        "state_comment": {
+                            "state_code": "",
+                            "state_message": ""
+                        },
+                        "tags": [
+                            {
+                                "key": "Key:TF66",
+                                "value": "value:TF66"
+                            },
+                            {
+                                "key": "Key-2",
+                                "value": "value-tags-2"
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_image",
+            "name": "outscale_image_2",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_alias": "",
+                        "account_id": "##id-0##",
+                        "architecture": "x86_64",
+                        "block_device_mappings": [
+                            {
+                                "bsu": {
+                                    "delete_on_vm_deletion": "true",
+                                    "iops": "0",
+                                    "snapshot_id": "##id-1##",
+                                    "volume_size": "10",
+                                    "volume_type": "standard"
+                                },
+                                "device_name": "/dev/sda1",
+                                "no_device": "",
+                                "virtual_device_name": ""
+                            }
+                        ],
+                        "creation_date": "########",
+                        "description": null,
+                        "file_location": "###account_id###/image-TF66",
+                        "filter": "########",
+                        "id": "##id-2##",
+                        "image_id": "##id-2##",
+                        "image_name": "########",
+                        "image_type": "machine",
+                        "is_public": null,
+                        "permission": null,
+                        "permissions_to_launch": [],
+                        "product_codes": [
+                            "0001"
+                        ],
+                        "request_id": "########",
+                        "root_device_name": "/dev/sda1",
+                        "root_device_type": "bsu",
+                        "state": "available",
+                        "state_comment": {
+                            "state_code": "",
+                            "state_message": ""
+                        },
+                        "tags": [
+                            {
+                                "key": "Key:TF66",
+                                "value": "value:TF66"
+                            },
+                            {
+                                "key": "Key-2",
+                                "value": "value-tags-2"
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_image",
+            "name": "outscale_image_3",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_alias": "",
+                        "account_id": "##id-0##",
+                        "architecture": "x86_64",
+                        "block_device_mappings": [
+                            {
+                                "bsu": {
+                                    "delete_on_vm_deletion": "true",
+                                    "iops": "0",
+                                    "snapshot_id": "##id-1##",
+                                    "volume_size": "10",
+                                    "volume_type": "standard"
+                                },
+                                "device_name": "/dev/sda1",
+                                "no_device": "",
+                                "virtual_device_name": ""
+                            }
+                        ],
+                        "creation_date": "########",
+                        "description": null,
+                        "file_location": "###account_id###/image-TF66",
+                        "filter": "########",
+                        "id": "##id-2##",
+                        "image_id": "##id-2##",
+                        "image_name": "########",
+                        "image_type": "machine",
+                        "is_public": null,
+                        "permission": null,
+                        "permissions_to_launch": [],
+                        "product_codes": [
+                            "0001"
+                        ],
+                        "request_id": "########",
+                        "root_device_name": "/dev/sda1",
+                        "root_device_type": "bsu",
+                        "state": "available",
+                        "state_comment": {
+                            "state_code": "",
+                            "state_message": ""
+                        },
+                        "tags": [
+                            {
+                                "key": "Key:TF66",
+                                "value": "value:TF66"
+                            },
+                            {
+                                "key": "Key-2",
+                                "value": "value-tags-2"
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_image",
+            "name": "outscale_image_4",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_alias": "",
+                        "account_id": "##id-0##",
+                        "architecture": "x86_64",
+                        "block_device_mappings": [
+                            {
+                                "bsu": {
+                                    "delete_on_vm_deletion": "true",
+                                    "iops": "0",
+                                    "snapshot_id": "##id-1##",
+                                    "volume_size": "10",
+                                    "volume_type": "standard"
+                                },
+                                "device_name": "/dev/sda1",
+                                "no_device": "",
+                                "virtual_device_name": ""
+                            }
+                        ],
+                        "creation_date": "########",
+                        "description": null,
+                        "file_location": "###account_id###/image-TF66",
                         "filter": "########",
                         "id": "##id-2##",
                         "image_id": "##id-2##",
@@ -59,19 +248,20 @@
                                 "value": "value-tags-2"
                             },
                             {
-                                "key": "Key-tags",
-                                "value": "value-tags"
+                                "key": "Key:TF66",
+                                "value": "value:TF66"
                             }
                         ]
-                    }
+                    },
+                    "sensitive_attributes": []
                 }
             ]
         },
         {
-            "mode": "managed",
+            "mode": "data",
             "type": "outscale_image",
-            "name": "outscale_image",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "name": "outscale_image_5",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -94,8 +284,197 @@
                             }
                         ],
                         "creation_date": "########",
-                        "description": "",
-                        "file_location": "###account_id###/terraform-image-1",
+                        "description": null,
+                        "file_location": "###account_id###/image-TF66",
+                        "filter": "########",
+                        "id": "##id-2##",
+                        "image_id": "##id-2##",
+                        "image_name": "########",
+                        "image_type": "machine",
+                        "is_public": null,
+                        "permission": null,
+                        "permissions_to_launch": [],
+                        "product_codes": [
+                            "0001"
+                        ],
+                        "request_id": "########",
+                        "root_device_name": "/dev/sda1",
+                        "root_device_type": "bsu",
+                        "state": "available",
+                        "state_comment": {
+                            "state_code": "",
+                            "state_message": ""
+                        },
+                        "tags": [
+                            {
+                                "key": "Key-2",
+                                "value": "value-tags-2"
+                            },
+                            {
+                                "key": "Key:TF66",
+                                "value": "value:TF66"
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_image",
+            "name": "outscale_image_6",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_alias": "",
+                        "account_id": "##id-0##",
+                        "architecture": "x86_64",
+                        "block_device_mappings": [
+                            {
+                                "bsu": {
+                                    "delete_on_vm_deletion": "true",
+                                    "iops": "0",
+                                    "snapshot_id": "##id-1##",
+                                    "volume_size": "10",
+                                    "volume_type": "standard"
+                                },
+                                "device_name": "/dev/sda1",
+                                "no_device": "",
+                                "virtual_device_name": ""
+                            }
+                        ],
+                        "creation_date": "########",
+                        "description": null,
+                        "file_location": "###account_id###/image-TF66",
+                        "filter": "########",
+                        "id": "##id-2##",
+                        "image_id": "##id-2##",
+                        "image_name": "########",
+                        "image_type": "machine",
+                        "is_public": null,
+                        "permission": null,
+                        "permissions_to_launch": [],
+                        "product_codes": [
+                            "0001"
+                        ],
+                        "request_id": "########",
+                        "root_device_name": "/dev/sda1",
+                        "root_device_type": "bsu",
+                        "state": "available",
+                        "state_comment": {
+                            "state_code": "",
+                            "state_message": ""
+                        },
+                        "tags": [
+                            {
+                                "key": "Key-2",
+                                "value": "value-tags-2"
+                            },
+                            {
+                                "key": "Key:TF66",
+                                "value": "value:TF66"
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_image",
+            "name": "outscale_image_7",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_alias": "",
+                        "account_id": "##id-0##",
+                        "architecture": "x86_64",
+                        "block_device_mappings": [
+                            {
+                                "bsu": {
+                                    "delete_on_vm_deletion": "true",
+                                    "iops": "0",
+                                    "snapshot_id": "##id-1##",
+                                    "volume_size": "10",
+                                    "volume_type": "standard"
+                                },
+                                "device_name": "/dev/sda1",
+                                "no_device": "",
+                                "virtual_device_name": ""
+                            }
+                        ],
+                        "creation_date": "########",
+                        "description": null,
+                        "file_location": "###account_id###/image-TF66",
+                        "filter": "########",
+                        "id": "##id-2##",
+                        "image_id": "##id-2##",
+                        "image_name": "########",
+                        "image_type": "machine",
+                        "is_public": null,
+                        "permission": null,
+                        "permissions_to_launch": [],
+                        "product_codes": [
+                            "0001"
+                        ],
+                        "request_id": "########",
+                        "root_device_name": "/dev/sda1",
+                        "root_device_type": "bsu",
+                        "state": "available",
+                        "state_comment": {
+                            "state_code": "",
+                            "state_message": ""
+                        },
+                        "tags": [
+                            {
+                                "key": "Key:TF66",
+                                "value": "value:TF66"
+                            },
+                            {
+                                "key": "Key-2",
+                                "value": "value-tags-2"
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_image",
+            "name": "outscale_image",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_alias": "",
+                        "account_id": "##id-0##",
+                        "architecture": "x86_64",
+                        "block_device_mappings": [
+                            {
+                                "bsu": {
+                                    "delete_on_vm_deletion": "true",
+                                    "iops": "0",
+                                    "snapshot_id": "##id-1##",
+                                    "volume_size": "10",
+                                    "volume_type": "standard"
+                                },
+                                "device_name": "/dev/sda1",
+                                "no_device": "",
+                                "virtual_device_name": ""
+                            }
+                        ],
+                        "creation_date": "########",
+                        "description": "TF-66",
+                        "file_location": "###account_id###/image-TF66",
                         "id": "##id-2##",
                         "image_id": "##id-2##",
                         "image_name": "########",
@@ -127,13 +506,14 @@
                                 "value": "value-tags-2"
                             },
                             {
-                                "key": "Key-tags",
-                                "value": "value-tags"
+                                "key": "Key:TF66",
+                                "value": "value:TF66"
                             }
                         ],
                         "timeouts": null,
                         "vm_id": "##id-3##"
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoyNDAwMDAwMDAwMDAwLCJkZWxldGUiOjI0MDAwMDAwMDAwMDAsInVwZGF0ZSI6MjQwMDAwMDAwMDAwMH19",
                     "dependencies": [
                         "outscale_vm.my-vm"
@@ -145,7 +525,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "my-vm",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -167,6 +547,7 @@
                         "bsu_optimized": false,
                         "client_token": "",
                         "deletion_protection": false,
+                        "get_admin_password": null,
                         "hypervisor": "xen",
                         "id": "##id-3##",
                         "image_id": "##id-5##",
@@ -209,6 +590,7 @@
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "t2.small"
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19"
                 }
             ]

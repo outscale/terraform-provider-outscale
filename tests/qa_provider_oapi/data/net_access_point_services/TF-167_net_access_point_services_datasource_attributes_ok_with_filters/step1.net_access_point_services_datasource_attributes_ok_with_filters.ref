@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_net_access_point_services",
             "name": "data-1",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -20,13 +20,14 @@
                         "services": [
                             {
                                 "ip_ranges": [
-                                    "171.33.66.3/32"
+                                    "10.27.13.133/32"
                                 ],
                                 "service_id": "##id-1##",
                                 "service_name": "com.outscale.###region###.api"
                             }
                         ]
-                    }
+                    },
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -34,7 +35,7 @@
             "mode": "data",
             "type": "outscale_net_access_point_services",
             "name": "data-2",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -45,13 +46,14 @@
                         "services": [
                             {
                                 "ip_ranges": [
-                                    "171.33.66.3/32"
+                                    "10.27.13.133/32"
                                 ],
                                 "service_id": "##id-1##",
                                 "service_name": "com.outscale.###region###.api"
                             }
                         ]
-                    }
+                    },
+                    "sensitive_attributes": []
                 }
             ]
         }

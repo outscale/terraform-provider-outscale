@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_vm_states",
             "name": "outscale_vm_states",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -32,7 +32,8 @@
                                 "vm_state": "running"
                             }
                         ]
-                    }
+                    },
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -40,7 +41,7 @@
             "mode": "managed",
             "type": "outscale_keypair",
             "name": "my_keypair",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -53,6 +54,7 @@
                         "request_id": "########",
                         "timeouts": null
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJyZWFkIjo2MDAwMDAwMDAwMDB9fQ=="
                 }
             ]
@@ -61,7 +63,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "outscale_vm",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -83,8 +85,9 @@
                         "bsu_optimized": false,
                         "client_token": "",
                         "deletion_protection": false,
+                        "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-1##",
+                        "id": "##id-2##",
                         "image_id": "##id-5##",
                         "is_source_dest_checked": true,
                         "keypair_name": "KP-TF150",
@@ -121,10 +124,11 @@
                         "tags": [],
                         "timeouts": null,
                         "user_data": "",
-                        "vm_id": "##id-1##",
+                        "vm_id": "##id-2##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
                     "dependencies": [
                         "outscale_keypair.my_keypair"
@@ -136,7 +140,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "outscale_vm2",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -158,8 +162,9 @@
                         "bsu_optimized": false,
                         "client_token": "",
                         "deletion_protection": false,
+                        "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-2##",
+                        "id": "##id-1##",
                         "image_id": "##id-5##",
                         "is_source_dest_checked": true,
                         "keypair_name": "KP-TF150",
@@ -196,10 +201,11 @@
                         "tags": [],
                         "timeouts": null,
                         "user_data": "",
-                        "vm_id": "##id-2##",
+                        "vm_id": "##id-1##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
                     "dependencies": [
                         "outscale_keypair.my_keypair"

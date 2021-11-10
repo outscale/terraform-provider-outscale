@@ -1,0 +1,34 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "managed",
+            "type": "outscale_server_certificate",
+            "name": "my_server_certificate",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "body": "-----BEGIN CERTIFICATE-----\nMIIFYTCCA0mgAwIBAgIJAOKTNTka8UFCMA0GCSqGSIb3DQEBCwUAMGQxCzAJBgNV\nBAYTAkZSMQ4wDAYDVQQIDAVQYXJpczEOMAwGA1UEBwwFUGFyaXMxETAPBgNVBAoM\nCG91dHNjYWxlMQswCQYDVQQLDAJRQTEVMBMGA1UEAwwMb3V0c2NhbGUuY29tMB4X\nDTIwMDgwNTEzMTY0OFoXDTIzMDUyNjEzMTY0OFowZDELMAkGA1UEBhMCRlIxDjAM\nBgNVBAgMBVBhcmlzMQ4wDAYDVQQHDAVQYXJpczERMA8GA1UECgwIb3V0c2NhbGUx\nCzAJBgNVBAsMAlFBMRUwEwYDVQQDDAxvdXRzY2FsZS5jb20wggIiMA0GCSqGSIb3\nDQEBAQUAA4ICDwAwggIKAoICAQC2V0O9k8/oJRJd1KizkJ6tBcHdFJZWDD64ix53\nDx9AI7xTC6ZXja23/w8vKStEyBhoRVnoMIVOn8/6WFK65YPPiwrz/QuA2vkvYsYQ\nUnvlyOj5GcP8FeXHw0Sd+A3WAxvnPIz4UyKPv7eH/wWW5ySw8fY/RnahuqbZ/KUd\ntE+Eoeui5p7oZRqnKJXab4r/VTLFMoTITRaXfJmJ51WhAwCj0VwMa4FovNAgTgVj\n7A2Rv5ZwfGqR5nF3dqL/e+mQZyRnmTVofs7kJfmxibbvlWY1XHsXmfI0iGTYmxwc\niNpEaElU5aI6/l5zG4cTNd+CY1kOApk3oAMWTWSDzW3U4DVb9PtdFkxxSVQbBlpS\ns1zZNyd1EuCghudulqe/Sf64mbylL9jDWSQsIsvXC4h04e81OZQ3bg3C7BRLydaK\n+kmDVg/sOeKgaoOEd092OzeW+Zk86kw3UmOEt0z89nL+bwSz6Q/IGym5SmJe/TR7\nAiKT6iS9zFrcWwd2a70psq/52+NSyDDArETH1S9h4TVCWJTksjWjPi9vM7Tzh1/H\n9q5i2jJdebrEmBZGXGH+0RczOdoVR7CmnyRwuaGJhX93saEEJqzGHvB1+dYhJF3M\nssWjJUxwfJEOOyNZLWBpgcER8aXzIeMmeofRI+o1WVaJLPDm0giM4bexW5uux0cv\nw6CTPQIDAQABoxYwFDASBgNVHRMBAf8ECDAGAQH/AgEBMA0GCSqGSIb3DQEBCwUA\nA4ICAQATv2CC3pYWKpC5Vhkvr2C10UbuPk/+jUp37ad4nkCGTnpKrH8IZs/r5Kes\n5qJwjbgT7B4kXq28WeoxqH5dEDzhM4sMgy/3k/X3qt0L4U6KLBVR6C/GJTzJ0/71\n2yRmImtiaJs2HUQw6C66E+YhqPlzUii14ZoRqeQ1r7NROgzMwV81Uunhr5er1s4p\n6O7YxBYyUI/0jaE5gkebA4v4E7PlLJlX5/hW+MfvgOoMGAYdu5pH/l5eZjxfF2W5\nQrDs2Mkyr6rx3QfFdRNjIfrxI8s4TT+NCVXovTXcVJqa1MebGnzsf5b/78tHt0vG\nhYe/A+plwYcaqaixGS6AmXA0RHZMg6qfCTA2I6QjB3Tl13zw/fOEVsZnjvv/725J\n5uoZERcPuyj6O8sbhrdbrK9BJMr/KE7TWB2kIuKUvmADWdHcbCuKB/jm3ImIIpYG\nzrXe4zqvuQTDCfbQzuYI4ZRzXzRpT4cWC3OJTrZcU9Udsw5ySoBvfa0X+veiIw/+\nsTKEWdJ2go8Mvg1F5zy0Sn/LAjvR7s/zJfL+lsgSxwvZn9QkSMx+LTwPQDSSnAJ+\nYWExCDVNCqOwT0D3YqV05gDloBH/bwKd7VSZV/0txiwmzmAbjR9jKdJfyBtXU6y1\nRtXoA2uw55pfLeFcFf2lmg5r588HwgSXCi+L+V65BR1oWsm2Cw==\n-----END CERTIFICATE-----\n",
+                        "chain": "-----BEGIN CERTIFICATE-----\nMIIFYTCCA0mgAwIBAgIJAOKTNTka8UFCMA0GCSqGSIb3DQEBCwUAMGQxCzAJBgNV\nBAYTAkZSMQ4wDAYDVQQIDAVQYXJpczEOMAwGA1UEBwwFUGFyaXMxETAPBgNVBAoM\nCG91dHNjYWxlMQswCQYDVQQLDAJRQTEVMBMGA1UEAwwMb3V0c2NhbGUuY29tMB4X\nDTIwMDgwNTEzMTY0OFoXDTIzMDUyNjEzMTY0OFowZDELMAkGA1UEBhMCRlIxDjAM\nBgNVBAgMBVBhcmlzMQ4wDAYDVQQHDAVQYXJpczERMA8GA1UECgwIb3V0c2NhbGUx\nCzAJBgNVBAsMAlFBMRUwEwYDVQQDDAxvdXRzY2FsZS5jb20wggIiMA0GCSqGSIb3\nDQEBAQUAA4ICDwAwggIKAoICAQC2V0O9k8/oJRJd1KizkJ6tBcHdFJZWDD64ix53\nDx9AI7xTC6ZXja23/w8vKStEyBhoRVnoMIVOn8/6WFK65YPPiwrz/QuA2vkvYsYQ\nUnvlyOj5GcP8FeXHw0Sd+A3WAxvnPIz4UyKPv7eH/wWW5ySw8fY/RnahuqbZ/KUd\ntE+Eoeui5p7oZRqnKJXab4r/VTLFMoTITRaXfJmJ51WhAwCj0VwMa4FovNAgTgVj\n7A2Rv5ZwfGqR5nF3dqL/e+mQZyRnmTVofs7kJfmxibbvlWY1XHsXmfI0iGTYmxwc\niNpEaElU5aI6/l5zG4cTNd+CY1kOApk3oAMWTWSDzW3U4DVb9PtdFkxxSVQbBlpS\ns1zZNyd1EuCghudulqe/Sf64mbylL9jDWSQsIsvXC4h04e81OZQ3bg3C7BRLydaK\n+kmDVg/sOeKgaoOEd092OzeW+Zk86kw3UmOEt0z89nL+bwSz6Q/IGym5SmJe/TR7\nAiKT6iS9zFrcWwd2a70psq/52+NSyDDArETH1S9h4TVCWJTksjWjPi9vM7Tzh1/H\n9q5i2jJdebrEmBZGXGH+0RczOdoVR7CmnyRwuaGJhX93saEEJqzGHvB1+dYhJF3M\nssWjJUxwfJEOOyNZLWBpgcER8aXzIeMmeofRI+o1WVaJLPDm0giM4bexW5uux0cv\nw6CTPQIDAQABoxYwFDASBgNVHRMBAf8ECDAGAQH/AgEBMA0GCSqGSIb3DQEBCwUA\nA4ICAQATv2CC3pYWKpC5Vhkvr2C10UbuPk/+jUp37ad4nkCGTnpKrH8IZs/r5Kes\n5qJwjbgT7B4kXq28WeoxqH5dEDzhM4sMgy/3k/X3qt0L4U6KLBVR6C/GJTzJ0/71\n2yRmImtiaJs2HUQw6C66E+YhqPlzUii14ZoRqeQ1r7NROgzMwV81Uunhr5er1s4p\n6O7YxBYyUI/0jaE5gkebA4v4E7PlLJlX5/hW+MfvgOoMGAYdu5pH/l5eZjxfF2W5\nQrDs2Mkyr6rx3QfFdRNjIfrxI8s4TT+NCVXovTXcVJqa1MebGnzsf5b/78tHt0vG\nhYe/A+plwYcaqaixGS6AmXA0RHZMg6qfCTA2I6QjB3Tl13zw/fOEVsZnjvv/725J\n5uoZERcPuyj6O8sbhrdbrK9BJMr/KE7TWB2kIuKUvmADWdHcbCuKB/jm3ImIIpYG\nzrXe4zqvuQTDCfbQzuYI4ZRzXzRpT4cWC3OJTrZcU9Udsw5ySoBvfa0X+veiIw/+\nsTKEWdJ2go8Mvg1F5zy0Sn/LAjvR7s/zJfL+lsgSxwvZn9QkSMx+LTwPQDSSnAJ+\nYWExCDVNCqOwT0D3YqV05gDloBH/bwKd7VSZV/0txiwmzmAbjR9jKdJfyBtXU6y1\nRtXoA2uw55pfLeFcFf2lmg5r588HwgSXCi+L+V65BR1oWsm2Cw==\n-----END CERTIFICATE-----\n",
+                        "dry_run": null,
+                        "expiration_date": "2023-05-26T13:16:48.000+0000",
+                        "id": "##id-0##",
+                        "name": "Certificate-TF187",
+                        "path": "/",
+                        "private_key": "########",
+                        "request_id": "########",
+                        "upload_date": "########"
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA=="
+                }
+            ]
+        }
+    ]
+}

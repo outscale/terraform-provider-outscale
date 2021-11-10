@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_internet_services",
             "name": "outscale_internet_services",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -46,7 +46,8 @@
                             }
                         ],
                         "request_id": "########"
-                    }
+                    },
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -54,7 +55,7 @@
             "mode": "managed",
             "type": "outscale_internet_service",
             "name": "outscale_internet_service",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -75,6 +76,7 @@
                             }
                         ]
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]
@@ -83,7 +85,7 @@
             "mode": "managed",
             "type": "outscale_internet_service",
             "name": "outscale_internet_service2",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -100,6 +102,7 @@
                             }
                         ]
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]

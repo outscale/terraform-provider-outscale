@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_snapshot",
             "name": "outscale_snapshot",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -31,17 +31,18 @@
                         "state": "completed",
                         "tags": [
                             {
-                                "key": "Key",
-                                "value": "value-tags"
-                            },
-                            {
                                 "key": "name",
                                 "value": "Snapshot_datasource"
+                            },
+                            {
+                                "key": "Key",
+                                "value": "value-tags"
                             }
                         ],
                         "volume_id": "##id-2##",
                         "volume_size": 40
-                    }
+                    },
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -49,7 +50,7 @@
             "mode": "managed",
             "type": "outscale_snapshot",
             "name": "outscale_snapshot",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -80,6 +81,7 @@
                         "volume_id": "##id-2##",
                         "volume_size": 40
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_volume.outscale_volume"
@@ -91,7 +93,7 @@
             "mode": "managed",
             "type": "outscale_volume",
             "name": "outscale_volume",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -108,6 +110,7 @@
                         "volume_id": "##id-2##",
                         "volume_type": "standard"
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]

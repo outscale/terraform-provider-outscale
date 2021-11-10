@@ -40,5 +40,5 @@ resource "outscale_load_balancer_policy" "policy-4" {
     policy_name        = "policy-lbu-terraform-4"
     policy_type        = "app" 
     cookie_name        = "Cookie-2"
-depends_on = [outscale_load_balancer_policy.policy-4]
+depends_on = [outscale_load_balancer_policy.policy-3]
 }

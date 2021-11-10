@@ -63,12 +63,12 @@ resource "outscale_nat_service" "outscale_nat_service" {
     subnet_id     = outscale_subnet.outscale_subnet.subnet_id
     public_ip_id = outscale_public_ip.outscale_public_ip.public_ip_id
 tags {
-      key = "Key"
-      value = "value-tags"
+      key = "Key-1"
+      value = "value-tags-1"
      }
 tags {
-      key = "Key-2"
-      value = "value-tags-2"
+      key = "Key:2"
+      value = "value-tags:2"
      }
 }
 
@@ -76,6 +76,14 @@ resource "outscale_nat_service" "outscale_nat_service2" {
     depends_on = [outscale_route.outscale_route2]
     subnet_id     = outscale_subnet.outscale_subnet2.subnet_id
     public_ip_id = outscale_public_ip.outscale_public_ip2.public_ip_id
+tags {
+      key = "Key"
+      value = "value-tags"
+     }
+tags {
+      key = "Key:2"
+      value = "value-tags:2"
+     }
 
 }
 data "outscale_nat_services" "outscale_nat_services" {
@@ -84,3 +92,56 @@ data "outscale_nat_services" "outscale_nat_services" {
         values = [outscale_nat_service.outscale_nat_service.nat_service_id, outscale_nat_service.outscale_nat_service2.nat_service_id]
     }     
 }
+
+data "outscale_nat_services" "outscale_nat_services-2" {
+    filter {
+        name   = "subnet_ids"
+        values = [outscale_nat_service.outscale_nat_service.subnet_id]
+    }
+depends_on=[outscale_nat_service.outscale_nat_service,outscale_nat_service.outscale_nat_service2]
+}
+
+
+data "outscale_nat_services" "outscale_nat_services-3" {
+    filter {
+        name   = "net_ids"
+        values = [outscale_nat_service.outscale_nat_service.net_id]
+    }
+depends_on=[outscale_nat_service.outscale_nat_service,outscale_nat_service.outscale_nat_service2]
+}
+
+data "outscale_nat_services" "outscale_nat_services-4" {
+    filter {
+        name   = "states"
+        values = [outscale_nat_service.outscale_nat_service.state]
+    }
+    filter {
+        name   = "tag_keys"
+        values = ["Key:2"]
+   }
+depends_on=[outscale_nat_service.outscale_nat_service,outscale_nat_service.outscale_nat_service2]
+}
+data "outscale_nat_services" "outscale_nat_services-5" {
+    filter {
+        name   = "states"
+        values = [outscale_nat_service.outscale_nat_service.state]
+    }
+    filter {
+        name   = "tag_values"
+        values = ["value-tags:2"]
+   }
+depends_on=[outscale_nat_service.outscale_nat_service,outscale_nat_service.outscale_nat_service2]
+}
+
+data "outscale_nat_services" "outscale_nat_services-6" {
+    filter {
+        name   = "states"
+        values = [outscale_nat_service.outscale_nat_service.state]
+    }
+    filter {
+        name   = "tags"
+        values = ["Key:2=value-tags:2"]
+   }
+depends_on=[outscale_nat_service.outscale_nat_service,outscale_nat_service.outscale_nat_service2]
+}
+

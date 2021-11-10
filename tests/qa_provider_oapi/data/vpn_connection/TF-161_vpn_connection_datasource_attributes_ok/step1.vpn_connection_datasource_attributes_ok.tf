@@ -15,11 +15,11 @@ resource "outscale_vpn_connection" "vpn_connection_1" {
     static_routes_only = false
     tags {
         key   = "Type"
-        value = "Dynamic"
+        value = "Dynamic-TF161"
     }
     tags {
-        key   = "Project"
-        value = "Terraform"
+        key   = "Test"
+        value = "Terraform-TF161"
     }
 }
 
@@ -28,19 +28,68 @@ data "outscale_vpn_connection" "data_vpn_connection_1" {
        name   = "vpn_connection_ids"
        values = [outscale_vpn_connection.vpn_connection_1.vpn_connection_id]
     }
-
+}
+data "outscale_vpn_connection" "data_vpn_connection_2" {
     filter {
        name   = "client_gateway_ids"
        values = [outscale_vpn_connection.vpn_connection_1.client_gateway_id]
     }
+depends_on =[outscale_vpn_connection.vpn_connection_1]
+}
 
+data "outscale_vpn_connection" "data_vpn_connection_3" {
     filter {
        name   = "virtual_gateway_ids"
        values = [outscale_vpn_connection.vpn_connection_1.virtual_gateway_id]
     }
+depends_on =[outscale_vpn_connection.vpn_connection_1]
+}
+
+data "outscale_vpn_connection" "data_vpn_connection_4" {
 
    filter {
        name   = "static_routes_only"
        values = [outscale_vpn_connection.vpn_connection_1.static_routes_only]
     }
+   filter {
+       name   = "states"
+       values = ["available"]
+    }
+depends_on =[outscale_vpn_connection.vpn_connection_1]
+}
+
+data "outscale_vpn_connection" "data_vpn_connection_5" {
+filter {
+       name   = "tag_keys"
+       values = ["Type"]
+    }
+filter {
+       name   = "states"
+       values = ["available"]
+    }
+depends_on =[outscale_vpn_connection.vpn_connection_1]
+}
+
+data "outscale_vpn_connection" "data_vpn_connection_6" {
+filter {
+       name   = "tag_values"
+       values = ["Dynamic-TF161"]
+    }
+filter {
+       name   = "states"
+       values = ["available"]
+    }
+depends_on =[outscale_vpn_connection.vpn_connection_1]
+}
+
+data "outscale_vpn_connection" "data_vpn_connection_7" {
+filter {
+       name   = "tags"
+       values = ["Type=Dynamic-TF161"]
+    }
+filter {
+       name   = "states"
+       values = ["available"]
+    }
+depends_on =[outscale_vpn_connection.vpn_connection_1]
 }

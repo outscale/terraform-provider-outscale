@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_public_ips",
             "name": "outscale_public_ips",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -26,12 +26,12 @@
                                 "public_ip_id": "##id-1##",
                                 "tags": [
                                     {
-                                        "key": "Key",
-                                        "value": "value-tags"
-                                    },
-                                    {
                                         "key": "name-2",
                                         "value": "test-data-2"
+                                    },
+                                    {
+                                        "key": "Key",
+                                        "value": "value-tags"
                                     }
                                 ],
                                 "vm_id": ""
@@ -48,7 +48,8 @@
                             }
                         ],
                         "request_id": "########"
-                    }
+                    },
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -56,7 +57,7 @@
             "mode": "data",
             "type": "outscale_public_ips",
             "name": "outscale_public_ips_2",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -85,7 +86,8 @@
                             }
                         ],
                         "request_id": "########"
-                    }
+                    },
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -93,7 +95,7 @@
             "mode": "data",
             "type": "outscale_public_ips",
             "name": "outscale_public_ips_3",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -122,7 +124,8 @@
                             }
                         ],
                         "request_id": "########"
-                    }
+                    },
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -130,7 +133,7 @@
             "mode": "data",
             "type": "outscale_public_ips",
             "name": "outscale_public_ips_4",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -159,7 +162,8 @@
                             }
                         ],
                         "request_id": "########"
-                    }
+                    },
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -167,7 +171,7 @@
             "mode": "managed",
             "type": "outscale_public_ip",
             "name": "outscale_public_ip",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -193,6 +197,7 @@
                         "timeouts": null,
                         "vm_id": ""
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxODAwMDAwMDAwMDAwLCJkZWxldGUiOjE4MDAwMDAwMDAwMDB9fQ=="
                 }
             ]
@@ -201,7 +206,7 @@
             "mode": "managed",
             "type": "outscale_public_ip",
             "name": "outscale_public_ip2",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -218,6 +223,7 @@
                         "timeouts": null,
                         "vm_id": ""
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxODAwMDAwMDAwMDAwLCJkZWxldGUiOjE4MDAwMDAwMDAwMDB9fQ=="
                 }
             ]

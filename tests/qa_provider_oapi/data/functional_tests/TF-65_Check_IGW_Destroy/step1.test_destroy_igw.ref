@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_internet_service",
             "name": "nomad",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -21,6 +21,7 @@
                         "state": "",
                         "tags": []
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.nomad"
@@ -32,7 +33,7 @@
             "mode": "managed",
             "type": "outscale_internet_service_link",
             "name": "nomad",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -44,6 +45,7 @@
                         "state": "available",
                         "tags": []
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_internet_service.nomad",
@@ -56,7 +58,7 @@
             "mode": "managed",
             "type": "outscale_nat_service",
             "name": "adm",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -76,6 +78,7 @@
                         "subnet_id": "##id-4##",
                         "tags": []
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_internet_service.nomad",
@@ -90,7 +93,7 @@
             "mode": "managed",
             "type": "outscale_net",
             "name": "nomad",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -109,6 +112,7 @@
                         ],
                         "tenancy": "default"
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]
@@ -117,7 +121,7 @@
             "mode": "managed",
             "type": "outscale_public_ip",
             "name": "EIP",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -139,6 +143,7 @@
                         "timeouts": null,
                         "vm_id": ""
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxODAwMDAwMDAwMDAwLCJkZWxldGUiOjE4MDAwMDAwMDAwMDB9fQ=="
                 }
             ]
@@ -147,7 +152,7 @@
             "mode": "managed",
             "type": "outscale_public_ip",
             "name": "EIP2",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -169,6 +174,7 @@
                         "timeouts": null,
                         "vm_id": ""
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxODAwMDAwMDAwMDAwLCJkZWxldGUiOjE4MDAwMDAwMDAwMDB9fQ=="
                 }
             ]
@@ -177,7 +183,7 @@
             "mode": "managed",
             "type": "outscale_public_ip",
             "name": "nat",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -199,6 +205,7 @@
                         "timeouts": null,
                         "vm_id": ""
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxODAwMDAwMDAwMDAwLCJkZWxldGUiOjE4MDAwMDAwMDAwMDB9fQ=="
                 }
             ]
@@ -207,7 +214,7 @@
             "mode": "managed",
             "type": "outscale_public_ip_link",
             "name": "eip_link",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -230,6 +237,7 @@
                         "timeouts": null,
                         "vm_id": "##id-11##"
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
                         "outscale_net.nomad",
@@ -245,7 +253,7 @@
             "mode": "managed",
             "type": "outscale_public_ip_link",
             "name": "eip_link2",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -268,6 +276,7 @@
                         "timeouts": null,
                         "vm_id": "##id-14##"
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
                         "outscale_net.nomad",
@@ -283,11 +292,12 @@
             "mode": "managed",
             "type": "outscale_route",
             "name": "internet",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
+                        "await_active_state": true,
                         "creation_method": "CreateRoute",
                         "destination_ip_range": "0.0.0.0/0",
                         "destination_service_id": "",
@@ -303,6 +313,7 @@
                         "vm_account_id": "",
                         "vm_id": ""
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_internet_service.nomad",
@@ -316,11 +327,12 @@
             "mode": "managed",
             "type": "outscale_route",
             "name": "nat_internet",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
+                        "await_active_state": true,
                         "creation_method": "CreateRoute",
                         "destination_ip_range": "0.0.0.0/0",
                         "destination_service_id": "",
@@ -336,6 +348,7 @@
                         "vm_account_id": "",
                         "vm_id": ""
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_internet_service.nomad",
@@ -354,7 +367,7 @@
             "mode": "managed",
             "type": "outscale_route_table",
             "name": "nat",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -382,6 +395,7 @@
                         ],
                         "tags": []
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.nomad"
@@ -393,7 +407,7 @@
             "mode": "managed",
             "type": "outscale_route_table",
             "name": "public",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -421,6 +435,7 @@
                         ],
                         "tags": []
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.nomad"
@@ -432,7 +447,7 @@
             "mode": "managed",
             "type": "outscale_route_table_link",
             "name": "igw",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -444,6 +459,7 @@
                         "route_table_id": "##id-15##",
                         "subnet_id": "##id-4##"
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.nomad",
@@ -457,7 +473,7 @@
             "mode": "managed",
             "type": "outscale_route_table_link",
             "name": "nat",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -469,6 +485,7 @@
                         "route_table_id": "##id-16##",
                         "subnet_id": "##id-19##"
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.nomad",
@@ -482,7 +499,7 @@
             "mode": "managed",
             "type": "outscale_security_group",
             "name": "nomad-sg1",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -509,6 +526,7 @@
                         "tag": null,
                         "tags": []
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.nomad"
@@ -520,7 +538,7 @@
             "mode": "managed",
             "type": "outscale_security_group",
             "name": "nomad-sg2",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -547,6 +565,7 @@
                         "tag": null,
                         "tags": []
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.nomad"
@@ -558,7 +577,7 @@
             "mode": "managed",
             "type": "outscale_security_group_rule",
             "name": "rule1-sg1",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -569,9 +588,9 @@
                         "inbound_rules": [
                             {
                                 "from_port_range": 0,
-                                "ip_protocol": "6",
+                                "ip_protocol": "tcp",
                                 "ip_ranges": [
-                                    "192.168.0.1"
+                                    "192.168.0.1/32"
                                 ],
                                 "security_groups_members": [],
                                 "service_ids": [],
@@ -601,6 +620,7 @@
                         "security_group_name_to_link": null,
                         "to_port_range": 0
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.nomad",
@@ -613,7 +633,7 @@
             "mode": "managed",
             "type": "outscale_security_group_rule",
             "name": "rule1-sg2",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -624,9 +644,9 @@
                         "inbound_rules": [
                             {
                                 "from_port_range": 0,
-                                "ip_protocol": "6",
+                                "ip_protocol": "tcp",
                                 "ip_ranges": [
-                                    "192.168.0.1"
+                                    "192.168.0.1/32"
                                 ],
                                 "security_groups_members": [],
                                 "service_ids": [],
@@ -656,6 +676,7 @@
                         "security_group_name_to_link": null,
                         "to_port_range": 0
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.nomad",
@@ -668,7 +689,7 @@
             "mode": "managed",
             "type": "outscale_security_group_rule",
             "name": "rule2-sg1",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -679,9 +700,9 @@
                         "inbound_rules": [
                             {
                                 "from_port_range": 0,
-                                "ip_protocol": "6",
+                                "ip_protocol": "tcp",
                                 "ip_ranges": [
-                                    "192.168.0.1"
+                                    "192.168.0.1/32"
                                 ],
                                 "security_groups_members": [],
                                 "service_ids": [],
@@ -689,9 +710,9 @@
                             },
                             {
                                 "from_port_range": 22,
-                                "ip_protocol": "6",
+                                "ip_protocol": "tcp",
                                 "ip_ranges": [
-                                    "192.168.0.1"
+                                    "192.168.0.1/32"
                                 ],
                                 "security_groups_members": [],
                                 "service_ids": [],
@@ -721,6 +742,7 @@
                         "security_group_name_to_link": null,
                         "to_port_range": 22
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.nomad",
@@ -734,7 +756,7 @@
             "mode": "managed",
             "type": "outscale_security_group_rule",
             "name": "rule2-sg2",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -745,9 +767,9 @@
                         "inbound_rules": [
                             {
                                 "from_port_range": 0,
-                                "ip_protocol": "6",
+                                "ip_protocol": "tcp",
                                 "ip_ranges": [
-                                    "192.168.0.1"
+                                    "192.168.0.1/32"
                                 ],
                                 "security_groups_members": [],
                                 "service_ids": [],
@@ -755,9 +777,9 @@
                             },
                             {
                                 "from_port_range": 80,
-                                "ip_protocol": "6",
+                                "ip_protocol": "tcp",
                                 "ip_ranges": [
-                                    "192.168.0.1"
+                                    "192.168.0.1/32"
                                 ],
                                 "security_groups_members": [],
                                 "service_ids": [],
@@ -787,6 +809,7 @@
                         "security_group_name_to_link": null,
                         "to_port_range": 80
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.nomad",
@@ -800,7 +823,7 @@
             "mode": "managed",
             "type": "outscale_security_group_rule",
             "name": "rule3-sg1",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -811,9 +834,9 @@
                         "inbound_rules": [
                             {
                                 "from_port_range": 0,
-                                "ip_protocol": "6",
+                                "ip_protocol": "tcp",
                                 "ip_ranges": [
-                                    "192.168.0.1"
+                                    "192.168.0.1/32"
                                 ],
                                 "security_groups_members": [],
                                 "service_ids": [],
@@ -821,9 +844,9 @@
                             },
                             {
                                 "from_port_range": 22,
-                                "ip_protocol": "6",
+                                "ip_protocol": "tcp",
                                 "ip_ranges": [
-                                    "192.168.0.1"
+                                    "192.168.0.1/32"
                                 ],
                                 "security_groups_members": [],
                                 "service_ids": [],
@@ -831,9 +854,9 @@
                             },
                             {
                                 "from_port_range": 1024,
-                                "ip_protocol": "6",
+                                "ip_protocol": "tcp",
                                 "ip_ranges": [
-                                    "192.168.0.1"
+                                    "192.168.0.1/32"
                                 ],
                                 "security_groups_members": [],
                                 "service_ids": [],
@@ -863,6 +886,7 @@
                         "security_group_name_to_link": null,
                         "to_port_range": 1024
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.nomad",
@@ -877,7 +901,7 @@
             "mode": "managed",
             "type": "outscale_security_group_rule",
             "name": "rule3-sg2",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -888,9 +912,9 @@
                         "inbound_rules": [
                             {
                                 "from_port_range": 0,
-                                "ip_protocol": "6",
+                                "ip_protocol": "tcp",
                                 "ip_ranges": [
-                                    "192.168.0.1"
+                                    "192.168.0.1/32"
                                 ],
                                 "security_groups_members": [],
                                 "service_ids": [],
@@ -898,9 +922,9 @@
                             },
                             {
                                 "from_port_range": 80,
-                                "ip_protocol": "6",
+                                "ip_protocol": "tcp",
                                 "ip_ranges": [
-                                    "192.168.0.1"
+                                    "192.168.0.1/32"
                                 ],
                                 "security_groups_members": [],
                                 "service_ids": [],
@@ -908,9 +932,9 @@
                             },
                             {
                                 "from_port_range": 1024,
-                                "ip_protocol": "6",
+                                "ip_protocol": "tcp",
                                 "ip_ranges": [
-                                    "192.168.0.1"
+                                    "192.168.0.1/32"
                                 ],
                                 "security_groups_members": [],
                                 "service_ids": [],
@@ -940,6 +964,7 @@
                         "security_group_name_to_link": null,
                         "to_port_range": 1024
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.nomad",
@@ -954,7 +979,7 @@
             "mode": "managed",
             "type": "outscale_subnet",
             "name": "adm",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -976,6 +1001,7 @@
                         ],
                         "timeouts": null
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
                         "outscale_net.nomad"
@@ -987,7 +1013,7 @@
             "mode": "managed",
             "type": "outscale_subnet",
             "name": "bastion",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -1009,6 +1035,7 @@
                         ],
                         "timeouts": null
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
                         "outscale_net.nomad"
@@ -1020,7 +1047,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "consul_server_1",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "index_key": 0,
@@ -1043,6 +1070,7 @@
                         "bsu_optimized": false,
                         "client_token": "",
                         "deletion_protection": false,
+                        "get_admin_password": null,
                         "hypervisor": "xen",
                         "id": "##id-11##",
                         "image_id": "##id-23##",
@@ -1133,6 +1161,7 @@
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
                     "dependencies": [
                         "outscale_net.nomad",
@@ -1161,6 +1190,7 @@
                         "bsu_optimized": false,
                         "client_token": "",
                         "deletion_protection": false,
+                        "get_admin_password": null,
                         "hypervisor": "xen",
                         "id": "##id-14##",
                         "image_id": "##id-23##",
@@ -1251,6 +1281,7 @@
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
                     "dependencies": [
                         "outscale_net.nomad",
@@ -1279,6 +1310,7 @@
                         "bsu_optimized": false,
                         "client_token": "",
                         "deletion_protection": false,
+                        "get_admin_password": null,
                         "hypervisor": "xen",
                         "id": "##id-30##",
                         "image_id": "##id-23##",
@@ -1369,6 +1401,7 @@
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
                     "dependencies": [
                         "outscale_net.nomad",
@@ -1382,7 +1415,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "vm2",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "index_key": 0,
@@ -1405,6 +1438,7 @@
                         "bsu_optimized": false,
                         "client_token": "",
                         "deletion_protection": false,
+                        "get_admin_password": null,
                         "hypervisor": "xen",
                         "id": "##id-35##",
                         "image_id": "##id-23##",
@@ -1495,6 +1529,7 @@
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
                     "dependencies": [
                         "outscale_net.nomad",
@@ -1523,6 +1558,7 @@
                         "bsu_optimized": false,
                         "client_token": "",
                         "deletion_protection": false,
+                        "get_admin_password": null,
                         "hypervisor": "xen",
                         "id": "##id-40##",
                         "image_id": "##id-23##",
@@ -1613,6 +1649,7 @@
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
                     "dependencies": [
                         "outscale_net.nomad",
@@ -1641,6 +1678,7 @@
                         "bsu_optimized": false,
                         "client_token": "",
                         "deletion_protection": false,
+                        "get_admin_password": null,
                         "hypervisor": "xen",
                         "id": "##id-45##",
                         "image_id": "##id-23##",
@@ -1731,6 +1769,7 @@
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
                     "dependencies": [
                         "outscale_net.nomad",

@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_net",
             "name": "outscale_net",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -28,6 +28,7 @@
                         ],
                         "tenancy": "default"
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]
@@ -36,7 +37,7 @@
             "mode": "managed",
             "type": "outscale_security_group",
             "name": "outscale_security_group",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -68,6 +69,7 @@
                             }
                         ]
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net"
@@ -79,7 +81,7 @@
             "mode": "managed",
             "type": "outscale_security_group",
             "name": "outscale_security_group2",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -111,6 +113,7 @@
                             }
                         ]
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net"
@@ -122,7 +125,7 @@
             "mode": "managed",
             "type": "outscale_security_group_rule",
             "name": "outscale_security_group_rule-3",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -133,7 +136,7 @@
                         "inbound_rules": [
                             {
                                 "from_port_range": 22,
-                                "ip_protocol": "6",
+                                "ip_protocol": "tcp",
                                 "ip_ranges": [],
                                 "security_groups_members": [
                                     {
@@ -184,6 +187,7 @@
                         "security_group_name_to_link": null,
                         "to_port_range": null
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net",
@@ -197,7 +201,7 @@
             "mode": "managed",
             "type": "outscale_security_group_rule",
             "name": "outscale_security_group_rule-3_2",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -208,7 +212,7 @@
                         "inbound_rules": [
                             {
                                 "from_port_range": 22,
-                                "ip_protocol": "6",
+                                "ip_protocol": "tcp",
                                 "ip_ranges": [],
                                 "security_groups_members": [
                                     {
@@ -237,7 +241,7 @@
                             },
                             {
                                 "from_port_range": 22,
-                                "ip_protocol": "6",
+                                "ip_protocol": "tcp",
                                 "ip_ranges": [],
                                 "security_groups_members": [
                                     {
@@ -273,6 +277,7 @@
                         "security_group_name_to_link": null,
                         "to_port_range": null
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net",

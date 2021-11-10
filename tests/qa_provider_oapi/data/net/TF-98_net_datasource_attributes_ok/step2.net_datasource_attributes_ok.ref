@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_net",
             "name": "outscale_net",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -23,16 +23,17 @@
                         "state": "available",
                         "tags": [
                             {
-                                "key": "Name",
-                                "value": "outscale_net_resource"
-                            },
-                            {
                                 "key": "VerSion",
                                 "value": "1Q84"
+                            },
+                            {
+                                "key": "Name",
+                                "value": "outscale_net_resource"
                             }
                         ],
                         "tenancy": "default"
-                    }
+                    },
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -40,7 +41,7 @@
             "mode": "data",
             "type": "outscale_net",
             "name": "outscale_net_2",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -54,16 +55,17 @@
                         "state": "available",
                         "tags": [
                             {
-                                "key": "Name",
-                                "value": "outscale_net_resource"
-                            },
-                            {
                                 "key": "VerSion",
                                 "value": "1Q84"
+                            },
+                            {
+                                "key": "Name",
+                                "value": "outscale_net_resource"
                             }
                         ],
                         "tenancy": "default"
-                    }
+                    },
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -71,7 +73,7 @@
             "mode": "data",
             "type": "outscale_net",
             "name": "outscale_net_3",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -85,16 +87,17 @@
                         "state": "available",
                         "tags": [
                             {
-                                "key": "Name",
-                                "value": "outscale_net_resource"
-                            },
-                            {
                                 "key": "VerSion",
                                 "value": "1Q84"
+                            },
+                            {
+                                "key": "Name",
+                                "value": "outscale_net_resource"
                             }
                         ],
                         "tenancy": "default"
-                    }
+                    },
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -102,7 +105,7 @@
             "mode": "data",
             "type": "outscale_net",
             "name": "outscale_net_4",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -116,16 +119,17 @@
                         "state": "available",
                         "tags": [
                             {
-                                "key": "Name",
-                                "value": "outscale_net_resource"
-                            },
-                            {
                                 "key": "VerSion",
                                 "value": "1Q84"
+                            },
+                            {
+                                "key": "Name",
+                                "value": "outscale_net_resource"
                             }
                         ],
                         "tenancy": "default"
-                    }
+                    },
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -133,7 +137,7 @@
             "mode": "data",
             "type": "outscale_net",
             "name": "outscale_net_5",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -147,16 +151,17 @@
                         "state": "available",
                         "tags": [
                             {
-                                "key": "Name",
-                                "value": "outscale_net_resource"
-                            },
-                            {
                                 "key": "VerSion",
                                 "value": "1Q84"
+                            },
+                            {
+                                "key": "Name",
+                                "value": "outscale_net_resource"
                             }
                         ],
                         "tenancy": "default"
-                    }
+                    },
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -164,7 +169,7 @@
             "mode": "managed",
             "type": "outscale_net",
             "name": "outscale_net",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -187,6 +192,7 @@
                         ],
                         "tenancy": "default"
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]

@@ -33,7 +33,10 @@ IGNORE_END_ELEMENTS = ['request_id',
     		       'secret_key',
                        'cookie_name',
                        'client_gateway_configuration',
-                       'last_modification_date']
+                       'last_modification_date',
+                       'upload_date' ,
+                       'comment',
+                       'osu_manifest_url']
 IGNORE_END_PATHS = []
 TINA_ID_PREFIXES = ['i', 'subnet', 'snap', 'img', 'vol', 'eni', 'vpc', 'igw', 'nat', 'vgw', 'pcx', 'sg', 'rtb', 'rtbassoc', 'vpn', 'vpcconn', 'ami', 'dxvif','vpce','fgpu']
 VARIABLES_FILE_NAME = ['provider.auto.tfvars', 'resources.auto.tfvars']
@@ -52,9 +55,10 @@ LOG_HANDLER.setFormatter(FORMATTER)
 logging.basicConfig(level=logging.DEBUG, handlers=[LOG_HANDLER])
 logging.getLogger('tpd_test').setLevel(logging.DEBUG)
 
-
 terraform_vars = {}
 for file_name in VARIABLES_FILE_NAME:
+    file_name = "/Users/meriem.zouari/git/qa_provider_oapi/qa_provider_oapi/" + file_name
+#    print(file_name)
     with open(file_name, 'r') as var_file:
         lines = var_file.readlines()
         for line in lines:
@@ -160,11 +164,34 @@ def compare_json_dicts(path, dict_out, dict_ref, ids):
             compare_json('{}.{}'.format(path, key), dict_out[key], dict_ref[key], ids)
 
 
+#def compare_json_lists(path, list_out, list_ref, ids):
+#    assert len(list_out) == len(list_ref)
+#    for i in range(len(list_out)):
+#        compare_json('{}.{}'.format(path, i), list_out[i], list_ref[i], ids)
+
 def compare_json_lists(path, list_out, list_ref, ids):
     assert len(list_out) == len(list_ref)
-    for i in range(len(list_out)):
-        compare_json('{}.{}'.format(path, i), list_out[i], list_ref[i], ids)
-
+    current_ids = ids.copy()
+    found_elts = []
+    for out_elt in list_out:
+        errors = []
+        for ref_elt in list_ref:
+            if ref_elt in found_elts:
+                continue
+            try:
+                tmp_ids = current_ids.copy()
+                compare_json('{}'.format(path), out_elt, ref_elt, tmp_ids)
+                found_elts.append(ref_elt)
+                current_ids = tmp_ids
+                errors = []
+                break
+            except Exception as error:
+                tmp_ids = current_ids
+                errors.append(error)
+                pass
+        if errors:
+            assert False, 'Could not match set values for path {}, {}'.format(path, errors)
+    ids = current_ids 
 
 def compare_json_sets(path, set_out, set_ref, ids):
     assert len(set_out) == len(set_ref)
@@ -341,14 +368,36 @@ Log: {}
         if proc.returncode != exp_ret_code:
             self.error = True
             self.log += "\nERROR:\nCMD '{}' failed\nStdout: {}\nStderr: {}".format(cmd, stdout, stderr)
+            print(self.log)
+
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
             assert False, 'Incorrect return code {}, expected {}'.format(proc.returncode, exp_ret_code)
         return stdout, stderr
 
     def exec_test_step(self, tf_file_path, out_file_path):
         self.logger.debug("Exec step : {}".format(tf_file_path))
         self.log += "\nTerraform validate:\n{}".format(self.run_cmd("/usr/local/bin/terraform validate -no-color")[0])
-        self.log += "\nTerraform plan:\n{}".format(self.run_cmd("/usr/local/bin/terraform plan -no-color")[0])
-        self.log += "\nTerraform apply:\n{}".format(self.run_cmd("/usr/local/bin/terraform apply -auto-approve -no-color")[0])
+        self.log += "\nTerraform plan:\n{}".format(self.run_cmd("/usr/local/bin/terraform plan -lock=false -no-color")[0])
+        self.log += "\nTerraform apply:\n{}".format(self.run_cmd("/usr/local/bin/terraform apply -auto-approve -lock=false -no-color")[0])
         self.log += "\nTerraform show:\n{}".format(self.run_cmd("/usr/local/bin/terraform show -no-color")[0])
         self.run_cmd("/usr/local/bin/terraform state pull > {}".format(out_file_path))
 
@@ -399,12 +448,12 @@ Log: {}
                 finally:
                     check_file_index += 1
                     pass
-        except Exception:
+        except Exception as error :
             self.error = True
-            raise
+            raise error
         finally:
             try:
-                self.run_cmd("/usr/local/bin/terraform destroy -force -no-color")
+                self.run_cmd("/usr/local/bin/terraform destroy -auto-approve -no-color")
             finally:
                 self.run_cmd("rm -f test.tf")
                 self.run_cmd("rm -f terraform.tfstate")

@@ -9,7 +9,57 @@
             "mode": "data",
             "type": "outscale_client_gateways",
             "name": "outscale_client_gateways",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "client_gateway_ids": null,
+                        "client_gateways": [
+                            {
+                                "bgp_asn": 575,
+                                "client_gateway_id": "##id-0##",
+                                "connection_type": "ipsec.1",
+                                "public_ip": "########",
+                                "state": "available",
+                                "tags": [
+                                    {
+                                        "key": "name-terraform",
+                                        "value": "CGW_2_terraform"
+                                    }
+                                ]
+                            },
+                            {
+                                "bgp_asn": 571,
+                                "client_gateway_id": "##id-1##",
+                                "connection_type": "ipsec.1",
+                                "public_ip": "########",
+                                "state": "available",
+                                "tags": [
+                                    {
+                                        "key": "project",
+                                        "value": "terraform"
+                                    },
+                                    {
+                                        "key": "name-terraform",
+                                        "value": "CGW_1_terraform"
+                                    }
+                                ]
+                            }
+                        ],
+                        "filter": "########",
+                        "id": "##id-2##",
+                        "request_id": "########"
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_client_gateways",
+            "name": "outscale_client_gateways-2",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -18,26 +68,127 @@
                         "client_gateways": [
                             {
                                 "bgp_asn": 571,
+                                "client_gateway_id": "##id-1##",
+                                "connection_type": "ipsec.1",
+                                "public_ip": "########",
+                                "state": "available",
+                                "tags": [
+                                    {
+                                        "key": "project",
+                                        "value": "terraform"
+                                    },
+                                    {
+                                        "key": "name-terraform",
+                                        "value": "CGW_1_terraform"
+                                    }
+                                ]
+                            }
+                        ],
+                        "filter": "########",
+                        "id": "##id-3##",
+                        "request_id": "########"
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_client_gateways",
+            "name": "outscale_client_gateways-3",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "client_gateway_ids": null,
+                        "client_gateways": [
+                            {
+                                "bgp_asn": 575,
                                 "client_gateway_id": "##id-0##",
                                 "connection_type": "ipsec.1",
                                 "public_ip": "########",
                                 "state": "available",
                                 "tags": [
                                     {
-                                        "key": "name-mzi",
-                                        "value": "CGW_1_mzi"
-                                    },
+                                        "key": "name-terraform",
+                                        "value": "CGW_2_terraform"
+                                    }
+                                ]
+                            },
+                            {
+                                "bgp_asn": 571,
+                                "client_gateway_id": "##id-1##",
+                                "connection_type": "ipsec.1",
+                                "public_ip": "########",
+                                "state": "available",
+                                "tags": [
                                     {
                                         "key": "project",
                                         "value": "terraform"
+                                    },
+                                    {
+                                        "key": "name-terraform",
+                                        "value": "CGW_1_terraform"
                                     }
                                 ]
                             }
                         ],
                         "filter": "########",
-                        "id": "##id-1##",
+                        "id": "##id-4##",
                         "request_id": "########"
-                    }
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_client_gateways",
+            "name": "outscale_client_gateways-4",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "client_gateway_ids": null,
+                        "client_gateways": [
+                            {
+                                "bgp_asn": 575,
+                                "client_gateway_id": "##id-0##",
+                                "connection_type": "ipsec.1",
+                                "public_ip": "########",
+                                "state": "available",
+                                "tags": [
+                                    {
+                                        "key": "name-terraform",
+                                        "value": "CGW_2_terraform"
+                                    }
+                                ]
+                            },
+                            {
+                                "bgp_asn": 571,
+                                "client_gateway_id": "##id-1##",
+                                "connection_type": "ipsec.1",
+                                "public_ip": "########",
+                                "state": "available",
+                                "tags": [
+                                    {
+                                        "key": "project",
+                                        "value": "terraform"
+                                    },
+                                    {
+                                        "key": "name-terraform",
+                                        "value": "CGW_1_terraform"
+                                    }
+                                ]
+                            }
+                        ],
+                        "filter": "########",
+                        "id": "##id-5##",
+                        "request_id": "########"
+                    },
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -45,22 +196,22 @@
             "mode": "managed",
             "type": "outscale_client_gateway",
             "name": "outscale_client_gateway",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "bgp_asn": 571,
-                        "client_gateway_id": "##id-0##",
+                        "client_gateway_id": "##id-1##",
                         "connection_type": "ipsec.1",
-                        "id": "##id-0##",
+                        "id": "##id-1##",
                         "public_ip": "########",
                         "request_id": "########",
                         "state": "available",
                         "tags": [
                             {
-                                "key": "name-mzi",
-                                "value": "CGW_1_mzi"
+                                "key": "name-terraform",
+                                "value": "CGW_1_terraform"
                             },
                             {
                                 "key": "project",
@@ -68,6 +219,7 @@
                             }
                         ]
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]
@@ -76,25 +228,26 @@
             "mode": "managed",
             "type": "outscale_client_gateway",
             "name": "outscale_client_gateway_2",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "bgp_asn": 575,
-                        "client_gateway_id": "##id-2##",
+                        "client_gateway_id": "##id-0##",
                         "connection_type": "ipsec.1",
-                        "id": "##id-2##",
+                        "id": "##id-0##",
                         "public_ip": "########",
                         "request_id": "########",
                         "state": "available",
                         "tags": [
                             {
-                                "key": "name-mzi",
-                                "value": "CGW_2_mzi"
+                                "key": "name-terraform",
+                                "value": "CGW_2_terraform"
                             }
                         ]
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]

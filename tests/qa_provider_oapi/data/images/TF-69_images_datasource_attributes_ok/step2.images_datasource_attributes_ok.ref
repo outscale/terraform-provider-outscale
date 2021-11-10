@@ -7,67 +7,84 @@
     "resources": [
         {
             "mode": "data",
+            "type": "outscale_image",
+            "name": "outscale_image_7",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_alias": "",
+                        "account_id": "##id-0##",
+                        "architecture": "x86_64",
+                        "block_device_mappings": [
+                            {
+                                "bsu": {
+                                    "delete_on_vm_deletion": "true",
+                                    "iops": "0",
+                                    "snapshot_id": "##id-1##",
+                                    "volume_size": "10",
+                                    "volume_type": "standard"
+                                },
+                                "device_name": "/dev/sda1",
+                                "no_device": "",
+                                "virtual_device_name": ""
+                            }
+                        ],
+                        "creation_date": "########",
+                        "description": null,
+                        "file_location": "###account_id###/TF-69-name",
+                        "filter": "########",
+                        "id": "##id-2##",
+                        "image_id": "##id-2##",
+                        "image_name": "########",
+                        "image_type": "machine",
+                        "is_public": null,
+                        "permission": null,
+                        "permissions_to_launch": [],
+                        "product_codes": [
+                            "0001"
+                        ],
+                        "request_id": "########",
+                        "root_device_name": "/dev/sda1",
+                        "root_device_type": "bsu",
+                        "state": "available",
+                        "state_comment": {
+                            "state_code": "",
+                            "state_message": ""
+                        },
+                        "tags": [
+                            {
+                                "key": "Key:TF69",
+                                "value": "value-tags"
+                            },
+                            {
+                                "key": "Key-2",
+                                "value": "value:TF69"
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "data",
             "type": "outscale_images",
             "name": "outscale_images",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "account_ids": null,
                         "filter": "########",
-                        "id": "##id-0##",
+                        "id": "##id-3##",
                         "image_ids": null,
                         "images": [
                             {
                                 "account_alias": "",
-                                "account_id": "##id-1##",
-                                "architecture": "x86_64",
-                                "block_device_mappings": [
-                                    {
-                                        "bsu": {
-                                            "delete_on_vm_deletion": "true",
-                                            "iops": "0",
-                                            "snapshot_id": "##id-2##",
-                                            "volume_size": "10",
-                                            "volume_type": "standard"
-                                        },
-                                        "device_name": "/dev/sda1",
-                                        "no_device": "",
-                                        "virtual_device_name": ""
-                                    }
-                                ],
-                                "creation_date": "########",
-                                "description": "",
-                                "file_location": "###account_id###/test-1",
-                                "image_id": "##id-3##",
-                                "image_name": "########",
-                                "image_type": "machine",
-                                "permissions_to_launch": [],
-                                "product_codes": [
-                                    "0001"
-                                ],
-                                "root_device_name": "/dev/sda1",
-                                "root_device_type": "bsu",
-                                "state": "available",
-                                "state_comment": {
-                                    "state_code": "",
-                                    "state_message": ""
-                                },
-                                "tags": [
-                                    {
-                                        "key": "Key",
-                                        "value": "value-tags"
-                                    },
-                                    {
-                                        "key": "Key-2",
-                                        "value": "value-tags-2"
-                                    }
-                                ]
-                            },
-                            {
-                                "account_alias": "",
-                                "account_id": "##id-1##",
+                                "account_id": "##id-0##",
                                 "architecture": "x86_64",
                                 "block_device_mappings": [
                                     {
@@ -102,19 +119,544 @@
                                 },
                                 "tags": [
                                     {
-                                        "key": "Key",
-                                        "value": "value-tags"
+                                        "key": "Key:TF69",
+                                        "value": "value:TF69"
                                     },
                                     {
                                         "key": "Key-2",
                                         "value": "value-tags-2"
                                     }
                                 ]
+                            },
+                            {
+                                "account_alias": "",
+                                "account_id": "##id-0##",
+                                "architecture": "x86_64",
+                                "block_device_mappings": [
+                                    {
+                                        "bsu": {
+                                            "delete_on_vm_deletion": "true",
+                                            "iops": "0",
+                                            "snapshot_id": "##id-1##",
+                                            "volume_size": "10",
+                                            "volume_type": "standard"
+                                        },
+                                        "device_name": "/dev/sda1",
+                                        "no_device": "",
+                                        "virtual_device_name": ""
+                                    }
+                                ],
+                                "creation_date": "########",
+                                "description": "TF-69",
+                                "file_location": "###account_id###/TF-69-name",
+                                "image_id": "##id-2##",
+                                "image_name": "########",
+                                "image_type": "machine",
+                                "permissions_to_launch": [],
+                                "product_codes": [
+                                    "0001"
+                                ],
+                                "root_device_name": "/dev/sda1",
+                                "root_device_type": "bsu",
+                                "state": "available",
+                                "state_comment": {
+                                    "state_code": "",
+                                    "state_message": ""
+                                },
+                                "tags": [
+                                    {
+                                        "key": "Key:TF69",
+                                        "value": "value-tags"
+                                    },
+                                    {
+                                        "key": "Key-2",
+                                        "value": "value:TF69"
+                                    }
+                                ]
                             }
                         ],
                         "permissions": null,
                         "request_id": "########"
-                    }
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_images",
+            "name": "outscale_images_2",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_ids": null,
+                        "filter": "########",
+                        "id": "##id-6##",
+                        "image_ids": null,
+                        "images": [
+                            {
+                                "account_alias": "",
+                                "account_id": "##id-0##",
+                                "architecture": "x86_64",
+                                "block_device_mappings": [
+                                    {
+                                        "bsu": {
+                                            "delete_on_vm_deletion": "true",
+                                            "iops": "0",
+                                            "snapshot_id": "##id-4##",
+                                            "volume_size": "10",
+                                            "volume_type": "standard"
+                                        },
+                                        "device_name": "/dev/sda1",
+                                        "no_device": "",
+                                        "virtual_device_name": ""
+                                    }
+                                ],
+                                "creation_date": "########",
+                                "description": "",
+                                "file_location": "###account_id###/test-2",
+                                "image_id": "##id-5##",
+                                "image_name": "########",
+                                "image_type": "machine",
+                                "permissions_to_launch": [],
+                                "product_codes": [
+                                    "0001"
+                                ],
+                                "root_device_name": "/dev/sda1",
+                                "root_device_type": "bsu",
+                                "state": "available",
+                                "state_comment": {
+                                    "state_code": "",
+                                    "state_message": ""
+                                },
+                                "tags": [
+                                    {
+                                        "key": "Key:TF69",
+                                        "value": "value:TF69"
+                                    },
+                                    {
+                                        "key": "Key-2",
+                                        "value": "value-tags-2"
+                                    }
+                                ]
+                            },
+                            {
+                                "account_alias": "",
+                                "account_id": "##id-0##",
+                                "architecture": "x86_64",
+                                "block_device_mappings": [
+                                    {
+                                        "bsu": {
+                                            "delete_on_vm_deletion": "true",
+                                            "iops": "0",
+                                            "snapshot_id": "##id-1##",
+                                            "volume_size": "10",
+                                            "volume_type": "standard"
+                                        },
+                                        "device_name": "/dev/sda1",
+                                        "no_device": "",
+                                        "virtual_device_name": ""
+                                    }
+                                ],
+                                "creation_date": "########",
+                                "description": "TF-69",
+                                "file_location": "###account_id###/TF-69-name",
+                                "image_id": "##id-2##",
+                                "image_name": "########",
+                                "image_type": "machine",
+                                "permissions_to_launch": [],
+                                "product_codes": [
+                                    "0001"
+                                ],
+                                "root_device_name": "/dev/sda1",
+                                "root_device_type": "bsu",
+                                "state": "available",
+                                "state_comment": {
+                                    "state_code": "",
+                                    "state_message": ""
+                                },
+                                "tags": [
+                                    {
+                                        "key": "Key:TF69",
+                                        "value": "value-tags"
+                                    },
+                                    {
+                                        "key": "Key-2",
+                                        "value": "value:TF69"
+                                    }
+                                ]
+                            }
+                        ],
+                        "permissions": null,
+                        "request_id": "########"
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_images",
+            "name": "outscale_images_3",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_ids": null,
+                        "filter": "########",
+                        "id": "##id-7##",
+                        "image_ids": null,
+                        "images": [
+                            {
+                                "account_alias": "",
+                                "account_id": "##id-0##",
+                                "architecture": "x86_64",
+                                "block_device_mappings": [
+                                    {
+                                        "bsu": {
+                                            "delete_on_vm_deletion": "true",
+                                            "iops": "0",
+                                            "snapshot_id": "##id-1##",
+                                            "volume_size": "10",
+                                            "volume_type": "standard"
+                                        },
+                                        "device_name": "/dev/sda1",
+                                        "no_device": "",
+                                        "virtual_device_name": ""
+                                    }
+                                ],
+                                "creation_date": "########",
+                                "description": "TF-69",
+                                "file_location": "###account_id###/TF-69-name",
+                                "image_id": "##id-2##",
+                                "image_name": "########",
+                                "image_type": "machine",
+                                "permissions_to_launch": [],
+                                "product_codes": [
+                                    "0001"
+                                ],
+                                "root_device_name": "/dev/sda1",
+                                "root_device_type": "bsu",
+                                "state": "available",
+                                "state_comment": {
+                                    "state_code": "",
+                                    "state_message": ""
+                                },
+                                "tags": [
+                                    {
+                                        "key": "Key:TF69",
+                                        "value": "value-tags"
+                                    },
+                                    {
+                                        "key": "Key-2",
+                                        "value": "value:TF69"
+                                    }
+                                ]
+                            }
+                        ],
+                        "permissions": null,
+                        "request_id": "########"
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_images",
+            "name": "outscale_images_4",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_ids": null,
+                        "filter": "########",
+                        "id": "##id-8##",
+                        "image_ids": null,
+                        "images": [
+                            {
+                                "account_alias": "",
+                                "account_id": "##id-0##",
+                                "architecture": "x86_64",
+                                "block_device_mappings": [
+                                    {
+                                        "bsu": {
+                                            "delete_on_vm_deletion": "true",
+                                            "iops": "0",
+                                            "snapshot_id": "##id-1##",
+                                            "volume_size": "10",
+                                            "volume_type": "standard"
+                                        },
+                                        "device_name": "/dev/sda1",
+                                        "no_device": "",
+                                        "virtual_device_name": ""
+                                    }
+                                ],
+                                "creation_date": "########",
+                                "description": "TF-69",
+                                "file_location": "###account_id###/TF-69-name",
+                                "image_id": "##id-2##",
+                                "image_name": "########",
+                                "image_type": "machine",
+                                "permissions_to_launch": [],
+                                "product_codes": [
+                                    "0001"
+                                ],
+                                "root_device_name": "/dev/sda1",
+                                "root_device_type": "bsu",
+                                "state": "available",
+                                "state_comment": {
+                                    "state_code": "",
+                                    "state_message": ""
+                                },
+                                "tags": [
+                                    {
+                                        "key": "Key-2",
+                                        "value": "value:TF69"
+                                    },
+                                    {
+                                        "key": "Key:TF69",
+                                        "value": "value-tags"
+                                    }
+                                ]
+                            },
+                            {
+                                "account_alias": "",
+                                "account_id": "##id-0##",
+                                "architecture": "x86_64",
+                                "block_device_mappings": [
+                                    {
+                                        "bsu": {
+                                            "delete_on_vm_deletion": "true",
+                                            "iops": "0",
+                                            "snapshot_id": "##id-4##",
+                                            "volume_size": "10",
+                                            "volume_type": "standard"
+                                        },
+                                        "device_name": "/dev/sda1",
+                                        "no_device": "",
+                                        "virtual_device_name": ""
+                                    }
+                                ],
+                                "creation_date": "########",
+                                "description": "",
+                                "file_location": "###account_id###/test-2",
+                                "image_id": "##id-5##",
+                                "image_name": "########",
+                                "image_type": "machine",
+                                "permissions_to_launch": [],
+                                "product_codes": [
+                                    "0001"
+                                ],
+                                "root_device_name": "/dev/sda1",
+                                "root_device_type": "bsu",
+                                "state": "available",
+                                "state_comment": {
+                                    "state_code": "",
+                                    "state_message": ""
+                                },
+                                "tags": [
+                                    {
+                                        "key": "Key-2",
+                                        "value": "value-tags-2"
+                                    },
+                                    {
+                                        "key": "Key:TF69",
+                                        "value": "value:TF69"
+                                    }
+                                ]
+                            }
+                        ],
+                        "permissions": null,
+                        "request_id": "########"
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_images",
+            "name": "outscale_images_5",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_ids": null,
+                        "filter": "########",
+                        "id": "##id-9##",
+                        "image_ids": null,
+                        "images": [
+                            {
+                                "account_alias": "",
+                                "account_id": "##id-0##",
+                                "architecture": "x86_64",
+                                "block_device_mappings": [
+                                    {
+                                        "bsu": {
+                                            "delete_on_vm_deletion": "true",
+                                            "iops": "0",
+                                            "snapshot_id": "##id-1##",
+                                            "volume_size": "10",
+                                            "volume_type": "standard"
+                                        },
+                                        "device_name": "/dev/sda1",
+                                        "no_device": "",
+                                        "virtual_device_name": ""
+                                    }
+                                ],
+                                "creation_date": "########",
+                                "description": "TF-69",
+                                "file_location": "###account_id###/TF-69-name",
+                                "image_id": "##id-2##",
+                                "image_name": "########",
+                                "image_type": "machine",
+                                "permissions_to_launch": [],
+                                "product_codes": [
+                                    "0001"
+                                ],
+                                "root_device_name": "/dev/sda1",
+                                "root_device_type": "bsu",
+                                "state": "available",
+                                "state_comment": {
+                                    "state_code": "",
+                                    "state_message": ""
+                                },
+                                "tags": [
+                                    {
+                                        "key": "Key-2",
+                                        "value": "value:TF69"
+                                    },
+                                    {
+                                        "key": "Key:TF69",
+                                        "value": "value-tags"
+                                    }
+                                ]
+                            },
+                            {
+                                "account_alias": "",
+                                "account_id": "##id-0##",
+                                "architecture": "x86_64",
+                                "block_device_mappings": [
+                                    {
+                                        "bsu": {
+                                            "delete_on_vm_deletion": "true",
+                                            "iops": "0",
+                                            "snapshot_id": "##id-4##",
+                                            "volume_size": "10",
+                                            "volume_type": "standard"
+                                        },
+                                        "device_name": "/dev/sda1",
+                                        "no_device": "",
+                                        "virtual_device_name": ""
+                                    }
+                                ],
+                                "creation_date": "########",
+                                "description": "",
+                                "file_location": "###account_id###/test-2",
+                                "image_id": "##id-5##",
+                                "image_name": "########",
+                                "image_type": "machine",
+                                "permissions_to_launch": [],
+                                "product_codes": [
+                                    "0001"
+                                ],
+                                "root_device_name": "/dev/sda1",
+                                "root_device_type": "bsu",
+                                "state": "available",
+                                "state_comment": {
+                                    "state_code": "",
+                                    "state_message": ""
+                                },
+                                "tags": [
+                                    {
+                                        "key": "Key-2",
+                                        "value": "value-tags-2"
+                                    },
+                                    {
+                                        "key": "Key:TF69",
+                                        "value": "value:TF69"
+                                    }
+                                ]
+                            }
+                        ],
+                        "permissions": null,
+                        "request_id": "########"
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_images",
+            "name": "outscale_images_6",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_ids": null,
+                        "filter": "########",
+                        "id": "##id-10##",
+                        "image_ids": null,
+                        "images": [
+                            {
+                                "account_alias": "",
+                                "account_id": "##id-0##",
+                                "architecture": "x86_64",
+                                "block_device_mappings": [
+                                    {
+                                        "bsu": {
+                                            "delete_on_vm_deletion": "true",
+                                            "iops": "0",
+                                            "snapshot_id": "##id-4##",
+                                            "volume_size": "10",
+                                            "volume_type": "standard"
+                                        },
+                                        "device_name": "/dev/sda1",
+                                        "no_device": "",
+                                        "virtual_device_name": ""
+                                    }
+                                ],
+                                "creation_date": "########",
+                                "description": "",
+                                "file_location": "###account_id###/test-2",
+                                "image_id": "##id-5##",
+                                "image_name": "########",
+                                "image_type": "machine",
+                                "permissions_to_launch": [],
+                                "product_codes": [
+                                    "0001"
+                                ],
+                                "root_device_name": "/dev/sda1",
+                                "root_device_type": "bsu",
+                                "state": "available",
+                                "state_comment": {
+                                    "state_code": "",
+                                    "state_message": ""
+                                },
+                                "tags": [
+                                    {
+                                        "key": "Key-2",
+                                        "value": "value-tags-2"
+                                    },
+                                    {
+                                        "key": "Key:TF69",
+                                        "value": "value:TF69"
+                                    }
+                                ]
+                            }
+                        ],
+                        "permissions": null,
+                        "request_id": "########"
+                    },
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -122,20 +664,20 @@
             "mode": "managed",
             "type": "outscale_image",
             "name": "outscale_image1",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "account_alias": "",
-                        "account_id": "##id-1##",
+                        "account_id": "##id-0##",
                         "architecture": "x86_64",
                         "block_device_mappings": [
                             {
                                 "bsu": {
                                     "delete_on_vm_deletion": "true",
                                     "iops": "0",
-                                    "snapshot_id": "##id-2##",
+                                    "snapshot_id": "##id-1##",
                                     "volume_size": "10",
                                     "volume_type": "standard"
                                 },
@@ -145,10 +687,10 @@
                             }
                         ],
                         "creation_date": "########",
-                        "description": "",
-                        "file_location": "###account_id###/test-1",
-                        "id": "##id-3##",
-                        "image_id": "##id-3##",
+                        "description": "TF-69",
+                        "file_location": "###account_id###/TF-69-name",
+                        "id": "##id-2##",
+                        "image_id": "##id-2##",
                         "image_name": "########",
                         "image_type": "machine",
                         "is_public": null,
@@ -174,17 +716,18 @@
                         },
                         "tags": [
                             {
-                                "key": "Key",
-                                "value": "value-tags"
+                                "key": "Key-2",
+                                "value": "value:TF69"
                             },
                             {
-                                "key": "Key-2",
-                                "value": "value-tags-2"
+                                "key": "Key:TF69",
+                                "value": "value-tags"
                             }
                         ],
                         "timeouts": null,
-                        "vm_id": "##id-6##"
+                        "vm_id": "##id-11##"
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoyNDAwMDAwMDAwMDAwLCJkZWxldGUiOjI0MDAwMDAwMDAwMDAsInVwZGF0ZSI6MjQwMDAwMDAwMDAwMH19",
                     "dependencies": [
                         "outscale_vm.outscale_vm"
@@ -196,13 +739,13 @@
             "mode": "managed",
             "type": "outscale_image",
             "name": "outscale_image2",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "account_alias": "",
-                        "account_id": "##id-1##",
+                        "account_id": "##id-0##",
                         "architecture": "x86_64",
                         "block_device_mappings": [
                             {
@@ -248,17 +791,18 @@
                         },
                         "tags": [
                             {
-                                "key": "Key",
-                                "value": "value-tags"
-                            },
-                            {
                                 "key": "Key-2",
                                 "value": "value-tags-2"
+                            },
+                            {
+                                "key": "Key:TF69",
+                                "value": "value:TF69"
                             }
                         ],
                         "timeouts": null,
-                        "vm_id": "##id-6##"
+                        "vm_id": "##id-11##"
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoyNDAwMDAwMDAwMDAwLCJkZWxldGUiOjI0MDAwMDAwMDAwMDAsInVwZGF0ZSI6MjQwMDAwMDAwMDAwMH19",
                     "dependencies": [
                         "outscale_vm.outscale_vm"
@@ -270,7 +814,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "outscale_vm",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -284,7 +828,7 @@
                                     "delete_on_vm_deletion": "true",
                                     "link_date": "########",
                                     "state": "attached",
-                                    "volume_id": "##id-7##"
+                                    "volume_id": "##id-12##"
                                 },
                                 "device_name": "/dev/sda1"
                             }
@@ -292,9 +836,10 @@
                         "bsu_optimized": false,
                         "client_token": "",
                         "deletion_protection": false,
+                        "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-6##",
-                        "image_id": "##id-8##",
+                        "id": "##id-11##",
+                        "image_id": "##id-13##",
                         "is_source_dest_checked": true,
                         "keypair_name": "",
                         "launch_number": 0,
@@ -313,14 +858,14 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-9##",
+                        "reservation_id": "##id-14##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
                         "security_group_ids": null,
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-10##",
+                                "security_group_id": "##id-15##",
                                 "security_group_name": "default"
                             }
                         ],
@@ -330,10 +875,11 @@
                         "tags": [],
                         "timeouts": null,
                         "user_data": "",
-                        "vm_id": "##id-6##",
+                        "vm_id": "##id-11##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "t2.small"
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19"
                 }
             ]

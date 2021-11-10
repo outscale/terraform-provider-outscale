@@ -3,18 +3,17 @@ resource "outscale_vm" "outscale_vm" {
 }
 
 resource "outscale_image" "outscale_image1" {
-#    count      = 2
-#    image_name = "test-datasources-${count.index}"
-    image_name = "test-1"
+    image_name = "TF-69-name"
+    description= "TF-69"
     vm_id      = outscale_vm.outscale_vm.vm_id
     no_reboot  = "true"
     tags {
-       key = "Key"
+       key = "Key:TF69"
        value = "value-tags"
      }
     tags {
        key = "Key-2"
-       value = "value-tags-2"
+       value = "value:TF69"
      }
 } 
 
@@ -23,8 +22,8 @@ resource "outscale_image" "outscale_image2" {
     vm_id      = outscale_vm.outscale_vm.vm_id
     no_reboot  = "true"
     tags {
-       key = "Key"
-       value = "value-tags"
+       key = "Key:TF69"
+       value = "value:TF69"
      }
     tags {
        key = "Key-2"
@@ -40,3 +39,69 @@ data "outscale_images" "outscale_images" {
 	   	values = [outscale_image.outscale_image1.image_id,outscale_image.outscale_image2.image_id]
 	}
 }
+
+data "outscale_images" "outscale_images_2" {
+    filter {
+        name   = "image_names"
+        values = [outscale_image.outscale_image1.image_name,outscale_image.outscale_image2.image_name]
+    }
+depends_on=[outscale_image.outscale_image1,outscale_image.outscale_image2]
+
+}
+
+data "outscale_images" "outscale_images_3" {
+    filter {
+        name   = "descriptions"
+        values = [outscale_image.outscale_image1.description]
+    }
+depends_on=[outscale_image.outscale_image1,outscale_image.outscale_image2]
+}
+
+data "outscale_images" "outscale_images_4" {
+   filter {
+        name   = "states"
+        values = [outscale_image.outscale_image1.state]
+    }
+   filter {
+        name   = "tag_keys"
+        values = ["Key:TF69"]
+    }
+depends_on=[outscale_image.outscale_image1,outscale_image.outscale_image2]
+}
+
+data "outscale_images" "outscale_images_5" {
+   filter {
+        name   = "states"
+        values = [outscale_image.outscale_image1.state]
+    }
+   filter {
+        name   = "tag_values"
+        values = ["value:TF69"]
+    }
+depends_on=[outscale_image.outscale_image1,outscale_image.outscale_image2]
+}
+
+data "outscale_images" "outscale_images_6" {
+   filter {
+        name   = "states"
+        values = [outscale_image.outscale_image1.state]
+    }
+   filter {
+        name   = "tags"
+        values = ["Key:TF69=value:TF69"]
+    }
+depends_on=[outscale_image.outscale_image1,outscale_image.outscale_image2]
+}
+
+data "outscale_image" "outscale_image_7" {
+   filter {
+        name   = "product_codes"
+        values = [outscale_image.outscale_image1.product_codes[0]]
+    }
+   filter {
+        name   = "descriptions"
+        values = [outscale_image.outscale_image1.description]
+    }
+depends_on=[outscale_image.outscale_image1,outscale_image.outscale_image2]
+}
+

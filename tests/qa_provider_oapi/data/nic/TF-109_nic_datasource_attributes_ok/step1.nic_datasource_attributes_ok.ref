@@ -8,14 +8,14 @@
         {
             "mode": "data",
             "type": "outscale_nic",
-            "name": "outscale_nic",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "name": "nic-0",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "account_id": "##id-0##",
-                        "description": "",
+                        "description": "TF-109",
                         "filter": "########",
                         "id": "##id-1##",
                         "is_source_dest_checked": true,
@@ -51,6 +51,18 @@
                                 },
                                 "private_dns_name": "########",
                                 "private_ip": "########"
+                            },
+                            {
+                                "is_primary": false,
+                                "link_public_ip": {
+                                    "link_public_ip_id": "",
+                                    "public_dns_name": "########",
+                                    "public_ip": "########",
+                                    "public_ip_account_id": "",
+                                    "public_ip_id": ""
+                                },
+                                "private_dns_name": "########",
+                                "private_ip": "########"
                             }
                         ],
                         "request_id": "########",
@@ -59,7 +71,7 @@
                         "security_groups": [
                             {
                                 "security_group_id": "##id-3##",
-                                "security_group_name": "default"
+                                "security_group_name": "Terraform-SG"
                             }
                         ],
                         "state": "available",
@@ -67,51 +79,31 @@
                         "subregion_name": "###region###a",
                         "tags": [
                             {
-                                "key": "Key",
-                                "value": "value-tags"
-                            },
-                            {
                                 "key": "Key-2",
                                 "value": "value-tags-2"
+                            },
+                            {
+                                "key": "Key:",
+                                "value": ":value-tags"
                             }
                         ]
-                    }
-                }
-            ]
-        },
-        {
-            "mode": "managed",
-            "type": "outscale_net",
-            "name": "outscale_net",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
-            "instances": [
-                {
-                    "schema_version": 0,
-                    "attributes": {
-                        "dhcp_options_set_id": "##id-5##",
-                        "id": "##id-2##",
-                        "ip_range": "10.0.0.0/16",
-                        "net_id": "##id-2##",
-                        "request_id": "########",
-                        "state": "available",
-                        "tags": [],
-                        "tenancy": "default"
                     },
-                    "private": "bnVsbA=="
+                    "sensitive_attributes": []
                 }
             ]
         },
         {
-            "mode": "managed",
+            "mode": "data",
             "type": "outscale_nic",
-            "name": "outscale_nic",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "name": "nic-1",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "account_id": "##id-0##",
-                        "description": "",
+                        "description": "TF-109",
+                        "filter": "########",
                         "id": "##id-1##",
                         "is_source_dest_checked": true,
                         "link_nic": {
@@ -146,14 +138,179 @@
                                 },
                                 "private_dns_name": "########",
                                 "private_ip": "########"
+                            },
+                            {
+                                "is_primary": false,
+                                "link_public_ip": {
+                                    "link_public_ip_id": "",
+                                    "public_dns_name": "########",
+                                    "public_ip": "########",
+                                    "public_ip_account_id": "",
+                                    "public_ip_id": ""
+                                },
+                                "private_dns_name": "########",
+                                "private_ip": "########"
                             }
                         ],
                         "request_id": "########",
                         "requester_managed": null,
-                        "security_group_ids": null,
+                        "security_group_id": null,
                         "security_groups": [
                             {
                                 "security_group_id": "##id-3##",
+                                "security_group_name": "Terraform-SG"
+                            }
+                        ],
+                        "state": "available",
+                        "subnet_id": "##id-4##",
+                        "subregion_name": "###region###a",
+                        "tags": [
+                            {
+                                "key": "Key-2",
+                                "value": "value-tags-2"
+                            },
+                            {
+                                "key": "Key:",
+                                "value": ":value-tags"
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_nic",
+            "name": "nic-2-main",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-0##",
+                        "description": "Primary network interface",
+                        "filter": "########",
+                        "id": "##id-5##",
+                        "is_source_dest_checked": true,
+                        "link_nic": {
+                            "delete_on_vm_deletion": "true",
+                            "device_number": "0",
+                            "link_nic_id": "##id-6##",
+                            "state": "attached",
+                            "vm_account_id": "##id-0##",
+                            "vm_id": "##id-7##"
+                        },
+                        "link_public_ip": {
+                            "link_public_ip_id": "",
+                            "public_dns_name": "########",
+                            "public_ip": "########",
+                            "public_ip_account_id": "",
+                            "public_ip_id": ""
+                        },
+                        "mac_address": "########",
+                        "net_id": "##id-2##",
+                        "nic_id": "##id-5##",
+                        "private_dns_name": "########",
+                        "private_ip": "########",
+                        "private_ips": [
+                            {
+                                "is_primary": true,
+                                "link_public_ip": {
+                                    "link_public_ip_id": "",
+                                    "public_dns_name": "########",
+                                    "public_ip": "########",
+                                    "public_ip_account_id": "",
+                                    "public_ip_id": ""
+                                },
+                                "private_dns_name": "########",
+                                "private_ip": "########"
+                            }
+                        ],
+                        "request_id": "########",
+                        "requester_managed": null,
+                        "security_group_id": null,
+                        "security_groups": [
+                            {
+                                "security_group_id": "##id-8##",
+                                "security_group_name": "default"
+                            }
+                        ],
+                        "state": "in-use",
+                        "subnet_id": "##id-4##",
+                        "subregion_name": "###region###a",
+                        "tags": []
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_nic",
+            "name": "nic-4",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-0##",
+                        "description": "",
+                        "filter": "########",
+                        "id": "##id-9##",
+                        "is_source_dest_checked": true,
+                        "link_nic": {
+                            "delete_on_vm_deletion": "false",
+                            "device_number": "0",
+                            "link_nic_id": "",
+                            "state": "",
+                            "vm_account_id": "",
+                            "vm_id": ""
+                        },
+                        "link_public_ip": {
+                            "link_public_ip_id": "",
+                            "public_dns_name": "########",
+                            "public_ip": "########",
+                            "public_ip_account_id": "",
+                            "public_ip_id": ""
+                        },
+                        "mac_address": "########",
+                        "net_id": "##id-2##",
+                        "nic_id": "##id-9##",
+                        "private_dns_name": "########",
+                        "private_ip": "########",
+                        "private_ips": [
+                            {
+                                "is_primary": true,
+                                "link_public_ip": {
+                                    "link_public_ip_id": "",
+                                    "public_dns_name": "########",
+                                    "public_ip": "########",
+                                    "public_ip_account_id": "",
+                                    "public_ip_id": ""
+                                },
+                                "private_dns_name": "########",
+                                "private_ip": "########"
+                            },
+                            {
+                                "is_primary": false,
+                                "link_public_ip": {
+                                    "link_public_ip_id": "",
+                                    "public_dns_name": "########",
+                                    "public_ip": "########",
+                                    "public_ip_account_id": "",
+                                    "public_ip_id": ""
+                                },
+                                "private_dns_name": "########",
+                                "private_ip": "########"
+                            }
+                        ],
+                        "request_id": "########",
+                        "requester_managed": null,
+                        "security_group_id": null,
+                        "security_groups": [
+                            {
+                                "security_group_id": "##id-8##",
                                 "security_group_name": "default"
                             }
                         ],
@@ -162,20 +319,571 @@
                         "subregion_name": "###region###a",
                         "tags": [
                             {
-                                "key": "Key",
-                                "value": "value-tags"
+                                "key": "Name",
+                                "value": "Nic-2"
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_nic",
+            "name": "nic-5",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-0##",
+                        "description": "TF-109",
+                        "filter": "########",
+                        "id": "##id-1##",
+                        "is_source_dest_checked": true,
+                        "link_nic": {
+                            "delete_on_vm_deletion": "false",
+                            "device_number": "0",
+                            "link_nic_id": "",
+                            "state": "",
+                            "vm_account_id": "",
+                            "vm_id": ""
+                        },
+                        "link_public_ip": {
+                            "link_public_ip_id": "",
+                            "public_dns_name": "########",
+                            "public_ip": "########",
+                            "public_ip_account_id": "",
+                            "public_ip_id": ""
+                        },
+                        "mac_address": "########",
+                        "net_id": "##id-2##",
+                        "nic_id": "##id-1##",
+                        "private_dns_name": "########",
+                        "private_ip": "########",
+                        "private_ips": [
+                            {
+                                "is_primary": true,
+                                "link_public_ip": {
+                                    "link_public_ip_id": "",
+                                    "public_dns_name": "########",
+                                    "public_ip": "########",
+                                    "public_ip_account_id": "",
+                                    "public_ip_id": ""
+                                },
+                                "private_dns_name": "########",
+                                "private_ip": "########"
                             },
+                            {
+                                "is_primary": false,
+                                "link_public_ip": {
+                                    "link_public_ip_id": "",
+                                    "public_dns_name": "########",
+                                    "public_ip": "########",
+                                    "public_ip_account_id": "",
+                                    "public_ip_id": ""
+                                },
+                                "private_dns_name": "########",
+                                "private_ip": "########"
+                            }
+                        ],
+                        "request_id": "########",
+                        "requester_managed": null,
+                        "security_group_id": null,
+                        "security_groups": [
+                            {
+                                "security_group_id": "##id-3##",
+                                "security_group_name": "Terraform-SG"
+                            }
+                        ],
+                        "state": "available",
+                        "subnet_id": "##id-4##",
+                        "subregion_name": "###region###a",
+                        "tags": [
                             {
                                 "key": "Key-2",
                                 "value": "value-tags-2"
+                            },
+                            {
+                                "key": "Key:",
+                                "value": ":value-tags"
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_nic",
+            "name": "nic-6",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-0##",
+                        "description": "TF-109",
+                        "filter": "########",
+                        "id": "##id-1##",
+                        "is_source_dest_checked": true,
+                        "link_nic": {
+                            "delete_on_vm_deletion": "false",
+                            "device_number": "0",
+                            "link_nic_id": "",
+                            "state": "",
+                            "vm_account_id": "",
+                            "vm_id": ""
+                        },
+                        "link_public_ip": {
+                            "link_public_ip_id": "",
+                            "public_dns_name": "########",
+                            "public_ip": "########",
+                            "public_ip_account_id": "",
+                            "public_ip_id": ""
+                        },
+                        "mac_address": "########",
+                        "net_id": "##id-2##",
+                        "nic_id": "##id-1##",
+                        "private_dns_name": "########",
+                        "private_ip": "########",
+                        "private_ips": [
+                            {
+                                "is_primary": true,
+                                "link_public_ip": {
+                                    "link_public_ip_id": "",
+                                    "public_dns_name": "########",
+                                    "public_ip": "########",
+                                    "public_ip_account_id": "",
+                                    "public_ip_id": ""
+                                },
+                                "private_dns_name": "########",
+                                "private_ip": "########"
+                            },
+                            {
+                                "is_primary": false,
+                                "link_public_ip": {
+                                    "link_public_ip_id": "",
+                                    "public_dns_name": "########",
+                                    "public_ip": "########",
+                                    "public_ip_account_id": "",
+                                    "public_ip_id": ""
+                                },
+                                "private_dns_name": "########",
+                                "private_ip": "########"
+                            }
+                        ],
+                        "request_id": "########",
+                        "requester_managed": null,
+                        "security_group_id": null,
+                        "security_groups": [
+                            {
+                                "security_group_id": "##id-3##",
+                                "security_group_name": "Terraform-SG"
+                            }
+                        ],
+                        "state": "available",
+                        "subnet_id": "##id-4##",
+                        "subregion_name": "###region###a",
+                        "tags": [
+                            {
+                                "key": "Key-2",
+                                "value": "value-tags-2"
+                            },
+                            {
+                                "key": "Key:",
+                                "value": ":value-tags"
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_net",
+            "name": "outscale_net",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "dhcp_options_set_id": "##id-10##",
+                        "id": "##id-2##",
+                        "ip_range": "10.0.0.0/16",
+                        "net_id": "##id-2##",
+                        "request_id": "########",
+                        "state": "available",
+                        "tags": [],
+                        "tenancy": "default"
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_nic",
+            "name": "outscale_nic",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-0##",
+                        "description": "TF-109",
+                        "id": "##id-1##",
+                        "is_source_dest_checked": true,
+                        "link_nic": {
+                            "delete_on_vm_deletion": "false",
+                            "device_number": "0",
+                            "link_nic_id": "",
+                            "state": "",
+                            "vm_account_id": "",
+                            "vm_id": ""
+                        },
+                        "link_public_ip": {
+                            "link_public_ip_id": "",
+                            "public_dns_name": "########",
+                            "public_ip": "########",
+                            "public_ip_account_id": "",
+                            "public_ip_id": ""
+                        },
+                        "mac_address": "########",
+                        "net_id": "##id-2##",
+                        "nic_id": "##id-1##",
+                        "private_dns_name": "########",
+                        "private_ip": "########",
+                        "private_ips": [
+                            {
+                                "is_primary": false,
+                                "link_public_ip": {
+                                    "link_public_ip_id": "",
+                                    "public_dns_name": "########",
+                                    "public_ip": "########",
+                                    "public_ip_account_id": "",
+                                    "public_ip_id": ""
+                                },
+                                "private_dns_name": "########",
+                                "private_ip": "########"
+                            },
+                            {
+                                "is_primary": true,
+                                "link_public_ip": {
+                                    "link_public_ip_id": "",
+                                    "public_dns_name": "########",
+                                    "public_ip": "########",
+                                    "public_ip_account_id": "",
+                                    "public_ip_id": ""
+                                },
+                                "private_dns_name": "########",
+                                "private_ip": "########"
+                            }
+                        ],
+                        "request_id": "########",
+                        "requester_managed": null,
+                        "security_group_ids": [
+                            "##id-3##"
+                        ],
+                        "security_groups": [
+                            {
+                                "security_group_id": "##id-3##",
+                                "security_group_name": "Terraform-SG"
+                            }
+                        ],
+                        "state": "available",
+                        "subnet_id": "##id-4##",
+                        "subregion_name": "###region###a",
+                        "tags": [
+                            {
+                                "key": "Key-2",
+                                "value": "value-tags-2"
+                            },
+                            {
+                                "key": "Key:",
+                                "value": ":value-tags"
                             }
                         ],
                         "timeouts": null
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
                         "outscale_net.outscale_net",
-                        "outscale_subnet.outscale_subnet"
+                        "outscale_security_group.security_group01",
+                        "outscale_subnet.subnet01"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_nic",
+            "name": "outscale_nic_2",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-0##",
+                        "description": "",
+                        "id": "##id-9##",
+                        "is_source_dest_checked": true,
+                        "link_nic": {
+                            "delete_on_vm_deletion": "false",
+                            "device_number": "0",
+                            "link_nic_id": "",
+                            "state": "",
+                            "vm_account_id": "",
+                            "vm_id": ""
+                        },
+                        "link_public_ip": {
+                            "link_public_ip_id": "",
+                            "public_dns_name": "########",
+                            "public_ip": "########",
+                            "public_ip_account_id": "",
+                            "public_ip_id": ""
+                        },
+                        "mac_address": "########",
+                        "net_id": "##id-2##",
+                        "nic_id": "##id-9##",
+                        "private_dns_name": "########",
+                        "private_ip": "########",
+                        "private_ips": [
+                            {
+                                "is_primary": false,
+                                "link_public_ip": {
+                                    "link_public_ip_id": "",
+                                    "public_dns_name": "########",
+                                    "public_ip": "########",
+                                    "public_ip_account_id": "",
+                                    "public_ip_id": ""
+                                },
+                                "private_dns_name": "########",
+                                "private_ip": "########"
+                            },
+                            {
+                                "is_primary": true,
+                                "link_public_ip": {
+                                    "link_public_ip_id": "",
+                                    "public_dns_name": "########",
+                                    "public_ip": "########",
+                                    "public_ip_account_id": "",
+                                    "public_ip_id": ""
+                                },
+                                "private_dns_name": "########",
+                                "private_ip": "########"
+                            }
+                        ],
+                        "request_id": "########",
+                        "requester_managed": null,
+                        "security_group_ids": null,
+                        "security_groups": [
+                            {
+                                "security_group_id": "##id-8##",
+                                "security_group_name": "default"
+                            }
+                        ],
+                        "state": "available",
+                        "subnet_id": "##id-4##",
+                        "subregion_name": "###region###a",
+                        "tags": [
+                            {
+                                "key": "Name",
+                                "value": "Nic-2"
+                            }
+                        ],
+                        "timeouts": null
+                    },
+                    "sensitive_attributes": [],
+                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwfX0=",
+                    "dependencies": [
+                        "outscale_net.outscale_net",
+                        "outscale_subnet.subnet01"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_nic",
+            "name": "outscale_nic_3",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-0##",
+                        "description": "",
+                        "id": "##id-11##",
+                        "is_source_dest_checked": true,
+                        "link_nic": {
+                            "delete_on_vm_deletion": "false",
+                            "device_number": "0",
+                            "link_nic_id": "",
+                            "state": "",
+                            "vm_account_id": "",
+                            "vm_id": ""
+                        },
+                        "link_public_ip": {
+                            "link_public_ip_id": "",
+                            "public_dns_name": "########",
+                            "public_ip": "########",
+                            "public_ip_account_id": "",
+                            "public_ip_id": ""
+                        },
+                        "mac_address": "########",
+                        "net_id": "##id-2##",
+                        "nic_id": "##id-11##",
+                        "private_dns_name": "########",
+                        "private_ip": "########",
+                        "private_ips": [
+                            {
+                                "is_primary": true,
+                                "link_public_ip": {
+                                    "link_public_ip_id": "",
+                                    "public_dns_name": "########",
+                                    "public_ip": "########",
+                                    "public_ip_account_id": "",
+                                    "public_ip_id": ""
+                                },
+                                "private_dns_name": "########",
+                                "private_ip": "########"
+                            }
+                        ],
+                        "request_id": "########",
+                        "requester_managed": null,
+                        "security_group_ids": null,
+                        "security_groups": [
+                            {
+                                "security_group_id": "##id-8##",
+                                "security_group_name": "default"
+                            }
+                        ],
+                        "state": "available",
+                        "subnet_id": "##id-12##",
+                        "subregion_name": "###region###b",
+                        "tags": [
+                            {
+                                "key": "Key-2",
+                                "value": "value-tags-2"
+                            },
+                            {
+                                "key": "Key:",
+                                "value": ":value-tags"
+                            }
+                        ],
+                        "timeouts": null
+                    },
+                    "sensitive_attributes": [],
+                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwfX0=",
+                    "dependencies": [
+                        "outscale_net.outscale_net",
+                        "outscale_subnet.subnet02"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_nic_link",
+            "name": "nic_link01",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "delete_on_vm_deletion": false,
+                        "device_number": 1,
+                        "id": "##id-13##",
+                        "link_nic_id": "##id-13##",
+                        "nic_id": "##id-1##",
+                        "request_id": "########",
+                        "state": null,
+                        "vm_account_id": null,
+                        "vm_id": "##id-7##"
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA==",
+                    "dependencies": [
+                        "outscale_net.outscale_net",
+                        "outscale_nic.outscale_nic",
+                        "outscale_security_group.security_group01",
+                        "outscale_subnet.subnet01",
+                        "outscale_vm.vm01"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_nic_link",
+            "name": "nic_link02",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "delete_on_vm_deletion": false,
+                        "device_number": 2,
+                        "id": "##id-14##",
+                        "link_nic_id": "##id-14##",
+                        "nic_id": "##id-9##",
+                        "request_id": "########",
+                        "state": null,
+                        "vm_account_id": null,
+                        "vm_id": "##id-7##"
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA==",
+                    "dependencies": [
+                        "outscale_net.outscale_net",
+                        "outscale_nic.outscale_nic_2",
+                        "outscale_subnet.subnet01",
+                        "outscale_vm.vm01"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_security_group",
+            "name": "security_group01",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-0##",
+                        "description": "Terraform security group test",
+                        "id": "##id-3##",
+                        "inbound_rules": [],
+                        "net_id": "##id-2##",
+                        "outbound_rules": [
+                            {
+                                "from_port_range": -1,
+                                "ip_protocol": "-1",
+                                "ip_ranges": [
+                                    "0.0.0.0/0"
+                                ],
+                                "security_groups_members": [],
+                                "to_port_range": -1
+                            }
+                        ],
+                        "request_id": "########",
+                        "security_group_id": "##id-3##",
+                        "security_group_name": "Terraform-SG",
+                        "tag": null,
+                        "tags": []
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA==",
+                    "dependencies": [
+                        "outscale_net.outscale_net"
                     ]
                 }
             ]
@@ -183,15 +891,15 @@
         {
             "mode": "managed",
             "type": "outscale_subnet",
-            "name": "outscale_subnet",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "name": "subnet01",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "available_ips_count": 65531,
+                        "available_ips_count": 251,
                         "id": "##id-4##",
-                        "ip_range": "10.0.0.0/16",
+                        "ip_range": "10.0.0.0/24",
                         "map_public_ip_on_launch": false,
                         "net_id": "##id-2##",
                         "request_id": "########",
@@ -201,9 +909,158 @@
                         "tags": [],
                         "timeouts": null
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
                         "outscale_net.outscale_net"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_subnet",
+            "name": "subnet02",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "available_ips_count": 251,
+                        "id": "##id-12##",
+                        "ip_range": "10.0.2.0/24",
+                        "map_public_ip_on_launch": false,
+                        "net_id": "##id-2##",
+                        "request_id": "########",
+                        "state": "available",
+                        "subnet_id": "##id-12##",
+                        "subregion_name": "###region###b",
+                        "tags": [],
+                        "timeouts": null
+                    },
+                    "sensitive_attributes": [],
+                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwfX0=",
+                    "dependencies": [
+                        "outscale_net.outscale_net"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_vm",
+            "name": "vm01",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "admin_password": "",
+                        "architecture": "x86_64",
+                        "block_device_mappings": [],
+                        "block_device_mappings_created": [
+                            {
+                                "bsu": {
+                                    "delete_on_vm_deletion": "true",
+                                    "link_date": "########",
+                                    "state": "attached",
+                                    "volume_id": "##id-15##"
+                                },
+                                "device_name": "/dev/sda1"
+                            }
+                        ],
+                        "bsu_optimized": false,
+                        "client_token": "",
+                        "deletion_protection": false,
+                        "get_admin_password": null,
+                        "hypervisor": "xen",
+                        "id": "##id-7##",
+                        "image_id": "##id-16##",
+                        "is_source_dest_checked": true,
+                        "keypair_name": "",
+                        "launch_number": 0,
+                        "net_id": "##id-2##",
+                        "nics": [
+                            {
+                                "account_id": "##id-0##",
+                                "delete_on_vm_deletion": true,
+                                "description": "Primary network interface",
+                                "device_number": 0,
+                                "is_source_dest_checked": true,
+                                "link_nic": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "device_number": "0",
+                                        "link_nic_id": "##id-6##",
+                                        "state": "attached"
+                                    }
+                                ],
+                                "link_public_ip": [],
+                                "mac_address": "########",
+                                "net_id": "##id-2##",
+                                "nic_id": "##id-5##",
+                                "private_dns_name": "########",
+                                "private_ips": [
+                                    {
+                                        "is_primary": true,
+                                        "link_public_ip": [],
+                                        "private_dns_name": "########",
+                                        "private_ip": "########"
+                                    }
+                                ],
+                                "secondary_private_ip_count": 0,
+                                "security_group_ids": [
+                                    "##id-8##"
+                                ],
+                                "security_groups": [
+                                    {
+                                        "security_group_id": "##id-8##",
+                                        "security_group_name": "default"
+                                    }
+                                ],
+                                "state": "in-use",
+                                "subnet_id": "##id-4##"
+                            }
+                        ],
+                        "os_family": "",
+                        "performance": "high",
+                        "placement_subregion_name": "###region###a",
+                        "placement_tenancy": "default",
+                        "private_dns_name": "########",
+                        "private_ip": "########",
+                        "private_ips": null,
+                        "product_codes": [
+                            "0001"
+                        ],
+                        "public_dns_name": "########",
+                        "public_ip": "########",
+                        "request_id": "########",
+                        "reservation_id": "##id-17##",
+                        "root_device_name": "/dev/sda1",
+                        "root_device_type": "ebs",
+                        "security_group_ids": null,
+                        "security_group_names": null,
+                        "security_groups": [
+                            {
+                                "security_group_id": "##id-8##",
+                                "security_group_name": "default"
+                            }
+                        ],
+                        "state": "running",
+                        "state_reason": "",
+                        "subnet_id": "##id-4##",
+                        "tags": [],
+                        "timeouts": null,
+                        "user_data": "",
+                        "vm_id": "##id-7##",
+                        "vm_initiated_shutdown_behavior": "stop",
+                        "vm_type": "###vm_type###"
+                    },
+                    "sensitive_attributes": [],
+                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
+                    "dependencies": [
+                        "outscale_net.outscale_net",
+                        "outscale_subnet.subnet01"
                     ]
                 }
             ]

@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_dhcp_option",
             "name": "outscale_dhcp_option",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -38,7 +38,8 @@
                                 "value": "test-MZI-3"
                             }
                         ]
-                    }
+                    },
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -46,13 +47,12 @@
             "mode": "managed",
             "type": "outscale_dhcp_option",
             "name": "outscale_dhcp_option",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "default": false,
-                        "dhcp_options_name": null,
                         "dhcp_options_set_id": "##id-0##",
                         "domain_name": "test234.fr",
                         "domain_name_servers": [
@@ -76,6 +76,7 @@
                             }
                         ]
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]

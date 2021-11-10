@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_access_key",
             "name": "my_access_key",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -20,8 +20,9 @@
                         "id": "##id-0##",
                         "last_modification_date": "########",
                         "request_id": "########",
-                        "state": "ACTIVE"
-                    }
+                        "state": "INACTIVE"
+                    },
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -29,7 +30,7 @@
             "mode": "managed",
             "type": "outscale_access_key",
             "name": "my_access_key",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -42,6 +43,7 @@
                         "secret_key": "########",
                         "state": "INACTIVE"
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]

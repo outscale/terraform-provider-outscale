@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_security_group",
             "name": "outscale_security_group",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -20,7 +20,7 @@
                         "inbound_rules": [
                             {
                                 "from_port_range": 0,
-                                "ip_protocol": "6",
+                                "ip_protocol": "tcp",
                                 "ip_ranges": [
                                     "0.0.0.0/0"
                                 ],
@@ -29,9 +29,9 @@
                             },
                             {
                                 "from_port_range": 22,
-                                "ip_protocol": "6",
+                                "ip_protocol": "tcp",
                                 "ip_ranges": [
-                                    "192.168.0.1"
+                                    "192.168.0.1/32"
                                 ],
                                 "security_groups_members": [],
                                 "to_port_range": 22
@@ -45,6 +45,7 @@
                         "tag": null,
                         "tags": []
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]

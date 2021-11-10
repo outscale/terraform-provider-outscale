@@ -3,12 +3,13 @@ resource "outscale_vm" "my-vm" {
 }
 
 resource "outscale_image" "outscale_image" {
-    image_name = "terraform-image-1"
+    image_name = "image-TF66"
     vm_id      = outscale_vm.my-vm.vm_id
+    description= "TF-66"
     no_reboot  = "true"
     tags {
-      key = "Key-tags"
-      value = "value-tags"
+      key = "Key:TF66"
+      value = "value:TF66"
      }
 tags {
       key = "Key-2"
@@ -23,3 +24,64 @@ data "outscale_image" "outscale_image" {
         values = [outscale_image.outscale_image.image_id]
     }
 }
+
+data "outscale_image" "outscale_image_2" {
+    filter {
+        name   = "image_names"
+        values = [outscale_image.outscale_image.image_name]
+    }
+depends_on=[outscale_image.outscale_image]
+}
+
+data "outscale_image" "outscale_image_3" {
+    filter {
+        name   = "descriptions"
+        values = [outscale_image.outscale_image.description]
+    }
+depends_on=[outscale_image.outscale_image]
+}
+
+data "outscale_image" "outscale_image_4" {
+   filter {
+        name   = "states"
+        values = [outscale_image.outscale_image.state]
+    }
+   filter {
+        name   = "tag_keys"
+        values = ["Key:TF66"]
+    }
+}
+
+data "outscale_image" "outscale_image_5" {
+   filter {
+        name   = "states"
+        values = [outscale_image.outscale_image.state]
+    }
+   filter {
+        name   = "tag_values"
+        values = ["value:TF66"]
+    }
+}
+
+data "outscale_image" "outscale_image_6" {
+   filter {
+        name   = "states"
+        values = [outscale_image.outscale_image.state]
+    }
+   filter {
+        name   = "tags"
+        values = ["Key:TF66=value:TF66"]
+    }
+}
+
+data "outscale_image" "outscale_image_7" {
+   filter {
+        name   = "product_codes"
+        values = [outscale_image.outscale_image.product_codes[0]]
+    }
+   filter {
+        name   = "descriptions"
+        values = [outscale_image.outscale_image.description]
+    }
+}
+

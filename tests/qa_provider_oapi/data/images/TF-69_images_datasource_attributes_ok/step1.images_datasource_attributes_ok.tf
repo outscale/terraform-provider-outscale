@@ -3,9 +3,7 @@ resource "outscale_vm" "outscale_vm" {
 }
 
 resource "outscale_image" "outscale_image1" {
-#    count      = 2
-#    image_name = "test-datasources-${count.index}"
-    image_name = "test-1"
+    image_name = "TF-69-name"
     vm_id      = outscale_vm.outscale_vm.vm_id
     no_reboot  = "true"
     tags {
@@ -17,12 +15,3 @@ resource "outscale_image" "outscale_image1" {
        value = "value-tags-2"
      }
 } 
-
-
-#data "outscale_images" "outscale_images" {
-#
-#    filter {
-#	   	name   = "image_ids"
-#	   	values = [outscale_image.outscale_image1[0].image_id,outscale_image.outscale_image1[1].image_id]
-#	}
-#}

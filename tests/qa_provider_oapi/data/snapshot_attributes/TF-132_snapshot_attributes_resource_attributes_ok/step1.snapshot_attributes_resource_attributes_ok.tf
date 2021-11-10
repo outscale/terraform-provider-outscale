@@ -1,7 +1,6 @@
 resource "outscale_volume" "outscale_volume" {
-    subregion_name = format("%s%s", var.region, "a")
+    subregion_name  = "${var.region}a"
     size            = 40
-    #snapshot_id     = "snap-439943a0"
 }
 
 resource "outscale_snapshot" "outscale_snapshot" {
@@ -17,6 +16,6 @@ resource "outscale_snapshot_attributes" "outscale_snapshot_attributes" {
 }
 
 data "outscale_snapshot" "outscale_snapshot" {
-    depends_on  = ["outscale_snapshot_attributes.outscale_snapshot_attributes"]
+    depends_on  = [outscale_snapshot_attributes.outscale_snapshot_attributes]
     snapshot_id = outscale_snapshot.outscale_snapshot.snapshot_id
 }

@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_net_peerings",
             "name": "outscale_net_peerings",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -26,7 +26,7 @@
                                 "net_peering_id": "##id-3##",
                                 "source_net": {
                                     "account_id": "##id-1##",
-                                    "ip_range": "10.31.0.0/16",
+                                    "ip_range": "20.0.0.0/16",
                                     "net_id": "##id-4##"
                                 },
                                 "state": {
@@ -44,7 +44,7 @@
                                 "net_peering_id": "##id-5##",
                                 "source_net": {
                                     "account_id": "##id-1##",
-                                    "ip_range": "20.0.0.0/16",
+                                    "ip_range": "10.31.0.0/16",
                                     "net_id": "##id-6##"
                                 },
                                 "state": {
@@ -55,7 +55,8 @@
                             }
                         ],
                         "request_id": "########"
-                    }
+                    },
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -63,7 +64,7 @@
             "mode": "managed",
             "type": "outscale_net",
             "name": "outscale_net",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -77,6 +78,7 @@
                         "tags": [],
                         "tenancy": "default"
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]
@@ -85,20 +87,21 @@
             "mode": "managed",
             "type": "outscale_net",
             "name": "outscale_net2",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "dhcp_options_set_id": "##id-7##",
-                        "id": "##id-4##",
+                        "id": "##id-6##",
                         "ip_range": "10.31.0.0/16",
-                        "net_id": "##id-4##",
+                        "net_id": "##id-6##",
                         "request_id": "########",
                         "state": "available",
                         "tags": [],
                         "tenancy": "default"
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]
@@ -107,20 +110,21 @@
             "mode": "managed",
             "type": "outscale_net",
             "name": "outscale_net3",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "dhcp_options_set_id": "##id-7##",
-                        "id": "##id-6##",
+                        "id": "##id-4##",
                         "ip_range": "20.0.0.0/16",
-                        "net_id": "##id-6##",
+                        "net_id": "##id-4##",
                         "request_id": "########",
                         "state": "available",
                         "tags": [],
                         "tenancy": "default"
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]
@@ -129,55 +133,7 @@
             "mode": "managed",
             "type": "outscale_net_peering",
             "name": "outscale_net_peering",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
-            "instances": [
-                {
-                    "schema_version": 0,
-                    "attributes": {
-                        "accepter_net": {
-                            "account_id": "##id-1##",
-                            "ip_range": "10.10.0.0/24",
-                            "net_id": "##id-2##"
-                        },
-                        "accepter_net_id": "##id-2##",
-                        "id": "##id-3##",
-                        "net_peering_id": "##id-3##",
-                        "request_id": "########",
-                        "source_net": {
-                            "account_id": "##id-1##",
-                            "ip_range": "10.31.0.0/16",
-                            "net_id": "##id-4##"
-                        },
-                        "source_net_account_id": null,
-                        "source_net_id": "##id-4##",
-                        "state": {
-                            "message": "Pending acceptance by ###account_id###",
-                            "name": "pending-acceptance"
-                        },
-                        "tags": [
-                            {
-                                "key": "Key",
-                                "value": "value-tags"
-                            },
-                            {
-                                "key": "Key-2",
-                                "value": "value-tags-2"
-                            }
-                        ]
-                    },
-                    "private": "bnVsbA==",
-                    "dependencies": [
-                        "outscale_net.outscale_net",
-                        "outscale_net.outscale_net2"
-                    ]
-                }
-            ]
-        },
-        {
-            "mode": "managed",
-            "type": "outscale_net_peering",
-            "name": "outscale_net_peering2",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -193,7 +149,7 @@
                         "request_id": "########",
                         "source_net": {
                             "account_id": "##id-1##",
-                            "ip_range": "20.0.0.0/16",
+                            "ip_range": "10.31.0.0/16",
                             "net_id": "##id-6##"
                         },
                         "source_net_account_id": null,
@@ -202,8 +158,58 @@
                             "message": "Pending acceptance by ###account_id###",
                             "name": "pending-acceptance"
                         },
+                        "tags": [
+                            {
+                                "key": "Key",
+                                "value": "value-tags"
+                            },
+                            {
+                                "key": "Key-2",
+                                "value": "value-tags-2"
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA==",
+                    "dependencies": [
+                        "outscale_net.outscale_net",
+                        "outscale_net.outscale_net2"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_net_peering",
+            "name": "outscale_net_peering2",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "accepter_net": {
+                            "account_id": "##id-1##",
+                            "ip_range": "10.10.0.0/24",
+                            "net_id": "##id-2##"
+                        },
+                        "accepter_net_id": "##id-2##",
+                        "id": "##id-3##",
+                        "net_peering_id": "##id-3##",
+                        "request_id": "########",
+                        "source_net": {
+                            "account_id": "##id-1##",
+                            "ip_range": "20.0.0.0/16",
+                            "net_id": "##id-4##"
+                        },
+                        "source_net_account_id": null,
+                        "source_net_id": "##id-4##",
+                        "state": {
+                            "message": "Pending acceptance by ###account_id###",
+                            "name": "pending-acceptance"
+                        },
                         "tags": []
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net",

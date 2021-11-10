@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_image",
             "name": "outscale_image1",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -33,7 +33,7 @@
                         ],
                         "creation_date": "########",
                         "description": "",
-                        "file_location": "###account_id###/test-1",
+                        "file_location": "###account_id###/TF-69-name",
                         "id": "##id-2##",
                         "image_id": "##id-2##",
                         "image_name": "########",
@@ -72,6 +72,7 @@
                         "timeouts": null,
                         "vm_id": "##id-3##"
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoyNDAwMDAwMDAwMDAwLCJkZWxldGUiOjI0MDAwMDAwMDAwMDAsInVwZGF0ZSI6MjQwMDAwMDAwMDAwMH19",
                     "dependencies": [
                         "outscale_vm.outscale_vm"
@@ -83,7 +84,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "outscale_vm",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -105,6 +106,7 @@
                         "bsu_optimized": false,
                         "client_token": "",
                         "deletion_protection": false,
+                        "get_admin_password": null,
                         "hypervisor": "xen",
                         "id": "##id-3##",
                         "image_id": "##id-5##",
@@ -147,6 +149,7 @@
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "t2.small"
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19"
                 }
             ]

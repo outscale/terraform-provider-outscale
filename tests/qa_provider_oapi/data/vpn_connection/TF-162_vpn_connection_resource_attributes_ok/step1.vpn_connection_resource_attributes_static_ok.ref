@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_client_gateway",
             "name": "My_CGW",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -23,6 +23,7 @@
                         "state": "available",
                         "tags": []
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]
@@ -31,7 +32,7 @@
             "mode": "managed",
             "type": "outscale_virtual_gateway",
             "name": "My_VGW",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -44,6 +45,7 @@
                         "tags": [],
                         "virtual_gateway_id": "##id-1##"
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]
@@ -52,7 +54,7 @@
             "mode": "managed",
             "type": "outscale_vpn_connection",
             "name": "static_vpn_connection",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -79,6 +81,7 @@
                         "virtual_gateway_id": "##id-1##",
                         "vpn_connection_id": "##id-2##"
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
                     "dependencies": [
                         "outscale_client_gateway.My_CGW",

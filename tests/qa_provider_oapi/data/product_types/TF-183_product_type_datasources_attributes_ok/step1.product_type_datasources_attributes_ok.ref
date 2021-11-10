@@ -1,0 +1,38 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "data",
+            "type": "outscale_product_types",
+            "name": "product_type_2",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "filter": "########",
+                        "id": "##id-0##",
+                        "product_types": [
+                            {
+                                "description": "Linux/UNIX",
+                                "product_type_id": "##id-1##",
+                                "vendor": ""
+                            },
+                            {
+                                "description": "Windows",
+                                "product_type_id": "##id-2##",
+                                "vendor": "Microsoft"
+                            }
+                        ],
+                        "request_id": "########"
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        }
+    ]
+}

@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_net_access_points",
             "name": "data_net_access_point4",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -56,7 +56,8 @@
                         "tag_keys": null,
                         "tag_values": null,
                         "tags": null
-                    }
+                    },
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -64,7 +65,7 @@
             "mode": "managed",
             "type": "outscale_net",
             "name": "outscale_net",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -78,6 +79,7 @@
                         "tags": [],
                         "tenancy": "default"
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]
@@ -86,7 +88,7 @@
             "mode": "managed",
             "type": "outscale_net_access_point",
             "name": "net_access_point_1",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -112,6 +114,7 @@
                             }
                         ]
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net",
@@ -125,7 +128,7 @@
             "mode": "managed",
             "type": "outscale_net_access_point",
             "name": "net_access_point_2",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -141,6 +144,7 @@
                         "state": "available",
                         "tags": []
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net",
@@ -153,7 +157,7 @@
             "mode": "managed",
             "type": "outscale_route_table",
             "name": "route_table-1",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "index_key": 0,
@@ -195,6 +199,7 @@
                         ],
                         "tags": []
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net"
@@ -202,58 +207,6 @@
                 },
                 {
                     "index_key": 1,
-                    "schema_version": 0,
-                    "attributes": {
-                        "id": "##id-6##",
-                        "link_route_tables": [],
-                        "net_id": "##id-2##",
-                        "request_id": "########",
-                        "route_propagating_virtual_gateways": [],
-                        "route_table_id": "##id-6##",
-                        "routes": [
-                            {
-                                "creation_method": "CreateRouteTable",
-                                "destination_ip_range": "10.0.0.0/16",
-                                "destination_service_id": "",
-                                "gateway_id": "",
-                                "nat_service_id": "",
-                                "net_access_point_id": "",
-                                "net_peering_id": "",
-                                "nic_id": "",
-                                "state": "active",
-                                "vm_account_id": "",
-                                "vm_id": ""
-                            },
-                            {
-                                "creation_method": "CreateRoute",
-                                "destination_ip_range": "",
-                                "destination_service_id": "##id-8##",
-                                "gateway_id": "",
-                                "nat_service_id": "",
-                                "net_access_point_id": "##id-4##",
-                                "net_peering_id": "",
-                                "nic_id": "",
-                                "state": "active",
-                                "vm_account_id": "",
-                                "vm_id": ""
-                            }
-                        ],
-                        "tags": []
-                    },
-                    "private": "bnVsbA==",
-                    "dependencies": [
-                        "outscale_net.outscale_net"
-                    ]
-                }
-            ]
-        },
-        {
-            "mode": "managed",
-            "type": "outscale_route_table",
-            "name": "route_table-2",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
-            "instances": [
-                {
                     "schema_version": 0,
                     "attributes": {
                         "id": "##id-5##",
@@ -292,6 +245,60 @@
                         ],
                         "tags": []
                     },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA==",
+                    "dependencies": [
+                        "outscale_net.outscale_net"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_route_table",
+            "name": "route_table-2",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "id": "##id-6##",
+                        "link_route_tables": [],
+                        "net_id": "##id-2##",
+                        "request_id": "########",
+                        "route_propagating_virtual_gateways": [],
+                        "route_table_id": "##id-6##",
+                        "routes": [
+                            {
+                                "creation_method": "CreateRouteTable",
+                                "destination_ip_range": "10.0.0.0/16",
+                                "destination_service_id": "",
+                                "gateway_id": "",
+                                "nat_service_id": "",
+                                "net_access_point_id": "",
+                                "net_peering_id": "",
+                                "nic_id": "",
+                                "state": "active",
+                                "vm_account_id": "",
+                                "vm_id": ""
+                            },
+                            {
+                                "creation_method": "CreateRoute",
+                                "destination_ip_range": "",
+                                "destination_service_id": "##id-8##",
+                                "gateway_id": "",
+                                "nat_service_id": "",
+                                "net_access_point_id": "##id-4##",
+                                "net_peering_id": "",
+                                "nic_id": "",
+                                "state": "active",
+                                "vm_account_id": "",
+                                "vm_id": ""
+                            }
+                        ],
+                        "tags": []
+                    },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net"

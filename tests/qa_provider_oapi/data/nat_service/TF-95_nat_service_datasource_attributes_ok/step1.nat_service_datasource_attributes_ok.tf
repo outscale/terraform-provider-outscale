@@ -69,7 +69,56 @@ resource "outscale_nat_service" "outscale_nat_service" {
 
 data "outscale_nat_service" "outscale_nat_service" {
     filter {
+        name   = "subnet_ids"
+        values = [outscale_nat_service.outscale_nat_service.subnet_id]
+    }    
+depends_on=[outscale_nat_service.outscale_nat_service]
+}
+
+data "outscale_nat_service" "outscale_nat_service-2" {
+    filter {
         name   = "nat_service_ids"
         values = [outscale_nat_service.outscale_nat_service.nat_service_id]
-    }    
+    }
+}
+
+data "outscale_nat_service" "outscale_nat_service-3" {
+    filter {
+        name   = "net_ids"
+        values = [outscale_nat_service.outscale_nat_service.net_id]
+    }
+depends_on=[outscale_nat_service.outscale_nat_service]
+}
+
+data "outscale_nat_service" "outscale_nat_service-4" {
+    filter {
+        name   = "states"
+        values = [outscale_nat_service.outscale_nat_service.state]
+    }
+    filter {
+        name   = "tag_keys"
+        values = ["Key"]
+   }
+}
+
+data "outscale_nat_service" "outscale_nat_service-5" {
+    filter {
+        name   = "states"
+        values = [outscale_nat_service.outscale_nat_service.state]
+    }
+    filter {
+        name   = "tag_values"
+        values = ["value-tags"]
+   }
+}
+
+data "outscale_nat_service" "outscale_nat_service-6" {
+    filter {
+        name   = "states"
+        values = [outscale_nat_service.outscale_nat_service.state]
+    }
+    filter {
+        name   = "tags"
+        values = ["Key=value-tags"]
+   }
 }

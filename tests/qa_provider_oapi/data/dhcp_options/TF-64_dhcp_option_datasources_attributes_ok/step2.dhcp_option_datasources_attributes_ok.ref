@@ -9,7 +9,50 @@
             "mode": "data",
             "type": "outscale_dhcp_options",
             "name": "outscale_dhcp_options",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "dhcp_options": [
+                            {
+                                "default": false,
+                                "dhcp_options_set_id": "##id-0##",
+                                "domain_name": "test234.fr",
+                                "domain_name_servers": [
+                                    "192.168.12.12",
+                                    "192.168.12.132"
+                                ],
+                                "ntp_servers": [
+                                    "192.0.0.2",
+                                    "192.168.12.242"
+                                ],
+                                "tags": [
+                                    {
+                                        "key": "Project",
+                                        "value": "test-MZI-3"
+                                    },
+                                    {
+                                        "key": "name-1",
+                                        "value": "test-MZI-3"
+                                    }
+                                ]
+                            }
+                        ],
+                        "dhcp_options_set_ids": null,
+                        "filter": "########",
+                        "id": "##id-1##",
+                        "request_id": "########"
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_dhcp_options",
+            "name": "outscale_dhcp_options_2",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -40,49 +83,7 @@
                             },
                             {
                                 "default": false,
-                                "dhcp_options_set_id": "##id-1##",
-                                "domain_name": "test234.fr",
-                                "domain_name_servers": [
-                                    "192.168.12.12",
-                                    "192.168.12.132"
-                                ],
-                                "ntp_servers": [
-                                    "192.0.0.2",
-                                    "192.168.12.242"
-                                ],
-                                "tags": [
-                                    {
-                                        "key": "Project",
-                                        "value": "test-MZI-3"
-                                    },
-                                    {
-                                        "key": "name-1",
-                                        "value": "test-MZI-3"
-                                    }
-                                ]
-                            }
-                        ],
-                        "dhcp_options_set_ids": null,
-                        "filter": "########",
-                        "id": "##id-2##",
-                        "request_id": "########"
-                    }
-                }
-            ]
-        },
-        {
-            "mode": "data",
-            "type": "outscale_dhcp_options",
-            "name": "outscale_dhcp_options_2",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
-            "instances": [
-                {
-                    "schema_version": 0,
-                    "attributes": {
-                        "dhcp_options": [
-                            {
-                                "default": false,
-                                "dhcp_options_set_id": "##id-3##",
+                                "dhcp_options_set_id": "##id-2##",
                                 "domain_name": "###region###.compute.internal",
                                 "domain_name_servers": [
                                     "OutscaleProvidedDNS"
@@ -94,36 +95,14 @@
                                         "value": "test-MZI_2"
                                     }
                                 ]
-                            },
-                            {
-                                "default": false,
-                                "dhcp_options_set_id": "##id-0##",
-                                "domain_name": "test234.fr",
-                                "domain_name_servers": [
-                                    "192.168.12.12",
-                                    "192.168.12.132"
-                                ],
-                                "ntp_servers": [
-                                    "192.0.0.2",
-                                    "192.168.12.242"
-                                ],
-                                "tags": [
-                                    {
-                                        "key": "Project",
-                                        "value": "test-MZI-3"
-                                    },
-                                    {
-                                        "key": "name-1",
-                                        "value": "test-MZI-3"
-                                    }
-                                ]
                             }
                         ],
                         "dhcp_options_set_ids": null,
                         "filter": "########",
-                        "id": "##id-4##",
+                        "id": "##id-3##",
                         "request_id": "########"
-                    }
+                    },
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -131,13 +110,12 @@
             "mode": "managed",
             "type": "outscale_dhcp_option",
             "name": "outscale_dhcp_option",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "default": false,
-                        "dhcp_options_name": null,
                         "dhcp_options_set_id": "##id-0##",
                         "domain_name": "test234.fr",
                         "domain_name_servers": [
@@ -161,6 +139,7 @@
                             }
                         ]
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]
@@ -169,19 +148,18 @@
             "mode": "managed",
             "type": "outscale_dhcp_option",
             "name": "outscale_dhcp_option2",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "default": false,
-                        "dhcp_options_name": null,
-                        "dhcp_options_set_id": "##id-3##",
+                        "dhcp_options_set_id": "##id-2##",
                         "domain_name": "###region###.compute.internal",
                         "domain_name_servers": [
                             "OutscaleProvidedDNS"
                         ],
-                        "id": "##id-3##",
+                        "id": "##id-2##",
                         "ntp_servers": [],
                         "request_id": "########",
                         "tags": [
@@ -191,6 +169,7 @@
                             }
                         ]
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]

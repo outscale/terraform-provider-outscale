@@ -5,7 +5,7 @@ resource "outscale_keypair" "my_keypair" {
 
 resource "outscale_vm" "MaVM" {
    image_id                       = var.image_id
-   vm_type                        = "tinav3.c2r2p2"
+   vm_type                        = "tinav4.c2r2p2"
    keypair_name                   = outscale_keypair.my_keypair.keypair_name
    placement_subregion_name       = "${var.region}a"
    vm_initiated_shutdown_behavior = "restart"
@@ -13,7 +13,7 @@ resource "outscale_vm" "MaVM" {
 
 resource "outscale_flexible_gpu" "fGPU-1" {
    model_name                   =  "nvidia-k2"
-   generation                   =  "v3"
+   generation                   =  "v4"
    subregion_name               =  "${var.region}a"
    delete_on_vm_deletion        =   true
 }

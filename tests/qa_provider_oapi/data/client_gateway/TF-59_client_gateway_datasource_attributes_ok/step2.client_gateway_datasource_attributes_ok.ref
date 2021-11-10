@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_client_gateway",
             "name": "outscale_client_gateway_2",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -24,15 +24,112 @@
                         "state": "available",
                         "tags": [
                             {
-                                "key": "name-mzi",
-                                "value": "CGW_1_mzi"
+                                "key": "project",
+                                "value": "terraform"
                             },
+                            {
+                                "key": "name:mzi",
+                                "value": "CGW_1:mzi"
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_client_gateway",
+            "name": "outscale_client_gateway_3",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "bgp_asn": 571,
+                        "client_gateway_id": "##id-0##",
+                        "connection_type": "ipsec.1",
+                        "filter": "########",
+                        "id": "##id-0##",
+                        "public_ip": "########",
+                        "request_id": "########",
+                        "state": "available",
+                        "tags": [
                             {
                                 "key": "project",
                                 "value": "terraform"
+                            },
+                            {
+                                "key": "name:mzi",
+                                "value": "CGW_1:mzi"
                             }
                         ]
-                    }
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_client_gateway",
+            "name": "outscale_client_gateway_4",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "bgp_asn": 571,
+                        "client_gateway_id": "##id-0##",
+                        "connection_type": "ipsec.1",
+                        "filter": "########",
+                        "id": "##id-0##",
+                        "public_ip": "########",
+                        "request_id": "########",
+                        "state": "available",
+                        "tags": [
+                            {
+                                "key": "project",
+                                "value": "terraform"
+                            },
+                            {
+                                "key": "name:mzi",
+                                "value": "CGW_1:mzi"
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_client_gateway",
+            "name": "outscale_client_gateway_5",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "bgp_asn": 571,
+                        "client_gateway_id": "##id-0##",
+                        "connection_type": "ipsec.1",
+                        "filter": "########",
+                        "id": "##id-0##",
+                        "public_ip": "########",
+                        "request_id": "########",
+                        "state": "available",
+                        "tags": [
+                            {
+                                "key": "project",
+                                "value": "terraform"
+                            },
+                            {
+                                "key": "name:mzi",
+                                "value": "CGW_1:mzi"
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -40,7 +137,7 @@
             "mode": "managed",
             "type": "outscale_client_gateway",
             "name": "outscale_client_gateway",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -54,8 +151,8 @@
                         "state": "available",
                         "tags": [
                             {
-                                "key": "name-mzi",
-                                "value": "CGW_1_mzi"
+                                "key": "name:mzi",
+                                "value": "CGW_1:mzi"
                             },
                             {
                                 "key": "project",
@@ -63,6 +160,7 @@
                             }
                         ]
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]

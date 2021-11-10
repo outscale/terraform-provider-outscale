@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_keypair",
             "name": "keypair-TF66",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "index_key": 0,
@@ -23,6 +23,7 @@
                         "request_id": "########",
                         "timeouts": null
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJyZWFkIjo2MDAwMDAwMDAwMDB9fQ=="
                 },
                 {
@@ -37,6 +38,7 @@
                         "request_id": "########",
                         "timeouts": null
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJyZWFkIjo2MDAwMDAwMDAwMDB9fQ=="
                 }
             ]
@@ -45,7 +47,7 @@
             "mode": "managed",
             "type": "outscale_security_group",
             "name": "security_group_TF66",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "index_key": 0,
@@ -63,6 +65,7 @@
                         "tag": null,
                         "tags": []
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 },
                 {
@@ -81,6 +84,7 @@
                         "tag": null,
                         "tags": []
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]
@@ -89,7 +93,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "outscale_vm-TF66",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -135,14 +139,61 @@
                         "bsu_optimized": false,
                         "client_token": "",
                         "deletion_protection": false,
+                        "get_admin_password": null,
                         "hypervisor": "xen",
                         "id": "##id-7##",
                         "image_id": "##id-8##",
                         "is_source_dest_checked": true,
                         "keypair_name": "keyname_TF66-1",
                         "launch_number": 0,
-                        "net_id": "",
-                        "nics": [],
+                        "net_id": "##id-9##",
+                        "nics": [
+                            {
+                                "account_id": "##id-2##",
+                                "delete_on_vm_deletion": true,
+                                "description": "Primary network interface",
+                                "device_number": 0,
+                                "is_source_dest_checked": true,
+                                "link_nic": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "device_number": "0",
+                                        "link_nic_id": "##id-10##",
+                                        "state": "attached"
+                                    }
+                                ],
+                                "link_public_ip": [],
+                                "mac_address": "########",
+                                "net_id": "##id-9##",
+                                "nic_id": "##id-11##",
+                                "private_dns_name": "########",
+                                "private_ips": [
+                                    {
+                                        "is_primary": true,
+                                        "link_public_ip": [],
+                                        "private_dns_name": "########",
+                                        "private_ip": "########"
+                                    }
+                                ],
+                                "secondary_private_ip_count": 0,
+                                "security_group_ids": [
+                                    "##id-4##",
+                                    "##id-3##"
+                                ],
+                                "security_groups": [
+                                    {
+                                        "security_group_id": "##id-4##",
+                                        "security_group_name": "terraform-sg-TF66-1"
+                                    },
+                                    {
+                                        "security_group_id": "##id-3##",
+                                        "security_group_name": "terraform-sg-TF66-0"
+                                    }
+                                ],
+                                "state": "in-use",
+                                "subnet_id": "##id-12##"
+                            }
+                        ],
                         "os_family": "",
                         "performance": "high",
                         "placement_subregion_name": "###region###a",
@@ -156,7 +207,7 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-9##",
+                        "reservation_id": "##id-13##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
                         "security_group_ids": [
@@ -166,17 +217,17 @@
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-3##",
-                                "security_group_name": "terraform-sg-TF66-0"
-                            },
-                            {
                                 "security_group_id": "##id-4##",
                                 "security_group_name": "terraform-sg-TF66-1"
+                            },
+                            {
+                                "security_group_id": "##id-3##",
+                                "security_group_name": "terraform-sg-TF66-0"
                             }
                         ],
                         "state": "running",
                         "state_reason": "",
-                        "subnet_id": "",
+                        "subnet_id": "##id-12##",
                         "tags": [],
                         "timeouts": null,
                         "user_data": "LS0tLS1CRUdJTiBPVVRTQ0FMRSBTRUNUSU9OLS0tLS0KCnByaXZhdGVfb25seT10cnVlCgotLS0tLUVORCBPVVRTQ0FMRSBTRUNUSU9OLS0tLS0=",
@@ -184,6 +235,7 @@
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "tinav4.c3r3"
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
                     "dependencies": [
                         "outscale_keypair.keypair-TF66",

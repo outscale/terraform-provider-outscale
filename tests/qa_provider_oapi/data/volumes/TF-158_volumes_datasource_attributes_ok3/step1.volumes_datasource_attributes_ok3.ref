@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_volumes",
             "name": "outscale_volumes",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -19,22 +19,6 @@
                         "request_id": "########",
                         "volume_id": null,
                         "volumes": [
-                            {
-                                "iops": 0,
-                                "linked_volumes": [],
-                                "size": 15,
-                                "snapshot_id": "",
-                                "state": "available",
-                                "subregion_name": "###region###a",
-                                "tags": [
-                                    {
-                                        "key": "Name",
-                                        "value": "volume-standard-1"
-                                    }
-                                ],
-                                "volume_id": "##id-1##",
-                                "volume_type": "standard"
-                            },
                             {
                                 "iops": 0,
                                 "linked_volumes": [],
@@ -48,11 +32,28 @@
                                         "value": "volume-standard-2"
                                     }
                                 ],
+                                "volume_id": "##id-1##",
+                                "volume_type": "standard"
+                            },
+                            {
+                                "iops": 0,
+                                "linked_volumes": [],
+                                "size": 15,
+                                "snapshot_id": "",
+                                "state": "available",
+                                "subregion_name": "###region###a",
+                                "tags": [
+                                    {
+                                        "key": "Name",
+                                        "value": "volume-standard-1"
+                                    }
+                                ],
                                 "volume_id": "##id-2##",
                                 "volume_type": "standard"
                             }
                         ]
-                    }
+                    },
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -60,12 +61,12 @@
             "mode": "managed",
             "type": "outscale_volume",
             "name": "outscale_volume",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-1##",
+                        "id": "##id-2##",
                         "iops": 0,
                         "linked_volumes": [],
                         "request_id": "########",
@@ -79,9 +80,10 @@
                                 "value": "volume-standard-1"
                             }
                         ],
-                        "volume_id": "##id-1##",
+                        "volume_id": "##id-2##",
                         "volume_type": "standard"
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]
@@ -90,12 +92,12 @@
             "mode": "managed",
             "type": "outscale_volume",
             "name": "outscale_volume2",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-2##",
+                        "id": "##id-1##",
                         "iops": 0,
                         "linked_volumes": [],
                         "request_id": "########",
@@ -109,9 +111,10 @@
                                 "value": "volume-standard-2"
                             }
                         ],
-                        "volume_id": "##id-2##",
+                        "volume_id": "##id-1##",
                         "volume_type": "standard"
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]

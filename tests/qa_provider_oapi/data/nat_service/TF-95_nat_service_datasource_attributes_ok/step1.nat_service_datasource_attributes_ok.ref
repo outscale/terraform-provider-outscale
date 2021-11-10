@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_nat_service",
             "name": "outscale_nat_service",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -29,15 +29,201 @@
                         "subnet_id": "##id-3##",
                         "tags": [
                             {
+                                "key": "name",
+                                "value": "nat"
+                            },
+                            {
                                 "key": "Key",
                                 "value": "value-tags"
-                            },
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_nat_service",
+            "name": "outscale_nat_service-2",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "filter": "########",
+                        "id": "##id-0##",
+                        "nat_service_id": "##id-0##",
+                        "net_id": "##id-1##",
+                        "public_ips": [
+                            {
+                                "public_ip": "########",
+                                "public_ip_id": "##id-2##"
+                            }
+                        ],
+                        "request_id": "########",
+                        "state": "available",
+                        "subnet_id": "##id-3##",
+                        "tags": [
                             {
                                 "key": "name",
                                 "value": "nat"
+                            },
+                            {
+                                "key": "Key",
+                                "value": "value-tags"
                             }
                         ]
-                    }
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_nat_service",
+            "name": "outscale_nat_service-3",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "filter": "########",
+                        "id": "##id-0##",
+                        "nat_service_id": "##id-0##",
+                        "net_id": "##id-1##",
+                        "public_ips": [
+                            {
+                                "public_ip": "########",
+                                "public_ip_id": "##id-2##"
+                            }
+                        ],
+                        "request_id": "########",
+                        "state": "available",
+                        "subnet_id": "##id-3##",
+                        "tags": [
+                            {
+                                "key": "name",
+                                "value": "nat"
+                            },
+                            {
+                                "key": "Key",
+                                "value": "value-tags"
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_nat_service",
+            "name": "outscale_nat_service-4",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "filter": "########",
+                        "id": "##id-0##",
+                        "nat_service_id": "##id-0##",
+                        "net_id": "##id-1##",
+                        "public_ips": [
+                            {
+                                "public_ip": "########",
+                                "public_ip_id": "##id-2##"
+                            }
+                        ],
+                        "request_id": "########",
+                        "state": "available",
+                        "subnet_id": "##id-3##",
+                        "tags": [
+                            {
+                                "key": "name",
+                                "value": "nat"
+                            },
+                            {
+                                "key": "Key",
+                                "value": "value-tags"
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_nat_service",
+            "name": "outscale_nat_service-5",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "filter": "########",
+                        "id": "##id-0##",
+                        "nat_service_id": "##id-0##",
+                        "net_id": "##id-1##",
+                        "public_ips": [
+                            {
+                                "public_ip": "########",
+                                "public_ip_id": "##id-2##"
+                            }
+                        ],
+                        "request_id": "########",
+                        "state": "available",
+                        "subnet_id": "##id-3##",
+                        "tags": [
+                            {
+                                "key": "name",
+                                "value": "nat"
+                            },
+                            {
+                                "key": "Key",
+                                "value": "value-tags"
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_nat_service",
+            "name": "outscale_nat_service-6",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "filter": "########",
+                        "id": "##id-0##",
+                        "nat_service_id": "##id-0##",
+                        "net_id": "##id-1##",
+                        "public_ips": [
+                            {
+                                "public_ip": "########",
+                                "public_ip_id": "##id-2##"
+                            }
+                        ],
+                        "request_id": "########",
+                        "state": "available",
+                        "subnet_id": "##id-3##",
+                        "tags": [
+                            {
+                                "key": "name",
+                                "value": "nat"
+                            },
+                            {
+                                "key": "Key",
+                                "value": "value-tags"
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -45,7 +231,7 @@
             "mode": "managed",
             "type": "outscale_internet_service",
             "name": "outscale_internet_service",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -62,6 +248,7 @@
                             }
                         ]
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]
@@ -70,7 +257,7 @@
             "mode": "managed",
             "type": "outscale_internet_service_link",
             "name": "outscale_internet_service_link",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -87,6 +274,7 @@
                             }
                         ]
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_internet_service.outscale_internet_service",
@@ -99,7 +287,7 @@
             "mode": "managed",
             "type": "outscale_nat_service",
             "name": "outscale_nat_service",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -128,6 +316,7 @@
                             }
                         ]
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_internet_service.outscale_internet_service",
@@ -144,7 +333,7 @@
             "mode": "managed",
             "type": "outscale_net",
             "name": "outscale_net",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -163,6 +352,7 @@
                         ],
                         "tenancy": "default"
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]
@@ -171,7 +361,7 @@
             "mode": "managed",
             "type": "outscale_public_ip",
             "name": "outscale_public_ip",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -193,6 +383,7 @@
                         "timeouts": null,
                         "vm_id": ""
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxODAwMDAwMDAwMDAwLCJkZWxldGUiOjE4MDAwMDAwMDAwMDB9fQ=="
                 }
             ]
@@ -201,11 +392,12 @@
             "mode": "managed",
             "type": "outscale_route",
             "name": "outscale_route",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
+                        "await_active_state": true,
                         "creation_method": "CreateRoute",
                         "destination_ip_range": "0.0.0.0/0",
                         "destination_service_id": "",
@@ -221,6 +413,7 @@
                         "vm_account_id": "",
                         "vm_id": ""
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_internet_service.outscale_internet_service",
@@ -234,7 +427,7 @@
             "mode": "managed",
             "type": "outscale_route_table",
             "name": "outscale_route_table",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -267,6 +460,7 @@
                             }
                         ]
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net"
@@ -278,7 +472,7 @@
             "mode": "managed",
             "type": "outscale_route_table_link",
             "name": "outscale_route_table_link",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -290,6 +484,7 @@
                         "route_table_id": "##id-6##",
                         "subnet_id": "##id-3##"
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net",
@@ -303,7 +498,7 @@
             "mode": "managed",
             "type": "outscale_subnet",
             "name": "outscale_subnet",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -325,6 +520,7 @@
                         ],
                         "timeouts": null
                     },
+                    "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
                         "outscale_net.outscale_net"

@@ -1,0 +1,29 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "data",
+            "type": "outscale_product_type",
+            "name": "product_type_0001",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "description": "Linux/UNIX",
+                        "filter": "########",
+                        "id": "##id-0##",
+                        "product_type_id": "##id-0##",
+                        "request_id": "########",
+                        "vendor": ""
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        }
+    ]
+}

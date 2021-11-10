@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_net",
             "name": "outscale_net",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -23,6 +23,7 @@
                         "tags": [],
                         "tenancy": "default"
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]
@@ -31,7 +32,7 @@
             "mode": "managed",
             "type": "outscale_route_table",
             "name": "outscale_route_table",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -64,6 +65,7 @@
                             }
                         ]
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net"
@@ -75,7 +77,7 @@
             "mode": "managed",
             "type": "outscale_virtual_gateway",
             "name": "outscale_virtual_gateway2",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -93,6 +95,7 @@
                         ],
                         "virtual_gateway_id": "##id-3##"
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA=="
                 }
             ]
@@ -101,7 +104,7 @@
             "mode": "managed",
             "type": "outscale_virtual_gateway_link",
             "name": "outscale_virtual_gateway_link",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -118,6 +121,7 @@
                         "request_id": "########",
                         "virtual_gateway_id": "##id-3##"
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net",
@@ -130,7 +134,7 @@
             "mode": "managed",
             "type": "outscale_virtual_gateway_route_propagation",
             "name": "outscale_virtual_gateway_route_propagation",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -141,6 +145,7 @@
                         "route_table_id": "##id-2##",
                         "virtual_gateway_id": "##id-3##"
                     },
+                    "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net",
