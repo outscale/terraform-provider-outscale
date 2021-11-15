@@ -143,7 +143,7 @@ func resourceOutscaleOAPIOutboundRuleCreate(d *schema.ResourceData, meta interfa
 func resourceOutscaleOAPIOutboundRuleRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	sg, _, err := readSecurityGroups(conn, d.Id())
+	sg, _, err := readSecurityGroups(conn, d.Get("security_group_id").(string))
 	if err != nil {
 		return err
 	}
