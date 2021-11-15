@@ -186,7 +186,7 @@ func resourceOutscaleOAPIRouteCreate(d *schema.ResourceData, meta interface{}) e
 
 func resourceOutscaleOAPIRouteRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-	routeTableID := d.Id()
+	routeTableID := d.Get("route_table_id").(string)
 
 	destinationIPRange := d.Get("destination_ip_range").(string)
 	var requestID string
