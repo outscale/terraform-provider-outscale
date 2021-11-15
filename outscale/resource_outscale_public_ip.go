@@ -65,7 +65,7 @@ func resourceOutscaleOAPIPublicIPCreate(d *schema.ResourceData, meta interface{}
 func resourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	id := d.Id()
+	id := d.Get("public_ip_id").(string)
 
 	req := oscgo.ReadPublicIpsRequest{
 		Filters: &oscgo.FiltersPublicIp{PublicIpIds: &[]string{id}},
