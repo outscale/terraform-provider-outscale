@@ -651,8 +651,5 @@ def main():
                  'w', encoding='utf-8') as f:
         f.write(navbar_file)
 
-    shutil.copyfile('{}/index{}'.format(ARGS.template_directory, extention),
-                    '{}/index{}'.format(index_dirpath, extention))
-
 if __name__ == '__main__':
     main()
