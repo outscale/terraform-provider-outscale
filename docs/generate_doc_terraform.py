@@ -8,12 +8,11 @@ import re
 import shutil
 import os
 import yaml
+# Local
+import utils
 
-import gtw.api.openapi.parser as openapi_parser
-import gtw.api.schema as schema
-import gtw.api.utils as utils
-
-# NOTE : python3 generate_doc_terraform.py --provider_directory /Users/mercatguillaume/workspace/terraform-provider-outscale/outscale --api /Users/mercatguillaume/workspace/osc-api/outscale.yaml --output_directory /Users/mercatguillaume/workspace/output_test --template_directory /Users/mercatguillaume/workspace/api-framework/terraform_template
+from osc_openapi_framework import parser as openapi_parser, schema
+from enum import Enum, auto
 
 parser = argparse.ArgumentParser(description='Generate documentation terraform')
 parser.add_argument('--new_format', action='store_true')
@@ -26,6 +25,18 @@ parser.add_argument('--output_directory', help='Output directory path.',
                     required=True)
 ARGS = parser.parse_args()
 
+
+# Data Sources that need to be consider as singular
+FORCE_SINGULAR_LIST = ["net_attributes", "quotas"] 
+# Data Sources that need to be consider as plural
+FORCE_PLURAL_LIST = ["flexible_gpu_catalog", "load_balancer_vm_health"] 
+
+class DataType(Enum):
+    SINGULAR = auto()
+    PLURAL = auto()
+    FORCE_PLURAL = auto()
+    FORCE_SINGULAR = auto()
+    RESOURCE = auto()
 
 def print_dict(item, path, profondeur):
     result = str()
@@ -156,9 +167,18 @@ def addField(field_object, key, value):
         if isinstance(field_object, schema.ObjectField):
             if key_split[0] in field_object.properties:
                 addField(field_object.properties[key_split[0]], key_split[1], value)
+            else:
+                print("[WARNING] The key does not exist")
+        elif isinstance(field_object, schema.ArrayField):
+            if isinstance(field_object.item, schema.ObjectField):
+                if key_split[0] in field_object.item.properties:
+                    addField(field_object.item.properties[key_split[0]], key_split[1],value)
+                else:
+                    print("[WARNING] The key does not exist")
+        elif isinstance(field_object, dict):
+            addField(field_object[key_split[0]], key_split[1], value)
         else:
-            if key_split[0] in field_object:
-                addField(field_object[key_split[0]], key_split[1], value)
+            print("[WARNING] case not implement What: addField Type: {}".format(type(field_object)))
     else:
         new_obj = schema.ObjectField({}, key, 'object', 'in', 'toto', description=value)
         if isinstance(field_object, schema.ObjectField):
@@ -174,7 +194,21 @@ def addField(field_object, key, value):
 def renameField(field_object, key, value):
     if '.' in key:
         key_split = key.split('.', 1)
-        renameField(field_object[key_split[0]], key_split[1], value)
+        if isinstance(field_object, schema.ObjectField):
+            if key_split[0] in field_object.properties:
+                renameField(field_object.properties[key_split[0]], key_split[1], value)
+            else:
+                print("[WARNING] The key does not exist")
+        elif isinstance(field_object, schema.ArrayField):
+            if isinstance(field_object.item, schema.ObjectField):
+                if key_split[0] in field_object.item.properties:
+                    renameField(field_object.item.properties[key_split[0]], key_split[1],value)
+                else:
+                    print("[WARNING] The key does not exist")
+        elif isinstance(field_object, dict):
+            renameField(field_object[key_split[0]], key_split[1], value)
+        else:
+            print("[WARNING] case not implement What: renameField Type: {}".format(type(field_object)))
     else:
         if isinstance(field_object, schema.ObjectField):
             if key in field_object.properties.keys():
@@ -228,7 +262,21 @@ def renameField(field_object, key, value):
 def removeField(field_object, key):
     if '.' in key:
         key_split = key.split('.', 1)
-        removeField(field_object[key_split[0]], key_split[1])
+        if isinstance(field_object, schema.ObjectField):
+            if key_split[0] in field_object.properties:
+                removeField(field_object.properties[key_split[0]], key_split[1])
+            else:
+                print("[WARNING] The key does not exist")
+        elif isinstance(field_object, schema.ArrayField):
+            if isinstance(field_object.item, schema.ObjectField):
+                if key_split[0] in field_object.item.properties:
+                    removeField(field_object.item.properties[key_split[0]], key_split[1])
+                else:
+                    print("[WARNING] The key does not exist")
+        elif isinstance(field_object, dict):
+            removeField(field_object[key_split[0]], key_split[1])
+        else:
+            print("[WARNING] case not implement What: removeField Type: {}".format(type(field_object)))
     else:
         if isinstance(field_object, schema.ObjectField):
             if key in field_object.properties.keys():
@@ -261,8 +309,11 @@ def treatAddPropData(field_to_update, part_to_update, addprop_content):
             removeField(field_to_update, new_k)
 
 
-def file_template(template, links, resource_name, is_singular, input_field, output_field, example_content, import_content):
-    resource_name_singular = resource_name if is_singular else resource_name[:-1]
+def file_template(template, links, resource_name, data_type, input_field, output_field, example_content, import_content):
+    if data_type  in [DataType.SINGULAR, DataType.FORCE_PLURAL, DataType.RESOURCE]:
+        resource_name_singular = resource_name
+    else:
+        resource_name_singular = resource_name[:-1]
     placeholders = links.get(resource_name_singular, 'NOT_FOUND {}'.format(resource_name_singular))
     print('======= placeholders -> {}'.format(placeholders))
 
@@ -384,7 +435,7 @@ def main():
         resource_name = str()
         code_filename = '{}/{}'.format(
             ARGS.provider_directory, filename[len('outscale/')+1:])
-        is_singular = True
+        data_type = DataType.RESOURCE
 
         if 'data_source' in name:
             dirpath = ARGS.output_directory + (
@@ -411,13 +462,22 @@ def main():
                     addprop_content = yaml.load(f, yaml.FullLoader)
             except FileNotFoundError as e:
                 pass
+
             if resource_name == 'vms_state':
                 template = template_datasources
-                is_singular = False
+                data_type = DataType.PLURAL
                 resource_name = 'vm_states'
-            elif resource_name[-1] == 's':
+            elif (resource_name[-1] == 's' and resource_name not in FORCE_SINGULAR_LIST):
+                # Has an S in the name and is not a plural exception
                 template = template_datasources
-                is_singular = False
+                data_type = DataType.PLURAL
+            elif resource_name in FORCE_PLURAL_LIST:
+                template = template_datasources
+                data_type = DataType.FORCE_PLURAL
+            elif resource_name in FORCE_SINGULAR_LIST:
+                data_type = DataType.FORCE_SINGULAR
+            else:
+                data_type= DataType.SINGULAR
         elif 'resource' in name:
             dirpath = ARGS.output_directory + (
                 '/docs/resources' if ARGS.new_format else '/website/docs/r')
@@ -468,7 +528,8 @@ def main():
         print(' - Remove double (Sing/Plur) in output fileds')
         for k in list(call_complete.output_fields.keys()):
             if k[-1] == 's' and k[:-1] in call_complete.output_fields.keys():
-                if is_singular:
+                # Remove the real singular name
+                if data_type in [DataType.SINGULAR, DataType.FORCE_PLURAL, DataType.RESOURCE]:
                     print('del {}'.format(k))
                     del call_complete.output_fields[k]
                 else:
@@ -476,7 +537,8 @@ def main():
                     del call_complete.output_fields[k[:-1]]
         
         print(' - Change output fields format for singular data source and resources')
-        if is_singular or 'resource' in name:
+        # For singular data source and resources, we need to remove the root node
+        if data_type in [DataType.SINGULAR, DataType.FORCE_SINGULAR, DataType.RESOURCE]:
             update_fields = dict()
             for k in list(call_complete.output_fields.keys()):
                 if k == 'ResponseContext':
@@ -484,7 +546,6 @@ def main():
                     continue
                 print("Exploring {}".format(k))
                 value = call_complete.output_fields[k]
-                print("What ?  {}, Type ? {}".format(k, type(value)))
                 if isinstance(value, schema.ArrayField):
                     if isinstance(value.item, schema.ObjectField):
                         for inner_k in value.item.properties.keys():
@@ -493,7 +554,6 @@ def main():
                         update_fields[inner_k] = value.item[inner_k]
                     else:
                         print("Who are you ? ... What: {} Type:{}".format(inner_k, type(value.item)))
-                        exit(1)
                 elif isinstance(value, schema.ObjectField):
                     for inner_k in value.properties.keys():
                         update_fields[inner_k] = value.properties[inner_k]
@@ -507,11 +567,9 @@ def main():
         print(' - Treating addprop data')
         input_field_to_update = call_complete.input_fields if call_complete else {}
         if not ARGS.no_addapt:
-            print("Exploring argument addprop")
             treatAddPropData(input_field_to_update, 'argument', addprop_content)
         output_field_to_update = call_complete.output_fields if call_complete else {}
         if not ARGS.no_addapt:
-            print("Exploring attributes addprop")
             treatAddPropData(output_field_to_update, 'attribute', addprop_content)
         
         print(' - Treating input parameters ...')
@@ -542,7 +600,7 @@ def main():
         content_file = file_template(template,
                                      links,
                                      resource_name,
-                                     is_singular,
+                                     data_type,
                                      str_input,
                                      str_output,
                                      example_content,
@@ -592,6 +650,9 @@ def main():
     with io.open('{}/outscale.erb'.format(navbar_dirpath),
                  'w', encoding='utf-8') as f:
         f.write(navbar_file)
+
+    shutil.copyfile('{}/index{}'.format(ARGS.template_directory, extention),
+                    '{}/index{}'.format(index_dirpath, extention))
 
 if __name__ == '__main__':
     main()
