@@ -113,3 +113,14 @@ Issues and contributions
 ------------------------
 
 Check [CONTRIBUTING.md](./CONTRIBUTING.md) for more details.
+
+
+Building the documentation
+------------------------
+- Requirements:
+  - make
+  - python3
+  - python-venv
+```shell
+  $ make doc
+```
