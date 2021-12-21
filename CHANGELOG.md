@@ -1,3 +1,12 @@
+0.5.1 (December 21, 2021)
+========================
+
+BUG FIXES:
+----------
+
+* Fix OMI used in examples
+* Update dependency due to security alert ([CVE](https://github.com/advisories/GHSA-25xm-hr59-7c27))
+
 0.5.0 (November 12, 2021)
 ========================
 
