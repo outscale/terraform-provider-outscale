@@ -218,7 +218,7 @@ def renameField(field_object, key, value):
                     field_object.properties[new_key] = old
                     del field_object.properties[key]
                 else:
-                    new_key = value.get('name', key)
+                    new_key = value.get('name', utils.camel_case_to_snake_case(key))
                     old.description = value.get('description', old.description)
                     if utils.snake_case_to_camel_case(new_key) != key:
                         field_object.properties[utils.snake_case_to_camel_case(new_key)] = old
@@ -234,7 +234,7 @@ def renameField(field_object, key, value):
                     field_object.item.properties[new_value] = old
                     del field_object.item.properties[key]
                 else:
-                    new_key = value.get('name', key)
+                    new_key = value.get('name', utils.camel_case_to_snake_case(key))
                     old.description = value.get('description', old.description)
                     if utils.snake_case_to_camel_case(new_key) != key:
                         field_object.item.properties[utils.snake_case_to_camel_case(new_key)] = old
@@ -250,7 +250,7 @@ def renameField(field_object, key, value):
                     field_object[new_value] = old
                     del field_object[key]
                 else:
-                    new_key = value.get('name', key)
+                    new_key = value.get('name', utils.camel_case_to_snake_case(key))
                     old.description = value.get('description', old.description)
                     if utils.snake_case_to_camel_case(new_key) != key:
                         field_object[utils.snake_case_to_camel_case(new_key)] = old
