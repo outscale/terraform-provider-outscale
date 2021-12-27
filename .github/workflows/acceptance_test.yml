@@ -1,0 +1,27 @@
+name: Acceptances tests
+
+on:
+  pull_request_target:
+    branches:
+      - master
+
+jobs:
+  Acceptances_tests:
+    concurrency: terraform-acceptance-test
+    runs-on: [self-hosted, linux]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
+      - name: Build go test
+        run: make test
+      - name: Run acceptance tests
+        run: make testacc
+        env:
+          OUTSCALE_ACCESSKEYID: ${{ secrets.OUTSCALE_ACCESSKEYID }}
+          OUTSCALE_SECRETKEYID: ${{ secrets.OUTSCALE_SECRETKEYID }}
+          OUTSCALE_REGION: ${{ secrets.OUTSCALE_REGION }}
+          OUTSCALE_ACCOUNT: ${{ secrets.OUTSCALE_ACCOUNT }}
+          OUTSCALE_IMAGEID: ${{ secrets.OUTSCALE_IMAGEID }}
