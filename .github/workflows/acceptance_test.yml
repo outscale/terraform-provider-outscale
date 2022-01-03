@@ -1,9 +1,6 @@
 name: Acceptances tests
 
-on:
-  pull_request:
-    branches:
-      - master
+on: workflow_dispatch
 
 jobs:
   Acceptances_tests:
