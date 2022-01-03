@@ -1,7 +1,9 @@
 name: Acceptances tests
 
 on:
-  pull_request_target
+  pull_request_target:
+    branches:
+      - master
 
 jobs:
   Acceptances_tests:
