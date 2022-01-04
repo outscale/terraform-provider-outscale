@@ -20,8 +20,8 @@ jobs:
       - name: Run acceptance tests
         run: make testacc
         env:
-          OUTSCALE_ACCESSKEYID: ${{ secrets.OUTSCALE_ACCESSKEYID }}
-          OUTSCALE_SECRETKEYID: ${{ secrets.OUTSCALE_SECRETKEYID }}
-          OUTSCALE_REGION: ${{ secrets.OUTSCALE_REGION }}
-          OUTSCALE_ACCOUNT: ${{ secrets.OUTSCALE_ACCOUNT }}
+          OUTSCALE_ACCESSKEYID: ${{ secrets.OSC_ACCESS_KEY }}
+          OUTSCALE_SECRETKEYID: ${{ secrets.OSC_SECRET_KEY }}
+          OUTSCALE_REGION: ${{ secrets.OSC_REGION }}
+          OUTSCALE_ACCOUNT: ${{ secrets.OSC_ACCOUNT_ID }}
           OUTSCALE_IMAGEID: ${{ secrets.OUTSCALE_IMAGEID }}
