@@ -90,9 +90,9 @@ In addition to [generic provider arguments](https://www.terraform.io/docs/config
 
 * `secret_key_id` - (Optional) The OUTSCALE secret key. It must be provided, but it can also be sourced from the `OUTSCALE_SECRETKEYID` [environment variable](#environment-variables).
 
-* `region` - (Optional) The Region that will be used as default value for all resources. It can also be sourced from the `OUTSCALE_REGION` [environment variable](#environment-variables). For more information on available Regions, see [Regions Reference](https://docs.outscale.com/en/userguide/Regions-Endpoints-and-Availability-Zones-Reference.html#_available_azs).
+* `region` - (Optional) The Region that will be used as default value for all resources. It can also be sourced from the `OUTSCALE_REGION` [environment variable](#environment-variables). For more information on available Regions, see [Regions, Endpoints and Availability Zones Reference](https://docs.outscale.com/en/userguide/Regions-Endpoints-and-Availability-Zones-Reference.html).
 
-* `endpoints` - (Optional) The shortened custom endpoint that will be used as default value for all resources. For more information on available endpoints, see [Endpoints Reference](https://docs.outscale.com/en/userguide/Regions-Endpoints-and-Availability-Zones-Reference.html#_available_endpoints).
+* `endpoints` - (Optional) The shortened custom endpoint that will be used as default value for all resources. For more information on available endpoints, see [Regions, Endpoints and Availability Zones Reference](https://docs.outscale.com/en/userguide/Regions-Endpoints-and-Availability-Zones-Reference.html).
 
 * `x509_cert_path` - (Optional) The path to the x509 Client Certificate. It can also be sourced from the `OUTSCALE_X509CERT` [environment variable](#environment-variables). For more information on the use of those certificates, see [About API Access Rules](https://docs.outscale.com/en/userguide/About-API-Access-Rules.html).
 
