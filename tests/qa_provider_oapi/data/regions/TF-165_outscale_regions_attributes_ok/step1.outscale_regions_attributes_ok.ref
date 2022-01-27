@@ -17,8 +17,8 @@
                         "id": "##id-0##",
                         "regions": [
                             {
-                                "endpoint": "api.eu-west-2.outscale.com",
-                                "region_name": "eu-west-2"
+                                "endpoint": "api.###region###.outscale.com",
+                                "region_name": "###region###"
                             },
                             {
                                 "endpoint": "api.us-east-2.outscale.com",
