@@ -36,7 +36,9 @@ IGNORE_END_ELEMENTS = ['request_id',
                        'last_modification_date',
                        'upload_date' ,
                        'comment',
-                       'osu_manifest_url']
+                       'osu_manifest_url',
+                       'max_value',
+                       'ip_ranges']
 IGNORE_END_PATHS = []
 TINA_ID_PREFIXES = ['i', 'subnet', 'snap', 'img', 'vol', 'eni', 'vpc', 'igw', 'nat', 'vgw', 'pcx', 'sg', 'rtb', 'rtbassoc', 'vpn', 'vpcconn', 'ami', 'dxvif','vpce','fgpu']
 VARIABLES_FILE_NAME = ['provider.auto.tfvars', 'resources.auto.tfvars']
@@ -57,7 +59,7 @@ logging.getLogger('tpd_test').setLevel(logging.DEBUG)
 
 terraform_vars = {}
 for file_name in VARIABLES_FILE_NAME:
-    file_name = "/Users/meriem.zouari/git/qa_provider_oapi/qa_provider_oapi/" + file_name
+    file_name = os.path.abspath(os.path.join(os.path.dirname(__file__), file_name))
 #    print(file_name)
     with open(file_name, 'r') as var_file:
         lines = var_file.readlines()
@@ -338,8 +340,8 @@ Log: {}
         """.format(method.__name__)
         self.error = False
         try:
-            self.run_cmd("/usr/local/bin/terraform init -no-color")
-            stdout, _ = self.run_cmd("/usr/local/bin/terraform version -no-color")
+            self.run_cmd("terraform init -no-color")
+            stdout, _ = self.run_cmd("terraform version -no-color")
             self.log += "\nVERSION:{}\n".format("\n".join(stdout.splitlines()[:2]))
         except Exception:
             try:
@@ -395,11 +397,11 @@ Log: {}
 
     def exec_test_step(self, tf_file_path, out_file_path):
         self.logger.debug("Exec step : {}".format(tf_file_path))
-        self.log += "\nTerraform validate:\n{}".format(self.run_cmd("/usr/local/bin/terraform validate -no-color")[0])
-        self.log += "\nTerraform plan:\n{}".format(self.run_cmd("/usr/local/bin/terraform plan -lock=false -no-color")[0])
-        self.log += "\nTerraform apply:\n{}".format(self.run_cmd("/usr/local/bin/terraform apply -auto-approve -lock=false -no-color")[0])
-        self.log += "\nTerraform show:\n{}".format(self.run_cmd("/usr/local/bin/terraform show -no-color")[0])
-        self.run_cmd("/usr/local/bin/terraform state pull > {}".format(out_file_path))
+        self.log += "\nTerraform validate:\n{}".format(self.run_cmd("terraform validate -no-color")[0])
+        self.log += "\nTerraform plan:\n{}".format(self.run_cmd("terraform plan -lock=false -no-color")[0])
+        self.log += "\nTerraform apply:\n{}".format(self.run_cmd("terraform apply -auto-approve -lock=false -no-color")[0])
+        self.log += "\nTerraform show:\n{}".format(self.run_cmd("terraform show -no-color")[0])
+        self.run_cmd("terraform state pull > {}".format(out_file_path))
 
     def exec_test(self, test_name, test_path):
         try:
@@ -453,7 +455,7 @@ Log: {}
             raise error
         finally:
             try:
-                self.run_cmd("/usr/local/bin/terraform destroy -auto-approve -no-color")
+                self.run_cmd("terraform destroy -auto-approve -no-color")
             finally:
                 self.run_cmd("rm -f test.tf")
                 self.run_cmd("rm -f terraform.tfstate")

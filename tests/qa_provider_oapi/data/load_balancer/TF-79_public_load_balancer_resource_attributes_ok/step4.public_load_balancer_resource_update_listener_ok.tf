@@ -6,6 +6,6 @@ resource "outscale_load_balancer" "public_lbu1" {
      backend_protocol= "HTTPS"
      load_balancer_protocol= "HTTPS"
      load_balancer_port = 8080
-     server_certificate_id = "arn:aws:iam::866464343301:server-certificate/Cockpit/Certificate-2"
+     server_certificate_id = var.server_certificate_id
     }
 }
