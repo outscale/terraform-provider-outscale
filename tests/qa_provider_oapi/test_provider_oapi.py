@@ -36,7 +36,9 @@ IGNORE_END_ELEMENTS = ['request_id',
                        'last_modification_date',
                        'upload_date' ,
                        'comment',
-                       'osu_manifest_url']
+                       'osu_manifest_url',
+                       'max_value',
+                       'ip_ranges']
 IGNORE_END_PATHS = []
 TINA_ID_PREFIXES = ['i', 'subnet', 'snap', 'img', 'vol', 'eni', 'vpc', 'igw', 'nat', 'vgw', 'pcx', 'sg', 'rtb', 'rtbassoc', 'vpn', 'vpcconn', 'ami', 'dxvif','vpce','fgpu']
 VARIABLES_FILE_NAME = ['provider.auto.tfvars', 'resources.auto.tfvars']
@@ -57,7 +59,7 @@ logging.getLogger('tpd_test').setLevel(logging.DEBUG)
 
 terraform_vars = {}
 for file_name in VARIABLES_FILE_NAME:
-    file_name = "/Users/meriem.zouari/git/qa_provider_oapi/qa_provider_oapi/" + file_name
+    file_name = os.path.abspath(os.path.join(os.path.dirname(__file__), file_name))
 #    print(file_name)
     with open(file_name, 'r') as var_file:
         lines = var_file.readlines()

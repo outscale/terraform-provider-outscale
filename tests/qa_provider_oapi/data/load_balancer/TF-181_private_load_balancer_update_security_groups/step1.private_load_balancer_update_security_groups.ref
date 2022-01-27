@@ -1,12 +1,14 @@
 {
     "version": "########",
     "terraform_version": "########",
+
     "serial": "########",
     "lineage": "########",
     "outputs": {},
     "resources": [
         {
             "mode": "managed",
+
             "type": "outscale_load_balancer",
             "name": "private_lbu",
             "provider": "provider[\"local/test/outscale\"]",

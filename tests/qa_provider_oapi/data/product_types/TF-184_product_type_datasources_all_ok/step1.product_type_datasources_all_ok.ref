@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_product_types",
             "name": "all-product-types",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -33,13 +33,33 @@
                                 "vendor": "MapR"
                             },
                             {
-                                "description": "Oracle Linux",
+                                "description": "LINUX ORACLE",
                                 "product_type_id": "##id-4##",
                                 "vendor": "Oracle"
                             },
                             {
                                 "description": "Windows 10",
                                 "product_type_id": "##id-5##",
+                                "vendor": "Microsoft"
+                            },
+                            {
+                                "description": "RHEL",
+                                "product_type_id": "##id-6##",
+                                "vendor": "RedHat"
+                            },
+                            {
+                                "description": "SQL Server Web",
+                                "product_type_id": "##id-7##",
+                                "vendor": "Microsoft"
+                            },
+                            {
+                                "description": "SQL Server Standard",
+                                "product_type_id": "##id-8##",
+                                "vendor": "Microsoft"
+                            },
+                            {
+                                "description": "SQL Server Entreprise",
+                                "product_type_id": "##id-9##",
                                 "vendor": "Microsoft"
                             }
                         ],
