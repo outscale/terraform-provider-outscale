@@ -262,9 +262,7 @@
                             {
                                 "from_port_range": 8080,
                                 "ip_protocol": "tcp",
-                                "ip_ranges": [
-                                    "0.0.0.0/0"
-                                ],
+                                "ip_ranges": "########",
                                 "security_groups_members": [],
                                 "service_ids": [],
                                 "to_port_range": 8080

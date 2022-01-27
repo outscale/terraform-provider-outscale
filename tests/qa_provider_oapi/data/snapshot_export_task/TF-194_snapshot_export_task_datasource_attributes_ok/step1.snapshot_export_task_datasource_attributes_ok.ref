@@ -25,7 +25,7 @@
                                 "osu_prefix": "prefix-194"
                             }
                         ],
-                        "progress": 0,
+                        "progress": 33,
                         "request_id": "########",
                         "snapshot_id": "##id-1##",
                         "state": "active",
@@ -100,7 +100,7 @@
                                 "osu_prefix": "prefix-194"
                             }
                         ],
-                        "progress": 0,
+                        "progress": 33,
                         "request_id": "########",
                         "snapshot_id": "##id-1##",
                         "state": "active",

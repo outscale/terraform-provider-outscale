@@ -3,6 +3,10 @@ variable "account_id" {}
 
 # resources configuration
 variable "image_id" {}
+variable "access_key_id" {}
+variable "secret_key_id" {}
+variable "region" {}
+
 variable "vm_type" {
   type    = string
   default = "tinav4.c2r2p2"

@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_subregions",
             "name": "subregion-2",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,

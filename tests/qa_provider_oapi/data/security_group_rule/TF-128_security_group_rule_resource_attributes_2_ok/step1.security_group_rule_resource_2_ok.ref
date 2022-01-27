@@ -51,9 +51,7 @@
                             {
                                 "from_port_range": -1,
                                 "ip_protocol": "-1",
-                                "ip_ranges": [
-                                    "0.0.0.0/0"
-                                ],
+                                "ip_ranges": "########",
                                 "security_groups_members": [],
                                 "to_port_range": -1
                             }
@@ -95,9 +93,7 @@
                             {
                                 "from_port_range": -1,
                                 "ip_protocol": "-1",
-                                "ip_ranges": [
-                                    "0.0.0.0/0"
-                                ],
+                                "ip_ranges": "########",
                                 "security_groups_members": [],
                                 "to_port_range": -1
                             }
@@ -137,7 +133,7 @@
                             {
                                 "from_port_range": 22,
                                 "ip_protocol": "tcp",
-                                "ip_ranges": [],
+                                "ip_ranges": "########",
                                 "security_groups_members": [
                                     {
                                         "account_id": "##id-2##",
@@ -156,9 +152,7 @@
                             {
                                 "from_port_range": -1,
                                 "ip_protocol": "-1",
-                                "ip_ranges": [
-                                    "0.0.0.0/0"
-                                ],
+                                "ip_ranges": "########",
                                 "security_groups_members": [],
                                 "service_ids": [],
                                 "to_port_range": -1
@@ -169,7 +163,7 @@
                             {
                                 "from_port_range": 22,
                                 "ip_protocol": "tcp",
-                                "ip_ranges": null,
+                                "ip_ranges": "########",
                                 "security_groups_members": [
                                     {
                                         "account_id": "##id-2##",
@@ -213,7 +207,7 @@
                             {
                                 "from_port_range": 22,
                                 "ip_protocol": "tcp",
-                                "ip_ranges": [],
+                                "ip_ranges": "########",
                                 "security_groups_members": [
                                     {
                                         "account_id": "##id-2##",
@@ -232,9 +226,7 @@
                             {
                                 "from_port_range": -1,
                                 "ip_protocol": "-1",
-                                "ip_ranges": [
-                                    "0.0.0.0/0"
-                                ],
+                                "ip_ranges": "########",
                                 "security_groups_members": [],
                                 "service_ids": [],
                                 "to_port_range": -1
@@ -242,7 +234,7 @@
                             {
                                 "from_port_range": 22,
                                 "ip_protocol": "tcp",
-                                "ip_ranges": [],
+                                "ip_ranges": "########",
                                 "security_groups_members": [
                                     {
                                         "account_id": "##id-2##",
@@ -259,7 +251,7 @@
                             {
                                 "from_port_range": 22,
                                 "ip_protocol": "tcp",
-                                "ip_ranges": null,
+                                "ip_ranges": "########",
                                 "security_groups_members": [
                                     {
                                         "account_id": "##id-2##",

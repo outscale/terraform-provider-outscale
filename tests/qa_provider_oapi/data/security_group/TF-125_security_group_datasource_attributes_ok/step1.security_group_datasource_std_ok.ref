@@ -20,19 +20,9 @@
                         "id": "##id-1##",
                         "inbound_rules": [
                             {
-                                "from_port_range": 80,
-                                "ip_protocol": "tcp",
-                                "ip_ranges": [
-                                    "46.231.147.8/32"
-                                ],
-                                "prefix_list_ids": [],
-                                "security_groups_members": [],
-                                "to_port_range": 80
-                            },
-                            {
                                 "from_port_range": 22,
                                 "ip_protocol": "tcp",
-                                "ip_ranges": [],
+                                "ip_ranges": "########",
                                 "prefix_list_ids": [],
                                 "security_groups_members": [
                                     {
@@ -42,14 +32,30 @@
                                     }
                                 ],
                                 "to_port_range": 22
+                            },
+                            {
+                                "from_port_range": 80,
+                                "ip_protocol": "tcp",
+                                "ip_ranges": "########",
+                                "prefix_list_ids": [],
+                                "security_groups_members": [],
+                                "to_port_range": 80
                             }
                         ],
                         "net_id": "##id-3##",
                         "outbound_rules": [
                             {
+                                "from_port_range": -1,
+                                "ip_protocol": "-1",
+                                "ip_ranges": "########",
+                                "prefix_list_ids": [],
+                                "security_groups_members": [],
+                                "to_port_range": -1
+                            },
+                            {
                                 "from_port_range": 22,
                                 "ip_protocol": "tcp",
-                                "ip_ranges": [],
+                                "ip_ranges": "########",
                                 "prefix_list_ids": [],
                                 "security_groups_members": [
                                     {
@@ -61,21 +67,9 @@
                                 "to_port_range": 22
                             },
                             {
-                                "from_port_range": -1,
-                                "ip_protocol": "-1",
-                                "ip_ranges": [
-                                    "0.0.0.0/0"
-                                ],
-                                "prefix_list_ids": [],
-                                "security_groups_members": [],
-                                "to_port_range": -1
-                            },
-                            {
                                 "from_port_range": 8080,
                                 "ip_protocol": "tcp",
-                                "ip_ranges": [
-                                    "46.231.147.8/32"
-                                ],
+                                "ip_ranges": "########",
                                 "prefix_list_ids": [],
                                 "security_groups_members": [],
                                 "to_port_range": 8080
@@ -114,19 +108,9 @@
                         "id": "##id-1##",
                         "inbound_rules": [
                             {
-                                "from_port_range": 80,
-                                "ip_protocol": "tcp",
-                                "ip_ranges": [
-                                    "46.231.147.8/32"
-                                ],
-                                "prefix_list_ids": [],
-                                "security_groups_members": [],
-                                "to_port_range": 80
-                            },
-                            {
                                 "from_port_range": 22,
                                 "ip_protocol": "tcp",
-                                "ip_ranges": [],
+                                "ip_ranges": "########",
                                 "prefix_list_ids": [],
                                 "security_groups_members": [
                                     {
@@ -136,6 +120,14 @@
                                     }
                                 ],
                                 "to_port_range": 22
+                            },
+                            {
+                                "from_port_range": 80,
+                                "ip_protocol": "tcp",
+                                "ip_ranges": "########",
+                                "prefix_list_ids": [],
+                                "security_groups_members": [],
+                                "to_port_range": 80
                             }
                         ],
                         "net_id": "##id-3##",
@@ -143,9 +135,7 @@
                             {
                                 "from_port_range": -1,
                                 "ip_protocol": "-1",
-                                "ip_ranges": [
-                                    "0.0.0.0/0"
-                                ],
+                                "ip_ranges": "########",
                                 "prefix_list_ids": [],
                                 "security_groups_members": [],
                                 "to_port_range": -1
@@ -153,7 +143,7 @@
                             {
                                 "from_port_range": 22,
                                 "ip_protocol": "tcp",
-                                "ip_ranges": [],
+                                "ip_ranges": "########",
                                 "prefix_list_ids": [],
                                 "security_groups_members": [
                                     {
@@ -167,9 +157,7 @@
                             {
                                 "from_port_range": 8080,
                                 "ip_protocol": "tcp",
-                                "ip_ranges": [
-                                    "46.231.147.8/32"
-                                ],
+                                "ip_ranges": "########",
                                 "prefix_list_ids": [],
                                 "security_groups_members": [],
                                 "to_port_range": 8080
@@ -212,9 +200,7 @@
                             {
                                 "from_port_range": -1,
                                 "ip_protocol": "-1",
-                                "ip_ranges": [
-                                    "0.0.0.0/0"
-                                ],
+                                "ip_ranges": "########",
                                 "prefix_list_ids": [],
                                 "security_groups_members": [],
                                 "to_port_range": -1
@@ -249,19 +235,9 @@
                         "id": "##id-1##",
                         "inbound_rules": [
                             {
-                                "from_port_range": 80,
-                                "ip_protocol": "tcp",
-                                "ip_ranges": [
-                                    "46.231.147.8/32"
-                                ],
-                                "prefix_list_ids": [],
-                                "security_groups_members": [],
-                                "to_port_range": 80
-                            },
-                            {
                                 "from_port_range": 22,
                                 "ip_protocol": "tcp",
-                                "ip_ranges": [],
+                                "ip_ranges": "########",
                                 "prefix_list_ids": [],
                                 "security_groups_members": [
                                     {
@@ -271,14 +247,30 @@
                                     }
                                 ],
                                 "to_port_range": 22
+                            },
+                            {
+                                "from_port_range": 80,
+                                "ip_protocol": "tcp",
+                                "ip_ranges": "########",
+                                "prefix_list_ids": [],
+                                "security_groups_members": [],
+                                "to_port_range": 80
                             }
                         ],
                         "net_id": "##id-3##",
                         "outbound_rules": [
                             {
+                                "from_port_range": -1,
+                                "ip_protocol": "-1",
+                                "ip_ranges": "########",
+                                "prefix_list_ids": [],
+                                "security_groups_members": [],
+                                "to_port_range": -1
+                            },
+                            {
                                 "from_port_range": 22,
                                 "ip_protocol": "tcp",
-                                "ip_ranges": [],
+                                "ip_ranges": "########",
                                 "prefix_list_ids": [],
                                 "security_groups_members": [
                                     {
@@ -290,21 +282,9 @@
                                 "to_port_range": 22
                             },
                             {
-                                "from_port_range": -1,
-                                "ip_protocol": "-1",
-                                "ip_ranges": [
-                                    "0.0.0.0/0"
-                                ],
-                                "prefix_list_ids": [],
-                                "security_groups_members": [],
-                                "to_port_range": -1
-                            },
-                            {
                                 "from_port_range": 8080,
                                 "ip_protocol": "tcp",
-                                "ip_ranges": [
-                                    "46.231.147.8/32"
-                                ],
+                                "ip_ranges": "########",
                                 "prefix_list_ids": [],
                                 "security_groups_members": [],
                                 "to_port_range": 8080
@@ -343,19 +323,9 @@
                         "id": "##id-1##",
                         "inbound_rules": [
                             {
-                                "from_port_range": 80,
-                                "ip_protocol": "tcp",
-                                "ip_ranges": [
-                                    "46.231.147.8/32"
-                                ],
-                                "prefix_list_ids": [],
-                                "security_groups_members": [],
-                                "to_port_range": 80
-                            },
-                            {
                                 "from_port_range": 22,
                                 "ip_protocol": "tcp",
-                                "ip_ranges": [],
+                                "ip_ranges": "########",
                                 "prefix_list_ids": [],
                                 "security_groups_members": [
                                     {
@@ -365,26 +335,22 @@
                                     }
                                 ],
                                 "to_port_range": 22
+                            },
+                            {
+                                "from_port_range": 80,
+                                "ip_protocol": "tcp",
+                                "ip_ranges": "########",
+                                "prefix_list_ids": [],
+                                "security_groups_members": [],
+                                "to_port_range": 80
                             }
                         ],
                         "net_id": "##id-3##",
                         "outbound_rules": [
                             {
-                                "from_port_range": 8080,
-                                "ip_protocol": "tcp",
-                                "ip_ranges": [
-                                    "46.231.147.8/32"
-                                ],
-                                "prefix_list_ids": [],
-                                "security_groups_members": [],
-                                "to_port_range": 8080
-                            },
-                            {
                                 "from_port_range": -1,
                                 "ip_protocol": "-1",
-                                "ip_ranges": [
-                                    "0.0.0.0/0"
-                                ],
+                                "ip_ranges": "########",
                                 "prefix_list_ids": [],
                                 "security_groups_members": [],
                                 "to_port_range": -1
@@ -392,7 +358,7 @@
                             {
                                 "from_port_range": 22,
                                 "ip_protocol": "tcp",
-                                "ip_ranges": [],
+                                "ip_ranges": "########",
                                 "prefix_list_ids": [],
                                 "security_groups_members": [
                                     {
@@ -402,6 +368,14 @@
                                     }
                                 ],
                                 "to_port_range": 22
+                            },
+                            {
+                                "from_port_range": 8080,
+                                "ip_protocol": "tcp",
+                                "ip_ranges": "########",
+                                "prefix_list_ids": [],
+                                "security_groups_members": [],
+                                "to_port_range": 8080
                             }
                         ],
                         "request_id": "########",
@@ -439,7 +413,7 @@
                             {
                                 "from_port_range": 22,
                                 "ip_protocol": "tcp",
-                                "ip_ranges": [],
+                                "ip_ranges": "########",
                                 "prefix_list_ids": [],
                                 "security_groups_members": [
                                     {
@@ -453,9 +427,7 @@
                             {
                                 "from_port_range": 80,
                                 "ip_protocol": "tcp",
-                                "ip_ranges": [
-                                    "46.231.147.8/32"
-                                ],
+                                "ip_ranges": "########",
                                 "prefix_list_ids": [],
                                 "security_groups_members": [],
                                 "to_port_range": 80
@@ -466,9 +438,7 @@
                             {
                                 "from_port_range": -1,
                                 "ip_protocol": "-1",
-                                "ip_ranges": [
-                                    "0.0.0.0/0"
-                                ],
+                                "ip_ranges": "########",
                                 "prefix_list_ids": [],
                                 "security_groups_members": [],
                                 "to_port_range": -1
@@ -476,7 +446,7 @@
                             {
                                 "from_port_range": 22,
                                 "ip_protocol": "tcp",
-                                "ip_ranges": [],
+                                "ip_ranges": "########",
                                 "prefix_list_ids": [],
                                 "security_groups_members": [
                                     {
@@ -490,9 +460,7 @@
                             {
                                 "from_port_range": 8080,
                                 "ip_protocol": "tcp",
-                                "ip_ranges": [
-                                    "46.231.147.8/32"
-                                ],
+                                "ip_ranges": "########",
                                 "prefix_list_ids": [],
                                 "security_groups_members": [],
                                 "to_port_range": 8080
@@ -557,9 +525,7 @@
                             {
                                 "from_port_range": -1,
                                 "ip_protocol": "-1",
-                                "ip_ranges": [
-                                    "0.0.0.0/0"
-                                ],
+                                "ip_ranges": "########",
                                 "security_groups_members": [],
                                 "to_port_range": -1
                             }
@@ -605,9 +571,7 @@
                             {
                                 "from_port_range": -1,
                                 "ip_protocol": "-1",
-                                "ip_ranges": [
-                                    "0.0.0.0/0"
-                                ],
+                                "ip_ranges": "########",
                                 "security_groups_members": [],
                                 "to_port_range": -1
                             }
@@ -645,25 +609,9 @@
                         "id": "##id-1##",
                         "inbound_rules": [
                             {
-                                "from_port_range": 22,
-                                "ip_protocol": "tcp",
-                                "ip_ranges": [],
-                                "security_groups_members": [
-                                    {
-                                        "account_id": "##id-0##",
-                                        "security_group_id": "##id-2##",
-                                        "security_group_name": "terraform-TF125-2"
-                                    }
-                                ],
-                                "service_ids": [],
-                                "to_port_range": 22
-                            },
-                            {
                                 "from_port_range": 80,
                                 "ip_protocol": "tcp",
-                                "ip_ranges": [
-                                    "46.231.147.8/32"
-                                ],
+                                "ip_ranges": "########",
                                 "security_groups_members": [],
                                 "service_ids": [],
                                 "to_port_range": 80
@@ -676,36 +624,10 @@
                             {
                                 "from_port_range": -1,
                                 "ip_protocol": "-1",
-                                "ip_ranges": [
-                                    "0.0.0.0/0"
-                                ],
+                                "ip_ranges": "########",
                                 "security_groups_members": [],
                                 "service_ids": [],
                                 "to_port_range": -1
-                            },
-                            {
-                                "from_port_range": 22,
-                                "ip_protocol": "tcp",
-                                "ip_ranges": [],
-                                "security_groups_members": [
-                                    {
-                                        "account_id": "##id-0##",
-                                        "security_group_id": "##id-2##",
-                                        "security_group_name": "terraform-TF125-2"
-                                    }
-                                ],
-                                "service_ids": [],
-                                "to_port_range": 22
-                            },
-                            {
-                                "from_port_range": 8080,
-                                "ip_protocol": "tcp",
-                                "ip_ranges": [
-                                    "46.231.147.8/32"
-                                ],
-                                "security_groups_members": [],
-                                "service_ids": [],
-                                "to_port_range": 8080
                             }
                         ],
                         "request_id": "########",
@@ -737,7 +659,16 @@
                         "flow": "Outbound",
                         "from_port_range": null,
                         "id": "##id-1##",
-                        "inbound_rules": [],
+                        "inbound_rules": [
+                            {
+                                "from_port_range": 80,
+                                "ip_protocol": "tcp",
+                                "ip_ranges": "########",
+                                "security_groups_members": [],
+                                "service_ids": [],
+                                "to_port_range": 80
+                            }
+                        ],
                         "ip_protocol": null,
                         "ip_range": null,
                         "net_id": "##id-3##",
@@ -745,9 +676,7 @@
                             {
                                 "from_port_range": -1,
                                 "ip_protocol": "-1",
-                                "ip_ranges": [
-                                    "0.0.0.0/0"
-                                ],
+                                "ip_ranges": "########",
                                 "security_groups_members": [],
                                 "service_ids": [],
                                 "to_port_range": -1
@@ -755,9 +684,7 @@
                             {
                                 "from_port_range": 8080,
                                 "ip_protocol": "tcp",
-                                "ip_ranges": [
-                                    "46.231.147.8/32"
-                                ],
+                                "ip_ranges": "########",
                                 "security_groups_members": [],
                                 "service_ids": [],
                                 "to_port_range": 8080
@@ -768,9 +695,7 @@
                             {
                                 "from_port_range": 8080,
                                 "ip_protocol": "tcp",
-                                "ip_ranges": [
-                                    "46.231.147.8/32"
-                                ],
+                                "ip_ranges": "########",
                                 "security_groups_members": [],
                                 "service_ids": null,
                                 "to_port_range": 8080
@@ -807,7 +732,7 @@
                             {
                                 "from_port_range": 22,
                                 "ip_protocol": "tcp",
-                                "ip_ranges": [],
+                                "ip_ranges": "########",
                                 "security_groups_members": [
                                     {
                                         "account_id": "##id-0##",
@@ -817,6 +742,14 @@
                                 ],
                                 "service_ids": [],
                                 "to_port_range": 22
+                            },
+                            {
+                                "from_port_range": 80,
+                                "ip_protocol": "tcp",
+                                "ip_ranges": "########",
+                                "security_groups_members": [],
+                                "service_ids": [],
+                                "to_port_range": 80
                             }
                         ],
                         "ip_protocol": null,
@@ -826,9 +759,7 @@
                             {
                                 "from_port_range": -1,
                                 "ip_protocol": "-1",
-                                "ip_ranges": [
-                                    "0.0.0.0/0"
-                                ],
+                                "ip_ranges": "########",
                                 "security_groups_members": [],
                                 "service_ids": [],
                                 "to_port_range": -1
@@ -836,9 +767,7 @@
                             {
                                 "from_port_range": 8080,
                                 "ip_protocol": "tcp",
-                                "ip_ranges": [
-                                    "46.231.147.8/32"
-                                ],
+                                "ip_ranges": "########",
                                 "security_groups_members": [],
                                 "service_ids": [],
                                 "to_port_range": 8080
@@ -849,7 +778,7 @@
                             {
                                 "from_port_range": 22,
                                 "ip_protocol": "tcp",
-                                "ip_ranges": null,
+                                "ip_ranges": "########",
                                 "security_groups_members": [
                                     {
                                         "account_id": "##id-0##",
@@ -893,7 +822,7 @@
                             {
                                 "from_port_range": 22,
                                 "ip_protocol": "tcp",
-                                "ip_ranges": [],
+                                "ip_ranges": "########",
                                 "security_groups_members": [
                                     {
                                         "account_id": "##id-0##",
@@ -903,6 +832,14 @@
                                 ],
                                 "service_ids": [],
                                 "to_port_range": 22
+                            },
+                            {
+                                "from_port_range": 80,
+                                "ip_protocol": "tcp",
+                                "ip_ranges": "########",
+                                "security_groups_members": [],
+                                "service_ids": [],
+                                "to_port_range": 80
                             }
                         ],
                         "ip_protocol": null,
@@ -912,9 +849,7 @@
                             {
                                 "from_port_range": -1,
                                 "ip_protocol": "-1",
-                                "ip_ranges": [
-                                    "0.0.0.0/0"
-                                ],
+                                "ip_ranges": "########",
                                 "security_groups_members": [],
                                 "service_ids": [],
                                 "to_port_range": -1
@@ -922,7 +857,7 @@
                             {
                                 "from_port_range": 22,
                                 "ip_protocol": "tcp",
-                                "ip_ranges": [],
+                                "ip_ranges": "########",
                                 "security_groups_members": [
                                     {
                                         "account_id": "##id-0##",
@@ -936,9 +871,7 @@
                             {
                                 "from_port_range": 8080,
                                 "ip_protocol": "tcp",
-                                "ip_ranges": [
-                                    "46.231.147.8/32"
-                                ],
+                                "ip_ranges": "########",
                                 "security_groups_members": [],
                                 "service_ids": [],
                                 "to_port_range": 8080
@@ -949,7 +882,7 @@
                             {
                                 "from_port_range": 22,
                                 "ip_protocol": "tcp",
-                                "ip_ranges": null,
+                                "ip_ranges": "########",
                                 "security_groups_members": [
                                     {
                                         "account_id": "##id-0##",
