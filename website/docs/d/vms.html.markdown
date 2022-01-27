@@ -64,20 +64,20 @@ The following attributes are exported:
             * `device_number` - The device index for the NIC attachment (between 1 and 7, both included).
             * `link_nic_id` - The ID of the NIC to attach.
             * `state` - The state of the attachment (`attaching` \| `attached` \| `detaching` \| `detached`).
-        * `link_public_ip` - Information about the EIP associated with the NIC.
+        * `link_public_ip` - Information about the public IP associated with the NIC.
             * `public_dns_name` - The name of the public DNS.
-            * `public_ip` - The External IP address (EIP) associated with the NIC.
-            * `public_ip_account_id` - The account ID of the owner of the EIP.
+            * `public_ip` - The public IP associated with the NIC.
+            * `public_ip_account_id` - The account ID of the owner of the public IP.
         * `mac_address` - The Media Access Control (MAC) address of the NIC.
         * `net_id` - The ID of the Net for the NIC.
         * `nic_id` - The ID of the NIC.
         * `private_dns_name` - The name of the private DNS.
         * `private_ips` - The private IP address or addresses of the NIC.
             * `is_primary` - If true, the IP address is the primary private IP address of the NIC.
-            * `link_public_ip` - Information about the EIP associated with the NIC.
+            * `link_public_ip` - Information about the public IP associated with the NIC.
                 * `public_dns_name` - The name of the public DNS.
-                * `public_ip` - The External IP address (EIP) associated with the NIC.
-                * `public_ip_account_id` - The account ID of the owner of the EIP.
+                * `public_ip` - The public IP associated with the NIC.
+                * `public_ip_account_id` - The account ID of the owner of the public IP.
             * `private_dns_name` - The name of the private DNS.
             * `private_ip` - The private IP address.
         * `security_groups` - One or more IDs of security groups for the NIC.
@@ -94,7 +94,7 @@ The following attributes are exported:
     * `private_ip` - The primary private IP address of the VM.
     * `product_codes` - The product code associated with the OMI used to create the VM (`0001` Linux/Unix \| `0002` Windows \| `0004` Linux/Oracle \| `0005` Windows 10).
     * `public_dns_name` - The name of the public DNS.
-    * `public_ip` - The public IP address of the VM.
+    * `public_ip` - The public IP of the VM.
     * `reservation_id` - The reservation ID of the VM.
     * `root_device_name` - The name of the root device for the VM (for example, /dev/vda1).
     * `root_device_type` - The type of root device used by the VM (always `bsu`).

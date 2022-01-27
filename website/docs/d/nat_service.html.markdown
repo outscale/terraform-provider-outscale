@@ -42,9 +42,9 @@ The following attributes are exported:
 
 * `nat_service_id` - The ID of the NAT service.
 * `net_id` - The ID of the Net in which the NAT service is.
-* `public_ips` - Information about the External IP address or addresses (EIPs) associated with the NAT service.
-    * `public_ip` - The External IP address (EIP) associated with the NAT service.
-    * `public_ip_id` - The allocation ID of the EIP associated with the NAT service.
+* `public_ips` - Information about the public IP or IPs associated with the NAT service.
+    * `public_ip` - The public IP associated with the NAT service.
+    * `public_ip_id` - The allocation ID of the public IP associated with the NAT service.
 * `state` - The state of the NAT service (`pending` \| `available` \| `deleting` \| `deleted`).
 * `subnet_id` - The ID of the Subnet in which the NAT service is.
 * `tags` - One or more tags associated with the NAT service.

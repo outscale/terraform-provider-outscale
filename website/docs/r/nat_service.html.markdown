@@ -68,8 +68,8 @@ resource "outscale_nat_service" "nat_service01" {
 
 The following arguments are supported:
 
-* `public_ip_id` - (Required) The allocation ID of the EIP to associate with the NAT service.<br />
-If the EIP is already associated with another resource, you must first disassociate it.
+* `public_ip_id` - (Required) The allocation ID of the public IP to associate with the NAT service.<br />
+If the public IP is already associated with another resource, you must first disassociate it.
 * `subnet_id` - (Required) The ID of the Subnet in which you want to create the NAT service.
 * `tags` - (Optional) A tag to add to this resource. You can specify this argument several times.
     * `key` - (Required) The key of the tag, with a minimum of 1 character.
@@ -81,9 +81,9 @@ The following attributes are exported:
 
 * `nat_service_id` - The ID of the NAT service.
 * `net_id` - The ID of the Net in which the NAT service is.
-* `public_ips` - Information about the External IP address or addresses (EIPs) associated with the NAT service.
-    * `public_ip` - The External IP address (EIP) associated with the NAT service.
-    * `public_ip_id` - The allocation ID of the EIP associated with the NAT service.
+* `public_ips` - Information about the public IP or IPs associated with the NAT service.
+    * `public_ip` - The public IP associated with the NAT service.
+    * `public_ip_id` - The allocation ID of the public IP associated with the NAT service.
 * `state` - The state of the NAT service (`pending` \| `available` \| `deleting` \| `deleted`).
 * `subnet_id` - The ID of the Subnet in which the NAT service is.
 * `tags` - One or more tags associated with the NAT service.

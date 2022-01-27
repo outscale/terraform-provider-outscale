@@ -36,17 +36,17 @@ The following arguments are supported:
     * `link_nic_states` - (Optional) The states of the attachments.
     * `link_nic_vm_account_ids` - (Optional) The account IDs of the owners of the VMs the NICs are attached to.
     * `link_nic_vm_ids` - (Optional) The IDs of the VMs the NICs are attached to.
-    * `link_public_ip_account_ids` - (Optional) The account IDs of the owners of the EIPs associated with the NICs.
-    * `link_public_ip_link_public_ip_ids` - (Optional) The association IDs returned when the EIPs were associated with the NICs.
-    * `link_public_ip_public_ip_ids` - (Optional) The allocation IDs returned when the EIPs were allocated to their accounts.
-    * `link_public_ip_public_ips` - (Optional) The EIPs associated with the NICs.
+    * `link_public_ip_account_ids` - (Optional) The account IDs of the owners of the public IPs associated with the NICs.
+    * `link_public_ip_link_public_ip_ids` - (Optional) The association IDs returned when the public IPs were associated with the NICs.
+    * `link_public_ip_public_ip_ids` - (Optional) The allocation IDs returned when the public IPs were allocated to their accounts.
+    * `link_public_ip_public_ips` - (Optional) The public IPs associated with the NICs.
     * `mac_addresses` - (Optional) The Media Access Control (MAC) addresses of the NICs.
     * `net_ids` - (Optional) The IDs of the Nets where the NICs are located.
     * `nic_ids` - (Optional) The IDs of the NICs.
     * `private_dns_names` - (Optional) The private DNS names associated with the primary private IP addresses.
-    * `private_ips_link_public_ip_account_ids` - (Optional) The account IDs of the owner of the EIPs associated with the private IP addresses.
-    * `private_ips_link_public_ip_public_ips` - (Optional) The EIPs associated with the private IP addresses.
-    * `private_ips_primary_ip` - (Optional) The primary private IP addresses of the NICs.
+    * `private_ips_link_public_ip_account_ids` - (Optional) The account IDs of the owner of the public IPs associated with the private IP addresses.
+    * `private_ips_link_public_ip_public_ips` - (Optional) The public IPs associated with the private IP addresses.
+    * `private_ips_primary_ip` - (Optional) Whether the private IP address is the primary IP address associated with the NIC.
     * `private_ips_private_ips` - (Optional) The private IP addresses of the NICs.
     * `security_group_ids` - (Optional) The IDs of the security groups associated with the NICs.
     * `security_group_names` - (Optional) The names of the security groups associated with the NICs.
@@ -71,24 +71,24 @@ The following attributes are exported:
     * `state` - The state of the attachment (`attaching` \| `attached` \| `detaching` \| `detached`).
     * `vm_account_id` - The account ID of the owner of the VM.
     * `vm_id` - The ID of the VM.
-* `link_public_ip` - Information about the EIP association.
-    * `link_public_ip_id` - (Required in a Net) The ID representing the association of the EIP with the VM or the NIC.
+* `link_public_ip` - Information about the public IP association.
+    * `link_public_ip_id` - (Required in a Net) The ID representing the association of the public IP with the VM or the NIC.
     * `public_dns_name` - The name of the public DNS.
-    * `public_ip` - The External IP address (EIP) associated with the NIC.
-    * `public_ip_account_id` - The account ID of the owner of the EIP.
-    * `public_ip_id` - The allocation ID of the EIP.
+    * `public_ip` - The public IP associated with the NIC.
+    * `public_ip_account_id` - The account ID of the owner of the public IP.
+    * `public_ip_id` - The allocation ID of the public IP.
 * `mac_address` - The Media Access Control (MAC) address of the NIC.
 * `net_id` - The ID of the Net for the NIC.
 * `nic_id` - The ID of the NIC.
 * `private_dns_name` - The name of the private DNS.
 * `private_ips` - The private IP addresses of the NIC.
     * `is_primary` - If true, the IP address is the primary private IP address of the NIC.
-    * `link_public_ip` - Information about the EIP association.
-        * `link_public_ip_id` - (Required in a Net) The ID representing the association of the EIP with the VM or the NIC.
+    * `link_public_ip` - Information about the public IP association.
+        * `link_public_ip_id` - (Required in a Net) The ID representing the association of the public IP with the VM or the NIC.
         * `public_dns_name` - The name of the public DNS.
-        * `public_ip` - The External IP address (EIP) associated with the NIC.
-        * `public_ip_account_id` - The account ID of the owner of the EIP.
-        * `public_ip_id` - The allocation ID of the EIP.
+        * `public_ip` - The public IP associated with the NIC.
+        * `public_ip_account_id` - The account ID of the owner of the public IP.
+        * `public_ip_id` - The allocation ID of the public IP.
     * `private_dns_name` - The name of the private DNS.
     * `private_ip` - The private IP address of the NIC.
 * `security_groups` - One or more IDs of security groups for the NIC.
