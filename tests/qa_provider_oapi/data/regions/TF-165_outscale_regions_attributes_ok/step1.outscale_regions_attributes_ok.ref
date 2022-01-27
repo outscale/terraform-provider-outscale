@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_regions",
             "name": "all_regions",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -19,6 +19,14 @@
                             {
                                 "endpoint": "api.###region###.outscale.com",
                                 "region_name": "###region###"
+                            },
+                            {
+                                "endpoint": "api.us-east-2.outscale.com",
+                                "region_name": "us-east-2"
+                            },
+                            {
+                                "endpoint": "api.us-west-1.outscale.com",
+                                "region_name": "us-west-1"
                             }
                         ],
                         "request_id": "########"

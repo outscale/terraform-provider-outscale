@@ -5,7 +5,7 @@ resource "outscale_keypair" "my_keypair" {
 
 resource "outscale_vm" "MaVM" {
    image_id                       = var.image_id
-   vm_type                        = "tinav4.c2r2p2"
+   vm_type                        = var.vm_type
    keypair_name                   = outscale_keypair.my_keypair.keypair_name
    placement_subregion_name       = "${var.region}a"
    vm_initiated_shutdown_behavior = "restart"
