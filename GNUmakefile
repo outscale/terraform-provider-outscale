@@ -5,8 +5,11 @@ WEBSITE_REPO=github.com/hashicorp/terraform-website
 
 default: build
 
+VERSION=$(shell git describe --exact-match 2> /dev/null || \
+                 git describe --match=$(git rev-parse --short=8 HEAD) --always --dirty --abbrev=8)
+
 build: fmtcheck
-	go install
+	go build -ldflags "-X github.com/terraform-providers/terraform-provider-outscale/version.version=${VERSION}"
 
 
 test: fmtcheck
