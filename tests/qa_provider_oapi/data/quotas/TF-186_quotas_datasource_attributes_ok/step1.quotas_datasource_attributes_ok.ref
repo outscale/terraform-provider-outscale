@@ -84,7 +84,7 @@
                         },
                         "subnets": [],
                         "subregion_names": [
-                            "eu-west-2a"
+                            "###region###a"
                         ],
                         "tags": []
                     },
