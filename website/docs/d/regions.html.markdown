@@ -9,7 +9,7 @@ description: |-
 # outscale_regions Data Source
 
 Provides information about Regions.
-For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Regions%2C+Endpoints%2C+and+Availability+Zones).
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Regions-Endpoints-and-Availability-Zones.html).
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#readregions).
 
 ## Example Usage

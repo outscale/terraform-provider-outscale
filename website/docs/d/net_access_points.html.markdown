@@ -9,7 +9,7 @@ description: |-
 # outscale_net_access_points Data Source
 
 Provides information about Net access points.
-For more information on this resource, see the [User Guide](https://wiki.outscale.internal/display/EN/About+VPC+Endpoints).
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-VPC-Endpoints.html).
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-netaccesspoint).
 
 ## Example Usage

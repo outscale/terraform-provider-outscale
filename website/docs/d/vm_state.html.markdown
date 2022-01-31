@@ -9,7 +9,7 @@ description: |-
 # outscale_vm_state Data Source
 
 Provides information about a specific VM state.
-For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Instance+Lifecycle).
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Instance-Lifecycle.html).
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#readvmsstate).
 
 ## Example Usage

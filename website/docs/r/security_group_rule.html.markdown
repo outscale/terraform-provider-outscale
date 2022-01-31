@@ -9,7 +9,7 @@ description: |-
 # outscale_security_group_rule Resource
 
 Manages a security group rule.
-For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Security+Group+Rules).
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Security-Group-Rules.html).
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-securitygrouprule).
 
 ## Example Usage

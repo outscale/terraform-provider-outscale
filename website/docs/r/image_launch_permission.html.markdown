@@ -9,7 +9,7 @@ description: |-
 # outscale_image_launch_permission Resource
 
 Manages an image launch permission.
-For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+OMIs).
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-OMIs.html).
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#updateimage).
 
 ## Example Usage

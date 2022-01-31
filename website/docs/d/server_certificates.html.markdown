@@ -9,7 +9,7 @@ description: |-
 # outscale_server_certificates Data Source
 
 Provides information about server certificates.
-For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Server+Certificates+in+EIM).
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Server-Certificates-in-EIM.html).
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-servercertificate).
 
 ## Example Usage
