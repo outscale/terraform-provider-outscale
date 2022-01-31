@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/logging"
-
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/version"
 )
 
 // Config ...
@@ -57,7 +57,7 @@ func (c *Config) Client() (*OutscaleClient, error) {
 	oscConfig.Debug = true
 	oscConfig.HTTPClient = skipClient
 	oscConfig.Host = basePath
-	oscConfig.UserAgent = "terraform-provider-outscale-dev"
+	oscConfig.UserAgent = fmt.Sprintf("terraform-provider-outscale/%s", version.GetVersion())
 
 	oscClient := oscgo.NewAPIClient(oscConfig)
 
