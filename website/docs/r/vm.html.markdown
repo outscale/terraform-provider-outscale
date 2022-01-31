@@ -51,7 +51,7 @@ resource "outscale_vm" "vm02" {
 	vm_type                 = var.vm_type
 	keypair_name            = var.keypair_name
 	block_device_mappings {
-		device_name = "/dev/sda" # /dev/sda corresponds to the root device of the VM
+		device_name = "/dev/sda1" # /dev/sda1 corresponds to the root device of the VM
 		bsu {
 			volume_size = 15
 			volume_type = "gp2"
