@@ -9,7 +9,7 @@ description: |-
 # outscale_security_groups Data Source
 
 Provides information about security groups.
-For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Security+Groups).
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Security-Groups.html).
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-securitygroup).
 
 ## Example Usage

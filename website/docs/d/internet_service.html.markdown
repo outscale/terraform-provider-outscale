@@ -9,7 +9,7 @@ description: |-
 # outscale_internet_service Data Source
 
 Provides information about a specific Internet service.
-For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Internet+Gateways).
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Internet-Gateways.html).
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-internetservice).
 
 ## Example Usage
