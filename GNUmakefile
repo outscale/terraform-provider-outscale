@@ -45,7 +45,8 @@ test-compile:
 		exit 1; \
 	fi
 	go test -c $(TEST) $(TESTARGS)
-
+test-integration:
+	@sh -c "'$(CURDIR)/scripts/integration.sh'"
 website:
 ifeq (,$(wildcard $(GOPATH)/src/$(WEBSITE_REPO)))
 	echo "$(WEBSITE_REPO) not found in your GOPATH (necessary for layouts and assets), get-ting..."
@@ -81,4 +82,4 @@ examples-test:
 		cd ../..; \
 	done\
 
-.PHONY: build test testacc fmt fmtcheck lint tools test-compile website website-lint website-test examples-test website-local
+.PHONY: build test testacc fmt fmtcheck lint tools test-compile website website-lint website-test examples-test website-local test-integration
