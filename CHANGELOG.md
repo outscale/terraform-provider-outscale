@@ -1,3 +1,17 @@
+0.5.2 (February 02, 2022)
+========================
+
+FEATURES:
+---------
+
+* Enhance User-Agent #56
+
+BUG FIXES:
+----------
+
+* Fix Resource outscale_route_table_link import issue (TPD-2011)
+* Update old wiki links to new docs address #49
+
 0.5.1 (December 21, 2021)
 ========================
 
