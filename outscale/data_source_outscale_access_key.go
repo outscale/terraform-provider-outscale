@@ -27,6 +27,10 @@ func dataSourceOutscaleAccessKey() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"expiration_date": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"last_modification_date": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -96,6 +100,9 @@ func dataSourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) e
 		return err
 	}
 	if err := d.Set("creation_date", accessKey.GetCreationDate()); err != nil {
+		return err
+	}
+	if err := d.Set("expiration_date", accessKey.GetExpirationDate()); err != nil {
 		return err
 	}
 	if err := d.Set("last_modification_date", accessKey.GetLastModificationDate()); err != nil {

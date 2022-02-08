@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/nav-inc/datetime"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 )
 
@@ -30,6 +31,15 @@ func resourceOutscaleAccessKey() *schema.Resource {
 			"creation_date": {
 				Type:     schema.TypeString,
 				Computed: true,
+			},
+			"expiration_date": {
+				Type:     schema.TypeString,
+				Optional: true,
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					date1, _ := datetime.Parse(new, time.UTC)
+					date2, _ := datetime.Parse(old, time.UTC)
+					return date1.Equal(date2)
+				},
 			},
 			"last_modification_date": {
 				Type:     schema.TypeString,
@@ -56,10 +66,19 @@ func resourceOutscaleAccessKey() *schema.Resource {
 func resourceOutscaleAccessKeyCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	var res oscgo.CreateAccessKeyResponse
 	var err error
+	req := oscgo.CreateAccessKeyRequest{}
+
+	expirDate := d.Get("expiration_date").(string)
+	if expirDate != "" {
+		if err = checkDateFormat(expirDate); err != nil {
+			return err
+		}
+	}
+	req.ExpirationDate = &expirDate
+	var res oscgo.CreateAccessKeyResponse
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		res, _, err = conn.AccessKeyApi.CreateAccessKey(context.Background()).CreateAccessKeyRequest(oscgo.CreateAccessKeyRequest{}).Execute()
+		res, _, err = conn.AccessKeyApi.CreateAccessKey(context.Background()).CreateAccessKeyRequest(req).Execute()
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -107,6 +126,9 @@ func resourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) err
 	if err := d.Set("creation_date", accessKey.GetCreationDate()); err != nil {
 		return err
 	}
+	if err := d.Set("expiration_date", accessKey.GetExpirationDate()); err != nil {
+		return err
+	}
 	if err := d.Set("last_modification_date", accessKey.GetLastModificationDate()); err != nil {
 		return err
 	}
@@ -122,13 +144,26 @@ func resourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) err
 
 func resourceOutscaleAccessKeyUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
+	req := oscgo.UpdateAccessKeyRequest{AccessKeyId: d.Id()}
 
 	if d.HasChange("state") {
-		if err := updateAccessKey(conn, d.Id(), d.Get("state").(string)); err != nil {
-			return err
-		}
+		req.State = d.Get("state").(string)
 	}
-
+	if d.HasChange("expiration_date") {
+		newExpirDate := d.Get("expiration_date").(string)
+		state := d.Get("state").(string)
+		if newExpirDate != "" {
+			if err := checkDateFormat(newExpirDate); err != nil {
+				return err
+			}
+			req.ExpirationDate = &newExpirDate
+		}
+		req.State = state
+	}
+	_, _, err := conn.AccessKeyApi.UpdateAccessKey(context.Background()).UpdateAccessKeyRequest(req).Execute()
+	if err != nil {
+		return err
+	}
 	return resourceOutscaleAccessKeyRead(d, meta)
 }
 
@@ -168,5 +203,19 @@ func updateAccessKey(conn *oscgo.APIClient, id, state string) error {
 		return err
 	}
 
+	return nil
+}
+
+func checkDateFormat(dateFormat string) error {
+	var err error
+	var settingDate time.Time
+	currentDate := time.Now()
+
+	if settingDate, err = datetime.Parse(dateFormat, time.UTC); err != nil {
+		return fmt.Errorf("Expiration Date should be 'ISO 8601' format ('2017-06-14' or '2017-06-14T00:00:00Z, ...) %s", err)
+	}
+	if currentDate.After(settingDate) {
+		return fmt.Errorf(" Expiration date: '%s' should be after current date '%s'", settingDate, currentDate)
+	}
 	return nil
 }

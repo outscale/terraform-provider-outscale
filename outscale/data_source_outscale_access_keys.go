@@ -44,6 +44,10 @@ func dataSourceOutscaleAccessKeys() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						"expiration_date": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 						"last_modification_date": {
 							Type:     schema.TypeString,
 							Computed: true,
@@ -122,6 +126,7 @@ func flattenAccessKeys(accessKeys []oscgo.AccessKey) []map[string]interface{} {
 		accessKeysMap[i] = map[string]interface{}{
 			"access_key_id":          ak.GetAccessKeyId(),
 			"creation_date":          ak.GetCreationDate(),
+			"expiration_date":        ak.GetExpirationDate(),
 			"last_modification_date": ak.GetLastModificationDate(),
 			"state":                  ak.GetState(),
 		}
