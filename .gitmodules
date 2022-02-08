@@ -3,4 +3,4 @@
 	url = https://github.com/outscale/osc-api
 [submodule "docs/doc-terraform-template"]
 	path = docs/doc-terraform-template
-	url = https://gitlab.outscale.internal/rd/doc-terraform-template.git
+	url = https://gitlab.outscale.internal/documentation/doc-terraform-template.git

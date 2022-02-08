@@ -26,9 +26,9 @@ parser.add_argument('--output_directory', help='Output directory path.',
 ARGS = parser.parse_args()
 
 
-# Data Sources that need to be consider as singular
+# Data Sources that need to be considered as singular
 FORCE_SINGULAR_LIST = ["net_attributes", "quotas"] 
-# Data Sources that need to be consider as plural
+# Data Sources that need to be considered as plural
 FORCE_PLURAL_LIST = ["flexible_gpu_catalog", "load_balancer_vm_health"] 
 
 class DataType(Enum):
