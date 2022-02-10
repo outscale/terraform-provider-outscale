@@ -3,7 +3,7 @@
  *
  * Welcome to the OUTSCALE API documentation.<br /><br />  The OUTSCALE API enables you to manage your resources in the OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.10
+ * API version: 1.16
  * Contact: support@outscale.com
  */
 
@@ -21,7 +21,9 @@ type UpdateAccessKeyRequest struct {
 	AccessKeyId string `json:"AccessKeyId"`
 	// If true, checks whether you have the required permissions to perform the action.
 	DryRun *bool `json:"DryRun,omitempty"`
-	// The new state for the access key (`ACTIVE` \\| `INACTIVE`).
+	// The date and time at which you want the access key to expire, in ISO 8601 format (for example, `2017-06-14` or `2017-06-14T00:00:00Z`). If not specified, the access key is set to not expire.
+	ExpirationDate *string `json:"ExpirationDate,omitempty"`
+	// The new state for the access key (`ACTIVE` \\| `INACTIVE`). When set to `ACTIVE`, the access key is enabled and can be used to send requests. When set to `INACTIVE`, the access key is disabled.
 	State string `json:"State"`
 }
 
@@ -100,6 +102,38 @@ func (o *UpdateAccessKeyRequest) SetDryRun(v bool) {
 	o.DryRun = &v
 }
 
+// GetExpirationDate returns the ExpirationDate field value if set, zero value otherwise.
+func (o *UpdateAccessKeyRequest) GetExpirationDate() string {
+	if o == nil || o.ExpirationDate == nil {
+		var ret string
+		return ret
+	}
+	return *o.ExpirationDate
+}
+
+// GetExpirationDateOk returns a tuple with the ExpirationDate field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *UpdateAccessKeyRequest) GetExpirationDateOk() (*string, bool) {
+	if o == nil || o.ExpirationDate == nil {
+		return nil, false
+	}
+	return o.ExpirationDate, true
+}
+
+// HasExpirationDate returns a boolean if a field has been set.
+func (o *UpdateAccessKeyRequest) HasExpirationDate() bool {
+	if o != nil && o.ExpirationDate != nil {
+		return true
+	}
+
+	return false
+}
+
+// SetExpirationDate gets a reference to the given string and assigns it to the ExpirationDate field.
+func (o *UpdateAccessKeyRequest) SetExpirationDate(v string) {
+	o.ExpirationDate = &v
+}
+
 // GetState returns the State field value
 func (o *UpdateAccessKeyRequest) GetState() string {
 	if o == nil {
@@ -131,6 +165,9 @@ func (o UpdateAccessKeyRequest) MarshalJSON() ([]byte, error) {
 	}
 	if o.DryRun != nil {
 		toSerialize["DryRun"] = o.DryRun
+	}
+	if o.ExpirationDate != nil {
+		toSerialize["ExpirationDate"] = o.ExpirationDate
 	}
 	if true {
 		toSerialize["State"] = o.State

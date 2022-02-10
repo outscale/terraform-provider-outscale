@@ -3,7 +3,7 @@
  *
  * Welcome to the OUTSCALE API documentation.<br /><br />  The OUTSCALE API enables you to manage your resources in the OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.10
+ * API version: 1.16
  * Contact: support@outscale.com
  */
 
@@ -17,23 +17,19 @@ import (
 
 // FiltersApiLog One or more filters.
 type FiltersApiLog struct {
-	// One or more API keys used for the query.
+	// The access keys used for the logged calls.
 	QueryAccessKeys *[]string `json:"QueryAccessKeys,omitempty"`
-	// The name of one or more API services used for the query.
+	// The names of the APIs of the logged calls (always `oapi` for the OUTSCALE API).
 	QueryApiNames *[]string `json:"QueryApiNames,omitempty"`
-	// The name of one or more calls.
+	// The names of the logged calls.
 	QueryCallNames *[]string `json:"QueryCallNames,omitempty"`
-	// The logs of the queries made after the date you specify, in ISO 8601 format (for example, `2017-06-14`).
-	QueryDateAfter *string `json:"QueryDateAfter,omitempty"`
-	// The logs of the queries made before the date you specify, in ISO 8601 format (for example, `2017-06-14`).
-	QueryDateBefore *string `json:"QueryDateBefore,omitempty"`
-	// One or more IP addresses used for the query.
+	// The IP addresses used for the logged calls.
 	QueryIpAddresses *[]string `json:"QueryIpAddresses,omitempty"`
-	// One or more user agents used for the HTTP request.
+	// The user agents of the HTTP requests of the logged calls.
 	QueryUserAgents *[]string `json:"QueryUserAgents,omitempty"`
-	// One or more request IDs.
+	// The request IDs provided in the responses of the logged calls.
 	RequestIds *[]string `json:"RequestIds,omitempty"`
-	// One or more HTTP codes provided by the responses.
+	// The HTTP status codes of the logged calls.
 	ResponseStatusCodes *[]int32 `json:"ResponseStatusCodes,omitempty"`
 }
 
@@ -148,70 +144,6 @@ func (o *FiltersApiLog) HasQueryCallNames() bool {
 // SetQueryCallNames gets a reference to the given []string and assigns it to the QueryCallNames field.
 func (o *FiltersApiLog) SetQueryCallNames(v []string) {
 	o.QueryCallNames = &v
-}
-
-// GetQueryDateAfter returns the QueryDateAfter field value if set, zero value otherwise.
-func (o *FiltersApiLog) GetQueryDateAfter() string {
-	if o == nil || o.QueryDateAfter == nil {
-		var ret string
-		return ret
-	}
-	return *o.QueryDateAfter
-}
-
-// GetQueryDateAfterOk returns a tuple with the QueryDateAfter field value if set, nil otherwise
-// and a boolean to check if the value has been set.
-func (o *FiltersApiLog) GetQueryDateAfterOk() (*string, bool) {
-	if o == nil || o.QueryDateAfter == nil {
-		return nil, false
-	}
-	return o.QueryDateAfter, true
-}
-
-// HasQueryDateAfter returns a boolean if a field has been set.
-func (o *FiltersApiLog) HasQueryDateAfter() bool {
-	if o != nil && o.QueryDateAfter != nil {
-		return true
-	}
-
-	return false
-}
-
-// SetQueryDateAfter gets a reference to the given string and assigns it to the QueryDateAfter field.
-func (o *FiltersApiLog) SetQueryDateAfter(v string) {
-	o.QueryDateAfter = &v
-}
-
-// GetQueryDateBefore returns the QueryDateBefore field value if set, zero value otherwise.
-func (o *FiltersApiLog) GetQueryDateBefore() string {
-	if o == nil || o.QueryDateBefore == nil {
-		var ret string
-		return ret
-	}
-	return *o.QueryDateBefore
-}
-
-// GetQueryDateBeforeOk returns a tuple with the QueryDateBefore field value if set, nil otherwise
-// and a boolean to check if the value has been set.
-func (o *FiltersApiLog) GetQueryDateBeforeOk() (*string, bool) {
-	if o == nil || o.QueryDateBefore == nil {
-		return nil, false
-	}
-	return o.QueryDateBefore, true
-}
-
-// HasQueryDateBefore returns a boolean if a field has been set.
-func (o *FiltersApiLog) HasQueryDateBefore() bool {
-	if o != nil && o.QueryDateBefore != nil {
-		return true
-	}
-
-	return false
-}
-
-// SetQueryDateBefore gets a reference to the given string and assigns it to the QueryDateBefore field.
-func (o *FiltersApiLog) SetQueryDateBefore(v string) {
-	o.QueryDateBefore = &v
 }
 
 // GetQueryIpAddresses returns the QueryIpAddresses field value if set, zero value otherwise.
@@ -352,12 +284,6 @@ func (o FiltersApiLog) MarshalJSON() ([]byte, error) {
 	}
 	if o.QueryCallNames != nil {
 		toSerialize["QueryCallNames"] = o.QueryCallNames
-	}
-	if o.QueryDateAfter != nil {
-		toSerialize["QueryDateAfter"] = o.QueryDateAfter
-	}
-	if o.QueryDateBefore != nil {
-		toSerialize["QueryDateBefore"] = o.QueryDateBefore
 	}
 	if o.QueryIpAddresses != nil {
 		toSerialize["QueryIpAddresses"] = o.QueryIpAddresses

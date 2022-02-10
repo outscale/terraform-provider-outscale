@@ -3,7 +3,7 @@
  *
  * Welcome to the OUTSCALE API documentation.<br /><br />  The OUTSCALE API enables you to manage your resources in the OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.10
+ * API version: 1.16
  * Contact: support@outscale.com
  */
 
@@ -25,11 +25,13 @@ type CreateLoadBalancerRequest struct {
 	LoadBalancerName string `json:"LoadBalancerName"`
 	// The type of load balancer: `internet-facing` or `internal`. Use this parameter only for load balancers in a Net.
 	LoadBalancerType *string `json:"LoadBalancerType,omitempty"`
+	// (internet-facing only) The public IP you want to associate with the load balancer. If not specified, a public IP owned by 3DS OUTSCALE is associated.
+	PublicIp *string `json:"PublicIp,omitempty"`
 	// (Net only) One or more IDs of security groups you want to assign to the load balancer. If not specified, the default security group of the Net is assigned to the load balancer.
 	SecurityGroups *[]string `json:"SecurityGroups,omitempty"`
-	// One or more IDs of Subnets in your Net that you want to attach to the load balancer.
+	// (Net only) The ID of the Subnet in which you want to create the load balancer. Regardless of this Subnet, the load balancer can distribute traffic to all Subnets. This parameter is required in a Net.
 	Subnets *[]string `json:"Subnets,omitempty"`
-	// One or more names of Subregions (currently, only one Subregion is supported). This parameter is not required if you create a load balancer in a Net. To create an internal load balancer, use the `LoadBalancerType` parameter.
+	// (public Cloud only) The Subregion in which you want to create the load balancer. Regardless of this Subregion, the load balancer can distribute traffic to all Subregions. This parameter is required in the public Cloud.
 	SubregionNames *[]string `json:"SubregionNames,omitempty"`
 	// One or more tags assigned to the load balancer.
 	Tags *[]ResourceTag `json:"Tags,omitempty"`
@@ -164,6 +166,38 @@ func (o *CreateLoadBalancerRequest) HasLoadBalancerType() bool {
 // SetLoadBalancerType gets a reference to the given string and assigns it to the LoadBalancerType field.
 func (o *CreateLoadBalancerRequest) SetLoadBalancerType(v string) {
 	o.LoadBalancerType = &v
+}
+
+// GetPublicIp returns the PublicIp field value if set, zero value otherwise.
+func (o *CreateLoadBalancerRequest) GetPublicIp() string {
+	if o == nil || o.PublicIp == nil {
+		var ret string
+		return ret
+	}
+	return *o.PublicIp
+}
+
+// GetPublicIpOk returns a tuple with the PublicIp field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *CreateLoadBalancerRequest) GetPublicIpOk() (*string, bool) {
+	if o == nil || o.PublicIp == nil {
+		return nil, false
+	}
+	return o.PublicIp, true
+}
+
+// HasPublicIp returns a boolean if a field has been set.
+func (o *CreateLoadBalancerRequest) HasPublicIp() bool {
+	if o != nil && o.PublicIp != nil {
+		return true
+	}
+
+	return false
+}
+
+// SetPublicIp gets a reference to the given string and assigns it to the PublicIp field.
+func (o *CreateLoadBalancerRequest) SetPublicIp(v string) {
+	o.PublicIp = &v
 }
 
 // GetSecurityGroups returns the SecurityGroups field value if set, zero value otherwise.
@@ -307,6 +341,9 @@ func (o CreateLoadBalancerRequest) MarshalJSON() ([]byte, error) {
 	}
 	if o.LoadBalancerType != nil {
 		toSerialize["LoadBalancerType"] = o.LoadBalancerType
+	}
+	if o.PublicIp != nil {
+		toSerialize["PublicIp"] = o.PublicIp
 	}
 	if o.SecurityGroups != nil {
 		toSerialize["SecurityGroups"] = o.SecurityGroups
