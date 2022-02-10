@@ -3,7 +3,7 @@
  *
  * Welcome to the OUTSCALE API documentation.<br /><br />  The OUTSCALE API enables you to manage your resources in the OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.10
+ * API version: 1.16
  * Contact: support@outscale.com
  */
 
@@ -31,16 +31,18 @@ type LoadBalancer struct {
 	LoadBalancerName *string `json:"LoadBalancerName,omitempty"`
 	// The policies defined for the load balancer.
 	LoadBalancerStickyCookiePolicies *[]LoadBalancerStickyCookiePolicy `json:"LoadBalancerStickyCookiePolicies,omitempty"`
-	// The type of load balancer. Valid only for load balancers in a Net.<br /> If `LoadBalancerType` is `internet-facing`, the load balancer has a public DNS name that resolves to a public IP address.<br /> If `LoadBalancerType` is `internal`, the load balancer has a public DNS name that resolves to a private IP address.
+	// The type of load balancer. Valid only for load balancers in a Net.<br /> If `LoadBalancerType` is `internet-facing`, the load balancer has a public DNS name that resolves to a public IP.<br /> If `LoadBalancerType` is `internal`, the load balancer has a public DNS name that resolves to a private IP address.
 	LoadBalancerType *string `json:"LoadBalancerType,omitempty"`
 	// The ID of the Net for the load balancer.
 	NetId *string `json:"NetId,omitempty"`
+	// (internet-facing only) The public IP associated with the load balancer.
+	PublicIp *string `json:"PublicIp,omitempty"`
 	// One or more IDs of security groups for the load balancers. Valid only for load balancers in a Net.
 	SecurityGroups      *[]string            `json:"SecurityGroups,omitempty"`
 	SourceSecurityGroup *SourceSecurityGroup `json:"SourceSecurityGroup,omitempty"`
-	// The IDs of the Subnets for the load balancer.
+	// The ID of the Subnet in which the load balancer was created.
 	Subnets *[]string `json:"Subnets,omitempty"`
-	// One or more names of Subregions for the load balancer.
+	// The ID of the Subregion in which the load balancer was created.
 	SubregionNames *[]string `json:"SubregionNames,omitempty"`
 	// One or more tags associated with the load balancer.
 	Tags *[]ResourceTag `json:"Tags,omitempty"`
@@ -383,6 +385,38 @@ func (o *LoadBalancer) SetNetId(v string) {
 	o.NetId = &v
 }
 
+// GetPublicIp returns the PublicIp field value if set, zero value otherwise.
+func (o *LoadBalancer) GetPublicIp() string {
+	if o == nil || o.PublicIp == nil {
+		var ret string
+		return ret
+	}
+	return *o.PublicIp
+}
+
+// GetPublicIpOk returns a tuple with the PublicIp field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *LoadBalancer) GetPublicIpOk() (*string, bool) {
+	if o == nil || o.PublicIp == nil {
+		return nil, false
+	}
+	return o.PublicIp, true
+}
+
+// HasPublicIp returns a boolean if a field has been set.
+func (o *LoadBalancer) HasPublicIp() bool {
+	if o != nil && o.PublicIp != nil {
+		return true
+	}
+
+	return false
+}
+
+// SetPublicIp gets a reference to the given string and assigns it to the PublicIp field.
+func (o *LoadBalancer) SetPublicIp(v string) {
+	o.PublicIp = &v
+}
+
 // GetSecurityGroups returns the SecurityGroups field value if set, zero value otherwise.
 func (o *LoadBalancer) GetSecurityGroups() []string {
 	if o == nil || o.SecurityGroups == nil {
@@ -574,6 +608,9 @@ func (o LoadBalancer) MarshalJSON() ([]byte, error) {
 	}
 	if o.NetId != nil {
 		toSerialize["NetId"] = o.NetId
+	}
+	if o.PublicIp != nil {
+		toSerialize["PublicIp"] = o.PublicIp
 	}
 	if o.SecurityGroups != nil {
 		toSerialize["SecurityGroups"] = o.SecurityGroups

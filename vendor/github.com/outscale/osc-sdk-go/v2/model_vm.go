@@ -3,7 +3,7 @@
  *
  * Welcome to the OUTSCALE API documentation.<br /><br />  The OUTSCALE API enables you to manage your resources in the OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.10
+ * API version: 1.16
  * Contact: support@outscale.com
  */
 
@@ -25,6 +25,8 @@ type Vm struct {
 	BsuOptimized *bool `json:"BsuOptimized,omitempty"`
 	// The idempotency token provided when launching the VM.
 	ClientToken *string `json:"ClientToken,omitempty"`
+	// The date and time at which the VM was created.
+	CreationDate *string `json:"CreationDate,omitempty"`
 	// If true, you cannot terminate the VM using Cockpit, the CLI or the API. If false, you can.
 	DeletionProtection *bool `json:"DeletionProtection,omitempty"`
 	// The hypervisor type of the VMs (`ovm` \\| `xen`).
@@ -54,7 +56,7 @@ type Vm struct {
 	ProductCodes *[]string `json:"ProductCodes,omitempty"`
 	// The name of the public DNS.
 	PublicDnsName *string `json:"PublicDnsName,omitempty"`
-	// The public IP address of the VM.
+	// The public IP of the VM.
 	PublicIp *string `json:"PublicIp,omitempty"`
 	// The reservation ID of the VM.
 	ReservationId *string `json:"ReservationId,omitempty"`
@@ -225,6 +227,38 @@ func (o *Vm) HasClientToken() bool {
 // SetClientToken gets a reference to the given string and assigns it to the ClientToken field.
 func (o *Vm) SetClientToken(v string) {
 	o.ClientToken = &v
+}
+
+// GetCreationDate returns the CreationDate field value if set, zero value otherwise.
+func (o *Vm) GetCreationDate() string {
+	if o == nil || o.CreationDate == nil {
+		var ret string
+		return ret
+	}
+	return *o.CreationDate
+}
+
+// GetCreationDateOk returns a tuple with the CreationDate field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *Vm) GetCreationDateOk() (*string, bool) {
+	if o == nil || o.CreationDate == nil {
+		return nil, false
+	}
+	return o.CreationDate, true
+}
+
+// HasCreationDate returns a boolean if a field has been set.
+func (o *Vm) HasCreationDate() bool {
+	if o != nil && o.CreationDate != nil {
+		return true
+	}
+
+	return false
+}
+
+// SetCreationDate gets a reference to the given string and assigns it to the CreationDate field.
+func (o *Vm) SetCreationDate(v string) {
+	o.CreationDate = &v
 }
 
 // GetDeletionProtection returns the DeletionProtection field value if set, zero value otherwise.
@@ -1136,6 +1170,9 @@ func (o Vm) MarshalJSON() ([]byte, error) {
 	}
 	if o.ClientToken != nil {
 		toSerialize["ClientToken"] = o.ClientToken
+	}
+	if o.CreationDate != nil {
+		toSerialize["CreationDate"] = o.CreationDate
 	}
 	if o.DeletionProtection != nil {
 		toSerialize["DeletionProtection"] = o.DeletionProtection

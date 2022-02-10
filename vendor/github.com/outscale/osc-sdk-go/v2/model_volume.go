@@ -3,7 +3,7 @@
  *
  * Welcome to the OUTSCALE API documentation.<br /><br />  The OUTSCALE API enables you to manage your resources in the OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.10
+ * API version: 1.16
  * Contact: support@outscale.com
  */
 
@@ -17,6 +17,8 @@ import (
 
 // Volume Information about the volume.
 type Volume struct {
+	// The date and time of creation of the volume.
+	CreationDate *string `json:"CreationDate,omitempty"`
 	// The number of I/O operations per second (IOPS):<br /> - For `io1` volumes, the number of provisioned IOPS<br /> - For `gp2` volumes, the baseline performance of the volume
 	Iops *int32 `json:"Iops,omitempty"`
 	// Information about your volume attachment.
@@ -52,6 +54,38 @@ func NewVolume() *Volume {
 func NewVolumeWithDefaults() *Volume {
 	this := Volume{}
 	return &this
+}
+
+// GetCreationDate returns the CreationDate field value if set, zero value otherwise.
+func (o *Volume) GetCreationDate() string {
+	if o == nil || o.CreationDate == nil {
+		var ret string
+		return ret
+	}
+	return *o.CreationDate
+}
+
+// GetCreationDateOk returns a tuple with the CreationDate field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *Volume) GetCreationDateOk() (*string, bool) {
+	if o == nil || o.CreationDate == nil {
+		return nil, false
+	}
+	return o.CreationDate, true
+}
+
+// HasCreationDate returns a boolean if a field has been set.
+func (o *Volume) HasCreationDate() bool {
+	if o != nil && o.CreationDate != nil {
+		return true
+	}
+
+	return false
+}
+
+// SetCreationDate gets a reference to the given string and assigns it to the CreationDate field.
+func (o *Volume) SetCreationDate(v string) {
+	o.CreationDate = &v
 }
 
 // GetIops returns the Iops field value if set, zero value otherwise.
@@ -344,6 +378,9 @@ func (o *Volume) SetVolumeType(v string) {
 
 func (o Volume) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
+	if o.CreationDate != nil {
+		toSerialize["CreationDate"] = o.CreationDate
+	}
 	if o.Iops != nil {
 		toSerialize["Iops"] = o.Iops
 	}

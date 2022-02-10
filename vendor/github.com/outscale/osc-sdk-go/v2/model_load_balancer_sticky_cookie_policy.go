@@ -3,7 +3,7 @@
  *
  * Welcome to the OUTSCALE API documentation.<br /><br />  The OUTSCALE API enables you to manage your resources in the OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.10
+ * API version: 1.16
  * Contact: support@outscale.com
  */
 
@@ -17,6 +17,8 @@ import (
 
 // LoadBalancerStickyCookiePolicy Information about the stickiness policy.
 type LoadBalancerStickyCookiePolicy struct {
+	// The time period, in seconds, after which the cookie should be considered stale.<br /> If `1`, the stickiness session lasts for the duration of the browser session.
+	CookieExpirationPeriod *int32 `json:"CookieExpirationPeriod,omitempty"`
 	// The name of the stickiness policy.
 	PolicyName *string `json:"PolicyName,omitempty"`
 }
@@ -36,6 +38,38 @@ func NewLoadBalancerStickyCookiePolicy() *LoadBalancerStickyCookiePolicy {
 func NewLoadBalancerStickyCookiePolicyWithDefaults() *LoadBalancerStickyCookiePolicy {
 	this := LoadBalancerStickyCookiePolicy{}
 	return &this
+}
+
+// GetCookieExpirationPeriod returns the CookieExpirationPeriod field value if set, zero value otherwise.
+func (o *LoadBalancerStickyCookiePolicy) GetCookieExpirationPeriod() int32 {
+	if o == nil || o.CookieExpirationPeriod == nil {
+		var ret int32
+		return ret
+	}
+	return *o.CookieExpirationPeriod
+}
+
+// GetCookieExpirationPeriodOk returns a tuple with the CookieExpirationPeriod field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *LoadBalancerStickyCookiePolicy) GetCookieExpirationPeriodOk() (*int32, bool) {
+	if o == nil || o.CookieExpirationPeriod == nil {
+		return nil, false
+	}
+	return o.CookieExpirationPeriod, true
+}
+
+// HasCookieExpirationPeriod returns a boolean if a field has been set.
+func (o *LoadBalancerStickyCookiePolicy) HasCookieExpirationPeriod() bool {
+	if o != nil && o.CookieExpirationPeriod != nil {
+		return true
+	}
+
+	return false
+}
+
+// SetCookieExpirationPeriod gets a reference to the given int32 and assigns it to the CookieExpirationPeriod field.
+func (o *LoadBalancerStickyCookiePolicy) SetCookieExpirationPeriod(v int32) {
+	o.CookieExpirationPeriod = &v
 }
 
 // GetPolicyName returns the PolicyName field value if set, zero value otherwise.
@@ -72,6 +106,9 @@ func (o *LoadBalancerStickyCookiePolicy) SetPolicyName(v string) {
 
 func (o LoadBalancerStickyCookiePolicy) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
+	if o.CookieExpirationPeriod != nil {
+		toSerialize["CookieExpirationPeriod"] = o.CookieExpirationPeriod
+	}
 	if o.PolicyName != nil {
 		toSerialize["PolicyName"] = o.PolicyName
 	}

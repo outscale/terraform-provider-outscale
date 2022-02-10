@@ -3,7 +3,7 @@
  *
  * Welcome to the OUTSCALE API documentation.<br /><br />  The OUTSCALE API enables you to manage your resources in the OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.10
+ * API version: 1.16
  * Contact: support@outscale.com
  */
 
@@ -21,6 +21,8 @@ type Snapshot struct {
 	AccountAlias *string `json:"AccountAlias,omitempty"`
 	// The account ID of the owner of the snapshot.
 	AccountId *string `json:"AccountId,omitempty"`
+	// The date and time of creation of the snapshot.
+	CreationDate *string `json:"CreationDate,omitempty"`
 	// The description of the snapshot.
 	Description               *string                `json:"Description,omitempty"`
 	PermissionsToCreateVolume *PermissionsOnResource `json:"PermissionsToCreateVolume,omitempty"`
@@ -117,6 +119,38 @@ func (o *Snapshot) HasAccountId() bool {
 // SetAccountId gets a reference to the given string and assigns it to the AccountId field.
 func (o *Snapshot) SetAccountId(v string) {
 	o.AccountId = &v
+}
+
+// GetCreationDate returns the CreationDate field value if set, zero value otherwise.
+func (o *Snapshot) GetCreationDate() string {
+	if o == nil || o.CreationDate == nil {
+		var ret string
+		return ret
+	}
+	return *o.CreationDate
+}
+
+// GetCreationDateOk returns a tuple with the CreationDate field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *Snapshot) GetCreationDateOk() (*string, bool) {
+	if o == nil || o.CreationDate == nil {
+		return nil, false
+	}
+	return o.CreationDate, true
+}
+
+// HasCreationDate returns a boolean if a field has been set.
+func (o *Snapshot) HasCreationDate() bool {
+	if o != nil && o.CreationDate != nil {
+		return true
+	}
+
+	return false
+}
+
+// SetCreationDate gets a reference to the given string and assigns it to the CreationDate field.
+func (o *Snapshot) SetCreationDate(v string) {
+	o.CreationDate = &v
 }
 
 // GetDescription returns the Description field value if set, zero value otherwise.
@@ -382,6 +416,9 @@ func (o Snapshot) MarshalJSON() ([]byte, error) {
 	}
 	if o.AccountId != nil {
 		toSerialize["AccountId"] = o.AccountId
+	}
+	if o.CreationDate != nil {
+		toSerialize["CreationDate"] = o.CreationDate
 	}
 	if o.Description != nil {
 		toSerialize["Description"] = o.Description

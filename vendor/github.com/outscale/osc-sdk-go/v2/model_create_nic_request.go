@@ -3,7 +3,7 @@
  *
  * Welcome to the OUTSCALE API documentation.<br /><br />  The OUTSCALE API enables you to manage your resources in the OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.10
+ * API version: 1.16
  * Contact: support@outscale.com
  */
 
@@ -21,7 +21,7 @@ type CreateNicRequest struct {
 	Description *string `json:"Description,omitempty"`
 	// If true, checks whether you have the required permissions to perform the action.
 	DryRun *bool `json:"DryRun,omitempty"`
-	// The primary private IP address for the NIC.<br /><br />  This IP address must be within the IP address range of the Subnet that you specify with the `SubnetId` attribute.<br /> If you do not specify this attribute, a random private IP address is selected within the IP address range of the Subnet.
+	// The primary private IP address for the NIC.<br /> This IP address must be within the IP address range of the Subnet that you specify with the `SubnetId` attribute.<br /> If you do not specify this attribute, a random private IP address is selected within the IP address range of the Subnet.
 	PrivateIps *[]PrivateIpLight `json:"PrivateIps,omitempty"`
 	// One or more IDs of security groups for the NIC.
 	SecurityGroupIds *[]string `json:"SecurityGroupIds,omitempty"`

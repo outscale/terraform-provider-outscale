@@ -3,7 +3,7 @@
  *
  * Welcome to the OUTSCALE API documentation.<br /><br />  The OUTSCALE API enables you to manage your resources in the OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.10
+ * API version: 1.16
  * Contact: support@outscale.com
  */
 
@@ -33,13 +33,13 @@ type FiltersNic struct {
 	LinkNicVmAccountIds *[]string `json:"LinkNicVmAccountIds,omitempty"`
 	// The IDs of the VMs the NICs are attached to.
 	LinkNicVmIds *[]string `json:"LinkNicVmIds,omitempty"`
-	// The account IDs of the owners of the EIPs associated with the NICs.
+	// The account IDs of the owners of the public IPs associated with the NICs.
 	LinkPublicIpAccountIds *[]string `json:"LinkPublicIpAccountIds,omitempty"`
-	// The association IDs returned when the EIPs were associated with the FNIs.
+	// The association IDs returned when the public IPs were associated with the NICs.
 	LinkPublicIpLinkPublicIpIds *[]string `json:"LinkPublicIpLinkPublicIpIds,omitempty"`
-	// The allocation IDs returned when the EIPs were allocated to their accounts.
+	// The allocation IDs returned when the public IPs were allocated to their accounts.
 	LinkPublicIpPublicIpIds *[]string `json:"LinkPublicIpPublicIpIds,omitempty"`
-	// The EIPs associated with the NICs.
+	// The public IPs associated with the NICs.
 	LinkPublicIpPublicIps *[]string `json:"LinkPublicIpPublicIps,omitempty"`
 	// The Media Access Control (MAC) addresses of the NICs.
 	MacAddresses *[]string `json:"MacAddresses,omitempty"`
@@ -49,11 +49,11 @@ type FiltersNic struct {
 	NicIds *[]string `json:"NicIds,omitempty"`
 	// The private DNS names associated with the primary private IP addresses.
 	PrivateDnsNames *[]string `json:"PrivateDnsNames,omitempty"`
-	// The account IDs of the owner of the EIPs associated with the private IP addresses.
+	// The account IDs of the owner of the public IPs associated with the private IP addresses.
 	PrivateIpsLinkPublicIpAccountIds *[]string `json:"PrivateIpsLinkPublicIpAccountIds,omitempty"`
-	// The EIPs associated with the private IP addresses.
+	// The public IPs associated with the private IP addresses.
 	PrivateIpsLinkPublicIpPublicIps *[]string `json:"PrivateIpsLinkPublicIpPublicIps,omitempty"`
-	// The primary private IP addresses of the NICs.
+	// Whether the private IP address is the primary IP address associated with the NIC.
 	PrivateIpsPrimaryIp *bool `json:"PrivateIpsPrimaryIp,omitempty"`
 	// The private IP addresses of the NICs.
 	PrivateIpsPrivateIps *[]string `json:"PrivateIpsPrivateIps,omitempty"`
