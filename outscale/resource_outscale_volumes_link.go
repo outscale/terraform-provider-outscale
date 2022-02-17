@@ -110,7 +110,7 @@ func resourceOAPIVolumeLinkCreate(d *schema.ResourceData, meta interface{}) erro
 
 		stateConf := &resource.StateChangeConf{
 			Pending:    []string{"pending"},
-			Target:     []string{"running"},
+			Target:     []string{"running", "stopped"},
 			Refresh:    vmStateRefreshFunc(conn, iID, ""),
 			Timeout:    10 * time.Minute,
 			Delay:      10 * time.Second,
