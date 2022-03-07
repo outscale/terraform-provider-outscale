@@ -71,14 +71,14 @@ The following attributes are exported:
     * `net_id` - The ID of the Net for the NIC.
     * `nic_id` - The ID of the NIC.
     * `private_dns_name` - The name of the private DNS.
-    * `private_ips` - The private IP address or addresses of the NIC.
-        * `is_primary` - If true, the IP address is the primary private IP address of the NIC.
+    * `private_ips` - The private IP or IPs of the NIC.
+        * `is_primary` - If true, the IP is the primary private IP of the NIC.
         * `link_public_ip` - Information about the public IP associated with the NIC.
             * `public_dns_name` - The name of the public DNS.
             * `public_ip` - The public IP associated with the NIC.
             * `public_ip_account_id` - The account ID of the owner of the public IP.
         * `private_dns_name` - The name of the private DNS.
-        * `private_ip` - The private IP address.
+        * `private_ip` - The private IP.
     * `security_groups` - One or more IDs of security groups for the NIC.
         * `security_group_id` - The ID of the security group.
         * `security_group_name` - The name of the security group.
@@ -90,7 +90,7 @@ The following attributes are exported:
     * `subregion_name` - The name of the Subregion.
     * `tenancy` - The tenancy of the VM (`default` \| `dedicated`).
 * `private_dns_name` - The name of the private DNS.
-* `private_ip` - The primary private IP address of the VM.
+* `private_ip` - The primary private IP of the VM.
 * `product_codes` - The product code associated with the OMI used to create the VM (`0001` Linux/Unix \| `0002` Windows \| `0004` Linux/Oracle \| `0005` Windows 10).
 * `public_dns_name` - The name of the public DNS.
 * `public_ip` - The public IP of the VM.

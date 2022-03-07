@@ -43,7 +43,7 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `subnets` - Information about one or more Subnets.
-    * `available_ips_count` - The number of available IP addresses in the Subnets.
+    * `available_ips_count` - The number of available IPs in the Subnets.
     * `ip_range` - The IP range in the Subnet, in CIDR notation (for example, 10.0.0.0/16).
     * `map_public_ip_on_launch` - If true, a public IP is assigned to the network interface cards (NICs) created in the specified Subnet.
     * `net_id` - The ID of the Net in which the Subnet is.

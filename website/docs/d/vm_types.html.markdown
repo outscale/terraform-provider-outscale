@@ -58,7 +58,7 @@ The following attributes are exported:
 
 * `vm_types` - Information about one or more VM types.
     * `bsu_optimized` - Indicates whether the VM is optimized for BSU I/O.
-    * `max_private_ips` - The maximum number of private IP addresses per network interface card (NIC).
+    * `max_private_ips` - The maximum number of private IPs per network interface card (NIC).
     * `memory_size` - The amount of memory, in gibibytes.
     * `vcore_count` - The number of vCores.
     * `vm_type_name` - The name of the VM type.

@@ -66,11 +66,11 @@ resource "outscale_nic" "nic02" {
 The following arguments are supported:
 
 * `description` - (Optional) A description for the NIC.
-* `private_ips` - (Optional) The primary private IP address for the NIC.<br />
-This IP address must be within the IP address range of the Subnet that you specify with the `subnet_id` attribute.<br />
-If you do not specify this attribute, a random private IP address is selected within the IP address range of the Subnet.
-    * `is_primary` - (Optional) If true, the IP address is the primary private IP address of the NIC.
-    * `private_ip` - (Optional) The private IP address of the NIC.
+* `private_ips` - (Optional) The primary private IP for the NIC.<br />
+This IP must be within the IP range of the Subnet that you specify with the `subnet_id` attribute.<br />
+If you do not specify this attribute, a random private IP is selected within the IP range of the Subnet.
+    * `is_primary` - (Optional) If true, the IP is the primary private IP of the NIC.
+    * `private_ip` - (Optional) The private IP of the NIC.
 * `security_group_ids` - (Optional) One or more IDs of security groups for the NIC.
 * `subnet_id` - (Required) The ID of the Subnet in which you want to create the NIC.
 * `tags` - (Optional) A tag to add to this resource. You can specify this argument several times.
@@ -101,8 +101,8 @@ The following attributes are exported:
 * `net_id` - The ID of the Net for the NIC.
 * `nic_id` - The ID of the NIC.
 * `private_dns_name` - The name of the private DNS.
-* `private_ips` - The private IP addresses of the NIC.
-    * `is_primary` - If true, the IP address is the primary private IP address of the NIC.
+* `private_ips` - The private IPs of the NIC.
+    * `is_primary` - If true, the IP is the primary private IP of the NIC.
     * `link_public_ip` - Information about the public IP association.
         * `link_public_ip_id` - (Required in a Net) The ID representing the association of the public IP with the VM or the NIC.
         * `public_dns_name` - The name of the public DNS.
@@ -110,7 +110,7 @@ The following attributes are exported:
         * `public_ip_account_id` - The account ID of the owner of the public IP.
         * `public_ip_id` - The allocation ID of the public IP.
     * `private_dns_name` - The name of the private DNS.
-    * `private_ip` - The private IP address of the NIC.
+    * `private_ip` - The private IP of the NIC.
 * `security_groups` - One or more IDs of security groups for the NIC.
     * `security_group_id` - The ID of the security group.
     * `security_group_name` - The name of the security group.

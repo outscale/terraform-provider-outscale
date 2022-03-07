@@ -65,7 +65,7 @@ The following attributes are exported:
         * `policy_name` - The name of the stickiness policy.
     * `load_balancer_type` - The type of load balancer. Valid only for load balancers in a Net.<br />
 If `load_balancer_type` is `internet-facing`, the load balancer has a public DNS name that resolves to a public IP.<br />
-If `load_balancer_type` is `internal`, the load balancer has a public DNS name that resolves to a private IP address.
+If `load_balancer_type` is `internal`, the load balancer has a public DNS name that resolves to a private IP.
     * `net_id` - The ID of the Net for the load balancer.
     * `security_groups` - One or more IDs of security groups for the load balancers. Valid only for load balancers in a Net.
     * `source_security_group` - Information about the source security group of the load balancer, which you can use as part of your inbound rules for your registered VMs.<br />
