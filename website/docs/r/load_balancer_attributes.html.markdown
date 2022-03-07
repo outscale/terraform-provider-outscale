@@ -121,7 +121,7 @@ The following arguments are supported:
 * `load_balancer_name` - (Required) The name of the load balancer.
 * `load_balancer_port` - (Optional) The port on which the load balancer is listening (between `1` and `65535`, both included). This parameter is required if you want to update the server certificate.
 * `policy_names` - (Optional) The name of the policy you want to enable for the listener.
-* `server_certificate_id` - (Optional) The Outscale Resource Name (ORN) of the server certificate. For more information, see [Resource Identifiers > Outscale Resource Names (ORNs)](https://wiki.outscale.net/display/EN/Resource+Identifiers#ResourceIdentifiers-ORNFormat). If this parameter is specified, you must also specify the `load_balancer_port` parameter.
+* `server_certificate_id` - (Optional) The Outscale Resource Name (ORN) of the server certificate. For more information, see [Resource Identifiers > Outscale Resource Names (ORNs)](https://docs.outscale.com/en/userguide/Resource-Identifiers.html#_outscale_resource_names_orns). If this parameter is specified, you must also specify the `load_balancer_port` parameter.
 
 ## Attribute Reference
 
@@ -151,7 +151,7 @@ The following attributes are exported:
     * `load_balancer_port` - The port on which the load balancer is listening (between 1 and `65535`, both included).
     * `load_balancer_protocol` - The routing protocol (`HTTP` \| `HTTPS` \| `TCP` \| `SSL`).
     * `policy_names` - The names of the policies. If there are no policies enabled, the list is empty.
-    * `server_certificate_id` - The OUTSCALE Resource Name (ORN) of the server certificate. For more information, see [Resource Identifiers > OUTSCALE Resource Names (ORNs)](https://wiki.outscale.net/display/EN/Resource+Identifiers#ResourceIdentifiers-ORNFormat).
+    * `server_certificate_id` - The OUTSCALE Resource Name (ORN) of the server certificate. For more information, see [Resource Identifiers > OUTSCALE Resource Names (ORNs)](https://docs.outscale.com/en/userguide/Resource-Identifiers.html#_outscale_resource_names_orns).
 * `load_balancer_name` - The name of the load balancer.
 * `load_balancer_sticky_cookie_policies` - The policies defined for the load balancer.
     * `policy_name` - The name of the stickiness policy.

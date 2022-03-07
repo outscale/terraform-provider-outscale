@@ -181,7 +181,7 @@ The following arguments are supported:
 If you specify a snapshot ID, the volume size must be at least equal to the snapshot size.<br />
 If you specify a snapshot ID but no volume size, the volume is created with a size similar to the snapshot one.
         * `volume_type` - (Optional) The type of the volume (`standard` \| `io1` \| `gp2`). If not specified in the request, a `standard` volume is created.<br />
-For more information about volume types, see [Volume Types and IOPS](https://wiki.outscale.net/display/EN/About+Volumes#AboutVolumes-VolumeTypesVolumeTypesandIOPS).
+For more information about volume types, see [About Volumes > Volume Types and IOPS](https://docs.outscale.com/en/userguide/About-Volumes.html#_volume_types_and_iops).
     * `device_name` - (Optional) The name of the device.
     * `no_device` - (Optional) Removes the device which is included in the block device mapping of the OMI.
     * `virtual_device_name` - (Optional) The name of the virtual device (ephemeralN).
@@ -293,7 +293,7 @@ The following attributes are exported:
 * `user_data` - The Base64-encoded MIME user data.
 * `vm_id` - The ID of the VM.
 * `vm_initiated_shutdown_behavior` - The VM behavior when you stop it. By default or if set to `stop`, the VM stops. If set to `restart`, the VM stops then automatically restarts. If set to `terminate`, the VM stops and is deleted.
-* `vm_type` - The type of VM. For more information, see [Instance Types](https://wiki.outscale.net/display/EN/Instance+Types).
+* `vm_type` - The type of VM. For more information, see [Instance Types](https://docs.outscale.com/en/userguide/Instance-Types.html).
 
 ## Import
 

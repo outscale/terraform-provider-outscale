@@ -31,7 +31,7 @@ The following arguments are supported:
     * `delete_on_vm_deletion` - (Optional) Indicates whether the fGPU is deleted when terminating the VM.
     * `flexible_gpu_ids` - (Optional) One or more IDs of fGPUs.
     * `generations` - (Optional) The processor generations that the fGPUs are compatible with.
-    * `model_names` - (Optional) One or more models of fGPUs. For more information, see [About Flexible GPUs](https://wiki.outscale.net/display/EN/About+Flexible+GPUs).
+    * `model_names` - (Optional) One or more models of fGPUs. For more information, see [About Flexible GPUs](https://docs.outscale.com/en/userguide/About-Flexible-GPUs.html).
     * `states` - (Optional) The states of the fGPUs (`allocated` \| `attaching` \| `attached` \| `detaching`).
     * `subregion_names` - (Optional) The Subregions where the fGPUs are located.
     * `vm_ids` - (Optional) One or more IDs of VMs.
@@ -43,7 +43,7 @@ The following attributes are exported:
 * `delete_on_vm_deletion` - If true, the fGPU is deleted when the VM is terminated.
 * `flexible_gpu_id` - The ID of the fGPU.
 * `generation` - The compatible processor generation.
-* `model_name` - The model of fGPU. For more information, see [About Flexible GPUs](https://wiki.outscale.net/display/EN/About+Flexible+GPUs).
+* `model_name` - The model of fGPU. For more information, see [About Flexible GPUs](https://docs.outscale.com/en/userguide/About-Flexible-GPUs.html).
 * `state` - The state of the fGPU (`allocated` \| `attaching` \| `attached` \| `detaching`).
 * `subregion_name` - The Subregion where the fGPU is located.
 * `vm_id` - The ID of the VM the fGPU is attached to, if any.
