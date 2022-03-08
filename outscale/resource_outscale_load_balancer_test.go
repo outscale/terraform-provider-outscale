@@ -18,7 +18,7 @@ import (
 func TestAccOutscaleOAPILBUBasic(t *testing.T) {
 	var conf oscgo.LoadBalancer
 
-	r := acctest.RandIntRange(0, 10)
+	r := acctest.RandIntRange(0, 50)
 	region := os.Getenv("OUTSCALE_REGION")
 	zone := fmt.Sprintf("%sa", region)
 

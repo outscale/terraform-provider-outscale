@@ -94,15 +94,15 @@ func testAccCheckOAPIImageExists(n string, ami *oscgo.Image) resource.TestCheckF
 func testAccOAPIImageConfigBasic(omi, vmType, region string, rInt int) string {
 	return fmt.Sprintf(`
 		resource "outscale_vm" "basic" {
-			image_id			      = "%s"
-			vm_type             = "%s"
-			keypair_name		    = "terraform-basic"
+			image_id                 = "%s"
+			vm_type                  = "%s"
+			keypair_name		 = "terraform-basic"
 			placement_subregion_name = "%sa"
 		}
 
 		resource "outscale_image" "foo" {
 			image_name  = "tf-testing-%d"
-			vm_id       = "${outscale_vm.basic.id}"
+			vm_id       = outscale_vm.basic.id
 			no_reboot   = "true"
 			description = "terraform testing"
 		}

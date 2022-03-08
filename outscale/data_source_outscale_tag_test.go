@@ -47,7 +47,7 @@ func testAccOAPITagDataSourceConfig(omi, vmType string) string {
 		data "outscale_tag" "web" {
 			filter {
 				name = "resource_ids"
-				values = ["${outscale_vm.basic.id}"]
+				values = [outscale_vm.basic.id]
 			}
 		}
 	`, omi, vmType)

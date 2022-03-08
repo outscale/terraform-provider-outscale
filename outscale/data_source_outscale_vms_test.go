@@ -39,7 +39,7 @@ func testAccOAPIVMSDataSourceConfig(omi, vmType string) string {
 		data "outscale_vms" "basic_web" {
 			filter {
 				name   = "vm_ids"
-				values = ["${outscale_vm.basic.id}"]
+				values = [outscale_vm.basic.id]
 			}
 		}`, omi, vmType)
 }

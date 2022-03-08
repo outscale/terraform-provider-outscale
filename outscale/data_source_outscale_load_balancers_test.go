@@ -5,12 +5,14 @@ import (
 	"os"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
 func TestAccOutscaleOAPIDSLBSU_basic(t *testing.T) {
 	region := os.Getenv("OUTSCALE_REGION")
 	zone := fmt.Sprintf("%sa", region)
+	numLbu := acctest.RandIntRange(0, 50)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -21,7 +23,7 @@ func TestAccOutscaleOAPIDSLBSU_basic(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscaleOAPILBUDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDSOutscaleOAPILBsUConfig(zone),
+				Config: testAccDSOutscaleOAPILBsUConfig(zone, numLbu),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.outscale_load_balancers.test", "load_balancer.#", "1"),
 				)},
@@ -29,11 +31,11 @@ func TestAccOutscaleOAPIDSLBSU_basic(t *testing.T) {
 	})
 }
 
-func testAccDSOutscaleOAPILBsUConfig(zone string) string {
+func testAccDSOutscaleOAPILBsUConfig(zone string, numLbu int) string {
 	return fmt.Sprintf(`
 	resource "outscale_load_balancer" "bar" {
 		subregion_names = ["%s"]
-		load_balancer_name        = "foobar-terraform-elb"
+		load_balancer_name        = "foobar-terraform-elb%d"
 
 		listeners {
 			backend_port      = 8000
@@ -53,5 +55,5 @@ func testAccDSOutscaleOAPILBsUConfig(zone string) string {
 	data "outscale_load_balancers" "test" {
 		load_balancer_name = ["${outscale_load_balancer.bar.id}"]
 	}
-`, zone)
+`, zone, numLbu)
 }

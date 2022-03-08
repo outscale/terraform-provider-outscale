@@ -392,7 +392,7 @@ resource "outscale_net" "foo" {
 resource "outscale_internet_service" "foo" {}
 
 resource "outscale_route_table" "foo" {
-	net_id = "${outscale_net.foo.id}"
+	net_id = "outscale_net.foo.id
 }
 `
 
@@ -409,7 +409,7 @@ resource "outscale_net" "foo" {
 resource "outscale_internet_service" "foo" {}
 
 resource "outscale_route_table" "foo" {
-	net_id = "${outscale_net.foo.id}"
+	net_id = outscale_net.foo.id
 }
 `
 
@@ -426,20 +426,20 @@ func testAccOAPIRouteTableConfigInstance(omi, vmType, region string) string {
 
 		resource "outscale_subnet" "foo" {
 			ip_range = "10.1.1.0/24"
-			net_id   = "${outscale_net.foo.id}"
+			net_id   = outscale_net.foo.id
 		}
 
 		resource "outscale_vm" "foo" {
 			image_id                 = "%s"
 			vm_type                  = "%s"
 			keypair_name             = "terraform-basic"
-			subnet_id                = "${outscale_subnet.foo.id}"
+			subnet_id                = outscale_subnet.foo.id
 			placement_subregion_name = "%sa"
 			placement_tenancy        = "default"
 		}
 
 		resource "outscale_route_table" "foo" {
-			net_id = "${outscale_net.foo.id}"
+			net_id = outscale_net.foo.id
 		}
 	`, omi, vmType, region)
 }
@@ -456,7 +456,7 @@ resource "outscale_net" "foo" {
 }
 
 resource "outscale_route_table" "foo" {
-	net_id = "${outscale_net.foo.id}"
+	net_id = outscale_net.foo.id
 
 	%s
 

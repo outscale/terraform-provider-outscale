@@ -162,13 +162,15 @@ func testAccCheckOutscaleAccessKeyDestroy(s *terraform.State) error {
 }
 
 const testAccOutscaleAccessKeyBasicConfig = `
-	resource "outscale_access_key" "outscale_access_key" {}
-`
+	resource "outscale_access_key" "outscale_access_key" {
+               expiration_date = "2025-01-04"
+        }`
 
 func testAccOutscaleAccessKeyUpdatedConfig(state string) string {
 	return fmt.Sprintf(`
 		resource "outscale_access_key" "outscale_access_key" {
 			state = "%s"
+                        expiration_date = "2025-08-10T15:19:21"
 		}
 	`, state)
 }
