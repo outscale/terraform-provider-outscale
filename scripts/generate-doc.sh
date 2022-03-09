@@ -2,7 +2,7 @@
 
 project_dir=$(cd "$(dirname $0)" && pwd)
 project_root=$(cd $project_dir/.. && pwd)
-docs_dir="${project_root}/docs"
+docs_dir="${project_dir}/docs"
 output_dir="${project_root}/"
 
 python3 -m venv "${docs_dir}/.venv"
@@ -10,8 +10,9 @@ python3 -m venv "${docs_dir}/.venv"
 
 pip3 install -r "${docs_dir}/requirements.txt" 1>"${docs_dir}/generation_log.txt" 2>&1 \
 && python3 "${docs_dir}/generate_doc_terraform.py" \
+            --new_format \
             --provider_directory "${project_root}/outscale/" \
-            --api "${docs_dir}/osc-api/outscale.yaml"  \
+            --api "${docs_dir}/doc-terraform-template/osc-api/outscale.yaml"  \
             --output_directory "$output_dir" \
             --template_directory "${docs_dir}/doc-terraform-template/"  1>"${docs_dir}/generation_log.txt" 2>&1
 RES=$?
