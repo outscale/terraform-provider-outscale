@@ -53,7 +53,7 @@ func testAccClientAccessKeyDataSourceBasic() string {
 		resource "outscale_access_key" "outscale_access_key" {}
 
 		data "outscale_access_key" "outscale_access_key" {
-			access_key_id = "${outscale_access_key.outscale_access_key.id}"
+			access_key_id = outscale_access_key.outscale_access_key.id
 		}
 	`
 }
@@ -65,7 +65,7 @@ func testAccClientAccessKeyDataSourceWithFilters() string {
 		data "outscale_access_key" "outscale_access_key" {
 			filter {
 				name = "access_key_ids"
-				values = ["${outscale_access_key.outscale_access_key.id}"]
+				values = [outscale_access_key.outscale_access_key.id]
 			}
 		}
 	`

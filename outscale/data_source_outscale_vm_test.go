@@ -40,7 +40,7 @@ func testAccOAPIVMDataSourceConfig(omi, vmType string) string {
 		}
 
  		resource "outscale_subnet" "outscale_subnet" {
-			net_id         = "${outscale_net.outscale_net.net_id}"
+			net_id         = outscale_net.outscale_net.net_id
 			ip_range       = "10.0.0.0/24"
 			subregion_name = "eu-west-2a"
 		}
@@ -49,7 +49,7 @@ func testAccOAPIVMDataSourceConfig(omi, vmType string) string {
 			image_id     = "%s"
 			vm_type      = "%s"
 			keypair_name = "terraform-basic"
-			subnet_id    = "${outscale_subnet.outscale_subnet.subnet_id}"
+			subnet_id    = outscale_subnet.outscale_subnet.subnet_id
 
 			tags {
 				key   = "name"
@@ -60,7 +60,7 @@ func testAccOAPIVMDataSourceConfig(omi, vmType string) string {
     data "outscale_vm" "basic_web" {
 		 filter {
 				name   = "vm_ids"
-				values = ["${outscale_vm.outscale_vm.vm_id}"]
+				values = [outscale_vm.outscale_vm.vm_id]
 		  }
 		}
 	`, omi, vmType)

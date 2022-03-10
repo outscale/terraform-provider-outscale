@@ -50,9 +50,9 @@ func testAccCheckOutscaleImageExportTaskDataSourceID(n string) resource.TestChec
 func testAccOutscaleOAPIImageExportTaskDataSourceConfig(omi, vmType, region, imageName string) string {
 	return fmt.Sprintf(`
 	resource "outscale_vm" "basic" {
-		image_id			      = "%s"
-		vm_type             = "%s"
-		keypair_name		    = "terraform-basic"
+		image_id	         = "%s"
+		vm_type                  = "%s"
+		keypair_name	         = "terraform-basic"
 		placement_subregion_name = "%sa"
 	}
 
@@ -63,7 +63,7 @@ func testAccOutscaleOAPIImageExportTaskDataSourceConfig(omi, vmType, region, ima
 		description = "terraform testing"
 	}
 	resource "outscale_image_export_task" "outscale_image_export_task" {
-		image_id                     = outscale_image.foo.id
+		image_id                  = outscale_image.foo.id
 		osu_export {
 			osu_bucket        = "terraform-export-%s"
 			disk_image_format = "qcow2"
@@ -73,7 +73,7 @@ func testAccOutscaleOAPIImageExportTaskDataSourceConfig(omi, vmType, region, ima
 
 	data "outscale_image_export_task" "test" {
 		filter {
-			name = "task_ids"
+			name   = "task_ids"
 			values = [outscale_image_export_task.outscale_image_export_task.id]
 		}
 	}

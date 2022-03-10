@@ -63,20 +63,20 @@ func testAccCheckOutscaleOAPImageExportTaskExists(n string) resource.TestCheckFu
 func testAccOAPIImageExportTaskConfigBasic(omi, vmType, region, imageName, tags string) string {
 	return fmt.Sprintf(`
 	resource "outscale_vm" "basic" {
-		image_id			      = "%s"
-		vm_type             = "%s"
-		keypair_name		    = "terraform-basic"
+		image_id	         = "%s"
+		vm_type                  = "%s"
+		keypair_name		 = "terraform-basic"
 		placement_subregion_name = "%sa"
 	}
 
 	resource "outscale_image" "foo" {
 		image_name  = "%s"
-		vm_id       = "${outscale_vm.basic.id}"
+		vm_id       = "outscale_vm.basic.id"
 		no_reboot   = "true"
 		description = "terraform testing"
 	}
 	resource "outscale_image_export_task" "outscale_image_export_task" {
-		image_id                     = outscale_image.foo.id
+		image_id                  = outscale_image.foo.id
 		osu_export {
 			osu_bucket        = "%s"
 			disk_image_format = "qcow2"

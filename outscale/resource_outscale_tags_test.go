@@ -152,7 +152,7 @@ func testAccCheckOAPIInstanceConfigTags(omi, vmType, region, key, value string) 
 		}
 
 		resource "outscale_subnet" "outscale_subnet" {
-			net_id              = "${outscale_net.outscale_net.net_id}"
+			net_id              = outscale_net.outscale_net.net_id
 			ip_range            = "10.0.0.0/24"
 			subregion_name      = "eu-west-2a"
 		}
@@ -161,12 +161,12 @@ func testAccCheckOAPIInstanceConfigTags(omi, vmType, region, key, value string) 
 			vm_type                  = "%s"
 			keypair_name             = "terraform-basic"
 			placement_subregion_name = "%sa"
-			subnet_id                = "${outscale_subnet.outscale_subnet.subnet_id}"
+			subnet_id                = outscale_subnet.outscale_subnet.subnet_id
 			private_ips              =  ["10.0.0.12"]
 		}
 
 		resource "outscale_tag" "foo" {
-			resource_ids = ["${outscale_vm.vm.id}"]
+			resource_ids = [outscale_vm.vm.id]
 
 			tag {
 				key   = "%s"

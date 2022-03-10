@@ -61,7 +61,7 @@ func testAccDataSourceOutscaleOAPIVmStateConfig(omi, vmType string) string {
 		}
 
 		data "outscale_vm_state" "state" {
-			vm_id = "${outscale_vm.basic.id}"
+			vm_id = "outscale_vm.basic.id"
 		}
 	`, omi, vmType)
 }
