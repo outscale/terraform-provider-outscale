@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_vpn_connection",
             "name": "data_vpn_connection_1",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -44,7 +44,7 @@
             "mode": "data",
             "type": "outscale_vpn_connection",
             "name": "data_vpn_connection_2",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -79,7 +79,7 @@
             "mode": "data",
             "type": "outscale_vpn_connection",
             "name": "data_vpn_connection_3",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -114,7 +114,7 @@
             "mode": "data",
             "type": "outscale_vpn_connection",
             "name": "data_vpn_connection_4",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -149,7 +149,7 @@
             "mode": "data",
             "type": "outscale_vpn_connection",
             "name": "data_vpn_connection_5",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -184,7 +184,7 @@
             "mode": "data",
             "type": "outscale_vpn_connection",
             "name": "data_vpn_connection_6",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -219,7 +219,7 @@
             "mode": "data",
             "type": "outscale_vpn_connection",
             "name": "data_vpn_connection_7",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -254,7 +254,7 @@
             "mode": "managed",
             "type": "outscale_client_gateway",
             "name": "My_CGW",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -277,7 +277,7 @@
             "mode": "managed",
             "type": "outscale_virtual_gateway",
             "name": "My_VGW",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -299,7 +299,7 @@
             "mode": "managed",
             "type": "outscale_vpn_connection",
             "name": "vpn_connection_1",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,

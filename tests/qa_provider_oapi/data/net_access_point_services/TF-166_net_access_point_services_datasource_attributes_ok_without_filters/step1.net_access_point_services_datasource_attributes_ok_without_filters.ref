@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_net_access_point_services",
             "name": "all-services",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -21,46 +21,41 @@
                             {
                                 "ip_ranges": "########",
                                 "service_id": "##id-1##",
-                                "service_name": "com.outscale.###region###.osu"
-                            },
-                            {
-                                "ip_ranges": "########",
-                                "service_id": "##id-2##",
                                 "service_name": "com.outscale.###region###.fcu"
                             },
                             {
                                 "ip_ranges": "########",
-                                "service_id": "##id-3##",
+                                "service_id": "##id-2##",
                                 "service_name": "com.outscale.###region###.lbu"
                             },
                             {
                                 "ip_ranges": "########",
-                                "service_id": "##id-4##",
+                                "service_id": "##id-3##",
                                 "service_name": "com.outscale.###region###.eim"
                             },
                             {
                                 "ip_ranges": "########",
-                                "service_id": "##id-5##",
+                                "service_id": "##id-4##",
                                 "service_name": "com.outscale.###region###.icu"
                             },
                             {
                                 "ip_ranges": "########",
-                                "service_id": "##id-6##",
+                                "service_id": "##id-5##",
                                 "service_name": "com.outscale.###region###.directlink"
                             },
                             {
                                 "ip_ranges": "########",
-                                "service_id": "##id-7##",
+                                "service_id": "##id-6##",
                                 "service_name": "com.outscale.###region###.api"
                             },
                             {
                                 "ip_ranges": "########",
-                                "service_id": "##id-8##",
+                                "service_id": "##id-7##",
                                 "service_name": "com.outscale.###region###.kms"
                             },
                             {
                                 "ip_ranges": "########",
-                                "service_id": "##id-9##",
+                                "service_id": "##id-8##",
                                 "service_name": "com.outscale.###region###.oos"
                             }
                         ]
