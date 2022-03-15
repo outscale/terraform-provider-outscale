@@ -1,3 +1,26 @@
+0.5.3 (Mars 25, 2022)
+========================
+
+FEATURES:
+---------
+
+* Add "expiration_date" parameter to "outscale_access_key" resource and datasources (TPD-1987)
+
+BUG FIXES:
+----------
+
+* Fix acceptance tests
+* Fix public_ip datasource filters #64
+* Fix tags on outscale_resources #68
+* iops value is set to 0 for standard volumes (TPD-2053)
+
+IMPROVEMENT:
+-----------
+
+* Update sdk
+* Add credential checking
+* Make the generation of the doc more automatic
+
 0.5.2 (February 02, 2022)
 ========================
 
