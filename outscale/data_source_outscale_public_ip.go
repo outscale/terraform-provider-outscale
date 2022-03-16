@@ -28,10 +28,12 @@ func getOAPIPublicIPDataSourceSchema() map[string]*schema.Schema {
 		"public_ip_id": {
 			Type:     schema.TypeString,
 			Optional: true,
+			Computed: true,
 		},
 		"public_ip": {
 			Type:     schema.TypeString,
 			Optional: true,
+			Computed: true,
 		},
 		"link_public_ip_id": {
 			Type:     schema.TypeString,
@@ -55,7 +57,7 @@ func getOAPIPublicIPDataSourceSchema() map[string]*schema.Schema {
 		},
 		"request_id": {
 			Type:     schema.TypeString,
-			Optional: true,
+			Computed: true,
 		},
 		"tags": dataSourceTagsSchema(),
 	}
@@ -171,13 +173,13 @@ func buildOutscaleOAPIDataSourcePublicIpsFilters(set *schema.Set) *oscgo.Filters
 		case "private_ips":
 			filters.SetPrivateIps(filterValues)
 		case "public_ips":
-			filters.PublicIps = &filterValues
+			filters.SetPublicIps(filterValues)
 		case "tag_keys":
-			filters.TagKeys = &filterValues
+			filters.SetTagKeys(filterValues)
 		case "tag_values":
-			filters.TagValues = &filterValues
+			filters.SetTagValues(filterValues)
 		case "tags":
-			filters.Tags = &filterValues
+			filters.SetTags(filterValues)
 		default:
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)
 		}
