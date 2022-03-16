@@ -16,14 +16,16 @@ For more information on this resource actions, see the [API documentation](https
 
 ```hcl
 resource "outscale_access_key" "access_key01" {
-    state = "ACTIVE"
+    state           = "ACTIVE"
+    expiration_date = "2023-01-01"
 }
 ```
 
 ## Argument Reference
 
-The following argument is supported:
+The following arguments are supported:
 
+* `expiration_date` - (Optional) The date and time at which you want the access key to expire, in ISO 8601 format (for example, `2017-06-14` or `2017-06-14T00:00:00Z`). If not specified, the access key has no expiration date.
 * `state` - (Optional) The state for the access key (`ACTIVE` | `INACTIVE`).
 
 ## Attribute Reference
@@ -32,6 +34,7 @@ The following attributes are exported:
 
 * `access_key_id` - The ID of the secret access key.
 * `creation_date` - The date and time of creation of the secret access key.
+* `expiration_date` - The date at which the access key expires.
 * `last_modification_date` - The date and time of the last modification of the secret access key.
 * `secret_key` - The secret access key that enables you to send requests.
 * `state` - The state of the secret access key (`ACTIVE` if the key is valid for API calls, or `INACTIVE` if not).

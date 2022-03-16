@@ -40,9 +40,9 @@ resource "outscale_dhcp_option" "dhcp_option_02" {
 
 The following arguments are supported:
 
-* `domain_name_servers` - (Optional) The IP addresses of domain name servers. If no IP addresses are specified, the `OutscaleProvidedDNS` value is set by default.
+* `domain_name_servers` - (Optional) The IPs of domain name servers. If no IPs are specified, the `OutscaleProvidedDNS` value is set by default.
 * `domain_name` - (Optional) Specify a domain name (for example, MyCompany.com). You can specify only one domain name.
-* `ntp_servers` - (Optional) The IP addresses of the Network Time Protocol (NTP) servers.
+* `ntp_servers` - (Optional) The IPs of the Network Time Protocol (NTP) servers.
 * `tags` - (Optional) A tag to add to this resource. You can specify this argument several times.
     * `key` - (Required) The key of the tag, with a minimum of 1 character.
     * `value` - (Required) The value of the tag, between 0 and 255 characters.
@@ -53,9 +53,9 @@ The following attributes are exported:
 
 * `default` - If true, the DHCP options set is a default one. If false, it is not.
 * `dhcp_options_set_id` - The ID of the DHCP options set.
-* `domain_name_servers` - One or more IP addresses for the domain name servers.
+* `domain_name_servers` - One or more IPs for the domain name servers.
 * `domain_name` - The domain name.
-* `ntp_servers` - One or more IP addresses for the NTP servers.
+* `ntp_servers` - One or more IPs for the NTP servers.
 * `tags` - One or more tags associated with the DHCP options set.
     * `key` - The key of the tag, with a minimum of 1 character.
     * `value` - The value of the tag, between 0 and 255 characters.

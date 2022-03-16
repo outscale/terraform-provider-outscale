@@ -48,7 +48,7 @@ The following arguments are supported:
     * `bsu_optimized` - (Optional) Indicates whether the VM is optimized for BSU I/O.
     * `memory_sizes` - (Optional) The amounts of memory, in gibibytes (GiB).
     * `vcore_counts` - (Optional) The numbers of vCores.
-    * `vm_type_names` - (Optional) The names of the VM types. For more information, see [Instance Types](https://wiki.outscale.net/display/EN/Instance+Types).
+    * `vm_type_names` - (Optional) The names of the VM types. For more information, see [Instance Types](https://docs.outscale.com/en/userguide/Instance-Types.html).
     * `volume_counts` - (Optional) The maximum number of ephemeral storage disks.
     * `volume_sizes` - (Optional) The size of one ephemeral storage disk, in gibibytes (GiB).
 
@@ -58,7 +58,7 @@ The following attributes are exported:
 
 * `vm_types` - Information about one or more VM types.
     * `bsu_optimized` - Indicates whether the VM is optimized for BSU I/O.
-    * `max_private_ips` - The maximum number of private IP addresses per network interface card (NIC).
+    * `max_private_ips` - The maximum number of private IPs per network interface card (NIC).
     * `memory_size` - The amount of memory, in gibibytes.
     * `vcore_count` - The number of vCores.
     * `vm_type_name` - The name of the VM type.

@@ -32,7 +32,7 @@ The following arguments are supported:
     * `nic_account_ids` - (Optional) The account IDs of the owners of the NICs.
     * `nic_ids` - (Optional) The IDs of the NICs.
     * `placements` - (Optional) Whether the public IPs are for use in the public Cloud or in a Net.
-    * `private_ips` - (Optional) The private IP addresses associated with the public IPs.
+    * `private_ips` - (Optional) The private IPs associated with the public IPs.
     * `public_ip_ids` - (Optional) The IDs of the public IPs.
     * `public_ips` - (Optional) The public IPs.
     * `tag_keys` - (Optional) The keys of the tags associated with the public IPs.
@@ -47,7 +47,7 @@ The following attributes are exported:
 * `link_public_ip_id` - (Required in a Net) The ID representing the association of the public IP with the VM or the NIC.
 * `nic_account_id` - The account ID of the owner of the NIC.
 * `nic_id` - The ID of the NIC the public IP is associated with (if any).
-* `private_ip` - The private IP address associated with the public IP.
+* `private_ip` - The private IP associated with the public IP.
 * `public_ip_id` - The allocation ID of the public IP.
 * `public_ip` - The public IP.
 * `tags` - One or more tags associated with the public IP.

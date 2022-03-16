@@ -59,13 +59,13 @@ The following attributes are exported:
         * `load_balancer_port` - The port on which the load balancer is listening (between 1 and `65535`, both included).
         * `load_balancer_protocol` - The routing protocol (`HTTP` \| `HTTPS` \| `TCP` \| `SSL`).
         * `policy_names` - The names of the policies. If there are no policies enabled, the list is empty.
-        * `server_certificate_id` - The OUTSCALE Resource Name (ORN) of the server certificate. For more information, see [Resource Identifiers > OUTSCALE Resource Names (ORNs)](https://wiki.outscale.net/display/EN/Resource+Identifiers#ResourceIdentifiers-ORNFormat).
+        * `server_certificate_id` - The OUTSCALE Resource Name (ORN) of the server certificate. For more information, see [Resource Identifiers > OUTSCALE Resource Names (ORNs)](https://docs.outscale.com/en/userguide/Resource-Identifiers.html#_outscale_resource_names_orns).
     * `load_balancer_name` - The name of the load balancer.
     * `load_balancer_sticky_cookie_policies` - The policies defined for the load balancer.
         * `policy_name` - The name of the stickiness policy.
     * `load_balancer_type` - The type of load balancer. Valid only for load balancers in a Net.<br />
 If `load_balancer_type` is `internet-facing`, the load balancer has a public DNS name that resolves to a public IP.<br />
-If `load_balancer_type` is `internal`, the load balancer has a public DNS name that resolves to a private IP address.
+If `load_balancer_type` is `internal`, the load balancer has a public DNS name that resolves to a private IP.
     * `net_id` - The ID of the Net for the load balancer.
     * `security_groups` - One or more IDs of security groups for the load balancers. Valid only for load balancers in a Net.
     * `source_security_group` - Information about the source security group of the load balancer, which you can use as part of your inbound rules for your registered VMs.<br />

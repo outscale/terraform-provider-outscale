@@ -181,7 +181,7 @@ The following arguments are supported:
 If you specify a snapshot ID, the volume size must be at least equal to the snapshot size.<br />
 If you specify a snapshot ID but no volume size, the volume is created with a size similar to the snapshot one.
         * `volume_type` - (Optional) The type of the volume (`standard` \| `io1` \| `gp2`). If not specified in the request, a `standard` volume is created.<br />
-For more information about volume types, see [Volume Types and IOPS](https://wiki.outscale.net/display/EN/About+Volumes#AboutVolumes-VolumeTypesVolumeTypesandIOPS).
+For more information about volume types, see [About Volumes > Volume Types and IOPS](https://docs.outscale.com/en/userguide/About-Volumes.html#_volume_types_and_iops).
     * `device_name` - (Optional) The name of the device.
     * `no_device` - (Optional) Removes the device which is included in the block device mapping of the OMI.
     * `virtual_device_name` - (Optional) The name of the virtual device (ephemeralN).
@@ -196,16 +196,16 @@ For more information about volume types, see [Volume Types and IOPS](https://wik
     * `description` - (Optional) The description of the NIC, if you are creating a NIC when creating the VM.
     * `device_number` - (Optional) The index of the VM device for the NIC attachment (between 0 and 7, both included). This parameter is required if you create a NIC when creating the VM.
     * `nic_id` - (Optional) The ID of the NIC, if you are attaching an existing NIC when creating a VM.
-    * `private_ips` - (Optional) One or more private IP addresses to assign to the NIC, if you create a NIC when creating a VM. Only one private IP address can be the primary private IP address.
-        * `is_primary` - (Optional) If true, the IP address is the primary private IP address of the NIC.
-        * `private_ip` - (Optional) The private IP address of the NIC.
-    * `secondary_private_ip_count` - (Optional) The number of secondary private IP addresses, if you create a NIC when creating a VM. This parameter cannot be specified if you specified more than one private IP address in the `private_ips` parameter.
+    * `private_ips` - (Optional) One or more private IPs to assign to the NIC, if you create a NIC when creating a VM. Only one private IP can be the primary private IP.
+        * `is_primary` - (Optional) If true, the IP is the primary private IP of the NIC.
+        * `private_ip` - (Optional) The private IP of the NIC.
+    * `secondary_private_ip_count` - (Optional) The number of secondary private IPs, if you create a NIC when creating a VM. This parameter cannot be specified if you specified more than one private IP in the `private_ips` parameter.
     * `security_group_ids` - (Optional) One or more IDs of security groups for the NIC, if you acreate a NIC when creating a VM.
     * `subnet_id` - (Optional) The ID of the Subnet for the NIC, if you create a NIC when creating a VM.
 * `performance` - (Optional) The performance of the VM (`medium` | `high` | `highest`). Updating this parameter will trigger a stop/start of the VM.
 * `placement_subregion_name` - (Optional) The name of the Subregion where the VM is placed.
 * `placement_tenancy` - (Optional) The tenancy of the VM (`default` | `dedicated`).
-* `private_ips` - (Optional) One or more private IP addresses of the VM.
+* `private_ips` - (Optional) One or more private IPs of the VM.
 * `security_group_ids` - (Optional) One or more IDs of security group for the VMs.
 * `security_group_names` - (Optional) One or more names of security groups for the VMs.
 * `state` - The state of the VM (`running` | `stopped`). If set to `stopped`, the VM is stopped regardless of the value of the `vm_initiated_shutdown_behavior` argument.
@@ -256,14 +256,14 @@ The following attributes are exported:
     * `net_id` - The ID of the Net for the NIC.
     * `nic_id` - The ID of the NIC.
     * `private_dns_name` - The name of the private DNS.
-    * `private_ips` - The private IP address or addresses of the NIC.
-        * `is_primary` - If true, the IP address is the primary private IP address of the NIC.
+    * `private_ips` - The private IP or IPs of the NIC.
+        * `is_primary` - If true, the IP is the primary private IP of the NIC.
         * `link_public_ip` - Information about the public IP associated with the NIC.
             * `public_dns_name` - The name of the public DNS.
             * `public_ip` - The public IP associated with the NIC.
             * `public_ip_account_id` - The account ID of the owner of the public IP.
         * `private_dns_name` - The name of the private DNS.
-        * `private_ip` - The private IP address.
+        * `private_ip` - The private IP.
     * `security_groups` - One or more IDs of security groups for the NIC.
         * `security_group_id` - The ID of the security group.
         * `security_group_name` - The name of the security group.
@@ -274,7 +274,7 @@ The following attributes are exported:
 * `placement_subregion_name` - The name of the Subregion where the VM is placed.
 * `placement_tenancy` - The tenancy of the VM (`default` | `dedicated`).
 * `private_dns_name` - The name of the private DNS.
-* `private_ip` - The primary private IP address of the VM.
+* `private_ip` - The primary private IP of the VM.
 * `product_codes` - The product code associated with the OMI used to create the VM (`0001` Linux/Unix \| `0002` Windows \| `0004` Linux/Oracle \| `0005` Windows 10).
 * `public_dns_name` - The name of the public DNS.
 * `public_ip` - The public IP of the VM.
@@ -293,7 +293,7 @@ The following attributes are exported:
 * `user_data` - The Base64-encoded MIME user data.
 * `vm_id` - The ID of the VM.
 * `vm_initiated_shutdown_behavior` - The VM behavior when you stop it. By default or if set to `stop`, the VM stops. If set to `restart`, the VM stops then automatically restarts. If set to `terminate`, the VM stops and is deleted.
-* `vm_type` - The type of VM. For more information, see [Instance Types](https://wiki.outscale.net/display/EN/Instance+Types).
+* `vm_type` - The type of VM. For more information, see [Instance Types](https://docs.outscale.com/en/userguide/Instance-Types.html).
 
 ## Import
 

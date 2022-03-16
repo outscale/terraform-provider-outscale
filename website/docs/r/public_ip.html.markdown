@@ -34,7 +34,7 @@ The following attributes are exported:
 * `link_public_ip_id` - (Required in a Net) The ID representing the association of the public IP with the VM or the NIC.
 * `nic_account_id` - The account ID of the owner of the NIC.
 * `nic_id` - The ID of the NIC the public IP is associated with (if any).
-* `private_ip` - The private IP address associated with the public IP.
+* `private_ip` - The private IP associated with the public IP.
 * `public_ip_id` - The allocation ID of the public IP.
 * `public_ip` - The public IP.
 * `tags` - One or more tags associated with the public IP.
