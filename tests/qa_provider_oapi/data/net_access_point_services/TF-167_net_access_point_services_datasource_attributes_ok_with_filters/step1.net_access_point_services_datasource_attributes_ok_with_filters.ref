@@ -19,9 +19,7 @@
                         "request_id": "########",
                         "services": [
                             {
-                                "ip_ranges": [
-                                    "10.27.13.133/32"
-                                ],
+                                "ip_ranges": "########",
                                 "service_id": "##id-1##",
                                 "service_name": "com.outscale.###region###.api"
                             }
@@ -45,9 +43,7 @@
                         "request_id": "########",
                         "services": [
                             {
-                                "ip_ranges": [
-                                    "10.27.13.133/32"
-                                ],
+                                "ip_ranges": "########",
                                 "service_id": "##id-1##",
                                 "service_name": "com.outscale.###region###.api"
                             }

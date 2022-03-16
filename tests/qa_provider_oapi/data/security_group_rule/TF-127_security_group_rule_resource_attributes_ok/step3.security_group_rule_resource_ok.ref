@@ -47,9 +47,7 @@
                             {
                                 "from_port_range": 443,
                                 "ip_protocol": "tcp",
-                                "ip_ranges": [
-                                    "192.168.0.1/32"
-                                ],
+                                "ip_ranges": "########",
                                 "security_groups_members": [],
                                 "service_ids": [],
                                 "to_port_range": 443

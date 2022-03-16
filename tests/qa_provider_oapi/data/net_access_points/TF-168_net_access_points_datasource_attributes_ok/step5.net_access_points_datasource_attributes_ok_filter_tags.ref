@@ -107,9 +107,9 @@
                     "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
-                        "outscale_route_table.route_table-1",
                         "outscale_route_table.route_table-2",
-                        "outscale_net.outscale_net"
+                        "outscale_net.outscale_net",
+                        "outscale_route_table.route_table-1"
                     ]
                 }
             ]

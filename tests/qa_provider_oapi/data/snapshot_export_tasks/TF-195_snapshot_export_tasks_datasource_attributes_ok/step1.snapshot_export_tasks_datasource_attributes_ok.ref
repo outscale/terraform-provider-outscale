@@ -24,31 +24,11 @@
                                 "osu_export": [
                                     {
                                         "disk_image_format": "raw",
-                                        "osu_bucket": "###osu_bucket_name###",
-                                        "osu_prefix": "prefix-195"
-                                    }
-                                ],
-                                "progress": 0,
-                                "snapshot_id": "##id-1##",
-                                "state": "active",
-                                "tags": [
-                                    {
-                                        "key": "test",
-                                        "value": "test"
-                                    }
-                                ],
-                                "task_id": "##id-2##"
-                            },
-                            {
-                                "comment": "########",
-                                "osu_export": [
-                                    {
-                                        "disk_image_format": "raw",
                                         "osu_bucket": "terraform-export-snap-3",
                                         "osu_prefix": "new-export-4"
                                     }
                                 ],
-                                "progress": 0,
+                                "progress": 33,
                                 "snapshot_id": "##id-1##",
                                 "state": "active",
                                 "tags": [
@@ -59,6 +39,26 @@
                                     {
                                         "key": "test-2",
                                         "value": "test-2"
+                                    }
+                                ],
+                                "task_id": "##id-2##"
+                            },
+                            {
+                                "comment": "########",
+                                "osu_export": [
+                                    {
+                                        "disk_image_format": "raw",
+                                        "osu_bucket": "###osu_bucket_name###",
+                                        "osu_prefix": "prefix-195"
+                                    }
+                                ],
+                                "progress": 33,
+                                "snapshot_id": "##id-1##",
+                                "state": "active",
+                                "tags": [
+                                    {
+                                        "key": "test",
+                                        "value": "test"
                                     }
                                 ],
                                 "task_id": "##id-3##"
@@ -114,7 +114,7 @@
                     "schema_version": 0,
                     "attributes": {
                         "comment": "########",
-                        "id": "##id-2##",
+                        "id": "##id-3##",
                         "osu_export": [
                             {
                                 "disk_image_format": "raw",
@@ -128,7 +128,7 @@
                                 "osu_prefix": "prefix-195"
                             }
                         ],
-                        "progress": 0,
+                        "progress": 33,
                         "request_id": "########",
                         "snapshot_id": "##id-1##",
                         "state": "active",
@@ -138,7 +138,7 @@
                                 "value": "test"
                             }
                         ],
-                        "task_id": "##id-2##",
+                        "task_id": "##id-3##",
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
@@ -160,7 +160,7 @@
                     "schema_version": 0,
                     "attributes": {
                         "comment": "########",
-                        "id": "##id-3##",
+                        "id": "##id-2##",
                         "osu_export": [
                             {
                                 "disk_image_format": "raw",
@@ -183,7 +183,7 @@
                                 "value": "test-2"
                             }
                         ],
-                        "task_id": "##id-3##",
+                        "task_id": "##id-2##",
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
