@@ -165,6 +165,19 @@ func diffOSCAPITags(oldTags, newTags []oscgo.ResourceTag) ([]oscgo.ResourceTag, 
 		create[t.Key] = t.Value
 	}
 
+	stateTags := make(map[string]interface{})
+	for _, t := range oldTags {
+		stateTags[t.Key] = t.Value
+	}
+
+	tagsToCreate := make(map[string]interface{})
+	for _, t := range newTags {
+		old, ok := stateTags[t.Key]
+		if !ok || old != t.Value {
+			tagsToCreate[t.Key] = t.Value
+		}
+	}
+
 	// Build the list of what to remove
 	var remove []oscgo.ResourceTag
 	for _, t := range oldTags {
@@ -174,7 +187,7 @@ func diffOSCAPITags(oldTags, newTags []oscgo.ResourceTag) ([]oscgo.ResourceTag, 
 		}
 	}
 
-	return tagsOSCAPIFromMap(create), remove
+	return tagsOSCAPIFromMap(tagsToCreate), remove
 }
 
 func tagsFromMapLBU(m map[string]interface{}) *[]oscgo.ResourceTag {
