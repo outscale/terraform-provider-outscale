@@ -276,17 +276,7 @@ func resourceOAPIVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 				return fmt.Errorf("Vm not found")
 			}
 			if readVm.GetState() == "running" && (updateReq.HasVolumeType() || updateReq.HasSize()) {
-				log.Println("[WARNING] VM WILL BE STOPPED TO UPDATE VOLUME")
-				if err := stopVM(vm_id, conn); err != nil {
-					return err
-				}
-				_, _, err := conn.VolumeApi.UpdateVolume(context.Background()).UpdateVolumeRequest(*updateReq).Execute()
-				if err != nil {
-					return err
-				}
-				if err := startVM(vm_id, conn); err != nil {
-					return err
-				}
+				return fmt.Errorf("Error: Cannot update 'volume_type' or 'volume_size' on ATTACHED volume to RUNNING Vm")
 			} else {
 				_, _, err := conn.VolumeApi.UpdateVolume(context.Background()).UpdateVolumeRequest(*updateReq).Execute()
 				if err != nil {
