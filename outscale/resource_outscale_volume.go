@@ -15,12 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-const (
-	minIops     = 100
-	maxIops     = 13000
-	defaultIops = 150
-)
-
 func resourceOutscaleOAPIVolume() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceOAPIVolumeCreate,
@@ -40,11 +34,13 @@ func resourceOutscaleOAPIVolume() *schema.Resource {
 			"iops": {
 				Type:     schema.TypeInt,
 				Optional: true,
+				ForceNew: true,
 				Computed: true,
 			},
 			"size": {
 				Type:     schema.TypeInt,
 				Optional: true,
+				ForceNew: true,
 				Computed: true,
 			},
 			"snapshot_id": {
@@ -56,6 +52,7 @@ func resourceOutscaleOAPIVolume() *schema.Resource {
 			"volume_type": {
 				Type:     schema.TypeString,
 				Optional: true,
+				ForceNew: true,
 				Computed: true,
 			},
 			// Attributes
@@ -110,35 +107,24 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	request := oscgo.CreateVolumeRequest{
 		SubregionName: d.Get("subregion_name").(string),
 	}
-	var vType string
-	var vSize int32
-	var vIops int32
-	var snapId string
-
 	if value, ok := d.GetOk("size"); ok {
 		request.SetSize(int32(value.(int)))
-		vSize = int32(value.(int))
-	}
-	if value, ok := d.GetOk("volume_type"); ok {
-		request.SetVolumeType(value.(string))
-		vType = value.(string)
-	}
-	if value, ok := d.GetOk("iops"); ok {
-		request.SetIops(int32(value.(int)))
-		vIops = int32(value.(int))
 	}
 	if value, ok := d.GetOk("snapshot_id"); ok {
 		request.SetSnapshotId(value.(string))
-		snapId = value.(string)
 	}
-	if vType != "io1" && vIops > 0 {
-		return fmt.Errorf("Error IOPs is only valid for storage type 'io1' for EBS Volumes")
+
+	var t string
+	if value, ok := d.GetOk("volume_type"); ok {
+		request.SetVolumeType(value.(string))
+		t = value.(string)
 	}
-	if vType == "io1" && (vIops < minIops || vIops > maxIops) {
-		return fmt.Errorf("Cannot create volume type 'io1' without 'iops'. The number of 'iops' allowed for 'io1' volumes is: min: %d and max: %d", minIops, maxIops)
-	}
-	if vSize == 0 && snapId == "" {
-		return fmt.Errorf("The size of the volume is required if the volume is not created from a snapshot")
+
+	iops := d.Get("iops").(int)
+	if t != "io1" && iops > 0 {
+		log.Printf("[WARN] IOPs is only valid for storate type io1 for EBS Volumes")
+	} else if t == "io1" {
+		request.SetIops(int32(iops))
 	}
 
 	var resp oscgo.CreateVolumeResponse
@@ -155,11 +141,13 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 
 		return nil
 	})
+
 	if err != nil {
 		return fmt.Errorf("Error creating Outscale BSU volume: %s", utils.GetErrorResponse(err))
 	}
 
 	log.Println("[DEBUG] Waiting for Volume to become available")
+
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"creating"},
 		Target:     []string{"available"},
@@ -221,108 +209,29 @@ func resourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 func resourceOAPIVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	updateReq, err, isAttrChange := setUpdateVolumeAttrRequest(d)
-	if err != nil {
-		return err
-	}
-	if isAttrChange {
-		readVolReq := oscgo.ReadVolumesRequest{
-			Filters: &oscgo.FiltersVolume{VolumeIds: &[]string{d.Id()}},
-		}
-
-		var volResp oscgo.ReadVolumesResponse
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			volResp, _, err = conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(readVolReq).Execute()
-			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
-			}
-			return nil
-		})
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "InvalidVolume.NotFound") {
-				d.SetId("")
-				return nil
-			}
-			return fmt.Errorf("Error reading Outscale volume %s: %s", d.Id(), err)
-		}
-
-		readVolume := volResp.GetVolumes()[0]
-		if readVolume.GetVolumeId() == "" {
-			return fmt.Errorf("Volume not found")
-		}
-		if readVolume.GetState() != "available" {
-			vm_id := readVolume.GetLinkedVolumes()[0].GetVmId()
-
-			var vmResp oscgo.ReadVmsResponse
-			err := resource.Retry(30*time.Second, func() *resource.RetryError {
-				vmResp, _, err = conn.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
-					Filters: &oscgo.FiltersVm{VmIds: &[]string{vm_id}}}).Execute()
-				if err != nil {
-					if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-						return resource.RetryableError(err)
-					}
-					return resource.NonRetryableError(err)
-				}
-				return nil
-			})
-			if err != nil {
-				return err
-			}
-			readVm := vmResp.GetVms()[0]
-			if readVm.GetVmId() == "" {
-				return fmt.Errorf("Vm not found")
-			}
-			if readVm.GetState() == "running" && (updateReq.HasVolumeType() || updateReq.HasSize()) {
-				log.Println("[WARNING] VM WILL BE STOPPED TO UPDATE VOLUME")
-				if err := stopVM(vm_id, conn); err != nil {
-					return err
-				}
-				_, _, err := conn.VolumeApi.UpdateVolume(context.Background()).UpdateVolumeRequest(*updateReq).Execute()
-				if err != nil {
-					return err
-				}
-				if err := startVM(vm_id, conn); err != nil {
-					return err
-				}
-			} else {
-				_, _, err := conn.VolumeApi.UpdateVolume(context.Background()).UpdateVolumeRequest(*updateReq).Execute()
-				if err != nil {
-					return err
-				}
-			}
-		} else {
-			_, _, err := conn.VolumeApi.UpdateVolume(context.Background()).UpdateVolumeRequest(*updateReq).Execute()
-			if err != nil {
-				return err
-			}
-		}
-
-		log.Println("[DEBUG] Waiting for Volume refresh")
-		stateConf := &resource.StateChangeConf{
-			Pending:    []string{"creating"},
-			Target:     []string{"available", "in-use"},
-			Refresh:    volumeOAPIStateRefreshFunc(conn, readVolume.GetVolumeId()),
-			Timeout:    5 * time.Minute,
-			Delay:      10 * time.Second,
-			MinTimeout: 3 * time.Second,
-		}
-
-		_, err = stateConf.WaitForState()
-		if err != nil {
-			return fmt.Errorf("Error waiting for Volume (%s) to become available: %s", readVolume.GetVolumeId(), err)
-		}
-	}
 	d.Partial(true)
+
 	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
 
 	d.SetPartial("tags")
-	d.Partial(false)
 
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"creating"},
+		Target:     []string{"available"},
+		Refresh:    volumeOAPIStateRefreshFunc(conn, d.Id()),
+		Timeout:    5 * time.Minute,
+		Delay:      10 * time.Second,
+		MinTimeout: 3 * time.Second,
+	}
+
+	_, err := stateConf.WaitForState()
+	if err != nil {
+		return fmt.Errorf("Error waiting for Volume (%s) to update: %s", d.Id(), err)
+	}
+
+	d.Partial(false)
 	return resourceOAPIVolumeRead(d, meta)
 }
 
@@ -397,14 +306,9 @@ func readOAPIVolume(d *schema.ResourceData, volume oscgo.Volume) error {
 			return err
 		}
 	}
-	if volume.GetVolumeType() != "standard" {
-		if err := d.Set("iops", volume.GetIops()); err != nil {
-			return err
-		}
-	} else {
-		if err := d.Set("iops", defaultIops); err != nil {
-			return err
-		}
+
+	if err := d.Set("iops", volume.GetIops()); err != nil {
+		return err
 	}
 	if err := d.Set("state", volume.GetState()); err != nil {
 		return err
@@ -467,44 +371,4 @@ func readOAPIVolume(d *schema.ResourceData, volume oscgo.Volume) error {
 	}
 
 	return nil
-}
-
-func setUpdateVolumeAttrRequest(d *schema.ResourceData) (*oscgo.UpdateVolumeRequest, error, bool) {
-	isAttrChange := false
-	request := oscgo.UpdateVolumeRequest{
-		VolumeId: d.Get("volume_id").(string),
-	}
-	if d.HasChange("iops") && !d.IsNewResource() {
-		_, newIops := d.GetChange("iops")
-		oldType, newType := d.GetChange("volume_type")
-
-		if newIops.(int) > 0 && newType.(string) != "io1" {
-			return nil, fmt.Errorf("Update IOPS is only valid for volume type 'io1'. Current volume type is '%s'", oldType.(string)), false
-		}
-		if newIops.(int) < minIops || newIops.(int) > maxIops {
-			return nil, fmt.Errorf("The number of IOPS allowed for io1 volumes is: min: %d and max: %d", minIops, maxIops), false
-		}
-		request.SetIops(int32(newIops.(int)))
-		isAttrChange = true
-	}
-
-	if d.HasChange("volume_type") && !d.IsNewResource() {
-		_, newType := d.GetChange("volume_type")
-
-		if newType.(string) == "io1" && !d.HasChange("iops") {
-			return nil, fmt.Errorf("To update volume type 'io1', you must also specify the 'iops' parameter"), false
-		}
-		request.SetVolumeType(newType.(string))
-		isAttrChange = true
-	}
-
-	if d.HasChange("size") && !d.IsNewResource() {
-		oldSize, newSize := d.GetChange("size")
-		if newSize.(int) < oldSize.(int) {
-			return nil, fmt.Errorf("The new size of the volume value must be equal to or greater than the current size of the volume"), false
-		}
-		request.SetSize(int32(newSize.(int)))
-		isAttrChange = true
-	}
-	return &request, nil, isAttrChange
 }
