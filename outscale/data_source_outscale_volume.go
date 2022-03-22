@@ -167,7 +167,7 @@ func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oscgo.Volum
 	if err := d.Set("volume_id", volume.GetVolumeId()); err != nil {
 		return err
 	}
-	if err := d.Set("iops", volume.GetIops()); err != nil {
+	if err := d.Set("iops", getIops(volume.GetVolumeType(), volume.GetIops())); err != nil {
 		return err
 	}
 

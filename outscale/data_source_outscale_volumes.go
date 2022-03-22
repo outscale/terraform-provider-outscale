@@ -156,7 +156,7 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 func getOAPIVolumes(volumes []oscgo.Volume) (res []map[string]interface{}) {
 	for _, v := range volumes {
 		res = append(res, map[string]interface{}{
-			"iops":           v.Iops,
+			"iops":           getIops(v.GetVolumeType(), v.GetIops()),
 			"linked_volumes": getLinkedVolumes(v.GetLinkedVolumes()),
 			"size":           v.Size,
 			"snapshot_id":    v.SnapshotId,
@@ -181,4 +181,11 @@ func getLinkedVolumes(linkedVolumes []oscgo.LinkedVolume) (res []map[string]inte
 		})
 	}
 	return
+}
+
+func getIops(volumeType string, iops int32) int32 {
+	if volumeType != "standard" {
+		return iops
+	}
+	return defaultIops
 }

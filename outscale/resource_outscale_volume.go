@@ -15,6 +15,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
+const defaultIops = 150
+
 func resourceOutscaleOAPIVolume() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceOAPIVolumeCreate,
@@ -307,9 +309,10 @@ func readOAPIVolume(d *schema.ResourceData, volume oscgo.Volume) error {
 		}
 	}
 
-	if err := d.Set("iops", volume.GetIops()); err != nil {
+	if err := d.Set("iops", getIops(volume.GetVolumeType(), volume.GetIops())); err != nil {
 		return err
 	}
+
 	if err := d.Set("state", volume.GetState()); err != nil {
 		return err
 	}
