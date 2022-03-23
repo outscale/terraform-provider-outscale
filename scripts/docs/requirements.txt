@@ -1,0 +1,4 @@
+prance
+pyyaml
+openapi-spec-validator
+osc-openapi-framework

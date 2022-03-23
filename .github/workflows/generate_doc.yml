@@ -1,0 +1,31 @@
+name: Generate documentation
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'doc template tag repository'
+        required: true
+
+jobs:
+  doc-release:
+    environment: auto-build
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+        with: 
+         submodules: 'recursive'
+      - uses: actions/setup-python@v2
+      - name: auto-generate release
+        run: .github/scripts/doc-build.sh
+        env:
+          TAG: ${{ github.event.inputs.tag }}
+      - name: push release branch
+        run: .github/scripts/doc-push.sh
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          TAG: ${{ github.event.inputs.tag }}
+      - name: create pull request
+        run: .github/scripts/doc-pr.sh
+        env:
+          TAG: ${{ github.event.inputs.tag }}
+          GH_BOT_TOKEN: ${{ secrets.GH_BOT_TOKEN }}

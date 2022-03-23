@@ -82,4 +82,7 @@ examples-test:
 		cd ../..; \
 	done\
 
-.PHONY: build test testacc fmt fmtcheck lint tools test-compile website website-lint website-test examples-test website-local test-integration
+doc:
+	@sh -c "'$(CURDIR)/scripts/generate-doc.sh'"
+
+.PHONY: build test testacc fmt fmtcheck lint tools test-compile website website-lint website-test examples-test website-local test-integration doc
