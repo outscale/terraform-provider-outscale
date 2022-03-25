@@ -21,27 +21,31 @@ func TestAccOutscaleSecurityGroupRule_basic(t *testing.T) {
 	var group oscgo.SecurityGroup
 	rInt := acctest.RandInt()
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleOAPISecurityGroupRuleDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccOutscaleOAPISecurityGroupRuleEgressConfig(rInt),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIRuleExists(resourceName, &group),
-					testAccCheckOutscaleOAPIRuleAttributes(resourceName, &group, nil, "Inbound"),
-				),
+	if os.Getenv("TEST_QUOTA") == "true" {
+		resource.Test(t, resource.TestCase{
+			PreCheck:     func() { testAccPreCheck(t) },
+			Providers:    testAccProviders,
+			CheckDestroy: testAccCheckOutscaleOAPISecurityGroupRuleDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: testAccOutscaleOAPISecurityGroupRuleEgressConfig(rInt),
+					Check: resource.ComposeTestCheckFunc(
+						testAccCheckOutscaleOAPIRuleExists(resourceName, &group),
+						testAccCheckOutscaleOAPIRuleAttributes(resourceName, &group, nil, "Inbound"),
+					),
+				},
+				{
+					ResourceName:            resourceName,
+					ImportState:             true,
+					ImportStateIdFunc:       testAccCheckOutscaleOAPIRuleImportStateIDFunc(resourceName),
+					ImportStateVerify:       true,
+					ImportStateVerifyIgnore: []string{"request_id"},
+				},
 			},
-			{
-				ResourceName:            resourceName,
-				ImportState:             true,
-				ImportStateIdFunc:       testAccCheckOutscaleOAPIRuleImportStateIDFunc(resourceName),
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"request_id"},
-			},
-		},
-	})
+		})
+	} else {
+		t.Skip("will be done soon")
+	}
 }
 
 func TestAccOutscaleSecurityGroupRule_withSecurityGroupMember(t *testing.T) {
