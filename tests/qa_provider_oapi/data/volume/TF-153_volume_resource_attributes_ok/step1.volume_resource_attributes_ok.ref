@@ -15,7 +15,7 @@
                     "schema_version": 0,
                     "attributes": {
                         "id": "##id-0##",
-                        "iops": 0,
+                        "iops": 150,
                         "linked_volumes": [],
                         "request_id": "########",
                         "size": 10,

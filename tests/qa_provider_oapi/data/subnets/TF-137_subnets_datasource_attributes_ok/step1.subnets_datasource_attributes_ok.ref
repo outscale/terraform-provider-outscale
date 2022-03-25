@@ -20,40 +20,40 @@
                         "subnet_ids": null,
                         "subnets": [
                             {
-                                "available_ips_count": 251,
-                                "ip_range": "10.0.10.0/24",
-                                "map_public_ip_on_launch": false,
-                                "net_id": "##id-1##",
-                                "state": "available",
-                                "subnet_id": "##id-2##",
-                                "subregion_name": "###region###a",
-                                "tags": [
-                                    {
-                                        "key": "name-tf137",
-                                        "value": "subnet-tags-1"
-                                    },
-                                    {
-                                        "key": "Key",
-                                        "value": "value-tags"
-                                    }
-                                ]
-                            },
-                            {
                                 "available_ips_count": 11,
                                 "ip_range": "10.0.20.0/28",
                                 "map_public_ip_on_launch": false,
                                 "net_id": "##id-1##",
                                 "state": "available",
-                                "subnet_id": "##id-3##",
+                                "subnet_id": "##id-2##",
                                 "subregion_name": "###region###b",
                                 "tags": [
                                     {
+                                        "key": "Key",
+                                        "value": "value-tags"
+                                    },
+                                    {
                                         "key": "name-tf137",
                                         "value": "subnet-tags-2"
-                                    },
+                                    }
+                                ]
+                            },
+                            {
+                                "available_ips_count": 251,
+                                "ip_range": "10.0.10.0/24",
+                                "map_public_ip_on_launch": false,
+                                "net_id": "##id-1##",
+                                "state": "available",
+                                "subnet_id": "##id-3##",
+                                "subregion_name": "###region###a",
+                                "tags": [
                                     {
                                         "key": "Key",
                                         "value": "value-tags"
+                                    },
+                                    {
+                                        "key": "name-tf137",
+                                        "value": "subnet-tags-1"
                                     }
                                 ]
                             }
@@ -83,16 +83,16 @@
                                 "map_public_ip_on_launch": false,
                                 "net_id": "##id-1##",
                                 "state": "available",
-                                "subnet_id": "##id-3##",
+                                "subnet_id": "##id-2##",
                                 "subregion_name": "###region###b",
                                 "tags": [
                                     {
-                                        "key": "name-tf137",
-                                        "value": "subnet-tags-2"
-                                    },
-                                    {
                                         "key": "Key",
                                         "value": "value-tags"
+                                    },
+                                    {
+                                        "key": "name-tf137",
+                                        "value": "subnet-tags-2"
                                     }
                                 ]
                             }
@@ -122,16 +122,16 @@
                                 "map_public_ip_on_launch": false,
                                 "net_id": "##id-1##",
                                 "state": "available",
-                                "subnet_id": "##id-2##",
+                                "subnet_id": "##id-3##",
                                 "subregion_name": "###region###a",
                                 "tags": [
                                     {
-                                        "key": "name-tf137",
-                                        "value": "subnet-tags-1"
-                                    },
-                                    {
                                         "key": "Key",
                                         "value": "value-tags"
+                                    },
+                                    {
+                                        "key": "name-tf137",
+                                        "value": "subnet-tags-1"
                                     }
                                 ]
                             }
@@ -161,16 +161,16 @@
                                 "map_public_ip_on_launch": false,
                                 "net_id": "##id-1##",
                                 "state": "available",
-                                "subnet_id": "##id-2##",
+                                "subnet_id": "##id-3##",
                                 "subregion_name": "###region###a",
                                 "tags": [
                                     {
-                                        "key": "name-tf137",
-                                        "value": "subnet-tags-1"
-                                    },
-                                    {
                                         "key": "Key",
                                         "value": "value-tags"
+                                    },
+                                    {
+                                        "key": "name-tf137",
+                                        "value": "subnet-tags-1"
                                     }
                                 ]
                             }
@@ -200,16 +200,16 @@
                                 "map_public_ip_on_launch": false,
                                 "net_id": "##id-1##",
                                 "state": "available",
-                                "subnet_id": "##id-2##",
+                                "subnet_id": "##id-3##",
                                 "subregion_name": "###region###a",
                                 "tags": [
                                     {
-                                        "key": "name-tf137",
-                                        "value": "subnet-tags-1"
-                                    },
-                                    {
                                         "key": "Key",
                                         "value": "value-tags"
+                                    },
+                                    {
+                                        "key": "name-tf137",
+                                        "value": "subnet-tags-1"
                                     }
                                 ]
                             },
@@ -219,16 +219,16 @@
                                 "map_public_ip_on_launch": false,
                                 "net_id": "##id-1##",
                                 "state": "available",
-                                "subnet_id": "##id-3##",
+                                "subnet_id": "##id-2##",
                                 "subregion_name": "###region###b",
                                 "tags": [
                                     {
-                                        "key": "name-tf137",
-                                        "value": "subnet-tags-2"
-                                    },
-                                    {
                                         "key": "Key",
                                         "value": "value-tags"
+                                    },
+                                    {
+                                        "key": "name-tf137",
+                                        "value": "subnet-tags-2"
                                     }
                                 ]
                             }
@@ -258,16 +258,16 @@
                                 "map_public_ip_on_launch": false,
                                 "net_id": "##id-1##",
                                 "state": "available",
-                                "subnet_id": "##id-3##",
+                                "subnet_id": "##id-2##",
                                 "subregion_name": "###region###b",
                                 "tags": [
                                     {
-                                        "key": "name-tf137",
-                                        "value": "subnet-tags-2"
-                                    },
-                                    {
                                         "key": "Key",
                                         "value": "value-tags"
+                                    },
+                                    {
+                                        "key": "name-tf137",
+                                        "value": "subnet-tags-2"
                                     }
                                 ]
                             }
@@ -297,16 +297,16 @@
                                 "map_public_ip_on_launch": false,
                                 "net_id": "##id-1##",
                                 "state": "available",
-                                "subnet_id": "##id-2##",
+                                "subnet_id": "##id-3##",
                                 "subregion_name": "###region###a",
                                 "tags": [
                                     {
-                                        "key": "name-tf137",
-                                        "value": "subnet-tags-1"
-                                    },
-                                    {
                                         "key": "Key",
                                         "value": "value-tags"
+                                    },
+                                    {
+                                        "key": "name-tf137",
+                                        "value": "subnet-tags-1"
                                     }
                                 ]
                             }
@@ -349,13 +349,13 @@
                     "schema_version": 0,
                     "attributes": {
                         "available_ips_count": 251,
-                        "id": "##id-2##",
+                        "id": "##id-3##",
                         "ip_range": "10.0.10.0/24",
                         "map_public_ip_on_launch": false,
                         "net_id": "##id-1##",
                         "request_id": "########",
                         "state": "available",
-                        "subnet_id": "##id-2##",
+                        "subnet_id": "##id-3##",
                         "subregion_name": "###region###a",
                         "tags": [
                             {
@@ -387,13 +387,13 @@
                     "schema_version": 0,
                     "attributes": {
                         "available_ips_count": 11,
-                        "id": "##id-3##",
+                        "id": "##id-2##",
                         "ip_range": "10.0.20.0/28",
                         "map_public_ip_on_launch": false,
                         "net_id": "##id-1##",
                         "request_id": "########",
                         "state": "available",
-                        "subnet_id": "##id-3##",
+                        "subnet_id": "##id-2##",
                         "subregion_name": "###region###b",
                         "tags": [
                             {

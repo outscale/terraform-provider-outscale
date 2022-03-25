@@ -16,6 +16,7 @@
                     "attributes": {
                         "access_key_id": "##id-0##",
                         "creation_date": "########",
+                        "expiration_date": "",
                         "id": "##id-0##",
                         "last_modification_date": "########",
                         "request_id": "########",

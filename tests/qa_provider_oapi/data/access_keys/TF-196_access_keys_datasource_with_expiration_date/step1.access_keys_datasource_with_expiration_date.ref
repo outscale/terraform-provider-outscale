@@ -19,7 +19,7 @@
                             {
                                 "access_key_id": "##id-0##",
                                 "creation_date": "########",
-                                "expiration_date": "",
+                                "expiration_date": "2024-02-20T10:04:05.000Z",
                                 "last_modification_date": "########",
                                 "state": "ACTIVE"
                             },
@@ -43,16 +43,49 @@
         {
             "mode": "managed",
             "type": "outscale_access_key",
-            "name": "my_access_key_1",
+            "name": "my_access_key",
             "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
+                    "index_key": 0,
                     "schema_version": 0,
                     "attributes": {
-                        "access_key_id": "##id-1##",
+                        "access_key_id": "##id-0##",
                         "creation_date": "########",
-                        "expiration_date": "",
-                        "id": "##id-1##",
+                        "expiration_date": "2024-02-20T10:04:05.000Z",
+                        "id": "##id-0##",
+                        "last_modification_date": "########",
+                        "request_id": "########",
+                        "secret_key": "########",
+                        "state": "ACTIVE"
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA=="
+                },
+                {
+                    "index_key": 1,
+                    "schema_version": 0,
+                    "attributes": {
+                        "access_key_id": "##id-3##",
+                        "creation_date": "########",
+                        "expiration_date": "2024-02-20T10:04:05.000Z",
+                        "id": "##id-3##",
+                        "last_modification_date": "########",
+                        "request_id": "########",
+                        "secret_key": "########",
+                        "state": "ACTIVE"
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA=="
+                },
+                {
+                    "index_key": 2,
+                    "schema_version": 0,
+                    "attributes": {
+                        "access_key_id": "##id-4##",
+                        "creation_date": "########",
+                        "expiration_date": "2024-02-20T10:04:05.000Z",
+                        "id": "##id-4##",
                         "last_modification_date": "########",
                         "request_id": "########",
                         "secret_key": "########",
@@ -72,10 +105,10 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "access_key_id": "##id-0##",
+                        "access_key_id": "##id-1##",
                         "creation_date": "########",
                         "expiration_date": "",
-                        "id": "##id-0##",
+                        "id": "##id-1##",
                         "last_modification_date": "########",
                         "request_id": "########",
                         "secret_key": "########",

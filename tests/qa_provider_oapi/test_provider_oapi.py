@@ -461,3 +461,4 @@ Log: {}
             finally:
                 self.run_cmd("rm -f test.tf")
                 self.run_cmd("rm -f terraform.tfstate")
+                self.run_cmd("rm -f .terraform.lock.hcl")

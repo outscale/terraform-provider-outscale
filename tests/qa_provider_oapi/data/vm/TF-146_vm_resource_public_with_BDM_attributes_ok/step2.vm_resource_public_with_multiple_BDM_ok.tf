@@ -3,7 +3,7 @@ resource "outscale_keypair" "my_keypair" {
 }
 
 resource "outscale_volume" "my_volume" {
-    subregion_name = format("%s%s", var.region, "a")
+    subregion_name = "${var.region}a"
     size           = 20
 }
 

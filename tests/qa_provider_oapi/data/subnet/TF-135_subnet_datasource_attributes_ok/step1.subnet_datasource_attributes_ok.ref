@@ -57,7 +57,7 @@
                         "request_id": "########",
                         "state": "available",
                         "subnet_id": "##id-2##",
-                        "subregion_name": "###region###b",
+                        "subregion_name": "###region###a",
                         "tags": []
                     },
                     "sensitive_attributes": []
@@ -107,17 +107,26 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "available_ips_count": 11,
+                        "available_ips_count": 251,
                         "filter": "########",
-                        "id": "##id-2##",
-                        "ip_range": "10.0.2.0/28",
+                        "id": "##id-0##",
+                        "ip_range": "10.0.1.0/24",
                         "map_public_ip_on_launch": false,
                         "net_id": "##id-1##",
                         "request_id": "########",
                         "state": "available",
-                        "subnet_id": "##id-2##",
-                        "subregion_name": "###region###b",
-                        "tags": []
+                        "subnet_id": "##id-0##",
+                        "subregion_name": "###region###a",
+                        "tags": [
+                            {
+                                "key": "name",
+                                "value": "terraform-subnet"
+                            },
+                            {
+                                "key": "tag:key",
+                                "value": "value:tags"
+                            }
+                        ]
                     },
                     "sensitive_attributes": []
                 }
@@ -303,7 +312,7 @@
                         "request_id": "########",
                         "state": "available",
                         "subnet_id": "##id-2##",
-                        "subregion_name": "###region###b",
+                        "subregion_name": "###region###a",
                         "tags": [],
                         "timeouts": null
                     },

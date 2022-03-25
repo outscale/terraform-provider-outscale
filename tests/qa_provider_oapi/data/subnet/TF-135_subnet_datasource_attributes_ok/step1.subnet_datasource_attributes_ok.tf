@@ -1,12 +1,10 @@
 resource "outscale_net" "outscale_net" {
-    #count = 1
-
     ip_range = "10.0.0.0/16"
 }
 
 resource "outscale_subnet" "outscale_subnet" {
 
-    subregion_name = format("%s%s", var.region, "a")
+    subregion_name = "${var.region}a"
     ip_range       = "10.0.1.0/24"
     net_id         = outscale_net.outscale_net.net_id
     tags {
@@ -21,7 +19,7 @@ resource "outscale_subnet" "outscale_subnet" {
 
 resource "outscale_subnet" "outscale_subnet-2" {
 
-    subregion_name = format("%s%s", var.region, "b")
+    subregion_name = "${var.region}a"
     ip_range       = "10.0.2.0/28"
     net_id         = outscale_net.outscale_net.net_id
 }
@@ -70,6 +68,10 @@ filter {
 filter {
         name   = "net_ids"
         values = [outscale_subnet.outscale_subnet.net_id]
+    }
+filter {
+        name   = "subnet_ids"
+        values = [outscale_subnet.outscale_subnet.subnet_id]
     }
 depends_on = [outscale_subnet.outscale_subnet-2]
 }
