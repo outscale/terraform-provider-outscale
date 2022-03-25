@@ -392,7 +392,7 @@ resource "outscale_net" "foo" {
 resource "outscale_internet_service" "foo" {}
 
 resource "outscale_route_table" "foo" {
-	net_id = "outscale_net.foo.id
+	net_id = outscale_net.foo.id
 }
 `
 

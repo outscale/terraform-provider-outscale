@@ -124,8 +124,8 @@ func testAccOutscaleInternetServiceLinkConfig() string {
 		resource "outscale_internet_service" "outscale_internet_service" {}
 
 		resource "outscale_internet_service_link" "outscale_internet_service_link" {
-			net_id              = "${outscale_net.outscale_net.net_id}"
-			internet_service_id = "${outscale_internet_service.outscale_internet_service.id}"
+			net_id              = outscale_net.outscale_net.net_id
+			internet_service_id = outscale_internet_service.outscale_internet_service.id
 		}
 	`
 }
