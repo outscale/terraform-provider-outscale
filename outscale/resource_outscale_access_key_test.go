@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -117,6 +118,44 @@ func TestAccOutscaleAccessKey_updatedToActivedKey(t *testing.T) {
 	})
 }
 
+func TestAccOutscaleAccessKey_updatedExpirationDate(t *testing.T) {
+	resourceName := "outscale_access_key.outscale_access_key"
+	expirDate := time.Now().AddDate(1, 1, 0).Format("2006-01-02")
+	expirDateUpdated := time.Now().AddDate(1, 4, 0).Format("2006-01-02")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckOutscaleAccessKeyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccOutscaleAccessKeyExpirationDateConfig(string(expirDate)),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleAccessKeyExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "access_key_id"),
+					resource.TestCheckResourceAttrSet(resourceName, "creation_date"),
+					resource.TestCheckResourceAttrSet(resourceName, "expiration_date"),
+					resource.TestCheckResourceAttrSet(resourceName, "last_modification_date"),
+					resource.TestCheckResourceAttrSet(resourceName, "secret_key"),
+					resource.TestCheckResourceAttrSet(resourceName, "state"),
+				),
+			},
+			{
+				Config: testAccOutscaleAccessKeyExpirationDateConfig(string(expirDateUpdated)),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleAccessKeyExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "access_key_id"),
+					resource.TestCheckResourceAttrSet(resourceName, "creation_date"),
+					resource.TestCheckResourceAttrSet(resourceName, "expiration_date"),
+					resource.TestCheckResourceAttrSet(resourceName, "last_modification_date"),
+					resource.TestCheckResourceAttrSet(resourceName, "secret_key"),
+					resource.TestCheckResourceAttrSet(resourceName, "state"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckOutscaleAccessKeyExists(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
@@ -162,15 +201,20 @@ func testAccCheckOutscaleAccessKeyDestroy(s *terraform.State) error {
 }
 
 const testAccOutscaleAccessKeyBasicConfig = `
-	resource "outscale_access_key" "outscale_access_key" {
-               expiration_date = "2025-01-04"
-        }`
+	resource "outscale_access_key" "outscale_access_key" {}`
 
 func testAccOutscaleAccessKeyUpdatedConfig(state string) string {
 	return fmt.Sprintf(`
 		resource "outscale_access_key" "outscale_access_key" {
 			state = "%s"
-                        expiration_date = "2025-08-10T15:19:21"
 		}
 	`, state)
+}
+
+func testAccOutscaleAccessKeyExpirationDateConfig(expirDate string) string {
+	return fmt.Sprintf(`
+		resource "outscale_access_key" "outscale_access_key" {
+			expiration_date = "%s"
+		}
+	`, expirDate)
 }
