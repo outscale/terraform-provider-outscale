@@ -23,26 +23,30 @@ func TestAccOutscaleOAPIImageExportTask_basic(t *testing.T) {
 			key = "test-1"
 			value = "test-1"
 		}`
-	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheck(t)
-		},
-		Providers: testAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccOAPIImageExportTaskConfigBasic(omi, "tinav4.c2r2p2", region, imageName, ""),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPImageExportTaskExists("outscale_image_export_task.outscale_image_export_task"),
-				),
+	if os.Getenv("TEST_QUOTA") == "true" {
+		resource.Test(t, resource.TestCase{
+			PreCheck: func() {
+				testAccPreCheck(t)
 			},
-			{
-				Config: testAccOAPIImageExportTaskConfigBasic(omi, "tinav4.c2r2p2", region, imageName, tags),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPImageExportTaskExists("outscale_image_export_task.outscale_image_export_task"),
-				),
+			Providers: testAccProviders,
+			Steps: []resource.TestStep{
+				{
+					Config: testAccOAPIImageExportTaskConfigBasic(omi, "tinav4.c2r2p2", region, imageName, ""),
+					Check: resource.ComposeTestCheckFunc(
+						testAccCheckOutscaleOAPImageExportTaskExists("outscale_image_export_task.outscale_image_export_task"),
+					),
+				},
+				{
+					Config: testAccOAPIImageExportTaskConfigBasic(omi, "tinav4.c2r2p2", region, imageName, tags),
+					Check: resource.ComposeTestCheckFunc(
+						testAccCheckOutscaleOAPImageExportTaskExists("outscale_image_export_task.outscale_image_export_task"),
+					),
+				},
 			},
-		},
-	})
+		})
+	} else {
+		t.Skip("will be done soon")
+	}
 }
 
 func testAccCheckOutscaleOAPImageExportTaskExists(n string) resource.TestCheckFunc {

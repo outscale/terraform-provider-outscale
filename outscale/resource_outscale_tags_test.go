@@ -22,33 +22,37 @@ func TestAccOutscaleOAPIVM_tags(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckOAPIInstanceConfigTags(omi, "tinav4.c2r2p2", region, "keyOriginal", "valueOriginal"),
-				Check: resource.ComposeTestCheckFunc(
-					oapiTestAccCheckOutscaleVMExists("outscale_vm.vm", v),
-					testAccCheckOAPIVMTags(v, "keyOriginal", "valueOriginal"),
-					// Guard against regression of https://github.com/hashicorp/terraform/issues/914
-					resource.TestCheckResourceAttr(
-						"outscale_tag.foo", "tags.#", "1"),
-				),
+	if os.Getenv("TEST_QUOTA") == "true" {
+		resource.Test(t, resource.TestCase{
+			PreCheck:     func() { testAccPreCheck(t) },
+			Providers:    testAccProviders,
+			CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: testAccCheckOAPIInstanceConfigTags(omi, "tinav4.c2r2p2", region, "keyOriginal", "valueOriginal"),
+					Check: resource.ComposeTestCheckFunc(
+						oapiTestAccCheckOutscaleVMExists("outscale_vm.vm", v),
+						testAccCheckOAPIVMTags(v, "keyOriginal", "valueOriginal"),
+						// Guard against regression of https://github.com/hashicorp/terraform/issues/914
+						resource.TestCheckResourceAttr(
+							"outscale_tag.foo", "tags.#", "1"),
+					),
+				},
+				{
+					Config: testAccCheckOAPIInstanceConfigTags(omi, "tinav4.c2r2p2", region, "keyUpdated", "valueUpdated"),
+					Check: resource.ComposeTestCheckFunc(
+						oapiTestAccCheckOutscaleVMExists("outscale_vm.vm", v),
+						testAccCheckOAPIVMTags(v, "keyUpdated", "valueUpdated"),
+						// Guard against regression of https://github.com/hashicorp/terraform/issues/914
+						resource.TestCheckResourceAttr(
+							"outscale_tag.foo", "tags.#", "1"),
+					),
+				},
 			},
-			{
-				Config: testAccCheckOAPIInstanceConfigTags(omi, "tinav4.c2r2p2", region, "keyUpdated", "valueUpdated"),
-				Check: resource.ComposeTestCheckFunc(
-					oapiTestAccCheckOutscaleVMExists("outscale_vm.vm", v),
-					testAccCheckOAPIVMTags(v, "keyUpdated", "valueUpdated"),
-					// Guard against regression of https://github.com/hashicorp/terraform/issues/914
-					resource.TestCheckResourceAttr(
-						"outscale_tag.foo", "tags.#", "1"),
-				),
-			},
-		},
-	})
+		})
+	} else {
+		t.Skip("will be done soon")
+	}
 }
 
 func testAccCheckOAPIVMTags(vm *oscgo.Vm, key, value string) resource.TestCheckFunc {
