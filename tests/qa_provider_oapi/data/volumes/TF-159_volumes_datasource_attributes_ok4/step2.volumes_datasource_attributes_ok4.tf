@@ -29,7 +29,7 @@ resource "outscale_volumes_link" "outscale_volumes_link" {
 
 
 resource "outscale_volume" "outscale_volume" {
-    subregion_name = format("%s%s", var.region, "a")
+    subregion_name = "${var.region}a"
     size = 15
     volume_type    = "standard"
     tags {
@@ -38,7 +38,7 @@ resource "outscale_volume" "outscale_volume" {
     }
 }
 resource "outscale_volume" "outscale_volume2" {
-    subregion_name = format("%s%s", var.region, "a")
+    subregion_name = "${var.region}a"
     size = 13
     tags {
         key = "Name"

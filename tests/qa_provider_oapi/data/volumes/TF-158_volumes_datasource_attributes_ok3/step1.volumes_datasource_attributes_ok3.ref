@@ -20,7 +20,7 @@
                         "volume_id": null,
                         "volumes": [
                             {
-                                "iops": 0,
+                                "iops": 150,
                                 "linked_volumes": [],
                                 "size": 13,
                                 "snapshot_id": "",
@@ -36,7 +36,7 @@
                                 "volume_type": "standard"
                             },
                             {
-                                "iops": 0,
+                                "iops": 150,
                                 "linked_volumes": [],
                                 "size": 15,
                                 "snapshot_id": "",
@@ -67,7 +67,7 @@
                     "schema_version": 0,
                     "attributes": {
                         "id": "##id-2##",
-                        "iops": 0,
+                        "iops": 150,
                         "linked_volumes": [],
                         "request_id": "########",
                         "size": 15,
@@ -98,7 +98,7 @@
                     "schema_version": 0,
                     "attributes": {
                         "id": "##id-1##",
-                        "iops": 0,
+                        "iops": 150,
                         "linked_volumes": [],
                         "request_id": "########",
                         "size": 13,

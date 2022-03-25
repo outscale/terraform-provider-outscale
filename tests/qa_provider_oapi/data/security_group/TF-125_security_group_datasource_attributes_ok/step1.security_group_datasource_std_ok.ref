@@ -628,6 +628,14 @@
                                 "security_groups_members": [],
                                 "service_ids": [],
                                 "to_port_range": -1
+                            },
+                            {
+                                "from_port_range": 8080,
+                                "ip_protocol": "tcp",
+                                "ip_ranges": "########",
+                                "security_groups_members": [],
+                                "service_ids": [],
+                                "to_port_range": 8080
                             }
                         ],
                         "request_id": "########",
@@ -659,16 +667,7 @@
                         "flow": "Outbound",
                         "from_port_range": null,
                         "id": "##id-1##",
-                        "inbound_rules": [
-                            {
-                                "from_port_range": 80,
-                                "ip_protocol": "tcp",
-                                "ip_ranges": "########",
-                                "security_groups_members": [],
-                                "service_ids": [],
-                                "to_port_range": 80
-                            }
-                        ],
+                        "inbound_rules": [],
                         "ip_protocol": null,
                         "ip_range": null,
                         "net_id": "##id-3##",
@@ -765,6 +764,20 @@
                                 "to_port_range": -1
                             },
                             {
+                                "from_port_range": 22,
+                                "ip_protocol": "tcp",
+                                "ip_ranges": "########",
+                                "security_groups_members": [
+                                    {
+                                        "account_id": "##id-0##",
+                                        "security_group_id": "##id-2##",
+                                        "security_group_name": "terraform-TF125-2"
+                                    }
+                                ],
+                                "service_ids": [],
+                                "to_port_range": 22
+                            },
+                            {
                                 "from_port_range": 8080,
                                 "ip_protocol": "tcp",
                                 "ip_ranges": "########",
@@ -819,20 +832,6 @@
                         "from_port_range": null,
                         "id": "##id-1##",
                         "inbound_rules": [
-                            {
-                                "from_port_range": 22,
-                                "ip_protocol": "tcp",
-                                "ip_ranges": "########",
-                                "security_groups_members": [
-                                    {
-                                        "account_id": "##id-0##",
-                                        "security_group_id": "##id-2##",
-                                        "security_group_name": "terraform-TF125-2"
-                                    }
-                                ],
-                                "service_ids": [],
-                                "to_port_range": 22
-                            },
                             {
                                 "from_port_range": 80,
                                 "ip_protocol": "tcp",

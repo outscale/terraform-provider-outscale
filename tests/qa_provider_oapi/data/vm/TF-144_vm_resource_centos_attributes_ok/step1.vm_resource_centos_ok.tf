@@ -11,7 +11,7 @@ resource "outscale_vm" "outscale_vm" {
     vm_type                  = var.vm_type
     keypair_name             = outscale_keypair.my_keypair.keypair_name
     security_group_ids       = [outscale_security_group.public_sg_terraform.security_group_id]
-    placement_subregion_name = format("%s%s", var.region, "a")
+    placement_subregion_name = "${var.region}a"
     placement_tenancy        = "default"
     tags {
          key = "name"
@@ -24,7 +24,7 @@ resource "outscale_vm" "outscale_vm2" {
     vm_type                  = var.vm_type
     keypair_name             = outscale_keypair.my_keypair.keypair_name
     security_group_names     = [outscale_security_group.public_sg_terraform.security_group_name]
-    placement_subregion_name = format("%s%s", var.region, "a")
+    placement_subregion_name = "${var.region}a"
     placement_tenancy        = "default"
      tags {
          key = "name"

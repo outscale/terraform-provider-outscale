@@ -4,7 +4,7 @@
 # Then the volume is created. Can be seen in cockpit and attached to a vm. Seen as empty volume.
 
 resource "outscale_volume" "volume-1" {
-    subregion_name  = format("%s%s", var.region, "a")
+    subregion_name  = "${var.region}a"
     size            = 10
     tags {
        key          = "name"
@@ -22,7 +22,7 @@ resource "outscale_snapshot" "snapshot-1" {
 
 
 resource "outscale_volume" "volume-2" {
-    subregion_name  = format("%s%s", var.region, "a")
+    subregion_name  = "${var.region}a"
     size            = 25
     volume_type     = "gp2"
     snapshot_id     = outscale_snapshot.snapshot-1.snapshot_id

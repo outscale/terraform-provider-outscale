@@ -1,5 +1,5 @@
 resource "outscale_volume" "outscale_volume_snap" {
-    subregion_name = format("%s%s", var.region, "a")
+    subregion_name = "${var.region}a"
     size           = 40
 }
 
@@ -18,6 +18,6 @@ source_snapshot_id = outscale_snapshot.outscale_snapshot.snapshot_id
 source_region_name = var.region
 tags {
     key = "name"
-    value = "Snapsho_Copy_test"
+    value = "Snapshot_Copy_test"
     }
 }

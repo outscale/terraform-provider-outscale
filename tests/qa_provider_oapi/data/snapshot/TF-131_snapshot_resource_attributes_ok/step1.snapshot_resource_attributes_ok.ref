@@ -69,7 +69,7 @@
                         "tags": [
                             {
                                 "key": "name",
-                                "value": "Snapsho_Copy_test"
+                                "value": "Snapshot_Copy_test"
                             }
                         ],
                         "volume_id": "",
@@ -94,7 +94,7 @@
                     "schema_version": 0,
                     "attributes": {
                         "id": "##id-2##",
-                        "iops": 0,
+                        "iops": 150,
                         "linked_volumes": [],
                         "request_id": "########",
                         "size": 40,

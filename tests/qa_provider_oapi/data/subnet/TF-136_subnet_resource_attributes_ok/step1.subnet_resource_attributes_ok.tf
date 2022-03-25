@@ -3,7 +3,7 @@ resource "outscale_net" "outscale_net" {
 }
 
 resource "outscale_subnet" "outscale_subnet" {
-    subregion_name = format("%s%s", var.region, "a")
+    subregion_name = "${var.region}a"
     ip_range       = "10.0.0.0/16"
     net_id         = outscale_net.outscale_net.net_id
     tags {

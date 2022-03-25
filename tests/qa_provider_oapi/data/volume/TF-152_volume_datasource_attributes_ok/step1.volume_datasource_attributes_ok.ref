@@ -25,12 +25,12 @@
                         "subregion_name": "###region###a",
                         "tags": [
                             {
-                                "key": "name",
-                                "value": "test-Volume"
-                            },
-                            {
                                 "key": "Key",
                                 "value": "value-tags"
+                            },
+                            {
+                                "key": "name",
+                                "value": "test-Volume"
                             }
                         ],
                         "volume_id": "##id-0##",

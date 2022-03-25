@@ -1,5 +1,5 @@
 resource "outscale_volume" "outscale_volume" {
-    subregion_name = format("%s%s", var.region, "b")
+    subregion_name = "${var.region}b"
     size            = 12
     volume_type    = "gp2"
     tags {
@@ -9,7 +9,7 @@ resource "outscale_volume" "outscale_volume" {
 
 }
 resource "outscale_volume" "outscale_volume2" {
-    subregion_name = format("%s%s", var.region, "a")
+    subregion_name = "${var.region}a"
     size            = 13
     volume_type    = "gp2"
     tags {

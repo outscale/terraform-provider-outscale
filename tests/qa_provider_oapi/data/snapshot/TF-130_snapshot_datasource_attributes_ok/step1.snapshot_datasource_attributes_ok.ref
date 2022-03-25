@@ -31,12 +31,12 @@
                         "state": "completed",
                         "tags": [
                             {
-                                "key": "name",
-                                "value": "Snapshot_datasource"
-                            },
-                            {
                                 "key": "Key",
                                 "value": "value-tags"
+                            },
+                            {
+                                "key": "name",
+                                "value": "Snapshot_datasource"
                             }
                         ],
                         "volume_id": "##id-2##",
@@ -99,7 +99,7 @@
                     "schema_version": 0,
                     "attributes": {
                         "id": "##id-2##",
-                        "iops": 0,
+                        "iops": 150,
                         "linked_volumes": [],
                         "request_id": "########",
                         "size": 40,

@@ -4,7 +4,7 @@
 # Then the volume is created. Can be seen in cockpit and attached to a vm. Seen as empty volume.
 
 resource "outscale_volume" "outscale_volume" {
-    subregion_name = format("%s%s", var.region, "a")
+    subregion_name = "${var.region}a" 
     size            = 10
     iops            = 100
     volume_type     = "io1"

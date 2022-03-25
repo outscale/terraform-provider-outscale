@@ -107,9 +107,9 @@
                     "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
+                        "outscale_net.outscale_net",
                         "outscale_route_table.route_table-1",
-                        "outscale_route_table.route_table-2",
-                        "outscale_net.outscale_net"
+                        "outscale_route_table.route_table-2"
                     ]
                 }
             ]
@@ -199,12 +199,12 @@
                     "index_key": 1,
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-3##",
+                        "id": "##id-4##",
                         "link_route_tables": [],
                         "net_id": "##id-2##",
                         "request_id": "########",
                         "route_propagating_virtual_gateways": [],
-                        "route_table_id": "##id-3##",
+                        "route_table_id": "##id-4##",
                         "routes": [
                             {
                                 "creation_method": "CreateRouteTable",
@@ -252,12 +252,12 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-4##",
+                        "id": "##id-3##",
                         "link_route_tables": [],
                         "net_id": "##id-2##",
                         "request_id": "########",
                         "route_propagating_virtual_gateways": [],
-                        "route_table_id": "##id-4##",
+                        "route_table_id": "##id-3##",
                         "routes": [
                             {
                                 "creation_method": "CreateRouteTable",

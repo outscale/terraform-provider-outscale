@@ -21,18 +21,8 @@
                                 "net_access_point_id": "##id-1##",
                                 "net_id": "##id-2##",
                                 "route_table_ids": [
-                                    "##id-3##"
-                                ],
-                                "service_name": "com.outscale.###region###.api",
-                                "state": "available",
-                                "tags": []
-                            },
-                            {
-                                "net_access_point_id": "##id-4##",
-                                "net_id": "##id-2##",
-                                "route_table_ids": [
-                                    "##id-5##",
-                                    "##id-6##"
+                                    "##id-3##",
+                                    "##id-4##"
                                 ],
                                 "service_name": "com.outscale.###region###.api",
                                 "state": "available",
@@ -46,6 +36,16 @@
                                         "value": "Net-Access-Point"
                                     }
                                 ]
+                            },
+                            {
+                                "net_access_point_id": "##id-5##",
+                                "net_id": "##id-2##",
+                                "route_table_ids": [
+                                    "##id-6##"
+                                ],
+                                "service_name": "com.outscale.###region###.api",
+                                "state": "available",
+                                "tags": []
                             }
                         ],
                         "net_access_point_ids": null,
@@ -93,13 +93,13 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-4##",
-                        "net_access_point_id": "##id-4##",
+                        "id": "##id-1##",
+                        "net_access_point_id": "##id-1##",
                         "net_id": "##id-2##",
                         "request_id": "########",
                         "route_table_ids": [
-                            "##id-5##",
-                            "##id-6##"
+                            "##id-3##",
+                            "##id-4##"
                         ],
                         "service_name": "com.outscale.###region###.api",
                         "state": "available",
@@ -133,12 +133,12 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-1##",
-                        "net_access_point_id": "##id-1##",
+                        "id": "##id-5##",
+                        "net_access_point_id": "##id-5##",
                         "net_id": "##id-2##",
                         "request_id": "########",
                         "route_table_ids": [
-                            "##id-3##"
+                            "##id-6##"
                         ],
                         "service_name": "com.outscale.###region###.api",
                         "state": "available",
@@ -163,12 +163,58 @@
                     "index_key": 0,
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-3##",
+                        "id": "##id-6##",
                         "link_route_tables": [],
                         "net_id": "##id-2##",
                         "request_id": "########",
                         "route_propagating_virtual_gateways": [],
-                        "route_table_id": "##id-3##",
+                        "route_table_id": "##id-6##",
+                        "routes": [
+                            {
+                                "creation_method": "CreateRouteTable",
+                                "destination_ip_range": "10.0.0.0/16",
+                                "destination_service_id": "",
+                                "gateway_id": "",
+                                "nat_service_id": "",
+                                "net_access_point_id": "",
+                                "net_peering_id": "",
+                                "nic_id": "",
+                                "state": "active",
+                                "vm_account_id": "",
+                                "vm_id": ""
+                            },
+                            {
+                                "creation_method": "CreateRoute",
+                                "destination_ip_range": "",
+                                "destination_service_id": "##id-8##",
+                                "gateway_id": "",
+                                "nat_service_id": "",
+                                "net_access_point_id": "##id-5##",
+                                "net_peering_id": "",
+                                "nic_id": "",
+                                "state": "active",
+                                "vm_account_id": "",
+                                "vm_id": ""
+                            }
+                        ],
+                        "tags": []
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA==",
+                    "dependencies": [
+                        "outscale_net.outscale_net"
+                    ]
+                },
+                {
+                    "index_key": 1,
+                    "schema_version": 0,
+                    "attributes": {
+                        "id": "##id-4##",
+                        "link_route_tables": [],
+                        "net_id": "##id-2##",
+                        "request_id": "########",
+                        "route_propagating_virtual_gateways": [],
+                        "route_table_id": "##id-4##",
                         "routes": [
                             {
                                 "creation_method": "CreateRouteTable",
@@ -204,52 +250,6 @@
                     "dependencies": [
                         "outscale_net.outscale_net"
                     ]
-                },
-                {
-                    "index_key": 1,
-                    "schema_version": 0,
-                    "attributes": {
-                        "id": "##id-5##",
-                        "link_route_tables": [],
-                        "net_id": "##id-2##",
-                        "request_id": "########",
-                        "route_propagating_virtual_gateways": [],
-                        "route_table_id": "##id-5##",
-                        "routes": [
-                            {
-                                "creation_method": "CreateRouteTable",
-                                "destination_ip_range": "10.0.0.0/16",
-                                "destination_service_id": "",
-                                "gateway_id": "",
-                                "nat_service_id": "",
-                                "net_access_point_id": "",
-                                "net_peering_id": "",
-                                "nic_id": "",
-                                "state": "active",
-                                "vm_account_id": "",
-                                "vm_id": ""
-                            },
-                            {
-                                "creation_method": "CreateRoute",
-                                "destination_ip_range": "",
-                                "destination_service_id": "##id-8##",
-                                "gateway_id": "",
-                                "nat_service_id": "",
-                                "net_access_point_id": "##id-4##",
-                                "net_peering_id": "",
-                                "nic_id": "",
-                                "state": "active",
-                                "vm_account_id": "",
-                                "vm_id": ""
-                            }
-                        ],
-                        "tags": []
-                    },
-                    "sensitive_attributes": [],
-                    "private": "bnVsbA==",
-                    "dependencies": [
-                        "outscale_net.outscale_net"
-                    ]
                 }
             ]
         },
@@ -262,12 +262,12 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-6##",
+                        "id": "##id-3##",
                         "link_route_tables": [],
                         "net_id": "##id-2##",
                         "request_id": "########",
                         "route_propagating_virtual_gateways": [],
-                        "route_table_id": "##id-6##",
+                        "route_table_id": "##id-3##",
                         "routes": [
                             {
                                 "creation_method": "CreateRouteTable",
@@ -288,7 +288,7 @@
                                 "destination_service_id": "##id-8##",
                                 "gateway_id": "",
                                 "nat_service_id": "",
-                                "net_access_point_id": "##id-4##",
+                                "net_access_point_id": "##id-1##",
                                 "net_peering_id": "",
                                 "nic_id": "",
                                 "state": "active",

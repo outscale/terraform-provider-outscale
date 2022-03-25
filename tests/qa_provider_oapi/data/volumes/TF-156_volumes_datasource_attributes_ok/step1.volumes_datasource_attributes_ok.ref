@@ -44,12 +44,12 @@
                                 "subregion_name": "###region###a",
                                 "tags": [
                                     {
-                                        "key": "Name",
-                                        "value": "volume-io1-1"
-                                    },
-                                    {
                                         "key": "Key",
                                         "value": "value-tags"
+                                    },
+                                    {
+                                        "key": "Name",
+                                        "value": "volume-io1-1"
                                     }
                                 ],
                                 "volume_id": "##id-2##",
