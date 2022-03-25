@@ -399,7 +399,7 @@ func testAccCheckOutscaleVMWithMultiBlockDeviceMapping(region, omi, keypair stri
 		}
 
 		resource "outscale_snapshot" "snapshot" {
-			volume_id = "${outscale_volume.example.id}"
+			volume_id = outscale_volume.example.id
 		}
 
 		resource "outscale_vm" "outscale_vm" {
@@ -656,17 +656,17 @@ func testAccCheckOutscaleOAPIVMConfigBasic(omi, vmType, region, keypair string) 
 		}
 
 		resource "outscale_subnet" "outscale_subnet" {
-			net_id              = "${outscale_net.outscale_net.net_id}"
+			net_id              = outscale_net.outscale_net.net_id
 			ip_range            = "10.0.0.0/24"
 			subregion_name      = "eu-west-2a"
 		}
 
 		resource "outscale_vm" "basic" {
-			image_id			           = "%[1]s"
+			image_id                 = "%[1]s"
 			vm_type                  = "%[2]s"
-			keypair_name	           = "%[4]s"
+			keypair_name	         = "%[4]s"
 			placement_subregion_name = "%[3]s"
-			subnet_id                = "${outscale_subnet.outscale_subnet.subnet_id}"
+			subnet_id                = outscale_subnet.outscale_subnet.subnet_id
 			private_ips              =  ["10.0.0.12"]
 
 			tags {
@@ -688,9 +688,9 @@ func testAccCheckOutscaleOAPIVMConfigBasicWithNicAttached(omi, vmType, region, k
 		}
 
 		resource "outscale_subnet" "outscale_subnet" {
-			net_id              = "${outscale_net.outscale_net.net_id}"
+			net_id              = outscale_net.outscale_net.net_id
 			ip_range            = "10.0.0.0/24"
-			subregion_name      = "eu-west-2a"
+			subregion_name      = "%[3]sa"
 		}
 
 		resource "outscale_security_group" "outscale_security_group8" {
@@ -704,10 +704,9 @@ func testAccCheckOutscaleOAPIVMConfigBasicWithNicAttached(omi, vmType, region, k
 		}
 
 		resource "outscale_vm" "basic" {
-			image_id			     = "%[1]s"
+			image_id	         = "%[1]s"
 			vm_type                  = "%[2]s"
 			keypair_name	         = "%[4]s"
-			placement_subregion_name = "%[3]sa"
 
 			nics {
 				subnet_id = outscale_subnet.outscale_subnet.subnet_id
@@ -720,7 +719,7 @@ func testAccCheckOutscaleOAPIVMConfigBasicWithNicAttached(omi, vmType, region, k
 			}
 
 			nics {
-				nic_id =outscale_nic.outscale_nic5.nic_id
+				nic_id = outscale_nic.outscale_nic5.nic_id
 				device_number = 1
 			}
 
@@ -733,19 +732,19 @@ func testAccCheckOutscaleOAPIVMConfigBasicWithNics(omi, vmType, keypair string) 
 	  }
 
 	  resource "outscale_subnet" "outscale_subnet" {
-		net_id         = "${outscale_net.outscale_net.net_id}"
+		net_id         = outscale_net.outscale_net.net_id
 		ip_range       = "10.0.0.0/24"
 		subregion_name = "eu-west-2a"
 	  }
 
 	  resource "outscale_nic" "outscale_nic" {
-		subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
+		subnet_id = outscale_subnet.outscale_subnet.subnet_id
 	  }
 
 	  resource "outscale_security_group" "outscale_security_group" {
 		description         = "test vm with nic"
 		security_group_name = "private-sg"
-		net_id              = "${outscale_net.outscale_net.net_id}"
+		net_id              = outscale_net.outscale_net.net_id
 	  }
 
 	  resource "outscale_vm" "basic" {
@@ -753,17 +752,17 @@ func testAccCheckOutscaleOAPIVMConfigBasicWithNics(omi, vmType, keypair string) 
 		vm_type      = "%s"
 		keypair_name = "%s"
 
-		# subnet_id              ="${outscale_subnet.outscale_subnet.subnet_id}"
+		# subnet_id              = outscale_subnet.outscale_subnet.subnet_id
 		nics {
 		  # delete_on_vm_deletion      = false
 		  # description                = "myDescription"
 		  device_number = 0
 
-		  # nic_id                     = "${outscale_nic.outscale_nic.nic_id}"
+		  # nic_id                     = outscale_nic.outscale_nic.nic_id
 		  # secondary_private_ip_count = 1
 		  subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
 
-		  security_group_ids = ["${outscale_security_group.outscale_security_group.security_group_id}"]
+		  security_group_ids = [outscale_security_group.outscale_security_group.security_group_id]
 
 		  private_ips {
 			private_ip = "10.0.0.123"
@@ -798,7 +797,7 @@ func testAccVmsConfigUpdateOAPIVMKey(omi, vmType, region, keypair, sgId string) 
 				value = "tf-acc-test"
 			}
 
-			net_id = "${outscale_net.net.id}"
+			net_id = outscale_net.net.id
 		}
 
 		resource "outscale_vm" "basic" {
@@ -831,7 +830,7 @@ func testAccVmsConfigUpdateOAPIVMTags(omi, vmType string, region, value, keypair
 				value = "tf-acc-test"
 			}
 
-			net_id = "${outscale_net.net.id}"
+			net_id = outscale_net.net.id
 		}
 
 		resource "outscale_vm" "basic" {
@@ -863,21 +862,21 @@ func testAccCheckOutscaleOAPIVMConfigWithSubnet(omi, vmType, region, keypair str
 	  resource "outscale_subnet" "outscale_subnet" {
 			subregion_name = "%[3]sa"
 			ip_range       = "10.0.0.0/16"
-			net_id         = "${outscale_net.outscale_net.net_id}"
+			net_id         = outscale_net.outscale_net.net_id
 	  }
 
 	  resource "outscale_security_group" "outscale_security_group" {
 			description         = "test group"
 			security_group_name = "sg1-test-group_test-net"
-			net_id              = "${outscale_net.outscale_net.net_id}"
+			net_id              = outscale_net.outscale_net.net_id
 	  }
 
 	  resource "outscale_vm" "basic" {
 			image_id                 = "%[1]s"
 			vm_type                  = "%[2]s"
 			keypair_name             = "%[4]s"
-			security_group_ids       = ["${outscale_security_group.outscale_security_group.security_group_id}"]
-			subnet_id                = "${outscale_subnet.outscale_subnet.subnet_id}"
+			security_group_ids       = [outscale_security_group.outscale_security_group.security_group_id]
+			subnet_id                = outscale_subnet.outscale_subnet.subnet_id
 			placement_subregion_name = "%[3]sa"
 			placement_tenancy        = "default"
 	  }
@@ -892,7 +891,7 @@ func testAccCheckOutscaleOAPIVMConfigWithBlockDeviceMappings(omi, vmType, region
 	  }
 
 	  resource "outscale_snapshot" "snapshot" {
-		volume_id = "${outscale_volume.external1.id}"
+		volume_id = outscale_volume.external1.id
 	  }
 
 	  resource "outscale_vm" "basic" {
@@ -906,7 +905,7 @@ func testAccCheckOutscaleOAPIVMConfigWithBlockDeviceMappings(omi, vmType, region
 		  bsu {
 			volume_size           = 15
 			volume_type           = "gp2"
-			snapshot_id           = "${outscale_snapshot.snapshot.id}"
+			snapshot_id           = outscale_snapshot.snapshot.id
 			delete_on_vm_deletion = true
 		  }
 		}
@@ -917,7 +916,7 @@ func testAccCheckOutscaleOAPIVMConfigWithBlockDeviceMappings(omi, vmType, region
 			volume_size           = 22
 			volume_type           = "io1"
 			iops                  = 150
-			snapshot_id           = "${outscale_snapshot.snapshot.id}"
+			snapshot_id           = outscale_snapshot.snapshot.id
 			delete_on_vm_deletion = true
 		  }
 		}
@@ -928,7 +927,7 @@ func testAccCheckOutscaleOAPIVMConfigWithBlockDeviceMappings(omi, vmType, region
 			volume_size = 22
 			volume_type = "io1"
 			iops        = 150
-			snapshot_id = "${outscale_snapshot.snapshot.id}"
+			snapshot_id = outscale_snapshot.snapshot.id
 		  }
 		}
 	  }
@@ -946,7 +945,7 @@ func testAccCheckOutscaleOAPIVMConfigWithNet(omi, vmType, region, keypair string
 		}
 	}
 	resource "outscale_subnet" "outscale_subnet" {
-		net_id         = "${outscale_net.outscale_net.net_id}"
+		net_id         = outscale_net.outscale_net.net_id
 		ip_range       = "10.0.0.0/24"
 		subregion_name = "%[3]sb"
 
@@ -959,7 +958,7 @@ func testAccCheckOutscaleOAPIVMConfigWithNet(omi, vmType, region, keypair string
 	resource "outscale_security_group" "outscale_sg" {
 		description         = "sg for terraform tests"
 		security_group_name = "terraform-sg"
-		net_id              = "${outscale_net.outscale_net.net_id}"
+		net_id              = outscale_net.outscale_net.net_id
 	}
 
 	resource "outscale_internet_service" "outscale_internet_service" {
@@ -976,33 +975,33 @@ func testAccCheckOutscaleOAPIVMConfigWithNet(omi, vmType, region, keypair string
 	}
 
 	resource "outscale_route_table_link" "outscale_route_table_link" {
-		route_table_id  = "${outscale_route_table.outscale_route_table.route_table_id}"
-		subnet_id       = "${outscale_subnet.outscale_subnet.subnet_id}"
+		route_table_id  = outscale_route_table.outscale_route_table.route_table_id
+		subnet_id       = outscale_subnet.outscale_subnet.subnet_id
 	}
 
 	resource "outscale_internet_service_link" "outscale_internet_service_link" {
-		internet_service_id = "${outscale_internet_service.outscale_internet_service.internet_service_id}"
+		internet_service_id = outscale_internet_service.outscale_internet_service.internet_service_id
 		net_id              = "${outscale_net.outscale_net.net_id}"
 	}
 
 	resource "outscale_route" "outscale_route" {
-		gateway_id           = "${outscale_internet_service.outscale_internet_service.internet_service_id}"
+		gateway_id           = outscale_internet_service.outscale_internet_service.internet_service_id
 		destination_ip_range = "0.0.0.0/0"
-		route_table_id       = "${outscale_route_table.outscale_route_table.route_table_id}"
+		route_table_id       = outscale_route_table.outscale_route_table.route_table_id
 	}
 	resource "outscale_vm" "outscale_vmnet" {
 		image_id           = "%[1]s"
 		vm_type            = "%[2]s"
 		keypair_name       = "%[4]s"
-		security_group_ids = ["${outscale_security_group.outscale_sg.security_group_id}"]
-		subnet_id          ="${outscale_subnet.outscale_subnet.subnet_id}"
+		security_group_ids = [outscale_security_group.outscale_sg.security_group_id]
+		subnet_id          = outscale_subnet.outscale_subnet.subnet_id
 	}
 
 	resource "outscale_public_ip" "outscale_public_ip" {}
 
 	resource "outscale_public_ip_link" "outscale_public_ip_link" {
-		vm_id     = "${outscale_vm.outscale_vmnet.vm_id}"
-		public_ip = "${outscale_public_ip.outscale_public_ip.public_ip}"
+		vm_id     = outscale_vm.outscale_vmnet.vm_id
+		public_ip = outscale_public_ip.outscale_public_ip.public_ip
 	}
 	`, omi, vmType, region, keypair)
 }
@@ -1031,7 +1030,7 @@ func testAccCheckOutscaleOAPIVMBehaviorConfigBasic(omi, vmType, region, keypair,
 		}
 
 		resource "outscale_subnet" "outscale_subnet" {
-			net_id              = "${outscale_net.outscale_net.net_id}"
+			net_id              = outscale_net.outscale_net.net_id
 			ip_range            = "10.0.0.0/24"
 			subregion_name      = "eu-west-2a"
 		}
@@ -1041,7 +1040,7 @@ func testAccCheckOutscaleOAPIVMBehaviorConfigBasic(omi, vmType, region, keypair,
 			vm_type                  = "%[2]s"
 			keypair_name	           = "%[4]s"
 			#placement_subregion_name = "%[3]s"
-			subnet_id                = "${outscale_subnet.outscale_subnet.subnet_id}"
+			subnet_id                = outscale_subnet.outscale_subnet.subnet_id
 			private_ips              =  ["10.0.0.12"]
 			vm_initiated_shutdown_behavior = "%[6]s"
 

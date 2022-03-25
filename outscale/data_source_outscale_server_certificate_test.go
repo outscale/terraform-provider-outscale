@@ -113,7 +113,7 @@ resource "outscale_server_certificate" "test" {
    private_key =  %[3]q
 }
 
-data "outscale_server_certificate" "test" {
+data "outscale_server_certificates" "test" {
 	filter {
 		name = "paths"
 		values = [outscale_server_certificate.test.path]

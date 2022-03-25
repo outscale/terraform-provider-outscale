@@ -239,7 +239,7 @@ func testAccOutscaleOAPISecurityGroupRuleEgressConfig(rInt int) string {
 	return fmt.Sprintf(`
 		resource "outscale_security_group_rule" "outscale_security_group_rule" {
 			flow              = "Inbound"
-			security_group_id = "${outscale_security_group.outscale_security_group.security_group_id}"
+			security_group_id = outscale_security_group.outscale_security_group.security_group_id
                         from_port_range = "0"
 			to_port_range   = "0"
 			ip_protocol     = "tcp"
@@ -252,7 +252,7 @@ func testAccOutscaleOAPISecurityGroupRuleEgressConfig(rInt int) string {
 			to_port_range     = 443
 			ip_protocol       = "tcp"
 			ip_range          = "46.231.147.8/32"
-			security_group_id = "${outscale_security_group.outscale_security_group.security_group_id}"
+			security_group_id = outscale_security_group.outscale_security_group.security_group_id
 		}
 
 		resource "outscale_security_group" "outscale_security_group" {
@@ -266,7 +266,7 @@ func testAccOutscaleOAPISecurityGroupRuleWithGroupMembers(rInt int, accountID st
 	return fmt.Sprintf(`
 		resource "outscale_security_group" "outscale_security_group" {
 			description         = "test group"
-			security_group_name = "sg3-terraform-test"
+			security_group_name = "sg3-terraform-test_%[2]d"
 			tags {
 				key   = "Name"
 				value = "outscale_sg"
@@ -275,7 +275,7 @@ func testAccOutscaleOAPISecurityGroupRuleWithGroupMembers(rInt int, accountID st
 
 		resource "outscale_security_group" "outscale_security_group2" {
 			description         = "test group"
-			security_group_name = "sg4-terraform-test"
+			security_group_name = "sg4-terraform-test_%[2]d"
 			tags {
 				key   = "Name"
 				value = "outscale_sg2"
@@ -296,5 +296,5 @@ func testAccOutscaleOAPISecurityGroupRuleWithGroupMembers(rInt int, accountID st
 			}
                      depends_on = [outscale_security_group.outscale_security_group2]
 		}
-	`, accountID)
+	`, accountID, rInt)
 }
