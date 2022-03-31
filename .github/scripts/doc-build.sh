@@ -2,7 +2,7 @@
 
 set -e 
 
-DOC_TEMPLATE_SUBMODULE="docs/doc-terraform-template"
+DOC_TEMPLATE_SUBMODULE="scripts/docs/doc-terraform-template"
 
 if [ "$TAG" == "" ]; then
     echo "We need the tag of the doc"
@@ -13,7 +13,7 @@ fi
 git checkout -b "autobuild-Documentation-$TAG"
 
 # Update submodule
-(cd $DOC_TEMPLATE_SUBMODULE && git fetch && git checkout $TAG && git submodule update)
+(cd $DOC_TEMPLATE_SUBMODULE && git fetch && git checkout $TAG && git submodule init && git submodule update)
 
 # Gen the doc
 make doc
