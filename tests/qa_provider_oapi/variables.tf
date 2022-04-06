@@ -3,12 +3,7 @@ variable "account_id" {}
 
 # resources configuration
 variable "image_id" {}
-variable "access_key_id" {}
-variable "secret_key_id" {}
-variable "region" {
-  type    = string
-  default = "eu-west-2"
-}
+variable "region" {}
 
 variable "vm_type" {
   type    = string
