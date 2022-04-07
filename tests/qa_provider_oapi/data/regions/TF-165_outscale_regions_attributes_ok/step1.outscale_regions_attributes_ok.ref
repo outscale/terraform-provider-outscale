@@ -19,6 +19,14 @@
                             {
                                 "endpoint": "api.###region###.outscale.com",
                                 "region_name": "###region###"
+                            },
+                            {
+                                "endpoint": "api.us-east-2.outscale.com",
+                                "region_name": "us-east-2"
+                            },
+                            {
+                                "endpoint": "api.us-west-1.outscale.com",
+                                "region_name": "us-west-1"
                             }
                         ],
                         "request_id": "########"
