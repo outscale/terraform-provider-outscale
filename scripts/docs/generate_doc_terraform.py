@@ -309,7 +309,7 @@ def treatAddPropData(field_to_update, part_to_update, addprop_content):
             removeField(field_to_update, new_k)
 
 
-def file_template(template, links, resource_name, data_type, input_field, output_field, example_content, import_content):
+def file_template(template, links, resource_name, data_type, input_field, output_field, example_content, import_content, extra_intro_content):
     if data_type  in [DataType.SINGULAR, DataType.FORCE_PLURAL, DataType.RESOURCE]:
         resource_name_singular = resource_name
     else:
@@ -356,6 +356,12 @@ def file_template(template, links, resource_name, data_type, input_field, output
     content_file = content_file.replace('IMPORT', import_content)
 
     content_file = content_file.replace('](#', '](https://docs.outscale.com/api#')
+
+    if len(extra_intro_content) == 0:
+        # Remove extra lines and TAG
+        content_file = content_file.replace('\nADDITIONAL_INTRO\n\n', "")
+    else:
+        content_file = content_file.replace('ADDITIONAL_INTRO', "{}".format(extra_intro_content))
 
     return content_file
 
@@ -490,6 +496,7 @@ def main():
         dirpath = str()
         template = str()
         example_content = str()
+        extra_intro_content = str()
         import_content = str()
         addprop_content = {}
         resource_name = str()
@@ -520,6 +527,12 @@ def main():
                 with io.open('{}/Content/datasources/{}-addprop.yaml'.format(ARGS.template_directory, resource_name),
                              'r') as f:
                     addprop_content = yaml.load(f, yaml.FullLoader)
+            except FileNotFoundError as e:
+                pass
+            try:
+                with io.open('{}/Content/datasources/{}-intro.md'.format(ARGS.template_directory, resource_name),
+                             'r') as f:
+                    extra_intro_content  = f.read()
             except FileNotFoundError as e:
                 pass
 
@@ -561,6 +574,12 @@ def main():
                 with io.open('{}/Content/resources/{}-addprop.yaml'.format(ARGS.template_directory, resource_name),
                              'r') as f:
                     addprop_content = yaml.load(f, yaml.FullLoader)
+            except FileNotFoundError as e:
+                pass
+            try:
+                with io.open('{}/Content/resources/{}-intro.md'.format(ARGS.template_directory, resource_name),
+                             'r') as f:
+                    extra_intro_content  = f.read()
             except FileNotFoundError as e:
                 pass
         else:
@@ -693,7 +712,8 @@ def main():
                                      str_input,
                                      str_output,
                                      example_content,
-                                     import_content)
+                                     import_content,
+                                     extra_intro_content)
 
         if not os.path.exists(dirpath):
             os.makedirs(dirpath)
