@@ -360,6 +360,66 @@ def file_template(template, links, resource_name, data_type, input_field, output
     return content_file
 
 
+def search_parameters_in_description(regex, description, path, description_to_change):
+    res = re.findall(regex, description)
+    if len(res) > 0:
+        description_to_change[path] = res
+
+def extract_all_arguments(path, node, extract_map, description_to_change_list):
+    regex = re.compile('`([A-Za-z]+)`')
+    if isinstance(node, schema.TerminalField):
+        search_parameters_in_description(regex, node.description, path, description_to_change_list)
+    elif isinstance(node, schema.ObjectField):
+        search_parameters_in_description(regex, node.description, path, description_to_change_list)
+        for k, v in node.properties.items():
+            extract_map[k] = True
+            extract_all_arguments("{}.{}".format(path, k), v, extract_map, description_to_change_list)
+    elif isinstance(node, schema.ArrayField):
+        search_parameters_in_description(regex, node.description, path, description_to_change_list)
+        if isinstance(node.item, schema.TerminalField):
+            search_parameters_in_description(regex, node.item.description, path, description_to_change_list)
+        elif isinstance(node.item, schema.ObjectField):
+            search_parameters_in_description(regex, node.item.description, path, description_to_change_list)
+            for k, v in node.item.properties.items():
+                extract_map[k] = True
+                extract_all_arguments("{}.{}".format(path, k), v, extract_map, description_to_change_list)
+
+def replace_parameters_in_description(field_object, key,  match):
+    if '.' in key:
+        key_split = key.split('.', 1)
+        if isinstance(field_object, schema.ObjectField):
+            if key_split[0] in field_object.properties:
+                replace_parameters_in_description(field_object.properties[key_split[0]], key_split[1], match)
+            else:
+                print("[WARNING] The key does not exist")
+        elif isinstance(field_object, schema.ArrayField):
+            if isinstance(field_object.item, schema.ObjectField):
+                if key_split[0] in field_object.item.properties:
+                    replace_parameters_in_description(field_object.item.properties[key_split[0]], key_split[1],match)
+                else:
+                    print("[WARNING] The key does not exist")
+        elif isinstance(field_object, dict):
+            replace_parameters_in_description(field_object[key_split[0]], key_split[1], match)
+        else:
+            print("[WARNING] case not implement What: replace_parameters_in_description Type: {}".format(type(field_object)))
+    else:
+        print("{} -> type : {}".format(key, type(field_object)))
+        if isinstance(field_object, schema.TerminalField):
+            field_object.description = field_object.description.replace("`{}`".format(match), "`{}`".format(utils.camel_case_to_snake_case(match)))
+        elif isinstance(field_object, schema.ObjectField):
+            if key in field_object.properties.keys():
+                field_object.properties[key].description = field_object.properties[key].description.replace("`{}`".format(match), "`{}`".format(utils.camel_case_to_snake_case(match)))
+            else:
+                print("[WARNING] The key does not exist")
+        elif isinstance(field_object, schema.ArrayField):
+            if key in field_object.item.properties.keys():
+                field_object.item.properties[key].description = field_object.item.properties[key].description.replace("`{}`".format(match), "`{}`".format(utils.camel_case_to_snake_case(match)))
+            else:
+                print("[WARNING] The key does not exist")
+        elif isinstance(field_object, dict):
+            if key in field_object:
+                field_object[key].description = field_object[key].description.replace("`{}`".format(match), "`{}`".format(utils.camel_case_to_snake_case(match)))
+
 def main():
     provider_filename = '{}/provider.go'.format(ARGS.provider_directory)
     with io.open(provider_filename, 'r') as f:
@@ -563,7 +623,36 @@ def main():
                     print("Strange ... What : {} Type:{}".format( k, type(value)))
                     exit(1)
             call_complete.output_fields = update_fields
-        
+
+        print(" - Replacing argument/attribute in description")
+        # Retrieve all arguments and attributes in a set/list
+        arg_attr_list_map = dict()
+        arg_description_to_change = dict()
+        attr_description_to_change = dict()
+        input_field_to_parse = call_complete.input_fields if call_complete else {}
+        for key, value in input_field_to_parse.items():
+            if key != 'DryRun':
+                arg_attr_list_map[key] = True
+                extract_all_arguments(key, value, arg_attr_list_map, arg_description_to_change)
+        output_field_to_parse = call_complete.output_fields if call_complete else {}
+        for key, value in output_field_to_parse.items():
+            if key != 'ResponseContext':
+                arg_attr_list_map[key] = True
+                extract_all_arguments(key, value, arg_attr_list_map, attr_description_to_change)       
+
+        ## Change the description
+        for path, matches in arg_description_to_change.items():
+            for match in matches:
+                if match in arg_attr_list_map:
+                    print("Changing description of {} to replace {}".format(path, match))
+                    replace_parameters_in_description(call_complete.input_fields, path, match)
+                
+        for path, matches in attr_description_to_change.items():
+            for match in matches:
+                if match in arg_attr_list_map:
+                    print("Changing description of {} to replace {}".format(path, match))
+                    replace_parameters_in_description(call_complete.output_fields, path, match)
+
         print(' - Treating addprop data')
         input_field_to_update = call_complete.input_fields if call_complete else {}
         if not ARGS.no_addapt:
