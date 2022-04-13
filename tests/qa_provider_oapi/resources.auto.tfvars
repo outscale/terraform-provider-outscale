@@ -1,4 +1,4 @@
-image_id                = "ami-1cda4f98"
+image_id                = "ami-0736e5f7"     #Copie-CentOS-8-2021.06.17-0 #eu-west-2
 account_id              = "xxxxxxxxxx"
 osu_bucket_name         = "bucket-name"
 server_certificate_id   = "arn:aws:iam::xxxxxxxxxxxx:xxxxxxxxxxxxxxxxxxx/xxxxxxx/xxxxxxxxxxxx"
