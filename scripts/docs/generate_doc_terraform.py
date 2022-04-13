@@ -7,6 +7,7 @@ import io
 import re
 import shutil
 import os
+import sys
 import yaml
 # Local
 import utils
@@ -764,6 +765,12 @@ def main():
     with io.open('{}/outscale.erb'.format(navbar_dirpath),
                  'w', encoding='utf-8') as f:
         f.write(navbar_file)
+
+    index_source_path = os.path.join(ARGS.template_directory, INDEX_PATH)
+    if not os.path.exists(index_source_path):
+        print("Index not found at {}".format(index_source_path))
+        sys.exit(1)
+    shutil.copy2(index_source_path, index_dirpath)
 
 if __name__ == '__main__':
     main()
