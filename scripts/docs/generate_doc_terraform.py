@@ -359,7 +359,7 @@ def file_template(template, links, resource_name, data_type, input_field, output
 
     if len(extra_intro_content) == 0:
         # Remove extra lines and TAG
-        content_file = content_file.replace('\nADDITIONAL_INTRO\n\n', "")
+        content_file = content_file.replace('\nADDITIONAL_INTRO\n', "")
     else:
         content_file = content_file.replace('ADDITIONAL_INTRO', "{}".format(extra_intro_content))
 
