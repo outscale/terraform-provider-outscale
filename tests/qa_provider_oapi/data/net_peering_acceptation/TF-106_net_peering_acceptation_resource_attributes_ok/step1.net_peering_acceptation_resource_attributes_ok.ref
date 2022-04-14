@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_net",
             "name": "outscale_net",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -32,7 +32,7 @@
             "mode": "managed",
             "type": "outscale_net",
             "name": "outscale_net2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -55,7 +55,7 @@
             "mode": "managed",
             "type": "outscale_net_peering",
             "name": "outscale_net_peering",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -77,7 +77,7 @@
                         "source_net_account_id": null,
                         "source_net_id": "##id-2##",
                         "state": {
-                            "message": "Pending acceptance by ###account_id###",
+                            "message": "########",
                             "name": "pending-acceptance"
                         },
                         "tags": [
@@ -100,7 +100,7 @@
             "mode": "managed",
             "type": "outscale_net_peering_acceptation",
             "name": "outscale_net_peering_acceptation",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -121,7 +121,7 @@
                         },
                         "source_net_id": "##id-2##",
                         "state": {
-                            "message": "Active",
+                            "message": "########",
                             "name": "active"
                         },
                         "tags": [

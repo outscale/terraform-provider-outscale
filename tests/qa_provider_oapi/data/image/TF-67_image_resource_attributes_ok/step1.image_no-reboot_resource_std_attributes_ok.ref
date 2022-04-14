@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_image",
             "name": "outscale_image",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -33,7 +33,7 @@
                         ],
                         "creation_date": "########",
                         "description": "",
-                        "file_location": "###account_id###/terraform-image-2",
+                        "file_location": "########",
                         "id": "##id-2##",
                         "image_id": "##id-2##",
                         "image_name": "########",
@@ -84,7 +84,7 @@
             "mode": "managed",
             "type": "outscale_image",
             "name": "outscale_image_2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -108,7 +108,7 @@
                         ],
                         "creation_date": "########",
                         "description": "Test-copy-image",
-                        "file_location": "###account_id###/terraform-copy-image",
+                        "file_location": "########",
                         "id": "##id-5##",
                         "image_id": "##id-5##",
                         "image_name": "########",
@@ -147,7 +147,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "my-vm",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,

@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_net_peerings",
             "name": "outscale_net_peerings",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -30,7 +30,7 @@
                                     "net_id": "##id-4##"
                                 },
                                 "state": {
-                                    "message": "Pending acceptance by ###account_id###",
+                                    "message": "########",
                                     "name": "pending-acceptance"
                                 },
                                 "tags": []
@@ -48,7 +48,7 @@
                                     "net_id": "##id-6##"
                                 },
                                 "state": {
-                                    "message": "Pending acceptance by ###account_id###",
+                                    "message": "########",
                                     "name": "pending-acceptance"
                                 },
                                 "tags": []
@@ -64,7 +64,7 @@
             "mode": "managed",
             "type": "outscale_net",
             "name": "outscale_net",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -87,7 +87,7 @@
             "mode": "managed",
             "type": "outscale_net",
             "name": "outscale_net2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -110,7 +110,7 @@
             "mode": "managed",
             "type": "outscale_net",
             "name": "outscale_net3",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -133,7 +133,7 @@
             "mode": "managed",
             "type": "outscale_net_peering",
             "name": "outscale_net_peering",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -155,7 +155,7 @@
                         "source_net_account_id": null,
                         "source_net_id": "##id-6##",
                         "state": {
-                            "message": "Pending acceptance by ###account_id###",
+                            "message": "########",
                             "name": "pending-acceptance"
                         },
                         "tags": [
@@ -182,7 +182,7 @@
             "mode": "managed",
             "type": "outscale_net_peering",
             "name": "outscale_net_peering2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -204,7 +204,7 @@
                         "source_net_account_id": null,
                         "source_net_id": "##id-4##",
                         "state": {
-                            "message": "Pending acceptance by ###account_id###",
+                            "message": "########",
                             "name": "pending-acceptance"
                         },
                         "tags": []
