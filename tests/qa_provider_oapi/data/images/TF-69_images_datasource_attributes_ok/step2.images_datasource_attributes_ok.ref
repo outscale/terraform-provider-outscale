@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_image",
             "name": "outscale_image_7",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -33,7 +33,7 @@
                         ],
                         "creation_date": "########",
                         "description": null,
-                        "file_location": "###account_id###/TF-69-name",
+                        "file_location": "########",
                         "filter": "########",
                         "id": "##id-2##",
                         "image_id": "##id-2##",
@@ -55,12 +55,12 @@
                         },
                         "tags": [
                             {
-                                "key": "Key:TF69",
-                                "value": "value-tags"
-                            },
-                            {
                                 "key": "Key-2",
                                 "value": "value:TF69"
+                            },
+                            {
+                                "key": "Key:TF69",
+                                "value": "value-tags"
                             }
                         ]
                     },
@@ -72,7 +72,7 @@
             "mode": "data",
             "type": "outscale_images",
             "name": "outscale_images",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -82,52 +82,6 @@
                         "id": "##id-3##",
                         "image_ids": null,
                         "images": [
-                            {
-                                "account_alias": "",
-                                "account_id": "##id-0##",
-                                "architecture": "x86_64",
-                                "block_device_mappings": [
-                                    {
-                                        "bsu": {
-                                            "delete_on_vm_deletion": "true",
-                                            "iops": "0",
-                                            "snapshot_id": "##id-4##",
-                                            "volume_size": "10",
-                                            "volume_type": "standard"
-                                        },
-                                        "device_name": "/dev/sda1",
-                                        "no_device": "",
-                                        "virtual_device_name": ""
-                                    }
-                                ],
-                                "creation_date": "########",
-                                "description": "",
-                                "file_location": "###account_id###/test-2",
-                                "image_id": "##id-5##",
-                                "image_name": "########",
-                                "image_type": "machine",
-                                "permissions_to_launch": [],
-                                "product_codes": [
-                                    "0001"
-                                ],
-                                "root_device_name": "/dev/sda1",
-                                "root_device_type": "bsu",
-                                "state": "available",
-                                "state_comment": {
-                                    "state_code": "",
-                                    "state_message": ""
-                                },
-                                "tags": [
-                                    {
-                                        "key": "Key:TF69",
-                                        "value": "value:TF69"
-                                    },
-                                    {
-                                        "key": "Key-2",
-                                        "value": "value-tags-2"
-                                    }
-                                ]
-                            },
                             {
                                 "account_alias": "",
                                 "account_id": "##id-0##",
@@ -148,7 +102,7 @@
                                 ],
                                 "creation_date": "########",
                                 "description": "TF-69",
-                                "file_location": "###account_id###/TF-69-name",
+                                "file_location": "########",
                                 "image_id": "##id-2##",
                                 "image_name": "########",
                                 "image_type": "machine",
@@ -165,11 +119,57 @@
                                 },
                                 "tags": [
                                     {
-                                        "key": "Key:TF69",
-                                        "value": "value-tags"
+                                        "key": "Key-2",
+                                        "value": "value:TF69"
                                     },
                                     {
+                                        "key": "Key:TF69",
+                                        "value": "value-tags"
+                                    }
+                                ]
+                            },
+                            {
+                                "account_alias": "",
+                                "account_id": "##id-0##",
+                                "architecture": "x86_64",
+                                "block_device_mappings": [
+                                    {
+                                        "bsu": {
+                                            "delete_on_vm_deletion": "true",
+                                            "iops": "0",
+                                            "snapshot_id": "##id-4##",
+                                            "volume_size": "10",
+                                            "volume_type": "standard"
+                                        },
+                                        "device_name": "/dev/sda1",
+                                        "no_device": "",
+                                        "virtual_device_name": ""
+                                    }
+                                ],
+                                "creation_date": "########",
+                                "description": "",
+                                "file_location": "########",
+                                "image_id": "##id-5##",
+                                "image_name": "########",
+                                "image_type": "machine",
+                                "permissions_to_launch": [],
+                                "product_codes": [
+                                    "0001"
+                                ],
+                                "root_device_name": "/dev/sda1",
+                                "root_device_type": "bsu",
+                                "state": "available",
+                                "state_comment": {
+                                    "state_code": "",
+                                    "state_message": ""
+                                },
+                                "tags": [
+                                    {
                                         "key": "Key-2",
+                                        "value": "value-tags-2"
+                                    },
+                                    {
+                                        "key": "Key:TF69",
                                         "value": "value:TF69"
                                     }
                                 ]
@@ -186,7 +186,7 @@
             "mode": "data",
             "type": "outscale_images",
             "name": "outscale_images_2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -216,7 +216,7 @@
                                 ],
                                 "creation_date": "########",
                                 "description": "",
-                                "file_location": "###account_id###/test-2",
+                                "file_location": "########",
                                 "image_id": "##id-5##",
                                 "image_name": "########",
                                 "image_type": "machine",
@@ -233,12 +233,12 @@
                                 },
                                 "tags": [
                                     {
-                                        "key": "Key:TF69",
-                                        "value": "value:TF69"
-                                    },
-                                    {
                                         "key": "Key-2",
                                         "value": "value-tags-2"
+                                    },
+                                    {
+                                        "key": "Key:TF69",
+                                        "value": "value:TF69"
                                     }
                                 ]
                             },
@@ -262,7 +262,7 @@
                                 ],
                                 "creation_date": "########",
                                 "description": "TF-69",
-                                "file_location": "###account_id###/TF-69-name",
+                                "file_location": "########",
                                 "image_id": "##id-2##",
                                 "image_name": "########",
                                 "image_type": "machine",
@@ -279,12 +279,12 @@
                                 },
                                 "tags": [
                                     {
-                                        "key": "Key:TF69",
-                                        "value": "value-tags"
-                                    },
-                                    {
                                         "key": "Key-2",
                                         "value": "value:TF69"
+                                    },
+                                    {
+                                        "key": "Key:TF69",
+                                        "value": "value-tags"
                                     }
                                 ]
                             }
@@ -300,7 +300,7 @@
             "mode": "data",
             "type": "outscale_images",
             "name": "outscale_images_3",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -330,7 +330,7 @@
                                 ],
                                 "creation_date": "########",
                                 "description": "TF-69",
-                                "file_location": "###account_id###/TF-69-name",
+                                "file_location": "########",
                                 "image_id": "##id-2##",
                                 "image_name": "########",
                                 "image_type": "machine",
@@ -347,12 +347,12 @@
                                 },
                                 "tags": [
                                     {
-                                        "key": "Key:TF69",
-                                        "value": "value-tags"
-                                    },
-                                    {
                                         "key": "Key-2",
                                         "value": "value:TF69"
+                                    },
+                                    {
+                                        "key": "Key:TF69",
+                                        "value": "value-tags"
                                     }
                                 ]
                             }
@@ -368,7 +368,7 @@
             "mode": "data",
             "type": "outscale_images",
             "name": "outscale_images_4",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -387,52 +387,6 @@
                                         "bsu": {
                                             "delete_on_vm_deletion": "true",
                                             "iops": "0",
-                                            "snapshot_id": "##id-1##",
-                                            "volume_size": "10",
-                                            "volume_type": "standard"
-                                        },
-                                        "device_name": "/dev/sda1",
-                                        "no_device": "",
-                                        "virtual_device_name": ""
-                                    }
-                                ],
-                                "creation_date": "########",
-                                "description": "TF-69",
-                                "file_location": "###account_id###/TF-69-name",
-                                "image_id": "##id-2##",
-                                "image_name": "########",
-                                "image_type": "machine",
-                                "permissions_to_launch": [],
-                                "product_codes": [
-                                    "0001"
-                                ],
-                                "root_device_name": "/dev/sda1",
-                                "root_device_type": "bsu",
-                                "state": "available",
-                                "state_comment": {
-                                    "state_code": "",
-                                    "state_message": ""
-                                },
-                                "tags": [
-                                    {
-                                        "key": "Key-2",
-                                        "value": "value:TF69"
-                                    },
-                                    {
-                                        "key": "Key:TF69",
-                                        "value": "value-tags"
-                                    }
-                                ]
-                            },
-                            {
-                                "account_alias": "",
-                                "account_id": "##id-0##",
-                                "architecture": "x86_64",
-                                "block_device_mappings": [
-                                    {
-                                        "bsu": {
-                                            "delete_on_vm_deletion": "true",
-                                            "iops": "0",
                                             "snapshot_id": "##id-4##",
                                             "volume_size": "10",
                                             "volume_type": "standard"
@@ -444,7 +398,7 @@
                                 ],
                                 "creation_date": "########",
                                 "description": "",
-                                "file_location": "###account_id###/test-2",
+                                "file_location": "########",
                                 "image_id": "##id-5##",
                                 "image_name": "########",
                                 "image_type": "machine",
@@ -469,6 +423,52 @@
                                         "value": "value:TF69"
                                     }
                                 ]
+                            },
+                            {
+                                "account_alias": "",
+                                "account_id": "##id-0##",
+                                "architecture": "x86_64",
+                                "block_device_mappings": [
+                                    {
+                                        "bsu": {
+                                            "delete_on_vm_deletion": "true",
+                                            "iops": "0",
+                                            "snapshot_id": "##id-1##",
+                                            "volume_size": "10",
+                                            "volume_type": "standard"
+                                        },
+                                        "device_name": "/dev/sda1",
+                                        "no_device": "",
+                                        "virtual_device_name": ""
+                                    }
+                                ],
+                                "creation_date": "########",
+                                "description": "TF-69",
+                                "file_location": "########",
+                                "image_id": "##id-2##",
+                                "image_name": "########",
+                                "image_type": "machine",
+                                "permissions_to_launch": [],
+                                "product_codes": [
+                                    "0001"
+                                ],
+                                "root_device_name": "/dev/sda1",
+                                "root_device_type": "bsu",
+                                "state": "available",
+                                "state_comment": {
+                                    "state_code": "",
+                                    "state_message": ""
+                                },
+                                "tags": [
+                                    {
+                                        "key": "Key-2",
+                                        "value": "value:TF69"
+                                    },
+                                    {
+                                        "key": "Key:TF69",
+                                        "value": "value-tags"
+                                    }
+                                ]
                             }
                         ],
                         "permissions": null,
@@ -482,7 +482,7 @@
             "mode": "data",
             "type": "outscale_images",
             "name": "outscale_images_5",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -501,52 +501,6 @@
                                         "bsu": {
                                             "delete_on_vm_deletion": "true",
                                             "iops": "0",
-                                            "snapshot_id": "##id-1##",
-                                            "volume_size": "10",
-                                            "volume_type": "standard"
-                                        },
-                                        "device_name": "/dev/sda1",
-                                        "no_device": "",
-                                        "virtual_device_name": ""
-                                    }
-                                ],
-                                "creation_date": "########",
-                                "description": "TF-69",
-                                "file_location": "###account_id###/TF-69-name",
-                                "image_id": "##id-2##",
-                                "image_name": "########",
-                                "image_type": "machine",
-                                "permissions_to_launch": [],
-                                "product_codes": [
-                                    "0001"
-                                ],
-                                "root_device_name": "/dev/sda1",
-                                "root_device_type": "bsu",
-                                "state": "available",
-                                "state_comment": {
-                                    "state_code": "",
-                                    "state_message": ""
-                                },
-                                "tags": [
-                                    {
-                                        "key": "Key-2",
-                                        "value": "value:TF69"
-                                    },
-                                    {
-                                        "key": "Key:TF69",
-                                        "value": "value-tags"
-                                    }
-                                ]
-                            },
-                            {
-                                "account_alias": "",
-                                "account_id": "##id-0##",
-                                "architecture": "x86_64",
-                                "block_device_mappings": [
-                                    {
-                                        "bsu": {
-                                            "delete_on_vm_deletion": "true",
-                                            "iops": "0",
                                             "snapshot_id": "##id-4##",
                                             "volume_size": "10",
                                             "volume_type": "standard"
@@ -558,7 +512,7 @@
                                 ],
                                 "creation_date": "########",
                                 "description": "",
-                                "file_location": "###account_id###/test-2",
+                                "file_location": "########",
                                 "image_id": "##id-5##",
                                 "image_name": "########",
                                 "image_type": "machine",
@@ -583,6 +537,52 @@
                                         "value": "value:TF69"
                                     }
                                 ]
+                            },
+                            {
+                                "account_alias": "",
+                                "account_id": "##id-0##",
+                                "architecture": "x86_64",
+                                "block_device_mappings": [
+                                    {
+                                        "bsu": {
+                                            "delete_on_vm_deletion": "true",
+                                            "iops": "0",
+                                            "snapshot_id": "##id-1##",
+                                            "volume_size": "10",
+                                            "volume_type": "standard"
+                                        },
+                                        "device_name": "/dev/sda1",
+                                        "no_device": "",
+                                        "virtual_device_name": ""
+                                    }
+                                ],
+                                "creation_date": "########",
+                                "description": "TF-69",
+                                "file_location": "########",
+                                "image_id": "##id-2##",
+                                "image_name": "########",
+                                "image_type": "machine",
+                                "permissions_to_launch": [],
+                                "product_codes": [
+                                    "0001"
+                                ],
+                                "root_device_name": "/dev/sda1",
+                                "root_device_type": "bsu",
+                                "state": "available",
+                                "state_comment": {
+                                    "state_code": "",
+                                    "state_message": ""
+                                },
+                                "tags": [
+                                    {
+                                        "key": "Key-2",
+                                        "value": "value:TF69"
+                                    },
+                                    {
+                                        "key": "Key:TF69",
+                                        "value": "value-tags"
+                                    }
+                                ]
                             }
                         ],
                         "permissions": null,
@@ -596,7 +596,7 @@
             "mode": "data",
             "type": "outscale_images",
             "name": "outscale_images_6",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -626,7 +626,7 @@
                                 ],
                                 "creation_date": "########",
                                 "description": "",
-                                "file_location": "###account_id###/test-2",
+                                "file_location": "########",
                                 "image_id": "##id-5##",
                                 "image_name": "########",
                                 "image_type": "machine",
@@ -664,7 +664,7 @@
             "mode": "managed",
             "type": "outscale_image",
             "name": "outscale_image1",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -688,7 +688,7 @@
                         ],
                         "creation_date": "########",
                         "description": "TF-69",
-                        "file_location": "###account_id###/TF-69-name",
+                        "file_location": "########",
                         "id": "##id-2##",
                         "image_id": "##id-2##",
                         "image_name": "########",
@@ -739,7 +739,7 @@
             "mode": "managed",
             "type": "outscale_image",
             "name": "outscale_image2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -763,7 +763,7 @@
                         ],
                         "creation_date": "########",
                         "description": "",
-                        "file_location": "###account_id###/test-2",
+                        "file_location": "########",
                         "id": "##id-5##",
                         "image_id": "##id-5##",
                         "image_name": "########",
@@ -814,7 +814,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "outscale_vm",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,

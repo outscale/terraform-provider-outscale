@@ -38,6 +38,8 @@ IGNORE_END_ELEMENTS = ['request_id',
                        'comment',
                        'osu_manifest_url',
                        'max_value',
+                       'file_location',
+                       'message',
                        'ip_ranges']
 IGNORE_END_PATHS = []
 TINA_ID_PREFIXES = ['i', 'subnet', 'snap', 'img', 'vol', 'eni', 'vpc', 'igw', 'nat', 'vgw', 'pcx', 'sg', 'rtb', 'rtbassoc', 'vpn', 'vpcconn', 'ami', 'dxvif','vpce','fgpu']

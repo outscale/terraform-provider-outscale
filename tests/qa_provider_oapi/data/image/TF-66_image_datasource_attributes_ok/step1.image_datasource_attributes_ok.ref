@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_image",
             "name": "outscale_image",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -33,7 +33,7 @@
                         ],
                         "creation_date": "########",
                         "description": null,
-                        "file_location": "###account_id###/image-TF66",
+                        "file_location": "########",
                         "filter": "########",
                         "id": "##id-2##",
                         "image_id": "##id-2##",
@@ -55,12 +55,12 @@
                         },
                         "tags": [
                             {
-                                "key": "Key:TF66",
-                                "value": "value:TF66"
-                            },
-                            {
                                 "key": "Key-2",
                                 "value": "value-tags-2"
+                            },
+                            {
+                                "key": "Key:TF66",
+                                "value": "value:TF66"
                             }
                         ]
                     },
@@ -72,7 +72,7 @@
             "mode": "data",
             "type": "outscale_image",
             "name": "outscale_image_2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -96,7 +96,7 @@
                         ],
                         "creation_date": "########",
                         "description": null,
-                        "file_location": "###account_id###/image-TF66",
+                        "file_location": "########",
                         "filter": "########",
                         "id": "##id-2##",
                         "image_id": "##id-2##",
@@ -118,12 +118,12 @@
                         },
                         "tags": [
                             {
-                                "key": "Key:TF66",
-                                "value": "value:TF66"
-                            },
-                            {
                                 "key": "Key-2",
                                 "value": "value-tags-2"
+                            },
+                            {
+                                "key": "Key:TF66",
+                                "value": "value:TF66"
                             }
                         ]
                     },
@@ -135,7 +135,7 @@
             "mode": "data",
             "type": "outscale_image",
             "name": "outscale_image_3",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -159,7 +159,7 @@
                         ],
                         "creation_date": "########",
                         "description": null,
-                        "file_location": "###account_id###/image-TF66",
+                        "file_location": "########",
                         "filter": "########",
                         "id": "##id-2##",
                         "image_id": "##id-2##",
@@ -181,12 +181,12 @@
                         },
                         "tags": [
                             {
-                                "key": "Key:TF66",
-                                "value": "value:TF66"
-                            },
-                            {
                                 "key": "Key-2",
                                 "value": "value-tags-2"
+                            },
+                            {
+                                "key": "Key:TF66",
+                                "value": "value:TF66"
                             }
                         ]
                     },
@@ -198,7 +198,7 @@
             "mode": "data",
             "type": "outscale_image",
             "name": "outscale_image_4",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -222,7 +222,7 @@
                         ],
                         "creation_date": "########",
                         "description": null,
-                        "file_location": "###account_id###/image-TF66",
+                        "file_location": "########",
                         "filter": "########",
                         "id": "##id-2##",
                         "image_id": "##id-2##",
@@ -261,7 +261,7 @@
             "mode": "data",
             "type": "outscale_image",
             "name": "outscale_image_5",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -285,7 +285,7 @@
                         ],
                         "creation_date": "########",
                         "description": null,
-                        "file_location": "###account_id###/image-TF66",
+                        "file_location": "########",
                         "filter": "########",
                         "id": "##id-2##",
                         "image_id": "##id-2##",
@@ -324,7 +324,7 @@
             "mode": "data",
             "type": "outscale_image",
             "name": "outscale_image_6",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -348,7 +348,7 @@
                         ],
                         "creation_date": "########",
                         "description": null,
-                        "file_location": "###account_id###/image-TF66",
+                        "file_location": "########",
                         "filter": "########",
                         "id": "##id-2##",
                         "image_id": "##id-2##",
@@ -387,7 +387,7 @@
             "mode": "data",
             "type": "outscale_image",
             "name": "outscale_image_7",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -411,7 +411,7 @@
                         ],
                         "creation_date": "########",
                         "description": null,
-                        "file_location": "###account_id###/image-TF66",
+                        "file_location": "########",
                         "filter": "########",
                         "id": "##id-2##",
                         "image_id": "##id-2##",
@@ -433,12 +433,12 @@
                         },
                         "tags": [
                             {
-                                "key": "Key:TF66",
-                                "value": "value:TF66"
-                            },
-                            {
                                 "key": "Key-2",
                                 "value": "value-tags-2"
+                            },
+                            {
+                                "key": "Key:TF66",
+                                "value": "value:TF66"
                             }
                         ]
                     },
@@ -450,7 +450,7 @@
             "mode": "managed",
             "type": "outscale_image",
             "name": "outscale_image",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -474,7 +474,7 @@
                         ],
                         "creation_date": "########",
                         "description": "TF-66",
-                        "file_location": "###account_id###/image-TF66",
+                        "file_location": "########",
                         "id": "##id-2##",
                         "image_id": "##id-2##",
                         "image_name": "########",
@@ -525,7 +525,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "my-vm",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
