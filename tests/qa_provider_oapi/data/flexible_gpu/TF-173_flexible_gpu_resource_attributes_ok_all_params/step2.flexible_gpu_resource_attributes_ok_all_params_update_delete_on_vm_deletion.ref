@@ -9,14 +9,14 @@
             "mode": "managed",
             "type": "outscale_flexible_gpu",
             "name": "fGPU-1",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "delete_on_vm_deletion": false,
                         "flexible_gpu_id": "##id-0##",
-                        "generation": "v4",
+                        "generation": "v3",
                         "id": "##id-0##",
                         "model_name": "nvidia-k2",
                         "request_id": "########",

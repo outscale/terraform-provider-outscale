@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_flexible_gpu",
             "name": "data-fGPU-1",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -17,7 +17,7 @@
                         "delete_on_vm_deletion": true,
                         "filter": "########",
                         "flexible_gpu_id": "##id-0##",
-                        "generation": "v4",
+                        "generation": "v3",
                         "id": "##id-0##",
                         "model_name": "nvidia-k2",
                         "request_id": "########",
@@ -33,7 +33,7 @@
             "mode": "data",
             "type": "outscale_flexible_gpu",
             "name": "data-fGPU-2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -41,7 +41,7 @@
                         "delete_on_vm_deletion": true,
                         "filter": "########",
                         "flexible_gpu_id": "##id-0##",
-                        "generation": "v4",
+                        "generation": "v3",
                         "id": "##id-0##",
                         "model_name": "nvidia-k2",
                         "request_id": "########",
@@ -57,7 +57,7 @@
             "mode": "data",
             "type": "outscale_flexible_gpu",
             "name": "data-fGPU-3",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -65,7 +65,7 @@
                         "delete_on_vm_deletion": true,
                         "filter": "########",
                         "flexible_gpu_id": "##id-0##",
-                        "generation": "v4",
+                        "generation": "v3",
                         "id": "##id-0##",
                         "model_name": "nvidia-k2",
                         "request_id": "########",
@@ -81,14 +81,14 @@
             "mode": "managed",
             "type": "outscale_flexible_gpu",
             "name": "fGPU-1",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "delete_on_vm_deletion": true,
                         "flexible_gpu_id": "##id-0##",
-                        "generation": "v4",
+                        "generation": "v3",
                         "id": "##id-0##",
                         "model_name": "nvidia-k2",
                         "request_id": "########",
@@ -105,7 +105,7 @@
             "mode": "managed",
             "type": "outscale_flexible_gpu_link",
             "name": "link_fGPU",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -129,7 +129,7 @@
             "mode": "managed",
             "type": "outscale_keypair",
             "name": "my_keypair",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -151,7 +151,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "MaVM",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -214,7 +214,7 @@
                         "user_data": "",
                         "vm_id": "##id-1##",
                         "vm_initiated_shutdown_behavior": "restart",
-                        "vm_type": "###vm_type###"
+                        "vm_type": "tinav3.c2r2p2"
                     },
                     "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
