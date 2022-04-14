@@ -23,16 +23,17 @@
                                 ],
                                 "max_cpu": 80,
                                 "max_ram": 512,
-                                "model_name": "nvidia-m60",
-                                "v_ram": 16000
+                                "model_name": "nvidia-k2",
+                                "v_ram": 4096
                             },
                             {
                                 "generations": [
-                                    "v5"
+                                    "v3",
+                                    "v4"
                                 ],
-                                "max_cpu": 35,
-                                "max_ram": 250,
-                                "model_name": "nvidia-v100",
+                                "max_cpu": 80,
+                                "max_ram": 512,
+                                "model_name": "nvidia-m60",
                                 "v_ram": 16000
                             },
                             {
@@ -55,13 +56,12 @@
                             },
                             {
                                 "generations": [
-                                    "v3",
-                                    "v4"
+                                    "v5"
                                 ],
-                                "max_cpu": 80,
-                                "max_ram": 512,
-                                "model_name": "nvidia-k2",
-                                "v_ram": 4096
+                                "max_cpu": 35,
+                                "max_ram": 250,
+                                "model_name": "nvidia-v100",
+                                "v_ram": 16000
                             }
                         ],
                         "id": "##id-0##",
