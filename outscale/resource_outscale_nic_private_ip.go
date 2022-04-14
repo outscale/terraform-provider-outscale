@@ -68,7 +68,7 @@ func resourceOutscaleOAPINetworkInterfacePrivateIPCreate(d *schema.ResourceData,
 	}
 
 	if v, ok := d.GetOk("secondary_private_ip_count"); ok {
-		input.SetSecondaryPrivateIpCount(int32(v.(int) - 1))
+		input.SetSecondaryPrivateIpCount(int32(v.(int)))
 	}
 
 	if v, ok := d.GetOk("private_ips"); ok {
@@ -145,11 +145,13 @@ func resourceOutscaleOAPINetworkInterfacePrivateIPRead(d *schema.ResourceData, m
 	// We need to avoid to store inside private_ips when private IP is the primary IP
 	//because the primary can't remove.
 	var primaryPrivateID string
+	secondary_private_ip_count := 0
 	for _, v := range eni.GetPrivateIps() {
 		if v.GetIsPrimary() {
 			primaryPrivateID = v.GetPrivateIp()
 		} else {
 			ips = append(ips, v.GetPrivateIp())
+			secondary_private_ip_count += 1
 		}
 	}
 
@@ -161,7 +163,7 @@ func resourceOutscaleOAPINetworkInterfacePrivateIPRead(d *schema.ResourceData, m
 	if err := d.Set("private_ips", ips); err != nil {
 		return err
 	}
-	if err := d.Set("secondary_private_ip_count", len(eni.GetPrivateIps())); err != nil {
+	if err := d.Set("secondary_private_ip_count", secondary_private_ip_count); err != nil {
 		return err
 	}
 	if err := d.Set("nic_id", eni.GetNicId()); err != nil {
