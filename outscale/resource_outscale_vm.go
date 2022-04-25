@@ -679,6 +679,7 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 	id := d.Get("vm_id").(string)
 
 	nothingToDo := true
+	onlyTags := d.HasChange("tags")
 	o, n := d.GetChange("")
 	os := o.(map[string]interface{})
 	ns := n.(map[string]interface{})
@@ -687,11 +688,17 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 		if d.HasChange(k) && k != "get_admin_password" {
 			nothingToDo = false
 		}
+		if d.HasChange(k) && k != "tags" {
+			onlyTags = false
+		}
 	}
 
 	for k := range ns {
 		if d.HasChange(k) && k != "get_admin_password" {
 			nothingToDo = false
+		}
+		if d.HasChange(k) && k != "tags" {
+			onlyTags = false
 		}
 	}
 
@@ -849,6 +856,10 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	d.Partial(false)
 
+	if onlyTags {
+		goto out
+	}
+
 	if d.HasChange("state") && !d.IsNewResource() {
 		upState := d.Get("state").(string)
 		if upState != "stopped" && upState != "running" {
@@ -869,6 +880,7 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
+out:
 	return resourceOAPIVMRead(d, meta)
 }
 
