@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
+
 	"github.com/openlyinc/pointy"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 
@@ -162,10 +164,7 @@ func resourceOAPIImageExportTaskCreate(d *schema.ResourceData, meta interface{})
 		resp, _, err = conn.ImageApi.CreateImageExportTask(context.Background()).
 			CreateImageExportTaskRequest(request).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
@@ -202,10 +201,7 @@ func resourceOAPIImageExportTaskRead(d *schema.ResourceData, meta interface{}) e
 				Filters: filter,
 			}).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
@@ -334,16 +330,13 @@ func ImageTaskStateRefreshFunc(client *oscgo.APIClient, id string) resource.Stat
 					Filters: filter,
 				}).Execute()
 			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
+				return utils.CheckThrottling(err)
 			}
 			return nil
 		})
 
 		if err != nil {
-			if e := fmt.Sprint(err); strings.Contains(e, "InvalidAMIID.NotFound") {
+			if e := fmt.Sprint(err); strings.Contains(e, utils.ResourceNotFound) {
 				log.Printf("[INFO] Image export task %s state %s", id, "destroyed")
 				return resp, "destroyed", nil
 			} else if resp.GetImageExportTasks() != nil && len(resp.GetImageExportTasks()) == 0 {

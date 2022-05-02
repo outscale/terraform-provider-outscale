@@ -9,6 +9,7 @@ import (
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -251,13 +252,8 @@ func loadBalancerAttributesDoRequest(d *schema.ResourceData, meta interface{}, r
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, _, err = conn.LoadBalancerApi.UpdateLoadBalancer(
 			context.Background()).UpdateLoadBalancerRequest(req).Execute()
-
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "400 Bad Request") {
-				return resource.NonRetryableError(err)
-			}
-			return resource.RetryableError(
-				fmt.Errorf("[WARN] Error creating LBU Attr: %s", err))
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
@@ -520,13 +516,8 @@ func resourceOutscaleOAPILoadBalancerAttributesDelete(d *schema.ResourceData, me
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, _, err = conn.LoadBalancerApi.UpdateLoadBalancer(
 			context.Background()).UpdateLoadBalancerRequest(req).Execute()
-
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "400 Bad Request") {
-				return resource.NonRetryableError(err)
-			}
-			return resource.RetryableError(
-				fmt.Errorf("[WARN] Error creating LBU Attr: %s", err))
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})

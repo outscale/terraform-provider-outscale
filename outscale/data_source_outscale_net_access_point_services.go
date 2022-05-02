@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func dataSourceOutscaleOAPINetAccessPointServices() *schema.Resource {
@@ -64,7 +65,7 @@ func dataSourceOutscaleOAPINetAccessPointServicesRead(d *schema.ResourceData, me
 			context.Background()).
 			ReadNetAccessPointServicesRequest(req).Execute()
 		if err != nil {
-			return resource.RetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})

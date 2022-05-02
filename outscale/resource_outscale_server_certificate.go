@@ -4,16 +4,14 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"time"
-
-	"github.com/openlyinc/pointy"
-	"github.com/spf13/cast"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/openlyinc/pointy"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/spf13/cast"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleOAPIServerCertificate() *schema.Resource {
@@ -95,11 +93,15 @@ func resourceOutscaleOAPIServerCertificateCreate(d *schema.ResourceData, meta in
 	if v, ok := d.GetOk("path"); ok {
 		req.Path = pointy.String(v.(string))
 	}
-
-	resp, _, err := conn.ServerCertificateApi.CreateServerCertificate(context.Background()).CreateServerCertificateRequest(req).Execute()
-	if err != nil {
-		return fmt.Errorf("[DEBUG] Error creating Server Certificate: %s", utils.GetErrorResponse(err))
-	}
+	var resp oscgo.CreateServerCertificateResponse
+	var err error
+	err = resource.Retry(120*time.Second, func() *resource.RetryError {
+		resp, _, err = conn.ServerCertificateApi.CreateServerCertificate(context.Background()).CreateServerCertificateRequest(req).Execute()
+		if err != nil {
+			return utils.CheckThrottling(err)
+		}
+		return nil
+	})
 
 	d.SetId(cast.ToString(resp.ServerCertificate.Id))
 
@@ -114,17 +116,12 @@ func resourceOutscaleOAPIServerCertificateRead(d *schema.ResourceData, meta inte
 	log.Printf("[DEBUG] Reading Server Certificate id (%s)", id)
 
 	var resp oscgo.ReadServerCertificatesResponse
-
-	err := resource.Retry(120*time.Second, func() *resource.RetryError {
-		r, _, err := conn.ServerCertificateApi.ReadServerCertificates(context.Background()).ReadServerCertificatesRequest(oscgo.ReadServerCertificatesRequest{}).Execute()
-
+	var err error
+	err = resource.Retry(120*time.Second, func() *resource.RetryError {
+		resp, _, err = conn.ServerCertificateApi.ReadServerCertificates(context.Background()).ReadServerCertificatesRequest(oscgo.ReadServerCertificatesRequest{}).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
-		resp = r
 		return nil
 	})
 
@@ -172,10 +169,14 @@ func resourceOutscaleOAPIServerCertificateUpdate(d *schema.ResourceData, meta in
 		req.NewPath = pointy.String(d.Get("path").(string))
 	}
 
-	_, _, err := conn.ServerCertificateApi.UpdateServerCertificate(context.Background()).UpdateServerCertificateRequest(req).Execute()
-	if err != nil {
-		return fmt.Errorf("[DEBUG] Error creating Server Certificate: %s", utils.GetErrorResponse(err))
-	}
+	var err error
+	err = resource.Retry(120*time.Second, func() *resource.RetryError {
+		_, _, err = conn.ServerCertificateApi.UpdateServerCertificate(context.Background()).UpdateServerCertificateRequest(req).Execute()
+		if err != nil {
+			return utils.CheckThrottling(err)
+		}
+		return nil
+	})
 	return resourceOutscaleOAPIServerCertificateRead(d, meta)
 }
 
@@ -186,10 +187,14 @@ func resourceOutscaleOAPIServerCertificateDelete(d *schema.ResourceData, meta in
 		Name: d.Get("name").(string),
 	}
 
-	_, _, err := conn.ServerCertificateApi.DeleteServerCertificate(context.Background()).DeleteServerCertificateRequest(req).Execute()
-	if err != nil {
-		return fmt.Errorf("[DEBUG] Error deleting Server Certificate id (%s)", err)
-	}
+	var err error
+	err = resource.Retry(120*time.Second, func() *resource.RetryError {
+		_, _, err = conn.ServerCertificateApi.DeleteServerCertificate(context.Background()).DeleteServerCertificateRequest(req).Execute()
+		if err != nil {
+			return utils.CheckThrottling(err)
+		}
+		return nil
+	})
 
 	return nil
 }

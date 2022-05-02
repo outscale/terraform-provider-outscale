@@ -10,6 +10,7 @@ import (
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/errwrap"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -91,18 +92,13 @@ func resourceOutscaleOAPILinPeeringCreate(d *schema.ResourceData, meta interface
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		resp, _, err = conn.NetPeeringApi.CreateNetPeering(context.Background()).CreateNetPeeringRequest(createOpts).Execute()
-
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
 
 	var errString string
-
 	if err != nil {
 		errString = err.Error()
 		return fmt.Errorf("Error creating Net Peering. Details: %s", errString)
@@ -146,18 +142,13 @@ func resourceOutscaleOAPILinPeeringRead(d *schema.ResourceData, meta interface{}
 		resp, _, err = conn.NetPeeringApi.ReadNetPeerings(context.Background()).ReadNetPeeringsRequest(oscgo.ReadNetPeeringsRequest{
 			Filters: &oscgo.FiltersNetPeering{NetPeeringIds: &[]string{d.Id()}},
 		}).Execute()
-
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
 
 	var errString string
-
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "InvalidVpcPeeringConnectionID.NotFound") {
 			d.SetId("")
@@ -262,18 +253,13 @@ func resourceOutscaleOAPILinPeeringDelete(d *schema.ResourceData, meta interface
 		_, _, err = conn.NetPeeringApi.DeleteNetPeering(context.Background()).DeleteNetPeeringRequest(oscgo.DeleteNetPeeringRequest{
 			NetPeeringId: d.Id(),
 		}).Execute()
-
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
 
 	var errString string
-
 	if err != nil {
 		errString = err.Error()
 		return fmt.Errorf("Error deleteting Net Peering. Details: %s", errString)
@@ -292,18 +278,13 @@ func resourceOutscaleOAPILinPeeringConnectionStateRefreshFunc(conn *oscgo.APICli
 			resp, _, err = conn.NetPeeringApi.ReadNetPeerings(context.Background()).ReadNetPeeringsRequest(oscgo.ReadNetPeeringsRequest{
 				Filters: &oscgo.FiltersNetPeering{NetPeeringIds: &[]string{id}},
 			}).Execute()
-
 			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
+				return utils.CheckThrottling(err)
 			}
 			return nil
 		})
 
 		var errString string
-
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "InvalidVpcPeeringConnectionID.NotFound") {
 				// Sometimes AWS just has consistency issues and doesn't see

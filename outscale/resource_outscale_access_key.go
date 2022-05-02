@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -11,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/nav-inc/datetime"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleAccessKey() *schema.Resource {
@@ -80,10 +80,7 @@ func resourceOutscaleAccessKeyCreate(d *schema.ResourceData, meta interface{}) e
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		res, _, err = conn.AccessKeyApi.CreateAccessKey(context.Background()).CreateAccessKeyRequest(req).Execute()
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
@@ -108,8 +105,16 @@ func resourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) err
 	filter := oscgo.ReadSecretAccessKeyRequest{
 		AccessKeyId: d.Id(),
 	}
+	var resp oscgo.ReadSecretAccessKeyResponse
+	err := resource.Retry(2*time.Minute, func() *resource.RetryError {
+		rp, _, err := conn.AccessKeyApi.ReadSecretAccessKey(context.Background()).ReadSecretAccessKeyRequest(filter).Execute()
+		if err != nil {
+			return utils.CheckThrottling(err)
+		}
+		resp = rp
+		return nil
+	})
 
-	resp, _, err := conn.AccessKeyApi.ReadSecretAccessKey(context.Background()).ReadSecretAccessKeyRequest(filter).Execute()
 	if err != nil {
 		return err
 	}
@@ -160,7 +165,14 @@ func resourceOutscaleAccessKeyUpdate(d *schema.ResourceData, meta interface{}) e
 		}
 		req.State = state
 	}
-	_, _, err := conn.AccessKeyApi.UpdateAccessKey(context.Background()).UpdateAccessKeyRequest(req).Execute()
+
+	err := resource.Retry(2*time.Minute, func() *resource.RetryError {
+		_, _, err := conn.AccessKeyApi.UpdateAccessKey(context.Background()).UpdateAccessKeyRequest(req).Execute()
+		if err != nil {
+			return utils.CheckThrottling(err)
+		}
+		return nil
+	})
 	if err != nil {
 		return err
 	}
@@ -178,10 +190,7 @@ func resourceOutscaleAccessKeyDelete(d *schema.ResourceData, meta interface{}) e
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, _, err = conn.AccessKeyApi.DeleteAccessKey(context.Background()).DeleteAccessKeyRequest(req).Execute()
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
@@ -197,12 +206,17 @@ func updateAccessKey(conn *oscgo.APIClient, id, state string) error {
 		AccessKeyId: id,
 		State:       state,
 	}
+	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+		_, _, err := conn.AccessKeyApi.UpdateAccessKey(context.Background()).UpdateAccessKeyRequest(req).Execute()
+		if err != nil {
+			return utils.CheckThrottling(err)
+		}
+		return nil
+	})
 
-	_, _, err := conn.AccessKeyApi.UpdateAccessKey(context.Background()).UpdateAccessKeyRequest(req).Execute()
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 

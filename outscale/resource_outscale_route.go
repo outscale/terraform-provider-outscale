@@ -140,16 +140,13 @@ func resourceOutscaleOAPIRouteCreate(d *schema.ResourceData, meta interface{}) e
 	var err error
 	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
 		_, _, err = conn.RouteApi.CreateRoute(context.Background()).CreateRouteRequest(createOpts).Execute()
-
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "InvalidParameterException") {
+			if strings.Contains(fmt.Sprint(err), utils.InvalidState) {
 				log.Printf("[DEBUG] Trying to create route again: %q", err)
 				return resource.RetryableError(err)
 			}
-
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
-
 		return nil
 	})
 
@@ -193,7 +190,7 @@ func resourceOutscaleOAPIRouteRead(d *schema.ResourceData, meta interface{}) err
 
 	route, requestID, err := findResourceOAPIRoute(conn, routeTableID, destinationIPRange)
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "InvalidRouteTableID.NotFound") {
+		if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
 			log.Printf("[WARN] Route Table %q could not be found. Removing Route from state.", routeTableID)
 			return nil
 		}
@@ -330,16 +327,13 @@ func resourceOutscaleOAPIRouteUpdate(d *schema.ResourceData, meta interface{}) e
 	var err error
 	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
 		_, _, err = conn.RouteApi.UpdateRoute(context.Background()).UpdateRouteRequest(replaceOpts).Execute()
-
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "InvalidParameterException") {
+			if strings.Contains(fmt.Sprint(err), utils.InvalidState) {
 				log.Printf("[DEBUG] Trying to create route again: %q", err)
 				return resource.RetryableError(err)
 			}
-
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
-
 		return nil
 	})
 	if err != nil {
@@ -363,17 +357,14 @@ func resourceOutscaleOAPIRouteDelete(d *schema.ResourceData, meta interface{}) e
 		log.Printf("[DEBUG] Trying to delete route with opts %+v", deleteOpts)
 		resp, _, err := conn.RouteApi.DeleteRoute(context.Background()).DeleteRouteRequest(deleteOpts).Execute()
 		log.Printf("[DEBUG] Route delete result: %+v", resp)
-
-		if err == nil {
-			return nil
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), utils.InvalidState) {
+				log.Printf("[DEBUG] Trying to delete route again: %q", fmt.Sprint(err))
+				return resource.RetryableError(err)
+			}
+			return utils.CheckThrottling(err)
 		}
-
-		if strings.Contains(fmt.Sprint(err), "InvalidParameterException") {
-			log.Printf("[DEBUG] Trying to delete route again: %q", fmt.Sprint(err))
-			return resource.RetryableError(err)
-		}
-
-		return resource.NonRetryableError(err)
+		return nil
 	})
 
 	if err != nil {
@@ -396,16 +387,13 @@ func resourceOutscaleOAPIRouteExists(d *schema.ResourceData, meta interface{}) (
 	var err error
 	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
 		resp, _, err = conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(findOpts).Execute()
-
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "InvalidParameterException") || strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
+			if strings.Contains(fmt.Sprint(err), utils.InvalidState) {
 				log.Printf("[DEBUG] Trying to create route again: %q", err)
 				return resource.RetryableError(err)
 			}
-
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
-
 		return nil
 	})
 
@@ -449,16 +437,13 @@ func findResourceOAPIRoute(conn *oscgo.APIClient, rtbid string, cidr string) (*o
 	var err error
 	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
 		resp, _, err = conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(findOpts).Execute()
-
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "InvalidParameterException") || strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
+			if strings.Contains(fmt.Sprint(err), utils.InvalidState) {
 				log.Printf("[DEBUG] Trying to create route again: %q", err)
 				return resource.RetryableError(err)
 			}
-
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
-
 		return nil
 	})
 

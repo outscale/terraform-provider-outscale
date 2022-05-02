@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 )
@@ -52,8 +53,13 @@ func resourceOutscaleVPNConnectionRouteCreate(d *schema.ResourceData, meta inter
 		DestinationIpRange: destinationIPRange,
 		VpnConnectionId:    vpnConnectionID,
 	}
-
-	_, _, err := conn.VpnConnectionApi.CreateVpnConnectionRoute(context.Background()).CreateVpnConnectionRouteRequest(req).Execute()
+	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+		_, _, err := conn.VpnConnectionApi.CreateVpnConnectionRoute(context.Background()).CreateVpnConnectionRouteRequest(req).Execute()
+		if err != nil {
+			return utils.CheckThrottling(err)
+		}
+		return nil
+	})
 	if err != nil {
 		return fmt.Errorf("Error creating Outscale VPN Conecction Route: %s", err)
 	}
@@ -94,8 +100,14 @@ func resourceOutscaleVPNConnectionRouteDelete(d *schema.ResourceData, meta inter
 		DestinationIpRange: destinationIPRange,
 		VpnConnectionId:    vpnConnectionID,
 	}
+	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+		_, _, err := conn.VpnConnectionApi.DeleteVpnConnectionRoute(context.Background()).DeleteVpnConnectionRouteRequest(req).Execute()
+		if err != nil {
+			return utils.CheckThrottling(err)
+		}
+		return nil
+	})
 
-	_, _, err := conn.VpnConnectionApi.DeleteVpnConnectionRoute(context.Background()).DeleteVpnConnectionRouteRequest(req).Execute()
 	if err != nil {
 		return err
 	}
@@ -130,7 +142,7 @@ func vpnConnectionRouteRefreshFunc(conn *oscgo.APIClient, destinationIPRange, vp
 		resp, _, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(filter).Execute()
 		if err != nil {
 			switch {
-			case strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:"):
+			case strings.Contains(fmt.Sprint(err), utils.Throttled):
 				return nil, "pending", nil
 			case strings.Contains(fmt.Sprint(err), "404"):
 				return nil, "deleted", nil

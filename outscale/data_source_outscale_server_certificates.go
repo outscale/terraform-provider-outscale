@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func datasourceOutscaleOAPIServerCertificates() *schema.Resource {
@@ -69,30 +69,21 @@ func datasourceOutscaleOAPIServerCertificatesRead(d *schema.ResourceData, meta i
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
 		resp, _, err = conn.ServerCertificateApi.ReadServerCertificates(context.Background()).ReadServerCertificatesRequest(params).Execute()
-
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
-		return resource.RetryableError(err)
+		return nil
 	})
 
 	var errString string
-
 	if err != nil {
 		errString = err.Error()
-
 		return fmt.Errorf("[DEBUG] Error reading Server Certificates (%s)", errString)
 	}
 
 	log.Printf("[DEBUG] Setting Server Certificates id (%s)", err)
-
 	d.Set("server_certificates", flattenServerCertificates(resp.GetServerCertificates()))
-
 	d.SetId(resource.UniqueId())
-
 	return nil
 }
 
@@ -113,11 +104,8 @@ func flattenServerCertificates(apiObjects []oscgo.ServerCertificate) []map[strin
 	}
 
 	var tfList []map[string]interface{}
-
 	for _, apiObject := range apiObjects {
-
 		tfList = append(tfList, flattenServerCertificate(apiObject))
 	}
-
 	return tfList
 }

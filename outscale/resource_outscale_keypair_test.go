@@ -8,8 +8,8 @@ import (
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -105,32 +105,21 @@ func testAccCheckOutscaleOAPIKeyPairDestroy(s *terraform.State) error {
 			}).Execute()
 
 			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
+				return utils.CheckThrottling(err)
 			}
-
-			return resource.RetryableError(err)
+			return nil
 		})
 
+		if err != nil {
+			return err
+		}
 		if err == nil {
 			if len(resp.GetKeypairs()) > 0 {
 				return fmt.Errorf("still exist")
 			}
 			return nil
 		}
-
-		// Verify the error is what we want
-		ec2err, ok := err.(awserr.Error)
-		if !ok {
-			return err
-		}
-		if ec2err.Code() != "InvalidOAPIKeyPair.NotFound" {
-			return err
-		}
 	}
-
 	return nil
 }
 
@@ -163,14 +152,11 @@ func testAccCheckOutscaleOAPIKeyPairExists(n string, res *oscgo.Keypair) resourc
 			}).Execute()
 
 			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
+				return utils.CheckThrottling(err)
 			}
 			return nil
 		})
-		if err != nil {
+		if err != nil && !strings.Contains(fmt.Sprintf("%s", err), utils.ResourceNotFound) {
 			return err
 		}
 		if len(resp.GetKeypairs()) != 1 ||

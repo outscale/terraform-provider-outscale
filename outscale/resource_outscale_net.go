@@ -49,12 +49,9 @@ func resourceOutscaleOAPINetCreate(d *schema.ResourceData, meta interface{}) err
 		resp, _, err = conn.NetApi.CreateNet(context.Background()).CreateNetRequest(req).Execute()
 
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
-		return resource.RetryableError(err)
+		return nil
 	})
 
 	if err != nil {
@@ -74,7 +71,7 @@ func resourceOutscaleOAPINetCreate(d *schema.ResourceData, meta interface{}) err
 	return resource.Retry(120*time.Second, func() *resource.RetryError {
 		err = resourceOutscaleOAPINetRead(d, meta)
 		if err != nil {
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		if c, ok := d.GetOk("state"); ok {
 			state := c.(string)
@@ -105,12 +102,9 @@ func resourceOutscaleOAPINetRead(d *schema.ResourceData, meta interface{}) error
 		resp, _, err = conn.NetApi.ReadNets(context.Background()).ReadNetsRequest(req).Execute()
 
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
-		return resource.RetryableError(err)
+		return nil
 	})
 	if err != nil {
 		return fmt.Errorf("[DEBUG] Error reading network (%s)", err)
@@ -168,11 +162,14 @@ func resourceOutscaleOAPINetDelete(d *schema.ResourceData, meta interface{}) err
 		Pending: []string{"pending"},
 		Target:  []string{"deleted", "failed"},
 		Refresh: func() (interface{}, string, error) {
-			_, _, err := conn.NetApi.DeleteNet(context.Background()).DeleteNetRequest(req).Execute()
-			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return nil, "pending", nil
+			err := resource.Retry(120*time.Second, func() *resource.RetryError {
+				_, _, err := conn.NetApi.DeleteNet(context.Background()).DeleteNetRequest(req).Execute()
+				if err != nil {
+					return utils.CheckThrottling(err)
 				}
+				return nil
+			})
+			if err != nil {
 				return nil, "failed", err
 			}
 			return "", "deleted", nil

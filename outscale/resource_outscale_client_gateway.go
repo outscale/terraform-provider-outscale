@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/spf13/cast"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -66,7 +67,15 @@ func resourceOutscaleClientGatewayCreate(d *schema.ResourceData, meta interface{
 		PublicIp:       d.Get("public_ip").(string),
 	}
 
-	client, _, err := conn.ClientGatewayApi.CreateClientGateway(context.Background()).CreateClientGatewayRequest(req).Execute()
+	var client oscgo.CreateClientGatewayResponse
+	err := resource.Retry(120*time.Second, func() *resource.RetryError {
+		var err error
+		client, _, err = conn.ClientGatewayApi.CreateClientGateway(context.Background()).CreateClientGatewayRequest(req).Execute()
+		if err != nil {
+			return utils.CheckThrottling(err)
+		}
+		return nil
+	})
 	if err != nil {
 		return err
 	}
@@ -149,8 +158,14 @@ func resourceOutscaleClientGatewayDelete(d *schema.ResourceData, meta interface{
 	req := oscgo.DeleteClientGatewayRequest{
 		ClientGatewayId: gatewayID,
 	}
+	err := resource.Retry(120*time.Second, func() *resource.RetryError {
+		_, _, err := conn.ClientGatewayApi.DeleteClientGateway(context.Background()).DeleteClientGatewayRequest(req).Execute()
+		if err != nil {
+			return utils.CheckThrottling(err)
+		}
+		return nil
+	})
 
-	_, _, err := conn.ClientGatewayApi.DeleteClientGateway(context.Background()).DeleteClientGatewayRequest(req).Execute()
 	if err != nil {
 		return err
 	}
@@ -184,7 +199,7 @@ func clientGatewayRefreshFunc(conn *oscgo.APIClient, gatewayID *string) resource
 		resp, _, err := conn.ClientGatewayApi.ReadClientGateways(context.Background()).ReadClientGatewaysRequest(filter).Execute()
 		if err != nil || len(resp.GetClientGateways()) == 0 {
 			switch {
-			case strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:"):
+			case strings.Contains(fmt.Sprint(err), utils.Throttled):
 				return nil, "pending", nil
 			case strings.Contains(fmt.Sprint(err), "404") || len(resp.GetClientGateways()) == 0:
 				return nil, "deleted", nil

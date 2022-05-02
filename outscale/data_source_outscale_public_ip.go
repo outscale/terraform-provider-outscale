@@ -88,20 +88,16 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 		var err error
 		response, _, err = conn.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
 
 	if err != nil {
-		if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
+		if e := fmt.Sprint(err); strings.Contains(e, utils.ResourceNotFound) {
 			d.SetId("")
 			return nil
 		}
-
 		return fmt.Errorf("Error retrieving EIP: %s", err)
 	}
 

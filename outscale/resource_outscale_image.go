@@ -7,6 +7,7 @@ import (
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/openlyinc/pointy"
 	"github.com/spf13/cast"
@@ -218,8 +219,17 @@ func resourceOAPIImageCreate(d *schema.ResourceData, meta interface{}) error {
 	if v := cast.ToString(d.Get("root_device_name")); v != "" {
 		imageRequest.SetRootDeviceName(v)
 	}
+	var resp oscgo.CreateImageResponse
+	var err error
+	err = resource.Retry(120*time.Second, func() *resource.RetryError {
+		rp, _, err := conn.ImageApi.CreateImage(context.Background()).CreateImageRequest(imageRequest).Execute()
+		if err != nil {
+			return utils.CheckThrottling(err)
+		}
+		resp = rp
+		return nil
+	})
 
-	resp, _, err := conn.ImageApi.CreateImage(context.Background()).CreateImageRequest(imageRequest).Execute()
 	if err != nil {
 		return err
 	}
@@ -268,7 +278,16 @@ func resourceOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
 		Filters: &oscgo.FiltersImage{ImageIds: &[]string{id}},
 	}
 
-	resp, _, err := conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(req).Execute()
+	var resp oscgo.ReadImagesResponse
+	err := resource.Retry(120*time.Second, func() *resource.RetryError {
+		var err error
+		resp, _, err = conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(req).Execute()
+		if err != nil {
+			return utils.CheckThrottling(err)
+		}
+		return nil
+	})
+
 	if err != nil {
 		return fmt.Errorf("Error reading for OMI (%s): %v", id, err)
 	}
@@ -366,12 +385,19 @@ func resourceOAPIImageUpdate(d *schema.ResourceData, meta interface{}) error {
 func resourceOAPIImageDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	_, _, err := conn.ImageApi.DeleteImage(context.Background()).DeleteImageRequest(oscgo.DeleteImageRequest{
-		ImageId: d.Id(),
-	}).Execute()
+	var err error
+	err = resource.Retry(120*time.Second, func() *resource.RetryError {
+		_, _, err := conn.ImageApi.DeleteImage(context.Background()).DeleteImageRequest(oscgo.DeleteImageRequest{
+			ImageId: d.Id(),
+		}).Execute()
+		if err != nil {
+			return utils.CheckThrottling(err)
+		}
+		return nil
+	})
 
 	if err != nil {
-		return fmt.Errorf("Error deleting the image")
+		return fmt.Errorf("Error deleting the image %s", err)
 	}
 
 	if err := resourceOutscaleOAPIImageWaitForDestroy(d.Id(), conn); err != nil {
@@ -408,7 +434,17 @@ func resourceOutscaleOAPIImageWaitForDestroy(id string, conn *oscgo.APIClient) e
 // ImageOAPIStateRefreshFunc ...
 func ImageOAPIStateRefreshFunc(client *oscgo.APIClient, req oscgo.ReadImagesRequest, failState string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		resp, _, err := client.ImageApi.ReadImages(context.Background()).ReadImagesRequest(req).Execute()
+		var resp oscgo.ReadImagesResponse
+		var err error
+		err = resource.Retry(120*time.Second, func() *resource.RetryError {
+			var err error
+			resp, _, err = client.ImageApi.ReadImages(context.Background()).ReadImagesRequest(req).Execute()
+			if err != nil {
+				return utils.CheckThrottling(err)
+			}
+			return nil
+		})
+
 		if err != nil {
 			return nil, "failed", err
 		}

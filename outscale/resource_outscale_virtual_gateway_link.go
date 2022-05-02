@@ -8,8 +8,8 @@ import (
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
@@ -81,11 +81,11 @@ func resourceOutscaleOAPIVirtualGatewayLinkCreate(d *schema.ResourceData, meta i
 	err = resource.Retry(30*time.Second, func() *resource.RetryError {
 		_, _, err = conn.VirtualGatewayApi.LinkVirtualGateway(context.Background()).LinkVirtualGatewayRequest(createOpts).Execute()
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "InvalidVirtualGatewayID.NotFound") {
+			if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
 				return resource.RetryableError(
 					fmt.Errorf("Gateway not found, retry for eventual consistancy"))
 			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
@@ -129,17 +129,13 @@ func resourceOutscaleOAPIVirtualGatewayLinkRead(d *schema.ResourceData, meta int
 			Filters: &oscgo.FiltersVirtualGateway{VirtualGatewayIds: &[]string{vgwID}},
 		}).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
 
 	if err != nil {
-		awsErr, ok := err.(awserr.Error)
-		if ok && awsErr.Code() == "InvalidVPNGatewayID.NotFound" {
+		if strings.Contains(err.Error(), utils.ResourceNotFound) {
 			log.Printf("[WARN] VPN Gateway %q not found.", vgwID)
 			d.SetId("")
 			return nil
@@ -216,20 +212,20 @@ func resourceOutscaleOAPIVirtualGatewayLinkDelete(d *schema.ResourceData, meta i
 			NetId:            netID.(string),
 		}).Execute()
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "InvalidVpnGatewayID.NotFound") {
+			if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
 				return resource.RetryableError(
 					fmt.Errorf("Gateway not found, retry for eventual consistancy"))
 			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
 
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "InvalidVpnGatewayID.NotFound") {
+		if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
 			err = nil
 			wait = false
-		} else if strings.Contains(fmt.Sprint(err), "InvalidVpnGatewayAttachment.NotFound") {
+		} else if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
 			err = nil
 			wait = false
 		}
@@ -270,26 +266,20 @@ func vpnGatewayLinkStateRefresh(conn *oscgo.APIClient, vpcID, vgwID string) reso
 				LinkNetIds:        &[]string{vpcID},
 			}}).Execute()
 			if err != nil {
-				if strings.Contains(fmt.Sprint(err), "InvalidVpnGatewayID.NotFound") {
+				if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
 					return resource.RetryableError(
 						fmt.Errorf("Gateway not found, retry for eventual consistancy"))
 				}
-				return resource.NonRetryableError(err)
+				return utils.CheckThrottling(err)
 			}
 			return nil
 		})
 
 		if err != nil {
-			awsErr, ok := err.(awserr.Error)
-			if ok {
-				switch awsErr.Code() {
-				case "InvalidVPNGatewayID.NotFound":
-					fallthrough
-				case "InvalidVpnGatewayAttachment.NotFound":
-					return nil, "", nil
-				}
+			if strings.Contains(err.Error(), utils.ResourceNotFound) {
+				log.Printf("[WARN] VPN Gateway %q not found.", vgwID)
+				return nil, "", nil
 			}
-
 			return nil, "", err
 		}
 

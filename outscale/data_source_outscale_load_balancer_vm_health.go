@@ -12,6 +12,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func dataSourceOutscaleLoadBalancerVmsHeals() *schema.Resource {
@@ -95,12 +96,11 @@ func dataSourceOutscaleLoadBalancerVmsHealRead(d *schema.ResourceData,
 
 		if err != nil {
 			log.Printf("[DEBUG] err: (%s)", err)
-			if strings.Contains(fmt.Sprint(err), "Throttling:") ||
-				strings.Contains(fmt.Sprint(err), "InvalidResource") ||
+			if strings.Contains(fmt.Sprint(err), "InvalidResource") ||
 				strings.Contains(fmt.Sprint(err), "Bad Request") {
 				return resource.RetryableError(err)
 			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})

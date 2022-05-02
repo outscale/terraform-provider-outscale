@@ -4,14 +4,12 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"time"
-
-	oscgo "github.com/outscale/osc-sdk-go/v2"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func datasourceOutscaleOAPIServerCertificate() *schema.Resource {
@@ -60,20 +58,13 @@ func datasourceOutscaleOAPIServerCertificateRead(d *schema.ResourceData, meta in
 	}
 
 	var resp oscgo.ReadServerCertificatesResponse
-
 	err := resource.Retry(120*time.Second, func() *resource.RetryError {
-		r, _, err := conn.ServerCertificateApi.ReadServerCertificates(context.Background()).ReadServerCertificatesRequest(params).Execute()
-
+		var err error
+		resp, _, err = conn.ServerCertificateApi.ReadServerCertificates(context.Background()).ReadServerCertificatesRequest(params).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
-
-		resp = r
-
-		return resource.RetryableError(err)
+		return nil
 	})
 
 	if err != nil {

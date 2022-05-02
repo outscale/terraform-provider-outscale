@@ -7,6 +7,7 @@ import (
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -79,18 +80,13 @@ func resourceOutscaleOAPINetworkInterfacePrivateIPCreate(d *schema.ResourceData,
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, _, err = conn.NicApi.LinkPrivateIps(context.Background()).LinkPrivateIpsRequest(input).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
-
 	if err != nil {
 		errString := err.Error()
 		return fmt.Errorf("Failure to assign Private IPs: %s", errString)
-
 	}
 
 	d.SetId(input.NicId)
@@ -110,16 +106,12 @@ func resourceOutscaleOAPINetworkInterfacePrivateIPRead(d *schema.ResourceData, m
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		resp, _, err = conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(req).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
-
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "InvalidNetworkInterfaceID.NotFound") {
+		if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
 			// The ENI is gone now, so just remove the attachment from the state
 			d.SetId("")
 			return nil
@@ -191,20 +183,14 @@ func resourceOutscaleOAPINetworkInterfacePrivateIPDelete(d *schema.ResourceData,
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, _, err = conn.NicApi.UnlinkPrivateIps(context.Background()).UnlinkPrivateIpsRequest(input).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
 	if err != nil {
 		errString := err.Error()
 		return fmt.Errorf("Failure to unassign Private IPs: %s", errString)
-
 	}
-
 	d.SetId("")
-
 	return nil
 }

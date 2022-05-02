@@ -3,11 +3,13 @@ package outscale
 import (
 	"context"
 	"fmt"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"log"
 	"reflect"
 	"strings"
 	"time"
+
+	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/errwrap"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -70,16 +72,13 @@ func dataSourceOutscaleOAPILinPeeringConnectionRead(d *schema.ResourceData, meta
 		resp, _, err = conn.NetPeeringApi.ReadNetPeerings(context.Background()).ReadNetPeeringsRequest(req).Execute()
 
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
 
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "InvalidNetPeeringConnectionID.NotFound") {
+		if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
 			return fmt.Errorf("no matching Net Peering Connection found")
 		}
 		return fmt.Errorf("Error reading Net Peering Connection details: %s", err)

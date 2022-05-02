@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -155,13 +155,8 @@ func resourceOutscaleLoadBalancerListenerRuleCreate(d *schema.ResourceData, meta
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		resp, _, err = conn.ListenerApi.CreateListenerRule(
 			context.Background()).CreateListenerRuleRequest(*req).Execute()
-
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "400 Bad Request") {
-				return resource.NonRetryableError(err)
-			}
-			return resource.RetryableError(
-				fmt.Errorf("[WARN] Error creating LBU Attr: %s", err))
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
@@ -194,10 +189,7 @@ func resourceOutscaleLoadBalancerListenerRuleRead(d *schema.ResourceData, meta i
 			context.Background()).ReadListenerRulesRequest(req).
 			Execute()
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "Throttling:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
@@ -279,11 +271,7 @@ func resourceOutscaleLoadBalancerListenerRuleUpdate(d *schema.ResourceData, meta
 				context.Background()).UpdateListenerRuleRequest(req).
 				Execute()
 			if err != nil {
-				if strings.Contains(fmt.Sprint(err), "400 Bad Request") {
-					return resource.NonRetryableError(err)
-				}
-				return resource.RetryableError(
-					fmt.Errorf("[WARN] Error creating LBU Attr: %s", err))
+				return utils.CheckThrottling(err)
 			}
 			return nil
 		})
@@ -311,10 +299,7 @@ func resourceOutscaleLoadBalancerListenerRuleDelete(d *schema.ResourceData, meta
 		_, _, err = conn.ListenerApi.DeleteListenerRule(
 			context.Background()).DeleteListenerRuleRequest(req).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "Throttling:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
@@ -342,10 +327,7 @@ func resourceOutscaleLoadBalancerListenerRuleDelete(d *schema.ResourceData, meta
 					context.Background()).
 					ReadListenerRulesRequest(req).Execute()
 				if err != nil {
-					if strings.Contains(fmt.Sprint(err), "Throttling:") {
-						return resource.RetryableError(err)
-					}
-					return resource.NonRetryableError(err)
+					return utils.CheckThrottling(err)
 				}
 				return nil
 			})

@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func TestAccOutscaleOAPISubNet_basic(t *testing.T) {
@@ -55,10 +56,7 @@ func testAccCheckOutscaleOAPISubNetExists(n string, res *oscgo.Subnet) resource.
 			}).Execute()
 
 			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
+				return utils.CheckThrottling(err)
 			}
 			return nil
 		})
@@ -96,12 +94,8 @@ func testAccCheckOutscaleOAPISubNetDestroyed(s *terraform.State) error {
 			}).Execute()
 
 			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
+				return utils.CheckThrottling(err)
 			}
-
 			return nil
 		})
 

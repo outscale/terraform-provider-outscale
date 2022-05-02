@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/spf13/cast"
@@ -78,21 +77,16 @@ func dataSourceOutscaleOAPISubnetRead(d *schema.ResourceData, meta interface{}) 
 	var resp oscgo.ReadSubnetsResponse
 
 	err := resource.Retry(120*time.Second, func() *resource.RetryError {
-		r, _, err := conn.SubnetApi.ReadSubnets(context.Background()).ReadSubnetsRequest(req).Execute()
-
+		var err error
+		resp, _, err = conn.SubnetApi.ReadSubnets(context.Background()).ReadSubnetsRequest(req).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
-		resp = r
 		return nil
 	})
 
 	if err != nil {
 		errString := err.Error()
-
 		return fmt.Errorf("[DEBUG] Error reading Subnet (%s)", errString)
 	}
 

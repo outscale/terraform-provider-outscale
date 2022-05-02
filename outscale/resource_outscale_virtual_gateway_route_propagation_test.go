@@ -3,12 +3,12 @@ package outscale
 import (
 	"context"
 	"fmt"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws/awserr"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -54,10 +54,7 @@ func testAccCheckOAPIVirtualRoutePropagationDestroy(s *terraform.State) error {
 				Filters: &oscgo.FiltersVirtualGateway{VirtualGatewayIds: &[]string{rs.Primary.Attributes["gateway_id"]}},
 			}).Execute()
 			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
+				return utils.CheckThrottling(err)
 			}
 			return nil
 		})
@@ -71,23 +68,13 @@ func testAccCheckOAPIVirtualRoutePropagationDestroy(s *terraform.State) error {
 				_, _, err := oscapi.VirtualGatewayApi.DeleteVirtualGateway(context.Background()).DeleteVirtualGatewayRequest(oscgo.DeleteVirtualGatewayRequest{
 					VirtualGatewayId: resp.GetVirtualGateways()[0].GetVirtualGatewayId(),
 				}).Execute()
-				if err == nil {
-					return nil
+				if err != nil {
+					if strings.Contains(err.Error(), utils.ResourceNotFound) {
+						return resource.RetryableError(err)
+					}
+					return utils.CheckThrottling(err)
 				}
-
-				ec2err, ok := err.(awserr.Error)
-				if !ok {
-					return resource.RetryableError(err)
-				}
-
-				switch ec2err.Code() {
-				case "InvalidVirtualGatewayID.NotFound":
-					return nil
-				case "IncorrectState":
-					return resource.RetryableError(err)
-				}
-
-				return resource.NonRetryableError(err)
+				return nil
 			})
 
 			if err != nil {
@@ -98,7 +85,6 @@ func testAccCheckOAPIVirtualRoutePropagationDestroy(s *terraform.State) error {
 			return nil
 		}
 	}
-
 	return nil
 }
 

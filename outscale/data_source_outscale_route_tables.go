@@ -3,13 +3,12 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
-
-	oscgo "github.com/outscale/osc-sdk-go/v2"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func dataSourceOutscaleOAPIRouteTables() *schema.Resource {
@@ -172,12 +171,9 @@ func dataSourceOutscaleOAPIRouteTablesRead(d *schema.ResourceData, meta interfac
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
 		resp, _, err = conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(params).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded") {
-				return resource.RetryableError(err)
-			}
+			return utils.CheckThrottling(err)
 		}
-
-		return resource.NonRetryableError(err)
+		return nil
 	})
 
 	var errString string

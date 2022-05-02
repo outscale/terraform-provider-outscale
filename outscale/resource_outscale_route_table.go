@@ -8,6 +8,7 @@ import (
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -148,10 +149,7 @@ func resourceOutscaleOAPIRouteTableCreate(d *schema.ResourceData, meta interface
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		resp, _, err = conn.RouteTableApi.CreateRouteTable(context.Background()).CreateRouteTableRequest(createOpts).Execute()
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
@@ -264,21 +262,17 @@ func resourceOutscaleOAPIRouteTableDelete(d *schema.ResourceData, meta interface
 
 			var err error
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-
 				_, _, err := conn.RouteTableApi.UnlinkRouteTable(context.Background()).UnlinkRouteTableRequest(oscgo.UnlinkRouteTableRequest{
 					LinkRouteTableId: a.GetLinkRouteTableId(),
 				}).Execute()
 				if err != nil {
-					if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
-						return resource.RetryableError(err)
-					}
-					return resource.NonRetryableError(err)
+					return utils.CheckThrottling(err)
 				}
 				return nil
 			})
 
 			if err != nil {
-				if strings.Contains(fmt.Sprint(err), "InvalidAssociationID.NotFound") {
+				if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
 					err = nil
 				}
 				return err
@@ -293,16 +287,13 @@ func resourceOutscaleOAPIRouteTableDelete(d *schema.ResourceData, meta interface
 			RouteTableId: d.Id(),
 		}).Execute()
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
 
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "InvalidRouteTableID.NotFound") {
+		if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
 			return nil
 		}
 
@@ -332,12 +323,10 @@ func readOAPIRouteTable(conn *oscgo.APIClient, routeTableID string, linkIds ...s
 	routeTableRequest.Filters = &oscgo.FiltersRouteTable{RouteTableIds: &[]string{routeTableID}}
 
 	err = resource.Retry(15*time.Minute, func() *resource.RetryError {
+		var err error
 		resp, _, err = conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(routeTableRequest).Execute()
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})

@@ -2,13 +2,13 @@ package outscale
 
 import (
 	"context"
-	"strings"
-
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -82,17 +82,16 @@ func resourceOAPINatServiceCreate(d *schema.ResourceData, meta interface{}) erro
 
 	var resp oscgo.CreateNatServiceResponse
 	var err error
-
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
 		res, contex, err := conn.NatServiceApi.CreateNatService(context.Background()).CreateNatServiceRequest(req).Execute()
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "Conflict") {
-				return resource.RetryableError(err) // retry
-			}
-			return resource.NonRetryableError(err)
-		}
 		if contex != nil && contex.StatusCode == 409 {
 			return resource.RetryableError(err) // retry
+		}
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), utils.ResourceConflict) {
+				return resource.RetryableError(err) // retry
+			}
+			return utils.CheckThrottling(err)
 		}
 		resp = res
 		return nil
@@ -220,10 +219,16 @@ func resourceOAPINatServiceDelete(d *schema.ResourceData, meta interface{}) erro
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	log.Printf("[INFO] Deleting NAT Service: %s\n", d.Id())
+	err := resource.Retry(120*time.Second, func() *resource.RetryError {
+		_, _, err := conn.NatServiceApi.DeleteNatService(context.Background()).DeleteNatServiceRequest(oscgo.DeleteNatServiceRequest{
+			NatServiceId: d.Id(),
+		}).Execute()
+		if err != nil {
+			return utils.CheckThrottling(err)
+		}
+		return nil
+	})
 
-	_, _, err := conn.NatServiceApi.DeleteNatService(context.Background()).DeleteNatServiceRequest(oscgo.DeleteNatServiceRequest{
-		NatServiceId: d.Id(),
-	}).Execute()
 	if err != nil {
 		return fmt.Errorf("Error deleting Nat Service: %s", err)
 	}
@@ -245,7 +250,6 @@ func resourceOAPINatServiceDelete(d *schema.ResourceData, meta interface{}) erro
 	if stateErr != nil {
 		return fmt.Errorf("Error waiting for NAT Service (%s) to delete: %s", d.Id(), stateErr)
 	}
-
 	return nil
 }
 
@@ -253,13 +257,20 @@ func resourceOAPINatServiceDelete(d *schema.ResourceData, meta interface{}) erro
 // a NAT Service.
 func NGOAPIStateRefreshFunc(client *oscgo.APIClient, req oscgo.ReadNatServicesRequest, failState string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		resp, _, err := client.NatServiceApi.ReadNatServices(context.Background()).ReadNatServicesRequest(req).Execute()
+		var resp oscgo.ReadNatServicesResponse
+		err := resource.Retry(120*time.Second, func() *resource.RetryError {
+			var err error
+			resp, _, err = client.NatServiceApi.ReadNatServices(context.Background()).ReadNatServicesRequest(req).Execute()
+			if err != nil {
+				return utils.CheckThrottling(err)
+			}
+			return nil
+		})
 		if err != nil {
 			return nil, "failed", err
 		}
 
 		state := "deleted"
-
 		if resp.HasNatServices() && len(resp.GetNatServices()) > 0 {
 			natServices := resp.GetNatServices()
 			state = natServices[0].GetState()

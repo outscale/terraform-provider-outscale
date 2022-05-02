@@ -90,7 +90,7 @@ func resourceOutscaleOAPIFlexibleGpuCreate(d *schema.ResourceData, meta interfac
 			context.Background()).
 			CreateFlexibleGpuRequest(*req).Execute()
 		if err != nil {
-			return resource.RetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
@@ -125,7 +125,7 @@ func resourceOutscaleOAPIFlexibleGpuRead(d *schema.ResourceData, meta interface{
 			context.Background()).
 			ReadFlexibleGpusRequest(*req).Execute()
 		if err != nil {
-			return resource.RetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
@@ -181,7 +181,7 @@ func resourceOutscaleOAPIFlexibleGpuUpdate(d *schema.ResourceData, meta interfac
 			context.Background()).
 			UpdateFlexibleGpuRequest(*req).Execute()
 		if err != nil {
-			return resource.RetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
@@ -201,13 +201,12 @@ func resourceOutscaleOAPIFlexibleGpuDelete(d *schema.ResourceData, meta interfac
 	}
 
 	var err error
-
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
 		_, _, err = conn.FlexibleGpuApi.DeleteFlexibleGpu(
 			context.Background()).
 			DeleteFlexibleGpuRequest(*req).Execute()
 		if err != nil {
-			return resource.RetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -81,10 +80,7 @@ func dataSourceOutscaleOAPIVMTypesRead(d *schema.ResourceData, meta interface{})
 		var err error
 		resp, _, err = conn.VmApi.ReadVmTypes(context.Background()).ReadVmTypesRequest(req).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded") {
-				return resource.RetryableError(err)
-			}
-			return resource.RetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})

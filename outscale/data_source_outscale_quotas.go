@@ -3,13 +3,13 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func dataSourceOutscaleOAPIQuotas() *schema.Resource {
@@ -81,21 +81,15 @@ func dataSourceOutscaleOAPIQuotasRead(d *schema.ResourceData, meta interface{}) 
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
 		resp, _, err = conn.QuotaApi.ReadQuotas(context.Background()).ReadQuotasRequest(req).Execute()
-
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
 
 	var errString string
-
 	if err != nil {
 		errString = err.Error()
-
 		return fmt.Errorf("[DEBUG] Error reading Quotas type (%s)", errString)
 	}
 
@@ -106,7 +100,6 @@ func dataSourceOutscaleOAPIQuotasRead(d *schema.ResourceData, meta interface{}) 
 	quotas := make([]map[string]interface{}, 0)
 
 	for _, quotaType := range resp.GetQuotaTypes() {
-
 		if len(quotaType.GetQuotas()) == 0 {
 			return fmt.Errorf("no matching quotas found")
 		}
@@ -136,10 +129,8 @@ func dataSourceOutscaleOAPIQuotasRead(d *schema.ResourceData, meta interface{}) 
 			if quota.GetAccountId() != "" {
 				quotaMap["account_id"] = quota.GetAccountId()
 			}
-
 			quotas = append(quotas, quotaMap)
 		}
-
 	}
 
 	if err := d.Set("quotas", quotas); err != nil {

@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"testing"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -118,10 +118,7 @@ func testAccCheckOutscaleOAPILinPeeringConnectionDestroy(s *terraform.State) err
 			}).Execute()
 
 			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
+				return utils.CheckThrottling(err)
 			}
 			return nil
 		})
@@ -180,10 +177,7 @@ func testAccCheckOutscaleOAPILinPeeringConnectionExists(n string, connection *os
 			}).Execute()
 
 			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
+				return utils.CheckThrottling(err)
 			}
 			return nil
 		})
@@ -253,7 +247,7 @@ const testAccOAPIVpcPeeringConfig = `
 // 				})
 
 // 			if err != nil {
-// 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+// 				if strings.Contains(err.Error(), "Request rate exceeded") {
 // 					return resource.RetryableError(err)
 // 				}
 // 				return resource.NonRetryableError(err)

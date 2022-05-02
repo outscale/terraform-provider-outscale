@@ -10,8 +10,8 @@ import (
 	"github.com/openlyinc/pointy"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/spf13/cast"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
@@ -91,16 +91,12 @@ func resourceOAPIVolumeLinkCreate(d *schema.ResourceData, meta interface{}) erro
 	var err error
 	var vols oscgo.ReadVolumesResponse
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-
+		var err error
 		vols, _, err = conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(request).Execute()
-
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
-		return resource.NonRetryableError(err)
+		return nil
 	})
 
 	if (err != nil) || isElegibleToLink(vols.GetVolumes(), iID) {
@@ -137,20 +133,13 @@ func resourceOAPIVolumeLinkCreate(d *schema.ResourceData, meta interface{}) erro
 			var err error
 			_, _, err = conn.VolumeApi.LinkVolume(context.Background()).LinkVolumeRequest(opts).Execute()
 			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
+				return utils.CheckThrottling(err)
 			}
-			return resource.NonRetryableError(err)
+			return nil
 		})
 
 		if err != nil {
-			if awsErr, ok := err.(awserr.Error); ok {
-				return fmt.Errorf("[WARN] Error attaching volume (%s) to instance (%s), message: \"%s\", code: \"%s\"",
-					vID, iID, awsErr.Message(), awsErr.Code())
-			}
-			return err
+			return fmt.Errorf("[WARN] Error attaching volume (%s) to instance (%s), message:'%s'", vID, iID, err)
 		}
 	}
 
@@ -205,18 +194,12 @@ func volumeOAPIAttachmentStateRefreshFunc(conn *oscgo.APIClient, volumeID, insta
 			var err error
 			resp, _, err = conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(request).Execute()
 			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
+				return utils.CheckThrottling(err)
 			}
 			return nil
 		})
 
 		if err != nil {
-			if awsErr, ok := err.(awserr.Error); ok {
-				return nil, "failed", fmt.Errorf("code: %s, message: %s", awsErr.Code(), awsErr.Message())
-			}
 			return nil, "failed", err
 		}
 
@@ -249,16 +232,13 @@ func resourceOAPIVolumeLinkRead(d *schema.ResourceData, meta interface{}) error 
 		var err error
 		vols, _, err = conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(request).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
 
 	if err != nil {
-		if ec2err, ok := err.(awserr.Error); ok && ec2err.Code() == "InvalidVolume.NotFound" {
+		if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
 			d.SetId("")
 			return nil
 		}
@@ -320,15 +300,12 @@ func resourceOAPIVolumeLinkDelete(d *schema.ResourceData, meta interface{}) erro
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		var err error
 		_, _, err = conn.VolumeApi.UnlinkVolume(context.Background()).UnlinkVolumeRequest(opts).Execute()
-
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
-		return resource.NonRetryableError(err)
+		return nil
 	})
 
 	if err != nil {
