@@ -10,6 +10,7 @@ import (
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -85,10 +86,7 @@ func resourceOutscaleOAPINetworkInterfaceAttachmentCreate(d *schema.ResourceData
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		resp, _, err = conn.NicApi.LinkNic(context.Background()).LinkNicRequest(opts).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
@@ -153,16 +151,13 @@ func resourceOutscaleOAPINetworkInterfaceAttachmentDelete(d *schema.ResourceData
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, _, err = conn.NicApi.UnlinkNic(context.Background()).UnlinkNicRequest(req).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
 
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "InvalidAttachmentID.NotFound") {
+		if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
 			return fmt.Errorf("Error detaching ENI: %s", err)
 		}
 	}
@@ -238,10 +233,7 @@ func nicLinkRefreshFunc(conn *oscgo.APIClient, nicID string) resource.StateRefre
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 			resp, _, err = conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(req).Execute()
 			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
+				return utils.CheckThrottling(err)
 			}
 			return nil
 		})

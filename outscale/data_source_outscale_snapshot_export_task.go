@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func dataSourceOutscaleOAPISnapshotExportTask() *schema.Resource {
@@ -98,10 +98,7 @@ func dataSourceOAPISnapshotExportTaskRead(d *schema.ResourceData, meta interface
 				Filters: filtersReq,
 			}).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})

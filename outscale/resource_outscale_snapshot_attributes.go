@@ -3,11 +3,10 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
-	"strings"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -140,21 +139,13 @@ func resourcedOutscaleOAPISnapshotAttributesCreate(d *schema.ResourceData, meta 
 	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
 		_, _, err = conn.SnapshotApi.UpdateSnapshot(context.Background()).UpdateSnapshotRequest(req).Execute()
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
-				log.Printf("[DEBUG] Error: %q", err)
-				return resource.RetryableError(err)
-			}
-
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
-
 		return nil
 	})
-
 	if err != nil {
 		return fmt.Errorf("Error createing snapshot createVolumePermission: %s", err)
 	}
-
 	d.SetId(snapshotID)
 
 	return resourcedOutscaleOAPISnapshotAttributesRead(d, meta)
@@ -164,25 +155,18 @@ func resourcedOutscaleOAPISnapshotAttributesRead(d *schema.ResourceData, meta in
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	var resp oscgo.ReadSnapshotsResponse
-	var err error
-	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
+	err := resource.Retry(2*time.Minute, func() *resource.RetryError {
+		var err error
 		resp, _, err = conn.SnapshotApi.ReadSnapshots(context.Background()).ReadSnapshotsRequest(oscgo.ReadSnapshotsRequest{
 			Filters: &oscgo.FiltersSnapshot{
 				SnapshotIds: &[]string{d.Id()},
 			},
 		}).Execute()
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
-				log.Printf("[DEBUG] Error: %q", err)
-				return resource.RetryableError(err)
-			}
-
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
-
 		return nil
 	})
-
 	if err != nil {
 		return fmt.Errorf("Error refreshing snapshot createVolumePermission state: %s", err)
 	}

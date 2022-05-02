@@ -5,12 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func datasourceOutscaleOApiVMS() *schema.Resource {
@@ -84,14 +84,9 @@ func dataSourceOutscaleOApiVMSRead(d *schema.ResourceData, meta interface{}) err
 	var resp oscgo.ReadVmsResponse
 	err := resource.Retry(30*time.Second, func() *resource.RetryError {
 		r, _, err := client.VmApi.ReadVms(context.Background()).ReadVmsRequest(params).Execute()
-
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
-
 		resp = r
 		return nil
 	})

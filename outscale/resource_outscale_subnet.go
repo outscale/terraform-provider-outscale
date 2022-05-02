@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleOAPISubNet() *schema.Resource {
@@ -44,11 +45,7 @@ func resourceOutscaleOAPISubNetCreate(d *schema.ResourceData, meta interface{}) 
 	err = resource.Retry(40*time.Second, func() *resource.RetryError {
 		r, _, err := conn.SubnetApi.CreateSubnet(context.Background()).CreateSubnetRequest(req).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded") {
-				fmt.Printf("[INFO] Request limit exceeded")
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		resp = r
 		return nil
@@ -97,10 +94,7 @@ func resourceOutscaleOAPISubNetRead(d *schema.ResourceData, meta interface{}) er
 	err := resource.Retry(120*time.Second, func() *resource.RetryError {
 		r, _, err := conn.SubnetApi.ReadSubnets(context.Background()).ReadSubnetsRequest(req).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		resp = r
 		return nil
@@ -135,14 +129,11 @@ func resourceOutscaleOAPISubNetDelete(d *schema.ResourceData, meta interface{}) 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, _, err = conn.SubnetApi.DeleteSubnet(context.Background()).DeleteSubnetRequest(req).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(),
-				"RequestLimitExceeded:") ||
-				strings.Contains(err.Error(), "Conflict") {
-				log.Printf("[DEBUG] Subnet waiting delete: (%s)",
-					err)
+			if strings.Contains(err.Error(), utils.ResourceConflict) {
+				log.Printf("[DEBUG] Subnet waiting delete: (%s)", err)
 				return resource.RetryableError(err)
 			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})

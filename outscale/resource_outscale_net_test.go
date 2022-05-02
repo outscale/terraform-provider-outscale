@@ -3,11 +3,11 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"strings"
 	"testing"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -76,12 +76,9 @@ func testAccCheckOutscaleOAPILinExists(n string, res *oscgo.Net) resource.TestCh
 				Filters: &oscgo.FiltersNet{NetIds: &[]string{rs.Primary.ID}},
 			}).Execute()
 			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
+				return utils.CheckThrottling(err)
 			}
-			return resource.NonRetryableError(err)
+			return nil
 		})
 		if err != nil {
 			return err

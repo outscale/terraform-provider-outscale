@@ -11,6 +11,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func datasourceOutscaleOApiKeyPairRead(d *schema.ResourceData, meta interface{}) error {
@@ -38,10 +39,7 @@ func datasourceOutscaleOApiKeyPairRead(d *schema.ResourceData, meta interface{})
 		resp, _, err = conn.KeypairApi.ReadKeypairs(context.Background()).ReadKeypairsRequest(req).Execute()
 
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
@@ -49,7 +47,7 @@ func datasourceOutscaleOApiKeyPairRead(d *schema.ResourceData, meta interface{})
 	var errString string
 
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "InvalidOAPIKeyPair.NotFound") {
+		if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
 			d.SetId("")
 			return nil
 		}

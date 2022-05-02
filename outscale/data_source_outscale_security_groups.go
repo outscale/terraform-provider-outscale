@@ -212,19 +212,13 @@ func dataSourceOutscaleOAPISecurityGroupsRead(d *schema.ResourceData, meta inter
 	var resp oscgo.ReadSecurityGroupsResponse
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		resp, _, err = conn.SecurityGroupApi.ReadSecurityGroups(context.Background()).ReadSecurityGroupsRequest(req).Execute()
-
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
-
 		return nil
 	})
 
 	var errString string
-
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "InvalidSecurityGroupID.NotFound") ||
 			strings.Contains(fmt.Sprint(err), "InvalidGroup.NotFound") {

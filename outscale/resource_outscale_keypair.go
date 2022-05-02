@@ -8,6 +8,7 @@ import (
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -57,14 +58,11 @@ func resourceOAPIKeyPairCreate(d *schema.ResourceData, meta interface{}) error {
 	var resp oscgo.CreateKeypairResponse
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		resp, _, err = conn.KeypairApi.CreateKeypair(context.Background()).CreateKeypairRequest(req).Execute()
-
+		rp, _, err := conn.KeypairApi.CreateKeypair(context.Background()).CreateKeypairRequest(req).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
+		resp = rp
 		return nil
 	})
 
@@ -100,12 +98,8 @@ func resourceOAPIKeyPairRead(d *schema.ResourceData, meta interface{}) error {
 	err := resource.Retry(120*time.Second, func() *resource.RetryError {
 		var err error
 		resp, _, err = conn.KeypairApi.ReadKeypairs(context.Background()).ReadKeypairsRequest(req).Execute()
-
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
@@ -148,10 +142,7 @@ func resourceOAPIKeyPairDelete(d *schema.ResourceData, meta interface{}) error {
 		var err error
 		_, _, err = conn.KeypairApi.DeleteKeypair(context.Background()).DeleteKeypairRequest(request).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})

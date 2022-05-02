@@ -3,12 +3,13 @@ package outscale
 import (
 	"context"
 	"fmt"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws/awserr"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
@@ -129,12 +130,9 @@ func testAccOutscaleOAPIVirtualGatewayDisappears(gateway *oscgo.VirtualGateway) 
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 			_, _, err = conn.VirtualGatewayApi.DeleteVirtualGateway(context.Background()).DeleteVirtualGatewayRequest(opts).Execute()
 			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
+				return utils.CheckThrottling(err)
 			}
-			return resource.NonRetryableError(err)
+			return nil
 		})
 
 		if err != nil {
@@ -152,24 +150,19 @@ func testAccOutscaleOAPIVirtualGatewayDisappears(gateway *oscgo.VirtualGateway) 
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 				resp, _, err = conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(opts).Execute()
 				if err != nil {
-					if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-						return resource.RetryableError(err)
-					}
-					return resource.NonRetryableError(err)
+					return utils.CheckThrottling(err)
 				}
-				return resource.NonRetryableError(err)
+				return nil
 			})
 			if err != nil {
-				cgw, ok := err.(awserr.Error)
-				if ok && cgw.Code() == "InvalidVirtualGatewayID.NotFound" {
+				if strings.Contains(err.Error(), utils.ResourceNotFound) {
 					return nil
 				}
-				if ok && cgw.Code() == "IncorrectState" {
+				if strings.Contains(err.Error(), utils.InvalidState) {
 					return resource.RetryableError(fmt.Errorf(
 						"Waiting for VPN Gateway to be in the correct state: %v", gateway.VirtualGatewayId))
 				}
-				return resource.NonRetryableError(
-					fmt.Errorf("Error retrieving VPN Gateway: %s", err))
+				return utils.CheckThrottling(err)
 			}
 			if resp.GetVirtualGateways()[0].GetState() == "deleted" {
 				return nil
@@ -196,12 +189,9 @@ func testAccCheckOAPIVirtualGatewayDestroy(s *terraform.State) error {
 				Filters: &oscgo.FiltersVirtualGateway{VirtualGatewayIds: &[]string{rs.Primary.ID}},
 			}).Execute()
 			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
+				return utils.CheckThrottling(err)
 			}
-			return resource.NonRetryableError(err)
+			return nil
 		})
 		if err == nil {
 			var v *oscgo.VirtualGateway
@@ -221,17 +211,8 @@ func testAccCheckOAPIVirtualGatewayDestroy(s *terraform.State) error {
 			}
 			return nil
 		}
-
-		// Verify the error is what we want
-		ec2err, ok := err.(awserr.Error)
-		if !ok {
-			return err
-		}
-		if ec2err.Code() != "InvalidVirtualGatewayID.NotFound" {
-			return err
-		}
+		return err
 	}
-
 	return nil
 }
 
@@ -256,12 +237,9 @@ func testAccCheckOAPIVirtualGatewayExists(n string, ig *oscgo.VirtualGateway) re
 				Filters: &oscgo.FiltersVirtualGateway{VirtualGatewayIds: &[]string{rs.Primary.ID}},
 			}).Execute()
 			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
+				return utils.CheckThrottling(err)
 			}
-			return resource.NonRetryableError(err)
+			return nil
 		})
 		if err != nil {
 			return err

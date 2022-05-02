@@ -9,6 +9,7 @@ import (
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -66,12 +67,13 @@ func resourceOutscaleOAPILinkRouteTableCreate(d *schema.ResourceData, meta inter
 	var resp oscgo.LinkRouteTableResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		var err error
 		resp, _, err = conn.RouteTableApi.LinkRouteTable(context.Background()).LinkRouteTableRequest(linkRouteTableOpts).Execute()
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "InvalidRouteTableID.NotFound") {
+			if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
 				return resource.RetryableError(err)
 			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
@@ -118,14 +120,11 @@ func resourceOutscaleOAPILinkRouteTableDelete(d *schema.ResourceData, meta inter
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err = conn.RouteTableApi.UnlinkRouteTable(context.Background()).UnlinkRouteTableRequest(oscgo.UnlinkRouteTableRequest{
+		_, _, err := conn.RouteTableApi.UnlinkRouteTable(context.Background()).UnlinkRouteTableRequest(oscgo.UnlinkRouteTableRequest{
 			LinkRouteTableId: d.Id(),
 		}).Execute()
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
@@ -178,12 +177,10 @@ func readOutscaleLinkRouteTable(meta *OutscaleClient, routeTableID, linkRouteTab
 	routeTableRequest.Filters = &oscgo.FiltersRouteTable{RouteTableIds: &[]string{routeTableID}}
 
 	err = resource.Retry(15*time.Minute, func() *resource.RetryError {
+		var err error
 		resp, _, err = conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(routeTableRequest).Execute()
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})

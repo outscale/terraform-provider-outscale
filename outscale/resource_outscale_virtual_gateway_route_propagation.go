@@ -3,10 +3,11 @@ package outscale
 import (
 	"context"
 	"fmt"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"log"
-	"strings"
 	"time"
+
+	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -60,10 +61,7 @@ func resourceOutscaleOAPIVpnGatewayRoutePropagationEnable(d *schema.ResourceData
 			Enable:           enable,
 		}).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
@@ -95,10 +93,7 @@ func resourceOutscaleOAPIVpnGatewayRoutePropagationDisable(d *schema.ResourceDat
 			Enable:           enable,
 		}).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
@@ -124,10 +119,7 @@ func resourceOutscaleOAPIVpnGatewayRoutePropagationRead(d *schema.ResourceData, 
 			Filters: &oscgo.FiltersRouteTable{RouteTableIds: &[]string{rtID}},
 		}).Execute()
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})

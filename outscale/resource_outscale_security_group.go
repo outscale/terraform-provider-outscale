@@ -11,6 +11,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleOAPISecurityGroup() *schema.Resource {
@@ -138,10 +139,7 @@ func resourceOutscaleOAPISecurityGroupCreate(d *schema.ResourceData, meta interf
 		resp, _, err = conn.SecurityGroupApi.CreateSecurityGroup(context.Background()).CreateSecurityGroupRequest(securityGroupOpts).Execute()
 
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 
 		return nil
@@ -236,16 +234,12 @@ func resourceOutscaleOAPISecurityGroupDelete(d *schema.ResourceData, meta interf
 		_, _, err := conn.SecurityGroupApi.DeleteSecurityGroup(context.Background()).DeleteSecurityGroupRequest(oscgo.DeleteSecurityGroupRequest{
 			SecurityGroupId: &securityGroupID,
 		}).Execute()
-
 		if err != nil {
-			var errString string
-			if strings.Contains(err.Error(), "RequestLimitExceeded") ||
-				strings.Contains(err.Error(), "DependencyViolation") ||
-				strings.Contains(err.Error(), "Conflict") {
+			if strings.Contains(err.Error(), "DependencyProblem") ||
+				strings.Contains(err.Error(), utils.ResourceConflict) {
 				return resource.RetryableError(err)
-			} else if !strings.Contains(err.Error(), "InvalidGroup.NotFound") {
-				return resource.NonRetryableError(fmt.Errorf("Error on SGStateRefresh: %s", errString))
 			}
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
@@ -289,10 +283,7 @@ func readSecurityGroups(client *oscgo.APIClient, securityGroupID string) (*oscgo
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		resp, _, err = client.SecurityGroupApi.ReadSecurityGroups(context.Background()).ReadSecurityGroupsRequest(filters).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})

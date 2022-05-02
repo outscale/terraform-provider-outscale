@@ -3,15 +3,28 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"strconv"
+	"strings"
+	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/spf13/cast"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
 // PrintToJSON method helper to debug responses
+const (
+	ResourceNotFound string  = "InvalidResource"
+	ResourceConflict string  = "Conflict"
+	InvalidState     string  = "InvalidState"
+	Throttled        string  = "Request rate exceeded"
+	randMin          float32 = 1.0
+	randMax          float32 = 20.0
+)
+
 func PrintToJSON(v interface{}, msg string) {
 	pretty, _ := json.MarshalIndent(v, "", "  ")
 	fmt.Print("\n\n[DEBUG] ", msg, string(pretty))
@@ -76,4 +89,14 @@ func IsResponseEmptyOrMutiple(rLen int, resName string) error {
 		return fmt.Errorf("Multiple %vs matched; use additional constraints to reduce matches to a single %v", resName, resName)
 	}
 	return nil
+}
+
+func CheckThrottling(err error) *resource.RetryError {
+	rand.Seed(time.Now().UnixNano())
+	if strings.Contains(err.Error(), Throttled) {
+		randTime := (rand.Float32()*(randMax-randMin) + randMin) * 1000
+		time.Sleep(time.Duration(randTime) * time.Millisecond)
+		return resource.RetryableError(err)
+	}
+	return resource.NonRetryableError(err)
 }

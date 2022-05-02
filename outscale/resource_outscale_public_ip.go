@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -38,8 +37,17 @@ func resourceOutscaleOAPIPublicIPCreate(d *schema.ResourceData, meta interface{}
 
 	allocOpts := oscgo.CreatePublicIpRequest{}
 
+	var resp oscgo.CreatePublicIpResponse
 	log.Printf("[DEBUG] EIP create configuration: %#v", allocOpts)
-	resp, _, err := conn.PublicIpApi.CreatePublicIp(context.Background()).CreatePublicIpRequest(allocOpts).Execute()
+	err := resource.Retry(60*time.Second, func() *resource.RetryError {
+		rp, _, err := conn.PublicIpApi.CreatePublicIp(context.Background()).CreatePublicIpRequest(allocOpts).Execute()
+		if err != nil {
+			return utils.CheckThrottling(err)
+		}
+		resp = rp
+		return nil
+	})
+
 	if err != nil {
 		return fmt.Errorf("error creating EIP: %s", utils.GetErrorResponse(err))
 	}
@@ -71,7 +79,16 @@ func resourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) 
 		Filters: &oscgo.FiltersPublicIp{PublicIpIds: &[]string{id}},
 	}
 
-	response, _, err := conn.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
+	var response oscgo.ReadPublicIpsResponse
+	var err error
+	err = resource.Retry(60*time.Second, func() *resource.RetryError {
+		resp, _, err := conn.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
+		if err != nil {
+			return utils.CheckThrottling(err)
+		}
+		response = resp
+		return nil
+	})
 
 	if err != nil {
 		if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
@@ -150,8 +167,7 @@ func resourceOutscaleOAPIPublicIPUpdate(d *schema.ResourceData, meta interface{}
 				if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
 					return resource.RetryableError(err)
 				}
-
-				return resource.NonRetryableError(err)
+				return utils.CheckThrottling(err)
 			}
 
 			return nil
@@ -181,6 +197,20 @@ func resourceOutscaleOAPIPublicIPUpdate(d *schema.ResourceData, meta interface{}
 	return resourceOutscaleOAPIPublicIPRead(d, meta)
 }
 
+func unlinkPublicIp(conn *oscgo.APIClient, publicIpId *string) error {
+	var err error
+	err = resource.Retry(60*time.Second, func() *resource.RetryError {
+		_, _, err := conn.PublicIpApi.UnlinkPublicIp(context.Background()).UnlinkPublicIpRequest(oscgo.UnlinkPublicIpRequest{
+			LinkPublicIpId: publicIpId,
+		}).Execute()
+		if err != nil {
+			return utils.CheckThrottling(err)
+		}
+		return nil
+	})
+	return err
+}
+
 func resourceOutscaleOAPIPublicIPDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
@@ -199,15 +229,11 @@ func resourceOutscaleOAPIPublicIPDelete(d *schema.ResourceData, meta interface{}
 		var err error
 		switch resourceOutscaleOAPIPublicIPDomain(d) {
 		case "vpc":
-			lppiId := d.Get("link_public_ip_id").(string)
-			_, _, err = conn.PublicIpApi.UnlinkPublicIp(context.Background()).UnlinkPublicIpRequest(oscgo.UnlinkPublicIpRequest{
-				LinkPublicIpId: &lppiId,
-			}).Execute()
+			linIpId := d.Get("link_public_ip_id").(string)
+			err = unlinkPublicIp(conn, &linIpId)
 		case "standard":
 			pIP := d.Get("public_ip").(string)
-			_, _, err = conn.PublicIpApi.UnlinkPublicIp(context.Background()).UnlinkPublicIpRequest(oscgo.UnlinkPublicIpRequest{
-				PublicIp: &pIP,
-			}).Execute()
+			err = unlinkPublicIp(conn, &pIP)
 		}
 
 		if err != nil {
@@ -227,18 +253,10 @@ func resourceOutscaleOAPIPublicIPDelete(d *schema.ResourceData, meta interface{}
 			PublicIpId: &idIP,
 		}).Execute()
 
-		if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
-			return nil
+		if err != nil {
+			return utils.CheckThrottling(err)
 		}
-
-		if err == nil {
-			return nil
-		}
-		if _, ok := err.(awserr.Error); !ok {
-			return resource.NonRetryableError(err)
-		}
-
-		return resource.RetryableError(err)
+		return nil
 	})
 }
 

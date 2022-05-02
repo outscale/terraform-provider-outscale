@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func dataSourceOutscaleVPNConnections() *schema.Resource {
@@ -116,10 +116,7 @@ func dataSourceOutscaleVPNConnectionsRead(d *schema.ResourceData, meta interface
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		resp, _, err = conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(params).Execute()
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})

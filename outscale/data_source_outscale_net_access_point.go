@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -96,10 +95,7 @@ func dataSourceOutscaleNetAccessPointRead(d *schema.ResourceData, meta interface
 			context.Background()).
 			ReadNetAccessPointsRequest(*req).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})

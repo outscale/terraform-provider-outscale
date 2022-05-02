@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 // Creates a network interface in the specified subnet
@@ -239,7 +240,10 @@ func dataSourceOutscaleOAPINicsRead(d *schema.ResourceData, meta interface{}) er
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		resp, _, err = conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(params).Execute()
-		return resource.RetryableError(err)
+		if err != nil {
+			return utils.CheckThrottling(err)
+		}
+		return nil
 	})
 
 	if err != nil {

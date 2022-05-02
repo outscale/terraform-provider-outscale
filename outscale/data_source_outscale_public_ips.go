@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func dataSourceOutscaleOAPIPublicIPS() *schema.Resource {
@@ -82,11 +83,14 @@ func dataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{}) e
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
 		var err error
 		resp, _, err = conn.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
-		return resource.RetryableError(err)
+		if err != nil {
+			return utils.CheckThrottling(err)
+		}
+		return nil
 	})
 
 	if err != nil {
-		if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
+		if e := fmt.Sprint(err); strings.Contains(e, utils.ResourceNotFound) {
 			d.SetId("")
 			return nil
 		}

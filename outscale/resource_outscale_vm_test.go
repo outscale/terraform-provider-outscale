@@ -9,8 +9,8 @@ import (
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -412,9 +412,9 @@ func testAccCheckOutscaleVMWithMultiBlockDeviceMapping(region, omi, keypair stri
 			block_device_mappings {
 				device_name = "/dev/sda1" # resizing bootdisk volume
 				bsu {
-					volume_size           = "100"
-					volume_type           = "strandard"
-					delete_on_vm_deletion = "true"
+					volume_size           = 100
+					volume_type           = "standard"
+					delete_on_vm_deletion = true
 				}
 			}
 
@@ -558,7 +558,7 @@ func testAccCheckOutscaleOAPIVMDestroyWithProvider(s *terraform.State, provider 
 				Filters: getVMsFilterByVMID(rs.Primary.ID),
 			}).Execute()
 			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded") {
+				if strings.Contains(err.Error(), utils.Throttled) {
 					time.Sleep(10 * time.Second)
 				} else {
 					break
@@ -577,7 +577,7 @@ func testAccCheckOutscaleOAPIVMDestroyWithProvider(s *terraform.State, provider 
 		}
 
 		// Verify the error is what we want
-		if ae, ok := err.(awserr.Error); ok && ae.Code() == "InvalidVmsID.NotFound" {
+		if err != nil && strings.Contains(err.Error(), utils.ResourceNotFound) {
 			continue
 		}
 		return err
@@ -616,7 +616,7 @@ func testAccCheckOutscaleOAPIVMExistsWithProviders(n string, i *oscgo.Vm, provid
 					Filters: getVMsFilterByVMID(rs.Primary.ID),
 				}).Execute()
 				if err != nil {
-					if oapiErr, ok := err.(awserr.Error); ok && oapiErr.Code() == "InvalidVmsID.NotFound" {
+					if strings.Contains(err.Error(), utils.ResourceNotFound) {
 						continue
 					}
 					time.Sleep(10 * time.Second)

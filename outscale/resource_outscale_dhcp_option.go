@@ -3,10 +3,10 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -184,10 +184,7 @@ func createDhcpOption(conn *oscgo.APIClient, dhcp oscgo.CreateDhcpOptionsRequest
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		resp, _, err = conn.DhcpOptionApi.CreateDhcpOptions(context.Background()).CreateDhcpOptionsRequest(dhcp).Execute()
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
@@ -208,10 +205,7 @@ func readDhcpOption(conn *oscgo.APIClient, dhcpID string) (*oscgo.DhcpOptionsSet
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		resp, _, err = conn.DhcpOptionApi.ReadDhcpOptions(context.Background()).ReadDhcpOptionsRequest(filterRequest).Execute()
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
@@ -233,10 +227,7 @@ func deleteDhcpOptions(conn *oscgo.APIClient, dhcpID string) error {
 			DhcpOptionsSetId: dhcpID,
 		}).Execute()
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
@@ -253,12 +244,8 @@ func getAttachedDHCPs(conn *oscgo.APIClient, dhcpID string) ([]oscgo.Net, error)
 				DhcpOptionsSetIds: &[]string{dhcpID},
 			},
 		}).Execute()
-
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
@@ -272,10 +259,16 @@ func getAttachedDHCPs(conn *oscgo.APIClient, dhcpID string) ([]oscgo.Net, error)
 func detachDHCPs(conn *oscgo.APIClient, nets []oscgo.Net) error {
 	// Detaching the dhcp of the nets
 	for _, net := range nets {
-		_, _, err := conn.NetApi.UpdateNet(context.Background()).UpdateNetRequest(oscgo.UpdateNetRequest{
-			DhcpOptionsSetId: "default",
-			NetId:            net.GetNetId(),
-		}).Execute()
+		err := resource.Retry(120*time.Second, func() *resource.RetryError {
+			_, _, err := conn.NetApi.UpdateNet(context.Background()).UpdateNetRequest(oscgo.UpdateNetRequest{
+				DhcpOptionsSetId: "default",
+				NetId:            net.GetNetId(),
+			}).Execute()
+			if err != nil {
+				return utils.CheckThrottling(err)
+			}
+			return nil
+		})
 		if err != nil {
 			return fmt.Errorf("Error updating net(%s) in DHCP Option resource: %s", net.GetNetId(), err)
 		}

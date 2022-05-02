@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -199,10 +198,7 @@ func dataSourceOutscaleOAPIImagesRead(d *schema.ResourceData, meta interface{}) 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		resp, _, err = conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(req).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})

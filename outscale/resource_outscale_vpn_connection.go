@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/spf13/cast"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 )
@@ -198,8 +199,13 @@ func resourceOutscaleVPNConnectionDelete(d *schema.ResourceData, meta interface{
 	req := oscgo.DeleteVpnConnectionRequest{
 		VpnConnectionId: vpnConnectionID,
 	}
-
-	_, _, err := conn.VpnConnectionApi.DeleteVpnConnection(context.Background()).DeleteVpnConnectionRequest(req).Execute()
+	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+		_, _, err := conn.VpnConnectionApi.DeleteVpnConnection(context.Background()).DeleteVpnConnectionRequest(req).Execute()
+		if err != nil {
+			return utils.CheckThrottling(err)
+		}
+		return nil
+	})
 	if err != nil {
 		return err
 	}
@@ -229,11 +235,10 @@ func vpnConnectionRefreshFunc(conn *oscgo.APIClient, vpnConnectionID *string) re
 				VpnConnectionIds: &[]string{*vpnConnectionID},
 			},
 		}
-
 		resp, _, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(filter).Execute()
 		if err != nil {
 			switch {
-			case strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:"):
+			case strings.Contains(fmt.Sprint(err), utils.Throttled):
 				return nil, "pending", nil
 			case strings.Contains(fmt.Sprint(err), "404"):
 				return nil, "deleted", nil

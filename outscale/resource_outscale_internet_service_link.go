@@ -6,6 +6,7 @@ import (
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -70,8 +71,16 @@ func resourceOutscaleOAPIInternetServiceLinkCreate(d *schema.ResourceData, meta 
 		InternetServiceId: internetServiceID,
 		NetId:             d.Get("net_id").(string),
 	}
+	var resp oscgo.LinkInternetServiceResponse
+	err := resource.Retry(120*time.Second, func() *resource.RetryError {
+		lResp, _, err := conn.InternetServiceApi.LinkInternetService(context.Background()).LinkInternetServiceRequest(req).Execute()
+		if err != nil {
+			return utils.CheckThrottling(err)
+		}
+		resp = lResp
+		return nil
+	})
 
-	resp, _, err := conn.InternetServiceApi.LinkInternetService(context.Background()).LinkInternetServiceRequest(req).Execute()
 	if err != nil {
 		return fmt.Errorf("Error Link Internet Service: %s", err.Error())
 	}
@@ -182,7 +191,7 @@ func resourceOutscaleOAPIInternetServiceLinkDelete(d *schema.ResourceData, meta 
 	}
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err = conn.InternetServiceApi.UnlinkInternetService(
+		_, _, err := conn.InternetServiceApi.UnlinkInternetService(
 			context.Background()).
 			UnlinkInternetServiceRequest(req).Execute()
 		if err != nil {
@@ -193,6 +202,9 @@ func resourceOutscaleOAPIInternetServiceLinkDelete(d *schema.ResourceData, meta 
 		return nil
 	})
 
+	if err != nil {
+		return fmt.Errorf("error unlink Internet Service (%s):  %s", d.Id(), err)
+	}
 	return nil
 }
 
@@ -200,13 +212,22 @@ func resourceOutscaleOAPIInternetServiceLinkDelete(d *schema.ResourceData, meta 
 // a Link Internet Service.
 func LISOAPIStateRefreshFunction(client *oscgo.APIClient, req oscgo.ReadInternetServicesRequest, failState string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		resp, _, err := client.InternetServiceApi.ReadInternetServices(context.Background()).ReadInternetServicesRequest(req).Execute()
+		var resp oscgo.ReadInternetServicesResponse
+		var err error
+		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			rp, _, err := client.InternetServiceApi.ReadInternetServices(context.Background()).ReadInternetServicesRequest(req).Execute()
+			if err != nil {
+				return utils.CheckThrottling(err)
+			}
+			resp = rp
+			return nil
+		})
+
 		if err != nil {
 			return nil, "failed", err
 		}
 
 		state := "deleted"
-
 		if resp.HasInternetServices() && len(resp.GetInternetServices()) > 0 {
 			natServices := resp.GetInternetServices()
 			state = natServices[0].GetState()
@@ -219,7 +240,6 @@ func LISOAPIStateRefreshFunction(client *oscgo.APIClient, req oscgo.ReadInternet
 				return resp, "available", nil
 			}
 		}
-
 		return resp, state, nil
 	}
 }

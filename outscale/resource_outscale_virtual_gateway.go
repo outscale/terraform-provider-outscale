@@ -3,13 +3,14 @@ package outscale
 import (
 	"context"
 	"fmt"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"log"
 	"strings"
 	"time"
 
+	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
@@ -76,17 +77,13 @@ func resourceOutscaleOAPIVirtualGatewayCreate(d *schema.ResourceData, meta inter
 	}
 
 	var resp oscgo.CreateVirtualGatewayResponse
-	var err error
-
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+		var err error
 		resp, _, err = conn.VirtualGatewayApi.CreateVirtualGateway(context.Background()).CreateVirtualGatewayRequest(createOpts).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
-		return resource.NonRetryableError(err)
+		return nil
 	})
 	if err != nil {
 		return fmt.Errorf("Error creating VPN gateway: %s", err)
@@ -124,22 +121,18 @@ func resourceOutscaleOAPIVirtualGatewayRead(d *schema.ResourceData, meta interfa
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	var resp oscgo.ReadVirtualGatewaysResponse
-	var err error
-
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+		var err error
 		resp, _, err = conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(oscgo.ReadVirtualGatewaysRequest{
 			Filters: &oscgo.FiltersVirtualGateway{VirtualGatewayIds: &[]string{d.Id()}},
 		}).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
-		return resource.NonRetryableError(err)
+		return nil
 	})
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "InvalidVpnGatewayID.NotFound") {
+		if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
 			d.SetId("")
 			return nil
 		}
@@ -199,26 +192,15 @@ func resourceOutscaleOAPIVirtualGatewayDelete(d *schema.ResourceData, meta inter
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err := conn.VirtualGatewayApi.DeleteVirtualGateway(context.Background()).DeleteVirtualGatewayRequest(oscgo.DeleteVirtualGatewayRequest{
-			VirtualGatewayId: d.Id(),
-		}).Execute()
-		if err == nil {
-			return nil
+		_, _, err := conn.VirtualGatewayApi.DeleteVirtualGateway(context.Background()).DeleteVirtualGatewayRequest(
+			oscgo.DeleteVirtualGatewayRequest{VirtualGatewayId: d.Id()}).Execute()
+		if err != nil {
+			if strings.Contains(err.Error(), utils.ResourceNotFound) {
+				return nil
+			}
+			return utils.CheckThrottling(err)
 		}
-
-		ec2err, ok := err.(awserr.Error)
-		if !ok {
-			return resource.RetryableError(err)
-		}
-
-		switch ec2err.Code() {
-		case "InvalidVpnGatewayID.NotFound":
-			return nil
-		case "IncorrectState":
-			return resource.RetryableError(err)
-		}
-
-		return resource.NonRetryableError(err)
+		return nil
 	})
 }
 
@@ -234,16 +216,13 @@ func vpnGatewayAttachStateRefreshFunc(conn *oscgo.APIClient, id string, expected
 				Filters: &oscgo.FiltersVirtualGateway{VirtualGatewayIds: &[]string{id}},
 			}).Execute()
 			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
+				return utils.CheckThrottling(err)
 			}
-			return resource.NonRetryableError(err)
+			return nil
 		})
 
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "InvalidVpnGatewayID.NotFound") {
+			if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
 				resp.SetVirtualGateways(nil)
 			} else {
 				fmt.Printf("[ERROR] Error on VpnGatewayStateRefresh: %s", err)
@@ -276,11 +255,18 @@ func oapiVpnGatewayGetLink(vgw oscgo.VirtualGateway) *oscgo.NetToVirtualGatewayL
 
 func virtualGatewayStateRefreshFunc(conn *oscgo.APIClient, instanceID, failState string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		resp, _, err := conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(oscgo.ReadVirtualGatewaysRequest{
-			Filters: &oscgo.FiltersVirtualGateway{
-				VirtualGatewayIds: &[]string{instanceID},
-			},
-		}).Execute()
+
+		var resp oscgo.ReadVirtualGatewaysResponse
+		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+			var err error
+			resp, _, err = conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(oscgo.ReadVirtualGatewaysRequest{
+				Filters: &oscgo.FiltersVirtualGateway{
+					VirtualGatewayIds: &[]string{instanceID}}}).Execute()
+			if err != nil {
+				return utils.CheckThrottling(err)
+			}
+			return nil
+		})
 
 		if err != nil {
 			log.Printf("[ERROR] error on InstanceStateRefresh: %s", err)

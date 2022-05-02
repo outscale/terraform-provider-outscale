@@ -3,11 +3,12 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"os"
-	"strings"
 	"testing"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 
@@ -153,10 +154,7 @@ func testAccOutscaleOAPIImageDisappears(imageID *string) r.TestCheckFunc {
 			var err error
 			_, _, err = conn.ImageApi.DeleteImage(context.Background()).DeleteImageRequest(req).Execute()
 			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return r.RetryableError(err)
-				}
-				return r.NonRetryableError(err)
+				return utils.CheckThrottling(err)
 			}
 			return nil
 		})

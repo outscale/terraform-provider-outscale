@@ -9,9 +9,9 @@ import (
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleOAPISnapshot() *schema.Resource {
@@ -149,14 +149,11 @@ func resourceOutscaleOAPISnapshotCreate(d *schema.ResourceData, meta interface{}
 	}
 
 	var resp oscgo.CreateSnapshotResponse
-	var err error
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+		var err error
 		resp, _, err = conn.SnapshotApi.CreateSnapshot(context.Background()).CreateSnapshotRequest(request).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
@@ -200,14 +197,11 @@ func resourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) 
 	}
 
 	var resp oscgo.ReadSnapshotsResponse
-	var err error
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+		var err error
 		resp, _, err = conn.SnapshotApi.ReadSnapshots(context.Background()).ReadSnapshotsRequest(req).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
@@ -215,13 +209,11 @@ func resourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) 
 	if err != nil {
 		return fmt.Errorf("Error reading the snapshot %snapshot", err)
 	}
-
 	if len(resp.GetSnapshots()) == 0 {
 		return fmt.Errorf("Error reading the snapshot: there are not snapshots with id %s", d.Id())
 	}
 
 	snapshot := resp.GetSnapshots()[0]
-
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
 		permisions := snapshot.GetPermissionsToCreateVolume()
 		if err := set("description", snapshot.GetDescription()); err != nil {
@@ -281,32 +273,18 @@ func resourceOutscaleOAPISnapshotDelete(d *schema.ResourceData, meta interface{}
 
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 			_, _, err := conn.SnapshotApi.DeleteSnapshot(context.Background()).DeleteSnapshotRequest(request).Execute()
-
 			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded") {
-					return resource.RetryableError(err)
+				if strings.Contains(err.Error(), utils.ResourceConflict) {
+					return resource.RetryableError(fmt.Errorf("EBS SnapshotInUse - trying again while it detaches"))
 				}
-				return resource.NonRetryableError(err)
+				return utils.CheckThrottling(err)
 			}
-
 			return nil
 		})
-		if err == nil {
-			return nil
+		if err != nil {
+			return utils.CheckThrottling(err)
 		}
-
-		ebsErr, ok := err.(awserr.Error)
-		if ebsErr != nil {
-			if ebsErr.Code() == "SnapshotInUse" {
-				return resource.RetryableError(fmt.Errorf("EBS SnapshotInUse - trying again while it detaches"))
-			}
-		}
-
-		if !ok {
-			return resource.NonRetryableError(err)
-		}
-
-		return resource.NonRetryableError(err)
+		return nil
 	})
 }
 
@@ -316,17 +294,13 @@ func SnapshotOAPIStateRefreshFunc(client *oscgo.APIClient, id string) resource.S
 		emptyResp := oscgo.ReadSnapshotsResponse{}
 
 		var resp oscgo.ReadSnapshotsResponse
-		var err error
-
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+			var err error
 			resp, _, err = client.SnapshotApi.ReadSnapshots(context.Background()).ReadSnapshotsRequest(oscgo.ReadSnapshotsRequest{
 				Filters: &oscgo.FiltersSnapshot{SnapshotIds: &[]string{id}},
 			}).Execute()
 			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
+				return utils.CheckThrottling(err)
 			}
 			return nil
 		})

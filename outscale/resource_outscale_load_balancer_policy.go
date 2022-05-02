@@ -8,6 +8,7 @@ import (
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -254,11 +255,7 @@ func resourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, met
 			CreateLoadBalancerPolicyRequest(req).Execute()
 
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "Throttling") {
-				return resource.RetryableError(
-					fmt.Errorf("[WARN] Error creating AppCookieStickinessPolicy, retrying: %s", err))
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
@@ -358,12 +355,11 @@ func resourceOutscaleAppCookieStickinessPolicyDelete(d *schema.ResourceData, met
 			DeleteLoadBalancerPolicyRequest(request).Execute()
 
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "Throttling") ||
-				strings.Contains(fmt.Sprint(err), "Conflict") {
+			if strings.Contains(fmt.Sprint(err), utils.ResourceConflict) {
 				return resource.RetryableError(
 					fmt.Errorf("[WARN] Error deleting App stickiness policy, retrying: %s", err))
 			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})

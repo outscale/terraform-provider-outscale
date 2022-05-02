@@ -12,7 +12,6 @@ import (
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/openlyinc/pointy"
@@ -263,15 +262,11 @@ func resourceOutscaleOAPINicCreate(d *schema.ResourceData, meta interface{}) err
 	log.Printf("[DEBUG] Creating network interface")
 
 	var resp oscgo.CreateNicResponse
-	var err error
-
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+		var err error
 		resp, _, err = conn.NicApi.CreateNic(context.Background()).CreateNicRequest(request).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
@@ -318,10 +313,7 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 
 		resp, _, err = conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(dnir).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
@@ -332,12 +324,11 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 	}
 
 	if err != nil {
-		if ec2err, ok := err.(awserr.Error); ok && ec2err.Code() == "InvalidNetworkInterfaceID.NotFound" {
+		if strings.Contains(err.Error(), "Unable to find Nic") {
 			// The ENI is gone now, so just remove it from the state
 			d.SetId("")
 			return nil
 		}
-
 		return fmt.Errorf("Error retrieving ENI: %s", err)
 	}
 
@@ -474,10 +465,7 @@ func resourceOutscaleOAPINicDelete(d *schema.ResourceData, meta interface{}) err
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, _, err = conn.NicApi.DeleteNic(context.Background()).DeleteNicRequest(deleteEniOpts).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
@@ -519,16 +507,13 @@ func resourceOutscaleOAPINicDetach(meta interface{}, nicID string) error {
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 			_, _, err = conn.NicApi.UnlinkNic(context.Background()).UnlinkNicRequest(req).Execute()
 			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
+				return utils.CheckThrottling(err)
 			}
 			return nil
 		})
 
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "InvalidNetworkInterfaceID.NotFound") {
+			if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
 				return fmt.Errorf("Error detaching ENI: %s", err)
 			}
 		}
@@ -563,20 +548,14 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 				_, _, err = conn.NicApi.LinkNic(context.Background()).LinkNicRequest(ar).Execute()
 				if err != nil {
-					if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-						return resource.RetryableError(err)
-					}
-					return resource.NonRetryableError(err)
+					return utils.CheckThrottling(err)
 				}
 				return nil
 			})
-
 			if err != nil {
-
 				return fmt.Errorf("Error Attaching Network Interface: %s", err)
 			}
 		}
-
 		d.SetPartial("link_nic")
 	}
 
@@ -593,14 +572,10 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 			err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 				_, _, err = conn.NicApi.UnlinkPrivateIps(context.Background()).UnlinkPrivateIpsRequest(input).Execute()
 				if err != nil {
-					if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-						return resource.RetryableError(err)
-					}
-					return resource.NonRetryableError(err)
+					return utils.CheckThrottling(err)
 				}
 				return nil
 			})
-
 			if err != nil {
 				return fmt.Errorf("Failure to unassign Private IPs: %s", err)
 			}
@@ -617,19 +592,14 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 				_, _, err = conn.NicApi.LinkPrivateIps(context.Background()).LinkPrivateIpsRequest(input).Execute()
 				if err != nil {
-					if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-						return resource.RetryableError(err)
-					}
-					return resource.NonRetryableError(err)
+					return utils.CheckThrottling(err)
 				}
 				return nil
 			})
-
 			if err != nil {
 				return fmt.Errorf("Failure to assign Private IPs: %s", err)
 			}
 		}
-
 		d.SetPartial("private_ip")
 	}
 
@@ -661,10 +631,7 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 					var err error
 					_, _, err = conn.NicApi.LinkPrivateIps(context.Background()).LinkPrivateIpsRequest(input).Execute()
 					if err != nil {
-						if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-							return resource.RetryableError(err)
-						}
-						return resource.NonRetryableError(err)
+						return utils.CheckThrottling(err)
 					}
 					return nil
 				})
@@ -682,19 +649,14 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 				err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 					_, _, err = conn.NicApi.UnlinkPrivateIps(context.Background()).UnlinkPrivateIpsRequest(input).Execute()
 					if err != nil {
-						if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-							return resource.RetryableError(err)
-						}
-						return resource.NonRetryableError(err)
+						return utils.CheckThrottling(err)
 					}
 					return nil
 				})
-
 				if err != nil {
 					return fmt.Errorf("Failure to unassign Private IPs: %s", err)
 				}
 			}
-
 			d.SetPartial("private_ips_count")
 		}
 	}
@@ -709,10 +671,7 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 			_, _, err = conn.NicApi.UpdateNic(context.Background()).UpdateNicRequest(request).Execute()
 			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
+				return utils.CheckThrottling(err)
 			}
 			return nil
 		})
@@ -734,10 +693,7 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 			_, _, err = conn.NicApi.UpdateNic(context.Background()).UpdateNicRequest(request).Execute()
 			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
+				return utils.CheckThrottling(err)
 			}
 			return nil
 		})
@@ -745,7 +701,6 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 		if err != nil {
 			return fmt.Errorf("Failure updating ENI: %s", err)
 		}
-
 		d.SetPartial("description")
 	}
 

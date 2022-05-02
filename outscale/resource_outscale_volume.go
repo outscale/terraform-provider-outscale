@@ -10,7 +10,6 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
@@ -133,14 +132,11 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.VolumeApi.CreateVolume(context.Background()).CreateVolumeRequest(request).Execute()
+		rp, _, err := conn.VolumeApi.CreateVolume(context.Background()).CreateVolumeRequest(request).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
-
+		resp = rp
 		return nil
 	})
 
@@ -188,17 +184,14 @@ func resourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		r, _, err := conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(request).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		resp = r
 		return nil
 	})
 
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "InvalidVolume.NotFound") {
+		if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
 			d.SetId("")
 			return nil
 		}
@@ -245,38 +238,35 @@ func resourceOAPIVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 			VolumeId: d.Id(),
 		}
 		_, _, err := conn.VolumeApi.DeleteVolume(context.Background()).DeleteVolumeRequest(request).Execute()
-		if err == nil {
-			return nil
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "VolumeInUse") {
+				return resource.RetryableError(fmt.Errorf("Outscale VolumeInUse - trying again while it detaches"))
+			}
+			return utils.CheckThrottling(err)
 		}
-
-		if strings.Contains(fmt.Sprint(err), "VolumeInUse") {
-			return resource.RetryableError(fmt.Errorf("Outscale VolumeInUse - trying again while it detaches"))
-		}
-		fmt.Println(err)
-
-		return resource.NonRetryableError(err)
+		return nil
 	})
-
 }
 
 func volumeOAPIStateRefreshFunc(conn *oscgo.APIClient, volumeID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		resp, _, err := conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(oscgo.ReadVolumesRequest{
-			Filters: &oscgo.FiltersVolume{
-				VolumeIds: &[]string{volumeID},
-			},
-		}).Execute()
-
-		if err != nil {
-			if ec2err, ok := err.(awserr.Error); ok {
-				log.Printf("Error on Volume State Refresh: message: \"%s\", code:\"%s\"", ec2err.Message(), ec2err.Code())
-				//resp = nil
-				return nil, "", err
+		var resp oscgo.ReadVolumesResponse
+		var err error
+		err = resource.Retry(3*time.Minute, func() *resource.RetryError {
+			rp, _, err := conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(oscgo.ReadVolumesRequest{
+				Filters: &oscgo.FiltersVolume{
+					VolumeIds: &[]string{volumeID},
+				},
+			}).Execute()
+			if err != nil {
+				return utils.CheckThrottling(err)
 			}
-			log.Printf("Error on Volume State Refresh: %s", err)
+			resp = rp
+			return nil
+		})
+		if err != nil {
 			return nil, "", err
 		}
-
 		v := resp.GetVolumes()[0]
 		return v, v.GetState(), nil
 	}

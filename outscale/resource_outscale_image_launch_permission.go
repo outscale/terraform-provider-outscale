@@ -9,6 +9,7 @@ import (
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/spf13/cast"
 
@@ -157,16 +158,12 @@ func resourceOutscaleOAPIImageLaunchPermissionCreate(d *schema.ResourceData, met
 		var err error
 		_, _, err = conn.ImageApi.UpdateImage(context.Background()).UpdateImageRequest(request).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
 
 	var errString string
-
 	if err != nil {
 		errString = err.Error()
 
@@ -182,24 +179,20 @@ func resourceOutscaleOAPIImageLaunchPermissionRead(d *schema.ResourceData, meta 
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	var resp oscgo.ReadImagesResponse
-	var err error
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+		var err error
 		resp, _, err = conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(oscgo.ReadImagesRequest{
 			Filters: &oscgo.FiltersImage{
 				ImageIds: &[]string{d.Id()},
 			},
 		}).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
 
 	var errString string
-
 	if err != nil {
 		// When an AMI disappears out from under a launch permission resource, we will
 		// see either InvalidAMIID.NotFound or InvalidAMIID.Unavailable.
@@ -242,19 +235,14 @@ func resourceOutscaleOAPIImageLaunchPermissionDelete(d *schema.ResourceData, met
 		request.SetPermissionsToLaunch(permission)
 
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-			var err error
-			_, _, err = conn.ImageApi.UpdateImage(context.Background()).UpdateImageRequest(request).Execute()
+			_, _, err := conn.ImageApi.UpdateImage(context.Background()).UpdateImageRequest(request).Execute()
 			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
+				return utils.CheckThrottling(err)
 			}
 			return nil
 		})
 
 		var errString string
-
 		if err != nil {
 			errString = err.Error()
 
@@ -268,24 +256,20 @@ func resourceOutscaleOAPIImageLaunchPermissionDelete(d *schema.ResourceData, met
 
 func hasOAPILaunchPermission(conn *oscgo.APIClient, imageID string) (bool, error) {
 	var resp oscgo.ReadImagesResponse
-	var err error
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+		var err error
 		resp, _, err = conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(oscgo.ReadImagesRequest{
 			Filters: &oscgo.FiltersImage{
 				ImageIds: &[]string{imageID},
 			},
 		}).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
 
 	var errString string
-
 	if err != nil {
 		// When an AMI disappears out from under a launch permission resource, we will
 		// see either InvalidAMIID.NotFound or InvalidAMIID.Unavailable.

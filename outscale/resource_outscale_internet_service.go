@@ -4,14 +4,12 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"time"
-
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleOAPIInternetService() *schema.Resource {
@@ -49,7 +47,17 @@ func resourceOutscaleOAPIInternetService() *schema.Resource {
 func resourceOutscaleOAPIInternetServiceCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	resp, _, err := conn.InternetServiceApi.CreateInternetService(context.Background()).CreateInternetServiceRequest(oscgo.CreateInternetServiceRequest{}).Execute()
+	var resp oscgo.CreateInternetServiceResponse
+	var err error
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		rp, _, err := conn.InternetServiceApi.CreateInternetService(context.Background()).CreateInternetServiceRequest(oscgo.CreateInternetServiceRequest{}).Execute()
+		if err != nil {
+			return utils.CheckThrottling(err)
+		}
+		resp = rp
+		return nil
+	})
+
 	if err != nil {
 		return fmt.Errorf("[DEBUG] Error creating Internet Service: %s", utils.GetErrorResponse(err))
 	}
@@ -79,14 +87,10 @@ func resourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta interf
 
 	var resp oscgo.ReadInternetServicesResponse
 
-	err := resource.Retry(120*time.Second, func() *resource.RetryError {
+	err := resource.Retry(60*time.Second, func() *resource.RetryError {
 		r, _, err := conn.InternetServiceApi.ReadInternetServices(context.Background()).ReadInternetServicesRequest(req).Execute()
-
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		resp = r
 		return nil
@@ -160,10 +164,15 @@ func resourceOutscaleOAPIInternetServiceDelete(d *schema.ResourceData, meta inte
 		InternetServiceId: internetServiceID,
 	}
 
-	_, _, err = conn.InternetServiceApi.DeleteInternetService(context.Background()).DeleteInternetServiceRequest(req).Execute()
+	err = resource.Retry(120*time.Second, func() *resource.RetryError {
+		_, _, err = conn.InternetServiceApi.DeleteInternetService(context.Background()).DeleteInternetServiceRequest(req).Execute()
+		if err != nil {
+			return utils.CheckThrottling(err)
+		}
+		return nil
+	})
 	if err != nil {
 		return fmt.Errorf("[DEBUG] Error deleting Internet Service id (%s)", err)
 	}
-
 	return nil
 }

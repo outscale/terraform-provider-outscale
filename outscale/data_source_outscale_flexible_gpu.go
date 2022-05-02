@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -82,10 +81,7 @@ func dataSourceOutscaleOAPIFlexibleGpuRead(d *schema.ResourceData, meta interfac
 		resp, _, err = conn.FlexibleGpuApi.ReadFlexibleGpus(
 			context.Background()).ReadFlexibleGpusRequest(req).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})

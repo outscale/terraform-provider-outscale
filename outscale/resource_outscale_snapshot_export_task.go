@@ -9,6 +9,7 @@ import (
 
 	"github.com/openlyinc/pointy"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -151,16 +152,12 @@ func resourceOAPISnapshotExportTaskCreate(d *schema.ResourceData, meta interface
 	}
 
 	var resp oscgo.CreateSnapshotExportTaskResponse
-	var err error
-
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+		var err error
 		resp, _, err = conn.SnapshotApi.CreateSnapshotExportTask(context.Background()).
 			CreateSnapshotExportTaskRequest(request).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
@@ -189,18 +186,15 @@ func resourceOAPISnapshotExportTaskRead(d *schema.ResourceData, meta interface{}
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	var resp oscgo.ReadSnapshotExportTasksResponse
-	var err error
 	filter := &oscgo.FiltersExportTask{TaskIds: &[]string{d.Id()}}
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+		var err error
 		resp, _, err = conn.SnapshotApi.ReadSnapshotExportTasks(context.Background()).
 			ReadSnapshotExportTasksRequest(oscgo.ReadSnapshotExportTasksRequest{
 				Filters: filter,
 			}).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
@@ -313,25 +307,21 @@ func resourceOAPISnapshotExportTaskDelete(d *schema.ResourceData, meta interface
 func SnapshotTaskStateRefreshFunc(client *oscgo.APIClient, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		var resp oscgo.ReadSnapshotExportTasksResponse
-		var err error
-
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			filter := &oscgo.FiltersExportTask{TaskIds: &[]string{id}}
+		filter := &oscgo.FiltersExportTask{TaskIds: &[]string{id}}
+		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+			var err error
 			resp, _, err = client.SnapshotApi.ReadSnapshotExportTasks(context.Background()).
 				ReadSnapshotExportTasksRequest(oscgo.ReadSnapshotExportTasksRequest{
 					Filters: filter,
 				}).Execute()
 			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
+				return utils.CheckThrottling(err)
 			}
 			return nil
 		})
 
 		if err != nil {
-			if e := fmt.Sprint(err); strings.Contains(e, "InvalidAMIID.NotFound") {
+			if e := fmt.Sprint(err); strings.Contains(e, utils.ResourceNotFound) {
 				log.Printf("[INFO] Snapshot export task %s state %s", id, "destroyed")
 				return resp, "destroyed", nil
 			} else if resp.GetSnapshotExportTasks() != nil && len(resp.GetSnapshotExportTasks()) == 0 {

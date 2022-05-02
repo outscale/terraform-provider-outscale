@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -67,18 +66,12 @@ func datasourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta inte
 	var resp oscgo.ReadInternetServicesResponse
 
 	err := resource.Retry(120*time.Second, func() *resource.RetryError {
-		r, _, err := conn.InternetServiceApi.ReadInternetServices(context.Background()).ReadInternetServicesRequest(params).Execute()
-
+		var err error
+		resp, _, err = conn.InternetServiceApi.ReadInternetServices(context.Background()).ReadInternetServicesRequest(params).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
-
-		resp = r
-
-		return resource.RetryableError(err)
+		return nil
 	})
 
 	if err != nil {

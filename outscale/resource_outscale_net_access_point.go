@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -102,17 +101,16 @@ func resourceOutscaleNetAccessPointUpdate(d *schema.ResourceData, meta interface
 		}
 
 		var err error
-
 		err = resource.Retry(60*time.Second, func() *resource.RetryError {
 			_, _, err = conn.NetAccessPointApi.UpdateNetAccessPoint(context.Background()).UpdateNetAccessPointRequest(*req).Execute()
 			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
+				return utils.CheckThrottling(err)
 			}
 			return nil
 		})
+		if err != nil {
+			return err
+		}
 	}
 
 	if d.HasChange("tags") {
@@ -179,7 +177,7 @@ func resourceOutscaleNetAccessPointCreate(d *schema.ResourceData, meta interface
 			context.Background()).
 			CreateNetAccessPointRequest(*req).Execute()
 		if err != nil {
-			return resource.RetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
@@ -237,7 +235,7 @@ func resourceOutscaleNetAccessPointRead(d *schema.ResourceData, meta interface{}
 			context.Background()).
 			ReadNetAccessPointsRequest(*req).Execute()
 		if err != nil {
-			return resource.RetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
@@ -276,7 +274,7 @@ func resourceOutscaleNetAccessPointDelete(d *schema.ResourceData, meta interface
 			context.Background()).
 			DeleteNetAccessPointRequest(*req).Execute()
 		if err != nil {
-			return resource.RetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})

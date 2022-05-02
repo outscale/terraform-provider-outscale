@@ -7,8 +7,8 @@ import (
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
@@ -59,10 +59,10 @@ func resourceOutscaleOAPITagsCreate(d *schema.ResourceData, meta interface{}) er
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
 		_, _, err := conn.TagApi.CreateTags(context.Background()).CreateTagsRequest(request).Execute()
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), ".NotFound") {
+			if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
 				return resource.RetryableError(err)
 			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
@@ -117,7 +117,10 @@ func resourceOutscaleOAPITagsRead(d *schema.ResourceData, meta interface{}) erro
 
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
 		resp, _, err = conn.TagApi.ReadTags(context.Background()).ReadTagsRequest(params).Execute()
-		return resource.RetryableError(err)
+		if err != nil {
+			return utils.CheckThrottling(err)
+		}
+		return nil
 	})
 
 	if err != nil {
@@ -162,11 +165,10 @@ func resourceOutscaleOAPITagsDelete(d *schema.ResourceData, meta interface{}) er
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
 		_, _, err := conn.TagApi.DeleteTags(context.Background()).DeleteTagsRequest(request).Execute()
 		if err != nil {
-			ec2err, ok := err.(awserr.Error)
-			if ok && strings.Contains(ec2err.Code(), ".NotFound") {
+			if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
 				return resource.RetryableError(err) // retry
 			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})

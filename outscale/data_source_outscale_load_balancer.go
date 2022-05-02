@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -237,14 +236,9 @@ func readLbs_(conn *oscgo.APIClient, d *schema.ResourceData, t schema.ValueType)
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		resp, _, err = conn.LoadBalancerApi.
 			ReadLoadBalancers(context.Background()).
-			ReadLoadBalancersRequest(req).
-			Execute()
-
+			ReadLoadBalancersRequest(req).Execute()
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "Throttling:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
