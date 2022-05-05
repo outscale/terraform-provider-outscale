@@ -14,6 +14,7 @@ import (
 )
 
 func TestAccOutscaleVPNConnectionRoute_basic(t *testing.T) {
+	t.Parallel()
 	resourceName := "outscale_vpn_connection_route.foo"
 
 	publicIP := fmt.Sprintf("172.0.0.%d", acctest.RandIntRange(1, 255))
@@ -37,6 +38,7 @@ func TestAccOutscaleVPNConnectionRoute_basic(t *testing.T) {
 }
 
 func TestAccOutscaleVPNConnectionRouteimport_basic(t *testing.T) {
+	t.Parallel()
 	if os.Getenv("TEST_QUOTA") == "true" {
 		resourceName := "outscale_vpn_connection_route.foo"
 

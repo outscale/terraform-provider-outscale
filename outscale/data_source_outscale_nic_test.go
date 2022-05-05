@@ -16,6 +16,7 @@ import (
 )
 
 func TestAccOutscaleOAPIENIDataSource_basic(t *testing.T) {
+	t.Parallel()
 	var conf oscgo.Nic
 	subregion := os.Getenv("OUTSCALE_REGION")
 
@@ -37,6 +38,7 @@ func TestAccOutscaleOAPIENIDataSource_basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIENIDataSource_basicFilter(t *testing.T) {
+	t.Parallel()
 	var conf oscgo.Nic
 
 	subregion := os.Getenv("OUTSCALE_REGION")

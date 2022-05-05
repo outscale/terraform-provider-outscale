@@ -16,6 +16,7 @@ import (
 )
 
 func TestAccOutscaleOAPIKeyPair_basic(t *testing.T) {
+	t.Parallel()
 	var conf oscgo.Keypair
 
 	rInt := acctest.RandInt()
@@ -36,6 +37,7 @@ func TestAccOutscaleOAPIKeyPair_basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIKeyPair_retrieveName(t *testing.T) {
+	t.Parallel()
 	var conf oscgo.Keypair
 
 	rInt := acctest.RandInt()
@@ -58,6 +60,7 @@ func TestAccOutscaleOAPIKeyPair_retrieveName(t *testing.T) {
 	})
 }
 func TestAccOutscaleOAPIKeyPair_generatedName(t *testing.T) {
+	t.Parallel()
 	var conf oscgo.Keypair
 
 	resource.Test(t, resource.TestCase{

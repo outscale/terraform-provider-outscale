@@ -12,6 +12,7 @@ import (
 )
 
 func TestAccOutscaleOAPILBUAttachment_basic(t *testing.T) {
+	t.Parallel()
 	var conf oscgo.LoadBalancer
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")

@@ -10,6 +10,7 @@ import (
 )
 
 func TestAccOutscaleOAPIVolumeDataSource_basic(t *testing.T) {
+	t.Parallel()
 	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
@@ -29,6 +30,7 @@ func TestAccOutscaleOAPIVolumeDataSource_basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIVolumeDataSource_filterByTags(t *testing.T) {
+	t.Parallel()
 	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{

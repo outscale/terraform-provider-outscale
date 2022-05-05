@@ -14,6 +14,7 @@ import (
 )
 
 func TestAccOutscaleOAPISubNet_basic(t *testing.T) {
+	t.Parallel()
 	var conf oscgo.Subnet
 	region := os.Getenv("OUTSCALE_REGION")
 

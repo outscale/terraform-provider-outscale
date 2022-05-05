@@ -10,7 +10,7 @@ import (
 
 func TestAccDataSourceOutscaleOAPIVirtualGateway_unattached(t *testing.T) {
 	//t.Skip()
-
+	t.Parallel()
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{

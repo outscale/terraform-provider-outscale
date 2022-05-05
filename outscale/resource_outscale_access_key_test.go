@@ -12,6 +12,7 @@ import (
 )
 
 func TestAccOutscaleAccessKey_basic(t *testing.T) {
+	t.Parallel()
 	resourceName := "outscale_access_key.outscale_access_key"
 
 	resource.Test(t, resource.TestCase{
@@ -37,6 +38,7 @@ func TestAccOutscaleAccessKey_basic(t *testing.T) {
 }
 
 func TestAccOutscaleAccessKey_updatedToInactivedKey(t *testing.T) {
+	t.Parallel()
 	resourceName := "outscale_access_key.outscale_access_key"
 
 	state := "ACTIVE"

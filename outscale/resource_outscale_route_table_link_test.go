@@ -15,6 +15,7 @@ import (
 )
 
 func TestAccOutscaleOAPILinkRouteTable_basic(t *testing.T) {
+	t.Parallel()
 	var v oscgo.RouteTable
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

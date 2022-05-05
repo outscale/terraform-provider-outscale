@@ -9,6 +9,7 @@ import (
 )
 
 func TestAccDataSourceOutscaleOAPINetAccessPointServices_basic(t *testing.T) {
+	t.Parallel()
 	serviceName := fmt.Sprintf("com.outscale.%s.api", os.Getenv("OUTSCALE_REGION"))
 
 	resource.Test(t, resource.TestCase{

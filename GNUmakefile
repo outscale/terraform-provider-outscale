@@ -13,10 +13,10 @@ build: fmtcheck
 
 
 test: fmtcheck
-	go test $(TEST) -timeout=30s -parallel=4
+	go test $(TEST) -count 1 -timeout=30s -parallel=4
 
 testacc: fmtcheck
-	TF_ACC=1 go test $(TEST) -v -parallel 4 $(TESTARGS) -timeout 240m -cover
+	TF_ACC=1 go test $(TEST) -count 1 -v -parallel 4 $(TESTARGS) -timeout 240m -cover
 
 fmt:
 	@echo "==> Fixing source code with gofmt..."

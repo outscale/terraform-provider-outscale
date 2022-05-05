@@ -9,6 +9,7 @@ import (
 )
 
 func TestAccOutscaleOAPIVolumesDataSource_multipleFilters(t *testing.T) {
+	t.Parallel()
 	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
@@ -28,6 +29,7 @@ func TestAccOutscaleOAPIVolumesDataSource_multipleFilters(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIVolumeDataSource_multipleVIdsFilters(t *testing.T) {
+	t.Parallel()
 	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
@@ -46,6 +48,7 @@ func TestAccOutscaleOAPIVolumeDataSource_multipleVIdsFilters(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIVolumesDataSource_withVM(t *testing.T) {
+	t.Parallel()
 	region := os.Getenv("OUTSCALE_REGION")
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")

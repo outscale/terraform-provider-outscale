@@ -14,6 +14,7 @@ import (
 )
 
 func TestAccOutscaleOAPIVirtualGateway_basic(t *testing.T) {
+	t.Parallel()
 	var v, v2 oscgo.VirtualGateway
 
 	resource.Test(t, resource.TestCase{

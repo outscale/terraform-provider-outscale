@@ -15,6 +15,7 @@ import (
 )
 
 func TestAccOutscaleOAPISnapshot_basic(t *testing.T) {
+	t.Parallel()
 	region := os.Getenv("OUTSCALE_REGION")
 
 	var v oscgo.Snapshot
@@ -33,6 +34,7 @@ func TestAccOutscaleOAPISnapshot_basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPISnapshot_withDescription(t *testing.T) {
+	t.Parallel()
 	region := os.Getenv("OUTSCALE_REGION")
 
 	var v oscgo.Snapshot
@@ -52,6 +54,7 @@ func TestAccOutscaleOAPISnapshot_withDescription(t *testing.T) {
 }
 
 func TestAccOutscaleOAPISnapshot_CopySnapshot(t *testing.T) {
+	t.Parallel()
 	region := os.Getenv("OUTSCALE_REGION")
 
 	var v oscgo.Snapshot

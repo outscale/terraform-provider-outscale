@@ -10,6 +10,7 @@ import (
 )
 
 func TestAccOutscaleOAPIDSLBSU_basic(t *testing.T) {
+	t.Parallel()
 	region := os.Getenv("OUTSCALE_REGION")
 	zone := fmt.Sprintf("%sa", region)
 	numLbu := acctest.RandIntRange(0, 50)

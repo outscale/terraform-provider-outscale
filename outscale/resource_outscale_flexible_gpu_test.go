@@ -9,6 +9,7 @@ import (
 )
 
 func TestAccOutscaleOAPIFlexibleGpu_basic(t *testing.T) {
+	t.Parallel()
 	region := fmt.Sprintf("%sa", os.Getenv("OUTSCALE_REGION"))
 
 	resource.Test(t, resource.TestCase{

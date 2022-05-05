@@ -15,6 +15,7 @@ import (
 )
 
 func TestAccOutscaleOAPIPublicIP_basic(t *testing.T) {
+	t.Parallel()
 	var conf oscgo.PublicIp
 
 	resource.Test(t, resource.TestCase{
@@ -35,6 +36,7 @@ func TestAccOutscaleOAPIPublicIP_basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
+	t.Parallel()
 	var conf oscgo.PublicIp
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
