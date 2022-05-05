@@ -4,8 +4,12 @@ on:
   pull_request_target:
     branches:
       - master
-  workflow_dispatch:
-    
+    paths:
+      - '**.go'
+      - '**.sum'
+      - '**.mod'
+      - 'GNUmakefile'
+    workflow_dispatch:
 
 jobs:
   Acceptances_tests:

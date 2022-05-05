@@ -4,8 +4,13 @@ on:
   pull_request_target:
     branches:
       - master
+    paths:
+      - '**.go'
+      - 'tests/**'
+      - 'scripts/integration.sh'
+      - 'GNUmakefile'
+      - '!**_test.go'
   workflow_dispatch:
-    
 
 jobs:
   Integration_tests:
