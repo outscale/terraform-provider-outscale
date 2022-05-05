@@ -9,6 +9,7 @@ import (
 )
 
 func TestAccOutscaleDHCPOption_basic(t *testing.T) {
+	t.Parallel()
 	resourceName := "outscale_dhcp_option.foo"
 	dataSourceName := "data.outscale_dhcp_option.test"
 	value := fmt.Sprintf("test-acc-value-%s", acctest.RandString(5))
@@ -43,6 +44,7 @@ func TestAccOutscaleDHCPOption_basic(t *testing.T) {
 }
 
 func TestAccOutscaleDHCPOption_withFilters(t *testing.T) {
+	t.Parallel()
 	resourceName := "outscale_dhcp_option.foo"
 	dataSourceName := "data.outscale_dhcp_option.test"
 	value := fmt.Sprintf("test-acc-value-%s", acctest.RandString(5))

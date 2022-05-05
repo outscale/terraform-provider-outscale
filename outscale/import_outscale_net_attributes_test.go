@@ -7,6 +7,7 @@ import (
 )
 
 func TestAccOutscaleNetAttr_import(t *testing.T) {
+	t.Parallel()
 	resourceName := "outscale_net_attributes.outscale_net_attributes"
 
 	resource.Test(t, resource.TestCase{

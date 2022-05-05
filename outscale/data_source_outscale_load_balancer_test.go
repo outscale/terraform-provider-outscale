@@ -11,6 +11,7 @@ import (
 )
 
 func TestAccOutscaleOAPIDSLBU_basic(t *testing.T) {
+	t.Parallel()
 	var conf oscgo.LoadBalancer
 
 	region := os.Getenv("OUTSCALE_REGION")

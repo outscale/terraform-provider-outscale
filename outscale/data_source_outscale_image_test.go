@@ -11,6 +11,7 @@ import (
 )
 
 func TestAccOutscaleOAPIImageDataSource_Instance(t *testing.T) {
+	t.Parallel()
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 	imageName := fmt.Sprintf("image-test-%d", acctest.RandInt())
@@ -33,6 +34,7 @@ func TestAccOutscaleOAPIImageDataSource_Instance(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIImageDataSource_basic(t *testing.T) {
+	t.Parallel()
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 	imageName := fmt.Sprintf("image-test-%d", acctest.RandInt())

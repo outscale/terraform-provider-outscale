@@ -10,6 +10,7 @@ import (
 )
 
 func TestAccDataSourceOutscaleOAPISecurityGroup_basic(t *testing.T) {
+	t.Parallel()
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -27,6 +28,7 @@ func TestAccDataSourceOutscaleOAPISecurityGroup_basic(t *testing.T) {
 }
 
 func TestAccDataSourceOutscaleOAPISecurityGroupPublic(t *testing.T) {
+	t.Parallel()
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },

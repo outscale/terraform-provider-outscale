@@ -9,7 +9,7 @@ import (
 )
 
 func TestAccDataSourceOutscaleOAPISubnets(t *testing.T) {
-
+	t.Parallel()
 	rInt := acctest.RandIntRange(0, 256)
 
 	resource.Test(t, resource.TestCase{
@@ -27,7 +27,7 @@ func TestAccDataSourceOutscaleOAPISubnets(t *testing.T) {
 }
 
 func TestAccDataSourceOutscaleOAPISubnets_withAvailableIpsCountsFilter(t *testing.T) {
-
+	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,

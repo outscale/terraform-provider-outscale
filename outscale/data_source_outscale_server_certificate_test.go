@@ -9,6 +9,7 @@ import (
 )
 
 func TestAccOutscaleOAPIServerCertificateDatasource_basic(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandomWithPrefix("acc-test")
 	body := `-----BEGIN CERTIFICATE-----
 MIIFETCCAvkCFE1QlISgW8h5/akhNlZzb+or8HgYMA0GCSqGSIb3DQEBCwUAMEUx

@@ -10,7 +10,7 @@ import (
 )
 
 func TestAccOutscaleOAPIKeypairsDataSource_Instance(t *testing.T) {
-
+	t.Parallel()
 	keyPairName := fmt.Sprintf("testacc-keypair-%d", acctest.RandIntRange(0, 400))
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },

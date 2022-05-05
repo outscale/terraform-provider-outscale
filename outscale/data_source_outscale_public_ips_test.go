@@ -8,7 +8,7 @@ import (
 )
 
 func TestAccDataSourceOutscaleOAPIPublicIPS(t *testing.T) {
-
+	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -29,7 +29,7 @@ func TestAccDataSourceOutscaleOAPIPublicIPS(t *testing.T) {
 }
 
 func TestAccDataSourceOutscaleOAPIPublicIPS_withTags(t *testing.T) {
-
+	t.Parallel()
 	if os.Getenv("TEST_QUOTA") == "true" {
 		resource.Test(t, resource.TestCase{
 			PreCheck:  func() { testAccPreCheck(t) },

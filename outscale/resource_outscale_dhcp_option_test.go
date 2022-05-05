@@ -15,6 +15,7 @@ import (
 )
 
 func TestAccOutscaleOAPIDhcpOptional_basic(t *testing.T) {
+	t.Parallel()
 	resourceName := "outscale_dhcp_option.foo"
 	value := fmt.Sprintf("test-acc-value-%s", acctest.RandString(5))
 	updateValue := fmt.Sprintf("test-acc-value-%s", acctest.RandString(5))
@@ -111,6 +112,7 @@ func TestAccOutscaleOAPIDhcpOptional_withEmptyAttrs(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIDhcpOptional_withNet(t *testing.T) {
+	t.Parallel()
 	resourceName := "outscale_dhcp_option.outscale_dhcp_option"
 
 	domainName := fmt.Sprintf("eu-west-2.compute%s.internal", acctest.RandString(3))

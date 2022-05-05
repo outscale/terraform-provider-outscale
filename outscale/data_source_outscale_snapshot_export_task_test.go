@@ -11,6 +11,7 @@ import (
 )
 
 func TestAccOutscaleOAPISnapshotExportTaskDataSource_basic(t *testing.T) {
+	t.Parallel()
 	imageName := acctest.RandomWithPrefix("terraform-export-")
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {

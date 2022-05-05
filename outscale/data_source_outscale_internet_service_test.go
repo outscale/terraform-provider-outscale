@@ -6,14 +6,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccOutscaleOAPIINternetServiceDatasource_basic(t *testing.T) {
-
+func TestAccOutscaleOAPIInternetServiceDatasource_basic(t *testing.T) {
+	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIINternetServiceDatasourceConfig,
+				Config: testAccOutscaleOAPIInternetServiceDatasourceConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.outscale_internet_service.outscale_internet_serviced", "internet_service_id"),
 				),
@@ -22,7 +22,7 @@ func TestAccOutscaleOAPIINternetServiceDatasource_basic(t *testing.T) {
 	})
 }
 
-const testAccOutscaleOAPIINternetServiceDatasourceConfig = `
+const testAccOutscaleOAPIInternetServiceDatasourceConfig = `
 	resource "outscale_internet_service" "outscale_internet_service" {}
 
 	data "outscale_internet_service" "outscale_internet_serviced" {

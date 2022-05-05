@@ -12,6 +12,7 @@ import (
 )
 
 func TestAccOutscaleOAPILBUAttr_basic(t *testing.T) {
+	t.Parallel()
 	var conf oscgo.AccessLog
 
 	r := acctest.RandIntRange(0, 10)

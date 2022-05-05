@@ -11,6 +11,7 @@ import (
 )
 
 func TestAccDataSourceOutscaleOAPIVpc_basic(t *testing.T) {
+	t.Parallel()
 	rand.Seed(time.Now().UTC().UnixNano())
 	rInt := rand.Intn(16)
 	ipRange := fmt.Sprintf("172.%d.0.0/16", rInt)

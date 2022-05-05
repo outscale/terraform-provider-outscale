@@ -16,6 +16,7 @@ import (
 )
 
 func TestAccOutscaleOAPILBUBasic(t *testing.T) {
+	t.Parallel()
 	var conf oscgo.LoadBalancer
 
 	r := acctest.RandIntRange(0, 50)

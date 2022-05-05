@@ -9,7 +9,7 @@ import (
 )
 
 func TestAccDataSourceOutscaleOAPISubnet(t *testing.T) {
-
+	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -26,7 +26,7 @@ func TestAccDataSourceOutscaleOAPISubnet(t *testing.T) {
 }
 
 func TestAccDataSourceOutscaleOAPISubnet_withAvailableIpsCountsFilter(t *testing.T) {
-
+	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,

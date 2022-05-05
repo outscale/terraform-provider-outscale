@@ -13,6 +13,7 @@ import (
 )
 
 func TestAccOutscaleClientGateway_basic(t *testing.T) {
+	t.Parallel()
 	resourceName := "outscale_client_gateway.foo"
 	rBgpAsn := acctest.RandIntRange(64512, 65534)
 	rBgpAsnUpdated := acctest.RandIntRange(64512, 65534)

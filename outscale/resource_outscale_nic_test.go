@@ -16,6 +16,7 @@ import (
 )
 
 func TestAccOutscaleOAPIENI_basic(t *testing.T) {
+	t.Parallel()
 	var conf oscgo.Nic
 	subregion := os.Getenv("OUTSCALE_REGION")
 

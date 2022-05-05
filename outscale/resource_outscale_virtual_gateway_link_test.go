@@ -17,7 +17,7 @@ import (
 func TestAccOutscaleOAPIVpnGatewayAttachment_basic(t *testing.T) {
 	//var vpc oscgo.NetToVirtualGatewayLink
 	//var vgw oscgo.VirtualGateway
-
+	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
@@ -76,7 +76,7 @@ func testAccCheckVpnGatewayAttachmentImportStateIDFunc(resourceName string) reso
 }
 
 func TestAccAWSOAPIVpnGatewayAttachment_deleted(t *testing.T) {
-
+	t.Parallel()
 	if os.Getenv("TEST_QUOTA") == "true" {
 		var vpc oscgo.NetToVirtualGatewayLink
 		var vgw oscgo.VirtualGateway

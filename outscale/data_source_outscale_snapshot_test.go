@@ -10,6 +10,7 @@ import (
 )
 
 func TestAccOutscaleOAPISnapshotDataSource_basic(t *testing.T) {
+	t.Parallel()
 	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
@@ -28,6 +29,7 @@ func TestAccOutscaleOAPISnapshotDataSource_basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPISnapshotDataSource_multipleFilters(t *testing.T) {
+	t.Parallel()
 	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{

@@ -9,7 +9,7 @@ import (
 )
 
 func TestAccOutscaleVPNConnectionsDataSource_basic(t *testing.T) {
-
+	t.Parallel()
 	publicIP := fmt.Sprintf("172.0.0.%d", acctest.RandIntRange(1, 255))
 
 	resource.Test(t, resource.TestCase{
@@ -24,7 +24,7 @@ func TestAccOutscaleVPNConnectionsDataSource_basic(t *testing.T) {
 }
 
 func TestAccOutscaleVPNConnectionsDataSource_withFilters(t *testing.T) {
-
+	t.Parallel()
 	publicIP := fmt.Sprintf("172.0.0.%d", acctest.RandIntRange(1, 255))
 
 	resource.Test(t, resource.TestCase{

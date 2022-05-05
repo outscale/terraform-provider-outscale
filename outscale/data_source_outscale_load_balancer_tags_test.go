@@ -11,6 +11,7 @@ import (
 )
 
 func TestAccOutscaleOAPIDSLoadBalancerTags_basic(t *testing.T) {
+	t.Parallel()
 	r := acctest.RandString(4)
 	region := os.Getenv("OUTSCALE_REGION")
 	zone := fmt.Sprintf("%sa", region)

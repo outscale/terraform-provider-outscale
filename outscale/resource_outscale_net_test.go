@@ -14,6 +14,7 @@ import (
 )
 
 func TestAccOutscaleOAPILin_basic(t *testing.T) {
+	t.Parallel()
 	var conf1 oscgo.Net
 	var conf2 oscgo.Net
 
@@ -38,6 +39,7 @@ func TestAccOutscaleOAPILin_basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPILin_UpdateTags(t *testing.T) {
+	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,

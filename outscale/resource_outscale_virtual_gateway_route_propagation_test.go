@@ -16,6 +16,7 @@ import (
 )
 
 func TestAccOutscaleOAPIVirtualRoutePropagation_basic(t *testing.T) {
+	t.Parallel()
 	rBgpAsn := acctest.RandIntRange(64512, 65534)
 
 	resource.Test(t, resource.TestCase{

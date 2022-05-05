@@ -15,6 +15,7 @@ import (
 )
 
 func TestAccOutscaleOAPIVolume_basic(t *testing.T) {
+	t.Parallel()
 	region := os.Getenv("OUTSCALE_REGION")
 
 	var v oscgo.Volume
@@ -39,6 +40,7 @@ func TestAccOutscaleOAPIVolume_basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIVolume_updateSize(t *testing.T) {
+	t.Parallel()
 	region := os.Getenv("OUTSCALE_REGION")
 
 	var v oscgo.Volume
@@ -69,6 +71,7 @@ func TestAccOutscaleOAPIVolume_updateSize(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIVolume_io1Type(t *testing.T) {
+	t.Parallel()
 	region := os.Getenv("OUTSCALE_REGION")
 
 	var v oscgo.Volume

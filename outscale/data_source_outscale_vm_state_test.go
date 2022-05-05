@@ -10,6 +10,7 @@ import (
 )
 
 func TestAccDataSourceOutscaleOAPIVmState(t *testing.T) {
+	t.Parallel()
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 
 	resource.Test(t, resource.TestCase{

@@ -13,6 +13,7 @@ import (
 )
 
 func TestAccOutscaleOAPIServerCertificate_basic(t *testing.T) {
+	t.Parallel()
 	resourceName := "outscale_server_certificate.test"
 	rName := acctest.RandomWithPrefix("acc-test")
 	rNameUpdated := acctest.RandomWithPrefix("acc-test")

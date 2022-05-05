@@ -7,6 +7,7 @@ import (
 )
 
 func TestAccOutscaleDataSourceAccessKey_basic(t *testing.T) {
+	t.Parallel()
 	dataSourceName := "outscale_access_key.outscale_access_key"
 
 	resource.Test(t, resource.TestCase{
@@ -28,6 +29,7 @@ func TestAccOutscaleDataSourceAccessKey_basic(t *testing.T) {
 }
 
 func TestAccOutscaleDataSourceAccessKey_withFilters(t *testing.T) {
+	t.Parallel()
 	dataSourceName := "outscale_access_key.outscale_access_key"
 
 	resource.Test(t, resource.TestCase{

@@ -17,6 +17,7 @@ import (
 )
 
 func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
+	t.Parallel()
 	var server oscgo.Vm
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := fmt.Sprintf("%sa", os.Getenv("OUTSCALE_REGION"))
@@ -43,6 +44,7 @@ func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIVMBehavior_Basic(t *testing.T) {
+	t.Parallel()
 	var server oscgo.Vm
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
