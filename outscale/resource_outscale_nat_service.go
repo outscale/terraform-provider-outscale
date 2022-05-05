@@ -184,7 +184,12 @@ func resourceOAPINatServiceRead(d *schema.ResourceData, meta interface{}) error 
 			return err
 		}
 
-		if err := set("public_ips", getOSCPublicIPs(natService.GetPublicIps())); err != nil {
+		public_ips := natService.GetPublicIps()
+		if err := set("public_ips", getOSCPublicIPs(public_ips)); err != nil {
+			return err
+		}
+
+		if err := set("public_ip_id", public_ips[0].GetPublicIpId()); err != nil {
 			return err
 		}
 
