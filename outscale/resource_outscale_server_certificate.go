@@ -28,7 +28,7 @@ func resourceOutscaleOAPIServerCertificate() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"body": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 				ForceNew: true,
 			},
 			"chain": {
@@ -54,7 +54,7 @@ func resourceOutscaleOAPIServerCertificate() *schema.Resource {
 			},
 			"private_key": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 				ForceNew: true,
 			},
 			"request_id": {
@@ -76,6 +76,14 @@ func resourceOutscaleOAPIServerCertificateCreate(d *schema.ResourceData, meta in
 		Body:       d.Get("body").(string),
 		Name:       d.Get("name").(string),
 		PrivateKey: d.Get("private_key").(string),
+	}
+
+	if _, ok := d.GetOk("body"); ok == false {
+		return fmt.Errorf("[DEBUG] Error 'body' field is require for server certificate creation")
+	}
+
+	if _, ok := d.GetOk("private_key"); ok == false {
+		return fmt.Errorf("[DEBUG] Error 'private_key' field is require for server certificate creation")
 	}
 
 	if v, ok := d.GetOk("chain"); ok {
