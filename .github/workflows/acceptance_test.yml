@@ -16,6 +16,11 @@ jobs:
         with:
             repository: ${{ github.event.pull_request.head.repo.full_name }}
             ref: ${{ github.event.pull_request.head.ref }}
+      - uses: outscale-dev/frieza-github-actions/frieza-clean@master
+        with:
+          access_key: ${{ secrets.OSC_ACCESS_KEY }}
+          secret_key: ${{ secrets.OSC_SECRET_KEY }}
+          region: ${{ secrets.OSC_REGION }}
       - name: Set up Go
         uses: actions/setup-go@v2
         with:

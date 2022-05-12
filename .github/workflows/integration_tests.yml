@@ -15,6 +15,11 @@ jobs:
         with:
             repository: ${{ github.event.pull_request.head.repo.full_name }}
             ref: ${{ github.event.pull_request.head.ref }}
+      - uses: outscale-dev/frieza-github-actions/frieza-clean@master
+        with:
+          access_key: ${{ secrets.OSC_ACCESS_KEY }}
+          secret_key: ${{ secrets.OSC_SECRET_KEY }}
+          region: ${{ secrets.OSC_REGION }}
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
@@ -38,8 +43,8 @@ jobs:
       - name: Run integration tests
         run: make test-integration
         env:
-          OUTSCALE_ACCESSKEYID: ${{ secrets.OUTSCALE_ACCESSKEYID }}
-          OUTSCALE_SECRETKEYID: ${{ secrets.OUTSCALE_SECRETKEYID }}
-          OUTSCALE_REGION: ${{ secrets.OUTSCALE_REGION }}
-          OUTSCALE_ACCOUNT: ${{ secrets.OUTSCALE_ACCOUNT }}
+          OUTSCALE_ACCESSKEYID: ${{ secrets.OSC_ACCESS_KEY }}
+          OUTSCALE_SECRETKEYID: ${{ secrets.OSC_SECRET_KEY }}
+          OUTSCALE_REGION: ${{ secrets.OSC_REGION }}
+          OUTSCALE_ACCOUNT: ${{ secrets.OSC_ACCOUNT_ID }}
           OUTSCALE_IMAGEID: ${{ secrets.OUTSCALE_IMAGEID }}
