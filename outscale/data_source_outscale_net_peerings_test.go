@@ -52,7 +52,7 @@ const testAccDataSourceOutscaleOAPILinPeeringsConnectionConfig = `
 	data "outscale_net_peerings" "outscale_net_peerings" {
 		filter {
 			name   = "net_peering_ids"
-			values = ["${outscale_net_peering.outscale_net_peering.net_peering_id}", "${outscale_net_peering.outscale_net_peering2.net_peering_id}"]
+			values = ["${outscale_net_peering.outscale_net_peering.net_peering_id}"]
 		}
 	}
 `
