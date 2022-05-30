@@ -2,6 +2,7 @@ package outscale
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"strings"
 	"testing"
@@ -64,25 +65,28 @@ func TestAccOutscaleOAPIRoute_importBasic(t *testing.T) {
 
 func TestAccOutscaleOAPIRoute_importWithNatService(t *testing.T) {
 
-	resourceName := "outscale_route.outscale_route_nat"
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOAPIOutscaleRouteDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccOutscaleOAPIRouteWithNatService,
+	if os.Getenv("TEST_QUOTA") == "true" {
+		resourceName := "outscale_route.outscale_route_nat"
+		resource.ParallelTest(t, resource.TestCase{
+			PreCheck:     func() { testAccPreCheck(t) },
+			Providers:    testAccProviders,
+			CheckDestroy: testAccCheckOAPIOutscaleRouteDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: testAccOutscaleOAPIRouteWithNatService,
+				},
+				{
+					ResourceName:            resourceName,
+					ImportStateIdFunc:       testAccCheckOutscaleOAPIRouteImportStateIDFunc(resourceName),
+					ImportState:             true,
+					ImportStateVerify:       true,
+					ImportStateVerifyIgnore: []string{"request_id", "await_active_state"},
+				},
 			},
-			{
-				ResourceName:            resourceName,
-				ImportStateIdFunc:       testAccCheckOutscaleOAPIRouteImportStateIDFunc(resourceName),
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"request_id", "await_active_state"},
-			},
-		},
-	})
+		})
+	} else {
+		t.Skip("will be done soon")
+	}
 }
 
 func TestAccOutscaleOAPIRoute_changeTarget(t *testing.T) {
