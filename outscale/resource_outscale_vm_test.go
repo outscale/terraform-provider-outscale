@@ -413,7 +413,7 @@ func testAccCheckOutscaleVMWithMultiBlockDeviceMapping(region, omi, keypair stri
 				device_name = "/dev/sda1" # resizing bootdisk volume
 				bsu {
 					volume_size           = "100"
-					volume_type           = "gp2"
+					volume_type           = "strandard"
 					delete_on_vm_deletion = "true"
 				}
 			}
@@ -906,7 +906,7 @@ func testAccCheckOutscaleOAPIVMConfigWithBlockDeviceMappings(omi, vmType, region
 		  no_device   = "/dev/xvdb"
 		  bsu {
 			volume_size           = 15
-			volume_type           = "gp2"
+			volume_type           = "standard"
 			snapshot_id           = outscale_snapshot.snapshot.id
 			delete_on_vm_deletion = true
 		  }

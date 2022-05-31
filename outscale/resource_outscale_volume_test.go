@@ -137,7 +137,7 @@ func testAccOutscaleOAPIVolumeConfig(region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_volume" "test" {
 			subregion_name = "%sa"
-			volume_type    = "gp2"
+			volume_type    = "standard"
 			size           = 1
 		
 			tags {
@@ -152,7 +152,7 @@ func testOutscaleOAPIVolumeConfigUpdateSize(region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_volume" "test" {
 			subregion_name = "%sa"
-			volume_type    = "gp2"
+			volume_type    = "standard"
 			size           = 10
 		
 			tags {
