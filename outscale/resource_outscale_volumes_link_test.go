@@ -146,8 +146,8 @@ func testAccOAPIVolumeAttachmentConfig(omi, vmType, region, keypair, sgId string
 
 		resource "outscale_volume" "volume" {
 			subregion_name = "%[3]sb"
-			volume_type    = "gp2"
-			size           = 1
+			volume_type    = "standard"
+			size           = 100
 		}
 
 		resource "outscale_volumes_link" "ebs_att" {

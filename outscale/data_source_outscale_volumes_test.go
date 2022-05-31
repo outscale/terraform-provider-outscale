@@ -21,7 +21,7 @@ func TestAccOutscaleOAPIVolumesDataSource_multipleFilters(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIVolumeDataSourceID("data.outscale_volumes.ebs_volume"),
 					resource.TestCheckResourceAttr("data.outscale_volumes.ebs_volume", "volumes.0.size", "1"),
-					resource.TestCheckResourceAttr("data.outscale_volumes.ebs_volume", "volumes.0.volume_type", "gp2"),
+					resource.TestCheckResourceAttr("data.outscale_volumes.ebs_volume", "volumes.0.volume_type", "standard"),
 				),
 			},
 		},
@@ -63,7 +63,7 @@ func TestAccOutscaleOAPIVolumesDataSource_withVM(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIVolumeDataSourceID("data.outscale_volumes.outscale_volumes"),
 					// resource.TestCheckResourceAttr("data.outscale_volumes.outscale_volumes", "volumes.0.size", "1"),
-					// resource.TestCheckResourceAttr("data.outscale_volumes.outscale_volumes", "volumes.0.volume_type", "gp2"),
+					// resource.TestCheckResourceAttr("data.outscale_volumes.outscale_volumes", "volumes.0.volume_type", "standard"),
 				),
 			},
 		},
@@ -74,7 +74,7 @@ func testAccCheckOutscaleOAPIVolumeDataSourceConfigWithMultipleFilters(region st
 	return fmt.Sprintf(`
 		resource "outscale_volume" "external" {
 			subregion_name = "%sa"
-			volume_type    = "gp2"
+			volume_type    = "standard"
 			size           = 1
 
 			tags {
@@ -122,11 +122,11 @@ func testAccCheckOutscaleOAPIVolumesDataSourceConfigWithVM(region, imageID, keyp
 	return fmt.Sprintf(`
 		resource "outscale_volume" "outscale_volume" {
 			subregion_name = "%[1]sa"
-			volume_type    = "gp2"
+			volume_type    = "standard"
 			size           = 25
 			tags {
 				key   = "Name"
-				value = "volume-gp2-1"
+				value = "volume-standard-1"
 			}
 		}
 
