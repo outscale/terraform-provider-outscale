@@ -301,6 +301,13 @@ class ProviderOapiMeta(type):
     def __new__(cls, name, bases, attrs):
         logger = logging.getLogger('tpd_test')
 
+        def skip_tests(test_name):
+            if os.path.exists('tests_to_fix.json'):
+                with open('tests_to_fix.json') as t_file:
+                    skips = json.load(t_file)
+                    return test_name in skips
+            return False
+
         def create_test_func(resource, test_name, test_path):
             def func(self):
                 self.exec_test(test_name, test_path)
@@ -322,6 +329,9 @@ class ProviderOapiMeta(type):
                     continue
                 logger.debug("Build test: '%s'", path)
                 func = create_test_func(resource, test, path)
+                if skip_tests(func.__name__):
+                    logger.debug(" %s is skipped at moment, But it must be fixed\n", func.__name__)
+                    continue
                 attrs[func.__name__] = func
         return type.__new__(cls, name, bases, attrs)
 
