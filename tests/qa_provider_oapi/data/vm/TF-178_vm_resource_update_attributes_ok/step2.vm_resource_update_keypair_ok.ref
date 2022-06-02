@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_keypair",
             "name": "keypair-TF66",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "index_key": 0,
@@ -47,7 +47,7 @@
             "mode": "managed",
             "type": "outscale_security_group",
             "name": "security_group_TF66",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "index_key": 0,
@@ -93,7 +93,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "outscale_vm-TF66",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -108,7 +108,7 @@
                                         "iops": 0,
                                         "snapshot_id": "",
                                         "volume_size": 20,
-                                        "volume_type": "gp2"
+                                        "volume_type": "standard"
                                     }
                                 ],
                                 "device_name": "/dev/sdb",

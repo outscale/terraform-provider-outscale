@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_keypair",
             "name": "keypair-TF66",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "index_key": 0,
@@ -47,7 +47,7 @@
             "mode": "managed",
             "type": "outscale_security_group",
             "name": "security_group_TF66",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "index_key": 0,
@@ -93,7 +93,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "outscale_vm-TF66",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -108,7 +108,7 @@
                                         "iops": 0,
                                         "snapshot_id": "",
                                         "volume_size": 20,
-                                        "volume_type": "gp2"
+                                        "volume_type": "standard"
                                     }
                                 ],
                                 "device_name": "/dev/sdb",
@@ -177,17 +177,17 @@
                                 ],
                                 "secondary_private_ip_count": 0,
                                 "security_group_ids": [
-                                    "##id-4##",
-                                    "##id-3##"
+                                    "##id-3##",
+                                    "##id-4##"
                                 ],
                                 "security_groups": [
                                     {
-                                        "security_group_id": "##id-4##",
-                                        "security_group_name": "terraform-sg-TF66-1"
-                                    },
-                                    {
                                         "security_group_id": "##id-3##",
                                         "security_group_name": "terraform-sg-TF66-0"
+                                    },
+                                    {
+                                        "security_group_id": "##id-4##",
+                                        "security_group_name": "terraform-sg-TF66-1"
                                     }
                                 ],
                                 "state": "in-use",
@@ -217,12 +217,12 @@
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-4##",
-                                "security_group_name": "terraform-sg-TF66-1"
-                            },
-                            {
                                 "security_group_id": "##id-3##",
                                 "security_group_name": "terraform-sg-TF66-0"
+                            },
+                            {
+                                "security_group_id": "##id-4##",
+                                "security_group_name": "terraform-sg-TF66-1"
                             }
                         ],
                         "state": "running",

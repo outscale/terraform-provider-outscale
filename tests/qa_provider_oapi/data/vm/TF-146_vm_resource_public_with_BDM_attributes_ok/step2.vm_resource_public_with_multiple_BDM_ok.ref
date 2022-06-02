@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_keypair",
             "name": "my_keypair",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -31,7 +31,7 @@
             "mode": "managed",
             "type": "outscale_snapshot",
             "name": "my_snapshot",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -39,7 +39,7 @@
                         "account_alias": "",
                         "account_id": "##id-1##",
                         "description": "",
-                        "file_location": null,
+                        "file_location": "########",
                         "id": "##id-2##",
                         "permissions_to_create_volume": [],
                         "progress": 100,
@@ -65,7 +65,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "outscale_vm2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -80,7 +80,7 @@
                                         "iops": 0,
                                         "snapshot_id": "",
                                         "volume_size": 100,
-                                        "volume_type": "gp2"
+                                        "volume_type": "standard"
                                     }
                                 ],
                                 "device_name": "/dev/sda1",
@@ -94,7 +94,7 @@
                                         "iops": 0,
                                         "snapshot_id": "",
                                         "volume_size": 15,
-                                        "volume_type": "gp2"
+                                        "volume_type": "standard"
                                     }
                                 ],
                                 "device_name": "/dev/sdb",
@@ -204,7 +204,7 @@
             "mode": "managed",
             "type": "outscale_volume",
             "name": "my_volume",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,

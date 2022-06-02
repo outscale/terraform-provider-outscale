@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_snapshot",
             "name": "snapshot-1",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -17,7 +17,7 @@
                         "account_alias": "",
                         "account_id": "##id-0##",
                         "description": "",
-                        "file_location": null,
+                        "file_location": "########",
                         "id": "##id-1##",
                         "permissions_to_create_volume": [],
                         "progress": 100,
@@ -48,7 +48,7 @@
             "mode": "managed",
             "type": "outscale_volume",
             "name": "volume-1",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -79,13 +79,13 @@
             "mode": "managed",
             "type": "outscale_volume",
             "name": "volume-2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "id": "##id-3##",
-                        "iops": 100,
+                        "iops": 150,
                         "linked_volumes": [],
                         "request_id": "########",
                         "size": 25,
@@ -94,7 +94,7 @@
                         "subregion_name": "###region###a",
                         "tags": [],
                         "volume_id": "##id-3##",
-                        "volume_type": "gp2"
+                        "volume_type": "standard"
                     },
                     "sensitive_attributes": [],
                     "private": "bnVsbA==",

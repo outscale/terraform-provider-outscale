@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_snapshot",
             "name": "outscale_snapshot",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -17,7 +17,7 @@
                         "account_alias": "",
                         "account_id": "##id-0##",
                         "description": "",
-                        "file_location": null,
+                        "file_location": "########",
                         "id": "##id-1##",
                         "permissions_to_create_volume": [],
                         "progress": 100,
@@ -48,7 +48,7 @@
             "mode": "managed",
             "type": "outscale_snapshot",
             "name": "outscale_snapshot_2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -56,7 +56,7 @@
                         "account_alias": "",
                         "account_id": "##id-0##",
                         "description": "Test-copy-snapshot",
-                        "file_location": null,
+                        "file_location": "########",
                         "id": "##id-3##",
                         "permissions_to_create_volume": [],
                         "progress": 100,
@@ -88,7 +88,7 @@
             "mode": "managed",
             "type": "outscale_volume",
             "name": "outscale_volume_snap",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
