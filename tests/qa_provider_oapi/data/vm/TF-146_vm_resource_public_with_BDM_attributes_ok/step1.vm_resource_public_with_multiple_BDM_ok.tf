@@ -21,7 +21,7 @@ resource "outscale_vm" "outscale_vm2" {
       device_name = "/dev/sda1"   # resizing bootdisk volume
       bsu {
       volume_size = "100"
-      volume_type = "gp2"
+      volume_type = "standard"
       delete_on_vm_deletion = false
       }
     }
@@ -29,7 +29,7 @@ resource "outscale_vm" "outscale_vm2" {
      device_name = "/dev/sdb"
      bsu  {
          volume_size=15
-         volume_type = "gp2"
+         volume_type = "standard"
        }
     }
     block_device_mappings {

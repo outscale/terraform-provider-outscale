@@ -14,7 +14,7 @@ resource "outscale_vm" "outscale_vm-TF66" {
         device_name       = "/dev/sdb"
         bsu  {
             volume_size   = 20
-            volume_type    = "gp2"
+            volume_type    = "standard"
          }
       }
 

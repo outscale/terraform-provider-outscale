@@ -24,6 +24,6 @@ resource "outscale_snapshot" "snapshot-1" {
 resource "outscale_volume" "volume-2" {
     subregion_name  = "${var.region}a"
     size            = 25
-    volume_type     = "gp2"
+    volume_type     = "standard"
     snapshot_id     = outscale_snapshot.snapshot-1.snapshot_id
 }

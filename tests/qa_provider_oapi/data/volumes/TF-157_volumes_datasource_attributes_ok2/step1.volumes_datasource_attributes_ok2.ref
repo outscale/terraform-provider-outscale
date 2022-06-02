@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_volumes",
             "name": "outscale_volumes",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -20,7 +20,7 @@
                         "volume_id": null,
                         "volumes": [
                             {
-                                "iops": 100,
+                                "iops": 150,
                                 "linked_volumes": [],
                                 "size": 12,
                                 "snapshot_id": "",
@@ -29,14 +29,14 @@
                                 "tags": [
                                     {
                                         "key": "Name",
-                                        "value": "volume-gp2-1"
+                                        "value": "volume-standard-1"
                                     }
                                 ],
                                 "volume_id": "##id-1##",
-                                "volume_type": "gp2"
+                                "volume_type": "standard"
                             },
                             {
-                                "iops": 100,
+                                "iops": 120,
                                 "linked_volumes": [],
                                 "size": 13,
                                 "snapshot_id": "",
@@ -45,11 +45,11 @@
                                 "tags": [
                                     {
                                         "key": "Name",
-                                        "value": "volume-gp2-1"
+                                        "value": "volume-io1-1"
                                     }
                                 ],
                                 "volume_id": "##id-2##",
-                                "volume_type": "gp2"
+                                "volume_type": "io1"
                             }
                         ]
                     },
@@ -61,13 +61,13 @@
             "mode": "managed",
             "type": "outscale_volume",
             "name": "outscale_volume",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "id": "##id-1##",
-                        "iops": 100,
+                        "iops": 150,
                         "linked_volumes": [],
                         "request_id": "########",
                         "size": 12,
@@ -77,11 +77,11 @@
                         "tags": [
                             {
                                 "key": "Name",
-                                "value": "volume-gp2-1"
+                                "value": "volume-standard-1"
                             }
                         ],
                         "volume_id": "##id-1##",
-                        "volume_type": "gp2"
+                        "volume_type": "standard"
                     },
                     "sensitive_attributes": [],
                     "private": "bnVsbA=="
@@ -92,13 +92,13 @@
             "mode": "managed",
             "type": "outscale_volume",
             "name": "outscale_volume2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "id": "##id-2##",
-                        "iops": 100,
+                        "iops": 120,
                         "linked_volumes": [],
                         "request_id": "########",
                         "size": 13,
@@ -108,11 +108,11 @@
                         "tags": [
                             {
                                 "key": "Name",
-                                "value": "volume-gp2-1"
+                                "value": "volume-io1-1"
                             }
                         ],
                         "volume_id": "##id-2##",
-                        "volume_type": "gp2"
+                        "volume_type": "io1"
                     },
                     "sensitive_attributes": [],
                     "private": "bnVsbA=="
