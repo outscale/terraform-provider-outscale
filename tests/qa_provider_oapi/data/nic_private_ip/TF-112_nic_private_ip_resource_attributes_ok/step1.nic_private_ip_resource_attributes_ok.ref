@@ -116,7 +116,7 @@
                             "10.0.45.67"
                         ],
                         "request_id": "########",
-                        "secondary_private_ip_count": 2
+                        "secondary_private_ip_count": 1
                     },
                     "sensitive_attributes": [],
                     "private": "bnVsbA==",
