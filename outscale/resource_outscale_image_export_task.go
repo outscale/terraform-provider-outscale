@@ -13,8 +13,8 @@ import (
 	"github.com/openlyinc/pointy"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceOutscaleOAPIIMageExportTask() *schema.Resource {
@@ -179,9 +179,9 @@ func resourceOAPIImageExportTaskCreate(d *schema.ResourceData, meta interface{})
 	d.SetId(id)
 	if d.IsNewResource() {
 		if err := setOSCAPITags(conn, d); err != nil {
+			d.Partial(true)
 			return err
 		}
-		d.SetPartial("tags")
 	}
 	_, err = resourceOutscaleImageTaskWaitForAvailable(id, conn)
 	if err != nil {
@@ -279,14 +279,10 @@ func resourceOAPIImageExportTaskRead(d *schema.ResourceData, meta interface{}) e
 func resourceOAPIImageExportTaskUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	d.Partial(true)
 	if err := setOSCAPITags(conn, d); err != nil {
+		d.Partial(true)
 		return err
 	}
-	d.SetPartial("tags")
-
-	d.Partial(false)
-
 	return resourceOAPIImageExportTaskRead(d, meta)
 }
 

@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/spf13/cast"
@@ -41,7 +41,7 @@ func resourceOutscaleOApiVM() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"bsu": {
-							Type:     schema.TypeList,
+							Type:     schema.TypeSet,
 							Optional: true,
 							Computed: true,
 							MaxItems: 1,
@@ -50,6 +50,7 @@ func resourceOutscaleOApiVM() *schema.Resource {
 									"delete_on_vm_deletion": {
 										Type:     schema.TypeBool,
 										Optional: true,
+										Computed: true,
 									},
 									"iops": {
 										Type:     schema.TypeInt,
@@ -236,8 +237,7 @@ func resourceOutscaleOApiVM() *schema.Resource {
 							ForceNew: true,
 						},
 						"link_nic": {
-							Type:     schema.TypeList,
-							MaxItems: 1,
+							Type:     schema.TypeSet,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -376,13 +376,11 @@ func resourceOutscaleOApiVM() *schema.Resource {
 			},
 			"block_device_mappings_created": {
 				Type:     schema.TypeList,
-				Optional: true,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"bsu": {
-							Type:     schema.TypeMap,
-							Optional: true,
+							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -395,11 +393,11 @@ func resourceOutscaleOApiVM() *schema.Resource {
 										Computed: true,
 									},
 									"state": {
-										Type:     schema.TypeInt,
+										Type:     schema.TypeString,
 										Computed: true,
 									},
 									"volume_id": {
-										Type:     schema.TypeFloat,
+										Type:     schema.TypeString,
 										Computed: true,
 									},
 								},
@@ -882,12 +880,9 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if err := setOSCAPITags(conn, d); err != nil {
+		d.Partial(true)
 		return err
 	}
-
-	d.SetPartial("tags")
-
-	d.Partial(false)
 
 	if onlyTags {
 		goto out

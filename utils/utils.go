@@ -1,20 +1,21 @@
 package utils
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"hash/crc32"
 	"log"
 	"math/rand"
 	"net/http"
 	"strconv"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/spf13/cast"
-
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 // PrintToJSON method helper to debug responses
@@ -232,4 +233,32 @@ func StringSlicePtrToInterfaceSlice(list *[]string) []interface{} {
 
 func I32toa(i int32) string {
 	return strconv.FormatInt(int64(i), 10)
+}
+
+// String hashes a string to a unique hashcode.
+//
+// crc32 returns a uint32, but for our use we need
+// and non negative integer. Here we cast to an integer
+// and invert it if the result is negative.
+func String(s string) int {
+	v := int(crc32.ChecksumIEEE([]byte(s)))
+	if v >= 0 {
+		return v
+	}
+	if -v >= 0 {
+		return -v
+	}
+	// v == MinInt
+	return 0
+}
+
+// Strings hashes a list of strings to a unique hashcode.
+func Strings(strings []string) string {
+	var buf bytes.Buffer
+
+	for _, s := range strings {
+		buf.WriteString(fmt.Sprintf("%s-", s))
+	}
+
+	return fmt.Sprintf("%d", String(buf.String()))
 }

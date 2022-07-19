@@ -10,8 +10,8 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceOutscaleOAPIRouteTable() *schema.Resource {
@@ -179,9 +179,9 @@ func resourceOutscaleOAPIRouteTableCreate(d *schema.ResourceData, meta interface
 
 	if d.IsNewResource() {
 		if err := setOSCAPITags(conn, d); err != nil {
+			d.Partial(true)
 			return err
 		}
-		d.SetPartial("tags")
 	}
 
 	a := make([]interface{}, 0)
@@ -237,12 +237,9 @@ func resourceOutscaleOAPIRouteTableUpdate(d *schema.ResourceData, meta interface
 	d.Partial(true)
 
 	if err := setOSCAPITags(conn, d); err != nil {
+		d.Partial(true)
 		return err
 	}
-
-	d.SetPartial("tags")
-
-	d.Partial(false)
 	return resourceOutscaleOAPIRouteTableRead(d, meta)
 }
 

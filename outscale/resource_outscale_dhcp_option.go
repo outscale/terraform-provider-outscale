@@ -8,8 +8,8 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceOutscaleDHCPOption() *schema.Resource {
@@ -159,16 +159,10 @@ func resourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) er
 func resourceOutscaleDHCPOptionUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	d.Partial(true)
-
 	if err := setOSCAPITags(conn, d); err != nil {
+		d.Partial(true)
 		return err
 	}
-
-	d.SetPartial("tags")
-
-	d.Partial(false)
-
 	return resourceOutscaleDHCPOptionRead(d, meta)
 }
 
