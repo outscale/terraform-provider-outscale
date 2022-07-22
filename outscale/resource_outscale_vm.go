@@ -1145,7 +1145,7 @@ func vmStateRefreshFunc(conn *oscgo.APIClient, instanceID, failState string) res
 		state := vm.GetState()
 
 		if state == failState {
-			return vm, state, fmt.Errorf("Failed to reach target state. Reason: %v", vm.State)
+			return vm, state, fmt.Errorf("Failed to reach target state. Reason: %v", *vm.State)
 
 		}
 
