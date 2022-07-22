@@ -1,3 +1,20 @@
+0.5.4 (July 26, 2022)
+========================
+
+BUG FIXES:
+----------
+* Fix ```public_ip_id``` attribute when imported outscale_nat_service resource ([GH-95](https://github.com/outscale-dev/terraform-provider-outscale/issues/95))
+* Fix issue with importing server_certificate ([GH-97](https://github.com/outscale-dev/terraform-provider-outscale/issues/97))
+* Fix StartVM action when updating VM tags ([GH-86](https://github.com/outscale-dev/terraform-provider-outscale/issues/86))
+* Fix ```secondary_private_ip_count``` parameter in outscale_nic_private_ip resource ([GH-100](https://github.com/outscale-dev/terraform-provider-outscale/issues/100))
+
+IMPROVEMENT:
+-----------
+
+* Update retrying when api call throttled ([GH-106](https://github.com/outscale-dev/terraform-provider-outscale/issues/106))
+* Improve integration and acceptance tests
+* Add ```frieza-clean``` to clean account after running tests
+
 0.5.3 (Mars 25, 2022)
 ========================
 
