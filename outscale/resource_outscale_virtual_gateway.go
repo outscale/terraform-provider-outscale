@@ -281,7 +281,7 @@ func virtualGatewayStateRefreshFunc(conn *oscgo.APIClient, instanceID, failState
 		state := virtualGateway.GetState()
 
 		if state == failState {
-			return virtualGateway, state, fmt.Errorf("Failed to reach target state. Reason: %v", virtualGateway.State)
+			return virtualGateway, state, fmt.Errorf("Failed to reach target state. Reason: %v", *virtualGateway.State)
 
 		}
 
