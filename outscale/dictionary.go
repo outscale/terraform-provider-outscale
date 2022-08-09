@@ -49,6 +49,7 @@ func init() {
 			"outscale_net_peering_acceptation": resourceOutscaleOAPILinPeeringConnectionAccepter,
 			"outscale_server_certificate":      resourceOutscaleOAPIServerCertificate,
 			"outscale_snapshot_export_task":    resourceOutscaleOAPISnapshotExportTask,
+			"outscale_ca":                      resourceOutscaleOAPICa,
 		},
 	}
 
@@ -97,6 +98,8 @@ func init() {
 			"outscale_server_certificates":   datasourceOutscaleOAPIServerCertificates,
 			"outscale_snapshot_export_task":  dataSourceOutscaleOAPISnapshotExportTask,
 			"outscale_snapshot_export_tasks": dataSourceOutscaleOAPISnapshotExportTasks,
+			"outscale_ca":                    dataSourceOutscaleOAPICa,
+			"outscale_cas":                   dataSourceOutscaleOAPICas,
 		},
 	}
 }

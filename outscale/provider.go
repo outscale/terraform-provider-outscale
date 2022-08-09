@@ -98,6 +98,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_image_export_task":                 resourceOutscaleOAPIIMageExportTask(),
 			"outscale_server_certificate":                resourceOutscaleOAPIServerCertificate(),
 			"outscale_snapshot_export_task":              resourceOutscaleOAPISnapshotExportTask(),
+			"outscale_ca":                                resourceOutscaleOAPICa(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"outscale_vm":                           dataSourceOutscaleOAPIVM(),
@@ -168,6 +169,8 @@ func Provider() terraform.ResourceProvider {
 			"outscale_server_certificates":          datasourceOutscaleOAPIServerCertificates(),
 			"outscale_snapshot_export_task":         dataSourceOutscaleOAPISnapshotExportTask(),
 			"outscale_snapshot_export_tasks":        dataSourceOutscaleOAPISnapshotExportTasks(),
+			"outscale_ca":                           dataSourceOutscaleOAPICa(),
+			"outscale_cas":                          dataSourceOutscaleOAPICas(),
 		},
 
 		ConfigureFunc: providerConfigureClient,
