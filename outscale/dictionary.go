@@ -51,6 +51,7 @@ func init() {
 			"outscale_snapshot_export_task":    resourceOutscaleOAPISnapshotExportTask,
 			"outscale_ca":                      resourceOutscaleOAPICa,
 			"outscale_api_access_rule":         resourceOutscaleOAPIApiAccessRule,
+			"outscale_api_access_policy":       resourceOutscaleOAPIApiAccessPolicy,
 		},
 	}
 
@@ -103,6 +104,7 @@ func init() {
 			"outscale_cas":                   dataSourceOutscaleOAPICas,
 			"outscale_api_access_rule":       dataSourceOutscaleOAPIApiAccessRule,
 			"outscale_api_access_rules":      dataSourceOutscaleOAPIApiAccessRules,
+			"outscale_api_access_policy":     dataSourceOutscaleOAPIApiAccessPolicy,
 		},
 	}
 }

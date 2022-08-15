@@ -100,6 +100,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_snapshot_export_task":              resourceOutscaleOAPISnapshotExportTask(),
 			"outscale_ca":                                resourceOutscaleOAPICa(),
 			"outscale_api_access_rule":                   resourceOutscaleOAPIApiAccessRule(),
+			"outscale_api_access_policy":                 resourceOutscaleOAPIApiAccessPolicy(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"outscale_vm":                           dataSourceOutscaleOAPIVM(),
@@ -174,6 +175,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_cas":                          dataSourceOutscaleOAPICas(),
 			"outscale_api_access_rule":              dataSourceOutscaleOAPIApiAccessRule(),
 			"outscale_api_access_rules":             dataSourceOutscaleOAPIApiAccessRules(),
+			"outscale_api_access_policy":            dataSourceOutscaleOAPIApiAccessPolicy(),
 		},
 
 		ConfigureFunc: providerConfigureClient,
