@@ -25,6 +25,10 @@ func datasourceOutscaleOAPIServerCertificate() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"orn": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"path": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -85,7 +89,9 @@ func datasourceOutscaleOAPIServerCertificateRead(d *schema.ResourceData, meta in
 
 	d.Set("expiration_date", result.GetExpirationDate())
 	d.Set("name", result.GetName())
+	d.Set("orn", result.GetOrn())
 	d.Set("path", result.GetPath())
+	d.Set("upload_date", result.GetUploadDate())
 
 	d.SetId(result.GetId())
 

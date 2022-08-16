@@ -34,6 +34,10 @@ func datasourceOutscaleOAPIServerCertificates() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						"orn": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 						"path": {
 							Type:     schema.TypeString,
 							Computed: true,
@@ -92,6 +96,7 @@ func flattenServerCertificate(apiObject oscgo.ServerCertificate) map[string]inte
 	tfMap["expiration_date"] = apiObject.GetExpirationDate()
 	tfMap["id"] = apiObject.GetId()
 	tfMap["name"] = apiObject.GetName()
+	tfMap["orn"] = apiObject.GetOrn()
 	tfMap["path"] = apiObject.GetPath()
 	tfMap["upload_date"] = apiObject.GetUploadDate()
 
