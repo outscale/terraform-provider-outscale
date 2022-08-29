@@ -16,7 +16,7 @@ jobs:
   Integration_tests:
     runs-on: [self-hosted, linux]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
             repository: ${{ github.event.pull_request.head.repo.full_name }}
             ref: ${{ github.event.pull_request.head.ref }}
@@ -25,22 +25,22 @@ jobs:
           access_key: ${{ secrets.OSC_ACCESS_KEY }}
           secret_key: ${{ secrets.OSC_SECRET_KEY }}
           region: ${{ secrets.OSC_REGION }}
-      - name: Set up Go
-        uses: actions/setup-go@v2
+      - run: go version
+        uses: actions/setup-go@v3
         with:
-          go-version: 1.17
+          go-version: '>=1.18.0'
       - name: Set up Python
-        uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         with:
-          python-version: '3.5.x'
+          python-version: '3.10'
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
-          node-version: '14'
+          node-version: '16'
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v1
+        uses: hashicorp/setup-terraform@v2
         with:
           terraform_wrapper: false
       - name: Build go test
