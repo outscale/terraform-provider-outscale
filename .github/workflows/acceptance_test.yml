@@ -16,7 +16,7 @@ jobs:
     concurrency: terraform-acceptance-test
     runs-on: [self-hosted, linux]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
             repository: ${{ github.event.pull_request.head.repo.full_name }}
             ref: ${{ github.event.pull_request.head.ref }}
@@ -26,9 +26,9 @@ jobs:
           secret_key: ${{ secrets.OSC_SECRET_KEY }}
           region: ${{ secrets.OSC_REGION }}
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
-          go-version: 1.17
+          go-version: '>=1.18.0'
       - name: Build go test
         run: make test
       - name: Run acceptance tests
