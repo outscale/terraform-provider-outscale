@@ -1,4 +1,4 @@
 prance
 pyyaml
-openapi-spec-validator
+openapi-spec-validator==0.4
 osc-openapi-framework
