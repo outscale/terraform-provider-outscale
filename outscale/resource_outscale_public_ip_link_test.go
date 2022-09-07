@@ -89,7 +89,7 @@ func testAccCheckOutscaleOAPIPublicIPLinkDestroy(s *terraform.State) error {
 			return fmt.Errorf("No Public IP Link ID is set")
 		}
 
-		id := rs.Primary.Attributes["link_id"]
+		id := rs.Primary.Attributes["link_public_ip_id"]
 
 		conn := testAccProvider.Meta().(*OutscaleClient)
 

@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"os"
 	"testing"
 	"time"
 
@@ -15,28 +14,25 @@ import (
 )
 
 func TestAccOutscaleOAPIVpnGatewayAttachment_basic(t *testing.T) {
-	//var vpc oscgo.NetToVirtualGatewayLink
-	//var vgw oscgo.VirtualGateway
+	var vpc oscgo.Net
+	var vgw oscgo.VirtualGateway
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
-		//IDRefreshName: "outscale_virtual_gateway_link.test",
-		Providers: testAccProviders,
+		IDRefreshName: "outscale_virtual_gateway_link.test",
+		Providers:     testAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOAPIVpnGatewayAttachmentConfig,
-				Check:  resource.ComposeTestCheckFunc(
-				// testAccCheckOutscaleOAPILinExists(
-				// 	"outscale_net.test",
-				// 	&vpc), TODO: fix once we develop this resource
-				//testAccCheckOAPIVirtualGatewayExists(
-				//	"outscale_virtual_gateway.outscale_virtual_gateway",
-				//	&vgw),
-				//testAccCheckOAPIVpnGatewayAttachmentExists(
-				//	"outscale_virtual_gateway_link.outscale_virtual_gateway",
-				//	&vpc, &vgw),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleOAPILinExists(
+						"outscale_net.test",
+						&vpc),
+					testAccCheckOAPIVirtualGatewayExists(
+						"outscale_virtual_gateway.test",
+						&vgw),
 				),
 			},
 		},
@@ -77,56 +73,52 @@ func testAccCheckVpnGatewayAttachmentImportStateIDFunc(resourceName string) reso
 
 func TestAccAWSOAPIVpnGatewayAttachment_deleted(t *testing.T) {
 	t.Parallel()
-	if os.Getenv("TEST_QUOTA") == "true" {
-		var vpc oscgo.NetToVirtualGatewayLink
-		var vgw oscgo.VirtualGateway
+	var vgw oscgo.VirtualGateway
+	var vpc oscgo.Net
 
-		testDeleted := func(n string) resource.TestCheckFunc {
-			return func(s *terraform.State) error {
-				_, ok := s.RootModule().Resources[n]
-				if ok {
-					return fmt.Errorf("expected vpn gateway attachment resource %q to be deleted", n)
-				}
-				return nil
+	testDeleted := func(n string) resource.TestCheckFunc {
+		return func(s *terraform.State) error {
+			_, ok := s.RootModule().Resources[n]
+			if ok {
+				return fmt.Errorf("expected vpn gateway attachment resource %q to be deleted", n)
 			}
+			return nil
 		}
-
-		resource.Test(t, resource.TestCase{
-			PreCheck: func() {
-				testAccPreCheck(t)
-			},
-			IDRefreshName: "outscale_virtual_gateway_link.test",
-			Providers:     testAccProviders,
-			CheckDestroy:  testAccCheckOAPIVpnGatewayAttachmentDestroy,
-			Steps: []resource.TestStep{
-				{
-					Config: testAccOAPIVpnGatewayAttachmentConfig,
-					Check: resource.ComposeTestCheckFunc(
-						// testAccCheckOutscaleOAPILinExists(
-						// 	"outscale_net.test",
-						// 	&vpc),  TODO: Fix once we develop this resource
-						testAccCheckOAPIVirtualGatewayExists(
-							"outscale_virtual_gateway.test",
-							&vgw),
-						testAccCheckOAPIVpnGatewayAttachmentExists(
-							"outscale_virtual_gateway_link.test",
-							&vpc, &vgw),
-					),
-				},
-				{
-					Config: testAccNoOAPIVpnGatewayAttachmentConfig,
-					Check: resource.ComposeTestCheckFunc(
-						testDeleted("outscale_virtual_gateway_link.test"),
-					),
-				},
-			},
-		})
-	} else {
-		t.Skip("will be done soon")
 	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+		},
+		IDRefreshName: "outscale_virtual_gateway_link.test",
+		Providers:     testAccProviders,
+		CheckDestroy:  testAccCheckOAPIVpnGatewayAttachmentDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccOAPIVpnGatewayAttachmentConfig,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleOAPILinExists(
+						"outscale_net.test",
+						&vpc),
+					testAccCheckOAPIVirtualGatewayExists(
+						"outscale_virtual_gateway.test",
+						&vgw),
+					testAccCheckOAPIVpnGatewayAttachmentExists(
+						"outscale_virtual_gateway_link.test",
+						&vgw),
+				),
+			},
+			{
+				Config: testAccNoOAPIVpnGatewayAttachmentConfig,
+				Check: resource.ComposeTestCheckFunc(
+					testDeleted("outscale_virtual_gateway_link.test"),
+				),
+			},
+		},
+	})
 }
 
-func testAccCheckOAPIVpnGatewayAttachmentExists(n string, vpc *oscgo.NetToVirtualGatewayLink, vgw *oscgo.VirtualGateway) resource.TestCheckFunc {
+func testAccCheckOAPIVpnGatewayAttachmentExists(n string, vgw *oscgo.VirtualGateway) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -137,8 +129,8 @@ func testAccCheckOAPIVpnGatewayAttachmentExists(n string, vpc *oscgo.NetToVirtua
 			return fmt.Errorf("No ID is set")
 		}
 
-		vpcID := rs.Primary.Attributes["lin_id"]
-		vgwID := rs.Primary.Attributes["vpn_gateway_id"]
+		vpcID := rs.Primary.Attributes["net_id"]
+		vgwID := rs.Primary.Attributes["virtual_gateway_id"]
 
 		if len(vgw.GetNetToVirtualGatewayLinks()) == 0 {
 			return fmt.Errorf("vpn gateway %q has no attachments", vgwID)
@@ -149,7 +141,7 @@ func testAccCheckOAPIVpnGatewayAttachmentExists(n string, vpc *oscgo.NetToVirtua
 				vgwID, vgw.GetNetToVirtualGatewayLinks()[0].GetState())
 		}
 
-		if vgw.GetNetToVirtualGatewayLinks()[0].GetNetId() != vpc.GetNetId() {
+		if vgw.GetNetToVirtualGatewayLinks()[0].GetNetId() != vpcID {
 			return fmt.Errorf("Expected VPN Gateway %q to be attached to VPC %q, but got: %q",
 				vgwID, vpcID, vgw.GetNetToVirtualGatewayLinks()[0].GetNetId())
 		}
@@ -184,9 +176,8 @@ func testAccCheckOAPIVpnGatewayAttachmentDestroy(s *terraform.State) error {
 		if err != nil {
 			return err
 		}
-
-		if len(resp.GetVirtualGateways()) > 1 {
-			vgw := resp.GetVirtualGateways()[0]
+		vgw := resp.GetVirtualGateways()[0]
+		if len(vgw.GetNetToVirtualGatewayLinks()) > 0 {
 			if vgw.GetNetToVirtualGatewayLinks()[0].GetState() != "detached" {
 				return fmt.Errorf("Expected VPN Gateway %q to be in detached state, but got: %q",
 					vgwID, vgw.GetNetToVirtualGatewayLinks()[0].GetState())
