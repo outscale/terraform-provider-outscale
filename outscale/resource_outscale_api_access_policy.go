@@ -94,6 +94,9 @@ func resourceOutscaleOAPIApiAccessPolicyUpdate(d *schema.ResourceData, meta inte
 		}
 		return nil
 	})
+	if err != nil {
+		return err
+	}
 	return resourceOutscaleOAPIApiAccessPolicyRead(d, meta)
 }
 

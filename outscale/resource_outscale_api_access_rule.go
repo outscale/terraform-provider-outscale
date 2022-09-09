@@ -27,22 +27,21 @@ func resourceOutscaleOAPIApiAccessRule() *schema.Resource {
 				Computed: true,
 			},
 			"ca_ids": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"cns": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"description": {
 				Type:     schema.TypeString,
 				Optional: true,
-				Computed: true,
 			},
 			"ip_ranges": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
@@ -59,20 +58,20 @@ func resourceOutscaleOAPIApiAccessRuleCreate(d *schema.ResourceData, meta interf
 	var checkParam = false
 	req := oscgo.CreateApiAccessRuleRequest{}
 
-	if _, ok := d.GetOk("ca_ids"); ok != false {
+	if val, ok := d.GetOk("ca_ids"); ok {
 		checkParam = true
-		req.SetCaIds(getParameters(d, "ca_ids"))
+		req.CaIds = expandSetStringList(val.(*schema.Set))
 	}
-	if _, ok := d.GetOk("ip_ranges"); ok != false {
+	if val, ok := d.GetOk("ip_ranges"); ok {
 		checkParam = true
-		req.SetIpRanges(getParameters(d, "ip_ranges"))
+		req.IpRanges = expandSetStringList(val.(*schema.Set))
 	}
 	if !checkParam {
 		return fmt.Errorf("[DEBUG] Error 'ca_ids' or 'ip_ranges' field is require for API Access Rules creation")
 	}
 
-	if _, ok := d.GetOk("cns"); ok {
-		req.SetCns(getParameters(d, "cns"))
+	if val, ok := d.GetOk("cns"); ok {
+		req.Cns = expandSetStringList(val.(*schema.Set))
 	}
 	if v, ok := d.GetOk("description"); ok {
 		req.SetDescription(v.(string))
@@ -80,13 +79,16 @@ func resourceOutscaleOAPIApiAccessRuleCreate(d *schema.ResourceData, meta interf
 
 	var resp oscgo.CreateApiAccessRuleResponse
 	var err error
-	err = resource.Retry(120*time.Second, func() *resource.RetryError {
+	err = resource.Retry(60*time.Second, func() *resource.RetryError {
 		resp, _, err = conn.ApiAccessRuleApi.CreateApiAccessRule(context.Background()).CreateApiAccessRuleRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(err)
 		}
 		return nil
 	})
+	if err != nil {
+		return err
+	}
 	d.SetId(cast.ToString(resp.ApiAccessRule.GetApiAccessRuleId()))
 
 	return resourceOutscaleOAPIApiAccessRuleRead(d, meta)
@@ -154,28 +156,33 @@ func resourceOutscaleOAPIApiAccessRuleUpdate(d *schema.ResourceData, meta interf
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	accRid, isIdOk := d.GetOk("api_access_rule_id")
-	_, isIpsOk := d.GetOk("api_access_rule_id")
-
 	if !isIdOk {
 		return fmt.Errorf("[DEBUG] Error 'api_access_rule_id' field is required to update API Access Rules")
 	}
-	if !isIpsOk {
-		return fmt.Errorf("[DEBUG] Error 'ip_ranges' field is required to update API Access Rules")
-	}
-	ipRanges := getParameters(d, "ip_ranges")
+
+	var checkParam = false
 	req := oscgo.UpdateApiAccessRuleRequest{
 		ApiAccessRuleId: accRid.(string),
-		IpRanges:        &ipRanges,
 	}
-	if d.HasChange("ca_ids") {
-		req.SetCaIds(getParameters(d, "ca_ids"))
+
+	if val, ok := d.GetOk("ca_ids"); ok {
+		checkParam = true
+		req.CaIds = expandSetStringList(val.(*schema.Set))
 	}
-	if d.HasChange("cns") {
-		req.SetCns(getParameters(d, "cns"))
+	if val, ok := d.GetOk("ip_ranges"); ok {
+		checkParam = true
+		req.IpRanges = expandSetStringList(val.(*schema.Set))
 	}
-	if d.HasChange("description") {
-		_, nVal := d.GetChange("description")
-		req.SetDescription(nVal.(string))
+
+	if !checkParam {
+		return fmt.Errorf("[DEBUG] Error 'ca_ids' or 'ip_ranges' field is require to update API Access Rules")
+	}
+
+	if val, ok := d.GetOk("cns"); ok {
+		req.Cns = expandSetStringList(val.(*schema.Set))
+	}
+	if v, ok := d.GetOk("description"); ok {
+		req.SetDescription(v.(string))
 	}
 
 	var err error
@@ -186,6 +193,9 @@ func resourceOutscaleOAPIApiAccessRuleUpdate(d *schema.ResourceData, meta interf
 		}
 		return nil
 	})
+	if err != nil {
+		return err
+	}
 	return resourceOutscaleOAPIApiAccessRuleRead(d, meta)
 }
 
@@ -204,8 +214,7 @@ func resourceOutscaleOAPIApiAccessRuleDelete(d *schema.ResourceData, meta interf
 		}
 		return nil
 	})
-
-	return nil
+	return err
 }
 
 func getParameters(d *schema.ResourceData, param string) []string {

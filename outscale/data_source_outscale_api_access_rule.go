@@ -121,7 +121,7 @@ func buildOutscaleApiAccessRuleFilters(set *schema.Set) *oscgo.FiltersApiAccessR
 		}
 
 		switch name := m["name"].(string); name {
-		case "api_access_ruleIds":
+		case "api_access_rule_ids":
 			filters.SetApiAccessRuleIds(filterValues)
 		case "ca_ids":
 			filters.SetCaIds(filterValues)
