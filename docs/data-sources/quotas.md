@@ -3,12 +3,12 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_quotas"
 sidebar_current: "outscale-quotas"
 description: |-
-  [Provides information about quotas.]
+  [Provides information about a specific quotas.]
 ---
 
 # outscale_quotas Data Source
 
-Provides information about quotas.
+Provides information about a specific quotas.
 For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Your-Account.html).
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#readquotas).
 

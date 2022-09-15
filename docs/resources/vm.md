@@ -91,7 +91,7 @@ resource "outscale_subnet" "subnet01" {
 	}
 }
 
-resource "outscale_security_group" "security_01" {
+resource "outscale_security_group" "security_group01" {
 	description          = "Terraform security group for VM"
 	security_group_name = "terraform-security-group-for-vm"
 	net_id               = outscale_net.net01.net_id
