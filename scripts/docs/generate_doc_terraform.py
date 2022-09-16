@@ -518,25 +518,25 @@ def main():
             template = template_datasource
             # Load example, import and addprop
             try:
-                with io.open('{}/Content/datasources/{}-example.md'.format(ARGS.template_directory, resource_name),
+                with io.open('{}/Content/data-sources/{}-example.md'.format(ARGS.template_directory, resource_name),
                              'r') as f:
                     example_content = f.read()
             except FileNotFoundError as e:
                 pass
             try:
-                with io.open('{}/Content/datasources/{}-import.md'.format(ARGS.template_directory, resource_name),
+                with io.open('{}/Content/data-sources/{}-import.md'.format(ARGS.template_directory, resource_name),
                              'r') as f:
                     import_content = f.read()
             except FileNotFoundError as e:
                 pass
             try:
-                with io.open('{}/Content/datasources/{}-addprop.yaml'.format(ARGS.template_directory, resource_name),
+                with io.open('{}/Content/data-sources/{}-addprop.yaml'.format(ARGS.template_directory, resource_name),
                              'r') as f:
                     addprop_content = yaml.load(f, yaml.FullLoader)
             except FileNotFoundError as e:
                 pass
             try:
-                with io.open('{}/Content/datasources/{}-intro.md'.format(ARGS.template_directory, resource_name),
+                with io.open('{}/Content/data-sources/{}-intro.md'.format(ARGS.template_directory, resource_name),
                              'r') as f:
                     extra_intro_content  = f.read()
             except FileNotFoundError as e:
