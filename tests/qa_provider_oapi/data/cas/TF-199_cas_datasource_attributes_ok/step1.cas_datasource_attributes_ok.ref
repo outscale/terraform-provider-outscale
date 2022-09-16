@@ -16,14 +16,14 @@
                     "attributes": {
                         "cas": [
                             {
-                                "ca_fingerprint": "76994019de9d20922ab75bef39e89764eb8030fd",
+                                "ca_fingerprint": "########",
                                 "ca_id": "##id-0##",
-                                "description": "test-TF199-2"
+                                "description": "test-TF199"
                             },
                             {
-                                "ca_fingerprint": "76994019de9d20922ab75bef39e89764eb8030fd",
+                                "ca_fingerprint": "########",
                                 "ca_id": "##id-1##",
-                                "description": "test-TF199"
+                                "description": "test-TF199-2"
                             }
                         ],
                         "filter": "########",
@@ -45,14 +45,14 @@
                     "attributes": {
                         "cas": [
                             {
-                                "ca_fingerprint": "76994019de9d20922ab75bef39e89764eb8030fd",
+                                "ca_fingerprint": "########",
                                 "ca_id": "##id-0##",
-                                "description": "test-TF199-2"
+                                "description": "test-TF199"
                             },
                             {
-                                "ca_fingerprint": "76994019de9d20922ab75bef39e89764eb8030fd",
+                                "ca_fingerprint": "########",
                                 "ca_id": "##id-1##",
-                                "description": "test-TF199"
+                                "description": "test-TF199-2"
                             }
                         ],
                         "filter": "########",
@@ -72,11 +72,11 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "ca_fingerprint": "76994019de9d20922ab75bef39e89764eb8030fd",
-                        "ca_id": "##id-1##",
-                        "ca_pem": "-----BEGIN CERTIFICATE-----\nMIIE4TCCAsmgAwIBAgIJANTa8m/fe0CwMA0GCSqGSIb3DQEBCwUAMCQxCzAJBgNV\nBAYTAkZyMRUwEwYDVQQKDAxDb2NrcGl0LWRlbW8wHhcNMjIwNjAzMTIwNDM1WhcN\nMjMwNjAzMTIwNDM1WjAkMQswCQYDVQQGEwJGcjEVMBMGA1UECgwMQ29ja3BpdC1k\nZW1vMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAtzMKu+Z30R1AWCTt\nRimpJbEdvnJW3ynbiE5e4cBRBuoWiuitp0WSboStQVSa1PWPE49MUKriazBPnGmv\n+Qdq86vrb7O4JGItVvfiJNtkMaV3ZAAxlDBvu9xB/JlYnEijsK2IlGMIFaja2T6S\nREJ3an+y3rNcpMuWL6+mVkWxuYmFnXTn+Oglc2aZAAuCraSug0UqsRmWipjiiBGg\nePbVpmjF/Ag9bige3CRwSMDUiJ7+Yu4gLXlm5Bri+aQNr9L/7RQox/5W5e7Ww9pa\n/GWlEAd7rc6WCoFiofFiLFrfQikBj2hn9L+KXV0j7AHTpTkviLGQFIFB8uVkMIKr\nTFQCr+wa+DJbPl2R3fLxoTH7b9ajwbdiczlBij8sNEFZ7Ntrm1MmAxNxM50usddo\nDyW9y+mo0C4ppMJkN0KZI1X6hI/JzU+8/rMWhvJ5ZTu9NcAuqPH0d/d8zkzsX2pM\nx6vuO0yT1qHTAPAugodYxeKA7P16iY8K/B4feUFOLuOu++bmy83qyX2HztojSVeV\nXl5ofCzOqdqQO3T/QAmTDIgLO2dM3okWZoPsithSB5zbq1KGHYByeFPzAPxZ2hvg\nXZl3kkQDNBpZ3cQOIbmaSOf56v9lNvei4QA5dmFHHIveh9Iiuu5WrLSIRTRgVLjG\n4kftxII3oosDiRpKMzPiTUE2ceMCAwEAAaMWMBQwEgYDVR0TAQH/BAgwBgEB/wIB\nATANBgkqhkiG9w0BAQsFAAOCAgEAj27uOECY2yERpg4uZch0yRtfbvee7OXXMR9e\n2CFv6M1d3eDngNDA6y4FshIHnGQcvH3zdURupIVfwG9Y/DXl/85CM/qpt6z/6fHg\nzSkClAmdxWild5N9sAaJxRpf57sqPC/jU8HFh6k/p609j5mdsxcI1Kq+91VsIpFN\n3PGp44DcnmZ7DbHKV26mdMUWq5fWAWE77+prlrn3lI6GbQXpg/Bq/oY4v5NfaWyi\n4QyDYjgXpfM+QZCeEbYvV9kI/sooEFmiNqug4qLzpnLSYbV8CqJEFrNGc5YLcVcE\nV8PLswczSefeH4jSBQnqBJlmJawjzFrxwftx9ArAlVNhAXTzB15xuyFtmDb4YSSw\nMTMQ1wx8QtSk1CJhYLA9DyXDBTiM6n4iv7YKiX07uX6KkeYCk0mWFodanxwy9opH\n3rm+ERs8i/YmW3X0BzXSri+4Eujw8WY46ghPfFgMPamu6Iu4hEPyA575oPFjskzm\nIot36JgN8TBTSeC/RAWVS84zjdUkpescaGzsvxxw35jPoUa/d3EW4wwxqtbOeDlj\niaASdgVibC0Rb5q+4YsmE0xYgaYMDdmhgDH/P75p/BNk4dDbQH1wmNJiGqo3Iqnz\nP+pnrrv+oQTEF1r1yTXfTg/LwDDLD84iGlaVFDTpZYFZCVT9EJKN/S9Ocjue9Esp\nOu0DegY=\n-----END CERTIFICATE-----\n",
+                        "ca_fingerprint": "########",
+                        "ca_id": "##id-0##",
+                        "ca_pem": "########",
                         "description": "test-TF199",
-                        "id": "##id-1##",
+                        "id": "##id-0##",
                         "request_id": "########"
                     },
                     "sensitive_attributes": [],
@@ -93,11 +93,11 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "ca_fingerprint": "76994019de9d20922ab75bef39e89764eb8030fd",
-                        "ca_id": "##id-0##",
-                        "ca_pem": "-----BEGIN CERTIFICATE-----\nMIIE4TCCAsmgAwIBAgIJANTa8m/fe0CwMA0GCSqGSIb3DQEBCwUAMCQxCzAJBgNV\nBAYTAkZyMRUwEwYDVQQKDAxDb2NrcGl0LWRlbW8wHhcNMjIwNjAzMTIwNDM1WhcN\nMjMwNjAzMTIwNDM1WjAkMQswCQYDVQQGEwJGcjEVMBMGA1UECgwMQ29ja3BpdC1k\nZW1vMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAtzMKu+Z30R1AWCTt\nRimpJbEdvnJW3ynbiE5e4cBRBuoWiuitp0WSboStQVSa1PWPE49MUKriazBPnGmv\n+Qdq86vrb7O4JGItVvfiJNtkMaV3ZAAxlDBvu9xB/JlYnEijsK2IlGMIFaja2T6S\nREJ3an+y3rNcpMuWL6+mVkWxuYmFnXTn+Oglc2aZAAuCraSug0UqsRmWipjiiBGg\nePbVpmjF/Ag9bige3CRwSMDUiJ7+Yu4gLXlm5Bri+aQNr9L/7RQox/5W5e7Ww9pa\n/GWlEAd7rc6WCoFiofFiLFrfQikBj2hn9L+KXV0j7AHTpTkviLGQFIFB8uVkMIKr\nTFQCr+wa+DJbPl2R3fLxoTH7b9ajwbdiczlBij8sNEFZ7Ntrm1MmAxNxM50usddo\nDyW9y+mo0C4ppMJkN0KZI1X6hI/JzU+8/rMWhvJ5ZTu9NcAuqPH0d/d8zkzsX2pM\nx6vuO0yT1qHTAPAugodYxeKA7P16iY8K/B4feUFOLuOu++bmy83qyX2HztojSVeV\nXl5ofCzOqdqQO3T/QAmTDIgLO2dM3okWZoPsithSB5zbq1KGHYByeFPzAPxZ2hvg\nXZl3kkQDNBpZ3cQOIbmaSOf56v9lNvei4QA5dmFHHIveh9Iiuu5WrLSIRTRgVLjG\n4kftxII3oosDiRpKMzPiTUE2ceMCAwEAAaMWMBQwEgYDVR0TAQH/BAgwBgEB/wIB\nATANBgkqhkiG9w0BAQsFAAOCAgEAj27uOECY2yERpg4uZch0yRtfbvee7OXXMR9e\n2CFv6M1d3eDngNDA6y4FshIHnGQcvH3zdURupIVfwG9Y/DXl/85CM/qpt6z/6fHg\nzSkClAmdxWild5N9sAaJxRpf57sqPC/jU8HFh6k/p609j5mdsxcI1Kq+91VsIpFN\n3PGp44DcnmZ7DbHKV26mdMUWq5fWAWE77+prlrn3lI6GbQXpg/Bq/oY4v5NfaWyi\n4QyDYjgXpfM+QZCeEbYvV9kI/sooEFmiNqug4qLzpnLSYbV8CqJEFrNGc5YLcVcE\nV8PLswczSefeH4jSBQnqBJlmJawjzFrxwftx9ArAlVNhAXTzB15xuyFtmDb4YSSw\nMTMQ1wx8QtSk1CJhYLA9DyXDBTiM6n4iv7YKiX07uX6KkeYCk0mWFodanxwy9opH\n3rm+ERs8i/YmW3X0BzXSri+4Eujw8WY46ghPfFgMPamu6Iu4hEPyA575oPFjskzm\nIot36JgN8TBTSeC/RAWVS84zjdUkpescaGzsvxxw35jPoUa/d3EW4wwxqtbOeDlj\niaASdgVibC0Rb5q+4YsmE0xYgaYMDdmhgDH/P75p/BNk4dDbQH1wmNJiGqo3Iqnz\nP+pnrrv+oQTEF1r1yTXfTg/LwDDLD84iGlaVFDTpZYFZCVT9EJKN/S9Ocjue9Esp\nOu0DegY=\n-----END CERTIFICATE-----\n",
+                        "ca_fingerprint": "########",
+                        "ca_id": "##id-1##",
+                        "ca_pem": "########",
                         "description": "test-TF199-2",
-                        "id": "##id-0##",
+                        "id": "##id-1##",
                         "request_id": "########"
                     },
                     "sensitive_attributes": [],
