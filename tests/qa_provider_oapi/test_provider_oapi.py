@@ -40,9 +40,11 @@ IGNORE_END_ELEMENTS = ['request_id',
                        'max_value',
                        'file_location',
                        'message',
-                       'ip_ranges']
+                       'ip_ranges',
+                       'ca_fingerprint',
+                       'ca_pem']
 IGNORE_END_PATHS = []
-TINA_ID_PREFIXES = ['i', 'subnet', 'snap', 'img', 'vol', 'eni', 'vpc', 'igw', 'nat', 'vgw', 'pcx', 'sg', 'rtb', 'rtbassoc', 'vpn', 'vpcconn', 'ami', 'dxvif','vpce','fgpu']
+TINA_ID_PREFIXES = ['i', 'subnet', 'snap', 'img', 'vol', 'eni', 'vpc', 'igw', 'nat', 'vgw', 'pcx', 'sg', 'rtb', 'rtbassoc', 'vpn', 'vpcconn', 'ami', 'dxvif','vpce','fgpu','aar','ca']
 VARIABLES_FILE_NAME = ['provider.auto.tfvars', 'resources.auto.tfvars']
 VARIABLES = ['region']
 SET_KEY_VALUES = ['resources', 'tags']
@@ -89,7 +91,7 @@ def validate_value_ref(path, parent, value, ids):
     replace = None
     if type(value) == str:
         value_items = value.split('-')
-        if len(value_items) == 2 and len(value_items[1]) == 8 and value_items[0] in TINA_ID_PREFIXES:
+        if len(value_items) == 2 and len(value_items[1]) in [8,32] and value_items[0] in TINA_ID_PREFIXES:
             replace = value
 
     for p in TAG_END_PATHS:
