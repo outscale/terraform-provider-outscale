@@ -18,7 +18,6 @@ If you want to write your credentials in terraform variables, just edit `terrafo
 
 Once your credentials are configured, you can go to any example folder and test them:
 ```bash
-cd volume
 terraform init
 # Check plan before applying
 terraform plan
