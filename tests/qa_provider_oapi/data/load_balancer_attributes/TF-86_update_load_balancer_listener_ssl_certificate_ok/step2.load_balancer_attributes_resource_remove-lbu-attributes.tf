@@ -17,16 +17,10 @@ listeners {
      backend_protocol= "HTTPS"
      load_balancer_protocol= "HTTPS"
      load_balancer_port = 8080
-     server_certificate_id = outscale_server_certificate.server_certificate_1.orn
+     server_certificate_id = outscale_server_certificate.server_certificate_2.orn
     }
  tags {
     key = "name"
     value = "public_lbu1"
    }
-}
-
-resource "outscale_load_balancer_attributes" "attributes-ssl-certificate" {
-   load_balancer_name = outscale_load_balancer.public_lbu1.id
-   load_balancer_port = 8080
-   server_certificate_id = outscale_server_certificate.server_certificate_2.orn
 }

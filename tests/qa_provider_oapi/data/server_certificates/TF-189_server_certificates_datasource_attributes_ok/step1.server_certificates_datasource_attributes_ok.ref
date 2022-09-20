@@ -22,6 +22,7 @@
                                 "expiration_date": "2023-05-26T13:16:48.000+0000",
                                 "id": "##id-1##",
                                 "name": "Certificate-TF189-2",
+                                "orn": "orn:ows:idauth::###account_id###:server-certificate/terraform/test2/Certificate-TF189-2",
                                 "path": "/terraform/test2/",
                                 "upload_date": "########"
                             },
@@ -29,6 +30,7 @@
                                 "expiration_date": "2023-05-26T13:16:48.000+0000",
                                 "id": "##id-2##",
                                 "name": "Certificate-TF189-1",
+                                "orn": "orn:ows:idauth::###account_id###:server-certificate/terraform/test1/Certificate-TF189-1",
                                 "path": "/terraform/test1/",
                                 "upload_date": "########"
                             }
@@ -53,6 +55,7 @@
                         "expiration_date": "2023-05-26T13:16:48.000+0000",
                         "id": "##id-2##",
                         "name": "Certificate-TF189-1",
+                        "orn": "orn:ows:idauth::###account_id###:server-certificate/terraform/test1/Certificate-TF189-1",
                         "path": "/terraform/test1/",
                         "private_key": "########",
                         "request_id": "########",
@@ -78,6 +81,7 @@
                         "expiration_date": "2023-05-26T13:16:48.000+0000",
                         "id": "##id-1##",
                         "name": "Certificate-TF189-2",
+                        "orn": "orn:ows:idauth::###account_id###:server-certificate/terraform/test2/Certificate-TF189-2",
                         "path": "/terraform/test2/",
                         "private_key": "########",
                         "request_id": "########",

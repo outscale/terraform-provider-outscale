@@ -1,0 +1,85 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "managed",
+            "type": "outscale_load_balancer",
+            "name": "public_lbu1",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "access_log": {
+                            "is_enabled": "true",
+                            "osu_bucket_name": "###osu_bucket_name###",
+                            "osu_bucket_prefix": "access-logs-test",
+                            "publication_interval": "5"
+                        },
+                        "application_sticky_cookie_policies": [],
+                        "backend_vm_ids": [],
+                        "dns_name": "########",
+                        "health_check": {
+                            "check_interval": "30",
+                            "healthy_threshold": "10",
+                            "path": "",
+                            "port": "80",
+                            "protocol": "TCP",
+                            "timeout": "5",
+                            "unhealthy_threshold": "2"
+                        },
+                        "id": "##id-0##",
+                        "listeners": [
+                            {
+                                "backend_port": 1024,
+                                "backend_protocol": "TCP",
+                                "load_balancer_port": 1024,
+                                "load_balancer_protocol": "TCP",
+                                "policy_names": [],
+                                "server_certificate_id": ""
+                            },
+                            {
+                                "backend_port": 80,
+                                "backend_protocol": "HTTP",
+                                "load_balancer_port": 80,
+                                "load_balancer_protocol": "HTTP",
+                                "policy_names": [],
+                                "server_certificate_id": ""
+                            }
+                        ],
+                        "load_balancer_name": "lbu-TF-83",
+                        "load_balancer_sticky_cookie_policies": [],
+                        "load_balancer_type": "internet-facing",
+                        "net_id": "",
+                        "request_id": "########",
+                        "security_groups": [],
+                        "source_security_group": {
+                            "security_group_account_id": "##id-1##",
+                            "security_group_name": "outscale-elb-sg"
+                        },
+                        "subnets": [],
+                        "subregion_names": [
+                            "###region###a"
+                        ],
+                        "tags": [
+                            {
+                                "key": "name",
+                                "value": "public_lbu1"
+                            },
+                            {
+                                "key": "platform",
+                                "value": "###region###a"
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA=="
+                }
+            ]
+        }
+    ]
+}

@@ -16,9 +16,9 @@
                     "attributes": {
                         "id": "##id-0##",
                         "internet_service_id": "##id-0##",
-                        "net_id": "",
+                        "net_id": "##id-1##",
                         "request_id": "########",
-                        "state": "",
+                        "state": "available",
                         "tags": []
                     },
                     "sensitive_attributes": [],
@@ -53,93 +53,6 @@
         },
         {
             "mode": "managed",
-            "type": "outscale_load_balancer",
-            "name": "private_lbu_1",
-            "provider": "provider[\"local/test/outscale\"]",
-            "instances": [
-                {
-                    "schema_version": 0,
-                    "attributes": {
-                        "access_log": {
-                            "is_enabled": "false",
-                            "osu_bucket_name": "",
-                            "osu_bucket_prefix": "",
-                            "publication_interval": "60"
-                        },
-                        "application_sticky_cookie_policies": [],
-                        "backend_vm_ids": [],
-                        "dns_name": "########",
-                        "health_check": {
-                            "check_interval": "30",
-                            "healthy_threshold": "10",
-                            "path": "",
-                            "port": "8080",
-                            "protocol": "TCP",
-                            "timeout": "5",
-                            "unhealthy_threshold": "2"
-                        },
-                        "id": "##id-2##",
-                        "listeners": [
-                            {
-                                "backend_port": 8080,
-                                "backend_protocol": "HTTP",
-                                "load_balancer_port": 8080,
-                                "load_balancer_protocol": "HTTP",
-                                "policy_names": [],
-                                "server_certificate_id": ""
-                            },
-                            {
-                                "backend_port": 80,
-                                "backend_protocol": "TCP",
-                                "load_balancer_port": 80,
-                                "load_balancer_protocol": "TCP",
-                                "policy_names": [],
-                                "server_certificate_id": ""
-                            }
-                        ],
-                        "load_balancer_name": "lbu-TF-81",
-                        "load_balancer_sticky_cookie_policies": [],
-                        "load_balancer_type": "internet-facing",
-                        "net_id": "##id-1##",
-                        "request_id": "########",
-                        "security_groups": [
-                            "##id-3##",
-                            "##id-4##"
-                        ],
-                        "source_security_group": {
-                            "security_group_account_id": "##id-5##",
-                            "security_group_name": "terraform-sg-lbu-1"
-                        },
-                        "subnets": [
-                            "##id-6##"
-                        ],
-                        "subregion_names": [
-                            "###region###a"
-                        ],
-                        "tags": [
-                            {
-                                "key": "name",
-                                "value": "lbu-internet-facing"
-                            }
-                        ]
-                    },
-                    "sensitive_attributes": [],
-                    "private": "bnVsbA==",
-                    "dependencies": [
-                        "outscale_internet_service.outscale_internet_service",
-                        "outscale_net.outscale_net",
-                        "outscale_route.outscale_route",
-                        "outscale_route_table.outscale_route_table",
-                        "outscale_route_table_link.outscale_route_table_link",
-                        "outscale_security_group.outscale_security_group",
-                        "outscale_security_group.outscale_security_group-2",
-                        "outscale_subnet.subnet-1"
-                    ]
-                }
-            ]
-        },
-        {
-            "mode": "managed",
             "type": "outscale_net",
             "name": "outscale_net",
             "provider": "provider[\"local/test/outscale\"]",
@@ -147,7 +60,7 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "dhcp_options_set_id": "##id-7##",
+                        "dhcp_options_set_id": "##id-2##",
                         "id": "##id-1##",
                         "ip_range": "10.0.0.0/16",
                         "net_id": "##id-1##",
@@ -175,13 +88,13 @@
                         "destination_ip_range": "0.0.0.0/0",
                         "destination_service_id": "",
                         "gateway_id": "##id-0##",
-                        "id": "##id-8##",
+                        "id": "##id-3##",
                         "nat_access_point": "",
                         "nat_service_id": "",
                         "net_peering_id": "",
                         "nic_id": "",
                         "request_id": "########",
-                        "route_table_id": "##id-8##",
+                        "route_table_id": "##id-3##",
                         "state": "active",
                         "vm_account_id": "",
                         "vm_id": ""
@@ -189,9 +102,9 @@
                     "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
-                        "outscale_internet_service.outscale_internet_service",
                         "outscale_net.outscale_net",
-                        "outscale_route_table.outscale_route_table"
+                        "outscale_route_table.outscale_route_table",
+                        "outscale_internet_service.outscale_internet_service"
                     ]
                 }
             ]
@@ -205,13 +118,34 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-8##",
-                        "link_route_tables": [],
+                        "id": "##id-3##",
+                        "link_route_tables": [
+                            {
+                                "link_route_table_id": "##id-4##",
+                                "main": false,
+                                "route_table_id": "##id-3##",
+                                "route_table_to_subnet_link_id": "",
+                                "subnet_id": "##id-5##"
+                            }
+                        ],
                         "net_id": "##id-1##",
                         "request_id": "########",
                         "route_propagating_virtual_gateways": [],
-                        "route_table_id": "##id-8##",
+                        "route_table_id": "##id-3##",
                         "routes": [
+                            {
+                                "creation_method": "CreateRoute",
+                                "destination_ip_range": "0.0.0.0/0",
+                                "destination_service_id": "",
+                                "gateway_id": "##id-0##",
+                                "nat_service_id": "",
+                                "net_access_point_id": "",
+                                "net_peering_id": "",
+                                "nic_id": "",
+                                "state": "active",
+                                "vm_account_id": "",
+                                "vm_id": ""
+                            },
                             {
                                 "creation_method": "CreateRouteTable",
                                 "destination_ip_range": "10.0.0.0/16",
@@ -250,19 +184,19 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-9##",
-                        "link_route_table_id": "##id-9##",
+                        "id": "##id-4##",
+                        "link_route_table_id": "##id-4##",
                         "main": false,
                         "request_id": "########",
-                        "route_table_id": "##id-8##",
-                        "subnet_id": "##id-6##"
+                        "route_table_id": "##id-3##",
+                        "subnet_id": "##id-5##"
                     },
                     "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
-                        "outscale_net.outscale_net",
                         "outscale_route_table.outscale_route_table",
-                        "outscale_subnet.subnet-1"
+                        "outscale_subnet.subnet-1",
+                        "outscale_net.outscale_net"
                     ]
                 }
             ]
@@ -276,9 +210,9 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "account_id": "##id-5##",
+                        "account_id": "##id-6##",
                         "description": "test lbu-2",
-                        "id": "##id-4##",
+                        "id": "##id-7##",
                         "inbound_rules": [],
                         "net_id": "##id-1##",
                         "outbound_rules": [
@@ -291,7 +225,7 @@
                             }
                         ],
                         "request_id": "########",
-                        "security_group_id": "##id-4##",
+                        "security_group_id": "##id-7##",
                         "security_group_name": "terraform-sg-lbu-1",
                         "tag": null,
                         "tags": [
@@ -318,9 +252,9 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "account_id": "##id-5##",
+                        "account_id": "##id-6##",
                         "description": "test lbu-2",
-                        "id": "##id-3##",
+                        "id": "##id-8##",
                         "inbound_rules": [],
                         "net_id": "##id-1##",
                         "outbound_rules": [
@@ -333,7 +267,7 @@
                             }
                         ],
                         "request_id": "########",
-                        "security_group_id": "##id-3##",
+                        "security_group_id": "##id-8##",
                         "security_group_name": "terraform-sg-lbu-2",
                         "tag": null,
                         "tags": [
@@ -361,13 +295,13 @@
                     "schema_version": 0,
                     "attributes": {
                         "available_ips_count": 251,
-                        "id": "##id-6##",
+                        "id": "##id-5##",
                         "ip_range": "10.0.0.0/24",
                         "map_public_ip_on_launch": false,
                         "net_id": "##id-1##",
                         "request_id": "########",
                         "state": "available",
-                        "subnet_id": "##id-6##",
+                        "subnet_id": "##id-5##",
                         "subregion_name": "###region###a",
                         "tags": [
                             {
