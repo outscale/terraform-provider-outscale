@@ -30,7 +30,7 @@ func resourceOutscaleOAPISubNet() *schema.Resource {
 	}
 }
 
-//Create SubNet
+// Create SubNet
 func resourceOutscaleOAPISubNetCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	req := oscgo.CreateSubnetRequest{
@@ -80,7 +80,7 @@ func resourceOutscaleOAPISubNetCreate(d *schema.ResourceData, meta interface{}) 
 	return resourceOutscaleOAPISubNetRead(d, meta)
 }
 
-//Read SubNet
+// Read SubNet
 func resourceOutscaleOAPISubNetRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	id := d.Id()

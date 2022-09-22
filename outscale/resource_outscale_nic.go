@@ -233,7 +233,7 @@ func getOAPINicSchema() map[string]*schema.Schema {
 	}
 }
 
-//Create OAPINic
+// Create OAPINic
 func resourceOutscaleOAPINicCreate(d *schema.ResourceData, meta interface{}) error {
 
 	conn := meta.(*OutscaleClient).OSCAPI
@@ -297,7 +297,7 @@ func resourceOutscaleOAPINicCreate(d *schema.ResourceData, meta interface{}) err
 
 }
 
-//Read OAPINic
+// Read OAPINic
 func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error {
 
 	conn := meta.(*OutscaleClient).OSCAPI
@@ -446,7 +446,7 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 	return nil
 }
 
-//Delete OAPINic
+// Delete OAPINic
 func resourceOutscaleOAPINicDelete(d *schema.ResourceData, meta interface{}) error {
 
 	conn := meta.(*OutscaleClient).OSCAPI
@@ -521,7 +521,7 @@ func resourceOutscaleOAPINicDetach(meta interface{}, nicID string) error {
 	return nil
 }
 
-//Update OAPINic
+// Update OAPINic
 func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	d.Partial(true)

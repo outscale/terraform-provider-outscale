@@ -21,7 +21,7 @@ type Config struct {
 	X509key     string
 }
 
-//OutscaleClient client
+// OutscaleClient client
 type OutscaleClient struct {
 	OSCAPI *oscgo.APIClient
 }
