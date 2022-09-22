@@ -13,6 +13,7 @@ import (
 
 func resourceOutscaleOAPIApiAccessPolicy() *schema.Resource {
 	return &schema.Resource{
+		Create: resourceOutscaleOAPIApiAccessPolicyCreate,
 		Read:   resourceOutscaleOAPIApiAccessPolicyRead,
 		Update: resourceOutscaleOAPIApiAccessPolicyUpdate,
 		Delete: resourceOutscaleOAPIApiAccessPolicyDelete,
@@ -34,6 +35,35 @@ func resourceOutscaleOAPIApiAccessPolicy() *schema.Resource {
 			},
 		},
 	}
+}
+
+func resourceOutscaleOAPIApiAccessPolicyCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
+
+	maxAcc := d.Get("max_access_key_expiration_seconds")
+	trustEnv := d.Get("require_trusted_env")
+
+	if trustEnv.(bool) == true && maxAcc == 0 {
+		return fmt.Errorf("Error 'max_access_key_expiration_seconds' value must be greater than '0' if 'require_trusted_env' value is 'true'")
+	}
+
+	req := oscgo.UpdateApiAccessPolicyRequest{
+		MaxAccessKeyExpirationSeconds: int64(maxAcc.(int)),
+		RequireTrustedEnv:             trustEnv.(bool),
+	}
+
+	var err error
+	err = resource.Retry(120*time.Second, func() *resource.RetryError {
+		_, _, err = conn.ApiAccessPolicyApi.UpdateApiAccessPolicy(context.Background()).UpdateApiAccessPolicyRequest(req).Execute()
+		if err != nil {
+			return utils.CheckThrottling(err)
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	return resourceOutscaleOAPIApiAccessPolicyRead(d, meta)
 }
 
 func resourceOutscaleOAPIApiAccessPolicyRead(d *schema.ResourceData, meta interface{}) error {
