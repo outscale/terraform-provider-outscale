@@ -2,13 +2,13 @@ package outscale
 
 import "github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 
-//Dictionary for the Outscale APIs maps the apis to their respective functions
+// Dictionary for the Outscale APIs maps the apis to their respective functions
 type Dictionary map[string]ResourceMap
 
-//ResourceMap maps a schema to their resource or datasource implementation
+// ResourceMap maps a schema to their resource or datasource implementation
 type ResourceMap map[string]SchemaFunc
 
-//SchemaFunc maps a function that returns a schema
+// SchemaFunc maps a function that returns a schema
 type SchemaFunc func() *schema.Resource
 
 var resources Dictionary
@@ -125,8 +125,8 @@ func GetResource(api, resource string) SchemaFunc {
 	return a[resource]
 }
 
-//GetDatasource receives the apu and the name of the datasource
-//and returns the corrresponding
+// GetDatasource receives the apu and the name of the datasource
+// and returns the corrresponding
 func GetDatasource(api, datasource string) SchemaFunc {
 	var a ResourceMap
 	if _, ok := datasources[api]; !ok {

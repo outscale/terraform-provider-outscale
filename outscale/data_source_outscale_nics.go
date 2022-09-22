@@ -221,7 +221,7 @@ func getDSOAPINicsSchema() map[string]*schema.Schema {
 	}
 }
 
-//Read Nic
+// Read Nic
 func dataSourceOutscaleOAPINicsRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 

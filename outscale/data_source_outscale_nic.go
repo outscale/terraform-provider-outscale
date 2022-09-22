@@ -213,7 +213,7 @@ func dataSourceOutscaleOAPINic() *schema.Resource {
 	}
 }
 
-//Read Nic
+// Read Nic
 func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
