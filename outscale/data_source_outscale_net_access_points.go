@@ -50,7 +50,7 @@ func napSchema() map[string]*schema.Schema {
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
-		"net_access_point": {
+		"net_access_points": {
 			Type:     schema.TypeList,
 			Computed: true,
 			Elem: &schema.Resource{
