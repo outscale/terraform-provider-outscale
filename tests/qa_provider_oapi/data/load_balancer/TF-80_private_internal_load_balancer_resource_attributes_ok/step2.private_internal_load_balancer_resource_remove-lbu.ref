@@ -8,7 +8,7 @@
         {
             "mode": "managed",
             "type": "outscale_load_balancer",
-            "name": "private_lbu",
+            "name": "private_lbu_1",
             "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
@@ -27,7 +27,7 @@
                             "check_interval": "30",
                             "healthy_threshold": "10",
                             "path": "",
-                            "port": "80",
+                            "port": "8080",
                             "protocol": "TCP",
                             "timeout": "5",
                             "unhealthy_threshold": "2"
@@ -35,15 +35,23 @@
                         "id": "##id-0##",
                         "listeners": [
                             {
-                                "backend_port": 80,
+                                "backend_port": 8080,
                                 "backend_protocol": "HTTP",
-                                "load_balancer_port": 80,
+                                "load_balancer_port": 8080,
                                 "load_balancer_protocol": "HTTP",
+                                "policy_names": [],
+                                "server_certificate_id": ""
+                            },
+                            {
+                                "backend_port": 80,
+                                "backend_protocol": "TCP",
+                                "load_balancer_port": 80,
+                                "load_balancer_protocol": "TCP",
                                 "policy_names": [],
                                 "server_certificate_id": ""
                             }
                         ],
-                        "load_balancer_name": "lbu-TF-181",
+                        "load_balancer_name": "lbu-TF-80",
                         "load_balancer_sticky_cookie_policies": [],
                         "load_balancer_type": "internal",
                         "net_id": "##id-1##",
@@ -53,7 +61,7 @@
                         ],
                         "source_security_group": {
                             "security_group_account_id": "##id-3##",
-                            "security_group_name": "default"
+                            "security_group_name": "sg1-terraform-lbu-test"
                         },
                         "subnets": [
                             "##id-4##"
@@ -64,7 +72,7 @@
                         "tags": [
                             {
                                 "key": "name",
-                                "value": "lbu-update-sg"
+                                "value": "lbu-internal"
                             }
                         ]
                     },
@@ -72,6 +80,7 @@
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net",
+                        "outscale_security_group.outscale_security_group",
                         "outscale_subnet.subnet-1"
                     ]
                 }
@@ -110,8 +119,8 @@
                     "schema_version": 0,
                     "attributes": {
                         "account_id": "##id-3##",
-                        "description": "test lbu-TF181",
-                        "id": "##id-6##",
+                        "description": "test lbu-1",
+                        "id": "##id-2##",
                         "inbound_rules": [],
                         "net_id": "##id-1##",
                         "outbound_rules": [
@@ -124,47 +133,15 @@
                             }
                         ],
                         "request_id": "########",
-                        "security_group_id": "##id-6##",
-                        "security_group_name": "terraform-sg-lbu-TF181-1",
+                        "security_group_id": "##id-2##",
+                        "security_group_name": "sg1-terraform-lbu-test",
                         "tag": null,
-                        "tags": []
-                    },
-                    "sensitive_attributes": [],
-                    "private": "bnVsbA==",
-                    "dependencies": [
-                        "outscale_net.outscale_net"
-                    ]
-                }
-            ]
-        },
-        {
-            "mode": "managed",
-            "type": "outscale_security_group",
-            "name": "outscale_security_group-2",
-            "provider": "provider[\"local/test/outscale\"]",
-            "instances": [
-                {
-                    "schema_version": 0,
-                    "attributes": {
-                        "account_id": "##id-3##",
-                        "description": "test lbu-2",
-                        "id": "##id-7##",
-                        "inbound_rules": [],
-                        "net_id": "##id-1##",
-                        "outbound_rules": [
+                        "tags": [
                             {
-                                "from_port_range": -1,
-                                "ip_protocol": "-1",
-                                "ip_ranges": "########",
-                                "security_groups_members": [],
-                                "to_port_range": -1
+                                "key": "Name",
+                                "value": "outscale_terraform_lbu_sg"
                             }
-                        ],
-                        "request_id": "########",
-                        "security_group_id": "##id-7##",
-                        "security_group_name": "terraform-sg-lbu-TF181-2",
-                        "tag": null,
-                        "tags": []
+                        ]
                     },
                     "sensitive_attributes": [],
                     "private": "bnVsbA==",
@@ -192,7 +169,12 @@
                         "state": "available",
                         "subnet_id": "##id-4##",
                         "subregion_name": "###region###a",
-                        "tags": [],
+                        "tags": [
+                            {
+                                "key": "Name",
+                                "value": "outscale_terraform_lbu_subnet"
+                            }
+                        ],
                         "timeouts": null
                     },
                     "sensitive_attributes": [],

@@ -112,7 +112,7 @@
                     "schema_version": 0,
                     "attributes": {
                         "backend_vm_ids": [
-                            "##id-2##"
+                            "##id-1##"
                         ],
                         "id": "##id-5##",
                         "load_balancer_name": "lbu-TF-93",
@@ -156,7 +156,7 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-2##",
+                        "id": "##id-1##",
                         "image_id": "##id-7##",
                         "is_source_dest_checked": true,
                         "keypair_name": "KP-TF93",
@@ -198,7 +198,7 @@
                         ],
                         "timeouts": null,
                         "user_data": "ICAgICAjIS9iaW4vYmFzaAogICAgcHVzaGQgL2hvbWUKICAgIG5vaHVwIHB5dGhvbiAtbSBTaW1wbGVIVFRQU2VydmVyIDgwODAK",
-                        "vm_id": "##id-2##",
+                        "vm_id": "##id-1##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
@@ -231,7 +231,7 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-1##",
+                        "id": "##id-2##",
                         "image_id": "##id-7##",
                         "is_source_dest_checked": true,
                         "keypair_name": "KP-TF93",
@@ -273,7 +273,7 @@
                         ],
                         "timeouts": null,
                         "user_data": "ICAgICAjIS9iaW4vYmFzaAogICAgcHVzaGQgL2hvbWUKICAgIG5vaHVwIHB5dGhvbiAtbSBTaW1wbGVIVFRQU2VydmVyIDgwODAK",
-                        "vm_id": "##id-1##",
+                        "vm_id": "##id-2##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },

@@ -102,9 +102,9 @@
                     "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
+                        "outscale_internet_service.outscale_internet_service",
                         "outscale_net.outscale_net",
-                        "outscale_route_table.outscale_route_table",
-                        "outscale_internet_service.outscale_internet_service"
+                        "outscale_route_table.outscale_route_table"
                     ]
                 }
             ]
@@ -194,9 +194,9 @@
                     "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
+                        "outscale_net.outscale_net",
                         "outscale_route_table.outscale_route_table",
-                        "outscale_subnet.subnet-1",
-                        "outscale_net.outscale_net"
+                        "outscale_subnet.subnet-1"
                     ]
                 }
             ]
@@ -294,7 +294,7 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "available_ips_count": 251,
+                        "available_ips_count": 250,
                         "id": "##id-5##",
                         "ip_range": "10.0.0.0/24",
                         "map_public_ip_on_launch": false,

@@ -57,6 +57,11 @@
                                 "ip_ranges": "########",
                                 "service_id": "##id-8##",
                                 "service_name": "com.outscale.###region###.oos"
+                            },
+{
+                                "ip_ranges": "########",
+                                "service_id": "##id-9##",
+                                "service_name": "com.outscale.###region###.osu"
                             }
                         ]
                     },

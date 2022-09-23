@@ -1,0 +1,203 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "managed",
+            "type": "outscale_net",
+            "name": "outscale_net",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "dhcp_options_set_id": "##id-0##",
+                        "id": "##id-1##",
+                        "ip_range": "10.0.0.0/16",
+                        "net_id": "##id-1##",
+                        "request_id": "########",
+                        "state": "available",
+                        "tags": [],
+                        "tenancy": "default"
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_net",
+            "name": "outscale_net_2",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "dhcp_options_set_id": "##id-0##",
+                        "id": "##id-2##",
+                        "ip_range": "10.10.0.0/16",
+                        "net_id": "##id-2##",
+                        "request_id": "########",
+                        "state": "available",
+                        "tags": [],
+                        "tenancy": "default"
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_net_access_point",
+            "name": "net_access_point_1",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "id": "##id-3##",
+                        "net_access_point_id": "##id-3##",
+                        "net_id": "##id-1##",
+                        "request_id": "########",
+                        "route_table_ids": [
+                            "##id-4##"
+                        ],
+                        "service_name": "com.outscale.###region###.api",
+                        "state": "available",
+                        "tags": [
+                            {
+                                "key": "name",
+                                "value": "terraform-Net-Access-Point"
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA==",
+                    "dependencies": [
+                        "outscale_net.outscale_net",
+                        "outscale_route_table.route_table-1"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_net_access_point",
+            "name": "net_access_point_2",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "id": "##id-5##",
+                        "net_access_point_id": "##id-5##",
+                        "net_id": "##id-2##",
+                        "request_id": "########",
+                        "route_table_ids": [
+                            "##id-6##"
+                        ],
+                        "service_name": "com.outscale.###region###.api",
+                        "state": "available",
+                        "tags": [
+                            {
+                                "key": "test-terraform",
+                                "value": "Net-Access-Point"
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA==",
+                    "dependencies": [
+                        "outscale_net.outscale_net_2",
+                        "outscale_route_table.route_table-2"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_route_table",
+            "name": "route_table-1",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "id": "##id-4##",
+                        "link_route_tables": [],
+                        "net_id": "##id-1##",
+                        "request_id": "########",
+                        "route_propagating_virtual_gateways": [],
+                        "route_table_id": "##id-4##",
+                        "routes": [
+                            {
+                                "creation_method": "CreateRouteTable",
+                                "destination_ip_range": "10.0.0.0/16",
+                                "destination_service_id": "",
+                                "gateway_id": "",
+                                "nat_service_id": "",
+                                "net_access_point_id": "",
+                                "net_peering_id": "",
+                                "nic_id": "",
+                                "state": "active",
+                                "vm_account_id": "",
+                                "vm_id": ""
+                            }
+                        ],
+                        "tags": []
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA==",
+                    "dependencies": [
+                        "outscale_net.outscale_net"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_route_table",
+            "name": "route_table-2",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "id": "##id-6##",
+                        "link_route_tables": [],
+                        "net_id": "##id-2##",
+                        "request_id": "########",
+                        "route_propagating_virtual_gateways": [],
+                        "route_table_id": "##id-6##",
+                        "routes": [
+                            {
+                                "creation_method": "CreateRouteTable",
+                                "destination_ip_range": "10.10.0.0/16",
+                                "destination_service_id": "",
+                                "gateway_id": "",
+                                "nat_service_id": "",
+                                "net_access_point_id": "",
+                                "net_peering_id": "",
+                                "nic_id": "",
+                                "state": "active",
+                                "vm_account_id": "",
+                                "vm_id": ""
+                            }
+                        ],
+                        "tags": []
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA==",
+                    "dependencies": [
+                        "outscale_net.outscale_net_2"
+                    ]
+                }
+            ]
+        }
+    ]
+}

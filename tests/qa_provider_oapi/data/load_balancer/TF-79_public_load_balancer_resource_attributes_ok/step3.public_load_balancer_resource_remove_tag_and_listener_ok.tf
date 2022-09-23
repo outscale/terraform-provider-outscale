@@ -8,3 +8,4 @@ resource "outscale_load_balancer" "public_lbu1" {
      load_balancer_port = 80
     }
 }
+

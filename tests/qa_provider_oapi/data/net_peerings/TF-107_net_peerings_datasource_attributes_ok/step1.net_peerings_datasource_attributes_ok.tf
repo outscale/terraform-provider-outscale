@@ -1,30 +1,28 @@
 resource "outscale_net" "outscale_net" {
-    #count = 1
 
     ip_range = "10.10.0.0/24"
-   # tags {
-   # key = "name"
-   #  value = "net-1"
-   #}
+    tags {
+       key   = "Name"
+       value = "terraform-net-1"
+   }
 }
 
 resource "outscale_net" "outscale_net2" {
-    #count = 1
 
     ip_range = "10.31.0.0/16"
-   # tags {
-   # key = "name"
-   # value = "net-2"
-   # }
+    tags {
+      key   = "Name"
+      value = "terraform-net-2"
+    }
 }
 
 resource "outscale_net" "outscale_net3" {
-    #count = 1
-    ip_range = "20.0.0.0/16"
-   # tags {
-   # key = "name"
-   # value = "net-3"
-   # }
+   
+ ip_range = "10.24.0.0/16"
+    tags {
+      key   = "Name"
+      value = "terraform-net-3"
+    }
 }
 
 resource "outscale_net_peering" "outscale_net_peering" {

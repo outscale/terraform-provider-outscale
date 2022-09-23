@@ -235,9 +235,9 @@
                     "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
-                        "outscale_vm.public_vm_1",
                         "outscale_keypair.my_keypair",
-                        "outscale_load_balancer.public_lbu2"
+                        "outscale_load_balancer.public_lbu2",
+                        "outscale_vm.public_vm_1"
                     ]
                 }
             ]

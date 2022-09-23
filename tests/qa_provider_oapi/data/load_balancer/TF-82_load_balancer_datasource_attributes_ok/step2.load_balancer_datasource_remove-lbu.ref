@@ -1,0 +1,108 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "managed",
+            "type": "outscale_net",
+            "name": "outscale_net",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "dhcp_options_set_id": "##id-0##",
+                        "id": "##id-1##",
+                        "ip_range": "10.0.0.0/16",
+                        "net_id": "##id-1##",
+                        "request_id": "########",
+                        "state": "available",
+                        "tags": [],
+                        "tenancy": "default"
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_security_group",
+            "name": "outscale_security_group",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-2##",
+                        "description": "test lbu-1",
+                        "id": "##id-3##",
+                        "inbound_rules": [],
+                        "net_id": "##id-1##",
+                        "outbound_rules": [
+                            {
+                                "from_port_range": -1,
+                                "ip_protocol": "-1",
+                                "ip_ranges": "########",
+                                "security_groups_members": [],
+                                "to_port_range": -1
+                            }
+                        ],
+                        "request_id": "########",
+                        "security_group_id": "##id-3##",
+                        "security_group_name": "sg1-terraform-lbu-test",
+                        "tag": null,
+                        "tags": [
+                            {
+                                "key": "Name",
+                                "value": "outscale_terraform_lbu_sg"
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA==",
+                    "dependencies": [
+                        "outscale_net.outscale_net"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_subnet",
+            "name": "subnet-1",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "available_ips_count": 250,
+                        "id": "##id-4##",
+                        "ip_range": "10.0.0.0/24",
+                        "map_public_ip_on_launch": false,
+                        "net_id": "##id-1##",
+                        "request_id": "########",
+                        "state": "available",
+                        "subnet_id": "##id-4##",
+                        "subregion_name": "###region###a",
+                        "tags": [
+                            {
+                                "key": "Name",
+                                "value": "outscale_terraform_lbu_subnet"
+                            }
+                        ],
+                        "timeouts": null
+                    },
+                    "sensitive_attributes": [],
+                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwfX0=",
+                    "dependencies": [
+                        "outscale_net.outscale_net"
+                    ]
+                }
+            ]
+        }
+    ]
+}

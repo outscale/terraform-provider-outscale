@@ -67,81 +67,6 @@
                     "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
-                        "outscale_server_certificate.server_certificate_1"
-                    ]
-                }
-            ]
-        },
-        {
-            "mode": "managed",
-            "type": "outscale_load_balancer_attributes",
-            "name": "attributes-ssl-certificate",
-            "provider": "provider[\"local/test/outscale\"]",
-            "instances": [
-                {
-                    "schema_version": 0,
-                    "attributes": {
-                        "access_log": [
-                            {
-                                "is_enabled": false,
-                                "osu_bucket_name": "",
-                                "osu_bucket_prefix": "",
-                                "publication_interval": 60
-                            }
-                        ],
-                        "application_sticky_cookie_policies": [],
-                        "backend_vm_ids": [],
-                        "dns_name": "########",
-                        "health_check": [
-                            {
-                                "check_interval": "30",
-                                "healthy_threshold": "10",
-                                "path": "",
-                                "port": "8080",
-                                "protocol": "TCP",
-                                "timeout": "5",
-                                "unhealthy_threshold": "2"
-                            }
-                        ],
-                        "id": "##id-0##",
-                        "listeners": [
-                            {
-                                "backend_port": 8080,
-                                "backend_protocol": "HTTPS",
-                                "load_balancer_port": 8080,
-                                "load_balancer_protocol": "HTTPS",
-                                "policy_names": [],
-                                "server_certificate_id": "##id-3##"
-                            }
-                        ],
-                        "load_balancer_name": "lbu-TF-86",
-                        "load_balancer_port": 8080,
-                        "load_balancer_sticky_cookie_policies": [],
-                        "load_balancer_type": null,
-                        "policy_names": null,
-                        "request_id": "########",
-                        "security_groups": [],
-                        "server_certificate_id": "##id-3##",
-                        "source_security_group": {
-                            "security_group_account_id": "##id-2##",
-                            "security_group_name": "outscale-elb-sg"
-                        },
-                        "subnets": [],
-                        "subregion_names": [
-                            "###region###a"
-                        ],
-                        "tags": [
-                            {
-                                "key": "name",
-                                "value": "public_lbu1"
-                            }
-                        ]
-                    },
-                    "sensitive_attributes": [],
-                    "private": "bnVsbA==",
-                    "dependencies": [
-                        "outscale_load_balancer.public_lbu1",
-                        "outscale_server_certificate.server_certificate_1",
                         "outscale_server_certificate.server_certificate_2"
                     ]
                 }
@@ -160,7 +85,7 @@
                         "chain": null,
                         "dry_run": null,
                         "expiration_date": "2023-05-26T13:16:48.000+0000",
-                        "id": "##id-4##",
+                        "id": "##id-3##",
                         "name": "Certificate-TF86-1",
                         "orn": "orn:ows:idauth::###account_id###:server-certificate/Certificate-TF86-1",
                         "path": "/",
@@ -186,7 +111,7 @@
                         "chain": null,
                         "dry_run": null,
                         "expiration_date": "2023-05-26T13:16:48.000+0000",
-                        "id": "##id-5##",
+                        "id": "##id-4##",
                         "name": "Certificate-TF86-2",
                         "orn": "orn:ows:idauth::###account_id###:server-certificate/Certificate-TF86-2",
                         "path": "/",

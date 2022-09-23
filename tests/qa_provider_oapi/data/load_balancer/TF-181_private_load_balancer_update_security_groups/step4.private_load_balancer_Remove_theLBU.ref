@@ -7,78 +7,6 @@
     "resources": [
         {
             "mode": "managed",
-            "type": "outscale_load_balancer",
-            "name": "private_lbu",
-            "provider": "provider[\"local/test/outscale\"]",
-            "instances": [
-                {
-                    "schema_version": 0,
-                    "attributes": {
-                        "access_log": {
-                            "is_enabled": "false",
-                            "osu_bucket_name": "",
-                            "osu_bucket_prefix": "",
-                            "publication_interval": "60"
-                        },
-                        "application_sticky_cookie_policies": [],
-                        "backend_vm_ids": [],
-                        "dns_name": "########",
-                        "health_check": {
-                            "check_interval": "30",
-                            "healthy_threshold": "10",
-                            "path": "",
-                            "port": "80",
-                            "protocol": "TCP",
-                            "timeout": "5",
-                            "unhealthy_threshold": "2"
-                        },
-                        "id": "##id-0##",
-                        "listeners": [
-                            {
-                                "backend_port": 80,
-                                "backend_protocol": "HTTP",
-                                "load_balancer_port": 80,
-                                "load_balancer_protocol": "HTTP",
-                                "policy_names": [],
-                                "server_certificate_id": ""
-                            }
-                        ],
-                        "load_balancer_name": "lbu-TF-181",
-                        "load_balancer_sticky_cookie_policies": [],
-                        "load_balancer_type": "internal",
-                        "net_id": "##id-1##",
-                        "request_id": "########",
-                        "security_groups": [
-                            "##id-2##"
-                        ],
-                        "source_security_group": {
-                            "security_group_account_id": "##id-3##",
-                            "security_group_name": "default"
-                        },
-                        "subnets": [
-                            "##id-4##"
-                        ],
-                        "subregion_names": [
-                            "###region###a"
-                        ],
-                        "tags": [
-                            {
-                                "key": "name",
-                                "value": "lbu-update-sg"
-                            }
-                        ]
-                    },
-                    "sensitive_attributes": [],
-                    "private": "bnVsbA==",
-                    "dependencies": [
-                        "outscale_net.outscale_net",
-                        "outscale_subnet.subnet-1"
-                    ]
-                }
-            ]
-        },
-        {
-            "mode": "managed",
             "type": "outscale_net",
             "name": "outscale_net",
             "provider": "provider[\"local/test/outscale\"]",
@@ -86,7 +14,7 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "dhcp_options_set_id": "##id-5##",
+                        "dhcp_options_set_id": "##id-0##",
                         "id": "##id-1##",
                         "ip_range": "10.0.0.0/16",
                         "net_id": "##id-1##",
@@ -109,9 +37,9 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "account_id": "##id-3##",
+                        "account_id": "##id-2##",
                         "description": "test lbu-TF181",
-                        "id": "##id-6##",
+                        "id": "##id-3##",
                         "inbound_rules": [],
                         "net_id": "##id-1##",
                         "outbound_rules": [
@@ -124,7 +52,7 @@
                             }
                         ],
                         "request_id": "########",
-                        "security_group_id": "##id-6##",
+                        "security_group_id": "##id-3##",
                         "security_group_name": "terraform-sg-lbu-TF181-1",
                         "tag": null,
                         "tags": []
@@ -146,9 +74,9 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "account_id": "##id-3##",
+                        "account_id": "##id-2##",
                         "description": "test lbu-2",
-                        "id": "##id-7##",
+                        "id": "##id-4##",
                         "inbound_rules": [],
                         "net_id": "##id-1##",
                         "outbound_rules": [
@@ -161,7 +89,7 @@
                             }
                         ],
                         "request_id": "########",
-                        "security_group_id": "##id-7##",
+                        "security_group_id": "##id-4##",
                         "security_group_name": "terraform-sg-lbu-TF181-2",
                         "tag": null,
                         "tags": []
@@ -183,14 +111,14 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "available_ips_count": 251,
-                        "id": "##id-4##",
+                        "available_ips_count": 250,
+                        "id": "##id-5##",
                         "ip_range": "10.0.0.0/24",
                         "map_public_ip_on_launch": false,
                         "net_id": "##id-1##",
                         "request_id": "########",
                         "state": "available",
-                        "subnet_id": "##id-4##",
+                        "subnet_id": "##id-5##",
                         "subregion_name": "###region###a",
                         "tags": [],
                         "timeouts": null
