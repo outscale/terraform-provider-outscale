@@ -184,7 +184,7 @@ func dataSourceOutscaleNetAccessPointsRead(d *schema.ResourceData, meta interfac
 		nap_ret[k] = n
 	}
 
-	err = d.Set("net_access_point", nap_ret)
+	err = d.Set("net_access_points", nap_ret)
 	if err != nil {
 		return err
 	}
