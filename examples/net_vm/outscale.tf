@@ -2,7 +2,7 @@ terraform {
   required_providers {
     outscale = {
       source  = "outscale-dev/outscale"
-      version = "0.2.0"
+      version = ">= 0.2.0"
     }
   }
 }

@@ -2,7 +2,7 @@
 #secret_key_id       = "MySecretKey"
 #region              = "eu-west-2"
 
-image_id        = "ami-4779e795" # Ubuntu-20.04-2021.09.09-0 on eu-west-2
+image_id        = "ami-bb490c7e" # Ubuntu-20.04-2022.03.10-0 on eu-west-2
 vm_type         = "tinav4.c1r1p2"
 allowed_cidr    = ["0.0.0.0/0"]
 net_ip_range    = "10.0.0.0/16"
