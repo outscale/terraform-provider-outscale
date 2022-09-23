@@ -16,7 +16,8 @@
                     "attributes": {
                         "filter": "########",
                         "id": "##id-0##",
-                        "net_access_point": [
+                        "net_access_point_ids": null,
+                        "net_access_points": [
                             {
                                 "net_access_point_id": "##id-1##",
                                 "net_id": "##id-2##",
@@ -33,7 +34,6 @@
                                 ]
                             }
                         ],
-                        "net_access_point_ids": null,
                         "net_ids": null,
                         "request_id": "########",
                         "service_names": null,

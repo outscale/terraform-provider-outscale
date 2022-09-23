@@ -5,17 +5,8 @@
     "test_image_export_tasks_TF-192_image_export_tasks_datasource_attributes_ok",
     "test_snapshot_export_task_TF-193_snapshot_export_task_resource_attributes_ok",
     "test_image_export_task_TF-191_image_export_task_datasource_attributes_ok",
-    "test_load_balancers_TF-94_load_balancers_datasource_attributes_ok",
-    "test_security_group_TF-125_security_group_datasource_attributes_ok",
     "test_snapshot_export_tasks_TF-195_snapshot_export_tasks_datasource_attributes_ok",
     "test_net_access_points_TF-168_net_access_points_datasource_attributes_ok",
     "test_vpn_connection_route_TF-179_vpn_connection_route_resource_attributes_ok",
-    "test_net_access_points_TF-168_net_access_points_datasource_attributes_ok",
-    "test_security_group_TF-125_security_group_datasource_attributes_ok",
-    "test_load_balancer_TF-79_public_load_balancer_resource_attributes_ok",
-    "test_load_balancer_attributes_TF-86_update_load_balancer_listener_ssl_certificate_ok",
-    "test_load_balancer_TF-181_private_load_balancer_update_security_groups",
-    "test_load_balancer_TF-80_private_internal_load_balancer_resource_attributes_ok",
-    "test_load_balancer_TF-82_load_balancer_datasource_attributes_ok",
-    "test_net_access_point_services_TF-166_net_access_point_services_datasource_attributes_ok_without_filters"
+    "test_security_group_TF-125_security_group_datasource_attributes_ok"
 ]
