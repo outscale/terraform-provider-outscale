@@ -15,18 +15,18 @@
 
 Add the following lines in the Terraform configuration to permit to get the provider from the Terrafom registry:
 
-```sh
+  ```sh
 terraform {
-  required_providers {
-    outscale = {
-      source = "outscale-dev/outscale"
-      version = "0.5.4"
-    }
-  }
+	required_providers {
+		outscale = {
+			source = "outscale-dev/outscale"
+			version = "0.5.4"
+		}
+	}
 }
 
 provider "outscale" {
-  # Configuration options
+	# Configuration options
 }
 ```
 
