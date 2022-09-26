@@ -952,16 +952,16 @@ func buildCreateVmsRequest(d *schema.ResourceData, meta interface{}) (oscgo.Crea
 		request.SetPrivateIps(privateIPs)
 	}
 
+	if v := d.Get("subnet_id").(string); v != "" {
+		request.SetSubnetId(v)
+	}
+
 	if sgIDs := expandStringValueList(d.Get("security_group_ids").([]interface{})); len(sgIDs) > 0 {
 		request.SetSecurityGroupIds(sgIDs)
 	}
 
 	if sgNames := expandStringValueList(d.Get("security_group_names").([]interface{})); len(sgNames) > 0 {
 		request.SetSecurityGroups(sgNames)
-	}
-
-	if v := d.Get("subnet_id").(string); v != "" {
-		request.SetSubnetId(v)
 	}
 
 	if v := d.Get("user_data").(string); v != "" {

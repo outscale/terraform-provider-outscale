@@ -63,6 +63,12 @@ func resourceOutscaleOAPISecurityGroup() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"empty": {
+				Type:	schema.TypeBool,
+				Optional: true,
+				ForceNew: true,
+				Default: false,
+			}
 			"tags": tagsListOAPISchema(),
 			"tag":  tagsSchema(),
 			"request_id": {
@@ -113,8 +119,9 @@ func resourceOutscaleOAPISecurityGroupCreate(d *schema.ResourceData, meta interf
 
 	securityGroupOpts := oscgo.CreateSecurityGroupRequest{}
 
-	if v, ok := d.GetOk("net_id"); ok {
-		securityGroupOpts.SetNetId(v.(string))
+	net, have_net := d.GetOk("net_id")
+	if have_net {
+		securityGroupOpts.SetNetId(net.(string))
 	}
 
 	if v := d.Get("description"); v != nil {
@@ -153,7 +160,20 @@ func resourceOutscaleOAPISecurityGroupCreate(d *schema.ResourceData, meta interf
 		return fmt.Errorf("Error creating Security Group: %s", errString)
 	}
 
-	d.SetId(resp.SecurityGroup.GetSecurityGroupId())
+	id := resp.SecurityGroup.GetSecurityGroupId()
+	empty := d.Get("description")
+	if empty && have_net {
+		emptierOpts := oscgo.DeleteSecurityGroupRuleRequest{
+			Flow: "Outbound",
+			SecurityGroupId: id,
+			IpRange: "0.0.0.0/0",
+			IpProtocol: "-1",
+		}
+		
+		emptierOpts.setRules(r)
+	}
+
+	d.SetId(id)
 
 	log.Printf("[INFO] Security Group ID: %s", d.Id())
 
