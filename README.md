@@ -31,11 +31,11 @@ provider "outscale" {
 ```
 
 ## Configuring the proxy, if any
-#### on Linux/macOS
+### on Linux/macOS
 ```sh
 export HTTPS_PROXY=http://192.168.1.24:3128
 ```
-#### on Windows
+### on Windows
  ```sh
 set HTTPS_PROXY=http://192.168.1.24:3128
 ```
@@ -80,20 +80,27 @@ cd  $GOPATH/src/github.com/terraform-providers/terraform-provider-outscale
 go build -o terraform-provider-outscale_v0.5.4
 ```
 ## Using the provider
+### On Linux
+
 1. Download and install [Terraform](https://www.terraform.io/downloads.html)
-#### On Linux 
+
 2. Move the plugin to the repository ~/.terraform.d/plugins/registry.terraform.io/outscale-dev/outscale/0.5.4/linux_amd64/.
 ```shell
 mkdir -p ~/.terraform.d/plugins/registry.terraform.io/outscale-dev/outscale/0.5.4/linux_amd64
 mv terraform-provider-outscale_v0.5.4 ~/.terraform.d/plugins/registry.terraform.io/outscale-dev/outscale/0.5.4/linux_amd64
 ```
-#### On macOS
+3. Execute `terraform init`
+
+4. Execute `terraform plan`
+
+### On macOS
+1. Download and install [Terraform](https://www.terraform.io/downloads.html)
+
 2. Move the plugin to the repository ~/.terraform.d/plugins/registry.terraform.io/outscale-dev/outscale/0.5.4/darwin_arm64
 ```shell
 mkdir -p ~/.terraform.d/plugins/registry.terraform.io/outscale-dev/outscale/0.5.4/darwin_arm64
 mv terraform-provider-outscale_v0.5.4 ~/.terraform.d/plugins/registry.terraform.io/outscale-dev/outscale/0.5.4/darwin_arm64
 ```  
-<hr>
 
 3. Execute `terraform init`
 
