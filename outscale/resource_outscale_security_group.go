@@ -63,6 +63,12 @@ func resourceOutscaleOAPISecurityGroup() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"remove_default_outbound_rule": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				ForceNew: true,
+				Default:  false,
+			},
 			"tags": tagsListOAPISchema(),
 			"tag":  tagsSchema(),
 			"request_id": {
@@ -113,8 +119,9 @@ func resourceOutscaleOAPISecurityGroupCreate(d *schema.ResourceData, meta interf
 
 	securityGroupOpts := oscgo.CreateSecurityGroupRequest{}
 
-	if v, ok := d.GetOk("net_id"); ok {
-		securityGroupOpts.SetNetId(v.(string))
+	net, have_net := d.GetOk("net_id")
+	if have_net {
+		securityGroupOpts.SetNetId(net.(string))
 	}
 
 	if v := d.Get("description"); v != nil {
@@ -130,6 +137,11 @@ func resourceOutscaleOAPISecurityGroupCreate(d *schema.ResourceData, meta interf
 		groupName = resource.UniqueId()
 	}
 	securityGroupOpts.SetSecurityGroupName(groupName)
+
+	empty := d.Get("remove_default_outbound_rule").(bool)
+	if empty && !have_net {
+		return fmt.Errorf("remove_default_outbound_rule is useless when net_id is not set (so with public SG)")
+	}
 
 	log.Printf("[DEBUG] Security Group create configuration: %#v", securityGroupOpts)
 
@@ -153,7 +165,34 @@ func resourceOutscaleOAPISecurityGroupCreate(d *schema.ResourceData, meta interf
 		return fmt.Errorf("Error creating Security Group: %s", errString)
 	}
 
-	d.SetId(resp.SecurityGroup.GetSecurityGroupId())
+	id := resp.SecurityGroup.GetSecurityGroupId()
+	if empty {
+		ipRange := "0.0.0.0/0"
+		ipProtocol := "-1"
+		emptierOpts := oscgo.DeleteSecurityGroupRuleRequest{
+			Flow:            "Outbound",
+			SecurityGroupId: id,
+			IpRange:         &ipRange,
+			IpProtocol:      &ipProtocol,
+		}
+
+		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			_, _, err = conn.SecurityGroupRuleApi.DeleteSecurityGroupRule(context.Background()).DeleteSecurityGroupRuleRequest(emptierOpts).Execute()
+
+			if err != nil {
+				return utils.CheckThrottling(err)
+			}
+
+			return nil
+		})
+
+		if err != nil {
+			return fmt.Errorf("Error Emptying Security Group: %s", err.Error())
+		}
+
+	}
+
+	d.SetId(id)
 
 	log.Printf("[INFO] Security Group ID: %s", d.Id())
 
