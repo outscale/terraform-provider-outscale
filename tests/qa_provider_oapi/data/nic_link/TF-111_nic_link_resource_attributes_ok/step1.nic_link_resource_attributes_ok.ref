@@ -176,6 +176,7 @@
                                 "to_port_range": -1
                             }
                         ],
+                        "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-9##",
                         "security_group_name": "sg1-test-group_test",

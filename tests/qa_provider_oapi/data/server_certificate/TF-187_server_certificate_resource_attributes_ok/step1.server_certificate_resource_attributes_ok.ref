@@ -20,6 +20,7 @@
                         "expiration_date": "2023-05-26T13:16:48.000+0000",
                         "id": "##id-0##",
                         "name": "Certificate-TF187",
+                        "orn": "orn:ows:idauth::###account_id###:server-certificate/Certificate-TF187",
                         "path": "/",
                         "private_key": "########",
                         "request_id": "########",

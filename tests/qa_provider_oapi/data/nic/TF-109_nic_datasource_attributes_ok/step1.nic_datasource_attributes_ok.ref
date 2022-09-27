@@ -872,6 +872,7 @@
                                 "to_port_range": -1
                             }
                         ],
+                        "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-3##",
                         "security_group_name": "Terraform-SG",

@@ -1,0 +1,265 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "data",
+            "type": "outscale_security_group",
+            "name": "filters-outbound",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-0##",
+                        "description": "test group-1",
+                        "filter": "########",
+                        "id": "##id-1##",
+                        "inbound_rules": [],
+                        "net_id": "##id-2##",
+                        "outbound_rules": [
+                            {
+                                "from_port_range": -1,
+                                "ip_protocol": "-1",
+                                "ip_ranges": "########",
+                                "prefix_list_ids": [],
+                                "security_groups_members": [],
+                                "to_port_range": -1
+                            },
+                            {
+                                "from_port_range": 22,
+                                "ip_protocol": "tcp",
+                                "ip_ranges": "########",
+                                "prefix_list_ids": [],
+                                "security_groups_members": [
+                                    {
+                                        "account_id": "##id-0##",
+                                        "security_group_id": "##id-3##",
+                                        "security_group_name": "terraform-TF125-2"
+                                    }
+                                ],
+                                "to_port_range": 22
+                            }
+                        ],
+                        "request_id": "########",
+                        "security_group_id": "##id-1##",
+                        "security_group_name": "terraform-TF125",
+                        "tags": [
+                            {
+                                "key": "Key:",
+                                "value": "value-tags"
+                            },
+                            {
+                                "key": "Name",
+                                "value": ":outscale_net_resource2"
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_net",
+            "name": "outscale_net",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "dhcp_options_set_id": "##id-4##",
+                        "id": "##id-2##",
+                        "ip_range": "10.0.0.0/16",
+                        "net_id": "##id-2##",
+                        "request_id": "########",
+                        "state": "available",
+                        "tags": [],
+                        "tenancy": "default"
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_security_group",
+            "name": "outscale_security_group",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-0##",
+                        "description": "test group-1",
+                        "id": "##id-1##",
+                        "inbound_rules": [
+                            {
+                                "from_port_range": 22,
+                                "ip_protocol": "tcp",
+                                "ip_ranges": "########",
+                                "security_groups_members": [
+                                    {
+                                        "account_id": "##id-0##",
+                                        "security_group_id": "##id-3##",
+                                        "security_group_name": "terraform-TF125-2"
+                                    }
+                                ],
+                                "to_port_range": 22
+                            }
+                        ],
+                        "net_id": "##id-2##",
+                        "outbound_rules": [
+                            {
+                                "from_port_range": -1,
+                                "ip_protocol": "-1",
+                                "ip_ranges": "########",
+                                "security_groups_members": [],
+                                "to_port_range": -1
+                            }
+                        ],
+                        "remove_default_outbound_rule": false,
+                        "request_id": "########",
+                        "security_group_id": "##id-1##",
+                        "security_group_name": "terraform-TF125",
+                        "tag": null,
+                        "tags": [
+                            {
+                                "key": "Key:",
+                                "value": "value-tags"
+                            },
+                            {
+                                "key": "Name",
+                                "value": ":outscale_net_resource2"
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA==",
+                    "dependencies": [
+                        "outscale_net.outscale_net"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_security_group",
+            "name": "outscale_security_group2",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-0##",
+                        "description": "test group-2",
+                        "id": "##id-3##",
+                        "inbound_rules": [],
+                        "net_id": "##id-2##",
+                        "outbound_rules": [
+                            {
+                                "from_port_range": -1,
+                                "ip_protocol": "-1",
+                                "ip_ranges": "########",
+                                "security_groups_members": [],
+                                "to_port_range": -1
+                            }
+                        ],
+                        "remove_default_outbound_rule": false,
+                        "request_id": "########",
+                        "security_group_id": "##id-3##",
+                        "security_group_name": "terraform-TF125-2",
+                        "tag": null,
+                        "tags": [
+                            {
+                                "key": "Name",
+                                "value": "outscale_sg2"
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA==",
+                    "dependencies": [
+                        "outscale_net.outscale_net"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_security_group_rule",
+            "name": "outscale_security_group_rule-3_2",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "flow": "Outbound",
+                        "from_port_range": null,
+                        "id": "##id-1##",
+                        "inbound_rules": [],
+                        "ip_protocol": null,
+                        "ip_range": null,
+                        "net_id": "##id-2##",
+                        "outbound_rules": [
+                            {
+                                "from_port_range": -1,
+                                "ip_protocol": "-1",
+                                "ip_ranges": "########",
+                                "security_groups_members": [],
+                                "service_ids": [],
+                                "to_port_range": -1
+                            },
+                            {
+                                "from_port_range": 22,
+                                "ip_protocol": "tcp",
+                                "ip_ranges": "########",
+                                "security_groups_members": [
+                                    {
+                                        "account_id": "##id-0##",
+                                        "security_group_id": "##id-3##",
+                                        "security_group_name": "terraform-TF125-2"
+                                    }
+                                ],
+                                "service_ids": [],
+                                "to_port_range": 22
+                            }
+                        ],
+                        "request_id": "########",
+                        "rules": [
+                            {
+                                "from_port_range": 22,
+                                "ip_protocol": "tcp",
+                                "ip_ranges": "########",
+                                "security_groups_members": [
+                                    {
+                                        "account_id": "##id-0##",
+                                        "security_group_id": "##id-3##",
+                                        "security_group_name": ""
+                                    }
+                                ],
+                                "service_ids": null,
+                                "to_port_range": 22
+                            }
+                        ],
+                        "security_group_account_id_to_link": null,
+                        "security_group_id": "##id-1##",
+                        "security_group_name": "terraform-TF125",
+                        "security_group_name_to_link": null,
+                        "to_port_range": null
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA==",
+                    "dependencies": [
+                        "outscale_security_group.outscale_security_group",
+                        "outscale_security_group.outscale_security_group2"
+                    ]
+                }
+            ]
+        }
+    ]
+}

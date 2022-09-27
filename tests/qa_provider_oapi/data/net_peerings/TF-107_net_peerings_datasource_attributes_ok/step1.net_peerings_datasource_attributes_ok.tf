@@ -20,7 +20,7 @@ resource "outscale_net" "outscale_net2" {
 
 resource "outscale_net" "outscale_net3" {
     #count = 1
-    ip_range = "20.0.0.0/16"
+    ip_range = "10.20.0.0/16"
    # tags {
    # key = "name"
    # value = "net-3"
