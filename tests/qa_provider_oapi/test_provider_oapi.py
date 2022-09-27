@@ -196,7 +196,7 @@ def compare_json_lists(path, list_out, list_ref, ids):
                 errors.append(error)
                 pass
         if errors:
-            assert False, 'Could not match set values for path {}, {}'.format(path, errors)
+            assert False, 'Could not match list values for path {}, {}'.format(path, errors)
     ids = current_ids 
 
 def compare_json_sets(path, set_out, set_ref, ids):
@@ -220,7 +220,8 @@ def compare_json_sets(path, set_out, set_ref, ids):
                 errors.append(error)
                 pass
         if errors:
-            assert False, 'Could not match set values for path {}, {}'.format(path, errors)
+                assert False, 'Could not match set values for path {}, {}'.format(path, errors)
+     
     ids = current_ids
 
 

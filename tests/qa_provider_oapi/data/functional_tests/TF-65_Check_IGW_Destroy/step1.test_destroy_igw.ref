@@ -518,6 +518,7 @@
                                 "to_port_range": -1
                             }
                         ],
+                        "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-20##",
                         "security_group_name": "terraform-sg-12",
@@ -555,6 +556,7 @@
                                 "to_port_range": -1
                             }
                         ],
+                        "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-21##",
                         "security_group_name": "terraform-sg-22",

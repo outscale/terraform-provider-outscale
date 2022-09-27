@@ -18,6 +18,7 @@
                         "filter": "########",
                         "id": "##id-0##",
                         "name": "Certificate-TF188",
+                        "orn": "orn:ows:idauth::###account_id###:server-certificate/terraform/test/Certificate-TF188",
                         "path": "/terraform/test/",
                         "request_id": "########",
                         "upload_date": "########"
@@ -41,6 +42,7 @@
                         "expiration_date": "2023-05-26T13:16:48.000+0000",
                         "id": "##id-0##",
                         "name": "Certificate-TF188",
+                        "orn": "orn:ows:idauth::###account_id###:server-certificate/terraform/test/Certificate-TF188",
                         "path": "/terraform/test/",
                         "private_key": "########",
                         "request_id": "########",

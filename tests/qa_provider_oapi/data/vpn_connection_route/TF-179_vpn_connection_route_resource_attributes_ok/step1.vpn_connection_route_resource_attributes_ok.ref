@@ -22,13 +22,8 @@
                         "request_id": "########",
                         "routes": [
                             {
-                                "destination_ip_range": "30.0.0.0/16",
-                                "route_type": "",
-                                "state": "available"
-                            },
-                            {
                                 "destination_ip_range": "40.0.0.0/16",
-                                "route_type": "",
+                                "route_type": "static",
                                 "state": "available"
                             }
                         ],
@@ -131,30 +126,6 @@
         {
             "mode": "managed",
             "type": "outscale_vpn_connection_route",
-            "name": "route1",
-            "provider": "provider[\"local/test/outscale\"]",
-            "instances": [
-                {
-                    "schema_version": 0,
-                    "attributes": {
-                        "destination_ip_range": "30.0.0.0/16",
-                        "id": "##id-3##",
-                        "request_id": "########",
-                        "vpn_connection_id": "##id-1##"
-                    },
-                    "sensitive_attributes": [],
-                    "private": "bnVsbA==",
-                    "dependencies": [
-                        "outscale_client_gateway.My_CGW",
-                        "outscale_virtual_gateway.My_VGW",
-                        "outscale_vpn_connection.outscale_vpn_connection"
-                    ]
-                }
-            ]
-        },
-        {
-            "mode": "managed",
-            "type": "outscale_vpn_connection_route",
             "name": "route2",
             "provider": "provider[\"local/test/outscale\"]",
             "instances": [
@@ -162,7 +133,7 @@
                     "schema_version": 0,
                     "attributes": {
                         "destination_ip_range": "40.0.0.0/16",
-                        "id": "##id-4##",
+                        "id": "##id-3##",
                         "request_id": "########",
                         "vpn_connection_id": "##id-1##"
                     },

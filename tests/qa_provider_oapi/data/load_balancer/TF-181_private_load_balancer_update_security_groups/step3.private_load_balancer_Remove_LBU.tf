@@ -18,20 +18,3 @@ resource "outscale_subnet" "subnet-1" {
   net_id   = outscale_net.outscale_net.net_id
   ip_range = "10.0.0.0/24"
 }
-resource "outscale_load_balancer" "private_lbu" {
-  load_balancer_name ="lbu-TF-181"
-  listeners {
-     backend_port = 80
-     backend_protocol= "HTTP"
-     load_balancer_protocol= "HTTP"
-     load_balancer_port = 80
-    }
-  subnets = [outscale_subnet.subnet-1.subnet_id]
- security_groups = [outscale_security_group.outscale_security_group-2.id]
-  load_balancer_type = "internal"
-  tags {
-     key = "name"
-     value = "lbu-update-sg"
-    }
-}
-
