@@ -1,26 +1,50 @@
-3DS OUTSCALE Terraform Provider
-===============================
+# 3DS OUTSCALE Terraform Provider
 
 - Website: https://www.terraform.io
 - [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/hashicorp-terraform/Lobby)
 - Mailing list: [Google Groups](http://groups.google.com/group/terraform-tool)
+<img  alt="Terraform"  src="https://camo.githubusercontent.com/1a4ed08978379480a9b1ca95d7f4cc8eb80b45ad47c056a7cfb5c597e9315ae5/68747470733a2f2f7777772e6461746f636d732d6173736574732e636f6d2f323838352f313632393934313234322d6c6f676f2d7465727261666f726d2d6d61696e2e737667"  width="200px">
 
-<img alt="Terraform" src="https://www.terraform.io/assets/images/logo-hashicorp-3f10732f.svg" width="600px">
+## Requirements
 
-Requirements
-------------
+- [Terraform](https://www.terraform.io/downloads.html) 1.0.x
 
--	[Terraform](https://www.terraform.io/downloads.html) 1.0.x
--	[Go](https://golang.org/doc/install) 1.13 (to build the provider plugin)
+- [Go](https://golang.org/doc/install) 1.13 (to build the provider plugin)
 
-
-Using the Provider
-------------------
+## Using the Provider
 
 Add the following lines in the Terraform configuration to permit to get the provider from the Terrafom registry:
 
 ```sh
 terraform {
+	required_providers {
+		outscale = {
+			source = "outscale-dev/outscale"
+			version = "0.5.4"
+		}
+	}
+}
+
+provider "outscale" {
+	# Configuration options
+}
+```
+
+## Configuring the proxy, if any
+### on Linux/macOS
+```sh
+export HTTPS_PROXY=http://192.168.1.24:3128
+```
+### on Windows
+ ```sh
+set HTTPS_PROXY=http://192.168.1.24:3128
+```
+
+## x509 client authentication, if any
+Add the following lines in the Terraform configuration to define certificate location:
+```sh
+terraform {
+  required_version = ">= 0.13"
   required_providers {
     outscale = {
       source = "outscale-dev/outscale"
@@ -30,97 +54,68 @@ terraform {
 }
 
 provider "outscale" {
-  # Configuration options
-}
-```
-
-Configuring the proxy on Linux/MAC OS, if any
----------------------------------------------
-
-```sh
-$ export HTTPS_PROXY=http://192.168.1.24:3128
-```
-
-Configuring the proxy on Windows, if any
-----------------------------------------
-
-```sh
-$ set HTTPS_PROXY=http://192.168.1.24:3128
-```
-
-
-x509 client authentication, if any
-----------------------------------
-
-Add the following lines in the Terraform configuration to define certificate location:
-
-```sh
-terraform {
-  required_version = ">= 0.13"
-  required_providers {
-    outscale = {
-      source  = "outscale-dev/outscale"
-      version = "0.5.4"
-    }
-  }
-}
-provider "outscale" {
   access_key_id = var.access_key_id
   secret_key_id = var.secret_key_id
-  region        = var.region
-  x509_cert_path      = "/myrepository/certificate/client_ca.crt"
-  x509_key_path       = "/myrepository/certificate/client_ca.key"
+  region = var.region
+  x509_cert_path = "/myrepository/certificate/client_ca.crt"
+  x509_key_path = "/myrepository/certificate/client_ca.key"
 }
 ```
-
 or set the following environment variables:
 
 ```sh
 export OUTSCALE_X509CERT=/myrepository/certificate/client_ca.crt
 export OUTSCALE_X509KEY=/myrepository/certificate/client_ca.key
 ```
-
-Building The Provider
----------------------
-
+## Building The Provider
 Clone repository to: `$GOPATH/src/github.com/terraform-providers/terraform-provider-outscale`
-
 ```sh
-$ mkdir -p $GOPATH/src/github.com/terraform-providers; cd $GOPATH/src/github.com/terraform-providers
-$ git clone --branch v0.5.4 https://github.com/outscale-dev/terraform-provider-outscale
+mkdir -p $GOPATH/src/github.com/terraform-providers
+cd  $GOPATH/src/github.com/terraform-providers
+git clone --branch v0.5.4 https://github.com/outscale-dev/terraform-provider-outscale
 ```
-
 Enter the provider directory and build the provider
-
 ```sh
-$ cd $GOPATH/src/github.com/terraform-providers/terraform-provider-outscale
-$ go build -o terraform-provider-outscale_v0.5.4
+cd  $GOPATH/src/github.com/terraform-providers/terraform-provider-outscale
+go build -o terraform-provider-outscale_v0.5.4
 ```
+## Using the provider
+### On Linux
 
-Using the provider
-----------------------
 1. Download and install [Terraform](https://www.terraform.io/downloads.html)
+
 2. Move the plugin to the repository ~/.terraform.d/plugins/registry.terraform.io/outscale-dev/outscale/0.5.4/linux_amd64/.
-
 ```shell
-  $ mv terraform-provider-outscale_v0.5.4 ~/.terraform.d/plugins/registry.terraform.io/outscale-dev/outscale/0.5.4/linux_amd64/.
+mkdir -p ~/.terraform.d/plugins/registry.terraform.io/outscale-dev/outscale/0.5.4/linux_amd64
+mv terraform-provider-outscale_v0.5.4 ~/.terraform.d/plugins/registry.terraform.io/outscale-dev/outscale/0.5.4/linux_amd64
 ```
-
 3. Execute `terraform init`
+
 4. Execute `terraform plan`
 
-Issues and contributions
-------------------------
+### On macOS
+1. Download and install [Terraform](https://www.terraform.io/downloads.html)
 
+2. Move the plugin to the repository ~/.terraform.d/plugins/registry.terraform.io/outscale-dev/outscale/0.5.4/darwin_arm64
+```shell
+mkdir -p ~/.terraform.d/plugins/registry.terraform.io/outscale-dev/outscale/0.5.4/darwin_arm64
+mv terraform-provider-outscale_v0.5.4 ~/.terraform.d/plugins/registry.terraform.io/outscale-dev/outscale/0.5.4/darwin_arm64
+```  
+
+3. Execute `terraform init`
+
+4. Execute `terraform plan`
+
+## Issues and contributions
 Check [CONTRIBUTING.md](./CONTRIBUTING.md) for more details.
 
+## Building the documentation
 
-Building the documentation
-------------------------
-- Requirements:
-  - make
-  - python3
-  - python-venv
+Requirements:
+- make
+- python3
+- python-venv
+
 ```shell
-  $ make doc
+make doc
 ```
