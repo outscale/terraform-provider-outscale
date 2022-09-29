@@ -11,4 +11,10 @@ resource "outscale_security_group_rule" "my_sg_rule" {
     ip_protocol     = "tcp"
     ip_ranges       = ["0.0.0.0/0"]
   }
+  rules {
+    from_port_range = "80"
+    to_port_range   = "80"
+    ip_protocol     = "tcp"
+    ip_ranges       = ["0.0.0.0/0"]
+  }
 }
