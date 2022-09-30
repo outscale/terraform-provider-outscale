@@ -17,18 +17,18 @@
                         "dhcp_options_set_id": "##id-0##",
                         "filter": "########",
                         "id": "##id-1##",
-                        "ip_range": "50.0.0.0/18",
+                        "ip_range": "10.0.0.0/18",
                         "net_id": "##id-1##",
                         "request_id": "########",
                         "state": "available",
                         "tags": [
                             {
-                                "key": "VerSion",
-                                "value": "1Q84"
-                            },
-                            {
                                 "key": "Name",
                                 "value": "outscale_net_resource"
+                            },
+                            {
+                                "key": "VerSion",
+                                "value": "1Q84"
                             }
                         ],
                         "tenancy": "default"
@@ -48,7 +48,7 @@
                     "attributes": {
                         "dhcp_options_set_id": "##id-0##",
                         "id": "##id-1##",
-                        "ip_range": "50.0.0.0/18",
+                        "ip_range": "10.0.0.0/18",
                         "net_id": "##id-1##",
                         "request_id": "########",
                         "state": "available",
