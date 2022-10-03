@@ -1,0 +1,41 @@
+name: Examples tests
+
+on:
+  pull_request_target:
+    branches:
+      - master
+    paths:
+      - 'examples/**.tfvars'
+      - 'examples/**.tf'
+      - 'scripts/test-examples.sh'
+      - 'GNUmakefile'
+  schedule:
+    - cron: '30 22 * * *'
+  workflow_dispatch:
+
+jobs:
+  Examples_tests:
+    runs-on: [self-hosted, linux]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+            repository: ${{ github.event.pull_request.head.repo.full_name }}
+            ref: ${{ github.event.pull_request.head.ref }}
+      - uses: outscale-dev/frieza-github-actions/frieza-clean@master
+        with:
+          access_key: ${{ secrets.OSC_ACCESS_KEY }}
+          secret_key: ${{ secrets.OSC_SECRET_KEY }}
+          region: ${{ secrets.OSC_REGION }}
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '>=1.18.0'
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_wrapper: false
+      - name: Run Examples
+        run: make test-examples
+        env:
+          TF_VAR_access_key_id: ${{ secrets.OSC_ACCESS_KEY }}
+          TF_VAR_secret_key_id: ${{ secrets.OSC_SECRET_KEY }}
+          TF_VAR_region: ${{ secrets.OSC_REGION }}
