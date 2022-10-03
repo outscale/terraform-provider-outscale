@@ -25,7 +25,7 @@ func resourceOutscaleOAPICa() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"ca_pem": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 				ForceNew: true,
 			},
 			"ca_fingerprint": {
@@ -39,7 +39,6 @@ func resourceOutscaleOAPICa() *schema.Resource {
 			"description": {
 				Type:     schema.TypeString,
 				Optional: true,
-				Computed: true,
 			},
 			"request_id": {
 				Type:     schema.TypeString,
@@ -72,7 +71,9 @@ func resourceOutscaleOAPICaCreate(d *schema.ResourceData, meta interface{}) erro
 		}
 		return nil
 	})
-
+	if err != nil {
+		return err
+	}
 	d.SetId(cast.ToString(resp.Ca.GetCaId()))
 
 	return resourceOutscaleOAPICaRead(d, meta)
@@ -140,6 +141,9 @@ func resourceOutscaleOAPICaUpdate(d *schema.ResourceData, meta interface{}) erro
 		}
 		return nil
 	})
+	if err != nil {
+		return err
+	}
 	return resourceOutscaleOAPICaRead(d, meta)
 }
 
@@ -158,6 +162,5 @@ func resourceOutscaleOAPICaDelete(d *schema.ResourceData, meta interface{}) erro
 		}
 		return nil
 	})
-
-	return nil
+	return err
 }
