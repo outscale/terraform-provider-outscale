@@ -50,7 +50,11 @@ test-compile:
 		exit 1; \
 	fi
 	go test -c $(TEST) $(TESTARGS)
-	
+
+.PHONY: test-examples
+test-examples:
+	@sh -c "'$(CURDIR)/scripts/test-examples.sh'"
+
 .PHONY: test-integration
 test-integration:
 	@sh -c "'$(CURDIR)/scripts/integration.sh'"
