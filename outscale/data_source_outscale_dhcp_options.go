@@ -45,6 +45,13 @@ func dataSourceOutscaleDHCPOptions() *schema.Resource {
 								Type: schema.TypeString,
 							},
 						},
+						"log_servers": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
 						"ntp_servers": {
 							Type:     schema.TypeList,
 							Computed: true,
@@ -119,6 +126,7 @@ func flattenDHCPOption(dhcpOptions []oscgo.DhcpOptionsSet) []map[string]interfac
 		dhcpOptionsMap[i] = map[string]interface{}{
 			"domain_name":         dhcpOption.GetDomainName(),
 			"domain_name_servers": dhcpOption.GetDomainNameServers(),
+			"log_servers":         dhcpOption.GetLogServers(),
 			"ntp_servers":         dhcpOption.GetNtpServers(),
 			"default":             dhcpOption.GetDefault(),
 			"dhcp_options_set_id": dhcpOption.GetDhcpOptionsSetId(),

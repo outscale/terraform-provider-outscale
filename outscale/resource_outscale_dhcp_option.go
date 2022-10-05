@@ -37,6 +37,15 @@ func resourceOutscaleDHCPOption() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"log_servers": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Computed: true,
+				ForceNew: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 			"ntp_servers": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -70,16 +79,20 @@ func resourceOutscaleDHCPOptionCreate(d *schema.ResourceData, meta interface{}) 
 
 	domainName, okDomainName := d.GetOk("domain_name")
 	domainNameServers, okDomainNameServers := d.GetOk("domain_name_servers")
+	logServers, okLogServers := d.GetOk("log_servers")
 	ntpServers, okNTPServers := d.GetOk("ntp_servers")
 
-	if !okDomainName && !okDomainNameServers && !okNTPServers {
-		return fmt.Errorf("Insufficient parameters provided out of: DomainName, domainNameServers, ntpServers. Expected at least: 1")
+	if !okDomainName && !okDomainNameServers && !okLogServers && !okNTPServers {
+		return fmt.Errorf("Insufficient parameters provided out of: domainName, domainNameServers, logServers, ntpServers. Expected at least: 1")
 	}
 	if okDomainName {
 		createOpts.SetDomainName(domainName.(string))
 	}
 	if okDomainNameServers {
 		createOpts.SetDomainNameServers(expandStringValueList(domainNameServers.([]interface{})))
+	}
+	if okLogServers {
+		createOpts.SetLogServers(expandStringValueList(logServers.([]interface{})))
 	}
 	if okNTPServers {
 		createOpts.SetNtpServers(expandStringValueList(ntpServers.([]interface{})))
@@ -122,6 +135,9 @@ func resourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) er
 		return err
 	}
 	if err := d.Set("domain_name_servers", dhcp.GetDomainNameServers()); err != nil {
+		return err
+	}
+	if err := d.Set("log_servers", dhcp.GetLogServers()); err != nil {
 		return err
 	}
 	if err := d.Set("ntp_servers", dhcp.GetNtpServers()); err != nil {
