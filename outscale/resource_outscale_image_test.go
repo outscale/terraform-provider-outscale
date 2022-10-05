@@ -35,9 +35,7 @@ func TestAccOutscaleOAPIImage_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"outscale_image.foo", "block_device_mappings.0.device_name", "/dev/sda1"),
 					resource.TestCheckResourceAttr(
-						"outscale_image.foo", "block_device_mappings.0.bsu.delete_on_vm_deletion", "true"),
-					resource.TestCheckResourceAttr(
-						"outscale_image.foo", "state_comment.state_code", ""),
+						"outscale_image.foo", "block_device_mappings.0.bsu.0.delete_on_vm_deletion", "true"),
 				),
 			},
 		},
@@ -95,17 +93,29 @@ func testAccCheckOAPIImageExists(n string, ami *oscgo.Image) resource.TestCheckF
 func testAccOAPIImageConfigBasic(omi, vmType, region string, rInt int) string {
 	return fmt.Sprintf(`
 		resource "outscale_vm" "basic" {
-			image_id                 = "%s"
-			vm_type                  = "%s"
-			keypair_name		 = "terraform-basic"
-			placement_subregion_name = "%sa"
+			image_id                 = "%[1]s"
+			vm_type                  = "%[2]s"
+			placement_subregion_name = "%[3]sa"
 		}
-
+		resource "outscale_volume" "snap_volume" {
+			subregion_name = "%[3]sa"
+			size = 40
+		}
+		resource "outscale_snapshot" "snap_image" {
+			volume_id = outscale_volume.snap_volume.volume_id
+                }
 		resource "outscale_image" "foo" {
 			image_name  = "tf-testing-%d"
-			vm_id       = outscale_vm.basic.id
-			no_reboot   = "true"
 			description = "terraform testing"
+                        root_device_name="/dev/sda1"
+                        architecture = "x86_64"
+                        block_device_mappings {
+                          bsu  {
+                            snapshot_id = outscale_snapshot.snap_image.snapshot_id
+                            delete_on_vm_deletion = true
+                          }
+                         device_name = "/dev/sda1"
+                      }
 		}
 	`, omi, vmType, region, rInt)
 }
