@@ -35,6 +35,13 @@ func dataSourceOutscaleDHCPOption() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"log_servers": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 			"ntp_servers": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -103,6 +110,9 @@ func dataSourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) 
 	if err := d.Set("domain_name_servers", dhcpOption.GetDomainNameServers()); err != nil {
 		return err
 	}
+	if err := d.Set("log_servers", dhcpOption.GetLogServers()); err != nil {
+		return err
+	}
 	if err := d.Set("ntp_servers", dhcpOption.GetNtpServers()); err != nil {
 		return err
 	}
@@ -137,15 +147,11 @@ func buildOutscaleDataSourceDHCPOptionFilters(set *schema.Set) *oscgo.FiltersDhc
 			filters.SetDhcpOptionsSetIds(filterValues)
 		case "domain_name_servers":
 			filters.SetDomainNameServers(filterValues)
-		case "domain_name_server":
-			filters.SetDomainNameServers(filterValues)
 		case "domain_names":
 			filters.SetDomainNames(filterValues)
-		case "domain_name":
-			filters.SetDomainNames(filterValues)
+		case "log_servers":
+			filters.SetLogServers(filterValues)
 		case "ntp_servers":
-			filters.SetNtpServers(filterValues)
-		case "ntp_server":
 			filters.SetNtpServers(filterValues)
 		case "tag_keys":
 			filters.SetTagKeys(filterValues)
