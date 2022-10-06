@@ -26,11 +26,13 @@ func TestAccOutscaleDHCPOption_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "domain_name"),
 					resource.TestCheckResourceAttrSet(resourceName, "domain_name_servers.#"),
 					resource.TestCheckResourceAttrSet(resourceName, "ntp_servers.#"),
+					resource.TestCheckResourceAttrSet(resourceName, "log_servers.#"),
 					//resource.TestCheckResourceAttrSet(resourceName, "tags.#"),
 
 					resource.TestCheckResourceAttr(resourceName, "domain_name", "test.fr"),
 					resource.TestCheckResourceAttr(resourceName, "domain_name_servers.0", "192.168.12.1"),
 					resource.TestCheckResourceAttr(resourceName, "ntp_servers.0", "192.0.0.2"),
+					resource.TestCheckResourceAttr(resourceName, "log_servers.0", "192.0.0.12"),
 					//resource.TestCheckResourceAttr(resourceName, "tags.#", "1"),
 					//resource.TestCheckResourceAttr(resourceName, "tags.0.key", "name"),
 					//resource.TestCheckResourceAttr(resourceName, "tags.0.value", value),
@@ -61,11 +63,13 @@ func TestAccOutscaleDHCPOption_withFilters(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "domain_name"),
 					resource.TestCheckResourceAttrSet(resourceName, "domain_name_servers.#"),
 					resource.TestCheckResourceAttrSet(resourceName, "ntp_servers.#"),
+					resource.TestCheckResourceAttrSet(resourceName, "log_servers.#"),
 					//resource.TestCheckResourceAttrSet(resourceName, "tags.#"),
 
 					resource.TestCheckResourceAttr(resourceName, "domain_name", "test.fr"),
 					resource.TestCheckResourceAttr(resourceName, "domain_name_servers.0", "192.168.12.1"),
 					resource.TestCheckResourceAttr(resourceName, "ntp_servers.0", "192.0.0.2"),
+					resource.TestCheckResourceAttr(resourceName, "log_servers.0", "192.0.0.12"),
 					//resource.TestCheckResourceAttr(resourceName, "tags.#", "1"),
 					//resource.TestCheckResourceAttr(resourceName, "tags.0.key", "name"),
 					//resource.TestCheckResourceAttr(resourceName, "tags.0.value", value),
@@ -85,6 +89,7 @@ func testAccClientDHCPOptionBasic(value string) string {
 			domain_name         = "test.fr"
 			domain_name_servers = ["192.168.12.1"]
 			ntp_servers         = ["192.0.0.2"]
+			log_servers         = ["192.0.0.12"]
 
 			tags {
 				key   = "name"
@@ -108,6 +113,7 @@ func testAccClientDHCPOptionWithFilters(value string) string {
 			domain_name         = "test.fr"
 			domain_name_servers = ["192.168.12.1"]
 			ntp_servers         = ["192.0.0.2"]
+			log_servers         = ["192.0.0.12"]
 
 			tags {
 				key   = "name"
@@ -120,10 +126,10 @@ func testAccClientDHCPOptionWithFilters(value string) string {
 				name = "dhcp_options_set_ids"
 				values = ["${outscale_dhcp_option.foo.id}"]
 			}
-                        filter {
-                                name = "tag_keys"
-                                values = ["name"]
-                        }
+			filter {
+				name = "tag_keys"
+				values = ["name"]
+			}
 		}
 	`, value)
 }
