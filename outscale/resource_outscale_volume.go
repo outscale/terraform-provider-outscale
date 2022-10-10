@@ -32,6 +32,10 @@ func resourceOutscaleOAPIVolume() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
+			"creation_date": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"iops": {
 				Type:     schema.TypeInt,
 				Optional: true,
@@ -298,7 +302,9 @@ func readOAPIVolume(d *schema.ResourceData, volume oscgo.Volume) error {
 			return err
 		}
 	}
-
+	if err := d.Set("creation_date", volume.GetCreationDate()); err != nil {
+		return err
+	}
 	if err := d.Set("iops", getIops(volume.GetVolumeType(), volume.GetIops())); err != nil {
 		return err
 	}

@@ -29,6 +29,10 @@ func datasourceOutscaleOAPIVolumes() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"creation_date": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 						"iops": {
 							Type:     schema.TypeInt,
 							Computed: true,
@@ -153,6 +157,7 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 func getOAPIVolumes(volumes []oscgo.Volume) (res []map[string]interface{}) {
 	for _, v := range volumes {
 		res = append(res, map[string]interface{}{
+			"creation_date":  v.CreationDate,
 			"iops":           getIops(v.GetVolumeType(), v.GetIops()),
 			"linked_volumes": getLinkedVolumes(v.GetLinkedVolumes()),
 			"size":           v.Size,
