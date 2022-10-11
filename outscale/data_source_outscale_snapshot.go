@@ -43,6 +43,10 @@ func dataSourceOutscaleOAPISnapshot() *schema.Resource {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
+			"creation_date": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"snapshot_id": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -150,6 +154,9 @@ func snapshotOAPIDescriptionAttributes(d *schema.ResourceData, snapshot *oscgo.S
 		return err
 	}
 	if err := d.Set("account_id", snapshot.GetAccountId()); err != nil {
+		return err
+	}
+	if err := d.Set("creation_date", snapshot.GetCreationDate()); err != nil {
 		return err
 	}
 	if err := d.Set("progress", snapshot.GetProgress()); err != nil {

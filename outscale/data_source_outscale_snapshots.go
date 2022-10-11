@@ -64,6 +64,10 @@ func dataSourceOutscaleOAPISnapshots() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						"creation_date": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 						"description": {
 							Type:     schema.TypeString,
 							Computed: true,
@@ -157,6 +161,7 @@ func dataSourceOutscaleOAPISnapshotsRead(d *schema.ResourceData, meta interface{
 		snapshot["description"] = v.GetDescription()
 		snapshot["account_alias"] = v.GetAccountAlias()
 		snapshot["account_id"] = v.GetAccountId()
+		snapshot["creation_date"] = v.GetCreationDate()
 		snapshot["progress"] = v.GetProgress()
 		snapshot["snapshot_id"] = v.GetSnapshotId()
 		snapshot["state"] = v.GetState()
