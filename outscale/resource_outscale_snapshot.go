@@ -70,6 +70,10 @@ func resourceOutscaleOAPISnapshot() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"creation_date": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"permissions_to_create_volume": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -226,6 +230,9 @@ func resourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) 
 			return err
 		}
 		if err := set("account_id", snapshot.GetAccountId()); err != nil {
+			return err
+		}
+		if err := set("creation_date", snapshot.GetCreationDate()); err != nil {
 			return err
 		}
 		if err := set("permissions_to_create_volume", omiOAPIPermissionToLuch(&permisions)); err != nil {
