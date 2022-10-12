@@ -129,7 +129,9 @@ func oapiVMDescriptionAttributes(set AttributeSetter, vm *oscgo.Vm) error {
 	if err := set("net_id", vm.GetNetId()); err != nil {
 		return err
 	}
-
+	if err := set("nested_virtualization", vm.GetNestedVirtualization()); err != nil {
+		return err
+	}
 	if err := set("nics", getOAPIVMNetworkInterfaceLightSet(vm.GetNics())); err != nil {
 		return err
 	}
@@ -371,7 +373,10 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 			Type:     schema.TypeInt,
 			Computed: true,
 		},
-
+		"nested_virtualization": {
+			Type:     schema.TypeBool,
+			Computed: true,
+		},
 		"net_id": {
 			Type:     schema.TypeString,
 			Computed: true,

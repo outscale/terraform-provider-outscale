@@ -411,6 +411,11 @@ func resourceOutscaleOApiVM() *schema.Resource {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
+			"nested_virtualization": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
 			"net_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -941,7 +946,13 @@ func buildCreateVmsRequest(d *schema.ResourceData, meta interface{}) (oscgo.Crea
 		MaxVmsCount:        oscgo.PtrInt32(1),
 		MinVmsCount:        oscgo.PtrInt32(1),
 		ImageId:            d.Get("image_id").(string),
-		Placement:          expandPlacement(d),
+	}
+
+	placement, err := expandPlacement(d)
+	if err != nil {
+		return request, err
+	} else if placement != nil {
+		request.SetPlacement(*placement)
 	}
 
 	if nics := buildNetworkOApiInterfaceOpts(d); len(nics) > 0 {
@@ -963,6 +974,12 @@ func buildCreateVmsRequest(d *schema.ResourceData, meta interface{}) (oscgo.Crea
 	if sgNames := expandStringValueList(d.Get("security_group_names").([]interface{})); len(sgNames) > 0 {
 		request.SetSecurityGroups(sgNames)
 	}
+
+	nestedVirtualization := d.Get("nested_virtualization").(bool)
+	if tenacy := d.Get("placement_tenancy").(string); nestedVirtualization && tenacy != "dedicated" {
+		return request, errors.New("The field nested_virtualization can be true, only if placement_tenancy is \"dedicated\".")
+	}
+	request.SetNestedVirtualization(nestedVirtualization)
 
 	if v := d.Get("subnet_id").(string); v != "" {
 		request.SetSubnetId(v)
@@ -1105,20 +1122,27 @@ func expandPrivatePublicIps(p *schema.Set) []oscgo.PrivateIpLight {
 	return privatePublicIPS
 }
 
-func expandPlacement(d *schema.ResourceData) *oscgo.Placement {
-	var placement *oscgo.Placement
+func expandPlacement(d *schema.ResourceData) (*oscgo.Placement, error) {
+	placement := &oscgo.Placement{}
 
 	subregionName, sOK := d.GetOk("placement_subregion_name")
 	tenancy, tOK := d.GetOk("placement_tenancy")
 
-	if sOK || tOK {
-		placement = &oscgo.Placement{
-			SubregionName: oscgo.PtrString(subregionName.(string)),
-		}
-
-		placement.Tenancy = oscgo.PtrString(tenancy.(string))
+	if sOK {
+		placement.SetSubregionName(subregionName.(string))
 	}
-	return placement
+	if tOK {
+		if v := tenancy.(string); v == "default" || v == "dedicated" {
+			placement.SetTenancy(v)
+		} else {
+			return nil, errors.New("The value of field placement_tenancy can be only \"default\" or \"dedicated\"")
+		}
+	}
+	if sOK || tOK {
+		return placement, nil
+	} else {
+		return nil, nil
+	}
 }
 
 func vmStateRefreshFunc(conn *oscgo.APIClient, instanceID, failState string) resource.StateRefreshFunc {
