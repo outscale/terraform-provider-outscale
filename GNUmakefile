@@ -30,10 +30,6 @@ fmt:
 	gofmt -s -w ./main.go
 	gofmt -s -w ./$(PKG_NAME)
 
-.PHONY: websitefmtcheck
-websitefmtcheck:
-	@sh -c "'$(CURDIR)/scripts/websitefmtcheck.sh'"
-
 .PHONY: lint
 lint:
 	@GOGC=30 golangci-lint run ./$(PKG_NAME)  --deadline=30m
