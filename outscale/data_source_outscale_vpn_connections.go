@@ -77,6 +77,34 @@ func dataSourceOutscaleVPNConnections() *schema.Resource {
 							},
 						},
 						"tags": dataSourceTagsSchema(),
+						"vgw_telemetries": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"accepted_route_count": {
+										Type:     schema.TypeInt,
+										Computed: true,
+									},
+									"last_state_change_date": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"outside_ip_address": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"state": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"state_description": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -149,6 +177,7 @@ func flattenVPNConnections(vpnConnections []oscgo.VpnConnection) []map[string]in
 			"state":                        vpnConnection.GetState(),
 			"routes":                       flattenVPNConnection(vpnConnection.GetRoutes()),
 			"tags":                         tagsOSCAPIToMap(vpnConnection.GetTags()),
+			"vgw_telemetries":              flattenVgwTelemetries(vpnConnection.GetVgwTelemetries()),
 		}
 	}
 	return vpnConnectionsMap
