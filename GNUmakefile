@@ -1,4 +1,5 @@
-GOFMT_FILES?=$$(find . -name '*.go' |grep -v vendor)
+TEST?=./...
+GOFMT_FILES?=$(shell find . -name '*.go')
 PKG_NAME=outscale
 TEST?=./...
 VERSION=$(shell git describe --exact-match 2> /dev/null || \
