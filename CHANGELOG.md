@@ -1,8 +1,35 @@
+0.6.0 (October 31, 2022)
+========================
+
+BUG FIXES:
+----------
+
+* Fix Outscale_image Blocks of type "bsu" are not expected here ([GH-176](https://github.com/outscale-dev/terraform-provider-outscale/issues/176))
+* Fix Missing "s" in outscale_net_access_points datasource ([GH-172](https://github.com/outscale-dev/terraform-provider-outscale/issues/172))
+
+FEATURES:
+---------
+
+* Allow to create security groups in VPC without outbound default rule ([GH-109](https://github.com/outscale-dev/terraform-provider-outscale/issues/109))
+* Support API Access Rules in Terraform ([GH-134](https://github.com/outscale-dev/terraform-provider-outscale/issues/134))
+* Update outscale_server_certificate resource and datasources ([GH-136](https://github.com/outscale-dev/terraform-provider-outscale/issues/136))
+* Implement Api Access Policy ([GH-147](https://github.com/outscale-dev/terraform-provider-outscale/issues/147))
+* Implement "Ca" resource and datasource(s) ([GH-151](https://github.com/outscale-dev/terraform-provider-outscale/issues/151))
+
+IMPROVEMENT:
+-----------
+
+* Change the description when parameters are quoted ([GH-101](https://github.com/outscale-dev/terraform-provider-outscale/issues/101))
+* Customize the intro by adding extra info ([GH-102](https://github.com/outscale-dev/terraform-provider-outscale/issues/102))
+* Update the path for the doc-templates ([GH-103](https://github.com/outscale-dev/terraform-provider-outscale/issues/103))
+* Add workflow to check examples ([GH-178](https://github.com/outscale-dev/terraform-provider-outscale/issues/178))
+
 0.5.4 (July 26, 2022)
 ========================
 
 BUG FIXES:
 ----------
+
 * Fix ```public_ip_id``` attribute when imported outscale_nat_service resource ([GH-95](https://github.com/outscale-dev/terraform-provider-outscale/issues/95))
 * Fix issue with importing server_certificate ([GH-97](https://github.com/outscale-dev/terraform-provider-outscale/issues/97))
 * Fix StartVM action when updating VM tags ([GH-86](https://github.com/outscale-dev/terraform-provider-outscale/issues/86))
