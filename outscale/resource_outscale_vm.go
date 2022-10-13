@@ -955,7 +955,15 @@ func buildCreateVmsRequest(d *schema.ResourceData, meta interface{}) (oscgo.Crea
 		request.SetPlacement(*placement)
 	}
 
+	subNet := d.Get("subnet_id").(string)
+	if subNet != "" {
+		request.SetSubnetId(subNet)
+	}
+
 	if nics := buildNetworkOApiInterfaceOpts(d); len(nics) > 0 {
+		if subNet != "" || placement != nil {
+			return request, errors.New("If you specify nics parameter, you must not specify subnet_id and placement parameters.")
+		}
 		request.SetNics(nics)
 	}
 
@@ -980,10 +988,6 @@ func buildCreateVmsRequest(d *schema.ResourceData, meta interface{}) (oscgo.Crea
 		return request, errors.New("The field nested_virtualization can be true, only if placement_tenancy is \"dedicated\".")
 	}
 	request.SetNestedVirtualization(nestedVirtualization)
-
-	if v := d.Get("subnet_id").(string); v != "" {
-		request.SetSubnetId(v)
-	}
 
 	if v := d.Get("user_data").(string); v != "" {
 		request.SetUserData(v)
