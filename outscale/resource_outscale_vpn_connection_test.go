@@ -31,6 +31,7 @@ func TestAccOutscaleVPNConnection_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "client_gateway_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "virtual_gateway_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "connection_type"),
+					resource.TestCheckResourceAttrSet(resourceName, "vgw_telemetries.#"),
 
 					resource.TestCheckResourceAttr(resourceName, "connection_type", "ipsec.1"),
 				),
@@ -43,6 +44,7 @@ func TestAccOutscaleVPNConnection_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "virtual_gateway_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "connection_type"),
 					resource.TestCheckResourceAttrSet(resourceName, "static_routes_only"),
+					resource.TestCheckResourceAttrSet(resourceName, "vgw_telemetries.#"),
 
 					resource.TestCheckResourceAttr(resourceName, "connection_type", "ipsec.1"),
 					resource.TestCheckResourceAttr(resourceName, "static_routes_only", "true"),
@@ -56,6 +58,7 @@ func TestAccOutscaleVPNConnection_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "virtual_gateway_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "connection_type"),
 					resource.TestCheckResourceAttrSet(resourceName, "static_routes_only"),
+					resource.TestCheckResourceAttrSet(resourceName, "vgw_telemetries.#"),
 
 					resource.TestCheckResourceAttr(resourceName, "connection_type", "ipsec.1"),
 					resource.TestCheckResourceAttr(resourceName, "static_routes_only", "false"),
