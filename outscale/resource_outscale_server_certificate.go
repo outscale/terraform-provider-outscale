@@ -106,6 +106,9 @@ func resourceOutscaleOAPIServerCertificateCreate(d *schema.ResourceData, meta in
 		}
 		return nil
 	})
+	if err != nil {
+		return fmt.Errorf("[DEBUG] Error reading Server Certificate: %s", utils.GetErrorResponse(err))
+	}
 
 	d.SetId(cast.ToString(resp.ServerCertificate.Id))
 
@@ -182,6 +185,10 @@ func resourceOutscaleOAPIServerCertificateUpdate(d *schema.ResourceData, meta in
 		}
 		return nil
 	})
+	if err != nil {
+		return fmt.Errorf("[DEBUG] Error update Server Certificate: %s", utils.GetErrorResponse(err))
+	}
+
 	return resourceOutscaleOAPIServerCertificateRead(d, meta)
 }
 
@@ -201,5 +208,5 @@ func resourceOutscaleOAPIServerCertificateDelete(d *schema.ResourceData, meta in
 		return nil
 	})
 
-	return nil
+	return err
 }
