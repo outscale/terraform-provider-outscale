@@ -62,23 +62,52 @@ func dataSourceOutscaleOAPIImages() *schema.Resource {
 						},
 						"block_device_mappings": {
 							Type:     schema.TypeList,
+							Optional: true,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
+									"bsu": {
+										Type:     schema.TypeList,
+										Optional: true,
+										Computed: true,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"delete_on_vm_deletion": {
+													Type:     schema.TypeBool,
+													Optional: true,
+													Computed: true,
+												},
+												"iops": {
+													Type:     schema.TypeInt,
+													Optional: true,
+													Computed: true,
+												},
+												"snapshot_id": {
+													Type:     schema.TypeString,
+													Optional: true,
+													Computed: true,
+												},
+												"volume_size": {
+													Type:     schema.TypeInt,
+													Optional: true,
+													Computed: true,
+												},
+												"volume_type": {
+													Type:     schema.TypeString,
+													Optional: true,
+													Computed: true,
+												},
+											},
+										},
+									},
 									"device_name": {
 										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"no_device": {
-										Type:     schema.TypeString,
+										Optional: true,
 										Computed: true,
 									},
 									"virtual_device_name": {
 										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"bsu": {
-										Type:     schema.TypeMap,
+										Optional: true,
 										Computed: true,
 									},
 								},
@@ -144,8 +173,20 @@ func dataSourceOutscaleOAPIImages() *schema.Resource {
 							Computed: true,
 						},
 						"state_comment": {
-							Type:     schema.TypeMap,
+							Type:     schema.TypeSet,
 							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"state_code": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"state_message": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
+							},
 						},
 						"tags": {
 							Type: schema.TypeList,
