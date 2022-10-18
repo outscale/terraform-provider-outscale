@@ -35,9 +35,7 @@ func TestAccOutscaleOAPIImage_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"outscale_image.foo", "block_device_mappings.0.device_name", "/dev/sda1"),
 					resource.TestCheckResourceAttr(
-						"outscale_image.foo", "block_device_mappings.0.bsu.delete_on_vm_deletion", "true"),
-					resource.TestCheckResourceAttr(
-						"outscale_image.foo", "state_comment.state_code", ""),
+						"outscale_image.foo", "block_device_mappings.0.bsu.0.delete_on_vm_deletion", "true"),
 				),
 			},
 		},

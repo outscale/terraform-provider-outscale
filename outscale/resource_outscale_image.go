@@ -9,9 +9,6 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
-	"github.com/openlyinc/pointy"
-	"github.com/spf13/cast"
-
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
@@ -226,40 +223,44 @@ func resourceOutscaleOAPIImage() *schema.Resource {
 func resourceOAPIImageCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	imageRequest := oscgo.CreateImageRequest{
-		ImageName: pointy.String(cast.ToString(d.Get("image_name"))),
+	imageRequest := oscgo.CreateImageRequest{}
+	if v, ok := d.GetOk("image_name"); ok {
+		imageRequest.SetImageName(v.(string))
 	}
 
-	if v := cast.ToString(d.Get("vm_id")); v != "" {
-		imageRequest.SetVmId(v)
+	if v, ok := d.GetOk("vm_id"); ok {
+		imageRequest.SetVmId(v.(string))
 	}
 
-	if v := cast.ToString(d.Get("description")); v != "" {
-		imageRequest.SetDescription(v)
+	if v, ok := d.GetOk("description"); ok {
+		imageRequest.SetDescription(v.(string))
 	}
-
+	if blocks, ok := d.GetOk("block_device_mappings"); ok {
+		blockDevices := expandOmiBlockDeviceOApiMappings(blocks.([]interface{}))
+		imageRequest.SetBlockDeviceMappings(blockDevices)
+	}
 	if v, ok := d.GetOk("no_reboot"); ok {
-		imageRequest.SetNoReboot(cast.ToBool(v))
+		imageRequest.SetNoReboot(v.(bool))
 	}
 
-	if v := cast.ToString(d.Get("architecture")); v != "" {
-		imageRequest.SetArchitecture(v)
+	if v, ok := d.GetOk("architecture"); ok {
+		imageRequest.SetArchitecture(v.(string))
 	}
 
-	if v := cast.ToString(d.Get("file_location")); v != "" {
-		imageRequest.SetFileLocation(v)
+	if v, ok := d.GetOk("file_location"); ok {
+		imageRequest.SetFileLocation(v.(string))
 	}
 
-	if v := cast.ToString(d.Get("source_image_id")); v != "" {
-		imageRequest.SetSourceImageId(v)
+	if v, ok := d.GetOk("source_image_id"); ok {
+		imageRequest.SetSourceImageId(v.(string))
 	}
 
-	if v := cast.ToString(d.Get("source_region_name")); v != "" {
-		imageRequest.SetSourceRegionName(v)
+	if v, ok := d.GetOk("source_region_name"); ok {
+		imageRequest.SetSourceRegionName(v.(string))
 	}
 
-	if v := cast.ToString(d.Get("root_device_name")); v != "" {
-		imageRequest.SetRootDeviceName(v)
+	if v, ok := d.GetOk("root_device_name"); ok {
+		imageRequest.SetRootDeviceName(v.(string))
 	}
 	var resp oscgo.CreateImageResponse
 	var err error
@@ -380,8 +381,7 @@ func resourceOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
 		if err := set("state", image.State); err != nil {
 			return err
 		}
-
-		if err := set("block_device_mappings", omiOAPIBlockDeviceMappings(*image.BlockDeviceMappings)); err != nil {
+		if err := set("block_device_mappings", omiOAPIBlockDeviceMappings(image.GetBlockDeviceMappings())); err != nil {
 			return err
 		}
 		if err := set("product_codes", image.ProductCodes); err != nil {
@@ -513,30 +513,78 @@ func omiOAPIBlockDeviceMappings(m []oscgo.BlockDeviceMappingImage) []map[string]
 	blockDeviceMapping := make([]map[string]interface{}, len(m))
 
 	for k, v := range m {
-		blockDeviceMapping[k] = map[string]interface{}{
-			"device_name":         v.GetDeviceName(),
-			"virtual_device_name": v.GetVirtualDeviceName(),
-			"bsu": map[string]interface{}{
-				"delete_on_vm_deletion": cast.ToString(v.Bsu.GetDeleteOnVmDeletion()),
-				"iops":                  cast.ToString(v.Bsu.GetIops()),
-				"snapshot_id":           v.Bsu.GetSnapshotId(),
-				"volume_size":           cast.ToString(v.Bsu.GetVolumeSize()),
-				"volume_type":           v.Bsu.GetVolumeType(),
-			},
+		block := make(map[string]interface{})
+		block["device_name"] = v.GetDeviceName()
+		block["virtual_device_name"] = v.GetVirtualDeviceName()
+		if val, ok := v.GetBsuOk(); ok {
+			block["bsu"] = getOAPIBsuToCreate(*val)
 		}
+		blockDeviceMapping[k] = block
 	}
 	return blockDeviceMapping
 }
 
-// Returns the state reason.
-func omiOAPIStateReason(m *oscgo.StateComment) map[string]interface{} {
-	s := make(map[string]interface{})
-	if m != nil {
-		s["state_code"] = m.GetStateCode()
-		s["state_message"] = m.GetStateMessage()
-	} else {
-		s["state_code"] = "UNSET"
-		s["state_message"] = "UNSET"
+func getOAPIBsuToCreate(bsu oscgo.BsuToCreate) []map[string]interface{} {
+	return []map[string]interface{}{{
+		"delete_on_vm_deletion": bsu.GetDeleteOnVmDeletion(),
+		"iops":                  bsu.GetIops(),
+		"snapshot_id":           bsu.GetSnapshotId(),
+		"volume_size":           bsu.GetVolumeSize(),
+		"volume_type":           bsu.GetVolumeType(),
+	}}
+}
+
+func expandOmiBlockDeviceOApiMappings(blocks []interface{}) []oscgo.BlockDeviceMappingImage {
+	var blockDevices []oscgo.BlockDeviceMappingImage
+
+	for _, v := range blocks {
+		blockDevice := oscgo.BlockDeviceMappingImage{}
+
+		value := v.(map[string]interface{})
+		if bsu := value["bsu"].([]interface{}); bsu != nil {
+			blockDevice.SetBsu(expandOmiBlockDeviceBSU(bsu))
+		}
+
+		if deviceName := value["device_name"].(string); deviceName != "" {
+			blockDevice.SetDeviceName(deviceName)
+		}
+		if virtualDeviceName := value["virtual_device_name"].(string); virtualDeviceName != "" {
+			blockDevice.SetVirtualDeviceName(virtualDeviceName)
+		}
+
+		blockDevices = append(blockDevices, blockDevice)
 	}
-	return s
+	return blockDevices
+}
+
+func expandOmiBlockDeviceBSU(bsu []interface{}) oscgo.BsuToCreate {
+	bsuToCreate := oscgo.BsuToCreate{}
+
+	for _, v := range bsu {
+		val := v.(map[string]interface{})
+		if del := val["delete_on_vm_deletion"].(bool); del {
+			bsuToCreate.SetDeleteOnVmDeletion(del)
+		}
+		if snap := val["snapshot_id"].(string); snap != "" {
+			bsuToCreate.SetSnapshotId(snap)
+		}
+		if vSize := val["volume_size"].(int); vSize > 0 {
+			bsuToCreate.SetVolumeSize(int32(vSize))
+		}
+		if vType := val["volume_type"].(string); vType != "" {
+			bsuToCreate.SetVolumeType(vType)
+			if iops := val["iops"].(int); iops > 0 && vType == "io1" {
+				bsuToCreate.SetIops(int32(iops))
+			}
+		}
+	}
+	return bsuToCreate
+}
+
+// Returns the state reason.
+func omiOAPIStateReason(m *oscgo.StateComment) []map[string]interface{} {
+	return []map[string]interface{}{{
+		"state_code":    m.GetStateCode(),
+		"state_message": m.GetStateMessage(),
+	}}
 }
