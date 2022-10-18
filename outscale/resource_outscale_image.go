@@ -44,35 +44,65 @@ func resourceOutscaleOAPIImage() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"vm_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-			},
-			"image_name": {
-				Type:     schema.TypeString,
-				Required: true,
-			},
-			"no_reboot": {
-				Type:     schema.TypeBool,
-				Optional: true,
-			},
-			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
-			},
 			"architecture": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
 			},
-			"source_region_name": {
-				Type:     schema.TypeString,
+			"block_device_mappings": {
+				Type:     schema.TypeList,
 				Optional: true,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"bsu": {
+							Type:     schema.TypeList,
+							Optional: true,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"delete_on_vm_deletion": {
+										Type:     schema.TypeBool,
+										Optional: true,
+										Computed: true,
+									},
+									"iops": {
+										Type:     schema.TypeInt,
+										Optional: true,
+										Computed: true,
+									},
+									"snapshot_id": {
+										Type:     schema.TypeString,
+										Optional: true,
+										Computed: true,
+									},
+									"volume_size": {
+										Type:     schema.TypeInt,
+										Optional: true,
+										Computed: true,
+									},
+									"volume_type": {
+										Type:     schema.TypeString,
+										Optional: true,
+										Computed: true,
+									},
+								},
+							},
+						},
+						"device_name": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+						},
+						"virtual_device_name": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+						},
+					},
+				},
 			},
-			"source_image_id": {
+			"description": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
@@ -82,6 +112,31 @@ func resourceOutscaleOAPIImage() *schema.Resource {
 				Optional: true,
 				Computed: true,
 			},
+			"image_name": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+			},
+			"no_reboot": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Computed: true,
+			},
+			"root_device_name": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+			},
+			"source_image_id": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+			},
+			"source_region_name": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+
 			"account_alias": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -102,11 +157,6 @@ func resourceOutscaleOAPIImage() *schema.Resource {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
-			"root_device_name": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-			},
 			"root_device_type": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -119,31 +169,6 @@ func resourceOutscaleOAPIImage() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			// Complex computed values
-			"block_device_mappings": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"device_name": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"no_device": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"virtual_device_name": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"bsu": {
-							Type:     schema.TypeMap,
-							Computed: true,
-						},
-					},
-				},
-			},
 			"product_codes": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -152,8 +177,20 @@ func resourceOutscaleOAPIImage() *schema.Resource {
 				},
 			},
 			"state_comment": {
-				Type:     schema.TypeMap,
+				Type:     schema.TypeSet,
 				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"state_code": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"state_message": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
 			},
 			"permissions_to_launch": {
 				Type:     schema.TypeList,
@@ -177,6 +214,11 @@ func resourceOutscaleOAPIImage() *schema.Resource {
 				Computed: true,
 			},
 			"tags": tagsListOAPISchema(),
+			"vm_id": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+			},
 		},
 	}
 }
