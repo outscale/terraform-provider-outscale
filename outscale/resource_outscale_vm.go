@@ -718,7 +718,8 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 	if d.HasChange("vm_type") && !d.IsNewResource() ||
 		d.HasChange("user_data") && !d.IsNewResource() ||
 		d.HasChange("bsu_optimized") && !d.IsNewResource() ||
-		d.HasChange("performance") && !d.IsNewResource() {
+		d.HasChange("performance") && !d.IsNewResource() ||
+		d.HasChange("nested_virtualization") && !d.IsNewResource() {
 		if err := stopVM(id, conn); err != nil {
 			return err
 		}
@@ -754,6 +755,15 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 	if d.HasChange("performance") && !d.IsNewResource() {
 		opts := oscgo.UpdateVmRequest{VmId: id}
 		opts.SetPerformance(d.Get("performance").(string))
+
+		if err := updateVmAttr(conn, opts); err != nil {
+			return err
+		}
+	}
+
+	if d.HasChange("nested_virtualization") && !d.IsNewResource() {
+		opts := oscgo.UpdateVmRequest{VmId: id}
+		opts.SetNestedVirtualization(d.Get("nested_virtualization").(bool))
 
 		if err := updateVmAttr(conn, opts); err != nil {
 			return err
