@@ -176,6 +176,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_api_access_rule":              dataSourceOutscaleOAPIApiAccessRule(),
 			"outscale_api_access_rules":             dataSourceOutscaleOAPIApiAccessRules(),
 			"outscale_api_access_policy":            dataSourceOutscaleOAPIApiAccessPolicy(),
+			"outscale_public_catalog":               dataSourceOutscaleOAPIPublicCatalog(),
 		},
 
 		ConfigureFunc: providerConfigureClient,
