@@ -33,6 +33,7 @@ func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &server),
 					testAccCheckOutscaleOAPIVMAttributes(t, &server, omi),
+					resource.TestCheckResourceAttrSet("outscale_vm.basic", "creation_date"),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "image_id", omi),
 					resource.TestCheckResourceAttr(
