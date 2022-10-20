@@ -105,6 +105,9 @@ func oapiVMDescriptionAttributes(set AttributeSetter, vm *oscgo.Vm) error {
 	if err := set("client_token", vm.GetClientToken()); err != nil {
 		return err
 	}
+	if err := set("creation_date", vm.GetCreationDate()); err != nil {
+		return err
+	}
 	if err := set("deletion_protection", vm.GetDeletionProtection()); err != nil {
 		return err
 	}
@@ -322,6 +325,10 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 			Computed: true,
 		},
 		"client_token": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"creation_date": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
