@@ -923,6 +923,27 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 		}
 	}
 
+	if d.HasChange("public_ip") {
+		req := oscgo.UpdateLoadBalancerRequest{
+			LoadBalancerName: d.Id(),
+		}
+		req.SetPublicIp(d.Get("public_ip").(string))
+
+		var err error
+		err = resource.Retry(1*time.Minute, func() *resource.RetryError {
+			_, _, err = conn.LoadBalancerApi.UpdateLoadBalancer(
+				context.Background()).UpdateLoadBalancerRequest(req).Execute()
+			if err != nil {
+				return utils.CheckThrottling(err)
+			}
+			return nil
+		})
+
+		if err != nil {
+			return fmt.Errorf("Failure updating PublicIp: %s", err)
+		}
+	}
+
 	if d.HasChange("secured_cookies") {
 		req := oscgo.UpdateLoadBalancerRequest{
 			LoadBalancerName: d.Id(),
@@ -950,10 +971,6 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 }
 
 func resourceOutscaleOAPILoadBalancerDelete(d *schema.ResourceData, meta interface{}) error {
-	return resourceOutscaleOAPILoadBalancerDelete_(d, meta, true)
-}
-
-func resourceOutscaleOAPILoadBalancerDelete_(d *schema.ResourceData, meta interface{}, needupdate bool) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	log.Printf("[INFO] Deleting Load Balancer: %s", d.Id())
@@ -978,10 +995,6 @@ func resourceOutscaleOAPILoadBalancerDelete_(d *schema.ResourceData, meta interf
 		return fmt.Errorf("Error deleting Load Balancer: %s", err)
 	}
 
-	if needupdate {
-		d.SetId("")
-	}
-
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"ready"},
 		Target:  []string{},
@@ -996,6 +1009,11 @@ func resourceOutscaleOAPILoadBalancerDelete_(d *schema.ResourceData, meta interf
 	}
 	if _, err := stateConf.WaitForState(); err != nil {
 		return fmt.Errorf("Error waiting for load balancer (%s) to become null: %s", d.Id(), err)
+	}
+
+	//Remove this when bug will be fix
+	if _, ok := d.GetOk("public_ip"); ok {
+		time.Sleep(5 * time.Second)
 	}
 
 	return nil
