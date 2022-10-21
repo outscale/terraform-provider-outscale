@@ -42,6 +42,8 @@ func TestAccOutscaleOAPILBUBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"outscale_load_balancer.bar",
 						"listeners.#", "1"),
+					resource.TestCheckResourceAttr("outscale_load_balancer.bar",
+						"secured_cookies", "true"),
 				)},
 		},
 	})
@@ -159,14 +161,17 @@ func testAccCheckOutscaleOAPILBUExists(n string, res *oscgo.LoadBalancer) resour
 func testAccOutscaleOAPILBUConfig(r int) string {
 	return fmt.Sprintf(`
 resource "outscale_load_balancer" "bar" {
-  subregion_names = ["%sa"]
-  load_balancer_name               = "foobar-terraform-elb-%d"
-  listeners {
-    backend_port = 8000
-    backend_protocol = "HTTP"
-    load_balancer_port = 80
-    load_balancer_protocol = "HTTP"
-  }
+	subregion_names = ["%sa"]
+	load_balancer_name               = "foobar-terraform-elb-%d"
+	
+	secured_cookies                  = true
+
+	listeners {
+		backend_port = 8000
+		backend_protocol = "HTTP"
+		load_balancer_port = 80
+		load_balancer_protocol = "HTTP"
+	}
 
 	tags {
 		key = "name"
