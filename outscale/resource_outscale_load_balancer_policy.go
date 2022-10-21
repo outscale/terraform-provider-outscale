@@ -146,6 +146,14 @@ func resourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
 					},
 				},
 			},
+			"public_ip": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"secured_cookies": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
 			"net_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -338,6 +346,8 @@ func resourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, met
 			ssg["security_group_account_id"] = *lb.SourceSecurityGroup.SecurityGroupAccountId
 		}
 		d.Set("source_security_group", ssg)
+		d.Set("public_ip", lb.PublicIp)
+		d.Set("secured_cookies", lb.SecuredCookies)
 		d.Set("net_id", lb.NetId)
 	}
 
