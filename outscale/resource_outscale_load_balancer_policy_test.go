@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleAppCookieStickinessPolicy_basic(t *testing.T) {
+func TestAccOutscaleCookieStickinessPolicy_basic(t *testing.T) {
 	t.Parallel()
 	lbName := fmt.Sprintf("tf-test-lb-%s", acctest.RandString(5))
 	region := os.Getenv("OUTSCALE_REGION")
@@ -22,7 +22,7 @@ func TestAccOutscaleAppCookieStickinessPolicy_basic(t *testing.T) {
 		CheckDestroy: testAccCheckAppCookieStickinessPolicyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccAppCookieStickinessPolicyConfig(lbName, zone),
+				Config: testAccCookieStickinessPolicyConfig(lbName, zone),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAppCookieStickinessPolicy(
 						"outscale_load_balancer.lb",
@@ -31,7 +31,7 @@ func TestAccOutscaleAppCookieStickinessPolicy_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccAppCookieStickinessPolicyConfigUpdate(lbName, zone),
+				Config: testAccCookieStickinessPolicyConfigUpdate(lbName, zone),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAppCookieStickinessPolicy(
 						"outscale_load_balancer.lb",
@@ -72,29 +72,37 @@ func testAccCheckAppCookieStickinessPolicy(elbResource string, policyResource st
 	}
 }
 
-func testAccAppCookieStickinessPolicyConfig(rName string, zone string) string {
+func testAccCookieStickinessPolicyConfig(rName string, zone string) string {
 	return fmt.Sprintf(`
 resource "outscale_load_balancer" "lb" {
 	load_balancer_name = "%s"
 	subregion_names = ["%s"]
-  listeners {
-    backend_port = 8000
-    backend_protocol = "HTTP"
-    load_balancer_port = 80
-    load_balancer_protocol = "HTTP"
-  }
+	listeners {
+		backend_port = 8000
+		backend_protocol = "HTTP"
+		load_balancer_port = 80
+		load_balancer_protocol = "HTTP"
+	}
 }
 
-resource "outscale_load_balancer_policy" "foo" {
+resource "outscale_load_balancer_policy" "app-policy" {
 	policy_type = "app"
 	policy_name = "foo-policy"
 	load_balancer_name = "${outscale_load_balancer.lb.id}"
 	cookie_name = "MyAppCookie"
-}`, rName, zone)
+}
+
+resource "outscale_load_balancer_policy" "lb-policy" {
+	policy_type = "load_balancer"
+	policy_name = "lb-policy"
+	load_balancer_name = "${outscale_load_balancer.lb.id}"
+	cookie_expiration_period = 180
+}
+`, rName, zone)
 }
 
 // Change the cookie_name to "MyOtherAppCookie".
-func testAccAppCookieStickinessPolicyConfigUpdate(rName string, zone string) string {
+func testAccCookieStickinessPolicyConfigUpdate(rName string, zone string) string {
 	return fmt.Sprintf(`
 resource "outscale_load_balancer" "lb" {
 	load_balancer_name = "%s"
@@ -107,10 +115,17 @@ resource "outscale_load_balancer" "lb" {
   }
 }
 
-resource "outscale_load_balancer_policy" "foo" {
+resource "outscale_load_balancer_policy" "app-policy" {
 	policy_type = "app"
 	policy_name = "foo-policy"
 	load_balancer_name = "${outscale_load_balancer.lb.id}"
 	cookie_name = "MyOtherAppCookie"
+}
+
+resource "outscale_load_balancer_policy" "lb-policy" {
+	policy_type = "load_balancer"
+	policy_name = "lb-policy"
+	load_balancer_name = "${outscale_load_balancer.lb.id}"
+	cookie_expiration_period = 100
 }`, rName, zone)
 }
