@@ -1,4 +1,4 @@
- resource "outscale_public_ip" "my_public_ip" {
+resource "outscale_public_ip" "my_public_ip" {
 }
 
 resource "outscale_public_ip_link" "my_public_ip_link" {
