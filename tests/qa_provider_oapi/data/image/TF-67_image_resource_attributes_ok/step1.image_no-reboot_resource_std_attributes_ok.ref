@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_image",
             "name": "outscale_image",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -19,15 +19,16 @@
                         "architecture": "x86_64",
                         "block_device_mappings": [
                             {
-                                "bsu": {
-                                    "delete_on_vm_deletion": "true",
-                                    "iops": "0",
-                                    "snapshot_id": "##id-1##",
-                                    "volume_size": "10",
-                                    "volume_type": "standard"
-                                },
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "iops": 0,
+                                        "snapshot_id": "##id-1##",
+                                        "volume_size": 10,
+                                        "volume_type": "standard"
+                                    }
+                                ],
                                 "device_name": "/dev/sda1",
-                                "no_device": "",
                                 "virtual_device_name": ""
                             }
                         ],
@@ -55,10 +56,12 @@
                         "source_image_id": null,
                         "source_region_name": null,
                         "state": "available",
-                        "state_comment": {
-                            "state_code": "",
-                            "state_message": ""
-                        },
+                        "state_comment": [
+                            {
+                                "state_code": "",
+                                "state_message": ""
+                            }
+                        ],
                         "tags": [
                             {
                                 "key": "Key",
@@ -84,7 +87,7 @@
             "mode": "managed",
             "type": "outscale_image",
             "name": "outscale_image_2",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -94,15 +97,16 @@
                         "architecture": "x86_64",
                         "block_device_mappings": [
                             {
-                                "bsu": {
-                                    "delete_on_vm_deletion": "true",
-                                    "iops": "0",
-                                    "snapshot_id": "##id-4##",
-                                    "volume_size": "10",
-                                    "volume_type": "standard"
-                                },
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "iops": 0,
+                                        "snapshot_id": "##id-4##",
+                                        "volume_size": 10,
+                                        "volume_type": "standard"
+                                    }
+                                ],
                                 "device_name": "/dev/sda1",
-                                "no_device": "",
                                 "virtual_device_name": ""
                             }
                         ],
@@ -130,10 +134,12 @@
                         "source_image_id": "##id-6##",
                         "source_region_name": "###region###",
                         "state": "available",
-                        "state_comment": {
-                            "state_code": "",
-                            "state_message": ""
-                        },
+                        "state_comment": [
+                            {
+                                "state_code": "",
+                                "state_message": ""
+                            }
+                        ],
                         "tags": [],
                         "timeouts": null,
                         "vm_id": null
@@ -147,7 +153,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "my-vm",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
