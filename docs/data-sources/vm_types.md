@@ -9,7 +9,8 @@ description: |-
 # outscale_vm_types Data Source
 
 Provides information about VM types.
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/Instance-Types.html).
+
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/Instance-Types.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#readvmtypes).
 
 ## Example Usage
@@ -45,7 +46,7 @@ data "outscale_vm_types" "vm_types02" {
 The following arguments are supported:
 
 * `filter` - (Optional) A combination of a filter name and one or more filter values. You can specify this argument for as many filter names as you need. The filter name can be any of the following:
-    * `bsu_optimized` - (Optional) Indicates whether the VM is optimized for BSU I/O.
+    * `bsu_optimized` - (Optional) This parameter is not available. It is present in our API for the sake of historical compatibility with AWS.
     * `memory_sizes` - (Optional) The amounts of memory, in gibibytes (GiB).
     * `vcore_counts` - (Optional) The numbers of vCores.
     * `vm_type_names` - (Optional) The names of the VM types. For more information, see [Instance Types](https://docs.outscale.com/en/userguide/Instance-Types.html).
@@ -57,7 +58,7 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `vm_types` - Information about one or more VM types.
-    * `bsu_optimized` - Indicates whether the VM is optimized for BSU I/O.
+    * `bsu_optimized` - This parameter is not available. It is present in our API for the sake of historical compatibility with AWS.
     * `max_private_ips` - The maximum number of private IPs per network interface card (NIC).
     * `memory_size` - The amount of memory, in gibibytes.
     * `vcore_count` - The number of vCores.

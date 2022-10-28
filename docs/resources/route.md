@@ -9,7 +9,8 @@ description: |-
 # outscale_route Resource
 
 Manages a route.
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Route-Tables.html).
+
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Route-Tables.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-route).
 
 ## Example Usage
@@ -49,7 +50,7 @@ resource "outscale_route" "route01" {
 The following arguments are supported:
 
 * `await_active_state` - (Optional) By default or if set to true, waits for the route to be in the `active` state to declare its successful creation.<br />If false, the created route is in the `active` state if available, or the `blackhole` state if not available.
-* `destination_ip_range` - (Required) The IP range used for the destination match, in CIDR notation (for example, 10.0.0.0/24).
+* `destination_ip_range` - (Required) The IP range used for the destination match, in CIDR notation (for example, `10.0.0.0/24`).
 * `gateway_id` - (Optional) The ID of an Internet service or virtual gateway attached to your Net.
 * `nat_service_id` - (Optional) The ID of a NAT service.
 * `net_peering_id` - (Optional) The ID of a Net peering connection.
@@ -73,7 +74,7 @@ The following attributes are exported:
 * `route_table_id` - The ID of the route table.
 * `routes` - One or more routes in the route table.
     * `creation_method` - The method used to create the route.
-    * `destination_ip_range` - The IP range used for the destination match, in CIDR notation (for example, 10.0.0.0/24).
+    * `destination_ip_range` - The IP range used for the destination match, in CIDR notation (for example, `10.0.0.0/24`).
     * `destination_service_id` - The ID of the OUTSCALE service.
     * `gateway_id` - The ID of the Internet service or virtual gateway attached to the Net.
     * `nat_service_id` - The ID of a NAT service attached to the Net.

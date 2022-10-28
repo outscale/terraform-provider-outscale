@@ -3,13 +3,14 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_nat_service"
 sidebar_current: "outscale-nat-service"
 description: |-
-  [Provides information about a specific NAT service.]
+  [Provides information about a NAT service.]
 ---
 
 # outscale_nat_service Data Source
 
-Provides information about a specific NAT service.
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-NAT-Gateways.html).
+Provides information about a NAT service.
+
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-NAT-Gateways.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-natservice).
 
 ## Example Usage

@@ -9,7 +9,8 @@ description: |-
 # outscale_virtual_gateway Resource
 
 Manages a virtual gateway.
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Virtual-Private-Gateways.html).
+
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Virtual-Private-Gateways.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-virtualgateway).
 
 ## Example Usage

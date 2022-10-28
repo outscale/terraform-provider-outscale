@@ -3,13 +3,14 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_net_access_point"
 sidebar_current: "outscale-net-access-point"
 description: |-
-  [Provides information about a specific Net access point.]
+  [Provides information about a Net access point.]
 ---
 
 # outscale_net_access_point Data Source
 
-Provides information about a specific Net access point.
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-VPC-Endpoints.html).
+Provides information about a Net access point.
+
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-VPC-Endpoints.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-netaccesspoint).
 
 ## Example Usage

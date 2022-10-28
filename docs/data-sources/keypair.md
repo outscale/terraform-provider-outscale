@@ -3,13 +3,14 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_keypair"
 sidebar_current: "outscale-keypair"
 description: |-
-  [Provides information about a specific keypair.]
+  [Provides information about a keypair.]
 ---
 
 # outscale_keypair Data Source
 
-Provides information about a specific keypair.
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Keypairs.html).
+Provides information about a keypair.
+
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Keypairs.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-keypair).
 
 ## Example Usage

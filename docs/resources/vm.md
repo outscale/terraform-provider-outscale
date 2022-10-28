@@ -9,7 +9,8 @@ description: |-
 # outscale_vm Resource
 
 Manages a virtual machine (VM).
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Instances.html).
+
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Instances.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-vm).
 
 ## Example Usage
@@ -91,7 +92,7 @@ resource "outscale_subnet" "subnet01" {
 	}
 }
 
-resource "outscale_security_group" "security_01" {
+resource "outscale_security_group" "security_group01" {
 	description          = "Terraform security group for VM"
 	security_group_name = "terraform-security-group-for-vm"
 	net_id               = outscale_net.net01.net_id
@@ -182,26 +183,26 @@ If you specify a snapshot ID, the volume size must be at least equal to the snap
 If you specify a snapshot ID but no volume size, the volume is created with a size similar to the snapshot one.
         * `volume_type` - (Optional) The type of the volume (`standard` \| `io1` \| `gp2`). If not specified in the request, a `standard` volume is created.<br />
 For more information about volume types, see [About Volumes > Volume Types and IOPS](https://docs.outscale.com/en/userguide/About-Volumes.html#_volume_types_and_iops).
-    * `device_name` - (Optional) The name of the device.
+    * `device_name` - (Optional) The device name for the volume. For a root device, you must use `/dev/sda1`. For other volumes, you must use `/dev/sdX` or `/dev/xvdX` (where `X` is a letter between `b` and `z`).
     * `no_device` - (Optional) Removes the device which is included in the block device mapping of the OMI.
-    * `virtual_device_name` - (Optional) The name of the virtual device (ephemeralN).
+    * `virtual_device_name` - (Optional) The name of the virtual device (`ephemeralN`).
 * `bsu_optimized` - (Optional) If true, the VM is created with optimized BSU I/O. Updating this parameter will trigger a stop/start of the VM.
 * `client_token` - (Optional) A unique identifier which enables you to manage the idempotency.
-* `deletion_protection` - (Optional) If true, you cannot terminate the VM using Cockpit, the CLI or the API. If false, you can.
+* `deletion_protection` - (Optional) If true, you cannot delete the VM unless you change this parameter back to false.
 * `get_admin_password` - (Optional) (Windows VM only) If true, waits for the administrator password of the VM to become available in order to retrieve the VM. The password is exported to the `admin_password` attribute.
 * `image_id` - (Required) The ID of the OMI used to create the VM. You can find the list of OMIs by calling the [ReadImages](https://docs.outscale.com/api#readimages) method.
 * `keypair_name` - (Optional) The name of the keypair.
-* `nics` - (Optional) One or more NICs. If you specify this parameter, you must define one NIC as the primary network interface of the VM with `0` as its device number.
-    * `delete_on_vm_deletion` - (Optional) By default or if set to true, the NIC is deleted when the VM is terminated. You can specify this parameter only for a new NIC. To modify this value for an existing NIC, see [UpdateNic](https://docs.outscale.com/api#updatenic).
+* `nics` - (Optional) One or more NICs. If you specify this parameter, you must not specify the `subnet_id` and `subregion_name` parameters. You also must define one NIC as the primary network interface of the VM with `0` as its device number.
+    * `delete_on_vm_deletion` - (Optional) If true, the NIC is deleted when the VM is terminated. You can specify this parameter only for a new NIC. To modify this value for an existing NIC, see [UpdateNic](https://docs.outscale.com/api#updatenic).
     * `description` - (Optional) The description of the NIC, if you are creating a NIC when creating the VM.
-    * `device_number` - (Optional) The index of the VM device for the NIC attachment (between 0 and 7, both included). This parameter is required if you create a NIC when creating the VM.
+    * `device_number` - (Optional) The index of the VM device for the NIC attachment (between `0` and `7`, both included). This parameter is required if you create a NIC when creating the VM.
     * `nic_id` - (Optional) The ID of the NIC, if you are attaching an existing NIC when creating a VM.
     * `private_ips` - (Optional) One or more private IPs to assign to the NIC, if you create a NIC when creating a VM. Only one private IP can be the primary private IP.
         * `is_primary` - (Optional) If true, the IP is the primary private IP of the NIC.
         * `private_ip` - (Optional) The private IP of the NIC.
     * `secondary_private_ip_count` - (Optional) The number of secondary private IPs, if you create a NIC when creating a VM. This parameter cannot be specified if you specified more than one private IP in the `private_ips` parameter.
-    * `security_group_ids` - (Optional) One or more IDs of security groups for the NIC, if you acreate a NIC when creating a VM.
-    * `subnet_id` - (Optional) The ID of the Subnet for the NIC, if you create a NIC when creating a VM.
+    * `security_group_ids` - (Optional) One or more IDs of security groups for the NIC, if you create a NIC when creating a VM.
+    * `subnet_id` - (Optional) The ID of the Subnet for the NIC, if you create a NIC when creating a VM. This parameter is required if you create a NIC when creating the VM.
 * `performance` - (Optional) The performance of the VM (`medium` | `high` | `highest`). Updating this parameter will trigger a stop/start of the VM.
 * `placement_subregion_name` - (Optional) The name of the Subregion where the VM is placed.
 * `placement_tenancy` - (Optional) The tenancy of the VM (`default` | `dedicated`).
@@ -209,7 +210,7 @@ For more information about volume types, see [About Volumes > Volume Types and I
 * `security_group_ids` - (Optional) One or more IDs of security group for the VMs.
 * `security_group_names` - (Optional) One or more names of security groups for the VMs.
 * `state` - The state of the VM (`running` | `stopped`). If set to `stopped`, the VM is stopped regardless of the value of the `vm_initiated_shutdown_behavior` argument.
-* `subnet_id` - (Optional) The ID of the Subnet in which you want to create the VM.
+* `subnet_id` - (Optional) The ID of the Subnet in which you want to create the VM. If you specify this parameter, you must not specify the `nics` parameter.
 * `tags` - (Optional) A tag to add to this resource. You can specify this argument several times.
     * `key` - (Required) The key of the tag, with a minimum of 1 character.
     * `value` - (Required) The value of the tag, between 0 and 255 characters.
@@ -230,14 +231,14 @@ The following attributes are exported:
         * `state` - The state of the volume.
         * `volume_id` - The ID of the volume.
     * `device_name` - The name of the device.
-* `bsu_optimized` - If true, the VM is optimized for BSU I/O.
+* `bsu_optimized` - This parameter is not available. It is present in our API for the sake of historical compatibility with AWS.
 * `client_token` - The idempotency token provided when launching the VM.
-* `deletion_protection` - If true, you cannot terminate the VM using Cockpit, the CLI or the API. If false, you can.
+* `deletion_protection` - If true, you cannot delete the VM unless you change this parameter back to false.
 * `hypervisor` - The hypervisor type of the VMs (`ovm` \| `xen`).
 * `image_id` - The ID of the OMI used to create the VM.
 * `is_source_dest_checked` - (Net only) If true, the source/destination check is enabled. If false, it is disabled. This value must be false for a NAT VM to perform network address translation (NAT) in a Net.
 * `keypair_name` - The name of the keypair used when launching the VM.
-* `launch_number` - The number for the VM when launching a group of several VMs (for example, 0, 1, 2, and so on).
+* `launch_number` - The number for the VM when launching a group of several VMs (for example, `0`, `1`, `2`, and so on).
 * `net_id` - The ID of the Net in which the VM is running.
 * `nics` - (Net only) The network interface cards (NICs) the VMs are attached to.
     * `account_id` - The account ID of the owner of the NIC.
@@ -245,7 +246,7 @@ The following attributes are exported:
     * `is_source_dest_checked` - (Net only) If true, the source/destination check is enabled. If false, it is disabled. This value must be false for a NAT VM to perform network address translation (NAT) in a Net.
     * `link_nic` - Information about the network interface card (NIC).
         * `delete_on_vm_deletion` - If true, the NIC is deleted when the VM is terminated.
-        * `device_number` - The device index for the NIC attachment (between 1 and 7, both included).
+        * `device_number` - The device index for the NIC attachment (between `1` and `7`, both included).
         * `link_nic_id` - The ID of the NIC to attach.
         * `state` - The state of the attachment (`attaching` \| `attached` \| `detaching` \| `detached`).
     * `link_public_ip` - Information about the public IP associated with the NIC.
@@ -279,7 +280,7 @@ The following attributes are exported:
 * `public_dns_name` - The name of the public DNS.
 * `public_ip` - The public IP of the VM.
 * `reservation_id` - The reservation ID of the VM.
-* `root_device_name` - The name of the root device for the VM (for example, /dev/vda1).
+* `root_device_name` - The name of the root device for the VM (for example, `/dev/vda1`).
 * `root_device_type` - The type of root device used by the VM (always `bsu`).
 * `security_groups` - One or more security groups associated with the VM.
     * `security_group_id` - The ID of the security group.
@@ -292,7 +293,7 @@ The following attributes are exported:
     * `value` - The value of the tag, between 0 and 255 characters.
 * `user_data` - The Base64-encoded MIME user data.
 * `vm_id` - The ID of the VM.
-* `vm_initiated_shutdown_behavior` - The VM behavior when you stop it. By default or if set to `stop`, the VM stops. If set to `restart`, the VM stops then automatically restarts. If set to `terminate`, the VM stops and is deleted.
+* `vm_initiated_shutdown_behavior` - The VM behavior when you stop it. If set to `stop`, the VM stops. If set to `restart`, the VM stops then automatically restarts. If set to `terminate`, the VM stops and is deleted.
 * `vm_type` - The type of VM. For more information, see [Instance Types](https://docs.outscale.com/en/userguide/Instance-Types.html).
 
 ## Import
