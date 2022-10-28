@@ -148,7 +148,7 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "available_ips_count": 250,
+                        "available_ips_count": 251,
                         "id": "##id-6##",
                         "ip_range": "10.0.0.0/24",
                         "map_public_ip_on_launch": false,

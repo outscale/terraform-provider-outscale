@@ -17,36 +17,9 @@
                         "api_access_rules": [
                             {
                                 "api_access_rule_id": "##id-0##",
-                                "ca_ids": [],
-                                "cns": [],
-                                "description": "Allows all IPv4 domain",
-                                "ip_ranges": "########"
-                            },
-                            {
-                                "api_access_rule_id": "##id-1##",
-                                "ca_ids": [],
-                                "cns": [],
-                                "description": "Allows Outscale Cockpit of this region",
-                                "ip_ranges": "########"
-                            },
-                            {
-                                "api_access_rule_id": "##id-2##",
                                 "ca_ids": [
-                                    "##id-3##",
-                                    "##id-4##"
-                                ],
-                                "cns": [
-                                    "outscale-1",
-                                    "test-TF202"
-                                ],
-                                "description": "AAR-TF-202-1",
-                                "ip_ranges": "########"
-                            },
-                            {
-                                "api_access_rule_id": "##id-5##",
-                                "ca_ids": [
-                                    "##id-3##",
-                                    "##id-4##"
+                                    "##id-1##",
+                                    "##id-2##"
                                 ],
                                 "cns": [
                                     "outscale-1",
@@ -55,10 +28,23 @@
                                 ],
                                 "description": "API Access rules-TF-202-1",
                                 "ip_ranges": "########"
+                            },
+                            {
+                                "api_access_rule_id": "##id-3##",
+                                "ca_ids": [
+                                    "##id-1##",
+                                    "##id-2##"
+                                ],
+                                "cns": [
+                                    "outscale-1",
+                                    "test-TF202"
+                                ],
+                                "description": "AAR-TF-202-1",
+                                "ip_ranges": "########"
                             }
                         ],
                         "filter": "########",
-                        "id": "##id-6##",
+                        "id": "##id-4##",
                         "request_id": "########"
                     },
                     "sensitive_attributes": []
@@ -76,23 +62,10 @@
                     "attributes": {
                         "api_access_rules": [
                             {
-                                "api_access_rule_id": "##id-2##",
+                                "api_access_rule_id": "##id-0##",
                                 "ca_ids": [
-                                    "##id-3##",
-                                    "##id-4##"
-                                ],
-                                "cns": [
-                                    "outscale-1",
-                                    "test-TF202"
-                                ],
-                                "description": "AAR-TF-202-1",
-                                "ip_ranges": "########"
-                            },
-                            {
-                                "api_access_rule_id": "##id-5##",
-                                "ca_ids": [
-                                    "##id-3##",
-                                    "##id-4##"
+                                    "##id-1##",
+                                    "##id-2##"
                                 ],
                                 "cns": [
                                     "outscale-1",
@@ -101,10 +74,23 @@
                                 ],
                                 "description": "API Access rules-TF-202-1",
                                 "ip_ranges": "########"
+                            },
+                            {
+                                "api_access_rule_id": "##id-3##",
+                                "ca_ids": [
+                                    "##id-1##",
+                                    "##id-2##"
+                                ],
+                                "cns": [
+                                    "outscale-1",
+                                    "test-TF202"
+                                ],
+                                "description": "AAR-TF-202-1",
+                                "ip_ranges": "########"
                             }
                         ],
                         "filter": "########",
-                        "id": "##id-7##",
+                        "id": "##id-5##",
                         "request_id": "########"
                     },
                     "sensitive_attributes": []
@@ -122,23 +108,10 @@
                     "attributes": {
                         "api_access_rules": [
                             {
-                                "api_access_rule_id": "##id-2##",
+                                "api_access_rule_id": "##id-0##",
                                 "ca_ids": [
-                                    "##id-3##",
-                                    "##id-4##"
-                                ],
-                                "cns": [
-                                    "outscale-1",
-                                    "test-TF202"
-                                ],
-                                "description": "AAR-TF-202-1",
-                                "ip_ranges": "########"
-                            },
-                            {
-                                "api_access_rule_id": "##id-5##",
-                                "ca_ids": [
-                                    "##id-3##",
-                                    "##id-4##"
+                                    "##id-1##",
+                                    "##id-2##"
                                 ],
                                 "cns": [
                                     "outscale-1",
@@ -147,10 +120,23 @@
                                 ],
                                 "description": "API Access rules-TF-202-1",
                                 "ip_ranges": "########"
+                            },
+                            {
+                                "api_access_rule_id": "##id-3##",
+                                "ca_ids": [
+                                    "##id-1##",
+                                    "##id-2##"
+                                ],
+                                "cns": [
+                                    "outscale-1",
+                                    "test-TF202"
+                                ],
+                                "description": "AAR-TF-202-1",
+                                "ip_ranges": "########"
                             }
                         ],
                         "filter": "########",
-                        "id": "##id-8##",
+                        "id": "##id-6##",
                         "request_id": "########"
                     },
                     "sensitive_attributes": []
@@ -168,23 +154,10 @@
                     "attributes": {
                         "api_access_rules": [
                             {
-                                "api_access_rule_id": "##id-2##",
+                                "api_access_rule_id": "##id-0##",
                                 "ca_ids": [
-                                    "##id-3##",
-                                    "##id-4##"
-                                ],
-                                "cns": [
-                                    "outscale-1",
-                                    "test-TF202"
-                                ],
-                                "description": "AAR-TF-202-1",
-                                "ip_ranges": "########"
-                            },
-                            {
-                                "api_access_rule_id": "##id-5##",
-                                "ca_ids": [
-                                    "##id-3##",
-                                    "##id-4##"
+                                    "##id-1##",
+                                    "##id-2##"
                                 ],
                                 "cns": [
                                     "outscale-1",
@@ -193,10 +166,23 @@
                                 ],
                                 "description": "API Access rules-TF-202-1",
                                 "ip_ranges": "########"
+                            },
+                            {
+                                "api_access_rule_id": "##id-3##",
+                                "ca_ids": [
+                                    "##id-1##",
+                                    "##id-2##"
+                                ],
+                                "cns": [
+                                    "outscale-1",
+                                    "test-TF202"
+                                ],
+                                "description": "AAR-TF-202-1",
+                                "ip_ranges": "########"
                             }
                         ],
                         "filter": "########",
-                        "id": "##id-9##",
+                        "id": "##id-7##",
                         "request_id": "########"
                     },
                     "sensitive_attributes": []
@@ -214,10 +200,10 @@
                     "attributes": {
                         "api_access_rules": [
                             {
-                                "api_access_rule_id": "##id-2##",
+                                "api_access_rule_id": "##id-3##",
                                 "ca_ids": [
-                                    "##id-3##",
-                                    "##id-4##"
+                                    "##id-1##",
+                                    "##id-2##"
                                 ],
                                 "cns": [
                                     "outscale-1",
@@ -228,7 +214,7 @@
                             }
                         ],
                         "filter": "########",
-                        "id": "##id-10##",
+                        "id": "##id-8##",
                         "request_id": "########"
                     },
                     "sensitive_attributes": []
@@ -244,10 +230,10 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "api_access_rule_id": "##id-5##",
+                        "api_access_rule_id": "##id-0##",
                         "ca_ids": [
-                            "##id-3##",
-                            "##id-4##"
+                            "##id-1##",
+                            "##id-2##"
                         ],
                         "cns": [
                             "outscale-1",
@@ -255,7 +241,7 @@
                             "test-TF202-2"
                         ],
                         "description": "API Access rules-TF-202-1",
-                        "id": "##id-5##",
+                        "id": "##id-0##",
                         "ip_ranges": "########",
                         "request_id": "########"
                     },
@@ -277,17 +263,17 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "api_access_rule_id": "##id-2##",
+                        "api_access_rule_id": "##id-3##",
                         "ca_ids": [
-                            "##id-3##",
-                            "##id-4##"
+                            "##id-1##",
+                            "##id-2##"
                         ],
                         "cns": [
                             "outscale-1",
                             "test-TF202"
                         ],
                         "description": "AAR-TF-202-1",
-                        "id": "##id-2##",
+                        "id": "##id-3##",
                         "ip_ranges": "########",
                         "request_id": "########"
                     },
@@ -310,10 +296,10 @@
                     "schema_version": 0,
                     "attributes": {
                         "ca_fingerprint": "########",
-                        "ca_id": "##id-3##",
+                        "ca_id": "##id-2##",
                         "ca_pem": "########",
                         "description": "",
-                        "id": "##id-3##",
+                        "id": "##id-2##",
                         "request_id": "########"
                     },
                     "sensitive_attributes": [],
@@ -331,10 +317,10 @@
                     "schema_version": 0,
                     "attributes": {
                         "ca_fingerprint": "########",
-                        "ca_id": "##id-4##",
+                        "ca_id": "##id-1##",
                         "ca_pem": "########",
                         "description": "",
-                        "id": "##id-4##",
+                        "id": "##id-1##",
                         "request_id": "########"
                     },
                     "sensitive_attributes": [],

@@ -15,58 +15,9 @@
                     "schema_version": 0,
                     "attributes": {
                         "account_id": "##id-0##",
-                        "description": "default security group",
-                        "filter": "########",
-                        "id": "##id-1##",
-                        "inbound_rules": [
-                            {
-                                "from_port_range": -1,
-                                "ip_protocol": "-1",
-                                "ip_ranges": "########",
-                                "prefix_list_ids": [],
-                                "security_groups_members": [
-                                    {
-                                        "account_id": "##id-0##",
-                                        "security_group_id": "##id-1##",
-                                        "security_group_name": "default"
-                                    }
-                                ],
-                                "to_port_range": -1
-                            }
-                        ],
-                        "net_id": "##id-2##",
-                        "outbound_rules": [
-                            {
-                                "from_port_range": -1,
-                                "ip_protocol": "-1",
-                                "ip_ranges": "########",
-                                "prefix_list_ids": [],
-                                "security_groups_members": [],
-                                "to_port_range": -1
-                            }
-                        ],
-                        "request_id": "########",
-                        "security_group_id": "##id-1##",
-                        "security_group_name": "default",
-                        "tags": []
-                    },
-                    "sensitive_attributes": []
-                }
-            ]
-        },
-        {
-            "mode": "data",
-            "type": "outscale_security_group",
-            "name": "filters-tags",
-            "provider": "provider[\"local/test/outscale\"]",
-            "instances": [
-                {
-                    "schema_version": 0,
-                    "attributes": {
-                        "account_id": "##id-0##",
                         "description": "test group-1",
                         "filter": "########",
-                        "id": "##id-3##",
+                        "id": "##id-1##",
                         "inbound_rules": [
                             {
                                 "from_port_range": 80,
@@ -89,7 +40,59 @@
                             }
                         ],
                         "request_id": "########",
-                        "security_group_id": "##id-3##",
+                        "security_group_id": "##id-1##",
+                        "security_group_name": "terraform-TF125",
+                        "tags": [
+                            {
+                                "key": "Key:",
+                                "value": "value-tags"
+                            },
+                            {
+                                "key": "Name",
+                                "value": ":outscale_net_resource2"
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_security_group",
+            "name": "filters-tags",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-0##",
+                        "description": "test group-1",
+                        "filter": "########",
+                        "id": "##id-1##",
+                        "inbound_rules": [
+                            {
+                                "from_port_range": 80,
+                                "ip_protocol": "tcp",
+                                "ip_ranges": "########",
+                                "prefix_list_ids": [],
+                                "security_groups_members": [],
+                                "to_port_range": 80
+                            }
+                        ],
+                        "net_id": "##id-2##",
+                        "outbound_rules": [
+                            {
+                                "from_port_range": -1,
+                                "ip_protocol": "-1",
+                                "ip_ranges": "########",
+                                "prefix_list_ids": [],
+                                "security_groups_members": [],
+                                "to_port_range": -1
+                            }
+                        ],
+                        "request_id": "########",
+                        "security_group_id": "##id-1##",
                         "security_group_name": "terraform-TF125",
                         "tags": [
                             {
@@ -118,7 +121,7 @@
                         "account_id": "##id-0##",
                         "description": "test group-1",
                         "filter": "########",
-                        "id": "##id-3##",
+                        "id": "##id-1##",
                         "inbound_rules": [
                             {
                                 "from_port_range": 80,
@@ -141,7 +144,7 @@
                             }
                         ],
                         "request_id": "########",
-                        "security_group_id": "##id-3##",
+                        "security_group_id": "##id-1##",
                         "security_group_name": "terraform-TF125",
                         "tags": [
                             {
@@ -170,7 +173,7 @@
                         "account_id": "##id-0##",
                         "description": "test group-1",
                         "filter": "########",
-                        "id": "##id-3##",
+                        "id": "##id-1##",
                         "inbound_rules": [
                             {
                                 "from_port_range": 80,
@@ -193,7 +196,7 @@
                             }
                         ],
                         "request_id": "########",
-                        "security_group_id": "##id-3##",
+                        "security_group_id": "##id-1##",
                         "security_group_name": "terraform-TF125",
                         "tags": [
                             {
@@ -219,7 +222,7 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "dhcp_options_set_id": "##id-4##",
+                        "dhcp_options_set_id": "##id-3##",
                         "id": "##id-2##",
                         "ip_range": "10.0.0.0/16",
                         "net_id": "##id-2##",
@@ -244,7 +247,7 @@
                     "attributes": {
                         "account_id": "##id-0##",
                         "description": "test group-1",
-                        "id": "##id-3##",
+                        "id": "##id-1##",
                         "inbound_rules": [],
                         "net_id": "##id-2##",
                         "outbound_rules": [
@@ -258,7 +261,7 @@
                         ],
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
-                        "security_group_id": "##id-3##",
+                        "security_group_id": "##id-1##",
                         "security_group_name": "terraform-TF125",
                         "tag": null,
                         "tags": [
@@ -291,7 +294,7 @@
                     "attributes": {
                         "account_id": "##id-0##",
                         "description": "test group-2",
-                        "id": "##id-5##",
+                        "id": "##id-4##",
                         "inbound_rules": [],
                         "net_id": "##id-2##",
                         "outbound_rules": [
@@ -305,7 +308,7 @@
                         ],
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
-                        "security_group_id": "##id-5##",
+                        "security_group_id": "##id-4##",
                         "security_group_name": "terraform-TF125-2",
                         "tag": null,
                         "tags": [
@@ -334,7 +337,7 @@
                     "attributes": {
                         "flow": "Inbound",
                         "from_port_range": 80,
-                        "id": "##id-3##",
+                        "id": "##id-1##",
                         "inbound_rules": [
                             {
                                 "from_port_range": 80,
@@ -361,7 +364,7 @@
                         "request_id": "########",
                         "rules": [],
                         "security_group_account_id_to_link": null,
-                        "security_group_id": "##id-3##",
+                        "security_group_id": "##id-1##",
                         "security_group_name": "terraform-TF125",
                         "security_group_name_to_link": null,
                         "to_port_range": 80

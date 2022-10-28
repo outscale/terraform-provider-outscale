@@ -55,6 +55,10 @@ data "outscale_vpn_connection" "data_vpn_connection_4" {
        name   = "states"
        values = ["available"]
     }
+   filter {
+       name   = "vpn_connection_ids"
+       values = [outscale_vpn_connection.vpn_connection_1.vpn_connection_id]
+    }
 depends_on =[outscale_vpn_connection.vpn_connection_1]
 }
 

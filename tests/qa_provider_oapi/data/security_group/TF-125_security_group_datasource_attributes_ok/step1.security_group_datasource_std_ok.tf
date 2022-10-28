@@ -59,10 +59,6 @@ depends_on=[outscale_security_group_rule.outscale_security_group_rule]
 
 data "outscale_security_group" "filters-inbound" {
    filter {
-        name    = "inbound_rule_account_ids"
-        values  = [outscale_security_group.outscale_security_group.account_id]
-   }
-   filter {
         name    = "inbound_rule_from_port_ranges"
         values  = [80]
    }
