@@ -9,7 +9,8 @@ description: |-
 # outscale_subregions Data Source
 
 Provides information about subregions.
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Regions-Endpoints-and-Availability-Zones.html).
+
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Regions-Endpoints-and-Availability-Zones.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#readsubregions).
 
 ## Example Usage

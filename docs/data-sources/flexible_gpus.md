@@ -9,7 +9,8 @@ description: |-
 # outscale_flexible_gpus Data Source
 
 Provides information about flexible GPUs.
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Flexible-GPUs.html).
+
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Flexible-GPUs.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-flexiblegpu).
 
 ## Example Usage

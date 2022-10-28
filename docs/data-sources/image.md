@@ -3,13 +3,14 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_image"
 sidebar_current: "outscale-image"
 description: |-
-  [Provides information about a specific image.]
+  [Provides information about an image.]
 ---
 
 # outscale_image Data Source
 
-Provides information about a specific image.
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-OMIs.html).
+Provides information about an image.
+
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-OMIs.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-image).
 
 ## Example Usage
@@ -44,7 +45,7 @@ The following arguments are supported:
     * `permissions_to_launch_account_ids` - (Optional) The account IDs of the users who have launch permissions for the OMIs.
     * `permissions_to_launch_global_permission` - (Optional) If true, lists all public OMIs. If false, lists all private OMIs.
     * `product_codes` - (Optional) The product code associated with the OMI (`0001` Linux/Unix \| `0002` Windows \| `0004` Linux/Oracle \| `0005` Windows 10).
-    * `root_device_names` - (Optional) The device names of the root devices (for example, `/dev/sda1`).
+    * `root_device_names` - (Optional) The name of the root device. This value must be /dev/sda1.
     * `root_device_types` - (Optional) The types of root device used by the OMIs (always `bsu`).
     * `states` - (Optional) The states of the OMIs (`pending` \| `available` \| `failed`).
     * `tag_keys` - (Optional) The keys of the tags associated with the OMIs.
@@ -69,8 +70,8 @@ If you specify a snapshot ID, the volume size must be at least equal to the snap
 If you specify a snapshot ID but no volume size, the volume is created with a size similar to the snapshot one.
         * `volume_type` - The type of the volume (`standard` \| `io1` \| `gp2`). If not specified in the request, a `standard` volume is created.<br />
 For more information about volume types, see [About Volumes > Volume Types and IOPS](https://docs.outscale.com/en/userguide/About-Volumes.html#_volume_types_and_iops).
-    * `device_name` - The name of the device.
-    * `virtual_device_name` - The name of the virtual device (ephemeralN).
+    * `device_name` - The device name for the volume. For a root device, you must use `/dev/sda1`. For other volumes, you must use `/dev/sdX` or `/dev/xvdX` (where `X` is a letter between `b` and `z`).
+    * `virtual_device_name` - The name of the virtual device (`ephemeralN`).
 * `creation_date` - The date and time at which the OMI was created.
 * `description` - The description of the OMI.
 * `file_location` - The location of the bucket where the OMI files are stored.

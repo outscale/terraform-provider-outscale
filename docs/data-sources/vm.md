@@ -3,13 +3,14 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_vm"
 sidebar_current: "outscale-vm"
 description: |-
-  [Provides information about a specific virtual machine (VM).]
+  [Provides information about a virtual machine (VM).]
 ---
 
 # outscale_vm Data Source
 
-Provides information about a specific virtual machine (VM).
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Instances.html).
+Provides information about a virtual machine (VM).
+
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Instances.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-vm).
 
 ## Example Usage
@@ -45,14 +46,14 @@ The following attributes are exported:
         * `state` - The state of the volume.
         * `volume_id` - The ID of the volume.
     * `device_name` - The name of the device.
-* `bsu_optimized` - If true, the VM is optimized for BSU I/O.
+* `bsu_optimized` - This parameter is not available. It is present in our API for the sake of historical compatibility with AWS.
 * `client_token` - The idempotency token provided when launching the VM.
-* `deletion_protection` - If true, you cannot terminate the VM using Cockpit, the CLI or the API. If false, you can.
+* `deletion_protection` - If true, you cannot delete the VM unless you change this parameter back to false.
 * `hypervisor` - The hypervisor type of the VMs (`ovm` \| `xen`).
 * `image_id` - The ID of the OMI used to create the VM.
 * `is_source_dest_checked` - (Net only) If true, the source/destination check is enabled. If false, it is disabled. This value must be false for a NAT VM to perform network address translation (NAT) in a Net.
 * `keypair_name` - The name of the keypair used when launching the VM.
-* `launch_number` - The number for the VM when launching a group of several VMs (for example, 0, 1, 2, and so on).
+* `launch_number` - The number for the VM when launching a group of several VMs (for example, `0`, `1`, `2`, and so on).
 * `net_id` - The ID of the Net in which the VM is running.
 * `nics` - (Net only) The network interface cards (NICs) the VMs are attached to.
     * `account_id` - The account ID of the owner of the NIC.
@@ -60,7 +61,7 @@ The following attributes are exported:
     * `is_source_dest_checked` - (Net only) If true, the source/destination check is enabled. If false, it is disabled. This value must be false for a NAT VM to perform network address translation (NAT) in a Net.
     * `link_nic` - Information about the network interface card (NIC).
         * `delete_on_vm_deletion` - If true, the NIC is deleted when the VM is terminated.
-        * `device_number` - The device index for the NIC attachment (between 1 and 7, both included).
+        * `device_number` - The device index for the NIC attachment (between `1` and `7`, both included).
         * `link_nic_id` - The ID of the NIC to attach.
         * `state` - The state of the attachment (`attaching` \| `attached` \| `detaching` \| `detached`).
     * `link_public_ip` - Information about the public IP associated with the NIC.
@@ -87,7 +88,7 @@ The following attributes are exported:
 * `os_family` - Indicates the operating system (OS) of the VM.
 * `performance` - The performance of the VM (`medium` \| `high` \|  `highest`).
 * `placement` - Information about the placement of the VM.
-    * `subregion_name` - The name of the Subregion.
+    * `subregion_name` - The name of the Subregion. If you specify this parameter, you must not specify the `nics` parameter.
     * `tenancy` - The tenancy of the VM (`default` \| `dedicated`).
 * `private_dns_name` - The name of the private DNS.
 * `private_ip` - The primary private IP of the VM.
@@ -95,7 +96,7 @@ The following attributes are exported:
 * `public_dns_name` - The name of the public DNS.
 * `public_ip` - The public IP of the VM.
 * `reservation_id` - The reservation ID of the VM.
-* `root_device_name` - The name of the root device for the VM (for example, /dev/vda1).
+* `root_device_name` - The name of the root device for the VM (for example, `/dev/vda1`).
 * `root_device_type` - The type of root device used by the VM (always `bsu`).
 * `security_groups` - One or more security groups associated with the VM.
     * `security_group_id` - The ID of the security group.
@@ -108,5 +109,5 @@ The following attributes are exported:
     * `value` - The value of the tag, between 0 and 255 characters.
 * `user_data` - The Base64-encoded MIME user data.
 * `vm_id` - The ID of the VM.
-* `vm_initiated_shutdown_behavior` - The VM behavior when you stop it. By default or if set to `stop`, the VM stops. If set to `restart`, the VM stops then automatically restarts. If set to `terminate`, the VM stops and is deleted.
+* `vm_initiated_shutdown_behavior` - The VM behavior when you stop it. If set to `stop`, the VM stops. If set to `restart`, the VM stops then automatically restarts. If set to `terminate`, the VM stops and is deleted.
 * `vm_type` - The type of VM. For more information, see [Instance Types](https://docs.outscale.com/en/userguide/Instance-Types.html).

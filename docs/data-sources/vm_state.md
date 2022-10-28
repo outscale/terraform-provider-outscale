@@ -3,13 +3,14 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_vm_state"
 sidebar_current: "outscale-vm-state"
 description: |-
-  [Provides information about a specific VM state.]
+  [Provides information about a VM state.]
 ---
 
 # outscale_vm_state Data Source
 
-Provides information about a specific VM state.
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Instance-Lifecycle.html).
+Provides information about a VM state.
+
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Instance-Lifecycle.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#readvmsstate).
 
 ## Example Usage

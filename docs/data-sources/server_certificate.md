@@ -3,13 +3,14 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_server_certificate"
 sidebar_current: "outscale-server-certificate"
 description: |-
-  [Provides information about a specific server certificate.]
+  [Provides information about a server certificate.]
 ---
 
 # outscale_server_certificate Data Source
 
-Provides information about a specific server certificate.
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Server-Certificates-in-EIM.html).
+Provides information about a server certificate.
+
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Server-Certificates-in-EIM.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-servercertificate).
 
 ## Example Usage
@@ -37,5 +38,6 @@ The following attributes are exported:
 * `expiration_date` - The date at which the server certificate expires.
 * `id` - The ID of the server certificate.
 * `name` - The name of the server certificate.
+* `orn` - The Outscale Resource Name (ORN) of the server certificate. For more information, see [Resource Identifiers > Outscale Resource Names (ORNs)](https://docs.outscale.com/en/userguide/Resource-Identifiers.html#_outscale_resource_names_orns).
 * `path` - The path to the server certificate.
 * `upload_date` - The date at which the server certificate has been uploaded.

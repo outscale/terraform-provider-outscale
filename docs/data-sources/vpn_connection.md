@@ -3,13 +3,14 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_vpn_connection"
 sidebar_current: "outscale-vpn-connection"
 description: |-
-  [Provides information about a specific VPN connection.]
+  [Provides information about a VPN connection.]
 ---
 
 # outscale_vpn_connection Data Source
 
-Provides information about a specific VPN connection.
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-VPN-Connections.html).
+Provides information about a VPN connection.
+
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-VPN-Connections.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-vpnconnection).
 
 ## Example Usage
@@ -48,7 +49,7 @@ The following attributes are exported:
 * `client_gateway_id` - The ID of the client gateway used on the client end of the connection.
 * `connection_type` - The type of VPN connection (always `ipsec.1`).
 * `routes` - Information about one or more static routes associated with the VPN connection, if any.
-    * `destination_ip_range` - The IP range used for the destination match, in CIDR notation (for example, 10.0.0.0/24).
+    * `destination_ip_range` - The IP range used for the destination match, in CIDR notation (for example, `10.0.0.0/24`).
     * `route_type` - The type of route (always `static`).
     * `state` - The current state of the static route (`pending` \| `available` \| `deleting` \| `deleted`).
 * `state` - The state of the VPN connection (`pending` \| `available` \| `deleting` \| `deleted`).
