@@ -176,7 +176,11 @@ func Provider() terraform.ResourceProvider {
 			"outscale_api_access_rule":              dataSourceOutscaleOAPIApiAccessRule(),
 			"outscale_api_access_rules":             dataSourceOutscaleOAPIApiAccessRules(),
 			"outscale_api_access_policy":            dataSourceOutscaleOAPIApiAccessPolicy(),
+<<<<<<< HEAD
 			"outscale_public_catalog":               dataSourceOutscaleOAPIPublicCatalog(),
+=======
+			"outscale_account":                      dataSourceAccount(),
+>>>>>>> f4d3bb8a (Add accountdatasources and test)
 			"outscale_accounts":                     dataSourceAccounts(),
 		},
 
