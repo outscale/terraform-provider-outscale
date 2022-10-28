@@ -2,6 +2,7 @@ resource "outscale_dhcp_option" "outscale_dhcp_option" {
 domain_name ="test234.fr"
 domain_name_servers= ["192.168.12.12","192.168.12.132"]
 ntp_servers = ["192.0.0.2","192.168.12.242"]
+log_servers = ["192.0.0.3","192.0.0.4"]
 tags {
    key ="Name-1"
    value = "test-MZI-3"

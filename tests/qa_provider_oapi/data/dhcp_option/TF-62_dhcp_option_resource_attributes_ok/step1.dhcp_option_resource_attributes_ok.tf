@@ -2,6 +2,7 @@ resource "outscale_dhcp_option" "dhcp_option_1" {
 domain_name ="test234.fr"
 domain_name_servers= ["192.168.12.12","192.168.12.132"]
 ntp_servers = ["192.0.0.2","192.168.12.242"]
+log_servers = ["192.0.0.3","192.0.0.4"]
 tags {
    key ="name-1"
    value = "set-1"
@@ -16,7 +17,6 @@ tags {
  }
 }
 
-
 resource "outscale_dhcp_option" "dhcp_option_3" {
 domain_name_servers= ["192.168.12.32","192.168.12.33"]
 tags {
@@ -30,5 +30,13 @@ ntp_servers = ["192.0.0.25","192.168.12.24"]
 tags {
    key ="name-4"
    value = "set-4"
+ }
+}
+
+resource "outscale_dhcp_option" "dhcp_option_5" {
+log_servers = ["192.0.0.22","192.168.12.23"]
+tags {
+   key ="name-5"
+   value = "set-5"
  }
 }

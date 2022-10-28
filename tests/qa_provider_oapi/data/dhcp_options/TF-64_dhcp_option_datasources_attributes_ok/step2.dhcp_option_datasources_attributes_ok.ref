@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_dhcp_options",
             "name": "outscale_dhcp_options",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -22,6 +22,10 @@
                                 "domain_name_servers": [
                                     "192.168.12.12",
                                     "192.168.12.132"
+                                ],
+                                "log_servers": [
+                                    "192.0.0.3",
+                                    "192.0.0.4"
                                 ],
                                 "ntp_servers": [
                                     "192.0.0.2",
@@ -52,7 +56,7 @@
             "mode": "data",
             "type": "outscale_dhcp_options",
             "name": "outscale_dhcp_options_2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -60,11 +64,31 @@
                         "dhcp_options": [
                             {
                                 "default": false,
+                                "dhcp_options_set_id": "##id-2##",
+                                "domain_name": "###region###.compute.internal",
+                                "domain_name_servers": [
+                                    "OutscaleProvidedDNS"
+                                ],
+                                "log_servers": [],
+                                "ntp_servers": [],
+                                "tags": [
+                                    {
+                                        "key": "name",
+                                        "value": "test-MZI_2"
+                                    }
+                                ]
+                            },
+                            {
+                                "default": false,
                                 "dhcp_options_set_id": "##id-0##",
                                 "domain_name": "test234.fr",
                                 "domain_name_servers": [
                                     "192.168.12.12",
                                     "192.168.12.132"
+                                ],
+                                "log_servers": [
+                                    "192.0.0.3",
+                                    "192.0.0.4"
                                 ],
                                 "ntp_servers": [
                                     "192.0.0.2",
@@ -78,21 +102,6 @@
                                     {
                                         "key": "name-1",
                                         "value": "test-MZI-3"
-                                    }
-                                ]
-                            },
-                            {
-                                "default": false,
-                                "dhcp_options_set_id": "##id-2##",
-                                "domain_name": "###region###.compute.internal",
-                                "domain_name_servers": [
-                                    "OutscaleProvidedDNS"
-                                ],
-                                "ntp_servers": [],
-                                "tags": [
-                                    {
-                                        "key": "name",
-                                        "value": "test-MZI_2"
                                     }
                                 ]
                             }
@@ -110,7 +119,7 @@
             "mode": "managed",
             "type": "outscale_dhcp_option",
             "name": "outscale_dhcp_option",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -123,6 +132,10 @@
                             "192.168.12.132"
                         ],
                         "id": "##id-0##",
+                        "log_servers": [
+                            "192.0.0.3",
+                            "192.0.0.4"
+                        ],
                         "ntp_servers": [
                             "192.0.0.2",
                             "192.168.12.242"
@@ -148,7 +161,7 @@
             "mode": "managed",
             "type": "outscale_dhcp_option",
             "name": "outscale_dhcp_option2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -160,6 +173,7 @@
                             "OutscaleProvidedDNS"
                         ],
                         "id": "##id-2##",
+                        "log_servers": [],
                         "ntp_servers": [],
                         "request_id": "########",
                         "tags": [
@@ -174,5 +188,6 @@
                 }
             ]
         }
-    ]
+    ],
+    "check_results": []
 }
