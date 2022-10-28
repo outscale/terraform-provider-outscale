@@ -9,7 +9,8 @@ description: |-
 # outscale_route_table_link Resource
 
 Manages a route table link.
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Route-Tables.html).
+
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Route-Tables.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-routetable).
 
 ## Example Usage

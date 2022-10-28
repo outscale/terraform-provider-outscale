@@ -9,7 +9,8 @@ description: |-
 # outscale_dhcp_option Resource
 
 Manages a DHCP option.
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-DHCP-Options.html).
+
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-DHCP-Options.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-dhcpoption).
 
 ## Example Usage
@@ -40,9 +41,9 @@ resource "outscale_dhcp_option" "dhcp_option_02" {
 
 The following arguments are supported:
 
-* `domain_name_servers` - (Optional) The IPs of domain name servers. If no IPs are specified, the `OutscaleProvidedDNS` value is set by default.
-* `domain_name` - (Optional) Specify a domain name (for example, MyCompany.com). You can specify only one domain name.
-* `ntp_servers` - (Optional) The IPs of the Network Time Protocol (NTP) servers.
+* `domain_name_servers` - (Optional) The IPs of domain name servers. If no IPs are specified, the `OutscaleProvidedDNS` value is set by default. You must specify at least one of the following parameters: `DomainName`, `DomainNameServers`, or `NtpServers`.
+* `domain_name` - (Optional) Specify a domain name (for example, MyCompany.com). You can specify only one domain name. You must specify at least one of the following parameters: `DomainName`, `DomainNameServers`, or `NtpServers`.
+* `ntp_servers` - (Optional) The IPs of the Network Time Protocol (NTP) servers. You must specify at least one of the following parameters: `DomainName`, `DomainNameServers`, or `NtpServers`.
 * `tags` - (Optional) A tag to add to this resource. You can specify this argument several times.
     * `key` - (Required) The key of the tag, with a minimum of 1 character.
     * `value` - (Required) The value of the tag, between 0 and 255 characters.

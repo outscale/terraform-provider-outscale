@@ -3,13 +3,14 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_net_peering"
 sidebar_current: "outscale-net-peering"
 description: |-
-  [Provides information about a specific Net peering.]
+  [Provides information about a Net peering.]
 ---
 
 # outscale_net_peering Data Source
 
-Provides information about a specific Net peering.
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-VPC-Peering-Connections.html).
+Provides information about a Net peering.
+
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-VPC-Peering-Connections.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-netpeering).
 
 ## Example Usage
@@ -29,7 +30,7 @@ The following arguments are supported:
 
 * `filter` - (Optional) A combination of a filter name and one or more filter values. You can specify this argument for as many filter names as you need. The filter name can be any of the following:
     * `accepter_net_account_ids` - (Optional) The account IDs of the owners of the peer Nets.
-    * `accepter_net_ip_ranges` - (Optional) The IP ranges of the peer Nets, in CIDR notation (for example, 10.0.0.0/24).
+    * `accepter_net_ip_ranges` - (Optional) The IP ranges of the peer Nets, in CIDR notation (for example, `10.0.0.0/24`).
     * `accepter_net_net_ids` - (Optional) The IDs of the peer Nets.
     * `net_peering_ids` - (Optional) The IDs of the Net peering connections.
     * `source_net_account_ids` - (Optional) The account IDs of the owners of the peer Nets.
@@ -47,12 +48,12 @@ The following attributes are exported:
 
 * `accepter_net` - Information about the accepter Net.
     * `account_id` - The account ID of the owner of the accepter Net.
-    * `ip_range` - The IP range for the accepter Net, in CIDR notation (for example, 10.0.0.0/16).
+    * `ip_range` - The IP range for the accepter Net, in CIDR notation (for example, `10.0.0.0/16`).
     * `net_id` - The ID of the accepter Net.
 * `net_peering_id` - The ID of the Net peering connection.
 * `source_net` - Information about the source Net.
     * `account_id` - The account ID of the owner of the source Net.
-    * `ip_range` - The IP range for the source Net, in CIDR notation (for example, 10.0.0.0/16).
+    * `ip_range` - The IP range for the source Net, in CIDR notation (for example, `10.0.0.0/16`).
     * `net_id` - The ID of the source Net.
 * `state` - Information about the state of the Net peering connection.
     * `message` - Additional information about the state of the Net peering connection.

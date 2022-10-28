@@ -9,7 +9,8 @@ description: |-
 # outscale_client_gateways Data Source
 
 Provides information about client gateways.
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Customer-Gateways.html).
+
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Customer-Gateways.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-clientgateway).
 
 ## Example Usage
@@ -42,7 +43,7 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `client_gateways` - Information about one or more client gateways.
-    * `bgp_asn` - An Autonomous System Number (ASN) used by the Border Gateway Protocol (BGP) to find the path to your client gateway through the Internet.
+    * `bgp_asn` - The Autonomous System Number (ASN) used by the Border Gateway Protocol (BGP) to find the path to your client gateway through the Internet.
     * `client_gateway_id` - The ID of the client gateway.
     * `connection_type` - The type of communication tunnel used by the client gateway (only `ipsec.1` is supported).
     * `public_ip` - The public IPv4 address of the client gateway (must be a fixed address into a NATed network).

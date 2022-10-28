@@ -3,13 +3,14 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_net_attributes"
 sidebar_current: "outscale-net-attributes"
 description: |-
-  [Provides information about a specific Net attributes.]
+  [Provides information about the attributes of a Net.]
 ---
 
 # outscale_net_attributes Data Source
 
-Provides information about a specific Net attributes.
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-DHCP-Options.html).
+Provides information about the attributes of a Net.
+
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-DHCP-Options.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#updatenet).
 
 ## Example Usage
@@ -31,9 +32,9 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `dhcp_options_set_id` - The ID of the DHCP options set (or `default` if you want to associate the default one).
-* `ip_range` - The IP range for the Net, in CIDR notation (for example, 10.0.0.0/16).
+* `ip_range` - The IP range for the Net, in CIDR notation (for example, `10.0.0.0/16`).
 * `net_id` - The ID of the Net.
-* `state` - The state of the Net (`pending` \| `available`).
+* `state` - The state of the Net (`pending` \| `available` \| `deleted`).
 * `tags` - One or more tags associated with the Net.
     * `key` - The key of the tag, with a minimum of 1 character.
     * `value` - The value of the tag, between 0 and 255 characters.

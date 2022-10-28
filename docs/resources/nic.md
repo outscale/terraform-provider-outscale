@@ -9,7 +9,8 @@ description: |-
 # outscale_nic Resource
 
 Manages a network interface card (NIC).
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-FNIs.html).
+
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-FNIs.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-nic).
 
 ## Example Usage
@@ -86,7 +87,7 @@ The following attributes are exported:
 * `is_source_dest_checked` - (Net only) If true, the source/destination check is enabled. If false, it is disabled. This value must be false for a NAT VM to perform network address translation (NAT) in a Net.
 * `link_nic` - Information about the NIC attachment.
     * `delete_on_vm_deletion` - If true, the NIC is deleted when the VM is terminated.
-    * `device_number` - The device index for the NIC attachment (between 1 and 7, both included).
+    * `device_number` - The device index for the NIC attachment (between `1` and `7`, both included).
     * `link_nic_id` - The ID of the NIC to attach.
     * `state` - The state of the attachment (`attaching` \| `attached` \| `detaching` \| `detached`).
     * `vm_account_id` - The account ID of the owner of the VM.
