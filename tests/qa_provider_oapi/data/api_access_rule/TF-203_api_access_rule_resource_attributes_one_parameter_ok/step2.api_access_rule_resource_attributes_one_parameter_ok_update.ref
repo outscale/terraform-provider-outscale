@@ -15,12 +15,8 @@
                     "schema_version": 0,
                     "attributes": {
                         "api_access_rule_id": "##id-0##",
-                        "ca_ids": [
-                            "##id-1##"
-                        ],
-                        "cns": [
-                            "test-TF203"
-                        ],
+                        "ca_ids": [],
+                        "cns": [],
                         "description": null,
                         "id": "##id-0##",
                         "ip_ranges": "########",

@@ -82,7 +82,7 @@
                         "expiration_date": "2023-05-26T13:16:48.000+0000",
                         "id": "##id-3##",
                         "name": "Certificate-TF-79",
-                        "orn": "orn:ows:idauth::###account_id###:server-certificate/Certificate-TF-79",
+                        "orn": "########",
                         "path": "/",
                         "private_key": "########",
                         "request_id": "########",
