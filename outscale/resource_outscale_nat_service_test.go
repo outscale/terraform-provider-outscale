@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -59,7 +61,16 @@ func testAccCheckOAPINatGatewayDestroy(s *terraform.State) error {
 			Filters: &oscgo.FiltersNatService{NatServiceIds: &[]string{rs.Primary.ID}},
 		}
 
-		resp, _, err := conn.NatServiceApi.ReadNatServices(context.Background()).ReadNatServicesRequest(filterReq).Execute()
+		var resp oscgo.ReadNatServicesResponse
+		err := resource.Retry(60*time.Second, func() *resource.RetryError {
+			rp, httpResp, err := conn.NatServiceApi.ReadNatServices(context.Background()).ReadNatServicesRequest(filterReq).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp.StatusCode, err)
+			}
+			resp = rp
+			return nil
+		})
+
 		if err != nil || len(resp.GetNatServices()) > 0 {
 			return fmt.Errorf("Nat Services still exists (%s)", rs.Primary.ID)
 		}
@@ -84,7 +95,16 @@ func testAccCheckOAPINatGatewayExists(n string, ns *oscgo.NatService) resource.T
 			Filters: &oscgo.FiltersNatService{NatServiceIds: &[]string{rs.Primary.ID}},
 		}
 
-		resp, _, err := conn.NatServiceApi.ReadNatServices(context.Background()).ReadNatServicesRequest(filterReq).Execute()
+		var resp oscgo.ReadNatServicesResponse
+		err := resource.Retry(60*time.Second, func() *resource.RetryError {
+			rp, httpResp, err := conn.NatServiceApi.ReadNatServices(context.Background()).ReadNatServicesRequest(filterReq).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp.StatusCode, err)
+			}
+			resp = rp
+			return nil
+		})
+
 		if err != nil || len(resp.GetNatServices()) < 1 {
 			return fmt.Errorf("Nat Services not found (%s)", rs.Primary.ID)
 		}

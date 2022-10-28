@@ -9,6 +9,7 @@ import (
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -201,16 +202,11 @@ func testAccCheckOutscaleOAPIRuleExists(n string, group *oscgo.SecurityGroup) re
 		var resp oscgo.ReadSecurityGroupsResponse
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, _, err = conn.SecurityGroupApi.ReadSecurityGroups(context.Background()).ReadSecurityGroupsRequest(req).Execute()
-
+			rp, httpResp, err := conn.SecurityGroupApi.ReadSecurityGroups(context.Background()).ReadSecurityGroupsRequest(req).Execute()
 			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded") {
-					fmt.Printf("\n\n[INFO] Request limit exceeded")
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
+				return utils.CheckThrottling(httpResp.StatusCode, err)
 			}
-
+			resp = rp
 			return nil
 		})
 

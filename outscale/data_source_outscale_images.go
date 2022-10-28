@@ -237,10 +237,11 @@ func dataSourceOutscaleOAPIImagesRead(d *schema.ResourceData, meta interface{}) 
 	var resp oscgo.ReadImagesResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(req).Execute()
+		rp, httpResp, err := conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 

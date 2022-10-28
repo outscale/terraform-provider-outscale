@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/openlyinc/pointy"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -206,10 +208,18 @@ func testAccCheckOutscaleDHCPOptionExists(n string) resource.TestCheckFunc {
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("No DHCP Option id is set")
 		}
+		var resp oscgo.ReadDhcpOptionsResponse
+		err := resource.Retry(120*time.Second, func() *resource.RetryError {
+			rp, httpResp, err := conn.DhcpOptionApi.ReadDhcpOptions(context.Background()).ReadDhcpOptionsRequest(oscgo.ReadDhcpOptionsRequest{
+				Filters: &oscgo.FiltersDhcpOptions{DhcpOptionsSetIds: &[]string{rs.Primary.ID}},
+			}).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp.StatusCode, err)
+			}
+			resp = rp
+			return nil
+		})
 
-		resp, _, err := conn.DhcpOptionApi.ReadDhcpOptions(context.Background()).ReadDhcpOptionsRequest(oscgo.ReadDhcpOptionsRequest{
-			Filters: &oscgo.FiltersDhcpOptions{DhcpOptionsSetIds: &[]string{rs.Primary.ID}},
-		}).Execute()
 		if err != nil || len(resp.GetDhcpOptionsSets()) < 1 {
 			return fmt.Errorf("DHCP Option is not found (%s)", rs.Primary.ID)
 		}
@@ -224,11 +234,21 @@ func testAccCheckOAPIDHCPOptionDestroy(s *terraform.State) error {
 		if rs.Type != "outscale_dhcp_option" {
 			continue
 		}
+		var resp oscgo.ReadDhcpOptionsResponse
+		var statusCode int
+		err := resource.Retry(120*time.Second, func() *resource.RetryError {
+			rp, httpResp, err := conn.DhcpOptionApi.ReadDhcpOptions(context.Background()).ReadDhcpOptionsRequest(oscgo.ReadDhcpOptionsRequest{
+				Filters: &oscgo.FiltersDhcpOptions{DhcpOptionsSetIds: &[]string{rs.Primary.ID}},
+			}).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp.StatusCode, err)
+			}
+			resp = rp
+			statusCode = httpResp.StatusCode
+			return nil
+		})
 
-		resp, _, err := conn.DhcpOptionApi.ReadDhcpOptions(context.Background()).ReadDhcpOptionsRequest(oscgo.ReadDhcpOptionsRequest{
-			Filters: &oscgo.FiltersDhcpOptions{DhcpOptionsSetIds: &[]string{rs.Primary.ID}},
-		}).Execute()
-		if strings.Contains(fmt.Sprint(err), "InvalidDhcpID.NotFound") {
+		if statusCode == utils.ResourceNotFound {
 			continue
 		}
 

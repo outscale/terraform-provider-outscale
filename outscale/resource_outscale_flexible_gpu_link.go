@@ -59,11 +59,12 @@ func resourceOutscaleOAPIFlexibleGpuLinkCreate(d *schema.ResourceData, meta inte
 	var resp oscgo.LinkFlexibleGpuResponse
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
 		var err error
-		resp, _, err = conn.FlexibleGpuApi.LinkFlexibleGpu(
+		rp, httpResp, err := conn.FlexibleGpuApi.LinkFlexibleGpu(
 			context.Background()).LinkFlexibleGpuRequest(reqLink).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 
@@ -75,13 +76,14 @@ func resourceOutscaleOAPIFlexibleGpuLinkCreate(d *schema.ResourceData, meta inte
 		return fmt.Errorf("Error there is not Link flexible gpu (%s)", err)
 	}
 
-	var respGpu oscgo.ReadFlexibleGpusResponse
+	var respV oscgo.ReadFlexibleGpusResponse
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
-		respGpu, _, err = conn.FlexibleGpuApi.ReadFlexibleGpus(context.Background()).
+		rp, httpResp, err := conn.FlexibleGpuApi.ReadFlexibleGpus(context.Background()).
 			ReadFlexibleGpusRequest(*reqFlex).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		respV = rp
 		return nil
 	})
 
@@ -89,11 +91,11 @@ func resourceOutscaleOAPIFlexibleGpuLinkCreate(d *schema.ResourceData, meta inte
 		return fmt.Errorf("error reading the FlexibleGpu %s", err)
 	}
 
-	if err := utils.IsResponseEmptyOrMutiple(len(respGpu.GetFlexibleGpus()), "FlexibleGpu"); err != nil {
+	if err := utils.IsResponseEmptyOrMutiple(len(respV.GetFlexibleGpus()), "FlexibleGpu"); err != nil {
 		return err
 	}
 
-	if (*respGpu.FlexibleGpus)[0].GetState() != "attaching" {
+	if (*respV.FlexibleGpus)[0].GetState() != "attaching" {
 		return fmt.Errorf("Unable to link Flexible GPU")
 	}
 
@@ -120,12 +122,13 @@ func resourceOutscaleOAPIFlexibleGpuLinkRead(d *schema.ResourceData, meta interf
 	var resp oscgo.ReadFlexibleGpusResponse
 	var err error
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
-		resp, _, err = conn.FlexibleGpuApi.ReadFlexibleGpus(
+		rp, httpResp, err := conn.FlexibleGpuApi.ReadFlexibleGpus(
 			context.Background()).
 			ReadFlexibleGpusRequest(*req).Execute()
 		if err != nil {
-			return resource.RetryableError(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 
@@ -168,10 +171,10 @@ func resourceOutscaleOAPIFlexibleGpuLinkDelete(d *schema.ResourceData, meta inte
 
 	var err error
 	err = resource.Retry(20*time.Second, func() *resource.RetryError {
-		_, _, err = conn.FlexibleGpuApi.UnlinkFlexibleGpu(
+		_, httpResp, err := conn.FlexibleGpuApi.UnlinkFlexibleGpu(
 			context.Background()).UnlinkFlexibleGpuRequest(*req).Execute()
 		if err != nil {
-			return resource.RetryableError(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})
@@ -180,24 +183,24 @@ func resourceOutscaleOAPIFlexibleGpuLinkDelete(d *schema.ResourceData, meta inte
 		return err
 	}
 
-	var respGpu oscgo.ReadFlexibleGpusResponse
+	var resp oscgo.ReadFlexibleGpusResponse
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
-		var err error
-		respGpu, _, err = conn.FlexibleGpuApi.ReadFlexibleGpus(context.Background()).
+		rp, httpResp, err := conn.FlexibleGpuApi.ReadFlexibleGpus(context.Background()).
 			ReadFlexibleGpusRequest(*reqFlex).Execute()
 		if err != nil {
-			return resource.RetryableError(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 	if err != nil {
 		return fmt.Errorf("error reading the FlexibleGpu %s", err)
 	}
 
-	if len(*respGpu.FlexibleGpus) != 1 {
+	if len(*resp.FlexibleGpus) != 1 {
 		return fmt.Errorf("Unable to find Flexible GPU")
 	}
-	if (*respGpu.FlexibleGpus)[0].GetState() != "detaching" {
+	if (*resp.FlexibleGpus)[0].GetState() != "detaching" {
 		return fmt.Errorf("Unable to unlink Flexible GPU")
 	}
 
@@ -212,25 +215,25 @@ func resourceOutscaleOAPIFlexibleGpuLinkDelete(d *schema.ResourceData, meta inte
 
 func changeShutdownBehavior(conn *oscgo.APIClient, vmId string) error {
 
-	var respV oscgo.ReadVmsResponse
+	var resp oscgo.ReadVmsResponse
 	err := resource.Retry(20*time.Second, func() *resource.RetryError {
-		var err error
-		respV, _, err = conn.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
+		rp, httpResp, err := conn.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
 			Filters: &oscgo.FiltersVm{
 				VmIds: &[]string{vmId},
 			}}).Execute()
 		if err != nil {
-			return resource.RetryableError(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 	if err != nil {
 		return fmt.Errorf("error reading the VM %s", err)
 	}
-	if len(respV.GetVms()) == 0 {
+	if len(resp.GetVms()) == 0 {
 		return fmt.Errorf("error reading the VM %s err %s ", vmId, err)
 	}
-	vm := respV.GetVms()[0]
+	vm := resp.GetVms()[0]
 
 	shutdownBehOpt := vm.GetVmInitiatedShutdownBehavior()
 	if shutdownBehOpt != "stop" {

@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -78,9 +77,9 @@ func resourceOutscaleOAPINetworkInterfacePrivateIPCreate(d *schema.ResourceData,
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err = conn.NicApi.LinkPrivateIps(context.Background()).LinkPrivateIpsRequest(input).Execute()
+		_, httpResp, err := conn.NicApi.LinkPrivateIps(context.Background()).LinkPrivateIpsRequest(input).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})
@@ -103,15 +102,18 @@ func resourceOutscaleOAPINetworkInterfacePrivateIPRead(d *schema.ResourceData, m
 
 	var resp oscgo.ReadNicsResponse
 	var err error
+	var statusCode int
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(req).Execute()
+		rp, httpResp, err := conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		statusCode = httpResp.StatusCode
+		resp = rp
 		return nil
 	})
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
+		if statusCode == utils.ResourceNotFound {
 			// The ENI is gone now, so just remove the attachment from the state
 			d.SetId("")
 			return nil
@@ -181,9 +183,9 @@ func resourceOutscaleOAPINetworkInterfacePrivateIPDelete(d *schema.ResourceData,
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err = conn.NicApi.UnlinkPrivateIps(context.Background()).UnlinkPrivateIpsRequest(input).Execute()
+		_, httpResp, err := conn.NicApi.UnlinkPrivateIps(context.Background()).UnlinkPrivateIpsRequest(input).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})

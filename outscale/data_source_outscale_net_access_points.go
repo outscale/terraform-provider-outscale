@@ -155,12 +155,13 @@ func dataSourceOutscaleNetAccessPointsRead(d *schema.ResourceData, meta interfac
 	var err error
 
 	err = resource.Retry(30*time.Second, func() *resource.RetryError {
-		resp, _, err = conn.NetAccessPointApi.ReadNetAccessPoints(
+		rp, httpResp, err := conn.NetAccessPointApi.ReadNetAccessPoints(
 			context.Background()).
 			ReadNetAccessPointsRequest(*req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 

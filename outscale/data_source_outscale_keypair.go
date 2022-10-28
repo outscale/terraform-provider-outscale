@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -34,20 +33,23 @@ func datasourceOutscaleOApiKeyPairRead(d *schema.ResourceData, meta interface{})
 	}
 
 	var resp oscgo.ReadKeypairsResponse
+	var statusCode int
 	err := resource.Retry(120*time.Second, func() *resource.RetryError {
 		var err error
-		resp, _, err = conn.KeypairApi.ReadKeypairs(context.Background()).ReadKeypairsRequest(req).Execute()
+		rp, httpResp, err := conn.KeypairApi.ReadKeypairs(context.Background()).ReadKeypairsRequest(req).Execute()
 
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
+		statusCode = httpResp.StatusCode
 		return nil
 	})
 
 	var errString string
 
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
+		if statusCode == utils.ResourceNotFound {
 			d.SetId("")
 			return nil
 		}

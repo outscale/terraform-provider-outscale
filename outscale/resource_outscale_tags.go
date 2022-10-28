@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -57,12 +56,12 @@ func resourceOutscaleOAPITagsCreate(d *schema.ResourceData, meta interface{}) er
 	}
 
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
-		_, _, err := conn.TagApi.CreateTags(context.Background()).CreateTagsRequest(request).Execute()
+		_, httpResp, err := conn.TagApi.CreateTags(context.Background()).CreateTagsRequest(request).Execute()
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
+			if httpResp.StatusCode == utils.ResourceNotFound {
 				return resource.RetryableError(err)
 			}
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})
@@ -116,10 +115,11 @@ func resourceOutscaleOAPITagsRead(d *schema.ResourceData, meta interface{}) erro
 	var err error
 
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
-		resp, _, err = conn.TagApi.ReadTags(context.Background()).ReadTagsRequest(params).Execute()
+		rp, httpResp, err := conn.TagApi.ReadTags(context.Background()).ReadTagsRequest(params).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 
@@ -163,12 +163,12 @@ func resourceOutscaleOAPITagsDelete(d *schema.ResourceData, meta interface{}) er
 	}
 
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
-		_, _, err := conn.TagApi.DeleteTags(context.Background()).DeleteTagsRequest(request).Execute()
+		_, httpResp, err := conn.TagApi.DeleteTags(context.Background()).DeleteTagsRequest(request).Execute()
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
+			if httpResp.StatusCode == utils.ResourceNotFound {
 				return resource.RetryableError(err) // retry
 			}
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})

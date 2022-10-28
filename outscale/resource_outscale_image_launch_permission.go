@@ -156,9 +156,9 @@ func resourceOutscaleOAPIImageLaunchPermissionCreate(d *schema.ResourceData, met
 
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
-		_, _, err = conn.ImageApi.UpdateImage(context.Background()).UpdateImageRequest(request).Execute()
+		_, httpResp, err := conn.ImageApi.UpdateImage(context.Background()).UpdateImageRequest(request).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})
@@ -181,14 +181,15 @@ func resourceOutscaleOAPIImageLaunchPermissionRead(d *schema.ResourceData, meta 
 	var resp oscgo.ReadImagesResponse
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
-		resp, _, err = conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(oscgo.ReadImagesRequest{
+		rp, httpResp, err := conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(oscgo.ReadImagesRequest{
 			Filters: &oscgo.FiltersImage{
 				ImageIds: &[]string{d.Id()},
 			},
 		}).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 
@@ -235,9 +236,9 @@ func resourceOutscaleOAPIImageLaunchPermissionDelete(d *schema.ResourceData, met
 		request.SetPermissionsToLaunch(permission)
 
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-			_, _, err := conn.ImageApi.UpdateImage(context.Background()).UpdateImageRequest(request).Execute()
+			_, httpResp, err := conn.ImageApi.UpdateImage(context.Background()).UpdateImageRequest(request).Execute()
 			if err != nil {
-				return utils.CheckThrottling(err)
+				return utils.CheckThrottling(httpResp.StatusCode, err)
 			}
 			return nil
 		})
@@ -258,14 +259,15 @@ func hasOAPILaunchPermission(conn *oscgo.APIClient, imageID string) (bool, error
 	var resp oscgo.ReadImagesResponse
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
-		resp, _, err = conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(oscgo.ReadImagesRequest{
+		rp, httpResp, err := conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(oscgo.ReadImagesRequest{
 			Filters: &oscgo.FiltersImage{
 				ImageIds: &[]string{imageID},
 			},
 		}).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 

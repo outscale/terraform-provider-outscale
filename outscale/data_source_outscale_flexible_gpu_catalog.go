@@ -61,12 +61,13 @@ func dataSourceOutscaleOAPIFlexibleGpuCatalogRead(d *schema.ResourceData, meta i
 	var resp oscgo.ReadFlexibleGpuCatalogResponse
 	var err error
 	err = resource.Retry(20*time.Second, func() *resource.RetryError {
-		resp, _, err = conn.FlexibleGpuApi.ReadFlexibleGpuCatalog(
+		rp, httpResp, err := conn.FlexibleGpuApi.ReadFlexibleGpuCatalog(
 			context.Background()).
 			ReadFlexibleGpuCatalogRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 

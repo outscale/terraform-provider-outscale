@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -155,10 +154,11 @@ func resourceOutscaleOAPISnapshotCreate(d *schema.ResourceData, meta interface{}
 	var resp oscgo.CreateSnapshotResponse
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
-		resp, _, err = conn.SnapshotApi.CreateSnapshot(context.Background()).CreateSnapshotRequest(request).Execute()
+		rp, httpResp, err := conn.SnapshotApi.CreateSnapshot(context.Background()).CreateSnapshotRequest(request).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 	if err != nil {
@@ -203,10 +203,11 @@ func resourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) 
 	var resp oscgo.ReadSnapshotsResponse
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
-		resp, _, err = conn.SnapshotApi.ReadSnapshots(context.Background()).ReadSnapshotsRequest(req).Execute()
+		rp, httpResp, err := conn.SnapshotApi.ReadSnapshots(context.Background()).ReadSnapshotsRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 
@@ -277,19 +278,9 @@ func resourceOutscaleOAPISnapshotDelete(d *schema.ResourceData, meta interface{}
 
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
 		request := oscgo.DeleteSnapshotRequest{SnapshotId: d.Id()}
-
-		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-			_, _, err := conn.SnapshotApi.DeleteSnapshot(context.Background()).DeleteSnapshotRequest(request).Execute()
-			if err != nil {
-				if strings.Contains(err.Error(), utils.ResourceConflict) {
-					return resource.RetryableError(fmt.Errorf("EBS SnapshotInUse - trying again while it detaches"))
-				}
-				return utils.CheckThrottling(err)
-			}
-			return nil
-		})
+		_, httpResp, err := conn.SnapshotApi.DeleteSnapshot(context.Background()).DeleteSnapshotRequest(request).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})
@@ -301,19 +292,22 @@ func SnapshotOAPIStateRefreshFunc(client *oscgo.APIClient, id string) resource.S
 		emptyResp := oscgo.ReadSnapshotsResponse{}
 
 		var resp oscgo.ReadSnapshotsResponse
+		var statusCode int
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 			var err error
-			resp, _, err = client.SnapshotApi.ReadSnapshots(context.Background()).ReadSnapshotsRequest(oscgo.ReadSnapshotsRequest{
+			rp, httpResp, err := client.SnapshotApi.ReadSnapshots(context.Background()).ReadSnapshotsRequest(oscgo.ReadSnapshotsRequest{
 				Filters: &oscgo.FiltersSnapshot{SnapshotIds: &[]string{id}},
 			}).Execute()
 			if err != nil {
-				return utils.CheckThrottling(err)
+				return utils.CheckThrottling(httpResp.StatusCode, err)
 			}
+			resp = rp
+			statusCode = httpResp.StatusCode
 			return nil
 		})
 
 		if err != nil {
-			if e := fmt.Sprint(err); strings.Contains(e, "InvalidAMIID.NotFound") {
+			if statusCode == utils.ResourceNotFound {
 				log.Printf("[INFO] OMI %s state %s", id, "destroyed")
 				return emptyResp, "destroyed", nil
 

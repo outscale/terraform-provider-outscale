@@ -74,9 +74,16 @@ func TestAccOutscaleOAPILinPeeringConnection_plan(t *testing.T) {
 	testDestroy := func(*terraform.State) error {
 		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 		log.Printf("[DEBUG] Test deleting the Net Peering.")
-		_, _, err := conn.NetPeeringApi.DeleteNetPeering(context.Background()).DeleteNetPeeringRequest(oscgo.DeleteNetPeeringRequest{
-			NetPeeringId: connection.GetNetPeeringId(),
-		}).Execute()
+		err := resource.Retry(3*time.Minute, func() *resource.RetryError {
+			_, httpResp, err := conn.NetPeeringApi.DeleteNetPeering(context.Background()).DeleteNetPeeringRequest(oscgo.DeleteNetPeeringRequest{
+				NetPeeringId: connection.GetNetPeeringId(),
+			}).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp.StatusCode, err)
+			}
+			return nil
+		})
+
 		if err != nil {
 			return err
 		}
@@ -113,13 +120,14 @@ func testAccCheckOutscaleOAPILinPeeringConnectionDestroy(s *terraform.State) err
 		var resp oscgo.ReadNetPeeringsResponse
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, _, err = conn.NetPeeringApi.ReadNetPeerings(context.Background()).ReadNetPeeringsRequest(oscgo.ReadNetPeeringsRequest{
+			rp, httpResp, err := conn.NetPeeringApi.ReadNetPeerings(context.Background()).ReadNetPeeringsRequest(oscgo.ReadNetPeeringsRequest{
 				Filters: &oscgo.FiltersNetPeering{NetPeeringIds: &[]string{rs.Primary.ID}},
 			}).Execute()
 
 			if err != nil {
-				return utils.CheckThrottling(err)
+				return utils.CheckThrottling(httpResp.StatusCode, err)
 			}
+			resp = rp
 			return nil
 		})
 
@@ -172,13 +180,14 @@ func testAccCheckOutscaleOAPILinPeeringConnectionExists(n string, connection *os
 		var resp oscgo.ReadNetPeeringsResponse
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, _, err = conn.NetPeeringApi.ReadNetPeerings(context.Background()).ReadNetPeeringsRequest(oscgo.ReadNetPeeringsRequest{
+			rp, httpResp, err := conn.NetPeeringApi.ReadNetPeerings(context.Background()).ReadNetPeeringsRequest(oscgo.ReadNetPeeringsRequest{
 				Filters: &oscgo.FiltersNetPeering{NetPeeringIds: &[]string{rs.Primary.ID}},
 			}).Execute()
 
 			if err != nil {
-				return utils.CheckThrottling(err)
+				return utils.CheckThrottling(httpResp.StatusCode, err)
 			}
+			resp = rp
 			return nil
 		})
 

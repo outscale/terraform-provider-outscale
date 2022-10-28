@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"strings"
 	"testing"
 	"time"
 
@@ -50,12 +49,13 @@ func testAccCheckOAPIVirtualRoutePropagationDestroy(s *terraform.State) error {
 		var err error
 
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, _, err = oscapi.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(oscgo.ReadVirtualGatewaysRequest{
+			rp, httpResp, err := oscapi.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(oscgo.ReadVirtualGatewaysRequest{
 				Filters: &oscgo.FiltersVirtualGateway{VirtualGatewayIds: &[]string{rs.Primary.Attributes["gateway_id"]}},
 			}).Execute()
 			if err != nil {
-				return utils.CheckThrottling(err)
+				return utils.CheckThrottling(httpResp.StatusCode, err)
 			}
+			resp = rp
 			return nil
 		})
 
@@ -65,22 +65,17 @@ func testAccCheckOAPIVirtualRoutePropagationDestroy(s *terraform.State) error {
 
 		if len(resp.GetVirtualGateways()) > 0 {
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-				_, _, err := oscapi.VirtualGatewayApi.DeleteVirtualGateway(context.Background()).DeleteVirtualGatewayRequest(oscgo.DeleteVirtualGatewayRequest{
+				_, httpResp, err := oscapi.VirtualGatewayApi.DeleteVirtualGateway(context.Background()).DeleteVirtualGatewayRequest(oscgo.DeleteVirtualGatewayRequest{
 					VirtualGatewayId: resp.GetVirtualGateways()[0].GetVirtualGatewayId(),
 				}).Execute()
 				if err != nil {
-					if strings.Contains(err.Error(), utils.ResourceNotFound) {
-						return resource.RetryableError(err)
-					}
-					return utils.CheckThrottling(err)
+					return utils.CheckThrottling(httpResp.StatusCode, err)
 				}
 				return nil
 			})
-
 			if err != nil {
 				return fmt.Errorf("ERROR => %s", err)
 			}
-
 		} else {
 			return nil
 		}

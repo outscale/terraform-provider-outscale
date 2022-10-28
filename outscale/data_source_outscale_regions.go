@@ -46,10 +46,11 @@ func dataSourceOutscaleOAPIRegionsRead(d *schema.ResourceData, meta interface{})
 	var req oscgo.ReadRegionsRequest
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.RegionApi.ReadRegions(context.Background()).ReadRegionsRequest(req).Execute()
+		rp, httpResp, err := conn.RegionApi.ReadRegions(context.Background()).ReadRegionsRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 	if err != nil {

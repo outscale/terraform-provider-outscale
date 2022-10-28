@@ -54,9 +54,9 @@ func resourceOutscaleVPNConnectionRouteCreate(d *schema.ResourceData, meta inter
 		VpnConnectionId:    vpnConnectionID,
 	}
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err := conn.VpnConnectionApi.CreateVpnConnectionRoute(context.Background()).CreateVpnConnectionRouteRequest(req).Execute()
+		_, httpResp, err := conn.VpnConnectionApi.CreateVpnConnectionRoute(context.Background()).CreateVpnConnectionRouteRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})
@@ -101,9 +101,9 @@ func resourceOutscaleVPNConnectionRouteDelete(d *schema.ResourceData, meta inter
 		VpnConnectionId:    vpnConnectionID,
 	}
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err := conn.VpnConnectionApi.DeleteVpnConnectionRoute(context.Background()).DeleteVpnConnectionRouteRequest(req).Execute()
+		_, httpResp, err := conn.VpnConnectionApi.DeleteVpnConnectionRoute(context.Background()).DeleteVpnConnectionRouteRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})
@@ -139,12 +139,12 @@ func vpnConnectionRouteRefreshFunc(conn *oscgo.APIClient, destinationIPRange, vp
 			},
 		}
 
-		resp, _, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(filter).Execute()
+		resp, httpResp, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(filter).Execute()
 		if err != nil {
 			switch {
-			case strings.Contains(fmt.Sprint(err), utils.Throttled):
+			case httpResp.StatusCode == utils.Throttled:
 				return nil, "pending", nil
-			case strings.Contains(fmt.Sprint(err), "404"):
+			case httpResp.StatusCode == utils.ResourceNotFound:
 				return nil, "deleted", nil
 			default:
 				return nil, "failed", fmt.Errorf("Error on vpnConnectionRouteRefresh: %s", err)

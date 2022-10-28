@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"reflect"
-	"strings"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -68,17 +67,20 @@ func dataSourceOutscaleOAPILinPeeringConnectionRead(d *schema.ResourceData, meta
 
 	var resp oscgo.ReadNetPeeringsResponse
 	var err error
+	var statusCode int
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.NetPeeringApi.ReadNetPeerings(context.Background()).ReadNetPeeringsRequest(req).Execute()
+		rp, httpResp, err := conn.NetPeeringApi.ReadNetPeerings(context.Background()).ReadNetPeeringsRequest(req).Execute()
 
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
+		statusCode = httpResp.StatusCode
 		return nil
 	})
 
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
+		if statusCode == utils.ResourceNotFound {
 			return fmt.Errorf("no matching Net Peering Connection found")
 		}
 		return fmt.Errorf("Error reading Net Peering Connection details: %s", err)

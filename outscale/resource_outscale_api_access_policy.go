@@ -54,9 +54,9 @@ func resourceOutscaleOAPIApiAccessPolicyCreate(d *schema.ResourceData, meta inte
 
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		_, _, err = conn.ApiAccessPolicyApi.UpdateApiAccessPolicy(context.Background()).UpdateApiAccessPolicyRequest(req).Execute()
+		_, httpResp, err := conn.ApiAccessPolicyApi.UpdateApiAccessPolicy(context.Background()).UpdateApiAccessPolicyRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})
@@ -74,10 +74,11 @@ func resourceOutscaleOAPIApiAccessPolicyRead(d *schema.ResourceData, meta interf
 	var resp oscgo.ReadApiAccessPolicyResponse
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		resp, _, err = conn.ApiAccessPolicyApi.ReadApiAccessPolicy(context.Background()).ReadApiAccessPolicyRequest(req).Execute()
+		rp, httpResp, err := conn.ApiAccessPolicyApi.ReadApiAccessPolicy(context.Background()).ReadApiAccessPolicyRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 
@@ -118,9 +119,9 @@ func resourceOutscaleOAPIApiAccessPolicyUpdate(d *schema.ResourceData, meta inte
 
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		_, _, err = conn.ApiAccessPolicyApi.UpdateApiAccessPolicy(context.Background()).UpdateApiAccessPolicyRequest(req).Execute()
+		_, httpResp, err := conn.ApiAccessPolicyApi.UpdateApiAccessPolicy(context.Background()).UpdateApiAccessPolicyRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})

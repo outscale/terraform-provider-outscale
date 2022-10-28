@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func setOSCAPITags(conn *oscgo.APIClient, d *schema.ResourceData) error {
@@ -24,7 +25,7 @@ func setOSCAPITags(conn *oscgo.APIClient, d *schema.ResourceData) error {
 		// Set tag
 		if len(remove) > 0 {
 			err := resource.Retry(60*time.Second, func() *resource.RetryError {
-				_, _, err := conn.TagApi.DeleteTags(context.Background()).DeleteTagsRequest(oscgo.DeleteTagsRequest{
+				_, httpResp, err := conn.TagApi.DeleteTags(context.Background()).DeleteTagsRequest(oscgo.DeleteTagsRequest{
 					ResourceIds: []string{d.Id()},
 					Tags:        remove,
 				}).Execute()
@@ -32,7 +33,7 @@ func setOSCAPITags(conn *oscgo.APIClient, d *schema.ResourceData) error {
 					if strings.Contains(fmt.Sprint(err), ".NotFound") {
 						return resource.RetryableError(err) // retry
 					}
-					return resource.NonRetryableError(err)
+					return utils.CheckThrottling(httpResp.StatusCode, err)
 				}
 				return nil
 			})
@@ -42,7 +43,7 @@ func setOSCAPITags(conn *oscgo.APIClient, d *schema.ResourceData) error {
 		}
 		if len(create) > 0 {
 			err := resource.Retry(60*time.Second, func() *resource.RetryError {
-				_, _, err := conn.TagApi.CreateTags(context.Background()).CreateTagsRequest(oscgo.CreateTagsRequest{
+				_, httpResp, err := conn.TagApi.CreateTags(context.Background()).CreateTagsRequest(oscgo.CreateTagsRequest{
 					ResourceIds: []string{d.Id()},
 					Tags:        create,
 				}).Execute()
@@ -50,7 +51,7 @@ func setOSCAPITags(conn *oscgo.APIClient, d *schema.ResourceData) error {
 					if strings.Contains(fmt.Sprint(err), ".NotFound") {
 						return resource.RetryableError(err) // retry
 					}
-					return resource.NonRetryableError(err)
+					return utils.CheckThrottling(httpResp.StatusCode, err)
 				}
 				return nil
 			})
@@ -248,13 +249,13 @@ func assignTags(tag *schema.Set, resourceID string, conn *oscgo.APIClient) error
 	request.Tags = tagsFromSliceMap(tag)
 	request.ResourceIds = []string{resourceID}
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
-		_, _, err := conn.TagApi.CreateTags(context.Background()).CreateTagsRequest(request).Execute()
+		_, httpResp, err := conn.TagApi.CreateTags(context.Background()).CreateTagsRequest(request).Execute()
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "NotFound") {
 				return resource.RetryableError(err)
 			}
-			return resource.NonRetryableError(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})

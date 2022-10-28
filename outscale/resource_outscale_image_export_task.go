@@ -161,11 +161,12 @@ func resourceOAPIImageExportTaskCreate(d *schema.ResourceData, meta interface{})
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.ImageApi.CreateImageExportTask(context.Background()).
+		rp, httpResp, err := conn.ImageApi.CreateImageExportTask(context.Background()).
 			CreateImageExportTaskRequest(request).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 
@@ -196,13 +197,14 @@ func resourceOAPIImageExportTaskRead(d *schema.ResourceData, meta interface{}) e
 	var err error
 	filter := &oscgo.FiltersExportTask{TaskIds: &[]string{d.Id()}}
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.ImageApi.ReadImageExportTasks(context.Background()).
+		rp, httpResp, err := conn.ImageApi.ReadImageExportTasks(context.Background()).
 			ReadImageExportTasksRequest(oscgo.ReadImageExportTasksRequest{
 				Filters: filter,
 			}).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 
@@ -322,21 +324,24 @@ func ImageTaskStateRefreshFunc(client *oscgo.APIClient, id string) resource.Stat
 	return func() (interface{}, string, error) {
 		var resp oscgo.ReadImageExportTasksResponse
 		var err error
+		var statusCode int
 
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 			filter := &oscgo.FiltersExportTask{TaskIds: &[]string{id}}
-			resp, _, err = client.ImageApi.ReadImageExportTasks(context.Background()).
+			rp, httpResp, err := client.ImageApi.ReadImageExportTasks(context.Background()).
 				ReadImageExportTasksRequest(oscgo.ReadImageExportTasksRequest{
 					Filters: filter,
 				}).Execute()
 			if err != nil {
-				return utils.CheckThrottling(err)
+				return utils.CheckThrottling(httpResp.StatusCode, err)
 			}
+			resp = rp
+			statusCode = httpResp.StatusCode
 			return nil
 		})
 
 		if err != nil {
-			if e := fmt.Sprint(err); strings.Contains(e, utils.ResourceNotFound) {
+			if statusCode == utils.ResourceNotFound {
 				log.Printf("[INFO] Image export task %s state %s", id, "destroyed")
 				return resp, "destroyed", nil
 			} else if resp.GetImageExportTasks() != nil && len(resp.GetImageExportTasks()) == 0 {

@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -179,7 +181,17 @@ func testAccOutscaleVPNConnectionExists(resourceName string) resource.TestCheckF
 			},
 		}
 
-		resp, _, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(filter).Execute()
+		var resp oscgo.ReadVpnConnectionsResponse
+		var err error
+		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			rp, httpResp, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(filter).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp.StatusCode, err)
+			}
+			resp = rp
+			return nil
+		})
+
 		if err != nil || len(resp.GetVpnConnections()) < 1 {
 			return fmt.Errorf("Outscale VPN Connection not found (%s)", rs.Primary.ID)
 		}
@@ -199,8 +211,17 @@ func testAccOutscaleVPNConnectionDestroy(s *terraform.State) error {
 				VpnConnectionIds: &[]string{rs.Primary.ID},
 			},
 		}
+		var resp oscgo.ReadVpnConnectionsResponse
+		var err error
+		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			rp, httpResp, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(filter).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp.StatusCode, err)
+			}
+			resp = rp
+			return nil
+		})
 
-		resp, _, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(filter).Execute()
 		if err != nil ||
 			len(resp.GetVpnConnections()) > 0 && resp.GetVpnConnections()[0].GetState() != "deleted" {
 			return fmt.Errorf("Outscale VPN Connection still exists (%s): %s", rs.Primary.ID, err)

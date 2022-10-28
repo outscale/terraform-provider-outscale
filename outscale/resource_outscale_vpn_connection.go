@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -132,20 +131,28 @@ func resourceOutscaleVPNConnectionCreate(d *schema.ResourceData, meta interface{
 	if staticRoutesOnly, ok := d.GetOkExists("static_routes_only"); ok {
 		req.SetStaticRoutesOnly(cast.ToBool(staticRoutesOnly))
 	}
+	var resp oscgo.CreateVpnConnectionResponse
+	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+		rp, httpResp, err := conn.VpnConnectionApi.CreateVpnConnection(context.Background()).CreateVpnConnectionRequest(req).Execute()
+		if err != nil {
+			return utils.CheckThrottling(httpResp.StatusCode, err)
+		}
+		resp = rp
+		return nil
+	})
 
-	vpn, _, err := conn.VpnConnectionApi.CreateVpnConnection(context.Background()).CreateVpnConnectionRequest(req).Execute()
 	if err != nil {
 		return fmt.Errorf("Error creating Outscale VPN Conecction: %s", err)
 	}
 
 	if tags, ok := d.GetOk("tags"); ok {
-		err := assignTags(tags.(*schema.Set), *vpn.GetVpnConnection().VpnConnectionId, conn)
+		err := assignTags(tags.(*schema.Set), *resp.GetVpnConnection().VpnConnectionId, conn)
 		if err != nil {
 			return err
 		}
 	}
 
-	d.SetId(*vpn.GetVpnConnection().VpnConnectionId)
+	d.SetId(*resp.GetVpnConnection().VpnConnectionId)
 
 	return resourceOutscaleVPNConnectionRead(d, meta)
 }
@@ -230,9 +237,9 @@ func resourceOutscaleVPNConnectionDelete(d *schema.ResourceData, meta interface{
 		VpnConnectionId: vpnConnectionID,
 	}
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err := conn.VpnConnectionApi.DeleteVpnConnection(context.Background()).DeleteVpnConnectionRequest(req).Execute()
+		_, httpResp, err := conn.VpnConnectionApi.DeleteVpnConnection(context.Background()).DeleteVpnConnectionRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})
@@ -265,12 +272,12 @@ func vpnConnectionRefreshFunc(conn *oscgo.APIClient, vpnConnectionID *string) re
 				VpnConnectionIds: &[]string{*vpnConnectionID},
 			},
 		}
-		resp, _, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(filter).Execute()
+		resp, httpResp, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(filter).Execute()
 		if err != nil {
 			switch {
-			case strings.Contains(fmt.Sprint(err), utils.Throttled):
+			case httpResp.StatusCode == utils.Throttled:
 				return nil, "pending", nil
-			case strings.Contains(fmt.Sprint(err), "404"):
+			case httpResp.StatusCode == utils.ResourceNotFound:
 				return nil, "deleted", nil
 			default:
 				return nil, "failed", fmt.Errorf("Error on vpnConnectionRefresh: %s", err)

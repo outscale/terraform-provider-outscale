@@ -113,10 +113,11 @@ func testAccCheckOAPIVolumeExists(n string, v *oscgo.Volume) resource.TestCheckF
 		var response oscgo.ReadVolumesResponse
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			response, _, err = conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(request).Execute()
+			rp, httpResp, err := conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(request).Execute()
 			if err != nil {
-				return utils.CheckThrottling(err)
+				return utils.CheckThrottling(httpResp.StatusCode, err)
 			}
+			response = rp
 			return nil
 		})
 

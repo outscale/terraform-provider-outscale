@@ -78,10 +78,11 @@ func dataSourceOutscaleOAPIVMTypesRead(d *schema.ResourceData, meta interface{})
 	var err error
 	err = resource.Retry(30*time.Second, func() *resource.RetryError {
 		var err error
-		resp, _, err = conn.VmApi.ReadVmTypes(context.Background()).ReadVmTypesRequest(req).Execute()
+		rp, httpResp, err := conn.VmApi.ReadVmTypes(context.Background()).ReadVmTypesRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 

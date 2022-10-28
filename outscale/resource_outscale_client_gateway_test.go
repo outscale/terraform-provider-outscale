@@ -4,12 +4,14 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/spf13/cast"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func TestAccOutscaleClientGateway_basic(t *testing.T) {
@@ -101,8 +103,16 @@ func testAccCheckClientGatewayExists(resourceName string) resource.TestCheckFunc
 				ClientGatewayIds: &[]string{rs.Primary.ID},
 			},
 		}
+		var resp oscgo.ReadClientGatewaysResponse
+		err := resource.Retry(120*time.Second, func() *resource.RetryError {
+			rp, httpResp, err := conn.ClientGatewayApi.ReadClientGateways(context.Background()).ReadClientGatewaysRequest(filter).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp.StatusCode, err)
+			}
+			resp = rp
+			return nil
+		})
 
-		resp, _, err := conn.ClientGatewayApi.ReadClientGateways(context.Background()).ReadClientGatewaysRequest(filter).Execute()
 		if err != nil || len(resp.GetClientGateways()) < 1 {
 			return fmt.Errorf("Outscale Client Gateway not found (%s)", rs.Primary.ID)
 		}
@@ -123,8 +133,16 @@ func testAccCheckClientGatewayDestroy(s *terraform.State) error {
 				ClientGatewayIds: &[]string{rs.Primary.ID},
 			},
 		}
+		var resp oscgo.ReadClientGatewaysResponse
+		err := resource.Retry(120*time.Second, func() *resource.RetryError {
+			rp, httpResp, err := conn.ClientGatewayApi.ReadClientGateways(context.Background()).ReadClientGatewaysRequest(filter).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp.StatusCode, err)
+			}
+			resp = rp
+			return nil
+		})
 
-		resp, _, err := conn.ClientGatewayApi.ReadClientGateways(context.Background()).ReadClientGatewaysRequest(filter).Execute()
 		if err != nil ||
 			len(resp.GetClientGateways()) > 0 && resp.GetClientGateways()[0].GetState() != "deleted" {
 			return fmt.Errorf("Outscale Client Gateway still exists (%s): %s", rs.Primary.ID, err)

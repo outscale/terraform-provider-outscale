@@ -85,10 +85,11 @@ func dataSourceOutscaleOAPINatServiceRead(d *schema.ResourceData, meta interface
 	var resp oscgo.ReadNatServicesResponse
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
-		resp, _, err = conn.NatServiceApi.ReadNatServices(context.Background()).ReadNatServicesRequest(params).Execute()
+		rp, httpResp, err := conn.NatServiceApi.ReadNatServices(context.Background()).ReadNatServicesRequest(params).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 

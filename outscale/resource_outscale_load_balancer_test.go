@@ -9,6 +9,7 @@ import (
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -92,15 +93,13 @@ func testAccCheckOutscaleOAPILBUDestroy(s *terraform.State) error {
 				Filters: filter,
 			}
 
-			resp, _, err = conn.LoadBalancerApi.ReadLoadBalancers(
+			rp, httpResp, err := conn.LoadBalancerApi.ReadLoadBalancers(
 				context.Background()).ReadLoadBalancersRequest(*req).Execute()
 
 			if err != nil {
-				if strings.Contains(fmt.Sprint(err), "Throttling") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
+				return utils.CheckThrottling(httpResp.StatusCode, err)
 			}
+			resp = rp
 			return nil
 		})
 
@@ -148,15 +147,13 @@ func testAccCheckOutscaleOAPILBUExists(n string, res *oscgo.LoadBalancer) resour
 				Filters: filter,
 			}
 
-			resp, _, err = conn.LoadBalancerApi.ReadLoadBalancers(
+			rp, httpResp, err := conn.LoadBalancerApi.ReadLoadBalancers(
 				context.Background()).ReadLoadBalancersRequest(*req).Execute()
 
 			if err != nil {
-				if strings.Contains(fmt.Sprint(err), "Throttling") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
+				return utils.CheckThrottling(httpResp.StatusCode, err)
 			}
+			resp = rp
 			return nil
 		})
 

@@ -437,7 +437,7 @@ func resourceOutscaleOAPILoadBalancerCreate_(d *schema.ResourceData, meta interf
 
 	log.Printf("[DEBUG] Load Balancer request configuration: %#v", *req)
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err := conn.LoadBalancerApi.CreateLoadBalancer(
+		_, httpResp, err := conn.LoadBalancerApi.CreateLoadBalancer(
 			context.Background()).
 			CreateLoadBalancerRequest(*req).Execute()
 		if err != nil {
@@ -445,7 +445,7 @@ func resourceOutscaleOAPILoadBalancerCreate_(d *schema.ResourceData, meta interf
 				return resource.RetryableError(
 					fmt.Errorf("[WARN] Error creating Load Balancer Listener with SSL Cert, retrying: %s", err))
 			}
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})
@@ -466,10 +466,10 @@ func resourceOutscaleOAPILoadBalancerCreate_(d *schema.ResourceData, meta interf
 
 		var err error
 		err = resource.Retry(1*time.Minute, func() *resource.RetryError {
-			_, _, err = conn.LoadBalancerApi.UpdateLoadBalancer(
+			_, httpResp, err := conn.LoadBalancerApi.UpdateLoadBalancer(
 				context.Background()).UpdateLoadBalancerRequest(req).Execute()
 			if err != nil {
-				return utils.CheckThrottling(err)
+				return utils.CheckThrottling(httpResp.StatusCode, err)
 			}
 			return nil
 		})
@@ -505,12 +505,13 @@ func readResourceLb(conn *oscgo.APIClient, elbName string) (*oscgo.LoadBalancer,
 	var resp oscgo.ReadLoadBalancersResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.LoadBalancerApi.ReadLoadBalancers(
+		rp, httpResp, err := conn.LoadBalancerApi.ReadLoadBalancers(
 			context.Background()).
 			ReadLoadBalancersRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 
@@ -620,10 +621,10 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 
 		var err error
 		err = resource.Retry(1*time.Minute, func() *resource.RetryError {
-			_, _, err = conn.LoadBalancerApi.UpdateLoadBalancer(
+			_, httpResp, err := conn.LoadBalancerApi.UpdateLoadBalancer(
 				context.Background()).UpdateLoadBalancerRequest(req).Execute()
 			if err != nil {
-				return utils.CheckThrottling(err)
+				return utils.CheckThrottling(httpResp.StatusCode, err)
 			}
 			return nil
 		})
@@ -652,7 +653,7 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 		}
 
 		err = resource.Retry(60*time.Second, func() *resource.RetryError {
-			_, _, err := conn.LoadBalancerApi.DeleteLoadBalancerTags(
+			_, httpResp, err := conn.LoadBalancerApi.DeleteLoadBalancerTags(
 				context.Background()).
 				DeleteLoadBalancerTagsRequest(
 					oscgo.DeleteLoadBalancerTagsRequest{
@@ -660,10 +661,7 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 						Tags:              remove,
 					}).Execute()
 			if err != nil {
-				if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
-					return resource.RetryableError(err) // retry
-				}
-				return utils.CheckThrottling(err)
+				return utils.CheckThrottling(httpResp.StatusCode, err)
 			}
 			return nil
 		})
@@ -677,7 +675,7 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 		}
 
 		err = resource.Retry(60*time.Second, func() *resource.RetryError {
-			_, _, err := conn.LoadBalancerApi.CreateLoadBalancerTags(
+			_, httpResp, err := conn.LoadBalancerApi.CreateLoadBalancerTags(
 				context.Background()).
 				CreateLoadBalancerTagsRequest(
 					oscgo.CreateLoadBalancerTagsRequest{
@@ -685,10 +683,10 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 						Tags:              create,
 					}).Execute()
 			if err != nil {
-				if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
+				if httpResp.StatusCode == utils.ResourceNotFound {
 					return resource.RetryableError(err) // retry
 				}
-				return utils.CheckThrottling(err)
+				return utils.CheckThrottling(httpResp.StatusCode, err)
 			}
 			return nil
 		})
@@ -723,13 +721,13 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 
 			var err error
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-				_, _, err = conn.ListenerApi.DeleteLoadBalancerListeners(
+				_, httpResp, err := conn.ListenerApi.DeleteLoadBalancerListeners(
 					context.Background()).
 					DeleteLoadBalancerListenersRequest(req).
 					Execute()
 
 				if err != nil {
-					return utils.CheckThrottling(err)
+					return utils.CheckThrottling(httpResp.StatusCode, err)
 				}
 				return nil
 			})
@@ -750,7 +748,7 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 			var err error
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 				log.Printf("[DEBUG] Load Balancer Create Listeners")
-				_, _, err = conn.ListenerApi.CreateLoadBalancerListeners(
+				_, httpResp, err := conn.ListenerApi.CreateLoadBalancerListeners(
 					context.Background()).CreateLoadBalancerListenersRequest(req).Execute()
 				if err != nil {
 					if strings.Contains(fmt.Sprint(err), "DuplicateListener") {
@@ -761,7 +759,7 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 						log.Printf("[DEBUG] SSL Cert not found for given ARN, retrying")
 						return resource.RetryableError(err)
 					}
-					return utils.CheckThrottling(err)
+					return utils.CheckThrottling(httpResp.StatusCode, err)
 				}
 				// Successful creation
 				return nil
@@ -788,13 +786,13 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 
 			var err error
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-				_, _, err = conn.LoadBalancerApi.
+				_, httpResp, err := conn.LoadBalancerApi.
 					RegisterVmsInLoadBalancer(context.Background()).
 					RegisterVmsInLoadBalancerRequest(req).
 					Execute()
 
 				if err != nil {
-					return utils.CheckThrottling(err)
+					return utils.CheckThrottling(httpResp.StatusCode, err)
 				}
 				return nil
 			})
@@ -810,14 +808,14 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 
 			var err error
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-				_, _, err := conn.LoadBalancerApi.
+				_, httpResp, err := conn.LoadBalancerApi.
 					DeregisterVmsInLoadBalancer(
 						context.Background()).
 					DeregisterVmsInLoadBalancerRequest(req).
 					Execute()
 
 				if err != nil {
-					return utils.CheckThrottling(err)
+					return utils.CheckThrottling(httpResp.StatusCode, err)
 				}
 				return nil
 			})
@@ -851,11 +849,11 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 			var err error
 
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-				_, _, err = conn.LoadBalancerApi.UpdateLoadBalancer(
+				_, httpResp, err := conn.LoadBalancerApi.UpdateLoadBalancer(
 					context.Background()).UpdateLoadBalancerRequest(req).
 					Execute()
 				if err != nil {
-					return utils.CheckThrottling(err)
+					return utils.CheckThrottling(httpResp.StatusCode, err)
 				}
 				return nil
 			})
@@ -888,10 +886,10 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 			var err error
 
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-				_, _, err = conn.LoadBalancerApi.UpdateLoadBalancer(
+				_, httpResp, err := conn.LoadBalancerApi.UpdateLoadBalancer(
 					context.Background()).UpdateLoadBalancerRequest(req).Execute()
 				if err != nil {
-					return utils.CheckThrottling(err)
+					return utils.CheckThrottling(httpResp.StatusCode, err)
 				}
 				return nil
 			})
@@ -910,10 +908,10 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 
 		var err error
 		err = resource.Retry(1*time.Minute, func() *resource.RetryError {
-			_, _, err = conn.LoadBalancerApi.UpdateLoadBalancer(
+			_, httpResp, err := conn.LoadBalancerApi.UpdateLoadBalancer(
 				context.Background()).UpdateLoadBalancerRequest(req).Execute()
 			if err != nil {
-				return utils.CheckThrottling(err)
+				return utils.CheckThrottling(httpResp.StatusCode, err)
 			}
 			return nil
 		})
@@ -931,10 +929,10 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 
 		var err error
 		err = resource.Retry(1*time.Minute, func() *resource.RetryError {
-			_, _, err = conn.LoadBalancerApi.UpdateLoadBalancer(
+			_, httpResp, err := conn.LoadBalancerApi.UpdateLoadBalancer(
 				context.Background()).UpdateLoadBalancerRequest(req).Execute()
 			if err != nil {
-				return utils.CheckThrottling(err)
+				return utils.CheckThrottling(httpResp.StatusCode, err)
 			}
 			return nil
 		})
@@ -962,10 +960,10 @@ func resourceOutscaleOAPILoadBalancerDelete(d *schema.ResourceData, meta interfa
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err = conn.LoadBalancerApi.DeleteLoadBalancer(
+		_, httpResp, err := conn.LoadBalancerApi.DeleteLoadBalancer(
 			context.Background()).DeleteLoadBalancerRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})

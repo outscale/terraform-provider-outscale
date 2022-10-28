@@ -49,15 +49,16 @@ func testAccCheckOutscaleOAPISubNetExists(n string, res *oscgo.Subnet) resource.
 
 		err := resource.Retry(30*time.Second, func() *resource.RetryError {
 			var err error
-			resp, _, err = conn.SubnetApi.ReadSubnets(context.Background()).ReadSubnetsRequest(oscgo.ReadSubnetsRequest{
+			rp, httpResp, err := conn.SubnetApi.ReadSubnets(context.Background()).ReadSubnetsRequest(oscgo.ReadSubnetsRequest{
 				Filters: &oscgo.FiltersSubnet{
 					SubnetIds: &[]string{rs.Primary.ID},
 				},
 			}).Execute()
 
 			if err != nil {
-				return utils.CheckThrottling(err)
+				return utils.CheckThrottling(httpResp.StatusCode, err)
 			}
+			resp = rp
 			return nil
 		})
 
@@ -86,16 +87,15 @@ func testAccCheckOutscaleOAPISubNetDestroyed(s *terraform.State) error {
 		var resp oscgo.ReadSubnetsResponse
 		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 		err := resource.Retry(30*time.Second, func() *resource.RetryError {
-			var err error
-			resp, _, err = conn.SubnetApi.ReadSubnets(context.Background()).ReadSubnetsRequest(oscgo.ReadSubnetsRequest{
+			rp, httpResp, err := conn.SubnetApi.ReadSubnets(context.Background()).ReadSubnetsRequest(oscgo.ReadSubnetsRequest{
 				Filters: &oscgo.FiltersSubnet{
 					SubnetIds: &[]string{rs.Primary.ID},
 				},
 			}).Execute()
-
 			if err != nil {
-				return utils.CheckThrottling(err)
+				return utils.CheckThrottling(httpResp.StatusCode, err)
 			}
+			resp = rp
 			return nil
 		})
 

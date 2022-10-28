@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -238,11 +237,14 @@ func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) err
 
 	var resp oscgo.ReadNicsResponse
 	var err error
+	var statusCode int
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(dnri).Execute()
+		rp, httpResp, err := conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(dnri).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
+		statusCode = httpResp.StatusCode
 		return nil
 	})
 
@@ -252,7 +254,7 @@ func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) err
 	}
 
 	if err != nil {
-		if strings.Contains(err.Error(), utils.ResourceNotFound) {
+		if statusCode == utils.ResourceNotFound {
 			// The ENI is gone now, so just remove it from the state
 			d.SetId("")
 			return nil

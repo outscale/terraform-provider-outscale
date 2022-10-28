@@ -102,9 +102,9 @@ func resourceOutscaleNetAccessPointUpdate(d *schema.ResourceData, meta interface
 
 		var err error
 		err = resource.Retry(60*time.Second, func() *resource.RetryError {
-			_, _, err = conn.NetAccessPointApi.UpdateNetAccessPoint(context.Background()).UpdateNetAccessPointRequest(*req).Execute()
+			_, httpResp, err := conn.NetAccessPointApi.UpdateNetAccessPoint(context.Background()).UpdateNetAccessPointRequest(*req).Execute()
 			if err != nil {
-				return utils.CheckThrottling(err)
+				return utils.CheckThrottling(httpResp.StatusCode, err)
 			}
 			return nil
 		})
@@ -130,13 +130,23 @@ func resourceOutscaleNetAccessPointUpdate(d *schema.ResourceData, meta interface
 
 func napStateRefreshFunc(conn *oscgo.APIClient, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		resp, _, err := conn.NetAccessPointApi.
-			ReadNetAccessPoints(context.Background()).
-			ReadNetAccessPointsRequest(oscgo.ReadNetAccessPointsRequest{
-				Filters: &oscgo.FiltersNetAccessPoint{
-					NetAccessPointIds: &[]string{id},
-				},
-			}).Execute()
+		var resp oscgo.ReadNetAccessPointsResponse
+		var err error
+
+		err = resource.Retry(60*time.Second, func() *resource.RetryError {
+			rp, httpResp, err := conn.NetAccessPointApi.
+				ReadNetAccessPoints(context.Background()).
+				ReadNetAccessPointsRequest(oscgo.ReadNetAccessPointsRequest{
+					Filters: &oscgo.FiltersNetAccessPoint{
+						NetAccessPointIds: &[]string{id},
+					},
+				}).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp.StatusCode, err)
+			}
+			resp = rp
+			return nil
+		})
 
 		if err != nil {
 			log.Printf("[ERROR] error on NetAccessPointStateRefresh: %s", err)
@@ -173,12 +183,13 @@ func resourceOutscaleNetAccessPointCreate(d *schema.ResourceData, meta interface
 	var err error
 
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
-		resp, _, err = conn.NetAccessPointApi.CreateNetAccessPoint(
+		rp, httpResp, err := conn.NetAccessPointApi.CreateNetAccessPoint(
 			context.Background()).
 			CreateNetAccessPointRequest(*req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 
@@ -231,12 +242,13 @@ func resourceOutscaleNetAccessPointRead(d *schema.ResourceData, meta interface{}
 	var err error
 
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
-		resp, _, err = conn.NetAccessPointApi.ReadNetAccessPoints(
+		rp, httpResp, err := conn.NetAccessPointApi.ReadNetAccessPoints(
 			context.Background()).
 			ReadNetAccessPointsRequest(*req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 
@@ -270,11 +282,11 @@ func resourceOutscaleNetAccessPointDelete(d *schema.ResourceData, meta interface
 	var err error
 
 	err = resource.Retry(70*time.Second, func() *resource.RetryError {
-		_, _, err = conn.NetAccessPointApi.DeleteNetAccessPoint(
+		_, httpResp, err := conn.NetAccessPointApi.DeleteNetAccessPoint(
 			context.Background()).
 			DeleteNetAccessPointRequest(*req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})

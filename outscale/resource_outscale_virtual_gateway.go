@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -79,10 +78,11 @@ func resourceOutscaleOAPIVirtualGatewayCreate(d *schema.ResourceData, meta inter
 	var resp oscgo.CreateVirtualGatewayResponse
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
-		resp, _, err = conn.VirtualGatewayApi.CreateVirtualGateway(context.Background()).CreateVirtualGatewayRequest(createOpts).Execute()
+		rp, httpResp, err := conn.VirtualGatewayApi.CreateVirtualGateway(context.Background()).CreateVirtualGatewayRequest(createOpts).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 	if err != nil {
@@ -121,18 +121,22 @@ func resourceOutscaleOAPIVirtualGatewayRead(d *schema.ResourceData, meta interfa
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	var resp oscgo.ReadVirtualGatewaysResponse
-	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-		var err error
-		resp, _, err = conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(oscgo.ReadVirtualGatewaysRequest{
+	var err error
+	var statusCode int
+
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		rp, httpResp, err := conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(oscgo.ReadVirtualGatewaysRequest{
 			Filters: &oscgo.FiltersVirtualGateway{VirtualGatewayIds: &[]string{d.Id()}},
 		}).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
+		statusCode = httpResp.StatusCode
 		return nil
 	})
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
+		if statusCode == utils.ResourceNotFound {
 			d.SetId("")
 			return nil
 		}
@@ -192,14 +196,16 @@ func resourceOutscaleOAPIVirtualGatewayDelete(d *schema.ResourceData, meta inter
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err := conn.VirtualGatewayApi.DeleteVirtualGateway(context.Background()).DeleteVirtualGatewayRequest(
+		_, httpResp, err := conn.VirtualGatewayApi.DeleteVirtualGateway(context.Background()).DeleteVirtualGatewayRequest(
 			oscgo.DeleteVirtualGatewayRequest{VirtualGatewayId: d.Id()}).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), utils.ResourceNotFound) {
+			if httpResp.StatusCode == utils.ResourceNotFound {
+				d.SetId("")
 				return nil
 			}
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		d.SetId("")
 		return nil
 	})
 }
@@ -210,19 +216,22 @@ func vpnGatewayAttachStateRefreshFunc(conn *oscgo.APIClient, id string, expected
 	return func() (interface{}, string, error) {
 		var resp oscgo.ReadVirtualGatewaysResponse
 		var err error
+		var statusCode int
 
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, _, err = conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(oscgo.ReadVirtualGatewaysRequest{
+			rp, httpResp, err := conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(oscgo.ReadVirtualGatewaysRequest{
 				Filters: &oscgo.FiltersVirtualGateway{VirtualGatewayIds: &[]string{id}},
 			}).Execute()
 			if err != nil {
-				return utils.CheckThrottling(err)
+				return utils.CheckThrottling(httpResp.StatusCode, err)
 			}
+			resp = rp
+			statusCode = httpResp.StatusCode
 			return nil
 		})
 
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
+			if statusCode == utils.ResourceNotFound {
 				resp.SetVirtualGateways(nil)
 			} else {
 				fmt.Printf("[ERROR] Error on VpnGatewayStateRefresh: %s", err)
@@ -259,12 +268,13 @@ func virtualGatewayStateRefreshFunc(conn *oscgo.APIClient, instanceID, failState
 		var resp oscgo.ReadVirtualGatewaysResponse
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 			var err error
-			resp, _, err = conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(oscgo.ReadVirtualGatewaysRequest{
+			rp, httpResp, err := conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(oscgo.ReadVirtualGatewaysRequest{
 				Filters: &oscgo.FiltersVirtualGateway{
 					VirtualGatewayIds: &[]string{instanceID}}}).Execute()
 			if err != nil {
-				return utils.CheckThrottling(err)
+				return utils.CheckThrottling(httpResp.StatusCode, err)
 			}
+			resp = rp
 			return nil
 		})
 

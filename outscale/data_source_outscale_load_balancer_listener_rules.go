@@ -116,12 +116,13 @@ func dataSourceOutscaleOAPILoadBalancerLDRulesRead(d *schema.ResourceData, meta 
 	var resp oscgo.ReadListenerRulesResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.ListenerApi.ReadListenerRules(
+		rp, httpResp, err := conn.ListenerApi.ReadListenerRules(
 			context.Background()).
 			ReadListenerRulesRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 

@@ -65,10 +65,11 @@ func resourceOutscaleOAPICaCreate(d *schema.ResourceData, meta interface{}) erro
 	var resp oscgo.CreateCaResponse
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		resp, _, err = conn.CaApi.CreateCa(context.Background()).CreateCaRequest(req).Execute()
+		rp, httpResp, err := conn.CaApi.CreateCa(context.Background()).CreateCaRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 	if err != nil {
@@ -89,10 +90,11 @@ func resourceOutscaleOAPICaRead(d *schema.ResourceData, meta interface{}) error 
 	var resp oscgo.ReadCasResponse
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		resp, _, err = conn.CaApi.ReadCas(context.Background()).ReadCasRequest(req).Execute()
+		rp, httpResp, err := conn.CaApi.ReadCas(context.Background()).ReadCasRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 
@@ -135,9 +137,9 @@ func resourceOutscaleOAPICaUpdate(d *schema.ResourceData, meta interface{}) erro
 
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		_, _, err = conn.CaApi.UpdateCa(context.Background()).UpdateCaRequest(req).Execute()
+		_, httpResp, err := conn.CaApi.UpdateCa(context.Background()).UpdateCaRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})
@@ -156,9 +158,9 @@ func resourceOutscaleOAPICaDelete(d *schema.ResourceData, meta interface{}) erro
 
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		_, _, err = conn.CaApi.DeleteCa(context.Background()).DeleteCaRequest(req).Execute()
+		_, httpResp, err := conn.CaApi.DeleteCa(context.Background()).DeleteCaRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})

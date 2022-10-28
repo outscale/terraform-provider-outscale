@@ -90,7 +90,7 @@ func dataSourceOutscaleLoadBalancerVmsHealRead(d *schema.ResourceData,
 	var resp oscgo.ReadVmsHealthResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.LoadBalancerApi.ReadVmsHealth(
+		rp, httpResp, err := conn.LoadBalancerApi.ReadVmsHealth(
 			context.Background()).ReadVmsHealthRequest(req).
 			Execute()
 
@@ -100,8 +100,9 @@ func dataSourceOutscaleLoadBalancerVmsHealRead(d *schema.ResourceData,
 				strings.Contains(fmt.Sprint(err), "Bad Request") {
 				return resource.RetryableError(err)
 			}
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 	if err != nil {

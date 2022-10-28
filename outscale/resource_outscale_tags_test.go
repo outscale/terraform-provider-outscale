@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/go-test/deep"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 
@@ -87,17 +88,20 @@ func oapiTestAccCheckOutscaleVMExistsWithProviders(n string, i *oscgo.Vm, provid
 			var resp oscgo.ReadVmsResponse
 			var err error
 
-			for {
-				resp, _, err = conn.OSCAPI.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
+			err = resource.Retry(30*time.Second, func() *resource.RetryError {
+				rp, httpResp, err := conn.OSCAPI.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
 					Filters: &oscgo.FiltersVm{
 						VmIds: &[]string{rs.Primary.ID},
 					},
 				}).Execute()
 				if err != nil {
-					time.Sleep(10 * time.Second)
-				} else {
-					break
+					return utils.CheckThrottling(httpResp.StatusCode, err)
 				}
+				resp = rp
+				return nil
+			})
+			if err != nil {
+				return err
 			}
 
 			if len(resp.GetVms()) == 0 {
@@ -110,7 +114,6 @@ func oapiTestAccCheckOutscaleVMExistsWithProviders(n string, i *oscgo.Vm, provid
 				return nil
 			}
 		}
-
 		return fmt.Errorf("VM not found")
 	}
 }

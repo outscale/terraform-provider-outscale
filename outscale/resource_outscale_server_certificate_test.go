@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform/helper/acctest"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -141,7 +143,16 @@ func testAccCheckOutscaleServerCertificateExists(n string) resource.TestCheckFun
 			return fmt.Errorf("No id is set")
 		}
 		exists := false
-		resp, _, err := conn.ServerCertificateApi.ReadServerCertificates(context.Background()).ReadServerCertificatesRequest(oscgo.ReadServerCertificatesRequest{}).Execute()
+		var resp oscgo.ReadServerCertificatesResponse
+		err := resource.Retry(3*time.Minute, func() *resource.RetryError {
+			rp, httpResp, err := conn.ServerCertificateApi.ReadServerCertificates(context.Background()).ReadServerCertificatesRequest(oscgo.ReadServerCertificatesRequest{}).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp.StatusCode, err)
+			}
+			resp = rp
+			return nil
+		})
+
 		if err != nil || len(resp.GetServerCertificates()) == 0 {
 			return fmt.Errorf("Server Certificate not found (%s)", rs.Primary.ID)
 		}
@@ -169,7 +180,18 @@ func testAccCheckOutscaleServerCertificateDestroy(s *terraform.State) error {
 		}
 
 		exists := false
-		resp, _, err := conn.ServerCertificateApi.ReadServerCertificates(context.Background()).ReadServerCertificatesRequest(oscgo.ReadServerCertificatesRequest{}).Execute()
+
+		var resp oscgo.ReadServerCertificatesResponse
+		var err error
+		err = resource.Retry(3*time.Minute, func() *resource.RetryError {
+			rp, httpResp, err := conn.ServerCertificateApi.ReadServerCertificates(context.Background()).ReadServerCertificatesRequest(oscgo.ReadServerCertificatesRequest{}).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp.StatusCode, err)
+			}
+			resp = rp
+			return nil
+		})
+
 		if err != nil {
 			return fmt.Errorf("Server Certificate reading (%s)", rs.Primary.ID)
 		}

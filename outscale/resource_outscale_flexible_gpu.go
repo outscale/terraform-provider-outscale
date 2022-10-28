@@ -86,12 +86,13 @@ func resourceOutscaleOAPIFlexibleGpuCreate(d *schema.ResourceData, meta interfac
 	var resp oscgo.CreateFlexibleGpuResponse
 	var err error
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
-		resp, _, err = conn.FlexibleGpuApi.CreateFlexibleGpu(
+		rp, httpResp, err := conn.FlexibleGpuApi.CreateFlexibleGpu(
 			context.Background()).
 			CreateFlexibleGpuRequest(*req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 
@@ -121,12 +122,13 @@ func resourceOutscaleOAPIFlexibleGpuRead(d *schema.ResourceData, meta interface{
 	var err error
 
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
-		resp, _, err = conn.FlexibleGpuApi.ReadFlexibleGpus(
+		rp, httpResp, err := conn.FlexibleGpuApi.ReadFlexibleGpus(
 			context.Background()).
 			ReadFlexibleGpusRequest(*req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 
@@ -177,11 +179,11 @@ func resourceOutscaleOAPIFlexibleGpuUpdate(d *schema.ResourceData, meta interfac
 	var err error
 
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
-		_, _, err = conn.FlexibleGpuApi.UpdateFlexibleGpu(
+		_, httpResp, err := conn.FlexibleGpuApi.UpdateFlexibleGpu(
 			context.Background()).
 			UpdateFlexibleGpuRequest(*req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})
@@ -202,11 +204,11 @@ func resourceOutscaleOAPIFlexibleGpuDelete(d *schema.ResourceData, meta interfac
 
 	var err error
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
-		_, _, err = conn.FlexibleGpuApi.DeleteFlexibleGpu(
+		_, httpResp, err := conn.FlexibleGpuApi.DeleteFlexibleGpu(
 			context.Background()).
 			DeleteFlexibleGpuRequest(*req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})
