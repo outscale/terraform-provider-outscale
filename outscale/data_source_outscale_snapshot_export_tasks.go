@@ -101,13 +101,14 @@ func dataSourceOAPISnapshotExportTasksRead(d *schema.ResourceData, meta interfac
 	var resp oscgo.ReadSnapshotExportTasksResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.SnapshotApi.ReadSnapshotExportTasks(context.Background()).
+		rp, httpResp, err := conn.SnapshotApi.ReadSnapshotExportTasks(context.Background()).
 			ReadSnapshotExportTasksRequest(oscgo.ReadSnapshotExportTasksRequest{
 				Filters: filtersReq,
 			}).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 

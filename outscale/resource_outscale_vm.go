@@ -524,12 +524,11 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 	// Create the vm
 	var resp oscgo.CreateVmsResponse
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		var err error
-		resp, _, err = conn.VmApi.CreateVms(context.Background()).CreateVmsRequest(vmOpts).Execute()
-
+		rp, httpResp, err := conn.VmApi.CreateVms(context.Background()).CreateVmsRequest(vmOpts).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 
@@ -552,7 +551,7 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 				return resource.RetryableError(errors.New("timeout awaiting windows password"))
 			}
 			if err != nil {
-				return utils.CheckThrottling(err)
+				return resource.NonRetryableError(err)
 			}
 			return nil
 		})
@@ -619,17 +618,16 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 
 	var resp oscgo.ReadVmsResponse
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
-		r, _, err := conn.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
+		rp, httpResp, err := conn.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
 			Filters: &oscgo.FiltersVm{
 				VmIds: &[]string{d.Id()},
 			},
 		}).Execute()
 
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
-
-		resp = r
+		resp = rp
 		return nil
 	})
 
@@ -663,9 +661,9 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 func getOAPIVMAdminPassword(VMID string, conn *oscgo.APIClient) (string, error) {
 	var resp oscgo.ReadAdminPasswordResponse
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
-		rp, _, err := conn.VmApi.ReadAdminPassword(context.Background()).ReadAdminPasswordRequest(oscgo.ReadAdminPasswordRequest{VmId: VMID}).Execute()
+		rp, httpResp, err := conn.VmApi.ReadAdminPassword(context.Background()).ReadAdminPasswordRequest(oscgo.ReadAdminPasswordRequest{VmId: VMID}).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		resp = rp
 		return nil
@@ -899,12 +897,12 @@ func resourceOAPIVMDelete(d *schema.ResourceData, meta interface{}) error {
 
 	var err error
 	err = resource.Retry(30*time.Second, func() *resource.RetryError {
-		_, _, err = conn.VmApi.DeleteVms(context.Background()).DeleteVmsRequest(oscgo.DeleteVmsRequest{
+		_, httpResp, err := conn.VmApi.DeleteVms(context.Background()).DeleteVmsRequest(oscgo.DeleteVmsRequest{
 			VmIds: []string{id},
 		}).Execute()
 
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})
@@ -1125,13 +1123,13 @@ func vmStateRefreshFunc(conn *oscgo.APIClient, instanceID, failState string) res
 	return func() (interface{}, string, error) {
 		var resp oscgo.ReadVmsResponse
 		err := resource.Retry(30*time.Second, func() *resource.RetryError {
-			rp, _, err := conn.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
+			rp, httpResp, err := conn.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
 				Filters: &oscgo.FiltersVm{
 					VmIds: &[]string{instanceID},
 				},
 			}).Execute()
 			if err != nil {
-				return utils.CheckThrottling(err)
+				return utils.CheckThrottling(httpResp.StatusCode, err)
 			}
 			resp = rp
 			return nil
@@ -1175,11 +1173,11 @@ func stopVM(vmID string, conn *oscgo.APIClient) error {
 	}
 
 	err = resource.Retry(50*time.Second, func() *resource.RetryError {
-		_, _, err = conn.VmApi.StopVms(context.Background()).StopVmsRequest(oscgo.StopVmsRequest{
+		_, httpResp, err := conn.VmApi.StopVms(context.Background()).StopVmsRequest(oscgo.StopVmsRequest{
 			VmIds: []string{vmID},
 		}).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})
@@ -1215,11 +1213,11 @@ func stopVM(vmID string, conn *oscgo.APIClient) error {
 
 func startVM(vmID string, conn *oscgo.APIClient) error {
 	err := resource.Retry(50*time.Second, func() *resource.RetryError {
-		_, _, err := conn.VmApi.StartVms(context.Background()).StartVmsRequest(oscgo.StartVmsRequest{
+		_, httpResp, err := conn.VmApi.StartVms(context.Background()).StartVmsRequest(oscgo.StartVmsRequest{
 			VmIds: []string{vmID},
 		}).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})
@@ -1252,7 +1250,7 @@ func updateVmAttr(conn *oscgo.APIClient, instanceAttrOpts oscgo.UpdateVmRequest)
 			if errBody != nil {
 				fmt.Println(errBody)
 			}
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})
@@ -1273,7 +1271,7 @@ func readVM(vmID string, conn *oscgo.APIClient) (oscgo.ReadVmsResponse, *http.Re
 			},
 		}).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(http.StatusCode, err)
 		}
 		resp = rp
 		httpResp = http

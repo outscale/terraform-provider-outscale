@@ -63,13 +63,13 @@ func resourceOutscaleOAPILBUAttachmentCreate(d *schema.ResourceData, meta interf
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err = conn.LoadBalancerApi.
+		_, httpResp, err := conn.LoadBalancerApi.
 			RegisterVmsInLoadBalancer(context.Background()).
 			RegisterVmsInLoadBalancerRequest(req).
 			Execute()
 
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})
@@ -129,13 +129,13 @@ func resourceOutscaleOAPILBUAttachmentDelete(d *schema.ResourceData, meta interf
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err := conn.LoadBalancerApi.
+		_, httpResp, err := conn.LoadBalancerApi.
 			DeregisterVmsInLoadBalancer(context.Background()).
 			DeregisterVmsInLoadBalancerRequest(req).
 			Execute()
 
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})

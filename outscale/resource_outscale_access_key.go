@@ -76,19 +76,20 @@ func resourceOutscaleAccessKeyCreate(d *schema.ResourceData, meta interface{}) e
 		}
 	}
 	req.ExpirationDate = &expirDate
-	var res oscgo.CreateAccessKeyResponse
+	var resp oscgo.CreateAccessKeyResponse
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		res, _, err = conn.AccessKeyApi.CreateAccessKey(context.Background()).CreateAccessKeyRequest(req).Execute()
+		rp, httpResp, err := conn.AccessKeyApi.CreateAccessKey(context.Background()).CreateAccessKeyRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 	if err != nil {
 		return err
 	}
 
-	d.SetId(*res.GetAccessKey().AccessKeyId)
+	d.SetId(*resp.GetAccessKey().AccessKeyId)
 
 	if d.Get("state").(string) != "ACTIVE" {
 		if err := updateAccessKey(conn, d.Id(), "INACTIVE"); err != nil {
@@ -107,9 +108,9 @@ func resourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) err
 	}
 	var resp oscgo.ReadSecretAccessKeyResponse
 	err := resource.Retry(2*time.Minute, func() *resource.RetryError {
-		rp, _, err := conn.AccessKeyApi.ReadSecretAccessKey(context.Background()).ReadSecretAccessKeyRequest(filter).Execute()
+		rp, httpResp, err := conn.AccessKeyApi.ReadSecretAccessKey(context.Background()).ReadSecretAccessKeyRequest(filter).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		resp = rp
 		return nil
@@ -167,9 +168,9 @@ func resourceOutscaleAccessKeyUpdate(d *schema.ResourceData, meta interface{}) e
 	}
 
 	err := resource.Retry(2*time.Minute, func() *resource.RetryError {
-		_, _, err := conn.AccessKeyApi.UpdateAccessKey(context.Background()).UpdateAccessKeyRequest(req).Execute()
+		_, httpResp, err := conn.AccessKeyApi.UpdateAccessKey(context.Background()).UpdateAccessKeyRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})
@@ -188,9 +189,9 @@ func resourceOutscaleAccessKeyDelete(d *schema.ResourceData, meta interface{}) e
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err = conn.AccessKeyApi.DeleteAccessKey(context.Background()).DeleteAccessKeyRequest(req).Execute()
+		_, httpResp, err := conn.AccessKeyApi.DeleteAccessKey(context.Background()).DeleteAccessKeyRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})
@@ -207,9 +208,9 @@ func updateAccessKey(conn *oscgo.APIClient, id, state string) error {
 		State:       state,
 	}
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err := conn.AccessKeyApi.UpdateAccessKey(context.Background()).UpdateAccessKeyRequest(req).Execute()
+		_, httpResp, err := conn.AccessKeyApi.UpdateAccessKey(context.Background()).UpdateAccessKeyRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})

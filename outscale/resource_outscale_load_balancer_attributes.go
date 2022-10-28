@@ -250,10 +250,10 @@ func loadBalancerAttributesDoRequest(d *schema.ResourceData, meta interface{}, r
 	conn := meta.(*OutscaleClient).OSCAPI
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err = conn.LoadBalancerApi.UpdateLoadBalancer(
+		_, httpResp, err := conn.LoadBalancerApi.UpdateLoadBalancer(
 			context.Background()).UpdateLoadBalancerRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})
@@ -514,10 +514,10 @@ func resourceOutscaleOAPILoadBalancerAttributesDelete(d *schema.ResourceData, me
 	}
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err = conn.LoadBalancerApi.UpdateLoadBalancer(
+		_, httpResp, err := conn.LoadBalancerApi.UpdateLoadBalancer(
 			context.Background()).UpdateLoadBalancerRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})

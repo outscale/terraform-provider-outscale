@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"regexp"
-	"strings"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -271,14 +270,15 @@ func resourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, met
 	var err error
 	var resp oscgo.CreateLoadBalancerPolicyResponse
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.LoadBalancerPolicyApi.
+		rp, httpResp, err := conn.LoadBalancerPolicyApi.
 			CreateLoadBalancerPolicy(
 				context.Background()).
 			CreateLoadBalancerPolicyRequest(req).Execute()
 
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 
@@ -375,17 +375,13 @@ func resourceOutscaleAppCookieStickinessPolicyDelete(d *schema.ResourceData, met
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err = elbconn.LoadBalancerPolicyApi.
+		_, httpResp, err := elbconn.LoadBalancerPolicyApi.
 			DeleteLoadBalancerPolicy(
 				context.Background()).
 			DeleteLoadBalancerPolicyRequest(request).Execute()
 
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), utils.ResourceConflict) {
-				return resource.RetryableError(
-					fmt.Errorf("[WARN] Error deleting App stickiness policy, retrying: %s", err))
-			}
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})

@@ -3,12 +3,12 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
 	"strings"
 	"testing"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -84,16 +84,11 @@ func testAccCheckOAPILinkRouteTableDestroy(s *terraform.State) error {
 		var resp oscgo.ReadRouteTablesResponse
 		var err error
 		err = resource.Retry(2*time.Minute, func() *resource.RetryError {
-			resp, _, err = conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(params).Execute()
+			rp, httpResp, err := conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(params).Execute()
 			if err != nil {
-				if strings.Contains(fmt.Sprint(err), "InvalidParameterException") || strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
-					log.Printf("[DEBUG] Trying to create route again: %q", err)
-					return resource.RetryableError(err)
-				}
-
-				return resource.NonRetryableError(err)
+				return utils.CheckThrottling(httpResp.StatusCode, err)
 			}
-
+			resp = rp
 			return nil
 		})
 
@@ -133,14 +128,11 @@ func testAccCheckOAPILinkRouteTableExists(n string, v *oscgo.RouteTable) resourc
 		var resp oscgo.ReadRouteTablesResponse
 		var err error
 		err = resource.Retry(2*time.Minute, func() *resource.RetryError {
-			resp, _, err = conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(params).Execute()
+			rp, httpResp, err := conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(params).Execute()
 			if err != nil {
-				if strings.Contains(fmt.Sprint(err), "InvalidParameterException") {
-					log.Printf("[DEBUG] Trying to create route again: %q", err)
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
+				return utils.CheckThrottling(httpResp.StatusCode, err)
 			}
+			resp = rp
 			return nil
 		})
 

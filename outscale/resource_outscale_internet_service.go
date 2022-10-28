@@ -50,9 +50,9 @@ func resourceOutscaleOAPIInternetServiceCreate(d *schema.ResourceData, meta inte
 	var resp oscgo.CreateInternetServiceResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		rp, _, err := conn.InternetServiceApi.CreateInternetService(context.Background()).CreateInternetServiceRequest(oscgo.CreateInternetServiceRequest{}).Execute()
+		rp, httpResp, err := conn.InternetServiceApi.CreateInternetService(context.Background()).CreateInternetServiceRequest(oscgo.CreateInternetServiceRequest{}).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		resp = rp
 		return nil
@@ -88,9 +88,9 @@ func resourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta interf
 	var resp oscgo.ReadInternetServicesResponse
 
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
-		r, _, err := conn.InternetServiceApi.ReadInternetServices(context.Background()).ReadInternetServicesRequest(req).Execute()
+		r, httpResp, err := conn.InternetServiceApi.ReadInternetServices(context.Background()).ReadInternetServicesRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		resp = r
 		return nil
@@ -165,9 +165,9 @@ func resourceOutscaleOAPIInternetServiceDelete(d *schema.ResourceData, meta inte
 	}
 
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		_, _, err = conn.InternetServiceApi.DeleteInternetService(context.Background()).DeleteInternetServiceRequest(req).Execute()
+		_, httpResp, err := conn.InternetServiceApi.DeleteInternetService(context.Background()).DeleteInternetServiceRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})

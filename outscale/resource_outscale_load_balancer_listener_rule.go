@@ -153,11 +153,12 @@ func resourceOutscaleLoadBalancerListenerRuleCreate(d *schema.ResourceData, meta
 	var err error
 	var resp oscgo.CreateListenerRuleResponse
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.ListenerApi.CreateListenerRule(
+		rp, httpResp, err := conn.ListenerApi.CreateListenerRule(
 			context.Background()).CreateListenerRuleRequest(*req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 
@@ -185,12 +186,13 @@ func resourceOutscaleLoadBalancerListenerRuleRead(d *schema.ResourceData, meta i
 	var resp oscgo.ReadListenerRulesResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.ListenerApi.ReadListenerRules(
+		rp, httpResp, err := conn.ListenerApi.ReadListenerRules(
 			context.Background()).ReadListenerRulesRequest(req).
 			Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 
@@ -267,11 +269,11 @@ func resourceOutscaleLoadBalancerListenerRuleUpdate(d *schema.ResourceData, meta
 		}
 
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			_, _, err = conn.ListenerApi.UpdateListenerRule(
+			_, httpResp, err := conn.ListenerApi.UpdateListenerRule(
 				context.Background()).UpdateListenerRuleRequest(req).
 				Execute()
 			if err != nil {
-				return utils.CheckThrottling(err)
+				return utils.CheckThrottling(httpResp.StatusCode, err)
 			}
 			return nil
 		})
@@ -296,10 +298,10 @@ func resourceOutscaleLoadBalancerListenerRuleDelete(d *schema.ResourceData, meta
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err = conn.ListenerApi.DeleteListenerRule(
+		_, httpResp, err := conn.ListenerApi.DeleteListenerRule(
 			context.Background()).DeleteListenerRuleRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})
@@ -323,12 +325,13 @@ func resourceOutscaleLoadBalancerListenerRuleDelete(d *schema.ResourceData, meta
 			var resp oscgo.ReadListenerRulesResponse
 			var err error
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-				resp, _, err = conn.ListenerApi.ReadListenerRules(
+				rp, httpResp, err := conn.ListenerApi.ReadListenerRules(
 					context.Background()).
 					ReadListenerRulesRequest(req).Execute()
 				if err != nil {
-					return utils.CheckThrottling(err)
+					return utils.CheckThrottling(httpResp.StatusCode, err)
 				}
+				resp = rp
 				return nil
 			})
 

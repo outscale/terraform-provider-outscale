@@ -71,13 +71,13 @@ func testAccCheckOutscaleOAPILinExists(n string, res *oscgo.Net) resource.TestCh
 		conn := testAccProvider.Meta().(*OutscaleClient)
 
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-			var err error
-			resp, _, err = conn.OSCAPI.NetApi.ReadNets(context.Background()).ReadNetsRequest(oscgo.ReadNetsRequest{
+			rp, httpResp, err := conn.OSCAPI.NetApi.ReadNets(context.Background()).ReadNetsRequest(oscgo.ReadNetsRequest{
 				Filters: &oscgo.FiltersNet{NetIds: &[]string{rs.Primary.ID}},
 			}).Execute()
 			if err != nil {
-				return utils.CheckThrottling(err)
+				return utils.CheckThrottling(httpResp.StatusCode, err)
 			}
+			resp = rp
 			return nil
 		})
 		if err != nil {

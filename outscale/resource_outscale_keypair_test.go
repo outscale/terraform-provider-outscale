@@ -100,13 +100,14 @@ func testAccCheckOutscaleOAPIKeyPairDestroy(s *terraform.State) error {
 		var resp oscgo.ReadKeypairsResponse
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 			var err error
-			resp, _, err = conn.OSCAPI.KeypairApi.ReadKeypairs(context.Background()).ReadKeypairsRequest(oscgo.ReadKeypairsRequest{
+			rp, httpResp, err := conn.OSCAPI.KeypairApi.ReadKeypairs(context.Background()).ReadKeypairsRequest(oscgo.ReadKeypairsRequest{
 				Filters: &oscgo.FiltersKeypair{KeypairNames: &[]string{rs.Primary.ID}},
 			}).Execute()
 
 			if err != nil {
-				return utils.CheckThrottling(err)
+				return utils.CheckThrottling(httpResp.StatusCode, err)
 			}
+			resp = rp
 			return nil
 		})
 
@@ -143,20 +144,22 @@ func testAccCheckOutscaleOAPIKeyPairExists(n string, res *oscgo.Keypair) resourc
 			return fmt.Errorf("No OAPIKeyPair name is set")
 		}
 		var resp oscgo.ReadKeypairsResponse
+		var statusCode int
 		conn := testAccProvider.Meta().(*OutscaleClient)
 
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-			var err error
-			resp, _, err = conn.OSCAPI.KeypairApi.ReadKeypairs(context.Background()).ReadKeypairsRequest(oscgo.ReadKeypairsRequest{
+			rp, httpResp, err := conn.OSCAPI.KeypairApi.ReadKeypairs(context.Background()).ReadKeypairsRequest(oscgo.ReadKeypairsRequest{
 				Filters: &oscgo.FiltersKeypair{KeypairNames: &[]string{rs.Primary.ID}},
 			}).Execute()
 
 			if err != nil {
-				return utils.CheckThrottling(err)
+				return utils.CheckThrottling(httpResp.StatusCode, err)
 			}
+			resp = rp
+			statusCode = httpResp.StatusCode
 			return nil
 		})
-		if err != nil && !strings.Contains(fmt.Sprintf("%s", err), utils.ResourceNotFound) {
+		if err != nil && statusCode == utils.ResourceNotFound {
 			return err
 		}
 		if len(resp.GetKeypairs()) != 1 ||

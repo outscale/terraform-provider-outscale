@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"os"
 	"testing"
+	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -53,8 +55,16 @@ func testAccCheckOAPIImageDestroy(s *terraform.State) error {
 		filterReq := oscgo.ReadImagesRequest{
 			Filters: &oscgo.FiltersImage{ImageIds: &[]string{rs.Primary.ID}},
 		}
+		var resp oscgo.ReadImagesResponse
+		err := resource.Retry(120*time.Second, func() *resource.RetryError {
+			rp, httpResp, err := conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(filterReq).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp.StatusCode, err)
+			}
+			resp = rp
+			return nil
+		})
 
-		resp, _, err := conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(filterReq).Execute()
 		if err != nil || len(resp.GetImages()) > 0 {
 			return fmt.Errorf("Image still exists (%s)", rs.Primary.ID)
 		}
@@ -78,8 +88,16 @@ func testAccCheckOAPIImageExists(n string, ami *oscgo.Image) resource.TestCheckF
 		filterReq := oscgo.ReadImagesRequest{
 			Filters: &oscgo.FiltersImage{ImageIds: &[]string{rs.Primary.ID}},
 		}
+		var resp oscgo.ReadImagesResponse
+		err := resource.Retry(120*time.Second, func() *resource.RetryError {
+			rp, httpResp, err := conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(filterReq).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp.StatusCode, err)
+			}
+			resp = rp
+			return nil
+		})
 
-		resp, _, err := conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(filterReq).Execute()
 		if err != nil || len(resp.GetImages()) < 1 {
 			return fmt.Errorf("Image not found (%s)", rs.Primary.ID)
 		}

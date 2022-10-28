@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/spf13/cast"
@@ -67,13 +66,14 @@ func resourceOutscaleClientGatewayCreate(d *schema.ResourceData, meta interface{
 		PublicIp:       d.Get("public_ip").(string),
 	}
 
-	var client oscgo.CreateClientGatewayResponse
+	var resp oscgo.CreateClientGatewayResponse
 	err := resource.Retry(120*time.Second, func() *resource.RetryError {
 		var err error
-		client, _, err = conn.ClientGatewayApi.CreateClientGateway(context.Background()).CreateClientGatewayRequest(req).Execute()
+		rp, httpResp, err := conn.ClientGatewayApi.CreateClientGateway(context.Background()).CreateClientGatewayRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 	if err != nil {
@@ -81,13 +81,13 @@ func resourceOutscaleClientGatewayCreate(d *schema.ResourceData, meta interface{
 	}
 
 	if tags, ok := d.GetOk("tags"); ok {
-		err := assignTags(tags.(*schema.Set), *client.GetClientGateway().ClientGatewayId, conn)
+		err := assignTags(tags.(*schema.Set), *resp.GetClientGateway().ClientGatewayId, conn)
 		if err != nil {
 			return err
 		}
 	}
 
-	d.SetId(*client.GetClientGateway().ClientGatewayId)
+	d.SetId(*resp.GetClientGateway().ClientGatewayId)
 
 	return resourceOutscaleClientGatewayRead(d, meta)
 }
@@ -158,10 +158,11 @@ func resourceOutscaleClientGatewayDelete(d *schema.ResourceData, meta interface{
 	req := oscgo.DeleteClientGatewayRequest{
 		ClientGatewayId: gatewayID,
 	}
+
 	err := resource.Retry(120*time.Second, func() *resource.RetryError {
-		_, _, err := conn.ClientGatewayApi.DeleteClientGateway(context.Background()).DeleteClientGatewayRequest(req).Execute()
+		_, httpResp, err := conn.ClientGatewayApi.DeleteClientGateway(context.Background()).DeleteClientGatewayRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})
@@ -195,13 +196,22 @@ func clientGatewayRefreshFunc(conn *oscgo.APIClient, gatewayID *string) resource
 				ClientGatewayIds: &[]string{*gatewayID},
 			},
 		}
-
-		resp, _, err := conn.ClientGatewayApi.ReadClientGateways(context.Background()).ReadClientGatewaysRequest(filter).Execute()
+		var resp oscgo.ReadClientGatewaysResponse
+		var statusCode int
+		err := resource.Retry(120*time.Second, func() *resource.RetryError {
+			rp, httpResp, err := conn.ClientGatewayApi.ReadClientGateways(context.Background()).ReadClientGatewaysRequest(filter).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp.StatusCode, err)
+			}
+			resp = rp
+			statusCode = httpResp.StatusCode
+			return nil
+		})
 		if err != nil || len(resp.GetClientGateways()) == 0 {
 			switch {
-			case strings.Contains(fmt.Sprint(err), utils.Throttled):
+			case statusCode == utils.Throttled || statusCode == utils.ResourceConflict:
 				return nil, "pending", nil
-			case strings.Contains(fmt.Sprint(err), "404") || len(resp.GetClientGateways()) == 0:
+			case statusCode == utils.ResourceNotFound || len(resp.GetClientGateways()) == 0:
 				return nil, "deleted", nil
 			default:
 				return nil, "failed", fmt.Errorf("Error on clientGatewayRefresh: %s", err)

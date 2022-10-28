@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func TestAccOutscaleAccessKey_basic(t *testing.T) {
@@ -173,8 +174,13 @@ func testAccCheckOutscaleAccessKeyExists(resourceName string) resource.TestCheck
 		filter := oscgo.ReadSecretAccessKeyRequest{
 			AccessKeyId: rs.Primary.ID,
 		}
-
-		_, _, err := conn.AccessKeyApi.ReadSecretAccessKey(context.Background()).ReadSecretAccessKeyRequest(filter).Execute()
+		err := resource.Retry(2*time.Minute, func() *resource.RetryError {
+			_, httpResp, err := conn.AccessKeyApi.ReadSecretAccessKey(context.Background()).ReadSecretAccessKeyRequest(filter).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp.StatusCode, err)
+			}
+			return nil
+		})
 		if err != nil {
 			return fmt.Errorf("Outscale Access Key not found (%s)", rs.Primary.ID)
 		}
@@ -193,10 +199,15 @@ func testAccCheckOutscaleAccessKeyDestroy(s *terraform.State) error {
 		filter := oscgo.ReadSecretAccessKeyRequest{
 			AccessKeyId: rs.Primary.ID,
 		}
-
-		_, _, err := conn.AccessKeyApi.ReadSecretAccessKey(context.Background()).ReadSecretAccessKeyRequest(filter).Execute()
+		err := resource.Retry(2*time.Minute, func() *resource.RetryError {
+			_, httpResp, err := conn.AccessKeyApi.ReadSecretAccessKey(context.Background()).ReadSecretAccessKeyRequest(filter).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp.StatusCode, err)
+			}
+			return nil
+		})
 		if err != nil {
-			return fmt.Errorf("Outscale Access Key still exists (%s)", rs.Primary.ID)
+			return fmt.Errorf("Outscale Access Key not found (%s)", rs.Primary.ID)
 		}
 	}
 	return nil

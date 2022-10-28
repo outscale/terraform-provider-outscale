@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -80,17 +79,20 @@ func dataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{}) e
 	}
 
 	var resp oscgo.ReadPublicIpsResponse
+	var statusCode int
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
 		var err error
-		resp, _, err = conn.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
+		rp, httpResp, err := conn.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
+		statusCode = httpResp.StatusCode
 		return nil
 	})
 
 	if err != nil {
-		if e := fmt.Sprint(err); strings.Contains(e, utils.ResourceNotFound) {
+		if statusCode == utils.ResourceNotFound {
 			d.SetId("")
 			return nil
 		}

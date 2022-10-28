@@ -54,10 +54,11 @@ func dataSourceOutscaleOAPITagRead(d *schema.ResourceData, meta interface{}) err
 	var err error
 
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
-		resp, _, err = conn.TagApi.ReadTags(context.Background()).ReadTagsRequest(params).Execute()
+		rp, httpResp, err := conn.TagApi.ReadTags(context.Background()).ReadTagsRequest(params).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 

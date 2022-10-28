@@ -67,10 +67,11 @@ func dataSourceOutscaleOAPISubregionsRead(d *schema.ResourceData, meta interface
 	var resp oscgo.ReadSubregionsResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.SubregionApi.ReadSubregions(context.Background()).ReadSubregionsRequest(req).Execute()
+		rp, httpResp, err := conn.SubregionApi.ReadSubregions(context.Background()).ReadSubregionsRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 

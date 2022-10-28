@@ -73,10 +73,11 @@ func dataSourceOutscaleOAPIQuotaRead(d *schema.ResourceData, meta interface{}) e
 	var resp oscgo.ReadQuotasResponse
 	err := resource.Retry(120*time.Second, func() *resource.RetryError {
 		var err error
-		resp, _, err = conn.QuotaApi.ReadQuotas(context.Background()).ReadQuotasRequest(req).Execute()
+		rp, httpResp, err := conn.QuotaApi.ReadQuotas(context.Background()).ReadQuotasRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 

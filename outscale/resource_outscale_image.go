@@ -265,9 +265,9 @@ func resourceOAPIImageCreate(d *schema.ResourceData, meta interface{}) error {
 	var resp oscgo.CreateImageResponse
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		rp, _, err := conn.ImageApi.CreateImage(context.Background()).CreateImageRequest(imageRequest).Execute()
+		rp, httpResp, err := conn.ImageApi.CreateImage(context.Background()).CreateImageRequest(imageRequest).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		resp = rp
 		return nil
@@ -324,10 +324,11 @@ func resourceOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
 	var resp oscgo.ReadImagesResponse
 	err := resource.Retry(120*time.Second, func() *resource.RetryError {
 		var err error
-		resp, _, err = conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(req).Execute()
+		rp, httpResp, err := conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 
@@ -429,11 +430,11 @@ func resourceOAPIImageDelete(d *schema.ResourceData, meta interface{}) error {
 
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		_, _, err := conn.ImageApi.DeleteImage(context.Background()).DeleteImageRequest(oscgo.DeleteImageRequest{
+		_, httpResp, err := conn.ImageApi.DeleteImage(context.Background()).DeleteImageRequest(oscgo.DeleteImageRequest{
 			ImageId: d.Id(),
 		}).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})
@@ -480,10 +481,11 @@ func ImageOAPIStateRefreshFunc(client *oscgo.APIClient, req oscgo.ReadImagesRequ
 		var err error
 		err = resource.Retry(120*time.Second, func() *resource.RetryError {
 			var err error
-			resp, _, err = client.ImageApi.ReadImages(context.Background()).ReadImagesRequest(req).Execute()
+			rp, httpResp, err := client.ImageApi.ReadImages(context.Background()).ReadImagesRequest(req).Execute()
 			if err != nil {
-				return utils.CheckThrottling(err)
+				return utils.CheckThrottling(httpResp.StatusCode, err)
 			}
+			resp = rp
 			return nil
 		})
 

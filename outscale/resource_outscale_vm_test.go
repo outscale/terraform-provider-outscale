@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"strings"
 	"testing"
 	"time"
 
@@ -495,16 +494,19 @@ func testAccCheckOAPIVMExistsWithProviders(n string, i *oscgo.Vm, providers *[]*
 
 			var resp oscgo.ReadVmsResponse
 			var err error
-			for {
-				resp, _, err = client.OSCAPI.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
+			err = resource.Retry(120*time.Second, func() *resource.RetryError {
+				rp, httpResp, err := client.OSCAPI.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
 					Filters: getVMsFilterByVMID(rs.Primary.ID),
 				}).Execute()
 				if err != nil {
-					time.Sleep(10 * time.Second)
-				} else {
-					break
+					return utils.CheckThrottling(httpResp.StatusCode, err)
 				}
+				resp = rp
+				return nil
+			})
 
+			if err != nil {
+				return err
 			}
 
 			if len(resp.GetVms()) > 0 {
@@ -553,22 +555,23 @@ func testAccCheckOutscaleOAPIVMDestroyWithProvider(s *terraform.State, provider 
 
 		var resp oscgo.ReadVmsResponse
 		var err error
-		for {
-			// Try to find the resource
-			resp, _, err = conn.OSCAPI.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
+		var statusCode int
+		// Try to find the resource
+		err = resource.Retry(120*time.Second, func() *resource.RetryError {
+			rp, httpResp, err := conn.OSCAPI.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
 				Filters: getVMsFilterByVMID(rs.Primary.ID),
 			}).Execute()
 			if err != nil {
-				if strings.Contains(err.Error(), utils.Throttled) {
-					time.Sleep(10 * time.Second)
-				} else {
-					break
-				}
-			} else {
-				break
+				return utils.CheckThrottling(httpResp.StatusCode, err)
 			}
-		}
+			resp = rp
+			statusCode = httpResp.StatusCode
+			return nil
+		})
 
+		if err != nil {
+			return err
+		}
 		if err == nil {
 			for _, i := range resp.GetVms() {
 				if i.GetState() != "" && i.GetState() != "terminated" {
@@ -578,12 +581,11 @@ func testAccCheckOutscaleOAPIVMDestroyWithProvider(s *terraform.State, provider 
 		}
 
 		// Verify the error is what we want
-		if err != nil && strings.Contains(err.Error(), utils.ResourceNotFound) {
+		if err != nil && statusCode == utils.ResourceNotFound {
 			continue
 		}
 		return err
 	}
-
 	return nil
 }
 
@@ -612,18 +614,19 @@ func testAccCheckOutscaleOAPIVMExistsWithProviders(n string, i *oscgo.Vm, provid
 			var resp oscgo.ReadVmsResponse
 			var err error
 
-			for {
-				resp, _, err = conn.OSCAPI.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
+			err = resource.Retry(120*time.Second, func() *resource.RetryError {
+				rp, httpResp, err := conn.OSCAPI.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
 					Filters: getVMsFilterByVMID(rs.Primary.ID),
 				}).Execute()
 				if err != nil {
-					if strings.Contains(err.Error(), utils.ResourceNotFound) {
-						continue
-					}
-					time.Sleep(10 * time.Second)
-				} else {
-					break
+					return utils.CheckThrottling(httpResp.StatusCode, err)
 				}
+				resp = rp
+				return nil
+			})
+
+			if err != nil {
+				return err
 			}
 
 			if resp.Vms == nil {
@@ -635,7 +638,6 @@ func testAccCheckOutscaleOAPIVMExistsWithProviders(n string, i *oscgo.Vm, provid
 				return nil
 			}
 		}
-
 		return fmt.Errorf("Vms not found")
 	}
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -83,17 +82,11 @@ func resourceOAPINatServiceCreate(d *schema.ResourceData, meta interface{}) erro
 	var resp oscgo.CreateNatServiceResponse
 	var err error
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
-		res, contex, err := conn.NatServiceApi.CreateNatService(context.Background()).CreateNatServiceRequest(req).Execute()
-		if contex != nil && contex.StatusCode == 409 {
-			return resource.RetryableError(err) // retry
-		}
+		rp, httpResp, err := conn.NatServiceApi.CreateNatService(context.Background()).CreateNatServiceRequest(req).Execute()
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), utils.ResourceConflict) {
-				return resource.RetryableError(err) // retry
-			}
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
-		resp = res
+		resp = rp
 		return nil
 	})
 	if err != nil {
@@ -220,11 +213,11 @@ func resourceOAPINatServiceDelete(d *schema.ResourceData, meta interface{}) erro
 
 	log.Printf("[INFO] Deleting NAT Service: %s\n", d.Id())
 	err := resource.Retry(120*time.Second, func() *resource.RetryError {
-		_, _, err := conn.NatServiceApi.DeleteNatService(context.Background()).DeleteNatServiceRequest(oscgo.DeleteNatServiceRequest{
+		_, httpResp, err := conn.NatServiceApi.DeleteNatService(context.Background()).DeleteNatServiceRequest(oscgo.DeleteNatServiceRequest{
 			NatServiceId: d.Id(),
 		}).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})
@@ -260,10 +253,11 @@ func NGOAPIStateRefreshFunc(client *oscgo.APIClient, req oscgo.ReadNatServicesRe
 		var resp oscgo.ReadNatServicesResponse
 		err := resource.Retry(120*time.Second, func() *resource.RetryError {
 			var err error
-			resp, _, err = client.NatServiceApi.ReadNatServices(context.Background()).ReadNatServicesRequest(req).Execute()
+			rp, httpResp, err := client.NatServiceApi.ReadNatServices(context.Background()).ReadNatServicesRequest(req).Execute()
 			if err != nil {
-				return utils.CheckThrottling(err)
+				return utils.CheckThrottling(httpResp.StatusCode, err)
 			}
+			resp = rp
 			return nil
 		})
 		if err != nil {

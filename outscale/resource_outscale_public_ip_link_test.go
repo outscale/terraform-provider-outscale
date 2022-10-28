@@ -10,6 +10,7 @@ import (
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -58,7 +59,15 @@ func testAccCheckOutscaleOAPIPublicIPLinkExists(name string, res *oscgo.PublicIp
 				LinkPublicIpIds: &[]string{res.GetLinkPublicIpId()},
 			},
 		}
-		response, _, err := conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(request).Execute()
+		var response oscgo.ReadPublicIpsResponse
+		err := resource.Retry(60*time.Second, func() *resource.RetryError {
+			rp, httpResp, err := conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(request).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp.StatusCode, err)
+			}
+			response = rp
+			return nil
+		})
 
 		if err != nil {
 			log.Printf("[DEBUG] ERROR testAccCheckOutscaleOAPIPublicIPLinkExists (%s)", err)
@@ -98,11 +107,18 @@ func testAccCheckOutscaleOAPIPublicIPLinkDestroy(s *terraform.State) error {
 				LinkPublicIpIds: &[]string{id},
 			},
 		}
-		response, _, err := conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(request).Execute()
-
-		log.Printf("[DEBUG] ERROR testAccCheckOutscaleOAPIPublicIPLinkDestroy (%s)", err)
+		var response oscgo.ReadPublicIpsResponse
+		err := resource.Retry(60*time.Second, func() *resource.RetryError {
+			rp, httpResp, err := conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(request).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp.StatusCode, err)
+			}
+			response = rp
+			return nil
+		})
 
 		if err != nil {
+			log.Printf("[DEBUG] ERROR testAccCheckOutscaleOAPIPublicIPLinkDestroy (%s)", err)
 			return err
 		}
 
@@ -133,7 +149,15 @@ func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oscgo.PublicIp) reso
 					LinkPublicIpIds: &[]string{rs.Primary.ID},
 				},
 			}
-			resp, _, err := conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
+			var resp oscgo.ReadPublicIpsResponse
+			err := resource.Retry(60*time.Second, func() *resource.RetryError {
+				rp, httpResp, err := conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
+				if err != nil {
+					return utils.CheckThrottling(httpResp.StatusCode, err)
+				}
+				resp = rp
+				return nil
+			})
 
 			if err != nil {
 				return err
@@ -153,25 +177,26 @@ func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oscgo.PublicIp) reso
 			}
 
 			var response oscgo.ReadPublicIpsResponse
+			var statusCode int
 			err := resource.Retry(120*time.Second, func() *resource.RetryError {
 				var err error
-				response, _, err = conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
+				rp, httpResp, err := conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
 
 				if err != nil {
-					if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
+					if httpResp.StatusCode == utils.ResourceNotFound {
 						return resource.RetryableError(err)
 					}
-
-					return resource.NonRetryableError(err)
+					return utils.CheckThrottling(httpResp.StatusCode, err)
 				}
+				response = rp
+				statusCode = httpResp.StatusCode
 				return nil
 			})
 
 			if err != nil {
-				if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
+				if statusCode == utils.ResourceNotFound {
 					return nil
 				}
-
 				return err
 			}
 

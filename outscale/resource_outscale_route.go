@@ -139,13 +139,13 @@ func resourceOutscaleOAPIRouteCreate(d *schema.ResourceData, meta interface{}) e
 
 	var err error
 	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
-		_, _, err = conn.RouteApi.CreateRoute(context.Background()).CreateRouteRequest(createOpts).Execute()
+		_, httpResp, err := conn.RouteApi.CreateRoute(context.Background()).CreateRouteRequest(createOpts).Execute()
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), utils.InvalidState) {
 				log.Printf("[DEBUG] Trying to create route again: %q", err)
 				return resource.RetryableError(err)
 			}
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})
@@ -154,7 +154,6 @@ func resourceOutscaleOAPIRouteCreate(d *schema.ResourceData, meta interface{}) e
 
 	if err != nil {
 		errString = err.Error()
-
 		return fmt.Errorf("Error creating route: %s", errString)
 	}
 
@@ -190,10 +189,6 @@ func resourceOutscaleOAPIRouteRead(d *schema.ResourceData, meta interface{}) err
 
 	route, requestID, err := findResourceOAPIRoute(conn, routeTableID, destinationIPRange)
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
-			log.Printf("[WARN] Route Table %q could not be found. Removing Route from state.", routeTableID)
-			return nil
-		}
 		return err
 	}
 	return resourceOutscaleOAPIRouteSetResourceData(d, route, requestID)
@@ -326,13 +321,13 @@ func resourceOutscaleOAPIRouteUpdate(d *schema.ResourceData, meta interface{}) e
 
 	var err error
 	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
-		_, _, err = conn.RouteApi.UpdateRoute(context.Background()).UpdateRouteRequest(replaceOpts).Execute()
+		_, httpResp, err := conn.RouteApi.UpdateRoute(context.Background()).UpdateRouteRequest(replaceOpts).Execute()
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), utils.InvalidState) {
 				log.Printf("[DEBUG] Trying to create route again: %q", err)
 				return resource.RetryableError(err)
 			}
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})
@@ -355,14 +350,14 @@ func resourceOutscaleOAPIRouteDelete(d *schema.ResourceData, meta interface{}) e
 
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		log.Printf("[DEBUG] Trying to delete route with opts %+v", deleteOpts)
-		resp, _, err := conn.RouteApi.DeleteRoute(context.Background()).DeleteRouteRequest(deleteOpts).Execute()
+		resp, httpResp, err := conn.RouteApi.DeleteRoute(context.Background()).DeleteRouteRequest(deleteOpts).Execute()
 		log.Printf("[DEBUG] Route delete result: %+v", resp)
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), utils.InvalidState) {
 				log.Printf("[DEBUG] Trying to delete route again: %q", fmt.Sprint(err))
 				return resource.RetryableError(err)
 			}
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})
@@ -386,14 +381,15 @@ func resourceOutscaleOAPIRouteExists(d *schema.ResourceData, meta interface{}) (
 	var resp oscgo.ReadRouteTablesResponse
 	var err error
 	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(findOpts).Execute()
+		rp, httpResp, err := conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(findOpts).Execute()
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), utils.InvalidState) {
 				log.Printf("[DEBUG] Trying to create route again: %q", err)
 				return resource.RetryableError(err)
 			}
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 
@@ -436,14 +432,15 @@ func findResourceOAPIRoute(conn *oscgo.APIClient, rtbid string, cidr string) (*o
 	var resp oscgo.ReadRouteTablesResponse
 	var err error
 	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(findOpts).Execute()
+		rp, httpResp, err := conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(findOpts).Execute()
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), utils.InvalidState) {
 				log.Printf("[DEBUG] Trying to create route again: %q", err)
 				return resource.RetryableError(err)
 			}
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 

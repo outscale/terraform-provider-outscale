@@ -37,15 +37,20 @@ func dataSourceOutscaleOAPILBUTagsRead(d *schema.ResourceData, meta interface{})
 	var resp oscgo.ReadLoadBalancerTagsResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.LoadBalancerApi.ReadLoadBalancerTags(
+		rp, httpResp, err := conn.LoadBalancerApi.ReadLoadBalancerTags(
 			context.Background()).
 			ReadLoadBalancerTagsRequest(req).Execute()
 
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
+
+	if err != nil {
+		return err
+	}
 
 	tags := *resp.Tags
 	l := len(*resp.Tags)

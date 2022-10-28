@@ -70,10 +70,11 @@ func resourceOutscaleOAPILinAttrCreate(d *schema.ResourceData, meta interface{})
 	var resp oscgo.UpdateNetResponse
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
 		var err error
-		resp, _, err = conn.NetApi.UpdateNet(context.Background()).UpdateNetRequest(req).Execute()
+		rp, httpResp, err := conn.NetApi.UpdateNet(context.Background()).UpdateNetRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 
@@ -94,13 +95,14 @@ func resourceOutscaleOAPILinAttrUpdate(d *schema.ResourceData, meta interface{})
 		DhcpOptionsSetId: d.Get("dhcp_options_set_id").(string),
 	}
 
-	if err := resource.Retry(120*time.Second, func() *resource.RetryError {
-		_, _, err := conn.NetApi.UpdateNet(context.Background()).UpdateNetRequest(req).Execute()
+	err := resource.Retry(120*time.Second, func() *resource.RetryError {
+		_, httpResp, err := conn.NetApi.UpdateNet(context.Background()).UpdateNetRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
-	}); err != nil {
+	})
+	if err != nil {
 		return fmt.Errorf("[DEBUG] Error creating lin (%s)", utils.GetErrorResponse(err))
 	}
 
@@ -122,10 +124,11 @@ func resourceOutscaleOAPILinAttrRead(d *schema.ResourceData, meta interface{}) e
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
 		var err error
-		resp, _, err = conn.NetApi.ReadNets(context.Background()).ReadNetsRequest(req).Execute()
+		rp, httpResp, err := conn.NetApi.ReadNets(context.Background()).ReadNetsRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 	if err != nil {

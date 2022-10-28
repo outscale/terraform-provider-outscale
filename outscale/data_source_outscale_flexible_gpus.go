@@ -79,11 +79,12 @@ func dataSourceOutscaleOAPIFlexibleGpusRead(d *schema.ResourceData, meta interfa
 	var err error
 
 	err = resource.Retry(30*time.Second, func() *resource.RetryError {
-		resp, _, err = conn.FlexibleGpuApi.ReadFlexibleGpus(
+		rp, httpResp, err := conn.FlexibleGpuApi.ReadFlexibleGpus(
 			context.Background()).ReadFlexibleGpusRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 

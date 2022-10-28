@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -79,13 +78,13 @@ func resourceOutscaleOAPIVirtualGatewayLinkCreate(d *schema.ResourceData, meta i
 	var err error
 
 	err = resource.Retry(30*time.Second, func() *resource.RetryError {
-		_, _, err = conn.VirtualGatewayApi.LinkVirtualGateway(context.Background()).LinkVirtualGatewayRequest(createOpts).Execute()
+		_, httpResp, err := conn.VirtualGatewayApi.LinkVirtualGateway(context.Background()).LinkVirtualGatewayRequest(createOpts).Execute()
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
+			if httpResp.StatusCode == utils.ResourceNotFound {
 				return resource.RetryableError(
 					fmt.Errorf("Gateway not found, retry for eventual consistancy"))
 			}
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})
@@ -123,19 +122,21 @@ func resourceOutscaleOAPIVirtualGatewayLinkRead(d *schema.ResourceData, meta int
 
 	var resp oscgo.ReadVirtualGatewaysResponse
 	var err error
-
+	var statusCode int
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(oscgo.ReadVirtualGatewaysRequest{
+		rp, httpResp, err := conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(oscgo.ReadVirtualGatewaysRequest{
 			Filters: &oscgo.FiltersVirtualGateway{VirtualGatewayIds: &[]string{vgwID}},
 		}).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
+		statusCode = httpResp.StatusCode
 		return nil
 	})
 
 	if err != nil {
-		if strings.Contains(err.Error(), utils.ResourceNotFound) {
+		if statusCode == utils.ResourceNotFound {
 			log.Printf("[WARN] VPN Gateway %q not found.", vgwID)
 			d.SetId("")
 			return nil
@@ -206,30 +207,28 @@ func resourceOutscaleOAPIVirtualGatewayLinkDelete(d *schema.ResourceData, meta i
 	wait := true
 
 	var err error
+	var statusCode int
 	err = resource.Retry(30*time.Second, func() *resource.RetryError {
-		_, _, err = conn.VirtualGatewayApi.UnlinkVirtualGateway(context.Background()).UnlinkVirtualGatewayRequest(oscgo.UnlinkVirtualGatewayRequest{
+		_, httpResp, err := conn.VirtualGatewayApi.UnlinkVirtualGateway(context.Background()).UnlinkVirtualGatewayRequest(oscgo.UnlinkVirtualGatewayRequest{
 			VirtualGatewayId: d.Id(),
 			NetId:            netID.(string),
 		}).Execute()
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
+			if httpResp.StatusCode == utils.ResourceNotFound {
 				return resource.RetryableError(
 					fmt.Errorf("Gateway not found, retry for eventual consistancy"))
 			}
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		statusCode = httpResp.StatusCode
 		return nil
 	})
 
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
-			err = nil
-			wait = false
-		} else if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
+		if statusCode == utils.ResourceNotFound {
 			err = nil
 			wait = false
 		}
-
 		if err != nil {
 			return err
 		}
@@ -260,23 +259,26 @@ func vpnGatewayLinkStateRefresh(conn *oscgo.APIClient, vpcID, vgwID string) reso
 	return func() (interface{}, string, error) {
 		var err error
 		var resp oscgo.ReadVirtualGatewaysResponse
+		var statusCode int
 		err = resource.Retry(30*time.Second, func() *resource.RetryError {
-			resp, _, err = conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(oscgo.ReadVirtualGatewaysRequest{Filters: &oscgo.FiltersVirtualGateway{
+			rp, httpResp, err := conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(oscgo.ReadVirtualGatewaysRequest{Filters: &oscgo.FiltersVirtualGateway{
 				VirtualGatewayIds: &[]string{vgwID},
 				LinkNetIds:        &[]string{vpcID},
 			}}).Execute()
 			if err != nil {
-				if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
+				if httpResp.StatusCode == utils.ResourceNotFound {
 					return resource.RetryableError(
 						fmt.Errorf("Gateway not found, retry for eventual consistancy"))
 				}
-				return utils.CheckThrottling(err)
+				return utils.CheckThrottling(httpResp.StatusCode, err)
 			}
+			resp = rp
+			statusCode = httpResp.StatusCode
 			return nil
 		})
 
 		if err != nil {
-			if strings.Contains(err.Error(), utils.ResourceNotFound) {
+			if statusCode == utils.ResourceNotFound {
 				log.Printf("[WARN] VPN Gateway %q not found.", vgwID)
 				return nil, "", nil
 			}

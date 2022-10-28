@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -147,10 +146,11 @@ func resourceOutscaleOAPIRouteTableCreate(d *schema.ResourceData, meta interface
 	var resp oscgo.CreateRouteTableResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.RouteTableApi.CreateRouteTable(context.Background()).CreateRouteTableRequest(createOpts).Execute()
+		rp, httpResp, err := conn.RouteTableApi.CreateRouteTable(context.Background()).CreateRouteTableRequest(createOpts).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 	var errString string
@@ -261,19 +261,21 @@ func resourceOutscaleOAPIRouteTableDelete(d *schema.ResourceData, meta interface
 			log.Printf("[INFO] Unlinking LinkRouteTable: %s", a.GetLinkRouteTableId())
 
 			var err error
+			var statusCode int
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-				_, _, err := conn.RouteTableApi.UnlinkRouteTable(context.Background()).UnlinkRouteTableRequest(oscgo.UnlinkRouteTableRequest{
+				_, httpResp, err := conn.RouteTableApi.UnlinkRouteTable(context.Background()).UnlinkRouteTableRequest(oscgo.UnlinkRouteTableRequest{
 					LinkRouteTableId: a.GetLinkRouteTableId(),
 				}).Execute()
 				if err != nil {
-					return utils.CheckThrottling(err)
+					return utils.CheckThrottling(httpResp.StatusCode, err)
 				}
+				statusCode = httpResp.StatusCode
 				return nil
 			})
 
 			if err != nil {
-				if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
-					err = nil
+				if statusCode == utils.ResourceNotFound {
+					return nil
 				}
 				return err
 			}
@@ -281,19 +283,20 @@ func resourceOutscaleOAPIRouteTableDelete(d *schema.ResourceData, meta interface
 	}
 
 	log.Printf("[INFO] Deleting Route Table: %s", d.Id())
-
+	var statusCode int
 	err = resource.Retry(15*time.Minute, func() *resource.RetryError {
-		_, _, err = conn.RouteTableApi.DeleteRouteTable(context.Background()).DeleteRouteTableRequest(oscgo.DeleteRouteTableRequest{
+		_, httpResp, err := conn.RouteTableApi.DeleteRouteTable(context.Background()).DeleteRouteTableRequest(oscgo.DeleteRouteTableRequest{
 			RouteTableId: d.Id(),
 		}).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		statusCode = httpResp.StatusCode
 		return nil
 	})
 
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
+		if statusCode == utils.ResourceNotFound {
 			return nil
 		}
 
@@ -324,10 +327,11 @@ func readOAPIRouteTable(conn *oscgo.APIClient, routeTableID string, linkIds ...s
 
 	err = resource.Retry(15*time.Minute, func() *resource.RetryError {
 		var err error
-		resp, _, err = conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(routeTableRequest).Execute()
+		rp, httpResp, err := conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(routeTableRequest).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 

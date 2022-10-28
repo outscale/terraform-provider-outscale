@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -43,11 +42,11 @@ func resourceOutscaleOAPISubNetCreate(d *schema.ResourceData, meta interface{}) 
 	var resp oscgo.CreateSubnetResponse
 	var err error
 	err = resource.Retry(40*time.Second, func() *resource.RetryError {
-		r, _, err := conn.SubnetApi.CreateSubnet(context.Background()).CreateSubnetRequest(req).Execute()
+		rp, httpResp, err := conn.SubnetApi.CreateSubnet(context.Background()).CreateSubnetRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
-		resp = r
+		resp = rp
 		return nil
 	})
 	if err != nil {
@@ -92,11 +91,11 @@ func resourceOutscaleOAPISubNetRead(d *schema.ResourceData, meta interface{}) er
 	}
 	var resp oscgo.ReadSubnetsResponse
 	err := resource.Retry(120*time.Second, func() *resource.RetryError {
-		r, _, err := conn.SubnetApi.ReadSubnets(context.Background()).ReadSubnetsRequest(req).Execute()
+		rp, httpResp, err := conn.SubnetApi.ReadSubnets(context.Background()).ReadSubnetsRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
-		resp = r
+		resp = rp
 		return nil
 	})
 	if err != nil {
@@ -127,13 +126,9 @@ func resourceOutscaleOAPISubNetDelete(d *schema.ResourceData, meta interface{}) 
 	}
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err = conn.SubnetApi.DeleteSubnet(context.Background()).DeleteSubnetRequest(req).Execute()
+		_, httpResp, err := conn.SubnetApi.DeleteSubnet(context.Background()).DeleteSubnetRequest(req).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), utils.ResourceConflict) {
-				log.Printf("[DEBUG] Subnet waiting delete: (%s)", err)
-				return resource.RetryableError(err)
-			}
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})
@@ -190,11 +185,20 @@ func readOutscaleOAPISubNet(d *schema.ResourceData, subnet *oscgo.Subnet) error 
 
 func SubnetStateOApiRefreshFunc(conn *oscgo.APIClient, subnetID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		resp, _, err := conn.SubnetApi.ReadSubnets(context.Background()).ReadSubnetsRequest(oscgo.ReadSubnetsRequest{
-			Filters: &oscgo.FiltersSubnet{
-				SubnetIds: &[]string{subnetID},
-			},
-		}).Execute()
+		var resp oscgo.ReadSubnetsResponse
+		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+			rp, httpResp, err := conn.SubnetApi.ReadSubnets(context.Background()).ReadSubnetsRequest(oscgo.ReadSubnetsRequest{
+				Filters: &oscgo.FiltersSubnet{
+					SubnetIds: &[]string{subnetID},
+				},
+			}).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp.StatusCode, err)
+			}
+			resp = rp
+			return nil
+		})
+
 		if err != nil {
 			log.Printf("[ERROR] error on SubnetStateRefresh: %s", err)
 			return nil, "error", err

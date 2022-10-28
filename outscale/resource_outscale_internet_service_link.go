@@ -73,11 +73,11 @@ func resourceOutscaleOAPIInternetServiceLinkCreate(d *schema.ResourceData, meta 
 	}
 	var resp oscgo.LinkInternetServiceResponse
 	err := resource.Retry(120*time.Second, func() *resource.RetryError {
-		lResp, _, err := conn.InternetServiceApi.LinkInternetService(context.Background()).LinkInternetServiceRequest(req).Execute()
+		rp, httpResp, err := conn.InternetServiceApi.LinkInternetService(context.Background()).LinkInternetServiceRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
-		resp = lResp
+		resp = rp
 		return nil
 	})
 
@@ -191,13 +191,11 @@ func resourceOutscaleOAPIInternetServiceLinkDelete(d *schema.ResourceData, meta 
 	}
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err := conn.InternetServiceApi.UnlinkInternetService(
+		_, httpResp, err := conn.InternetServiceApi.UnlinkInternetService(
 			context.Background()).
 			UnlinkInternetServiceRequest(req).Execute()
 		if err != nil {
-			return resource.RetryableError(
-				fmt.Errorf("error unlink Internet Service (%s):  %s",
-					d.Id(), err))
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})
@@ -215,9 +213,9 @@ func LISOAPIStateRefreshFunction(client *oscgo.APIClient, req oscgo.ReadInternet
 		var resp oscgo.ReadInternetServicesResponse
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			rp, _, err := client.InternetServiceApi.ReadInternetServices(context.Background()).ReadInternetServicesRequest(req).Execute()
+			rp, httpResp, err := client.InternetServiceApi.ReadInternetServices(context.Background()).ReadInternetServicesRequest(req).Execute()
 			if err != nil {
-				return utils.CheckThrottling(err)
+				return utils.CheckThrottling(httpResp.StatusCode, err)
 			}
 			resp = rp
 			return nil

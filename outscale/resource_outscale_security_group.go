@@ -148,12 +148,12 @@ func resourceOutscaleOAPISecurityGroupCreate(d *schema.ResourceData, meta interf
 	var resp oscgo.CreateSecurityGroupResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.SecurityGroupApi.CreateSecurityGroup(context.Background()).CreateSecurityGroupRequest(securityGroupOpts).Execute()
+		rp, httpResp, err := conn.SecurityGroupApi.CreateSecurityGroup(context.Background()).CreateSecurityGroupRequest(securityGroupOpts).Execute()
 
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
-
+		resp = rp
 		return nil
 	})
 
@@ -177,12 +177,11 @@ func resourceOutscaleOAPISecurityGroupCreate(d *schema.ResourceData, meta interf
 		}
 
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			_, _, err = conn.SecurityGroupRuleApi.DeleteSecurityGroupRule(context.Background()).DeleteSecurityGroupRuleRequest(emptierOpts).Execute()
+			_, httpResp, err := conn.SecurityGroupRuleApi.DeleteSecurityGroupRule(context.Background()).DeleteSecurityGroupRuleRequest(emptierOpts).Execute()
 
 			if err != nil {
-				return utils.CheckThrottling(err)
+				return utils.CheckThrottling(httpResp.StatusCode, err)
 			}
-
 			return nil
 		})
 
@@ -270,15 +269,14 @@ func resourceOutscaleOAPISecurityGroupDelete(d *schema.ResourceData, meta interf
 	log.Printf("[DEBUG] Security Group destroy: %v", d.Id())
 	securityGroupID := d.Id()
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err := conn.SecurityGroupApi.DeleteSecurityGroup(context.Background()).DeleteSecurityGroupRequest(oscgo.DeleteSecurityGroupRequest{
+		_, httpResp, err := conn.SecurityGroupApi.DeleteSecurityGroup(context.Background()).DeleteSecurityGroupRequest(oscgo.DeleteSecurityGroupRequest{
 			SecurityGroupId: &securityGroupID,
 		}).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "DependencyProblem") ||
-				strings.Contains(err.Error(), utils.ResourceConflict) {
+			if strings.Contains(err.Error(), "DependencyProblem") {
 				return resource.RetryableError(err)
 			}
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})
@@ -320,10 +318,11 @@ func readSecurityGroups(client *oscgo.APIClient, securityGroupID string) (*oscgo
 	var err error
 	var resp oscgo.ReadSecurityGroupsResponse
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = client.SecurityGroupApi.ReadSecurityGroups(context.Background()).ReadSecurityGroupsRequest(filters).Execute()
+		rp, httpResp, err := client.SecurityGroupApi.ReadSecurityGroups(context.Background()).ReadSecurityGroupsRequest(filters).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 	if err != nil {

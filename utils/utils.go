@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math/rand"
 	"strconv"
-	"strings"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -17,10 +16,11 @@ import (
 
 // PrintToJSON method helper to debug responses
 const (
-	ResourceNotFound string  = "InvalidResource"
-	ResourceConflict string  = "Conflict"
 	InvalidState     string  = "InvalidState"
-	Throttled        string  = "Request rate exceeded"
+	ResourceNotFound int     = 404
+	ResourceConflict int     = 409
+	TooManyRequests  int     = 429
+	Throttled        int     = 503
 	randMin          float32 = 1.0
 	randMax          float32 = 20.0
 	TestCaPem        string  = `-----BEGIN CERTIFICATE-----
@@ -126,9 +126,9 @@ func IsResponseEmptyOrMutiple(rLen int, resName string) error {
 	return nil
 }
 
-func CheckThrottling(err error) *resource.RetryError {
+func CheckThrottling(errCode int, err error) *resource.RetryError {
 	rand.Seed(time.Now().UnixNano())
-	if strings.Contains(err.Error(), Throttled) {
+	if errCode == Throttled || errCode == TooManyRequests || errCode == ResourceConflict {
 		randTime := (rand.Float32()*(randMax-randMin) + randMin) * 1000
 		time.Sleep(time.Duration(randTime) * time.Millisecond)
 		return resource.RetryableError(err)

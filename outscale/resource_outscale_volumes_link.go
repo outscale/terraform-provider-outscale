@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/openlyinc/pointy"
@@ -89,17 +88,17 @@ func resourceOAPIVolumeLinkCreate(d *schema.ResourceData, meta interface{}) erro
 		},
 	}
 	var err error
-	var vols oscgo.ReadVolumesResponse
+	var resp oscgo.ReadVolumesResponse
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		var err error
-		vols, _, err = conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(request).Execute()
+		rp, httpResp, err := conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(request).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
 		return nil
 	})
 
-	if (err != nil) || isElegibleToLink(vols.GetVolumes(), iID) {
+	if (err != nil) || isElegibleToLink(resp.GetVolumes(), iID) {
 		// This handles the situation where the instance is created by
 		// a spot request and whilst the request has been fulfilled the
 		// instance is not running yet
@@ -131,9 +130,9 @@ func resourceOAPIVolumeLinkCreate(d *schema.ResourceData, meta interface{}) erro
 
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 			var err error
-			_, _, err = conn.VolumeApi.LinkVolume(context.Background()).LinkVolumeRequest(opts).Execute()
+			_, httpResp, err := conn.VolumeApi.LinkVolume(context.Background()).LinkVolumeRequest(opts).Execute()
 			if err != nil {
-				return utils.CheckThrottling(err)
+				return utils.CheckThrottling(httpResp.StatusCode, err)
 			}
 			return nil
 		})
@@ -192,10 +191,11 @@ func volumeOAPIAttachmentStateRefreshFunc(conn *oscgo.APIClient, volumeID, insta
 
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 			var err error
-			resp, _, err = conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(request).Execute()
+			rp, httpResp, err := conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(request).Execute()
 			if err != nil {
-				return utils.CheckThrottling(err)
+				return utils.CheckThrottling(httpResp.StatusCode, err)
 			}
+			resp = rp
 			return nil
 		})
 
@@ -226,19 +226,20 @@ func resourceOAPIVolumeLinkRead(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	var err error
-	var vols oscgo.ReadVolumesResponse
-
+	var resp oscgo.ReadVolumesResponse
+	var statusCode int
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		var err error
-		vols, _, err = conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(request).Execute()
+		rp, httpResp, err := conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(request).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
+		resp = rp
+		statusCode = httpResp.StatusCode
 		return nil
 	})
 
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), utils.ResourceNotFound) {
+		if statusCode == utils.ResourceNotFound {
 			d.SetId("")
 			return nil
 		}
@@ -246,7 +247,7 @@ func resourceOAPIVolumeLinkRead(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	var linkedVolume oscgo.LinkedVolume
-	for _, vol := range vols.GetVolumes()[0].GetLinkedVolumes() {
+	for _, vol := range resp.GetVolumes()[0].GetLinkedVolumes() {
 		linkedVolume = vol
 	}
 
@@ -265,7 +266,7 @@ func resourceOAPIVolumeLinkRead(d *schema.ResourceData, meta interface{}) error 
 	if err := d.Set("state", linkedVolume.GetState()); err != nil {
 		return fmt.Errorf("error sertting %s in Volume Link(%s): %s", `state`, linkedVolume.GetVolumeId(), err)
 	}
-	if len(vols.GetVolumes()) == 0 || vols.GetVolumes()[0].GetState() == "available" || isElegibleToLink(vols.GetVolumes(), d.Get("vm_id").(string)) {
+	if len(resp.GetVolumes()) == 0 || resp.GetVolumes()[0].GetState() == "available" || isElegibleToLink(resp.GetVolumes(), d.Get("vm_id").(string)) {
 		log.Printf("[DEBUG] Volume Attachment (%s) not found, removing from state", d.Id())
 		d.SetId("")
 	}
@@ -301,9 +302,9 @@ func resourceOAPIVolumeLinkDelete(d *schema.ResourceData, meta interface{}) erro
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
-		_, _, err = conn.VolumeApi.UnlinkVolume(context.Background()).UnlinkVolumeRequest(opts).Execute()
+		_, httpResp, err := conn.VolumeApi.UnlinkVolume(context.Background()).UnlinkVolumeRequest(opts).Execute()
 		if err != nil {
-			return utils.CheckThrottling(err)
+			return utils.CheckThrottling(httpResp.StatusCode, err)
 		}
 		return nil
 	})
