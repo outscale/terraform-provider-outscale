@@ -11,7 +11,7 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 )
 
-func TestAccOutscaleOAPILBUAttachment_basic(t *testing.T) {
+func TestAccLBUAttachment_basic(t *testing.T) {
 	t.Parallel()
 	var conf oscgo.LoadBalancer
 	omi := os.Getenv("OUTSCALE_IMAGEID")
@@ -36,7 +36,21 @@ func TestAccOutscaleOAPILBUAttachment_basic(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscaleOAPILBUDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPILBUAttachmentConfig1(omi, region),
+				Config: testAcc_ConfigLBUAttachmentBasic(omi, region),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleOAPILBUExists("outscale_load_balancer.bar", &conf),
+					testCheckInstanceAttached(1),
+				),
+			},
+			{
+				Config: testAcc_ConfigLBUAttachmentAddUpdate(omi, region),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleOAPILBUExists("outscale_load_balancer.bar", &conf),
+					testCheckInstanceAttached(2),
+				),
+			},
+			{
+				Config: testAcc_ConfigLBUAttachmentRemoveUpdate(omi, region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPILBUExists("outscale_load_balancer.bar", &conf),
 					testCheckInstanceAttached(1),
@@ -47,12 +61,12 @@ func TestAccOutscaleOAPILBUAttachment_basic(t *testing.T) {
 }
 
 // add one attachment
-func testAccOutscaleOAPILBUAttachmentConfig1(omi, region string) string {
+func testAcc_ConfigLBUAttachmentBasic(omi, region string) string {
 	return fmt.Sprintf(`
 resource "outscale_load_balancer" "bar" {
-	load_balancer_name = "load-test12"
-	subregion_names = ["%sa"]
-    listeners {
+  load_balancer_name = "load-test12"
+  subregion_names = ["%sa"]
+  listeners {
     backend_port = 8000
     backend_protocol = "HTTP"
     load_balancer_port = 80
@@ -61,13 +75,78 @@ resource "outscale_load_balancer" "bar" {
 }
 
 resource "outscale_vm" "foo1" {
-  image_id = "%s"
+  image_id = "%[2]s"
+  vm_type = "tinav4.c1r1p1"
+}
+
+resource "outscale_vm" "foo2" {
+  image_id = "%[2]s"
   vm_type = "tinav4.c1r1p1"
 }
 
 resource "outscale_load_balancer_vms" "foo1" {
   load_balancer_name      = "${outscale_load_balancer.bar.id}"
   backend_vm_ids = ["${outscale_vm.foo1.id}"]
+}
+`, region, omi)
+}
+
+func testAcc_ConfigLBUAttachmentAddUpdate(omi, region string) string {
+	return fmt.Sprintf(`
+resource "outscale_load_balancer" "bar" {
+  load_balancer_name = "load-test12"
+  subregion_names = ["%sa"]
+  listeners {
+    backend_port = 8000
+    backend_protocol = "HTTP"
+    load_balancer_port = 80
+    load_balancer_protocol = "HTTP"
+  }
+}
+
+resource "outscale_vm" "foo1" {
+  image_id = "%[2]s"
+  vm_type = "tinav4.c1r1p1"
+}
+
+resource "outscale_vm" "foo2" {
+  image_id = "%[2]s"
+  vm_type = "tinav4.c1r1p1"
+}
+
+resource "outscale_load_balancer_vms" "foo1" {
+  load_balancer_name      = "${outscale_load_balancer.bar.id}"
+  backend_vm_ids = ["${outscale_vm.foo1.id}", "${outscale_vm.foo2.id}"]
+}
+`, region, omi)
+}
+
+func testAcc_ConfigLBUAttachmentRemoveUpdate(omi, region string) string {
+	return fmt.Sprintf(`
+resource "outscale_load_balancer" "bar" {
+  load_balancer_name = "load-test12"
+  subregion_names = ["%sa"]
+  listeners {
+    backend_port = 8000
+    backend_protocol = "HTTP"
+    load_balancer_port = 80
+    load_balancer_protocol = "HTTP"
+  }
+}
+
+resource "outscale_vm" "foo1" {
+  image_id = "%[2]s"
+  vm_type = "tinav4.c1r1p1"
+}
+
+resource "outscale_vm" "foo2" {
+  image_id = "%[2]s"
+  vm_type = "tinav4.c1r1p1"
+}
+
+resource "outscale_load_balancer_vms" "foo1" {
+  load_balancer_name      = "${outscale_load_balancer.bar.id}"
+  backend_vm_ids = ["${outscale_vm.foo2.id}"]
 }
 `, region, omi)
 }
