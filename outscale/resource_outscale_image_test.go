@@ -29,7 +29,7 @@ func TestAccOthers_Image_basic(t *testing.T) {
 		CheckDestroy: testAccCheckOAPIImageDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIImageConfigBasic(omi, "tinav4.c2r2p2", region, rInt),
+				Config: testAccOAPIImageConfigBasic(omi, utils.TestAccVmType, region, rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIImageExists("outscale_image.foo", &ami),
 					resource.TestCheckResourceAttr(

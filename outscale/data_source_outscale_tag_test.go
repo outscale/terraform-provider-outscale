@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
 func TestAccVM_WithTagDataSource(t *testing.T) {
@@ -16,7 +17,7 @@ func TestAccVM_WithTagDataSource(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPITagDataSourceConfig(omi, "tinav4.c2r2p2"),
+				Config: testAccOAPITagDataSourceConfig(omi, utils.TestAccVmType),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"data.outscale_tag.web", "key", "Name"),

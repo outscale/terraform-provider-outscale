@@ -51,7 +51,7 @@ func TestAccVM_PublicIP_instance(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscalePublicIPDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscalePublicIPInstanceConfig(omi, "tinav4.c2r2p2", region, keypair),
+				Config: testAccOutscalePublicIPInstanceConfig(omi, utils.TestAccVmType, region, keypair),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscalePublicIPExists("outscale_public_ip.bar1", &conf),
 					testAccCheckOutscalePublicIPAttributes(&conf),
@@ -76,14 +76,14 @@ func TestAccNet_PublicIP_associated_user_private_ip(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscalePublicIPDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscalePublicIPInstanceConfigAssociated(omi, "tinav4.c2r2p2", region, keypair),
+				Config: testAccOutscalePublicIPInstanceConfigAssociated(omi, utils.TestAccVmType, region, keypair),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscalePublicIPExists("outscale_public_ip.bar", &one),
 					testAccCheckOutscalePublicIPAttributes(&one),
 				),
 			},
 			{
-				Config: testAccOutscalePublicIPInstanceConfigAssociatedSwitch(omi, "tinav4.c2r2p2", region, keypair),
+				Config: testAccOutscalePublicIPInstanceConfigAssociatedSwitch(omi, utils.TestAccVmType, region, keypair),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscalePublicIPExists("outscale_public_ip.bar", &one),
 					testAccCheckOutscalePublicIPAttributes(&one),

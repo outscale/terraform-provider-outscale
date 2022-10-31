@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
 func TestAccVMS_DataSource_basic(t *testing.T) {
@@ -17,12 +18,12 @@ func TestAccVMS_DataSource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIVMSDataSourceConfig(omi, "tinav4.c2r2p2"),
+				Config: testAccOAPIVMSDataSourceConfig(omi, utils.TestAccVmType),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"data.outscale_vms.basic_web", "vms.0.image_id", omi),
 					resource.TestCheckResourceAttr(
-						"data.outscale_vms.basic_web", "vms.0.vm_type", "tinav4.c2r2p2"),
+						"data.outscale_vms.basic_web", "vms.0.vm_type", utils.TestAccVmType),
 				),
 			},
 		},

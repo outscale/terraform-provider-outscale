@@ -55,7 +55,7 @@ func TestAccVM_withVolumesDataSource(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleVolumesDataSourceConfigWithVM(utils.GetRegion(), omi, keypair),
+				Config: testAccCheckOutscaleVolumesDataSourceConfigWithVM(utils.GetRegion(), omi, keypair, utils.TestAccVmType),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleVolumeDataSourceID("data.outscale_volumes.outscale_volumes"),
 					resource.TestCheckResourceAttrSet("data.outscale_volumes.outscale_volumes", "volumes.#"),
@@ -113,7 +113,7 @@ func testAccCheckOutscaleVolumesDataSourceConfigWithMultipleVolumeIDsFilter(regi
 	`, region)
 }
 
-func testAccCheckOutscaleVolumesDataSourceConfigWithVM(region, imageID, keypair string) string {
+func testAccCheckOutscaleVolumesDataSourceConfigWithVM(region, imageID, keypair, vmType string) string {
 	return fmt.Sprintf(`
 		resource "outscale_volume" "outscale_volume" {
 			subregion_name = "%[1]sa"
@@ -159,7 +159,7 @@ func testAccCheckOutscaleVolumesDataSourceConfigWithVM(region, imageID, keypair 
 			image_id           = "%[2]s"
 			keypair_name       = "%[3]s"
 			security_group_ids = [outscale_security_group.sg_volumes.security_group_id]
-			vm_type            = "tinav4.c2r2p2"
+			vm_type            = "%[4]s"
 		}
 
 		resource "outscale_volume_link" "outscale_volume_link" {
@@ -186,5 +186,5 @@ func testAccCheckOutscaleVolumesDataSourceConfigWithVM(region, imageID, keypair 
 				values = [outscale_vm.outscale_vm.vm_id]
 			}
 		}
-	`, region, imageID, keypair)
+	`, region, imageID, keypair, vmType)
 }

@@ -19,10 +19,10 @@ func TestAccVM_DataSource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIVMDataSourceConfig(omi, "tinav4.c2r2p2", utils.GetRegion()),
+				Config: testAccOAPIVMDataSourceConfig(omi, utils.TestAccVmType, utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(datasourcceName, "image_id", omi),
-					resource.TestCheckResourceAttr(datasourcceName, "vm_type", "tinav4.c2r2p2"),
+					resource.TestCheckResourceAttr(datasourcceName, "vm_type", utils.TestAccVmType),
 					resource.TestCheckResourceAttr(datasourcceName, "tags.#", "1"),
 				),
 			},

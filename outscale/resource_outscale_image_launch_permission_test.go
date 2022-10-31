@@ -31,21 +31,21 @@ func TestAccVM_WithImageLaunchPermission_Basic(t *testing.T) {
 		Steps: []r.TestStep{
 			// Scaffold everything
 			{
-				Config: testAccOutscaleImageLaunchPermissionConfig(omi, "tinav4.c2r2p2", region, accountID, keypair, true, rInt),
+				Config: testAccOutscaleImageLaunchPermissionConfig(omi, utils.TestAccVmType, region, accountID, keypair, true, rInt),
 				Check: r.ComposeTestCheckFunc(
 					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
 				),
 			},
 			// Drop just launch permission to test destruction
 			{
-				Config: testAccOutscaleImageLaunchPermissionConfig(omi, "tinav4.c2r2p2", region, accountID, keypair, false, rInt),
+				Config: testAccOutscaleImageLaunchPermissionConfig(omi, utils.TestAccVmType, region, accountID, keypair, false, rInt),
 				Check: r.ComposeTestCheckFunc(
 					testAccOutscaleImageLaunchPermissionDestroyed(accountID, &imageID),
 				),
 			},
 			// Re-add everything so we can test when AMI disappears
 			{
-				Config: testAccOutscaleImageLaunchPermissionConfig(omi, "tinav4.c2r2p2", region, accountID, keypair, true, rInt),
+				Config: testAccOutscaleImageLaunchPermissionConfig(omi, utils.TestAccVmType, region, accountID, keypair, true, rInt),
 				Check: r.ComposeTestCheckFunc(
 					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
 				),
@@ -53,7 +53,7 @@ func TestAccVM_WithImageLaunchPermission_Basic(t *testing.T) {
 			// Here we delete the AMI to verify the follow-on refresh after this step
 			// should not error.
 			{
-				Config: testAccOutscaleImageLaunchPermissionConfig(omi, "tinav4.c2r2p2", region, accountID, keypair, true, rInt),
+				Config: testAccOutscaleImageLaunchPermissionConfig(omi, utils.TestAccVmType, region, accountID, keypair, true, rInt),
 				Check: r.ComposeTestCheckFunc(
 					testAccOutscaleImageDisappears(&imageID),
 				),
@@ -78,14 +78,14 @@ func TestAccVM_ImageLaunchPermissionDestruction_Basic(t *testing.T) {
 		Steps: []r.TestStep{
 			// Scaffold everything
 			{
-				Config: testAccOutscaleImageLaunchPermissionCreateConfig(omi, "tinav4.c2r2p2", region, keypair, rInt, true, false),
+				Config: testAccOutscaleImageLaunchPermissionCreateConfig(omi, utils.TestAccVmType, region, keypair, rInt, true, false),
 				Check: r.ComposeTestCheckFunc(
 					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
 					testAccOutscaleImageLaunchPermissionExists(accountID, &imageID),
 				),
 			},
 			{
-				Config: testAccOutscaleImageLaunchPermissionCreateConfig(omi, "tinav4.c2r2p2", region, keypair, rInt, true, true),
+				Config: testAccOutscaleImageLaunchPermissionCreateConfig(omi, utils.TestAccVmType, region, keypair, rInt, true, true),
 				Check: r.ComposeTestCheckFunc(
 					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
 				),

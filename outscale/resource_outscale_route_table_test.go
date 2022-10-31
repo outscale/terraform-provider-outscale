@@ -104,7 +104,7 @@ func TestAccNet_RouteTable_instance(t *testing.T) {
 		CheckDestroy:  testAccCheckOAPIRouteTableDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIRouteTableConfigInstance(omi, "tinav4.c2r2p2", utils.GetRegion()),
+				Config: testAccOAPIRouteTableConfigInstance(omi, utils.TestAccVmType, utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIRouteTableExists(
 						"outscale_route_table.foo", &v, nil),
