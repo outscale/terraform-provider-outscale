@@ -19,6 +19,9 @@ import (
 func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 	t.Parallel()
 	var server oscgo.Vm
+
+	resourceName := "outscale_vm.basic"
+
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := fmt.Sprintf("%sa", os.Getenv("OUTSCALE_REGION"))
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
@@ -31,13 +34,13 @@ func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 			{
 				Config: testAccCheckOutscaleOAPIVMConfigBasic(omi, "tinav4.c2r2p2", region, keypair),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &server),
+					testAccCheckOutscaleOAPIVMExists(resourceName, &server),
 					testAccCheckOutscaleOAPIVMAttributes(t, &server, omi),
-					resource.TestCheckResourceAttrSet("outscale_vm.basic", "creation_date"),
-					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "image_id", omi),
-					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "vm_type", "tinav4.c2r2p2"),
+
+					resource.TestCheckResourceAttr(resourceName, "image_id", omi),
+					resource.TestCheckResourceAttr(resourceName, "vm_type", "tinav4.c2r2p2"),
+
+					resource.TestCheckResourceAttr(resourceName, "nested_virtualization", "true"),
 				),
 			},
 		},
@@ -667,8 +670,10 @@ func testAccCheckOutscaleOAPIVMConfigBasic(omi, vmType, region, keypair string) 
 		resource "outscale_vm" "basic" {
 			image_id                 = "%[1]s"
 			vm_type                  = "%[2]s"
-			keypair_name	         = "%[4]s"
+			keypair_name             = "%[4]s"
 			placement_subregion_name = "%[3]s"
+			placement_tenancy        = "dedicated"
+			nested_virtualization    = true
 			subnet_id                = outscale_subnet.outscale_subnet.subnet_id
 			private_ips              =  ["10.0.0.12"]
 
