@@ -9,16 +9,14 @@ func DataSourceOutscaleLoadBalancerVms() *schema.Resource {
 	return &schema.Resource{
 		Read: DataSourceOutscaleLoadBalancerVmsRead,
 		Schema: getDataSourceSchemas(map[string]*schema.Schema{
+			"filter": dataSourceFiltersSchema(),
 			"load_balancer_name": {
 				Type:     schema.TypeString,
-				ForceNew: true,
-				Required: true,
+				Computed: true,
 			},
-
 			"backend_vm_ids": {
-				Type:     schema.TypeList,
-				ForceNew: true,
-				Required: true,
+				Type:     schema.TypeSet,
+				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"request_id": {
