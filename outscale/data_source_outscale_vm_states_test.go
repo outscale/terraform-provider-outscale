@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
 func TestAccVM_StatesDataSource(t *testing.T) {
@@ -16,7 +17,7 @@ func TestAccVM_StatesDataSource(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleVMStatesConfig(omi, "tinav4.c2r2p2"),
+				Config: testAccDataSourceOutscaleVMStatesConfig(omi, utils.TestAccVmType),
 			},
 		},
 	})

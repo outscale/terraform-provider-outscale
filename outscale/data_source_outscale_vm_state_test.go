@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
 func TestAccVM_StateDataSource(t *testing.T) {
@@ -18,7 +19,7 @@ func TestAccVM_StateDataSource(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleVmStateConfig(omi, "tinav4.c2r2p2"),
+				Config: testAccDataSourceOutscaleVmStateConfig(omi, utils.TestAccVmType),
 				Check: resource.ComposeTestCheckFunc(
 					testAccDataSourceOutscaleVMStateCheck("data.outscale_vm_state.state"),
 				),

@@ -32,6 +32,7 @@ const (
 	MaxIops              int     = 13000
 	DefaultIops          int32   = 150
 	MaxSize              int     = 14901
+	TestAccVmType        string  = "tinav6.c2r2p2"
 	LinkedPolicyNotFound string  = "5102"
 	InvalidState         string  = "InvalidState"
 	SuffixConfigFilePath string  = "/.osc/config.json"
@@ -232,7 +233,7 @@ func InterfaceSliceToStringSlice(slice []interface{}) []string {
 	for _, v := range slice {
 		val, ok := v.(string)
 		if ok && val != "" {
-			result = append(result, v.(string))
+			result = append(result, val)
 		}
 	}
 	return result

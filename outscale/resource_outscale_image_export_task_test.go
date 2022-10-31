@@ -31,13 +31,13 @@ func TestAccVM_withImageExportTask_basic(t *testing.T) {
 			Providers: testAccProviders,
 			Steps: []resource.TestStep{
 				{
-					Config: testAccOAPIImageExportTaskConfigBasic(omi, "tinav4.c2r2p2", region, imageName, ""),
+					Config: testAccOAPIImageExportTaskConfigBasic(omi, utils.TestAccVmType, region, imageName, ""),
 					Check: resource.ComposeTestCheckFunc(
 						testAccCheckOutscalemageExportTaskExists("outscale_image_export_task.outscale_image_export_task"),
 					),
 				},
 				{
-					Config: testAccOAPIImageExportTaskConfigBasic(omi, "tinav4.c2r2p2", region, imageName, tags),
+					Config: testAccOAPIImageExportTaskConfigBasic(omi, utils.TestAccVmType, region, imageName, tags),
 					Check: resource.ComposeTestCheckFunc(
 						testAccCheckOutscalemageExportTaskExists("outscale_image_export_task.outscale_image_export_task"),
 					),

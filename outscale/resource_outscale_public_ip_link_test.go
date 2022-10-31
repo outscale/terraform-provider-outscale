@@ -28,7 +28,7 @@ func TestAccVM_WithPublicIPLink_basic(t *testing.T) {
 		CheckDestroy: testAccCheckOutscalePublicIPLinkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscalePublicIPLinkConfig(omi, "tinav4.c2r2p2", utils.GetRegion(), keypair),
+				Config: testAccOutscalePublicIPLinkConfig(omi, utils.TestAccVmType, utils.GetRegion(), keypair),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscalePublicIPLExists(
 						"outscale_public_ip.ip_link", &a),

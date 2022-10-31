@@ -234,7 +234,7 @@ func ResourceUserGroupRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	if _, ok := resp.GetUserGroupsOk(); !ok {
+	if groups, ok := resp.GetUserGroupsOk(); !ok || len(*groups) == 0 {
 		d.SetId("")
 		return nil
 	}

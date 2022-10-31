@@ -23,7 +23,7 @@ func TestAccVM_WithImageDataSource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleImageDataSourceBasicConfig(omi, "tinav4.c2r2p2", utils.GetRegion(), imageName),
+				Config: testAccCheckOutscaleImageDataSourceBasicConfig(omi, utils.TestAccVmType, utils.GetRegion(), imageName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleImageDataSourceID("data.outscale_image.omi"),
 				),

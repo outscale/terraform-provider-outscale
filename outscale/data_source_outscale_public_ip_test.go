@@ -36,7 +36,7 @@ func TestAccVM_WithPublicIP(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscalePublicIPConfigwithVM(omi, utils.GetRegion()),
+				Config: testAccDataSourceOutscalePublicIPConfigwithVM(omi, utils.GetRegion(), utils.TestAccVmType),
 			},
 		},
 	})
@@ -126,7 +126,7 @@ const testAccDataSourceOutscalePublicIPConfigWithTags = `
 	}
 `
 
-func testAccDataSourceOutscalePublicIPConfigwithVM(omi, region string) string {
+func testAccDataSourceOutscalePublicIPConfigwithVM(omi, region, vmType string) string {
 	return fmt.Sprintf(`
 		resource "outscale_security_group" "sg_Pbip" {
 			security_group_name = "sg_data_ip"
@@ -140,7 +140,7 @@ func testAccDataSourceOutscalePublicIPConfigwithVM(omi, region string) string {
 
 		resource "outscale_vm" "outscale_vm" {
 			image_id     = "%s"
-			vm_type      = "tinav4.c2r2p2"
+			vm_type      = "%[3]s"
 			keypair_name = "terraform-basic"
 			security_group_ids = [outscale_security_group.sg_Pbip.security_group_id]
 		}
@@ -171,5 +171,5 @@ func testAccDataSourceOutscalePublicIPConfigwithVM(omi, region string) string {
 				values = [outscale_public_ip_link.outscale_public_ip_link.link_public_ip_id]
 			}
 		}
-	`, omi, region)
+	`, omi, region, vmType)
 }

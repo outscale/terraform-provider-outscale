@@ -28,7 +28,7 @@ func TestAccVM_WithVolumeAttachment_basic(t *testing.T) {
 		CheckDestroy: testAccCheckOAPIVolumeAttachmentDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIVolumeAttachmentConfig(omi, "tinav4.c2r2p2", utils.GetRegion(), keypair),
+				Config: testAccOAPIVolumeAttachmentConfig(omi, utils.TestAccVmType, utils.GetRegion(), keypair),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"outscale_volume_link.ebs_att", "device_name", "/dev/sdh"),
@@ -53,7 +53,7 @@ func TestAccVM_ImportVolumeAttachment_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckOAPIVolumeAttachmentDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIVolumeAttachmentConfig(omi, "tinav4.c2r2p2", utils.GetRegion(), keypair),
+				Config: testAccOAPIVolumeAttachmentConfig(omi, utils.TestAccVmType, utils.GetRegion(), keypair),
 			},
 			{
 				ResourceName:            resourceName,
