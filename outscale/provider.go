@@ -90,7 +90,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_access_key":                        resourceOutscaleAccessKey(),
 			"outscale_load_balancer":                     resourceOutscaleOAPILoadBalancer(),
 			"outscale_load_balancer_policy":              resourceOutscaleAppCookieStickinessPolicy(),
-			"outscale_load_balancer_vms":                 resourceOutscaleOAPILBUAttachment(),
+			"outscale_load_balancer_vms":                 resourceLBUAttachment(),
 			"outscale_load_balancer_attributes":          resourceOutscaleOAPILoadBalancerAttributes(),
 			"outscale_load_balancer_listener_rule":       resourceOutscaleLoadBalancerListenerRule(),
 			"outscale_flexible_gpu":                      resourceOutscaleOAPIFlexibleGpu(),
