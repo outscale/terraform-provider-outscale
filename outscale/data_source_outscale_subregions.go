@@ -31,7 +31,7 @@ func dataSourceOutscaleOAPISubregions() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"location_code": {
 							Type:     schema.TypeString,
-							Computed: true,	
+							Computed: true,
 						},
 						"region_name": {
 							Type:     schema.TypeString,
