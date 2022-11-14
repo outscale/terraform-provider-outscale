@@ -19,27 +19,30 @@ func TestAccOutscaleOAPIENI_basic(t *testing.T) {
 	t.Parallel()
 	var conf oscgo.Nic
 	subregion := os.Getenv("OUTSCALE_REGION")
+	resourceName := "outscale_nic.outscale_nic"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
-		IDRefreshName: "outscale_nic.outscale_nic",
+		IDRefreshName: resourceName,
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOutscaleOAPINICDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleOAPIENIConfig(subregion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIENIExists("outscale_nic.outscale_nic", &conf),
+					testAccCheckOutscaleOAPIENIExists(resourceName, &conf),
 					testAccCheckOutscaleOAPIENIAttributes(&conf, subregion),
-					resource.TestCheckResourceAttr("outscale_nic.outscale_nic", "private_ips.#", "2"),
+					resource.TestCheckResourceAttr(resourceName, "primary_private_ip", "10.0.0.23"),
+					resource.TestCheckResourceAttr(resourceName, "secondary_private_ips.#", "2"),
 				),
 			},
 			{
 				Config: testAccOutscaleOAPIENIConfigUpdate(subregion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIENIExists("outscale_nic.outscale_nic", &conf),
+					testAccCheckOutscaleOAPIENIExists(resourceName, &conf),
 					testAccCheckOutscaleOAPIENIAttributes(&conf, subregion),
-					resource.TestCheckResourceAttr("outscale_nic.outscale_nic", "private_ips.#", "3"),
+					resource.TestCheckResourceAttr(resourceName, "primary_private_ip", "10.0.0.23"),
+					resource.TestCheckResourceAttr(resourceName, "secondary_private_ips.#", "2"),
 				),
 			},
 		},
@@ -130,15 +133,9 @@ func testAccOutscaleOAPIENIConfig(subregion string) string {
 			subnet_id          = "${outscale_subnet.outscale_subnet.subnet_id}"
 			security_group_ids = ["${outscale_security_group.outscale_sg.security_group_id}"]
 		
-			private_ips {
-				is_primary = true
-				private_ip = "10.0.0.23"
-			}
-
-			private_ips	{
-				is_primary = false
-				private_ip = "10.0.0.46"
-			}
+			primary_private_ip = "10.0.0.23"
+			
+			secondary_private_ips = ["10.0.0.46", "10.0.0.69"]
 		}
 	`, subregion)
 }
@@ -169,20 +166,9 @@ func testAccOutscaleOAPIENIConfigUpdate(subregion string) string {
 			subnet_id          = "${outscale_subnet.outscale_subnet.subnet_id}"
 			security_group_ids = ["${outscale_security_group.outscale_sg.security_group_id}"]
 		
-			private_ips {
-				is_primary = true
-				private_ip = "10.0.0.23"
-			}
+			primary_private_ip = "10.0.0.23"
 			
-			private_ips {
-				is_primary = false
-				private_ip = "10.0.0.46"
-			}
-			
-			private_ips {
-				is_primary = false
-				private_ip = "10.0.0.69"
-			}
+			secondary_private_ips = ["10.0.0.46", "10.0.0.79"]
 		}	 
 	`, subregion)
 }
