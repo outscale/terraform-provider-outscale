@@ -120,6 +120,8 @@ func dataSourceAccountsRead(d *schema.ResourceData, meta interface{}) error {
 	if err := d.Set("accounts", flattenAccounts(resp.GetAccounts())); err != nil {
 		return err
 	}
+	d.SetId(resource.UniqueId())
+
 	return nil
 }
 
