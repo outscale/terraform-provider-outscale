@@ -923,27 +923,6 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 		}
 	}
 
-	if d.HasChange("public_ip") {
-		req := oscgo.UpdateLoadBalancerRequest{
-			LoadBalancerName: d.Id(),
-		}
-		req.SetPublicIp(d.Get("public_ip").(string))
-
-		var err error
-		err = resource.Retry(1*time.Minute, func() *resource.RetryError {
-			_, _, err = conn.LoadBalancerApi.UpdateLoadBalancer(
-				context.Background()).UpdateLoadBalancerRequest(req).Execute()
-			if err != nil {
-				return utils.CheckThrottling(err)
-			}
-			return nil
-		})
-
-		if err != nil {
-			return fmt.Errorf("Failure updating PublicIp: %s", err)
-		}
-	}
-
 	if d.HasChange("secured_cookies") {
 		req := oscgo.UpdateLoadBalancerRequest{
 			LoadBalancerName: d.Id(),
