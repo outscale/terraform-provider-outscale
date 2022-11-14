@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"math"
 	"reflect"
 	"strconv"
 	"strings"
@@ -156,12 +155,9 @@ func getOAPINicSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-
 		"private_ips": {
 			Type:     schema.TypeSet,
 			Computed: true,
-			Optional: true,
-			ForceNew: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"link_public_ip": {
@@ -199,15 +195,24 @@ func getOAPINicSchema() map[string]*schema.Schema {
 					"private_ip": {
 						Type:     schema.TypeString,
 						Computed: true,
-						Optional: true,
 					},
 					"is_primary": {
 						Type:     schema.TypeBool,
 						Computed: true,
-						Optional: true,
 					},
 				},
 			},
+		},
+		"primary_private_ip": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Computed: true,
+		},
+		"secondary_private_ips": {
+			Type:     schema.TypeSet,
+			Optional: true,
+			Computed: true,
+			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 		"request_id": {
 			Type:     schema.TypeString,
@@ -255,8 +260,34 @@ func resourceOutscaleOAPINicCreate(d *schema.ResourceData, meta interface{}) err
 		request.SetSecurityGroupIds(a)
 	}
 
-	if v, ok := d.GetOk("private_ips"); ok {
-		request.SetPrivateIps(expandPrivateIPLight(v.(*schema.Set).List()))
+	primaryPrivateIp, primaryOk := d.GetOk("primary_private_ip")
+	secondaryPrivateIp, secondaryOk := d.GetOk("secondary_private_ips")
+	if primaryOk || secondaryOk {
+		privateIPs := make([]oscgo.PrivateIpLight, 0)
+
+		if primaryOk {
+			isPrimary := true
+			private := primaryPrivateIp.(string)
+			privateIP := oscgo.PrivateIpLight{
+				IsPrimary: &isPrimary,
+				PrivateIp: &private,
+			}
+			privateIPs = append(privateIPs, privateIP)
+		}
+
+		if secondaryOk {
+			for _, v := range secondaryPrivateIp.(*schema.Set).List() {
+				isPrimary := false
+				private := v.(string)
+				privateIP := oscgo.PrivateIpLight{
+					IsPrimary: &isPrimary,
+					PrivateIp: &private,
+				}
+				privateIPs = append(privateIPs, privateIP)
+			}
+		}
+
+		request.SetPrivateIps(privateIPs)
 	}
 
 	log.Printf("[DEBUG] Creating network interface")
@@ -281,7 +312,6 @@ func resourceOutscaleOAPINicCreate(d *schema.ResourceData, meta interface{}) err
 		if err := setOSCAPITags(conn, d); err != nil {
 			return err
 		}
-		d.SetPartial("tags")
 	}
 
 	if err := d.Set("tags", make([]map[string]interface{}, 0)); err != nil {
@@ -403,33 +433,42 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 	if err := d.Set("private_dns_name", eni.GetPrivateDnsName()); err != nil {
 		return err
 	}
-	//d.Set("private_ip", eni.)
 
-	y := make([]map[string]interface{}, len(eni.GetPrivateIps()))
+	privateIps := make([]map[string]interface{}, len(eni.GetPrivateIps()))
+	secondaryIps := make([]string, 0)
 	if eni.PrivateIps != nil {
 		for k, v := range eni.GetPrivateIps() {
-			b := make(map[string]interface{})
+			privateIp := make(map[string]interface{})
 
-			d := make(map[string]interface{})
+			link := make(map[string]interface{})
 			assoc := v.GetLinkPublicIp()
-			d["public_ip_id"] = assoc.GetPublicIpId()
-			d["link_public_ip_id"] = assoc.GetLinkPublicIpId()
-			d["public_ip_account_id"] = assoc.GetPublicIpAccountId()
-			d["public_dns_name"] = assoc.GetPublicDnsName()
-			d["public_ip"] = assoc.GetPublicIp()
+			link["public_ip_id"] = assoc.GetPublicIpId()
+			link["link_public_ip_id"] = assoc.GetLinkPublicIpId()
+			link["public_ip_account_id"] = assoc.GetPublicIpAccountId()
+			link["public_dns_name"] = assoc.GetPublicDnsName()
+			link["public_ip"] = assoc.GetPublicIp()
 
-			b["link_public_ip"] = d
-			b["private_dns_name"] = v.GetPrivateDnsName()
-			b["private_ip"] = v.GetPrivateIp()
-			b["is_primary"] = v.GetIsPrimary()
+			privateIp["link_public_ip"] = link
+			privateIp["private_dns_name"] = v.GetPrivateDnsName()
+			privateIp["private_ip"] = v.GetPrivateIp()
+			privateIp["is_primary"] = v.GetIsPrimary()
 
-			y[k] = b
+			privateIps[k] = privateIp
+			if v.GetIsPrimary() {
+				if err := d.Set("primary_private_ip", v.GetPrivateIp()); err != nil {
+					return err
+				}
+			} else {
+				secondaryIps = append(secondaryIps, v.GetPrivateIp())
+			}
 		}
 	}
-	if err := d.Set("private_ips", y); err != nil {
+	if err := d.Set("private_ips", privateIps); err != nil {
 		return err
 	}
-
+	if err := d.Set("secondary_private_ips", secondaryIps); err != nil {
+		return err
+	}
 	if err := d.Set("is_source_dest_checked", eni.GetIsSourceDestChecked()); err != nil {
 		return err
 	}
@@ -524,7 +563,6 @@ func resourceOutscaleOAPINicDetach(meta interface{}, nicID string) error {
 // Update OAPINic
 func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-	d.Partial(true)
 	var err error
 
 	if d.HasChange("link_nic") {
@@ -556,17 +594,18 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 				return fmt.Errorf("Error Attaching Network Interface: %s", err)
 			}
 		}
-		d.SetPartial("link_nic")
 	}
 
-	if d.HasChange("private_ips") {
-		o, n := d.GetChange("private_ips")
+	if d.HasChange("secondary_private_ips") {
+		oldSecondary, newSecondary := d.GetChange("secondary_private_ips")
+		inter := oldSecondary.(*schema.Set).Intersection(newSecondary.(*schema.Set))
+		created := newSecondary.(*schema.Set).Difference(inter)
+		removed := oldSecondary.(*schema.Set).Difference(inter)
 
-		// Unassign old IP addresses
-		if len(o.(*schema.Set).List()) != 0 {
+		if removed.Len() > 0 {
 			input := oscgo.UnlinkPrivateIpsRequest{
 				NicId:      d.Id(),
-				PrivateIps: flattenPrivateIPLightToStringSlice(o.(*schema.Set).List()),
+				PrivateIps: utils.InterfaceSliceToStringSlice(removed.List()),
 			}
 
 			err := resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -582,13 +621,11 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 		}
 
 		// Assign new IP addresses
-		if len(n.(*schema.Set).List()) != 0 {
-			stringSlice := flattenPrivateIPLightToStringSlice(n.(*schema.Set).List())
+		if created.Len() > 0 {
 			input := oscgo.LinkPrivateIpsRequest{
-				NicId:      d.Id(),
-				PrivateIps: &stringSlice,
+				NicId: d.Id(),
 			}
-
+			input.SetPrivateIps(utils.InterfaceSliceToStringSlice(created.List()))
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 				_, _, err = conn.NicApi.LinkPrivateIps(context.Background()).LinkPrivateIpsRequest(input).Execute()
 				if err != nil {
@@ -599,65 +636,6 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 			if err != nil {
 				return fmt.Errorf("Failure to assign Private IPs: %s", err)
 			}
-		}
-		d.SetPartial("private_ip")
-	}
-
-	if d.HasChange("private_ips_count") {
-		o, n := d.GetChange("private_ips_count")
-		pips := d.Get("pips").(*schema.Set).List()
-		prips := pips[:0]
-		pip := d.Get("private_ip")
-
-		for _, ip := range pips {
-			if ip != pip {
-				prips = append(prips, ip)
-			}
-		}
-
-		if o != nil && o != 0 && n != nil && n != len(prips) {
-			diff := n.(int) - o.(int)
-
-			// Surplus of IPs, add the diff
-			if diff > 0 {
-				dif := int32(diff)
-				input := oscgo.LinkPrivateIpsRequest{
-					NicId:                   d.Id(),
-					SecondaryPrivateIpCount: pointy.Int32(dif),
-				}
-				// _, err := conn.VM.AssignPrivateIpAddresses(input)
-
-				err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-					var err error
-					_, _, err = conn.NicApi.LinkPrivateIps(context.Background()).LinkPrivateIpsRequest(input).Execute()
-					if err != nil {
-						return utils.CheckThrottling(err)
-					}
-					return nil
-				})
-				if err != nil {
-					return fmt.Errorf("Failure to assign Private IPs: %s", err)
-				}
-			}
-
-			if diff < 0 {
-				input := oscgo.UnlinkPrivateIpsRequest{
-					NicId:      d.Id(),
-					PrivateIps: expandStringValueList(prips[0:int(math.Abs(float64(diff)))]),
-				}
-
-				err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-					_, _, err = conn.NicApi.UnlinkPrivateIps(context.Background()).UnlinkPrivateIpsRequest(input).Execute()
-					if err != nil {
-						return utils.CheckThrottling(err)
-					}
-					return nil
-				})
-				if err != nil {
-					return fmt.Errorf("Failure to unassign Private IPs: %s", err)
-				}
-			}
-			d.SetPartial("private_ips_count")
 		}
 	}
 
@@ -679,8 +657,6 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 		if err != nil {
 			return fmt.Errorf("Failure updating ENI: %s", err)
 		}
-
-		d.SetPartial("security_groups")
 	}
 
 	if d.HasChange("description") {
@@ -701,16 +677,11 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 		if err != nil {
 			return fmt.Errorf("Failure updating ENI: %s", err)
 		}
-		d.SetPartial("description")
 	}
 
 	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
-
-	d.SetPartial("tags")
-
-	d.Partial(false)
 
 	return resourceOutscaleOAPINicRead(d, meta)
 }
