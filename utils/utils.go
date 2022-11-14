@@ -135,3 +135,11 @@ func CheckThrottling(err error) *resource.RetryError {
 	}
 	return resource.NonRetryableError(err)
 }
+
+func InterfaceSliceToStringSlice(list []interface{}) []string {
+	result := make([]string, 0, len(list))
+	for _, i := range list {
+		result = append(result, i.(string))
+	}
+	return result
+}

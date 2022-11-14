@@ -776,8 +776,8 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 		o, n := d.GetChange("backend_vm_ids")
 		os := o.(*schema.Set)
 		ns := n.(*schema.Set)
-		remove := expandInstanceString(os.Difference(ns).List())
-		add := expandInstanceString(ns.Difference(os).List())
+		remove := utils.InterfaceSliceToStringSlice(os.Difference(ns).List())
+		add := utils.InterfaceSliceToStringSlice(ns.Difference(os).List())
 
 		if len(add) > 0 {
 
@@ -1017,15 +1017,6 @@ func resourceOutscaleOAPILoadBalancerDelete(d *schema.ResourceData, meta interfa
 	}
 
 	return nil
-}
-
-// Expands an array of String Instance IDs into a []Instances
-func expandInstanceString(list []interface{}) []string {
-	result := make([]string, 0, len(list))
-	for _, i := range list {
-		result = append(result, i.(string))
-	}
-	return result
 }
 
 func formatInt32(n int32) string {
