@@ -148,13 +148,13 @@ func dataSourceOutscaleOAPILoadBalancerLDRuleRead(d *schema.ResourceData, meta i
 	if lr.Priority != nil {
 		d.Set("priority", lr.Priority)
 	} else {
-		fmt.Errorf("Malformated listener rule")
+		_ = fmt.Errorf("Malformated listener rule")
 	}
 
 	if lr.VmIds != nil {
 		d.Set("vm_ids", flattenStringList(lr.VmIds))
 	} else {
-		fmt.Errorf("Malformated listener rule")
+		_ = fmt.Errorf("Malformated listener rule")
 	}
 
 	d.SetId(resource.UniqueId())
