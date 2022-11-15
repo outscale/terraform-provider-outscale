@@ -146,12 +146,12 @@
                         "subnet_id": "",
                         "tags": [
                             {
-                                "key": "name-1",
-                                "value": "test-VM-tag"
-                            },
-                            {
                                 "key": "Key",
                                 "value": "value-tags"
+                            },
+                            {
+                                "key": "name-1",
+                                "value": "test-VM-tag"
                             }
                         ],
                         "user_data": "",
@@ -225,12 +225,12 @@
                         "subnet_id": "",
                         "tags": [
                             {
-                                "key": "name-1",
-                                "value": "test-VM-tag"
-                            },
-                            {
                                 "key": "Key",
                                 "value": "value-tags"
+                            },
+                            {
+                                "key": "name-1",
+                                "value": "test-VM-tag"
                             }
                         ],
                         "user_data": "",
@@ -429,6 +429,7 @@
                         "inbound_rules": [],
                         "net_id": "",
                         "outbound_rules": [],
+                        "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-4##",
                         "security_group_name": "terraform-public-sg",

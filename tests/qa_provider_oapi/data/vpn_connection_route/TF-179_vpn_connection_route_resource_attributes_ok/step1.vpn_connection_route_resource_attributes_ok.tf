@@ -20,11 +20,6 @@ resource "outscale_vpn_connection" "outscale_vpn_connection" {
     }
 }
 
-resource "outscale_vpn_connection_route" "route1" {
- vpn_connection_id  = outscale_vpn_connection.outscale_vpn_connection.vpn_connection_id
- destination_ip_range = "30.0.0.0/16"
-}
-
 resource "outscale_vpn_connection_route" "route2" {
  vpn_connection_id  = outscale_vpn_connection.outscale_vpn_connection.vpn_connection_id
  destination_ip_range = "40.0.0.0/16"
@@ -39,4 +34,3 @@ filter {
        values = [outscale_vpn_connection_route.route2.destination_ip_range]
     }
 }
-

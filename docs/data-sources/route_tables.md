@@ -9,7 +9,8 @@ description: |-
 # outscale_route_tables Data Source
 
 Provides information about route tables.
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Route-Tables.html).
+
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Route-Tables.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-routetable).
 
 ## Example Usage
@@ -62,7 +63,7 @@ The following attributes are exported:
     * `route_table_id` - The ID of the route table.
     * `routes` - One or more routes in the route table.
         * `creation_method` - The method used to create the route.
-        * `destination_ip_range` - The IP range used for the destination match, in CIDR notation (for example, 10.0.0.0/24).
+        * `destination_ip_range` - The IP range used for the destination match, in CIDR notation (for example, `10.0.0.0/24`).
         * `destination_service_id` - The ID of the OUTSCALE service.
         * `gateway_id` - The ID of the Internet service or virtual gateway attached to the Net.
         * `nat_service_id` - The ID of a NAT service attached to the Net.

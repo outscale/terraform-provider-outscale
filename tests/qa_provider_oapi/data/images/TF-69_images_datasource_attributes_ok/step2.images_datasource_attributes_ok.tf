@@ -38,6 +38,10 @@ data "outscale_images" "outscale_images" {
 	   	name   = "image_ids"
 	   	values = [outscale_image.outscale_image1.image_id,outscale_image.outscale_image2.image_id]
 	}
+    filter {
+        name   = "descriptions"
+        values = [outscale_image.outscale_image1.description]
+    }
 }
 
 data "outscale_images" "outscale_images_2" {
@@ -47,14 +51,6 @@ data "outscale_images" "outscale_images_2" {
     }
 depends_on=[outscale_image.outscale_image1,outscale_image.outscale_image2]
 
-}
-
-data "outscale_images" "outscale_images_3" {
-    filter {
-        name   = "descriptions"
-        values = [outscale_image.outscale_image1.description]
-    }
-depends_on=[outscale_image.outscale_image1,outscale_image.outscale_image2]
 }
 
 data "outscale_images" "outscale_images_4" {
@@ -92,16 +88,3 @@ data "outscale_images" "outscale_images_6" {
     }
 depends_on=[outscale_image.outscale_image1,outscale_image.outscale_image2]
 }
-
-data "outscale_image" "outscale_image_7" {
-   filter {
-        name   = "product_codes"
-        values = [outscale_image.outscale_image1.product_codes[0]]
-    }
-   filter {
-        name   = "descriptions"
-        values = [outscale_image.outscale_image1.description]
-    }
-depends_on=[outscale_image.outscale_image1,outscale_image.outscale_image2]
-}
-

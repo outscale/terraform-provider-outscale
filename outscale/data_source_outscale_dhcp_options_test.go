@@ -44,6 +44,7 @@ func testAccOutscaleDHCPOptionsDatasourceConfigBasic(value string) string {
 			domain_name         = "test.fr"
 			domain_name_servers = ["192.168.12.1"]
 			ntp_servers         = ["192.0.0.2"]
+			log_servers         = ["192.0.0.12"]
 
 			tags {
 				key   = "name"
@@ -55,6 +56,7 @@ func testAccOutscaleDHCPOptionsDatasourceConfigBasic(value string) string {
 			domain_name         = "test.fr"
 			domain_name_servers = ["192.168.12.2"]
 			ntp_servers         = ["192.0.0.3"]
+			log_servers         = ["192.0.0.13"]
 
 			tags {
 				key   = "name"
@@ -77,6 +79,7 @@ func testAccOutscaleDHCPOptionsDatasourceConfigWithFilters(value string) string 
 			domain_name         = "test.fr"
 			domain_name_servers = ["192.168.12.2"]
 			ntp_servers         = ["192.0.0.3"]
+			log_servers         = ["192.0.0.13"]
 
 			tags {
 				key   = "name"
@@ -88,7 +91,8 @@ func testAccOutscaleDHCPOptionsDatasourceConfigWithFilters(value string) string 
 			domain_name         = "test.fr"
 			domain_name_servers = ["192.168.12.2"]
 			ntp_servers         = ["192.0.0.3"]
-
+			log_servers         = ["192.0.0.13"]
+			
 			tags {
 				key   = "name"
 				value = "%[1]s"

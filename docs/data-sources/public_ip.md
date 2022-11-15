@@ -3,13 +3,14 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_public_ip"
 sidebar_current: "outscale-public-ip"
 description: |-
-  [Provides information about a specific public IP.]
+  [Provides information about a public IP.]
 ---
 
 # outscale_public_ip Data Source
 
-Provides information about a specific public IP.
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-EIPs.html).
+Provides information about a public IP.
+
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-EIPs.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-publicip).
 
 ## Example Usage

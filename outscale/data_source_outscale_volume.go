@@ -26,6 +26,10 @@ func datasourceOutscaleOAPIVolume() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"creation_date": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"iops": {
 				Type:     schema.TypeInt,
 				Computed: true,
@@ -143,6 +147,9 @@ func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 
 func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oscgo.Volume) error {
 	if err := d.Set("volume_id", volume.GetVolumeId()); err != nil {
+		return err
+	}
+	if err := d.Set("creation_date", volume.GetCreationDate()); err != nil {
 		return err
 	}
 	if err := d.Set("subregion_name", volume.GetSubregionName()); err != nil {

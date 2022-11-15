@@ -3,13 +3,14 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_image_export_task"
 sidebar_current: "outscale-image-export-task"
 description: |-
-  [Provides information about a specific image export task.]
+  [Provides information about an image export task.]
 ---
 
 # outscale_image_export_task Data Source
 
-Provides information about a specific image export task.
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-OMIs.html).
+Provides information about an image export task.
+
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-OMIs.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-image).
 
 ## Example Usage

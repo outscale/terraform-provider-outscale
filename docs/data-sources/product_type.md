@@ -3,13 +3,14 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_product_type"
 sidebar_current: "outscale-product-type"
 description: |-
-  [Provides information about a specific product type.]
+  [Provides information about a product type.]
 ---
 
 # outscale_product_type Data Source
 
-Provides information about a specific product type.
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/Software-Licenses.html).
+Provides information about a product type.
+
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/Software-Licenses.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-producttype).
 
 ## Example Usage

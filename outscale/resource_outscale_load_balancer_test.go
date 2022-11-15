@@ -19,6 +19,8 @@ func TestAccOutscaleOAPILBUBasic(t *testing.T) {
 	t.Parallel()
 	var conf oscgo.LoadBalancer
 
+	resourceName := "outscale_load_balancer.bar"
+
 	r := acctest.RandIntRange(0, 50)
 	region := os.Getenv("OUTSCALE_REGION")
 	zone := fmt.Sprintf("%sa", region)
@@ -27,21 +29,45 @@ func TestAccOutscaleOAPILBUBasic(t *testing.T) {
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
-		IDRefreshName: "outscale_load_balancer.bar",
+		IDRefreshName: resourceName,
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOutscaleOAPILBUDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleOAPILBUConfig(r),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPILBUExists("outscale_load_balancer.bar", &conf),
-					resource.TestCheckResourceAttr(
-						"outscale_load_balancer.bar", "subregion_names.#", "1"),
-					resource.TestCheckResourceAttr(
-						"outscale_load_balancer.bar", "subregion_names.0", zone),
-					resource.TestCheckResourceAttr(
-						"outscale_load_balancer.bar",
-						"listeners.#", "1"),
+					testAccCheckOutscaleOAPILBUExists(resourceName, &conf),
+					resource.TestCheckResourceAttr(resourceName, "subregion_names.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "subregion_names.0", zone),
+					resource.TestCheckResourceAttr(resourceName, "listeners.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "secured_cookies", "true"),
+				)},
+		},
+	})
+}
+
+func TestAccOutscaleOAPILBUPublicIp(t *testing.T) {
+	t.Parallel()
+	var conf oscgo.LoadBalancer
+
+	resourceName := "outscale_load_balancer.bar"
+
+	r := acctest.RandIntRange(0, 50)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+		},
+		IDRefreshName: resourceName,
+		Providers:     testAccProviders,
+		CheckDestroy:  testAccCheckOutscaleOAPILBUDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccOutscaleOAPILBUPublicIpConfig(r),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleOAPILBUExists(resourceName, &conf),
+					resource.TestCheckResourceAttr(resourceName, "listeners.#", "1"),
+					resource.TestCheckResourceAttrSet(resourceName, "public_ip"),
 				)},
 		},
 	})
@@ -159,14 +185,17 @@ func testAccCheckOutscaleOAPILBUExists(n string, res *oscgo.LoadBalancer) resour
 func testAccOutscaleOAPILBUConfig(r int) string {
 	return fmt.Sprintf(`
 resource "outscale_load_balancer" "bar" {
-  subregion_names = ["%sa"]
-  load_balancer_name               = "foobar-terraform-elb-%d"
-  listeners {
-    backend_port = 8000
-    backend_protocol = "HTTP"
-    load_balancer_port = 80
-    load_balancer_protocol = "HTTP"
-  }
+	subregion_names = ["%sa"]
+	load_balancer_name               = "foobar-terraform-elb-%d"
+	
+	secured_cookies                  = true
+
+	listeners {
+		backend_port = 8000
+		backend_protocol = "HTTP"
+		load_balancer_port = 80
+		load_balancer_protocol = "HTTP"
+	}
 
 	tags {
 		key = "name"
@@ -174,5 +203,32 @@ resource "outscale_load_balancer" "bar" {
 	}
 
 }
+`, os.Getenv("OUTSCALE_REGION"), r)
+}
+
+func testAccOutscaleOAPILBUPublicIpConfig(r int) string {
+	return fmt.Sprintf(`
+
+	resource "outscale_public_ip" "my_public_ip" {
+	}
+
+	resource "outscale_load_balancer" "bar" {
+		subregion_names = ["%[1]sa"]
+		load_balancer_name = "foobar-terraform-elb-%[2]d"
+	  
+		listeners {
+		  backend_port           = 80
+		  backend_protocol       = "HTTP"
+		  load_balancer_protocol = "HTTP"
+		  load_balancer_port     = 80
+		}
+	  
+		public_ip =  "${outscale_public_ip.my_public_ip.public_ip}"
+	  
+		tags {
+		  key = "name"
+		  value = "terraform-internet-facing-lb-with-eip"
+		}
+	  }
 `, os.Getenv("OUTSCALE_REGION"), r)
 }

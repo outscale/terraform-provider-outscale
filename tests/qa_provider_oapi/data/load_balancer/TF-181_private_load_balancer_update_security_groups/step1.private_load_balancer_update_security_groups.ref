@@ -1,14 +1,12 @@
 {
     "version": "########",
     "terraform_version": "########",
-
     "serial": "########",
     "lineage": "########",
     "outputs": {},
     "resources": [
         {
             "mode": "managed",
-
             "type": "outscale_load_balancer",
             "name": "private_lbu",
             "provider": "provider[\"local/test/outscale\"]",
@@ -125,6 +123,7 @@
                                 "to_port_range": -1
                             }
                         ],
+                        "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-6##",
                         "security_group_name": "terraform-sg-lbu-TF181-1",
@@ -162,6 +161,7 @@
                                 "to_port_range": -1
                             }
                         ],
+                        "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-7##",
                         "security_group_name": "terraform-sg-lbu-TF181-2",

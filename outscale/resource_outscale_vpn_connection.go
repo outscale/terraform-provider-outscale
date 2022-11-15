@@ -84,6 +84,34 @@ func resourceOutscaleVPNConnection() *schema.Resource {
 				},
 			},
 			"tags": tagsListOAPISchema(),
+			"vgw_telemetries": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"accepted_route_count": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+						"last_state_change_date": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"outside_ip_address": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"state": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"state_description": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -171,7 +199,9 @@ func resourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{})
 	if err := d.Set("tags", tagsOSCAPIToMap(vpnConnection.GetTags())); err != nil {
 		return err
 	}
-
+	if err := d.Set("vgw_telemetries", flattenVgwTelemetries(vpnConnection.GetVgwTelemetries())); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -268,4 +298,19 @@ func flattenVPNConnection(routes []oscgo.RouteLight) []map[string]interface{} {
 		}
 	}
 	return routesMap
+}
+
+func flattenVgwTelemetries(vgwTelemetries []oscgo.VgwTelemetry) []map[string]interface{} {
+	vgwTelemetriesMap := make([]map[string]interface{}, len(vgwTelemetries))
+
+	for i, vgwTelemetry := range vgwTelemetries {
+		vgwTelemetriesMap[i] = map[string]interface{}{
+			"accepted_route_count":   vgwTelemetry.GetAcceptedRouteCount(),
+			"last_state_change_date": vgwTelemetry.GetLastStateChangeDate(),
+			"outside_ip_address":     vgwTelemetry.GetOutsideIpAddress(),
+			"state":                  vgwTelemetry.GetState(),
+			"state_description":      vgwTelemetry.GetStateDescription(),
+		}
+	}
+	return vgwTelemetriesMap
 }

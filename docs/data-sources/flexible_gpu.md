@@ -3,13 +3,14 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_flexible_gpu"
 sidebar_current: "outscale-flexible-gpu"
 description: |-
-  [Provides information about a specific flexible GPU.]
+  [Provides information about a flexible GPU.]
 ---
 
 # outscale_flexible_gpu Data Source
 
-Provides information about a specific flexible GPU.
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Flexible-GPUs.html).
+Provides information about a flexible GPU.
+
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Flexible-GPUs.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-flexiblegpu).
 
 ## Example Usage

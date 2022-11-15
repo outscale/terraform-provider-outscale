@@ -9,7 +9,8 @@ description: |-
 # outscale_image Resource
 
 Manages an image.
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-OMIs.html).
+
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-OMIs.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-image).
 
 ## Example Usage
@@ -50,7 +51,7 @@ resource "outscale_image" "image03" {
 
 The following arguments are supported:
 
-* `architecture` - (Optional) The architecture of the OMI (by default, `i386`).
+* `architecture` - (Optional) The architecture of the OMI (by default, `i386` if you specified the `file_location` or `root_device_name` parameter).
 * `block_device_mappings` - (Optional) One or more block device mappings.
     * `bsu` - Information about the BSU volume to create.
         * `delete_on_vm_deletion` - (Optional) By default or if set to true, the volume is deleted when terminating the VM. If false, the volume is not deleted when terminating the VM.
@@ -61,20 +62,20 @@ If you specify a snapshot ID, the volume size must be at least equal to the snap
 If you specify a snapshot ID but no volume size, the volume is created with a size similar to the snapshot one.
         * `volume_type` - (Optional) The type of the volume (`standard` \| `io1` \| `gp2`). If not specified in the request, a `standard` volume is created.<br />
 For more information about volume types, see [About Volumes > Volume Types and IOPS](https://docs.outscale.com/en/userguide/About-Volumes.html#_volume_types_and_iops).
-    * `device_name` - (Optional) The name of the device.
-    * `virtual_device_name` - (Optional) The name of the virtual device (ephemeralN).
+    * `device_name` - (Optional) The device name for the volume. For a root device, you must use `/dev/sda1`. For other volumes, you must use `/dev/sdX` or `/dev/xvdX` (where `X` is a letter between `b` and `z`).
+    * `virtual_device_name` - (Optional) The name of the virtual device (`ephemeralN`).
 * `description` - (Optional) A description for the new OMI.
-* `file_location` - (Optional) The pre-signed URL of the OMI manifest file, or the full path to the OMI stored in a bucket. If you specify this parameter, a copy of the OMI is created in your account.
+* `file_location` - (Optional) The pre-signed URL of the OMI manifest file, or the full path to the OMI stored in a bucket. If you specify this parameter, a copy of the OMI is created in your account. You must specify only one of the following parameters: `file_location`, `root_device_name`, `source_image_id` or `vm_id`.
 * `image_name` - (Optional) A unique name for the new OMI.<br />
 Constraints: 3-128 alphanumeric characters, underscores (_), spaces ( ), parentheses (()), slashes (/), periods (.), or dashes (-).
 * `no_reboot` - (Optional) If false, the VM shuts down before creating the OMI and then reboots. If true, the VM does not.
-* `root_device_name` - (Optional) The name of the root device.
-* `source_image_id` - (Optional) The ID of the OMI you want to copy.
+* `root_device_name` - (Optional) The name of the root device. You must specify only one of the following parameters: `file_location`, `root_device_name`, `source_image_id` or `vm_id`.
+* `source_image_id` - (Optional) The ID of the OMI you want to copy. You must specify only one of the following parameters: `file_location`, `root_device_name`, `source_image_id` or `vm_id`.
 * `source_region_name` - (Optional) The name of the source Region, which must be the same as the Region of your account.
 * `tags` - (Optional) A tag to add to this resource. You can specify this argument several times.
     * `key` - (Required) The key of the tag, with a minimum of 1 character.
     * `value` - (Required) The value of the tag, between 0 and 255 characters.
-* `vm_id` - (Optional) The ID of the VM from which you want to create the OMI.
+* `vm_id` - (Optional) The ID of the VM from which you want to create the OMI. You must specify only one of the following parameters: `file_location`, `root_device_name`, `source_image_id` or `vm_id`.
 
 ## Attribute Reference
 
@@ -93,8 +94,8 @@ If you specify a snapshot ID, the volume size must be at least equal to the snap
 If you specify a snapshot ID but no volume size, the volume is created with a size similar to the snapshot one.
         * `volume_type` - The type of the volume (`standard` \| `io1` \| `gp2`). If not specified in the request, a `standard` volume is created.<br />
 For more information about volume types, see [About Volumes > Volume Types and IOPS](https://docs.outscale.com/en/userguide/About-Volumes.html#_volume_types_and_iops).
-    * `device_name` - The name of the device.
-    * `virtual_device_name` - The name of the virtual device (ephemeralN).
+    * `device_name` - The device name for the volume. For a root device, you must use `/dev/sda1`. For other volumes, you must use `/dev/sdX` or `/dev/xvdX` (where `X` is a letter between `b` and `z`).
+    * `virtual_device_name` - The name of the virtual device (`ephemeralN`).
 * `creation_date` - The date and time at which the OMI was created.
 * `description` - The description of the OMI.
 * `file_location` - The location of the bucket where the OMI files are stored.

@@ -21,6 +21,7 @@
                         "inbound_rules": [],
                         "net_id": "",
                         "outbound_rules": [],
+                        "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-1##",
                         "security_group_name": "sg1-test-group_test-r",

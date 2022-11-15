@@ -8,6 +8,7 @@ import (
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/spf13/cast"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -36,9 +37,7 @@ func resourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
 			},
 			"access_log": {
 				Type:     schema.TypeMap,
-				Optional: true,
 				Computed: true,
-				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"is_enabled": {
@@ -63,7 +62,6 @@ func resourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
 			"health_check": {
 				Type:     schema.TypeMap,
 				Computed: true,
-				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"healthy_threshold": {
@@ -100,7 +98,6 @@ func resourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
 			"application_sticky_cookie_policies": {
 				Type:     schema.TypeList,
 				Computed: true,
-				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"cookie_name": {
@@ -117,7 +114,6 @@ func resourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
 			"load_balancer_sticky_cookie_policies": {
 				Type:     schema.TypeList,
 				Computed: true,
-				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"policy_name": {
@@ -129,9 +125,7 @@ func resourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
 			},
 			"listeners": {
 				Type:     schema.TypeList,
-				Optional: true,
 				Computed: true,
-				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: lb_listener_schema(true),
 				},
@@ -139,7 +133,6 @@ func resourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
 			"source_security_group": {
 				Type:     schema.TypeMap,
 				Computed: true,
-				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"security_group_name": {
@@ -153,10 +146,17 @@ func resourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
 					},
 				},
 			},
+			"public_ip": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"secured_cookies": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
 			"net_id": {
 				Type:     schema.TypeString,
 				Computed: true,
-				ForceNew: true,
 			},
 			"backend_vm_ids": {
 				Type:     schema.TypeList,
@@ -205,15 +205,30 @@ func resourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
+				ValidateFunc: func(v interface{}, k string) (ws []string, es []error) {
+					value := v.(string)
+					if !regexp.MustCompile(`^app|load_balancer$`).MatchString(value) {
+						es = append(es, fmt.Errorf(
+							"only \"app\" or \"load_balancer\" allowed in %q", k))
+					}
+					return
+				},
 			},
 			"load_balancer_name": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
+			"cookie_expiration_period": {
+				Type:     schema.TypeInt,
+				Optional: true,
+				Computed: true,
+				ForceNew: true,
+			},
 			"cookie_name": {
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
 				ForceNew: true,
 			},
 			"request_id": {
@@ -227,25 +242,32 @@ func resourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
 func resourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	l, lok := d.GetOk("load_balancer_name")
-	p, pon := d.GetOk("policy_name")
-	v, cnok := d.GetOk("cookie_name")
-	pt, pot := d.GetOk("policy_type")
+	l := d.Get("load_balancer_name")
+	pn := d.Get("policy_name")
+	pt := d.Get("policy_type")
 
-	if !lok && !pon && !pot {
-		return fmt.Errorf("please provide the required attributes load_balancer_name, policy_name and policy_type")
+	cep, cepok := d.GetOk("cookie_expiration_period")
+	v, cnok := d.GetOk("cookie_name")
+
+	if cepok && pt.(string) == "app" {
+		return fmt.Errorf("if you want define \"cookie_expiration_period\", use policy_type = \"load_balancer\"")
+	}
+	if cnok && pt.(string) == "load_balancer" {
+		return fmt.Errorf("if you want define \"cookie_name\", use policy_type = \"app\"")
 	}
 
 	vs := v.(string)
 	req := oscgo.CreateLoadBalancerPolicyRequest{
 		LoadBalancerName: l.(string),
-		PolicyName:       p.(string),
+		PolicyName:       pn.(string),
 		PolicyType:       pt.(string),
 	}
 	if cnok {
 		req.CookieName = &vs
 	}
-
+	if cepok {
+		req.SetCookieExpirationPeriod(cast.ToInt32(cep))
+	}
 	var err error
 	var resp oscgo.CreateLoadBalancerPolicyResponse
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -298,6 +320,9 @@ func resourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, met
 				a := make(map[string]interface{})
 				a["cookie_name"] = v.CookieName
 				a["policy_name"] = v.PolicyName
+				if v.GetPolicyName() == pn.(string) {
+					d.Set("cookie_name", v.GetCookieName())
+				}
 				app[k] = a
 			}
 			d.Set("application_sticky_cookie_policies", app)
@@ -308,6 +333,9 @@ func resourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, met
 			for k, v := range *lb.LoadBalancerStickyCookiePolicies {
 				a := make(map[string]interface{})
 				a["policy_name"] = v.PolicyName
+				if v.GetPolicyName() == pn.(string) {
+					d.Set("cookie_expiration_period", cast.ToInt32(v.CookieExpirationPeriod))
+				}
 				lbc[k] = a
 			}
 			d.Set("load_balancer_sticky_cookie_policies", lbc)
@@ -318,18 +346,16 @@ func resourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, met
 			ssg["security_group_account_id"] = *lb.SourceSecurityGroup.SecurityGroupAccountId
 		}
 		d.Set("source_security_group", ssg)
+		d.Set("public_ip", lb.PublicIp)
+		d.Set("secured_cookies", lb.SecuredCookies)
 		d.Set("net_id", lb.NetId)
 	}
 
 	d.SetId(resource.UniqueId())
 	d.Set("load_balancer_name", l.(string))
-	d.Set("policy_name", p.(string))
+	d.Set("policy_name", pn.(string))
 	d.Set("policy_type", pt.(string))
-
-	if cnok {
-		d.Set("cookie_name", v.(string))
-	}
-	return resourceOutscaleAppCookieStickinessPolicyRead(d, meta)
+	return nil
 }
 
 func resourceOutscaleAppCookieStickinessPolicyRead(d *schema.ResourceData, meta interface{}) error {

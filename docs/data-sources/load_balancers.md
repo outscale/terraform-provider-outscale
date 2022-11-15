@@ -9,7 +9,8 @@ description: |-
 # outscale_load_balancers Data Source
 
 Provides information about load balancers.
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Load-Balancers.html).
+
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Load-Balancers.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-loadbalancer).
 
 ## Example Usage
@@ -39,7 +40,7 @@ The following attributes are exported:
         * `is_enabled` - If true, access logs are enabled for your load balancer. If false, they are not. If you set this to true in your request, the `osu_bucket_name` parameter is required.
         * `osu_bucket_name` - The name of the OOS bucket for the access logs.
         * `osu_bucket_prefix` - The path to the folder of the access logs in your OOS bucket (by default, the `root` level of your bucket).
-        * `publication_interval` - The time interval for the publication of access logs in the OOS bucket, in minutes. This value can be either 5 or 60 (by default, 60).
+        * `publication_interval` - The time interval for the publication of access logs in the OOS bucket, in minutes. This value can be either `5` or `60` (by default, `60`).
     * `application_sticky_cookie_policies` - The stickiness policies defined for the load balancer.
         * `cookie_name` - The name of the application cookie used for stickiness.
         * `policy_name` - The mnemonic name for the policy being created. The name must be unique within a set of policies for this load balancer.
@@ -56,7 +57,7 @@ The following attributes are exported:
     * `listeners` - The listeners for the load balancer.
         * `backend_port` - The port on which the back-end VM is listening (between `1` and `65535`, both included).
         * `backend_protocol` - The protocol for routing traffic to back-end VMs (`HTTP` \| `HTTPS` \| `TCP` \| `SSL`).
-        * `load_balancer_port` - The port on which the load balancer is listening (between 1 and `65535`, both included).
+        * `load_balancer_port` - The port on which the load balancer is listening (between `1` and `65535`, both included).
         * `load_balancer_protocol` - The routing protocol (`HTTP` \| `HTTPS` \| `TCP` \| `SSL`).
         * `policy_names` - The names of the policies. If there are no policies enabled, the list is empty.
         * `server_certificate_id` - The OUTSCALE Resource Name (ORN) of the server certificate. For more information, see [Resource Identifiers > OUTSCALE Resource Names (ORNs)](https://docs.outscale.com/en/userguide/Resource-Identifiers.html#_outscale_resource_names_orns).

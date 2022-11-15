@@ -102,17 +102,7 @@ data "outscale_nics" "nic-0" {
         name = "nic_ids"
         values = [outscale_nic.outscale_nic.nic_id]
     }    
-}
-
-data "outscale_nics" "nic-1" {
-    filter {
-        name = "descriptions"
-        values = [outscale_nic.outscale_nic.description]
-    }
-filter {
-        name = "states"
-        values = [outscale_nic.outscale_nic.state]
-    }
+depends_on =[outscale_nic_link.nic_link01,outscale_nic_link.nic_link02]
 }
 
 data "outscale_nics" "nic-2-main" {
@@ -124,22 +114,17 @@ data "outscale_nics" "nic-2-main" {
         name = "link_nic_device_numbers"
         values = [0]
     }
+depends_on =[outscale_nic_link.nic_link01,outscale_nic_link.nic_link02]
 }
 
-#data "outscale_nics" "nic-3" {
-#    filter {
-#        name = "private_ips_primary_ip"
-#       values = ["10.0.0.41"]
-#    } 
-#depends_on=[outscale_nic.outscale_nic,outscale_nic.outscale_nic_2,outscale_nic.outscale_nic_3]
-#}
+
 
 data "outscale_nics" "nic-4" {
     filter {
         name = "private_ips_private_ips"
         values = ["10.0.0.42","10.0.2.21"]
     }
-depends_on=[outscale_nic.outscale_nic,outscale_nic.outscale_nic_2,outscale_nic.outscale_nic_3]
+depends_on=[outscale_nic.outscale_nic,outscale_nic.outscale_nic_2,outscale_nic.outscale_nic_3,outscale_nic_link.nic_link01,outscale_nic_link.nic_link02]
 }
 
 data "outscale_nics" "nic-5" {
@@ -147,7 +132,7 @@ data "outscale_nics" "nic-5" {
         name = "security_group_ids"
         values = [outscale_security_group.security_group01.security_group_id]
     }
-depends_on=[outscale_nic.outscale_nic,outscale_nic.outscale_nic_2,outscale_nic.outscale_nic_3]
+depends_on=[outscale_nic.outscale_nic,outscale_nic.outscale_nic_2,outscale_nic.outscale_nic_3,outscale_nic_link.nic_link01,outscale_nic_link.nic_link02]
 }
 
 data "outscale_nics" "nic-6" {
@@ -155,49 +140,14 @@ data "outscale_nics" "nic-6" {
         name = "security_group_names"
         values = [outscale_security_group.security_group01.security_group_name]
     }
-depends_on=[outscale_nic.outscale_nic,outscale_nic.outscale_nic_2,outscale_nic.outscale_nic_3]
+depends_on=[outscale_nic.outscale_nic,outscale_nic.outscale_nic_2,outscale_nic.outscale_nic_3,outscale_nic_link.nic_link01,outscale_nic_link.nic_link02]
 }
 
 data "outscale_nics" "nic-7" {
     filter {
         name   = "subnet_ids"
-        values = [outscale_nic.outscale_nic.subnet_id]
+        values = [outscale_nic.outscale_nic_3.subnet_id]
     }
-depends_on=[outscale_nic.outscale_nic,outscale_nic.outscale_nic_2,outscale_nic.outscale_nic_3]
+depends_on=[outscale_nic.outscale_nic_3]
 }
 
-#data "outscale_nics" "nic-7" {
-#    filter {
-#        name   = "subnet_ids"
-#        values = [outscale_nic.outscale_nic.subnet_id]
-#    }
-#    filter{
-#        name   = "tag_keys"
-#        values = ["Key:"]
-#    }
-#depends_on=[outscale_nic.outscale_nic,outscale_nic.outscale_nic_2,outscale_nic.outscale_nic_3]
-#}
-
-#data "outscale_nics" "nic-8" {
-#    filter {
-#        name   = "subnet_ids"
-#        values = [outscale_nic.outscale_nic.subnet_id]
-#    }
-#    filter{
-#        name   = "tag_values"
-#        values = [":value-tags"]
-#    }
-#depends_on=[outscale_nic.outscale_nic,outscale_nic.outscale_nic_2,outscale_nic.outscale_nic_3]
-#}
-
-#data "outscale_nics" "nic-9" {
-#    filter {
-#        name   = "subnet_ids"
-#        values = [outscale_nic.outscale_nic.subnet_id]
-#    }
-#    filter{
-#        name   = "tags"
-#        values = ["Key:=:value-tags"]
-#    }
-#depends_on=[outscale_nic.outscale_nic,outscale_nic.outscale_nic_2,outscale_nic.outscale_nic_3]
-#}

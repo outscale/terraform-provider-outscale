@@ -117,6 +117,14 @@ func attrLBchema() map[string]*schema.Schema {
 				Schema: lb_listener_schema(true),
 			},
 		},
+		"public_ip": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"secured_cookies": {
+			Type:     schema.TypeBool,
+			Computed: true,
+		},
 		"net_id": {
 			Type:     schema.TypeString,
 			Optional: true,
@@ -338,6 +346,8 @@ func dataSourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interfa
 		ssg["security_group_name"] = *lb.SourceSecurityGroup.SecurityGroupName
 	}
 
+	d.Set("public_ip", lb.PublicIp)
+	d.Set("secured_cookies", lb.SecuredCookies)
 	d.Set("net_id", lb.NetId)
 	d.Set("source_security_group", ssg)
 	d.Set("subnets", flattenStringList(lb.Subnets))

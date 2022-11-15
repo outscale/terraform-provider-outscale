@@ -271,6 +271,7 @@
                         "inbound_rules": [],
                         "net_id": "",
                         "outbound_rules": [],
+                        "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-4##",
                         "security_group_name": "terraform-public-sg",

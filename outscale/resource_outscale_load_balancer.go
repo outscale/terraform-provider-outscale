@@ -159,6 +159,16 @@ func resourceOutscaleOAPILoadBalancer() *schema.Resource {
 				},
 			},
 			"source_security_group": lb_sg_schema(),
+			"public_ip": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+			},
+			"secured_cookies": {
+				Type:     schema.TypeBool,
+				Computed: true,
+				Optional: true,
+			},
 			"net_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -402,6 +412,11 @@ func resourceOutscaleOAPILoadBalancerCreate_(d *schema.ResourceData, meta interf
 		req.LoadBalancerType = &s
 	}
 
+	if v, ok := d.GetOk("public_ip"); ok {
+		s := v.(string)
+		req.PublicIp = &s
+	}
+
 	if v, ok := d.GetOk("security_groups"); ok {
 		req.SecurityGroups = expandSetStringList(v.(*schema.Set))
 	}
@@ -443,8 +458,25 @@ func resourceOutscaleOAPILoadBalancerCreate_(d *schema.ResourceData, meta interf
 	d.SetId(req.LoadBalancerName)
 	log.Printf("[INFO] Load Balancer ID: %s", d.Id())
 
-	if err := d.Set("listeners", make([]map[string]interface{}, 0)); err != nil {
-		return err
+	if scVal, scOk := d.GetOk("secured_cookies"); scOk {
+		req := oscgo.UpdateLoadBalancerRequest{
+			LoadBalancerName: d.Id(),
+		}
+		req.SetSecuredCookies(scVal.(bool))
+
+		var err error
+		err = resource.Retry(1*time.Minute, func() *resource.RetryError {
+			_, _, err = conn.LoadBalancerApi.UpdateLoadBalancer(
+				context.Background()).UpdateLoadBalancerRequest(req).Execute()
+			if err != nil {
+				return utils.CheckThrottling(err)
+			}
+			return nil
+		})
+
+		if err != nil {
+			return fmt.Errorf("Failure updating SecruedCookies: %s", err)
+		}
 	}
 
 	return resourceOutscaleOAPILoadBalancerRead(d, meta)
@@ -565,6 +597,10 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 	}
 	d.Set("source_security_group", ssg)
 	d.Set("subnets", flattenStringList(lb.Subnets))
+
+	d.Set("public_ip", lb.PublicIp)
+	d.Set("secured_cookies", lb.SecuredCookies)
+
 	d.Set("net_id", lb.NetId)
 
 	return nil
@@ -595,7 +631,6 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 		if err != nil {
 			return fmt.Errorf("Failure updating SecurityGroups: %s", err)
 		}
-		d.SetPartial("security_groups")
 	}
 
 	if d.HasChange("tags") {
@@ -735,8 +770,6 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 				return fmt.Errorf("Failure adding new or updated Load Balancer listeners: %s", err)
 			}
 		}
-
-		d.SetPartial("listeners")
 	}
 
 	if d.HasChange("backend_vm_ids") {
@@ -793,8 +826,6 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 				return fmt.Errorf("Failure deregistering instances from Load Balancer: %s", err)
 			}
 		}
-
-		d.SetPartial("backend_vm_ids")
 	}
 
 	if d.HasChange("health_check") {
@@ -832,7 +863,6 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 			if err != nil {
 				return fmt.Errorf("Failure configuring health check for Load Balancer: %s", err)
 			}
-			d.SetPartial("health_check")
 		}
 	}
 
@@ -869,13 +899,50 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 			if err != nil {
 				return fmt.Errorf("Failure configuring access log for Load Balancer: %s", err)
 			}
-			d.SetPartial("access_log")
 		}
 	}
 
-	d.SetPartial("listeners")
-	d.SetPartial("application_sticky_cookie_policies")
-	d.SetPartial("load_balancer_sticky_cookie_policies")
+	if d.HasChange("public_ip") {
+		req := oscgo.UpdateLoadBalancerRequest{
+			LoadBalancerName: d.Id(),
+		}
+		req.SetPublicIp(d.Get("public_ip").(string))
+
+		var err error
+		err = resource.Retry(1*time.Minute, func() *resource.RetryError {
+			_, _, err = conn.LoadBalancerApi.UpdateLoadBalancer(
+				context.Background()).UpdateLoadBalancerRequest(req).Execute()
+			if err != nil {
+				return utils.CheckThrottling(err)
+			}
+			return nil
+		})
+
+		if err != nil {
+			return fmt.Errorf("Failure updating PublicIp: %s", err)
+		}
+	}
+
+	if d.HasChange("secured_cookies") {
+		req := oscgo.UpdateLoadBalancerRequest{
+			LoadBalancerName: d.Id(),
+		}
+		req.SetSecuredCookies(d.Get("secured_cookies").(bool))
+
+		var err error
+		err = resource.Retry(1*time.Minute, func() *resource.RetryError {
+			_, _, err = conn.LoadBalancerApi.UpdateLoadBalancer(
+				context.Background()).UpdateLoadBalancerRequest(req).Execute()
+			if err != nil {
+				return utils.CheckThrottling(err)
+			}
+			return nil
+		})
+
+		if err != nil {
+			return fmt.Errorf("Failure updating SecruedCookies: %s", err)
+		}
+	}
 
 	d.Partial(false)
 
@@ -883,10 +950,6 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 }
 
 func resourceOutscaleOAPILoadBalancerDelete(d *schema.ResourceData, meta interface{}) error {
-	return resourceOutscaleOAPILoadBalancerDelete_(d, meta, true)
-}
-
-func resourceOutscaleOAPILoadBalancerDelete_(d *schema.ResourceData, meta interface{}, needupdate bool) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	log.Printf("[INFO] Deleting Load Balancer: %s", d.Id())
@@ -911,10 +974,6 @@ func resourceOutscaleOAPILoadBalancerDelete_(d *schema.ResourceData, meta interf
 		return fmt.Errorf("Error deleting Load Balancer: %s", err)
 	}
 
-	if needupdate {
-		d.SetId("")
-	}
-
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"ready"},
 		Target:  []string{},
@@ -929,6 +988,11 @@ func resourceOutscaleOAPILoadBalancerDelete_(d *schema.ResourceData, meta interf
 	}
 	if _, err := stateConf.WaitForState(); err != nil {
 		return fmt.Errorf("Error waiting for load balancer (%s) to become null: %s", d.Id(), err)
+	}
+
+	//Remove this when bug will be fix
+	if _, ok := d.GetOk("public_ip"); ok {
+		time.Sleep(5 * time.Second)
 	}
 
 	return nil

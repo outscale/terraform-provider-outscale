@@ -314,6 +314,7 @@
                                 "to_port_range": -1
                             }
                         ],
+                        "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-12##",
                         "security_group_name": "terraform-sg",
@@ -348,6 +349,7 @@
                         "inbound_rules": [],
                         "net_id": "",
                         "outbound_rules": [],
+                        "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-13##",
                         "security_group_name": "terraform-public-sg_for_vms",

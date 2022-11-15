@@ -101,6 +101,10 @@ func resourceOutscaleOApiVM() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"creation_date": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"deletion_protection": {
 				Type:     schema.TypeBool,
 				Optional: true,

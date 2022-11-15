@@ -1,0 +1,62 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "managed",
+            "type": "outscale_net",
+            "name": "outscale_net_sg",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "dhcp_options_set_id": "##id-0##",
+                        "id": "##id-1##",
+                        "ip_range": "10.0.0.0/16",
+                        "net_id": "##id-1##",
+                        "request_id": "########",
+                        "state": "available",
+                        "tags": [],
+                        "tenancy": "default"
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_security_group",
+            "name": "private_sg",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-2##",
+                        "description": "test group-TF204",
+                        "id": "##id-3##",
+                        "inbound_rules": [],
+                        "net_id": "##id-1##",
+                        "outbound_rules": [],
+                        "remove_default_outbound_rule": true,
+                        "request_id": "########",
+                        "security_group_id": "##id-3##",
+                        "security_group_name": "terraform-TF204",
+                        "tag": null,
+                        "tags": []
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA==",
+                    "dependencies": [
+                        "outscale_net.outscale_net_sg"
+                    ]
+                }
+            ]
+        }
+    ]
+}

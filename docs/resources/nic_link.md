@@ -9,7 +9,8 @@ description: |-
 # outscale_nic_link Resource
 
 Manages a NIC link.
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-FNIs.html).
+
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-FNIs.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-nic).
 
 ## Example Usage
@@ -53,7 +54,7 @@ resource "outscale_nic_link" "nic_link01" {
 
 The following arguments are supported:
 
-* `device_number` - (Required) The index of the VM device for the NIC attachment (between 1 and 7, both included).
+* `device_number` - (Required) The index of the VM device for the NIC attachment (between `1` and `7`, both included).
 * `nic_id` - (Required) The ID of the NIC you want to attach.
 * `vm_id` - (Required) The ID of the VM to which you want to attach the NIC.
 

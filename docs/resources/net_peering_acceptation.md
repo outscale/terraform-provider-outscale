@@ -9,7 +9,8 @@ description: |-
 # outscale_net_peering_acceptation Resource
 
 Manages a Net peering acceptation.
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-VPC-Peering-Connections.html).
+
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-VPC-Peering-Connections.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-netpeering).
 
 ## Example Usage
@@ -32,12 +33,12 @@ The following attributes are exported:
 
 * `accepter_net` - Information about the accepter Net.
     * `account_id` - The account ID of the owner of the accepter Net.
-    * `ip_range` - The IP range for the accepter Net, in CIDR notation (for example, 10.0.0.0/16).
+    * `ip_range` - The IP range for the accepter Net, in CIDR notation (for example, `10.0.0.0/16`).
     * `net_id` - The ID of the accepter Net.
 * `net_peering_id` - The ID of the Net peering connection.
 * `source_net` - Information about the source Net.
     * `account_id` - The account ID of the owner of the source Net.
-    * `ip_range` - The IP range for the source Net, in CIDR notation (for example, 10.0.0.0/16).
+    * `ip_range` - The IP range for the source Net, in CIDR notation (for example, `10.0.0.0/16`).
     * `net_id` - The ID of the source Net.
 * `state` - Information about the state of the Net peering connection.
     * `message` - Additional information about the state of the Net peering connection.

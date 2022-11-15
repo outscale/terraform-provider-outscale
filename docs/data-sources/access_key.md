@@ -3,13 +3,14 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_access_key"
 sidebar_current: "outscale-access-key"
 description: |-
-  [Provides information about a specific access key.]
+  [Provides information about an access key.]
 ---
 
 # outscale_access_key Data Source
 
-Provides information about a specific access key.
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Access-Keys.html).
+Provides information about an access key.
+
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Access-Keys.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-accesskey).
 
 ## Example Usage
