@@ -178,65 +178,8 @@
                                 "is_source_dest_checked": true,
                                 "link_nic": {
                                     "delete_on_vm_deletion": "false",
-                                    "device_number": "0",
-                                    "link_nic_id": "",
-                                    "state": "",
-                                    "vm_account_id": "",
-                                    "vm_id": ""
-                                },
-                                "link_public_ip": {
-                                    "link_public_ip_id": "",
-                                    "public_dns_name": "########",
-                                    "public_ip": "########",
-                                    "public_ip_account_id": "",
-                                    "public_ip_id": ""
-                                },
-                                "mac_address": "########",
-                                "net_id": "##id-4##",
-                                "nic_id": "##id-13##",
-                                "private_dns_name": "########",
-                                "private_ips": [
-                                    {
-                                        "is_primary": true,
-                                        "link_public_ip": {
-                                            "link_public_ip_id": "",
-                                            "public_dns_name": "########",
-                                            "public_ip": "########",
-                                            "public_ip_account_id": "",
-                                            "public_ip_id": ""
-                                        },
-                                        "private_dns_name": "########",
-                                        "private_ip": "########"
-                                    }
-                                ],
-                                "security_groups": [
-                                    {
-                                        "security_group_id": "##id-6##",
-                                        "security_group_name": "Terraform-SG"
-                                    }
-                                ],
-                                "state": "available",
-                                "subnet_id": "##id-14##",
-                                "subregion_name": "###region###b",
-                                "tags": [
-                                    {
-                                        "key": "Key:",
-                                        "value": ":value-tags"
-                                    },
-                                    {
-                                        "key": "Key-2",
-                                        "value": "value-tags-2"
-                                    }
-                                ]
-                            },
-                            {
-                                "account_id": "##id-1##",
-                                "description": "",
-                                "is_source_dest_checked": true,
-                                "link_nic": {
-                                    "delete_on_vm_deletion": "false",
                                     "device_number": "2",
-                                    "link_nic_id": "##id-15##",
+                                    "link_nic_id": "##id-13##",
                                     "state": "attached",
                                     "vm_account_id": "##id-1##",
                                     "vm_id": "##id-3##"
@@ -250,7 +193,7 @@
                                 },
                                 "mac_address": "########",
                                 "net_id": "##id-4##",
-                                "nic_id": "##id-16##",
+                                "nic_id": "##id-14##",
                                 "private_dns_name": "########",
                                 "private_ips": [
                                     {
@@ -293,6 +236,63 @@
                                         "value": "Nic-2"
                                     }
                                 ]
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "",
+                                "is_source_dest_checked": true,
+                                "link_nic": {
+                                    "delete_on_vm_deletion": "false",
+                                    "device_number": "0",
+                                    "link_nic_id": "",
+                                    "state": "",
+                                    "vm_account_id": "",
+                                    "vm_id": ""
+                                },
+                                "link_public_ip": {
+                                    "link_public_ip_id": "",
+                                    "public_dns_name": "########",
+                                    "public_ip": "########",
+                                    "public_ip_account_id": "",
+                                    "public_ip_id": ""
+                                },
+                                "mac_address": "########",
+                                "net_id": "##id-4##",
+                                "nic_id": "##id-15##",
+                                "private_dns_name": "########",
+                                "private_ips": [
+                                    {
+                                        "is_primary": true,
+                                        "link_public_ip": {
+                                            "link_public_ip_id": "",
+                                            "public_dns_name": "########",
+                                            "public_ip": "########",
+                                            "public_ip_account_id": "",
+                                            "public_ip_id": ""
+                                        },
+                                        "private_dns_name": "########",
+                                        "private_ip": "########"
+                                    }
+                                ],
+                                "security_groups": [
+                                    {
+                                        "security_group_id": "##id-6##",
+                                        "security_group_name": "Terraform-SG"
+                                    }
+                                ],
+                                "state": "available",
+                                "subnet_id": "##id-16##",
+                                "subregion_name": "###region###b",
+                                "tags": [
+                                    {
+                                        "key": "Key:",
+                                        "value": ":value-tags"
+                                    },
+                                    {
+                                        "key": "Key-2",
+                                        "value": "value-tags-2"
+                                    }
+                                ]
                             }
                         ],
                         "request_id": "########"
@@ -313,6 +313,63 @@
                         "filter": "########",
                         "id": "##id-17##",
                         "nics": [
+                            {
+                                "account_id": "##id-1##",
+                                "description": "",
+                                "is_source_dest_checked": true,
+                                "link_nic": {
+                                    "delete_on_vm_deletion": "false",
+                                    "device_number": "0",
+                                    "link_nic_id": "",
+                                    "state": "",
+                                    "vm_account_id": "",
+                                    "vm_id": ""
+                                },
+                                "link_public_ip": {
+                                    "link_public_ip_id": "",
+                                    "public_dns_name": "########",
+                                    "public_ip": "########",
+                                    "public_ip_account_id": "",
+                                    "public_ip_id": ""
+                                },
+                                "mac_address": "########",
+                                "net_id": "##id-4##",
+                                "nic_id": "##id-15##",
+                                "private_dns_name": "########",
+                                "private_ips": [
+                                    {
+                                        "is_primary": true,
+                                        "link_public_ip": {
+                                            "link_public_ip_id": "",
+                                            "public_dns_name": "########",
+                                            "public_ip": "########",
+                                            "public_ip_account_id": "",
+                                            "public_ip_id": ""
+                                        },
+                                        "private_dns_name": "########",
+                                        "private_ip": "########"
+                                    }
+                                ],
+                                "security_groups": [
+                                    {
+                                        "security_group_id": "##id-6##",
+                                        "security_group_name": "Terraform-SG"
+                                    }
+                                ],
+                                "state": "available",
+                                "subnet_id": "##id-16##",
+                                "subregion_name": "###region###b",
+                                "tags": [
+                                    {
+                                        "key": "Key:",
+                                        "value": ":value-tags"
+                                    },
+                                    {
+                                        "key": "Key-2",
+                                        "value": "value-tags-2"
+                                    }
+                                ]
+                            },
                             {
                                 "account_id": "##id-1##",
                                 "description": "TF-109",
@@ -371,63 +428,6 @@
                                 "state": "in-use",
                                 "subnet_id": "##id-7##",
                                 "subregion_name": "###region###a",
-                                "tags": [
-                                    {
-                                        "key": "Key:",
-                                        "value": ":value-tags"
-                                    },
-                                    {
-                                        "key": "Key-2",
-                                        "value": "value-tags-2"
-                                    }
-                                ]
-                            },
-                            {
-                                "account_id": "##id-1##",
-                                "description": "",
-                                "is_source_dest_checked": true,
-                                "link_nic": {
-                                    "delete_on_vm_deletion": "false",
-                                    "device_number": "0",
-                                    "link_nic_id": "",
-                                    "state": "",
-                                    "vm_account_id": "",
-                                    "vm_id": ""
-                                },
-                                "link_public_ip": {
-                                    "link_public_ip_id": "",
-                                    "public_dns_name": "########",
-                                    "public_ip": "########",
-                                    "public_ip_account_id": "",
-                                    "public_ip_id": ""
-                                },
-                                "mac_address": "########",
-                                "net_id": "##id-4##",
-                                "nic_id": "##id-13##",
-                                "private_dns_name": "########",
-                                "private_ips": [
-                                    {
-                                        "is_primary": true,
-                                        "link_public_ip": {
-                                            "link_public_ip_id": "",
-                                            "public_dns_name": "########",
-                                            "public_ip": "########",
-                                            "public_ip_account_id": "",
-                                            "public_ip_id": ""
-                                        },
-                                        "private_dns_name": "########",
-                                        "private_ip": "########"
-                                    }
-                                ],
-                                "security_groups": [
-                                    {
-                                        "security_group_id": "##id-6##",
-                                        "security_group_name": "Terraform-SG"
-                                    }
-                                ],
-                                "state": "available",
-                                "subnet_id": "##id-14##",
-                                "subregion_name": "###region###b",
                                 "tags": [
                                     {
                                         "key": "Key:",
@@ -460,6 +460,63 @@
                         "nics": [
                             {
                                 "account_id": "##id-1##",
+                                "description": "",
+                                "is_source_dest_checked": true,
+                                "link_nic": {
+                                    "delete_on_vm_deletion": "false",
+                                    "device_number": "0",
+                                    "link_nic_id": "",
+                                    "state": "",
+                                    "vm_account_id": "",
+                                    "vm_id": ""
+                                },
+                                "link_public_ip": {
+                                    "link_public_ip_id": "",
+                                    "public_dns_name": "########",
+                                    "public_ip": "########",
+                                    "public_ip_account_id": "",
+                                    "public_ip_id": ""
+                                },
+                                "mac_address": "########",
+                                "net_id": "##id-4##",
+                                "nic_id": "##id-15##",
+                                "private_dns_name": "########",
+                                "private_ips": [
+                                    {
+                                        "is_primary": true,
+                                        "link_public_ip": {
+                                            "link_public_ip_id": "",
+                                            "public_dns_name": "########",
+                                            "public_ip": "########",
+                                            "public_ip_account_id": "",
+                                            "public_ip_id": ""
+                                        },
+                                        "private_dns_name": "########",
+                                        "private_ip": "########"
+                                    }
+                                ],
+                                "security_groups": [
+                                    {
+                                        "security_group_id": "##id-6##",
+                                        "security_group_name": "Terraform-SG"
+                                    }
+                                ],
+                                "state": "available",
+                                "subnet_id": "##id-16##",
+                                "subregion_name": "###region###b",
+                                "tags": [
+                                    {
+                                        "key": "Key:",
+                                        "value": ":value-tags"
+                                    },
+                                    {
+                                        "key": "Key-2",
+                                        "value": "value-tags-2"
+                                    }
+                                ]
+                            },
+                            {
+                                "account_id": "##id-1##",
                                 "description": "TF-109",
                                 "is_source_dest_checked": true,
                                 "link_nic": {
@@ -516,63 +573,6 @@
                                 "state": "in-use",
                                 "subnet_id": "##id-7##",
                                 "subregion_name": "###region###a",
-                                "tags": [
-                                    {
-                                        "key": "Key:",
-                                        "value": ":value-tags"
-                                    },
-                                    {
-                                        "key": "Key-2",
-                                        "value": "value-tags-2"
-                                    }
-                                ]
-                            },
-                            {
-                                "account_id": "##id-1##",
-                                "description": "",
-                                "is_source_dest_checked": true,
-                                "link_nic": {
-                                    "delete_on_vm_deletion": "false",
-                                    "device_number": "0",
-                                    "link_nic_id": "",
-                                    "state": "",
-                                    "vm_account_id": "",
-                                    "vm_id": ""
-                                },
-                                "link_public_ip": {
-                                    "link_public_ip_id": "",
-                                    "public_dns_name": "########",
-                                    "public_ip": "########",
-                                    "public_ip_account_id": "",
-                                    "public_ip_id": ""
-                                },
-                                "mac_address": "########",
-                                "net_id": "##id-4##",
-                                "nic_id": "##id-13##",
-                                "private_dns_name": "########",
-                                "private_ips": [
-                                    {
-                                        "is_primary": true,
-                                        "link_public_ip": {
-                                            "link_public_ip_id": "",
-                                            "public_dns_name": "########",
-                                            "public_ip": "########",
-                                            "public_ip_account_id": "",
-                                            "public_ip_id": ""
-                                        },
-                                        "private_dns_name": "########",
-                                        "private_ip": "########"
-                                    }
-                                ],
-                                "security_groups": [
-                                    {
-                                        "security_group_id": "##id-6##",
-                                        "security_group_name": "Terraform-SG"
-                                    }
-                                ],
-                                "state": "available",
-                                "subnet_id": "##id-14##",
-                                "subregion_name": "###region###b",
                                 "tags": [
                                     {
                                         "key": "Key:",
@@ -624,7 +624,7 @@
                                 },
                                 "mac_address": "########",
                                 "net_id": "##id-4##",
-                                "nic_id": "##id-13##",
+                                "nic_id": "##id-15##",
                                 "private_dns_name": "########",
                                 "private_ips": [
                                     {
@@ -647,7 +647,7 @@
                                     }
                                 ],
                                 "state": "available",
-                                "subnet_id": "##id-14##",
+                                "subnet_id": "##id-16##",
                                 "subregion_name": "###region###b",
                                 "tags": [
                                     {
@@ -796,7 +796,7 @@
                     "attributes": {
                         "account_id": "##id-1##",
                         "description": "",
-                        "id": "##id-16##",
+                        "id": "##id-14##",
                         "is_source_dest_checked": true,
                         "link_nic": {
                             "delete_on_vm_deletion": "false",
@@ -815,7 +815,7 @@
                         },
                         "mac_address": "########",
                         "net_id": "##id-4##",
-                        "nic_id": "##id-16##",
+                        "nic_id": "##id-14##",
                         "private_dns_name": "########",
                         "private_ip": "########",
                         "private_ips": [
@@ -884,7 +884,7 @@
                     "attributes": {
                         "account_id": "##id-1##",
                         "description": "",
-                        "id": "##id-13##",
+                        "id": "##id-15##",
                         "is_source_dest_checked": true,
                         "link_nic": {
                             "delete_on_vm_deletion": "false",
@@ -903,7 +903,7 @@
                         },
                         "mac_address": "########",
                         "net_id": "##id-4##",
-                        "nic_id": "##id-13##",
+                        "nic_id": "##id-15##",
                         "private_dns_name": "########",
                         "private_ip": "########",
                         "private_ips": [
@@ -932,7 +932,7 @@
                             }
                         ],
                         "state": "available",
-                        "subnet_id": "##id-14##",
+                        "subnet_id": "##id-16##",
                         "subregion_name": "###region###b",
                         "tags": [
                             {
@@ -998,9 +998,9 @@
                     "attributes": {
                         "delete_on_vm_deletion": false,
                         "device_number": 2,
-                        "id": "##id-15##",
-                        "link_nic_id": "##id-15##",
-                        "nic_id": "##id-16##",
+                        "id": "##id-13##",
+                        "link_nic_id": "##id-13##",
+                        "nic_id": "##id-14##",
                         "request_id": "########",
                         "state": null,
                         "vm_account_id": null,
@@ -1094,13 +1094,13 @@
                     "schema_version": 0,
                     "attributes": {
                         "available_ips_count": 251,
-                        "id": "##id-14##",
+                        "id": "##id-16##",
                         "ip_range": "10.0.2.0/24",
                         "map_public_ip_on_launch": false,
                         "net_id": "##id-4##",
                         "request_id": "########",
                         "state": "available",
-                        "subnet_id": "##id-14##",
+                        "subnet_id": "##id-16##",
                         "subregion_name": "###region###b",
                         "tags": [],
                         "timeouts": null
@@ -1138,6 +1138,7 @@
                         ],
                         "bsu_optimized": false,
                         "client_token": "",
+                        "creation_date": "########",
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",

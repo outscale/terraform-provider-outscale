@@ -22,6 +22,10 @@
                             "192.168.12.132"
                         ],
                         "id": "##id-0##",
+                        "log_servers": [
+                            "192.10.0.2",
+                            "192.18.12.242"
+                        ],
                         "ntp_servers": [
                             "192.0.0.2",
                             "192.168.12.242"
@@ -55,6 +59,7 @@
                             "OutscaleProvidedDNS"
                         ],
                         "id": "##id-1##",
+                        "log_servers": [],
                         "ntp_servers": [],
                         "request_id": "########",
                         "tags": [
@@ -86,6 +91,7 @@
                             "192.168.12.33"
                         ],
                         "id": "##id-2##",
+                        "log_servers": [],
                         "ntp_servers": [],
                         "request_id": "########",
                         "tags": [
@@ -116,6 +122,7 @@
                             "OutscaleProvidedDNS"
                         ],
                         "id": "##id-3##",
+                        "log_servers": [],
                         "ntp_servers": [
                             "192.0.0.25",
                             "192.168.12.24"
@@ -125,6 +132,40 @@
                             {
                                 "key": "name-4",
                                 "value": "set-4"
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_dhcp_option",
+            "name": "dhcp_option_5",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "default": false,
+                        "dhcp_options_set_id": "##id-4##",
+                        "domain_name": "###region###.compute.internal",
+                        "domain_name_servers": [
+                            "OutscaleProvidedDNS"
+                        ],
+                        "id": "##id-4##",
+                        "log_servers": [
+                            "192.110.0.21",
+                            "192.118.19.22"
+                        ],
+                        "ntp_servers": [],
+                        "request_id": "########",
+                        "tags": [
+                            {
+                                "key": "name-5",
+                                "value": "set-5"
                             }
                         ]
                     },

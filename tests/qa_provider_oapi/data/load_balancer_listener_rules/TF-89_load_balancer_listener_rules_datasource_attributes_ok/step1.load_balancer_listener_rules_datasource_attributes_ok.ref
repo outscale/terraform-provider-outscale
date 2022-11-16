@@ -19,24 +19,24 @@
                         "listener_rules": [
                             {
                                 "action": "forward",
-                                "host_name_pattern": "",
+                                "host_name_pattern": "*.abc.-.abc.*.com",
                                 "listener_id": "##id-1##",
                                 "listener_rule_id": "##id-2##",
-                                "listener_rule_name": "listener-rule-1",
-                                "path_pattern": "*.abc.*.abc.*.com",
-                                "priority": 10,
+                                "listener_rule_name": "listener-rule-2",
+                                "path_pattern": "",
+                                "priority": 1,
                                 "vm_ids": [
                                     "##id-3##"
                                 ]
                             },
                             {
                                 "action": "forward",
-                                "host_name_pattern": "*.abc.-.abc.*.com",
+                                "host_name_pattern": "",
                                 "listener_id": "##id-1##",
                                 "listener_rule_id": "##id-4##",
-                                "listener_rule_name": "listener-rule-2",
-                                "path_pattern": "",
-                                "priority": 1,
+                                "listener_rule_name": "listener-rule-1",
+                                "path_pattern": "*.abc.*.abc.*.com",
+                                "priority": 10,
                                 "vm_ids": [
                                     "##id-3##"
                                 ]
@@ -112,7 +112,9 @@
                         "load_balancer_sticky_cookie_policies": [],
                         "load_balancer_type": "internet-facing",
                         "net_id": "",
+                        "public_ip": "########",
                         "request_id": "########",
+                        "secured_cookies": false,
                         "security_groups": [],
                         "source_security_group": {
                             "security_group_account_id": "##id-7##",
@@ -155,7 +157,7 @@
                                 "action": "forward",
                                 "host_name_pattern": "",
                                 "listener_id": "##id-1##",
-                                "listener_rule_id": "##id-2##",
+                                "listener_rule_id": "##id-4##",
                                 "listener_rule_name": "listener-rule-1",
                                 "path_pattern": "*.abc.*.abc.*.com",
                                 "priority": 10
@@ -197,7 +199,7 @@
                                 "action": "forward",
                                 "host_name_pattern": "*.abc.-.abc.*.com",
                                 "listener_id": "##id-1##",
-                                "listener_rule_id": "##id-4##",
+                                "listener_rule_id": "##id-2##",
                                 "listener_rule_name": "listener-rule-2",
                                 "path_pattern": "",
                                 "priority": 1
@@ -269,6 +271,7 @@
                         ],
                         "bsu_optimized": false,
                         "client_token": "",
+                        "creation_date": "########",
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",

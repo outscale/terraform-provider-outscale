@@ -55,7 +55,9 @@
                         "load_balancer_sticky_cookie_policies": [],
                         "load_balancer_type": "internet-facing",
                         "net_id": "",
+                        "public_ip": "########",
                         "request_id": "########",
+                        "secured_cookies": false,
                         "security_groups": [],
                         "source_security_group": {
                             "security_group_account_id": "##id-1##",
@@ -192,6 +194,7 @@
                         },
                         "application_sticky_cookie_policies": [],
                         "backend_vm_ids": [],
+                        "cookie_expiration_period": 1,
                         "cookie_name": "########",
                         "dns_name": "########",
                         "health_check": {
@@ -232,7 +235,9 @@
                         "net_id": "",
                         "policy_name": "policy-lbu-terraform-2",
                         "policy_type": "load_balancer",
+                        "public_ip": "########",
                         "request_id": "########",
+                        "secured_cookies": false,
                         "security_groups": [],
                         "source_security_group": {
                             "security_group_account_id": "##id-1##",

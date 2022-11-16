@@ -2,6 +2,7 @@ resource "outscale_dhcp_option" "outscale_dhcp_option" {
 domain_name ="test-terraform.fr"
 domain_name_servers= ["192.168.12.12","192.168.12.132"]
 ntp_servers = ["192.0.0.2","192.168.12.242"]
+log_servers = ["192.33.0.2","192.33.12.242"]
 tags {
    key ="name-1"
    value = "test-terraform-3"
@@ -55,5 +56,12 @@ data "outscale_dhcp_options" "outscale_dhcp_options_2" {
 filter {
        name   = "dhcp_options_set_ids"
        values = [outscale_dhcp_option.outscale_dhcp_option2.dhcp_options_set_id]
+    }
+}
+
+data "outscale_dhcp_option" "outscale_dhcp_option-3" {
+filter {
+       name   = "log_servers"
+       values = [outscale_dhcp_option.outscale_dhcp_option.log_servers.0, outscale_dhcp_option.outscale_dhcp_option.log_servers.1]
     }
 }
