@@ -37,7 +37,7 @@
                             {
                                 "accepted_route_count": 0,
                                 "last_state_change_date": "########",
-                                "outside_ip_address": "46.231.148.123",
+                                "outside_ip_address": "########",
                                 "state": "DOWN",
                                 "state_description": "IPSEC IS DOWN"
                             }
@@ -81,7 +81,7 @@
                             {
                                 "accepted_route_count": 0,
                                 "last_state_change_date": "########",
-                                "outside_ip_address": "46.231.148.123",
+                                "outside_ip_address": "########",
                                 "state": "DOWN",
                                 "state_description": "IPSEC IS DOWN"
                             }
@@ -125,7 +125,7 @@
                             {
                                 "accepted_route_count": 0,
                                 "last_state_change_date": "########",
-                                "outside_ip_address": "46.231.148.123",
+                                "outside_ip_address": "########",
                                 "state": "DOWN",
                                 "state_description": "IPSEC IS DOWN"
                             }
@@ -169,7 +169,7 @@
                             {
                                 "accepted_route_count": 0,
                                 "last_state_change_date": "########",
-                                "outside_ip_address": "46.231.148.123",
+                                "outside_ip_address": "########",
                                 "state": "DOWN",
                                 "state_description": "IPSEC IS DOWN"
                             }
@@ -213,7 +213,7 @@
                             {
                                 "accepted_route_count": 0,
                                 "last_state_change_date": "########",
-                                "outside_ip_address": "46.231.148.123",
+                                "outside_ip_address": "########",
                                 "state": "DOWN",
                                 "state_description": "IPSEC IS DOWN"
                             }
@@ -257,7 +257,7 @@
                             {
                                 "accepted_route_count": 0,
                                 "last_state_change_date": "########",
-                                "outside_ip_address": "46.231.148.123",
+                                "outside_ip_address": "########",
                                 "state": "DOWN",
                                 "state_description": "IPSEC IS DOWN"
                             }
@@ -301,7 +301,7 @@
                             {
                                 "accepted_route_count": 0,
                                 "last_state_change_date": "########",
-                                "outside_ip_address": "46.231.148.123",
+                                "outside_ip_address": "########",
                                 "state": "DOWN",
                                 "state_description": "IPSEC IS DOWN"
                             }
@@ -390,7 +390,7 @@
                             {
                                 "accepted_route_count": 0,
                                 "last_state_change_date": "########",
-                                "outside_ip_address": "46.231.148.123",
+                                "outside_ip_address": "########",
                                 "state": "DOWN",
                                 "state_description": "IPSEC IS DOWN"
                             }
