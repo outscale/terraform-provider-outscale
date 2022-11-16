@@ -9,11 +9,12 @@
             "mode": "data",
             "type": "outscale_volume",
             "name": "outscale_volume",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
+                        "creation_date": "########",
                         "filter": "########",
                         "id": "##id-0##",
                         "iops": 140,
@@ -44,11 +45,12 @@
             "mode": "managed",
             "type": "outscale_volume",
             "name": "outscale_volume",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
+                        "creation_date": "########",
                         "id": "##id-0##",
                         "iops": 140,
                         "linked_volumes": [],

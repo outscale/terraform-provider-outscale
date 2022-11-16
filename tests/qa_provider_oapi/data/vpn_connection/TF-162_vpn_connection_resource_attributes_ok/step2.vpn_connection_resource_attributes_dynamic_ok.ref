@@ -101,6 +101,15 @@
                             }
                         ],
                         "timeouts": null,
+                        "vgw_telemetries": [
+                            {
+                                "accepted_route_count": 0,
+                                "last_state_change_date": "########",
+                                "outside_ip_address": "46.231.149.75",
+                                "state": "DOWN",
+                                "state_description": "IPSEC IS DOWN"
+                            }
+                        ],
                         "virtual_gateway_id": "##id-2##",
                         "vpn_connection_id": "##id-3##"
                     },

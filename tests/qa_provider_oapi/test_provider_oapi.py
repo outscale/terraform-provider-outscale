@@ -43,7 +43,8 @@ IGNORE_END_ELEMENTS = ['request_id',
                        'ip_ranges',
                        'ca_fingerprint',
                        'ca_pem',
-                       'orn']
+                       'orn',
+                       'last_state_change_date']
 IGNORE_END_PATHS = []
 TINA_ID_PREFIXES = ['i', 'subnet', 'snap', 'img', 'vol', 'eni', 'vpc', 'igw', 'nat', 'vgw', 'pcx', 'sg', 'rtb', 'rtbassoc', 'vpn', 'vpcconn', 'ami', 'dxvif','vpce','fgpu','aar','ca']
 VARIABLES_FILE_NAME = ['provider.auto.tfvars', 'resources.auto.tfvars']

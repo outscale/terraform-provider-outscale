@@ -43,6 +43,7 @@
                             "OutscaleProvidedDNS"
                         ],
                         "id": "##id-2##",
+                        "log_servers": [],
                         "ntp_servers": [],
                         "request_id": "########",
                         "tags": []

@@ -47,7 +47,9 @@
                         "load_balancer_sticky_cookie_policies": [],
                         "load_balancer_type": "internal",
                         "net_id": "##id-1##",
+                        "public_ip": "########",
                         "request_id": "########",
+                        "secured_cookies": false,
                         "security_groups": [
                             "##id-2##"
                         ],

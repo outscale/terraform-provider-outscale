@@ -7,6 +7,48 @@
     "resources": [
         {
             "mode": "data",
+            "type": "outscale_dhcp_option",
+            "name": "outscale_dhcp_option-3",
+            "provider": "provider[\"local/test/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "default": false,
+                        "dhcp_options_set_id": "##id-0##",
+                        "domain_name": "test-terraform.fr",
+                        "domain_name_servers": [
+                            "192.168.12.12",
+                            "192.168.12.132"
+                        ],
+                        "filter": "########",
+                        "id": "##id-0##",
+                        "log_servers": [
+                            "192.33.0.2",
+                            "192.33.12.242"
+                        ],
+                        "ntp_servers": [
+                            "192.0.0.2",
+                            "192.168.12.242"
+                        ],
+                        "request_id": "########",
+                        "tags": [
+                            {
+                                "key": "Project",
+                                "value": "test-terraform-3"
+                            },
+                            {
+                                "key": "name-1",
+                                "value": "test-terraform-3"
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "data",
             "type": "outscale_dhcp_options",
             "name": "outscale_dhcp_options",
             "provider": "provider[\"local/test/outscale\"]",
@@ -22,6 +64,10 @@
                                 "domain_name_servers": [
                                     "192.168.12.12",
                                     "192.168.12.132"
+                                ],
+                                "log_servers": [
+                                    "192.33.0.2",
+                                    "192.33.12.242"
                                 ],
                                 "ntp_servers": [
                                     "192.0.0.2",
@@ -65,6 +111,7 @@
                                 "domain_name_servers": [
                                     "OutscaleProvidedDNS"
                                 ],
+                                "log_servers": [],
                                 "ntp_servers": [],
                                 "tags": [
                                     {
@@ -100,6 +147,10 @@
                             "192.168.12.132"
                         ],
                         "id": "##id-0##",
+                        "log_servers": [
+                            "192.33.0.2",
+                            "192.33.12.242"
+                        ],
                         "ntp_servers": [
                             "192.0.0.2",
                             "192.168.12.242"
@@ -137,6 +188,7 @@
                             "OutscaleProvidedDNS"
                         ],
                         "id": "##id-2##",
+                        "log_servers": [],
                         "ntp_servers": [],
                         "request_id": "########",
                         "tags": [

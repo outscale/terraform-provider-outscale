@@ -79,12 +79,12 @@
                         "subregion_name": "###region###a",
                         "tags": [
                             {
-                                "key": "Key-2",
-                                "value": "value-tags-2"
-                            },
-                            {
                                 "key": "Key:",
                                 "value": ":value-tags"
+                            },
+                            {
+                                "key": "Key-2",
+                                "value": "value-tags-2"
                             }
                         ]
                     },
@@ -166,12 +166,12 @@
                         "subregion_name": "###region###a",
                         "tags": [
                             {
-                                "key": "Key-2",
-                                "value": "value-tags-2"
-                            },
-                            {
                                 "key": "Key:",
                                 "value": ":value-tags"
+                            },
+                            {
+                                "key": "Key-2",
+                                "value": "value-tags-2"
                             }
                         ]
                     },
@@ -402,12 +402,12 @@
                         "subregion_name": "###region###a",
                         "tags": [
                             {
-                                "key": "Key-2",
-                                "value": "value-tags-2"
-                            },
-                            {
                                 "key": "Key:",
                                 "value": ":value-tags"
+                            },
+                            {
+                                "key": "Key-2",
+                                "value": "value-tags-2"
                             }
                         ]
                     },
@@ -489,12 +489,12 @@
                         "subregion_name": "###region###a",
                         "tags": [
                             {
-                                "key": "Key-2",
-                                "value": "value-tags-2"
-                            },
-                            {
                                 "key": "Key:",
                                 "value": ":value-tags"
+                            },
+                            {
+                                "key": "Key-2",
+                                "value": "value-tags-2"
                             }
                         ]
                     },
@@ -970,6 +970,7 @@
                         ],
                         "bsu_optimized": false,
                         "client_token": "",
+                        "creation_date": "########",
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",

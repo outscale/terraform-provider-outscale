@@ -140,6 +140,7 @@
                         ],
                         "bsu_optimized": false,
                         "client_token": "",
+                        "creation_date": "########",
                         "deletion_protection": true,
                         "get_admin_password": null,
                         "hypervisor": "xen",

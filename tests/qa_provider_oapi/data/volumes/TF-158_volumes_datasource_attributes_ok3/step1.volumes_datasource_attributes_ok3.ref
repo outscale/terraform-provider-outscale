@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_volumes",
             "name": "outscale_volumes",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -20,6 +20,7 @@
                         "volume_id": null,
                         "volumes": [
                             {
+                                "creation_date": "########",
                                 "iops": 150,
                                 "linked_volumes": [],
                                 "size": 13,
@@ -36,6 +37,7 @@
                                 "volume_type": "standard"
                             },
                             {
+                                "creation_date": "########",
                                 "iops": 150,
                                 "linked_volumes": [],
                                 "size": 15,
@@ -61,11 +63,12 @@
             "mode": "managed",
             "type": "outscale_volume",
             "name": "outscale_volume",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
+                        "creation_date": "########",
                         "id": "##id-2##",
                         "iops": 150,
                         "linked_volumes": [],
@@ -92,11 +95,12 @@
             "mode": "managed",
             "type": "outscale_volume",
             "name": "outscale_volume2",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"local/test/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
+                        "creation_date": "########",
                         "id": "##id-1##",
                         "iops": 150,
                         "linked_volumes": [],
