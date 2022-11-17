@@ -175,14 +175,15 @@ func resourceOutscaleOAPIRouteCreate(d *schema.ResourceData, meta interface{}) e
 		}
 	}
 
-	d.SetId(d.Get("route_table_id").(string))
+	d.SetId(d.Get("route_table_id").(string) + "_" + d.Get("destination_ip_range").(string))
+
 	resourceOutscaleOAPIRouteSetResourceData(d, route, requestID)
 	return nil
 }
 
 func resourceOutscaleOAPIRouteRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-	routeTableID := d.Id()
+	routeTableID := d.Get("route_table_id").(string)
 
 	destinationIPRange := d.Get("destination_ip_range").(string)
 	var requestID string
@@ -499,7 +500,7 @@ func resourceOutscaleOAPIRouteImportState(d *schema.ResourceData, meta interface
 		return nil, fmt.Errorf("error setting `%s` for Outscale Route(%s): %s", "destination_ip_range", destinationIPRange, err)
 	}
 
-	d.SetId(routeTableID)
+	d.SetId(d.Get("route_table_id").(string) + "_" + d.Get("destination_ip_range").(string))
 
 	return []*schema.ResourceData{d}, nil
 }
