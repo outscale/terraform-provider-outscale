@@ -55,6 +55,13 @@ func resourceOutscaleOApiVM() *schema.Resource {
 										Type:     schema.TypeInt,
 										Optional: true,
 										ForceNew: true,
+										ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+											iopsVal := val.(int)
+											if iopsVal < utils.MinIops || iopsVal > utils.MaxIops {
+												errs = append(errs, fmt.Errorf("%q must be between %d and %d inclusive, got: %d", key, utils.MinIops, utils.MaxIops, iopsVal))
+											}
+											return
+										},
 									},
 									"snapshot_id": {
 										Type:     schema.TypeString,
@@ -65,6 +72,13 @@ func resourceOutscaleOApiVM() *schema.Resource {
 										Type:     schema.TypeInt,
 										Optional: true,
 										ForceNew: true,
+										ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+											vSize := val.(int)
+											if vSize < 1 || vSize > utils.MaxSize {
+												errs = append(errs, fmt.Errorf("%q must be between 1 and %d gibibytes inclusive, got: %d", key, utils.MaxSize, vSize))
+											}
+											return
+										},
 									},
 									"volume_type": {
 										Type:     schema.TypeString,
@@ -967,16 +981,19 @@ func buildCreateVmsRequest(d *schema.ResourceData, meta interface{}) (oscgo.Crea
 	if subNet != "" {
 		request.SetSubnetId(subNet)
 	}
+	blockDevices, err := expandBlockDeviceOApiMappings(d)
+	if err != nil {
+		return request, err
+	}
+	if len(blockDevices) > 0 {
+		request.SetBlockDeviceMappings(blockDevices)
+	}
 
 	if nics := buildNetworkOApiInterfaceOpts(d); len(nics) > 0 {
 		if subNet != "" || placement != nil {
 			return request, errors.New("If you specify nics parameter, you must not specify subnet_id and placement parameters.")
 		}
 		request.SetNics(nics)
-	}
-
-	if blockDevices := expandBlockDeviceOApiMappings(d); len(blockDevices) > 0 {
-		request.SetBlockDeviceMappings(blockDevices)
 	}
 
 	if privateIPs := expandStringValueList(d.Get("private_ips").([]interface{})); len(privateIPs) > 0 {
@@ -1024,7 +1041,7 @@ func buildCreateVmsRequest(d *schema.ResourceData, meta interface{}) (oscgo.Crea
 	return request, nil
 }
 
-func expandBlockDeviceOApiMappings(d *schema.ResourceData) []oscgo.BlockDeviceMappingVmCreation {
+func expandBlockDeviceOApiMappings(d *schema.ResourceData) ([]oscgo.BlockDeviceMappingVmCreation, error) {
 	var blockDevices []oscgo.BlockDeviceMappingVmCreation
 
 	block := d.Get("block_device_mappings").([]interface{})
@@ -1034,9 +1051,12 @@ func expandBlockDeviceOApiMappings(d *schema.ResourceData) []oscgo.BlockDeviceMa
 
 		value := v.(map[string]interface{})
 		if bsu, ok := value["bsu"].([]interface{}); ok && len(bsu) > 0 {
-			blockDevice.SetBsu(expandBlockDeviceBSU(bsu[0].(map[string]interface{})))
+			expandBSU, err := expandBlockDeviceBSU(bsu[0].(map[string]interface{}))
+			if err != nil {
+				return nil, err
+			}
+			blockDevice.SetBsu(expandBSU)
 		}
-
 		if deviceName, ok := value["device_name"]; ok && deviceName != "" {
 			blockDevice.SetDeviceName(cast.ToString(deviceName))
 		}
@@ -1046,36 +1066,41 @@ func expandBlockDeviceOApiMappings(d *schema.ResourceData) []oscgo.BlockDeviceMa
 		if virtualDeviceName, ok := value["virtual_device_name"]; ok && virtualDeviceName != "" {
 			blockDevice.SetVirtualDeviceName(cast.ToString(virtualDeviceName))
 		}
-
 		blockDevices = append(blockDevices, blockDevice)
 	}
-	return blockDevices
+	return blockDevices, nil
 }
 
-func expandBlockDeviceBSU(bsu map[string]interface{}) oscgo.BsuToCreate {
+func expandBlockDeviceBSU(bsu map[string]interface{}) (oscgo.BsuToCreate, error) {
 	bsuToCreate := oscgo.BsuToCreate{}
+
+	snapshotID := bsu["snapshot_id"].(string)
+	volumeType := bsu["volume_type"].(string)
+	volumeSize := int32(bsu["volume_size"].(int))
+
+	if snapshotID == "" && volumeSize == 0 {
+		return bsuToCreate, fmt.Errorf("Error: 'volume_size' parameter is required if the volume is not created from a snapshot (SnapshotId unspecified)")
+	}
+	if iops, ok := bsu["iops"]; ok && iops.(int) > 0 {
+		if volumeType != "io1" {
+			return bsuToCreate, fmt.Errorf("Error: %s", utils.VolumeIOPSError)
+		}
+		bsuToCreate.SetIops(int32(iops.(int)))
+	}
+	if snapshotID != "" {
+		bsuToCreate.SetSnapshotId(snapshotID)
+	}
+	if volumeSize > 0 {
+		bsuToCreate.SetVolumeSize(volumeSize)
+	}
+	if volumeType != "" {
+		bsuToCreate.SetVolumeType(volumeType)
+	}
 
 	if deleteOnVMDeletion, ok := bsu["delete_on_vm_deletion"]; ok && deleteOnVMDeletion != "" {
 		bsuToCreate.SetDeleteOnVmDeletion(cast.ToBool(deleteOnVMDeletion))
 	}
-
-	if snapshotID, ok := bsu["snapshot_id"]; ok && snapshotID != "" {
-		bsuToCreate.SetSnapshotId(cast.ToString(snapshotID))
-	}
-	if volumeSize, ok := bsu["volume_size"]; ok && volumeSize != "" {
-		bsuToCreate.SetVolumeSize(cast.ToInt32(volumeSize))
-	}
-	if volumeType, ok := bsu["volume_type"]; ok && volumeType != "" {
-
-		vType := cast.ToString(volumeType)
-		bsuToCreate.SetVolumeType(vType)
-
-		if iops, ok := bsu["iops"]; ok && vType == "io1" {
-			bsuToCreate.SetIops(cast.ToInt32(iops))
-		}
-	}
-
-	return bsuToCreate
+	return bsuToCreate, nil
 }
 
 func buildNetworkOApiInterfaceOpts(d *schema.ResourceData) []oscgo.NicForVmCreation {

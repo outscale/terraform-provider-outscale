@@ -41,12 +41,26 @@ func resourceOutscaleOAPIVolume() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 				Computed: true,
+				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+					iopsVal := val.(int)
+					if iopsVal < utils.MinIops || iopsVal > utils.MaxIops {
+						errs = append(errs, fmt.Errorf("%q must be between %d and %d inclusive, got: %d", key, utils.MinIops, utils.MaxIops, iopsVal))
+					}
+					return
+				},
 			},
 			"size": {
 				Type:     schema.TypeInt,
 				Optional: true,
 				ForceNew: true,
 				Computed: true,
+				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+					vSize := val.(int)
+					if vSize < 1 || vSize > utils.MaxSize {
+						errs = append(errs, fmt.Errorf("%q must be between 1 and %d gibibytes inclusive, got: %d", key, utils.MaxSize, vSize))
+					}
+					return
+				},
 			},
 			"snapshot_id": {
 				Type:     schema.TypeString,
@@ -112,25 +126,26 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	request := oscgo.CreateVolumeRequest{
 		SubregionName: d.Get("subregion_name").(string),
 	}
-	if value, ok := d.GetOk("size"); ok {
-		request.SetSize(int32(value.(int)))
-	}
-	if value, ok := d.GetOk("snapshot_id"); ok {
-		request.SetSnapshotId(value.(string))
-	}
+	vSize := int32(d.Get("size").(int))
+	snapId := d.Get("snapshot_id").(string)
+	vType := d.Get("volume_type").(string)
 
-	var t string
-	if value, ok := d.GetOk("volume_type"); ok {
-		request.SetVolumeType(value.(string))
-		t = value.(string)
+	if snapId == "" && vSize == 0 {
+		return fmt.Errorf("Error: 'size' parameter is required if the volume is not created from a snapshot (SnapshotId unspecified)")
 	}
-
-	iops := d.Get("iops").(int)
-	if t != "io1" && iops > 0 {
-		log.Printf("[WARN] IOPs is only valid for storate type io1 for EBS Volumes")
-	} else if t == "io1" {
-		request.SetIops(int32(iops))
+	if value, ok := d.GetOk("iops"); ok {
+		if vType != "io1" {
+			return fmt.Errorf("Error: %s", utils.VolumeIOPSError)
+		}
+		request.SetIops(int32(value.(int)))
 	}
+	if snapId != "" {
+		request.SetSnapshotId(snapId)
+	}
+	if vType != "" {
+		request.SetVolumeType(vType)
+	}
+	request.SetSize(vSize)
 
 	var resp oscgo.CreateVolumeResponse
 	var err error
