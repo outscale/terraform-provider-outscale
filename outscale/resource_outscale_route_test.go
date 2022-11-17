@@ -210,7 +210,7 @@ func testAccCheckOutscaleOAPIRouteImportStateIDFunc(resourceName string) resourc
 		if !ok {
 			return "", fmt.Errorf("Not found: %s", resourceName)
 		}
-		return fmt.Sprintf("%s_%s", rs.Primary.ID, rs.Primary.Attributes["destination_ip_range"]), nil
+		return rs.Primary.ID, nil
 	}
 }
 
