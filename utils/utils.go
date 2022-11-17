@@ -16,14 +16,23 @@ import (
 
 // PrintToJSON method helper to debug responses
 const (
-	InvalidState     string  = "InvalidState"
 	ResourceNotFound int     = 404
 	ResourceConflict int     = 409
 	TooManyRequests  int     = 429
 	Throttled        int     = 503
 	randMin          float32 = 1.0
 	randMax          float32 = 20.0
-	TestCaPem        string  = `-----BEGIN CERTIFICATE-----
+	MinIops          int     = 100
+	MaxIops          int     = 13000
+	DefaultIops      int     = 150
+	MaxSize          int     = 14901
+	InvalidState     string  = "InvalidState"
+	VolumeIOPSError  string  = `
+- The "iops" parameter can only be set if "io1" volume type is created.
+- "Standard" volume types have a default value of 150 iops.
+- For "gp2" volume types, iops value depend on your volume size.
+`
+	TestCaPem string = `-----BEGIN CERTIFICATE-----
 MIIFzzCCA7egAwIBAgIUG4MiEOc008Sc0VFUYiiPud2MINEwDQYJKoZIhvcNAQEL
 BQAwdzELMAkGA1UEBhMCRlIxDjAMBgNVBAgMBVBhcmlzMREwDwYDVQQKDAhvdXRz
 Y2FsZTEYMBYGA1UEAwwPT1VBVFRBUkEgdGhpZXJ5MSswKQYJKoZIhvcNAQkBFhx0
