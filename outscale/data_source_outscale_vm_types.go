@@ -13,9 +13,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPIVMTypes() *schema.Resource {
+func dataSourceVMTypes() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPIVMTypesRead,
+		Read: dataSourceVMTypesRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -63,14 +63,14 @@ func dataSourceOutscaleOAPIVMTypes() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPIVMTypesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceVMTypesRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	filter, filterOk := d.GetOk("filter")
 	filtersReq := oscgo.FiltersVmType{}
 
 	if filterOk {
-		filtersReq = buildOutscaleOAPIDataSourceVMTypesFilters(filter.(*schema.Set))
+		filtersReq = buildDataSourceVMTypesFilters(filter.(*schema.Set))
 	}
 	req := oscgo.ReadVmTypesRequest{Filters: &filtersReq}
 
@@ -96,11 +96,11 @@ func dataSourceOutscaleOAPIVMTypesRead(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
 	}
 
-	return statusDescriptionOAPIVMTypesAttributes(d, filteredTypes)
+	return statusDescriptionVMTypesAttributes(d, filteredTypes)
 
 }
 
-func setOAPIVMTypeAttributes(set AttributeSetter, vType *oscgo.VmType) error {
+func setVMTypeAttributes(set AttributeSetter, vType *oscgo.VmType) error {
 
 	if err := set("bsu_optimized", vType.GetBsuOptimized()); err != nil {
 		return err
@@ -127,7 +127,7 @@ func setOAPIVMTypeAttributes(set AttributeSetter, vType *oscgo.VmType) error {
 	return nil
 }
 
-func statusDescriptionOAPIVMTypesAttributes(d *schema.ResourceData, fTypes []oscgo.VmType) error {
+func statusDescriptionVMTypesAttributes(d *schema.ResourceData, fTypes []oscgo.VmType) error {
 	d.SetId(resource.UniqueId())
 
 	vTypes := make([]map[string]interface{}, len(fTypes))
@@ -140,7 +140,7 @@ func statusDescriptionOAPIVMTypesAttributes(d *schema.ResourceData, fTypes []osc
 			return nil
 		}
 
-		if err := setOAPIVMTypeAttributes(setterFunc, &v); err != nil {
+		if err := setVMTypeAttributes(setterFunc, &v); err != nil {
 			return err
 		}
 
@@ -151,7 +151,7 @@ func statusDescriptionOAPIVMTypesAttributes(d *schema.ResourceData, fTypes []osc
 
 }
 
-func buildOutscaleOAPIDataSourceVMTypesFilters(set *schema.Set) oscgo.FiltersVmType {
+func buildDataSourceVMTypesFilters(set *schema.Set) oscgo.FiltersVmType {
 	var filters oscgo.FiltersVmType
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})

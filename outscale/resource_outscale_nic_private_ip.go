@@ -12,11 +12,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func resourceOutscaleOAPINetworkInterfacePrivateIP() *schema.Resource {
+func resourceNetworkInterfacePrivateIP() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPINetworkInterfacePrivateIPCreate,
-		Read:   resourceOutscaleOAPINetworkInterfacePrivateIPRead,
-		Delete: resourceOutscaleOAPINetworkInterfacePrivateIPDelete,
+		Create: resourceNetworkInterfacePrivateIPCreate,
+		Read:   resourceNetworkInterfacePrivateIPRead,
+		Delete: resourceNetworkInterfacePrivateIPDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -56,8 +56,8 @@ func resourceOutscaleOAPINetworkInterfacePrivateIP() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPINetworkInterfacePrivateIPCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceNetworkInterfacePrivateIPCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	input := oscgo.LinkPrivateIpsRequest{
 		NicId: d.Get("nic_id").(string),
@@ -90,11 +90,11 @@ func resourceOutscaleOAPINetworkInterfacePrivateIPCreate(d *schema.ResourceData,
 
 	d.SetId(input.NicId)
 
-	return resourceOutscaleOAPINetworkInterfacePrivateIPRead(d, meta)
+	return resourceNetworkInterfacePrivateIPRead(d, meta)
 }
 
-func resourceOutscaleOAPINetworkInterfacePrivateIPRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceNetworkInterfacePrivateIPRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	req := oscgo.ReadNicsRequest{
 		Filters: &oscgo.FiltersNic{NicIds: &[]string{d.Id()}},
@@ -170,8 +170,8 @@ func resourceOutscaleOAPINetworkInterfacePrivateIPRead(d *schema.ResourceData, m
 	return nil
 }
 
-func resourceOutscaleOAPINetworkInterfacePrivateIPDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceNetworkInterfacePrivateIPDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	input := oscgo.UnlinkPrivateIpsRequest{
 		NicId: d.Id(),

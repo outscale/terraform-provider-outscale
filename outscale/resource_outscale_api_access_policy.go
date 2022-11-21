@@ -11,12 +11,12 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func resourceOutscaleOAPIApiAccessPolicy() *schema.Resource {
+func resourceApiAccessPolicy() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPIApiAccessPolicyCreate,
-		Read:   resourceOutscaleOAPIApiAccessPolicyRead,
-		Update: resourceOutscaleOAPIApiAccessPolicyUpdate,
-		Delete: resourceOutscaleOAPIApiAccessPolicyDelete,
+		Create: resourceApiAccessPolicyCreate,
+		Read:   resourceApiAccessPolicyRead,
+		Update: resourceApiAccessPolicyUpdate,
+		Delete: resourceApiAccessPolicyDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -37,8 +37,8 @@ func resourceOutscaleOAPIApiAccessPolicy() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPIApiAccessPolicyCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceApiAccessPolicyCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	maxAcc := d.Get("max_access_key_expiration_seconds")
 	trustEnv := d.Get("require_trusted_env")
@@ -63,11 +63,11 @@ func resourceOutscaleOAPIApiAccessPolicyCreate(d *schema.ResourceData, meta inte
 	if err != nil {
 		return err
 	}
-	return resourceOutscaleOAPIApiAccessPolicyRead(d, meta)
+	return resourceApiAccessPolicyRead(d, meta)
 }
 
-func resourceOutscaleOAPIApiAccessPolicyRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceApiAccessPolicyRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	req := oscgo.ReadApiAccessPolicyRequest{}
 
@@ -102,8 +102,8 @@ func resourceOutscaleOAPIApiAccessPolicyRead(d *schema.ResourceData, meta interf
 	return nil
 }
 
-func resourceOutscaleOAPIApiAccessPolicyUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceApiAccessPolicyUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	_, maxAcc := d.GetChange("max_access_key_expiration_seconds")
 	_, trustEnv := d.GetChange("require_trusted_env")
@@ -128,10 +128,10 @@ func resourceOutscaleOAPIApiAccessPolicyUpdate(d *schema.ResourceData, meta inte
 	if err != nil {
 		return err
 	}
-	return resourceOutscaleOAPIApiAccessPolicyRead(d, meta)
+	return resourceApiAccessPolicyRead(d, meta)
 }
 
-func resourceOutscaleOAPIApiAccessPolicyDelete(d *schema.ResourceData, _ interface{}) error {
+func resourceApiAccessPolicyDelete(d *schema.ResourceData, _ interface{}) error {
 	d.SetId("")
 	return nil
 }

@@ -14,11 +14,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func resourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
+func resourceAppCookieStickinessPolicy() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleAppCookieStickinessPolicyCreate,
-		Read:   resourceOutscaleAppCookieStickinessPolicyRead,
-		Delete: resourceOutscaleAppCookieStickinessPolicyDelete,
+		Create: resourceAppCookieStickinessPolicyCreate,
+		Read:   resourceAppCookieStickinessPolicyRead,
+		Delete: resourceAppCookieStickinessPolicyDelete,
 
 		Schema: map[string]*schema.Schema{
 			"policy_name": {
@@ -193,7 +193,7 @@ func resourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"tags": tagsListOAPISchema2(true),
+			"tags": tagsListSchema2(true),
 
 			"dns_name": {
 				Type:     schema.TypeString,
@@ -238,8 +238,8 @@ func resourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
 	}
 }
 
-func resourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceAppCookieStickinessPolicyCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	l := d.Get("load_balancer_name")
 	pn := d.Get("policy_name")
@@ -288,8 +288,8 @@ func resourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, met
 
 	if resp.LoadBalancer != nil {
 		lb := resp.LoadBalancer
-		d.Set("access_log", flattenOAPIAccessLog(lb.AccessLog))
-		d.Set("listeners", flattenOAPIListeners(lb.Listeners))
+		d.Set("access_log", flattenAccessLog(lb.AccessLog))
+		d.Set("listeners", flattenListeners(lb.Listeners))
 		d.Set("subregion_names", flattenStringList(lb.SubregionNames))
 		d.Set("load_balancer_type", lb.LoadBalancerType)
 		if lb.SecurityGroups != nil {
@@ -299,7 +299,7 @@ func resourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, met
 		}
 		d.Set("dns_name", lb.DnsName)
 		d.Set("subnets", flattenStringList(lb.Subnets))
-		d.Set("health_check", flattenOAPIHealthCheck(lb.HealthCheck))
+		d.Set("health_check", flattenHealthCheck(lb.HealthCheck))
 		d.Set("backend_vm_ids", flattenStringList(lb.BackendVmIds))
 		if lb.Tags != nil {
 			ta := make([]map[string]interface{}, len(*lb.Tags))
@@ -358,12 +358,12 @@ func resourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, met
 	return nil
 }
 
-func resourceOutscaleAppCookieStickinessPolicyRead(d *schema.ResourceData, meta interface{}) error {
+func resourceAppCookieStickinessPolicyRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceOutscaleAppCookieStickinessPolicyDelete(d *schema.ResourceData, meta interface{}) error {
-	elbconn := meta.(*OutscaleClient).OSCAPI
+func resourceAppCookieStickinessPolicyDelete(d *schema.ResourceData, meta interface{}) error {
+	elbconn := meta.(*Client).OSCAPI
 
 	l := d.Get("load_balancer_name").(string)
 	p := d.Get("policy_name").(string)

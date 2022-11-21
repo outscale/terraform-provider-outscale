@@ -12,12 +12,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func resourceOutscaleDHCPOption() *schema.Resource {
+func resourceDHCPOption() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleDHCPOptionCreate,
-		Read:   resourceOutscaleDHCPOptionRead,
-		Update: resourceOutscaleDHCPOptionUpdate,
-		Delete: resourceOutscaleDHCPOptionDelete,
+		Create: resourceDHCPOptionCreate,
+		Read:   resourceDHCPOptionRead,
+		Update: resourceDHCPOptionUpdate,
+		Delete: resourceDHCPOptionDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -63,7 +63,7 @@ func resourceOutscaleDHCPOption() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": tagsListOAPISchema(),
+			"tags": tagsListSchema(),
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -72,8 +72,8 @@ func resourceOutscaleDHCPOption() *schema.Resource {
 	}
 }
 
-func resourceOutscaleDHCPOptionCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceDHCPOptionCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	createOpts := oscgo.CreateDhcpOptionsRequest{}
 
@@ -112,11 +112,11 @@ func resourceOutscaleDHCPOptionCreate(d *schema.ResourceData, meta interface{}) 
 
 	d.SetId(dhcp.GetDhcpOptionsSetId())
 
-	return resourceOutscaleDHCPOptionRead(d, meta)
+	return resourceDHCPOptionRead(d, meta)
 }
 
-func resourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceDHCPOptionRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 	dhcpID := d.Id()
 
 	_, resp, err := readDhcpOption(conn, dhcpID)
@@ -149,19 +149,19 @@ func resourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) er
 	if err := d.Set("dhcp_options_set_id", dhcp.GetDhcpOptionsSetId()); err != nil {
 		return err
 	}
-	if err := d.Set("tags", tagsOSCAPIToMap(dhcp.GetTags())); err != nil {
+	if err := d.Set("tags", tagsToMap(dhcp.GetTags())); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func resourceOutscaleDHCPOptionUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceDHCPOptionUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	d.Partial(true)
 
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := setTags(conn, d); err != nil {
 		return err
 	}
 
@@ -169,11 +169,11 @@ func resourceOutscaleDHCPOptionUpdate(d *schema.ResourceData, meta interface{}) 
 
 	d.Partial(false)
 
-	return resourceOutscaleDHCPOptionRead(d, meta)
+	return resourceDHCPOptionRead(d, meta)
 }
 
-func resourceOutscaleDHCPOptionDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceDHCPOptionDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	dhcpID := d.Id()
 

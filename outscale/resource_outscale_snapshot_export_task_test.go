@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform/helper/acctest"
 )
 
-func TestAccOutscaleOAPISnapshotExportTask_basic(t *testing.T) {
+func TestAccSnapshotExportTask_basic(t *testing.T) {
 	osuBucketNames := []string{
 		acctest.RandomWithPrefix("terraform-export-bucket-"),
 		acctest.RandomWithPrefix("terraform-export-bucket-"),
@@ -29,22 +29,22 @@ func TestAccOutscaleOAPISnapshotExportTask_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISnapshotExportTaskConfig("", osuBucketNames[0]),
+				Config: testAccSnapshotExportTaskConfig("", osuBucketNames[0]),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPISnapshotExportTaskExists("outscale_snapshot_export_task.outscale_snapshot_export_task"),
+					testAccCheckSnapshotExportTaskExists("outscale_snapshot_export_task.outscale_snapshot_export_task"),
 				),
 			},
 			{
-				Config: testAccOutscaleOAPISnapshotExportTaskConfig(tags, osuBucketNames[1]),
+				Config: testAccSnapshotExportTaskConfig(tags, osuBucketNames[1]),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPISnapshotExportTaskExists("outscale_snapshot_export_task.outscale_snapshot_export_task"),
+					testAccCheckSnapshotExportTaskExists("outscale_snapshot_export_task.outscale_snapshot_export_task"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckOutscaleOAPISnapshotExportTaskExists(n string) resource.TestCheckFunc {
+func testAccCheckSnapshotExportTaskExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -59,7 +59,7 @@ func testAccCheckOutscaleOAPISnapshotExportTaskExists(n string) resource.TestChe
 	}
 }
 
-func testAccOutscaleOAPISnapshotExportTaskConfig(tags, osuBucketName string) string {
+func testAccSnapshotExportTaskConfig(tags, osuBucketName string) string {
 	return fmt.Sprintf(`
 		resource "outscale_volume" "outscale_volume_snap" {
     subregion_name   = "eu-west-2a"

@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPIPublicIP_basic(t *testing.T) {
+func TestAccPublicIP_basic(t *testing.T) {
 	t.Parallel()
 	var conf oscgo.PublicIp
 
@@ -22,20 +22,20 @@ func TestAccOutscaleOAPIPublicIP_basic(t *testing.T) {
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_public_ip.bar",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscaleOAPIPublicIPDestroy,
+		CheckDestroy:  testAccCheckPublicIPDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIPublicIPConfig,
+				Config: testAccPublicIPConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &conf),
-					testAccCheckOutscaleOAPIPublicIPAttributes(&conf),
+					testAccCheckPublicIPExists("outscale_public_ip.bar", &conf),
+					testAccCheckPublicIPAttributes(&conf),
 				),
 			},
 		},
 	})
 }
 
-func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
+func TestAccPublicIP_instance(t *testing.T) {
 	t.Parallel()
 	var conf oscgo.PublicIp
 	omi := os.Getenv("OUTSCALE_IMAGEID")
@@ -48,30 +48,30 @@ func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_public_ip.bar",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscaleOAPIPublicIPDestroy,
+		CheckDestroy:  testAccCheckPublicIPDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIPublicIPInstanceConfig(omi, "tinav4.c2r2p2", region, keypair, sgId),
+				Config: testAccPublicIPInstanceConfig(omi, "tinav4.c2r2p2", region, keypair, sgId),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &conf),
-					testAccCheckOutscaleOAPIPublicIPAttributes(&conf),
+					testAccCheckPublicIPExists("outscale_public_ip.bar", &conf),
+					testAccCheckPublicIPAttributes(&conf),
 				),
 			},
 
 			{
-				Config: testAccOutscaleOAPIPublicIPInstanceConfig2(omi, "tinav4.c2r2p2", region, keypair, sgId),
+				Config: testAccPublicIPInstanceConfig2(omi, "tinav4.c2r2p2", region, keypair, sgId),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &conf),
-					testAccCheckOutscaleOAPIPublicIPAttributes(&conf),
+					testAccCheckPublicIPExists("outscale_public_ip.bar", &conf),
+					testAccCheckPublicIPAttributes(&conf),
 				),
 			},
 		},
 	})
 }
 
-// // This test is an expansion of TestAccOutscalePublicIP_instance, by testing the
+// // This test is an expansion of TestAccPublicIP_instance, by testing the
 // // associated Private PublicIPs of two instances
-func TestAccOutscaleOAPIPublicIP_associated_user_private_ip(t *testing.T) {
+func TestAccPublicIP_associated_user_private_ip(t *testing.T) {
 	var one oscgo.PublicIp
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
@@ -82,28 +82,28 @@ func TestAccOutscaleOAPIPublicIP_associated_user_private_ip(t *testing.T) {
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_public_ip.bar",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscaleOAPIPublicIPDestroy,
+		CheckDestroy:  testAccCheckPublicIPDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIPublicIPInstanceConfigAssociated(omi, "tinav4.c2r2p2", region, keypair, sgId),
+				Config: testAccPublicIPInstanceConfigAssociated(omi, "tinav4.c2r2p2", region, keypair, sgId),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &one),
-					testAccCheckOutscaleOAPIPublicIPAttributes(&one),
+					testAccCheckPublicIPExists("outscale_public_ip.bar", &one),
+					testAccCheckPublicIPAttributes(&one),
 				),
 			},
 			{
-				Config: testAccOutscaleOAPIPublicIPInstanceConfigAssociatedSwitch(omi, "tinav4.c2r2p2", region, keypair, sgId),
+				Config: testAccPublicIPInstanceConfigAssociatedSwitch(omi, "tinav4.c2r2p2", region, keypair, sgId),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &one),
-					testAccCheckOutscaleOAPIPublicIPAttributes(&one),
+					testAccCheckPublicIPExists("outscale_public_ip.bar", &one),
+					testAccCheckPublicIPAttributes(&one),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckOutscaleOAPIPublicIPDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient)
+func testAccCheckPublicIPDestroy(s *terraform.State) error {
+	conn := testAccProvider.Meta().(*Client)
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_public_ip" {
@@ -169,7 +169,7 @@ func testAccCheckOutscaleOAPIPublicIPDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOutscaleOAPIPublicIPAttributes(conf *oscgo.PublicIp) resource.TestCheckFunc {
+func testAccCheckPublicIPAttributes(conf *oscgo.PublicIp) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if conf.GetPublicIp() == "" {
 			return fmt.Errorf("empty public_ip")
@@ -179,7 +179,7 @@ func testAccCheckOutscaleOAPIPublicIPAttributes(conf *oscgo.PublicIp) resource.T
 	}
 }
 
-func testAccCheckOutscaleOAPIPublicIPExists(n string, res *oscgo.PublicIp) resource.TestCheckFunc {
+func testAccCheckPublicIPExists(n string, res *oscgo.PublicIp) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -190,7 +190,7 @@ func testAccCheckOutscaleOAPIPublicIPExists(n string, res *oscgo.PublicIp) resou
 			return fmt.Errorf("No PublicIP ID is set")
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient)
+		conn := testAccProvider.Meta().(*Client)
 
 		//Missing on Swagger Spec
 		// if strings.Contains(rs.Primary.ID, "link") {
@@ -253,7 +253,7 @@ func testAccCheckOutscaleOAPIPublicIPExists(n string, res *oscgo.PublicIp) resou
 	}
 }
 
-const testAccOutscaleOAPIPublicIPConfig = `
+const testAccPublicIPConfig = `
 resource "outscale_public_ip" "bar" {
 	tags {
 		key = "Name"
@@ -262,7 +262,7 @@ resource "outscale_public_ip" "bar" {
 }
 `
 
-func testAccOutscaleOAPIPublicIPInstanceConfig(omi, vmType, region, keypair, sgId string) string {
+func testAccPublicIPInstanceConfig(omi, vmType, region, keypair, sgId string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "net" {
 			ip_range = "10.0.0.0/16"
@@ -297,7 +297,7 @@ func testAccOutscaleOAPIPublicIPInstanceConfig(omi, vmType, region, keypair, sgI
 	`, omi, vmType, region, keypair, sgId)
 }
 
-func testAccOutscaleOAPIPublicIPInstanceConfig2(omi, vmType, region, keypair, sgId string) string {
+func testAccPublicIPInstanceConfig2(omi, vmType, region, keypair, sgId string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "net" {
 			ip_range = "10.0.0.0/16"
@@ -332,7 +332,7 @@ func testAccOutscaleOAPIPublicIPInstanceConfig2(omi, vmType, region, keypair, sg
 	`, omi, vmType, region, keypair, sgId)
 }
 
-func testAccOutscaleOAPIPublicIPInstanceConfigAssociated(omi, vmType, region, keypair, sgId string) string {
+func testAccPublicIPInstanceConfigAssociated(omi, vmType, region, keypair, sgId string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "net" {
 			ip_range = "10.0.0.0/16"
@@ -375,7 +375,7 @@ func testAccOutscaleOAPIPublicIPInstanceConfigAssociated(omi, vmType, region, ke
 	`, omi, vmType, region, keypair, sgId)
 }
 
-func testAccOutscaleOAPIPublicIPInstanceConfigAssociatedSwitch(omi, vmType, region, keypair, sgId string) string {
+func testAccPublicIPInstanceConfigAssociatedSwitch(omi, vmType, region, keypair, sgId string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "net" {
 			ip_range = "10.0.0.0/16"

@@ -13,9 +13,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func datasourceOutscaleOAPIInternetServices() *schema.Resource {
+func dataSourceInternetServices() *schema.Resource {
 	return &schema.Resource{
-		Read: datasourceOutscaleOAPIInternetServicesRead,
+		Read: dataSourceInternetServicesRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"internet_service_ids": {
@@ -54,8 +54,8 @@ func datasourceOutscaleOAPIInternetServices() *schema.Resource {
 	}
 }
 
-func datasourceOutscaleOAPIInternetServicesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceInternetServicesRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
 	internetID, internetIDOk := d.GetOk("internet_service_ids")
@@ -78,7 +78,7 @@ func datasourceOutscaleOAPIInternetServicesRead(d *schema.ResourceData, meta int
 	}
 
 	if filtersOk {
-		params.Filters = buildOutscaleOSCAPIDataSourceInternetServiceFilters(filters.(*schema.Set))
+		params.Filters = buildDataSourceInternetServiceFilters(filters.(*schema.Set))
 	}
 
 	var resp oscgo.ReadInternetServicesResponse
@@ -105,10 +105,10 @@ func datasourceOutscaleOAPIInternetServicesRead(d *schema.ResourceData, meta int
 	d.SetId(resource.UniqueId())
 
 	result := resp.GetInternetServices()
-	return internetServicesOAPIDescriptionAttributes(d, result)
+	return internetServicesDescriptionAttributes(d, result)
 }
 
-func internetServicesOAPIDescriptionAttributes(d *schema.ResourceData, internetServices []oscgo.InternetService) error {
+func internetServicesDescriptionAttributes(d *schema.ResourceData, internetServices []oscgo.InternetService) error {
 
 	i := make([]map[string]interface{}, len(internetServices))
 	for k, v := range internetServices {
@@ -124,7 +124,7 @@ func internetServicesOAPIDescriptionAttributes(d *schema.ResourceData, internetS
 			im["internet_service_id"] = v.GetInternetServiceId()
 		}
 		if v.Tags != nil {
-			im["tags"] = tagsOSCAPIToMap(v.GetTags())
+			im["tags"] = tagsToMap(v.GetTags())
 		}
 		i[k] = im
 	}

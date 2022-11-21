@@ -87,15 +87,15 @@ func napSchema() map[string]*schema.Schema {
 	}
 }
 
-func dataSourceOutscaleNetAccessPoints() *schema.Resource {
+func dataSourceNetAccessPoints() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleNetAccessPointsRead,
+		Read: dataSourceNetAccessPointsRead,
 
 		Schema: getDataSourceSchemas(napSchema()),
 	}
 }
 
-func buildOutscaleDataSourcesNAPFilters(set *schema.Set) *oscgo.FiltersNetAccessPoint {
+func buildDataSourcesNAPFilters(set *schema.Set) *oscgo.FiltersNetAccessPoint {
 	filters := new(oscgo.FiltersNetAccessPoint)
 
 	for _, v := range set.List() {
@@ -128,8 +128,8 @@ func buildOutscaleDataSourcesNAPFilters(set *schema.Set) *oscgo.FiltersNetAccess
 	return filters
 }
 
-func dataSourceOutscaleNetAccessPointsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceNetAccessPointsRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	napid, napidOk := d.GetOk("net_access_point_ids")
 	filters, filtersOk := d.GetOk("filter")
@@ -140,7 +140,7 @@ func dataSourceOutscaleNetAccessPointsRead(d *schema.ResourceData, meta interfac
 	}
 
 	if filtersOk {
-		filter = buildOutscaleDataSourcesNAPFilters(filters.(*schema.Set))
+		filter = buildDataSourcesNAPFilters(filters.(*schema.Set))
 	} else {
 		filter = &oscgo.FiltersNetAccessPoint{
 			NetAccessPointIds: &[]string{napid.(string)},
@@ -181,7 +181,7 @@ func dataSourceOutscaleNetAccessPointsRead(d *schema.ResourceData, meta interfac
 		n["net_id"] = v.NetId
 		n["service_name"] = v.ServiceName
 		n["state"] = v.State
-		n["tags"] = tagsOSCAPIToMap(v.GetTags())
+		n["tags"] = tagsToMap(v.GetTags())
 		nap_ret[k] = n
 	}
 

@@ -13,27 +13,27 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccDataOutscaleOAPIApiAccessRule_basic(t *testing.T) {
+func TestAccDataApiAccessRule_basic(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_api_access_rule.rule_data"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccDataCheckOutscaleApiAccessRuleDestroy,
+		CheckDestroy: testAccDataCheckApiAccessRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataOutscaleOAPIApiAccessRuleConfig(utils.TestCaPem),
+				Config: testAccDataApiAccessRuleConfig(utils.TestCaPem),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleApiAccessRuleExists(resourceName),
+					testAccCheckApiAccessRuleExists(resourceName),
 				),
 			},
 		},
 	})
 }
 
-func testAccDataCheckOutscaleApiAccessRuleDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+func testAccDataCheckApiAccessRuleDestroy(s *terraform.State) error {
+	conn := testAccProvider.Meta().(*Client).OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_api_access_rule" {
@@ -70,7 +70,7 @@ func testAccDataCheckOutscaleApiAccessRuleDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccDataOutscaleOAPIApiAccessRuleConfig(ca_pem string) string {
+func testAccDataApiAccessRuleConfig(ca_pem string) string {
 	return fmt.Sprintf(`
 resource "outscale_ca" "ca_rule" { 
    ca_pem       = %[1]q

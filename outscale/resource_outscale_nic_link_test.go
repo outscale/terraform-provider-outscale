@@ -18,7 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleNicLink_Basic(t *testing.T) {
+func TestAccNicLink_Basic(t *testing.T) {
 	var conf oscgo.Nic
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
@@ -28,12 +28,12 @@ func TestAccOutscaleNicLink_Basic(t *testing.T) {
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_nic.outscale_nic",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscaleNicLinkDestroy,
+		CheckDestroy:  testAccCheckNicLinkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleNicLinkConfigBasic(rInt, omi, "tinav4.c2r2p2", region),
+				Config: testAccNicLinkConfigBasic(rInt, omi, "tinav4.c2r2p2", region),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIENIExists("outscale_nic.outscale_nic", &conf),
+					testAccCheckENIExists("outscale_nic.outscale_nic", &conf),
 					resource.TestCheckResourceAttr(
 						"outscale_nic_link.outscale_nic_link", "device_number", "1"),
 					resource.TestCheckResourceAttrSet(
@@ -46,7 +46,7 @@ func TestAccOutscaleNicLink_Basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleNicLink_importBasic(t *testing.T) {
+func TestAccNicLink_importBasic(t *testing.T) {
 	resourceName := "outscale_nic_link.outscale_nic_link"
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
@@ -55,10 +55,10 @@ func TestAccOutscaleNicLink_importBasic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleNicLinkDestroy,
+		CheckDestroy: testAccCheckNicLinkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleNicLinkConfigBasic(rInt, omi, "tinav4.c2r2p2", region),
+				Config: testAccNicLinkConfigBasic(rInt, omi, "tinav4.c2r2p2", region),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("outscale_nic_link.outscale_nic_link", "device_number", "1"),
 					resource.TestCheckResourceAttrSet("outscale_nic_link.outscale_nic_link", "vm_id"),
@@ -67,7 +67,7 @@ func TestAccOutscaleNicLink_importBasic(t *testing.T) {
 			},
 			{
 				ResourceName:            resourceName,
-				ImportStateIdFunc:       testAccCheckOutscaleNicLinkStateIDFunc(resourceName),
+				ImportStateIdFunc:       testAccCheckNicLinkStateIDFunc(resourceName),
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{""},
@@ -76,7 +76,7 @@ func TestAccOutscaleNicLink_importBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleNicLinkStateIDFunc(resourceName string) resource.ImportStateIdFunc {
+func testAccCheckNicLinkStateIDFunc(resourceName string) resource.ImportStateIdFunc {
 	return func(s *terraform.State) (string, error) {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
@@ -87,8 +87,8 @@ func testAccCheckOutscaleNicLinkStateIDFunc(resourceName string) resource.Import
 	}
 }
 
-func testAccCheckOutscaleNicLinkDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+func testAccCheckNicLinkDestroy(s *terraform.State) error {
+	conn := testAccProvider.Meta().(*Client).OSCAPI
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_nic_link" {
 			continue
@@ -126,7 +126,7 @@ func testAccCheckOutscaleNicLinkDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccOutscaleNicLinkConfigBasic(sg int, omi, vmType, region string) string {
+func testAccNicLinkConfigBasic(sg int, omi, vmType, region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "net" {
 			ip_range = "10.0.0.0/16"

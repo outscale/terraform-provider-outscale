@@ -6,31 +6,31 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccOutscaleClientGatewaysDatasource_basic(t *testing.T) {
+func TestAccClientGatewaysDatasource_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleClientGatewaysDatasourceConfigBasic,
+				Config: testAccClientGatewaysDatasourceConfigBasic,
 			},
 		},
 	})
 }
 
-func TestAccOutscaleClientGatewaysDatasource_withFilters(t *testing.T) {
+func TestAccClientGatewaysDatasource_withFilters(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleClientGatewaysDatasourceConfigWithFilters,
+				Config: testAccClientGatewaysDatasourceConfigWithFilters,
 			},
 		},
 	})
 }
 
-const testAccOutscaleClientGatewaysDatasourceConfigBasic = `
+const testAccClientGatewaysDatasourceConfigBasic = `
 	resource "outscale_client_gateway" "foo1" {
 		bgp_asn         = 3
 		public_ip       = "172.0.0.1"
@@ -53,7 +53,7 @@ const testAccOutscaleClientGatewaysDatasourceConfigBasic = `
 	}
 `
 
-const testAccOutscaleClientGatewaysDatasourceConfigWithFilters = `
+const testAccClientGatewaysDatasourceConfigWithFilters = `
 	resource "outscale_client_gateway" "foo1" {
 		bgp_asn         = 3
 		public_ip       = "172.0.0.1"

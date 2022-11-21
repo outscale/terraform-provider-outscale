@@ -14,9 +14,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func dataSourceOutscaleOAPIVirtualGateway() *schema.Resource {
+func dataSourceVirtualGateway() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPIVirtualGatewayRead,
+		Read: dataSourceVirtualGatewayRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -60,8 +60,8 @@ func dataSourceOutscaleOAPIVirtualGateway() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPIVirtualGatewayRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceVirtualGatewayRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
 	virtualId, vpnOk := d.GetOk("virtual_gateway_id")
@@ -77,7 +77,7 @@ func dataSourceOutscaleOAPIVirtualGatewayRead(d *schema.ResourceData, meta inter
 	}
 
 	if filtersOk {
-		params.SetFilters(buildOutscaleAPIVirtualGatewayFilters(filters.(*schema.Set)))
+		params.SetFilters(buildVirtualGatewayFilters(filters.(*schema.Set)))
 	}
 
 	var resp oscgo.ReadVirtualGatewaysResponse
@@ -119,12 +119,12 @@ func dataSourceOutscaleOAPIVirtualGatewayRead(d *schema.ResourceData, meta inter
 	d.Set("net_to_virtual_gateway_links", vs)
 	d.Set("state", aws.StringValue(vgw.State))
 	d.Set("connection_type", vgw.ConnectionType)
-	d.Set("tags", tagsOSCAPIToMap(vgw.GetTags()))
+	d.Set("tags", tagsToMap(vgw.GetTags()))
 
 	return nil
 }
 
-func buildOutscaleAPIVirtualGatewayFilters(set *schema.Set) oscgo.FiltersVirtualGateway {
+func buildVirtualGatewayFilters(set *schema.Set) oscgo.FiltersVirtualGateway {
 	var filters oscgo.FiltersVirtualGateway
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})

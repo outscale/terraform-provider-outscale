@@ -11,19 +11,19 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPISecurityGroup(t *testing.T) {
+func TestAccSecurityGroup(t *testing.T) {
 	var group oscgo.SecurityGroup
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleOAPISGRuleDestroy,
+		CheckDestroy: testAccCheckSGRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISecurityGroupConfig(rInt),
+				Config: testAccSecurityGroupConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPISecurityGroupRuleExists("outscale_security_group.web", &group),
+					testAccCheckSecurityGroupRuleExists("outscale_security_group.web", &group),
 					resource.TestCheckResourceAttr(
 						"outscale_security_group.web", "security_group_name", fmt.Sprintf("terraform_test_%d", rInt)),
 				),
@@ -32,8 +32,8 @@ func TestAccOutscaleOAPISecurityGroup(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleOAPISGRuleDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+func testAccCheckSGRuleDestroy(s *terraform.State) error {
+	conn := testAccProvider.Meta().(*Client).OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_security_group" {
@@ -48,9 +48,9 @@ func testAccCheckOutscaleOAPISGRuleDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOutscaleOAPISecurityGroupRuleExists(n string, group *oscgo.SecurityGroup) resource.TestCheckFunc {
+func testAccCheckSecurityGroupRuleExists(n string, group *oscgo.SecurityGroup) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		conn := testAccProvider.Meta().(*Client).OSCAPI
 
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -69,7 +69,7 @@ func testAccCheckOutscaleOAPISecurityGroupRuleExists(n string, group *oscgo.Secu
 	}
 }
 
-func testAccOutscaleOAPISecurityGroupConfig(rInt int) string {
+func testAccSecurityGroupConfig(rInt int) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "net" {
 			ip_range = "10.0.0.0/16"

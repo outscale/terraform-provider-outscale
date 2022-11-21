@@ -13,14 +13,14 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPIPublicIP() *schema.Resource {
+func dataSourcePublicIP() *schema.Resource {
 	return &schema.Resource{
-		Read:   dataSourceOutscaleOAPIPublicIPRead,
-		Schema: getOAPIPublicIPDataSourceSchema(),
+		Read:   dataSourcePublicIPRead,
+		Schema: getPublicIPDataSourceSchema(),
 	}
 }
 
-func getOAPIPublicIPDataSourceSchema() map[string]*schema.Schema {
+func getPublicIPDataSourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		// Attributes
 		"filter": dataSourceFiltersSchema(),
@@ -62,8 +62,8 @@ func getOAPIPublicIPDataSourceSchema() map[string]*schema.Schema {
 	}
 }
 
-func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourcePublicIPRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	req := oscgo.ReadPublicIpsRequest{
 		Filters: &oscgo.FiltersPublicIp{},
@@ -79,7 +79,7 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 
 	filters, filtersOk := d.GetOk("filter")
 	if filtersOk {
-		req.Filters = buildOutscaleOAPIDataSourcePublicIpsFilters(filters.(*schema.Set))
+		req.Filters = buildDataSourcePublicIpsFilters(filters.(*schema.Set))
 	}
 
 	var response oscgo.ReadPublicIpsResponse
@@ -103,7 +103,6 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 		return fmt.Errorf("Error retrieving EIP: %s", err)
 	}
 
-	// Verify Outscale returned our EIP
 	if err := utils.IsResponseEmptyOrMutiple(len(response.GetPublicIps()), "PublicIp"); err != nil {
 		return err
 	}
@@ -135,7 +134,7 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 		return err
 	}
 
-	if err := d.Set("tags", tagsOSCAPIToMap(address.GetTags())); err != nil {
+	if err := d.Set("tags", tagsToMap(address.GetTags())); err != nil {
 		return fmt.Errorf("Error setting PublicIp tags: %s", err)
 	}
 
@@ -146,7 +145,7 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 	return nil
 }
 
-func buildOutscaleOAPIDataSourcePublicIpsFilters(set *schema.Set) *oscgo.FiltersPublicIp {
+func buildDataSourcePublicIpsFilters(set *schema.Set) *oscgo.FiltersPublicIp {
 	var filters oscgo.FiltersPublicIp
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})

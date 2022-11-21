@@ -21,13 +21,13 @@ type Config struct {
 	X509key     string
 }
 
-// OutscaleClient client
-type OutscaleClient struct {
+// Client client
+type Client struct {
 	OSCAPI *oscgo.APIClient
 }
 
 // Client ...
-func (c *Config) Client() (*OutscaleClient, error) {
+func (c *Config) Client() (*Client, error) {
 	tlsconfig := &tls.Config{InsecureSkipVerify: false}
 	cert, err := tls.LoadX509KeyPair(c.X509cert, c.X509key)
 	if err == nil {
@@ -61,7 +61,7 @@ func (c *Config) Client() (*OutscaleClient, error) {
 
 	oscClient := oscgo.NewAPIClient(oscConfig)
 
-	client := &OutscaleClient{
+	client := &Client{
 		OSCAPI: oscClient,
 	}
 

@@ -6,14 +6,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccDataSourceOutscaleOAPIRouteTables_basic(t *testing.T) {
+func TestAccDataSourceRouteTables_basic(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPIRouteTablesGroupConfig,
+				Config: testAccDataSourceRouteTablesGroupConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.outscale_route_tables.by_filter", "route_tables.#", "1"),
 					resource.TestCheckResourceAttr("data.outscale_route_tables.by_id", "route_tables.#", "1"),
@@ -23,7 +23,7 @@ func TestAccDataSourceOutscaleOAPIRouteTables_basic(t *testing.T) {
 	})
 }
 
-const testAccDataSourceOutscaleOAPIRouteTablesGroupConfig = `
+const testAccDataSourceRouteTablesGroupConfig = `
 	resource "outscale_net" "test" {
 		ip_range = "172.16.0.0/16"
 

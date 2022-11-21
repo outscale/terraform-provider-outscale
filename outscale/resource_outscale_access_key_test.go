@@ -12,19 +12,19 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func TestAccOutscaleAccessKey_basic(t *testing.T) {
+func TestAccAccessKey_basic(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_access_key.outscale_access_key"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleAccessKeyDestroy,
+		CheckDestroy: testAccCheckAccessKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleAccessKeyBasicConfig,
+				Config: testAccAccessKeyBasicConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleAccessKeyExists(resourceName),
+					testAccCheckAccessKeyExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "access_key_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "creation_date"),
 					resource.TestCheckResourceAttrSet(resourceName, "last_modification_date"),
@@ -38,7 +38,7 @@ func TestAccOutscaleAccessKey_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleAccessKey_updatedToInactivedKey(t *testing.T) {
+func TestAccAccessKey_updatedToInactivedKey(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_access_key.outscale_access_key"
 
@@ -48,12 +48,12 @@ func TestAccOutscaleAccessKey_updatedToInactivedKey(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleAccessKeyDestroy,
+		CheckDestroy: testAccCheckAccessKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleAccessKeyUpdatedConfig(state),
+				Config: testAccAccessKeyUpdatedConfig(state),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleAccessKeyExists(resourceName),
+					testAccCheckAccessKeyExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "access_key_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "creation_date"),
 					resource.TestCheckResourceAttrSet(resourceName, "last_modification_date"),
@@ -64,9 +64,9 @@ func TestAccOutscaleAccessKey_updatedToInactivedKey(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccOutscaleAccessKeyUpdatedConfig(stateUpdated),
+				Config: testAccAccessKeyUpdatedConfig(stateUpdated),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleAccessKeyExists(resourceName),
+					testAccCheckAccessKeyExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "access_key_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "creation_date"),
 					resource.TestCheckResourceAttrSet(resourceName, "last_modification_date"),
@@ -80,7 +80,7 @@ func TestAccOutscaleAccessKey_updatedToInactivedKey(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleAccessKey_updatedToActivedKey(t *testing.T) {
+func TestAccAccessKey_updatedToActivedKey(t *testing.T) {
 	resourceName := "outscale_access_key.outscale_access_key"
 
 	state := "INACTIVE"
@@ -89,12 +89,12 @@ func TestAccOutscaleAccessKey_updatedToActivedKey(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleAccessKeyDestroy,
+		CheckDestroy: testAccCheckAccessKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleAccessKeyUpdatedConfig(state),
+				Config: testAccAccessKeyUpdatedConfig(state),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleAccessKeyExists(resourceName),
+					testAccCheckAccessKeyExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "access_key_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "creation_date"),
 					resource.TestCheckResourceAttrSet(resourceName, "last_modification_date"),
@@ -105,9 +105,9 @@ func TestAccOutscaleAccessKey_updatedToActivedKey(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccOutscaleAccessKeyUpdatedConfig(stateUpdated),
+				Config: testAccAccessKeyUpdatedConfig(stateUpdated),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleAccessKeyExists(resourceName),
+					testAccCheckAccessKeyExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "access_key_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "creation_date"),
 					resource.TestCheckResourceAttrSet(resourceName, "last_modification_date"),
@@ -121,7 +121,7 @@ func TestAccOutscaleAccessKey_updatedToActivedKey(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleAccessKey_updatedExpirationDate(t *testing.T) {
+func TestAccAccessKey_updatedExpirationDate(t *testing.T) {
 	resourceName := "outscale_access_key.outscale_access_key"
 	expirDate := time.Now().AddDate(1, 1, 0).Format("2006-01-02")
 	expirDateUpdated := time.Now().AddDate(1, 4, 0).Format("2006-01-02")
@@ -129,12 +129,12 @@ func TestAccOutscaleAccessKey_updatedExpirationDate(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleAccessKeyDestroy,
+		CheckDestroy: testAccCheckAccessKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleAccessKeyExpirationDateConfig(string(expirDate)),
+				Config: testAccAccessKeyExpirationDateConfig(string(expirDate)),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleAccessKeyExists(resourceName),
+					testAccCheckAccessKeyExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "access_key_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "creation_date"),
 					resource.TestCheckResourceAttrSet(resourceName, "expiration_date"),
@@ -144,9 +144,9 @@ func TestAccOutscaleAccessKey_updatedExpirationDate(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccOutscaleAccessKeyExpirationDateConfig(string(expirDateUpdated)),
+				Config: testAccAccessKeyExpirationDateConfig(string(expirDateUpdated)),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleAccessKeyExists(resourceName),
+					testAccCheckAccessKeyExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "access_key_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "creation_date"),
 					resource.TestCheckResourceAttrSet(resourceName, "expiration_date"),
@@ -159,7 +159,7 @@ func TestAccOutscaleAccessKey_updatedExpirationDate(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleAccessKeyExists(resourceName string) resource.TestCheckFunc {
+func testAccCheckAccessKeyExists(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
@@ -169,7 +169,7 @@ func testAccCheckOutscaleAccessKeyExists(resourceName string) resource.TestCheck
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("No Access ID is set")
 		}
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		conn := testAccProvider.Meta().(*Client).OSCAPI
 
 		filter := oscgo.ReadSecretAccessKeyRequest{
 			AccessKeyId: rs.Primary.ID,
@@ -188,8 +188,8 @@ func testAccCheckOutscaleAccessKeyExists(resourceName string) resource.TestCheck
 	}
 }
 
-func testAccCheckOutscaleAccessKeyDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+func testAccCheckAccessKeyDestroy(s *terraform.State) error {
+	conn := testAccProvider.Meta().(*Client).OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_access_key" {
@@ -213,10 +213,10 @@ func testAccCheckOutscaleAccessKeyDestroy(s *terraform.State) error {
 	return nil
 }
 
-const testAccOutscaleAccessKeyBasicConfig = `
+const testAccAccessKeyBasicConfig = `
 	resource "outscale_access_key" "outscale_access_key" {}`
 
-func testAccOutscaleAccessKeyUpdatedConfig(state string) string {
+func testAccAccessKeyUpdatedConfig(state string) string {
 	return fmt.Sprintf(`
 		resource "outscale_access_key" "outscale_access_key" {
 			state = "%s"
@@ -224,7 +224,7 @@ func testAccOutscaleAccessKeyUpdatedConfig(state string) string {
 	`, state)
 }
 
-func testAccOutscaleAccessKeyExpirationDateConfig(expirDate string) string {
+func testAccAccessKeyExpirationDateConfig(expirDate string) string {
 	return fmt.Sprintf(`
 		resource "outscale_access_key" "outscale_access_key" {
 			expiration_date = "%s"

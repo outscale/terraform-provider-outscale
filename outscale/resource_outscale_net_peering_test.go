@@ -14,19 +14,19 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPILinPeeringConnection_basic(t *testing.T) {
+func TestAccLinPeeringConnection_basic(t *testing.T) {
 	var connection oscgo.NetPeering
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_net_peering.foo",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscaleOAPILinPeeringConnectionDestroy,
+		CheckDestroy:  testAccCheckLinPeeringConnectionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIVpcPeeringConfig,
+				Config: testAccVpcPeeringConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPILinPeeringConnectionExists(
+					testAccCheckLinPeeringConnectionExists(
 						"outscale_net_peering.foo",
 						&connection),
 				),
@@ -35,20 +35,20 @@ func TestAccOutscaleOAPILinPeeringConnection_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPILinPeeringConnection_importBasic(t *testing.T) {
+func TestAccLinPeeringConnection_importBasic(t *testing.T) {
 	resourceName := "outscale_net_peering.foo"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleOAPILinPeeringConnectionDestroy,
+		CheckDestroy: testAccCheckLinPeeringConnectionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIVpcPeeringConfig,
+				Config: testAccVpcPeeringConfig,
 			},
 			{
 				ResourceName:            resourceName,
-				ImportStateIdFunc:       testAccCheckOutscaleOAPILinkPeeeringConnectionImportStateIDFunc(resourceName),
+				ImportStateIdFunc:       testAccCheckLinkPeeeringConnectionImportStateIDFunc(resourceName),
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"request_id"},
@@ -57,7 +57,7 @@ func TestAccOutscaleOAPILinPeeringConnection_importBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleOAPILinkPeeeringConnectionImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
+func testAccCheckLinkPeeeringConnectionImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
 	return func(s *terraform.State) (string, error) {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
@@ -67,12 +67,12 @@ func testAccCheckOutscaleOAPILinkPeeeringConnectionImportStateIDFunc(resourceNam
 	}
 }
 
-func TestAccOutscaleOAPILinPeeringConnection_plan(t *testing.T) {
+func TestAccLinPeeringConnection_plan(t *testing.T) {
 	var connection oscgo.NetPeering
 
 	// reach out and DELETE the VPC Peering connection outside of Terraform
 	testDestroy := func(*terraform.State) error {
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		conn := testAccProvider.Meta().(*Client).OSCAPI
 		log.Printf("[DEBUG] Test deleting the Net Peering.")
 		err := resource.Retry(3*time.Minute, func() *resource.RetryError {
 			_, httpResp, err := conn.NetPeeringApi.DeleteNetPeering(context.Background()).DeleteNetPeeringRequest(oscgo.DeleteNetPeeringRequest{
@@ -93,12 +93,12 @@ func TestAccOutscaleOAPILinPeeringConnection_plan(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleOAPILinPeeringConnectionDestroy,
+		CheckDestroy: testAccCheckLinPeeringConnectionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIVpcPeeringConfig,
+				Config: testAccVpcPeeringConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPILinPeeringConnectionExists(
+					testAccCheckLinPeeringConnectionExists(
 						"outscale_net_peering.foo",
 						&connection),
 					testDestroy,
@@ -109,8 +109,8 @@ func TestAccOutscaleOAPILinPeeringConnection_plan(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleOAPILinPeeringConnectionDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+func testAccCheckLinPeeringConnectionDestroy(s *terraform.State) error {
+	conn := testAccProvider.Meta().(*Client).OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_net_peering" {
@@ -159,12 +159,12 @@ func testAccCheckOutscaleOAPILinPeeringConnectionDestroy(s *terraform.State) err
 
 		// return error here; we've found the vpc_peering object we want, however
 		// it's not in an expected state
-		return fmt.Errorf("Fall through error for testAccCheckOutscaleOAPILinPeeringConnectionDestroy")
+		return fmt.Errorf("Fall through error for testAccCheckLinPeeringConnectionDestroy")
 	}
 	return nil
 }
 
-func testAccCheckOutscaleOAPILinPeeringConnectionExists(n string, connection *oscgo.NetPeering) resource.TestCheckFunc {
+func testAccCheckLinPeeringConnectionExists(n string, connection *oscgo.NetPeering) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -175,7 +175,7 @@ func testAccCheckOutscaleOAPILinPeeringConnectionExists(n string, connection *os
 			return fmt.Errorf("No Net Peering ID is set")
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		conn := testAccProvider.Meta().(*Client).OSCAPI
 
 		var resp oscgo.ReadNetPeeringsResponse
 		var err error
@@ -208,7 +208,7 @@ func testAccCheckOutscaleOAPILinPeeringConnectionExists(n string, connection *os
 	}
 }
 
-const testAccOAPIVpcPeeringConfig = `
+const testAccVpcPeeringConfig = `
 	resource "outscale_net" "foo" {
 		ip_range = "10.0.0.0/16"
 

@@ -13,37 +13,37 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPIInternetService_basic(t *testing.T) {
+func TestAccInternetService_basic(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleInternetServiceDestroyed,
+		CheckDestroy: testAccCheckInternetServiceDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIInternetServiceConfig(),
+				Config: testAccInternetServiceConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleInternetServiceExists("outscale_internet_service.outscale_internet_service"),
+					testAccCheckInternetServiceExists("outscale_internet_service.outscale_internet_service"),
 				),
 			},
 			{
-				Config: testAccOutscaleOAPIInternetServiceConfig(),
+				Config: testAccInternetServiceConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleInternetServiceExists("outscale_internet_service.outscale_internet_service"),
+					testAccCheckInternetServiceExists("outscale_internet_service.outscale_internet_service"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckOutscaleInternetServiceExists(n string) resource.TestCheckFunc {
+func testAccCheckInternetServiceExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		conn := testAccProvider.Meta().(*Client).OSCAPI
 
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("No internet gateway id is set")
@@ -70,8 +70,8 @@ func testAccCheckOutscaleInternetServiceExists(n string) resource.TestCheckFunc 
 	}
 }
 
-func testAccCheckOutscaleInternetServiceDestroyed(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+func testAccCheckInternetServiceDestroyed(s *terraform.State) error {
+	conn := testAccProvider.Meta().(*Client).OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_internet_service_link" {
@@ -99,7 +99,7 @@ func testAccCheckOutscaleInternetServiceDestroyed(s *terraform.State) error {
 	return nil
 }
 
-func testAccOutscaleOAPIInternetServiceConfig() string {
+func testAccInternetServiceConfig() string {
 	return `
 		resource "outscale_net" "outscale_net" {
 			ip_range = "10.0.0.0/16"

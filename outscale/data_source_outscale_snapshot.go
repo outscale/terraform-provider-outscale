@@ -13,9 +13,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPISnapshot() *schema.Resource {
+func dataSourceSnapshot() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPISnapshotRead,
+		Read: dataSourceSnapshotRead,
 
 		Schema: map[string]*schema.Schema{
 			//selection criteria
@@ -86,8 +86,8 @@ func dataSourceOutscaleOAPISnapshot() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceSnapshotRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	restorableUsers, restorableUsersOk := d.GetOk("permission_to_create_volume")
 	filters, filtersOk := d.GetOk("filter")
@@ -104,11 +104,11 @@ func dataSourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}
 
 	filter := oscgo.FiltersSnapshot{}
 	if restorableUsersOk {
-		filter.SetPermissionsToCreateVolumeAccountIds(oapiExpandStringList(restorableUsers.([]interface{})))
+		filter.SetPermissionsToCreateVolumeAccountIds(ExpandStringList(restorableUsers.([]interface{})))
 		params.SetFilters(filter)
 	}
 	if filtersOk {
-		buildOutscaleOapiSnapshootDataSourceFilters(filters.(*schema.Set), params.Filters)
+		buildSnapshotDataSourceFilters(filters.(*schema.Set), params.Filters)
 	}
 	if ownersOk {
 		filter.SetAccountIds([]string{owners.(string)})
@@ -143,10 +143,10 @@ func dataSourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}
 	snapshot := resp.GetSnapshots()[0]
 
 	//Single Snapshot found so set to state
-	return snapshotOAPIDescriptionAttributes(d, &snapshot)
+	return snapshotDescriptionAttributes(d, &snapshot)
 }
 
-func snapshotOAPIDescriptionAttributes(d *schema.ResourceData, snapshot *oscgo.Snapshot) error {
+func snapshotDescriptionAttributes(d *schema.ResourceData, snapshot *oscgo.Snapshot) error {
 	d.SetId(snapshot.GetSnapshotId())
 	if err := d.Set("description", snapshot.GetDescription()); err != nil {
 		return err
@@ -185,10 +185,10 @@ func snapshotOAPIDescriptionAttributes(d *schema.ResourceData, snapshot *oscgo.S
 		return err
 	}
 
-	return d.Set("tags", tagsOSCAPIToMap(snapshot.GetTags()))
+	return d.Set("tags", tagsToMap(snapshot.GetTags()))
 }
 
-func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set, filter *oscgo.FiltersSnapshot) *oscgo.FiltersSnapshot {
+func buildSnapshotDataSourceFilters(set *schema.Set, filter *oscgo.FiltersSnapshot) *oscgo.FiltersSnapshot {
 
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -246,7 +246,8 @@ func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set, filter *oscgo.
 	return filter
 }
 
-func oapiExpandStringList(configured []interface{}) []string {
+// TODO MOVE To utils
+func ExpandStringList(configured []interface{}) []string {
 	vs := make([]string, 0, len(configured))
 	for _, v := range configured {
 		val, ok := v.(string)

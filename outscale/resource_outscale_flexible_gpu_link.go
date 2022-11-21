@@ -12,11 +12,11 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func resourceOutscaleOAPIFlexibleGpuLink() *schema.Resource {
+func resourceFlexibleGpuLink() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPIFlexibleGpuLinkCreate,
-		Read:   resourceOutscaleOAPIFlexibleGpuLinkRead,
-		Delete: resourceOutscaleOAPIFlexibleGpuLinkDelete,
+		Create: resourceFlexibleGpuLinkCreate,
+		Read:   resourceFlexibleGpuLinkRead,
+		Delete: resourceFlexibleGpuLinkDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -40,8 +40,8 @@ func resourceOutscaleOAPIFlexibleGpuLink() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPIFlexibleGpuLinkCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceFlexibleGpuLinkCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	flexGpuID := d.Get("flexible_gpu_id").(string)
 	vmId := d.Get("vm_id").(string)
@@ -103,11 +103,11 @@ func resourceOutscaleOAPIFlexibleGpuLinkCreate(d *schema.ResourceData, meta inte
 		return fmt.Errorf("Unable to change ShutdownBehavior: %s\n", err)
 	}
 
-	return resourceOutscaleOAPIFlexibleGpuLinkRead(d, meta)
+	return resourceFlexibleGpuLinkRead(d, meta)
 }
 
-func resourceOutscaleOAPIFlexibleGpuLinkRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceFlexibleGpuLinkRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	flexGpuID := d.Get("flexible_gpu_id").(string)
 	if flexGpuID == "" {
@@ -152,8 +152,8 @@ func resourceOutscaleOAPIFlexibleGpuLinkRead(d *schema.ResourceData, meta interf
 	return nil
 }
 
-func resourceOutscaleOAPIFlexibleGpuLinkDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceFlexibleGpuLinkDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	flexGpuID := d.Get("flexible_gpu_id").(string)
 	vmId := d.Get("vm_id").(string)

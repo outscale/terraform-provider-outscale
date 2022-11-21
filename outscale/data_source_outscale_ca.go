@@ -12,9 +12,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPICa() *schema.Resource {
+func dataSourceCa() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPICaRead,
+		Read: dataSourceCaRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"ca_pem": {
@@ -41,8 +41,8 @@ func dataSourceOutscaleOAPICa() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPICaRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceCaRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
 	if !filtersOk {
@@ -51,7 +51,7 @@ func dataSourceOutscaleOAPICaRead(d *schema.ResourceData, meta interface{}) erro
 
 	params := oscgo.ReadCasRequest{}
 	if filtersOk {
-		params.Filters = buildOutscaleOAPIDataSourceCaFilters(filters.(*schema.Set))
+		params.Filters = buildDataSourceCaFilters(filters.(*schema.Set))
 	}
 	var resp oscgo.ReadCasResponse
 	var err error
@@ -93,7 +93,7 @@ func dataSourceOutscaleOAPICaRead(d *schema.ResourceData, meta interface{}) erro
 	return nil
 }
 
-func buildOutscaleOAPIDataSourceCaFilters(set *schema.Set) *oscgo.FiltersCa {
+func buildDataSourceCaFilters(set *schema.Set) *oscgo.FiltersCa {
 	var filters oscgo.FiltersCa
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})

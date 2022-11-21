@@ -12,12 +12,12 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func resourceOutscaleOAPIApiAccessRule() *schema.Resource {
+func resourceApiAccessRule() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPIApiAccessRuleCreate,
-		Read:   resourceOutscaleOAPIApiAccessRuleRead,
-		Update: resourceOutscaleOAPIApiAccessRuleUpdate,
-		Delete: resourceOutscaleOAPIApiAccessRuleDelete,
+		Create: resourceApiAccessRuleCreate,
+		Read:   resourceApiAccessRuleRead,
+		Update: resourceApiAccessRuleUpdate,
+		Delete: resourceApiAccessRuleDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -53,8 +53,8 @@ func resourceOutscaleOAPIApiAccessRule() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPIApiAccessRuleCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceApiAccessRuleCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 	var checkParam = false
 	req := oscgo.CreateApiAccessRuleRequest{}
 
@@ -92,11 +92,11 @@ func resourceOutscaleOAPIApiAccessRuleCreate(d *schema.ResourceData, meta interf
 	}
 	d.SetId(cast.ToString(resp.ApiAccessRule.GetApiAccessRuleId()))
 
-	return resourceOutscaleOAPIApiAccessRuleRead(d, meta)
+	return resourceApiAccessRuleRead(d, meta)
 }
 
-func resourceOutscaleOAPIApiAccessRuleRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceApiAccessRuleRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	req := oscgo.ReadApiAccessRulesRequest{
 		Filters: &oscgo.FiltersApiAccessRule{ApiAccessRuleIds: &[]string{d.Id()}},
@@ -154,8 +154,8 @@ func resourceOutscaleOAPIApiAccessRuleRead(d *schema.ResourceData, meta interfac
 	return nil
 }
 
-func resourceOutscaleOAPIApiAccessRuleUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceApiAccessRuleUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	accRid, isIdOk := d.GetOk("api_access_rule_id")
 	if !isIdOk {
@@ -198,11 +198,11 @@ func resourceOutscaleOAPIApiAccessRuleUpdate(d *schema.ResourceData, meta interf
 	if err != nil {
 		return err
 	}
-	return resourceOutscaleOAPIApiAccessRuleRead(d, meta)
+	return resourceApiAccessRuleRead(d, meta)
 }
 
-func resourceOutscaleOAPIApiAccessRuleDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceApiAccessRuleDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	req := oscgo.DeleteApiAccessRuleRequest{
 		ApiAccessRuleId: d.Id(),

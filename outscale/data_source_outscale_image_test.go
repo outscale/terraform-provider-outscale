@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPIImageDataSource_Instance(t *testing.T) {
+func TestAccImageDataSource_Instance(t *testing.T) {
 	t.Parallel()
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
@@ -23,9 +23,9 @@ func TestAccOutscaleOAPIImageDataSource_Instance(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIImageConfigBasic(omi, "tinav4.c2r2p2", region, imageName),
+				Config: testAccCheckImageConfigBasic(omi, "tinav4.c2r2p2", region, imageName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIImageDataSourceID("data.outscale_image.nat_ami"),
+					testAccCheckImageDataSourceID("data.outscale_image.nat_ami"),
 					resource.TestCheckResourceAttr("data.outscale_image.nat_ami", "architecture", "x86_64"),
 				),
 			},
@@ -33,7 +33,7 @@ func TestAccOutscaleOAPIImageDataSource_Instance(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIImageDataSource_basic(t *testing.T) {
+func TestAccImageDataSource_basic(t *testing.T) {
 	t.Parallel()
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
@@ -46,16 +46,16 @@ func TestAccOutscaleOAPIImageDataSource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIImageDataSourceBasicConfig(omi, "tinav4.c2r2p2", region, imageName),
+				Config: testAccCheckImageDataSourceBasicConfig(omi, "tinav4.c2r2p2", region, imageName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIImageDataSourceID("data.outscale_image.omi"),
+					testAccCheckImageDataSourceID("data.outscale_image.omi"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckOutscaleOAPIImageDataSourceID(n string) resource.TestCheckFunc {
+func testAccCheckImageDataSourceID(n string) resource.TestCheckFunc {
 	// Wait for IAM role
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -70,7 +70,7 @@ func testAccCheckOutscaleOAPIImageDataSourceID(n string) resource.TestCheckFunc 
 	}
 }
 
-func testAccCheckOutscaleOAPIImageDataSourceBasicConfig(omi, vmType, region, imageName string) string {
+func testAccCheckImageDataSourceBasicConfig(omi, vmType, region, imageName string) string {
 	return fmt.Sprintf(`
 		resource "outscale_vm" "basic" {
 			image_id                 = "%[1]s"
@@ -93,7 +93,7 @@ func testAccCheckOutscaleOAPIImageDataSourceBasicConfig(omi, vmType, region, ima
 	`, omi, vmType, region, imageName)
 }
 
-func testAccCheckOutscaleOAPIImageConfigBasic(omi, vmType, region, imageName string) string {
+func testAccCheckImageConfigBasic(omi, vmType, region, imageName string) string {
 	return fmt.Sprintf(`
 		resource "outscale_vm" "basic" {
 			image_id			     = "%[1]s"

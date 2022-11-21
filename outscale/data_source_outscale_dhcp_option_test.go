@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccOutscaleDHCPOption_basic(t *testing.T) {
+func TestAccDHCPOption_basic(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_dhcp_option.foo"
 	dataSourceName := "data.outscale_dhcp_option.test"
@@ -22,7 +22,7 @@ func TestAccOutscaleDHCPOption_basic(t *testing.T) {
 				Config: testAccClientDHCPOptionBasic(value),
 				Check: resource.ComposeTestCheckFunc(
 					// resource validations
-					testAccCheckOutscaleDHCPOptionExists(resourceName),
+					testAccCheckDHCPOptionExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "domain_name"),
 					resource.TestCheckResourceAttrSet(resourceName, "domain_name_servers.#"),
 					resource.TestCheckResourceAttrSet(resourceName, "ntp_servers.#"),
@@ -45,7 +45,7 @@ func TestAccOutscaleDHCPOption_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleDHCPOption_withFilters(t *testing.T) {
+func TestAccDHCPOption_withFilters(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_dhcp_option.foo"
 	dataSourceName := "data.outscale_dhcp_option.test"
@@ -59,7 +59,7 @@ func TestAccOutscaleDHCPOption_withFilters(t *testing.T) {
 				Config: testAccClientDHCPOptionWithFilters(value),
 				Check: resource.ComposeTestCheckFunc(
 					// resource validations
-					testAccCheckOutscaleDHCPOptionExists(resourceName),
+					testAccCheckDHCPOptionExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "domain_name"),
 					resource.TestCheckResourceAttrSet(resourceName, "domain_name_servers.#"),
 					resource.TestCheckResourceAttrSet(resourceName, "ntp_servers.#"),

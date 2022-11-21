@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccOutscaleOAPINetworkInterfacePrivateIPBasic(t *testing.T) {
+func TestAccNetworkInterfacePrivateIPBasic(t *testing.T) {
 	region := os.Getenv("OUTSCALE_REGION")
 	var conf oscgo.Nic
 
@@ -18,12 +18,12 @@ func TestAccOutscaleOAPINetworkInterfacePrivateIPBasic(t *testing.T) {
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_nic.outscale_nic",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscaleOAPIENIDestroy,
+		CheckDestroy:  testAccCheckENIDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPINetworkInterfacePrivateIPConfigBasic(region),
+				Config: testAccNetworkInterfacePrivateIPConfigBasic(region),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIENIExists("outscale_nic.outscale_nic", &conf),
+					testAccCheckENIExists("outscale_nic.outscale_nic", &conf),
 					resource.TestCheckResourceAttr("outscale_nic_private_ip.outscale_nic_private_ip", "private_ips.#", "1"),
 					resource.TestCheckResourceAttr("outscale_nic_private_ip.outscale_nic_private_ip", "private_ips.0", "10.0.45.67"),
 					resource.TestCheckResourceAttrSet("outscale_nic_private_ip.outscale_nic_private_ip", "primary_private_ip")),
@@ -32,7 +32,7 @@ func TestAccOutscaleOAPINetworkInterfacePrivateIPBasic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPINetworkInterfacePrivateIP_importBasic(t *testing.T) {
+func TestAccNetworkInterfacePrivateIP_importBasic(t *testing.T) {
 	region := os.Getenv("OUTSCALE_REGION")
 	resourceName := "outscale_nic_private_ip.outscale_nic_private_ip"
 
@@ -40,10 +40,10 @@ func TestAccOutscaleOAPINetworkInterfacePrivateIP_importBasic(t *testing.T) {
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_nic.outscale_nic",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscaleOAPIENIDestroy,
+		CheckDestroy:  testAccCheckENIDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPINetworkInterfacePrivateIPConfigBasic(region),
+				Config: testAccNetworkInterfacePrivateIPConfigBasic(region),
 			},
 			{
 				ResourceName:            resourceName,
@@ -55,7 +55,7 @@ func TestAccOutscaleOAPINetworkInterfacePrivateIP_importBasic(t *testing.T) {
 	})
 }
 
-func testAccOutscaleOAPINetworkInterfacePrivateIPConfigBasic(region string) string {
+func testAccNetworkInterfacePrivateIPConfigBasic(region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "outscale_net" {
 			ip_range = "10.0.0.0/16"

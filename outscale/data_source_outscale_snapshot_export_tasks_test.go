@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccOutscaleOAPISnapshotExportTasksDataSource_basic(t *testing.T) {
+func TestAccSnapshotExportTasksDataSource_basic(t *testing.T) {
 	imageName := acctest.RandomWithPrefix("terraform-export")
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -17,16 +17,16 @@ func TestAccOutscaleOAPISnapshotExportTasksDataSource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISnapshotExportTasksDataSourceConfig(imageName),
+				Config: testAccSnapshotExportTasksDataSourceConfig(imageName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleSnapshotExportTaskDataSourceID("data.outscale_snapshot_export_tasks.export_tasks"),
+					testAccCheckSnapshotExportTaskDataSourceID("data.outscale_snapshot_export_tasks.export_tasks"),
 				),
 			},
 		},
 	})
 }
 
-func testAccOutscaleOAPISnapshotExportTasksDataSourceConfig(testName string) string {
+func testAccSnapshotExportTasksDataSourceConfig(testName string) string {
 	var stringTemplate = `
 			resource "outscale_volume" "outscale_volume_snap" {
 				subregion_name   = "eu-west-2a"

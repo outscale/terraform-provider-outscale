@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPIVolume_basic(t *testing.T) {
+func TestAccVolume_basic(t *testing.T) {
 	t.Parallel()
 	region := os.Getenv("OUTSCALE_REGION")
 
@@ -25,9 +25,9 @@ func TestAccOutscaleOAPIVolume_basic(t *testing.T) {
 		Providers:     testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIVolumeConfig(region),
+				Config: testAccVolumeConfig(region),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPIVolumeExists("outscale_volume.test", &v),
+					testAccCheckVolumeExists("outscale_volume.test", &v),
 				),
 			},
 			{
@@ -39,7 +39,7 @@ func TestAccOutscaleOAPIVolume_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIVolume_updateSize(t *testing.T) {
+func TestAccVolume_updateSize(t *testing.T) {
 	t.Parallel()
 	region := os.Getenv("OUTSCALE_REGION")
 
@@ -53,16 +53,16 @@ func TestAccOutscaleOAPIVolume_updateSize(t *testing.T) {
 		Providers:     testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIVolumeConfig(region),
+				Config: testAccVolumeConfig(region),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPIVolumeExists("outscale_volume.test", &v),
+					testAccCheckVolumeExists("outscale_volume.test", &v),
 					resource.TestCheckResourceAttr("outscale_volume.test", "size", "1"),
 				),
 			},
 			{
-				Config: testOutscaleOAPIVolumeConfigUpdateSize(region),
+				Config: testVolumeConfigUpdateSize(region),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPIVolumeExists("outscale_volume.test", &v),
+					testAccCheckVolumeExists("outscale_volume.test", &v),
 					resource.TestCheckResourceAttr("outscale_volume.test", "size", "10"),
 				),
 			},
@@ -70,7 +70,7 @@ func TestAccOutscaleOAPIVolume_updateSize(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIVolume_io1Type(t *testing.T) {
+func TestAccVolume_io1Type(t *testing.T) {
 	t.Parallel()
 	region := os.Getenv("OUTSCALE_REGION")
 
@@ -84,16 +84,16 @@ func TestAccOutscaleOAPIVolume_io1Type(t *testing.T) {
 		Providers:     testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testOutscaleOAPIVolumeConfigIO1Type(region),
+				Config: testVolumeConfigIO1Type(region),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPIVolumeExists("outscale_volume.test-io", &v),
+					testAccCheckVolumeExists("outscale_volume.test-io", &v),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckOAPIVolumeExists(n string, v *oscgo.Volume) resource.TestCheckFunc {
+func testAccCheckVolumeExists(n string, v *oscgo.Volume) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -104,7 +104,7 @@ func testAccCheckOAPIVolumeExists(n string, v *oscgo.Volume) resource.TestCheckF
 			return fmt.Errorf("No ID is set")
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		conn := testAccProvider.Meta().(*Client).OSCAPI
 
 		request := oscgo.ReadVolumesRequest{
 			Filters: &oscgo.FiltersVolume{VolumeIds: &[]string{rs.Primary.ID}},
@@ -131,7 +131,7 @@ func testAccCheckOAPIVolumeExists(n string, v *oscgo.Volume) resource.TestCheckF
 	}
 }
 
-func testAccOutscaleOAPIVolumeConfig(region string) string {
+func testAccVolumeConfig(region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_volume" "test" {
 			subregion_name = "%sa"
@@ -146,7 +146,7 @@ func testAccOutscaleOAPIVolumeConfig(region string) string {
 	`, region)
 }
 
-func testOutscaleOAPIVolumeConfigUpdateSize(region string) string {
+func testVolumeConfigUpdateSize(region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_volume" "test" {
 			subregion_name = "%sa"
@@ -161,7 +161,7 @@ func testOutscaleOAPIVolumeConfigUpdateSize(region string) string {
 	`, region)
 }
 
-func testOutscaleOAPIVolumeConfigIO1Type(region string) string {
+func testVolumeConfigIO1Type(region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_volume" "test-io" {
 			subregion_name = "%sa"

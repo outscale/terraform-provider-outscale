@@ -10,7 +10,7 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 )
 
-func getOAPISecurityGroups(groups []oscgo.SecurityGroupLight) (SecurityGroup []map[string]interface{}, SecurityGroupIds []string) {
+func getSecurityGroups(groups []oscgo.SecurityGroupLight) (SecurityGroup []map[string]interface{}, SecurityGroupIds []string) {
 	for _, g := range groups {
 		SecurityGroup = append(SecurityGroup, map[string]interface{}{
 			"security_group_id":   g.GetSecurityGroupId(),
@@ -21,7 +21,7 @@ func getOAPISecurityGroups(groups []oscgo.SecurityGroupLight) (SecurityGroup []m
 	return
 }
 
-func getOAPILinkNicLight(l oscgo.LinkNicLight) []map[string]interface{} {
+func getLinkNicLight(l oscgo.LinkNicLight) []map[string]interface{} {
 	return []map[string]interface{}{{
 		"delete_on_vm_deletion": l.GetDeleteOnVmDeletion(),
 		"device_number":         fmt.Sprintf("%d", l.GetDeviceNumber()),
@@ -30,7 +30,7 @@ func getOAPILinkNicLight(l oscgo.LinkNicLight) []map[string]interface{} {
 	}}
 }
 
-func getOAPILinkNic(l oscgo.LinkNic) map[string]interface{} {
+func getLinkNic(l oscgo.LinkNic) map[string]interface{} {
 	return map[string]interface{}{
 		"delete_on_vm_deletion": strconv.FormatBool(l.GetDeleteOnVmDeletion()),
 		"device_number":         fmt.Sprintf("%d", l.GetDeviceNumber()),
@@ -41,7 +41,7 @@ func getOAPILinkNic(l oscgo.LinkNic) map[string]interface{} {
 	}
 }
 
-func getOAPILinkPublicIPLight(l oscgo.LinkPublicIpLightForVm) *schema.Set {
+func getLinkPublicIPLight(l oscgo.LinkPublicIpLightForVm) *schema.Set {
 	res := &schema.Set{
 		F: func(v interface{}) int {
 			var buf bytes.Buffer
@@ -60,7 +60,7 @@ func getOAPILinkPublicIPLight(l oscgo.LinkPublicIpLightForVm) *schema.Set {
 	return res
 }
 
-func getOAPILinkPublicIP(l oscgo.LinkPublicIp) map[string]interface{} {
+func getLinkPublicIP(l oscgo.LinkPublicIp) map[string]interface{} {
 	return map[string]interface{}{
 		"link_public_ip_id":    l.GetLinkPublicIpId(),
 		"public_dns_name":      l.GetPublicDnsName(),
@@ -70,7 +70,7 @@ func getOAPILinkPublicIP(l oscgo.LinkPublicIp) map[string]interface{} {
 	}
 }
 
-func getOAPIPrivateIPsLight(privateIPs []oscgo.PrivateIpLightForVm) *schema.Set {
+func getPrivateIPsLight(privateIPs []oscgo.PrivateIpLightForVm) *schema.Set {
 	res := &schema.Set{
 		F: func(v interface{}) int {
 			var buf bytes.Buffer
@@ -89,7 +89,7 @@ func getOAPIPrivateIPsLight(privateIPs []oscgo.PrivateIpLightForVm) *schema.Set 
 		}
 
 		if p.HasLinkPublicIp() {
-			r["link_public_ip"] = getOAPILinkPublicIPLight(p.GetLinkPublicIp())
+			r["link_public_ip"] = getLinkPublicIPLight(p.GetLinkPublicIp())
 		}
 
 		res.Add(r)
@@ -97,11 +97,11 @@ func getOAPIPrivateIPsLight(privateIPs []oscgo.PrivateIpLightForVm) *schema.Set 
 	return res
 }
 
-func getOAPIPrivateIPs(privateIPs []oscgo.PrivateIp) (res []map[string]interface{}) {
+func getPrivateIPs(privateIPs []oscgo.PrivateIp) (res []map[string]interface{}) {
 	for _, p := range privateIPs {
 		res = append(res, map[string]interface{}{
 			"is_primary":       p.GetIsPrimary(),
-			"link_public_ip":   getOAPILinkPublicIP(p.GetLinkPublicIp()),
+			"link_public_ip":   getLinkPublicIP(p.GetLinkPublicIp()),
 			"private_dns_name": p.GetPrivateDnsName(),
 			"private_ip":       p.GetPrivateIp(),
 		})
@@ -109,9 +109,9 @@ func getOAPIPrivateIPs(privateIPs []oscgo.PrivateIp) (res []map[string]interface
 	return
 }
 
-func getOAPIVMNetworkInterfaceLightSet(nics []oscgo.NicLight) (res []map[string]interface{}) {
+func getVMNetworkInterfaceLightSet(nics []oscgo.NicLight) (res []map[string]interface{}) {
 	for _, nic := range nics {
-		securityGroups, securityGroupIds := getOAPISecurityGroups(nic.GetSecurityGroups())
+		securityGroups, securityGroupIds := getSecurityGroups(nic.GetSecurityGroups())
 
 		nicMap := map[string]interface{}{
 			"delete_on_vm_deletion":  nic.LinkNic.GetDeleteOnVmDeletion(), // Workaround.
@@ -133,15 +133,15 @@ func getOAPIVMNetworkInterfaceLightSet(nics []oscgo.NicLight) (res []map[string]
 		}
 
 		if nic.HasLinkPublicIp() {
-			nicMap["link_public_ip"] = getOAPILinkPublicIPLight(nic.GetLinkPublicIp())
+			nicMap["link_public_ip"] = getLinkPublicIPLight(nic.GetLinkPublicIp())
 		}
 
 		if nic.HasPrivateIps() {
-			nicMap["private_ips"] = getOAPIPrivateIPsLight(nic.GetPrivateIps())
+			nicMap["private_ips"] = getPrivateIPsLight(nic.GetPrivateIps())
 		}
 
 		if nic.HasLinkNic() {
-			nicMap["link_nic"] = getOAPILinkNicLight(nic.GetLinkNic())
+			nicMap["link_nic"] = getLinkNicLight(nic.GetLinkNic())
 		}
 
 		res = append(res, nicMap)
@@ -149,25 +149,25 @@ func getOAPIVMNetworkInterfaceLightSet(nics []oscgo.NicLight) (res []map[string]
 	return
 }
 
-func getOAPIVMNetworkInterfaceSet(nics []oscgo.Nic) (res []map[string]interface{}) {
+func getVMNetworkInterfaceSet(nics []oscgo.Nic) (res []map[string]interface{}) {
 	for _, nic := range nics {
-		securityGroups, _ := getOAPISecurityGroups(*nic.SecurityGroups)
+		securityGroups, _ := getSecurityGroups(*nic.SecurityGroups)
 		res = append(res, map[string]interface{}{
 			"account_id":             nic.GetAccountId(),
 			"description":            nic.GetDescription(),
 			"is_source_dest_checked": nic.GetIsSourceDestChecked(),
-			"link_nic":               getOAPILinkNic(nic.GetLinkNic()),
-			"link_public_ip":         getOAPILinkPublicIP(nic.GetLinkPublicIp()),
+			"link_nic":               getLinkNic(nic.GetLinkNic()),
+			"link_public_ip":         getLinkPublicIP(nic.GetLinkPublicIp()),
 			"mac_address":            nic.GetMacAddress(),
 			"net_id":                 nic.GetNetId(),
 			"nic_id":                 nic.GetNicId(),
 			"private_dns_name":       nic.GetPrivateDnsName(),
-			"private_ips":            getOAPIPrivateIPs(nic.GetPrivateIps()),
+			"private_ips":            getPrivateIPs(nic.GetPrivateIps()),
 			"security_groups":        securityGroups,
 			"state":                  nic.GetState(),
 			"subnet_id":              nic.GetSubnetId(),
 			"subregion_name":         nic.GetSubregionName(),
-			"tags":                   getOapiTagSet(nic.Tags),
+			"tags":                   getTagSet(nic.GetTags()),
 		})
 	}
 	return

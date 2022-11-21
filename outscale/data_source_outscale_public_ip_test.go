@@ -9,24 +9,24 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccDataSourceOutscaleOAPIPublicIP(t *testing.T) {
+func TestAccDataSourcePublicIP(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPIPublicIPConfig,
+				Config: testAccDataSourcePublicIPConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccDataSourceOutscaleOAPIPublicIPCheck("data.outscale_public_ip.by_public_ip_id"),
-					testAccDataSourceOutscaleOAPIPublicIPCheck("data.outscale_public_ip.by_public_ip"),
+					testAccDataSourcePublicIPCheck("data.outscale_public_ip.by_public_ip_id"),
+					testAccDataSourcePublicIPCheck("data.outscale_public_ip.by_public_ip"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccDataSourceOutscaleOAPIPublicIPWithVM(t *testing.T) {
+func TestAccDataSourcePublicIPWithVM(t *testing.T) {
 	t.Parallel()
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 
@@ -35,13 +35,13 @@ func TestAccDataSourceOutscaleOAPIPublicIPWithVM(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPIPublicIPConfigwithVM(omi),
+				Config: testAccDataSourcePublicIPConfigwithVM(omi),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleOAPIPublicIPCheck(name string) resource.TestCheckFunc {
+func testAccDataSourcePublicIPCheck(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 
@@ -76,20 +76,20 @@ func testAccDataSourceOutscaleOAPIPublicIPCheck(name string) resource.TestCheckF
 	}
 }
 
-func TestAccDataSourceOutscaleOAPIPublicIP_withTags(t *testing.T) {
+func TestAccDataSourcePublicIP_withTags(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPIPublicIPConfigWithTags,
+				Config: testAccDataSourcePublicIPConfigWithTags,
 			},
 		},
 	})
 }
 
-const testAccDataSourceOutscaleOAPIPublicIPConfig = `
+const testAccDataSourcePublicIPConfig = `
 	resource "outscale_public_ip" "test" {}
 
 	data "outscale_public_ip" "by_public_ip_id" {
@@ -104,7 +104,7 @@ const testAccDataSourceOutscaleOAPIPublicIPConfig = `
 	}
 `
 
-const testAccDataSourceOutscaleOAPIPublicIPConfigWithTags = `
+const testAccDataSourcePublicIPConfigWithTags = `
 	resource "outscale_public_ip" "outscale_public_ip" {
 		tags {
 			key   = "name"
@@ -125,7 +125,7 @@ const testAccDataSourceOutscaleOAPIPublicIPConfigWithTags = `
 	}
 `
 
-func testAccDataSourceOutscaleOAPIPublicIPConfigwithVM(omi string) string {
+func testAccDataSourcePublicIPConfigwithVM(omi string) string {
 	return fmt.Sprintf(`
 		resource "outscale_vm" "outscale_vm" {
 			image_id     = "%s"

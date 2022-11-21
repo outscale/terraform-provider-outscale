@@ -34,12 +34,12 @@ func lb_sg_schema() *schema.Schema {
 	}
 }
 
-func resourceOutscaleOAPILoadBalancer() *schema.Resource {
+func resourceLoadBalancer() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPILoadBalancerCreate,
-		Read:   resourceOutscaleOAPILoadBalancerRead,
-		Update: resourceOutscaleOAPILoadBalancerUpdate,
-		Delete: resourceOutscaleOAPILoadBalancerDelete,
+		Create: resourceLoadBalancerCreate,
+		Read:   resourceLoadBalancerRead,
+		Update: resourceLoadBalancerUpdate,
+		Delete: resourceLoadBalancerDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -76,7 +76,7 @@ func resourceOutscaleOAPILoadBalancer() *schema.Resource {
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"tags": tagsListOAPISchema2(false),
+			"tags": tagsListSchema2(false),
 
 			"dns_name": {
 				Type:     schema.TypeString,
@@ -228,7 +228,7 @@ func expandSetStringList(ifs *schema.Set) *[]string {
 }
 
 // Flattens an array of Listeners into a []map[string]interface{}
-func flattenOAPIListeners(list *[]oscgo.Listener) []map[string]interface{} {
+func flattenListeners(list *[]oscgo.Listener) []map[string]interface{} {
 	if list == nil {
 		return make([]map[string]interface{}, 0)
 	}
@@ -382,12 +382,12 @@ func lb_listener_schema(computed bool) map[string]*schema.Schema {
 	}
 }
 
-func resourceOutscaleOAPILoadBalancerCreate(d *schema.ResourceData, meta interface{}) error {
-	return resourceOutscaleOAPILoadBalancerCreate_(d, meta, false)
+func resourceLoadBalancerCreate(d *schema.ResourceData, meta interface{}) error {
+	return resourceLoadBalancerCreate_(d, meta, false)
 }
 
-func resourceOutscaleOAPILoadBalancerCreate_(d *schema.ResourceData, meta interface{}, isUpdate bool) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceLoadBalancerCreate_(d *schema.ResourceData, meta interface{}, isUpdate bool) error {
+	conn := meta.(*Client).OSCAPI
 
 	req := &oscgo.CreateLoadBalancerRequest{}
 
@@ -479,7 +479,7 @@ func resourceOutscaleOAPILoadBalancerCreate_(d *schema.ResourceData, meta interf
 		}
 	}
 
-	return resourceOutscaleOAPILoadBalancerRead(d, meta)
+	return resourceLoadBalancerRead(d, meta)
 }
 
 func flattenStringList(list *[]string) []interface{} {
@@ -527,8 +527,8 @@ func readResourceLb(conn *oscgo.APIClient, elbName string) (*oscgo.LoadBalancer,
 	return &lb, &resp, nil
 }
 
-func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceLoadBalancerRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 	elbName := d.Id()
 
 	lb, _, err := readResourceLb(conn, elbName)
@@ -538,11 +538,11 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 
 	d.Set("subregion_names", flattenStringList(lb.SubregionNames))
 	d.Set("dns_name", lb.DnsName)
-	d.Set("health_check", flattenOAPIHealthCheck(lb.HealthCheck))
-	d.Set("access_log", flattenOAPIAccessLog(lb.AccessLog))
+	d.Set("health_check", flattenHealthCheck(lb.HealthCheck))
+	d.Set("access_log", flattenAccessLog(lb.AccessLog))
 
 	d.Set("backend_vm_ids", flattenStringList(lb.BackendVmIds))
-	if err := d.Set("listeners", flattenOAPIListeners(lb.Listeners)); err != nil {
+	if err := d.Set("listeners", flattenListeners(lb.Listeners)); err != nil {
 		log.Printf("[DEBUG] out err %v", err)
 		return err
 	}
@@ -607,8 +607,8 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 	return nil
 }
 
-func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceLoadBalancerUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 	var err error
 	d.Partial(true)
 
@@ -944,11 +944,11 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 
 	d.Partial(false)
 
-	return resourceOutscaleOAPILoadBalancerRead(d, meta)
+	return resourceLoadBalancerRead(d, meta)
 }
 
-func resourceOutscaleOAPILoadBalancerDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceLoadBalancerDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	log.Printf("[INFO] Deleting Load Balancer: %s", d.Id())
 
@@ -1009,7 +1009,7 @@ func formatInt32(n int32) string {
 	return strconv.FormatInt(int64(n), 10)
 }
 
-func flattenOAPIHealthCheck(check *oscgo.HealthCheck) map[string]interface{} {
+func flattenHealthCheck(check *oscgo.HealthCheck) map[string]interface{} {
 	chk := make(map[string]interface{})
 
 	if check != nil {
@@ -1033,7 +1033,7 @@ func flattenOAPIHealthCheck(check *oscgo.HealthCheck) map[string]interface{} {
 	return chk
 }
 
-func flattenOAPIAccessLog(aclog *oscgo.AccessLog) map[string]interface{} {
+func flattenAccessLog(aclog *oscgo.AccessLog) map[string]interface{} {
 	accl := make(map[string]interface{})
 
 	if aclog != nil {

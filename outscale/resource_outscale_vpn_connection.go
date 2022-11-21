@@ -13,12 +13,12 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 )
 
-func resourceOutscaleVPNConnection() *schema.Resource {
+func resourceVPNConnection() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleVPNConnectionCreate,
-		Read:   resourceOutscaleVPNConnectionRead,
-		Update: resourceOutscaleVPNConnectionUpdate,
-		Delete: resourceOutscaleVPNConnectionDelete,
+		Create: resourceVPNConnectionCreate,
+		Read:   resourceVPNConnectionRead,
+		Update: resourceVPNConnectionUpdate,
+		Delete: resourceVPNConnectionDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -82,7 +82,7 @@ func resourceOutscaleVPNConnection() *schema.Resource {
 					},
 				},
 			},
-			"tags": tagsListOAPISchema(),
+			"tags": tagsListSchema(),
 			"vgw_telemetries": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -119,8 +119,8 @@ func resourceOutscaleVPNConnection() *schema.Resource {
 	}
 }
 
-func resourceOutscaleVPNConnectionCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceVPNConnectionCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	req := oscgo.CreateVpnConnectionRequest{
 		ClientGatewayId:  d.Get("client_gateway_id").(string),
@@ -142,7 +142,7 @@ func resourceOutscaleVPNConnectionCreate(d *schema.ResourceData, meta interface{
 	})
 
 	if err != nil {
-		return fmt.Errorf("Error creating Outscale VPN Conecction: %s", err)
+		return fmt.Errorf("Error creating Outscale VPN Connection: %s", err)
 	}
 
 	if tags, ok := d.GetOk("tags"); ok {
@@ -154,11 +154,11 @@ func resourceOutscaleVPNConnectionCreate(d *schema.ResourceData, meta interface{
 
 	d.SetId(*resp.GetVpnConnection().VpnConnectionId)
 
-	return resourceOutscaleVPNConnectionRead(d, meta)
+	return resourceVPNConnectionRead(d, meta)
 }
 
-func resourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceVPNConnectionRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	vpnConnectionID := d.Id()
 
@@ -203,7 +203,7 @@ func resourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{})
 	if err := d.Set("routes", flattenVPNConnection(vpnConnection.GetRoutes())); err != nil {
 		return err
 	}
-	if err := d.Set("tags", tagsOSCAPIToMap(vpnConnection.GetTags())); err != nil {
+	if err := d.Set("tags", tagsToMap(vpnConnection.GetTags())); err != nil {
 		return err
 	}
 	if err := d.Set("vgw_telemetries", flattenVgwTelemetries(vpnConnection.GetVgwTelemetries())); err != nil {
@@ -212,12 +212,12 @@ func resourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{})
 	return nil
 }
 
-func resourceOutscaleVPNConnectionUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceVPNConnectionUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	d.Partial(true)
 
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := setTags(conn, d); err != nil {
 		return err
 	}
 
@@ -225,11 +225,11 @@ func resourceOutscaleVPNConnectionUpdate(d *schema.ResourceData, meta interface{
 
 	d.Partial(false)
 
-	return resourceOutscaleVPNConnectionRead(d, meta)
+	return resourceVPNConnectionRead(d, meta)
 }
 
-func resourceOutscaleVPNConnectionDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceVPNConnectionDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	vpnConnectionID := d.Id()
 

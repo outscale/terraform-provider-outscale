@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPIVirtualGateway_basic(t *testing.T) {
+func TestAccVirtualGateway_basic(t *testing.T) {
 	t.Parallel()
 	var v, v2 oscgo.VirtualGateway
 
@@ -24,20 +24,20 @@ func TestAccOutscaleOAPIVirtualGateway_basic(t *testing.T) {
 		},
 		IDRefreshName: "outscale_virtual_gateway.foo",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOAPIVirtualGatewayDestroy,
+		CheckDestroy:  testAccCheckVirtualGatewayDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIVirtualGatewayConfig,
+				Config: testAccVirtualGatewayConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPIVirtualGatewayExists(
+					testAccCheckVirtualGatewayExists(
 						"outscale_virtual_gateway.foo", &v),
 				),
 			},
 
 			{
-				Config: testAccOAPIVirtualGatewayConfigChangeVPC,
+				Config: testAccVirtualGatewayConfigChangeVPC,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPIVirtualGatewayExists(
+					testAccCheckVirtualGatewayExists(
 						"outscale_virtual_gateway.foo", &v2),
 				),
 			},
@@ -45,25 +45,25 @@ func TestAccOutscaleOAPIVirtualGateway_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIVirtualGatewayChangeTags(t *testing.T) {
+func TestAccVirtualGatewayChangeTags(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOAPIVirtualGatewayDestroy,
+		CheckDestroy: testAccCheckVirtualGatewayDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIVirtualGatewayConfigChangeTags("ipsec.1", "test-VGW"),
+				Config: testAccVirtualGatewayConfigChangeTags("ipsec.1", "test-VGW"),
 			},
 			{
-				Config: testAccOAPIVirtualGatewayConfigChangeTags("ipsec.1", "test-VGW2"),
+				Config: testAccVirtualGatewayConfigChangeTags("ipsec.1", "test-VGW2"),
 			},
 		},
 	})
 }
 
-func TestAccOutscaleOAPIVirtualGateway_delete(t *testing.T) {
+func TestAccVirtualGateway_delete(t *testing.T) {
 	var virtualGateway oscgo.VirtualGateway
 
 	testDeleted := func(r string) resource.TestCheckFunc {
@@ -82,31 +82,31 @@ func TestAccOutscaleOAPIVirtualGateway_delete(t *testing.T) {
 		},
 		IDRefreshName: "outscale_virtual_gateway.foo",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOAPIVirtualGatewayDestroy,
+		CheckDestroy:  testAccCheckVirtualGatewayDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIVirtualGatewayConfig,
+				Config: testAccVirtualGatewayConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPIVirtualGatewayExists("outscale_virtual_gateway.foo", &virtualGateway)),
+					testAccCheckVirtualGatewayExists("outscale_virtual_gateway.foo", &virtualGateway)),
 			},
 			{
-				Config: testAccOAPINoVirtualGatewayConfig,
+				Config: testAccNoVirtualGatewayConfig,
 				Check:  resource.ComposeTestCheckFunc(testDeleted("outscale_virtual_gateway.foo")),
 			},
 		},
 	})
 }
 
-func TestAccOutscaleOAPIVirtualGateway_importBasic(t *testing.T) {
+func TestAccVirtualGateway_importBasic(t *testing.T) {
 	resourceName := "outscale_virtual_gateway.foo"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOAPIVirtualGatewayDestroy,
+		CheckDestroy: testAccCheckVirtualGatewayDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIVirtualGatewayConfig,
+				Config: testAccVirtualGatewayConfig,
 			},
 			{
 				ResourceName:            resourceName,
@@ -118,9 +118,9 @@ func TestAccOutscaleOAPIVirtualGateway_importBasic(t *testing.T) {
 	})
 }
 
-func testAccOutscaleOAPIVirtualGatewayDisappears(gateway *oscgo.VirtualGateway) resource.TestCheckFunc {
+func testAccVirtualGatewayDisappears(gateway *oscgo.VirtualGateway) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		conn := testAccProvider.Meta().(*Client).OSCAPI
 		var err error
 
 		opts := oscgo.DeleteVirtualGatewayRequest{
@@ -164,8 +164,8 @@ func testAccOutscaleOAPIVirtualGatewayDisappears(gateway *oscgo.VirtualGateway) 
 	}
 }
 
-func testAccCheckOAPIVirtualGatewayDestroy(s *terraform.State) error {
-	OSCAPI := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+func testAccCheckVirtualGatewayDestroy(s *terraform.State) error {
+	OSCAPI := testAccProvider.Meta().(*Client).OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_virtual_gateway" {
@@ -208,7 +208,7 @@ func testAccCheckOAPIVirtualGatewayDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOAPIVirtualGatewayExists(n string, ig *oscgo.VirtualGateway) resource.TestCheckFunc {
+func testAccCheckVirtualGatewayExists(n string, ig *oscgo.VirtualGateway) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -219,7 +219,7 @@ func testAccCheckOAPIVirtualGatewayExists(n string, ig *oscgo.VirtualGateway) re
 			return fmt.Errorf("No ID is set")
 		}
 
-		OSCAPI := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		OSCAPI := testAccProvider.Meta().(*Client).OSCAPI
 
 		var resp oscgo.ReadVirtualGatewaysResponse
 		var err error
@@ -247,13 +247,13 @@ func testAccCheckOAPIVirtualGatewayExists(n string, ig *oscgo.VirtualGateway) re
 	}
 }
 
-const testAccOAPINoVirtualGatewayConfig = `
+const testAccNoVirtualGatewayConfig = `
 	resource "outscale_net" "foo" {
 		ip_range = "10.1.0.0/16"
 	}
 `
 
-const testAccOAPIVirtualGatewayConfig = `
+const testAccVirtualGatewayConfig = `
 	resource "outscale_net" "foo" {
 		ip_range = "10.1.0.0/16"
 	}
@@ -264,7 +264,7 @@ const testAccOAPIVirtualGatewayConfig = `
 
 `
 
-const testAccOAPIVirtualGatewayConfigChangeVPC = `
+const testAccVirtualGatewayConfigChangeVPC = `
 	resource "outscale_net" "bar" {
 		ip_range = "10.2.0.0/16"
 	}
@@ -274,7 +274,7 @@ const testAccOAPIVirtualGatewayConfigChangeVPC = `
 }
 `
 
-func testAccOAPIVirtualGatewayConfigChangeTags(connectionType, name string) string {
+func testAccVirtualGatewayConfigChangeTags(connectionType, name string) string {
 	return fmt.Sprintf(`
 		resource "outscale_virtual_gateway" "outscale_virtual_gateway" {
 		 connection_type = "%s"
@@ -287,7 +287,7 @@ func testAccOAPIVirtualGatewayConfigChangeTags(connectionType, name string) stri
 	`, connectionType, name)
 }
 
-func testAccCheckOutscaleVirtualGatewayImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
+func testAccCheckVirtualGatewayImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
 	return func(s *terraform.State) (string, error) {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {

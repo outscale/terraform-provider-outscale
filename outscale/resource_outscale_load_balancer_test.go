@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPILBUBasic(t *testing.T) {
+func TestAccLBUBasic(t *testing.T) {
 	t.Parallel()
 	var conf oscgo.LoadBalancer
 
@@ -32,12 +32,12 @@ func TestAccOutscaleOAPILBUBasic(t *testing.T) {
 		},
 		IDRefreshName: resourceName,
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscaleOAPILBUDestroy,
+		CheckDestroy:  testAccCheckLBUDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPILBUConfig(r),
+				Config: testAccLBUConfig(r),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPILBUExists(resourceName, &conf),
+					testAccCheckLBUExists(resourceName, &conf),
 					resource.TestCheckResourceAttr(resourceName, "subregion_names.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "subregion_names.0", zone),
 					resource.TestCheckResourceAttr(resourceName, "listeners.#", "1"),
@@ -47,7 +47,7 @@ func TestAccOutscaleOAPILBUBasic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPILBUPublicIp(t *testing.T) {
+func TestAccLBUPublicIp(t *testing.T) {
 	t.Parallel()
 	var conf oscgo.LoadBalancer
 
@@ -61,12 +61,12 @@ func TestAccOutscaleOAPILBUPublicIp(t *testing.T) {
 		},
 		IDRefreshName: resourceName,
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscaleOAPILBUDestroy,
+		CheckDestroy:  testAccCheckLBUDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPILBUPublicIpConfig(r),
+				Config: testAccLBUPublicIpConfig(r),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPILBUExists(resourceName, &conf),
+					testAccCheckLBUExists(resourceName, &conf),
 					resource.TestCheckResourceAttr(resourceName, "listeners.#", "1"),
 					resource.TestCheckResourceAttrSet(resourceName, "public_ip"),
 				)},
@@ -74,8 +74,8 @@ func TestAccOutscaleOAPILBUPublicIp(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleOAPILBUDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+func testAccCheckLBUDestroy(s *terraform.State) error {
+	conn := testAccProvider.Meta().(*Client).OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_load_balancer" {
@@ -123,7 +123,7 @@ func testAccCheckOutscaleOAPILBUDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOutscaleOAPILBUExists(n string, res *oscgo.LoadBalancer) resource.TestCheckFunc {
+func testAccCheckLBUExists(n string, res *oscgo.LoadBalancer) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -134,7 +134,7 @@ func testAccCheckOutscaleOAPILBUExists(n string, res *oscgo.LoadBalancer) resour
 			return fmt.Errorf("No LBU ID is set")
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		conn := testAccProvider.Meta().(*Client).OSCAPI
 
 		var err error
 		var resp oscgo.ReadLoadBalancersResponse
@@ -179,7 +179,7 @@ func testAccCheckOutscaleOAPILBUExists(n string, res *oscgo.LoadBalancer) resour
 	}
 }
 
-func testAccOutscaleOAPILBUConfig(r int) string {
+func testAccLBUConfig(r int) string {
 	return fmt.Sprintf(`
 resource "outscale_load_balancer" "bar" {
 	subregion_names = ["%sa"]
@@ -203,7 +203,7 @@ resource "outscale_load_balancer" "bar" {
 `, os.Getenv("OUTSCALE_REGION"), r)
 }
 
-func testAccOutscaleOAPILBUPublicIpConfig(r int) string {
+func testAccLBUPublicIpConfig(r int) string {
 	return fmt.Sprintf(`
 
 	resource "outscale_public_ip" "my_public_ip" {

@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPILin_basic(t *testing.T) {
+func TestAccLin_basic(t *testing.T) {
 	t.Parallel()
 	var conf1 oscgo.Net
 	var conf2 oscgo.Net
@@ -21,13 +21,13 @@ func TestAccOutscaleOAPILin_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
-		// CheckDestroy: testAccCheckOutscaleLinDestroyed, // we need to create the destroyed test case
+		// CheckDestroy: testAccCheckLinDestroyed, // we need to create the destroyed test case
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPILinConfig,
+				Config: testAccLinConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPILinExists("outscale_net.vpc.0", &conf1),
-					testAccCheckOutscaleOAPILinExists("outscale_net.vpc.1", &conf2),
+					testAccCheckLinExists("outscale_net.vpc.0", &conf1),
+					testAccCheckLinExists("outscale_net.vpc.1", &conf2),
 					resource.TestCheckResourceAttr(
 						"outscale_net.vpc.0", "ip_range", "10.0.0.0/16"),
 					resource.TestCheckResourceAttr(
@@ -38,26 +38,26 @@ func TestAccOutscaleOAPILin_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPILin_UpdateTags(t *testing.T) {
+func TestAccLin_UpdateTags(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleOAPINICDestroy,
+		CheckDestroy: testAccCheckNICDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPILinConfigUpdateTags("Terraform_net"),
+				Config: testAccLinConfigUpdateTags("Terraform_net"),
 				Check:  resource.ComposeTestCheckFunc(),
 			},
 			{
-				Config: testAccOutscaleOAPILinConfigUpdateTags("Terraform_net2"),
+				Config: testAccLinConfigUpdateTags("Terraform_net2"),
 				Check:  resource.ComposeTestCheckFunc(),
 			},
 		},
 	})
 }
 
-func testAccCheckOutscaleOAPILinExists(n string, res *oscgo.Net) resource.TestCheckFunc {
+func testAccCheckLinExists(n string, res *oscgo.Net) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -68,7 +68,7 @@ func testAccCheckOutscaleOAPILinExists(n string, res *oscgo.Net) resource.TestCh
 			return fmt.Errorf("No internet gateway id is set")
 		}
 		var resp oscgo.ReadNetsResponse
-		conn := testAccProvider.Meta().(*OutscaleClient)
+		conn := testAccProvider.Meta().(*Client)
 
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 			rp, httpResp, err := conn.OSCAPI.NetApi.ReadNets(context.Background()).ReadNetsRequest(oscgo.ReadNetsRequest{
@@ -95,7 +95,7 @@ func testAccCheckOutscaleOAPILinExists(n string, res *oscgo.Net) resource.TestCh
 	}
 }
 
-const testAccOutscaleOAPILinConfig = `
+const testAccLinConfig = `
 	resource "outscale_net" "vpc" {
 		ip_range = "10.0.0.0/16"
 		count = 2
@@ -107,7 +107,7 @@ const testAccOutscaleOAPILinConfig = `
 	}
 `
 
-func testAccOutscaleOAPILinConfigUpdateTags(value string) string {
+func testAccLinConfigUpdateTags(value string) string {
 	return fmt.Sprintf(`
 	resource "outscale_net" "outscale_net" { 
 		ip_range = "10.0.0.0/16"

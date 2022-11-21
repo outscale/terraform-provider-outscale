@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPIServerCertificate_basic(t *testing.T) {
+func TestAccServerCertificate_basic(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_server_certificate.test"
 	rName := acctest.RandomWithPrefix("acc-test")
@@ -106,18 +106,18 @@ kbcI5Y2wveEgMqPSRya2OapYGiPeqYhg6JAGPRXtOfOq9IUDcPuc2emnihNpSa8y
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleServerCertificateDestroy,
+		CheckDestroy: testAccCheckServerCertificateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIServerCertificateConfig(rName, body, private),
+				Config: testAccServerCertificateConfig(rName, body, private),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleServerCertificateExists(resourceName),
+					testAccCheckServerCertificateExists(resourceName),
 				),
 			},
 			{
-				Config: testAccOutscaleOAPIServerCertificateConfig(rNameUpdated, body, private),
+				Config: testAccServerCertificateConfig(rNameUpdated, body, private),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleServerCertificateExists(resourceName),
+					testAccCheckServerCertificateExists(resourceName),
 				),
 			},
 			{
@@ -130,14 +130,14 @@ kbcI5Y2wveEgMqPSRya2OapYGiPeqYhg6JAGPRXtOfOq9IUDcPuc2emnihNpSa8y
 	})
 }
 
-func testAccCheckOutscaleServerCertificateExists(n string) resource.TestCheckFunc {
+func testAccCheckServerCertificateExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		conn := testAccProvider.Meta().(*Client).OSCAPI
 
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("No id is set")
@@ -171,8 +171,8 @@ func testAccCheckOutscaleServerCertificateExists(n string) resource.TestCheckFun
 	}
 }
 
-func testAccCheckOutscaleServerCertificateDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+func testAccCheckServerCertificateDestroy(s *terraform.State) error {
+	conn := testAccProvider.Meta().(*Client).OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_server_certificate_link" {
@@ -209,7 +209,7 @@ func testAccCheckOutscaleServerCertificateDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccOutscaleOAPIServerCertificateConfig(name, body, privateKey string) string {
+func testAccServerCertificateConfig(name, body, privateKey string) string {
 	return fmt.Sprintf(`
 resource "outscale_server_certificate" "test" { 
    name        =  %[1]q

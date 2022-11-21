@@ -12,9 +12,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func dataSourceOutscaleOAPIVirtualGateways() *schema.Resource {
+func dataSourceVirtualGateways() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPIVirtualGatewaysRead,
+		Read: dataSourceVirtualGatewaysRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -69,8 +69,8 @@ func dataSourceOutscaleOAPIVirtualGateways() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPIVirtualGatewaysRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceVirtualGatewaysRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	filter, filtersOk := d.GetOk("filter")
 	_, vpnOk := d.GetOk("virtual_gateway_id")
@@ -82,7 +82,7 @@ func dataSourceOutscaleOAPIVirtualGatewaysRead(d *schema.ResourceData, meta inte
 	params := oscgo.ReadVirtualGatewaysRequest{}
 
 	if filtersOk {
-		params.SetFilters(buildOutscaleAPIVirtualGatewayFilters(filter.(*schema.Set)))
+		params.SetFilters(buildVirtualGatewayFilters(filter.(*schema.Set)))
 	}
 
 	var resp oscgo.ReadVirtualGatewaysResponse
@@ -121,7 +121,7 @@ func dataSourceOutscaleOAPIVirtualGatewaysRead(d *schema.ResourceData, meta inte
 		vpn["state"] = v.GetState()
 		vpn["connection_type"] = v.GetConnectionType()
 		vpn["virtual_gateway_id"] = v.GetVirtualGatewayId()
-		vpn["tags"] = tagsOSCAPIToMap(v.GetTags())
+		vpn["tags"] = tagsToMap(v.GetTags())
 
 		vpns[k] = vpn
 	}

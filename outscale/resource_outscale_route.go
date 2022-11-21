@@ -17,7 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-var errOAPIRoute = errors.New("Error: more than 1 target specified. Only 1 of gateway_id, " +
+var errRoute = errors.New("Error: more than 1 target specified. Only 1 of gateway_id, " +
 	"nat_service_id, vm_id, nic_id or net_peering_id is allowed.")
 
 var allowedTargets = []string{
@@ -28,15 +28,15 @@ var allowedTargets = []string{
 	"net_peering_id",
 }
 
-func resourceOutscaleOAPIRoute() *schema.Resource {
+func resourceRoute() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPIRouteCreate,
-		Read:   resourceOutscaleOAPIRouteRead,
-		Update: resourceOutscaleOAPIRouteUpdate,
-		Delete: resourceOutscaleOAPIRouteDelete,
-		Exists: resourceOutscaleOAPIRouteExists,
+		Create: resourceRouteCreate,
+		Read:   resourceRouteRead,
+		Update: resourceRouteUpdate,
+		Delete: resourceRouteDelete,
+		Exists: resourceRouteExists,
 		Importer: &schema.ResourceImporter{
-			State: resourceOutscaleOAPIRouteImportState,
+			State: resourceRouteImportState,
 		},
 		Schema: map[string]*schema.Schema{
 			"creation_method": {
@@ -108,13 +108,13 @@ func resourceOutscaleOAPIRoute() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPIRouteCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceRouteCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 	numTargets, target := getTarget(d)
 	awaitActiveState := d.Get("await_active_state").(bool)
 
 	if numTargets > 1 {
-		return errOAPIRoute
+		return errRoute
 	}
 
 	createOpts := oscgo.CreateRouteRequest{
@@ -162,7 +162,7 @@ func resourceOutscaleOAPIRouteCreate(d *schema.ResourceData, meta interface{}) e
 
 	if v, ok := d.GetOk("destination_ip_range"); ok {
 		err = resource.Retry(2*time.Minute, func() *resource.RetryError {
-			route, requestID, err = findResourceOAPIRoute(conn, d.Get("route_table_id").(string), v.(string))
+			route, requestID, err = findResourceRoute(conn, d.Get("route_table_id").(string), v.(string))
 			if awaitActiveState && err == nil {
 				if route.GetState() != "active" {
 					return resource.RetryableError(fmt.Errorf("still await route to be active"))
@@ -176,25 +176,25 @@ func resourceOutscaleOAPIRouteCreate(d *schema.ResourceData, meta interface{}) e
 	}
 
 	d.SetId(d.Get("route_table_id").(string))
-	resourceOutscaleOAPIRouteSetResourceData(d, route, requestID)
+	resourceRouteSetResourceData(d, route, requestID)
 	return nil
 }
 
-func resourceOutscaleOAPIRouteRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceRouteRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 	routeTableID := d.Id()
 
 	destinationIPRange := d.Get("destination_ip_range").(string)
 	var requestID string
 
-	route, requestID, err := findResourceOAPIRoute(conn, routeTableID, destinationIPRange)
+	route, requestID, err := findResourceRoute(conn, routeTableID, destinationIPRange)
 	if err != nil {
 		return err
 	}
-	return resourceOutscaleOAPIRouteSetResourceData(d, route, requestID)
+	return resourceRouteSetResourceData(d, route, requestID)
 }
 
-func resourceOutscaleOAPIRouteSetResourceData(d *schema.ResourceData, route *oscgo.Route, requestID string) error {
+func resourceRouteSetResourceData(d *schema.ResourceData, route *oscgo.Route, requestID string) error {
 	if err := d.Set("destination_service_id", route.GetDestinationServiceId()); err != nil {
 		return err
 	}
@@ -241,8 +241,8 @@ func getTarget(d *schema.ResourceData) (n int, target string) {
 	return
 }
 
-func resourceOutscaleOAPIRouteUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceRouteUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 	nothingToDo := true
 	o, n := d.GetChange("")
 	os := o.(map[string]interface{})
@@ -335,11 +335,11 @@ func resourceOutscaleOAPIRouteUpdate(d *schema.ResourceData, meta interface{}) e
 		return fmt.Errorf("error updating route: %s", utils.GetErrorResponse(err))
 	}
 
-	return resourceOutscaleOAPIRouteRead(d, meta)
+	return resourceRouteRead(d, meta)
 }
 
-func resourceOutscaleOAPIRouteDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceRouteDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	deleteOpts := oscgo.DeleteRouteRequest{
 		RouteTableId: d.Get("route_table_id").(string),
@@ -370,8 +370,8 @@ func resourceOutscaleOAPIRouteDelete(d *schema.ResourceData, meta interface{}) e
 	return nil
 }
 
-func resourceOutscaleOAPIRouteExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceRouteExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+	conn := meta.(*Client).OSCAPI
 	routeTableID := d.Get("route_table_id").(string)
 
 	findOpts := oscgo.ReadRouteTablesRequest{
@@ -421,7 +421,7 @@ func resourceOutscaleOAPIRouteExists(d *schema.ResourceData, meta interface{}) (
 	return false, nil
 }
 
-func findResourceOAPIRoute(conn *oscgo.APIClient, rtbid string, cidr string) (*oscgo.Route, string, error) {
+func findResourceRoute(conn *oscgo.APIClient, rtbid string, cidr string) (*oscgo.Route, string, error) {
 	routeTableID := rtbid
 
 	findOpts := oscgo.ReadRouteTablesRequest{}
@@ -472,8 +472,8 @@ func findResourceOAPIRoute(conn *oscgo.APIClient, rtbid string, cidr string) (*o
 
 }
 
-func resourceOutscaleOAPIRouteImportState(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceRouteImportState(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	conn := meta.(*Client).OSCAPI
 
 	parts := strings.SplitN(d.Id(), "_", 2)
 	if len(parts) != 2 {
@@ -483,7 +483,7 @@ func resourceOutscaleOAPIRouteImportState(d *schema.ResourceData, meta interface
 	routeTableID := parts[0]
 	destinationIPRange := parts[1]
 
-	_, _, err := findResourceOAPIRoute(conn, routeTableID, destinationIPRange)
+	_, _, err := findResourceRoute(conn, routeTableID, destinationIPRange)
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "InvalidRouteTableID.NotFound") {
 			log.Printf("[WARN] Route Table %q could not be found. Removing Route from state.", routeTableID)

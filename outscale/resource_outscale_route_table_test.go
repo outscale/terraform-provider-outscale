@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPIRouteTable_basic(t *testing.T) {
+func TestAccRouteTable_basic(t *testing.T) {
 	var v oscgo.RouteTable
 
 	testCheck := func(*terraform.State) error {
@@ -55,20 +55,20 @@ func TestAccOutscaleOAPIRouteTable_basic(t *testing.T) {
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_route_table.foo",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOAPIRouteTableDestroy,
+		CheckDestroy:  testAccCheckRouteTableDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIRouteTableConfig,
+				Config: testAccRouteTableConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPIRouteTableExists("outscale_route_table.foo", &v, nil),
+					testAccCheckRouteTableExists("outscale_route_table.foo", &v, nil),
 					testCheck,
 				),
 			},
 
 			{
-				Config: testAccOAPIRouteTableConfigChange,
+				Config: testAccRouteTableConfigChange,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPIRouteTableExists("outscale_route_table.foo", &v, nil),
+					testAccCheckRouteTableExists("outscale_route_table.foo", &v, nil),
 					testCheckChange,
 				),
 			},
@@ -76,7 +76,7 @@ func TestAccOutscaleOAPIRouteTable_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIRouteTable_instance(t *testing.T) {
+func TestAccRouteTable_instance(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 
@@ -102,12 +102,12 @@ func TestAccOutscaleOAPIRouteTable_instance(t *testing.T) {
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_route_table.foo",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOAPIRouteTableDestroy,
+		CheckDestroy:  testAccCheckRouteTableDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIRouteTableConfigInstance(omi, "tinav4.c2r2p2", region),
+				Config: testAccRouteTableConfigInstance(omi, "tinav4.c2r2p2", region),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPIRouteTableExists(
+					testAccCheckRouteTableExists(
 						"outscale_route_table.foo", &v, nil),
 					testCheck,
 				),
@@ -116,7 +116,7 @@ func TestAccOutscaleOAPIRouteTable_instance(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIRouteTable_tags(t *testing.T) {
+func TestAccRouteTable_tags(t *testing.T) {
 	value1 := `
 	tags {
 		key = "name"
@@ -141,42 +141,42 @@ func TestAccOutscaleOAPIRouteTable_tags(t *testing.T) {
 			testAccPreCheck(t)
 		},
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOAPIRouteTableDestroy,
+		CheckDestroy: testAccCheckRouteTableDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIRouteTableConfigTags(value1),
+				Config: testAccRouteTableConfigTags(value1),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPIRouteTableExists("outscale_route_table.foo", &rt, &rtTags),
+					testAccCheckRouteTableExists("outscale_route_table.foo", &rt, &rtTags),
 
-					testAccCheckOAPITags(&rtTags, "name", "Terraform-nic"),
+					testAccCheckTags(&rtTags, "name", "Terraform-nic"),
 				),
 			},
 			{
-				Config: testAccOAPIRouteTableConfigTags(value2),
+				Config: testAccRouteTableConfigTags(value2),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPIRouteTableExists("outscale_route_table.foo", &rt, &rtTags),
-					testAccCheckOAPITags(&rtTags, "name", "Terraform-RT"),
-					testAccCheckOAPITags(&rtTags, "name2", "Terraform-RT2"),
+					testAccCheckRouteTableExists("outscale_route_table.foo", &rt, &rtTags),
+					testAccCheckTags(&rtTags, "name", "Terraform-RT"),
+					testAccCheckTags(&rtTags, "name2", "Terraform-RT2"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccOutscaleRouteTable_importBasic(t *testing.T) {
+func TestAccRouteTable_importBasic(t *testing.T) {
 	resourceName := "outscale_route_table.foo"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOAPIRouteTableDestroy,
+		CheckDestroy: testAccCheckRouteTableDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIRouteTableConfig,
+				Config: testAccRouteTableConfig,
 			},
 			{
 				ResourceName:            resourceName,
-				ImportStateIdFunc:       testAccCheckOutscaleRouteTableImportStateIDFunc(resourceName),
+				ImportStateIdFunc:       testAccCheckRouteTableImportStateIDFunc(resourceName),
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"request_id"},
@@ -185,7 +185,7 @@ func TestAccOutscaleRouteTable_importBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleRouteTableImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
+func testAccCheckRouteTableImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
 	return func(s *terraform.State) (string, error) {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
@@ -196,8 +196,8 @@ func testAccCheckOutscaleRouteTableImportStateIDFunc(resourceName string) resour
 	}
 }
 
-func testAccCheckOAPIRouteTableDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+func testAccCheckRouteTableDestroy(s *terraform.State) error {
+	conn := testAccProvider.Meta().(*Client).OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_route_table" {
@@ -237,7 +237,7 @@ func testAccCheckOAPIRouteTableDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOAPIRouteTableExists(n string, v *oscgo.RouteTable, t *[]oscgo.ResourceTag) resource.TestCheckFunc {
+func testAccCheckRouteTableExists(n string, v *oscgo.RouteTable, t *[]oscgo.ResourceTag) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -248,7 +248,7 @@ func testAccCheckOAPIRouteTableExists(n string, v *oscgo.RouteTable, t *[]oscgo.
 			return fmt.Errorf("No ID is set")
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		conn := testAccProvider.Meta().(*Client).OSCAPI
 
 		var resp oscgo.ReadRouteTablesResponse
 		var err error
@@ -288,7 +288,7 @@ func testAccCheckOAPIRouteTableExists(n string, v *oscgo.RouteTable, t *[]oscgo.
 
 // VPC Peering connections are prefixed with pcx
 // Right now there is no VPC Peering resource
-// func TestAccOutscaleRouteTable_vpcPeering(t *testing.T) {
+// func TestAccRouteTable_vpcPeering(t *testing.T) {
 // 	var v oscgo.RouteTable
 
 // 	testCheck := func(*terraform.State) error {
@@ -313,12 +313,12 @@ func testAccCheckOAPIRouteTableExists(n string, v *oscgo.RouteTable, t *[]oscgo.
 // 	resource.Test(t, resource.TestCase{
 // 		PreCheck:     func() { testAccPreCheck(t) },
 // 		Providers:    testAccProviders,
-// 		CheckDestroy: testAccCheckOAPIRouteTableDestroy,
+// 		CheckDestroy: testAccCheckRouteTableDestroy,
 // 		Steps: []resource.TestStep{
 // 			{
 // 				Config: testAccRouteTableVpcPeeringConfig,
 // 				Check: resource.ComposeTestCheckFunc(
-// 					testAccCheckOAPIRouteTableExists(
+// 					testAccCheckRouteTableExists(
 // 						"outscale_route_table.foo", &v),
 // 					testCheck,
 // 				),
@@ -327,7 +327,7 @@ func testAccCheckOAPIRouteTableExists(n string, v *oscgo.RouteTable, t *[]oscgo.
 // 	})
 // }
 
-// func TestAccOutscaleRouteTable_vgwRoutePropagation(t *testing.T) {
+// func TestAccRouteTable_vgwRoutePropagation(t *testing.T) {
 // 	var v oscgo.RouteTable
 // 	var vgw oscgo.VpnGateway
 
@@ -353,13 +353,13 @@ func testAccCheckOAPIRouteTableExists(n string, v *oscgo.RouteTable, t *[]oscgo.
 // 		Providers: testAccProviders,
 // 		CheckDestroy: resource.ComposeTestCheckFunc(
 // 			testAccCheckVpnGatewayDestroy,
-// 			testAccCheckOAPIRouteTableDestroy,
+// 			testAccCheckRouteTableDestroy,
 // 		),
 // 		Steps: []resource.TestStep{
 // 			{
 // 				Config: testAccRouteTableVgwRoutePropagationConfig,
 // 				Check: resource.ComposeTestCheckFunc(
-// 					testAccCheckOAPIRouteTableExists(
+// 					testAccCheckRouteTableExists(
 // 						"outscale_route_table.foo", &v),
 // 					testAccCheckVpnGatewayExists(
 // 						"aws_vpn_gateway.foo", &vgw),
@@ -370,7 +370,7 @@ func testAccCheckOAPIRouteTableExists(n string, v *oscgo.RouteTable, t *[]oscgo.
 // 	})
 // }
 
-const testAccOAPIRouteTableConfig = `
+const testAccRouteTableConfig = `
 resource "outscale_net" "foo" {
 	ip_range = "10.1.0.0/16"
 
@@ -387,7 +387,7 @@ resource "outscale_route_table" "foo" {
 }
 `
 
-const testAccOAPIRouteTableConfigChange = `
+const testAccRouteTableConfigChange = `
 resource "outscale_net" "foo" {
 	ip_range = "10.1.0.0/16"
 
@@ -404,7 +404,7 @@ resource "outscale_route_table" "foo" {
 }
 `
 
-func testAccOAPIRouteTableConfigInstance(omi, vmType, region string) string {
+func testAccRouteTableConfigInstance(omi, vmType, region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "foo" {
 			ip_range = "10.1.0.0/16"
@@ -435,7 +435,7 @@ func testAccOAPIRouteTableConfigInstance(omi, vmType, region string) string {
 	`, omi, vmType, region)
 }
 
-func testAccOAPIRouteTableConfigTags(value string) string {
+func testAccRouteTableConfigTags(value string) string {
 	return fmt.Sprintf(`
 resource "outscale_net" "foo" {
 	ip_range = "10.1.0.0/16"

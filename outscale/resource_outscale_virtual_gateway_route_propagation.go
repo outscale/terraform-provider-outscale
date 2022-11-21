@@ -13,11 +13,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func resourceOutscaleOAPIVirtualGatewayRoutePropagation() *schema.Resource {
+func resourceVirtualGatewayRoutePropagation() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPIVpnGatewayRoutePropagationEnable,
-		Read:   resourceOutscaleOAPIVpnGatewayRoutePropagationRead,
-		Delete: resourceOutscaleOAPIVpnGatewayRoutePropagationDisable,
+		Create: resourceVpnGatewayRoutePropagationEnable,
+		Read:   resourceVpnGatewayRoutePropagationRead,
+		Delete: resourceVpnGatewayRoutePropagationDisable,
 
 		Schema: map[string]*schema.Schema{
 			"virtual_gateway_id": {
@@ -43,8 +43,8 @@ func resourceOutscaleOAPIVirtualGatewayRoutePropagation() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPIVpnGatewayRoutePropagationEnable(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceVpnGatewayRoutePropagationEnable(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	gwID := d.Get("virtual_gateway_id").(string)
 	rtID := d.Get("route_table_id").(string)
@@ -75,8 +75,8 @@ func resourceOutscaleOAPIVpnGatewayRoutePropagationEnable(d *schema.ResourceData
 	return nil
 }
 
-func resourceOutscaleOAPIVpnGatewayRoutePropagationDisable(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceVpnGatewayRoutePropagationDisable(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	gwID := d.Get("virtual_gateway_id").(string)
 	rtID := d.Get("route_table_id").(string)
@@ -106,8 +106,8 @@ func resourceOutscaleOAPIVpnGatewayRoutePropagationDisable(d *schema.ResourceDat
 	return nil
 }
 
-func resourceOutscaleOAPIVpnGatewayRoutePropagationRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceVpnGatewayRoutePropagationRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	gwID := d.Get("virtual_gateway_id").(string)
 	rtID := d.Get("route_table_id").(string)

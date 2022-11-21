@@ -11,9 +11,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPIApiAccessPolicy() *schema.Resource {
+func dataSourceApiAccessPolicy() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPIApiAccessPolicyRead,
+		Read: dataSourceApiAccessPolicyRead,
 		Schema: map[string]*schema.Schema{
 			"max_access_key_expiration_seconds": {
 				Type:     schema.TypeInt,
@@ -31,8 +31,8 @@ func dataSourceOutscaleOAPIApiAccessPolicy() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPIApiAccessPolicyRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceApiAccessPolicyRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	req := oscgo.ReadApiAccessPolicyRequest{}
 

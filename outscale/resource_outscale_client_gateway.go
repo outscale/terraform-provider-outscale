@@ -14,12 +14,12 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 )
 
-func resourceOutscaleClientGateway() *schema.Resource {
+func resourceClientGateway() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleClientGatewayCreate,
-		Read:   resourceOutscaleClientGatewayRead,
-		Update: resourceOutscaleClientGatewayUpdate,
-		Delete: resourceOutscaleClientGatewayDelete,
+		Create: resourceClientGatewayCreate,
+		Read:   resourceClientGatewayRead,
+		Update: resourceClientGatewayUpdate,
+		Delete: resourceClientGatewayDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -48,7 +48,7 @@ func resourceOutscaleClientGateway() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": tagsListOAPISchema(),
+			"tags": tagsListSchema(),
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -57,8 +57,8 @@ func resourceOutscaleClientGateway() *schema.Resource {
 	}
 }
 
-func resourceOutscaleClientGatewayCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceClientGatewayCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	req := oscgo.CreateClientGatewayRequest{
 		BgpAsn:         cast.ToInt32(d.Get("bgp_asn")),
@@ -89,11 +89,11 @@ func resourceOutscaleClientGatewayCreate(d *schema.ResourceData, meta interface{
 
 	d.SetId(*resp.GetClientGateway().ClientGatewayId)
 
-	return resourceOutscaleClientGatewayRead(d, meta)
+	return resourceClientGatewayRead(d, meta)
 }
 
-func resourceOutscaleClientGatewayRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceClientGatewayRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	clientGatewayID := d.Id()
 
@@ -129,30 +129,30 @@ func resourceOutscaleClientGatewayRead(d *schema.ResourceData, meta interface{})
 	if err := d.Set("state", clientGateway.GetState()); err != nil {
 		return err
 	}
-	if err := d.Set("tags", tagsOSCAPIToMap(clientGateway.GetTags())); err != nil {
+	if err := d.Set("tags", tagsToMap(clientGateway.GetTags())); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func resourceOutscaleClientGatewayUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceClientGatewayUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	d.Partial(true)
 
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := setTags(conn, d); err != nil {
 		return err
 	}
 
 	d.SetPartial("tags")
 
 	d.Partial(false)
-	return resourceOutscaleClientGatewayRead(d, meta)
+	return resourceClientGatewayRead(d, meta)
 }
 
-func resourceOutscaleClientGatewayDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceClientGatewayDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	gatewayID := d.Id()
 	req := oscgo.DeleteClientGatewayRequest{

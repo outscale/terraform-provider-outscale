@@ -19,12 +19,12 @@ import (
 )
 
 // Creates a network interface in the specified subnet
-func resourceOutscaleOAPINic() *schema.Resource {
+func resourceNic() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPINicCreate,
-		Read:   resourceOutscaleOAPINicRead,
-		Update: resourceOutscaleOAPINicUpdate,
-		Delete: resourceOutscaleOAPINicDelete,
+		Create: resourceNicCreate,
+		Read:   resourceNicRead,
+		Update: resourceNicUpdate,
+		Delete: resourceNicDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -32,13 +32,13 @@ func resourceOutscaleOAPINic() *schema.Resource {
 			Create: schema.DefaultTimeout(10 * time.Minute),
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
-		Schema: getOAPINicSchema(),
+		Schema: getNicSchema(),
 	}
 }
 
-func getOAPINicSchema() map[string]*schema.Schema {
+func getNicSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		//  This is attribute part for schema OAPINic
+		//  This is attribute part for schema Nic
 		"description": {
 			Type:     schema.TypeString,
 			Optional: true,
@@ -225,7 +225,7 @@ func getOAPINicSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"tags": tagsListOAPISchema(),
+		"tags": tagsListSchema(),
 		"net_id": {
 			Type:     schema.TypeString,
 			Computed: true,
@@ -233,10 +233,10 @@ func getOAPINicSchema() map[string]*schema.Schema {
 	}
 }
 
-// Create OAPINic
-func resourceOutscaleOAPINicCreate(d *schema.ResourceData, meta interface{}) error {
+// Create Nic
+func resourceNicCreate(d *schema.ResourceData, meta interface{}) error {
 
-	conn := meta.(*OutscaleClient).OSCAPI
+	conn := meta.(*Client).OSCAPI
 
 	request := oscgo.CreateNicRequest{
 		SubnetId: d.Get("subnet_id").(string),
@@ -279,7 +279,7 @@ func resourceOutscaleOAPINicCreate(d *schema.ResourceData, meta interface{}) err
 	d.SetId(resp.Nic.GetNicId())
 
 	if d.IsNewResource() {
-		if err := setOSCAPITags(conn, d); err != nil {
+		if err := setTags(conn, d); err != nil {
 			return err
 		}
 		d.SetPartial("tags")
@@ -294,14 +294,14 @@ func resourceOutscaleOAPINicCreate(d *schema.ResourceData, meta interface{}) err
 
 	log.Printf("[INFO] ENI ID: %s", d.Id())
 
-	return resourceOutscaleOAPINicRead(d, meta)
+	return resourceNicRead(d, meta)
 
 }
 
-// Read OAPINic
-func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error {
+// Read Nic
+func resourceNicRead(d *schema.ResourceData, meta interface{}) error {
 
-	conn := meta.(*OutscaleClient).OSCAPI
+	conn := meta.(*Client).OSCAPI
 	dnir := oscgo.ReadNicsRequest{
 		Filters: &oscgo.FiltersNic{
 			NicIds: &[]string{d.Id()},
@@ -438,7 +438,7 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 	if err := d.Set("state", eni.GetState()); err != nil {
 		return err
 	}
-	if err := d.Set("tags", tagsOSCAPIToMap(eni.GetTags())); err != nil {
+	if err := d.Set("tags", tagsToMap(eni.GetTags())); err != nil {
 		return err
 	}
 	if err := d.Set("net_id", eni.GetNetId()); err != nil {
@@ -448,14 +448,14 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 	return nil
 }
 
-// Delete OAPINic
-func resourceOutscaleOAPINicDelete(d *schema.ResourceData, meta interface{}) error {
+// Delete Nic
+func resourceNicDelete(d *schema.ResourceData, meta interface{}) error {
 
-	conn := meta.(*OutscaleClient).OSCAPI
+	conn := meta.(*Client).OSCAPI
 
 	log.Printf("[INFO] Deleting ENI: %s", d.Id())
 
-	err := resourceOutscaleOAPINicDetach(meta, d.Id())
+	err := resourceNicDetach(meta, d.Id())
 	if err != nil {
 		return err
 	}
@@ -480,9 +480,9 @@ func resourceOutscaleOAPINicDelete(d *schema.ResourceData, meta interface{}) err
 	return nil
 }
 
-func resourceOutscaleOAPINicDetach(meta interface{}, nicID string) error {
+func resourceNicDetach(meta interface{}, nicID string) error {
 	// if there was an old nic_link, remove it
-	conn := meta.(*OutscaleClient).OSCAPI
+	conn := meta.(*Client).OSCAPI
 
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"attaching", "detaching"},
@@ -524,16 +524,16 @@ func resourceOutscaleOAPINicDetach(meta interface{}, nicID string) error {
 	return nil
 }
 
-// Update OAPINic
-func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+// Update Nic
+func resourceNicUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 	d.Partial(true)
 	var err error
 
 	if d.HasChange("link_nic") {
 		_, na := d.GetChange("link_nic")
 
-		err := resourceOutscaleOAPINicDetach(meta, d.Id())
+		err := resourceNicDetach(meta, d.Id())
 		if err != nil {
 			return err
 		}
@@ -707,7 +707,7 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 		d.SetPartial("description")
 	}
 
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := setTags(conn, d); err != nil {
 		return err
 	}
 
@@ -715,7 +715,7 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 
 	d.Partial(false)
 
-	return resourceOutscaleOAPINicRead(d, meta)
+	return resourceNicRead(d, meta)
 }
 
 func expandPrivateIPLight(pIPs []interface{}) []oscgo.PrivateIpLight {

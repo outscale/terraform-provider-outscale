@@ -13,42 +13,42 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPIInternetServiceLink_basic(t *testing.T) {
+func TestAccInternetServiceLink_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleOSCAPIInternetServiceLinkDestroyed,
+		CheckDestroy: testAccCheckInternetServiceLinkDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleInternetServiceLinkConfig(),
+				Config: testAccInternetServiceLinkConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOSCAPIInternetServiceLinkExists("outscale_internet_service_link.outscale_internet_service_link"),
+					testAccCheckInternetServiceLinkExists("outscale_internet_service_link.outscale_internet_service_link"),
 				),
 			},
 			{
-				Config: testAccOutscaleInternetServiceLinkConfig(),
+				Config: testAccInternetServiceLinkConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOSCAPIInternetServiceLinkExists("outscale_internet_service_link.outscale_internet_service_link"),
+					testAccCheckInternetServiceLinkExists("outscale_internet_service_link.outscale_internet_service_link"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccOutscaleOAPIInternetServiceLink_importBasic(t *testing.T) {
+func TestAccInternetServiceLink_importBasic(t *testing.T) {
 	resourceName := "outscale_internet_service_link.outscale_internet_service_link"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleOSCAPIInternetServiceLinkDestroyed,
+		CheckDestroy: testAccCheckInternetServiceLinkDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleInternetServiceLinkConfig(),
+				Config: testAccInternetServiceLinkConfig(),
 			},
 			{
 				ResourceName:            resourceName,
-				ImportStateIdFunc:       testAccCheckOutscaleInternetServiceLinkImportStateIDFunc(resourceName),
+				ImportStateIdFunc:       testAccCheckInternetServiceLinkImportStateIDFunc(resourceName),
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"request_id"},
@@ -57,7 +57,7 @@ func TestAccOutscaleOAPIInternetServiceLink_importBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleInternetServiceLinkImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
+func testAccCheckInternetServiceLinkImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
 	return func(s *terraform.State) (string, error) {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
@@ -67,14 +67,14 @@ func testAccCheckOutscaleInternetServiceLinkImportStateIDFunc(resourceName strin
 	}
 }
 
-func testAccCheckOutscaleOSCAPIInternetServiceLinkExists(n string) resource.TestCheckFunc {
+func testAccCheckInternetServiceLinkExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		conn := testAccProvider.Meta().(*Client).OSCAPI
 
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("No internet gateway id is set")
@@ -100,8 +100,8 @@ func testAccCheckOutscaleOSCAPIInternetServiceLinkExists(n string) resource.Test
 	}
 }
 
-func testAccCheckOutscaleOSCAPIInternetServiceLinkDestroyed(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+func testAccCheckInternetServiceLinkDestroyed(s *terraform.State) error {
+	conn := testAccProvider.Meta().(*Client).OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_internet_service_link" {
@@ -128,7 +128,7 @@ func testAccCheckOutscaleOSCAPIInternetServiceLinkDestroyed(s *terraform.State) 
 	return nil
 }
 
-func testAccOutscaleInternetServiceLinkConfig() string {
+func testAccInternetServiceLinkConfig() string {
 	return `
 		resource "outscale_net" "outscale_net" {
 			ip_range = "10.0.0.0/16"

@@ -14,9 +14,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func datasourceOutscaleOAPIVolumes() *schema.Resource {
+func dataSourceVolumes() *schema.Resource {
 	return &schema.Resource{
-		Read: datasourceOAPIVolumesRead,
+		Read: datasourceVolumesRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -101,8 +101,8 @@ func datasourceOutscaleOAPIVolumes() *schema.Resource {
 	}
 }
 
-func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func datasourceVolumesRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
 	volumeIds, volumeIdsOk := d.GetOk("volume_id")
@@ -118,7 +118,7 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if filtersOk {
-		params.SetFilters(buildOutscaleOSCAPIDataSourceVolumesFilters(filters.(*schema.Set)))
+		params.SetFilters(buildDataSourceVolumesFilters(filters.(*schema.Set)))
 	}
 
 	log.Printf("LOG____ params: %#+v\n", params.GetFilters())
@@ -146,7 +146,7 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
 
-	if err := d.Set("volumes", getOAPIVolumes(volumes)); err != nil {
+	if err := d.Set("volumes", flattenVolumes(volumes)); err != nil {
 		return err
 	}
 
@@ -155,7 +155,7 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func getOAPIVolumes(volumes []oscgo.Volume) (res []map[string]interface{}) {
+func flattenVolumes(volumes []oscgo.Volume) (res []map[string]interface{}) {
 	for _, v := range volumes {
 		res = append(res, map[string]interface{}{
 			"creation_date":  v.CreationDate,
@@ -165,7 +165,7 @@ func getOAPIVolumes(volumes []oscgo.Volume) (res []map[string]interface{}) {
 			"snapshot_id":    v.SnapshotId,
 			"state":          v.State,
 			"subregion_name": v.SubregionName,
-			"tags":           tagsOSCAPIToMap(v.GetTags()),
+			"tags":           tagsToMap(v.GetTags()),
 			"volume_id":      v.VolumeId,
 			"volume_type":    v.VolumeType,
 		})

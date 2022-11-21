@@ -14,9 +14,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleAccessKey() *schema.Resource {
+func dataSourceAccessKey() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleAccessKeyRead,
+		Read: dataSourceAccessKeyRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"access_key_id": {
@@ -48,8 +48,8 @@ func dataSourceOutscaleAccessKey() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceAccessKeyRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
 	accessKeyID, accessKeyOk := d.GetOk("access_key_id")
@@ -61,7 +61,7 @@ func dataSourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) e
 
 	filterReq := &oscgo.FiltersAccessKeys{}
 	if filtersOk {
-		filterReq = buildOutscaleDataSourceAccessKeyFilters(filters.(*schema.Set))
+		filterReq = buildDataSourceAccessKeyFilters(filters.(*schema.Set))
 	}
 	if accessKeyOk {
 		filterReq.SetAccessKeyIds([]string{accessKeyID.(string)})
@@ -115,7 +115,7 @@ func dataSourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) e
 	return nil
 }
 
-func buildOutscaleDataSourceAccessKeyFilters(set *schema.Set) *oscgo.FiltersAccessKeys {
+func buildDataSourceAccessKeyFilters(set *schema.Set) *oscgo.FiltersAccessKeys {
 	var filters oscgo.FiltersAccessKeys
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})

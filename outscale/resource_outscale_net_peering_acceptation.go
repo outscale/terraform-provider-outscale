@@ -13,11 +13,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func resourceOutscaleOAPILinPeeringConnectionAccepter() *schema.Resource {
+func resourceLinPeeringConnectionAccepter() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPILinPeeringAccepterCreate,
-		Read:   resourceOutscaleOAPILinPeeringRead,
-		Delete: resourceOutscaleOAPILinPeeringAccepterDelete,
+		Create: resourceLinPeeringAccepterCreate,
+		Read:   resourceLinPeeringRead,
+		Delete: resourceLinPeeringAccepterDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -46,9 +46,9 @@ func resourceOutscaleOAPILinPeeringConnectionAccepter() *schema.Resource {
 					},
 				},
 			},
-			"accepter_net": vpcOAPIPeeringConnectionOptionsSchema(),
-			"source_net":   vpcOAPIPeeringConnectionOptionsSchema(),
-			"tags":         tagsOAPIListSchemaComputed(),
+			"accepter_net": vpcPeeringConnectionOptionsSchema(),
+			"source_net":   vpcPeeringConnectionOptionsSchema(),
+			"tags":         tagsListSchemaComputed(),
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -65,8 +65,8 @@ func resourceOutscaleOAPILinPeeringConnectionAccepter() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPILinPeeringAccepterCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceLinPeeringAccepterCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	id := d.Get("net_peering_id").(string)
 	d.SetId(id)
@@ -90,10 +90,10 @@ func resourceOutscaleOAPILinPeeringAccepterCreate(d *schema.ResourceData, meta i
 		return fmt.Errorf("Error creating Net Peering accepter. Details: %s", errString)
 	}
 
-	return resourceOutscaleOAPILinPeeringRead(d, meta)
+	return resourceLinPeeringRead(d, meta)
 }
 
-func resourceOutscaleOAPILinPeeringAccepterDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceLinPeeringAccepterDelete(d *schema.ResourceData, meta interface{}) error {
 	log.Printf("[WARN] Will not delete VPC peering connection. Terraform will remove this resource from the state file, however resources may remain.")
 	d.SetId("")
 	return nil

@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccOutscaleOAPISnapshotAttributes_Basic(t *testing.T) {
+func TestAccSnapshotAttributes_Basic(t *testing.T) {
 	t.Skip()
 	var snapshotID string
 	accountID := os.Getenv("OUTSCALE_ACCOUNT")
@@ -18,13 +18,13 @@ func TestAccOutscaleOAPISnapshotAttributes_Basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISnapshotAttributesConfig(true, false, accountID),
+				Config: testAccSnapshotAttributesConfig(true, false, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckResourceGetAttr("outscale_snapshot.test", "id", &snapshotID),
 				),
 			},
 			{
-				Config: testAccOutscaleOAPISnapshotAttributesConfig(true, true, accountID),
+				Config: testAccSnapshotAttributesConfig(true, true, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckResourceGetAttr("outscale_snapshot.test", "id", &snapshotID),
 				),
@@ -33,7 +33,7 @@ func TestAccOutscaleOAPISnapshotAttributes_Basic(t *testing.T) {
 	})
 }
 
-func testAccOutscaleOAPISnapshotAttributesConfig(includeAddition, includeRemoval bool, aid string) string {
+func testAccSnapshotAttributesConfig(includeAddition, includeRemoval bool, aid string) string {
 	base := fmt.Sprintf(`
 		resource "outscale_volume" "description_test" {
 			subregion_name = "eu-west-2a"

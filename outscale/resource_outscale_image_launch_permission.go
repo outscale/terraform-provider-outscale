@@ -17,12 +17,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func resourceOutscaleOAPIImageLaunchPermission() *schema.Resource {
+func resourceImageLaunchPermission() *schema.Resource {
 	return &schema.Resource{
-		Exists: resourceOutscaleOAPIImageLaunchPermissionExists,
-		Create: resourceOutscaleOAPIImageLaunchPermissionCreate,
-		Read:   resourceOutscaleOAPIImageLaunchPermissionRead,
-		Delete: resourceOutscaleOAPIImageLaunchPermissionDelete,
+		Exists: resourceImageLaunchPermissionExists,
+		Create: resourceImageLaunchPermissionCreate,
+		Read:   resourceImageLaunchPermissionRead,
+		Delete: resourceImageLaunchPermissionDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -107,14 +107,14 @@ func resourceOutscaleOAPIImageLaunchPermission() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPIImageLaunchPermissionExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceImageLaunchPermissionExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+	conn := meta.(*Client).OSCAPI
 
 	imageID := d.Get("image_id").(string)
-	return hasOAPILaunchPermission(conn, imageID)
+	return hasLaunchPermission(conn, imageID)
 }
 
-func expandOAPIImagePermission(permissionType interface{}) (res oscgo.PermissionsOnResource) {
+func expandImagePermission(permissionType interface{}) (res oscgo.PermissionsOnResource) {
 
 	if len(permissionType.([]interface{})) > 0 {
 		permission := permissionType.([]interface{})[0].(map[string]interface{})
@@ -131,8 +131,8 @@ func expandOAPIImagePermission(permissionType interface{}) (res oscgo.Permission
 	return
 }
 
-func resourceOutscaleOAPIImageLaunchPermissionCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceImageLaunchPermissionCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	imageID, ok := d.GetOk("image_id")
 
@@ -143,10 +143,10 @@ func resourceOutscaleOAPIImageLaunchPermissionCreate(d *schema.ResourceData, met
 
 	permissionLunch := oscgo.PermissionsOnResourceCreation{}
 	if permissionAdditions, ok := d.GetOk("permission_additions"); ok {
-		permissionLunch.SetAdditions(expandOAPIImagePermission(permissionAdditions))
+		permissionLunch.SetAdditions(expandImagePermission(permissionAdditions))
 	}
 	if permissionRemovals, ok := d.GetOk("permission_removals"); ok {
-		permissionLunch.SetRemovals(expandOAPIImagePermission(permissionRemovals))
+		permissionLunch.SetRemovals(expandImagePermission(permissionRemovals))
 	}
 
 	request := oscgo.UpdateImageRequest{
@@ -172,11 +172,11 @@ func resourceOutscaleOAPIImageLaunchPermissionCreate(d *schema.ResourceData, met
 
 	d.SetId(imageID.(string))
 
-	return resourceOutscaleOAPIImageLaunchPermissionRead(d, meta)
+	return resourceImageLaunchPermissionRead(d, meta)
 }
 
-func resourceOutscaleOAPIImageLaunchPermissionRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceImageLaunchPermissionRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	var resp oscgo.ReadImagesResponse
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -219,8 +219,8 @@ func resourceOutscaleOAPIImageLaunchPermissionRead(d *schema.ResourceData, meta 
 	return d.Set("permissions_to_launch", []map[string]interface{}{lp})
 }
 
-func resourceOutscaleOAPIImageLaunchPermissionDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceImageLaunchPermissionDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	imageID, ok := d.GetOk("image_id")
 	if !ok {
@@ -232,7 +232,7 @@ func resourceOutscaleOAPIImageLaunchPermissionDelete(d *schema.ResourceData, met
 		request := oscgo.UpdateImageRequest{
 			ImageId: imageID.(string),
 		}
-		permission.SetRemovals(expandOAPIImagePermission(permissionAdditions))
+		permission.SetRemovals(expandImagePermission(permissionAdditions))
 		request.SetPermissionsToLaunch(permission)
 
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -255,7 +255,7 @@ func resourceOutscaleOAPIImageLaunchPermissionDelete(d *schema.ResourceData, met
 	return nil
 }
 
-func hasOAPILaunchPermission(conn *oscgo.APIClient, imageID string) (bool, error) {
+func hasLaunchPermission(conn *oscgo.APIClient, imageID string) (bool, error) {
 	var resp oscgo.ReadImagesResponse
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error

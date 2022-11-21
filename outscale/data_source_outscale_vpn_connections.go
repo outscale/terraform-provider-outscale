@@ -12,9 +12,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleVPNConnections() *schema.Resource {
+func dataSourceVPNConnections() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleVPNConnectionsRead,
+		Read: dataSourceVPNConnectionsRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -116,8 +116,8 @@ func dataSourceOutscaleVPNConnections() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleVPNConnectionsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceVPNConnectionsRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
 	vpnConnectionIDs, vpnConnectionOk := d.GetOk("vpn_connection_ids")
@@ -136,7 +136,7 @@ func dataSourceOutscaleVPNConnectionsRead(d *schema.ResourceData, meta interface
 	}
 
 	if filtersOk {
-		params.Filters = buildOutscaleDataSourceVPNConnectionFilters(filters.(*schema.Set))
+		params.Filters = buildDataSourceVPNConnectionFilters(filters.(*schema.Set))
 	}
 
 	var resp oscgo.ReadVpnConnectionsResponse
@@ -177,7 +177,7 @@ func flattenVPNConnections(vpnConnections []oscgo.VpnConnection) []map[string]in
 			"client_gateway_configuration": vpnConnection.GetClientGatewayConfiguration(),
 			"state":                        vpnConnection.GetState(),
 			"routes":                       flattenVPNConnection(vpnConnection.GetRoutes()),
-			"tags":                         tagsOSCAPIToMap(vpnConnection.GetTags()),
+			"tags":                         tagsToMap(vpnConnection.GetTags()),
 			"vgw_telemetries":              flattenVgwTelemetries(vpnConnection.GetVgwTelemetries()),
 		}
 	}

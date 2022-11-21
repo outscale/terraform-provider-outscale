@@ -14,12 +14,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func resourceOutscaleOAPISnapshotExportTask() *schema.Resource {
+func resourceSnapshotExportTask() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOAPISnapshotExportTaskCreate,
-		Read:   resourceOAPISnapshotExportTaskRead,
-		Update: resourceOAPISnapshotExportTaskUpdate,
-		Delete: resourceOAPISnapshotExportTaskDelete,
+		Create: resourceSnapshotExportTaskCreate,
+		Read:   resourceSnapshotExportTaskRead,
+		Update: resourceSnapshotExportTaskUpdate,
+		Delete: resourceSnapshotExportTaskDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -99,13 +99,13 @@ func resourceOutscaleOAPISnapshotExportTask() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": tagsListOAPISchema(),
+			"tags": tagsListSchema(),
 		},
 	}
 }
 
-func resourceOAPISnapshotExportTaskCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceSnapshotExportTaskCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	eto, etoOk := d.GetOk("osu_export")
 	v, ok := d.GetOk("snapshot_id")
@@ -169,21 +169,21 @@ func resourceOAPISnapshotExportTaskCreate(d *schema.ResourceData, meta interface
 	id := resp.SnapshotExportTask.GetTaskId()
 	d.SetId(id)
 	if d.IsNewResource() {
-		if err := setOSCAPITags(conn, d); err != nil {
+		if err := setTags(conn, d); err != nil {
 			return err
 		}
 		d.SetPartial("tags")
 	}
-	_, err = resourceOutscaleSnapshotTaskWaitForAvailable(id, conn)
+	_, err = resourceSnapshotTaskWaitForAvailable(id, conn)
 	if err != nil {
 		return err
 	}
 
-	return resourceOAPISnapshotExportTaskRead(d, meta)
+	return resourceSnapshotExportTaskRead(d, meta)
 }
 
-func resourceOAPISnapshotExportTaskRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceSnapshotExportTaskRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	var resp oscgo.ReadSnapshotExportTasksResponse
 	filter := &oscgo.FiltersExportTask{TaskIds: &[]string{d.Id()}}
@@ -254,37 +254,37 @@ func resourceOAPISnapshotExportTaskRead(d *schema.ResourceData, meta interface{}
 	if err = d.Set("osu_export", exp); err != nil {
 		return err
 	}
-	if err = d.Set("tags", tagsOSCAPIToMap(v.GetTags())); err != nil {
+	if err = d.Set("tags", tagsToMap(v.GetTags())); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func resourceOAPISnapshotExportTaskUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceSnapshotExportTaskUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	d.Partial(true)
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := setTags(conn, d); err != nil {
 		return err
 	}
 	d.SetPartial("tags")
 
 	d.Partial(false)
 
-	return resourceOAPISnapshotExportTaskRead(d, meta)
+	return resourceSnapshotExportTaskRead(d, meta)
 }
 
-func resourceOutscaleSnapshotTaskWaitForAvailable(id string, client *oscgo.APIClient) (oscgo.SnapshotExportTask, error) {
+func resourceSnapshotTaskWaitForAvailable(id string, client *oscgo.APIClient) (oscgo.SnapshotExportTask, error) {
 	log.Printf("Waiting for Image Task %s to become available...", id)
 	var snap oscgo.SnapshotExportTask
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending", "pending/queued", "queued"},
 		Target:     []string{"completed", "active"},
 		Refresh:    SnapshotTaskStateRefreshFunc(client, id),
-		Timeout:    OutscaleImageRetryTimeout,
-		Delay:      OutscaleImageRetryDelay,
-		MinTimeout: OutscaleImageRetryMinTimeout,
+		Timeout:    ImageRetryTimeout,
+		Delay:      ImageRetryDelay,
+		MinTimeout: ImageRetryMinTimeout,
 	}
 
 	info, err := stateConf.WaitForState()
@@ -295,7 +295,7 @@ func resourceOutscaleSnapshotTaskWaitForAvailable(id string, client *oscgo.APICl
 	return snap, nil
 }
 
-func resourceOAPISnapshotExportTaskDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceSnapshotExportTaskDelete(d *schema.ResourceData, meta interface{}) error {
 	d.SetId("")
 	if err := d.Set("osu_export", nil); err != nil {
 		return err

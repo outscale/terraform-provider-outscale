@@ -141,7 +141,7 @@ func attrLBSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"tags": tagsListOAPISchema2(true),
+					"tags": tagsListSchema2(true),
 					"security_groups": {
 						Type:     schema.TypeList,
 						Computed: true,
@@ -190,16 +190,16 @@ func attrLBSchema() map[string]*schema.Schema {
 	}
 }
 
-func dataSourceOutscaleOAPILoadBalancers() *schema.Resource {
+func dataSourceLoadBalancers() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPILoadBalancersRead,
+		Read: dataSourceLoadBalancersRead,
 
 		Schema: getDataSourceSchemas(attrLBSchema()),
 	}
 }
 
-func dataSourceOutscaleOAPILoadBalancersRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceLoadBalancersRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	resp, _, err := readLbs_(conn, d, schema.TypeList)
 	if err != nil {
@@ -216,11 +216,11 @@ func dataSourceOutscaleOAPILoadBalancersRead(d *schema.ResourceData, meta interf
 
 		l["subregion_names"] = v.SubregionNames
 		l["dns_name"] = *v.DnsName
-		l["access_log"] = flattenOAPIAccessLog(v.AccessLog)
-		l["health_check"] = flattenOAPIHealthCheck(v.HealthCheck)
+		l["access_log"] = flattenAccessLog(v.AccessLog)
+		l["health_check"] = flattenHealthCheck(v.HealthCheck)
 		l["backend_vm_ids"] = flattenStringList(v.BackendVmIds)
 		if v.Listeners != nil {
-			l["listeners"] = flattenOAPIListeners(v.Listeners)
+			l["listeners"] = flattenListeners(v.Listeners)
 		} else {
 			l["listeners"] = make([]interface{}, 0)
 		}

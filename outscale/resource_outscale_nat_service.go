@@ -13,12 +13,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func resourceOutscaleOAPINatService() *schema.Resource {
+func resourceNatService() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOAPINatServiceCreate,
-		Read:   resourceOAPINatServiceRead,
-		Delete: resourceOAPINatServiceDelete,
-		Update: resourceOutscaleOAPINatServiceUpdate,
+		Create: resourceNatServiceCreate,
+		Read:   resourceNatServiceRead,
+		Delete: resourceNatServiceDelete,
+		Update: resourceNatServiceUpdate,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -66,13 +66,13 @@ func resourceOutscaleOAPINatService() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": tagsListOAPISchema(),
+			"tags": tagsListSchema(),
 		},
 	}
 }
 
-func resourceOAPINatServiceCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceNatServiceCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	req := oscgo.CreateNatServiceRequest{
 		PublicIpId: d.Get("public_ip_id").(string),
@@ -112,7 +112,7 @@ func resourceOAPINatServiceCreate(d *schema.ResourceData, meta interface{}) erro
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"pending"},
 		Target:  []string{"available"},
-		Refresh: NGOAPIStateRefreshFunc(conn, filterReq, "failed"),
+		Refresh: NGStateRefreshFunc(conn, filterReq, "failed"),
 		Timeout: 10 * time.Minute,
 	}
 
@@ -129,11 +129,11 @@ func resourceOAPINatServiceCreate(d *schema.ResourceData, meta interface{}) erro
 
 	d.SetId(natService.GetNatServiceId())
 
-	return resourceOAPINatServiceRead(d, meta)
+	return resourceNatServiceRead(d, meta)
 }
 
-func resourceOAPINatServiceRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceNatServiceRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	filterReq := oscgo.ReadNatServicesRequest{
 		Filters: &oscgo.FiltersNatService{NatServiceIds: &[]string{d.Id()}},
@@ -142,7 +142,7 @@ func resourceOAPINatServiceRead(d *schema.ResourceData, meta interface{}) error 
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"pending"},
 		Target:  []string{"available", "deleted"},
-		Refresh: NGOAPIStateRefreshFunc(conn, filterReq, "failed"),
+		Refresh: NGStateRefreshFunc(conn, filterReq, "failed"),
 		Timeout: 10 * time.Minute,
 	}
 
@@ -177,7 +177,7 @@ func resourceOAPINatServiceRead(d *schema.ResourceData, meta interface{}) error 
 		}
 
 		public_ips := natService.GetPublicIps()
-		if err := set("public_ips", getOSCPublicIPs(public_ips)); err != nil {
+		if err := set("public_ips", flattenPublicIPs(public_ips)); err != nil {
 			return err
 		}
 
@@ -185,7 +185,7 @@ func resourceOAPINatServiceRead(d *schema.ResourceData, meta interface{}) error 
 			return err
 		}
 
-		if err := d.Set("tags", tagsOSCAPIToMap(natService.GetTags())); err != nil {
+		if err := d.Set("tags", tagsToMap(natService.GetTags())); err != nil {
 			fmt.Printf("[WARN] ERROR TAGS PROBLEME (%s)", err)
 		}
 
@@ -193,23 +193,23 @@ func resourceOAPINatServiceRead(d *schema.ResourceData, meta interface{}) error 
 	})
 }
 
-func resourceOutscaleOAPINatServiceUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceNatServiceUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	d.Partial(true)
 
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := setTags(conn, d); err != nil {
 		return err
 	}
 
 	d.SetPartial("tags")
 
 	d.Partial(false)
-	return resourceOAPINatServiceRead(d, meta)
+	return resourceNatServiceRead(d, meta)
 }
 
-func resourceOAPINatServiceDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceNatServiceDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	log.Printf("[INFO] Deleting NAT Service: %s\n", d.Id())
 	err := resource.Retry(120*time.Second, func() *resource.RetryError {
@@ -233,7 +233,7 @@ func resourceOAPINatServiceDelete(d *schema.ResourceData, meta interface{}) erro
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"deleting"},
 		Target:     []string{"deleted", "available"},
-		Refresh:    NGOAPIStateRefreshFunc(conn, filterReq, "failed"),
+		Refresh:    NGStateRefreshFunc(conn, filterReq, "failed"),
 		Timeout:    30 * time.Minute,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
@@ -246,9 +246,9 @@ func resourceOAPINatServiceDelete(d *schema.ResourceData, meta interface{}) erro
 	return nil
 }
 
-// NGOAPIStateRefreshFunc returns a resource.StateRefreshFunc that is used to watch
+// NGStateRefreshFunc returns a resource.StateRefreshFunc that is used to watch
 // a NAT Service.
-func NGOAPIStateRefreshFunc(client *oscgo.APIClient, req oscgo.ReadNatServicesRequest, failState string) resource.StateRefreshFunc {
+func NGStateRefreshFunc(client *oscgo.APIClient, req oscgo.ReadNatServicesRequest, failState string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		var resp oscgo.ReadNatServicesResponse
 		err := resource.Retry(120*time.Second, func() *resource.RetryError {
@@ -278,7 +278,7 @@ func NGOAPIStateRefreshFunc(client *oscgo.APIClient, req oscgo.ReadNatServicesRe
 	}
 }
 
-func getOSCPublicIPs(publicIps []oscgo.PublicIpLight) (res []map[string]interface{}) {
+func flattenPublicIPs(publicIps []oscgo.PublicIpLight) (res []map[string]interface{}) {
 	for _, p := range publicIps {
 		res = append(res, map[string]interface{}{
 			"public_ip_id": p.GetPublicIpId(),

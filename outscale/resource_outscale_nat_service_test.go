@@ -13,44 +13,44 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPINatService_basic(t *testing.T) {
+func TestAccNatService_basic(t *testing.T) {
 	var natService oscgo.NatService
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOAPINatGatewayDestroy,
+		CheckDestroy: testAccCheckNatGatewayDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPINatGatewayConfig,
+				Config: testAccNatGatewayConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPINatGatewayExists("outscale_nat_service.outscale_nat_service", &natService),
+					testAccCheckNatGatewayExists("outscale_nat_service.outscale_nat_service", &natService),
 				),
 			},
 		},
 	})
 }
 
-func TestAccOutscaleOAPINatService_basicWithDataSource(t *testing.T) {
+func TestAccNatService_basicWithDataSource(t *testing.T) {
 	var natService oscgo.NatService
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOAPINatGatewayDestroy,
+		CheckDestroy: testAccCheckNatGatewayDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPINatGatewayConfigWithDataSource,
+				Config: testAccNatGatewayConfigWithDataSource,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPINatGatewayExists("outscale_nat_service.outscale_nat_service", &natService),
+					testAccCheckNatGatewayExists("outscale_nat_service.outscale_nat_service", &natService),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckOAPINatGatewayDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+func testAccCheckNatGatewayDestroy(s *terraform.State) error {
+	conn := testAccProvider.Meta().(*Client).OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_nat_service" {
@@ -78,7 +78,7 @@ func testAccCheckOAPINatGatewayDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOAPINatGatewayExists(n string, ns *oscgo.NatService) resource.TestCheckFunc {
+func testAccCheckNatGatewayExists(n string, ns *oscgo.NatService) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -89,7 +89,7 @@ func testAccCheckOAPINatGatewayExists(n string, ns *oscgo.NatService) resource.T
 			return fmt.Errorf("No ID is set")
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		conn := testAccProvider.Meta().(*Client).OSCAPI
 
 		filterReq := oscgo.ReadNatServicesRequest{
 			Filters: &oscgo.FiltersNatService{NatServiceIds: &[]string{rs.Primary.ID}},
@@ -115,7 +115,7 @@ func testAccCheckOAPINatGatewayExists(n string, ns *oscgo.NatService) resource.T
 	}
 }
 
-const testAccOAPINatGatewayConfig = `
+const testAccNatGatewayConfig = `
 	resource "outscale_net" "outscale_net" {
 		ip_range = "10.0.0.0/16"
 
@@ -162,7 +162,7 @@ const testAccOAPINatGatewayConfig = `
 	}
 `
 
-const testAccOAPINatGatewayConfigWithDataSource = `
+const testAccNatGatewayConfigWithDataSource = `
 	resource "outscale_net" "outscale_net" {
 		ip_range = "10.0.0.0/16"
 

@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccOutscaleOAPITagDataSource(t *testing.T) {
+func TestAccTagDataSource(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 
 	resource.Test(t, resource.TestCase{
@@ -16,7 +16,7 @@ func TestAccOutscaleOAPITagDataSource(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPITagDataSourceConfig(omi, "tinav4.c2r2p2"),
+				Config: testAccTagDataSourceConfig(omi, "tinav4.c2r2p2"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"data.outscale_tag.web", "key", "Name"),
@@ -31,7 +31,7 @@ func TestAccOutscaleOAPITagDataSource(t *testing.T) {
 }
 
 // Lookup based on InstanceID
-func testAccOAPITagDataSourceConfig(omi, vmType string) string {
+func testAccTagDataSourceConfig(omi, vmType string) string {
 	return fmt.Sprintf(`
 		resource "outscale_vm" "basic" {
 			image_id            = "%s"

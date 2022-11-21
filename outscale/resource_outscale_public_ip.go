@@ -13,12 +13,12 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func resourceOutscaleOAPIPublicIP() *schema.Resource {
+func resourcePublicIP() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPIPublicIPCreate,
-		Read:   resourceOutscaleOAPIPublicIPRead,
-		Delete: resourceOutscaleOAPIPublicIPDelete,
-		Update: resourceOutscaleOAPIPublicIPUpdate,
+		Create: resourcePublicIPCreate,
+		Read:   resourcePublicIPRead,
+		Delete: resourcePublicIPDelete,
+		Update: resourcePublicIPUpdate,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -28,12 +28,12 @@ func resourceOutscaleOAPIPublicIP() *schema.Resource {
 			Delete: schema.DefaultTimeout(30 * time.Minute),
 		},
 
-		Schema: getOAPIPublicIPSchema(),
+		Schema: getPublicIPSchema(),
 	}
 }
 
-func resourceOutscaleOAPIPublicIPCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourcePublicIPCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	allocOpts := oscgo.CreatePublicIpRequest{}
 
@@ -67,11 +67,11 @@ func resourceOutscaleOAPIPublicIPCreate(d *schema.ResourceData, meta interface{}
 	}
 
 	log.Printf("[INFO] EIP ID: %s (placement: %v)", d.Id(), allocResp.GetPublicIp())
-	return resourceOutscaleOAPIPublicIPUpdate(d, meta)
+	return resourcePublicIPUpdate(d, meta)
 }
 
-func resourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourcePublicIPRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	id := d.Id()
 
@@ -129,7 +129,7 @@ func resourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) 
 		return err
 	}
 
-	if err := d.Set("tags", tagsOSCAPIToMap(publicIP.GetTags())); err != nil {
+	if err := d.Set("tags", tagsToMap(publicIP.GetTags())); err != nil {
 		log.Printf("[WARN] error setting tags for PublicIp(%s): %s", publicIP.GetPublicIp(), err)
 	}
 
@@ -138,8 +138,8 @@ func resourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) 
 	return nil
 }
 
-func resourceOutscaleOAPIPublicIPUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourcePublicIPUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	vVm, okInstance := d.GetOk("vm_id")
 	vNic, okInterface := d.GetOk("nic_id")
@@ -186,7 +186,7 @@ func resourceOutscaleOAPIPublicIPUpdate(d *schema.ResourceData, meta interface{}
 	}
 	d.Partial(true)
 
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := setTags(conn, d); err != nil {
 		return err
 	}
 
@@ -194,7 +194,7 @@ func resourceOutscaleOAPIPublicIPUpdate(d *schema.ResourceData, meta interface{}
 
 	d.Partial(false)
 
-	return resourceOutscaleOAPIPublicIPRead(d, meta)
+	return resourcePublicIPRead(d, meta)
 }
 
 func unlinkPublicIp(conn *oscgo.APIClient, publicIpId *string) error {
@@ -211,10 +211,10 @@ func unlinkPublicIp(conn *oscgo.APIClient, publicIpId *string) error {
 	return err
 }
 
-func resourceOutscaleOAPIPublicIPDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourcePublicIPDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
-	if err := resourceOutscaleOAPIPublicIPRead(d, meta); err != nil {
+	if err := resourcePublicIPRead(d, meta); err != nil {
 		return err
 	}
 	if d.Id() == "" {
@@ -227,7 +227,7 @@ func resourceOutscaleOAPIPublicIPDelete(d *schema.ResourceData, meta interface{}
 	if (okInstance && vInstance.(string) != "") || (okAssociationID && linkPublicIPID.(string) != "") {
 		log.Printf("[DEBUG] Disassociating EIP: %s", d.Id())
 		var err error
-		switch resourceOutscaleOAPIPublicIPDomain(d) {
+		switch resourcePublicIPDomain(d) {
 		case "vpc":
 			linIpId := d.Get("link_public_ip_id").(string)
 			err = unlinkPublicIp(conn, &linIpId)
@@ -260,7 +260,7 @@ func resourceOutscaleOAPIPublicIPDelete(d *schema.ResourceData, meta interface{}
 	})
 }
 
-func getOAPIPublicIPSchema() map[string]*schema.Schema {
+func getPublicIPSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"public_ip_id": {
 			Type:     schema.TypeString,
@@ -294,11 +294,11 @@ func getOAPIPublicIPSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"tags": tagsListOAPISchema(),
+		"tags": tagsListSchema(),
 	}
 }
 
-func resourceOutscaleOAPIPublicIPDomain(d *schema.ResourceData) string {
+func resourcePublicIPDomain(d *schema.ResourceData) string {
 	if v, ok := d.GetOk("placement"); ok {
 		return v.(string)
 	} else if strings.Contains(d.Id(), "eipalloc") {

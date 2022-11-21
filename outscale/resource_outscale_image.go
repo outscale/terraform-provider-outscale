@@ -14,22 +14,22 @@ import (
 )
 
 const (
-	// OutscaleImageRetryTimeout ...
-	OutscaleImageRetryTimeout = 40 * time.Minute
-	// OutscaleImageDeleteRetryTimeout ...
-	OutscaleImageDeleteRetryTimeout = 90 * time.Minute
-	// OutscaleImageRetryDelay ...
-	OutscaleImageRetryDelay = 20 * time.Second
-	// OutscaleImageRetryMinTimeout ...
-	OutscaleImageRetryMinTimeout = 3 * time.Second
+	// ImageRetryTimeout ...
+	ImageRetryTimeout = 40 * time.Minute
+	// ImageDeleteRetryTimeout ...
+	ImageDeleteRetryTimeout = 90 * time.Minute
+	// ImageRetryDelay ...
+	ImageRetryDelay = 20 * time.Second
+	// ImageRetryMinTimeout ...
+	ImageRetryMinTimeout = 3 * time.Second
 )
 
-func resourceOutscaleOAPIImage() *schema.Resource {
+func resourceImage() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOAPIImageCreate,
-		Read:   resourceOAPIImageRead,
-		Update: resourceOAPIImageUpdate,
-		Delete: resourceOAPIImageDelete,
+		Create: resourceImageCreate,
+		Read:   resourceImageRead,
+		Update: resourceImageUpdate,
+		Delete: resourceImageDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -210,7 +210,7 @@ func resourceOutscaleOAPIImage() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": tagsListOAPISchema(),
+			"tags": tagsListSchema(),
 			"vm_id": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -220,8 +220,8 @@ func resourceOutscaleOAPIImage() *schema.Resource {
 	}
 }
 
-func resourceOAPIImageCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceImageCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	imageRequest := oscgo.CreateImageRequest{}
 	if v, ok := d.GetOk("image_name"); ok {
@@ -236,7 +236,7 @@ func resourceOAPIImageCreate(d *schema.ResourceData, meta interface{}) error {
 		imageRequest.SetDescription(v.(string))
 	}
 	if blocks, ok := d.GetOk("block_device_mappings"); ok {
-		blockDevices := expandOmiBlockDeviceOApiMappings(blocks.([]interface{}))
+		blockDevices := expandOmiBlockDeviceMappings(blocks.([]interface{}))
 		imageRequest.SetBlockDeviceMappings(blockDevices)
 	}
 	if v, ok := d.GetOk("no_reboot"); ok {
@@ -290,7 +290,7 @@ func resourceOAPIImageCreate(d *schema.ResourceData, meta interface{}) error {
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending"},
 		Target:     []string{"available"},
-		Refresh:    ImageOAPIStateRefreshFunc(conn, req, "failed"),
+		Refresh:    ImageStateRefreshFunc(conn, req, "failed"),
 		Timeout:    10 * time.Minute,
 		MinTimeout: 30 * time.Second,
 		Delay:      1 * time.Minute,
@@ -310,11 +310,11 @@ func resourceOAPIImageCreate(d *schema.ResourceData, meta interface{}) error {
 
 	d.SetId(*image.ImageId)
 
-	return resourceOAPIImageRead(d, meta)
+	return resourceImageRead(d, meta)
 }
 
-func resourceOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceImageRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 	id := d.Id()
 
 	req := oscgo.ReadImagesRequest{
@@ -382,19 +382,19 @@ func resourceOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
 		if err := set("state", image.State); err != nil {
 			return err
 		}
-		if err := set("block_device_mappings", omiOAPIBlockDeviceMappings(image.GetBlockDeviceMappings())); err != nil {
+		if err := set("block_device_mappings", omiBlockDeviceMappings(image.GetBlockDeviceMappings())); err != nil {
 			return err
 		}
 		if err := set("product_codes", image.ProductCodes); err != nil {
 			return err
 		}
-		if err := set("state_comment", omiOAPIStateReason(image.StateComment)); err != nil {
+		if err := set("state_comment", omiStateReason(image.StateComment)); err != nil {
 			return err
 		}
 		if err := set("permissions_to_launch", setResourcePermissions(*image.PermissionsToLaunch)); err != nil {
 			return err
 		}
-		if err := d.Set("tags", tagsOSCAPIToMap(image.GetTags())); err != nil {
+		if err := d.Set("tags", tagsToMap(image.GetTags())); err != nil {
 			fmt.Printf("[WARN] ERROR TAGS PROBLEME (%s)", err)
 		}
 
@@ -411,22 +411,22 @@ func setResourcePermissions(por oscgo.PermissionsOnResource) []map[string]interf
 	}
 }
 
-func resourceOAPIImageUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceImageUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	d.Partial(true)
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := setTags(conn, d); err != nil {
 		return err
 	}
 	d.SetPartial("tags")
 
 	d.Partial(false)
 
-	return resourceOAPIImageRead(d, meta)
+	return resourceImageRead(d, meta)
 }
 
-func resourceOAPIImageDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceImageDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
@@ -443,7 +443,7 @@ func resourceOAPIImageDelete(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error deleting the image %s", err)
 	}
 
-	if err := resourceOutscaleOAPIImageWaitForDestroy(d.Id(), conn); err != nil {
+	if err := resourceImageWaitForDestroy(d.Id(), conn); err != nil {
 		return err
 	}
 
@@ -451,7 +451,7 @@ func resourceOAPIImageDelete(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceOutscaleOAPIImageWaitForDestroy(id string, conn *oscgo.APIClient) error {
+func resourceImageWaitForDestroy(id string, conn *oscgo.APIClient) error {
 	log.Printf("[INFO] Waiting for OMI %s to be deleted...", id)
 
 	filterReq := oscgo.ReadImagesRequest{
@@ -461,7 +461,7 @@ func resourceOutscaleOAPIImageWaitForDestroy(id string, conn *oscgo.APIClient) e
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"available", "pending"},
 		Target:     []string{"destroyed", "failed"},
-		Refresh:    ImageOAPIStateRefreshFunc(conn, filterReq, "failed"),
+		Refresh:    ImageStateRefreshFunc(conn, filterReq, "failed"),
 		Timeout:    10 * time.Minute,
 		MinTimeout: 30 * time.Second,
 		Delay:      1 * time.Minute,
@@ -474,8 +474,8 @@ func resourceOutscaleOAPIImageWaitForDestroy(id string, conn *oscgo.APIClient) e
 	return nil
 }
 
-// ImageOAPIStateRefreshFunc ...
-func ImageOAPIStateRefreshFunc(client *oscgo.APIClient, req oscgo.ReadImagesRequest, failState string) resource.StateRefreshFunc {
+// ImageStateRefreshFunc ...
+func ImageStateRefreshFunc(client *oscgo.APIClient, req oscgo.ReadImagesRequest, failState string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		var resp oscgo.ReadImagesResponse
 		var err error
@@ -511,7 +511,7 @@ func ImageOAPIStateRefreshFunc(client *oscgo.APIClient, req oscgo.ReadImagesRequ
 }
 
 // Returns a set of block device mappings.
-func omiOAPIBlockDeviceMappings(m []oscgo.BlockDeviceMappingImage) []map[string]interface{} {
+func omiBlockDeviceMappings(m []oscgo.BlockDeviceMappingImage) []map[string]interface{} {
 	blockDeviceMapping := make([]map[string]interface{}, len(m))
 
 	for k, v := range m {
@@ -519,14 +519,14 @@ func omiOAPIBlockDeviceMappings(m []oscgo.BlockDeviceMappingImage) []map[string]
 		block["device_name"] = v.GetDeviceName()
 		block["virtual_device_name"] = v.GetVirtualDeviceName()
 		if val, ok := v.GetBsuOk(); ok {
-			block["bsu"] = getOAPIBsuToCreate(*val)
+			block["bsu"] = getBsuToCreate(*val)
 		}
 		blockDeviceMapping[k] = block
 	}
 	return blockDeviceMapping
 }
 
-func getOAPIBsuToCreate(bsu oscgo.BsuToCreate) []map[string]interface{} {
+func getBsuToCreate(bsu oscgo.BsuToCreate) []map[string]interface{} {
 	return []map[string]interface{}{{
 		"delete_on_vm_deletion": bsu.GetDeleteOnVmDeletion(),
 		"iops":                  bsu.GetIops(),
@@ -536,7 +536,7 @@ func getOAPIBsuToCreate(bsu oscgo.BsuToCreate) []map[string]interface{} {
 	}}
 }
 
-func expandOmiBlockDeviceOApiMappings(blocks []interface{}) []oscgo.BlockDeviceMappingImage {
+func expandOmiBlockDeviceMappings(blocks []interface{}) []oscgo.BlockDeviceMappingImage {
 	var blockDevices []oscgo.BlockDeviceMappingImage
 
 	for _, v := range blocks {
@@ -584,7 +584,7 @@ func expandOmiBlockDeviceBSU(bsu []interface{}) oscgo.BsuToCreate {
 }
 
 // Returns the state reason.
-func omiOAPIStateReason(m *oscgo.StateComment) []map[string]interface{} {
+func omiStateReason(m *oscgo.StateComment) []map[string]interface{} {
 	return []map[string]interface{}{{
 		"state_code":    m.GetStateCode(),
 		"state_message": m.GetStateMessage(),

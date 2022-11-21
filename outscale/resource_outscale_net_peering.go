@@ -17,12 +17,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func resourceOutscaleOAPILinPeeringConnection() *schema.Resource {
+func resourceLinPeeringConnection() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPILinPeeringCreate,
-		Read:   resourceOutscaleOAPILinPeeringRead,
-		Update: resourceOutscaleOAPINetPeeringUpdate,
-		Delete: resourceOutscaleOAPILinPeeringDelete,
+		Create: resourceLinPeeringCreate,
+		Read:   resourceLinPeeringRead,
+		Update: resourceNetPeeringUpdate,
+		Delete: resourceLinPeeringDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -66,9 +66,9 @@ func resourceOutscaleOAPILinPeeringConnection() *schema.Resource {
 					},
 				},
 			},
-			"accepter_net": vpcOAPIPeeringConnectionOptionsSchema(),
-			"source_net":   vpcOAPIPeeringConnectionOptionsSchema(),
-			"tags":         tagsListOAPISchema(),
+			"accepter_net": vpcPeeringConnectionOptionsSchema(),
+			"source_net":   vpcPeeringConnectionOptionsSchema(),
+			"tags":         tagsListSchema(),
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -77,8 +77,8 @@ func resourceOutscaleOAPILinPeeringConnection() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPILinPeeringCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceLinPeeringCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	// Create the vpc peering connection
 	createOpts := oscgo.CreateNetPeeringRequest{
@@ -123,7 +123,7 @@ func resourceOutscaleOAPILinPeeringCreate(d *schema.ResourceData, meta interface
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"initiating-request", "provisioning", "pending"},
 		Target:  []string{"pending-acceptance", "active"},
-		Refresh: resourceOutscaleOAPILinPeeringConnectionStateRefreshFunc(conn, d.Id()),
+		Refresh: resourceLinPeeringConnectionStateRefreshFunc(conn, d.Id()),
 		Timeout: 1 * time.Minute,
 	}
 	if _, err := stateConf.WaitForState(); err != nil {
@@ -132,11 +132,11 @@ func resourceOutscaleOAPILinPeeringCreate(d *schema.ResourceData, meta interface
 			d.Id()), err)
 	}
 
-	return resourceOutscaleOAPILinPeeringRead(d, meta)
+	return resourceLinPeeringRead(d, meta)
 }
 
-func resourceOutscaleOAPILinPeeringRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceLinPeeringRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 	var resp oscgo.ReadNetPeeringsResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -225,30 +225,30 @@ func resourceOutscaleOAPILinPeeringRead(d *schema.ResourceData, meta interface{}
 	if err := d.Set("net_peering_id", pc.GetNetPeeringId()); err != nil {
 		return err
 	}
-	if err := d.Set("tags", tagsOSCAPIToMap(pc.GetTags())); err != nil {
+	if err := d.Set("tags", tagsToMap(pc.GetTags())); err != nil {
 		return errwrap.Wrapf("Error setting Net Peering tags: {{err}}", err)
 	}
 
 	return nil
 }
 
-func resourceOutscaleOAPINetPeeringUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceNetPeeringUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	d.Partial(true)
 
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := setTags(conn, d); err != nil {
 		return err
 	}
 
 	d.SetPartial("tags")
 
 	d.Partial(false)
-	return resourceOutscaleOAPILinPeeringRead(d, meta)
+	return resourceLinPeeringRead(d, meta)
 }
 
-func resourceOutscaleOAPILinPeeringDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceLinPeeringDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -270,9 +270,9 @@ func resourceOutscaleOAPILinPeeringDelete(d *schema.ResourceData, meta interface
 	return nil
 }
 
-// resourceOutscaleOAPILinPeeringConnectionStateRefreshFunc returns a resource.StateRefreshFunc that is used to watch
+// resourceLinPeeringConnectionStateRefreshFunc returns a resource.StateRefreshFunc that is used to watch
 // a VPCPeeringConnection.
-func resourceOutscaleOAPILinPeeringConnectionStateRefreshFunc(conn *oscgo.APIClient, id string) resource.StateRefreshFunc {
+func resourceLinPeeringConnectionStateRefreshFunc(conn *oscgo.APIClient, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		var resp oscgo.ReadNetPeeringsResponse
 		var err error
@@ -311,7 +311,7 @@ func resourceOutscaleOAPILinPeeringConnectionStateRefreshFunc(conn *oscgo.APICli
 	}
 }
 
-func vpcOAPIPeeringConnectionOptionsSchema() *schema.Schema {
+func vpcPeeringConnectionOptionsSchema() *schema.Schema {
 	return &schema.Schema{
 		Type:     schema.TypeMap,
 		Computed: true,

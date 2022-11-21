@@ -13,11 +13,11 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func datasourceOutscaleOApiVMS() *schema.Resource {
+func dataSourceVMS() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOApiVMSRead,
+		Read: dataSourceVMSRead,
 
-		Schema: datasourceOutscaleOApiVMSSchema(),
+		Schema: dataSourceVMSSchema(),
 	}
 }
 
@@ -43,14 +43,14 @@ func dataSourceFiltersSchema() *schema.Schema {
 	}
 }
 
-func datasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
+func dataSourceVMSSchema() map[string]*schema.Schema {
 	wholeSchema := map[string]*schema.Schema{
 		"filter": dataSourceFiltersSchema(),
 		"vms": {
 			Type:     schema.TypeList,
 			Computed: true,
 			Elem: &schema.Resource{
-				Schema: getOApiVMAttributesSchema(),
+				Schema: getVMAttributesSchema(),
 			},
 		},
 		"request_id": {
@@ -62,8 +62,8 @@ func datasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
 	return wholeSchema
 }
 
-func dataSourceOutscaleOApiVMSRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*OutscaleClient).OSCAPI
+func dataSourceVMSRead(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*Client).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
 	vmID, vmIDOk := d.GetOk("vm_id")
@@ -75,7 +75,7 @@ func dataSourceOutscaleOApiVMSRead(d *schema.ResourceData, meta interface{}) err
 	// Build up search parameters
 	params := oscgo.ReadVmsRequest{}
 	if filtersOk {
-		params.Filters = buildOutscaleOAPIDataSourceVMFilters(filters.(*schema.Set))
+		params.Filters = buildDataSourceVMFilters(filters.(*schema.Set))
 	}
 	if vmIDOk {
 		params.Filters.VmIds = &[]string{vmID.(string)}
@@ -114,10 +114,10 @@ func dataSourceOutscaleOApiVMSRead(d *schema.ResourceData, meta interface{}) err
 	}
 
 	d.SetId(resource.UniqueId())
-	return d.Set("vms", dataSourceOAPIVMS(filteredVms))
+	return d.Set("vms", flattenVMS(filteredVms))
 }
 
-func dataSourceOAPIVMS(i []oscgo.Vm) []map[string]interface{} {
+func flattenVMS(i []oscgo.Vm) []map[string]interface{} {
 	vms := make([]map[string]interface{}, len(i))
 	for index, v := range i {
 		vm := make(map[string]interface{})
@@ -127,11 +127,11 @@ func dataSourceOAPIVMS(i []oscgo.Vm) []map[string]interface{} {
 			return nil
 		}
 
-		if err := oapiVMDescriptionAttributes(setterFunc, &v); err != nil {
-			log.Fatalf("[DEBUG] oapiVMDescriptionAttributes ERROR %+v", err)
+		if err := setVMAttributes(setterFunc, &v); err != nil {
+			log.Fatalf("[DEBUG] setVMAttributes ERROR %+v", err)
 		}
 
-		vm["tags"] = getOscAPITagSet(v.GetTags())
+		vm["tags"] = getTagSet(v.GetTags())
 		vms[index] = vm
 	}
 	return vms

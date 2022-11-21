@@ -14,14 +14,14 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPIVMState() *schema.Resource {
+func dataSourceVMState() *schema.Resource {
 	return &schema.Resource{
-		Read:   dataSourceOutscaleOAPIVMStateRead,
-		Schema: getOAPIVMStateDataSourceSchema(),
+		Read:   dataSourceVMStateRead,
+		Schema: getVMStateDataSourceSchema(),
 	}
 }
 
-func getOAPIVMStateDataSourceSchema() map[string]*schema.Schema {
+func getVMStateDataSourceSchema() map[string]*schema.Schema {
 	wholeSchema := map[string]*schema.Schema{
 		"filter": dataSourceFiltersSchema(),
 	}
@@ -79,8 +79,8 @@ func getVMStateAttrsSchema() map[string]*schema.Schema {
 	}
 }
 
-func dataSourceOutscaleOAPIVMStateRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceVMStateRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
 	instanceID, instanceIDOk := d.GetOk("vm_id")
@@ -91,7 +91,7 @@ func dataSourceOutscaleOAPIVMStateRead(d *schema.ResourceData, meta interface{})
 
 	params := oscgo.ReadVmsStateRequest{}
 	if filtersOk {
-		params.SetFilters(buildOutscaleOAPIDataSourceVMStateFilters(filters.(*schema.Set)))
+		params.SetFilters(buildDataSourceVMStateFilters(filters.(*schema.Set)))
 	}
 	if instanceIDOk {
 		filter := oscgo.FiltersVmsState{}
@@ -130,7 +130,7 @@ func dataSourceOutscaleOAPIVMStateRead(d *schema.ResourceData, meta interface{})
 
 	state = filteredStates[0]
 
-	log.Printf("[DEBUG] outscale_oapi_vm_state - Single State found: %s", state.GetVmId())
+	log.Printf("[DEBUG] outscale_vm.state - Single State found: %s", state.GetVmId())
 	return vmStateDataAttrSetter(d, &state)
 }
 
@@ -139,15 +139,15 @@ func vmStateDataAttrSetter(d *schema.ResourceData, status *oscgo.VmStates) error
 		return d.Set(key, value)
 	}
 	d.SetId(status.GetVmId())
-	return statusDescriptionOAPIVMStateAttributes(setterFunc, status)
+	return statusDescriptionVMStateAttributes(setterFunc, status)
 }
 
-func statusDescriptionOAPIVMStateAttributes(set AttributeSetter, status *oscgo.VmStates) error {
+func statusDescriptionVMStateAttributes(set AttributeSetter, status *oscgo.VmStates) error {
 
 	if err := set("subregion_name", status.GetSubregionName()); err != nil {
 		return err
 	}
-	if err := set("maintenance_events", statusSetOAPIVMState(status.GetMaintenanceEvents())); err != nil {
+	if err := set("maintenance_events", statusSetVMState(status.GetMaintenanceEvents())); err != nil {
 		return err
 	}
 	if err := set("vm_state", status.GetVmState()); err != nil {
@@ -160,7 +160,7 @@ func statusDescriptionOAPIVMStateAttributes(set AttributeSetter, status *oscgo.V
 	return nil
 }
 
-func statusSetOAPIVMState(status []oscgo.MaintenanceEvent) []map[string]interface{} {
+func statusSetVMState(status []oscgo.MaintenanceEvent) []map[string]interface{} {
 	s := make([]map[string]interface{}, len(status))
 	for k, v := range status {
 		s[k] = map[string]interface{}{
@@ -174,7 +174,7 @@ func statusSetOAPIVMState(status []oscgo.MaintenanceEvent) []map[string]interfac
 	return s
 }
 
-func buildOutscaleOAPIDataSourceVMStateFilters(set *schema.Set) oscgo.FiltersVmsState {
+func buildDataSourceVMStateFilters(set *schema.Set) oscgo.FiltersVmsState {
 	var filters oscgo.FiltersVmsState
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})

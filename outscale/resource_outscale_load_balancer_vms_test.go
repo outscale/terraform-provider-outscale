@@ -11,7 +11,7 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 )
 
-func TestAccOutscaleOAPILBUAttachment_basic(t *testing.T) {
+func TestAccLBUAttachment_basic(t *testing.T) {
 	t.Parallel()
 	var conf oscgo.LoadBalancer
 	omi := os.Getenv("OUTSCALE_IMAGEID")
@@ -33,12 +33,12 @@ func TestAccOutscaleOAPILBUAttachment_basic(t *testing.T) {
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_load_balancer.bar",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscaleOAPILBUDestroy,
+		CheckDestroy:  testAccCheckLBUDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPILBUAttachmentConfig1(omi, region),
+				Config: testAccLBUAttachmentConfig1(omi, region),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPILBUExists("outscale_load_balancer.bar", &conf),
+					testAccCheckLBUExists("outscale_load_balancer.bar", &conf),
 					testCheckInstanceAttached(1),
 				),
 			},
@@ -47,7 +47,7 @@ func TestAccOutscaleOAPILBUAttachment_basic(t *testing.T) {
 }
 
 // add one attachment
-func testAccOutscaleOAPILBUAttachmentConfig1(omi, region string) string {
+func testAccLBUAttachmentConfig1(omi, region string) string {
 	return fmt.Sprintf(`
 resource "outscale_load_balancer" "bar" {
 	load_balancer_name = "load-test12"

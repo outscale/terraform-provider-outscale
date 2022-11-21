@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccOutscaleVPNConnectionDataSource_basic(t *testing.T) {
+func TestAccVPNConnectionDataSource_basic(t *testing.T) {
 	t.Parallel()
 	publicIP := fmt.Sprintf("172.0.0.%d", acctest.RandIntRange(1, 255))
 
@@ -17,13 +17,13 @@ func TestAccOutscaleVPNConnectionDataSource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleVPNConnectionDataSourceConfigBasic(publicIP),
+				Config: testAccVPNConnectionDataSourceConfigBasic(publicIP),
 			},
 		},
 	})
 }
 
-func TestAccOutscaleVPNConnectionDataSource_withFilters(t *testing.T) {
+func TestAccVPNConnectionDataSource_withFilters(t *testing.T) {
 	t.Parallel()
 	publicIP := fmt.Sprintf("172.0.0.%d", acctest.RandIntRange(1, 255))
 
@@ -32,13 +32,13 @@ func TestAccOutscaleVPNConnectionDataSource_withFilters(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleVPNConnectionDataSourceConfigWithFilters(publicIP),
+				Config: testAccVPNConnectionDataSourceConfigWithFilters(publicIP),
 			},
 		},
 	})
 }
 
-func testAccOutscaleVPNConnectionDataSourceConfigBasic(publicIP string) string {
+func testAccVPNConnectionDataSourceConfigBasic(publicIP string) string {
 	return fmt.Sprintf(`
 		resource "outscale_virtual_gateway" "virtual_gateway" {
 			connection_type = "ipsec.1"
@@ -68,7 +68,7 @@ func testAccOutscaleVPNConnectionDataSourceConfigBasic(publicIP string) string {
 	`, publicIP)
 }
 
-func testAccOutscaleVPNConnectionDataSourceConfigWithFilters(publicIP string) string {
+func testAccVPNConnectionDataSourceConfigWithFilters(publicIP string) string {
 	return fmt.Sprintf(`
 		resource "outscale_virtual_gateway" "virtual_gateway" {
 			connection_type = "ipsec.1"

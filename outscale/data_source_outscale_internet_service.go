@@ -13,9 +13,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func datasourceOutscaleOAPIInternetService() *schema.Resource {
+func dataSourceInternetService() *schema.Resource {
 	return &schema.Resource{
-		Read: datasourceOutscaleOAPIInternetServiceRead,
+		Read: dataSourceInternetServiceRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"state": {
@@ -39,8 +39,8 @@ func datasourceOutscaleOAPIInternetService() *schema.Resource {
 	}
 }
 
-func datasourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceInternetServiceRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
 	internetID, insternetIDOk := d.GetOk("internet_service_id")
@@ -60,7 +60,7 @@ func datasourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta inte
 	}
 
 	if filtersOk {
-		params.Filters = buildOutscaleOSCAPIDataSourceInternetServiceFilters(filters.(*schema.Set))
+		params.Filters = buildDataSourceInternetServiceFilters(filters.(*schema.Set))
 	}
 
 	var resp oscgo.ReadInternetServicesResponse
@@ -101,10 +101,10 @@ func datasourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta inte
 
 	d.SetId(result.GetInternetServiceId())
 
-	return d.Set("tags", tagsOSCAPIToMap(result.GetTags()))
+	return d.Set("tags", tagsToMap(result.GetTags()))
 }
 
-func buildOutscaleOSCAPIDataSourceInternetServiceFilters(set *schema.Set) *oscgo.FiltersInternetService {
+func buildDataSourceInternetServiceFilters(set *schema.Set) *oscgo.FiltersInternetService {
 	var filters oscgo.FiltersInternetService
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})

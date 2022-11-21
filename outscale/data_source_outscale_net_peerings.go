@@ -13,9 +13,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func dataSourceOutscaleOAPILinPeeringsConnection() *schema.Resource {
+func dataSourceLinPeeringsConnection() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPILinPeeringsConnectionRead,
+		Read: dataSourceLinPeeringsConnectionRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -24,12 +24,12 @@ func dataSourceOutscaleOAPILinPeeringsConnection() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"accepter_net": vpcOAPIPeeringConnectionOptionsSchema(),
+						"accepter_net": vpcPeeringConnectionOptionsSchema(),
 						"net_peering_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"source_net": vpcOAPIPeeringConnectionOptionsSchema(),
+						"source_net": vpcPeeringConnectionOptionsSchema(),
 						"state": {
 							Type:     schema.TypeMap,
 							Computed: true,
@@ -58,8 +58,8 @@ func dataSourceOutscaleOAPILinPeeringsConnection() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPILinPeeringsConnectionRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceLinPeeringsConnectionRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	log.Printf("[DEBUG] Reading VPC Peering Connections.")
 
@@ -69,7 +69,7 @@ func dataSourceOutscaleOAPILinPeeringsConnectionRead(d *schema.ResourceData, met
 	}
 
 	params := oscgo.ReadNetPeeringsRequest{}
-	params.SetFilters(buildOutscaleOAPILinPeeringConnectionFilters(filters.(*schema.Set)))
+	params.SetFilters(buildLinPeeringConnectionFilters(filters.(*schema.Set)))
 
 	var resp oscgo.ReadNetPeeringsResponse
 	var err error
@@ -95,7 +95,7 @@ func dataSourceOutscaleOAPILinPeeringsConnectionRead(d *schema.ResourceData, met
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
 		d.SetId(resource.UniqueId())
 
-		if err := set("net_peerings", getOAPINetPeerings(peerings)); err != nil {
+		if err := set("net_peerings", getNetPeerings(peerings)); err != nil {
 			log.Printf("[DEBUG] Net Peerings ERR %+v", err)
 			return err
 		}
@@ -103,20 +103,20 @@ func dataSourceOutscaleOAPILinPeeringsConnectionRead(d *schema.ResourceData, met
 	})
 }
 
-func getOAPINetPeerings(peerings []oscgo.NetPeering) (res []map[string]interface{}) {
+func getNetPeerings(peerings []oscgo.NetPeering) (res []map[string]interface{}) {
 	for _, p := range peerings {
 		res = append(res, map[string]interface{}{
-			"accepter_net":   getOAPINetPeeringAccepterNet(p.GetAccepterNet()),
+			"accepter_net":   getNetPeeringAccepterNet(p.GetAccepterNet()),
 			"net_peering_id": p.GetNetPeeringId(),
-			"source_net":     getOAPINetPeeringSourceNet(p.GetSourceNet()),
-			"state":          getOAPINetPeeringState(p.GetState()),
-			//"tags":           getOapiTagSet(p.Tags),
+			"source_net":     getNetPeeringSourceNet(p.GetSourceNet()),
+			"state":          getNetPeeringState(p.GetState()),
+			//"tags":           getTagSet(p.Tags),
 		})
 	}
 	return res
 }
 
-func getOAPINetPeeringAccepterNet(a oscgo.AccepterNet) map[string]interface{} {
+func getNetPeeringAccepterNet(a oscgo.AccepterNet) map[string]interface{} {
 	return map[string]interface{}{
 		"ip_range":   a.GetIpRange(),
 		"account_id": a.GetAccountId(),
@@ -124,7 +124,7 @@ func getOAPINetPeeringAccepterNet(a oscgo.AccepterNet) map[string]interface{} {
 	}
 }
 
-func getOAPINetPeeringSourceNet(a oscgo.SourceNet) map[string]interface{} {
+func getNetPeeringSourceNet(a oscgo.SourceNet) map[string]interface{} {
 	return map[string]interface{}{
 		"ip_range":   a.GetIpRange(),
 		"account_id": a.GetAccountId(),
@@ -132,7 +132,7 @@ func getOAPINetPeeringSourceNet(a oscgo.SourceNet) map[string]interface{} {
 	}
 }
 
-func getOAPINetPeeringState(a oscgo.NetPeeringState) map[string]interface{} {
+func getNetPeeringState(a oscgo.NetPeeringState) map[string]interface{} {
 	return map[string]interface{}{
 		"name":    a.Name,
 		"message": a.Message,

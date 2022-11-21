@@ -13,14 +13,14 @@ import (
 )
 
 // Creates a network interface in the specified subnet
-func dataSourceOutscaleOAPINics() *schema.Resource {
+func dataSourceNics() *schema.Resource {
 	return &schema.Resource{
-		Read:   dataSourceOutscaleOAPINicsRead,
-		Schema: getDSOAPINicsSchema(),
+		Read:   dataSourceNicsRead,
+		Schema: getDSNicsSchema(),
 	}
 }
 
-func getDSOAPINicsSchema() map[string]*schema.Schema {
+func getDSNicsSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		//  This is attribute part for schema Nic
 		"filter": dataSourceFiltersSchema(),
@@ -222,8 +222,8 @@ func getDSOAPINicsSchema() map[string]*schema.Schema {
 }
 
 // Read Nic
-func dataSourceOutscaleOAPINicsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceNicsRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
 	if !filtersOk {
@@ -232,7 +232,7 @@ func dataSourceOutscaleOAPINicsRead(d *schema.ResourceData, meta interface{}) er
 
 	params := oscgo.ReadNicsRequest{}
 	if filtersOk {
-		params.SetFilters(buildOutscaleOAPIDataSourceNicFilters(filters.(*schema.Set)))
+		params.SetFilters(buildDataSourceNicFilters(filters.(*schema.Set)))
 	}
 
 	var resp oscgo.ReadNicsResponse
@@ -264,7 +264,7 @@ func dataSourceOutscaleOAPINicsRead(d *schema.ResourceData, meta interface{}) er
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
 		d.SetId(resource.UniqueId())
 
-		if err := set("nics", getOAPIVMNetworkInterfaceSet(nics)); err != nil {
+		if err := set("nics", getVMNetworkInterfaceSet(nics)); err != nil {
 			return err
 		}
 

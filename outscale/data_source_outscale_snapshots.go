@@ -12,9 +12,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPISnapshots() *schema.Resource {
+func dataSourceSnapshots() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPISnapshotsRead,
+		Read: dataSourceSnapshotsRead,
 
 		Schema: map[string]*schema.Schema{
 			//selection criteria
@@ -105,8 +105,8 @@ func dataSourceOutscaleOAPISnapshots() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPISnapshotsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceSnapshotsRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	restorableUsers, restorableUsersOk := d.GetOk("permission_to_create_volume")
 	filters, filtersOk := d.GetOk("filter")
@@ -122,18 +122,18 @@ func dataSourceOutscaleOAPISnapshotsRead(d *schema.ResourceData, meta interface{
 	}
 	filter := oscgo.FiltersSnapshot{}
 	if restorableUsersOk {
-		filter.SetPermissionsToCreateVolumeAccountIds(oapiExpandStringList(restorableUsers.([]interface{})))
+		filter.SetPermissionsToCreateVolumeAccountIds(ExpandStringList(restorableUsers.([]interface{})))
 		params.SetFilters(filter)
 	}
 	if filtersOk {
-		buildOutscaleOapiSnapshootDataSourceFilters(filters.(*schema.Set), params.Filters)
+		buildSnapshotDataSourceFilters(filters.(*schema.Set), params.Filters)
 	}
 	if ownersOk {
-		filter.SetAccountIds(oapiExpandStringList(owners.([]interface{})))
+		filter.SetAccountIds(ExpandStringList(owners.([]interface{})))
 		params.SetFilters(filter)
 	}
 	if snapshotIdsOk {
-		filter.SetSnapshotIds(oapiExpandStringList(snapshotIds.([]interface{})))
+		filter.SetSnapshotIds(ExpandStringList(snapshotIds.([]interface{})))
 		params.SetFilters(filter)
 	}
 
@@ -168,7 +168,7 @@ func dataSourceOutscaleOAPISnapshotsRead(d *schema.ResourceData, meta interface{
 		snapshot["state"] = v.GetState()
 		snapshot["volume_id"] = v.GetVolumeId()
 		snapshot["volume_size"] = v.GetVolumeSize()
-		snapshot["tags"] = tagsOSCAPIToMap(v.GetTags())
+		snapshot["tags"] = tagsToMap(v.GetTags())
 
 		lp := make([]map[string]interface{}, 1)
 		lp[0] = make(map[string]interface{})

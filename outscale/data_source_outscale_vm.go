@@ -14,14 +14,14 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPIVM() *schema.Resource {
+func dataSourceVM() *schema.Resource {
 	return &schema.Resource{
-		Read:   dataSourceOutscaleOAPIVMRead,
-		Schema: getDataSourceOAPIVMSchemas(),
+		Read:   dataSourceVMRead,
+		Schema: getDataSourceVMSchemas(),
 	}
 }
-func dataSourceOutscaleOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*OutscaleClient).OSCAPI
+func dataSourceVMRead(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*Client).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
 	instanceID, instanceIDOk := d.GetOk("vm_id")
@@ -32,7 +32,7 @@ func dataSourceOutscaleOAPIVMRead(d *schema.ResourceData, meta interface{}) erro
 	// Build up search parameters
 	params := oscgo.ReadVmsRequest{}
 	if filtersOk {
-		params.Filters = buildOutscaleOAPIDataSourceVMFilters(filters.(*schema.Set))
+		params.Filters = buildDataSourceVMFilters(filters.(*schema.Set))
 	}
 	if instanceIDOk {
 		params.Filters.VmIds = &[]string{instanceID.(string)}
@@ -82,18 +82,18 @@ func dataSourceOutscaleOAPIVMRead(d *schema.ResourceData, meta interface{}) erro
 	// Populate vm attribute fields with the returned vm
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
 		d.SetId(vm.GetVmId())
-		return oapiVMDescriptionAttributes(set, &vm)
+		return setVMAttributes(set, &vm)
 	})
 }
 
 // Populate instance attribute fields with the returned instance
-func oapiVMDescriptionAttributes(set AttributeSetter, vm *oscgo.Vm) error {
+func setVMAttributes(set AttributeSetter, vm *oscgo.Vm) error {
 
 	if err := set("architecture", vm.GetArchitecture()); err != nil {
 		return err
 	}
 
-	if err := set("block_device_mappings_created", getOscAPIVMBlockDeviceMapping(vm.GetBlockDeviceMappings())); err != nil {
+	if err := set("block_device_mappings_created", getVMBlockDeviceMapping(vm.GetBlockDeviceMappings())); err != nil {
 		log.Printf("[DEBUG] BLOCKING DEVICE MAPPING ERR %+v", err)
 		return err
 	}
@@ -130,7 +130,7 @@ func oapiVMDescriptionAttributes(set AttributeSetter, vm *oscgo.Vm) error {
 	if err := set("nested_virtualization", vm.GetNestedVirtualization()); err != nil {
 		return err
 	}
-	if err := set("nics", getOAPIVMNetworkInterfaceLightSet(vm.GetNics())); err != nil {
+	if err := set("nics", getVMNetworkInterfaceLightSet(vm.GetNics())); err != nil {
 		return err
 	}
 
@@ -170,7 +170,7 @@ func oapiVMDescriptionAttributes(set AttributeSetter, vm *oscgo.Vm) error {
 	if err := set("root_device_type", vm.GetRootDeviceType()); err != nil {
 		return err
 	}
-	if err := set("security_groups", getOAPIVMSecurityGroups(vm.GetSecurityGroups())); err != nil {
+	if err := set("security_groups", getVMSecurityGroups(vm.GetSecurityGroups())); err != nil {
 		log.Printf("[DEBUG] SECURITY GROUPS ERR %+v", err)
 		return err
 	}
@@ -192,14 +192,14 @@ func oapiVMDescriptionAttributes(set AttributeSetter, vm *oscgo.Vm) error {
 	if err := set("vm_initiated_shutdown_behavior", vm.GetVmInitiatedShutdownBehavior()); err != nil {
 		return err
 	}
-	if err := set("tags", getOscAPITagSet(vm.GetTags())); err != nil {
+	if err := set("tags", getTagSet(vm.GetTags())); err != nil {
 		return err
 	}
 
 	return set("vm_type", vm.GetVmType())
 }
 
-func getOscAPIVMBlockDeviceMapping(blockDeviceMappings []oscgo.BlockDeviceMappingCreated) []map[string]interface{} {
+func getVMBlockDeviceMapping(blockDeviceMappings []oscgo.BlockDeviceMappingCreated) []map[string]interface{} {
 	blockDeviceMapping := make([]map[string]interface{}, len(blockDeviceMappings))
 
 	for k, v := range blockDeviceMappings {
@@ -216,7 +216,7 @@ func getOscAPIVMBlockDeviceMapping(blockDeviceMappings []oscgo.BlockDeviceMappin
 	return blockDeviceMapping
 }
 
-func getOAPIVMSecurityGroups(groupSet []oscgo.SecurityGroupLight) []map[string]interface{} {
+func getVMSecurityGroups(groupSet []oscgo.SecurityGroupLight) []map[string]interface{} {
 	res := []map[string]interface{}{}
 	for _, g := range groupSet {
 		r := map[string]interface{}{
@@ -229,12 +229,12 @@ func getOAPIVMSecurityGroups(groupSet []oscgo.SecurityGroupLight) []map[string]i
 	return res
 }
 
-func getDataSourceOAPIVMSchemas() map[string]*schema.Schema {
+func getDataSourceVMSchemas() map[string]*schema.Schema {
 	wholeSchema := map[string]*schema.Schema{
 		"filter": dataSourceFiltersSchema(),
 	}
 
-	attrsSchema := getOApiVMAttributesSchema()
+	attrsSchema := getVMAttributesSchema()
 
 	for k, v := range attrsSchema {
 		wholeSchema[k] = v
@@ -248,7 +248,7 @@ func getDataSourceOAPIVMSchemas() map[string]*schema.Schema {
 	return wholeSchema
 }
 
-func buildOutscaleOAPIDataSourceVMFilters(set *schema.Set) *oscgo.FiltersVm {
+func buildDataSourceVMFilters(set *schema.Set) *oscgo.FiltersVm {
 	filters := new(oscgo.FiltersVm)
 
 	for _, v := range set.List() {
@@ -274,7 +274,7 @@ func buildOutscaleOAPIDataSourceVMFilters(set *schema.Set) *oscgo.FiltersVm {
 	return filters
 }
 
-func getOApiVMAttributesSchema() map[string]*schema.Schema {
+func getVMAttributesSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		// Attributes
 		"architecture": {

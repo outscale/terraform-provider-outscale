@@ -15,9 +15,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPISubnet() *schema.Resource {
+func dataSourceSubnet() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPISubnetRead,
+		Read: dataSourceSubnetRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -59,8 +59,8 @@ func dataSourceOutscaleOAPISubnet() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPISubnetRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceSubnetRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	req := oscgo.ReadSubnetsRequest{}
 
@@ -71,7 +71,7 @@ func dataSourceOutscaleOAPISubnetRead(d *schema.ResourceData, meta interface{}) 
 	filters, filtersOk := d.GetOk("filter")
 
 	if filtersOk {
-		req.Filters = buildOutscaleOAPISubnetDataSourceFilters(filters.(*schema.Set))
+		req.Filters = buildSubnetDataSourceFilters(filters.(*schema.Set))
 	}
 
 	var resp oscgo.ReadSubnetsResponse
@@ -120,7 +120,7 @@ func dataSourceOutscaleOAPISubnetRead(d *schema.ResourceData, meta interface{}) 
 	if err := d.Set("map_public_ip_on_launch", subnet.GetMapPublicIpOnLaunch()); err != nil {
 		return err
 	}
-	if err := d.Set("tags", tagsOSCAPIToMap(subnet.GetTags())); err != nil {
+	if err := d.Set("tags", tagsToMap(subnet.GetTags())); err != nil {
 		return err
 	}
 	if err := d.Set("available_ips_count", subnet.GetAvailableIpsCount()); err != nil {
@@ -130,7 +130,7 @@ func dataSourceOutscaleOAPISubnetRead(d *schema.ResourceData, meta interface{}) 
 	return nil
 }
 
-func buildOutscaleOAPISubnetDataSourceFilters(set *schema.Set) *oscgo.FiltersSubnet {
+func buildSubnetDataSourceFilters(set *schema.Set) *oscgo.FiltersSubnet {
 	var filters oscgo.FiltersSubnet
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})

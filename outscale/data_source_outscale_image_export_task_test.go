@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccOutscaleOAPIImageExportTaskDataSource_basic(t *testing.T) {
+func TestAccImageExportTaskDataSource_basic(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 	imageName := acctest.RandomWithPrefix("test-image-name")
@@ -24,9 +24,9 @@ func TestAccOutscaleOAPIImageExportTaskDataSource_basic(t *testing.T) {
 			Providers: testAccProviders,
 			Steps: []resource.TestStep{
 				{
-					Config: testAccOutscaleOAPIImageExportTaskDataSourceConfig(omi, "tinav4.c2r2p2", region, imageName),
+					Config: testAccImageExportTaskDataSourceConfig(omi, "tinav4.c2r2p2", region, imageName),
 					Check: resource.ComposeTestCheckFunc(
-						testAccCheckOutscaleImageExportTaskDataSourceID("data.outscale_image_export_task.test"),
+						testAccCheckImageExportTaskDataSourceID("data.outscale_image_export_task.test"),
 					),
 				},
 			},
@@ -36,7 +36,7 @@ func TestAccOutscaleOAPIImageExportTaskDataSource_basic(t *testing.T) {
 	}
 }
 
-func testAccCheckOutscaleImageExportTaskDataSourceID(n string) resource.TestCheckFunc {
+func testAccCheckImageExportTaskDataSourceID(n string) resource.TestCheckFunc {
 	// Wait for IAM role
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -51,7 +51,7 @@ func testAccCheckOutscaleImageExportTaskDataSourceID(n string) resource.TestChec
 	}
 }
 
-func testAccOutscaleOAPIImageExportTaskDataSourceConfig(omi, vmType, region, imageName string) string {
+func testAccImageExportTaskDataSourceConfig(omi, vmType, region, imageName string) string {
 	return fmt.Sprintf(`
 	resource "outscale_vm" "basic" {
 		image_id	         = "%s"

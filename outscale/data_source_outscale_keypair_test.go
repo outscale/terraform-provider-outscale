@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPIKeypairDataSource_Instance(t *testing.T) {
+func TestAccKeypairDataSource_Instance(t *testing.T) {
 	t.Parallel()
 	keyPairName := fmt.Sprintf("acc-test-keypair-%d", acctest.RandIntRange(0, 400))
 
@@ -18,9 +18,9 @@ func TestAccOutscaleOAPIKeypairDataSource_Instance(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIKeypairDataSourceConfig(keyPairName),
+				Config: testAccCheckKeypairDataSourceConfig(keyPairName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIKeypairDataSourceID("data.outscale_keypair.nat_ami"),
+					testAccCheckKeypairDataSourceID("data.outscale_keypair.nat_ami"),
 					resource.TestCheckResourceAttr("data.outscale_keypair.nat_ami", "keypair_name", keyPairName),
 				),
 			},
@@ -28,7 +28,7 @@ func TestAccOutscaleOAPIKeypairDataSource_Instance(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleOAPIKeypairDataSourceID(n string) resource.TestCheckFunc {
+func testAccCheckKeypairDataSourceID(n string) resource.TestCheckFunc {
 	// Wait for IAM role
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -43,7 +43,7 @@ func testAccCheckOutscaleOAPIKeypairDataSourceID(n string) resource.TestCheckFun
 	}
 }
 
-func testAccCheckOutscaleOAPIKeypairDataSourceConfig(keypairName string) string {
+func testAccCheckKeypairDataSourceConfig(keypairName string) string {
 	return fmt.Sprintf(`
 		resource "outscale_keypair" "a_key_pair" {
 			keypair_name = "%s"

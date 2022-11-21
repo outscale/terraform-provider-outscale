@@ -15,18 +15,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func dataSourceOutscaleOAPILinPeeringConnection() *schema.Resource {
+func dataSourceLinPeeringConnection() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPILinPeeringConnectionRead,
+		Read: dataSourceLinPeeringConnectionRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter":       dataSourceFiltersSchema(),
-			"accepter_net": vpcOAPIPeeringConnectionOptionsSchema(),
+			"accepter_net": vpcPeeringConnectionOptionsSchema(),
 			"net_peering_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"source_net": vpcOAPIPeeringConnectionOptionsSchema(),
+			"source_net": vpcPeeringConnectionOptionsSchema(),
 			"state": {
 				Type:     schema.TypeMap,
 				Computed: true,
@@ -52,8 +52,8 @@ func dataSourceOutscaleOAPILinPeeringConnection() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPILinPeeringConnectionRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceLinPeeringConnectionRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	log.Printf("[DEBUG] Reading Net Peering Connections.")
 
@@ -63,7 +63,7 @@ func dataSourceOutscaleOAPILinPeeringConnectionRead(d *schema.ResourceData, meta
 	if !filtersOk {
 		return fmt.Errorf("filters must be assigned")
 	}
-	req.SetFilters(buildOutscaleOAPILinPeeringConnectionFilters(filters.(*schema.Set)))
+	req.SetFilters(buildLinPeeringConnectionFilters(filters.(*schema.Set)))
 
 	var resp oscgo.ReadNetPeeringsResponse
 	var err error
@@ -143,7 +143,7 @@ func dataSourceOutscaleOAPILinPeeringConnectionRead(d *schema.ResourceData, meta
 	if err := d.Set("net_peering_id", netPeering.GetNetPeeringId()); err != nil {
 		return err
 	}
-	if err := d.Set("tags", tagsOSCAPIToMap(netPeering.GetTags())); err != nil {
+	if err := d.Set("tags", tagsToMap(netPeering.GetTags())); err != nil {
 		return errwrap.Wrapf("Error setting Net Peering tags: {{err}}", err)
 	}
 
@@ -152,7 +152,7 @@ func dataSourceOutscaleOAPILinPeeringConnectionRead(d *schema.ResourceData, meta
 	return nil
 }
 
-func buildOutscaleOAPILinPeeringConnectionFilters(set *schema.Set) oscgo.FiltersNetPeering {
+func buildLinPeeringConnectionFilters(set *schema.Set) oscgo.FiltersNetPeering {
 	var filters oscgo.FiltersNetPeering
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})

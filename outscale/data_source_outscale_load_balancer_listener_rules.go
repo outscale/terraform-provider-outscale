@@ -64,15 +64,15 @@ func attrLBListenerRules() map[string]*schema.Schema {
 	}
 }
 
-func dataSourceOutscaleOAPILoadBalancerLDRules() *schema.Resource {
+func dataSourceLoadBalancerLDRules() *schema.Resource {
 	return &schema.Resource{
-		Read:   dataSourceOutscaleOAPILoadBalancerLDRulesRead,
+		Read:   dataSourceLoadBalancerLDRulesRead,
 		Schema: getDataSourceSchemas(attrLBListenerRules()),
 	}
 }
 
-func dataSourceOutscaleOAPILoadBalancerLDRulesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceLoadBalancerLDRulesRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	lrNamei, nameOk := d.GetOk("listener_rule_name")
 	filters, filtersOk := d.GetOk("filter")

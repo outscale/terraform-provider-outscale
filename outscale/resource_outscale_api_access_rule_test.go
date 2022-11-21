@@ -13,33 +13,33 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPIApiAccessRule_basic(t *testing.T) {
+func TestAccApiAccessRule_basic(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_api_access_rule.rule_test"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleApiAccessRuleDestroy,
+		CheckDestroy: testAccCheckApiAccessRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIApiAccessRuleConfig(utils.TestCaPem),
+				Config: testAccApiAccessRuleConfig(utils.TestCaPem),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleApiAccessRuleExists(resourceName),
+					testAccCheckApiAccessRuleExists(resourceName),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckOutscaleApiAccessRuleExists(n string) resource.TestCheckFunc {
+func testAccCheckApiAccessRuleExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		conn := testAccProvider.Meta().(*Client).OSCAPI
 
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("No id is set")
@@ -77,8 +77,8 @@ func testAccCheckOutscaleApiAccessRuleExists(n string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckOutscaleApiAccessRuleDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+func testAccCheckApiAccessRuleDestroy(s *terraform.State) error {
+	conn := testAccProvider.Meta().(*Client).OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_api_access_rule" {
@@ -116,7 +116,7 @@ func testAccCheckOutscaleApiAccessRuleDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccOutscaleOAPIApiAccessRuleConfig(ca_pem string) string {
+func testAccApiAccessRuleConfig(ca_pem string) string {
 	return fmt.Sprintf(`
 resource "outscale_ca" "ca_rule" { 
    ca_pem       = %[1]q

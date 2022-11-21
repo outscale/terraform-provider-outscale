@@ -13,12 +13,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func resourceOutscaleOAPILinAttributes() *schema.Resource {
+func resourceLinAttributes() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPILinAttrCreate,
-		Read:   resourceOutscaleOAPILinAttrRead,
-		Update: resourceOutscaleOAPILinAttrUpdate,
-		Delete: resourceOutscaleOAPILinAttrDelete,
+		Create: resourceLinAttrCreate,
+		Read:   resourceLinAttrRead,
+		Update: resourceLinAttrUpdate,
+		Delete: resourceLinAttrDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -49,13 +49,13 @@ func resourceOutscaleOAPILinAttributes() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": tagsOAPIListSchemaComputed(),
+			"tags": tagsListSchemaComputed(),
 		},
 	}
 }
 
-func resourceOutscaleOAPILinAttrCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceLinAttrCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	req := oscgo.UpdateNetRequest{
 		NetId:            d.Get("net_id").(string),
@@ -84,11 +84,11 @@ func resourceOutscaleOAPILinAttrCreate(d *schema.ResourceData, meta interface{})
 
 	d.SetId(resp.Net.GetNetId())
 
-	return resourceOutscaleOAPILinAttrRead(d, meta)
+	return resourceLinAttrRead(d, meta)
 }
 
-func resourceOutscaleOAPILinAttrUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceLinAttrUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	req := oscgo.UpdateNetRequest{
 		NetId:            d.Get("net_id").(string),
@@ -108,11 +108,11 @@ func resourceOutscaleOAPILinAttrUpdate(d *schema.ResourceData, meta interface{})
 
 	d.SetId(d.Get("net_id").(string))
 
-	return resourceOutscaleOAPILinAttrRead(d, meta)
+	return resourceLinAttrRead(d, meta)
 }
 
-func resourceOutscaleOAPILinAttrRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceLinAttrRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	req := oscgo.ReadNetsRequest{
 		Filters: &oscgo.FiltersNet{
@@ -152,10 +152,10 @@ func resourceOutscaleOAPILinAttrRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("net_id", resp.GetNets()[0].GetNetId())
 	d.Set("state", resp.GetNets()[0].GetState())
 
-	return d.Set("tags", tagsOSCAPIToMap(resp.GetNets()[0].GetTags()))
+	return d.Set("tags", tagsToMap(resp.GetNets()[0].GetTags()))
 }
 
-func resourceOutscaleOAPILinAttrDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceLinAttrDelete(d *schema.ResourceData, meta interface{}) error {
 	d.SetId("")
 
 	return nil

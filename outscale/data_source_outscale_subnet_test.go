@@ -8,40 +8,40 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccDataSourceOutscaleOAPISubnet(t *testing.T) {
+func TestAccDataSourceSubnet(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPISubnetConfig,
+				Config: testAccDataSourceSubnetConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccDataSourceOutscaleOAPISubnetCheck("data.outscale_subnet.by_id"),
-					testAccDataSourceOutscaleOAPISubnetCheck("data.outscale_subnet.by_filter"),
+					testAccDataSourceSubnetCheck("data.outscale_subnet.by_id"),
+					testAccDataSourceSubnetCheck("data.outscale_subnet.by_filter"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccDataSourceOutscaleOAPISubnet_withAvailableIpsCountsFilter(t *testing.T) {
+func TestAccDataSourceSubnet_withAvailableIpsCountsFilter(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPISubnetWithAvailableIpsCountsFilter(),
+				Config: testAccDataSourceSubnetWithAvailableIpsCountsFilter(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccDataSourceOutscaleOAPISubnetCheck("data.outscale_subnet.by_filter"),
+					testAccDataSourceSubnetCheck("data.outscale_subnet.by_filter"),
 				),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleOAPISubnetCheck(name string) resource.TestCheckFunc {
+func testAccDataSourceSubnetCheck(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -74,7 +74,7 @@ func testAccDataSourceOutscaleOAPISubnetCheck(name string) resource.TestCheckFun
 	}
 }
 
-const testAccDataSourceOutscaleOAPISubnetConfig = `
+const testAccDataSourceSubnetConfig = `
 	resource "outscale_net" "outscale_net" {
 		ip_range = "10.0.0.0/16"
 		tags {
@@ -101,7 +101,7 @@ const testAccDataSourceOutscaleOAPISubnetConfig = `
 	}
 `
 
-func testAccDataSourceOutscaleOAPISubnetWithAvailableIpsCountsFilter() string {
+func testAccDataSourceSubnetWithAvailableIpsCountsFilter() string {
 	return `
 		resource "outscale_net" "outscale_net" {
 			ip_range = "10.0.0.0/16"

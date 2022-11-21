@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccDataSourceOutscaleOAPISecurityGroup_basic(t *testing.T) {
+func TestAccDataSourceSecurityGroup_basic(t *testing.T) {
 	t.Parallel()
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
@@ -17,17 +17,17 @@ func TestAccDataSourceOutscaleOAPISecurityGroup_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPISecurityGroupConfig(rInt),
+				Config: testAccDataSourceSecurityGroupConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccDataSourceOutscaleOAPISecurityGroupCheck("data.outscale_security_group.by_id"),
-					//testAccDataSourceOutscaleOAPISecurityGroupCheck("data.outscale_security_group.by_filter"),
+					testAccDataSourceSecurityGroupCheck("data.outscale_security_group.by_id"),
+					//testAccDataSourceSecurityGroupCheck("data.outscale_security_group.by_filter"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccDataSourceOutscaleOAPISecurityGroupPublic(t *testing.T) {
+func TestAccDataSourceSecurityGroupPublic(t *testing.T) {
 	t.Parallel()
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
@@ -35,16 +35,16 @@ func TestAccDataSourceOutscaleOAPISecurityGroupPublic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPISecurityGroupPublicConfig(rInt),
+				Config: testAccDataSourceSecurityGroupPublicConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccDataSourceOutscaleOAPISecurityGroupCheck("data.outscale_security_group.by_filter_public"),
+					testAccDataSourceSecurityGroupCheck("data.outscale_security_group.by_filter_public"),
 				),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleOAPISecurityGroupCheck(name string) resource.TestCheckFunc {
+func testAccDataSourceSecurityGroupCheck(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -75,7 +75,7 @@ func testAccDataSourceOutscaleOAPISecurityGroupCheck(name string) resource.TestC
 	}
 }
 
-func testAccDataSourceOutscaleOAPISecurityGroupConfig(rInt int) string {
+func testAccDataSourceSecurityGroupConfig(rInt int) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "vpc" {
 				ip_range = "10.0.0.0/16"
@@ -107,7 +107,7 @@ func testAccDataSourceOutscaleOAPISecurityGroupConfig(rInt int) string {
 		#}`, rInt, rInt)
 }
 
-func testAccDataSourceOutscaleOAPISecurityGroupPublicConfig(rInt int) string {
+func testAccDataSourceSecurityGroupPublicConfig(rInt int) string {
 	return fmt.Sprintf(`
 		resource "outscale_security_group" "test" {
 			description = "Used in the terraform acceptance tests"

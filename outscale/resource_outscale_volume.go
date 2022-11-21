@@ -16,12 +16,12 @@ import (
 
 const defaultIops = 150
 
-func resourceOutscaleOAPIVolume() *schema.Resource {
+func resourceVolume() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOAPIVolumeCreate,
-		Read:   resourceOAPIVolumeRead,
-		Update: resourceOAPIVolumeUpdate,
-		Delete: resourceOAPIVolumeDelete,
+		Create: resourceVolumeCreate,
+		Read:   resourceVolumeRead,
+		Update: resourceVolumeUpdate,
+		Delete: resourceVolumeDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -107,7 +107,7 @@ func resourceOutscaleOAPIVolume() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": tagsListOAPISchema(),
+			"tags": tagsListSchema(),
 			"volume_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -120,8 +120,8 @@ func resourceOutscaleOAPIVolume() *schema.Resource {
 	}
 }
 
-func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceVolumeCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	request := oscgo.CreateVolumeRequest{
 		SubregionName: d.Get("subregion_name").(string),
@@ -168,7 +168,7 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"creating"},
 		Target:     []string{"available"},
-		Refresh:    volumeOAPIStateRefreshFunc(conn, resp.Volume.GetVolumeId()),
+		Refresh:    volumeStateRefreshFunc(conn, resp.Volume.GetVolumeId()),
 		Timeout:    5 * time.Minute,
 		Delay:      10 * time.Second,
 		MinTimeout: 3 * time.Second,
@@ -182,17 +182,17 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	d.SetId(resp.Volume.GetVolumeId())
 
 	if d.IsNewResource() {
-		if err := setOSCAPITags(conn, d); err != nil {
+		if err := setTags(conn, d); err != nil {
 			return err
 		}
 		d.SetPartial("tags")
 	}
 
-	return resourceOAPIVolumeRead(d, meta)
+	return resourceVolumeRead(d, meta)
 }
 
-func resourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceVolumeRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	request := oscgo.ReadVolumesRequest{
 		Filters: &oscgo.FiltersVolume{VolumeIds: &[]string{d.Id()}},
@@ -218,15 +218,15 @@ func resourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error reading Outscale volume %s: %s", d.Id(), err)
 	}
 
-	return readOAPIVolume(d, resp.GetVolumes()[0])
+	return readVolume(d, resp.GetVolumes()[0])
 }
 
-func resourceOAPIVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	d.Partial(true)
 
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := setTags(conn, d); err != nil {
 		return err
 	}
 
@@ -235,7 +235,7 @@ func resourceOAPIVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"creating"},
 		Target:     []string{"available"},
-		Refresh:    volumeOAPIStateRefreshFunc(conn, d.Id()),
+		Refresh:    volumeStateRefreshFunc(conn, d.Id()),
 		Timeout:    5 * time.Minute,
 		Delay:      10 * time.Second,
 		MinTimeout: 3 * time.Second,
@@ -247,11 +247,11 @@ func resourceOAPIVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.Partial(false)
-	return resourceOAPIVolumeRead(d, meta)
+	return resourceVolumeRead(d, meta)
 }
 
-func resourceOAPIVolumeDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceVolumeDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
 		request := oscgo.DeleteVolumeRequest{
@@ -268,7 +268,7 @@ func resourceOAPIVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 	})
 }
 
-func volumeOAPIStateRefreshFunc(conn *oscgo.APIClient, volumeID string) resource.StateRefreshFunc {
+func volumeStateRefreshFunc(conn *oscgo.APIClient, volumeID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		var resp oscgo.ReadVolumesResponse
 		var err error
@@ -292,7 +292,7 @@ func volumeOAPIStateRefreshFunc(conn *oscgo.APIClient, volumeID string) resource
 	}
 }
 
-func readOAPIVolume(d *schema.ResourceData, volume oscgo.Volume) error {
+func readVolume(d *schema.ResourceData, volume oscgo.Volume) error {
 	d.SetId(volume.GetVolumeId())
 
 	if err := d.Set("subregion_name", volume.GetSubregionName()); err != nil {
@@ -371,7 +371,7 @@ func readOAPIVolume(d *schema.ResourceData, volume oscgo.Volume) error {
 		}
 	}
 	if volume.GetTags() != nil {
-		if err := d.Set("tags", tagsOSCAPIToMap(volume.GetTags())); err != nil {
+		if err := d.Set("tags", tagsToMap(volume.GetTags())); err != nil {
 			return err
 		}
 	} else {

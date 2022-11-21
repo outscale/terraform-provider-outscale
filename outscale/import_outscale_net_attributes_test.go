@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccOutscaleNetAttr_import(t *testing.T) {
+func TestAccNetAttr_import(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_net_attributes.outscale_net_attributes"
 
@@ -15,7 +15,7 @@ func TestAccOutscaleNetAttr_import(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPILinAttrConfig,
+				Config: testAccLinAttrConfig,
 			},
 			{
 				ResourceName:            resourceName,

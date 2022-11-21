@@ -19,13 +19,13 @@ const (
 	errorLinkRouteTableSetting = "error setting `%s` for Link Route Table (%s): %s"
 )
 
-func resourceOutscaleOAPILinkRouteTable() *schema.Resource {
+func resourceLinkRouteTable() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPILinkRouteTableCreate,
-		Read:   resourceOutscaleOAPILinkRouteTableRead,
-		Delete: resourceOutscaleOAPILinkRouteTableDelete,
+		Create: resourceLinkRouteTableCreate,
+		Read:   resourceLinkRouteTableRead,
+		Delete: resourceLinkRouteTableDelete,
 		Importer: &schema.ResourceImporter{
-			State: resourceOutscaleOAPILinkRouteTableImportState,
+			State: resourceLinkRouteTableImportState,
 		},
 		Schema: map[string]*schema.Schema{
 			"subnet_id": {
@@ -54,8 +54,8 @@ func resourceOutscaleOAPILinkRouteTable() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPILinkRouteTableCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceLinkRouteTableCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 	subnetID := d.Get("subnet_id").(string)
 	routeTableID := d.Get("route_table_id").(string)
 	log.Printf("[INFO] Creating route table link: %s => %s", subnetID, routeTableID)
@@ -89,12 +89,12 @@ func resourceOutscaleOAPILinkRouteTableCreate(d *schema.ResourceData, meta inter
 
 	d.SetId(resp.GetLinkRouteTableId())
 
-	return resourceOutscaleOAPILinkRouteTableRead(d, meta)
+	return resourceLinkRouteTableRead(d, meta)
 }
 
-func resourceOutscaleOAPILinkRouteTableRead(d *schema.ResourceData, meta interface{}) error {
+func resourceLinkRouteTableRead(d *schema.ResourceData, meta interface{}) error {
 	routeTableID := d.Get("route_table_id").(string)
-	linkRTable, err := readOutscaleLinkRouteTable(meta.(*OutscaleClient), routeTableID, d.Id())
+	linkRTable, err := readLinkRouteTable(meta.(*Client), routeTableID, d.Id())
 	if err != nil {
 		return err
 	}
@@ -111,8 +111,8 @@ func resourceOutscaleOAPILinkRouteTableRead(d *schema.ResourceData, meta interfa
 	return nil
 }
 
-func resourceOutscaleOAPILinkRouteTableDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceLinkRouteTableDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	log.Printf("[INFO] Deleting link route table: %s", d.Id())
 
@@ -139,7 +139,7 @@ func resourceOutscaleOAPILinkRouteTableDelete(d *schema.ResourceData, meta inter
 	return nil
 }
 
-func resourceOutscaleOAPILinkRouteTableImportState(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+func resourceLinkRouteTableImportState(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	parts := strings.SplitN(d.Id(), "_", 2)
 	if len(parts) != 2 {
 		return nil, errors.New("import format error: to import a Link Route Table, use the format {route_table_id}_{link_route_table_id}")
@@ -148,7 +148,7 @@ func resourceOutscaleOAPILinkRouteTableImportState(d *schema.ResourceData, meta 
 	routeTableID := parts[0]
 	linkRouteTableID := parts[1]
 
-	linkRTable, err := readOutscaleLinkRouteTable(meta.(*OutscaleClient), routeTableID, linkRouteTableID)
+	linkRTable, err := readLinkRouteTable(meta.(*Client), routeTableID, linkRouteTableID)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't import Link Route Table(%s), error: %s", linkRouteTableID, err)
 	}
@@ -168,7 +168,7 @@ func resourceOutscaleOAPILinkRouteTableImportState(d *schema.ResourceData, meta 
 	return []*schema.ResourceData{d}, nil
 }
 
-func readOutscaleLinkRouteTable(meta *OutscaleClient, routeTableID, linkRouteTableID string) (*oscgo.LinkRouteTable, error) {
+func readLinkRouteTable(meta *Client, routeTableID, linkRouteTableID string) (*oscgo.LinkRouteTable, error) {
 	conn := meta.OSCAPI
 
 	var resp oscgo.ReadRouteTablesResponse

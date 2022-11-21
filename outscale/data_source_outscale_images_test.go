@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPIImagesDataSource_Instance(t *testing.T) {
+func TestAccImagesDataSource_Instance(t *testing.T) {
 	t.Parallel()
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
@@ -23,16 +23,16 @@ func TestAccOutscaleOAPIImagesDataSource_Instance(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIImagesDataSourceConfig(omi, "tinav4.c2r2p2", region, imageName),
+				Config: testAccCheckImagesDataSourceConfig(omi, "tinav4.c2r2p2", region, imageName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIImagesDataSourceID("data.outscale_images.nat_ami"),
+					testAccCheckImagesDataSourceID("data.outscale_images.nat_ami"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckOutscaleOAPIImagesDataSourceID(n string) resource.TestCheckFunc {
+func testAccCheckImagesDataSourceID(n string) resource.TestCheckFunc {
 	// Wait for IAM role
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -47,7 +47,7 @@ func testAccCheckOutscaleOAPIImagesDataSourceID(n string) resource.TestCheckFunc
 	}
 }
 
-func testAccCheckOutscaleOAPIImagesDataSourceConfig(omi, vmType, region, imageName string) string {
+func testAccCheckImagesDataSourceConfig(omi, vmType, region, imageName string) string {
 	return fmt.Sprintf(`
 		resource "outscale_vm" "basic_one" {
 			image_id			           = "%[1]s"

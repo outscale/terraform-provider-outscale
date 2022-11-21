@@ -8,16 +8,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccDataSourceOutscaleOAPIRouteTable_basic(t *testing.T) {
+func TestAccDataSourceRouteTable_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPIRouteTableGroupConfig,
+				Config: testAccDataSourceRouteTableGroupConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccDataSourceOutscaleOAPIRouteTableCheck("data.outscale_route_table.by_filter"),
-					testAccDataSourceOutscaleOAPIRouteTableCheck("data.outscale_route_table.by_id"),
+					testAccDataSourceRouteTableCheck("data.outscale_route_table.by_filter"),
+					testAccDataSourceRouteTableCheck("data.outscale_route_table.by_id"),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -25,7 +25,7 @@ func TestAccDataSourceOutscaleOAPIRouteTable_basic(t *testing.T) {
 	})
 }
 
-func testAccDataSourceOutscaleOAPIRouteTableCheck(name string) resource.TestCheckFunc {
+func testAccDataSourceRouteTableCheck(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 
@@ -84,7 +84,7 @@ func testAccDataSourceOutscaleOAPIRouteTableCheck(name string) resource.TestChec
 	}
 }
 
-const testAccDataSourceOutscaleOAPIRouteTableGroupConfig = `
+const testAccDataSourceRouteTableGroupConfig = `
 	resource "outscale_net" "test" {
 		ip_range = "172.16.0.0/16"
 

@@ -12,9 +12,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleDHCPOptions() *schema.Resource {
+func dataSourceDHCPOptions() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleDHCPOptionsRead,
+		Read: dataSourceDHCPOptionsRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -75,8 +75,8 @@ func dataSourceOutscaleDHCPOptions() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleDHCPOptionsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceDHCPOptionsRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
 	dhcpIDs, dhcpIDOk := d.GetOk("dhcp_options_set_ids")
@@ -91,7 +91,7 @@ func dataSourceOutscaleDHCPOptionsRead(d *schema.ResourceData, meta interface{})
 		}
 	}
 	if filtersOk {
-		params.Filters = buildOutscaleDataSourceDHCPOptionFilters(filters.(*schema.Set))
+		params.Filters = buildDataSourceDHCPOptionFilters(filters.(*schema.Set))
 	}
 
 	var resp oscgo.ReadDhcpOptionsResponse
@@ -131,7 +131,7 @@ func flattenDHCPOption(dhcpOptions []oscgo.DhcpOptionsSet) []map[string]interfac
 			"ntp_servers":         dhcpOption.GetNtpServers(),
 			"default":             dhcpOption.GetDefault(),
 			"dhcp_options_set_id": dhcpOption.GetDhcpOptionsSetId(),
-			"tags":                tagsOSCAPIToMap(dhcpOption.GetTags()),
+			"tags":                tagsToMap(dhcpOption.GetTags()),
 		}
 	}
 	return dhcpOptionsMap

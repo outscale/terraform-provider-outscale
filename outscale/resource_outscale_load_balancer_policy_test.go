@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleCookieStickinessPolicy_basic(t *testing.T) {
+func TestAccCookieStickinessPolicy_basic(t *testing.T) {
 	t.Parallel()
 	lbName := fmt.Sprintf("tf-test-lb-%s", acctest.RandString(5))
 	region := os.Getenv("OUTSCALE_REGION")

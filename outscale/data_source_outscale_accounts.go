@@ -95,7 +95,7 @@ func dataSourceAccounts() *schema.Resource {
 
 func dataSourceAccountsRead(d *schema.ResourceData, meta interface{}) error {
 
-	conn := meta.(*OutscaleClient).OSCAPI
+	conn := meta.(*Client).OSCAPI
 
 	req := oscgo.ReadAccountsRequest{}
 

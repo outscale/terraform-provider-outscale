@@ -13,11 +13,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func resourceOutscaleOAPIVirtualGatewayLink() *schema.Resource {
+func resourceVirtualGatewayLink() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPIVirtualGatewayLinkCreate,
-		Read:   resourceOutscaleOAPIVirtualGatewayLinkRead,
-		Delete: resourceOutscaleOAPIVirtualGatewayLinkDelete,
+		Create: resourceVirtualGatewayLinkCreate,
+		Read:   resourceVirtualGatewayLinkRead,
+		Delete: resourceVirtualGatewayLinkDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -63,8 +63,8 @@ func resourceOutscaleOAPIVirtualGatewayLink() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPIVirtualGatewayLinkCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceVirtualGatewayLinkCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	netID := d.Get("net_id").(string)
 	vgwID := d.Get("virtual_gateway_id").(string)
@@ -112,11 +112,11 @@ func resourceOutscaleOAPIVirtualGatewayLinkCreate(d *schema.ResourceData, meta i
 
 	d.SetId(vgwID)
 
-	return resourceOutscaleOAPIVirtualGatewayLinkRead(d, meta)
+	return resourceVirtualGatewayLinkRead(d, meta)
 }
 
-func resourceOutscaleOAPIVirtualGatewayLinkRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceVirtualGatewayLinkRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	vgwID := d.Id()
 
@@ -152,7 +152,7 @@ func resourceOutscaleOAPIVirtualGatewayLinkRead(d *schema.ResourceData, meta int
 			return nil
 		}
 
-		vga := oapiVpnGatewayGetLink(vgw)
+		vga := getVpnGatewayLink(vgw)
 		if len(vgw.GetNetToVirtualGatewayLinks()) == 0 || vga.GetState() == "detached" {
 			//d.Set("net_id", "")
 			return nil
@@ -186,8 +186,8 @@ func flattenNetToVirtualGatewayLinks(netToVirtualGatewayLinks *[]oscgo.NetToVirt
 	return res
 }
 
-func resourceOutscaleOAPIVirtualGatewayLinkDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceVirtualGatewayLinkDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	// Get the old VPC ID to detach from
 	netID, _ := d.GetChange("net_id")
@@ -290,7 +290,7 @@ func vpnGatewayLinkStateRefresh(conn *oscgo.APIClient, vpcID, vgwID string) reso
 			return vgw, "detached", nil
 		}
 
-		vga := oapiVpnGatewayGetLink(vgw)
+		vga := getVpnGatewayLink(vgw)
 
 		log.Printf("[DEBUG] VPN Gateway %q attachment status: %s", vgwID, *vga.State)
 		return vgw, *vga.State, nil

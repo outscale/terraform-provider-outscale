@@ -11,9 +11,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPIRouteTables() *schema.Resource {
+func dataSourceRouteTables() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPIRouteTablesRead,
+		Read: dataSourceRouteTablesRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -139,8 +139,8 @@ func dataSourceOutscaleOAPIRouteTables() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPIRouteTablesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceRouteTablesRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 	rtbID, rtbOk := d.GetOk("route_table_id")
 	filter, filterOk := d.GetOk("filter")
 	if !filterOk && !rtbOk {
@@ -163,7 +163,7 @@ func dataSourceOutscaleOAPIRouteTablesRead(d *schema.ResourceData, meta interfac
 	}
 
 	if filterOk {
-		params.Filters = buildOutscaleOAPIDataSourceRouteTableFilters(filter.(*schema.Set))
+		params.Filters = buildDataSourceRouteTableFilters(filter.(*schema.Set))
 	}
 
 	var resp oscgo.ReadRouteTablesResponse
@@ -196,12 +196,12 @@ func dataSourceOutscaleOAPIRouteTablesRead(d *schema.ResourceData, meta interfac
 
 	for k, v := range rt {
 		routeTable := make(map[string]interface{})
-		routeTable["route_propagating_virtual_gateways"] = setOSCAPIPropagatingVirtualGateways(v.GetRoutePropagatingVirtualGateways())
+		routeTable["route_propagating_virtual_gateways"] = setPropagatingVirtualGateways(v.GetRoutePropagatingVirtualGateways())
 		routeTable["route_table_id"] = v.GetRouteTableId()
 		routeTable["net_id"] = v.GetNetId()
-		routeTable["tags"] = tagsOSCAPIToMap(v.GetTags())
-		routeTable["routes"] = setOSCAPIRoutes(v.GetRoutes())
-		routeTable["link_route_tables"] = setOSCAPILinkRouteTables(v.GetLinkRouteTables())
+		routeTable["tags"] = tagsToMap(v.GetTags())
+		routeTable["routes"] = setRoutes(v.GetRoutes())
+		routeTable["link_route_tables"] = setLinkRouteTables(v.GetLinkRouteTables())
 		routeTables[k] = routeTable
 	}
 

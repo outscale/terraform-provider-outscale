@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccOutscaleOAPIVMDataSource_basic(t *testing.T) {
+func TestAccVMDataSource_basic(t *testing.T) {
 	t.Parallel()
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	datasourcceName := "data.outscale_vm.basic_web"
@@ -18,7 +18,7 @@ func TestAccOutscaleOAPIVMDataSource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIVMDataSourceConfig(omi, "tinav4.c2r2p2"),
+				Config: testAccVMDataSourceConfig(omi, "tinav4.c2r2p2"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(datasourcceName, "image_id", omi),
 					resource.TestCheckResourceAttr(datasourcceName, "vm_type", "tinav4.c2r2p2"),
@@ -29,7 +29,7 @@ func TestAccOutscaleOAPIVMDataSource_basic(t *testing.T) {
 	})
 }
 
-func testAccOAPIVMDataSourceConfig(omi, vmType string) string {
+func testAccVMDataSourceConfig(omi, vmType string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "outscale_net" {
 			ip_range = "10.0.0.0/16"

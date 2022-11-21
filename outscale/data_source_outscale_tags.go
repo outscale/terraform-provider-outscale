@@ -11,9 +11,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPITags() *schema.Resource {
+func dataSourceTags() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPITagsRead,
+		Read: dataSourceTagsRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"tags": {
@@ -44,15 +44,15 @@ func dataSourceOutscaleOAPITags() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPITagsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceTagsRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	// Build up search parameters
 	params := oscgo.ReadTagsRequest{}
 	filters, filtersOk := d.GetOk("filter")
 
 	if filtersOk {
-		params.SetFilters(oapiBuildOutscaleDataSourceFilters(filters.(*schema.Set)))
+		params.SetFilters(buildDataSourceFilters(filters.(*schema.Set)))
 	}
 
 	var resp oscgo.ReadTagsResponse
@@ -71,7 +71,7 @@ func dataSourceOutscaleOAPITagsRead(d *schema.ResourceData, meta interface{}) er
 		return err
 	}
 
-	if err := d.Set("tags", oapiTagsDescToList(resp.GetTags())); err != nil {
+	if err := d.Set("tags", tagsDescToList(resp.GetTags())); err != nil {
 		return err
 	}
 	d.SetId(resource.UniqueId())

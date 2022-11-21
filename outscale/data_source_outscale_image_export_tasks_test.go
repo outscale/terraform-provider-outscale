@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccOutscaleOAPIImageExportTasksDataSource_basic(t *testing.T) {
+func TestAccImageExportTasksDataSource_basic(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 	imageName := acctest.RandomWithPrefix("test-image-name")
@@ -23,9 +23,9 @@ func TestAccOutscaleOAPIImageExportTasksDataSource_basic(t *testing.T) {
 			Providers: testAccProviders,
 			Steps: []resource.TestStep{
 				{
-					Config: testAccOutscaleOAPIImageExportTasksDataSourceConfig(omi, "tinav4.c2r2p2", region, imageName),
+					Config: testAccImageExportTasksDataSourceConfig(omi, "tinav4.c2r2p2", region, imageName),
 					Check: resource.ComposeTestCheckFunc(
-						testAccCheckOutscaleImageExportTaskDataSourceID("outscale_image_export_task.outscale_image_export_task"),
+						testAccCheckImageExportTaskDataSourceID("outscale_image_export_task.outscale_image_export_task"),
 					),
 				},
 			},
@@ -35,7 +35,7 @@ func TestAccOutscaleOAPIImageExportTasksDataSource_basic(t *testing.T) {
 	}
 }
 
-func testAccOutscaleOAPIImageExportTasksDataSourceConfig(omi, vmType, region, imageName string) string {
+func testAccImageExportTasksDataSourceConfig(omi, vmType, region, imageName string) string {
 	return fmt.Sprintf(`
 	resource "outscale_vm" "basic" {
 		image_id			      = "%s"

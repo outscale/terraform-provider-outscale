@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPIVolumeDataSource_basic(t *testing.T) {
+func TestAccVolumeDataSource_basic(t *testing.T) {
 	t.Parallel()
 	region := os.Getenv("OUTSCALE_REGION")
 
@@ -18,9 +18,9 @@ func TestAccOutscaleOAPIVolumeDataSource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVolumeDataSourceConfig(region),
+				Config: testAccCheckVolumeDataSourceConfig(region),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIVolumeDataSourceID("data.outscale_volume.ebs_volume"),
+					testAccCheckVolumeDataSourceID("data.outscale_volume.ebs_volume"),
 					resource.TestCheckResourceAttr("data.outscale_volume.ebs_volume", "size", "10"),
 					resource.TestCheckResourceAttr("data.outscale_volume.ebs_volume", "volume_type", "standard"),
 				),
@@ -29,7 +29,7 @@ func TestAccOutscaleOAPIVolumeDataSource_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIVolumeDataSource_filterByTags(t *testing.T) {
+func TestAccVolumeDataSource_filterByTags(t *testing.T) {
 	t.Parallel()
 	region := os.Getenv("OUTSCALE_REGION")
 
@@ -38,9 +38,9 @@ func TestAccOutscaleOAPIVolumeDataSource_filterByTags(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVolumeDataSourceConfigFilterByTags(region),
+				Config: testAccCheckVolumeDataSourceConfigFilterByTags(region),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIVolumeDataSourceID("data.outscale_volume.ebs_volume"),
+					testAccCheckVolumeDataSourceID("data.outscale_volume.ebs_volume"),
 					resource.TestCheckResourceAttr("data.outscale_volume.ebs_volume", "size", "10"),
 					resource.TestCheckResourceAttr("data.outscale_volume.ebs_volume", "volume_type", "standard"),
 				),
@@ -49,7 +49,7 @@ func TestAccOutscaleOAPIVolumeDataSource_filterByTags(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleOAPIVolumeDataSourceID(n string) resource.TestCheckFunc {
+func testAccCheckVolumeDataSourceID(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -63,7 +63,7 @@ func testAccCheckOutscaleOAPIVolumeDataSourceID(n string) resource.TestCheckFunc
 	}
 }
 
-func testAccCheckOutscaleOAPIVolumeDataSourceConfig(region string) string {
+func testAccCheckVolumeDataSourceConfig(region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_volume" "example" {
 			subregion_name = "%sa"
@@ -85,7 +85,7 @@ func testAccCheckOutscaleOAPIVolumeDataSourceConfig(region string) string {
 	`, region)
 }
 
-func testAccCheckOutscaleOAPIVolumeDataSourceConfigFilterByTags(region string) string {
+func testAccCheckVolumeDataSourceConfigFilterByTags(region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_volume" "example" {
 			subregion_name = "%sa"

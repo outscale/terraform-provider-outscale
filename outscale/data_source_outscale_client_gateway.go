@@ -13,9 +13,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleClientGateway() *schema.Resource {
+func dataSourceClientGateway() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleClientGatewayRead,
+		Read: dataSourceClientGatewayRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"bgp_asn": {
@@ -47,8 +47,8 @@ func dataSourceOutscaleClientGateway() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleClientGatewayRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceClientGatewayRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
 	clientGatewayID, clientGatewayOk := d.GetOk("client_gateway_id")
@@ -66,7 +66,7 @@ func dataSourceOutscaleClientGatewayRead(d *schema.ResourceData, meta interface{
 	}
 
 	if filtersOk {
-		params.Filters = buildOutscaleDataSourceClientGatewayFilters(filters.(*schema.Set))
+		params.Filters = buildDataSourceClientGatewayFilters(filters.(*schema.Set))
 	}
 
 	var resp oscgo.ReadClientGatewaysResponse
@@ -108,7 +108,7 @@ func dataSourceOutscaleClientGatewayRead(d *schema.ResourceData, meta interface{
 	if err := d.Set("state", clientGateway.GetState()); err != nil {
 		return err
 	}
-	if err := d.Set("tags", tagsOSCAPIToMap(clientGateway.GetTags())); err != nil {
+	if err := d.Set("tags", tagsToMap(clientGateway.GetTags())); err != nil {
 		return err
 	}
 
@@ -117,7 +117,7 @@ func dataSourceOutscaleClientGatewayRead(d *schema.ResourceData, meta interface{
 	return nil
 }
 
-func buildOutscaleDataSourceClientGatewayFilters(set *schema.Set) *oscgo.FiltersClientGateway {
+func buildDataSourceClientGatewayFilters(set *schema.Set) *oscgo.FiltersClientGateway {
 	var filters oscgo.FiltersClientGateway
 	for _, v := range set.List() {
 		log.Printf("[DEBUG] gateway filters %+v", v)

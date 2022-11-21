@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPIRegionsDataSource_basic(t *testing.T) {
+func TestAccRegionsDataSource_basic(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -17,16 +17,16 @@ func TestAccOutscaleOAPIRegionsDataSource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIRegionsDataSourceConfig,
+				Config: testAccCheckRegionsDataSourceConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIRegionsDataSourceID("data.outscale_regions.regions"),
+					testAccCheckRegionsDataSourceID("data.outscale_regions.regions"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckOutscaleOAPIRegionsDataSourceID(n string) resource.TestCheckFunc {
+func testAccCheckRegionsDataSourceID(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -40,6 +40,6 @@ func testAccCheckOutscaleOAPIRegionsDataSourceID(n string) resource.TestCheckFun
 	}
 }
 
-var testAccCheckOutscaleOAPIRegionsDataSourceConfig = `
+var testAccCheckRegionsDataSourceConfig = `
 		data "outscale_regions" "regions" {}
 	`

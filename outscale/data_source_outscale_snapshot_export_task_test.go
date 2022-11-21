@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccOutscaleOAPISnapshotExportTaskDataSource_basic(t *testing.T) {
+func TestAccSnapshotExportTaskDataSource_basic(t *testing.T) {
 	t.Parallel()
 	imageName := acctest.RandomWithPrefix("terraform-export-")
 	resource.Test(t, resource.TestCase{
@@ -20,16 +20,16 @@ func TestAccOutscaleOAPISnapshotExportTaskDataSource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISnapshotExportTaskDataSourceConfig(imageName),
+				Config: testAccSnapshotExportTaskDataSourceConfig(imageName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleSnapshotExportTaskDataSourceID("data.outscale_snapshot_export_task.export_task"),
+					testAccCheckSnapshotExportTaskDataSourceID("data.outscale_snapshot_export_task.export_task"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckOutscaleSnapshotExportTaskDataSourceID(n string) resource.TestCheckFunc {
+func testAccCheckSnapshotExportTaskDataSourceID(n string) resource.TestCheckFunc {
 	// Wait for IAM role
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -44,7 +44,7 @@ func testAccCheckOutscaleSnapshotExportTaskDataSourceID(n string) resource.TestC
 	}
 }
 
-func testAccOutscaleOAPISnapshotExportTaskDataSourceConfig(testName string) string {
+func testAccSnapshotExportTaskDataSourceConfig(testName string) string {
 	var stringTemplate = `
 		resource "outscale_volume" "outscale_volume_snap" {
 			subregion_name   = "eu-west-2a"

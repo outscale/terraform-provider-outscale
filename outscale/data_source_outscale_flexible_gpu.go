@@ -14,9 +14,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPIFlexibleGpu() *schema.Resource {
+func dataSourceFlexibleGpu() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPIFlexibleGpuRead,
+		Read: dataSourceFlexibleGpuRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"request_id": {
@@ -55,9 +55,9 @@ func dataSourceOutscaleOAPIFlexibleGpu() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPIFlexibleGpuRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceFlexibleGpuRead(d *schema.ResourceData, meta interface{}) error {
 
-	conn := meta.(*OutscaleClient).OSCAPI
+	conn := meta.(*Client).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
 	flexID, IDOk := d.GetOk("flexible_gpu_id")
@@ -72,7 +72,7 @@ func dataSourceOutscaleOAPIFlexibleGpuRead(d *schema.ResourceData, meta interfac
 		FlexibleGpuIds: &[]string{flexID.(string)},
 	}
 
-	req.SetFilters(buildOutscaleOAPIDataSourceFlexibleGpuFilters(filters.(*schema.Set)))
+	req.SetFilters(buildDataSourceFlexibleGpuFilters(filters.(*schema.Set)))
 
 	var resp oscgo.ReadFlexibleGpusResponse
 	var err error
@@ -122,7 +122,7 @@ func dataSourceOutscaleOAPIFlexibleGpuRead(d *schema.ResourceData, meta interfac
 	return nil
 }
 
-func buildOutscaleOAPIDataSourceFlexibleGpuFilters(set *schema.Set) oscgo.FiltersFlexibleGpu {
+func buildDataSourceFlexibleGpuFilters(set *schema.Set) oscgo.FiltersFlexibleGpu {
 	var filters oscgo.FiltersFlexibleGpu
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})

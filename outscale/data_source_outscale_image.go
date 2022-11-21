@@ -12,9 +12,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPIImage() *schema.Resource {
+func dataSourceImage() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPIImageRead,
+		Read: dataSourceImageRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -194,8 +194,8 @@ func dataSourceOutscaleOAPIImage() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceImageRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
 	executableUsers, executableUsersOk := d.GetOk("permission")
@@ -207,7 +207,7 @@ func dataSourceOutscaleOAPIImageRead(d *schema.ResourceData, meta interface{}) e
 
 	filtersReq := &oscgo.FiltersImage{}
 	if filtersOk {
-		filtersReq = buildOutscaleOAPIDataSourceImagesFilters(filters.(*schema.Set))
+		filtersReq = buildDataSourceImagesFilters(filters.(*schema.Set))
 	}
 	if imageIDOk {
 		filtersReq.SetImageIds([]string{imageID.(string)})
@@ -284,19 +284,19 @@ func dataSourceOutscaleOAPIImageRead(d *schema.ResourceData, meta interface{}) e
 		if err := set("state", image.State); err != nil {
 			return err
 		}
-		if err := set("block_device_mappings", omiOAPIBlockDeviceMappings(*image.BlockDeviceMappings)); err != nil {
+		if err := set("block_device_mappings", omiBlockDeviceMappings(*image.BlockDeviceMappings)); err != nil {
 			return err
 		}
 		if err := set("product_codes", image.ProductCodes); err != nil {
 			return err
 		}
-		if err := set("state_comment", omiOAPIStateReason(image.StateComment)); err != nil {
+		if err := set("state_comment", omiStateReason(image.StateComment)); err != nil {
 			return err
 		}
-		if err := set("permissions_to_launch", omiOAPIPermissionToLuch(image.PermissionsToLaunch)); err != nil {
+		if err := set("permissions_to_launch", omiPermissionToLuch(image.PermissionsToLaunch)); err != nil {
 			return err
 		}
-		if err := set("tags", getOapiTagSet(image.Tags)); err != nil {
+		if err := set("tags", getTagSet(image.GetTags())); err != nil {
 			return err
 		}
 
@@ -304,7 +304,7 @@ func dataSourceOutscaleOAPIImageRead(d *schema.ResourceData, meta interface{}) e
 	})
 }
 
-func omiOAPIPermissionToLuch(p *oscgo.PermissionsOnResource) (res []map[string]interface{}) {
+func omiPermissionToLuch(p *oscgo.PermissionsOnResource) (res []map[string]interface{}) {
 	for _, v := range *p.AccountIds {
 		res = append(res, map[string]interface{}{
 			"account_id":        v,

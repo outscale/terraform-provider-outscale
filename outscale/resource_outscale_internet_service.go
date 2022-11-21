@@ -12,12 +12,12 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func resourceOutscaleOAPIInternetService() *schema.Resource {
+func resourceInternetService() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPIInternetServiceCreate,
-		Read:   resourceOutscaleOAPIInternetServiceRead,
-		Update: resourceOutscaleOAPIInternetServiceUpdate,
-		Delete: resourceOutscaleOAPIInternetServiceDelete,
+		Create: resourceInternetServiceCreate,
+		Read:   resourceInternetServiceRead,
+		Update: resourceInternetServiceUpdate,
+		Delete: resourceInternetServiceDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -39,13 +39,13 @@ func resourceOutscaleOAPIInternetService() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": tagsListOAPISchema(),
+			"tags": tagsListSchema(),
 		},
 	}
 }
 
-func resourceOutscaleOAPIInternetServiceCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceInternetServiceCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	var resp oscgo.CreateInternetServiceResponse
 	var err error
@@ -71,11 +71,11 @@ func resourceOutscaleOAPIInternetServiceCreate(d *schema.ResourceData, meta inte
 
 	d.SetId(resp.InternetService.GetInternetServiceId())
 
-	return resourceOutscaleOAPIInternetServiceRead(d, meta)
+	return resourceInternetServiceRead(d, meta)
 }
 
-func resourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceInternetServiceRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	id := d.Id()
 
@@ -120,26 +120,26 @@ func resourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta interf
 		return err
 	}
 
-	return d.Set("tags", tagsOSCAPIToMap(resp.GetInternetServices()[0].GetTags()))
+	return d.Set("tags", tagsToMap(resp.GetInternetServices()[0].GetTags()))
 }
 
-func resourceOutscaleOAPIInternetServiceUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceInternetServiceUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	d.Partial(true)
 
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := setTags(conn, d); err != nil {
 		return err
 	}
 
 	d.SetPartial("tags")
 
 	d.Partial(false)
-	return resourceOutscaleOAPIInternetServiceRead(d, meta)
+	return resourceInternetServiceRead(d, meta)
 }
 
-func resourceOutscaleOAPIInternetServiceDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceInternetServiceDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	internetServiceID := d.Id()
 	filterReq := oscgo.ReadInternetServicesRequest{
@@ -149,7 +149,7 @@ func resourceOutscaleOAPIInternetServiceDelete(d *schema.ResourceData, meta inte
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending"},
 		Target:     []string{"deleted", "available"},
-		Refresh:    LISOAPIStateRefreshFunction(conn, filterReq, "failed"),
+		Refresh:    LISStateRefreshFunction(conn, filterReq, "failed"),
 		Timeout:    10 * time.Minute,
 		MinTimeout: 30 * time.Second,
 		Delay:      1 * time.Minute,

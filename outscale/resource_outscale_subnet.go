@@ -12,12 +12,12 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func resourceOutscaleOAPISubNet() *schema.Resource {
+func resourceSubNet() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPISubNetCreate,
-		Read:   resourceOutscaleOAPISubNetRead,
-		Update: resourceOutscaleOAPISubNetUpdate,
-		Delete: resourceOutscaleOAPISubNetDelete,
+		Create: resourceSubNetCreate,
+		Read:   resourceSubNetRead,
+		Update: resourceSubNetUpdate,
+		Delete: resourceSubNetDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -25,13 +25,13 @@ func resourceOutscaleOAPISubNet() *schema.Resource {
 			Create: schema.DefaultTimeout(10 * time.Minute),
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
-		Schema: getOAPISubNetSchema(),
+		Schema: getSubNetSchema(),
 	}
 }
 
 // Create SubNet
-func resourceOutscaleOAPISubNetCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceSubNetCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 	req := oscgo.CreateSubnetRequest{
 		IpRange: d.Get("ip_range").(string),
 		NetId:   d.Get("net_id").(string),
@@ -64,7 +64,7 @@ func resourceOutscaleOAPISubNetCreate(d *schema.ResourceData, meta interface{}) 
 		stateConf := &resource.StateChangeConf{
 			Pending:    []string{"pending"},
 			Target:     []string{"available"},
-			Refresh:    SubnetStateOApiRefreshFunc(conn, result.GetSubnetId()),
+			Refresh:    SubnetStateRefreshFunc(conn, result.GetSubnetId()),
 			Timeout:    d.Timeout(schema.TimeoutCreate),
 			Delay:      6 * time.Second,
 			MinTimeout: 1 * time.Second,
@@ -76,12 +76,12 @@ func resourceOutscaleOAPISubNetCreate(d *schema.ResourceData, meta interface{}) 
 		}
 	}
 	d.SetId(result.GetSubnetId())
-	return resourceOutscaleOAPISubNetRead(d, meta)
+	return resourceSubNetRead(d, meta)
 }
 
 // Read SubNet
-func resourceOutscaleOAPISubNetRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceSubNetRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 	id := d.Id()
 	log.Printf("[DEBUG] Reading Subnet(%s)", id)
 	req := oscgo.ReadSubnetsRequest{
@@ -103,22 +103,22 @@ func resourceOutscaleOAPISubNetRead(d *schema.ResourceData, meta interface{}) er
 		return fmt.Errorf("[DEBUG] Error reading Subnet (%s)", errString)
 	}
 	if len(resp.GetSubnets()) > 0 {
-		return readOutscaleOAPISubNet(d, &resp.GetSubnets()[0])
+		return readSubNet(d, &resp.GetSubnets()[0])
 	}
 	return fmt.Errorf("No subnet (%s) found", d.Id())
 }
-func resourceOutscaleOAPISubNetUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceSubNetUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 	d.Partial(true)
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := setTags(conn, d); err != nil {
 		return err
 	}
 	d.SetPartial("tags")
 	d.Partial(false)
-	return resourceOutscaleOAPISubNetRead(d, meta)
+	return resourceSubNetRead(d, meta)
 }
-func resourceOutscaleOAPISubNetDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceSubNetDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 	id := d.Id()
 	log.Printf("[DEBUG] Deleting Subnet (%s)", id)
 	req := oscgo.DeleteSubnetRequest{
@@ -139,7 +139,7 @@ func resourceOutscaleOAPISubNetDelete(d *schema.ResourceData, meta interface{}) 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending", "available"},
 		Target:     []string{"deleted"},
-		Refresh:    SubnetStateOApiRefreshFunc(conn, id),
+		Refresh:    SubnetStateRefreshFunc(conn, id),
 		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      2 * time.Second,
 		MinTimeout: 1 * time.Second,
@@ -151,39 +151,39 @@ func resourceOutscaleOAPISubNetDelete(d *schema.ResourceData, meta interface{}) 
 	d.SetId("")
 	return nil
 }
-func readOutscaleOAPISubNet(d *schema.ResourceData, subnet *oscgo.Subnet) error {
+func readSubNet(d *schema.ResourceData, subnet *oscgo.Subnet) error {
 	if err := d.Set("subregion_name", subnet.GetSubregionName()); err != nil {
-		fmt.Printf("[WARN] ERROR readOutscaleSubNet1 (%s)", err)
+		fmt.Printf("[WARN] ERROR readSubNet1 (%s)", err)
 		return err
 	}
 	if err := d.Set("available_ips_count", subnet.GetAvailableIpsCount()); err != nil {
-		fmt.Printf("[WARN] ERROR readOutscaleSubNet2 (%s)", err)
+		fmt.Printf("[WARN] ERROR readSubNet2 (%s)", err)
 		return err
 	}
 	if err := d.Set("ip_range", subnet.GetIpRange()); err != nil {
-		fmt.Printf("[WARN] ERROR readOutscaleSubNet (%s)", err)
+		fmt.Printf("[WARN] ERROR readSubNet (%s)", err)
 		return err
 	}
 	if err := d.Set("state", subnet.GetState()); err != nil {
-		fmt.Printf("[WARN] ERROR readOutscaleSubNet4 (%s)", err)
+		fmt.Printf("[WARN] ERROR readSubNet4 (%s)", err)
 		return err
 	}
 	if err := d.Set("subnet_id", subnet.GetSubnetId()); err != nil {
-		fmt.Printf("[WARN] ERROR readOutscaleSubNet5 (%s)", err)
+		fmt.Printf("[WARN] ERROR readSubNet5 (%s)", err)
 		return err
 	}
 	if err := d.Set("net_id", subnet.GetNetId()); err != nil {
-		fmt.Printf("[WARN] ERROR readOutscaleSubNet6 (%s)", err)
+		fmt.Printf("[WARN] ERROR readSubNet6 (%s)", err)
 		return err
 	}
 	if err := d.Set("map_public_ip_on_launch", subnet.GetMapPublicIpOnLaunch()); err != nil {
-		fmt.Printf("[WARN] ERROR readOutscaleSubNet6 (%s)", err)
+		fmt.Printf("[WARN] ERROR readSubNet6 (%s)", err)
 		return err
 	}
-	return d.Set("tags", tagsOSCAPIToMap(subnet.GetTags()))
+	return d.Set("tags", tagsToMap(subnet.GetTags()))
 }
 
-func SubnetStateOApiRefreshFunc(conn *oscgo.APIClient, subnetID string) resource.StateRefreshFunc {
+func SubnetStateRefreshFunc(conn *oscgo.APIClient, subnetID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		var resp oscgo.ReadSubnetsResponse
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -209,7 +209,7 @@ func SubnetStateOApiRefreshFunc(conn *oscgo.APIClient, subnetID string) resource
 		return resp.GetSubnets()[0], resp.GetSubnets()[0].GetState(), nil
 	}
 }
-func getOAPISubNetSchema() map[string]*schema.Schema {
+func getSubNetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		//This is attribute part for schema SubNet
 		"net_id": {
@@ -249,6 +249,6 @@ func getOAPISubNetSchema() map[string]*schema.Schema {
 			Type:     schema.TypeBool,
 			Computed: true,
 		},
-		"tags": tagsListOAPISchema(),
+		"tags": tagsListSchema(),
 	}
 }

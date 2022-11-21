@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPISubregionsDataSource_Basic(t *testing.T) {
+func TestAccSubregionsDataSource_Basic(t *testing.T) {
 	t.Parallel()
 	subregionName := "eu-west-2b"
 
@@ -19,16 +19,16 @@ func TestAccOutscaleOAPISubregionsDataSource_Basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPISubregionsDataSourceConfig(subregionName),
+				Config: testAccCheckSubregionsDataSourceConfig(subregionName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPISubregionsDataSourceID("data.outscale_subregions.test"),
+					testAccCheckSubregionsDataSourceID("data.outscale_subregions.test"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccOutscaleOAPISubregionsDataSource_All(t *testing.T) {
+func TestAccSubregionsDataSource_All(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -37,16 +37,16 @@ func TestAccOutscaleOAPISubregionsDataSource_All(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPISubregionsDataSourceConfigAll,
+				Config: testAccCheckSubregionsDataSourceConfigAll,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPISubregionsDataSourceID("data.outscale_subregions.test"),
+					testAccCheckSubregionsDataSourceID("data.outscale_subregions.test"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckOutscaleOAPISubregionsDataSourceID(n string) resource.TestCheckFunc {
+func testAccCheckSubregionsDataSourceID(n string) resource.TestCheckFunc {
 	// Wait for IAM role
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -61,7 +61,7 @@ func testAccCheckOutscaleOAPISubregionsDataSourceID(n string) resource.TestCheck
 	}
 }
 
-func testAccCheckOutscaleOAPISubregionsDataSourceConfig(subregionName string) string {
+func testAccCheckSubregionsDataSourceConfig(subregionName string) string {
 	return fmt.Sprintf(`
 		data "outscale_subregions" "test" {
 			filter {
@@ -72,7 +72,7 @@ func testAccCheckOutscaleOAPISubregionsDataSourceConfig(subregionName string) st
 	`, subregionName)
 }
 
-var testAccCheckOutscaleOAPISubregionsDataSourceConfigAll = `
+var testAccCheckSubregionsDataSourceConfigAll = `
 		data "outscale_subregions" "test" {
 		}
 	`

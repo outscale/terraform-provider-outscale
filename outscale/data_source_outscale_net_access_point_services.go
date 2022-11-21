@@ -12,9 +12,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPINetAccessPointServices() *schema.Resource {
+func dataSourceNetAccessPointServices() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPINetAccessPointServicesRead,
+		Read: dataSourceNetAccessPointServicesRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"services": {
@@ -46,14 +46,14 @@ func dataSourceOutscaleOAPINetAccessPointServices() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPINetAccessPointServicesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceNetAccessPointServicesRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
 
 	filtersReq := oscgo.FiltersService{}
 	if filtersOk {
-		filtersReq = buildOutscaleDataSourcesNAPSFilters(filters.(*schema.Set))
+		filtersReq = buildDataSourcesNAPSFilters(filters.(*schema.Set))
 	}
 	req := oscgo.ReadNetAccessPointServicesRequest{Filters: &filtersReq}
 
@@ -95,7 +95,7 @@ func dataSourceOutscaleOAPINetAccessPointServicesRead(d *schema.ResourceData, me
 	return nil
 }
 
-func buildOutscaleDataSourcesNAPSFilters(set *schema.Set) oscgo.FiltersService {
+func buildDataSourcesNAPSFilters(set *schema.Set) oscgo.FiltersService {
 	var filters oscgo.FiltersService
 
 	for _, v := range set.List() {

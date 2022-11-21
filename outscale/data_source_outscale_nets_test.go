@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccDataSourceOutscaleOAPIVpcs_basic(t *testing.T) {
+func TestAccDataSourceVpcs_basic(t *testing.T) {
 
 	rand.Seed(time.Now().UTC().UnixNano())
 	rInt := rand.Intn(16)
@@ -20,7 +20,7 @@ func TestAccDataSourceOutscaleOAPIVpcs_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPIVpcsConfig(ipRange, tag),
+				Config: testAccDataSourceVpcsConfig(ipRange, tag),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.outscale_nets.by_id", "nets.#", "1"),
 				),
@@ -29,7 +29,7 @@ func TestAccDataSourceOutscaleOAPIVpcs_basic(t *testing.T) {
 	})
 }
 
-func testAccDataSourceOutscaleOAPIVpcsConfig(ipRange, tag string) string {
+func testAccDataSourceVpcsConfig(ipRange, tag string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "test" {
 			ip_range = "%s"
