@@ -36,11 +36,8 @@ func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIVMExists(resourceName, &server),
 					testAccCheckOutscaleOAPIVMAttributes(t, &server, omi),
-
 					resource.TestCheckResourceAttr(resourceName, "image_id", omi),
 					resource.TestCheckResourceAttr(resourceName, "vm_type", "tinav4.c2r2p2"),
-
-					resource.TestCheckResourceAttr(resourceName, "nested_virtualization", "true"),
 				),
 			},
 		},
@@ -211,6 +208,9 @@ func TestAccOutscaleOAPIVM_withNics(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIVM_Update(t *testing.T) {
+
+	resourceName := "outscale_vm.basic"
+
 	region := os.Getenv("OUTSCALE_REGION")
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
@@ -225,20 +225,22 @@ func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccVmsConfigUpdateOAPIVMKey(omi, "tinav4.c2r2p2", region, keypair, sgId),
+				Config: testAccVmsConfigUpdateOAPIVMKey(omi, "tinav4.c2r2p2", region, keypair, sgId, false),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &before),
+					testAccCheckOutscaleOAPIVMExists(resourceName, &before),
 					testAccCheckOutscaleOAPIVMAttributes(t, &before, omi),
-					resource.TestCheckResourceAttr("outscale_vm.basic", "image_id", omi),
-					resource.TestCheckResourceAttr("outscale_vm.basic", "vm_type", "tinav4.c2r2p2"),
+					resource.TestCheckResourceAttr(resourceName, "image_id", omi),
+					resource.TestCheckResourceAttr(resourceName, "vm_type", "tinav4.c2r2p2"),
+					resource.TestCheckResourceAttr(resourceName, "nested_virtualization", "false"),
 				),
 			},
 			{
-				Config: testAccVmsConfigUpdateOAPIVMKey(omi, "tinav4.c2r2p2", region, keypair, sgId),
+				Config: testAccVmsConfigUpdateOAPIVMKey(omi, "tinav4.c2r2p2", region, keypair, sgId, true),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPIVMExists("outscale_vm.basic", &after),
+					testAccCheckOAPIVMExists(resourceName, &after),
 					testAccCheckOAPIVMNotRecreated(t, &before, &after),
-					resource.TestCheckResourceAttr("outscale_vm.basic", "vm_type", "tinav4.c2r2p2"),
+					resource.TestCheckResourceAttr(resourceName, "vm_type", "tinav4.c2r2p2"),
+					resource.TestCheckResourceAttr(resourceName, "nested_virtualization", "true"),
 				),
 			},
 		},
@@ -788,7 +790,7 @@ func testAccCheckOutscaleOAPIVMConfigBasicWithNics(omi, vmType, keypair string) 
 	  }`, omi, vmType, keypair)
 }
 
-func testAccVmsConfigUpdateOAPIVMKey(omi, vmType, region, keypair, sgId string) string {
+func testAccVmsConfigUpdateOAPIVMKey(omi, vmType, region, keypair, sgId string, nested bool) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "net" {
 			ip_range = "10.0.0.0/16"
@@ -817,8 +819,10 @@ func testAccVmsConfigUpdateOAPIVMKey(omi, vmType, region, keypair, sgId string) 
 			keypair_name             = "%[4]s"
 			security_group_ids       = ["%[5]s"]
 			placement_subregion_name = "%[3]sb"
+			placement_tenancy        = "dedicated"
+			nested_virtualization    = %[6]v
 		}
-	`, omi, vmType, region, keypair, sgId)
+	`, omi, vmType, region, keypair, sgId, nested)
 }
 
 func testAccVmsConfigUpdateOAPIVMTags(omi, vmType string, region, value, keypair, sgId string) string {
