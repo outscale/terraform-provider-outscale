@@ -111,7 +111,7 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if volumeIdsOk {
-		volIDs := expandStringValueList(volumeIds.([]interface{}))
+		volIDs := utils.InterfaceSliceToStringSlice(volumeIds.([]interface{}))
 		filter := oscgo.FiltersVolume{}
 		filter.SetVolumeIds(volIDs)
 		params.SetFilters(filter)

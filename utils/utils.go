@@ -13,6 +13,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 // PrintToJSON method helper to debug responses
@@ -165,4 +166,47 @@ func RandVpcCidr() string {
 		result = fmt.Sprintf("192.168.0.0/%d", prefix)
 	}
 	return result
+}
+func InterfaceSliceToStringSlicePtr(slice []interface{}) *[]string {
+	result := InterfaceSliceToStringSlice(slice)
+	return &result
+}
+
+func SetToStringSlice(set *schema.Set) []string {
+	return InterfaceSliceToStringSlice(set.List())
+}
+
+func SetToStringSlicePtr(set *schema.Set) *[]string {
+	return InterfaceSliceToStringSlicePtr(set.List())
+}
+
+func InterfaceSliceToStringSlice(slice []interface{}) []string {
+	result := make([]string, 0, len(slice))
+	for _, v := range slice {
+		val, ok := v.(string)
+		if ok && val != "" {
+			result = append(result, v.(string))
+		}
+	}
+	return result
+}
+
+func InterfaceSliceToStringList(slice []interface{}) *[]string {
+	res := InterfaceSliceToStringSlice(slice)
+	return &res
+}
+
+func StringSlicePtrToInterfaceSlice(list *[]string) []interface{} {
+	if list == nil {
+		return make([]interface{}, 0)
+	}
+	vs := make([]interface{}, 0, len(*list))
+	for _, v := range *list {
+		vs = append(vs, v)
+	}
+	return vs
+}
+
+func I32toa(i int32) string {
+	return strconv.FormatInt(int64(i), 10)
 }

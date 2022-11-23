@@ -2,6 +2,7 @@ package outscale
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func dataSourceOutscaleLoadBalancerVms() *schema.Resource {
@@ -37,6 +38,6 @@ func dataSourceOutscaleLoadBalancerVmsRead(d *schema.ResourceData,
 		return err
 	}
 
-	d.Set("backend_vm_ids", flattenStringList(lb.BackendVmIds))
+	d.Set("backend_vm_ids", utils.StringSlicePtrToInterfaceSlice(lb.BackendVmIds))
 	return nil
 }

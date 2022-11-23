@@ -31,7 +31,7 @@ func dataSourceOutscaleOAPILBUTagsRead(d *schema.ResourceData, meta interface{})
 	names := ename.([]interface{})
 
 	req := oscgo.ReadLoadBalancerTagsRequest{
-		LoadBalancerNames: *expandStringList(names),
+		LoadBalancerNames: utils.InterfaceSliceToStringSlice(names),
 	}
 
 	var resp oscgo.ReadLoadBalancerTagsResponse

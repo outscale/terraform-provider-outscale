@@ -83,10 +83,10 @@ func dataSourceOutscaleAccessKeysRead(d *schema.ResourceData, meta interface{}) 
 		filterReq = buildOutscaleDataSourceAccessKeyFilters(filters.(*schema.Set))
 	}
 	if accessKeyOk {
-		filterReq.SetAccessKeyIds(expandStringValueList(accessKeyID.([]interface{})))
+		filterReq.SetAccessKeyIds(utils.InterfaceSliceToStringSlice(accessKeyID.([]interface{})))
 	}
 	if stateOk {
-		filterReq.SetStates(expandStringValueList(state.([]interface{})))
+		filterReq.SetStates(utils.InterfaceSliceToStringSlice(state.([]interface{})))
 	}
 
 	var resp oscgo.ReadAccessKeysResponse

@@ -60,18 +60,18 @@ func resourceOutscaleOAPIApiAccessRuleCreate(d *schema.ResourceData, meta interf
 
 	if val, ok := d.GetOk("ca_ids"); ok {
 		checkParam = true
-		req.CaIds = expandSetStringList(val.(*schema.Set))
+		req.CaIds = utils.SetToStringSlicePtr(val.(*schema.Set))
 	}
 	if val, ok := d.GetOk("ip_ranges"); ok {
 		checkParam = true
-		req.IpRanges = expandSetStringList(val.(*schema.Set))
+		req.IpRanges = utils.SetToStringSlicePtr(val.(*schema.Set))
 	}
 	if !checkParam {
 		return fmt.Errorf("[DEBUG] Error 'ca_ids' or 'ip_ranges' field is require for API Access Rules creation")
 	}
 
 	if val, ok := d.GetOk("cns"); ok {
-		req.Cns = expandSetStringList(val.(*schema.Set))
+		req.Cns = utils.SetToStringSlicePtr(val.(*schema.Set))
 	}
 	if v, ok := d.GetOk("description"); ok {
 		req.SetDescription(v.(string))
@@ -169,11 +169,11 @@ func resourceOutscaleOAPIApiAccessRuleUpdate(d *schema.ResourceData, meta interf
 
 	if val, ok := d.GetOk("ca_ids"); ok {
 		checkParam = true
-		req.CaIds = expandSetStringList(val.(*schema.Set))
+		req.CaIds = utils.SetToStringSlicePtr(val.(*schema.Set))
 	}
 	if val, ok := d.GetOk("ip_ranges"); ok {
 		checkParam = true
-		req.IpRanges = expandSetStringList(val.(*schema.Set))
+		req.IpRanges = utils.SetToStringSlicePtr(val.(*schema.Set))
 	}
 
 	if !checkParam {
@@ -181,7 +181,7 @@ func resourceOutscaleOAPIApiAccessRuleUpdate(d *schema.ResourceData, meta interf
 	}
 
 	if val, ok := d.GetOk("cns"); ok {
-		req.Cns = expandSetStringList(val.(*schema.Set))
+		req.Cns = utils.SetToStringSlicePtr(val.(*schema.Set))
 	}
 	if v, ok := d.GetOk("description"); ok {
 		req.SetDescription(v.(string))

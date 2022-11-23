@@ -647,7 +647,7 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 			if diff < 0 {
 				input := oscgo.UnlinkPrivateIpsRequest{
 					NicId:      d.Id(),
-					PrivateIps: expandStringValueList(prips[0:int(math.Abs(float64(diff)))]),
+					PrivateIps: utils.InterfaceSliceToStringSlice(prips[0:int(math.Abs(float64(diff)))]),
 				}
 
 				err := resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -666,7 +666,7 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 	}
 
 	if d.HasChange("security_group_ids") {
-		stringValueList := expandStringValueList(d.Get("security_group_ids").([]interface{}))
+		stringValueList := utils.InterfaceSliceToStringSlice(d.Get("security_group_ids").([]interface{}))
 		request := oscgo.UpdateNicRequest{
 			NicId:            d.Id(),
 			SecurityGroupIds: &stringValueList,

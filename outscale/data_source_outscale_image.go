@@ -216,7 +216,7 @@ func dataSourceOutscaleOAPIImageRead(d *schema.ResourceData, meta interface{}) e
 		filtersReq.SetAccountIds([]string{ai.(string)})
 	}
 	if executableUsersOk {
-		filtersReq.SetPermissionsToLaunchAccountIds(expandStringValueList(executableUsers.([]interface{})))
+		filtersReq.SetPermissionsToLaunchAccountIds(utils.InterfaceSliceToStringSlice(executableUsers.([]interface{})))
 	}
 
 	req := oscgo.ReadImagesRequest{Filters: filtersReq}

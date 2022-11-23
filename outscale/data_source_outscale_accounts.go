@@ -132,7 +132,7 @@ func flattenAccounts(accounts []oscgo.Account) []map[string]interface{} {
 	for i, account := range accounts {
 		accountsMap[i] = map[string]interface{}{
 			"account_id":        account.GetAccountId(),
-			"additional_emails": flattenStringList(account.AdditionalEmails),
+			"additional_emails": utils.StringSlicePtrToInterfaceSlice(account.AdditionalEmails),
 			"city":              account.GetCity(),
 			"company_name":      account.GetCompanyName(),
 			"country":           account.GetCountry(),

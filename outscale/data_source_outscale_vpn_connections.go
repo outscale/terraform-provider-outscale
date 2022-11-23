@@ -131,7 +131,7 @@ func dataSourceOutscaleVPNConnectionsRead(d *schema.ResourceData, meta interface
 
 	if vpnConnectionOk {
 		params.Filters = &oscgo.FiltersVpnConnection{
-			VpnConnectionIds: expandStringValueListPointer(vpnConnectionIDs.([]interface{})),
+			VpnConnectionIds: utils.InterfaceSliceToStringSlicePtr(vpnConnectionIDs.([]interface{})),
 		}
 	}
 
