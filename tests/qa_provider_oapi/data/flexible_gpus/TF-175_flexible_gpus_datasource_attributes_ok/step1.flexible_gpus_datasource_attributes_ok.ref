@@ -66,21 +66,21 @@
                         "flexible_gpus": [
                             {
                                 "delete_on_vm_deletion": true,
-                                "flexible_gpu_id": "##id-0##",
-                                "generation": "v3",
-                                "model_name": "nvidia-k2",
-                                "state": "attached",
-                                "subregion_name": "###region###a",
-                                "vm_id": "##id-1##"
-                            },
-                            {
-                                "delete_on_vm_deletion": true,
                                 "flexible_gpu_id": "##id-2##",
                                 "generation": "v3",
                                 "model_name": "nvidia-k2",
                                 "state": "allocated",
                                 "subregion_name": "###region###a",
                                 "vm_id": ""
+                            },
+                            {
+                                "delete_on_vm_deletion": true,
+                                "flexible_gpu_id": "##id-0##",
+                                "generation": "v3",
+                                "model_name": "nvidia-k2",
+                                "state": "attached",
+                                "subregion_name": "###region###a",
+                                "vm_id": "##id-1##"
                             }
                         ],
                         "id": "##id-3##",
@@ -218,6 +218,7 @@
                         "is_source_dest_checked": true,
                         "keypair_name": "KP-TF1775",
                         "launch_number": 0,
+                        "nested_virtualization": false,
                         "net_id": "",
                         "nics": [],
                         "os_family": "",

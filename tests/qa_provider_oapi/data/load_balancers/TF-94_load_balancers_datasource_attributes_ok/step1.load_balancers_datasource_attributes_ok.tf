@@ -49,7 +49,7 @@ resource "outscale_load_balancer" "private_lbu_1" {
      load_balancer_port = 8080
    }
   subnets = [outscale_subnet.subnet-1.subnet_id]
-  security_groups = [outscale_security_group.outscale_security_group.id]
+  security_groups = [outscale_security_group.outscale_security_group.security_group_id]
   load_balancer_type = "internal"
   tags {
      key = "name"

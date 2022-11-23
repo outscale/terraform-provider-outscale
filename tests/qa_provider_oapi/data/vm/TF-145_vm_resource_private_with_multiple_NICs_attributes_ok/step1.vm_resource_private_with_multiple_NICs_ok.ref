@@ -260,6 +260,7 @@
                         "is_source_dest_checked": true,
                         "keypair_name": "KP-TF145",
                         "launch_number": 0,
+                        "nested_virtualization": false,
                         "net_id": "##id-2##",
                         "nics": [
                             {
