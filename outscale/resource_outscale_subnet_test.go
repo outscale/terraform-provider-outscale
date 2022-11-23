@@ -19,15 +19,25 @@ func TestAccOutscaleOAPISubNet_basic(t *testing.T) {
 	var conf oscgo.Subnet
 	region := os.Getenv("OUTSCALE_REGION")
 
+	resourceName := "outscale_subnet.subnet"
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPISubNetDestroyed, // we need to create the destroyed test case
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISubnetConfig(region),
+				Config: testAccOutscaleOAPISubnetConfig(region, false),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPISubNetExists("outscale_subnet.subnet", &conf),
+					testAccCheckOutscaleOAPISubNetExists(resourceName, &conf),
+					resource.TestCheckResourceAttr(resourceName, "map_public_ip_on_launch", "false"),
+				),
+			},
+			{
+				Config: testAccOutscaleOAPISubnetConfig(region, true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleOAPISubNetExists(resourceName, &conf),
+					resource.TestCheckResourceAttr(resourceName, "map_public_ip_on_launch", "true"),
 				),
 			},
 		},
@@ -114,7 +124,7 @@ func testAccCheckOutscaleOAPISubNetDestroyed(s *terraform.State) error {
 	return nil
 }
 
-func testAccOutscaleOAPISubnetConfig(region string) string {
+func testAccOutscaleOAPISubnetConfig(region string, mapPublicIpOnLaunch bool) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "net" {
 			ip_range = "10.0.0.0/16"
@@ -129,11 +139,11 @@ func testAccOutscaleOAPISubnetConfig(region string) string {
 			ip_range       = "10.0.0.0/16"
 			subregion_name = "%sa"
 			net_id         = "${outscale_net.net.id}"
-
+			map_public_ip_on_launch = %v
 			tags {
 				key   = "name"
 				value = "terraform-subnet"
 			}
 		}
-	`, region)
+	`, region, mapPublicIpOnLaunch)
 }

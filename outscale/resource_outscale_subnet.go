@@ -76,6 +76,26 @@ func resourceOutscaleOAPISubNetCreate(d *schema.ResourceData, meta interface{}) 
 		}
 	}
 	d.SetId(result.GetSubnetId())
+	if v, ok := d.GetOk("map_public_ip_on_launch"); ok {
+		req := oscgo.UpdateSubnetRequest{
+			SubnetId: d.Id(),
+		}
+		req.SetMapPublicIpOnLaunch(v.(bool))
+
+		var err error
+		err = resource.Retry(1*time.Minute, func() *resource.RetryError {
+			_, httpResp, err := conn.SubnetApi.UpdateSubnet(
+				context.Background()).UpdateSubnetRequest(req).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp.StatusCode, err)
+			}
+			return nil
+		})
+
+		if err != nil {
+			return fmt.Errorf("Failure updating MapPublicIpOnLaunch: %s", err)
+		}
+	}
 	return resourceOutscaleOAPISubNetRead(d, meta)
 }
 
@@ -109,14 +129,35 @@ func resourceOutscaleOAPISubNetRead(d *schema.ResourceData, meta interface{}) er
 }
 func resourceOutscaleOAPISubNetUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-	d.Partial(true)
+
 	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
-	d.SetPartial("tags")
-	d.Partial(false)
+
+	if d.HasChange("map_public_ip_on_launch") {
+		req := oscgo.UpdateSubnetRequest{
+			SubnetId: d.Id(),
+		}
+		req.SetMapPublicIpOnLaunch(d.Get("map_public_ip_on_launch").(bool))
+
+		var err error
+		err = resource.Retry(1*time.Minute, func() *resource.RetryError {
+			_, httpResp, err := conn.SubnetApi.UpdateSubnet(
+				context.Background()).UpdateSubnetRequest(req).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp.StatusCode, err)
+			}
+			return nil
+		})
+
+		if err != nil {
+			return fmt.Errorf("Failure updating MapPublicIpOnLaunch: %s", err)
+		}
+	}
+
 	return resourceOutscaleOAPISubNetRead(d, meta)
 }
+
 func resourceOutscaleOAPISubNetDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	id := d.Id()
@@ -247,7 +288,7 @@ func getOAPISubNetSchema() map[string]*schema.Schema {
 		},
 		"map_public_ip_on_launch": {
 			Type:     schema.TypeBool,
-			Computed: true,
+			Optional: true,
 		},
 		"tags": tagsListOAPISchema(),
 	}
