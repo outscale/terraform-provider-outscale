@@ -25,15 +25,11 @@
                                 "connection_type": "ipsec.1",
                                 "routes": [],
                                 "state": "available",
-                                "static_routes_only": false,
+                                "static_routes_only": true,
                                 "tags": [
                                     {
                                         "key": "Type:TF-180",
-                                        "value": "Dynamic-TF:180"
-                                    },
-                                    {
-                                        "key": "Test-TF180",
-                                        "value": "Terraform"
+                                        "value": "Static-TF:180"
                                     }
                                 ],
                                 "vgw_telemetries": [
@@ -54,11 +50,15 @@
                                 "connection_type": "ipsec.1",
                                 "routes": [],
                                 "state": "available",
-                                "static_routes_only": true,
+                                "static_routes_only": false,
                                 "tags": [
                                     {
                                         "key": "Type:TF-180",
-                                        "value": "Static-TF:180"
+                                        "value": "Dynamic-TF:180"
+                                    },
+                                    {
+                                        "key": "Test-TF180",
+                                        "value": "Terraform"
                                     }
                                 ],
                                 "vgw_telemetries": [
@@ -95,7 +95,7 @@
                         "vpn_connections": [
                             {
                                 "client_gateway_configuration": "########",
-                                "client_gateway_id": "##id-1##",
+                                "client_gateway_id": "##id-4##",
                                 "connection_type": "ipsec.1",
                                 "routes": [],
                                 "state": "available",
@@ -120,7 +120,7 @@
                                     }
                                 ],
                                 "virtual_gateway_id": "##id-2##",
-                                "vpn_connection_id": "##id-3##"
+                                "vpn_connection_id": "##id-5##"
                             }
                         ]
                     },
@@ -144,7 +144,7 @@
                         "vpn_connections": [
                             {
                                 "client_gateway_configuration": "########",
-                                "client_gateway_id": "##id-1##",
+                                "client_gateway_id": "##id-4##",
                                 "connection_type": "ipsec.1",
                                 "routes": [],
                                 "state": "available",
@@ -169,7 +169,7 @@
                                     }
                                 ],
                                 "virtual_gateway_id": "##id-2##",
-                                "vpn_connection_id": "##id-3##"
+                                "vpn_connection_id": "##id-5##"
                             }
                         ]
                     },
@@ -193,7 +193,7 @@
                         "vpn_connections": [
                             {
                                 "client_gateway_configuration": "########",
-                                "client_gateway_id": "##id-1##",
+                                "client_gateway_id": "##id-4##",
                                 "connection_type": "ipsec.1",
                                 "routes": [],
                                 "state": "available",
@@ -218,7 +218,7 @@
                                     }
                                 ],
                                 "virtual_gateway_id": "##id-2##",
-                                "vpn_connection_id": "##id-3##"
+                                "vpn_connection_id": "##id-5##"
                             }
                         ]
                     },
@@ -242,7 +242,7 @@
                         "vpn_connections": [
                             {
                                 "client_gateway_configuration": "########",
-                                "client_gateway_id": "##id-1##",
+                                "client_gateway_id": "##id-4##",
                                 "connection_type": "ipsec.1",
                                 "routes": [],
                                 "state": "available",
@@ -267,7 +267,7 @@
                                     }
                                 ],
                                 "virtual_gateway_id": "##id-2##",
-                                "vpn_connection_id": "##id-3##"
+                                "vpn_connection_id": "##id-5##"
                             }
                         ]
                     },
@@ -291,7 +291,7 @@
                         "vpn_connections": [
                             {
                                 "client_gateway_configuration": "########",
-                                "client_gateway_id": "##id-1##",
+                                "client_gateway_id": "##id-4##",
                                 "connection_type": "ipsec.1",
                                 "routes": [],
                                 "state": "available",
@@ -316,7 +316,7 @@
                                     }
                                 ],
                                 "virtual_gateway_id": "##id-2##",
-                                "vpn_connection_id": "##id-3##"
+                                "vpn_connection_id": "##id-5##"
                             }
                         ]
                     },
@@ -334,9 +334,9 @@
                     "schema_version": 0,
                     "attributes": {
                         "bgp_asn": 65000,
-                        "client_gateway_id": "##id-1##",
+                        "client_gateway_id": "##id-4##",
                         "connection_type": "ipsec.1",
-                        "id": "##id-1##",
+                        "id": "##id-4##",
                         "public_ip": "########",
                         "request_id": "########",
                         "state": "available",
@@ -357,9 +357,9 @@
                     "schema_version": 0,
                     "attributes": {
                         "bgp_asn": 64900,
-                        "client_gateway_id": "##id-4##",
+                        "client_gateway_id": "##id-1##",
                         "connection_type": "ipsec.1",
-                        "id": "##id-4##",
+                        "id": "##id-1##",
                         "public_ip": "########",
                         "request_id": "########",
                         "state": "available",
@@ -402,9 +402,9 @@
                     "schema_version": 0,
                     "attributes": {
                         "client_gateway_configuration": "########",
-                        "client_gateway_id": "##id-1##",
+                        "client_gateway_id": "##id-4##",
                         "connection_type": "ipsec.1",
-                        "id": "##id-3##",
+                        "id": "##id-5##",
                         "request_id": "########",
                         "routes": [],
                         "state": "available",
@@ -430,7 +430,7 @@
                             }
                         ],
                         "virtual_gateway_id": "##id-2##",
-                        "vpn_connection_id": "##id-3##"
+                        "vpn_connection_id": "##id-5##"
                     },
                     "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
@@ -451,9 +451,9 @@
                     "schema_version": 0,
                     "attributes": {
                         "client_gateway_configuration": "########",
-                        "client_gateway_id": "##id-4##",
+                        "client_gateway_id": "##id-1##",
                         "connection_type": "ipsec.1",
-                        "id": "##id-5##",
+                        "id": "##id-3##",
                         "request_id": "########",
                         "routes": [],
                         "state": "available",
@@ -475,7 +475,7 @@
                             }
                         ],
                         "virtual_gateway_id": "##id-2##",
-                        "vpn_connection_id": "##id-5##"
+                        "vpn_connection_id": "##id-3##"
                     },
                     "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
@@ -486,5 +486,6 @@
                 }
             ]
         }
-    ]
+    ],
+    "check_results": "########"
 }

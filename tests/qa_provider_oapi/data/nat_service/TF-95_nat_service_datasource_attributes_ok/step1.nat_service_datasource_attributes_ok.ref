@@ -29,12 +29,12 @@
                         "subnet_id": "##id-3##",
                         "tags": [
                             {
-                                "key": "name",
-                                "value": "nat"
-                            },
-                            {
                                 "key": "Key",
                                 "value": "value-tags"
+                            },
+                            {
+                                "key": "name",
+                                "value": "nat"
                             }
                         ]
                     },
@@ -66,12 +66,12 @@
                         "subnet_id": "##id-3##",
                         "tags": [
                             {
-                                "key": "name",
-                                "value": "nat"
-                            },
-                            {
                                 "key": "Key",
                                 "value": "value-tags"
+                            },
+                            {
+                                "key": "name",
+                                "value": "nat"
                             }
                         ]
                     },
@@ -103,12 +103,12 @@
                         "subnet_id": "##id-3##",
                         "tags": [
                             {
-                                "key": "name",
-                                "value": "nat"
-                            },
-                            {
                                 "key": "Key",
                                 "value": "value-tags"
+                            },
+                            {
+                                "key": "name",
+                                "value": "nat"
                             }
                         ]
                     },
@@ -140,12 +140,12 @@
                         "subnet_id": "##id-3##",
                         "tags": [
                             {
-                                "key": "name",
-                                "value": "nat"
-                            },
-                            {
                                 "key": "Key",
                                 "value": "value-tags"
+                            },
+                            {
+                                "key": "name",
+                                "value": "nat"
                             }
                         ]
                     },
@@ -177,12 +177,12 @@
                         "subnet_id": "##id-3##",
                         "tags": [
                             {
-                                "key": "name",
-                                "value": "nat"
-                            },
-                            {
                                 "key": "Key",
                                 "value": "value-tags"
+                            },
+                            {
+                                "key": "name",
+                                "value": "nat"
                             }
                         ]
                     },
@@ -214,12 +214,12 @@
                         "subnet_id": "##id-3##",
                         "tags": [
                             {
-                                "key": "name",
-                                "value": "nat"
-                            },
-                            {
                                 "key": "Key",
                                 "value": "value-tags"
+                            },
+                            {
+                                "key": "name",
+                                "value": "nat"
                             }
                         ]
                     },
@@ -528,5 +528,6 @@
                 }
             ]
         }
-    ]
+    ],
+    "check_results": "########"
 }

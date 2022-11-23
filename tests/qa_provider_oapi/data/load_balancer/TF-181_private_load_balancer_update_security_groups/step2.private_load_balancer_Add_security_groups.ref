@@ -115,7 +115,7 @@
                     "attributes": {
                         "account_id": "##id-4##",
                         "description": "test lbu-TF181",
-                        "id": "##id-3##",
+                        "id": "##id-2##",
                         "inbound_rules": [],
                         "net_id": "##id-1##",
                         "outbound_rules": [
@@ -129,7 +129,7 @@
                         ],
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
-                        "security_group_id": "##id-3##",
+                        "security_group_id": "##id-2##",
                         "security_group_name": "terraform-sg-lbu-TF181-1",
                         "tag": null,
                         "tags": []
@@ -153,7 +153,7 @@
                     "attributes": {
                         "account_id": "##id-4##",
                         "description": "test lbu-2",
-                        "id": "##id-2##",
+                        "id": "##id-3##",
                         "inbound_rules": [],
                         "net_id": "##id-1##",
                         "outbound_rules": [
@@ -167,7 +167,7 @@
                         ],
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
-                        "security_group_id": "##id-2##",
+                        "security_group_id": "##id-3##",
                         "security_group_name": "terraform-sg-lbu-TF181-2",
                         "tag": null,
                         "tags": []
@@ -209,5 +209,6 @@
                 }
             ]
         }
-    ]
+    ],
+    "check_results": "########"
 }
