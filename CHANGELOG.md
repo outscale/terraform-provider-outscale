@@ -1,3 +1,31 @@
+0.7.0 (November 24, 2022)
+========================
+
+BUG FIXES:
+----------
+
+* Do not allow setting iops on "gp2" and "standard" volume types or bsu in block_device_mappings ([GH-229](https://github.com/outscale-dev/terraform-provider-outscale/issues/229))
+* Fix "outscale_vm" resource creation fails when only "placement_tenancy" parameter is set  ([GH-144](https://github.com/outscale-dev/terraform-provider-outscale/issues/144))
+
+FEATURES:
+---------
+
+* Implement "NestedVirtualization" parameter in Vm resource and datasource(s) ([GH-155](https://github.com/outscale-dev/terraform-provider-outscale/issues/155))
+* Implement "SecuredCookies" parameter in LoadBalancer resource and datasource(s) ([GH-156](https://github.com/outscale-dev/terraform-provider-outscale/issues/156))
+* Implement outscale_account datasource(s) ([GH-149](https://github.com/outscale-dev/terraform-provider-outscale/issues/149))
+* Implement "CookieExpirationPeriod" parameter in outscale_load_balancer_policy ([GH-126](https://github.com/outscale-dev/terraform-provider-outscale/issues/126))
+* Implement "LogServers" parameter in DhcpOptions resources and datasources ([GH-139](https://github.com/outscale-dev/terraform-provider-outscale/issues/139))
+* Implement "CreationDate" parameter in volume resources and datasources ([GH-142](https://github.com/outscale-dev/terraform-provider-outscale/issues/142))
+* Implement "VgwTelemetries" block in outscale_vpn_connection datasource ([GH-123](https://github.com/outscale-dev/terraform-provider-outscale/issues/123))
+* Implement "CreationDate" parameter in Snapshots resources and datasource(s) ([GH-143](https://github.com/outscale-dev/terraform-provider-outscale/issues/143))
+* Implement "CreationDate" parameter in Snapshots resources and datasource(s) ([GH-125](https://github.com/outscale-dev/terraform-provider-outscale/issues/125))
+* Implement "LocationCode" parameter in Subregions datasource ([GH-140](https://github.com/outscale-dev/terraform-provider-outscale/issues/140))
+
+IMPROVEMENT:
+-----------
+
+* Add more parameters for throttling checking ([GH-207](https://github.com/outscale-dev/terraform-provider-outscale/issues/207))
+
 0.6.0 (October 31, 2022)
 ========================
 
