@@ -60,7 +60,7 @@ func dataSourceVMStatesRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	if instanceIdsOk {
 		filter := oscgo.FiltersVmsState{}
-		filter.SetVmIds(ExpandStringList(instanceIds.([]interface{})))
+		filter.SetVmIds(utils.InterfaceSliceToStringSlice(instanceIds.([]interface{})))
 		params.SetFilters(filter)
 	}
 

@@ -3,6 +3,7 @@ package outscale
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func attrLBSchema() map[string]*schema.Schema {
@@ -218,7 +219,7 @@ func dataSourceLoadBalancersRead(d *schema.ResourceData, meta interface{}) error
 		l["dns_name"] = *v.DnsName
 		l["access_log"] = flattenAccessLog(v.AccessLog)
 		l["health_check"] = flattenHealthCheck(v.HealthCheck)
-		l["backend_vm_ids"] = flattenStringList(v.BackendVmIds)
+		l["backend_vm_ids"] = utils.StringSlicePtrToInterfaceSlice(v.BackendVmIds)
 		if v.Listeners != nil {
 			l["listeners"] = flattenListeners(v.Listeners)
 		} else {
@@ -265,7 +266,7 @@ func dataSourceLoadBalancersRead(d *schema.ResourceData, meta interface{}) error
 		}
 
 		l["load_balancer_type"] = v.LoadBalancerType
-		l["security_groups"] = flattenStringList(v.SecurityGroups)
+		l["security_groups"] = utils.StringSlicePtrToInterfaceSlice(v.SecurityGroups)
 		ssg := make(map[string]string)
 
 		if v.SourceSecurityGroup != nil {
@@ -273,7 +274,7 @@ func dataSourceLoadBalancersRead(d *schema.ResourceData, meta interface{}) error
 			ssg["security_group_name"] = *v.SourceSecurityGroup.SecurityGroupName
 		}
 		l["source_security_group"] = ssg
-		l["subnet_id"] = flattenStringList(v.Subnets)
+		l["subnet_id"] = utils.StringSlicePtrToInterfaceSlice(v.Subnets)
 		l["public_ip"] = v.PublicIp
 		l["secured_cookies"] = v.SecuredCookies
 		l["net_id"] = v.NetId

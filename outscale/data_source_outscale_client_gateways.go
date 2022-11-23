@@ -75,7 +75,7 @@ func dataSourceClientGatewaysRead(d *schema.ResourceData, meta interface{}) erro
 
 	if clientGatewayOk {
 		params.Filters = &oscgo.FiltersClientGateway{
-			ClientGatewayIds: expandStringValueListPointer(clientGatewayIDs.([]interface{})),
+			ClientGatewayIds: utils.InterfaceSliceToStringList(clientGatewayIDs.([]interface{})),
 		}
 	}
 

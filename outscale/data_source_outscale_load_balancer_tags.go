@@ -31,7 +31,7 @@ func dataSourceLBUTagsRead(d *schema.ResourceData, meta interface{}) error {
 	names := ename.([]interface{})
 
 	req := oscgo.ReadLoadBalancerTagsRequest{
-		LoadBalancerNames: *expandStringList(names),
+		LoadBalancerNames: utils.InterfaceSliceToStringSlice(names),
 	}
 
 	var resp oscgo.ReadLoadBalancerTagsResponse

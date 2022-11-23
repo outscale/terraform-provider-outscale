@@ -229,7 +229,7 @@ func dataSourceImagesRead(d *schema.ResourceData, meta interface{}) error {
 		filtersReq.SetAccountIds([]string{aids.(string)})
 	}
 	if executableUsersOk {
-		filtersReq.SetPermissionsToLaunchAccountIds(expandStringValueList(executableUsers.([]interface{})))
+		filtersReq.SetPermissionsToLaunchAccountIds(utils.InterfaceSliceToStringSlice(executableUsers.([]interface{})))
 	}
 
 	req := oscgo.ReadImagesRequest{Filters: filtersReq}
@@ -343,20 +343,4 @@ func buildDataSourceImagesFilters(set *schema.Set) *oscgo.FiltersImage {
 		}
 	}
 	return filters
-}
-
-func expandStringValueList(configured []interface{}) []string {
-	vs := make([]string, 0, len(configured))
-	for _, v := range configured {
-		val, ok := v.(string)
-		if ok && val != "" {
-			vs = append(vs, v.(string))
-		}
-	}
-	return vs
-}
-
-func expandStringValueListPointer(configured []interface{}) *[]string {
-	res := expandStringValueList(configured)
-	return &res
 }

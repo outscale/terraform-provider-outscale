@@ -72,7 +72,7 @@ func resourceNetworkInterfacePrivateIPCreate(d *schema.ResourceData, meta interf
 	}
 
 	if v, ok := d.GetOk("private_ips"); ok {
-		input.SetPrivateIps(expandStringValueList(v.([]interface{})))
+		input.SetPrivateIps(utils.InterfaceSliceToStringSlice(v.([]interface{})))
 	}
 
 	var err error
@@ -178,7 +178,7 @@ func resourceNetworkInterfacePrivateIPDelete(d *schema.ResourceData, meta interf
 	}
 
 	if v, ok := d.GetOk("private_ips"); ok {
-		input.SetPrivateIps(expandStringValueList(v.([]interface{})))
+		input.SetPrivateIps(utils.InterfaceSliceToStringSlice(v.([]interface{})))
 	}
 
 	var err error

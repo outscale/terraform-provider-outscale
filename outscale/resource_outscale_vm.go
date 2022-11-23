@@ -804,7 +804,7 @@ func resourceVMUpdate(d *schema.ResourceData, meta interface{}) error {
 	if d.HasChange("security_group_ids") && !d.IsNewResource() {
 		opts := oscgo.UpdateVmRequest{VmId: id}
 
-		opts.SetSecurityGroupIds(expandStringValueList(d.Get("security_group_ids").([]interface{})))
+		opts.SetSecurityGroupIds(utils.InterfaceSliceToStringSlice(d.Get("security_group_ids").([]interface{})))
 		if err := updateVmAttr(conn, opts); err != nil {
 			return err
 		}
@@ -812,7 +812,7 @@ func resourceVMUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	if d.HasChange("security_group_names") && !d.IsNewResource() {
 		opts := oscgo.UpdateVmRequest{VmId: id}
-		opts.SetSecurityGroupIds(expandStringValueList(d.Get("security_group_names").([]interface{})))
+		opts.SetSecurityGroupIds(utils.InterfaceSliceToStringSlice(d.Get("security_group_names").([]interface{})))
 		if err := updateVmAttr(conn, opts); err != nil {
 			return err
 		}
@@ -996,15 +996,15 @@ func buildCreateVmsRequest(d *schema.ResourceData, meta interface{}) (oscgo.Crea
 		request.SetNics(nics)
 	}
 
-	if privateIPs := expandStringValueList(d.Get("private_ips").([]interface{})); len(privateIPs) > 0 {
+	if privateIPs := utils.InterfaceSliceToStringSlice(d.Get("private_ips").([]interface{})); len(privateIPs) > 0 {
 		request.SetPrivateIps(privateIPs)
 	}
 
-	if sgIDs := expandStringValueList(d.Get("security_group_ids").([]interface{})); len(sgIDs) > 0 {
+	if sgIDs := utils.InterfaceSliceToStringSlice(d.Get("security_group_ids").([]interface{})); len(sgIDs) > 0 {
 		request.SetSecurityGroupIds(sgIDs)
 	}
 
-	if sgNames := expandStringValueList(d.Get("security_group_names").([]interface{})); len(sgNames) > 0 {
+	if sgNames := utils.InterfaceSliceToStringSlice(d.Get("security_group_names").([]interface{})); len(sgNames) > 0 {
 		request.SetSecurityGroups(sgNames)
 	}
 
@@ -1133,7 +1133,7 @@ func buildNetworkInterfaceOpts(d *schema.ResourceData) []oscgo.NicForVmCreation 
 		ni.SetPrivateIps(expandPrivatePublicIps(nic["private_ips"].(*schema.Set)))
 		ni.SetSubnetId(nic["subnet_id"].(string))
 
-		if sg := expandStringValueList(nic["security_group_ids"].([]interface{})); len(sg) > 0 {
+		if sg := utils.InterfaceSliceToStringSlice(nic["security_group_ids"].([]interface{})); len(sg) > 0 {
 			ni.SetSecurityGroupIds(sg)
 		}
 

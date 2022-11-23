@@ -153,7 +153,7 @@ func dataSourceLoadBalancerLDRuleRead(d *schema.ResourceData, meta interface{}) 
 	}
 
 	if lr.VmIds != nil {
-		d.Set("vm_ids", flattenStringList(lr.VmIds))
+		d.Set("vm_ids", utils.StringSlicePtrToInterfaceSlice(lr.VmIds))
 	} else {
 		fmt.Errorf("Malformated listener rule")
 	}

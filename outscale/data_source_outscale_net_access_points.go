@@ -177,7 +177,7 @@ func dataSourceNetAccessPointsRead(d *schema.ResourceData, meta interface{}) err
 		n := make(map[string]interface{})
 
 		n["net_access_point_id"] = v.NetAccessPointId
-		n["route_table_ids"] = flattenStringList(v.RouteTableIds)
+		n["route_table_ids"] = utils.StringSlicePtrToInterfaceSlice(v.RouteTableIds)
 		n["net_id"] = v.NetId
 		n["service_name"] = v.ServiceName
 		n["state"] = v.State

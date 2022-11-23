@@ -104,7 +104,7 @@ func dataSourceSnapshotRead(d *schema.ResourceData, meta interface{}) error {
 
 	filter := oscgo.FiltersSnapshot{}
 	if restorableUsersOk {
-		filter.SetPermissionsToCreateVolumeAccountIds(ExpandStringList(restorableUsers.([]interface{})))
+		filter.SetPermissionsToCreateVolumeAccountIds(utils.InterfaceSliceToStringSlice(restorableUsers.([]interface{})))
 		params.SetFilters(filter)
 	}
 	if filtersOk {
@@ -244,16 +244,4 @@ func buildSnapshotDataSourceFilters(set *schema.Set, filter *oscgo.FiltersSnapsh
 		}
 	}
 	return filter
-}
-
-// TODO MOVE To utils
-func ExpandStringList(configured []interface{}) []string {
-	vs := make([]string, 0, len(configured))
-	for _, v := range configured {
-		val, ok := v.(string)
-		if ok && val != "" {
-			vs = append(vs, v.(string))
-		}
-	}
-	return vs
 }

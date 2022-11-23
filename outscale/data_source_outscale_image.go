@@ -216,7 +216,7 @@ func dataSourceImageRead(d *schema.ResourceData, meta interface{}) error {
 		filtersReq.SetAccountIds([]string{ai.(string)})
 	}
 	if executableUsersOk {
-		filtersReq.SetPermissionsToLaunchAccountIds(expandStringValueList(executableUsers.([]interface{})))
+		filtersReq.SetPermissionsToLaunchAccountIds(utils.InterfaceSliceToStringSlice(executableUsers.([]interface{})))
 	}
 
 	req := oscgo.ReadImagesRequest{Filters: filtersReq}

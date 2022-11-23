@@ -89,13 +89,13 @@ func resourceDHCPOptionCreate(d *schema.ResourceData, meta interface{}) error {
 		createOpts.SetDomainName(domainName.(string))
 	}
 	if okDomainNameServers {
-		createOpts.SetDomainNameServers(expandStringValueList(domainNameServers.([]interface{})))
+		createOpts.SetDomainNameServers(utils.InterfaceSliceToStringSlice(domainNameServers.([]interface{})))
 	}
 	if okLogServers {
-		createOpts.SetLogServers(expandStringValueList(logServers.([]interface{})))
+		createOpts.SetLogServers(utils.InterfaceSliceToStringSlice(logServers.([]interface{})))
 	}
 	if okNTPServers {
-		createOpts.SetNtpServers(expandStringValueList(ntpServers.([]interface{})))
+		createOpts.SetNtpServers(utils.InterfaceSliceToStringSlice(ntpServers.([]interface{})))
 	}
 
 	dhcp, _, err := createDhcpOption(conn, createOpts)

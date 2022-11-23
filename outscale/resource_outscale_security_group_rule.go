@@ -210,11 +210,11 @@ func expandRules(d *schema.ResourceData) *[]oscgo.SecurityGroupRule {
 				SecurityGroupsMembers: expandSecurityGroupsMembers(r["security_groups_members"].([]interface{})),
 			}
 
-			if ipRanges := expandStringValueListPointer(r["ip_ranges"].([]interface{})); len(*ipRanges) > 0 {
-				rules[i].IpRanges = expandStringValueListPointer(r["ip_ranges"].([]interface{}))
+			if ipRanges := utils.InterfaceSliceToStringSlicePtr(r["ip_ranges"].([]interface{})); len(*ipRanges) > 0 {
+				rules[i].IpRanges = utils.InterfaceSliceToStringSlicePtr(r["ip_ranges"].([]interface{}))
 			}
-			if serviceIDs := expandStringValueListPointer(r["service_ids"].([]interface{})); len(*serviceIDs) > 0 {
-				rules[i].ServiceIds = expandStringValueListPointer(r["service_ids"].([]interface{}))
+			if serviceIDs := utils.InterfaceSliceToStringSlicePtr(r["service_ids"].([]interface{})); len(*serviceIDs) > 0 {
+				rules[i].ServiceIds = utils.InterfaceSliceToStringSlicePtr(r["service_ids"].([]interface{}))
 			}
 			if v, ok := r["from_port_range"]; ok {
 				rules[i].FromPortRange = pointy.Int32(cast.ToInt32(v))

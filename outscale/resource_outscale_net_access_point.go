@@ -63,8 +63,8 @@ func resourceNetAccessPointUpdate(d *schema.ResourceData, meta interface{}) erro
 		o, n := d.GetChange("route_table_ids")
 
 		log.Printf("[DEBUG] it change !: %v %v", o, n)
-		oo := expandSetStringList(o.(*schema.Set))
-		nn := expandSetStringList(n.(*schema.Set))
+		oo := utils.SetToStringSlicePtr(o.(*schema.Set))
+		nn := utils.SetToStringSlicePtr(n.(*schema.Set))
 		destroy := make([]string, 0)
 		add := make([]string, 0)
 
@@ -170,7 +170,7 @@ func resourceNetAccessPointCreate(d *schema.ResourceData, meta interface{}) erro
 	req := &oscgo.CreateNetAccessPointRequest{}
 
 	if v, ok := d.GetOk("route_table_ids"); ok {
-		req.RouteTableIds = expandSetStringList(v.(*schema.Set))
+		req.RouteTableIds = utils.SetToStringSlicePtr(v.(*schema.Set))
 	}
 
 	nid := d.Get("net_id")
@@ -262,7 +262,7 @@ func resourceNetAccessPointRead(d *schema.ResourceData, meta interface{}) error 
 
 	nap := (*resp.NetAccessPoints)[0]
 
-	d.Set("route_table_ids", flattenStringList(nap.RouteTableIds))
+	d.Set("route_table_ids", utils.StringSlicePtrToInterfaceSlice(nap.RouteTableIds))
 	d.Set("net_id", nap.NetId)
 	d.Set("service_name", nap.ServiceName)
 	d.Set("state", nap.State)

@@ -122,18 +122,18 @@ func dataSourceSnapshotsRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	filter := oscgo.FiltersSnapshot{}
 	if restorableUsersOk {
-		filter.SetPermissionsToCreateVolumeAccountIds(ExpandStringList(restorableUsers.([]interface{})))
+		filter.SetPermissionsToCreateVolumeAccountIds(utils.InterfaceSliceToStringSlice(restorableUsers.([]interface{})))
 		params.SetFilters(filter)
 	}
 	if filtersOk {
 		buildSnapshotDataSourceFilters(filters.(*schema.Set), params.Filters)
 	}
 	if ownersOk {
-		filter.SetAccountIds(ExpandStringList(owners.([]interface{})))
+		filter.SetAccountIds(utils.InterfaceSliceToStringSlice(owners.([]interface{})))
 		params.SetFilters(filter)
 	}
 	if snapshotIdsOk {
-		filter.SetSnapshotIds(ExpandStringList(snapshotIds.([]interface{})))
+		filter.SetSnapshotIds(utils.InterfaceSliceToStringSlice(snapshotIds.([]interface{})))
 		params.SetFilters(filter)
 	}
 
