@@ -14,7 +14,8 @@ IGNORE_PATHS = ['.lineage',
                 '.serial',
                 '.terraform_version',
                 '.version',
-                '.resources.provider']
+                '.resources.provider',
+                '.check_results']
 TAG_END_PATHS = ['.id', '_id']
 NO_TEST_VALUE = '########'
 IGNORE_END_ELEMENTS = ['request_id',

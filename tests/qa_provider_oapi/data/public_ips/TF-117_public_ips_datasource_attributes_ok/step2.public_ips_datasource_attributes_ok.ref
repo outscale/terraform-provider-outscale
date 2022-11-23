@@ -26,12 +26,12 @@
                                 "public_ip_id": "##id-1##",
                                 "tags": [
                                     {
-                                        "key": "name-2",
-                                        "value": "test-data-2"
-                                    },
-                                    {
                                         "key": "Key",
                                         "value": "value-tags"
+                                    },
+                                    {
+                                        "key": "name-2",
+                                        "value": "test-data-2"
                                     }
                                 ],
                                 "vm_id": ""
@@ -74,12 +74,12 @@
                                 "public_ip_id": "##id-1##",
                                 "tags": [
                                     {
-                                        "key": "name-2",
-                                        "value": "test-data-2"
-                                    },
-                                    {
                                         "key": "Key",
                                         "value": "value-tags"
+                                    },
+                                    {
+                                        "key": "name-2",
+                                        "value": "test-data-2"
                                     }
                                 ],
                                 "vm_id": ""
@@ -112,12 +112,12 @@
                                 "public_ip_id": "##id-1##",
                                 "tags": [
                                     {
-                                        "key": "name-2",
-                                        "value": "test-data-2"
-                                    },
-                                    {
                                         "key": "Key",
                                         "value": "value-tags"
+                                    },
+                                    {
+                                        "key": "name-2",
+                                        "value": "test-data-2"
                                     }
                                 ],
                                 "vm_id": ""
@@ -150,12 +150,12 @@
                                 "public_ip_id": "##id-1##",
                                 "tags": [
                                     {
-                                        "key": "name-2",
-                                        "value": "test-data-2"
-                                    },
-                                    {
                                         "key": "Key",
                                         "value": "value-tags"
+                                    },
+                                    {
+                                        "key": "name-2",
+                                        "value": "test-data-2"
                                     }
                                 ],
                                 "vm_id": ""
@@ -228,5 +228,6 @@
                 }
             ]
         }
-    ]
+    ],
+    "check_results": "########"
 }

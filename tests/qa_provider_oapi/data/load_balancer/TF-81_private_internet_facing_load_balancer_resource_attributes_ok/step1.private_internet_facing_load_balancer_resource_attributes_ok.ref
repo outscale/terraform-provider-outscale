@@ -110,7 +110,7 @@
                         ],
                         "source_security_group": {
                             "security_group_account_id": "##id-5##",
-                            "security_group_name": "terraform-sg-lbu-1"
+                            "security_group_name": "terraform-sg-lbu-2"
                         },
                         "subnets": [
                             "##id-6##"
@@ -389,5 +389,6 @@
                 }
             ]
         }
-    ]
+    ],
+    "check_results": "########"
 }

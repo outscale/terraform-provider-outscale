@@ -43,12 +43,12 @@
                         "security_group_name": "terraform-TF125",
                         "tags": [
                             {
-                                "key": "Name",
-                                "value": ":outscale_net_resource2"
-                            },
-                            {
                                 "key": "Key:",
                                 "value": "value-tags"
+                            },
+                            {
+                                "key": "Name",
+                                "value": ":outscale_net_resource2"
                             }
                         ]
                     },
@@ -236,5 +236,6 @@
                 }
             ]
         }
-    ]
+    ],
+    "check_results": "########"
 }

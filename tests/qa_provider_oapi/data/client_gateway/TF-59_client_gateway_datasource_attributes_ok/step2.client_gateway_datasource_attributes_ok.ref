@@ -24,12 +24,12 @@
                         "state": "available",
                         "tags": [
                             {
-                                "key": "project",
-                                "value": "terraform"
-                            },
-                            {
                                 "key": "name:mzi",
                                 "value": "CGW_1:mzi"
+                            },
+                            {
+                                "key": "project",
+                                "value": "terraform"
                             }
                         ]
                     },
@@ -56,12 +56,12 @@
                         "state": "available",
                         "tags": [
                             {
-                                "key": "project",
-                                "value": "terraform"
-                            },
-                            {
                                 "key": "name:mzi",
                                 "value": "CGW_1:mzi"
+                            },
+                            {
+                                "key": "project",
+                                "value": "terraform"
                             }
                         ]
                     },
@@ -88,12 +88,12 @@
                         "state": "available",
                         "tags": [
                             {
-                                "key": "project",
-                                "value": "terraform"
-                            },
-                            {
                                 "key": "name:mzi",
                                 "value": "CGW_1:mzi"
+                            },
+                            {
+                                "key": "project",
+                                "value": "terraform"
                             }
                         ]
                     },
@@ -120,12 +120,12 @@
                         "state": "available",
                         "tags": [
                             {
-                                "key": "project",
-                                "value": "terraform"
-                            },
-                            {
                                 "key": "name:mzi",
                                 "value": "CGW_1:mzi"
+                            },
+                            {
+                                "key": "project",
+                                "value": "terraform"
                             }
                         ]
                     },
@@ -165,5 +165,6 @@
                 }
             ]
         }
-    ]
+    ],
+    "check_results": "########"
 }
