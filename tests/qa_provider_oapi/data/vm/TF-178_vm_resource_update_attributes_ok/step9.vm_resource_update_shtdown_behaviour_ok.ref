@@ -149,6 +149,7 @@
                         "is_source_dest_checked": true,
                         "keypair_name": "keyname_TF66-1",
                         "launch_number": 0,
+                        "nested_virtualization": false,
                         "net_id": "##id-9##",
                         "nics": [
                             {

@@ -429,6 +429,7 @@
                         "is_source_dest_checked": true,
                         "keypair_name": "KP-TF144",
                         "launch_number": 0,
+                        "nested_virtualization": false,
                         "net_id": "",
                         "nics": [],
                         "os_family": "",
@@ -515,6 +516,7 @@
                         "is_source_dest_checked": true,
                         "keypair_name": "KP-TF144",
                         "launch_number": 0,
+                        "nested_virtualization": false,
                         "net_id": "",
                         "nics": [],
                         "os_family": "",
@@ -601,6 +603,7 @@
                         "is_source_dest_checked": true,
                         "keypair_name": "KP-TF144",
                         "launch_number": 0,
+                        "nested_virtualization": false,
                         "net_id": "##id-1##",
                         "nics": [
                             {
