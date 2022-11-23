@@ -20,6 +20,7 @@ const (
 	ResourceNotFound int     = 404
 	ResourceConflict int     = 409
 	TooManyRequests  int     = 429
+	FailedDependency int     = 424
 	Throttled        int     = 503
 	randMin          float32 = 1.0
 	randMax          float32 = 20.0
@@ -128,7 +129,8 @@ func IsResponseEmptyOrMutiple(rLen int, resName string) error {
 
 func CheckThrottling(errCode int, err error) *resource.RetryError {
 	rand.Seed(time.Now().UnixNano())
-	if errCode == Throttled || errCode == TooManyRequests || errCode == ResourceConflict {
+	if errCode == Throttled || errCode == TooManyRequests ||
+		errCode == ResourceConflict || errCode == FailedDependency {
 		randTime := (rand.Float32()*(randMax-randMin) + randMin) * 1000
 		time.Sleep(time.Duration(randTime) * time.Millisecond)
 		return resource.RetryableError(err)
