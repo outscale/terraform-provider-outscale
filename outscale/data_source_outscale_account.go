@@ -121,7 +121,7 @@ func dataSourceAccountRead(d *schema.ResourceData, meta interface{}) error {
 	if err := d.Set("account_id", account.GetAccountId()); err != nil {
 		return err
 	}
-	if err := d.Set("additional_emails", flattenStringList(account.AdditionalEmails)); err != nil {
+	if err := d.Set("additional_emails", utils.StringSlicePtrToInterfaceSlice(account.AdditionalEmails)); err != nil {
 		return err
 	}
 	if err := d.Set("city", account.GetCity()); err != nil {

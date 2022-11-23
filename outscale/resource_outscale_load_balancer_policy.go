@@ -290,17 +290,17 @@ func resourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, met
 		lb := resp.LoadBalancer
 		d.Set("access_log", flattenOAPIAccessLog(lb.AccessLog))
 		d.Set("listeners", flattenOAPIListeners(lb.Listeners))
-		d.Set("subregion_names", flattenStringList(lb.SubregionNames))
+		d.Set("subregion_names", utils.StringSlicePtrToInterfaceSlice(lb.SubregionNames))
 		d.Set("load_balancer_type", lb.LoadBalancerType)
 		if lb.SecurityGroups != nil {
-			d.Set("security_groups", flattenStringList(lb.SecurityGroups))
+			d.Set("security_groups", utils.StringSlicePtrToInterfaceSlice(lb.SecurityGroups))
 		} else {
 			d.Set("security_groups", make([]map[string]interface{}, 0))
 		}
 		d.Set("dns_name", lb.DnsName)
-		d.Set("subnets", flattenStringList(lb.Subnets))
+		d.Set("subnets", utils.StringSlicePtrToInterfaceSlice(lb.Subnets))
 		d.Set("health_check", flattenOAPIHealthCheck(lb.HealthCheck))
-		d.Set("backend_vm_ids", flattenStringList(lb.BackendVmIds))
+		d.Set("backend_vm_ids", utils.StringSlicePtrToInterfaceSlice(lb.BackendVmIds))
 		if lb.Tags != nil {
 			ta := make([]map[string]interface{}, len(*lb.Tags))
 			for k1, v1 := range *lb.Tags {

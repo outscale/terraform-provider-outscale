@@ -60,7 +60,7 @@ func dataSourceOutscaleOAPIVMStatesRead(d *schema.ResourceData, meta interface{}
 	}
 	if instanceIdsOk {
 		filter := oscgo.FiltersVmsState{}
-		filter.SetVmIds(oapiExpandStringList(instanceIds.([]interface{})))
+		filter.SetVmIds(utils.InterfaceSliceToStringSlice(instanceIds.([]interface{})))
 		params.SetFilters(filter)
 	}
 

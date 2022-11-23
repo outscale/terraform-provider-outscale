@@ -229,7 +229,7 @@ func readLbs_(conn *oscgo.APIClient, d *schema.ResourceData, t schema.ValueType)
 		}
 	} else { /* assuming typelist */
 		filter = &oscgo.FiltersLoadBalancer{
-			LoadBalancerNames: expandStringList(ename.([]interface{})),
+			LoadBalancerNames: utils.InterfaceSliceToStringSlicePtr(ename.([]interface{})),
 		}
 
 	}
@@ -286,12 +286,12 @@ func dataSourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interfa
 		return err
 	}
 
-	d.Set("subregion_names", flattenStringList(lb.SubregionNames))
+	d.Set("subregion_names", utils.StringSlicePtrToInterfaceSlice(lb.SubregionNames))
 	d.Set("dns_name", lb.DnsName)
 	d.Set("health_check", flattenOAPIHealthCheck(lb.HealthCheck))
 	d.Set("access_log", flattenOAPIAccessLog(lb.AccessLog))
 
-	d.Set("backend_vm_ids", flattenStringList(lb.BackendVmIds))
+	d.Set("backend_vm_ids", utils.StringSlicePtrToInterfaceSlice(lb.BackendVmIds))
 	if err := d.Set("listeners", flattenOAPIListeners(lb.Listeners)); err != nil {
 		return err
 	}
@@ -337,7 +337,7 @@ func dataSourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interfa
 	}
 	d.Set("load_balancer_type", lb.LoadBalancerType)
 	if lb.SecurityGroups != nil {
-		d.Set("security_groups", flattenStringList(lb.SecurityGroups))
+		d.Set("security_groups", utils.StringSlicePtrToInterfaceSlice(lb.SecurityGroups))
 	} else {
 		d.Set("security_groups", make([]map[string]interface{}, 0))
 	}
@@ -351,7 +351,7 @@ func dataSourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interfa
 	d.Set("secured_cookies", lb.SecuredCookies)
 	d.Set("net_id", lb.NetId)
 	d.Set("source_security_group", ssg)
-	d.Set("subnets", flattenStringList(lb.Subnets))
+	d.Set("subnets", utils.StringSlicePtrToInterfaceSlice(lb.Subnets))
 	d.SetId(*lb.LoadBalancerName)
 
 	return nil

@@ -73,7 +73,7 @@ func resourceOutscaleOAPINetworkInterfacePrivateIPCreate(d *schema.ResourceData,
 	}
 
 	if v, ok := d.GetOk("private_ips"); ok {
-		input.SetPrivateIps(expandStringValueList(v.([]interface{})))
+		input.SetPrivateIps(utils.InterfaceSliceToStringSlice(v.([]interface{})))
 	}
 
 	var err error
@@ -179,7 +179,7 @@ func resourceOutscaleOAPINetworkInterfacePrivateIPDelete(d *schema.ResourceData,
 	}
 
 	if v, ok := d.GetOk("private_ips"); ok {
-		input.SetPrivateIps(expandStringValueList(v.([]interface{})))
+		input.SetPrivateIps(utils.InterfaceSliceToStringSlice(v.([]interface{})))
 	}
 
 	var err error

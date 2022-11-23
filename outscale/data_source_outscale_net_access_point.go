@@ -112,7 +112,7 @@ func dataSourceOutscaleNetAccessPointRead(d *schema.ResourceData, meta interface
 	nap := resp.GetNetAccessPoints()[0]
 
 	d.Set("net_access_point_id", nap.NetAccessPointId)
-	d.Set("route_table_ids", flattenStringList(nap.RouteTableIds))
+	d.Set("route_table_ids", utils.StringSlicePtrToInterfaceSlice(nap.RouteTableIds))
 	d.Set("net_id", nap.NetId)
 	d.Set("service_name", nap.ServiceName)
 	d.Set("state", nap.State)

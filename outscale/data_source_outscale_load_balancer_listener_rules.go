@@ -166,7 +166,7 @@ func dataSourceOutscaleOAPILoadBalancerLDRulesRead(d *schema.ResourceData, meta 
 		}
 
 		if lr.VmIds != nil {
-			l["vm_ids"] = flattenStringList(lr.VmIds)
+			l["vm_ids"] = utils.StringSlicePtrToInterfaceSlice(lr.VmIds)
 		} else {
 			fmt.Errorf("Malformated listener rule")
 		}

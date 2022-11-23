@@ -210,24 +210,6 @@ func resourceOutscaleOAPILoadBalancer() *schema.Resource {
 	}
 }
 
-func expandStringList(ifs []interface{}) *[]string {
-	r := make([]string, len(ifs))
-
-	for k, v := range ifs {
-		r[k] = v.(string)
-	}
-	return &r
-}
-
-func expandSetStringList(ifs *schema.Set) *[]string {
-	r := make([]string, ifs.Len())
-
-	for k, v := range ifs.List() {
-		r[k] = v.(string)
-	}
-	return &r
-}
-
 // Flattens an array of Listeners into a []map[string]interface{}
 func flattenOAPIListeners(list *[]oscgo.Listener) []map[string]interface{} {
 	if list == nil {
@@ -247,7 +229,7 @@ func flattenOAPIListeners(list *[]oscgo.Listener) []map[string]interface{} {
 			listener["server_certificate_id"] =
 				*i.ServerCertificateId
 		}
-		listener["policy_names"] = flattenStringList(i.PolicyNames)
+		listener["policy_names"] = utils.StringSlicePtrToInterfaceSlice(i.PolicyNames)
 		result = append(result, listener)
 	}
 	return result
@@ -419,12 +401,12 @@ func resourceOutscaleOAPILoadBalancerCreate_(d *schema.ResourceData, meta interf
 	}
 
 	if v, ok := d.GetOk("security_groups"); ok {
-		req.SecurityGroups = expandSetStringList(v.(*schema.Set))
+		req.SecurityGroups = utils.SetToStringSlicePtr(v.(*schema.Set))
 	}
 
 	v_sb, sb_ok := d.GetOk("subnets")
 	if sb_ok {
-		req.Subnets = expandStringList(v_sb.([]interface{}))
+		req.Subnets = utils.InterfaceSliceToStringList(v_sb.([]interface{}))
 	}
 
 	v_srn, srn_ok := d.GetOk("subregion_names")
@@ -433,7 +415,7 @@ func resourceOutscaleOAPILoadBalancerCreate_(d *schema.ResourceData, meta interf
 	}
 
 	if srn_ok && sb_ok == false {
-		req.SubregionNames = expandStringList(v_srn.([]interface{}))
+		req.SubregionNames = utils.InterfaceSliceToStringList(v_srn.([]interface{}))
 	}
 
 	log.Printf("[DEBUG] Load Balancer request configuration: %#v", *req)
@@ -483,17 +465,6 @@ func resourceOutscaleOAPILoadBalancerCreate_(d *schema.ResourceData, meta interf
 	return resourceOutscaleOAPILoadBalancerRead(d, meta)
 }
 
-func flattenStringList(list *[]string) []interface{} {
-	if list == nil {
-		return make([]interface{}, 0)
-	}
-	vs := make([]interface{}, 0, len(*list))
-	for _, v := range *list {
-		vs = append(vs, v)
-	}
-	return vs
-}
-
 func readResourceLb(conn *oscgo.APIClient, elbName string) (*oscgo.LoadBalancer, *oscgo.ReadLoadBalancersResponse, error) {
 	filter := &oscgo.FiltersLoadBalancer{
 		LoadBalancerNames: &[]string{elbName},
@@ -537,12 +508,12 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 		return err
 	}
 
-	d.Set("subregion_names", flattenStringList(lb.SubregionNames))
+	d.Set("subregion_names", utils.StringSlicePtrToInterfaceSlice(lb.SubregionNames))
 	d.Set("dns_name", lb.DnsName)
 	d.Set("health_check", flattenOAPIHealthCheck(lb.HealthCheck))
 	d.Set("access_log", flattenOAPIAccessLog(lb.AccessLog))
 
-	d.Set("backend_vm_ids", flattenStringList(lb.BackendVmIds))
+	d.Set("backend_vm_ids", utils.StringSlicePtrToInterfaceSlice(lb.BackendVmIds))
 	if err := d.Set("listeners", flattenOAPIListeners(lb.Listeners)); err != nil {
 		log.Printf("[DEBUG] out err %v", err)
 		return err
@@ -588,7 +559,7 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 
 	d.Set("load_balancer_type", lb.LoadBalancerType)
 	if lb.SecurityGroups != nil {
-		d.Set("security_groups", flattenStringList(lb.SecurityGroups))
+		d.Set("security_groups", utils.StringSlicePtrToInterfaceSlice(lb.SecurityGroups))
 	} else {
 		d.Set("security_groups", make([]map[string]interface{}, 0))
 	}
@@ -598,7 +569,7 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 		ssg["security_group_account_id"] = *lb.SourceSecurityGroup.SecurityGroupAccountId
 	}
 	d.Set("source_security_group", ssg)
-	d.Set("subnets", flattenStringList(lb.Subnets))
+	d.Set("subnets", utils.StringSlicePtrToInterfaceSlice(lb.Subnets))
 
 	d.Set("public_ip", lb.PublicIp)
 	d.Set("secured_cookies", lb.SecuredCookies)
@@ -618,7 +589,7 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 			LoadBalancerName: d.Id(),
 		}
 		nSg, _ := d.GetOk("security_groups")
-		req.SecurityGroups = expandSetStringList(nSg.(*schema.Set))
+		req.SecurityGroups = utils.SetToStringSlicePtr(nSg.(*schema.Set))
 
 		var err error
 		err = resource.Retry(1*time.Minute, func() *resource.RetryError {
@@ -775,8 +746,8 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 		o, n := d.GetChange("backend_vm_ids")
 		os := o.(*schema.Set)
 		ns := n.(*schema.Set)
-		remove := expandInstanceString(os.Difference(ns).List())
-		add := expandInstanceString(ns.Difference(os).List())
+		remove := utils.SetToStringSlice(os.Difference(ns))
+		add := utils.SetToStringSlice(ns.Difference(os))
 
 		if len(add) > 0 {
 
@@ -834,12 +805,12 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 			req := oscgo.UpdateLoadBalancerRequest{
 				LoadBalancerName: d.Id(),
 				HealthCheck: &oscgo.HealthCheck{
-					HealthyThreshold:   int32(check["healthy_threshold"].(int)),
-					UnhealthyThreshold: int32(check["unhealthy_threshold"].(int)),
-					CheckInterval:      int32(check["check_interval"].(int)),
+					HealthyThreshold:   check["healthy_threshold"].(int32),
+					UnhealthyThreshold: check["unhealthy_threshold"].(int32),
+					CheckInterval:      check["check_interval"].(int32),
 					Protocol:           check["protocol"].(string),
-					Port:               int32(check["port"].(int)),
-					Timeout:            int32(check["timeout"].(int)),
+					Port:               check["port"].(int32),
+					Timeout:            check["timeout"].(int32),
 				},
 			}
 			if check["path"] != nil {
@@ -997,30 +968,17 @@ func resourceOutscaleOAPILoadBalancerDelete(d *schema.ResourceData, meta interfa
 	return nil
 }
 
-// Expands an array of String Instance IDs into a []Instances
-func expandInstanceString(list []interface{}) []string {
-	result := make([]string, 0, len(list))
-	for _, i := range list {
-		result = append(result, i.(string))
-	}
-	return result
-}
-
-func formatInt32(n int32) string {
-	return strconv.FormatInt(int64(n), 10)
-}
-
 func flattenOAPIHealthCheck(check *oscgo.HealthCheck) map[string]interface{} {
 	chk := make(map[string]interface{})
 
 	if check != nil {
-		h := formatInt32(check.HealthyThreshold)
-		i := formatInt32(check.CheckInterval)
+		h := utils.I32toa(check.HealthyThreshold)
+		i := utils.I32toa(check.CheckInterval)
 		pa := check.Path
-		po := formatInt32(check.Port)
+		po := utils.I32toa(check.Port)
 		pr := check.Protocol
-		ti := formatInt32(check.Timeout)
-		u := formatInt32(check.UnhealthyThreshold)
+		ti := utils.I32toa(check.Timeout)
+		u := utils.I32toa(check.UnhealthyThreshold)
 
 		chk["healthy_threshold"] = h
 		chk["check_interval"] = i

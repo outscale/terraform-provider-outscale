@@ -87,7 +87,7 @@ func dataSourceOutscaleDHCPOptionsRead(d *schema.ResourceData, meta interface{})
 	params := oscgo.ReadDhcpOptionsRequest{}
 	if dhcpIDOk {
 		params.Filters = &oscgo.FiltersDhcpOptions{
-			DhcpOptionsSetIds: expandStringValueListPointer(dhcpIDs.([]interface{})),
+			DhcpOptionsSetIds: utils.InterfaceSliceToStringList(dhcpIDs.([]interface{})),
 		}
 	}
 	if filtersOk {

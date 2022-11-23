@@ -122,18 +122,18 @@ func dataSourceOutscaleOAPISnapshotsRead(d *schema.ResourceData, meta interface{
 	}
 	filter := oscgo.FiltersSnapshot{}
 	if restorableUsersOk {
-		filter.SetPermissionsToCreateVolumeAccountIds(oapiExpandStringList(restorableUsers.([]interface{})))
+		filter.SetPermissionsToCreateVolumeAccountIds(utils.InterfaceSliceToStringSlice(restorableUsers.([]interface{})))
 		params.SetFilters(filter)
 	}
 	if filtersOk {
 		buildOutscaleOapiSnapshootDataSourceFilters(filters.(*schema.Set), params.Filters)
 	}
 	if ownersOk {
-		filter.SetAccountIds(oapiExpandStringList(owners.([]interface{})))
+		filter.SetAccountIds(utils.InterfaceSliceToStringSlice(owners.([]interface{})))
 		params.SetFilters(filter)
 	}
 	if snapshotIdsOk {
-		filter.SetSnapshotIds(oapiExpandStringList(snapshotIds.([]interface{})))
+		filter.SetSnapshotIds(utils.InterfaceSliceToStringSlice(snapshotIds.([]interface{})))
 		params.SetFilters(filter)
 	}
 

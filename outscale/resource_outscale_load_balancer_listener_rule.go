@@ -102,7 +102,7 @@ func resourceOutscaleLoadBalancerListenerRuleCreate(d *schema.ResourceData, meta
 	req := &oscgo.CreateListenerRuleRequest{}
 
 	if vids, ok := d.GetOk("vm_ids"); ok {
-		req.VmIds = *expandSetStringList(vids.(*schema.Set))
+		req.SetVmIds(utils.SetToStringSlice(vids.(*schema.Set)))
 	} else {
 		return fmt.Errorf("expect vm_ids")
 	}
@@ -234,7 +234,7 @@ func resourceOutscaleLoadBalancerListenerRuleRead(d *schema.ResourceData, meta i
 		return err
 	}
 	if lr.VmIds != nil {
-		d.Set("vm_ids", flattenStringList(lr.VmIds))
+		d.Set("vm_ids", utils.StringSlicePtrToInterfaceSlice(lr.VmIds))
 	}
 	return nil
 }
