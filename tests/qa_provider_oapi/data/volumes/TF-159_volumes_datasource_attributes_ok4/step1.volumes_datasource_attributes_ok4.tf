@@ -50,4 +50,5 @@ data "outscale_volumes" "outscale_volumes" {
         name = "volume_ids"
         values = [outscale_volume.outscale_volume.volume_id, outscale_volume.outscale_volume2.volume_id, outscale_volume.outscale_volume3.volume_id]
     }
+depends_on = [outscale_volumes_link.outscale_volumes_link]
 }
