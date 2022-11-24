@@ -58,5 +58,11 @@ The following attributes are exported:
     * `tags` - One or more tags associated with the VPN connection.
         * `key` - The key of the tag, with a minimum of 1 character.
         * `value` - The value of the tag, between 0 and 255 characters.
+    * `vgw_telemetries` - Information about the current state of one or more of the VPN tunnels.
+        * `accepted_route_count` - The number of routes accepted through BGP (Border Gateway Protocol) route exchanges.
+        * `last_state_change_date` - The date and time (UTC) of the latest state update.
+        * `outside_ip_address` - The IP on the OUTSCALE side of the tunnel.
+        * `state` - The state of the IPSEC tunnel (`UP` \| `DOWN`).
+        * `state_description` - A description of the current state of the tunnel.
     * `virtual_gateway_id` - The ID of the virtual gateway used on the OUTSCALE end of the connection.
     * `vpn_connection_id` - The ID of the VPN connection.

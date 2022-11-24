@@ -39,8 +39,8 @@ The following arguments are supported:
     * `route_destination_service_ids` - (Optional) The service IDs specified in routes in the tables.
     * `route_gateway_ids` - (Optional) The IDs of the gateways specified in routes in the tables.
     * `route_nat_service_ids` - (Optional) The IDs of the NAT services specified in routes in the tables.
-    * `route_net_peering_ids` - (Optional) The IDs of the Net peering connections specified in routes in the tables.
-    * `route_states` - (Optional) The states of routes in the route tables (`active` \| `blackhole`). The `blackhole` state indicates that the target of the route is not available.
+    * `route_net_peering_ids` - (Optional) The IDs of the Net peerings specified in routes in the tables.
+    * `route_states` - (Optional) The states of routes in the route tables (always `active`).
     * `route_table_ids` - (Optional) The IDs of the route tables.
     * `route_vm_ids` - (Optional) The IDs of the VMs specified in routes in the tables.
     * `tag_keys` - (Optional) The keys of the tags associated with the route tables.
@@ -68,9 +68,9 @@ The following attributes are exported:
         * `gateway_id` - The ID of the Internet service or virtual gateway attached to the Net.
         * `nat_service_id` - The ID of a NAT service attached to the Net.
         * `net_access_point_id` - The ID of the Net access point.
-        * `net_peering_id` - The ID of the Net peering connection.
+        * `net_peering_id` - The ID of the Net peering.
         * `nic_id` - The ID of the NIC.
-        * `state` - The state of a route in the route table (`active` \| `blackhole`). The `blackhole` state indicates that the target of the route is not available.
+        * `state` - The state of a route in the route table (always `active`). 
         * `vm_account_id` - The account ID of the owner of the VM.
         * `vm_id` - The ID of a VM specified in a route in the table.
     * `tags` - One or more tags associated with the route table.

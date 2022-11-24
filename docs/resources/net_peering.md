@@ -54,15 +54,15 @@ The following attributes are exported:
     * `account_id` - The account ID of the owner of the accepter Net.
     * `ip_range` - The IP range for the accepter Net, in CIDR notation (for example, `10.0.0.0/16`).
     * `net_id` - The ID of the accepter Net.
-* `net_peering_id` - The ID of the Net peering connection.
+* `net_peering_id` - The ID of the Net peering.
 * `source_net` - Information about the source Net.
     * `account_id` - The account ID of the owner of the source Net.
     * `ip_range` - The IP range for the source Net, in CIDR notation (for example, `10.0.0.0/16`).
     * `net_id` - The ID of the source Net.
-* `state` - Information about the state of the Net peering connection.
-    * `message` - Additional information about the state of the Net peering connection.
-    * `name` - The state of the Net peering connection (`pending-acceptance` \| `active` \| `rejected` \| `failed` \| `expired` \| `deleted`).
-* `tags` - One or more tags associated with the Net peering connection.
+* `state` - Information about the state of the Net peering.
+    * `message` - Additional information about the state of the Net peering.
+    * `name` - The state of the Net peering (`pending-acceptance` \| `active` \| `rejected` \| `failed` \| `expired` \| `deleted`).
+* `tags` - One or more tags associated with the Net peering.
     * `key` - The key of the tag, with a minimum of 1 character.
     * `value` - The value of the tag, between 0 and 255 characters.
 
