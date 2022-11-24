@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPIDSLoadBalancerTags_basic(t *testing.T) {
+func TestAccDSLoadBalancerTags_basic(t *testing.T) {
 	t.Parallel()
 	r := acctest.RandString(4)
 	region := os.Getenv("OUTSCALE_REGION")
@@ -23,9 +23,9 @@ func TestAccOutscaleOAPIDSLoadBalancerTags_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: getTestAccDSODSutscaleOAPILBUDSTagsConfig(r, zone),
+				Config: getTestAccDSODSutscaleLBUDSTagsConfig(r, zone),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckODSutscaleOAPILBUDSTagsExists("data.outscale_load_balancer_tags.testds"),
+					testAccCheckODSutscaleLBUDSTagsExists("data.outscale_load_balancer_tags.testds"),
 					resource.TestCheckResourceAttr(
 						"data.outscale_load_balancer_tags.testds", "tags.#", "1"),
 				)},
@@ -33,7 +33,7 @@ func TestAccOutscaleOAPIDSLoadBalancerTags_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckODSutscaleOAPILBUDSTagsExists(n string) resource.TestCheckFunc {
+func testAccCheckODSutscaleLBUDSTagsExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -48,7 +48,7 @@ func testAccCheckODSutscaleOAPILBUDSTagsExists(n string) resource.TestCheckFunc 
 	}
 }
 
-func getTestAccDSODSutscaleOAPILBUDSTagsConfig(r string, zone string) string {
+func getTestAccDSODSutscaleLBUDSTagsConfig(r string, zone string) string {
 	return fmt.Sprintf(`
 		resource "outscale_load_balancer" "bar" {
 			subregion_names    = ["%s"]

@@ -17,7 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPIImageLaunchPermission_Basic(t *testing.T) {
+func TestAccImageLaunchPermission_Basic(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 	accountID := os.Getenv("OUTSCALE_ACCOUNT")
@@ -34,31 +34,31 @@ func TestAccOutscaleOAPIImageLaunchPermission_Basic(t *testing.T) {
 		Steps: []r.TestStep{
 			// Scaffold everything
 			{
-				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(omi, "tinav4.c2r2p2", region, accountID, true, rInt, keypair, sgId),
+				Config: testAccImageLaunchPermissionConfig(omi, "tinav4.c2r2p2", region, accountID, true, rInt, keypair, sgId),
 				Check: r.ComposeTestCheckFunc(
-					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
+					testCheckResourceLPIGetAttr("outscale_image.outscale_image", "id", &imageID),
 				),
 			},
 			// Drop just launch permission to test destruction
 			{
-				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(omi, "tinav4.c2r2p2", region, accountID, false, rInt, keypair, sgId),
+				Config: testAccImageLaunchPermissionConfig(omi, "tinav4.c2r2p2", region, accountID, false, rInt, keypair, sgId),
 				Check: r.ComposeTestCheckFunc(
-					testAccOutscaleOAPIImageLaunchPermissionDestroyed(accountID, &imageID),
+					testAccImageLaunchPermissionDestroyed(accountID, &imageID),
 				),
 			},
 			// Re-add everything so we can test when AMI disappears
 			{
-				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(omi, "tinav4.c2r2p2", region, accountID, true, rInt, keypair, sgId),
+				Config: testAccImageLaunchPermissionConfig(omi, "tinav4.c2r2p2", region, accountID, true, rInt, keypair, sgId),
 				Check: r.ComposeTestCheckFunc(
-					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
+					testCheckResourceLPIGetAttr("outscale_image.outscale_image", "id", &imageID),
 				),
 			},
 			// Here we delete the AMI to verify the follow-on refresh after this step
 			// should not error.
 			{
-				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(omi, "tinav4.c2r2p2", region, accountID, true, rInt, keypair, sgId),
+				Config: testAccImageLaunchPermissionConfig(omi, "tinav4.c2r2p2", region, accountID, true, rInt, keypair, sgId),
 				Check: r.ComposeTestCheckFunc(
-					testAccOutscaleOAPIImageDisappears(&imageID),
+					testAccImageDisappears(&imageID),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -66,7 +66,7 @@ func TestAccOutscaleOAPIImageLaunchPermission_Basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIImageLaunchPermissionDestruction_Basic(t *testing.T) {
+func TestAccImageLaunchPermissionDestruction_Basic(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 	accountID := os.Getenv("OUTSCALE_ACCOUNT")
@@ -82,23 +82,23 @@ func TestAccOutscaleOAPIImageLaunchPermissionDestruction_Basic(t *testing.T) {
 		Steps: []r.TestStep{
 			// Scaffold everything
 			{
-				Config: testAccOutscaleOAPIImageLaunchPermissionCreateConfig(omi, "tinav4.c2r2p2", region, rInt, true, false, keypair, sgId),
+				Config: testAccImageLaunchPermissionCreateConfig(omi, "tinav4.c2r2p2", region, rInt, true, false, keypair, sgId),
 				Check: r.ComposeTestCheckFunc(
-					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
-					testAccOutscaleOAPIImageLaunchPermissionExists(accountID, &imageID),
+					testCheckResourceLPIGetAttr("outscale_image.outscale_image", "id", &imageID),
+					testAccImageLaunchPermissionExists(accountID, &imageID),
 				),
 			},
 			{
-				Config: testAccOutscaleOAPIImageLaunchPermissionCreateConfig(omi, "tinav4.c2r2p2", region, rInt, true, true, keypair, sgId),
+				Config: testAccImageLaunchPermissionCreateConfig(omi, "tinav4.c2r2p2", region, rInt, true, true, keypair, sgId),
 				Check: r.ComposeTestCheckFunc(
-					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
+					testCheckResourceLPIGetAttr("outscale_image.outscale_image", "id", &imageID),
 				),
 			},
 		},
 	})
 }
 
-func testCheckResourceOAPILPIGetAttr(name, key string, value *string) r.TestCheckFunc {
+func testCheckResourceLPIGetAttr(name, key string, value *string) r.TestCheckFunc {
 	return func(s *terraform.State) error {
 		ms := s.RootModule()
 		rs, ok := ms.Resources[name]
@@ -116,10 +116,10 @@ func testCheckResourceOAPILPIGetAttr(name, key string, value *string) r.TestChec
 	}
 }
 
-func testAccOutscaleOAPIImageLaunchPermissionExists(accountID string, imageID *string) r.TestCheckFunc {
+func testAccImageLaunchPermissionExists(accountID string, imageID *string) r.TestCheckFunc {
 	return func(s *terraform.State) error {
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
-		if has, err := hasOAPILaunchPermission(conn, *imageID); err != nil {
+		conn := testAccProvider.Meta().(*Client).OSCAPI
+		if has, err := hasLaunchPermission(conn, *imageID); err != nil {
 			return err
 		} else if !has {
 			return fmt.Errorf("launch permission does not exist for '%s' on '%s'", accountID, *imageID)
@@ -128,10 +128,10 @@ func testAccOutscaleOAPIImageLaunchPermissionExists(accountID string, imageID *s
 	}
 }
 
-func testAccOutscaleOAPIImageLaunchPermissionDestroyed(accountID string, imageID *string) r.TestCheckFunc {
+func testAccImageLaunchPermissionDestroyed(accountID string, imageID *string) r.TestCheckFunc {
 	return func(s *terraform.State) error {
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
-		if has, err := hasOAPILaunchPermission(conn, *imageID); err != nil {
+		conn := testAccProvider.Meta().(*Client).OSCAPI
+		if has, err := hasLaunchPermission(conn, *imageID); err != nil {
 			return err
 		} else if has {
 			return fmt.Errorf("launch permission still exists for '%s' on '%s'", accountID, *imageID)
@@ -140,12 +140,12 @@ func testAccOutscaleOAPIImageLaunchPermissionDestroyed(accountID string, imageID
 	}
 }
 
-// testAccOutscaleOAPIImageDisappears is technically a "test check function" but really it
+// testAccImageDisappears is technically a "test check function" but really it
 // exists to perform a side effect of deleting an AMI out from under a resource
 // so we can test that Terraform will react properly
-func testAccOutscaleOAPIImageDisappears(imageID *string) r.TestCheckFunc {
+func testAccImageDisappears(imageID *string) r.TestCheckFunc {
 	return func(s *terraform.State) error {
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		conn := testAccProvider.Meta().(*Client).OSCAPI
 		req := oscgo.DeleteImageRequest{
 			ImageId: aws.StringValue(imageID),
 		}
@@ -162,7 +162,7 @@ func testAccOutscaleOAPIImageDisappears(imageID *string) r.TestCheckFunc {
 			return err
 		}
 
-		return resourceOutscaleOAPIImageWaitForDestroy(*imageID, conn)
+		return resourceImageWaitForDestroy(*imageID, conn)
 	}
 }
 
@@ -184,7 +184,7 @@ func testCheckResourceGetAttr(name, key string, value *string) r.TestCheckFunc {
 	}
 }
 
-func testAccOutscaleOAPIImageLaunchPermissionConfig(omi, vmType, region, accountID string, includeLaunchPermission bool, r int, keypair, sgId string) string {
+func testAccImageLaunchPermissionConfig(omi, vmType, region, accountID string, includeLaunchPermission bool, r int, keypair, sgId string) string {
 	base := fmt.Sprintf(`
 		resource "outscale_net" "net" {
 			ip_range = "10.0.0.0/16"
@@ -236,7 +236,7 @@ func testAccOutscaleOAPIImageLaunchPermissionConfig(omi, vmType, region, account
 	`, accountID)
 }
 
-func testAccOutscaleOAPIImageLaunchPermissionCreateConfig(omi, vmType, region string, r int, includeAddtion, includeRemoval bool, keypair, sgId string) string {
+func testAccImageLaunchPermissionCreateConfig(omi, vmType, region string, r int, includeAddtion, includeRemoval bool, keypair, sgId string) string {
 	base := fmt.Sprintf(`
 		resource "outscale_net" "net" {
 			ip_range = "10.0.0.0/16"

@@ -12,9 +12,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleClientGateways() *schema.Resource {
+func dataSourceClientGateways() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleClientGatewaysRead,
+		Read: dataSourceClientGatewaysRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"client_gateway_ids": {
@@ -61,8 +61,8 @@ func dataSourceOutscaleClientGateways() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleClientGatewaysRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceClientGatewaysRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
 	clientGatewayIDs, clientGatewayOk := d.GetOk("client_gateway_ids")
@@ -75,12 +75,12 @@ func dataSourceOutscaleClientGatewaysRead(d *schema.ResourceData, meta interface
 
 	if clientGatewayOk {
 		params.Filters = &oscgo.FiltersClientGateway{
-			ClientGatewayIds: expandStringValueListPointer(clientGatewayIDs.([]interface{})),
+			ClientGatewayIds: utils.InterfaceSliceToStringList(clientGatewayIDs.([]interface{})),
 		}
 	}
 
 	if filtersOk {
-		params.Filters = buildOutscaleDataSourceClientGatewayFilters(filters.(*schema.Set))
+		params.Filters = buildDataSourceClientGatewayFilters(filters.(*schema.Set))
 	}
 
 	var resp oscgo.ReadClientGatewaysResponse
@@ -119,7 +119,7 @@ func flattenClientGateways(clientGateways []oscgo.ClientGateway) []map[string]in
 			"connection_type":   clientGateway.GetConnectionType(),
 			"public_ip":         clientGateway.GetPublicIp(),
 			"state":             clientGateway.GetState(),
-			"tags":              tagsOSCAPIToMap(clientGateway.GetTags()),
+			"tags":              tagsToMap(clientGateway.GetTags()),
 		}
 	}
 	return clientGatewaysMap

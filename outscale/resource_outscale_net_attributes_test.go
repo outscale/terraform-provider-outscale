@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccOutscaleOAPILinAttr_basic(t *testing.T) {
+func TestAccLinAttr_basic(t *testing.T) {
 	resourceName := "outscale_net_attributes.outscale_net_attributes"
 
 	resource.Test(t, resource.TestCase{
@@ -15,7 +15,7 @@ func TestAccOutscaleOAPILinAttr_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPILinAttrConfig,
+				Config: testAccLinAttrConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "dhcp_options_set_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "net_id"),
@@ -25,7 +25,7 @@ func TestAccOutscaleOAPILinAttr_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPILinAttr_withoutDHCPID(t *testing.T) {
+func TestAccLinAttr_withoutDHCPID(t *testing.T) {
 	resourceName := "outscale_net_attributes.outscale_net_attributes"
 
 	resource.Test(t, resource.TestCase{
@@ -33,14 +33,14 @@ func TestAccOutscaleOAPILinAttr_withoutDHCPID(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPILinAttrConfigwithoutDHCPID("outscale_net.vpc.id"),
+				Config: testAccLinAttrConfigwithoutDHCPID("outscale_net.vpc.id"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "dhcp_options_set_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "net_id"),
 				),
 			},
 			{
-				Config: testAccOutscaleOAPILinAttrConfigwithoutDHCPID("outscale_net.vpc2.id"),
+				Config: testAccLinAttrConfigwithoutDHCPID("outscale_net.vpc2.id"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "dhcp_options_set_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "net_id"),
@@ -50,7 +50,7 @@ func TestAccOutscaleOAPILinAttr_withoutDHCPID(t *testing.T) {
 	})
 }
 
-const testAccOutscaleOAPILinAttrConfig = `
+const testAccLinAttrConfig = `
 	resource "outscale_net" "vpc" {
 		ip_range = "10.0.0.0/16"
 
@@ -75,7 +75,7 @@ const testAccOutscaleOAPILinAttrConfig = `
 	}
 `
 
-func testAccOutscaleOAPILinAttrConfigwithoutDHCPID(vpc string) string {
+func testAccLinAttrConfigwithoutDHCPID(vpc string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "vpc" {
 			ip_range = "10.0.0.0/16"

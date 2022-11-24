@@ -14,11 +14,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func resourceOutscaleOAPIKeyPair() *schema.Resource {
+func resourceKeyPair() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOAPIKeyPairCreate,
-		Read:   resourceOAPIKeyPairRead,
-		Delete: resourceOAPIKeyPairDelete,
+		Create: resourceKeyPairCreate,
+		Read:   resourceKeyPairRead,
+		Delete: resourceKeyPairDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -29,12 +29,12 @@ func resourceOutscaleOAPIKeyPair() *schema.Resource {
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 
-		Schema: getOAPIKeyPairSchema(),
+		Schema: getKeyPairSchema(),
 	}
 }
 
-func resourceOAPIKeyPairCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceKeyPairCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	var keyName string
 	if v, ok := d.GetOk("keypair_name"); ok {
@@ -70,7 +70,7 @@ func resourceOAPIKeyPairCreate(d *schema.ResourceData, meta interface{}) error {
 	log.Printf("[DEBUG] resp keypair: %+v", resp)
 	if err != nil {
 		errString = err.Error()
-		return fmt.Errorf("Error creating OAPIKeyPair: %s", errString)
+		return fmt.Errorf("Error creating KeyPair: %s", errString)
 	}
 
 	d.SetId(resp.Keypair.GetKeypairName())
@@ -85,11 +85,11 @@ func resourceOAPIKeyPairCreate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	return resourceOAPIKeyPairRead(d, meta)
+	return resourceKeyPairRead(d, meta)
 }
 
-func resourceOAPIKeyPairRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceKeyPairRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 	req := oscgo.ReadKeypairsRequest{
 		Filters: &oscgo.FiltersKeypair{KeypairNames: &[]string{d.Id()}},
 	}
@@ -108,13 +108,13 @@ func resourceOAPIKeyPairRead(d *schema.ResourceData, meta interface{}) error {
 	var errString string
 
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "InvalidOAPIKeyPair.NotFound") {
+		if strings.Contains(fmt.Sprint(err), "InvalidKeyPair.NotFound") {
 			d.SetId("")
 			return nil
 		}
 		errString = err.Error()
 
-		return fmt.Errorf("Error retrieving OAPIKeyPair: %s", errString)
+		return fmt.Errorf("Error retrieving KeyPair: %s", errString)
 	}
 
 	for _, keyPair := range resp.GetKeypairs() {
@@ -132,8 +132,8 @@ func resourceOAPIKeyPairRead(d *schema.ResourceData, meta interface{}) error {
 	return fmt.Errorf("Unable to find key pair within: %#v", resp.GetKeypairs())
 }
 
-func resourceOAPIKeyPairDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceKeyPairDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		request := oscgo.DeleteKeypairRequest{
@@ -155,7 +155,7 @@ func resourceOAPIKeyPairDelete(d *schema.ResourceData, meta interface{}) error {
 	return err
 }
 
-func getOAPIKeyPairSchema() map[string]*schema.Schema {
+func getKeyPairSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		// Attributes
 		"keypair_fingerprint": {

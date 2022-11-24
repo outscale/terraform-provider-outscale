@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccDataSourceOutscaleOAPINetAccessPointServices_basic(t *testing.T) {
+func TestAccDataSourceNetAccessPointServices_basic(t *testing.T) {
 	t.Parallel()
 	serviceName := fmt.Sprintf("com.outscale.%s.api", os.Getenv("OUTSCALE_REGION"))
 
@@ -19,13 +19,13 @@ func TestAccDataSourceOutscaleOAPINetAccessPointServices_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPINetAccessPointServicesConfig(serviceName, serviceName),
+				Config: testAccDataSourceNetAccessPointServicesConfig(serviceName, serviceName),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleOAPINetAccessPointServicesConfig(sName, sName2 string) string {
+func testAccDataSourceNetAccessPointServicesConfig(sName, sName2 string) string {
 	return fmt.Sprintf(`
                 resource "outscale_net" "outscale_net" {
                         ip_range = "10.0.0.0/16"

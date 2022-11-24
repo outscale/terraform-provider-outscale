@@ -16,9 +16,9 @@ import (
 )
 
 // Creates a network interface in the specified subnet
-func dataSourceOutscaleOAPINic() *schema.Resource {
+func dataSourceNic() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPINicRead,
+		Read: dataSourceNicRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -213,8 +213,8 @@ func dataSourceOutscaleOAPINic() *schema.Resource {
 }
 
 // Read Nic
-func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceNicRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	nicID, okID := d.GetOk("nic_id")
 	filters, okFilters := d.GetOk("filter")
@@ -232,7 +232,7 @@ func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) err
 	}
 
 	if okFilters {
-		dnri.SetFilters(buildOutscaleOAPIDataSourceNicFilters(filters.(*schema.Set)))
+		dnri.SetFilters(buildDataSourceNicFilters(filters.(*schema.Set)))
 	}
 
 	var resp oscgo.ReadNicsResponse
@@ -369,7 +369,7 @@ func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) err
 	if err := d.Set("state", eni.GetState()); err != nil {
 		return err
 	}
-	if err := d.Set("tags", tagsOSCAPIToMap(eni.GetTags())); err != nil {
+	if err := d.Set("tags", tagsToMap(eni.GetTags())); err != nil {
 		return err
 	}
 	if err := d.Set("net_id", eni.GetNetId()); err != nil {
@@ -380,7 +380,7 @@ func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) err
 	return nil
 }
 
-func buildOutscaleOAPIDataSourceNicFilters(set *schema.Set) oscgo.FiltersNic {
+func buildDataSourceNicFilters(set *schema.Set) oscgo.FiltersNic {
 	var filters oscgo.FiltersNic
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})

@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccOutscaleOAPIVolumesDataSource_multipleFilters(t *testing.T) {
+func TestAccVolumesDataSource_multipleFilters(t *testing.T) {
 	t.Parallel()
 	region := os.Getenv("OUTSCALE_REGION")
 
@@ -17,9 +17,9 @@ func TestAccOutscaleOAPIVolumesDataSource_multipleFilters(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVolumeDataSourceConfigWithMultipleFilters(region),
+				Config: testAccCheckVolumeDataSourceConfigWithMultipleFilters(region),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIVolumeDataSourceID("data.outscale_volumes.ebs_volume"),
+					testAccCheckVolumeDataSourceID("data.outscale_volumes.ebs_volume"),
 					resource.TestCheckResourceAttr("data.outscale_volumes.ebs_volume", "volumes.0.size", "1"),
 					resource.TestCheckResourceAttr("data.outscale_volumes.ebs_volume", "volumes.0.volume_type", "standard"),
 				),
@@ -28,7 +28,7 @@ func TestAccOutscaleOAPIVolumesDataSource_multipleFilters(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIVolumeDataSource_multipleVIdsFilters(t *testing.T) {
+func TestAccVolumeDataSource_multipleVIdsFilters(t *testing.T) {
 	t.Parallel()
 	region := os.Getenv("OUTSCALE_REGION")
 
@@ -37,9 +37,9 @@ func TestAccOutscaleOAPIVolumeDataSource_multipleVIdsFilters(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVolumesDataSourceConfigWithMultipleVolumeIDsFilter(region),
+				Config: testAccCheckVolumesDataSourceConfigWithMultipleVolumeIDsFilter(region),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIVolumeDataSourceID("data.outscale_volumes.outscale_volumes"),
+					testAccCheckVolumeDataSourceID("data.outscale_volumes.outscale_volumes"),
 					resource.TestCheckResourceAttr("data.outscale_volumes.outscale_volumes", "volumes.0.size", "40"),
 				),
 			},
@@ -47,7 +47,7 @@ func TestAccOutscaleOAPIVolumeDataSource_multipleVIdsFilters(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIVolumesDataSource_withVM(t *testing.T) {
+func TestAccVolumesDataSource_withVM(t *testing.T) {
 	t.Parallel()
 	region := os.Getenv("OUTSCALE_REGION")
 	omi := os.Getenv("OUTSCALE_IMAGEID")
@@ -59,9 +59,9 @@ func TestAccOutscaleOAPIVolumesDataSource_withVM(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVolumesDataSourceConfigWithVM(region, omi, keypair, sgId),
+				Config: testAccCheckVolumesDataSourceConfigWithVM(region, omi, keypair, sgId),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIVolumeDataSourceID("data.outscale_volumes.outscale_volumes"),
+					testAccCheckVolumeDataSourceID("data.outscale_volumes.outscale_volumes"),
 					// resource.TestCheckResourceAttr("data.outscale_volumes.outscale_volumes", "volumes.0.size", "1"),
 					// resource.TestCheckResourceAttr("data.outscale_volumes.outscale_volumes", "volumes.0.volume_type", "standard"),
 				),
@@ -70,7 +70,7 @@ func TestAccOutscaleOAPIVolumesDataSource_withVM(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleOAPIVolumeDataSourceConfigWithMultipleFilters(region string) string {
+func testAccCheckVolumeDataSourceConfigWithMultipleFilters(region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_volume" "external" {
 			subregion_name = "%sa"
@@ -97,7 +97,7 @@ func testAccCheckOutscaleOAPIVolumeDataSourceConfigWithMultipleFilters(region st
 	`, region)
 }
 
-func testAccCheckOutscaleOAPIVolumesDataSourceConfigWithMultipleVolumeIDsFilter(region string) string {
+func testAccCheckVolumesDataSourceConfigWithMultipleVolumeIDsFilter(region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_volume" "outscale_volume" {
 			subregion_name = "%[1]sa"
@@ -118,7 +118,7 @@ func testAccCheckOutscaleOAPIVolumesDataSourceConfigWithMultipleVolumeIDsFilter(
 	`, region)
 }
 
-func testAccCheckOutscaleOAPIVolumesDataSourceConfigWithVM(region, imageID, keypair, sgId string) string {
+func testAccCheckVolumesDataSourceConfigWithVM(region, imageID, keypair, sgId string) string {
 	return fmt.Sprintf(`
 		resource "outscale_volume" "outscale_volume" {
 			subregion_name = "%[1]sa"

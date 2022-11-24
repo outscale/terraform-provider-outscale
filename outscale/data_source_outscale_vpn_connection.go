@@ -14,9 +14,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func dataSourceOutscaleVPNConnection() *schema.Resource {
+func dataSourceVPNConnection() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleVPNConnectionRead,
+		Read: dataSourceVPNConnectionRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"vpn_connection_id": {
@@ -104,8 +104,8 @@ func dataSourceOutscaleVPNConnection() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceVPNConnectionRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
 	vpnConnectionID, vpnConnectionOk := d.GetOk("vpn_connection_id")
@@ -123,7 +123,7 @@ func dataSourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{
 	}
 
 	if filtersOk {
-		params.Filters = buildOutscaleDataSourceVPNConnectionFilters(filters.(*schema.Set))
+		params.Filters = buildDataSourceVPNConnectionFilters(filters.(*schema.Set))
 	}
 
 	var resp oscgo.ReadVpnConnectionsResponse
@@ -174,7 +174,7 @@ func dataSourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{
 	if err := d.Set("routes", flattenVPNConnection(vpnConnection.GetRoutes())); err != nil {
 		return err
 	}
-	if err := d.Set("tags", tagsOSCAPIToMap(vpnConnection.GetTags())); err != nil {
+	if err := d.Set("tags", tagsToMap(vpnConnection.GetTags())); err != nil {
 		return err
 	}
 	if err := d.Set("vgw_telemetries", flattenVgwTelemetries(vpnConnection.GetVgwTelemetries())); err != nil {
@@ -185,7 +185,7 @@ func dataSourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{
 	return nil
 }
 
-func buildOutscaleDataSourceVPNConnectionFilters(set *schema.Set) *oscgo.FiltersVpnConnection {
+func buildDataSourceVPNConnectionFilters(set *schema.Set) *oscgo.FiltersVpnConnection {
 	var filters oscgo.FiltersVpnConnection
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})

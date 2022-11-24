@@ -6,13 +6,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccOutscaleOAPISnapshotsDataSource_basic(t *testing.T) {
+func TestAccSnapshotsDataSource_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPISnapshotsDataSourceConfig,
+				Config: testAccCheckSnapshotsDataSourceConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.outscale_snapshots.outscale_snapshots", "snapshots.#", "1"),
 				),
@@ -21,7 +21,7 @@ func TestAccOutscaleOAPISnapshotsDataSource_basic(t *testing.T) {
 	})
 }
 
-const testAccCheckOutscaleOAPISnapshotsDataSourceConfig = `
+const testAccCheckSnapshotsDataSourceConfig = `
 	resource "outscale_volume" "example" {
 		subregion_name = "eu-west-2a"
 		size           = 1

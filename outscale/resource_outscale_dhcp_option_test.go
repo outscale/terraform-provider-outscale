@@ -16,7 +16,7 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 )
 
-func TestAccOutscaleOAPIDhcpOptional_basic(t *testing.T) {
+func TestAccDhcpOptional_basic(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_dhcp_option.foo"
 	value := fmt.Sprintf("test-acc-value-%s", acctest.RandString(5))
@@ -26,12 +26,12 @@ func TestAccOutscaleOAPIDhcpOptional_basic(t *testing.T) {
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: resourceName,
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOAPIDHCPOptionDestroy,
+		CheckDestroy:  testAccCheckDHCPOptionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIDHCPOptionalBasicConfig(value, false, false),
+				Config: testAccDHCPOptionalBasicConfig(value, false, false),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleDHCPOptionExists(resourceName),
+					testAccCheckDHCPOptionExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "domain_name"),
 					resource.TestCheckResourceAttrSet(resourceName, "domain_name_servers.#"),
 					//resource.TestCheckResourceAttrSet(resourceName, "tags.#"),
@@ -44,9 +44,9 @@ func TestAccOutscaleOAPIDhcpOptional_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccOAPIDHCPOptionalBasicConfig(updateValue, true, true),
+				Config: testAccDHCPOptionalBasicConfig(updateValue, true, true),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleDHCPOptionExists(resourceName),
+					testAccCheckDHCPOptionExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "domain_name"),
 					resource.TestCheckResourceAttrSet(resourceName, "domain_name_servers.#"),
 					resource.TestCheckResourceAttrSet(resourceName, "log_servers.#"),
@@ -66,7 +66,7 @@ func TestAccOutscaleOAPIDhcpOptional_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIDhcpOptional_withEmptyAttrs(t *testing.T) {
+func TestAccDhcpOptional_withEmptyAttrs(t *testing.T) {
 	resourceName := "outscale_dhcp_option.foo"
 
 	value := fmt.Sprintf("test-acc-value-%s", acctest.RandString(5))
@@ -79,12 +79,12 @@ func TestAccOutscaleOAPIDhcpOptional_withEmptyAttrs(t *testing.T) {
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: resourceName,
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOAPIDHCPOptionDestroy,
+		CheckDestroy:  testAccCheckDHCPOptionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIDHCPOptionalBasicConfigWithEmptyAttrs(ntpServers, value),
+				Config: testAccDHCPOptionalBasicConfigWithEmptyAttrs(ntpServers, value),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleDHCPOptionExists(resourceName),
+					testAccCheckDHCPOptionExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "ntp_servers.#"),
 					//resource.TestCheckResourceAttrSet(resourceName, "tags.#"),
 
@@ -97,9 +97,9 @@ func TestAccOutscaleOAPIDhcpOptional_withEmptyAttrs(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccOAPIDHCPOptionalBasicConfigWithEmptyAttrs(ntpServersUpdated, updateValue),
+				Config: testAccDHCPOptionalBasicConfigWithEmptyAttrs(ntpServersUpdated, updateValue),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleDHCPOptionExists(resourceName),
+					testAccCheckDHCPOptionExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "ntp_servers.#"),
 					//resource.TestCheckResourceAttrSet(resourceName, "tags.#"),
 
@@ -115,7 +115,7 @@ func TestAccOutscaleOAPIDhcpOptional_withEmptyAttrs(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIDhcpOptional_withNet(t *testing.T) {
+func TestAccDhcpOptional_withNet(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_dhcp_option.outscale_dhcp_option"
 
@@ -132,12 +132,12 @@ func TestAccOutscaleOAPIDhcpOptional_withNet(t *testing.T) {
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: resourceName,
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOAPIDHCPOptionDestroy,
+		CheckDestroy:  testAccCheckDHCPOptionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIDHCPOptionalWithNet(domainName, domainServers, tags),
+				Config: testAccDHCPOptionalWithNet(domainName, domainServers, tags),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleDHCPOptionExists(resourceName),
+					testAccCheckDHCPOptionExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "domain_name"),
 					resource.TestCheckResourceAttrSet(resourceName, "domain_name_servers.#"),
 					resource.TestCheckResourceAttrSet(resourceName, "tags.#"),
@@ -152,9 +152,9 @@ func TestAccOutscaleOAPIDhcpOptional_withNet(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccOAPIDHCPOptionalWithNet(domainNameUpdated, []string{}, nil),
+				Config: testAccDHCPOptionalWithNet(domainNameUpdated, []string{}, nil),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleDHCPOptionExists(resourceName),
+					testAccCheckDHCPOptionExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "domain_name"),
 					resource.TestCheckResourceAttr(resourceName, "domain_name", domainNameUpdated),
 				),
@@ -163,21 +163,21 @@ func TestAccOutscaleOAPIDhcpOptional_withNet(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleDHCPOption_importBasic(t *testing.T) {
+func TestAccDHCPOption_importBasic(t *testing.T) {
 	resourceName := "outscale_dhcp_option.foo"
 	value := fmt.Sprintf("test-acc-value-%s", acctest.RandString(5))
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOAPIDHCPOptionDestroy,
+		CheckDestroy: testAccCheckDHCPOptionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIDHCPOptionalBasicConfig(value, true, true),
+				Config: testAccDHCPOptionalBasicConfig(value, true, true),
 			},
 			{
 				ResourceName:            resourceName,
-				ImportStateIdFunc:       testAccCheckOutscaleInternetServiceLinkImportStateIDFunc(resourceName),
+				ImportStateIdFunc:       testAccCheckInternetServiceLinkImportStateIDFunc(resourceName),
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"request_id"},
@@ -186,7 +186,7 @@ func TestAccOutscaleDHCPOption_importBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleDHCPOptionImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
+func testAccCheckDHCPOptionImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
 	return func(s *terraform.State) (string, error) {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
@@ -196,14 +196,14 @@ func testAccCheckOutscaleDHCPOptionImportStateIDFunc(resourceName string) resour
 	}
 }
 
-func testAccCheckOutscaleDHCPOptionExists(n string) resource.TestCheckFunc {
+func testAccCheckDHCPOptionExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		conn := testAccProvider.Meta().(*Client).OSCAPI
 
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("No DHCP Option id is set")
@@ -227,8 +227,8 @@ func testAccCheckOutscaleDHCPOptionExists(n string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckOAPIDHCPOptionDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+func testAccCheckDHCPOptionDestroy(s *terraform.State) error {
+	conn := testAccProvider.Meta().(*Client).OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_dhcp_option" {
@@ -264,7 +264,7 @@ func testAccCheckOAPIDHCPOptionDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccOAPIDHCPOptionalBasicConfig(value string, ntpServers bool, logServers bool) string {
+func testAccDHCPOptionalBasicConfig(value string, ntpServers bool, logServers bool) string {
 	var ntp string
 	var log string
 
@@ -296,7 +296,7 @@ func testAccOAPIDHCPOptionalBasicConfig(value string, ntpServers bool, logServer
 	return tf
 }
 
-func testAccOAPIDHCPOptionalBasicConfigWithEmptyAttrs(ntpServers []string, value string) string {
+func testAccDHCPOptionalBasicConfigWithEmptyAttrs(ntpServers []string, value string) string {
 	return fmt.Sprintf(`
 		resource "outscale_dhcp_option" "foo" {
 			ntp_servers = %s
@@ -309,7 +309,7 @@ func testAccOAPIDHCPOptionalBasicConfigWithEmptyAttrs(ntpServers []string, value
 	`, strings.ReplaceAll(fmt.Sprintf("%+q", ntpServers), " ", ","), value)
 }
 
-func testAccOAPIDHCPOptionalWithNet(domainName string, domainServers []string, tags *oscgo.Tag) string {
+func testAccDHCPOptionalWithNet(domainName string, domainServers []string, tags *oscgo.Tag) string {
 	var servers, dhcpTags string
 
 	if len(domainServers) > 0 {

@@ -12,11 +12,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func resourceOutscaleOAPIInternetServiceLink() *schema.Resource {
+func resourceInternetServiceLink() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPIInternetServiceLinkCreate,
-		Read:   resourceOutscaleOAPIInternetServiceLinkRead,
-		Delete: resourceOutscaleOAPIInternetServiceLinkDelete,
+		Create: resourceInternetServiceLinkCreate,
+		Read:   resourceInternetServiceLinkRead,
+		Delete: resourceInternetServiceLinkDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -63,8 +63,8 @@ func resourceOutscaleOAPIInternetServiceLink() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPIInternetServiceLinkCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceInternetServiceLinkCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	internetServiceID := d.Get("internet_service_id").(string)
 	req := oscgo.LinkInternetServiceRequest{
@@ -96,7 +96,7 @@ func resourceOutscaleOAPIInternetServiceLinkCreate(d *schema.ResourceData, meta 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending"},
 		Target:     []string{"available"},
-		Refresh:    LISOAPIStateRefreshFunction(conn, filterReq, "failed"),
+		Refresh:    LISStateRefreshFunction(conn, filterReq, "failed"),
 		Timeout:    10 * time.Minute,
 		MinTimeout: 30 * time.Second,
 		// Delay:      3 * time.Minute,
@@ -108,11 +108,11 @@ func resourceOutscaleOAPIInternetServiceLinkCreate(d *schema.ResourceData, meta 
 
 	d.SetId(internetServiceID)
 
-	return resourceOutscaleOAPIInternetServiceLinkRead(d, meta)
+	return resourceInternetServiceLinkRead(d, meta)
 }
 
-func resourceOutscaleOAPIInternetServiceLinkRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceInternetServiceLinkRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	internetServiceID := d.Id()
 	filterReq := oscgo.ReadInternetServicesRequest{
@@ -122,7 +122,7 @@ func resourceOutscaleOAPIInternetServiceLinkRead(d *schema.ResourceData, meta in
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending"},
 		Target:     []string{"deleted", "available"},
-		Refresh:    LISOAPIStateRefreshFunction(conn, filterReq, "failed"),
+		Refresh:    LISStateRefreshFunction(conn, filterReq, "failed"),
 		Timeout:    10 * time.Minute,
 		MinTimeout: 30 * time.Second,
 		// Delay:      3 * time.Minute,
@@ -152,7 +152,7 @@ func resourceOutscaleOAPIInternetServiceLinkRead(d *schema.ResourceData, meta in
 			return err
 		}
 
-		if err := set("tags", getOapiTagSet(internetService.Tags)); err != nil {
+		if err := set("tags", getTagSet(internetService.GetTags())); err != nil {
 			return err
 		}
 
@@ -160,8 +160,8 @@ func resourceOutscaleOAPIInternetServiceLinkRead(d *schema.ResourceData, meta in
 	})
 }
 
-func resourceOutscaleOAPIInternetServiceLinkDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceInternetServiceLinkDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	internetServiceID := d.Id()
 	filterReq := oscgo.ReadInternetServicesRequest{
@@ -171,7 +171,7 @@ func resourceOutscaleOAPIInternetServiceLinkDelete(d *schema.ResourceData, meta 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending"},
 		Target:     []string{"deleted", "available"},
-		Refresh:    LISOAPIStateRefreshFunction(conn, filterReq, "failed"),
+		Refresh:    LISStateRefreshFunction(conn, filterReq, "failed"),
 		Timeout:    10 * time.Minute,
 		MinTimeout: 30 * time.Second,
 		// Delay:      3 * time.Minute,
@@ -206,9 +206,9 @@ func resourceOutscaleOAPIInternetServiceLinkDelete(d *schema.ResourceData, meta 
 	return nil
 }
 
-// LISOAPIStateRefreshFunction returns a resource.StateRefreshFunc that is used to watch
+// LISStateRefreshFunction returns a resource.StateRefreshFunc that is used to watch
 // a Link Internet Service.
-func LISOAPIStateRefreshFunction(client *oscgo.APIClient, req oscgo.ReadInternetServicesRequest, failState string) resource.StateRefreshFunc {
+func LISStateRefreshFunction(client *oscgo.APIClient, req oscgo.ReadInternetServicesRequest, failState string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		var resp oscgo.ReadInternetServicesResponse
 		var err error

@@ -16,12 +16,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func resourceOutscaleOAPIIMageExportTask() *schema.Resource {
+func resourceIMageExportTask() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOAPIImageExportTaskCreate,
-		Read:   resourceOAPIImageExportTaskRead,
-		Update: resourceOAPIImageExportTaskUpdate,
-		Delete: resourceOAPIImageExportTaskDelete,
+		Create: resourceImageExportTaskCreate,
+		Read:   resourceImageExportTaskRead,
+		Update: resourceImageExportTaskUpdate,
+		Delete: resourceImageExportTaskDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -104,13 +104,13 @@ func resourceOutscaleOAPIIMageExportTask() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": tagsListOAPISchema(),
+			"tags": tagsListSchema(),
 		},
 	}
 }
 
-func resourceOAPIImageExportTaskCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceImageExportTaskCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	eto, etoOk := d.GetOk("osu_export")
 	v, ok := d.GetOk("image_id")
@@ -177,21 +177,21 @@ func resourceOAPIImageExportTaskCreate(d *schema.ResourceData, meta interface{})
 	id := resp.ImageExportTask.GetTaskId()
 	d.SetId(id)
 	if d.IsNewResource() {
-		if err := setOSCAPITags(conn, d); err != nil {
+		if err := setTags(conn, d); err != nil {
 			return err
 		}
 		d.SetPartial("tags")
 	}
-	_, err = resourceOutscaleImageTaskWaitForAvailable(id, conn)
+	_, err = resourceImageTaskWaitForAvailable(id, conn)
 	if err != nil {
 		return err
 	}
 
-	return resourceOAPIImageExportTaskRead(d, meta)
+	return resourceImageExportTaskRead(d, meta)
 }
 
-func resourceOAPIImageExportTaskRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceImageExportTaskRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	var resp oscgo.ReadImageExportTasksResponse
 	var err error
@@ -268,37 +268,37 @@ func resourceOAPIImageExportTaskRead(d *schema.ResourceData, meta interface{}) e
 	if err = d.Set("osu_export", exp); err != nil {
 		return err
 	}
-	if err = d.Set("tags", tagsOSCAPIToMap(v.GetTags())); err != nil {
+	if err = d.Set("tags", tagsToMap(v.GetTags())); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func resourceOAPIImageExportTaskUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceImageExportTaskUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	d.Partial(true)
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := setTags(conn, d); err != nil {
 		return err
 	}
 	d.SetPartial("tags")
 
 	d.Partial(false)
 
-	return resourceOAPIImageExportTaskRead(d, meta)
+	return resourceImageExportTaskRead(d, meta)
 }
 
-func resourceOutscaleImageTaskWaitForAvailable(id string, client *oscgo.APIClient) (oscgo.ImageExportTask, error) {
+func resourceImageTaskWaitForAvailable(id string, client *oscgo.APIClient) (oscgo.ImageExportTask, error) {
 	log.Printf("Waiting for Image Task %s to become available...", id)
 	var image oscgo.ImageExportTask
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending", "pending/queued", "queued"},
 		Target:     []string{"completed"},
 		Refresh:    ImageTaskStateRefreshFunc(client, id),
-		Timeout:    OutscaleImageRetryTimeout,
-		Delay:      OutscaleImageRetryDelay,
-		MinTimeout: OutscaleImageRetryMinTimeout,
+		Timeout:    ImageRetryTimeout,
+		Delay:      ImageRetryDelay,
+		MinTimeout: ImageRetryMinTimeout,
 	}
 
 	info, err := stateConf.WaitForState()
@@ -309,7 +309,7 @@ func resourceOutscaleImageTaskWaitForAvailable(id string, client *oscgo.APIClien
 	return image, nil
 }
 
-func resourceOAPIImageExportTaskDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceImageExportTaskDelete(d *schema.ResourceData, meta interface{}) error {
 
 	d.SetId("")
 	if err := d.Set("osu_export", nil); err != nil {

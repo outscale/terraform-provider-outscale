@@ -13,11 +13,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func resourceOutscaleOAPILBUAttachment() *schema.Resource {
+func resourceLBUAttachment() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPILBUAttachmentCreate,
-		Read:   resourceOutscaleOAPILBUAttachmentRead,
-		Delete: resourceOutscaleOAPILBUAttachmentDelete,
+		Create: resourceLBUAttachmentCreate,
+		Read:   resourceLBUAttachmentRead,
+		Delete: resourceLBUAttachmentDelete,
 
 		Schema: map[string]*schema.Schema{
 			"load_balancer_name": {
@@ -40,8 +40,8 @@ func resourceOutscaleOAPILBUAttachment() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPILBUAttachmentCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceLBUAttachmentCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	e, eok := d.GetOk("load_balancer_name")
 	i, iok := d.GetOk("backend_vm_ids")
@@ -80,11 +80,11 @@ func resourceOutscaleOAPILBUAttachmentCreate(d *schema.ResourceData, meta interf
 
 	d.SetId(resource.PrefixedUniqueId(fmt.Sprintf("%s-", e)))
 
-	return resourceOutscaleOAPILBUAttachmentRead(d, meta)
+	return resourceLBUAttachmentRead(d, meta)
 }
 
-func resourceOutscaleOAPILBUAttachmentRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceLBUAttachmentRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 	found := false
 	e := d.Get("load_balancer_name").(string)
 	lb, _, err := readResourceLb(conn, e)
@@ -111,8 +111,8 @@ func resourceOutscaleOAPILBUAttachmentRead(d *schema.ResourceData, meta interfac
 	return nil
 }
 
-func resourceOutscaleOAPILBUAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceLBUAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 	e := d.Get("load_balancer_name").(string)
 	i := d.Get("backend_vm_ids").([]interface{})
 

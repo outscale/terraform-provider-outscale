@@ -15,7 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleVPNConnectionRoute_basic(t *testing.T) {
+func TestAccVPNConnectionRoute_basic(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_vpn_connection_route.foo"
 
@@ -25,12 +25,12 @@ func TestAccOutscaleVPNConnectionRoute_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccOutscaleVPNConnectionRouteDestroy,
+		CheckDestroy: testAccVPNConnectionRouteDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleVPNConnectionRouteConfig(publicIP, destinationIPRange),
+				Config: testAccVPNConnectionRouteConfig(publicIP, destinationIPRange),
 				Check: resource.ComposeTestCheckFunc(
-					testAccOutscaleVPNConnectionRouteExists(resourceName),
+					testAccVPNConnectionRouteExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "destination_ip_range"),
 					resource.TestCheckResourceAttrSet(resourceName, "vpn_connection_id"),
 				),
@@ -39,7 +39,7 @@ func TestAccOutscaleVPNConnectionRoute_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleVPNConnectionRouteimport_basic(t *testing.T) {
+func TestAccVPNConnectionRouteimport_basic(t *testing.T) {
 	t.Parallel()
 	if os.Getenv("TEST_QUOTA") == "true" {
 		resourceName := "outscale_vpn_connection_route.foo"
@@ -50,12 +50,12 @@ func TestAccOutscaleVPNConnectionRouteimport_basic(t *testing.T) {
 		resource.Test(t, resource.TestCase{
 			PreCheck:     func() { testAccPreCheck(t) },
 			Providers:    testAccProviders,
-			CheckDestroy: testAccOutscaleVPNConnectionRouteDestroy,
+			CheckDestroy: testAccVPNConnectionRouteDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: testAccOutscaleVPNConnectionRouteConfig(publicIP, destinationIPRange),
+					Config: testAccVPNConnectionRouteConfig(publicIP, destinationIPRange),
 					Check: resource.ComposeTestCheckFunc(
-						testAccOutscaleVPNConnectionRouteExists(resourceName),
+						testAccVPNConnectionRouteExists(resourceName),
 						resource.TestCheckResourceAttrSet(resourceName, "destination_ip_range"),
 						resource.TestCheckResourceAttrSet(resourceName, "vpn_connection_id"),
 					),
@@ -63,7 +63,7 @@ func TestAccOutscaleVPNConnectionRouteimport_basic(t *testing.T) {
 				{
 					ResourceName:            resourceName,
 					ImportState:             true,
-					ImportStateIdFunc:       testAccCheckOutscaleOAPIRouteImportStateIDFunc(resourceName),
+					ImportStateIdFunc:       testAccCheckRouteImportStateIDFunc(resourceName),
 					ImportStateVerify:       true,
 					ImportStateVerifyIgnore: []string{"request_id"},
 				},
@@ -74,20 +74,20 @@ func TestAccOutscaleVPNConnectionRouteimport_basic(t *testing.T) {
 	}
 }
 
-func testAccOutscaleVPNConnectionRouteExists(resourceName string) resource.TestCheckFunc {
+func testAccVPNConnectionRouteExists(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
 			return fmt.Errorf("Not found: %s", resourceName)
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		conn := testAccProvider.Meta().(*Client).OSCAPI
 
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("No VPN Connection Route ID is set")
 		}
 
-		destinationIPRange, vpnConnectionID := resourceOutscaleVPNConnectionRouteParseID(rs.Primary.ID)
+		destinationIPRange, vpnConnectionID := resourceVPNConnectionRouteParseID(rs.Primary.ID)
 
 		filter := oscgo.ReadVpnConnectionsRequest{
 			Filters: &oscgo.FiltersVpnConnection{
@@ -122,14 +122,14 @@ func testAccOutscaleVPNConnectionRouteExists(resourceName string) resource.TestC
 	}
 }
 
-func testAccOutscaleVPNConnectionRouteDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+func testAccVPNConnectionRouteDestroy(s *terraform.State) error {
+	conn := testAccProvider.Meta().(*Client).OSCAPI
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_vpn_connection_route" {
 			continue
 		}
 
-		destinationIPRange, vpnConnectionID := resourceOutscaleVPNConnectionRouteParseID(rs.Primary.ID)
+		destinationIPRange, vpnConnectionID := resourceVPNConnectionRouteParseID(rs.Primary.ID)
 
 		filter := oscgo.ReadVpnConnectionsRequest{
 			Filters: &oscgo.FiltersVpnConnection{
@@ -165,7 +165,7 @@ func testAccOutscaleVPNConnectionRouteDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccOutscaleVPNConnectionRouteConfig(publicIP, destinationIPRange string) string {
+func testAccVPNConnectionRouteConfig(publicIP, destinationIPRange string) string {
 	return fmt.Sprintf(`
 		resource "outscale_virtual_gateway" "virtual_gateway" {
 			connection_type = "ipsec.1"

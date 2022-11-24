@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccDataSourceOutscaleOAPIVpnGateways_unattached(t *testing.T) {
+func TestAccDataSourceVpnGateways_unattached(t *testing.T) {
 	//t.Skip()
 	t.Parallel()
 	rInt := acctest.RandInt()
@@ -20,13 +20,13 @@ func TestAccDataSourceOutscaleOAPIVpnGateways_unattached(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPIVpnGatewaysUnattachedConfig(rInt),
+				Config: testAccDataSourceVpnGatewaysUnattachedConfig(rInt),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleOAPIVpnGatewaysUnattachedConfig(rInt int) string {
+func testAccDataSourceVpnGatewaysUnattachedConfig(rInt int) string {
 	return fmt.Sprintf(`
 		resource "outscale_virtual_gateway" "unattached" {
 			connection_type = "ipsec.1"	

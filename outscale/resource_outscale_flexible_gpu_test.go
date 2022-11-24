@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccOutscaleOAPIFlexibleGpu_basic(t *testing.T) {
+func TestAccFlexibleGpu_basic(t *testing.T) {
 	t.Parallel()
 	region := fmt.Sprintf("%sa", os.Getenv("OUTSCALE_REGION"))
 
@@ -19,13 +19,13 @@ func TestAccOutscaleOAPIFlexibleGpu_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIFlexibleGpuConfig(region),
+				Config: testAccFlexibleGpuConfig(region),
 			},
 		},
 	})
 }
 
-func testAccOutscaleOAPIFlexibleGpuConfig(region string) string {
+func testAccFlexibleGpuConfig(region string) string {
 	return fmt.Sprintf(`
                 resource "outscale_flexible_gpu" "fGPU-1" { 
                         model_name             =  "nvidia-k2"

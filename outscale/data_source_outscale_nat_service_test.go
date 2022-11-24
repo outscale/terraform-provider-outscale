@@ -8,16 +8,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPINatServiceDataSource_Instance(t *testing.T) {
+func TestAccNatServiceDataSource_Instance(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPINatServiceDataSourceConfig,
+				Config: testAccCheckNatServiceDataSourceConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleNatServiceDataSourceID("data.outscale_nat_service.nat"),
+					testAccCheckNatServiceDataSourceID("data.outscale_nat_service.nat"),
 					resource.TestCheckResourceAttrSet("data.outscale_nat_service.nat", "subnet_id"),
 				),
 			},
@@ -25,7 +25,7 @@ func TestAccOutscaleOAPINatServiceDataSource_Instance(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleNatServiceDataSourceID(n string) resource.TestCheckFunc {
+func testAccCheckNatServiceDataSourceID(n string) resource.TestCheckFunc {
 	// Wait for IAM role
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -40,7 +40,7 @@ func testAccCheckOutscaleNatServiceDataSourceID(n string) resource.TestCheckFunc
 	}
 }
 
-const testAccCheckOutscaleOAPINatServiceDataSourceConfig = `
+const testAccCheckNatServiceDataSourceConfig = `
 	resource "outscale_net" "outscale_net" {
 		ip_range = "10.0.0.0/16"
 		tags {

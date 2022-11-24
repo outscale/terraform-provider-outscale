@@ -14,12 +14,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func resourceOutscaleOAPIVirtualGateway() *schema.Resource {
+func resourceVirtualGateway() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPIVirtualGatewayCreate,
-		Read:   resourceOutscaleOAPIVirtualGatewayRead,
-		Update: resourceOutscaleOAPIVirtualGatewayUpdate,
-		Delete: resourceOutscaleOAPIVirtualGatewayDelete,
+		Create: resourceVirtualGatewayCreate,
+		Read:   resourceVirtualGatewayRead,
+		Update: resourceVirtualGatewayUpdate,
+		Delete: resourceVirtualGatewayDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -62,13 +62,13 @@ func resourceOutscaleOAPIVirtualGateway() *schema.Resource {
 				Optional: true,
 				Computed: true,
 			},
-			"tags": tagsListOAPISchema(),
+			"tags": tagsListSchema(),
 		},
 	}
 }
 
-func resourceOutscaleOAPIVirtualGatewayCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceVirtualGatewayCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 	connectType, connecTypeOk := d.GetOk("connection_type")
 	createOpts := oscgo.CreateVirtualGatewayRequest{}
 	if connecTypeOk {
@@ -108,17 +108,17 @@ func resourceOutscaleOAPIVirtualGatewayCreate(d *schema.ResourceData, meta inter
 	d.SetId(virtualGateway.GetVirtualGatewayId())
 
 	if d.IsNewResource() {
-		if err := setOSCAPITags(conn, d); err != nil {
+		if err := setTags(conn, d); err != nil {
 			return err
 		}
 		d.SetPartial("tag")
 	}
 
-	return resourceOutscaleOAPIVirtualGatewayRead(d, meta)
+	return resourceVirtualGatewayRead(d, meta)
 }
 
-func resourceOutscaleOAPIVirtualGatewayRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceVirtualGatewayRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	var resp oscgo.ReadVirtualGatewaysResponse
 	var err error
@@ -154,7 +154,7 @@ func resourceOutscaleOAPIVirtualGatewayRead(d *schema.ResourceData, meta interfa
 		d.SetId("")
 		return nil
 	}
-	vpnLink := oapiVpnGatewayGetLink(virtualGateway)
+	vpnLink := getVpnGatewayLink(virtualGateway)
 	if len(virtualGateway.GetNetToVirtualGatewayLinks()) == 0 || vpnLink.GetState() == "detached" {
 		d.Set("net_id", "")
 	} else {
@@ -175,15 +175,15 @@ func resourceOutscaleOAPIVirtualGatewayRead(d *schema.ResourceData, meta interfa
 	d.Set("virtual_gateway_id", virtualGateway.GetVirtualGatewayId())
 	d.Set("net_to_virtual_gateway_links", vs)
 	d.Set("state", virtualGateway.State)
-	d.Set("tags", tagsOSCAPIToMap(virtualGateway.GetTags()))
+	d.Set("tags", tagsToMap(virtualGateway.GetTags()))
 
 	return nil
 }
 
-func resourceOutscaleOAPIVirtualGatewayUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceVirtualGatewayUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 	d.Partial(true)
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := setTags(conn, d); err != nil {
 		return err
 	}
 	d.SetPartial("tags")
@@ -192,8 +192,8 @@ func resourceOutscaleOAPIVirtualGatewayUpdate(d *schema.ResourceData, meta inter
 	return nil
 }
 
-func resourceOutscaleOAPIVirtualGatewayDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceVirtualGatewayDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, httpResp, err := conn.VirtualGatewayApi.DeleteVirtualGateway(context.Background()).DeleteVirtualGatewayRequest(
@@ -248,12 +248,12 @@ func vpnGatewayAttachStateRefreshFunc(conn *oscgo.APIClient, id string, expected
 			return virtualGateway, "detached", nil
 		}
 
-		vpnAttachment := oapiVpnGatewayGetLink(virtualGateway)
+		vpnAttachment := getVpnGatewayLink(virtualGateway)
 		return virtualGateway, vpnAttachment.GetState(), nil
 	}
 }
 
-func oapiVpnGatewayGetLink(vgw oscgo.VirtualGateway) *oscgo.NetToVirtualGatewayLink {
+func getVpnGatewayLink(vgw oscgo.VirtualGateway) *oscgo.NetToVirtualGatewayLink {
 	for _, v := range vgw.GetNetToVirtualGatewayLinks() {
 		if v.GetState() == "attached" {
 			return &v

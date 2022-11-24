@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPIImageExportTask_basic(t *testing.T) {
+func TestAccImageExportTask_basic(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 	imageName := acctest.RandomWithPrefix("test-image-name")
@@ -31,15 +31,15 @@ func TestAccOutscaleOAPIImageExportTask_basic(t *testing.T) {
 			Providers: testAccProviders,
 			Steps: []resource.TestStep{
 				{
-					Config: testAccOAPIImageExportTaskConfigBasic(omi, "tinav4.c2r2p2", region, imageName, ""),
+					Config: testAccImageExportTaskConfigBasic(omi, "tinav4.c2r2p2", region, imageName, ""),
 					Check: resource.ComposeTestCheckFunc(
-						testAccCheckOutscaleOAPImageExportTaskExists("outscale_image_export_task.outscale_image_export_task"),
+						testAccCheckmageExportTaskExists("outscale_image_export_task.outscale_image_export_task"),
 					),
 				},
 				{
-					Config: testAccOAPIImageExportTaskConfigBasic(omi, "tinav4.c2r2p2", region, imageName, tags),
+					Config: testAccImageExportTaskConfigBasic(omi, "tinav4.c2r2p2", region, imageName, tags),
 					Check: resource.ComposeTestCheckFunc(
-						testAccCheckOutscaleOAPImageExportTaskExists("outscale_image_export_task.outscale_image_export_task"),
+						testAccCheckmageExportTaskExists("outscale_image_export_task.outscale_image_export_task"),
 					),
 				},
 			},
@@ -49,7 +49,7 @@ func TestAccOutscaleOAPIImageExportTask_basic(t *testing.T) {
 	}
 }
 
-func testAccCheckOutscaleOAPImageExportTaskExists(n string) resource.TestCheckFunc {
+func testAccCheckmageExportTaskExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -64,7 +64,7 @@ func testAccCheckOutscaleOAPImageExportTaskExists(n string) resource.TestCheckFu
 	}
 }
 
-func testAccOAPIImageExportTaskConfigBasic(omi, vmType, region, imageName, tags string) string {
+func testAccImageExportTaskConfigBasic(omi, vmType, region, imageName, tags string) string {
 	return fmt.Sprintf(`
 	resource "outscale_vm" "basic" {
 		image_id	         = "%s"

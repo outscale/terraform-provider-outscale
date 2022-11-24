@@ -14,9 +14,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPISecurityGroups() *schema.Resource {
+func dataSourceSecurityGroups() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPISecurityGroupsRead,
+		Read: dataSourceSecurityGroupsRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -177,8 +177,8 @@ func dataSourceOutscaleOAPISecurityGroups() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPISecurityGroupsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceSecurityGroupsRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	req := oscgo.ReadSecurityGroupsRequest{}
 
@@ -205,7 +205,7 @@ func dataSourceOutscaleOAPISecurityGroupsRead(d *schema.ResourceData, meta inter
 	}
 
 	if filtersOk {
-		req.SetFilters(buildOutscaleOAPIDataSourceSecurityGroupFilters(filters.(*schema.Set)))
+		req.SetFilters(buildDataSourceSecurityGroupFilters(filters.(*schema.Set)))
 	}
 
 	var err error
@@ -248,9 +248,9 @@ func dataSourceOutscaleOAPISecurityGroupsRead(d *schema.ResourceData, meta inter
 			s["net_id"] = v.GetNetId()
 		}
 		s["account_id"] = v.GetAccountId()
-		s["tags"] = tagsOSCAPIToMap(v.GetTags())
-		s["inbound_rules"] = flattenOAPISecurityGroupRule(v.GetInboundRules())
-		s["outbound_rules"] = flattenOAPISecurityGroupRule(v.GetOutboundRules())
+		s["tags"] = tagsToMap(v.GetTags())
+		s["inbound_rules"] = flattenSecurityGroupRule(v.GetInboundRules())
+		s["outbound_rules"] = flattenSecurityGroupRule(v.GetOutboundRules())
 		sg[k] = s
 	}
 
@@ -263,7 +263,7 @@ func dataSourceOutscaleOAPISecurityGroupsRead(d *schema.ResourceData, meta inter
 	return err
 }
 
-func flattenOAPISecurityGroupRule(p []oscgo.SecurityGroupRule) []map[string]interface{} {
+func flattenSecurityGroupRule(p []oscgo.SecurityGroupRule) []map[string]interface{} {
 	ips := make([]map[string]interface{}, len(p))
 
 	for k, v := range p {

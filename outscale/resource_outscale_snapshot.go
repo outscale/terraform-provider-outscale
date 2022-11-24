@@ -13,12 +13,12 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func resourceOutscaleOAPISnapshot() *schema.Resource {
+func resourceSnapshot() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPISnapshotCreate,
-		Read:   resourceOutscaleOAPISnapshotRead,
-		Update: resourceOutscaleOAPISnapshotUpdate,
-		Delete: resourceOutscaleOAPISnapshotDelete,
+		Create: resourceSnapshotCreate,
+		Read:   resourceSnapshotRead,
+		Update: resourceSnapshotUpdate,
+		Delete: resourceSnapshotDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -101,7 +101,7 @@ func resourceOutscaleOAPISnapshot() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": tagsListOAPISchema(),
+			"tags": tagsListSchema(),
 			"volume_size": {
 				Type:     schema.TypeInt,
 				Computed: true,
@@ -114,8 +114,8 @@ func resourceOutscaleOAPISnapshot() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPISnapshotCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceSnapshotCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	v, ok := d.GetOk("volume_id")
 	snp, sok := d.GetOk("snapshot_size")
@@ -170,10 +170,10 @@ func resourceOutscaleOAPISnapshotCreate(d *schema.ResourceData, meta interface{}
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending", "pending/queued", "queued", "importing"},
 		Target:     []string{"completed"},
-		Refresh:    SnapshotOAPIStateRefreshFunc(conn, resp.Snapshot.GetSnapshotId()),
-		Timeout:    OutscaleImageRetryTimeout,
-		Delay:      OutscaleImageRetryDelay,
-		MinTimeout: OutscaleImageRetryMinTimeout,
+		Refresh:    SnapshotStateRefreshFunc(conn, resp.Snapshot.GetSnapshotId()),
+		Timeout:    ImageRetryTimeout,
+		Delay:      ImageRetryDelay,
+		MinTimeout: ImageRetryMinTimeout,
 	}
 
 	_, err = stateConf.WaitForState()
@@ -190,11 +190,11 @@ func resourceOutscaleOAPISnapshotCreate(d *schema.ResourceData, meta interface{}
 
 	d.SetId(resp.Snapshot.GetSnapshotId())
 
-	return resourceOutscaleOAPISnapshotRead(d, meta)
+	return resourceSnapshotRead(d, meta)
 }
 
-func resourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceSnapshotRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	req := oscgo.ReadSnapshotsRequest{
 		Filters: &oscgo.FiltersSnapshot{SnapshotIds: &[]string{d.Id()}},
@@ -236,7 +236,7 @@ func resourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) 
 		if err := set("creation_date", snapshot.GetCreationDate()); err != nil {
 			return err
 		}
-		if err := set("permissions_to_create_volume", omiOAPIPermissionToLuch(&permisions)); err != nil {
+		if err := set("permissions_to_create_volume", omiPermissionToLuch(&permisions)); err != nil {
 			return err
 		}
 		if err := set("progress", snapshot.GetProgress()); err != nil {
@@ -248,7 +248,7 @@ func resourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) 
 		if err := set("state", snapshot.GetState()); err != nil {
 			return err
 		}
-		if err := set("tags", tagsOSCAPIToMap(snapshot.GetTags())); err != nil {
+		if err := set("tags", tagsToMap(snapshot.GetTags())); err != nil {
 			return err
 		}
 		if err := set("volume_size", snapshot.GetVolumeSize()); err != nil {
@@ -258,23 +258,23 @@ func resourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) 
 	})
 }
 
-func resourceOutscaleOAPISnapshotUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceSnapshotUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	d.Partial(true)
 
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := setTags(conn, d); err != nil {
 		return err
 	}
 
 	d.SetPartial("tags")
 
 	d.Partial(false)
-	return resourceOutscaleOAPISnapshotRead(d, meta)
+	return resourceSnapshotRead(d, meta)
 }
 
-func resourceOutscaleOAPISnapshotDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceSnapshotDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
 		request := oscgo.DeleteSnapshotRequest{SnapshotId: d.Id()}
@@ -286,8 +286,8 @@ func resourceOutscaleOAPISnapshotDelete(d *schema.ResourceData, meta interface{}
 	})
 }
 
-// SnapshotOAPIStateRefreshFunc ...
-func SnapshotOAPIStateRefreshFunc(client *oscgo.APIClient, id string) resource.StateRefreshFunc {
+// SnapshotStateRefreshFunc ...
+func SnapshotStateRefreshFunc(client *oscgo.APIClient, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		emptyResp := oscgo.ReadSnapshotsResponse{}
 

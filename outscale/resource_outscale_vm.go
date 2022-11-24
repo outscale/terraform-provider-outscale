@@ -18,12 +18,12 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func resourceOutscaleOApiVM() *schema.Resource {
+func resourceVM() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOAPIVMCreate,
-		Read:   resourceOAPIVMRead,
-		Update: resourceOAPIVMUpdate,
-		Delete: resourceOAPIVMDelete,
+		Create: resourceVMCreate,
+		Read:   resourceVMRead,
+		Update: resourceVMUpdate,
+		Delete: resourceVMDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -517,13 +517,13 @@ func resourceOutscaleOApiVM() *schema.Resource {
 				Type:     schema.TypeBool,
 				Optional: true,
 			},
-			"tags": tagsListOAPISchema(),
+			"tags": tagsListSchema(),
 		},
 	}
 }
 
-func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceVMCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	vmOpts, err := buildCreateVmsRequest(d, meta)
 	if err != nil {
@@ -565,7 +565,7 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 
 	if get_psswd := d.Get("get_admin_password").(bool); get_psswd {
 		psswd_err := resource.Retry(2500*time.Second, func() *resource.RetryError {
-			psswd, err := getOAPIVMAdminPassword(vm.GetVmId(), conn)
+			psswd, err := getVMAdminPassword(vm.GetVmId(), conn)
 			if err != nil || len(psswd) < 1 {
 				return resource.RetryableError(errors.New("timeout awaiting windows password"))
 			}
@@ -629,11 +629,11 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	return resourceOAPIVMRead(d, meta)
+	return resourceVMRead(d, meta)
 }
 
-func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceVMRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	var resp oscgo.ReadVmsResponse
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
@@ -663,7 +663,7 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 	vm := resp.GetVms()[0]
 
 	// Get the admin password from the server to save in the state
-	adminPassword, err := getOAPIVMAdminPassword(vm.GetVmId(), conn)
+	adminPassword, err := getVMAdminPassword(vm.GetVmId(), conn)
 	if err != nil {
 		return err
 	}
@@ -673,11 +673,11 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 			return err
 		}
 		d.SetId(vm.GetVmId())
-		return oapiVMDescriptionAttributes(set, &vm)
+		return setVMAttributes(set, &vm)
 	})
 }
 
-func getOAPIVMAdminPassword(VMID string, conn *oscgo.APIClient) (string, error) {
+func getVMAdminPassword(VMID string, conn *oscgo.APIClient) (string, error) {
 	var resp oscgo.ReadAdminPasswordResponse
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.VmApi.ReadAdminPassword(context.Background()).ReadAdminPasswordRequest(oscgo.ReadAdminPasswordRequest{VmId: VMID}).Execute()
@@ -694,8 +694,8 @@ func getOAPIVMAdminPassword(VMID string, conn *oscgo.APIClient) (string, error) 
 	return resp.GetAdminPassword(), nil
 }
 
-func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceVMUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	d.Partial(true)
 
@@ -804,7 +804,7 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 	if d.HasChange("security_group_ids") && !d.IsNewResource() {
 		opts := oscgo.UpdateVmRequest{VmId: id}
 
-		opts.SetSecurityGroupIds(expandStringValueList(d.Get("security_group_ids").([]interface{})))
+		opts.SetSecurityGroupIds(utils.InterfaceSliceToStringSlice(d.Get("security_group_ids").([]interface{})))
 		if err := updateVmAttr(conn, opts); err != nil {
 			return err
 		}
@@ -812,7 +812,7 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	if d.HasChange("security_group_names") && !d.IsNewResource() {
 		opts := oscgo.UpdateVmRequest{VmId: id}
-		opts.SetSecurityGroupIds(expandStringValueList(d.Get("security_group_names").([]interface{})))
+		opts.SetSecurityGroupIds(utils.InterfaceSliceToStringSlice(d.Get("security_group_names").([]interface{})))
 		if err := updateVmAttr(conn, opts); err != nil {
 			return err
 		}
@@ -881,7 +881,7 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := setTags(conn, d); err != nil {
 		return err
 	}
 
@@ -914,11 +914,11 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 out:
-	return resourceOAPIVMRead(d, meta)
+	return resourceVMRead(d, meta)
 }
 
-func resourceOAPIVMDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceVMDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	id := d.Id()
 
@@ -981,7 +981,7 @@ func buildCreateVmsRequest(d *schema.ResourceData, meta interface{}) (oscgo.Crea
 	if subNet != "" {
 		request.SetSubnetId(subNet)
 	}
-	blockDevices, err := expandBlockDeviceOApiMappings(d)
+	blockDevices, err := expandBlockDeviceMappings(d)
 	if err != nil {
 		return request, err
 	}
@@ -989,22 +989,22 @@ func buildCreateVmsRequest(d *schema.ResourceData, meta interface{}) (oscgo.Crea
 		request.SetBlockDeviceMappings(blockDevices)
 	}
 
-	if nics := buildNetworkOApiInterfaceOpts(d); len(nics) > 0 {
+	if nics := buildNetworkInterfaceOpts(d); len(nics) > 0 {
 		if subNet != "" || placement != nil {
 			return request, errors.New("If you specify nics parameter, you must not specify subnet_id and placement parameters.")
 		}
 		request.SetNics(nics)
 	}
 
-	if privateIPs := expandStringValueList(d.Get("private_ips").([]interface{})); len(privateIPs) > 0 {
+	if privateIPs := utils.InterfaceSliceToStringSlice(d.Get("private_ips").([]interface{})); len(privateIPs) > 0 {
 		request.SetPrivateIps(privateIPs)
 	}
 
-	if sgIDs := expandStringValueList(d.Get("security_group_ids").([]interface{})); len(sgIDs) > 0 {
+	if sgIDs := utils.InterfaceSliceToStringSlice(d.Get("security_group_ids").([]interface{})); len(sgIDs) > 0 {
 		request.SetSecurityGroupIds(sgIDs)
 	}
 
-	if sgNames := expandStringValueList(d.Get("security_group_names").([]interface{})); len(sgNames) > 0 {
+	if sgNames := utils.InterfaceSliceToStringSlice(d.Get("security_group_names").([]interface{})); len(sgNames) > 0 {
 		request.SetSecurityGroups(sgNames)
 	}
 
@@ -1041,7 +1041,7 @@ func buildCreateVmsRequest(d *schema.ResourceData, meta interface{}) (oscgo.Crea
 	return request, nil
 }
 
-func expandBlockDeviceOApiMappings(d *schema.ResourceData) ([]oscgo.BlockDeviceMappingVmCreation, error) {
+func expandBlockDeviceMappings(d *schema.ResourceData) ([]oscgo.BlockDeviceMappingVmCreation, error) {
 	var blockDevices []oscgo.BlockDeviceMappingVmCreation
 
 	block := d.Get("block_device_mappings").([]interface{})
@@ -1103,7 +1103,7 @@ func expandBlockDeviceBSU(bsu map[string]interface{}) (oscgo.BsuToCreate, error)
 	return bsuToCreate, nil
 }
 
-func buildNetworkOApiInterfaceOpts(d *schema.ResourceData) []oscgo.NicForVmCreation {
+func buildNetworkInterfaceOpts(d *schema.ResourceData) []oscgo.NicForVmCreation {
 
 	nics := d.Get("nics").(*schema.Set).List()
 	networkInterfaces := []oscgo.NicForVmCreation{}
@@ -1133,7 +1133,7 @@ func buildNetworkOApiInterfaceOpts(d *schema.ResourceData) []oscgo.NicForVmCreat
 		ni.SetPrivateIps(expandPrivatePublicIps(nic["private_ips"].(*schema.Set)))
 		ni.SetSubnetId(nic["subnet_id"].(string))
 
-		if sg := expandStringValueList(nic["security_group_ids"].([]interface{})); len(sg) > 0 {
+		if sg := utils.InterfaceSliceToStringSlice(nic["security_group_ids"].([]interface{})); len(sg) > 0 {
 			ni.SetSecurityGroupIds(sg)
 		}
 

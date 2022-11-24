@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPILBUAttr_basic(t *testing.T) {
+func TestAccLBUAttr_basic(t *testing.T) {
 	t.Parallel()
 	var conf oscgo.AccessLog
 
@@ -25,15 +25,15 @@ func TestAccOutscaleOAPILBUAttr_basic(t *testing.T) {
 		Providers:     testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPILBUAttrConfig(r),
+				Config: testAccLBUAttrConfig(r),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPILBUAttrExists("outscale_load_balancer_attributes.bar2", &conf),
+					testAccCheckLBUAttrExists("outscale_load_balancer_attributes.bar2", &conf),
 				)},
 		},
 	})
 }
 
-func testAccCheckOutscaleOAPILBUAttrExists(n string, res *oscgo.AccessLog) resource.TestCheckFunc {
+func testAccCheckLBUAttrExists(n string, res *oscgo.AccessLog) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -48,7 +48,7 @@ func testAccCheckOutscaleOAPILBUAttrExists(n string, res *oscgo.AccessLog) resou
 	}
 }
 
-func testAccOutscaleOAPILBUAttrConfig(r int) string {
+func testAccLBUAttrConfig(r int) string {
 	return fmt.Sprintf(`
 resource "outscale_load_balancer" "bar" {
   subregion_names = ["eu-west-2a"]

@@ -12,9 +12,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func datasourceOutscaleOAPIServerCertificate() *schema.Resource {
+func dataSourceServerCertificate() *schema.Resource {
 	return &schema.Resource{
-		Read: datasourceOutscaleOAPIServerCertificateRead,
+		Read: dataSourceServerCertificateRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"expiration_date": {
@@ -45,8 +45,8 @@ func datasourceOutscaleOAPIServerCertificate() *schema.Resource {
 	}
 }
 
-func datasourceOutscaleOAPIServerCertificateRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceServerCertificateRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
 
@@ -58,7 +58,7 @@ func datasourceOutscaleOAPIServerCertificateRead(d *schema.ResourceData, meta in
 	params := oscgo.ReadServerCertificatesRequest{}
 
 	if filtersOk {
-		params.Filters = buildOutscaleOSCAPIDataSourceServerCertificateFilters(filters.(*schema.Set))
+		params.Filters = buildDataSourceServerCertificateFilters(filters.(*schema.Set))
 	}
 
 	var resp oscgo.ReadServerCertificatesResponse
@@ -99,7 +99,7 @@ func datasourceOutscaleOAPIServerCertificateRead(d *schema.ResourceData, meta in
 	return nil
 }
 
-func buildOutscaleOSCAPIDataSourceServerCertificateFilters(set *schema.Set) *oscgo.FiltersServerCertificate {
+func buildDataSourceServerCertificateFilters(set *schema.Set) *oscgo.FiltersServerCertificate {
 	var filters oscgo.FiltersServerCertificate
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})

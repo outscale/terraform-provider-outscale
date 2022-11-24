@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccOutscaleGatewayDatasource_basic(t *testing.T) {
+func TestAccGatewayDatasource_basic(t *testing.T) {
 	t.Parallel()
 	rBgpAsn := acctest.RandIntRange(64512, 65534)
 	value := fmt.Sprintf("testacc-%s", acctest.RandString(5))
@@ -24,7 +24,7 @@ func TestAccOutscaleGatewayDatasource_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleGatewayDatasource_withFilters(t *testing.T) {
+func TestAccGatewayDatasource_withFilters(t *testing.T) {
 	t.Parallel()
 	// datasourceName := "data.outscale_client_gateway.test"
 	rBgpAsn := acctest.RandIntRange(64512, 65534)
@@ -41,7 +41,7 @@ func TestAccOutscaleGatewayDatasource_withFilters(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleGatewayDatasource_withFiltersNoLocalhost(t *testing.T) {
+func TestAccGatewayDatasource_withFiltersNoLocalhost(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },

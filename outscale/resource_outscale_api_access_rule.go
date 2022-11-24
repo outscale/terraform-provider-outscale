@@ -12,12 +12,12 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func resourceOutscaleOAPIApiAccessRule() *schema.Resource {
+func resourceApiAccessRule() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPIApiAccessRuleCreate,
-		Read:   resourceOutscaleOAPIApiAccessRuleRead,
-		Update: resourceOutscaleOAPIApiAccessRuleUpdate,
-		Delete: resourceOutscaleOAPIApiAccessRuleDelete,
+		Create: resourceApiAccessRuleCreate,
+		Read:   resourceApiAccessRuleRead,
+		Update: resourceApiAccessRuleUpdate,
+		Delete: resourceApiAccessRuleDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -53,25 +53,25 @@ func resourceOutscaleOAPIApiAccessRule() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPIApiAccessRuleCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceApiAccessRuleCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 	var checkParam = false
 	req := oscgo.CreateApiAccessRuleRequest{}
 
 	if val, ok := d.GetOk("ca_ids"); ok {
 		checkParam = true
-		req.CaIds = expandSetStringList(val.(*schema.Set))
+		req.CaIds = utils.SetToStringSlicePtr(val.(*schema.Set))
 	}
 	if val, ok := d.GetOk("ip_ranges"); ok {
 		checkParam = true
-		req.IpRanges = expandSetStringList(val.(*schema.Set))
+		req.IpRanges = utils.SetToStringSlicePtr(val.(*schema.Set))
 	}
 	if !checkParam {
 		return fmt.Errorf("[DEBUG] Error 'ca_ids' or 'ip_ranges' field is require for API Access Rules creation")
 	}
 
 	if val, ok := d.GetOk("cns"); ok {
-		req.Cns = expandSetStringList(val.(*schema.Set))
+		req.Cns = utils.SetToStringSlicePtr(val.(*schema.Set))
 	}
 	if v, ok := d.GetOk("description"); ok {
 		req.SetDescription(v.(string))
@@ -92,11 +92,11 @@ func resourceOutscaleOAPIApiAccessRuleCreate(d *schema.ResourceData, meta interf
 	}
 	d.SetId(cast.ToString(resp.ApiAccessRule.GetApiAccessRuleId()))
 
-	return resourceOutscaleOAPIApiAccessRuleRead(d, meta)
+	return resourceApiAccessRuleRead(d, meta)
 }
 
-func resourceOutscaleOAPIApiAccessRuleRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceApiAccessRuleRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	req := oscgo.ReadApiAccessRulesRequest{
 		Filters: &oscgo.FiltersApiAccessRule{ApiAccessRuleIds: &[]string{d.Id()}},
@@ -154,8 +154,8 @@ func resourceOutscaleOAPIApiAccessRuleRead(d *schema.ResourceData, meta interfac
 	return nil
 }
 
-func resourceOutscaleOAPIApiAccessRuleUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceApiAccessRuleUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	accRid, isIdOk := d.GetOk("api_access_rule_id")
 	if !isIdOk {
@@ -169,11 +169,11 @@ func resourceOutscaleOAPIApiAccessRuleUpdate(d *schema.ResourceData, meta interf
 
 	if val, ok := d.GetOk("ca_ids"); ok {
 		checkParam = true
-		req.CaIds = expandSetStringList(val.(*schema.Set))
+		req.CaIds = utils.SetToStringSlicePtr(val.(*schema.Set))
 	}
 	if val, ok := d.GetOk("ip_ranges"); ok {
 		checkParam = true
-		req.IpRanges = expandSetStringList(val.(*schema.Set))
+		req.IpRanges = utils.SetToStringSlicePtr(val.(*schema.Set))
 	}
 
 	if !checkParam {
@@ -181,7 +181,7 @@ func resourceOutscaleOAPIApiAccessRuleUpdate(d *schema.ResourceData, meta interf
 	}
 
 	if val, ok := d.GetOk("cns"); ok {
-		req.Cns = expandSetStringList(val.(*schema.Set))
+		req.Cns = utils.SetToStringSlicePtr(val.(*schema.Set))
 	}
 	if v, ok := d.GetOk("description"); ok {
 		req.SetDescription(v.(string))
@@ -198,11 +198,11 @@ func resourceOutscaleOAPIApiAccessRuleUpdate(d *schema.ResourceData, meta interf
 	if err != nil {
 		return err
 	}
-	return resourceOutscaleOAPIApiAccessRuleRead(d, meta)
+	return resourceApiAccessRuleRead(d, meta)
 }
 
-func resourceOutscaleOAPIApiAccessRuleDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceApiAccessRuleDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	req := oscgo.DeleteApiAccessRuleRequest{
 		ApiAccessRuleId: d.Id(),

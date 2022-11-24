@@ -12,11 +12,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func resourceOutscaleOAPITags() *schema.Resource {
+func resourceTags() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPITagsCreate,
-		Read:   resourceOutscaleOAPITagsRead,
-		Delete: resourceOutscaleOAPITagsDelete,
+		Create: resourceTagsCreate,
+		Read:   resourceTagsRead,
+		Delete: resourceTagsDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -26,12 +26,12 @@ func resourceOutscaleOAPITags() *schema.Resource {
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 
-		Schema: getOAPITagsSchema(),
+		Schema: getTagsSchema(),
 	}
 }
 
-func resourceOutscaleOAPITagsCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceTagsCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	request := oscgo.CreateTagsRequest{}
 
@@ -71,11 +71,11 @@ func resourceOutscaleOAPITagsCreate(d *schema.ResourceData, meta interface{}) er
 
 	d.SetId(resource.UniqueId())
 
-	return resourceOutscaleOAPITagsRead(d, meta)
+	return resourceTagsRead(d, meta)
 }
 
-func resourceOutscaleOAPITagsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceTagsRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	// Build up search parameters
 	params := oscgo.ReadTagsRequest{
@@ -127,7 +127,7 @@ func resourceOutscaleOAPITagsRead(d *schema.ResourceData, meta interface{}) erro
 		return err
 	}
 
-	tg := oapiTagsDescToList(resp.GetTags())
+	tg := tagsDescToList(resp.GetTags())
 	if err := d.Set("tags", tg); err != nil {
 		return err
 	}
@@ -135,8 +135,8 @@ func resourceOutscaleOAPITagsRead(d *schema.ResourceData, meta interface{}) erro
 	return err
 }
 
-func resourceOutscaleOAPITagsDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceTagsDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	request := oscgo.DeleteTagsRequest{}
 
@@ -179,7 +179,7 @@ func resourceOutscaleOAPITagsDelete(d *schema.ResourceData, meta interface{}) er
 	return nil
 }
 
-func getOAPITagsSchema() map[string]*schema.Schema {
+func getTagsSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"resource_ids": {
 			Type:     schema.TypeSet,

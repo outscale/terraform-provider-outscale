@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPIENIDataSource_basic(t *testing.T) {
+func TestAccENIDataSource_basic(t *testing.T) {
 	t.Parallel()
 	var conf oscgo.Nic
 	subregion := os.Getenv("OUTSCALE_REGION")
@@ -25,20 +25,20 @@ func TestAccOutscaleOAPIENIDataSource_basic(t *testing.T) {
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_nic.outscale_nic",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscaleOAPIENIDestroy,
+		CheckDestroy:  testAccCheckENIDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIENIDataSourceConfig(subregion),
+				Config: testAccENIDataSourceConfig(subregion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIENIExists("outscale_nic.outscale_nic", &conf),
-					testAccCheckOutscaleOAPIENIAttributes(&conf, subregion),
+					testAccCheckENIExists("outscale_nic.outscale_nic", &conf),
+					testAccCheckENIAttributes(&conf, subregion),
 				),
 			},
 		},
 	})
 }
 
-func TestAccOutscaleOAPIENIDataSource_basicFilter(t *testing.T) {
+func TestAccENIDataSource_basicFilter(t *testing.T) {
 	t.Parallel()
 	var conf oscgo.Nic
 
@@ -51,27 +51,27 @@ func TestAccOutscaleOAPIENIDataSource_basicFilter(t *testing.T) {
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_nic.outscale_nic",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscaleOAPIENIDestroy,
+		CheckDestroy:  testAccCheckENIDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIENIDataSourceConfigFilter,
+				Config: testAccENIDataSourceConfigFilter,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIENIExists("outscale_nic.outscale_nic", &conf),
-					testAccCheckOutscaleOAPIENIAttributes(&conf, subregion),
+					testAccCheckENIExists("outscale_nic.outscale_nic", &conf),
+					testAccCheckENIAttributes(&conf, subregion),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckOutscaleOAPIENIDestroy(s *terraform.State) error {
+func testAccCheckENIDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_nic" {
 			continue
 		}
 
 		var resp oscgo.ReadNicsResponse
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		conn := testAccProvider.Meta().(*Client).OSCAPI
 		req := oscgo.ReadNicsRequest{
 			Filters: &oscgo.FiltersNic{NicIds: &[]string{rs.Primary.ID}},
 		}
@@ -97,13 +97,13 @@ func testAccCheckOutscaleOAPIENIDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOutscaleOAPINICDestroy(s *terraform.State) error {
+func testAccCheckNICDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_nic" {
 			continue
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		conn := testAccProvider.Meta().(*Client).OSCAPI
 		dnir := oscgo.ReadNicsRequest{
 			Filters: &oscgo.FiltersNic{NicIds: &[]string{rs.Primary.ID}},
 		}
@@ -136,7 +136,7 @@ func testAccCheckOutscaleOAPINICDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccOutscaleOAPIENIDataSourceConfig(subregion string) string {
+func testAccENIDataSourceConfig(subregion string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "outscale_net" {
 			ip_range = "10.0.0.0/16"
@@ -167,7 +167,7 @@ func testAccOutscaleOAPIENIDataSourceConfig(subregion string) string {
 	`, subregion)
 }
 
-const testAccOutscaleOAPIENIDataSourceConfigFilter = `
+const testAccENIDataSourceConfigFilter = `
 	resource "outscale_net" "outscale_net" {
 		ip_range = "10.0.0.0/16"
 

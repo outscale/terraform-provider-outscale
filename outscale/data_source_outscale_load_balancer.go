@@ -43,7 +43,7 @@ func attrLBchema() map[string]*schema.Schema {
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 		"source_security_group": lb_sg_schema(),
-		"tags":                  tagsListOAPISchema2(true),
+		"tags":                  tagsListSchema2(true),
 		"dns_name": {
 			Type:     schema.TypeString,
 			Computed: true,
@@ -179,14 +179,14 @@ func getDataSourceSchemas(attrsSchema map[string]*schema.Schema) map[string]*sch
 
 }
 
-func dataSourceOutscaleOAPILoadBalancer() *schema.Resource {
+func dataSourceLoadBalancer() *schema.Resource {
 	return &schema.Resource{
-		Read:   dataSourceOutscaleOAPILoadBalancerRead,
+		Read:   dataSourceLoadBalancerRead,
 		Schema: getDataSourceSchemas(attrLBchema()),
 	}
 }
 
-func buildOutscaleDataSourceLBFilters(set *schema.Set) *oscgo.FiltersLoadBalancer {
+func buildDataSourceLBFilters(set *schema.Set) *oscgo.FiltersLoadBalancer {
 	filters := new(oscgo.FiltersLoadBalancer)
 
 	for _, v := range set.List() {
@@ -221,7 +221,7 @@ func readLbs_(conn *oscgo.APIClient, d *schema.ResourceData, t schema.ValueType)
 	}
 
 	if filtersOk {
-		filter = buildOutscaleDataSourceLBFilters(filters.(*schema.Set))
+		filter = buildDataSourceLBFilters(filters.(*schema.Set))
 	} else if t == schema.TypeString {
 		elbName := ename.(string)
 		filter = &oscgo.FiltersLoadBalancer{
@@ -229,7 +229,7 @@ func readLbs_(conn *oscgo.APIClient, d *schema.ResourceData, t schema.ValueType)
 		}
 	} else { /* assuming typelist */
 		filter = &oscgo.FiltersLoadBalancer{
-			LoadBalancerNames: expandStringList(ename.([]interface{})),
+			LoadBalancerNames: utils.InterfaceSliceToStringSlicePtr(ename.([]interface{})),
 		}
 
 	}
@@ -277,8 +277,8 @@ func readLbs0(conn *oscgo.APIClient, d *schema.ResourceData) (*oscgo.LoadBalance
 	return &lbs[0], resp, nil
 }
 
-func dataSourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceLoadBalancerRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	lb, _, err := readLbs0(conn, d)
 
@@ -286,13 +286,13 @@ func dataSourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interfa
 		return err
 	}
 
-	d.Set("subregion_names", flattenStringList(lb.SubregionNames))
+	d.Set("subregion_names", utils.StringSlicePtrToInterfaceSlice(lb.SubregionNames))
 	d.Set("dns_name", lb.DnsName)
-	d.Set("health_check", flattenOAPIHealthCheck(lb.HealthCheck))
-	d.Set("access_log", flattenOAPIAccessLog(lb.AccessLog))
+	d.Set("health_check", flattenHealthCheck(lb.HealthCheck))
+	d.Set("access_log", flattenAccessLog(lb.AccessLog))
 
-	d.Set("backend_vm_ids", flattenStringList(lb.BackendVmIds))
-	if err := d.Set("listeners", flattenOAPIListeners(lb.Listeners)); err != nil {
+	d.Set("backend_vm_ids", utils.StringSlicePtrToInterfaceSlice(lb.BackendVmIds))
+	if err := d.Set("listeners", flattenListeners(lb.Listeners)); err != nil {
 		return err
 	}
 	d.Set("load_balancer_name", lb.LoadBalancerName)
@@ -337,7 +337,7 @@ func dataSourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interfa
 	}
 	d.Set("load_balancer_type", lb.LoadBalancerType)
 	if lb.SecurityGroups != nil {
-		d.Set("security_groups", flattenStringList(lb.SecurityGroups))
+		d.Set("security_groups", utils.StringSlicePtrToInterfaceSlice(lb.SecurityGroups))
 	} else {
 		d.Set("security_groups", make([]map[string]interface{}, 0))
 	}
@@ -351,7 +351,7 @@ func dataSourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interfa
 	d.Set("secured_cookies", lb.SecuredCookies)
 	d.Set("net_id", lb.NetId)
 	d.Set("source_security_group", ssg)
-	d.Set("subnets", flattenStringList(lb.Subnets))
+	d.Set("subnets", utils.StringSlicePtrToInterfaceSlice(lb.Subnets))
 	d.SetId(*lb.LoadBalancerName)
 
 	return nil

@@ -15,7 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
+func TestAccVM_Basic(t *testing.T) {
 	t.Parallel()
 	var server oscgo.Vm
 
@@ -28,13 +28,13 @@ func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
+		CheckDestroy: testAccCheckVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVMConfigBasic(omi, "tinav4.c2r2p2", region, keypair),
+				Config: testAccCheckVMConfigBasic(omi, "tinav4.c2r2p2", region, keypair),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIVMExists(resourceName, &server),
-					testAccCheckOutscaleOAPIVMAttributes(t, &server, omi),
+					testAccCheckVMExists(resourceName, &server),
+					testAccCheckVMAttributes(t, &server, omi),
 
 					resource.TestCheckResourceAttr(resourceName, "image_id", omi),
 					resource.TestCheckResourceAttr(resourceName, "vm_type", "tinav4.c2r2p2"),
@@ -46,7 +46,7 @@ func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIVMBehavior_Basic(t *testing.T) {
+func TestAccVMBehavior_Basic(t *testing.T) {
 	t.Parallel()
 	var server oscgo.Vm
 	omi := os.Getenv("OUTSCALE_IMAGEID")
@@ -56,13 +56,13 @@ func TestAccOutscaleOAPIVMBehavior_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
+		CheckDestroy: testAccCheckVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVMBehaviorConfigBasic(omi, "tinav4.c2r2p2", region, keypair, "high", "stop"),
+				Config: testAccCheckVMBehaviorConfigBasic(omi, "tinav4.c2r2p2", region, keypair, "high", "stop"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &server),
-					testAccCheckOutscaleOAPIVMAttributes(t, &server, omi),
+					testAccCheckVMExists("outscale_vm.basic", &server),
+					testAccCheckVMAttributes(t, &server, omi),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "image_id", omi),
 					resource.TestCheckResourceAttr(
@@ -70,10 +70,10 @@ func TestAccOutscaleOAPIVMBehavior_Basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckOutscaleOAPIVMBehaviorConfigBasic(omi, "tinav4.c2r2p2", region, keypair, "highest", "restart"),
+				Config: testAccCheckVMBehaviorConfigBasic(omi, "tinav4.c2r2p2", region, keypair, "highest", "restart"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &server),
-					testAccCheckOutscaleOAPIVMAttributes(t, &server, omi),
+					testAccCheckVMExists("outscale_vm.basic", &server),
+					testAccCheckVMAttributes(t, &server, omi),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "image_id", omi),
 					resource.TestCheckResourceAttr(
@@ -84,7 +84,7 @@ func TestAccOutscaleOAPIVMBehavior_Basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIVM_importBasic(t *testing.T) {
+func TestAccVM_importBasic(t *testing.T) {
 	var (
 		server       oscgo.Vm
 		resourceName = "outscale_vm.basic"
@@ -96,12 +96,12 @@ func TestAccOutscaleOAPIVM_importBasic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
+		CheckDestroy: testAccCheckVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVMConfigBasic(omi, "tinav4.c2r2p2", region, keypair),
+				Config: testAccCheckVMConfigBasic(omi, "tinav4.c2r2p2", region, keypair),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIVMExists(resourceName, &server),
+					testAccCheckVMExists(resourceName, &server),
 					resource.TestCheckResourceAttr(resourceName, "image_id", omi),
 					resource.TestCheckResourceAttr(resourceName, "vm_type", "tinav4.c2r2p2"),
 					resource.TestCheckResourceAttr(resourceName, "keypair_name", keypair),
@@ -112,7 +112,7 @@ func TestAccOutscaleOAPIVM_importBasic(t *testing.T) {
 			},
 			{
 				ResourceName:            resourceName,
-				ImportStateIdFunc:       testAccCheckOutscaleVMImportStateIDFunc(resourceName),
+				ImportStateIdFunc:       testAccCheckVMImportStateIDFunc(resourceName),
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"private_ips", "request_id"},
@@ -121,7 +121,7 @@ func TestAccOutscaleOAPIVM_importBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleVMImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
+func testAccCheckVMImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
 	return func(s *terraform.State) (string, error) {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
@@ -131,7 +131,7 @@ func testAccCheckOutscaleVMImportStateIDFunc(resourceName string) resource.Impor
 	}
 }
 
-func TestAccOutscaleOAPIVM_withNicAttached(t *testing.T) {
+func TestAccVM_withNicAttached(t *testing.T) {
 	var server oscgo.Vm
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
@@ -140,13 +140,13 @@ func TestAccOutscaleOAPIVM_withNicAttached(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
+		CheckDestroy: testAccCheckVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVMConfigBasicWithNicAttached(omi, "tinav4.c2r2p2", region, keypair),
+				Config: testAccCheckVMConfigBasicWithNicAttached(omi, "tinav4.c2r2p2", region, keypair),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &server),
-					testAccCheckOutscaleOAPIVMAttributes(t, &server, omi),
+					testAccCheckVMExists("outscale_vm.basic", &server),
+					testAccCheckVMAttributes(t, &server, omi),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "image_id", omi),
 					resource.TestCheckResourceAttr(
@@ -157,7 +157,7 @@ func TestAccOutscaleOAPIVM_withNicAttached(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIVM_withTags(t *testing.T) {
+func TestAccVM_withTags(t *testing.T) {
 	var server oscgo.Vm
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
@@ -167,13 +167,13 @@ func TestAccOutscaleOAPIVM_withTags(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
+		CheckDestroy: testAccCheckVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccVmsConfigUpdateOAPIVMTags(omi, "tinav4.c2r2p2", region, "Terraform-VM", keypair, sgId),
+				Config: testAccVmsConfigUpdateVMTags(omi, "tinav4.c2r2p2", region, "Terraform-VM", keypair, sgId),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &server),
-					testAccCheckOutscaleOAPIVMAttributes(t, &server, omi),
+					testAccCheckVMExists("outscale_vm.basic", &server),
+					testAccCheckVMAttributes(t, &server, omi),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "image_id", omi),
 					resource.TestCheckResourceAttr(
@@ -184,7 +184,7 @@ func TestAccOutscaleOAPIVM_withTags(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIVM_withNics(t *testing.T) {
+func TestAccVM_withNics(t *testing.T) {
 	var server oscgo.Vm
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
@@ -192,13 +192,13 @@ func TestAccOutscaleOAPIVM_withNics(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
+		CheckDestroy: testAccCheckVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVMConfigBasicWithNics(omi, "tinav4.c2r2p2", keypair),
+				Config: testAccCheckVMConfigBasicWithNics(omi, "tinav4.c2r2p2", keypair),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &server),
-					testAccCheckOutscaleOAPIVMAttributes(t, &server, omi),
+					testAccCheckVMExists("outscale_vm.basic", &server),
+					testAccCheckVMAttributes(t, &server, omi),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "image_id", omi),
 					resource.TestCheckResourceAttr(
@@ -209,7 +209,7 @@ func TestAccOutscaleOAPIVM_withNics(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIVM_Update(t *testing.T) {
+func TestAccVM_Update(t *testing.T) {
 	region := os.Getenv("OUTSCALE_REGION")
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
@@ -221,22 +221,22 @@ func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
+		CheckDestroy: testAccCheckVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccVmsConfigUpdateOAPIVMKey(omi, "tinav4.c2r2p2", region, keypair, sgId),
+				Config: testAccVmsConfigUpdateVMKey(omi, "tinav4.c2r2p2", region, keypair, sgId),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &before),
-					testAccCheckOutscaleOAPIVMAttributes(t, &before, omi),
+					testAccCheckVMExists("outscale_vm.basic", &before),
+					testAccCheckVMAttributes(t, &before, omi),
 					resource.TestCheckResourceAttr("outscale_vm.basic", "image_id", omi),
 					resource.TestCheckResourceAttr("outscale_vm.basic", "vm_type", "tinav4.c2r2p2"),
 				),
 			},
 			{
-				Config: testAccVmsConfigUpdateOAPIVMKey(omi, "tinav4.c2r2p2", region, keypair, sgId),
+				Config: testAccVmsConfigUpdateVMKey(omi, "tinav4.c2r2p2", region, keypair, sgId),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPIVMExists("outscale_vm.basic", &after),
-					testAccCheckOAPIVMNotRecreated(t, &before, &after),
+					testAccCheckVMExists("outscale_vm.basic", &after),
+					testAccCheckVMNotRecreated(t, &before, &after),
 					resource.TestCheckResourceAttr("outscale_vm.basic", "vm_type", "tinav4.c2r2p2"),
 				),
 			},
@@ -244,7 +244,7 @@ func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIVM_WithSubnet(t *testing.T) {
+func TestAccVM_WithSubnet(t *testing.T) {
 	var server oscgo.Vm
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
@@ -253,13 +253,13 @@ func TestAccOutscaleOAPIVM_WithSubnet(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
+		CheckDestroy: testAccCheckVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVMConfigWithSubnet(omi, "tinav4.c2r2p2", region, keypair),
+				Config: testAccCheckVMConfigWithSubnet(omi, "tinav4.c2r2p2", region, keypair),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &server),
-					testAccCheckOutscaleOAPIVMAttributes(t, &server, omi),
+					testAccCheckVMExists("outscale_vm.basic", &server),
+					testAccCheckVMAttributes(t, &server, omi),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "image_id", omi),
 					resource.TestCheckResourceAttr(
@@ -270,7 +270,7 @@ func TestAccOutscaleOAPIVM_WithSubnet(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIVM_WithBlockDeviceMappings(t *testing.T) {
+func TestAccVM_WithBlockDeviceMappings(t *testing.T) {
 	var server oscgo.Vm
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
@@ -280,13 +280,13 @@ func TestAccOutscaleOAPIVM_WithBlockDeviceMappings(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
+		CheckDestroy: testAccCheckVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVMConfigWithBlockDeviceMappings(omi, vmType, region, keypair),
+				Config: testAccCheckVMConfigWithBlockDeviceMappings(omi, vmType, region, keypair),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &server),
-					testAccCheckOutscaleOAPIVMAttributes(t, &server, omi),
+					testAccCheckVMExists("outscale_vm.basic", &server),
+					testAccCheckVMAttributes(t, &server, omi),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "image_id", omi),
 					resource.TestCheckResourceAttr(
@@ -297,23 +297,23 @@ func TestAccOutscaleOAPIVM_WithBlockDeviceMappings(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIVM_DeletionProtectionUpdate(t *testing.T) {
+func TestAccVM_DeletionProtectionUpdate(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
+		CheckDestroy: testAccCheckVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleDeletionProtectionUpdateBasic(omi, "true", keypair),
+				Config: testAccCheckDeletionProtectionUpdateBasic(omi, "true", keypair),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("outscale_vm.outscale_vm", "deletion_protection", "true"),
 				),
 			},
 			{
-				Config: testAccCheckOutscaleDeletionProtectionUpdateBasic(omi, "false", keypair),
+				Config: testAccCheckDeletionProtectionUpdateBasic(omi, "false", keypair),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("outscale_vm.outscale_vm", "deletion_protection", "false"),
 				),
@@ -322,7 +322,7 @@ func TestAccOutscaleOAPIVM_DeletionProtectionUpdate(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIVMTags_Update(t *testing.T) {
+func TestAccVMTags_Update(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
@@ -332,21 +332,21 @@ func TestAccOutscaleOAPIVMTags_Update(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
+		CheckDestroy: testAccCheckVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccVmsConfigUpdateOAPIVMTags(omi, "tinav4.c2r2p2", region, "Terraform-VM", keypair, sgId),
+				Config: testAccVmsConfigUpdateVMTags(omi, "tinav4.c2r2p2", region, "Terraform-VM", keypair, sgId),
 				//Check:  resource.ComposeTestCheckFunc(),
 			},
 			{
-				Config: testAccVmsConfigUpdateOAPIVMTags(omi, "tinav4.c2r2p2", region, "Terraform-VM2", keypair, sgId),
+				Config: testAccVmsConfigUpdateVMTags(omi, "tinav4.c2r2p2", region, "Terraform-VM2", keypair, sgId),
 				//Check:  resource.ComposeTestCheckFunc(),
 			},
 		},
 	})
 }
 
-func TestAccOutscaleOAPIVM_WithNet(t *testing.T) {
+func TestAccVM_WithNet(t *testing.T) {
 	var server oscgo.Vm
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
@@ -356,13 +356,13 @@ func TestAccOutscaleOAPIVM_WithNet(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
+		CheckDestroy: testAccCheckVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVMConfigWithNet(omi, vmType, region, keypair),
+				Config: testAccCheckVMConfigWithNet(omi, vmType, region, keypair),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIVMExists("outscale_vm.outscale_vmnet", &server),
-					testAccCheckOutscaleOAPIVMAttributes(t, &server, omi),
+					testAccCheckVMExists("outscale_vm.outscale_vmnet", &server),
+					testAccCheckVMAttributes(t, &server, omi),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.outscale_vmnet", "image_id", omi),
 					resource.TestCheckResourceAttr(
@@ -373,7 +373,7 @@ func TestAccOutscaleOAPIVM_WithNet(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIVM_multiBlockDeviceMapping(t *testing.T) {
+func TestAccVM_multiBlockDeviceMapping(t *testing.T) {
 	var server oscgo.Vm
 	region := os.Getenv("OUTSCALE_REGION")
 	omi := os.Getenv("OUTSCALE_IMAGEID")
@@ -382,12 +382,12 @@ func TestAccOutscaleOAPIVM_multiBlockDeviceMapping(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
+		CheckDestroy: testAccCheckVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleVMWithMultiBlockDeviceMapping(region, omi, keypair),
+				Config: testAccCheckVMWithMultiBlockDeviceMapping(region, omi, keypair),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIVMExists("outscale_vm.outscale_vm", &server),
+					testAccCheckVMExists("outscale_vm.outscale_vm", &server),
 					resource.TestCheckResourceAttr("outscale_vm.outscale_vm", "image_id", omi),
 					resource.TestCheckResourceAttr("outscale_vm.outscale_vm", "vm_type", "tinav4.c2r2p2"),
 				),
@@ -396,7 +396,7 @@ func TestAccOutscaleOAPIVM_multiBlockDeviceMapping(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleVMWithMultiBlockDeviceMapping(region, omi, keypair string) string {
+func testAccCheckVMWithMultiBlockDeviceMapping(region, omi, keypair string) string {
 	return fmt.Sprintf(`
 		resource "outscale_volume" "example" {
 			subregion_name = "%sa"
@@ -440,7 +440,7 @@ func testAccCheckOutscaleVMWithMultiBlockDeviceMapping(region, omi, keypair stri
 	`, region, omi, keypair)
 }
 
-func testAccCheckOutscaleDeletionProtectionUpdateBasic(omi, deletionProtection, keypair string) string {
+func testAccCheckDeletionProtectionUpdateBasic(omi, deletionProtection, keypair string) string {
 	return fmt.Sprintf(`
 		resource "outscale_vm" "outscale_vm" {
 			image_id            = "%[1]s"
@@ -452,7 +452,7 @@ func testAccCheckOutscaleDeletionProtectionUpdateBasic(omi, deletionProtection, 
 }
 
 //TODO: check if is needed
-// func testAccCheckOAPIVMSecurityGroupsUpdated(t *testing.T, before, after *oscgo.Vm) resource.TestCheckFunc {
+// func testAccCheckVMSecurityGroupsUpdated(t *testing.T, before, after *oscgo.Vm) resource.TestCheckFunc {
 // 	return func(s *terraform.State) error {
 // 		log.Printf("[DEBUG] ATTRS: %+v, %+v", before.GetSecurityGroups(), after.GetSecurityGroups())
 // 		if len(after.GetSecurityGroups()) > 0 && len(before.GetSecurityGroups()) > 0 {
@@ -466,9 +466,9 @@ func testAccCheckOutscaleDeletionProtectionUpdateBasic(omi, deletionProtection, 
 // 	}
 // }
 
-func testAccCheckOAPIVMExists(n string, i *oscgo.Vm) resource.TestCheckFunc {
+func testAccCheckVMExists(n string, i *oscgo.Vm) resource.TestCheckFunc {
 	providers := []*schema.Provider{testAccProvider}
-	return testAccCheckOAPIVMExistsWithProviders(n, i, &providers)
+	return testAccCheckVMExistsWithProviders(n, i, &providers)
 }
 
 func getVMsFilterByVMID(vmID string) *oscgo.FiltersVm {
@@ -477,7 +477,7 @@ func getVMsFilterByVMID(vmID string) *oscgo.FiltersVm {
 	}
 }
 
-func testAccCheckOAPIVMExistsWithProviders(n string, i *oscgo.Vm, providers *[]*schema.Provider) resource.TestCheckFunc {
+func testAccCheckVMExistsWithProviders(n string, i *oscgo.Vm, providers *[]*schema.Provider) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -493,7 +493,7 @@ func testAccCheckOAPIVMExistsWithProviders(n string, i *oscgo.Vm, providers *[]*
 				continue
 			}
 
-			client := provider.Meta().(*OutscaleClient)
+			client := provider.Meta().(*Client)
 
 			var resp oscgo.ReadVmsResponse
 			var err error
@@ -512,6 +512,10 @@ func testAccCheckOAPIVMExistsWithProviders(n string, i *oscgo.Vm, providers *[]*
 				return err
 			}
 
+			if resp.Vms == nil {
+				return fmt.Errorf("Vms not found")
+			}
+
 			if len(resp.GetVms()) > 0 {
 				*i = resp.GetVms()[0]
 				return nil
@@ -522,25 +526,25 @@ func testAccCheckOAPIVMExistsWithProviders(n string, i *oscgo.Vm, providers *[]*
 	}
 }
 
-func testAccCheckOAPIVMNotRecreated(t *testing.T, before, after *oscgo.Vm) resource.TestCheckFunc {
+func testAccCheckVMNotRecreated(t *testing.T, before, after *oscgo.Vm) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		assertNotEqual(t, before.VmId, after.VmId, "Outscale VM IDs have changed.")
 		return nil
 	}
 }
 
-func testAccCheckOutscaleOAPIVMDestroy(s *terraform.State) error {
-	return testAccCheckOutscaleOAPIVMDestroyWithProvider(s, testAccProvider)
+func testAccCheckVMDestroy(s *terraform.State) error {
+	return testAccCheckVMDestroyWithProvider(s, testAccProvider)
 }
 
 //TODO: check if it is needed
-// func testAccCheckOutscaleOAPIVMDestroyWithProviders(providers *[]*schema.Provider) resource.TestCheckFunc {
+// func testAccCheckVMDestroyWithProviders(providers *[]*schema.Provider) resource.TestCheckFunc {
 // 	return func(s *terraform.State) error {
 // 		for _, provider := range *providers {
 // 			if provider.Meta() == nil {
 // 				continue
 // 			}
-// 			if err := testAccCheckOutscaleOAPIVMDestroyWithProvider(s, provider); err != nil {
+// 			if err := testAccCheckVMDestroyWithProvider(s, provider); err != nil {
 // 				return err
 // 			}
 // 		}
@@ -548,8 +552,8 @@ func testAccCheckOutscaleOAPIVMDestroy(s *terraform.State) error {
 // 	}
 // }
 
-func testAccCheckOutscaleOAPIVMDestroyWithProvider(s *terraform.State, provider *schema.Provider) error {
-	conn := provider.Meta().(*OutscaleClient)
+func testAccCheckVMDestroyWithProvider(s *terraform.State, provider *schema.Provider) error {
+	conn := provider.Meta().(*Client)
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_vm" {
@@ -592,67 +596,14 @@ func testAccCheckOutscaleOAPIVMDestroyWithProvider(s *terraform.State, provider 
 	return nil
 }
 
-func testAccCheckOutscaleOAPIVMExists(n string, i *oscgo.Vm) resource.TestCheckFunc {
-	providers := []*schema.Provider{testAccProvider}
-	return testAccCheckOutscaleOAPIVMExistsWithProviders(n, i, &providers)
-}
-
-func testAccCheckOutscaleOAPIVMExistsWithProviders(n string, i *oscgo.Vm, providers *[]*schema.Provider) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("Not found: %s", n)
-		}
-
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("No ID is set")
-		}
-		for _, provider := range *providers {
-			// Ignore if Meta is empty, this can happen for validation providers
-			if provider.Meta() == nil {
-				continue
-			}
-
-			conn := provider.Meta().(*OutscaleClient)
-			var resp oscgo.ReadVmsResponse
-			var err error
-
-			err = resource.Retry(120*time.Second, func() *resource.RetryError {
-				rp, httpResp, err := conn.OSCAPI.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
-					Filters: getVMsFilterByVMID(rs.Primary.ID),
-				}).Execute()
-				if err != nil {
-					return utils.CheckThrottling(httpResp.StatusCode, err)
-				}
-				resp = rp
-				return nil
-			})
-
-			if err != nil {
-				return err
-			}
-
-			if resp.Vms == nil {
-				return fmt.Errorf("Vms not found")
-			}
-
-			if len(resp.GetVms()) > 0 {
-				*i = resp.GetVms()[0]
-				return nil
-			}
-		}
-		return fmt.Errorf("Vms not found")
-	}
-}
-
-func testAccCheckOutscaleOAPIVMAttributes(t *testing.T, server *oscgo.Vm, omi string) resource.TestCheckFunc {
+func testAccCheckVMAttributes(t *testing.T, server *oscgo.Vm, omi string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		assertEqual(t, omi, server.GetImageId(), "Bad image_id.")
 		return nil
 	}
 }
 
-func testAccCheckOutscaleOAPIVMConfigBasic(omi, vmType, region, keypair string) string {
+func testAccCheckVMConfigBasic(omi, vmType, region, keypair string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "outscale_net" {
 			ip_range = "10.0.0.0/16"
@@ -686,7 +637,7 @@ func testAccCheckOutscaleOAPIVMConfigBasic(omi, vmType, region, keypair string) 
 		}`, omi, vmType, region, keypair)
 }
 
-func testAccCheckOutscaleOAPIVMConfigBasicWithNicAttached(omi, vmType, region, keypair string) string {
+func testAccCheckVMConfigBasicWithNicAttached(omi, vmType, region, keypair string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "outscale_net" {
 			ip_range = "10.0.0.0/16"
@@ -736,7 +687,7 @@ func testAccCheckOutscaleOAPIVMConfigBasicWithNicAttached(omi, vmType, region, k
 		}`, omi, vmType, region, keypair)
 }
 
-func testAccCheckOutscaleOAPIVMConfigBasicWithNics(omi, vmType, keypair string) string {
+func testAccCheckVMConfigBasicWithNics(omi, vmType, keypair string) string {
 	return fmt.Sprintf(`resource "outscale_net" "outscale_net" {
 		ip_range = "10.0.0.0/16"
 	  }
@@ -787,7 +738,7 @@ func testAccCheckOutscaleOAPIVMConfigBasicWithNics(omi, vmType, keypair string) 
 	  }`, omi, vmType, keypair)
 }
 
-func testAccVmsConfigUpdateOAPIVMKey(omi, vmType, region, keypair, sgId string) string {
+func testAccVmsConfigUpdateVMKey(omi, vmType, region, keypair, sgId string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "net" {
 			ip_range = "10.0.0.0/16"
@@ -820,7 +771,7 @@ func testAccVmsConfigUpdateOAPIVMKey(omi, vmType, region, keypair, sgId string) 
 	`, omi, vmType, region, keypair, sgId)
 }
 
-func testAccVmsConfigUpdateOAPIVMTags(omi, vmType string, region, value, keypair, sgId string) string {
+func testAccVmsConfigUpdateVMTags(omi, vmType string, region, value, keypair, sgId string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "net" {
 			ip_range = "10.0.0.0/16"
@@ -858,7 +809,7 @@ func testAccVmsConfigUpdateOAPIVMTags(omi, vmType string, region, value, keypair
 	`, omi, vmType, region, value, keypair, sgId)
 }
 
-func testAccCheckOutscaleOAPIVMConfigWithSubnet(omi, vmType, region, keypair string) string {
+func testAccCheckVMConfigWithSubnet(omi, vmType, region, keypair string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "outscale_net" {
 			ip_range = "10.0.0.0/16"
@@ -893,7 +844,7 @@ func testAccCheckOutscaleOAPIVMConfigWithSubnet(omi, vmType, region, keypair str
 	`, omi, vmType, region, keypair)
 }
 
-func testAccCheckOutscaleOAPIVMConfigWithBlockDeviceMappings(omi, vmType, region, keypair string) string {
+func testAccCheckVMConfigWithBlockDeviceMappings(omi, vmType, region, keypair string) string {
 	return fmt.Sprintf(`
 	resource "outscale_volume" "external1" {
 		subregion_name = "%[3]sa"
@@ -944,7 +895,7 @@ func testAccCheckOutscaleOAPIVMConfigWithBlockDeviceMappings(omi, vmType, region
 	`, omi, vmType, region, keypair)
 }
 
-func testAccCheckOutscaleOAPIVMConfigWithNet(omi, vmType, region, keypair string) string {
+func testAccCheckVMConfigWithNet(omi, vmType, region, keypair string) string {
 	return fmt.Sprintf(`
 	resource "outscale_net" "outscale_net" {
 		ip_range = "10.0.0.0/16"
@@ -1028,7 +979,7 @@ func assertEqual(t *testing.T, a interface{}, b interface{}, message string) {
 	}
 }
 
-func testAccCheckOutscaleOAPIVMBehaviorConfigBasic(omi, vmType, region, keypair, perfomance, vmBehavior string) string {
+func testAccCheckVMBehaviorConfigBasic(omi, vmType, region, keypair, perfomance, vmBehavior string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "outscale_net" {
 			ip_range = "10.0.0.0/16"

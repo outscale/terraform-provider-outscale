@@ -12,26 +12,26 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func TestAccDataOutscaleOAPICas_basic(t *testing.T) {
+func TestAccDataCas_basic(t *testing.T) {
 	resName := "outscale_ca.ca_test"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccDataCheckOutscaleCasDestroy,
+		CheckDestroy: testAccDataCheckCasDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataOutscaleOAPICasConfig(utils.TestCaPem),
+				Config: testAccDataCasConfig(utils.TestCaPem),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleCaExists(resName),
+					testAccCheckCaExists(resName),
 				),
 			},
 		},
 	})
 }
 
-func testAccDataCheckOutscaleCasDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+func testAccDataCheckCasDestroy(s *terraform.State) error {
+	conn := testAccProvider.Meta().(*Client).OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_ca" {
@@ -70,7 +70,7 @@ func testAccDataCheckOutscaleCasDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccDataOutscaleOAPICasConfig(ca_pem string) string {
+func testAccDataCasConfig(ca_pem string) string {
 	return fmt.Sprintf(`
 resource "outscale_ca" "ca_test" { 
    ca_pem        =  %[1]q

@@ -6,21 +6,21 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccDataSourceOutscaleOAPIQuota(t *testing.T) {
+func TestAccDataSourceQuota(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPIQuotaConfig,
+				Config: testAccDataSourceQuotaConfig,
 				Check:  resource.ComposeTestCheckFunc(),
 			},
 		},
 	})
 }
 
-const testAccDataSourceOutscaleOAPIQuotaConfig = `
+const testAccDataSourceQuotaConfig = `
 	data "outscale_quota" "lbu-quota" { 
   filter {
         name     = "quota_names"

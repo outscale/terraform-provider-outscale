@@ -56,15 +56,15 @@ func attrLBListenerRule() map[string]*schema.Schema {
 	}
 }
 
-func dataSourceOutscaleOAPILoadBalancerLDRule() *schema.Resource {
+func dataSourceLoadBalancerLDRule() *schema.Resource {
 	return &schema.Resource{
-		Read:   dataSourceOutscaleOAPILoadBalancerLDRuleRead,
+		Read:   dataSourceLoadBalancerLDRuleRead,
 		Schema: getDataSourceSchemas(attrLBListenerRule()),
 	}
 }
 
-func dataSourceOutscaleOAPILoadBalancerLDRuleRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceLoadBalancerLDRuleRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	lrNamei, nameOk := d.GetOk("listener_rule_name")
 	filters, filtersOk := d.GetOk("filter")
@@ -153,7 +153,7 @@ func dataSourceOutscaleOAPILoadBalancerLDRuleRead(d *schema.ResourceData, meta i
 	}
 
 	if lr.VmIds != nil {
-		d.Set("vm_ids", flattenStringList(lr.VmIds))
+		d.Set("vm_ids", utils.StringSlicePtrToInterfaceSlice(lr.VmIds))
 	} else {
 		fmt.Errorf("Malformated listener rule")
 	}

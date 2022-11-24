@@ -13,9 +13,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPINatService() *schema.Resource {
+func dataSourceNatService() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPINatServiceRead,
+		Read: dataSourceNatServiceRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -61,8 +61,8 @@ func dataSourceOutscaleOAPINatService() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPINatServiceRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceNatServiceRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
 	natGatewayID, natGatewayIDOK := d.GetOk("nat_service_id")
@@ -74,7 +74,7 @@ func dataSourceOutscaleOAPINatServiceRead(d *schema.ResourceData, meta interface
 	params := oscgo.ReadNatServicesRequest{}
 
 	if filtersOk {
-		params.SetFilters(buildOutscaleOAPINatServiceDataSourceFilters(filters.(*schema.Set)))
+		params.SetFilters(buildNatServiceDataSourceFilters(filters.(*schema.Set)))
 	}
 	if natGatewayIDOK && natGatewayID.(string) != "" {
 		filter := oscgo.FiltersNatService{}
@@ -110,11 +110,11 @@ func dataSourceOutscaleOAPINatServiceRead(d *schema.ResourceData, meta interface
 			"specific search criteria")
 	}
 
-	return ngOAPIDescriptionAttributes(d, resp.GetNatServices()[0])
+	return ngDescriptionAttributes(d, resp.GetNatServices()[0])
 }
 
 // populate the numerous fields that the image description returns.
-func ngOAPIDescriptionAttributes(d *schema.ResourceData, ng oscgo.NatService) error {
+func ngDescriptionAttributes(d *schema.ResourceData, ng oscgo.NatService) error {
 
 	d.SetId(ng.GetNatServiceId())
 
@@ -156,14 +156,14 @@ func ngOAPIDescriptionAttributes(d *schema.ResourceData, ng oscgo.NatService) er
 	if err := d.Set("public_ips", addresses); err != nil {
 		return err
 	}
-	if err := d.Set("tags", tagsOSCAPIToMap(ng.GetTags())); err != nil {
+	if err := d.Set("tags", tagsToMap(ng.GetTags())); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func buildOutscaleOAPINatServiceDataSourceFilters(set *schema.Set) oscgo.FiltersNatService {
+func buildNatServiceDataSourceFilters(set *schema.Set) oscgo.FiltersNatService {
 	var filters oscgo.FiltersNatService
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})

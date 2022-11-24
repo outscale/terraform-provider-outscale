@@ -13,12 +13,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func resourceOutscaleOAPIRouteTable() *schema.Resource {
+func resourceRouteTable() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPIRouteTableCreate,
-		Read:   resourceOutscaleOAPIRouteTableRead,
-		Update: resourceOutscaleOAPIRouteTableUpdate,
-		Delete: resourceOutscaleOAPIRouteTableDelete,
+		Create: resourceRouteTableCreate,
+		Read:   resourceRouteTableRead,
+		Update: resourceRouteTableUpdate,
+		Delete: resourceRouteTableDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -37,7 +37,7 @@ func resourceOutscaleOAPIRouteTable() *schema.Resource {
 				Computed: true,
 			},
 
-			"tags": tagsListOAPISchema(),
+			"tags": tagsListSchema(),
 
 			"route_propagating_virtual_gateways": {
 				Type:     schema.TypeList,
@@ -135,8 +135,8 @@ func resourceOutscaleOAPIRouteTable() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPIRouteTableCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceRouteTableCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	createOpts := oscgo.CreateRouteTableRequest{
 		NetId: d.Get("net_id").(string),
@@ -167,7 +167,7 @@ func resourceOutscaleOAPIRouteTableCreate(d *schema.ResourceData, meta interface
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"pending"},
 		Target:  []string{"ready"},
-		Refresh: resourceOutscaleOAPIRouteTableStateRefreshFunc(conn, d.Id()),
+		Refresh: resourceRouteTableStateRefreshFunc(conn, d.Id()),
 		Timeout: 5 * time.Minute,
 	}
 	if _, err := stateConf.WaitForState(); err != nil {
@@ -177,7 +177,7 @@ func resourceOutscaleOAPIRouteTableCreate(d *schema.ResourceData, meta interface
 	}
 
 	if d.IsNewResource() {
-		if err := setOSCAPITags(conn, d); err != nil {
+		if err := setTags(conn, d); err != nil {
 			return err
 		}
 		d.SetPartial("tags")
@@ -193,11 +193,11 @@ func resourceOutscaleOAPIRouteTableCreate(d *schema.ResourceData, meta interface
 		return err
 	}
 
-	return resourceOutscaleOAPIRouteTableRead(d, meta)
+	return resourceRouteTableRead(d, meta)
 }
 
-func resourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface{}) error {
-	rtRaw, _, err := readOAPIRouteTable(meta.(*OutscaleClient).OSCAPI, d.Id())
+func resourceRouteTableRead(d *schema.ResourceData, meta interface{}) error {
+	rtRaw, _, err := readRouteTable(meta.(*Client).OSCAPI, d.Id())
 	if err != nil {
 		return err
 	}
@@ -213,41 +213,41 @@ func resourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface{}
 	if err := d.Set("net_id", rt.GetNetId()); err != nil {
 		return err
 	}
-	if err := d.Set("route_propagating_virtual_gateways", setOSCAPIPropagatingVirtualGateways(rt.GetRoutePropagatingVirtualGateways())); err != nil {
+	if err := d.Set("route_propagating_virtual_gateways", setPropagatingVirtualGateways(rt.GetRoutePropagatingVirtualGateways())); err != nil {
 		return err
 	}
-	if err := d.Set("routes", setOSCAPIRoutes(rt.GetRoutes())); err != nil {
+	if err := d.Set("routes", setRoutes(rt.GetRoutes())); err != nil {
 		return err
 	}
-	if err := d.Set("link_route_tables", setOSCAPILinkRouteTables(rt.GetLinkRouteTables())); err != nil {
+	if err := d.Set("link_route_tables", setLinkRouteTables(rt.GetLinkRouteTables())); err != nil {
 		return err
 	}
-	if err := d.Set("tags", tagsOSCAPIToMap(rt.GetTags())); err != nil {
+	if err := d.Set("tags", tagsToMap(rt.GetTags())); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func resourceOutscaleOAPIRouteTableUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceRouteTableUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	d.Partial(true)
 
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := setTags(conn, d); err != nil {
 		return err
 	}
 
 	d.SetPartial("tags")
 
 	d.Partial(false)
-	return resourceOutscaleOAPIRouteTableRead(d, meta)
+	return resourceRouteTableRead(d, meta)
 }
 
-func resourceOutscaleOAPIRouteTableDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceRouteTableDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
-	rtRaw, _, err := readOAPIRouteTable(meta.(*OutscaleClient).OSCAPI, d.Id())
+	rtRaw, _, err := readRouteTable(meta.(*Client).OSCAPI, d.Id())
 	if err != nil {
 		return err
 	}
@@ -308,7 +308,7 @@ func resourceOutscaleOAPIRouteTableDelete(d *schema.ResourceData, meta interface
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"ready"},
 		Target:  []string{},
-		Refresh: resourceOutscaleOAPIRouteTableStateRefreshFunc(conn, d.Id()),
+		Refresh: resourceRouteTableStateRefreshFunc(conn, d.Id()),
 		Timeout: 5 * time.Minute,
 	}
 	if _, err := stateConf.WaitForState(); err != nil {
@@ -318,7 +318,7 @@ func resourceOutscaleOAPIRouteTableDelete(d *schema.ResourceData, meta interface
 	return nil
 }
 
-func readOAPIRouteTable(conn *oscgo.APIClient, routeTableID string, linkIds ...string) (interface{}, string, error) {
+func readRouteTable(conn *oscgo.APIClient, routeTableID string, linkIds ...string) (interface{}, string, error) {
 	log.Printf("[DEBUG] Looking for RouteTable with: id %v and link_ids %v", routeTableID, linkIds)
 	var resp oscgo.ReadRouteTablesResponse
 	var err error
@@ -347,7 +347,7 @@ func readOAPIRouteTable(conn *oscgo.APIClient, routeTableID string, linkIds ...s
 		return nil, resp.ResponseContext.GetRequestId(), err
 	}
 
-	//Fix for OAPI issue when passing routeTableIds and routeTableLinkIds
+	//Fix for  issue when passing routeTableIds and routeTableLinkIds
 	rts := resp.GetRouteTables()[0].GetLinkRouteTables()
 
 	if len(linkIds) > 0 {
@@ -363,9 +363,9 @@ func readOAPIRouteTable(conn *oscgo.APIClient, routeTableID string, linkIds ...s
 	return resp.GetRouteTables()[0], resp.ResponseContext.GetRequestId(), err
 }
 
-func resourceOutscaleOAPIRouteTableStateRefreshFunc(conn *oscgo.APIClient, routeTableID string, linkIds ...string) resource.StateRefreshFunc {
+func resourceRouteTableStateRefreshFunc(conn *oscgo.APIClient, routeTableID string, linkIds ...string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		rtRaw, _, err := readOAPIRouteTable(conn, routeTableID, linkIds...)
+		rtRaw, _, err := readRouteTable(conn, routeTableID, linkIds...)
 		if rtRaw == nil {
 			return nil, "", err
 		}
@@ -373,7 +373,7 @@ func resourceOutscaleOAPIRouteTableStateRefreshFunc(conn *oscgo.APIClient, route
 	}
 }
 
-func setOSCAPIRoutes(rt []oscgo.Route) []map[string]interface{} {
+func setRoutes(rt []oscgo.Route) []map[string]interface{} {
 	route := make([]map[string]interface{}, len(rt))
 	if len(rt) > 0 {
 		for k, r := range rt {
@@ -420,7 +420,7 @@ func setOSCAPIRoutes(rt []oscgo.Route) []map[string]interface{} {
 	return route
 }
 
-func setOSCAPILinkRouteTables(rt []oscgo.LinkRouteTable) []map[string]interface{} {
+func setLinkRouteTables(rt []oscgo.LinkRouteTable) []map[string]interface{} {
 	linkRouteTables := make([]map[string]interface{}, len(rt))
 	log.Printf("[DEBUG] LinkRouteTable: %#v", rt)
 	if len(rt) > 0 {
@@ -445,7 +445,7 @@ func setOSCAPILinkRouteTables(rt []oscgo.LinkRouteTable) []map[string]interface{
 	return linkRouteTables
 }
 
-func setOSCAPIPropagatingVirtualGateways(vg []oscgo.RoutePropagatingVirtualGateway) (propagatingVGWs []map[string]interface{}) {
+func setPropagatingVirtualGateways(vg []oscgo.RoutePropagatingVirtualGateway) (propagatingVGWs []map[string]interface{}) {
 	propagatingVGWs = make([]map[string]interface{}, len(vg))
 
 	if len(vg) > 0 {

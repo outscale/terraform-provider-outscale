@@ -6,14 +6,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccDataSourceOutscaleOAPILinPeeringsConnection_basic(t *testing.T) {
+func TestAccDataSourceLinPeeringsConnection_basic(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPILinPeeringsConnectionConfig,
+				Config: testAccDataSourceLinPeeringsConnectionConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.outscale_net_peerings.outscale_net_peerings", "net_peerings.#", "1"),
 				),
@@ -22,7 +22,7 @@ func TestAccDataSourceOutscaleOAPILinPeeringsConnection_basic(t *testing.T) {
 	})
 }
 
-const testAccDataSourceOutscaleOAPILinPeeringsConnectionConfig = `
+const testAccDataSourceLinPeeringsConnectionConfig = `
 	resource "outscale_net" "outscale_net" {
 		ip_range = "10.10.0.0/24"
 		tags {

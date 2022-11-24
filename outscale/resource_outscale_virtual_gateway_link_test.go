@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPIVpnGatewayAttachment_basic(t *testing.T) {
+func TestAccVpnGatewayAttachment_basic(t *testing.T) {
 	var vpc oscgo.Net
 	var vgw oscgo.VirtualGateway
 	t.Parallel()
@@ -25,12 +25,12 @@ func TestAccOutscaleOAPIVpnGatewayAttachment_basic(t *testing.T) {
 		Providers:     testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIVpnGatewayAttachmentConfig,
+				Config: testAccVpnGatewayAttachmentConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPILinExists(
+					testAccCheckLinExists(
 						"outscale_net.test",
 						&vpc),
-					testAccCheckOAPIVirtualGatewayExists(
+					testAccCheckVirtualGatewayExists(
 						"outscale_virtual_gateway.test",
 						&vgw),
 				),
@@ -45,10 +45,10 @@ func TestAccResourceVpnGatewayAttachment_importBasic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOAPIVpnGatewayAttachmentDestroy,
+		CheckDestroy: testAccCheckVpnGatewayAttachmentDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIVpnGatewayAttachmentConfig,
+				Config: testAccVpnGatewayAttachmentConfig,
 			},
 			{
 				ResourceName:            resourceName,
@@ -71,7 +71,7 @@ func testAccCheckVpnGatewayAttachmentImportStateIDFunc(resourceName string) reso
 	}
 }
 
-func TestAccAWSOAPIVpnGatewayAttachment_deleted(t *testing.T) {
+func TestAccAWSVpnGatewayAttachment_deleted(t *testing.T) {
 	t.Parallel()
 	var vgw oscgo.VirtualGateway
 	var vpc oscgo.Net
@@ -92,24 +92,24 @@ func TestAccAWSOAPIVpnGatewayAttachment_deleted(t *testing.T) {
 		},
 		IDRefreshName: "outscale_virtual_gateway_link.test",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOAPIVpnGatewayAttachmentDestroy,
+		CheckDestroy:  testAccCheckVpnGatewayAttachmentDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIVpnGatewayAttachmentConfig,
+				Config: testAccVpnGatewayAttachmentConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPILinExists(
+					testAccCheckLinExists(
 						"outscale_net.test",
 						&vpc),
-					testAccCheckOAPIVirtualGatewayExists(
+					testAccCheckVirtualGatewayExists(
 						"outscale_virtual_gateway.test",
 						&vgw),
-					testAccCheckOAPIVpnGatewayAttachmentExists(
+					testAccCheckVpnGatewayAttachmentExists(
 						"outscale_virtual_gateway_link.test",
 						&vgw),
 				),
 			},
 			{
-				Config: testAccNoOAPIVpnGatewayAttachmentConfig,
+				Config: testAccNoVpnGatewayAttachmentConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testDeleted("outscale_virtual_gateway_link.test"),
 				),
@@ -118,7 +118,7 @@ func TestAccAWSOAPIVpnGatewayAttachment_deleted(t *testing.T) {
 	})
 }
 
-func testAccCheckOAPIVpnGatewayAttachmentExists(n string, vgw *oscgo.VirtualGateway) resource.TestCheckFunc {
+func testAccCheckVpnGatewayAttachmentExists(n string, vgw *oscgo.VirtualGateway) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -150,8 +150,8 @@ func testAccCheckOAPIVpnGatewayAttachmentExists(n string, vgw *oscgo.VirtualGate
 	}
 }
 
-func testAccCheckOAPIVpnGatewayAttachmentDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+func testAccCheckVpnGatewayAttachmentDestroy(s *terraform.State) error {
+	conn := testAccProvider.Meta().(*Client).OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_virtual_gateway_link" {
@@ -189,7 +189,7 @@ func testAccCheckOAPIVpnGatewayAttachmentDestroy(s *terraform.State) error {
 	return nil
 }
 
-const testAccNoOAPIVpnGatewayAttachmentConfig = `
+const testAccNoVpnGatewayAttachmentConfig = `
 	resource "outscale_net" "test" {
 		ip_range = "10.0.0.0/16"
 	}
@@ -199,7 +199,7 @@ const testAccNoOAPIVpnGatewayAttachmentConfig = `
 }
 `
 
-const testAccOAPIVpnGatewayAttachmentConfig = `
+const testAccVpnGatewayAttachmentConfig = `
 resource "outscale_virtual_gateway" "test" {
  connection_type = "ipsec.1"
 }

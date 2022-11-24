@@ -3,6 +3,7 @@ package outscale
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func attrLBSchema() map[string]*schema.Schema {
@@ -141,7 +142,7 @@ func attrLBSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"tags": tagsListOAPISchema2(true),
+					"tags": tagsListSchema2(true),
 					"security_groups": {
 						Type:     schema.TypeList,
 						Computed: true,
@@ -190,16 +191,16 @@ func attrLBSchema() map[string]*schema.Schema {
 	}
 }
 
-func dataSourceOutscaleOAPILoadBalancers() *schema.Resource {
+func dataSourceLoadBalancers() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPILoadBalancersRead,
+		Read: dataSourceLoadBalancersRead,
 
 		Schema: getDataSourceSchemas(attrLBSchema()),
 	}
 }
 
-func dataSourceOutscaleOAPILoadBalancersRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceLoadBalancersRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	resp, _, err := readLbs_(conn, d, schema.TypeList)
 	if err != nil {
@@ -216,11 +217,11 @@ func dataSourceOutscaleOAPILoadBalancersRead(d *schema.ResourceData, meta interf
 
 		l["subregion_names"] = v.SubregionNames
 		l["dns_name"] = *v.DnsName
-		l["access_log"] = flattenOAPIAccessLog(v.AccessLog)
-		l["health_check"] = flattenOAPIHealthCheck(v.HealthCheck)
-		l["backend_vm_ids"] = flattenStringList(v.BackendVmIds)
+		l["access_log"] = flattenAccessLog(v.AccessLog)
+		l["health_check"] = flattenHealthCheck(v.HealthCheck)
+		l["backend_vm_ids"] = utils.StringSlicePtrToInterfaceSlice(v.BackendVmIds)
 		if v.Listeners != nil {
-			l["listeners"] = flattenOAPIListeners(v.Listeners)
+			l["listeners"] = flattenListeners(v.Listeners)
 		} else {
 			l["listeners"] = make([]interface{}, 0)
 		}
@@ -265,7 +266,7 @@ func dataSourceOutscaleOAPILoadBalancersRead(d *schema.ResourceData, meta interf
 		}
 
 		l["load_balancer_type"] = v.LoadBalancerType
-		l["security_groups"] = flattenStringList(v.SecurityGroups)
+		l["security_groups"] = utils.StringSlicePtrToInterfaceSlice(v.SecurityGroups)
 		ssg := make(map[string]string)
 
 		if v.SourceSecurityGroup != nil {
@@ -273,7 +274,7 @@ func dataSourceOutscaleOAPILoadBalancersRead(d *schema.ResourceData, meta interf
 			ssg["security_group_name"] = *v.SourceSecurityGroup.SecurityGroupName
 		}
 		l["source_security_group"] = ssg
-		l["subnet_id"] = flattenStringList(v.Subnets)
+		l["subnet_id"] = utils.StringSlicePtrToInterfaceSlice(v.Subnets)
 		l["public_ip"] = v.PublicIp
 		l["secured_cookies"] = v.SecuredCookies
 		l["net_id"] = v.NetId

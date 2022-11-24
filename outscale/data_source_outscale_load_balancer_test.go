@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccOutscaleOAPIDSLBU_basic(t *testing.T) {
+func TestAccDSLBU_basic(t *testing.T) {
 	t.Parallel()
 	var conf oscgo.LoadBalancer
 
@@ -22,12 +22,12 @@ func TestAccOutscaleOAPIDSLBU_basic(t *testing.T) {
 		},
 		IDRefreshName: "outscale_load_balancer.bar",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscaleOAPILBUDestroy,
+		CheckDestroy:  testAccCheckLBUDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDSOutscaleOAPILBUConfig(zone),
+				Config: testAccDSLBUConfig(zone),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPILBUExists("outscale_load_balancer.bar", &conf),
+					testAccCheckLBUExists("outscale_load_balancer.bar", &conf),
 					resource.TestCheckResourceAttr(
 						"data.outscale_load_balancer.test", "subregion_names.#", "1"),
 					resource.TestCheckResourceAttr(
@@ -37,7 +37,7 @@ func TestAccOutscaleOAPIDSLBU_basic(t *testing.T) {
 	})
 }
 
-func testAccDSOutscaleOAPILBUConfig(zone string) string {
+func testAccDSLBUConfig(zone string) string {
 	return fmt.Sprintf(`
 	resource "outscale_load_balancer" "bar" {
 		subregion_names    = ["%s"]

@@ -13,39 +13,39 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPICa_basic(t *testing.T) {
+func TestAccCa_basic(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_ca.ca_test"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleCaDestroy,
+		CheckDestroy: testAccCheckCaDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPICaConfig(utils.TestCaPem),
+				Config: testAccCaConfig(utils.TestCaPem),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleCaExists(resourceName),
+					testAccCheckCaExists(resourceName),
 				),
 			},
 			{
-				Config: testAccOutscaleOAPICaConfigUpdateDescription(utils.TestCaPem),
+				Config: testAccCaConfigUpdateDescription(utils.TestCaPem),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleCaExists(resourceName),
+					testAccCheckCaExists(resourceName),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckOutscaleCaExists(n string) resource.TestCheckFunc {
+func testAccCheckCaExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		conn := testAccProvider.Meta().(*Client).OSCAPI
 
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("No id is set")
@@ -81,8 +81,8 @@ func testAccCheckOutscaleCaExists(n string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckOutscaleCaDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+func testAccCheckCaDestroy(s *terraform.State) error {
+	conn := testAccProvider.Meta().(*Client).OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_ca" {
@@ -121,7 +121,7 @@ func testAccCheckOutscaleCaDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccOutscaleOAPICaConfig(ca_pem string) string {
+func testAccCaConfig(ca_pem string) string {
 	return fmt.Sprintf(`
 resource "outscale_ca" "ca_test" { 
    ca_pem        =  %[1]q
@@ -130,7 +130,7 @@ resource "outscale_ca" "ca_test" {
 	`, ca_pem)
 }
 
-func testAccOutscaleOAPICaConfigUpdateDescription(ca_pem string) string {
+func testAccCaConfigUpdateDescription(ca_pem string) string {
 	return fmt.Sprintf(`
 resource "outscale_ca" "ca_test" { 
    ca_pem        =  %[1]q

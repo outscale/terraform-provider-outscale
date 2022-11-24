@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccOutscaleDHCPOptionsDatasource_basic(t *testing.T) {
+func TestAccDHCPOptionsDatasource_basic(t *testing.T) {
 	t.Parallel()
 	value := fmt.Sprintf("test-acc-value-%s", acctest.RandString(5))
 
@@ -17,13 +17,13 @@ func TestAccOutscaleDHCPOptionsDatasource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleDHCPOptionsDatasourceConfigBasic(value),
+				Config: testAccDHCPOptionsDatasourceConfigBasic(value),
 			},
 		},
 	})
 }
 
-func TestAccOutscaleDHCPOptionsDatasource_withFilters(t *testing.T) {
+func TestAccDHCPOptionsDatasource_withFilters(t *testing.T) {
 	t.Parallel()
 	value := fmt.Sprintf("test-acc-value-%s", acctest.RandString(5))
 
@@ -32,13 +32,13 @@ func TestAccOutscaleDHCPOptionsDatasource_withFilters(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleDHCPOptionsDatasourceConfigWithFilters(value),
+				Config: testAccDHCPOptionsDatasourceConfigWithFilters(value),
 			},
 		},
 	})
 }
 
-func testAccOutscaleDHCPOptionsDatasourceConfigBasic(value string) string {
+func testAccDHCPOptionsDatasourceConfigBasic(value string) string {
 	return fmt.Sprintf(`
 		resource "outscale_dhcp_option" "foo1" {
 			domain_name         = "test.fr"
@@ -73,7 +73,7 @@ func testAccOutscaleDHCPOptionsDatasourceConfigBasic(value string) string {
 	`, value)
 }
 
-func testAccOutscaleDHCPOptionsDatasourceConfigWithFilters(value string) string {
+func testAccDHCPOptionsDatasourceConfigWithFilters(value string) string {
 	return fmt.Sprintf(`
 		resource "outscale_dhcp_option" "foo1" {
 			domain_name         = "test.fr"

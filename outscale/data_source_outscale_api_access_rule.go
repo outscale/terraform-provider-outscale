@@ -12,9 +12,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPIApiAccessRule() *schema.Resource {
+func dataSourceApiAccessRule() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPIApiAccessRuleRead,
+		Read: dataSourceApiAccessRuleRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"api_access_rule_id": {
@@ -48,8 +48,8 @@ func dataSourceOutscaleOAPIApiAccessRule() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPIApiAccessRuleRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceApiAccessRuleRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
 	if !filtersOk {
@@ -57,7 +57,7 @@ func dataSourceOutscaleOAPIApiAccessRuleRead(d *schema.ResourceData, meta interf
 	}
 
 	req := oscgo.ReadApiAccessRulesRequest{
-		Filters: buildOutscaleApiAccessRuleFilters(filters.(*schema.Set)),
+		Filters: buildApiAccessRuleFilters(filters.(*schema.Set)),
 	}
 
 	var resp oscgo.ReadApiAccessRulesResponse
@@ -112,7 +112,7 @@ func dataSourceOutscaleOAPIApiAccessRuleRead(d *schema.ResourceData, meta interf
 	return nil
 }
 
-func buildOutscaleApiAccessRuleFilters(set *schema.Set) *oscgo.FiltersApiAccessRule {
+func buildApiAccessRuleFilters(set *schema.Set) *oscgo.FiltersApiAccessRule {
 	var filters oscgo.FiltersApiAccessRule
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})

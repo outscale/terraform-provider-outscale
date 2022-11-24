@@ -14,18 +14,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPILinkRouteTable_basic(t *testing.T) {
+func TestAccLinkRouteTable_basic(t *testing.T) {
 	t.Parallel()
 	var v oscgo.RouteTable
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOAPILinkRouteTableDestroy,
+		CheckDestroy: testAccCheckLinkRouteTableDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPILinkRouteTableConfig,
+				Config: testAccLinkRouteTableConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPILinkRouteTableExists(
+					testAccCheckLinkRouteTableExists(
 						"outscale_route_table_link.foo", &v),
 					resource.TestCheckResourceAttrSet(
 						"outscale_route_table_link.foo", "link_route_table_id"),
@@ -37,20 +37,20 @@ func TestAccOutscaleOAPILinkRouteTable_basic(t *testing.T) {
 	})
 }
 
-func TestAccResourceOAPILinkRouteTable_importBasic(t *testing.T) {
+func TestAccResourceLinkRouteTable_importBasic(t *testing.T) {
 	resourceName := "outscale_route_table_link.foo"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOAPILinkRouteTableDestroy,
+		CheckDestroy: testAccCheckLinkRouteTableDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPILinkRouteTableConfig,
+				Config: testAccLinkRouteTableConfig,
 			},
 			{
 				ResourceName:            resourceName,
-				ImportStateIdFunc:       testAccCheckOAPILinkRouteTableImportStateIDFunc(resourceName),
+				ImportStateIdFunc:       testAccCheckLinkRouteTableImportStateIDFunc(resourceName),
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"request_id"},
@@ -59,7 +59,7 @@ func TestAccResourceOAPILinkRouteTable_importBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckOAPILinkRouteTableImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
+func testAccCheckLinkRouteTableImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
 	return func(s *terraform.State) (string, error) {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
@@ -69,8 +69,8 @@ func testAccCheckOAPILinkRouteTableImportStateIDFunc(resourceName string) resour
 	}
 }
 
-func testAccCheckOAPILinkRouteTableDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+func testAccCheckLinkRouteTableDestroy(s *terraform.State) error {
+	conn := testAccProvider.Meta().(*Client).OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_route_table_link" {
@@ -107,7 +107,7 @@ func testAccCheckOAPILinkRouteTableDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOAPILinkRouteTableExists(n string, v *oscgo.RouteTable) resource.TestCheckFunc {
+func testAccCheckLinkRouteTableExists(n string, v *oscgo.RouteTable) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -118,7 +118,7 @@ func testAccCheckOAPILinkRouteTableExists(n string, v *oscgo.RouteTable) resourc
 			return fmt.Errorf("No ID is set")
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		conn := testAccProvider.Meta().(*Client).OSCAPI
 
 		params := oscgo.ReadRouteTablesRequest{
 			Filters: &oscgo.FiltersRouteTable{
@@ -152,7 +152,7 @@ func testAccCheckOAPILinkRouteTableExists(n string, v *oscgo.RouteTable) resourc
 	}
 }
 
-const testAccOAPILinkRouteTableConfig = `
+const testAccLinkRouteTableConfig = `
 	resource "outscale_net" "foo" {
 		ip_range = "10.1.0.0/16"
 

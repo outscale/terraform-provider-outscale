@@ -12,9 +12,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPISubnets() *schema.Resource {
+func dataSourceSubnets() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPISubnetsRead,
+		Read: dataSourceSubnetsRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -72,8 +72,8 @@ func dataSourceOutscaleOAPISubnets() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPISubnetsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceSubnetsRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	req := oscgo.ReadSubnetsRequest{}
 
@@ -88,7 +88,7 @@ func dataSourceOutscaleOAPISubnetsRead(d *schema.ResourceData, meta interface{})
 	filters, filtersOk := d.GetOk("filter")
 
 	if filtersOk {
-		req.Filters = buildOutscaleOAPISubnetDataSourceFilters(filters.(*schema.Set))
+		req.Filters = buildSubnetDataSourceFilters(filters.(*schema.Set))
 	}
 
 	var resp oscgo.ReadSubnetsResponse
@@ -135,7 +135,7 @@ func dataSourceOutscaleOAPISubnetsRead(d *schema.ResourceData, meta interface{})
 			subnet["subnet_id"] = v.GetSubnetId()
 		}
 		if v.GetTags() != nil {
-			subnet["tags"] = tagsOSCAPIToMap(v.GetTags())
+			subnet["tags"] = tagsToMap(v.GetTags())
 		}
 		if v.GetNetId() != "" {
 			subnet["net_id"] = v.GetNetId()

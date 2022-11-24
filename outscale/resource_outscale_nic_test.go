@@ -15,7 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPIENI_basic(t *testing.T) {
+func TestAccENI_basic(t *testing.T) {
 	t.Parallel()
 	var conf oscgo.Nic
 	subregion := os.Getenv("OUTSCALE_REGION")
@@ -24,21 +24,21 @@ func TestAccOutscaleOAPIENI_basic(t *testing.T) {
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_nic.outscale_nic",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscaleOAPINICDestroy,
+		CheckDestroy:  testAccCheckNICDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIENIConfig(subregion),
+				Config: testAccENIConfig(subregion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIENIExists("outscale_nic.outscale_nic", &conf),
-					testAccCheckOutscaleOAPIENIAttributes(&conf, subregion),
+					testAccCheckENIExists("outscale_nic.outscale_nic", &conf),
+					testAccCheckENIAttributes(&conf, subregion),
 					resource.TestCheckResourceAttr("outscale_nic.outscale_nic", "private_ips.#", "2"),
 				),
 			},
 			{
-				Config: testAccOutscaleOAPIENIConfigUpdate(subregion),
+				Config: testAccENIConfigUpdate(subregion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIENIExists("outscale_nic.outscale_nic", &conf),
-					testAccCheckOutscaleOAPIENIAttributes(&conf, subregion),
+					testAccCheckENIExists("outscale_nic.outscale_nic", &conf),
+					testAccCheckENIAttributes(&conf, subregion),
 					resource.TestCheckResourceAttr("outscale_nic.outscale_nic", "private_ips.#", "3"),
 				),
 			},
@@ -46,7 +46,7 @@ func TestAccOutscaleOAPIENI_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleOAPIENIExists(n string, res *oscgo.Nic) resource.TestCheckFunc {
+func testAccCheckENIExists(n string, res *oscgo.Nic) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -57,7 +57,7 @@ func testAccCheckOutscaleOAPIENIExists(n string, res *oscgo.Nic) resource.TestCh
 			return fmt.Errorf("No ENI ID is set")
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		conn := testAccProvider.Meta().(*Client).OSCAPI
 		dnir := oscgo.ReadNicsRequest{
 			Filters: &oscgo.FiltersNic{NicIds: &[]string{rs.Primary.ID}},
 		}
@@ -90,7 +90,7 @@ func testAccCheckOutscaleOAPIENIExists(n string, res *oscgo.Nic) resource.TestCh
 	}
 }
 
-func testAccCheckOutscaleOAPIENIAttributes(conf *oscgo.Nic, suregion string) resource.TestCheckFunc {
+func testAccCheckENIAttributes(conf *oscgo.Nic, suregion string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 
 		if !reflect.DeepEqual(conf.GetLinkNic(), oscgo.LinkNic{}) {
@@ -105,7 +105,7 @@ func testAccCheckOutscaleOAPIENIAttributes(conf *oscgo.Nic, suregion string) res
 	}
 }
 
-func testAccOutscaleOAPIENIConfig(subregion string) string {
+func testAccENIConfig(subregion string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "outscale_net" {
 			ip_range = "10.0.0.0/16"
@@ -144,7 +144,7 @@ func testAccOutscaleOAPIENIConfig(subregion string) string {
 	`, subregion)
 }
 
-func testAccOutscaleOAPIENIConfigUpdate(subregion string) string {
+func testAccENIConfigUpdate(subregion string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "outscale_net" {
 			ip_range = "10.0.0.0/16"

@@ -15,9 +15,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleLoadBalancerVmsHeals() *schema.Resource {
+func dataSourceLoadBalancerVmsHeals() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleLoadBalancerVmsHealRead,
+		Read: dataSourceLoadBalancerVmsHealRead,
 		Schema: getDataSourceSchemas(map[string]*schema.Schema{
 			"load_balancer_name": {
 				Type:     schema.TypeString,
@@ -63,9 +63,9 @@ func dataSourceOutscaleLoadBalancerVmsHeals() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleLoadBalancerVmsHealRead(d *schema.ResourceData,
+func dataSourceLoadBalancerVmsHealRead(d *schema.ResourceData,
 	meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+	conn := meta.(*Client).OSCAPI
 
 	ename, ok := d.GetOk("load_balancer_name")
 	if ok == false {

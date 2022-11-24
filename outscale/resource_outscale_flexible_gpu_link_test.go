@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccOutscaleOAPIFlexibleGpuLink_basic(t *testing.T) {
+func TestAccFlexibleGpuLink_basic(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := fmt.Sprintf("%sa", os.Getenv("OUTSCALE_REGION"))
 
@@ -19,13 +19,13 @@ func TestAccOutscaleOAPIFlexibleGpuLink_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIFlexibleGpuLinkConfig(omi, "tinav3.c1r1p2", region),
+				Config: testAccFlexibleGpuLinkConfig(omi, "tinav3.c1r1p2", region),
 			},
 		},
 	})
 }
 
-func testAccOutscaleOAPIFlexibleGpuLinkConfig(omi, vmType, region string) string {
+func testAccFlexibleGpuLinkConfig(omi, vmType, region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_vm" "basic" {
 			image_id     = "%s"

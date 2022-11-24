@@ -14,9 +14,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPIImages() *schema.Resource {
+func dataSourceImages() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPIImagesRead,
+		Read: dataSourceImagesRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -211,8 +211,8 @@ func dataSourceOutscaleOAPIImages() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPIImagesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceImagesRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	executableUsers, executableUsersOk := d.GetOk("permissions")
 	filters, filtersOk := d.GetOk("filter")
@@ -223,13 +223,13 @@ func dataSourceOutscaleOAPIImagesRead(d *schema.ResourceData, meta interface{}) 
 
 	filtersReq := &oscgo.FiltersImage{}
 	if filtersOk {
-		filtersReq = buildOutscaleOAPIDataSourceImagesFilters(filters.(*schema.Set))
+		filtersReq = buildDataSourceImagesFilters(filters.(*schema.Set))
 	}
 	if ownersOk {
 		filtersReq.SetAccountIds([]string{aids.(string)})
 	}
 	if executableUsersOk {
-		filtersReq.SetPermissionsToLaunchAccountIds(expandStringValueList(executableUsers.([]interface{})))
+		filtersReq.SetPermissionsToLaunchAccountIds(utils.InterfaceSliceToStringSlice(executableUsers.([]interface{})))
 	}
 
 	req := oscgo.ReadImagesRequest{Filters: filtersReq}
@@ -269,11 +269,11 @@ func dataSourceOutscaleOAPIImagesRead(d *schema.ResourceData, meta interface{}) 
 				"root_device_name":      image.GetRootDeviceName(),
 				"root_device_type":      image.GetRootDeviceType(),
 				"state":                 image.GetState(),
-				"block_device_mappings": omiOAPIBlockDeviceMappings(*image.BlockDeviceMappings),
+				"block_device_mappings": omiBlockDeviceMappings(*image.BlockDeviceMappings),
 				"product_codes":         image.GetProductCodes(),
-				"state_comment":         omiOAPIStateReason(image.StateComment),
-				"permissions_to_launch": omiOAPIPermissionToLuch(image.PermissionsToLaunch),
-				"tags":                  getOapiTagSet(image.Tags),
+				"state_comment":         omiStateReason(image.StateComment),
+				"permissions_to_launch": omiPermissionToLuch(image.PermissionsToLaunch),
+				"tags":                  getTagSet(image.GetTags()),
 			}
 		}
 
@@ -281,7 +281,7 @@ func dataSourceOutscaleOAPIImagesRead(d *schema.ResourceData, meta interface{}) 
 	})
 }
 
-func buildOutscaleOAPIDataSourceImagesFilters(set *schema.Set) *oscgo.FiltersImage {
+func buildDataSourceImagesFilters(set *schema.Set) *oscgo.FiltersImage {
 	filters := &oscgo.FiltersImage{}
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -343,20 +343,4 @@ func buildOutscaleOAPIDataSourceImagesFilters(set *schema.Set) *oscgo.FiltersIma
 		}
 	}
 	return filters
-}
-
-func expandStringValueList(configured []interface{}) []string {
-	vs := make([]string, 0, len(configured))
-	for _, v := range configured {
-		val, ok := v.(string)
-		if ok && val != "" {
-			vs = append(vs, v.(string))
-		}
-	}
-	return vs
-}
-
-func expandStringValueListPointer(configured []interface{}) *[]string {
-	res := expandStringValueList(configured)
-	return &res
 }

@@ -12,9 +12,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPINatServices() *schema.Resource {
+func dataSourceNatServices() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPINatServicesRead,
+		Read: dataSourceNatServicesRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -74,8 +74,8 @@ func dataSourceOutscaleOAPINatServices() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPINatServicesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceNatServicesRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
 	natGatewayID, natGatewayIDOK := d.GetOk("nat_service_ids")
@@ -86,7 +86,7 @@ func dataSourceOutscaleOAPINatServicesRead(d *schema.ResourceData, meta interfac
 
 	params := oscgo.ReadNatServicesRequest{}
 	if filtersOk {
-		params.SetFilters(buildOutscaleOAPINatServiceDataSourceFilters(filters.(*schema.Set)))
+		params.SetFilters(buildNatServiceDataSourceFilters(filters.(*schema.Set)))
 	}
 	if natGatewayIDOK {
 		ids := make([]string, len(natGatewayID.([]interface{})))
@@ -122,11 +122,11 @@ func dataSourceOutscaleOAPINatServicesRead(d *schema.ResourceData, meta interfac
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
 
-	return ngsOAPIDescriptionAttributes(d, resp.GetNatServices())
+	return ngsDescriptionAttributes(d, resp.GetNatServices())
 }
 
 // populate the numerous fields that the image description returns.
-func ngsOAPIDescriptionAttributes(d *schema.ResourceData, ngs []oscgo.NatService) error {
+func ngsDescriptionAttributes(d *schema.ResourceData, ngs []oscgo.NatService) error {
 	d.SetId(resource.UniqueId())
 
 	addngs := make([]map[string]interface{}, len(ngs))
@@ -161,7 +161,7 @@ func ngsOAPIDescriptionAttributes(d *schema.ResourceData, ngs []oscgo.NatService
 			addng["net_id"] = v.GetNetId()
 		}
 		if v.GetTags() != nil {
-			addng["tags"] = tagsOSCAPIToMap(v.GetTags())
+			addng["tags"] = tagsToMap(v.GetTags())
 		}
 
 		addngs[k] = addng

@@ -13,9 +13,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPIImageExportTasks() *schema.Resource {
+func dataSourceImageExportTasks() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOAPIImageExportTasksRead,
+		Read: dataSourceImageExportTasksRead,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -93,14 +93,14 @@ func dataSourceOutscaleOAPIImageExportTasks() *schema.Resource {
 	}
 }
 
-func dataSourceOAPIImageExportTasksRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceImageExportTasksRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
 
 	filtersReq := &oscgo.FiltersExportTask{}
 	if filtersOk {
-		filtersReq = buildOutscaleOSCAPIDataSourceImageExportTaskFilters(filters.(*schema.Set))
+		filtersReq = buildDataSourceImageExportTaskFilters(filters.(*schema.Set))
 	}
 
 	var resp oscgo.ReadImageExportTasksResponse
@@ -151,7 +151,7 @@ func dataSourceOAPIImageExportTasksRead(d *schema.ResourceData, meta interface{}
 		snapshot["image_id"] = v.GetImageId()
 		snapshot["osu_export"] = exp
 
-		snapshot["tags"] = tagsOSCAPIToMap(v.GetTags())
+		snapshot["tags"] = tagsToMap(v.GetTags())
 
 		snapshots[k] = snapshot
 	}

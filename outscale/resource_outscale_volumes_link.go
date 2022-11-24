@@ -15,11 +15,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func resourceOutscaleOAPIVolumeLink() *schema.Resource {
+func resourceVolumeLink() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOAPIVolumeLinkCreate,
-		Read:   resourceOAPIVolumeLinkRead,
-		Delete: resourceOAPIVolumeLinkDelete,
+		Create: resourceVolumeLinkCreate,
+		Read:   resourceVolumeLinkRead,
+		Delete: resourceVolumeLinkDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -29,11 +29,11 @@ func resourceOutscaleOAPIVolumeLink() *schema.Resource {
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 
-		Schema: getOAPIVolumeLinkSchema(),
+		Schema: getVolumeLinkSchema(),
 	}
 }
 
-func getOAPIVolumeLinkSchema() map[string]*schema.Schema {
+func getVolumeLinkSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		// Arguments
 		"device_name": {
@@ -74,8 +74,8 @@ func getOAPIVolumeLinkSchema() map[string]*schema.Schema {
 	}
 }
 
-func resourceOAPIVolumeLinkCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceVolumeLinkCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 	name := d.Get("device_name").(string)
 	iID := d.Get("vm_id").(string)
 	vID := d.Get("volume_id").(string)
@@ -145,7 +145,7 @@ func resourceOAPIVolumeLinkCreate(d *schema.ResourceData, meta interface{}) erro
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"attaching"},
 		Target:     []string{"attached"},
-		Refresh:    volumeOAPIAttachmentStateRefreshFunc(conn, vID, iID),
+		Refresh:    volumeAttachmentStateRefreshFunc(conn, vID, iID),
 		Timeout:    5 * time.Minute,
 		Delay:      10 * time.Second,
 		MinTimeout: 3 * time.Second,
@@ -159,7 +159,7 @@ func resourceOAPIVolumeLinkCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	d.SetId(vID)
-	return resourceOAPIVolumeLinkRead(d, meta)
+	return resourceVolumeLinkRead(d, meta)
 }
 
 func isElegibleToLink(volumes []oscgo.Volume, instanceID string) bool {
@@ -177,7 +177,7 @@ func isElegibleToLink(volumes []oscgo.Volume, instanceID string) bool {
 	return elegible
 }
 
-func volumeOAPIAttachmentStateRefreshFunc(conn *oscgo.APIClient, volumeID, instanceID string) resource.StateRefreshFunc {
+func volumeAttachmentStateRefreshFunc(conn *oscgo.APIClient, volumeID, instanceID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		request := oscgo.ReadVolumesRequest{
@@ -216,8 +216,8 @@ func volumeOAPIAttachmentStateRefreshFunc(conn *oscgo.APIClient, volumeID, insta
 	}
 }
 
-func resourceOAPIVolumeLinkRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceVolumeLinkRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	request := oscgo.ReadVolumesRequest{
 		Filters: &oscgo.FiltersVolume{
@@ -274,8 +274,8 @@ func resourceOAPIVolumeLinkRead(d *schema.ResourceData, meta interface{}) error 
 	return nil
 }
 
-func resourceOAPIVolumeLinkDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceVolumeLinkDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	if _, ok := d.GetOk("skip_destroy"); ok {
 		log.Printf("[INFO] Found skip_destroy to be true, removing attachment %q from state", d.Id())
@@ -316,7 +316,7 @@ func resourceOAPIVolumeLinkDelete(d *schema.ResourceData, meta interface{}) erro
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"detaching"},
 		Target:     []string{"detached"},
-		Refresh:    volumeOAPIAttachmentStateRefreshFunc(conn, vID, iID),
+		Refresh:    volumeAttachmentStateRefreshFunc(conn, vID, iID),
 		Timeout:    5 * time.Minute,
 		Delay:      10 * time.Second,
 		MinTimeout: 3 * time.Second,

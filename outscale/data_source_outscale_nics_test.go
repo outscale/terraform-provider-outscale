@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccOutscaleOAPINicsDataSource(t *testing.T) {
+func TestAccNicsDataSource(t *testing.T) {
 	subregion := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
@@ -16,7 +16,7 @@ func TestAccOutscaleOAPINicsDataSource(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPINicsDataSourceConfig(subregion),
+				Config: testAccCheckNicsDataSourceConfig(subregion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.outscale_nics.outscale_nics", "nics.#", "1"),
 				),
@@ -25,7 +25,7 @@ func TestAccOutscaleOAPINicsDataSource(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleOAPINicsDataSourceConfig(subregion string) string {
+func testAccCheckNicsDataSourceConfig(subregion string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "outscale_net" {
 			ip_range = "10.0.0.0/16"

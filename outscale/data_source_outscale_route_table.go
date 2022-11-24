@@ -15,9 +15,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func dataSourceOutscaleOAPIRouteTable() *schema.Resource {
+func dataSourceRouteTable() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPIRouteTableRead,
+		Read: dataSourceRouteTableRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -131,8 +131,8 @@ func dataSourceOutscaleOAPIRouteTable() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceRouteTableRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 	routeTableID, routeTableIDOk := d.GetOk("route_table_id")
 	filter, filterOk := d.GetOk("filter")
 
@@ -148,7 +148,7 @@ func dataSourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface
 	}
 
 	if filterOk {
-		params.Filters = buildOutscaleOAPIDataSourceRouteTableFilters(filter.(*schema.Set))
+		params.Filters = buildDataSourceRouteTableFilters(filter.(*schema.Set))
 	}
 
 	var resp oscgo.ReadRouteTablesResponse
@@ -175,7 +175,7 @@ func dataSourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface
 
 	rt := resp.GetRouteTables()[0]
 	if err :=
-		d.Set("route_propagating_virtual_gateways", setOSCAPIPropagatingVirtualGateways(rt.GetRoutePropagatingVirtualGateways())); err != nil {
+		d.Set("route_propagating_virtual_gateways", setPropagatingVirtualGateways(rt.GetRoutePropagatingVirtualGateways())); err != nil {
 		return err
 	}
 	if err := d.Set("route_table_id", rt.GetRouteTableId()); err != nil {
@@ -184,19 +184,19 @@ func dataSourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface
 	if err := d.Set("net_id", rt.GetNetId()); err != nil {
 		return err
 	}
-	if err := d.Set("tags", tagsOSCAPIToMap(rt.GetTags())); err != nil {
+	if err := d.Set("tags", tagsToMap(rt.GetTags())); err != nil {
 		return err
 	}
-	if err := d.Set("routes", setOSCAPIRoutes(rt.GetRoutes())); err != nil {
+	if err := d.Set("routes", setRoutes(rt.GetRoutes())); err != nil {
 		return err
 	}
 
 	d.SetId(rt.GetRouteTableId())
 
-	return d.Set("link_route_tables", setOSCAPILinkRouteTables(rt.GetLinkRouteTables()))
+	return d.Set("link_route_tables", setLinkRouteTables(rt.GetLinkRouteTables()))
 }
 
-func buildOutscaleOAPIDataSourceRouteTableFilters(set *schema.Set) *oscgo.FiltersRouteTable {
+func buildDataSourceRouteTableFilters(set *schema.Set) *oscgo.FiltersRouteTable {
 	var filters oscgo.FiltersRouteTable
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})

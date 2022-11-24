@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleVPNConnection_basic(t *testing.T) {
+func TestAccVPNConnection_basic(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_vpn_connection.foo"
 
@@ -24,12 +24,12 @@ func TestAccOutscaleVPNConnection_basic(t *testing.T) {
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: resourceName,
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccOutscaleVPNConnectionDestroy,
+		CheckDestroy:  testAccVPNConnectionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleVPNConnectionConfigWithoutStaticRoutes(publicIP),
+				Config: testAccVPNConnectionConfigWithoutStaticRoutes(publicIP),
 				Check: resource.ComposeTestCheckFunc(
-					testAccOutscaleVPNConnectionExists(resourceName),
+					testAccVPNConnectionExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "client_gateway_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "virtual_gateway_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "connection_type"),
@@ -39,9 +39,9 @@ func TestAccOutscaleVPNConnection_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccOutscaleVPNConnectionConfig(publicIP, true),
+				Config: testAccVPNConnectionConfig(publicIP, true),
 				Check: resource.ComposeTestCheckFunc(
-					testAccOutscaleVPNConnectionExists(resourceName),
+					testAccVPNConnectionExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "client_gateway_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "virtual_gateway_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "connection_type"),
@@ -53,9 +53,9 @@ func TestAccOutscaleVPNConnection_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccOutscaleVPNConnectionConfig(publicIP, false),
+				Config: testAccVPNConnectionConfig(publicIP, false),
 				Check: resource.ComposeTestCheckFunc(
-					testAccOutscaleVPNConnectionExists(resourceName),
+					testAccVPNConnectionExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "client_gateway_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "virtual_gateway_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "connection_type"),
@@ -70,7 +70,7 @@ func TestAccOutscaleVPNConnection_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleVPNConnection_withoutStaticRoutes(t *testing.T) {
+func TestAccVPNConnection_withoutStaticRoutes(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_vpn_connection.foo"
 	publicIP := fmt.Sprintf("172.0.0.%d", acctest.RandIntRange(0, 255))
@@ -79,12 +79,12 @@ func TestAccOutscaleVPNConnection_withoutStaticRoutes(t *testing.T) {
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_vpn_connection.foo",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccOutscaleVPNConnectionDestroy,
+		CheckDestroy:  testAccVPNConnectionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleVPNConnectionConfigWithoutStaticRoutes(publicIP),
+				Config: testAccVPNConnectionConfigWithoutStaticRoutes(publicIP),
 				Check: resource.ComposeTestCheckFunc(
-					testAccOutscaleVPNConnectionExists(resourceName),
+					testAccVPNConnectionExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "client_gateway_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "virtual_gateway_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "connection_type"),
@@ -96,7 +96,7 @@ func TestAccOutscaleVPNConnection_withoutStaticRoutes(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleVPNConnection_withTags(t *testing.T) {
+func TestAccVPNConnection_withTags(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_vpn_connection.foo"
 
@@ -107,12 +107,12 @@ func TestAccOutscaleVPNConnection_withTags(t *testing.T) {
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: resourceName,
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccOutscaleVPNConnectionDestroy,
+		CheckDestroy:  testAccVPNConnectionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleVPNConnectionConfigWithTags(publicIP, value),
+				Config: testAccVPNConnectionConfigWithTags(publicIP, value),
 				Check: resource.ComposeTestCheckFunc(
-					testAccOutscaleVPNConnectionExists(resourceName),
+					testAccVPNConnectionExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "client_gateway_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "virtual_gateway_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "connection_type"),
@@ -128,7 +128,7 @@ func TestAccOutscaleVPNConnection_withTags(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleVPNConnection_importBasic(t *testing.T) {
+func TestAccVPNConnection_importBasic(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_vpn_connection.foo"
 
@@ -138,12 +138,12 @@ func TestAccOutscaleVPNConnection_importBasic(t *testing.T) {
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: resourceName,
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccOutscaleVPNConnectionDestroy,
+		CheckDestroy:  testAccVPNConnectionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleVPNConnectionConfig(publicIP, true),
+				Config: testAccVPNConnectionConfig(publicIP, true),
 				Check: resource.ComposeTestCheckFunc(
-					testAccOutscaleVPNConnectionExists(resourceName),
+					testAccVPNConnectionExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "client_gateway_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "virtual_gateway_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "connection_type"),
@@ -162,14 +162,14 @@ func TestAccOutscaleVPNConnection_importBasic(t *testing.T) {
 	})
 }
 
-func testAccOutscaleVPNConnectionExists(resourceName string) resource.TestCheckFunc {
+func testAccVPNConnectionExists(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
 			return fmt.Errorf("Not found: %s", resourceName)
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		conn := testAccProvider.Meta().(*Client).OSCAPI
 
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("No VPN Connection ID is set")
@@ -199,8 +199,8 @@ func testAccOutscaleVPNConnectionExists(resourceName string) resource.TestCheckF
 	}
 }
 
-func testAccOutscaleVPNConnectionDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+func testAccVPNConnectionDestroy(s *terraform.State) error {
+	conn := testAccProvider.Meta().(*Client).OSCAPI
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_vpn_connection" {
 			continue
@@ -230,7 +230,7 @@ func testAccOutscaleVPNConnectionDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccOutscaleVPNConnectionConfig(publicIP string, staticRoutesOnly bool) string {
+func testAccVPNConnectionConfig(publicIP string, staticRoutesOnly bool) string {
 	return fmt.Sprintf(`
 		resource "outscale_virtual_gateway" "virtual_gateway" {
 			connection_type = "ipsec.1"
@@ -251,7 +251,7 @@ func testAccOutscaleVPNConnectionConfig(publicIP string, staticRoutesOnly bool) 
 	`, publicIP, staticRoutesOnly)
 }
 
-func testAccOutscaleVPNConnectionConfigWithoutStaticRoutes(publicIP string) string {
+func testAccVPNConnectionConfigWithoutStaticRoutes(publicIP string) string {
 	return fmt.Sprintf(`
 		resource "outscale_virtual_gateway" "virtual_gateway" {
 			connection_type = "ipsec.1"
@@ -271,7 +271,7 @@ func testAccOutscaleVPNConnectionConfigWithoutStaticRoutes(publicIP string) stri
 	`, publicIP)
 }
 
-func testAccOutscaleVPNConnectionConfigWithTags(publicIP, value string) string {
+func testAccVPNConnectionConfigWithTags(publicIP, value string) string {
 	return fmt.Sprintf(`
 		resource "outscale_virtual_gateway" "virtual_gateway" {
 			connection_type = "ipsec.1"

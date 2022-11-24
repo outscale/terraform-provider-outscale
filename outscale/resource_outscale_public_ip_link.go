@@ -14,11 +14,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func resourceOutscaleOAPIPublicIPLink() *schema.Resource {
+func resourcePublicIPLink() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPIPublicIPLinkCreate,
-		Read:   resourceOutscaleOAPIPublicIPLinkRead,
-		Delete: resourceOutscaleOAPIPublicIPLinkDelete,
+		Create: resourcePublicIPLinkCreate,
+		Read:   resourcePublicIPLinkRead,
+		Delete: resourcePublicIPLinkDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -28,12 +28,12 @@ func resourceOutscaleOAPIPublicIPLink() *schema.Resource {
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 
-		Schema: getOAPIPublicIPLinkSchema(),
+		Schema: getPublicIPLinkSchema(),
 	}
 }
 
-func resourceOutscaleOAPIPublicIPLinkCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourcePublicIPLinkCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	request := oscgo.LinkPublicIpRequest{}
 
@@ -72,7 +72,7 @@ func resourceOutscaleOAPIPublicIPLinkCreate(d *schema.ResourceData, meta interfa
 	})
 
 	if err != nil {
-		log.Printf("[WARN] ERROR resourceOutscaleOAPIPublicIPLinkCreate (%s)", err)
+		log.Printf("[WARN] ERROR resourcePublicIPLinkCreate (%s)", err)
 		return err
 	}
 	//Using validation with request.
@@ -82,11 +82,11 @@ func resourceOutscaleOAPIPublicIPLinkCreate(d *schema.ResourceData, meta interfa
 		d.SetId(request.GetPublicIp())
 	}
 
-	return resourceOutscaleOAPIPublicIPLinkRead(d, meta)
+	return resourcePublicIPLinkRead(d, meta)
 }
 
-func resourceOutscaleOAPIPublicIPLinkRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourcePublicIPLinkRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	id := d.Id()
 	var request oscgo.ReadPublicIpsRequest
@@ -118,7 +118,7 @@ func resourceOutscaleOAPIPublicIPLinkRead(d *schema.ResourceData, meta interface
 	})
 
 	if err != nil {
-		log.Printf("[WARN] ERROR resourceOutscaleOAPIPublicIPLinkRead (%s)", err)
+		log.Printf("[WARN] ERROR resourcePublicIPLinkRead (%s)", err)
 		return fmt.Errorf("Error reading Outscale VM Public IP %s: %#v", d.Get("public_ip_id").(string), err)
 	}
 
@@ -128,15 +128,15 @@ func resourceOutscaleOAPIPublicIPLinkRead(d *schema.ResourceData, meta interface
 		return nil
 	}
 
-	if err := d.Set("tags", getOapiTagSet(response.GetPublicIps()[0].Tags)); err != nil {
+	if err := d.Set("tags", getTagSet(response.GetPublicIps()[0].GetTags())); err != nil {
 		return err
 	}
 
-	return readOutscaleOAPIPublicIPLink(d, &response.GetPublicIps()[0])
+	return readPublicIPLink(d, &response.GetPublicIps()[0])
 }
 
-func resourceOutscaleOAPIPublicIPLinkDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourcePublicIPLinkDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	linkID := d.Get("link_public_ip_id")
 
@@ -154,66 +154,66 @@ func resourceOutscaleOAPIPublicIPLinkDelete(d *schema.ResourceData, meta interfa
 	})
 
 	if err != nil {
-		log.Printf("[WARN] ERROR resourceOutscaleOAPIPublicIPLinkDelete (%s)", err)
+		log.Printf("[WARN] ERROR resourcePublicIPLinkDelete (%s)", err)
 		return fmt.Errorf("Error deleting Elastic IP association: %s", err)
 	}
 
 	return nil
 }
 
-func readOutscaleOAPIPublicIPLink(d *schema.ResourceData, address *oscgo.PublicIp) error {
+func readPublicIPLink(d *schema.ResourceData, address *oscgo.PublicIp) error {
 	// if err := d.Set("public_ip_id", address.ReservationId); err != nil {
-	// 	log.Printf("[WARN] ERROR readOutscalePublicIPLink1 (%s)", err)
+	// 	log.Printf("[WARN] ERROR readPublicIPLink1 (%s)", err)
 
 	// 	return err
 	// }
 	if err := d.Set("vm_id", address.GetVmId()); err != nil {
-		fmt.Printf("[WARN] ERROR readOutscalePublicIPLink2 (%s)", err)
+		fmt.Printf("[WARN] ERROR readPublicIPLink2 (%s)", err)
 
 		return err
 	}
 	if err := d.Set("nic_id", address.GetNicId()); err != nil {
-		fmt.Printf("[WARN] ERROR readOutscalePublicIPLink3 (%s)", err)
+		fmt.Printf("[WARN] ERROR readPublicIPLink3 (%s)", err)
 
 		return err
 	}
 	if err := d.Set("private_ip", address.GetPrivateIp()); err != nil {
-		fmt.Printf("[WARN] ERROR readOutscalePublicIPLink4 (%s)", err)
+		fmt.Printf("[WARN] ERROR readPublicIPLink4 (%s)", err)
 
 		return err
 	}
 	if err := d.Set("public_ip", address.GetPublicIp()); err != nil {
-		fmt.Printf("[WARN] ERROR readOutscaleOAPIPublicIPLink (%s)", err)
+		fmt.Printf("[WARN] ERROR readPublicIPLink (%s)", err)
 
 		return err
 	}
 
 	if err := d.Set("link_public_ip_id", address.GetLinkPublicIpId()); err != nil {
-		fmt.Printf("[WARN] ERROR readOutscaleOAPIPublicIPLink (%s)", err)
+		fmt.Printf("[WARN] ERROR readPublicIPLink (%s)", err)
 
 		return err
 	}
 
 	if err := d.Set("nic_account_id", address.GetNicAccountId()); err != nil {
-		fmt.Printf("[WARN] ERROR readOutscaleOAPIPublicIPLink (%s)", err)
+		fmt.Printf("[WARN] ERROR readPublicIPLink (%s)", err)
 
 		return err
 	}
 
 	if err := d.Set("public_ip_id", address.GetPublicIpId()); err != nil {
-		fmt.Printf("[WARN] ERROR readOutscaleOAPIPublicIPLink (%s)", err)
+		fmt.Printf("[WARN] ERROR readPublicIPLink (%s)", err)
 
 		return err
 	}
 
-	if err := d.Set("tags", tagsOSCAPIToMap(address.GetTags())); err != nil {
-		fmt.Printf("[WARN] ERROR readOutscaleOAPIPublicIPLink TAGS PROBLEME (%s)", err)
+	if err := d.Set("tags", tagsToMap(address.GetTags())); err != nil {
+		fmt.Printf("[WARN] ERROR readPublicIPLink TAGS PROBLEME (%s)", err)
 	}
 
 	return nil
 }
 
-func getOAPIPublicIPLinkSchema() map[string]*schema.Schema {
+func getPublicIPLinkSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"public_ip_id": {
 			Type:     schema.TypeString,
@@ -263,6 +263,6 @@ func getOAPIPublicIPLinkSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"tags": tagsOAPIListSchemaComputed(),
+		"tags": tagsListSchemaComputed(),
 	}
 }

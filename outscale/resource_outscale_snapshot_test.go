@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPISnapshot_basic(t *testing.T) {
+func TestAccSnapshot_basic(t *testing.T) {
 	t.Parallel()
 	region := os.Getenv("OUTSCALE_REGION")
 
@@ -24,16 +24,16 @@ func TestAccOutscaleOAPISnapshot_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISnapshotConfig(region),
+				Config: testAccSnapshotConfig(region),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPISnapshotExists("outscale_snapshot.outscale_snapshot", &v),
+					testAccCheckSnapshotExists("outscale_snapshot.outscale_snapshot", &v),
 				),
 			},
 		},
 	})
 }
 
-func TestAccOutscaleOAPISnapshot_withDescription(t *testing.T) {
+func TestAccSnapshot_withDescription(t *testing.T) {
 	t.Parallel()
 	region := os.Getenv("OUTSCALE_REGION")
 
@@ -43,9 +43,9 @@ func TestAccOutscaleOAPISnapshot_withDescription(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISnapshotConfigWithDescription(region),
+				Config: testAccSnapshotConfigWithDescription(region),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPISnapshotExists("outscale_snapshot.test", &v),
+					testAccCheckSnapshotExists("outscale_snapshot.test", &v),
 					resource.TestCheckResourceAttr("outscale_snapshot.test", "description", "Snapshot Acceptance Test"),
 				),
 			},
@@ -53,7 +53,7 @@ func TestAccOutscaleOAPISnapshot_withDescription(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPISnapshot_CopySnapshot(t *testing.T) {
+func TestAccSnapshot_CopySnapshot(t *testing.T) {
 	t.Parallel()
 	region := os.Getenv("OUTSCALE_REGION")
 
@@ -63,9 +63,9 @@ func TestAccOutscaleOAPISnapshot_CopySnapshot(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISnapshotConfigCopySnapshot(region),
+				Config: testAccSnapshotConfigCopySnapshot(region),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPISnapshotExists("outscale_snapshot.test", &v),
+					testAccCheckSnapshotExists("outscale_snapshot.test", &v),
 					resource.TestCheckResourceAttr("outscale_snapshot.test", "description", "Target Snapshot Acceptance Test"),
 				),
 			},
@@ -73,7 +73,7 @@ func TestAccOutscaleOAPISnapshot_CopySnapshot(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPISnapshot_UpdateTags(t *testing.T) {
+func TestAccSnapshot_UpdateTags(t *testing.T) {
 	region := os.Getenv("OUTSCALE_REGION")
 
 	//var v oscgo.Snapshot
@@ -82,18 +82,18 @@ func TestAccOutscaleOAPISnapshot_UpdateTags(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISnapshotConfigUpdateTags(region, "Terraform-Snapshot"),
+				Config: testAccSnapshotConfigUpdateTags(region, "Terraform-Snapshot"),
 				Check:  resource.ComposeTestCheckFunc(),
 			},
 			{
-				Config: testAccOutscaleOAPISnapshotConfigUpdateTags(region, "Terraform-Snapshot-2"),
+				Config: testAccSnapshotConfigUpdateTags(region, "Terraform-Snapshot-2"),
 				Check:  resource.ComposeTestCheckFunc(),
 			},
 		},
 	})
 }
 
-func TestAccOutscaleOAPISnapshot_importBasic(t *testing.T) {
+func TestAccSnapshot_importBasic(t *testing.T) {
 	region := os.Getenv("OUTSCALE_REGION")
 
 	var v oscgo.Snapshot
@@ -102,9 +102,9 @@ func TestAccOutscaleOAPISnapshot_importBasic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISnapshotConfig(region),
+				Config: testAccSnapshotConfig(region),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPISnapshotExists("outscale_snapshot.outscale_snapshot", &v),
+					testAccCheckSnapshotExists("outscale_snapshot.outscale_snapshot", &v),
 				),
 			},
 			{
@@ -117,7 +117,7 @@ func TestAccOutscaleOAPISnapshot_importBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckOAPISnapshotExists(n string, v *oscgo.Snapshot) resource.TestCheckFunc {
+func testAccCheckSnapshotExists(n string, v *oscgo.Snapshot) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -128,7 +128,7 @@ func testAccCheckOAPISnapshotExists(n string, v *oscgo.Snapshot) resource.TestCh
 			return fmt.Errorf("No ID is set")
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		conn := testAccProvider.Meta().(*Client).OSCAPI
 
 		request := oscgo.ReadSnapshotsRequest{
 			Filters: &oscgo.FiltersSnapshot{SnapshotIds: &[]string{rs.Primary.ID}},
@@ -155,7 +155,7 @@ func testAccCheckOAPISnapshotExists(n string, v *oscgo.Snapshot) resource.TestCh
 	}
 }
 
-func testAccOutscaleOAPISnapshotConfig(region string) string {
+func testAccSnapshotConfig(region string) string {
 	return fmt.Sprintf(`
 		 resource "outscale_volume" "outscale_volume" {
     subregion_name = "%sa"
@@ -173,7 +173,7 @@ resource "outscale_snapshot_attributes" "outscale_snapshot_attributes" {
 	`, region)
 }
 
-func testAccOutscaleOAPISnapshotConfigWithDescription(region string) string {
+func testAccSnapshotConfigWithDescription(region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_volume" "description_test" {
 			subregion_name = "%sa"
@@ -187,7 +187,7 @@ func testAccOutscaleOAPISnapshotConfigWithDescription(region string) string {
 	`, region)
 }
 
-func testAccOutscaleOAPISnapshotConfigCopySnapshot(region string) string {
+func testAccSnapshotConfigCopySnapshot(region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_volume" "description_test" {
 			subregion_name = "%[1]sb"
@@ -207,7 +207,7 @@ func testAccOutscaleOAPISnapshotConfigCopySnapshot(region string) string {
 	`, region)
 }
 
-func testAccOutscaleOAPISnapshotConfigUpdateTags(region, value string) string {
+func testAccSnapshotConfigUpdateTags(region, value string) string {
 	return fmt.Sprintf(`
 	resource "outscale_volume" "outscale_volume" {
 		subregion_name = "%sa"

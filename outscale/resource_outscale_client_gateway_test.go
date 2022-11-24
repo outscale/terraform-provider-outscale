@@ -14,7 +14,7 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func TestAccOutscaleClientGateway_basic(t *testing.T) {
+func TestAccClientGateway_basic(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_client_gateway.foo"
 	rBgpAsn := acctest.RandIntRange(64512, 65534)
@@ -52,7 +52,7 @@ func TestAccOutscaleClientGateway_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleClientGateway_withTags(t *testing.T) {
+func TestAccClientGateway_withTags(t *testing.T) {
 	resourceName := "outscale_client_gateway.foo"
 	value := fmt.Sprintf("testacc-%s", acctest.RandString(5))
 	valueUpdated := fmt.Sprintf("testacc-%s", acctest.RandString(5))
@@ -92,7 +92,7 @@ func testAccCheckClientGatewayExists(resourceName string) resource.TestCheckFunc
 			return fmt.Errorf("Not found: %s", resourceName)
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		conn := testAccProvider.Meta().(*Client).OSCAPI
 
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("No Client Gateway ID is set")
@@ -121,7 +121,7 @@ func testAccCheckClientGatewayExists(resourceName string) resource.TestCheckFunc
 }
 
 func testAccCheckClientGatewayDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+	conn := testAccProvider.Meta().(*Client).OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_client_gateway" {

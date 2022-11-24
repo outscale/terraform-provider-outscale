@@ -15,7 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPIImage_basic(t *testing.T) {
+func TestAccImage_basic(t *testing.T) {
 	t.Parallel()
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
@@ -26,12 +26,12 @@ func TestAccOutscaleOAPIImage_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOAPIImageDestroy,
+		CheckDestroy: testAccCheckImageDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIImageConfigBasic(omi, "tinav4.c2r2p2", region, rInt),
+				Config: testAccImageConfigBasic(omi, "tinav4.c2r2p2", region, rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPIImageExists("outscale_image.foo", &ami),
+					testAccCheckImageExists("outscale_image.foo", &ami),
 					resource.TestCheckResourceAttr(
 						"outscale_image.foo", "image_name", fmt.Sprintf("tf-testing-%d", rInt)),
 					resource.TestCheckResourceAttr(
@@ -44,8 +44,8 @@ func TestAccOutscaleOAPIImage_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckOAPIImageDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+func testAccCheckImageDestroy(s *terraform.State) error {
+	conn := testAccProvider.Meta().(*Client).OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_image" {
@@ -72,7 +72,7 @@ func testAccCheckOAPIImageDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOAPIImageExists(n string, ami *oscgo.Image) resource.TestCheckFunc {
+func testAccCheckImageExists(n string, ami *oscgo.Image) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -83,7 +83,7 @@ func testAccCheckOAPIImageExists(n string, ami *oscgo.Image) resource.TestCheckF
 			return fmt.Errorf("No OMI ID is set")
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		conn := testAccProvider.Meta().(*Client).OSCAPI
 
 		filterReq := oscgo.ReadImagesRequest{
 			Filters: &oscgo.FiltersImage{ImageIds: &[]string{rs.Primary.ID}},
@@ -108,7 +108,7 @@ func testAccCheckOAPIImageExists(n string, ami *oscgo.Image) resource.TestCheckF
 	}
 }
 
-func testAccOAPIImageConfigBasic(omi, vmType, region string, rInt int) string {
+func testAccImageConfigBasic(omi, vmType, region string, rInt int) string {
 	return fmt.Sprintf(`
 		resource "outscale_vm" "basic" {
 			image_id                 = "%[1]s"

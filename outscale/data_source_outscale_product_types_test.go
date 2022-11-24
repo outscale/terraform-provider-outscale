@@ -6,19 +6,19 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccDataSourceOutscaleOAPIProductTypes(t *testing.T) {
+func TestAccDataSourceProductTypes(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPIProductTypesConfig,
+				Config: testAccDataSourceProductTypesConfig,
 				Check:  resource.ComposeTestCheckFunc(),
 			},
 		},
 	})
 }
 
-const testAccDataSourceOutscaleOAPIProductTypesConfig = `
+const testAccDataSourceProductTypesConfig = `
  data "outscale_product_types" "all" {}`

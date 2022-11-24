@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPIVirtualRoutePropagation_basic(t *testing.T) {
+func TestAccVirtualRoutePropagation_basic(t *testing.T) {
 	t.Parallel()
 	rBgpAsn := acctest.RandIntRange(64512, 65534)
 
@@ -23,12 +23,12 @@ func TestAccOutscaleOAPIVirtualRoutePropagation_basic(t *testing.T) {
 			testAccPreCheck(t)
 		},
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOAPIVirtualRoutePropagationDestroy,
+		CheckDestroy: testAccCheckVirtualRoutePropagationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIVpnRoutePropagationConfig(rBgpAsn),
+				Config: testAccVpnRoutePropagationConfig(rBgpAsn),
 				Check: resource.ComposeTestCheckFunc(
-					testAccOutscaleOAPIVpnRoutePropagation(
+					testAccVpnRoutePropagation(
 						"outscale_virtual_gateway_route_propagation.outscale_virtual_gateway_route_propagation",
 					),
 				),
@@ -37,8 +37,8 @@ func TestAccOutscaleOAPIVirtualRoutePropagation_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckOAPIVirtualRoutePropagationDestroy(s *terraform.State) error {
-	oscapi := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+func testAccCheckVirtualRoutePropagationDestroy(s *terraform.State) error {
+	oscapi := testAccProvider.Meta().(*Client).OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_virtual_gateway_route_propagation" {
@@ -83,7 +83,7 @@ func testAccCheckOAPIVirtualRoutePropagationDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccOutscaleOAPIVpnRoutePropagation(routeProp string) resource.TestCheckFunc {
+func testAccVpnRoutePropagation(routeProp string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[routeProp]
 		if !ok {
@@ -98,7 +98,7 @@ func testAccOutscaleOAPIVpnRoutePropagation(routeProp string) resource.TestCheck
 	}
 }
 
-func testAccOutscaleOAPIVpnRoutePropagationConfig(rBgpAsn int) string {
+func testAccVpnRoutePropagationConfig(rBgpAsn int) string {
 	return fmt.Sprintf(`
 		resource "outscale_virtual_gateway" "outscale_virtual_gateway" {
  connection_type = "ipsec.1"

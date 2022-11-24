@@ -15,9 +15,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func datasourceOutscaleOAPIVolume() *schema.Resource {
+func dataSourceVolume() *schema.Resource {
 	return &schema.Resource{
-		Read: datasourceOAPIVolumeRead,
+		Read: datasourceVolumeRead,
 
 		Schema: map[string]*schema.Schema{
 			// Arguments
@@ -92,8 +92,8 @@ func datasourceOutscaleOAPIVolume() *schema.Resource {
 	}
 }
 
-func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func datasourceVolumeRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
 	volumeIds, VolumeIdsOk := d.GetOk("volume_id")
@@ -106,7 +106,7 @@ func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if filtersOk {
-		params.SetFilters(buildOutscaleOSCAPIDataSourceVolumesFilters(filters.(*schema.Set)))
+		params.SetFilters(buildDataSourceVolumesFilters(filters.(*schema.Set)))
 	}
 
 	var resp oscgo.ReadVolumesResponse
@@ -142,11 +142,11 @@ func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	// Query returned single result.
 	volume = filteredVolumes[0]
 	log.Printf("[DEBUG] outscale_volume - Single Volume found: %s", volume.GetVolumeId())
-	return volumeOAPIDescriptionAttributes(d, &volume)
+	return volumeDescriptionAttributes(d, &volume)
 
 }
 
-func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oscgo.Volume) error {
+func volumeDescriptionAttributes(d *schema.ResourceData, volume *oscgo.Volume) error {
 	if err := d.Set("volume_id", volume.GetVolumeId()); err != nil {
 		return err
 	}
@@ -194,7 +194,7 @@ func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oscgo.Volum
 	}
 
 	if volume.GetTags() != nil {
-		if err := d.Set("tags", tagsOSCAPIToMap(volume.GetTags())); err != nil {
+		if err := d.Set("tags", tagsToMap(volume.GetTags())); err != nil {
 			return err
 		}
 	} else {
@@ -212,7 +212,7 @@ func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oscgo.Volum
 	return nil
 }
 
-func buildOutscaleOSCAPIDataSourceVolumesFilters(set *schema.Set) oscgo.FiltersVolume {
+func buildDataSourceVolumesFilters(set *schema.Set) oscgo.FiltersVolume {
 	var filters oscgo.FiltersVolume
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})

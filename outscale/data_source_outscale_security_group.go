@@ -14,9 +14,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPISecurityGroup() *schema.Resource {
+func dataSourceSecurityGroup() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPISecurityGroupRead,
+		Read: dataSourceSecurityGroupRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -157,8 +157,8 @@ func dataSourceOutscaleOAPISecurityGroup() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceSecurityGroupRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 	req := oscgo.ReadSecurityGroupsRequest{}
 
 	filters, filtersOk := d.GetOk("filter")
@@ -177,7 +177,7 @@ func dataSourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interf
 	}
 
 	if filtersOk {
-		req.SetFilters(buildOutscaleOAPIDataSourceSecurityGroupFilters(filters.(*schema.Set)))
+		req.SetFilters(buildDataSourceSecurityGroupFilters(filters.(*schema.Set)))
 	}
 
 	var err error
@@ -231,16 +231,16 @@ func dataSourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interf
 	if err := d.Set("account_id", sg.GetAccountId()); err != nil {
 		return err
 	}
-	if err := d.Set("tags", tagsOSCAPIToMap(sg.GetTags())); err != nil {
+	if err := d.Set("tags", tagsToMap(sg.GetTags())); err != nil {
 		return err
 	}
-	if err := d.Set("inbound_rules", flattenOAPISecurityGroupRule(sg.GetInboundRules())); err != nil {
+	if err := d.Set("inbound_rules", flattenSecurityGroupRule(sg.GetInboundRules())); err != nil {
 		return err
 	}
-	return d.Set("outbound_rules", flattenOAPISecurityGroupRule(sg.GetOutboundRules()))
+	return d.Set("outbound_rules", flattenSecurityGroupRule(sg.GetOutboundRules()))
 }
 
-func buildOutscaleOAPIDataSourceSecurityGroupFilters(set *schema.Set) oscgo.FiltersSecurityGroup {
+func buildDataSourceSecurityGroupFilters(set *schema.Set) oscgo.FiltersSecurityGroup {
 	var filters oscgo.FiltersSecurityGroup
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})

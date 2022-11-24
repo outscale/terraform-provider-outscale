@@ -14,13 +14,13 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func setOSCAPITags(conn *oscgo.APIClient, d *schema.ResourceData) error {
+func setTags(conn *oscgo.APIClient, d *schema.ResourceData) error {
 
 	if d.HasChange("tags") {
 		oraw, nraw := d.GetChange("tags")
 		o := oraw.(*schema.Set)
 		n := nraw.(*schema.Set)
-		create, remove := diffOSCAPITags(tagsFromSliceMap(o), tagsFromSliceMap(n))
+		create, remove := diffTags(tagsFromSliceMap(o), tagsFromSliceMap(n))
 
 		// Set tag
 		if len(remove) > 0 {
@@ -64,7 +64,7 @@ func setOSCAPITags(conn *oscgo.APIClient, d *schema.ResourceData) error {
 	return nil
 }
 
-func tagsOAPIListSchemaComputed() *schema.Schema {
+func tagsListSchemaComputed() *schema.Schema {
 	return &schema.Schema{
 		Type:     schema.TypeSet,
 		Computed: true,
@@ -83,7 +83,7 @@ func tagsOAPIListSchemaComputed() *schema.Schema {
 	}
 }
 
-func tagsListOAPISchema2(computed bool) *schema.Schema {
+func tagsListSchema2(computed bool) *schema.Schema {
 	stype := schema.TypeSet
 
 	if computed {
@@ -105,7 +105,7 @@ func tagsListOAPISchema2(computed bool) *schema.Schema {
 	}
 }
 
-func tagsListOAPISchema() *schema.Schema {
+func tagsListSchema() *schema.Schema {
 	return &schema.Schema{
 		Type: schema.TypeSet,
 		Elem: &schema.Resource{
@@ -126,8 +126,8 @@ func tagsListOAPISchema() *schema.Schema {
 	}
 }
 
-// tagsOSCsAPI	ToMap turns the list of tag into a map.
-func tagsOSCAPIToMap(ts []oscgo.ResourceTag) []map[string]string {
+// tagsToMap turns the list of tag into a map.
+func tagsToMap(ts []oscgo.ResourceTag) []map[string]string {
 	result := make([]map[string]string, len(ts))
 	if len(ts) > 0 {
 		for k, t := range ts {
@@ -143,7 +143,7 @@ func tagsOSCAPIToMap(ts []oscgo.ResourceTag) []map[string]string {
 	return result
 }
 
-func tagsOSCAPIFromMap(m map[string]interface{}) []oscgo.ResourceTag {
+func tagsFromMap(m map[string]interface{}) []oscgo.ResourceTag {
 	result := make([]oscgo.ResourceTag, 0, len(m))
 	for k, v := range m {
 		t := oscgo.ResourceTag{
@@ -156,10 +156,10 @@ func tagsOSCAPIFromMap(m map[string]interface{}) []oscgo.ResourceTag {
 	return result
 }
 
-// diffOSCAPITags takes our tag locally and the ones remotely and returns
+// diffTags takes our tag locally and the ones remotely and returns
 // the set of tag that must be created, and the set of tag that must
 // be destroyed.
-func diffOSCAPITags(oldTags, newTags []oscgo.ResourceTag) ([]oscgo.ResourceTag, []oscgo.ResourceTag) {
+func diffTags(oldTags, newTags []oscgo.ResourceTag) ([]oscgo.ResourceTag, []oscgo.ResourceTag) {
 	// First, we're creating everything we have
 	create := make(map[string]interface{})
 	for _, t := range newTags {
@@ -188,7 +188,7 @@ func diffOSCAPITags(oldTags, newTags []oscgo.ResourceTag) ([]oscgo.ResourceTag, 
 		}
 	}
 
-	return tagsOSCAPIFromMap(tagsToCreate), remove
+	return tagsFromMap(tagsToCreate), remove
 }
 
 func tagsFromMapLBU(m map[string]interface{}) *[]oscgo.ResourceTag {
@@ -218,11 +218,11 @@ func tagsFromSliceMap(m *schema.Set) []oscgo.ResourceTag {
 	return result
 }
 
-func oapiTagsDescToList(ts []oscgo.Tag) []map[string]interface{} {
+func tagsDescToList(ts []oscgo.Tag) []map[string]interface{} {
 	res := make([]map[string]interface{}, len(ts))
 
 	for i, t := range ts {
-		if !oapiTagDescIgnored(&t) {
+		if !tagDescIgnored(&t) {
 			res[i] = map[string]interface{}{
 				"key":           t.Key,
 				"value":         t.Value,
@@ -234,7 +234,7 @@ func oapiTagsDescToList(ts []oscgo.Tag) []map[string]interface{} {
 	return res
 }
 
-func oapiTagDescIgnored(t *oscgo.Tag) bool {
+func tagDescIgnored(t *oscgo.Tag) bool {
 	filter := []string{"^outscale:"}
 	for _, v := range filter {
 		if r, _ := regexp.MatchString(v, t.GetKey()); r {
@@ -292,24 +292,7 @@ func tagsSchema() *schema.Schema {
 	}
 }
 
-func getOapiTagSet(tags *[]oscgo.ResourceTag) []map[string]interface{} {
-	res := []map[string]interface{}{}
-
-	if tags != nil {
-		for _, t := range *tags {
-			tag := map[string]interface{}{}
-
-			tag["key"] = t.Key
-			tag["value"] = t.Value
-
-			res = append(res, tag)
-		}
-	}
-
-	return res
-}
-
-func getOscAPITagSet(tags []oscgo.ResourceTag) []map[string]interface{} {
+func getTagSet(tags []oscgo.ResourceTag) []map[string]interface{} {
 	res := []map[string]interface{}{}
 
 	for _, t := range tags {

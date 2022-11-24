@@ -12,9 +12,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPIProductTypes() *schema.Resource {
+func dataSourceProductTypes() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPIProductTypesRead,
+		Read: dataSourceProductTypesRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -46,15 +46,15 @@ func dataSourceOutscaleOAPIProductTypes() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPIProductTypesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceProductTypesRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	req := oscgo.ReadProductTypesRequest{}
 
 	filters, filtersOk := d.GetOk("filter")
 
 	if filtersOk {
-		req.Filters = buildOutscaleOAPIProductTypeDataSourceFilters(filters.(*schema.Set))
+		req.Filters = buildProductTypeDataSourceFilters(filters.(*schema.Set))
 	}
 
 	var resp oscgo.ReadProductTypesResponse

@@ -14,7 +14,7 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func TestAccOutscaleOAPISubNet_basic(t *testing.T) {
+func TestAccSubNet_basic(t *testing.T) {
 	t.Parallel()
 	var conf oscgo.Subnet
 	region := os.Getenv("OUTSCALE_REGION")
@@ -22,19 +22,19 @@ func TestAccOutscaleOAPISubNet_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleOAPISubNetDestroyed, // we need to create the destroyed test case
+		CheckDestroy: testAccCheckSubNetDestroyed, // we need to create the destroyed test case
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISubnetConfig(region),
+				Config: testAccSubnetConfig(region),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPISubNetExists("outscale_subnet.subnet", &conf),
+					testAccCheckSubNetExists("outscale_subnet.subnet", &conf),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckOutscaleOAPISubNetExists(n string, res *oscgo.Subnet) resource.TestCheckFunc {
+func testAccCheckSubNetExists(n string, res *oscgo.Subnet) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -45,7 +45,7 @@ func testAccCheckOutscaleOAPISubNetExists(n string, res *oscgo.Subnet) resource.
 			return fmt.Errorf("No Subnet id is set")
 		}
 		var resp oscgo.ReadSubnetsResponse
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		conn := testAccProvider.Meta().(*Client).OSCAPI
 
 		err := resource.Retry(30*time.Second, func() *resource.RetryError {
 			var err error
@@ -77,7 +77,7 @@ func testAccCheckOutscaleOAPISubNetExists(n string, res *oscgo.Subnet) resource.
 	}
 }
 
-func testAccCheckOutscaleOAPISubNetDestroyed(s *terraform.State) error {
+func testAccCheckSubNetDestroyed(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_subnet" {
 			continue
@@ -85,7 +85,7 @@ func testAccCheckOutscaleOAPISubNetDestroyed(s *terraform.State) error {
 
 		// Try to find a subnet
 		var resp oscgo.ReadSubnetsResponse
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		conn := testAccProvider.Meta().(*Client).OSCAPI
 		err := resource.Retry(30*time.Second, func() *resource.RetryError {
 			rp, httpResp, err := conn.SubnetApi.ReadSubnets(context.Background()).ReadSubnetsRequest(oscgo.ReadSubnetsRequest{
 				Filters: &oscgo.FiltersSubnet{
@@ -114,7 +114,7 @@ func testAccCheckOutscaleOAPISubNetDestroyed(s *terraform.State) error {
 	return nil
 }
 
-func testAccOutscaleOAPISubnetConfig(region string) string {
+func testAccSubnetConfig(region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "net" {
 			ip_range = "10.0.0.0/16"

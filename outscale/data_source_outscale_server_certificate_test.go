@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform/helper/acctest"
 )
 
-func TestAccOutscaleOAPIServerCertificateDatasource_basic(t *testing.T) {
+func TestAccServerCertificateDatasource_basic(t *testing.T) {
 	t.Parallel()
 	rName := acctest.RandomWithPrefix("acc-test")
 	body := `-----BEGIN CERTIFICATE-----
@@ -100,13 +100,13 @@ kbcI5Y2wveEgMqPSRya2OapYGiPeqYhg6JAGPRXtOfOq9IUDcPuc2emnihNpSa8y
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIServerCertificateDatasourceConfig(rName, body, private),
+				Config: testAccServerCertificateDatasourceConfig(rName, body, private),
 			},
 		},
 	})
 }
 
-func testAccOutscaleOAPIServerCertificateDatasourceConfig(name, body, privateKey string) string {
+func testAccServerCertificateDatasourceConfig(name, body, privateKey string) string {
 	return fmt.Sprintf(`
 resource "outscale_server_certificate" "test" { 
    name        =  %[1]q

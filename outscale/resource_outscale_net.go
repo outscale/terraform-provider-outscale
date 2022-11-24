@@ -13,22 +13,22 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func resourceOutscaleOAPINet() *schema.Resource {
+func resourceNet() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPINetCreate,
-		Read:   resourceOutscaleOAPINetRead,
-		Update: resourceOutscaleOAPINetUpdate,
-		Delete: resourceOutscaleOAPINetDelete,
+		Create: resourceNetCreate,
+		Read:   resourceNetRead,
+		Update: resourceNetUpdate,
+		Delete: resourceNetDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
 
-		Schema: getOAPINetSchema(),
+		Schema: getNetSchema(),
 	}
 }
 
-func resourceOutscaleOAPINetCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceNetCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	req := oscgo.CreateNetRequest{
 		IpRange: d.Get("ip_range").(string),
@@ -70,7 +70,7 @@ func resourceOutscaleOAPINetCreate(d *schema.ResourceData, meta interface{}) err
 	d.SetId(resp.Net.GetNetId())
 
 	return resource.Retry(120*time.Second, func() *resource.RetryError {
-		err = resourceOutscaleOAPINetRead(d, meta)
+		err = resourceNetRead(d, meta)
 		if err != nil {
 			return resource.NonRetryableError(err)
 		}
@@ -84,8 +84,8 @@ func resourceOutscaleOAPINetCreate(d *schema.ResourceData, meta interface{}) err
 	})
 }
 
-func resourceOutscaleOAPINetRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceNetRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	id := d.Id()
 
@@ -133,26 +133,26 @@ func resourceOutscaleOAPINetRead(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 
-	return d.Set("tags", tagsOSCAPIToMap(resp.GetNets()[0].GetTags()))
+	return d.Set("tags", tagsToMap(resp.GetNets()[0].GetTags()))
 }
 
-func resourceOutscaleOAPINetUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceNetUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	d.Partial(true)
 
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := setTags(conn, d); err != nil {
 		return err
 	}
 
 	d.SetPartial("tags")
 
 	d.Partial(false)
-	return resourceOutscaleOAPINetRead(d, meta)
+	return resourceNetRead(d, meta)
 }
 
-func resourceOutscaleOAPINetDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceNetDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	id := d.Id()
 
@@ -191,7 +191,7 @@ func resourceOutscaleOAPINetDelete(d *schema.ResourceData, meta interface{}) err
 	return nil
 }
 
-func getOAPINetSchema() map[string]*schema.Schema {
+func getNetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"ip_range": {
 			Type:     schema.TypeString,
@@ -214,7 +214,7 @@ func getOAPINetSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"tags": tagsListOAPISchema(),
+		"tags": tagsListSchema(),
 		"net_id": {
 			Type:     schema.TypeString,
 			Computed: true,

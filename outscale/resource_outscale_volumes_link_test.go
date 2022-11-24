@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPIVolumeAttachment_basic(t *testing.T) {
+func TestAccVolumeAttachment_basic(t *testing.T) {
 	t.Parallel()
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
@@ -27,15 +27,15 @@ func TestAccOutscaleOAPIVolumeAttachment_basic(t *testing.T) {
 
 		},
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOAPIVolumeAttachmentDestroy,
+		CheckDestroy: testAccCheckVolumeAttachmentDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIVolumeAttachmentConfig(omi, "tinav4.c2r2p2", region, keypair, sgId),
+				Config: testAccVolumeAttachmentConfig(omi, "tinav4.c2r2p2", region, keypair, sgId),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"outscale_volumes_link.ebs_att", "device_name", "/dev/sdh"),
-					testAccCheckOutscaleOAPIVMExists("outscale_vm.web", &i),
-					testAccCheckOAPIVolumeAttachmentExists(
+					testAccCheckVMExists("outscale_vm.web", &i),
+					testAccCheckVolumeAttachmentExists(
 						"outscale_volumes_link.ebs_att", &i, &v),
 				),
 			},
@@ -43,7 +43,7 @@ func TestAccOutscaleOAPIVolumeAttachment_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIVolumeAttachment_importBasic(t *testing.T) {
+func TestAccVolumeAttachment_importBasic(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
@@ -54,14 +54,14 @@ func TestAccOutscaleOAPIVolumeAttachment_importBasic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOAPIVolumeAttachmentDestroy,
+		CheckDestroy: testAccCheckVolumeAttachmentDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIVolumeAttachmentConfig(omi, "tinav4.c2r2p2", region, keypair, sgId),
+				Config: testAccVolumeAttachmentConfig(omi, "tinav4.c2r2p2", region, keypair, sgId),
 			},
 			{
 				ResourceName:            resourceName,
-				ImportStateIdFunc:       testAccCheckOAPIVolumeAttachmentImportStateIDFunc(resourceName),
+				ImportStateIdFunc:       testAccCheckVolumeAttachmentImportStateIDFunc(resourceName),
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"request_id"},
@@ -70,7 +70,7 @@ func TestAccOutscaleOAPIVolumeAttachment_importBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckOAPIVolumeAttachmentImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
+func testAccCheckVolumeAttachmentImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
 	return func(s *terraform.State) (string, error) {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
@@ -80,7 +80,7 @@ func testAccCheckOAPIVolumeAttachmentImportStateIDFunc(resourceName string) reso
 	}
 }
 
-func testAccCheckOAPIVolumeAttachmentDestroy(s *terraform.State) error {
+func testAccCheckVolumeAttachmentDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_volume_link" {
 			continue
@@ -89,7 +89,7 @@ func testAccCheckOAPIVolumeAttachmentDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOAPIVolumeAttachmentExists(n string, i *oscgo.Vm, v *oscgo.Volume) resource.TestCheckFunc {
+func testAccCheckVolumeAttachmentExists(n string, i *oscgo.Vm, v *oscgo.Volume) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -113,7 +113,7 @@ func testAccCheckOAPIVolumeAttachmentExists(n string, i *oscgo.Vm, v *oscgo.Volu
 	}
 }
 
-func testAccOAPIVolumeAttachmentConfig(omi, vmType, region, keypair, sgId string) string {
+func testAccVolumeAttachmentConfig(omi, vmType, region, keypair, sgId string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "net" {
 			ip_range = "10.0.0.0/16"

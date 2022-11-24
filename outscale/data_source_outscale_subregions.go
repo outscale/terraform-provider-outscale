@@ -13,9 +13,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPISubregions() *schema.Resource {
+func dataSourceSubregions() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPISubregionsRead,
+		Read: dataSourceSubregionsRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -52,14 +52,14 @@ func dataSourceOutscaleOAPISubregions() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPISubregionsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceSubregionsRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
 
 	filtersReq := &oscgo.FiltersSubregion{}
 	if filtersOk {
-		filtersReq = buildOutscaleOAPIDataSourceSubregionsFilters(filters.(*schema.Set))
+		filtersReq = buildDataSourceSubregionsFilters(filters.(*schema.Set))
 	}
 
 	req := oscgo.ReadSubregionsRequest{Filters: filtersReq}
@@ -98,7 +98,7 @@ func dataSourceOutscaleOAPISubregionsRead(d *schema.ResourceData, meta interface
 	})
 }
 
-func buildOutscaleOAPIDataSourceSubregionsFilters(set *schema.Set) *oscgo.FiltersSubregion {
+func buildDataSourceSubregionsFilters(set *schema.Set) *oscgo.FiltersSubregion {
 	filters := &oscgo.FiltersSubregion{}
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})

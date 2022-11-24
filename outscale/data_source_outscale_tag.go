@@ -13,9 +13,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPITag() *schema.Resource {
+func dataSourceTag() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPITagRead,
+		Read: dataSourceTagRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"key": {
@@ -38,8 +38,8 @@ func dataSourceOutscaleOAPITag() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPITagRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func dataSourceTagRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	// Build up search parameters
 	params := oscgo.ReadTagsRequest{}
@@ -47,7 +47,7 @@ func dataSourceOutscaleOAPITagRead(d *schema.ResourceData, meta interface{}) err
 	filters, filtersOk := d.GetOk("filter")
 
 	if filtersOk {
-		params.SetFilters(oapiBuildOutscaleDataSourceFilters(filters.(*schema.Set)))
+		params.SetFilters(buildDataSourceFilters(filters.(*schema.Set)))
 	}
 
 	var resp oscgo.ReadTagsResponse
@@ -96,7 +96,7 @@ func dataSourceOutscaleOAPITagRead(d *schema.ResourceData, meta interface{}) err
 	return err
 }
 
-func oapiBuildOutscaleDataSourceFilters(set *schema.Set) oscgo.FiltersTag {
+func buildDataSourceFilters(set *schema.Set) oscgo.FiltersTag {
 	filters := oscgo.FiltersTag{}
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})

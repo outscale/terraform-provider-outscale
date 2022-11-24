@@ -11,12 +11,12 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func resourceOutscaleOAPIFlexibleGpu() *schema.Resource {
+func resourceFlexibleGpu() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPIFlexibleGpuCreate,
-		Read:   resourceOutscaleOAPIFlexibleGpuRead,
-		Delete: resourceOutscaleOAPIFlexibleGpuDelete,
-		Update: resourceOutscaleOAPIFlexibleGpuUpdate,
+		Create: resourceFlexibleGpuCreate,
+		Read:   resourceFlexibleGpuRead,
+		Delete: resourceFlexibleGpuDelete,
+		Update: resourceFlexibleGpuUpdate,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -64,8 +64,8 @@ func resourceOutscaleOAPIFlexibleGpu() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPIFlexibleGpuCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceFlexibleGpuCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	req := &oscgo.CreateFlexibleGpuRequest{}
 
@@ -102,11 +102,11 @@ func resourceOutscaleOAPIFlexibleGpuCreate(d *schema.ResourceData, meta interfac
 
 	d.SetId(resp.FlexibleGpu.GetFlexibleGpuId())
 
-	return resourceOutscaleOAPIFlexibleGpuRead(d, meta)
+	return resourceFlexibleGpuRead(d, meta)
 }
 
-func resourceOutscaleOAPIFlexibleGpuRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceFlexibleGpuRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	napid := d.Id()
 
@@ -167,8 +167,8 @@ func resourceOutscaleOAPIFlexibleGpuRead(d *schema.ResourceData, meta interface{
 	return nil
 }
 
-func resourceOutscaleOAPIFlexibleGpuUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceFlexibleGpuUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	v := d.Get("delete_on_vm_deletion")
 	req := &oscgo.UpdateFlexibleGpuRequest{
@@ -191,12 +191,12 @@ func resourceOutscaleOAPIFlexibleGpuUpdate(d *schema.ResourceData, meta interfac
 	if err != nil {
 		return err
 	}
-	return resourceOutscaleOAPIFlexibleGpuRead(d, meta)
+	return resourceFlexibleGpuRead(d, meta)
 
 }
 
-func resourceOutscaleOAPIFlexibleGpuDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceFlexibleGpuDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	req := &oscgo.DeleteFlexibleGpuRequest{
 		FlexibleGpuId: d.Id(),

@@ -18,13 +18,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
 
-func resourceOutscaleOAPIOutboundRule() *schema.Resource {
+func resourceOutboundRule() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPIOutboundRuleCreate,
-		Read:   resourceOutscaleOAPIOutboundRuleRead,
-		Delete: resourceOutscaleOAPIOutboundRuleDelete,
+		Create: resourceOutboundRuleCreate,
+		Read:   resourceOutboundRuleRead,
+		Delete: resourceOutboundRuleDelete,
 		Importer: &schema.ResourceImporter{
-			State: resourceOutscaleOAPISecurityGroupRuleImportState,
+			State: resourceSecurityGroupRuleImportState,
 		},
 		Schema: map[string]*schema.Schema{
 			"flow": {
@@ -89,8 +89,8 @@ func resourceOutscaleOAPIOutboundRule() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPIOutboundRuleCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceOutboundRuleCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	req := oscgo.CreateSecurityGroupRuleRequest{
 		Flow:            d.Get("flow").(string),
@@ -135,11 +135,11 @@ func resourceOutscaleOAPIOutboundRuleCreate(d *schema.ResourceData, meta interfa
 
 	d.SetId(*resp.GetSecurityGroup().SecurityGroupId)
 
-	return resourceOutscaleOAPIOutboundRuleRead(d, meta)
+	return resourceOutboundRuleRead(d, meta)
 }
 
-func resourceOutscaleOAPIOutboundRuleRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceOutboundRuleRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	sg, _, err := readSecurityGroups(conn, d.Id())
 	if err != nil {
@@ -162,8 +162,8 @@ func resourceOutscaleOAPIOutboundRuleRead(d *schema.ResourceData, meta interface
 	return nil
 }
 
-func resourceOutscaleOAPIOutboundRuleDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceOutboundRuleDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	req := oscgo.DeleteSecurityGroupRuleRequest{
 		Flow:            d.Get("flow").(string),
@@ -210,11 +210,11 @@ func expandRules(d *schema.ResourceData) *[]oscgo.SecurityGroupRule {
 				SecurityGroupsMembers: expandSecurityGroupsMembers(r["security_groups_members"].([]interface{})),
 			}
 
-			if ipRanges := expandStringValueListPointer(r["ip_ranges"].([]interface{})); len(*ipRanges) > 0 {
-				rules[i].IpRanges = expandStringValueListPointer(r["ip_ranges"].([]interface{}))
+			if ipRanges := utils.InterfaceSliceToStringSlicePtr(r["ip_ranges"].([]interface{})); len(*ipRanges) > 0 {
+				rules[i].IpRanges = utils.InterfaceSliceToStringSlicePtr(r["ip_ranges"].([]interface{}))
 			}
-			if serviceIDs := expandStringValueListPointer(r["service_ids"].([]interface{})); len(*serviceIDs) > 0 {
-				rules[i].ServiceIds = expandStringValueListPointer(r["service_ids"].([]interface{}))
+			if serviceIDs := utils.InterfaceSliceToStringSlicePtr(r["service_ids"].([]interface{})); len(*serviceIDs) > 0 {
+				rules[i].ServiceIds = utils.InterfaceSliceToStringSlicePtr(r["service_ids"].([]interface{}))
 			}
 			if v, ok := r["from_port_range"]; ok {
 				rules[i].FromPortRange = pointy.Int32(cast.ToInt32(v))
@@ -354,11 +354,11 @@ func getRulesSchema(isForAttr bool) *schema.Schema {
 	}
 }
 
-func resourceOutscaleOAPISecurityGroupRuleImportState(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+func resourceSecurityGroupRuleImportState(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	// example: sg-53173ec7_inbound_tcp_80_80_80.14.129.222/32
 	// example: sg-53173ec7_inbound_tcp_80_80_sg-53173ec7
 
-	conn := meta.(*OutscaleClient).OSCAPI
+	conn := meta.(*Client).OSCAPI
 
 	parts := strings.SplitN(d.Id(), "_", 6)
 	if len(parts) != 6 {

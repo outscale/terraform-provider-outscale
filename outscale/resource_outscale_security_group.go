@@ -14,12 +14,12 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func resourceOutscaleOAPISecurityGroup() *schema.Resource {
+func resourceSecurityGroup() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPISecurityGroupCreate,
-		Read:   resourceOutscaleOAPISecurityGroupRead,
-		Delete: resourceOutscaleOAPISecurityGroupDelete,
-		Update: resourceOutscaleOAPISecurityGroupUpdate,
+		Create: resourceSecurityGroupCreate,
+		Read:   resourceSecurityGroupRead,
+		Delete: resourceSecurityGroupDelete,
+		Update: resourceSecurityGroupUpdate,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -57,8 +57,8 @@ func resourceOutscaleOAPISecurityGroup() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"inbound_rules":  getOAPIIPPerms(),
-			"outbound_rules": getOAPIIPPerms(),
+			"inbound_rules":  getIPPerms(),
+			"outbound_rules": getIPPerms(),
 			"account_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -69,7 +69,7 @@ func resourceOutscaleOAPISecurityGroup() *schema.Resource {
 				ForceNew: true,
 				Default:  false,
 			},
-			"tags": tagsListOAPISchema(),
+			"tags": tagsListSchema(),
 			"tag":  tagsSchema(),
 			"request_id": {
 				Type:     schema.TypeString,
@@ -79,7 +79,7 @@ func resourceOutscaleOAPISecurityGroup() *schema.Resource {
 	}
 }
 
-func getOAPIIPPerms() *schema.Schema {
+func getIPPerms() *schema.Schema {
 	return &schema.Schema{
 		Type:     schema.TypeList,
 		Computed: true,
@@ -114,8 +114,8 @@ func getOAPIIPPerms() *schema.Schema {
 	}
 }
 
-func resourceOutscaleOAPISecurityGroupCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceSecurityGroupCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	securityGroupOpts := oscgo.CreateSecurityGroupRequest{}
 
@@ -200,7 +200,7 @@ func resourceOutscaleOAPISecurityGroupCreate(d *schema.ResourceData, meta interf
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{""},
 		Target:  []string{"exists", "failed"},
-		Refresh: SGOAPIStateRefreshFunc(conn, d.Id()),
+		Refresh: SGStateRefreshFunc(conn, d.Id()),
 		Timeout: 3 * time.Minute,
 	}
 
@@ -212,17 +212,17 @@ func resourceOutscaleOAPISecurityGroupCreate(d *schema.ResourceData, meta interf
 	}
 
 	if d.IsNewResource() {
-		if err := setOSCAPITags(conn, d); err != nil {
+		if err := setTags(conn, d); err != nil {
 			return err
 		}
 		d.SetPartial("tags")
 	}
 
-	return resourceOutscaleOAPISecurityGroupRead(d, meta)
+	return resourceSecurityGroupRead(d, meta)
 }
 
-func resourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceSecurityGroupRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	sg, _, err := readSecurityGroups(conn, d.Id())
 	if err != nil {
@@ -250,21 +250,21 @@ func resourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interfac
 	if err := d.Set("account_id", sg.GetAccountId()); err != nil {
 		return err
 	}
-	if err := d.Set("tags", tagsOSCAPIToMap(sg.GetTags())); err != nil {
+	if err := d.Set("tags", tagsToMap(sg.GetTags())); err != nil {
 		return err
 	}
 
-	if err := d.Set("inbound_rules", flattenOAPISecurityGroupRule(sg.GetInboundRules())); err != nil {
+	if err := d.Set("inbound_rules", flattenSecurityGroupRule(sg.GetInboundRules())); err != nil {
 		return err
 	}
 
 	d.SetId(sg.GetSecurityGroupId())
 
-	return d.Set("outbound_rules", flattenOAPISecurityGroupRule(sg.GetOutboundRules()))
+	return d.Set("outbound_rules", flattenSecurityGroupRule(sg.GetOutboundRules()))
 }
 
-func resourceOutscaleOAPISecurityGroupDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceSecurityGroupDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	log.Printf("[DEBUG] Security Group destroy: %v", d.Id())
 	securityGroupID := d.Id()
@@ -282,8 +282,8 @@ func resourceOutscaleOAPISecurityGroupDelete(d *schema.ResourceData, meta interf
 	})
 }
 
-// SGOAPIStateRefreshFunc ...
-func SGOAPIStateRefreshFunc(conn *oscgo.APIClient, id string) resource.StateRefreshFunc {
+// SGStateRefreshFunc ...
+func SGStateRefreshFunc(conn *oscgo.APIClient, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		securityGroup, _, err := readSecurityGroups(conn, id)
 		if err != nil {
@@ -293,19 +293,19 @@ func SGOAPIStateRefreshFunc(conn *oscgo.APIClient, id string) resource.StateRefr
 	}
 }
 
-func resourceOutscaleOAPISecurityGroupUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceSecurityGroupUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*Client).OSCAPI
 
 	d.Partial(true)
 
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := setTags(conn, d); err != nil {
 		return err
 	}
 
 	d.SetPartial("tags")
 
 	d.Partial(false)
-	return resourceOutscaleOAPISecurityGroupRead(d, meta)
+	return resourceSecurityGroupRead(d, meta)
 }
 
 func readSecurityGroups(client *oscgo.APIClient, securityGroupID string) (*oscgo.SecurityGroup, *oscgo.ReadSecurityGroupsResponse, error) {

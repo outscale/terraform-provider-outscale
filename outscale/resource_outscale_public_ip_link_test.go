@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPIPublicIPLink_basic(t *testing.T) {
+func TestAccPublicIPLink_basic(t *testing.T) {
 	var a oscgo.PublicIp
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
@@ -26,14 +26,14 @@ func TestAccOutscaleOAPIPublicIPLink_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleOAPIPublicIPLinkDestroy,
+		CheckDestroy: testAccCheckPublicIPLinkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIPublicIPLinkConfig(omi, "tinav4.c2r2p2", region, keypair, sgId),
+				Config: testAccPublicIPLinkConfig(omi, "tinav4.c2r2p2", region, keypair, sgId),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIPublicIPLExists(
+					testAccCheckPublicIPLExists(
 						"outscale_public_ip.ip", &a),
-					testAccCheckOutscaleOAPIPublicIPLinkExists(
+					testAccCheckPublicIPLinkExists(
 						"outscale_public_ip_link.by_public_ip", &a),
 				),
 			},
@@ -41,7 +41,7 @@ func TestAccOutscaleOAPIPublicIPLink_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleOAPIPublicIPLinkExists(name string, res *oscgo.PublicIp) resource.TestCheckFunc {
+func testAccCheckPublicIPLinkExists(name string, res *oscgo.PublicIp) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -52,7 +52,7 @@ func testAccCheckOutscaleOAPIPublicIPLinkExists(name string, res *oscgo.PublicIp
 			return fmt.Errorf("No Public IP Link ID is set")
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient)
+		conn := testAccProvider.Meta().(*Client)
 
 		request := oscgo.ReadPublicIpsRequest{
 			Filters: &oscgo.FiltersPublicIp{
@@ -70,7 +70,7 @@ func testAccCheckOutscaleOAPIPublicIPLinkExists(name string, res *oscgo.PublicIp
 		})
 
 		if err != nil {
-			log.Printf("[DEBUG] ERROR testAccCheckOutscaleOAPIPublicIPLinkExists (%s)", err)
+			log.Printf("[DEBUG] ERROR testAccCheckPublicIPLinkExists (%s)", err)
 			return err
 		}
 
@@ -88,7 +88,7 @@ func testAccCheckOutscaleOAPIPublicIPLinkExists(name string, res *oscgo.PublicIp
 	}
 }
 
-func testAccCheckOutscaleOAPIPublicIPLinkDestroy(s *terraform.State) error {
+func testAccCheckPublicIPLinkDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_public_ip_link" {
 			continue
@@ -100,7 +100,7 @@ func testAccCheckOutscaleOAPIPublicIPLinkDestroy(s *terraform.State) error {
 
 		id := rs.Primary.Attributes["link_public_ip_id"]
 
-		conn := testAccProvider.Meta().(*OutscaleClient)
+		conn := testAccProvider.Meta().(*Client)
 
 		request := oscgo.ReadPublicIpsRequest{
 			Filters: &oscgo.FiltersPublicIp{
@@ -118,7 +118,7 @@ func testAccCheckOutscaleOAPIPublicIPLinkDestroy(s *terraform.State) error {
 		})
 
 		if err != nil {
-			log.Printf("[DEBUG] ERROR testAccCheckOutscaleOAPIPublicIPLinkDestroy (%s)", err)
+			log.Printf("[DEBUG] ERROR testAccCheckPublicIPLinkDestroy (%s)", err)
 			return err
 		}
 
@@ -129,7 +129,7 @@ func testAccCheckOutscaleOAPIPublicIPLinkDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oscgo.PublicIp) resource.TestCheckFunc {
+func testAccCheckPublicIPLExists(n string, res *oscgo.PublicIp) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -140,7 +140,7 @@ func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oscgo.PublicIp) reso
 			return fmt.Errorf("No PublicIP ID is set")
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient)
+		conn := testAccProvider.Meta().(*Client)
 
 		// Missing on Swagger Spec
 		if strings.Contains(rs.Primary.ID, "reservation") {
@@ -211,7 +211,7 @@ func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oscgo.PublicIp) reso
 	}
 }
 
-func testAccOutscaleOAPIPublicIPLinkConfig(omi, vmType, region, keypair, sgId string) string {
+func testAccPublicIPLinkConfig(omi, vmType, region, keypair, sgId string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "net" {
 			ip_range = "10.0.0.0/16"

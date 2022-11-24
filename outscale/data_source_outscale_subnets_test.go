@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccDataSourceOutscaleOAPISubnets(t *testing.T) {
+func TestAccDataSourceSubnets(t *testing.T) {
 	t.Parallel()
 	rInt := acctest.RandIntRange(0, 256)
 
@@ -17,7 +17,7 @@ func TestAccDataSourceOutscaleOAPISubnets(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPISubnetsConfig(rInt),
+				Config: testAccDataSourceSubnetsConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.outscale_subnets.by_filter", "subnets.#", "1"),
 				),
@@ -26,20 +26,20 @@ func TestAccDataSourceOutscaleOAPISubnets(t *testing.T) {
 	})
 }
 
-func TestAccDataSourceOutscaleOAPISubnets_withAvailableIpsCountsFilter(t *testing.T) {
+func TestAccDataSourceSubnets_withAvailableIpsCountsFilter(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPISubnetsWithAvailableIpsCountsFilter(),
+				Config: testAccDataSourceSubnetsWithAvailableIpsCountsFilter(),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleOAPISubnetsConfig(rInt int) string {
+func testAccDataSourceSubnetsConfig(rInt int) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "net" {
 			ip_range = "172.%[1]d.123.0/24"
@@ -70,7 +70,7 @@ func testAccDataSourceOutscaleOAPISubnetsConfig(rInt int) string {
 	`, rInt)
 }
 
-func testAccDataSourceOutscaleOAPISubnetsWithAvailableIpsCountsFilter() string {
+func testAccDataSourceSubnetsWithAvailableIpsCountsFilter() string {
 	return `
 		resource "outscale_net" "outscale_net1" {
 			ip_range = "10.0.0.0/16"
