@@ -32,33 +32,33 @@ The following arguments are supported:
     * `accepter_net_account_ids` - (Optional) The account IDs of the owners of the peer Nets.
     * `accepter_net_ip_ranges` - (Optional) The IP ranges of the peer Nets, in CIDR notation (for example, `10.0.0.0/24`).
     * `accepter_net_net_ids` - (Optional) The IDs of the peer Nets.
-    * `net_peering_ids` - (Optional) The IDs of the Net peering connections.
+    * `net_peering_ids` - (Optional) The IDs of the Net peerings.
     * `source_net_account_ids` - (Optional) The account IDs of the owners of the peer Nets.
     * `source_net_ip_ranges` - (Optional) The IP ranges of the peer Nets.
     * `source_net_net_ids` - (Optional) The IDs of the peer Nets.
-    * `state_messages` - (Optional) Additional information about the states of the Net peering connections.
-    * `state_names` - (Optional) The states of the Net peering connections (`pending-acceptance` \| `active` \| `rejected` \| `failed` \| `expired` \| `deleted`).
-    * `tag_keys` - (Optional) The keys of the tags associated with the Net peering connections.
-    * `tag_values` - (Optional) The values of the tags associated with the Net peering connections.
-    * `tags` - (Optional) The key/value combination of the tags associated with the Net peering connections, in the following format: &quot;Filters&quot;:{&quot;Tags&quot;:[&quot;TAGKEY=TAGVALUE&quot;]}.
+    * `state_messages` - (Optional) Additional information about the states of the Net peerings.
+    * `state_names` - (Optional) The states of the Net peerings (`pending-acceptance` \| `active` \| `rejected` \| `failed` \| `expired` \| `deleted`).
+    * `tag_keys` - (Optional) The keys of the tags associated with the Net peerings.
+    * `tag_values` - (Optional) The values of the tags associated with the Net peerings.
+    * `tags` - (Optional) The key/value combination of the tags associated with the Net peerings, in the following format: &quot;Filters&quot;:{&quot;Tags&quot;:[&quot;TAGKEY=TAGVALUE&quot;]}.
 
 ## Attribute Reference
 
 The following attributes are exported:
 
-* `net_peerings` - Information about one or more Net peering connections.
+* `net_peerings` - Information about one or more Net peerings.
     * `accepter_net` - Information about the accepter Net.
         * `account_id` - The account ID of the owner of the accepter Net.
         * `ip_range` - The IP range for the accepter Net, in CIDR notation (for example, `10.0.0.0/16`).
         * `net_id` - The ID of the accepter Net.
-    * `net_peering_id` - The ID of the Net peering connection.
+    * `net_peering_id` - The ID of the Net peering.
     * `source_net` - Information about the source Net.
         * `account_id` - The account ID of the owner of the source Net.
         * `ip_range` - The IP range for the source Net, in CIDR notation (for example, `10.0.0.0/16`).
         * `net_id` - The ID of the source Net.
-    * `state` - Information about the state of the Net peering connection.
-        * `message` - Additional information about the state of the Net peering connection.
-        * `name` - The state of the Net peering connection (`pending-acceptance` \| `active` \| `rejected` \| `failed` \| `expired` \| `deleted`).
-    * `tags` - One or more tags associated with the Net peering connection.
+    * `state` - Information about the state of the Net peering.
+        * `message` - Additional information about the state of the Net peering.
+        * `name` - The state of the Net peering (`pending-acceptance` \| `active` \| `rejected` \| `failed` \| `expired` \| `deleted`).
+    * `tags` - One or more tags associated with the Net peering.
         * `key` - The key of the tag, with a minimum of 1 character.
         * `value` - The value of the tag, between 0 and 255 characters.

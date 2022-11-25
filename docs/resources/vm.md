@@ -176,14 +176,14 @@ The following arguments are supported:
 * `block_device_mappings` - (Optional) One or more block device mappings.
     * `bsu` - Information about the BSU volume to create.
         * `delete_on_vm_deletion` - (Optional) By default or if set to true, the volume is deleted when terminating the VM. If false, the volume is not deleted when terminating the VM.
-        * `iops` - (Optional) The number of I/O operations per second (IOPS). This parameter must be specified only if you create an `io1` volume. The maximum number of IOPS allowed for `io1` volumes is `13000`.
+        * `iops` - (Optional) The number of I/O operations per second (IOPS). This parameter must be specified only if you create an `io1` volume. The maximum number of IOPS allowed for `io1` volumes is `13000` with a maximum performance ratio of 300 IOPS per gibibyte.
         * `snapshot_id` - (Optional) The ID of the snapshot used to create the volume.
         * `volume_size` - (Optional) The size of the volume, in gibibytes (GiB).<br />
 If you specify a snapshot ID, the volume size must be at least equal to the snapshot size.<br />
 If you specify a snapshot ID but no volume size, the volume is created with a size similar to the snapshot one.
         * `volume_type` - (Optional) The type of the volume (`standard` \| `io1` \| `gp2`). If not specified in the request, a `standard` volume is created.<br />
 For more information about volume types, see [About Volumes > Volume Types and IOPS](https://docs.outscale.com/en/userguide/About-Volumes.html#_volume_types_and_iops).
-    * `device_name` - (Optional) The device name for the volume. For a root device, you must use `/dev/sda1`. For other volumes, you must use `/dev/sdX` or `/dev/xvdX` (where `X` is a letter between `b` and `z`).
+    * `device_name` - (Optional) The device name for the volume. For a root device, you must use `/dev/sda1`. For other volumes, you must use `/dev/sdX`, `/dev/sdXX`, `/dev/xvdX`, or `/dev/xvdXX` (where the first `X` is a letter between `b` and `z`, and the second `X` is a letter between `a` and `z`).
     * `no_device` - (Optional) Removes the device which is included in the block device mapping of the OMI.
     * `virtual_device_name` - (Optional) The name of the virtual device (`ephemeralN`).
 * `bsu_optimized` - (Optional) If true, the VM is created with optimized BSU I/O. Updating this parameter will trigger a stop/start of the VM.
@@ -192,6 +192,7 @@ For more information about volume types, see [About Volumes > Volume Types and I
 * `get_admin_password` - (Optional) (Windows VM only) If true, waits for the administrator password of the VM to become available in order to retrieve the VM. The password is exported to the `admin_password` attribute.
 * `image_id` - (Required) The ID of the OMI used to create the VM. You can find the list of OMIs by calling the [ReadImages](https://docs.outscale.com/api#readimages) method.
 * `keypair_name` - (Optional) The name of the keypair.
+* `nested_virtualization` - (Optional) (dedicated tenancy only) If true, nested virtualization is enabled. If false, it is disabled.
 * `nics` - (Optional) One or more NICs. If you specify this parameter, you must not specify the `subnet_id` and `subregion_name` parameters. You also must define one NIC as the primary network interface of the VM with `0` as its device number.
     * `delete_on_vm_deletion` - (Optional) If true, the NIC is deleted when the VM is terminated. You can specify this parameter only for a new NIC. To modify this value for an existing NIC, see [UpdateNic](https://docs.outscale.com/api#updatenic).
     * `description` - (Optional) The description of the NIC, if you are creating a NIC when creating the VM.
@@ -233,12 +234,14 @@ The following attributes are exported:
     * `device_name` - The name of the device.
 * `bsu_optimized` - This parameter is not available. It is present in our API for the sake of historical compatibility with AWS.
 * `client_token` - The idempotency token provided when launching the VM.
+* `creation_date` - The date and time at which the VM was created.
 * `deletion_protection` - If true, you cannot delete the VM unless you change this parameter back to false.
 * `hypervisor` - The hypervisor type of the VMs (`ovm` \| `xen`).
 * `image_id` - The ID of the OMI used to create the VM.
 * `is_source_dest_checked` - (Net only) If true, the source/destination check is enabled. If false, it is disabled. This value must be false for a NAT VM to perform network address translation (NAT) in a Net.
 * `keypair_name` - The name of the keypair used when launching the VM.
 * `launch_number` - The number for the VM when launching a group of several VMs (for example, `0`, `1`, `2`, and so on).
+* `nested_virtualization` - If true, nested virtualization is enabled. If false, it is disabled.
 * `net_id` - The ID of the Net in which the VM is running.
 * `nics` - (Net only) The network interface cards (NICs) the VMs are attached to.
     * `account_id` - The account ID of the owner of the NIC.

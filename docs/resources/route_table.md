@@ -60,9 +60,9 @@ The following attributes are exported:
     * `gateway_id` - The ID of the Internet service or virtual gateway attached to the Net.
     * `nat_service_id` - The ID of a NAT service attached to the Net.
     * `net_access_point_id` - The ID of the Net access point.
-    * `net_peering_id` - The ID of the Net peering connection.
+    * `net_peering_id` - The ID of the Net peering.
     * `nic_id` - The ID of the NIC.
-    * `state` - The state of a route in the route table (`active` \| `blackhole`). The `blackhole` state indicates that the target of the route is not available.
+    * `state` - The state of a route in the route table (always `active`). 
     * `vm_account_id` - The account ID of the owner of the VM.
     * `vm_id` - The ID of a VM specified in a route in the table.
 * `tags` - One or more tags associated with the route table.
