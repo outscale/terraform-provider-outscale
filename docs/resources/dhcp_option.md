@@ -43,6 +43,7 @@ The following arguments are supported:
 
 * `domain_name_servers` - (Optional) The IPs of domain name servers. If no IPs are specified, the `OutscaleProvidedDNS` value is set by default. You must specify at least one of the following parameters: `DomainName`, `DomainNameServers`, or `NtpServers`.
 * `domain_name` - (Optional) Specify a domain name (for example, MyCompany.com). You can specify only one domain name. You must specify at least one of the following parameters: `DomainName`, `DomainNameServers`, or `NtpServers`.
+* `log_servers` - (Optional) The IPs of the log servers. You must specify at least one of the following parameters: `domain_name`, `domain_name_servers`, `log_servers`, or `ntp_servers`.
 * `ntp_servers` - (Optional) The IPs of the Network Time Protocol (NTP) servers. You must specify at least one of the following parameters: `DomainName`, `DomainNameServers`, or `NtpServers`.
 * `tags` - (Optional) A tag to add to this resource. You can specify this argument several times.
     * `key` - (Required) The key of the tag, with a minimum of 1 character.
@@ -56,6 +57,7 @@ The following attributes are exported:
 * `dhcp_options_set_id` - The ID of the DHCP options set.
 * `domain_name_servers` - One or more IPs for the domain name servers.
 * `domain_name` - The domain name.
+* `log_servers` - One or more IPs for the log servers.
 * `ntp_servers` - One or more IPs for the NTP servers.
 * `tags` - One or more tags associated with the DHCP options set.
     * `key` - The key of the tag, with a minimum of 1 character.

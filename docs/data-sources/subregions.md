@@ -55,6 +55,7 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `subregions` - Information about one or more Subregions.
+    * `location_code` - The location code of the Subregion.
     * `region_name` - The name of the Region containing the Subregion.
     * `state` - The state of the Subregion (`available` \| `information` \| `impaired` \| `unavailable`).
     * `subregion_name` - The name of the Subregion.

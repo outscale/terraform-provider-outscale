@@ -48,12 +48,14 @@ The following attributes are exported:
     * `device_name` - The name of the device.
 * `bsu_optimized` - This parameter is not available. It is present in our API for the sake of historical compatibility with AWS.
 * `client_token` - The idempotency token provided when launching the VM.
+* `creation_date` - The date and time at which the VM was created.
 * `deletion_protection` - If true, you cannot delete the VM unless you change this parameter back to false.
 * `hypervisor` - The hypervisor type of the VMs (`ovm` \| `xen`).
 * `image_id` - The ID of the OMI used to create the VM.
 * `is_source_dest_checked` - (Net only) If true, the source/destination check is enabled. If false, it is disabled. This value must be false for a NAT VM to perform network address translation (NAT) in a Net.
 * `keypair_name` - The name of the keypair used when launching the VM.
 * `launch_number` - The number for the VM when launching a group of several VMs (for example, `0`, `1`, `2`, and so on).
+* `nested_virtualization` - If true, nested virtualization is enabled. If false, it is disabled.
 * `net_id` - The ID of the Net in which the VM is running.
 * `nics` - (Net only) The network interface cards (NICs) the VMs are attached to.
     * `account_id` - The account ID of the owner of the NIC.

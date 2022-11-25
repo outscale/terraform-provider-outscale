@@ -16,7 +16,7 @@ For more information on this resource actions, see the [API documentation](https
 ## Example Usage
 
 ```hcl
-data "outscale_dhcp_option" "data_dhcp_options" {
+data "outscale_dhcp_options" "data_dhcp_options" {
 	filter {
 		name   = "dhcp_options_set_ids"
 		values = ["dopt-12345678","dopt-87654321"]
@@ -33,6 +33,7 @@ The following arguments are supported:
     * `dhcp_options_set_ids` - (Optional) The IDs of the DHCP options sets.
     * `domain_name_servers` - (Optional) The IPs of the domain name servers used for the DHCP options sets.
     * `domain_names` - (Optional) The domain names used for the DHCP options sets.
+    * `log_servers` - (Optional) The IPs of the log servers used for the DHCP options sets.
     * `ntp_servers` - (Optional) The IPs of the Network Time Protocol (NTP) servers used for the DHCP options sets.
     * `tag_keys` - (Optional) The keys of the tags associated with the DHCP options sets.
     * `tag_values` - (Optional) The values of the tags associated with the DHCP options sets.
@@ -47,6 +48,7 @@ The following attributes are exported:
     * `dhcp_options_set_id` - The ID of the DHCP options set.
     * `domain_name` - The domain name.
     * `domain_name_servers` - One or more IPs for the domain name servers.
+    * `log_servers` - One or more IPs for the log servers.
     * `ntp_servers` - One or more IPs for the NTP servers.
     * `tags` - One or more tags associated with the DHCP options set.
         * `key` - The key of the tag, with a minimum of 1 character.
