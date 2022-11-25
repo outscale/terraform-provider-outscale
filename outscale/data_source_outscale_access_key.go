@@ -10,41 +10,13 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func dataSourceOutscaleAccessKey() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleAccessKeyRead,
-		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
-			"access_key_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
-			"creation_date": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"expiration_date": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"last_modification_date": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"state": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validation.StringInSlice([]string{"ACTIVE", "INACTIVE"}, false),
-			},
-			"request_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-		},
+		Read:   dataSourceOutscaleAccessKeyRead,
+		Schema: getDataSourceSchemas(AccessKeySchema()),
 	}
 }
 
@@ -52,22 +24,10 @@ func dataSourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) e
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
-	accessKeyID, accessKeyOk := d.GetOk("access_key_id")
-	state, stateOk := d.GetOk("state")
-
-	if !filtersOk && !accessKeyOk && !stateOk {
-		return fmt.Errorf("One of filters, access_key_id or state must be assigned")
-	}
 
 	filterReq := &oscgo.FiltersAccessKeys{}
 	if filtersOk {
 		filterReq = buildOutscaleDataSourceAccessKeyFilters(filters.(*schema.Set))
-	}
-	if accessKeyOk {
-		filterReq.SetAccessKeyIds([]string{accessKeyID.(string)})
-	}
-	if stateOk {
-		filterReq.SetStates([]string{state.(string)})
 	}
 
 	var resp oscgo.ReadAccessKeysResponse
