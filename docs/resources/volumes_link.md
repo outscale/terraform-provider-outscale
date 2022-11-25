@@ -45,7 +45,7 @@ resource "outscale_volumes_link" "volumes_link01" {
 
 The following arguments are supported:
 
-* `device_name` - (Required) The name of the device.
+* `device_name` - (Required) The name of the device. For a root device, you must use `/dev/sda1`. For other volumes, you must use `/dev/sdX`, `/dev/sdXX`, `/dev/xvdX`, or `/dev/xvdXX` (where the first `X` is a letter between `b` and `z`, and the second `X` is a letter between `a` and `z`).
 * `vm_id` - (Required) The ID of the VM you want to attach the volume to.
 * `volume_id` - (Required) The ID of the volume you want to attach.
 

@@ -33,7 +33,7 @@ The following arguments are supported:
     * `ca_ids` - (Optional) One or more IDs of Client Certificate Authorities (CAs).
     * `cns` - (Optional) One or more Client Certificate Common Names (CNs).
     * `descriptions` - (Optional) One or more descriptions of API access rules.
-    * `ip_ranges` - (Optional) One or more IP ranges, in CIDR notation (for example, `192.0.2.0/16`).
+    * `ip_ranges` - (Optional) One or more IP addresses or CIDR blocks (for example, `192.0.2.0/16`).
 
 ## Attribute Reference
 

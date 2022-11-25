@@ -50,6 +50,7 @@ The following attributes are exported:
 * `snapshots` - Information about one or more snapshots and their permissions.
     * `account_alias` - The account alias of the owner of the snapshot.
     * `account_id` - The account ID of the owner of the snapshot.
+    * `creation_date` - The date and time of creation of the snapshot.
     * `description` - The description of the snapshot.
     * `permissions_to_create_volume` - Information about the users who have permissions for the resource.
         * `account_ids` - The account ID of one or more users who have permissions for the resource.
