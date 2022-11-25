@@ -18,7 +18,7 @@ FEATURES:
 * Implement "CreationDate" parameter in volume resources and datasources ([GH-142](https://github.com/outscale-dev/terraform-provider-outscale/issues/142))
 * Implement "VgwTelemetries" block in outscale_vpn_connection datasource ([GH-123](https://github.com/outscale-dev/terraform-provider-outscale/issues/123))
 * Implement "CreationDate" parameter in Snapshots resources and datasource(s) ([GH-143](https://github.com/outscale-dev/terraform-provider-outscale/issues/143))
-* Implement "CreationDate" parameter in Snapshots resources and datasource(s) ([GH-125](https://github.com/outscale-dev/terraform-provider-outscale/issues/125))
+* Implement "CreationDate" parameter in Vm resources and datasource(s) ([GH-125](https://github.com/outscale-dev/terraform-provider-outscale/issues/125))
 * Implement "LocationCode" parameter in Subregions datasource ([GH-140](https://github.com/outscale-dev/terraform-provider-outscale/issues/140))
 
 IMPROVEMENT:
