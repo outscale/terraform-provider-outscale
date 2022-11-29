@@ -7,14 +7,14 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func TestAccDataSourceOutscaleOAPIVpcs_basic(t *testing.T) {
 
 	rand.Seed(time.Now().UTC().UnixNano())
-	rInt := rand.Intn(16)
-	ipRange := fmt.Sprintf("172.%d.0.0/16", rInt)
-	tag := fmt.Sprintf("terraform-testacc-vpc-data-source-%d", rInt)
+	ipRange := utils.RandVpcCidr()
+	tag := fmt.Sprintf("terraform-testacc-vpc-data-source-%s", ipRange)
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,

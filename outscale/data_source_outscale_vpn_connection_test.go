@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func TestAccOutscaleVPNConnectionDataSource_basic(t *testing.T) {
 	t.Parallel()
-	publicIP := fmt.Sprintf("172.0.0.%d", acctest.RandIntRange(1, 255))
+	publicIP := fmt.Sprintf("172.0.0.%d", utils.RandIntRange(1, 255))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -25,7 +26,7 @@ func TestAccOutscaleVPNConnectionDataSource_basic(t *testing.T) {
 
 func TestAccOutscaleVPNConnectionDataSource_withFilters(t *testing.T) {
 	t.Parallel()
-	publicIP := fmt.Sprintf("172.0.0.%d", acctest.RandIntRange(1, 255))
+	publicIP := fmt.Sprintf("172.0.0.%d", utils.RandIntRange(1, 255))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },

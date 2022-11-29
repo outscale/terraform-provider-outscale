@@ -10,7 +10,6 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
@@ -19,8 +18,8 @@ func TestAccOutscaleVPNConnectionRoute_basic(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_vpn_connection_route.foo"
 
-	publicIP := fmt.Sprintf("172.0.0.%d", acctest.RandIntRange(1, 255))
-	destinationIPRange := fmt.Sprintf("172.168.%d.0/24", acctest.RandIntRange(1, 255))
+	publicIP := fmt.Sprintf("172.0.0.%d", utils.RandIntRange(1, 255))
+	destinationIPRange := fmt.Sprintf("172.168.%d.0/24", utils.RandIntRange(1, 255))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -44,8 +43,8 @@ func TestAccOutscaleVPNConnectionRouteimport_basic(t *testing.T) {
 	if os.Getenv("TEST_QUOTA") == "true" {
 		resourceName := "outscale_vpn_connection_route.foo"
 
-		publicIP := fmt.Sprintf("172.0.0.%d", acctest.RandIntRange(1, 255))
-		destinationIPRange := fmt.Sprintf("172.168.%d.0/24", acctest.RandIntRange(1, 255))
+		publicIP := fmt.Sprintf("172.0.0.%d", utils.RandIntRange(1, 255))
+		destinationIPRange := fmt.Sprintf("172.168.%d.0/24", utils.RandIntRange(1, 255))
 
 		resource.Test(t, resource.TestCase{
 			PreCheck:     func() { testAccPreCheck(t) },

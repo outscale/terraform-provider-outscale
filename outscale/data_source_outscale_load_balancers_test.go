@@ -5,15 +5,15 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func TestAccOutscaleOAPIDSLBSU_basic(t *testing.T) {
 	t.Parallel()
 	region := os.Getenv("OUTSCALE_REGION")
 	zone := fmt.Sprintf("%sa", region)
-	numLbu := acctest.RandIntRange(0, 50)
+	numLbu := utils.RandIntRange(0, 50)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
