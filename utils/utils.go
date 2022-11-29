@@ -146,3 +146,7 @@ func CheckThrottling(errCode int, err error) *resource.RetryError {
 	}
 	return resource.NonRetryableError(err)
 }
+
+func RandIntRange(min, max int) int {
+	return min + rand.Intn(max-min)
+}
