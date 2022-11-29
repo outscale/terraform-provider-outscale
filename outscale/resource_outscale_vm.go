@@ -488,7 +488,6 @@ func resourceOutscaleOApiVM() *schema.Resource {
 			"user_data": {
 				Type:     schema.TypeString,
 				Optional: true,
-				Computed: true,
 			},
 			"vm_id": {
 				Type:     schema.TypeString,
