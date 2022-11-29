@@ -149,3 +149,20 @@ func CheckThrottling(httpResp *http.Response, err error) *resource.RetryError {
 func RandIntRange(min, max int) int {
 	return min + rand.Intn(max-min)
 }
+
+func RandVpcCidr() string {
+	var result string
+	prefix := RandIntRange(16, 29)
+	switch rand.Intn(3) {
+	case 0:
+		//10.0.0.0 - 10.255.255.255 (10/8 prefix)
+		result = fmt.Sprintf("10.%d.0.0/%d", rand.Intn(256), prefix)
+	case 1:
+		//172.16.0.0 - 172.31.255.255 (172.16/12 prefix)
+		result = fmt.Sprintf("172.%d.0.0/%d", RandIntRange(16, 32), prefix)
+	case 2:
+		//192.168.0.0 - 192.168.255.255 (192.168/16 prefix)
+		result = fmt.Sprintf("192.168.0.0/%d", prefix)
+	}
+	return result
+}

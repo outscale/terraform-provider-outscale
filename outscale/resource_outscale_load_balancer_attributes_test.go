@@ -6,16 +6,16 @@ import (
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func TestAccOutscaleOAPILBUAttr_basic(t *testing.T) {
 	t.Parallel()
 	var conf oscgo.AccessLog
 
-	r := acctest.RandIntRange(0, 10)
+	r := utils.RandIntRange(0, 10)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {

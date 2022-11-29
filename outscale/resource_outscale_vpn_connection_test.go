@@ -18,7 +18,7 @@ func TestAccOutscaleVPNConnection_basic(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_vpn_connection.foo"
 
-	publicIP := fmt.Sprintf("172.0.0.%d", acctest.RandIntRange(1, 255))
+	publicIP := fmt.Sprintf("172.0.0.%d", utils.RandIntRange(1, 255))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
@@ -73,7 +73,7 @@ func TestAccOutscaleVPNConnection_basic(t *testing.T) {
 func TestAccOutscaleVPNConnection_withoutStaticRoutes(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_vpn_connection.foo"
-	publicIP := fmt.Sprintf("172.0.0.%d", acctest.RandIntRange(0, 255))
+	publicIP := fmt.Sprintf("172.0.0.%d", utils.RandIntRange(0, 255))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
@@ -100,7 +100,7 @@ func TestAccOutscaleVPNConnection_withTags(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_vpn_connection.foo"
 
-	publicIP := fmt.Sprintf("172.0.0.%d", acctest.RandIntRange(1, 255))
+	publicIP := fmt.Sprintf("172.0.0.%d", utils.RandIntRange(1, 255))
 	value := fmt.Sprintf("testacc-%s", acctest.RandString(5))
 
 	resource.Test(t, resource.TestCase{
@@ -132,7 +132,7 @@ func TestAccOutscaleVPNConnection_importBasic(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_vpn_connection.foo"
 
-	publicIP := fmt.Sprintf("172.0.0.%d", acctest.RandIntRange(1, 255))
+	publicIP := fmt.Sprintf("172.0.0.%d", utils.RandIntRange(1, 255))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },

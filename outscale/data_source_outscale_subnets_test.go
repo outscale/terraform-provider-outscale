@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func TestAccDataSourceOutscaleOAPISubnets(t *testing.T) {
 	t.Parallel()
-	rInt := acctest.RandIntRange(0, 256)
+	rInt := utils.RandIntRange(16, 31)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },

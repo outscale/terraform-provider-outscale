@@ -11,7 +11,6 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
@@ -22,7 +21,7 @@ func TestAccOutscaleOAPILBUBasic(t *testing.T) {
 
 	resourceName := "outscale_load_balancer.bar"
 
-	r := acctest.RandIntRange(0, 50)
+	r := utils.RandIntRange(0, 50)
 	region := os.Getenv("OUTSCALE_REGION")
 	zone := fmt.Sprintf("%sa", region)
 
@@ -53,7 +52,7 @@ func TestAccOutscaleOAPILBUPublicIp(t *testing.T) {
 
 	resourceName := "outscale_load_balancer.bar"
 
-	r := acctest.RandIntRange(0, 50)
+	r := utils.RandIntRange(0, 50)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {

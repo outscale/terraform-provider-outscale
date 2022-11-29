@@ -8,14 +8,14 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func TestAccDataSourceOutscaleOAPIVpc_basic(t *testing.T) {
 	t.Parallel()
 	rand.Seed(time.Now().UTC().UnixNano())
-	rInt := rand.Intn(16)
-	ipRange := fmt.Sprintf("172.%d.0.0/16", rInt)
-	tag := fmt.Sprintf("terraform-testacc-vpc-data-source-%d", rInt)
+	ipRange := utils.RandVpcCidr()
+	tag := fmt.Sprintf("terraform-testacc-vpc-data-source-%s", ipRange)
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -72,7 +72,6 @@ func testAccDataSourceOutscaleOAPIVpcConfig(ipRange, tag string) string {
 		}
 		
 		data "outscale_net" "by_id" {
-			#  net_id = "${outscale_net.test.id}"
 			filter {
 				name   = "net_ids"
 				values = ["${outscale_net.test.id}"]

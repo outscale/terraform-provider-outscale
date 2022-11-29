@@ -9,14 +9,13 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 func TestAccOutscaleOAPIVirtualRoutePropagation_basic(t *testing.T) {
 	t.Parallel()
-	rBgpAsn := acctest.RandIntRange(64512, 65534)
+	rBgpAsn := utils.RandIntRange(64512, 65534)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
