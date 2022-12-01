@@ -147,7 +147,7 @@ func testAccCheckOutscaleServerCertificateExists(n string) resource.TestCheckFun
 		err := resource.Retry(3*time.Minute, func() *resource.RetryError {
 			rp, httpResp, err := conn.ServerCertificateApi.ReadServerCertificates(context.Background()).ReadServerCertificatesRequest(oscgo.ReadServerCertificatesRequest{}).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			return nil
@@ -186,7 +186,7 @@ func testAccCheckOutscaleServerCertificateDestroy(s *terraform.State) error {
 		err = resource.Retry(3*time.Minute, func() *resource.RetryError {
 			rp, httpResp, err := conn.ServerCertificateApi.ReadServerCertificates(context.Background()).ReadServerCertificatesRequest(oscgo.ReadServerCertificatesRequest{}).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			return nil

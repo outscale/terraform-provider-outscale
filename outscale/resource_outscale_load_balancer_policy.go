@@ -276,7 +276,7 @@ func resourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, met
 			CreateLoadBalancerPolicyRequest(req).Execute()
 
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -381,7 +381,7 @@ func resourceOutscaleAppCookieStickinessPolicyDelete(d *schema.ResourceData, met
 			DeleteLoadBalancerPolicyRequest(request).Execute()
 
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})

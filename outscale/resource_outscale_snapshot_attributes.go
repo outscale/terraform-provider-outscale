@@ -139,7 +139,7 @@ func resourcedOutscaleOAPISnapshotAttributesCreate(d *schema.ResourceData, meta 
 	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
 		_, httpResp, err := conn.SnapshotApi.UpdateSnapshot(context.Background()).UpdateSnapshotRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})
@@ -163,7 +163,7 @@ func resourcedOutscaleOAPISnapshotAttributesRead(d *schema.ResourceData, meta in
 			},
 		}).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil

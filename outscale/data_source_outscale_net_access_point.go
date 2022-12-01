@@ -95,7 +95,7 @@ func dataSourceOutscaleNetAccessPointRead(d *schema.ResourceData, meta interface
 			context.Background()).
 			ReadNetAccessPointsRequest(*req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil

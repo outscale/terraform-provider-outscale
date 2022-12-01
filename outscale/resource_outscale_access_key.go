@@ -80,7 +80,7 @@ func resourceOutscaleAccessKeyCreate(d *schema.ResourceData, meta interface{}) e
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.AccessKeyApi.CreateAccessKey(context.Background()).CreateAccessKeyRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -110,7 +110,7 @@ func resourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) err
 	err := resource.Retry(2*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.AccessKeyApi.ReadSecretAccessKey(context.Background()).ReadSecretAccessKeyRequest(filter).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -170,7 +170,7 @@ func resourceOutscaleAccessKeyUpdate(d *schema.ResourceData, meta interface{}) e
 	err := resource.Retry(2*time.Minute, func() *resource.RetryError {
 		_, httpResp, err := conn.AccessKeyApi.UpdateAccessKey(context.Background()).UpdateAccessKeyRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})
@@ -191,7 +191,7 @@ func resourceOutscaleAccessKeyDelete(d *schema.ResourceData, meta interface{}) e
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, httpResp, err := conn.AccessKeyApi.DeleteAccessKey(context.Background()).DeleteAccessKeyRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})
@@ -210,7 +210,7 @@ func updateAccessKey(conn *oscgo.APIClient, id, state string) error {
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, httpResp, err := conn.AccessKeyApi.UpdateAccessKey(context.Background()).UpdateAccessKeyRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})

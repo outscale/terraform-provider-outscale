@@ -80,7 +80,7 @@ func resourceOutscaleOAPIVirtualGatewayCreate(d *schema.ResourceData, meta inter
 		var err error
 		rp, httpResp, err := conn.VirtualGatewayApi.CreateVirtualGateway(context.Background()).CreateVirtualGatewayRequest(createOpts).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -129,7 +129,7 @@ func resourceOutscaleOAPIVirtualGatewayRead(d *schema.ResourceData, meta interfa
 			Filters: &oscgo.FiltersVirtualGateway{VirtualGatewayIds: &[]string{d.Id()}},
 		}).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		statusCode = httpResp.StatusCode
@@ -203,7 +203,7 @@ func resourceOutscaleOAPIVirtualGatewayDelete(d *schema.ResourceData, meta inter
 				d.SetId("")
 				return nil
 			}
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		d.SetId("")
 		return nil
@@ -223,7 +223,7 @@ func vpnGatewayAttachStateRefreshFunc(conn *oscgo.APIClient, id string, expected
 				Filters: &oscgo.FiltersVirtualGateway{VirtualGatewayIds: &[]string{id}},
 			}).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			statusCode = httpResp.StatusCode
@@ -272,7 +272,7 @@ func virtualGatewayStateRefreshFunc(conn *oscgo.APIClient, instanceID, failState
 				Filters: &oscgo.FiltersVirtualGateway{
 					VirtualGatewayIds: &[]string{instanceID}}}).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			return nil

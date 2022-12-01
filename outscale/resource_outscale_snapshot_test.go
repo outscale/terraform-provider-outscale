@@ -140,7 +140,7 @@ func testAccCheckOAPISnapshotExists(n string, v *oscgo.Snapshot) resource.TestCh
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 			rp, httpResp, err := conn.SnapshotApi.ReadSnapshots(context.Background()).ReadSnapshotsRequest(request).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			return nil

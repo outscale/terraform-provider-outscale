@@ -105,7 +105,7 @@ func dataSourceAccountsRead(d *schema.ResourceData, meta interface{}) error {
 	err = resource.Retry(30*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.AccountApi.ReadAccounts(context.Background()).ReadAccountsRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil

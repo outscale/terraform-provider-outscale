@@ -57,7 +57,7 @@ func testAccCheckOutscaleInternetServiceExists(n string) resource.TestCheckFunc 
 		err := resource.Retry(120*time.Second, func() *resource.RetryError {
 			rp, httpResp, err := conn.InternetServiceApi.ReadInternetServices(context.Background()).ReadInternetServicesRequest(filterReq).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			return nil
@@ -86,7 +86,7 @@ func testAccCheckOutscaleInternetServiceDestroyed(s *terraform.State) error {
 		err := resource.Retry(120*time.Second, func() *resource.RetryError {
 			rp, httpResp, err := conn.InternetServiceApi.ReadInternetServices(context.Background()).ReadInternetServicesRequest(filterReq).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			return nil

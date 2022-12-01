@@ -145,7 +145,7 @@ func resourceOutscaleOAPIRouteCreate(d *schema.ResourceData, meta interface{}) e
 				log.Printf("[DEBUG] Trying to create route again: %q", err)
 				return resource.RetryableError(err)
 			}
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})
@@ -327,7 +327,7 @@ func resourceOutscaleOAPIRouteUpdate(d *schema.ResourceData, meta interface{}) e
 				log.Printf("[DEBUG] Trying to create route again: %q", err)
 				return resource.RetryableError(err)
 			}
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})
@@ -357,7 +357,7 @@ func resourceOutscaleOAPIRouteDelete(d *schema.ResourceData, meta interface{}) e
 				log.Printf("[DEBUG] Trying to delete route again: %q", fmt.Sprint(err))
 				return resource.RetryableError(err)
 			}
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})
@@ -387,7 +387,7 @@ func resourceOutscaleOAPIRouteExists(d *schema.ResourceData, meta interface{}) (
 				log.Printf("[DEBUG] Trying to create route again: %q", err)
 				return resource.RetryableError(err)
 			}
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -438,7 +438,7 @@ func findResourceOAPIRoute(conn *oscgo.APIClient, rtbid string, cidr string) (*o
 				log.Printf("[DEBUG] Trying to create route again: %q", err)
 				return resource.RetryableError(err)
 			}
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil

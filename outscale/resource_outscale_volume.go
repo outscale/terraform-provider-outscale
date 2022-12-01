@@ -153,7 +153,7 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.VolumeApi.CreateVolume(context.Background()).CreateVolumeRequest(request).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -203,7 +203,7 @@ func resourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		r, httpResp, err := conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(request).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = r
 		statusCode = httpResp.StatusCode
@@ -262,7 +262,7 @@ func resourceOAPIVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 			if strings.Contains(fmt.Sprint(err), "VolumeInUse") {
 				return resource.RetryableError(fmt.Errorf("Outscale VolumeInUse - trying again while it detaches"))
 			}
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})
@@ -279,7 +279,7 @@ func volumeOAPIStateRefreshFunc(conn *oscgo.APIClient, volumeID string) resource
 				},
 			}).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			return nil

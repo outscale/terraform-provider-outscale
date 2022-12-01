@@ -47,9 +47,8 @@ func resourceOutscaleOAPINetCreate(d *schema.ResourceData, meta interface{}) err
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.NetApi.CreateNet(context.Background()).CreateNetRequest(req).Execute()
-
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -103,7 +102,7 @@ func resourceOutscaleOAPINetRead(d *schema.ResourceData, meta interface{}) error
 		rp, httpResp, err := conn.NetApi.ReadNets(context.Background()).ReadNetsRequest(req).Execute()
 
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -167,7 +166,7 @@ func resourceOutscaleOAPINetDelete(d *schema.ResourceData, meta interface{}) err
 			err := resource.Retry(120*time.Second, func() *resource.RetryError {
 				_, httpResp, err := conn.NetApi.DeleteNet(context.Background()).DeleteNetRequest(req).Execute()
 				if err != nil {
-					return utils.CheckThrottling(httpResp.StatusCode, err)
+					return utils.CheckThrottling(httpResp, err)
 				}
 				return nil
 			})

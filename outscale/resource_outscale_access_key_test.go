@@ -177,7 +177,7 @@ func testAccCheckOutscaleAccessKeyExists(resourceName string) resource.TestCheck
 		err := resource.Retry(2*time.Minute, func() *resource.RetryError {
 			_, httpResp, err := conn.AccessKeyApi.ReadSecretAccessKey(context.Background()).ReadSecretAccessKeyRequest(filter).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			return nil
 		})
@@ -202,7 +202,7 @@ func testAccCheckOutscaleAccessKeyDestroy(s *terraform.State) error {
 		err := resource.Retry(2*time.Minute, func() *resource.RetryError {
 			_, httpResp, err := conn.AccessKeyApi.ReadSecretAccessKey(context.Background()).ReadSecretAccessKeyRequest(filter).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			return nil
 		})

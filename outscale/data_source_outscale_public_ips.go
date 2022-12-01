@@ -84,7 +84,7 @@ func dataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{}) e
 		var err error
 		rp, httpResp, err := conn.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		statusCode = httpResp.StatusCode

@@ -158,7 +158,7 @@ func resourceOutscaleOAPIImageLaunchPermissionCreate(d *schema.ResourceData, met
 		var err error
 		_, httpResp, err := conn.ImageApi.UpdateImage(context.Background()).UpdateImageRequest(request).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})
@@ -187,7 +187,7 @@ func resourceOutscaleOAPIImageLaunchPermissionRead(d *schema.ResourceData, meta 
 			},
 		}).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -238,7 +238,7 @@ func resourceOutscaleOAPIImageLaunchPermissionDelete(d *schema.ResourceData, met
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 			_, httpResp, err := conn.ImageApi.UpdateImage(context.Background()).UpdateImageRequest(request).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			return nil
 		})
@@ -265,7 +265,7 @@ func hasOAPILaunchPermission(conn *oscgo.APIClient, imageID string) (bool, error
 			},
 		}).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil

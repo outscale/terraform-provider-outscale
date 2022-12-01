@@ -42,7 +42,7 @@ func resourceOutscaleOAPIPublicIPCreate(d *schema.ResourceData, meta interface{}
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.PublicIpApi.CreatePublicIp(context.Background()).CreatePublicIpRequest(allocOpts).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -84,7 +84,7 @@ func resourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) 
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
 		resp, httpResp, err := conn.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		response = resp
 		return nil
@@ -167,7 +167,7 @@ func resourceOutscaleOAPIPublicIPUpdate(d *schema.ResourceData, meta interface{}
 				if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
 					return resource.RetryableError(err)
 				}
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 
 			return nil
@@ -204,7 +204,7 @@ func unlinkPublicIp(conn *oscgo.APIClient, publicIpId *string) error {
 			LinkPublicIpId: publicIpId,
 		}).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})
@@ -254,7 +254,7 @@ func resourceOutscaleOAPIPublicIPDelete(d *schema.ResourceData, meta interface{}
 		}).Execute()
 
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})

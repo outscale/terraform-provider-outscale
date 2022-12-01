@@ -61,7 +61,7 @@ func resourceOutscaleOAPIVpnGatewayRoutePropagationEnable(d *schema.ResourceData
 			Enable:           enable,
 		}).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})
@@ -93,7 +93,7 @@ func resourceOutscaleOAPIVpnGatewayRoutePropagationDisable(d *schema.ResourceDat
 			Enable:           enable,
 		}).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})
@@ -119,7 +119,7 @@ func resourceOutscaleOAPIVpnGatewayRoutePropagationRead(d *schema.ResourceData, 
 			Filters: &oscgo.FiltersRouteTable{RouteTableIds: &[]string{rtID}},
 		}).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil

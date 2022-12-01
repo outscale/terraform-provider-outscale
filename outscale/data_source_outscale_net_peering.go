@@ -72,7 +72,7 @@ func dataSourceOutscaleOAPILinPeeringConnectionRead(d *schema.ResourceData, meta
 		rp, httpResp, err := conn.NetPeeringApi.ReadNetPeerings(context.Background()).ReadNetPeeringsRequest(req).Execute()
 
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		statusCode = httpResp.StatusCode

@@ -42,7 +42,7 @@ func dataSourceOutscaleOAPILBUTagsRead(d *schema.ResourceData, meta interface{})
 			ReadLoadBalancerTagsRequest(req).Execute()
 
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil

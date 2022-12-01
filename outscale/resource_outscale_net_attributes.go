@@ -72,7 +72,7 @@ func resourceOutscaleOAPILinAttrCreate(d *schema.ResourceData, meta interface{})
 		var err error
 		rp, httpResp, err := conn.NetApi.UpdateNet(context.Background()).UpdateNetRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -98,7 +98,7 @@ func resourceOutscaleOAPILinAttrUpdate(d *schema.ResourceData, meta interface{})
 	err := resource.Retry(120*time.Second, func() *resource.RetryError {
 		_, httpResp, err := conn.NetApi.UpdateNet(context.Background()).UpdateNetRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})
@@ -126,7 +126,7 @@ func resourceOutscaleOAPILinAttrRead(d *schema.ResourceData, meta interface{}) e
 		var err error
 		rp, httpResp, err := conn.NetApi.ReadNets(context.Background()).ReadNetsRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil

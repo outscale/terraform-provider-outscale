@@ -246,7 +246,7 @@ func readLbs_(conn *oscgo.APIClient, d *schema.ResourceData, t schema.ValueType)
 			ReadLoadBalancers(context.Background()).
 			ReadLoadBalancersRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil

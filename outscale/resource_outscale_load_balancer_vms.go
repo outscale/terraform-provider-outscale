@@ -69,7 +69,7 @@ func resourceOutscaleOAPILBUAttachmentCreate(d *schema.ResourceData, meta interf
 			Execute()
 
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})
@@ -135,7 +135,7 @@ func resourceOutscaleOAPILBUAttachmentDelete(d *schema.ResourceData, meta interf
 			Execute()
 
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})

@@ -104,7 +104,7 @@ func resourceOutscaleNetAccessPointUpdate(d *schema.ResourceData, meta interface
 		err = resource.Retry(60*time.Second, func() *resource.RetryError {
 			_, httpResp, err := conn.NetAccessPointApi.UpdateNetAccessPoint(context.Background()).UpdateNetAccessPointRequest(*req).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			return nil
 		})
@@ -142,7 +142,7 @@ func napStateRefreshFunc(conn *oscgo.APIClient, id string) resource.StateRefresh
 					},
 				}).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			return nil
@@ -187,7 +187,7 @@ func resourceOutscaleNetAccessPointCreate(d *schema.ResourceData, meta interface
 			context.Background()).
 			CreateNetAccessPointRequest(*req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -246,7 +246,7 @@ func resourceOutscaleNetAccessPointRead(d *schema.ResourceData, meta interface{}
 			context.Background()).
 			ReadNetAccessPointsRequest(*req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -286,7 +286,7 @@ func resourceOutscaleNetAccessPointDelete(d *schema.ResourceData, meta interface
 			context.Background()).
 			DeleteNetAccessPointRequest(*req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})

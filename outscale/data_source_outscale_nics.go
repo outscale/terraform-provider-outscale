@@ -241,7 +241,7 @@ func dataSourceOutscaleOAPINicsRead(d *schema.ResourceData, meta interface{}) er
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(params).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil

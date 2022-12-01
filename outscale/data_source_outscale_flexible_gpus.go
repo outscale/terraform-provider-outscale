@@ -82,7 +82,7 @@ func dataSourceOutscaleOAPIFlexibleGpusRead(d *schema.ResourceData, meta interfa
 		rp, httpResp, err := conn.FlexibleGpuApi.ReadFlexibleGpus(
 			context.Background()).ReadFlexibleGpusRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil

@@ -84,7 +84,7 @@ func resourceOutscaleOAPIVirtualGatewayLinkCreate(d *schema.ResourceData, meta i
 				return resource.RetryableError(
 					fmt.Errorf("Gateway not found, retry for eventual consistancy"))
 			}
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})
@@ -128,7 +128,7 @@ func resourceOutscaleOAPIVirtualGatewayLinkRead(d *schema.ResourceData, meta int
 			Filters: &oscgo.FiltersVirtualGateway{VirtualGatewayIds: &[]string{vgwID}},
 		}).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		statusCode = httpResp.StatusCode
@@ -218,7 +218,7 @@ func resourceOutscaleOAPIVirtualGatewayLinkDelete(d *schema.ResourceData, meta i
 				return resource.RetryableError(
 					fmt.Errorf("Gateway not found, retry for eventual consistancy"))
 			}
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		statusCode = httpResp.StatusCode
 		return nil
@@ -270,7 +270,7 @@ func vpnGatewayLinkStateRefresh(conn *oscgo.APIClient, vpcID, vgwID string) reso
 					return resource.RetryableError(
 						fmt.Errorf("Gateway not found, retry for eventual consistancy"))
 				}
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			statusCode = httpResp.StatusCode

@@ -148,7 +148,7 @@ func resourceOutscaleOAPIRouteTableCreate(d *schema.ResourceData, meta interface
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.RouteTableApi.CreateRouteTable(context.Background()).CreateRouteTableRequest(createOpts).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -267,7 +267,7 @@ func resourceOutscaleOAPIRouteTableDelete(d *schema.ResourceData, meta interface
 					LinkRouteTableId: a.GetLinkRouteTableId(),
 				}).Execute()
 				if err != nil {
-					return utils.CheckThrottling(httpResp.StatusCode, err)
+					return utils.CheckThrottling(httpResp, err)
 				}
 				statusCode = httpResp.StatusCode
 				return nil
@@ -289,7 +289,7 @@ func resourceOutscaleOAPIRouteTableDelete(d *schema.ResourceData, meta interface
 			RouteTableId: d.Id(),
 		}).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		statusCode = httpResp.StatusCode
 		return nil
@@ -329,7 +329,7 @@ func readOAPIRouteTable(conn *oscgo.APIClient, routeTableID string, linkIds ...s
 		var err error
 		rp, httpResp, err := conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(routeTableRequest).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil

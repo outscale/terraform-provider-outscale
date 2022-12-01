@@ -70,7 +70,7 @@ func resourceOutscaleOAPILinkRouteTableCreate(d *schema.ResourceData, meta inter
 		var err error
 		rp, httpResp, err := conn.RouteTableApi.LinkRouteTable(context.Background()).LinkRouteTableRequest(linkRouteTableOpts).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -123,7 +123,7 @@ func resourceOutscaleOAPILinkRouteTableDelete(d *schema.ResourceData, meta inter
 			LinkRouteTableId: d.Id(),
 		}).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		statusCode = httpResp.StatusCode
 		return nil
@@ -180,7 +180,7 @@ func readOutscaleLinkRouteTable(meta *OutscaleClient, routeTableID, linkRouteTab
 		var err error
 		rp, httpResp, err := conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(routeTableRequest).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil

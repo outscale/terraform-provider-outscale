@@ -71,7 +71,7 @@ func resourceOutscaleClientGatewayCreate(d *schema.ResourceData, meta interface{
 		var err error
 		rp, httpResp, err := conn.ClientGatewayApi.CreateClientGateway(context.Background()).CreateClientGatewayRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -162,7 +162,7 @@ func resourceOutscaleClientGatewayDelete(d *schema.ResourceData, meta interface{
 	err := resource.Retry(120*time.Second, func() *resource.RetryError {
 		_, httpResp, err := conn.ClientGatewayApi.DeleteClientGateway(context.Background()).DeleteClientGatewayRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})
@@ -201,7 +201,7 @@ func clientGatewayRefreshFunc(conn *oscgo.APIClient, gatewayID *string) resource
 		err := resource.Retry(120*time.Second, func() *resource.RetryError {
 			rp, httpResp, err := conn.ClientGatewayApi.ReadClientGateways(context.Background()).ReadClientGatewaysRequest(filter).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			statusCode = httpResp.StatusCode

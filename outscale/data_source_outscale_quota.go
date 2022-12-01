@@ -75,7 +75,7 @@ func dataSourceOutscaleOAPIQuotaRead(d *schema.ResourceData, meta interface{}) e
 		var err error
 		rp, httpResp, err := conn.QuotaApi.ReadQuotas(context.Background()).ReadQuotasRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil

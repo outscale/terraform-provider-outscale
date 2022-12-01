@@ -84,7 +84,7 @@ func resourceOAPINatServiceCreate(d *schema.ResourceData, meta interface{}) erro
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.NatServiceApi.CreateNatService(context.Background()).CreateNatServiceRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -217,7 +217,7 @@ func resourceOAPINatServiceDelete(d *schema.ResourceData, meta interface{}) erro
 			NatServiceId: d.Id(),
 		}).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})
@@ -255,7 +255,7 @@ func NGOAPIStateRefreshFunc(client *oscgo.APIClient, req oscgo.ReadNatServicesRe
 			var err error
 			rp, httpResp, err := client.NatServiceApi.ReadNatServices(context.Background()).ReadNatServicesRequest(req).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			return nil

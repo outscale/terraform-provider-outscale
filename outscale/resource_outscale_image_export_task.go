@@ -164,7 +164,7 @@ func resourceOAPIImageExportTaskCreate(d *schema.ResourceData, meta interface{})
 		rp, httpResp, err := conn.ImageApi.CreateImageExportTask(context.Background()).
 			CreateImageExportTaskRequest(request).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -202,7 +202,7 @@ func resourceOAPIImageExportTaskRead(d *schema.ResourceData, meta interface{}) e
 				Filters: filter,
 			}).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -333,7 +333,7 @@ func ImageTaskStateRefreshFunc(client *oscgo.APIClient, id string) resource.Stat
 					Filters: filter,
 				}).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			statusCode = httpResp.StatusCode

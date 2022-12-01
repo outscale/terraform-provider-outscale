@@ -215,7 +215,7 @@ func testAccCheckOAPIRouteTableDestroy(s *terraform.State) error {
 		err = resource.Retry(15*time.Minute, func() *resource.RetryError {
 			rp, httpResp, err := conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(params).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			return nil
@@ -260,7 +260,7 @@ func testAccCheckOAPIRouteTableExists(n string, v *oscgo.RouteTable, t *[]oscgo.
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 			rp, httpResp, err := conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(params).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			return nil

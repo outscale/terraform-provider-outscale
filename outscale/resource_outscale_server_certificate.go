@@ -102,7 +102,7 @@ func resourceOutscaleOAPIServerCertificateCreate(d *schema.ResourceData, meta in
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.ServerCertificateApi.CreateServerCertificate(context.Background()).CreateServerCertificateRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -128,7 +128,7 @@ func resourceOutscaleOAPIServerCertificateRead(d *schema.ResourceData, meta inte
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.ServerCertificateApi.ReadServerCertificates(context.Background()).ReadServerCertificatesRequest(oscgo.ReadServerCertificatesRequest{}).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -183,7 +183,7 @@ func resourceOutscaleOAPIServerCertificateUpdate(d *schema.ResourceData, meta in
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
 		_, httpResp, err := conn.ServerCertificateApi.UpdateServerCertificate(context.Background()).UpdateServerCertificateRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})
@@ -205,7 +205,7 @@ func resourceOutscaleOAPIServerCertificateDelete(d *schema.ResourceData, meta in
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
 		_, httpResp, err := conn.ServerCertificateApi.DeleteServerCertificate(context.Background()).DeleteServerCertificateRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})

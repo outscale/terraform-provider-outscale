@@ -79,7 +79,7 @@ func TestAccOutscaleOAPILinPeeringConnection_plan(t *testing.T) {
 				NetPeeringId: connection.GetNetPeeringId(),
 			}).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			return nil
 		})
@@ -125,7 +125,7 @@ func testAccCheckOutscaleOAPILinPeeringConnectionDestroy(s *terraform.State) err
 			}).Execute()
 
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			return nil
@@ -185,7 +185,7 @@ func testAccCheckOutscaleOAPILinPeeringConnectionExists(n string, connection *os
 			}).Execute()
 
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			return nil

@@ -266,7 +266,7 @@ func resourceOutscaleOAPINicCreate(d *schema.ResourceData, meta interface{}) err
 		var err error
 		rp, httpResp, err := conn.NicApi.CreateNic(context.Background()).CreateNicRequest(request).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -314,7 +314,7 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 
 		rp, httpResp, err := conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(dnir).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -467,7 +467,7 @@ func resourceOutscaleOAPINicDelete(d *schema.ResourceData, meta interface{}) err
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, httpResp, err := conn.NicApi.DeleteNic(context.Background()).DeleteNicRequest(deleteEniOpts).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})
@@ -509,7 +509,7 @@ func resourceOutscaleOAPINicDetach(meta interface{}, nicID string) error {
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 			_, httpResp, err := conn.NicApi.UnlinkNic(context.Background()).UnlinkNicRequest(req).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			statusCode = httpResp.StatusCode
 			return nil
@@ -551,7 +551,7 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 				_, httpResp, err := conn.NicApi.LinkNic(context.Background()).LinkNicRequest(ar).Execute()
 				if err != nil {
-					return utils.CheckThrottling(httpResp.StatusCode, err)
+					return utils.CheckThrottling(httpResp, err)
 				}
 				return nil
 			})
@@ -575,7 +575,7 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 			err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 				_, httpResp, err := conn.NicApi.UnlinkPrivateIps(context.Background()).UnlinkPrivateIpsRequest(input).Execute()
 				if err != nil {
-					return utils.CheckThrottling(httpResp.StatusCode, err)
+					return utils.CheckThrottling(httpResp, err)
 				}
 				return nil
 			})
@@ -595,7 +595,7 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 				_, httpResp, err := conn.NicApi.LinkPrivateIps(context.Background()).LinkPrivateIpsRequest(input).Execute()
 				if err != nil {
-					return utils.CheckThrottling(httpResp.StatusCode, err)
+					return utils.CheckThrottling(httpResp, err)
 				}
 				return nil
 			})
@@ -634,7 +634,7 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 					var err error
 					_, httpResp, err := conn.NicApi.LinkPrivateIps(context.Background()).LinkPrivateIpsRequest(input).Execute()
 					if err != nil {
-						return utils.CheckThrottling(httpResp.StatusCode, err)
+						return utils.CheckThrottling(httpResp, err)
 					}
 					return nil
 				})
@@ -652,7 +652,7 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 				err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 					_, httpResp, err := conn.NicApi.UnlinkPrivateIps(context.Background()).UnlinkPrivateIpsRequest(input).Execute()
 					if err != nil {
-						return utils.CheckThrottling(httpResp.StatusCode, err)
+						return utils.CheckThrottling(httpResp, err)
 					}
 					return nil
 				})
@@ -674,7 +674,7 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 			_, httpResp, err := conn.NicApi.UpdateNic(context.Background()).UpdateNicRequest(request).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			return nil
 		})
@@ -696,7 +696,7 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 			_, httpResp, err := conn.NicApi.UpdateNic(context.Background()).UpdateNicRequest(request).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			return nil
 		})

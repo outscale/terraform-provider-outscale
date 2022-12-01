@@ -57,7 +57,7 @@ func testAccCheckOutscaleCaExists(n string) resource.TestCheckFunc {
 		err = resource.Retry(120*time.Second, func() *resource.RetryError {
 			rp, httpResp, err := conn.CaApi.ReadCas(context.Background()).ReadCasRequest(oscgo.ReadCasRequest{}).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			return nil
@@ -99,7 +99,7 @@ func testAccCheckOutscaleCaDestroy(s *terraform.State) error {
 		err = resource.Retry(120*time.Second, func() *resource.RetryError {
 			rp, httpResp, err := conn.CaApi.ReadCas(context.Background()).ReadCasRequest(req).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			return nil

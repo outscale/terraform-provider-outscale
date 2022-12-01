@@ -52,7 +52,7 @@ func resourceOutscaleOAPIInternetServiceCreate(d *schema.ResourceData, meta inte
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.InternetServiceApi.CreateInternetService(context.Background()).CreateInternetServiceRequest(oscgo.CreateInternetServiceRequest{}).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -90,7 +90,7 @@ func resourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta interf
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
 		r, httpResp, err := conn.InternetServiceApi.ReadInternetServices(context.Background()).ReadInternetServicesRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = r
 		return nil
@@ -167,7 +167,7 @@ func resourceOutscaleOAPIInternetServiceDelete(d *schema.ResourceData, meta inte
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
 		_, httpResp, err := conn.InternetServiceApi.DeleteInternetService(context.Background()).DeleteInternetServiceRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})
