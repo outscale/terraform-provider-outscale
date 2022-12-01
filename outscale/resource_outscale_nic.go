@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"net/http"
 	"reflect"
 	"strconv"
 	"strings"
@@ -516,7 +517,7 @@ func resourceOutscaleOAPINicDetach(meta interface{}, nicID string) error {
 		})
 
 		if err != nil {
-			if statusCode == utils.ResourceNotFound {
+			if statusCode == http.StatusNotFound {
 				return fmt.Errorf("Error detaching ENI: %s", err)
 			}
 		}

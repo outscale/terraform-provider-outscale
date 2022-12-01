@@ -3,6 +3,7 @@ package outscale
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -54,7 +55,7 @@ func datasourceOutscaleOAPiKeyPairsRead(d *schema.ResourceData, meta interface{}
 	var errString string
 
 	if err != nil {
-		if statusCode == utils.ResourceNotFound {
+		if statusCode == http.StatusNotFound {
 			d.SetId("")
 			return nil
 		}

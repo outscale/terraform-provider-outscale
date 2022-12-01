@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -136,7 +137,7 @@ func resourceOutscaleOAPIVirtualGatewayRead(d *schema.ResourceData, meta interfa
 		return nil
 	})
 	if err != nil {
-		if statusCode == utils.ResourceNotFound {
+		if statusCode == http.StatusNotFound {
 			d.SetId("")
 			return nil
 		}
@@ -199,7 +200,7 @@ func resourceOutscaleOAPIVirtualGatewayDelete(d *schema.ResourceData, meta inter
 		_, httpResp, err := conn.VirtualGatewayApi.DeleteVirtualGateway(context.Background()).DeleteVirtualGatewayRequest(
 			oscgo.DeleteVirtualGatewayRequest{VirtualGatewayId: d.Id()}).Execute()
 		if err != nil {
-			if httpResp.StatusCode == utils.ResourceNotFound {
+			if httpResp.StatusCode == http.StatusNotFound {
 				d.SetId("")
 				return nil
 			}
@@ -231,7 +232,7 @@ func vpnGatewayAttachStateRefreshFunc(conn *oscgo.APIClient, id string, expected
 		})
 
 		if err != nil {
-			if statusCode == utils.ResourceNotFound {
+			if statusCode == http.StatusNotFound {
 				resp.SetVirtualGateways(nil)
 			} else {
 				fmt.Printf("[ERROR] Error on VpnGatewayStateRefresh: %s", err)

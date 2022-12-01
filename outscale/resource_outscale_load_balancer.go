@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -683,7 +684,7 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 						Tags:              create,
 					}).Execute()
 			if err != nil {
-				if httpResp.StatusCode == utils.ResourceNotFound {
+				if httpResp.StatusCode == http.StatusNotFound {
 					return resource.RetryableError(err) // retry
 				}
 				return utils.CheckThrottling(httpResp, err)

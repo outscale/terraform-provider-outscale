@@ -3,6 +3,7 @@ package outscale
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -275,9 +276,9 @@ func vpnConnectionRefreshFunc(conn *oscgo.APIClient, vpnConnectionID *string) re
 		resp, httpResp, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(filter).Execute()
 		if err != nil {
 			switch {
-			case httpResp.StatusCode == utils.Throttled:
+			case httpResp.StatusCode == http.StatusServiceUnavailable:
 				return nil, "pending", nil
-			case httpResp.StatusCode == utils.ResourceNotFound:
+			case httpResp.StatusCode == http.StatusNotFound:
 				return nil, "deleted", nil
 			default:
 				return nil, "failed", fmt.Errorf("Error on vpnConnectionRefresh: %s", err)

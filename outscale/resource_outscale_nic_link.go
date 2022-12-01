@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"reflect"
 	"time"
 
@@ -159,7 +160,7 @@ func resourceOutscaleOAPINetworkInterfaceAttachmentDelete(d *schema.ResourceData
 	})
 
 	if err != nil {
-		if statusCode == utils.ResourceNotFound {
+		if statusCode == http.StatusNotFound {
 			return fmt.Errorf("Error detaching ENI: %s", err)
 		}
 	}

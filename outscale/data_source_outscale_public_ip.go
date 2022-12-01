@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -96,7 +97,7 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 	})
 
 	if err != nil {
-		if statusCode == utils.ResourceNotFound {
+		if statusCode == http.StatusNotFound {
 			d.SetId("")
 			return nil
 		}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"strings"
 	"time"
 
@@ -341,7 +342,7 @@ func ImageTaskStateRefreshFunc(client *oscgo.APIClient, id string) resource.Stat
 		})
 
 		if err != nil {
-			if statusCode == utils.ResourceNotFound {
+			if statusCode == http.StatusNotFound {
 				log.Printf("[INFO] Image export task %s state %s", id, "destroyed")
 				return resp, "destroyed", nil
 			} else if resp.GetImageExportTasks() != nil && len(resp.GetImageExportTasks()) == 0 {

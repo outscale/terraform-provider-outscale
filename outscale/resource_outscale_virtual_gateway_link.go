@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -80,7 +81,7 @@ func resourceOutscaleOAPIVirtualGatewayLinkCreate(d *schema.ResourceData, meta i
 	err = resource.Retry(30*time.Second, func() *resource.RetryError {
 		_, httpResp, err := conn.VirtualGatewayApi.LinkVirtualGateway(context.Background()).LinkVirtualGatewayRequest(createOpts).Execute()
 		if err != nil {
-			if httpResp.StatusCode == utils.ResourceNotFound {
+			if httpResp.StatusCode == http.StatusNotFound {
 				return resource.RetryableError(
 					fmt.Errorf("Gateway not found, retry for eventual consistancy"))
 			}
@@ -136,7 +137,7 @@ func resourceOutscaleOAPIVirtualGatewayLinkRead(d *schema.ResourceData, meta int
 	})
 
 	if err != nil {
-		if statusCode == utils.ResourceNotFound {
+		if statusCode == http.StatusNotFound {
 			log.Printf("[WARN] VPN Gateway %q not found.", vgwID)
 			d.SetId("")
 			return nil
@@ -214,7 +215,7 @@ func resourceOutscaleOAPIVirtualGatewayLinkDelete(d *schema.ResourceData, meta i
 			NetId:            netID.(string),
 		}).Execute()
 		if err != nil {
-			if httpResp.StatusCode == utils.ResourceNotFound {
+			if httpResp.StatusCode == http.StatusNotFound {
 				return resource.RetryableError(
 					fmt.Errorf("Gateway not found, retry for eventual consistancy"))
 			}
@@ -225,7 +226,7 @@ func resourceOutscaleOAPIVirtualGatewayLinkDelete(d *schema.ResourceData, meta i
 	})
 
 	if err != nil {
-		if statusCode == utils.ResourceNotFound {
+		if statusCode == http.StatusNotFound {
 			err = nil
 			wait = false
 		}
@@ -266,7 +267,7 @@ func vpnGatewayLinkStateRefresh(conn *oscgo.APIClient, vpcID, vgwID string) reso
 				LinkNetIds:        &[]string{vpcID},
 			}}).Execute()
 			if err != nil {
-				if httpResp.StatusCode == utils.ResourceNotFound {
+				if httpResp.StatusCode == http.StatusNotFound {
 					return resource.RetryableError(
 						fmt.Errorf("Gateway not found, retry for eventual consistancy"))
 				}
@@ -278,7 +279,7 @@ func vpnGatewayLinkStateRefresh(conn *oscgo.APIClient, vpcID, vgwID string) reso
 		})
 
 		if err != nil {
-			if statusCode == utils.ResourceNotFound {
+			if statusCode == http.StatusNotFound {
 				log.Printf("[WARN] VPN Gateway %q not found.", vgwID)
 				return nil, "", nil
 			}

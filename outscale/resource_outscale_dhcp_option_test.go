@@ -3,6 +3,7 @@ package outscale
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"strings"
 	"testing"
 	"time"
@@ -248,7 +249,7 @@ func testAccCheckOAPIDHCPOptionDestroy(s *terraform.State) error {
 			return nil
 		})
 
-		if statusCode == utils.ResourceNotFound {
+		if statusCode == http.StatusNotFound {
 			continue
 		}
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -274,7 +275,7 @@ func resourceOutscaleOAPIRouteTableDelete(d *schema.ResourceData, meta interface
 			})
 
 			if err != nil {
-				if statusCode == utils.ResourceNotFound {
+				if statusCode == http.StatusNotFound {
 					return nil
 				}
 				return err
@@ -296,7 +297,7 @@ func resourceOutscaleOAPIRouteTableDelete(d *schema.ResourceData, meta interface
 	})
 
 	if err != nil {
-		if statusCode == utils.ResourceNotFound {
+		if statusCode == http.StatusNotFound {
 			return nil
 		}
 

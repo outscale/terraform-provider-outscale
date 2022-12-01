@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -307,7 +308,7 @@ func SnapshotOAPIStateRefreshFunc(client *oscgo.APIClient, id string) resource.S
 		})
 
 		if err != nil {
-			if statusCode == utils.ResourceNotFound {
+			if statusCode == http.StatusNotFound {
 				log.Printf("[INFO] OMI %s state %s", id, "destroyed")
 				return emptyResp, "destroyed", nil
 

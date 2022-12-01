@@ -17,19 +17,14 @@ import (
 
 // PrintToJSON method helper to debug responses
 const (
-	ResourceNotFound int     = 404
-	ResourceConflict int     = 409
-	TooManyRequests  int     = 429
-	FailedDependency int     = 424
-	Throttled        int     = 503
-	randMin          float32 = 1.0
-	randMax          float32 = 20.0
-	MinIops          int     = 100
-	MaxIops          int     = 13000
-	DefaultIops      int     = 150
-	MaxSize          int     = 14901
-	InvalidState     string  = "InvalidState"
-	VolumeIOPSError  string  = `
+	randMin         float32 = 1.0
+	randMax         float32 = 20.0
+	MinIops         int     = 100
+	MaxIops         int     = 13000
+	DefaultIops     int     = 150
+	MaxSize         int     = 14901
+	InvalidState    string  = "InvalidState"
+	VolumeIOPSError string  = `
 - The "iops" parameter can only be set if "io1" volume type is created.
 - "Standard" volume types have a default value of 150 iops.
 - For "gp2" volume types, iops value depend on your volume size.
@@ -141,8 +136,8 @@ func CheckThrottling(httpResp *http.Response, err error) *resource.RetryError {
 	rand.Seed(time.Now().UnixNano())
 	if httpResp != nil {
 		errCode := httpResp.StatusCode
-		if errCode == Throttled || errCode == TooManyRequests ||
-			errCode == ResourceConflict || errCode == FailedDependency {
+		if errCode == http.StatusServiceUnavailable || errCode == http.StatusTooManyRequests ||
+			errCode == http.StatusConflict || errCode == http.StatusFailedDependency {
 			randTime := (rand.Float32()*(randMax-randMin) + randMin) * 1000
 			time.Sleep(time.Duration(randTime) * time.Millisecond)
 			return resource.RetryableError(err)

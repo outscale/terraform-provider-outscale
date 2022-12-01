@@ -3,6 +3,7 @@ package outscale
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"strings"
 	"testing"
 	"time"
@@ -159,7 +160,7 @@ func testAccCheckOutscaleOAPIKeyPairExists(n string, res *oscgo.Keypair) resourc
 			statusCode = httpResp.StatusCode
 			return nil
 		})
-		if err != nil && statusCode == utils.ResourceNotFound {
+		if err != nil && statusCode == http.StatusNotFound {
 			return err
 		}
 		if len(resp.GetKeypairs()) != 1 ||
