@@ -3,6 +3,7 @@ package outscale
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"testing"
 	"time"
@@ -584,7 +585,7 @@ func testAccCheckOutscaleOAPIVMDestroyWithProvider(s *terraform.State, provider 
 		}
 
 		// Verify the error is what we want
-		if err != nil && statusCode == utils.ResourceNotFound {
+		if err != nil && statusCode == http.StatusNotFound {
 			continue
 		}
 		return err

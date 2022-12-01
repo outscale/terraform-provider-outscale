@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"strings"
 	"time"
 
@@ -142,9 +143,9 @@ func vpnConnectionRouteRefreshFunc(conn *oscgo.APIClient, destinationIPRange, vp
 		resp, httpResp, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(filter).Execute()
 		if err != nil {
 			switch {
-			case httpResp.StatusCode == utils.Throttled:
+			case httpResp.StatusCode == http.StatusServiceUnavailable:
 				return nil, "pending", nil
-			case httpResp.StatusCode == utils.ResourceNotFound:
+			case httpResp.StatusCode == http.StatusNotFound:
 				return nil, "deleted", nil
 			default:
 				return nil, "failed", fmt.Errorf("Error on vpnConnectionRouteRefresh: %s", err)

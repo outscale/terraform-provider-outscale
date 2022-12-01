@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"time"
 
 	"github.com/openlyinc/pointy"
@@ -325,7 +326,7 @@ func SnapshotTaskStateRefreshFunc(client *oscgo.APIClient, id string) resource.S
 		})
 
 		if err != nil {
-			if statusCode == utils.ResourceNotFound {
+			if statusCode == http.StatusNotFound {
 				log.Printf("[INFO] Snapshot export task %s state %s", id, "destroyed")
 				return resp, "destroyed", nil
 			} else if resp.GetSnapshotExportTasks() != nil && len(resp.GetSnapshotExportTasks()) == 0 {

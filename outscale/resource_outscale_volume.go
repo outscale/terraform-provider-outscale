@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"strings"
 	"time"
 
@@ -211,7 +212,7 @@ func resourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	})
 
 	if err != nil {
-		if statusCode == utils.ResourceNotFound {
+		if statusCode == http.StatusNotFound {
 			d.SetId("")
 			return nil
 		}

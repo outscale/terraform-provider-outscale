@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"strings"
 	"testing"
@@ -183,7 +184,7 @@ func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oscgo.PublicIp) reso
 				rp, httpResp, err := conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
 
 				if err != nil {
-					if httpResp.StatusCode == utils.ResourceNotFound {
+					if httpResp.StatusCode == http.StatusNotFound {
 						return resource.RetryableError(err)
 					}
 					return utils.CheckThrottling(httpResp, err)
@@ -194,7 +195,7 @@ func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oscgo.PublicIp) reso
 			})
 
 			if err != nil {
-				if statusCode == utils.ResourceNotFound {
+				if statusCode == http.StatusNotFound {
 					return nil
 				}
 				return err

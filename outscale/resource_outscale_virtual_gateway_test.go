@@ -3,6 +3,7 @@ package outscale
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"strings"
 	"testing"
 	"time"
@@ -146,7 +147,7 @@ func testAccOutscaleOAPIVirtualGatewayDisappears(gateway *oscgo.VirtualGateway) 
 
 			resp, httpResp, err := conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(opts).Execute()
 			if err != nil {
-				if httpResp.StatusCode == utils.ResourceNotFound {
+				if httpResp.StatusCode == http.StatusNotFound {
 					return nil
 				}
 				if strings.Contains(err.Error(), utils.InvalidState) {

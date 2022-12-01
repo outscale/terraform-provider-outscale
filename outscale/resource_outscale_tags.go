@@ -3,6 +3,7 @@ package outscale
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -58,7 +59,7 @@ func resourceOutscaleOAPITagsCreate(d *schema.ResourceData, meta interface{}) er
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
 		_, httpResp, err := conn.TagApi.CreateTags(context.Background()).CreateTagsRequest(request).Execute()
 		if err != nil {
-			if httpResp.StatusCode == utils.ResourceNotFound {
+			if httpResp.StatusCode == http.StatusNotFound {
 				return resource.RetryableError(err)
 			}
 			return utils.CheckThrottling(httpResp, err)
@@ -165,7 +166,7 @@ func resourceOutscaleOAPITagsDelete(d *schema.ResourceData, meta interface{}) er
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
 		_, httpResp, err := conn.TagApi.DeleteTags(context.Background()).DeleteTagsRequest(request).Execute()
 		if err != nil {
-			if httpResp.StatusCode == utils.ResourceNotFound {
+			if httpResp.StatusCode == http.StatusNotFound {
 				return resource.RetryableError(err) // retry
 			}
 			return utils.CheckThrottling(httpResp, err)

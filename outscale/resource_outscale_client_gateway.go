@@ -3,6 +3,7 @@ package outscale
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/spf13/cast"
@@ -209,9 +210,9 @@ func clientGatewayRefreshFunc(conn *oscgo.APIClient, gatewayID *string) resource
 		})
 		if err != nil || len(resp.GetClientGateways()) == 0 {
 			switch {
-			case statusCode == utils.Throttled || statusCode == utils.ResourceConflict:
+			case statusCode == http.StatusServiceUnavailable || statusCode == http.StatusConflict:
 				return nil, "pending", nil
-			case statusCode == utils.ResourceNotFound || len(resp.GetClientGateways()) == 0:
+			case statusCode == http.StatusNotFound || len(resp.GetClientGateways()) == 0:
 				return nil, "deleted", nil
 			default:
 				return nil, "failed", fmt.Errorf("Error on clientGatewayRefresh: %s", err)
