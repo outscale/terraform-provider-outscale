@@ -97,7 +97,7 @@ func testAccCheckOutscaleOAPILBUDestroy(s *terraform.State) error {
 				context.Background()).ReadLoadBalancersRequest(*req).Execute()
 
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			return nil
@@ -151,7 +151,7 @@ func testAccCheckOutscaleOAPILBUExists(n string, res *oscgo.LoadBalancer) resour
 				context.Background()).ReadLoadBalancersRequest(*req).Execute()
 
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			return nil

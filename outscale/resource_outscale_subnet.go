@@ -44,7 +44,7 @@ func resourceOutscaleOAPISubNetCreate(d *schema.ResourceData, meta interface{}) 
 	err = resource.Retry(40*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.SubnetApi.CreateSubnet(context.Background()).CreateSubnetRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -93,7 +93,7 @@ func resourceOutscaleOAPISubNetRead(d *schema.ResourceData, meta interface{}) er
 	err := resource.Retry(120*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.SubnetApi.ReadSubnets(context.Background()).ReadSubnetsRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -128,7 +128,7 @@ func resourceOutscaleOAPISubNetDelete(d *schema.ResourceData, meta interface{}) 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, httpResp, err := conn.SubnetApi.DeleteSubnet(context.Background()).DeleteSubnetRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})
@@ -193,7 +193,7 @@ func SubnetStateOApiRefreshFunc(conn *oscgo.APIClient, subnetID string) resource
 				},
 			}).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			return nil

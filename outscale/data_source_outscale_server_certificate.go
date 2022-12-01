@@ -66,7 +66,7 @@ func datasourceOutscaleOAPIServerCertificateRead(d *schema.ResourceData, meta in
 		var err error
 		rp, httpResp, err := conn.ServerCertificateApi.ReadServerCertificates(context.Background()).ReadServerCertificatesRequest(params).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil

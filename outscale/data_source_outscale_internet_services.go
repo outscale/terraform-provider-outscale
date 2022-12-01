@@ -86,7 +86,7 @@ func datasourceOutscaleOAPIInternetServicesRead(d *schema.ResourceData, meta int
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.InternetServiceApi.ReadInternetServices(context.Background()).ReadInternetServicesRequest(params).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil

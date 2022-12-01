@@ -154,7 +154,7 @@ func testAccOutscaleOAPIImageDisappears(imageID *string) r.TestCheckFunc {
 			var err error
 			_, httpResp, err := conn.ImageApi.DeleteImage(context.Background()).DeleteImageRequest(req).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			return nil
 		})

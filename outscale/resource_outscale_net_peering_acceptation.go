@@ -79,7 +79,7 @@ func resourceOutscaleOAPILinPeeringAccepterCreate(d *schema.ResourceData, meta i
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, httpResp, err := conn.NetPeeringApi.AcceptNetPeering(context.Background()).AcceptNetPeeringRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})

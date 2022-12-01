@@ -81,7 +81,7 @@ func dataSourceOutscaleOAPIPublicCatalogRead(d *schema.ResourceData, meta interf
 	err = resource.Retry(20*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.PublicCatalogApi.ReadPublicCatalog(context.Background()).ReadPublicCatalogRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil

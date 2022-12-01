@@ -135,7 +135,7 @@ func resourceOutscaleVPNConnectionCreate(d *schema.ResourceData, meta interface{
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.VpnConnectionApi.CreateVpnConnection(context.Background()).CreateVpnConnectionRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -239,7 +239,7 @@ func resourceOutscaleVPNConnectionDelete(d *schema.ResourceData, meta interface{
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, httpResp, err := conn.VpnConnectionApi.DeleteVpnConnection(context.Background()).DeleteVpnConnectionRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})

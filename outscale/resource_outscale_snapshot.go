@@ -156,7 +156,7 @@ func resourceOutscaleOAPISnapshotCreate(d *schema.ResourceData, meta interface{}
 		var err error
 		rp, httpResp, err := conn.SnapshotApi.CreateSnapshot(context.Background()).CreateSnapshotRequest(request).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -205,7 +205,7 @@ func resourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) 
 		var err error
 		rp, httpResp, err := conn.SnapshotApi.ReadSnapshots(context.Background()).ReadSnapshotsRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -280,7 +280,7 @@ func resourceOutscaleOAPISnapshotDelete(d *schema.ResourceData, meta interface{}
 		request := oscgo.DeleteSnapshotRequest{SnapshotId: d.Id()}
 		_, httpResp, err := conn.SnapshotApi.DeleteSnapshot(context.Background()).DeleteSnapshotRequest(request).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})
@@ -299,7 +299,7 @@ func SnapshotOAPIStateRefreshFunc(client *oscgo.APIClient, id string) resource.S
 				Filters: &oscgo.FiltersSnapshot{SnapshotIds: &[]string{id}},
 			}).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			statusCode = httpResp.StatusCode

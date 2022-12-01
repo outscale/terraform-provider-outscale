@@ -79,7 +79,7 @@ func resourceOutscaleOAPINetworkInterfacePrivateIPCreate(d *schema.ResourceData,
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, httpResp, err := conn.NicApi.LinkPrivateIps(context.Background()).LinkPrivateIpsRequest(input).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})
@@ -106,7 +106,7 @@ func resourceOutscaleOAPINetworkInterfacePrivateIPRead(d *schema.ResourceData, m
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		statusCode = httpResp.StatusCode
 		resp = rp
@@ -185,7 +185,7 @@ func resourceOutscaleOAPINetworkInterfacePrivateIPDelete(d *schema.ResourceData,
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, httpResp, err := conn.NicApi.UnlinkPrivateIps(context.Background()).UnlinkPrivateIpsRequest(input).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})

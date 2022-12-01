@@ -107,7 +107,7 @@ func testAccCheckClientGatewayExists(resourceName string) resource.TestCheckFunc
 		err := resource.Retry(120*time.Second, func() *resource.RetryError {
 			rp, httpResp, err := conn.ClientGatewayApi.ReadClientGateways(context.Background()).ReadClientGatewaysRequest(filter).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			return nil
@@ -137,7 +137,7 @@ func testAccCheckClientGatewayDestroy(s *terraform.State) error {
 		err := resource.Retry(120*time.Second, func() *resource.RetryError {
 			rp, httpResp, err := conn.ClientGatewayApi.ReadClientGateways(context.Background()).ReadClientGatewaysRequest(filter).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			return nil

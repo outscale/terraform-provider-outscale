@@ -65,7 +65,7 @@ func resourceOutscaleOAPIPublicIPLinkCreate(d *schema.ResourceData, meta interfa
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.PublicIpApi.LinkPublicIp(context.Background()).LinkPublicIpRequest(request).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -111,7 +111,7 @@ func resourceOutscaleOAPIPublicIPLinkRead(d *schema.ResourceData, meta interface
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
 		resp, httpResp, err := conn.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(request).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		response = resp
 		return nil
@@ -148,7 +148,7 @@ func resourceOutscaleOAPIPublicIPLinkDelete(d *schema.ResourceData, meta interfa
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
 		_, httpResp, err := conn.PublicIpApi.UnlinkPublicIp(context.Background()).UnlinkPublicIpRequest(opts).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})

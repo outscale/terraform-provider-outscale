@@ -63,7 +63,7 @@ func testAccCheckOutscaleOAPIPublicIPLinkExists(name string, res *oscgo.PublicIp
 		err := resource.Retry(60*time.Second, func() *resource.RetryError {
 			rp, httpResp, err := conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(request).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			response = rp
 			return nil
@@ -111,7 +111,7 @@ func testAccCheckOutscaleOAPIPublicIPLinkDestroy(s *terraform.State) error {
 		err := resource.Retry(60*time.Second, func() *resource.RetryError {
 			rp, httpResp, err := conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(request).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			response = rp
 			return nil
@@ -153,7 +153,7 @@ func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oscgo.PublicIp) reso
 			err := resource.Retry(60*time.Second, func() *resource.RetryError {
 				rp, httpResp, err := conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
 				if err != nil {
-					return utils.CheckThrottling(httpResp.StatusCode, err)
+					return utils.CheckThrottling(httpResp, err)
 				}
 				resp = rp
 				return nil
@@ -186,7 +186,7 @@ func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oscgo.PublicIp) reso
 					if httpResp.StatusCode == utils.ResourceNotFound {
 						return resource.RetryableError(err)
 					}
-					return utils.CheckThrottling(httpResp.StatusCode, err)
+					return utils.CheckThrottling(httpResp, err)
 				}
 				response = rp
 				statusCode = httpResp.StatusCode

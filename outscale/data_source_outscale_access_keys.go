@@ -96,7 +96,7 @@ func dataSourceOutscaleAccessKeysRead(d *schema.ResourceData, meta interface{}) 
 			Filters: filterReq,
 		}).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil

@@ -59,7 +59,7 @@ func testAccCheckOAPIImageDestroy(s *terraform.State) error {
 		err := resource.Retry(120*time.Second, func() *resource.RetryError {
 			rp, httpResp, err := conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(filterReq).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			return nil
@@ -92,7 +92,7 @@ func testAccCheckOAPIImageExists(n string, ami *oscgo.Image) resource.TestCheckF
 		err := resource.Retry(120*time.Second, func() *resource.RetryError {
 			rp, httpResp, err := conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(filterReq).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			return nil

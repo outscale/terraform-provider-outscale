@@ -204,7 +204,7 @@ func testAccCheckOutscaleOAPIRuleExists(n string, group *oscgo.SecurityGroup) re
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 			rp, httpResp, err := conn.SecurityGroupApi.ReadSecurityGroups(context.Background()).ReadSecurityGroupsRequest(req).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			return nil

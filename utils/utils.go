@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"net/http"
 	"strconv"
 	"time"
 
@@ -136,13 +137,16 @@ func IsResponseEmptyOrMutiple(rLen int, resName string) error {
 	return nil
 }
 
-func CheckThrottling(errCode int, err error) *resource.RetryError {
+func CheckThrottling(httpResp *http.Response, err error) *resource.RetryError {
 	rand.Seed(time.Now().UnixNano())
-	if errCode == Throttled || errCode == TooManyRequests ||
-		errCode == ResourceConflict || errCode == FailedDependency {
-		randTime := (rand.Float32()*(randMax-randMin) + randMin) * 1000
-		time.Sleep(time.Duration(randTime) * time.Millisecond)
-		return resource.RetryableError(err)
+	if httpResp != nil {
+		errCode := httpResp.StatusCode
+		if errCode == Throttled || errCode == TooManyRequests ||
+			errCode == ResourceConflict || errCode == FailedDependency {
+			randTime := (rand.Float32()*(randMax-randMin) + randMin) * 1000
+			time.Sleep(time.Duration(randTime) * time.Millisecond)
+			return resource.RetryableError(err)
+		}
 	}
 	return resource.NonRetryableError(err)
 }

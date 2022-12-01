@@ -53,7 +53,7 @@ func testAccCheckOAPIVirtualRoutePropagationDestroy(s *terraform.State) error {
 				Filters: &oscgo.FiltersVirtualGateway{VirtualGatewayIds: &[]string{rs.Primary.Attributes["gateway_id"]}},
 			}).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			return nil
@@ -69,7 +69,7 @@ func testAccCheckOAPIVirtualRoutePropagationDestroy(s *terraform.State) error {
 					VirtualGatewayId: resp.GetVirtualGateways()[0].GetVirtualGatewayId(),
 				}).Execute()
 				if err != nil {
-					return utils.CheckThrottling(httpResp.StatusCode, err)
+					return utils.CheckThrottling(httpResp, err)
 				}
 				return nil
 			})

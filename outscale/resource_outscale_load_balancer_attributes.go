@@ -253,7 +253,7 @@ func loadBalancerAttributesDoRequest(d *schema.ResourceData, meta interface{}, r
 		_, httpResp, err := conn.LoadBalancerApi.UpdateLoadBalancer(
 			context.Background()).UpdateLoadBalancerRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})
@@ -517,7 +517,7 @@ func resourceOutscaleOAPILoadBalancerAttributesDelete(d *schema.ResourceData, me
 		_, httpResp, err := conn.LoadBalancerApi.UpdateLoadBalancer(
 			context.Background()).UpdateLoadBalancerRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})

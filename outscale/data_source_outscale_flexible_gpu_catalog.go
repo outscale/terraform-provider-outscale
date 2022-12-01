@@ -65,7 +65,7 @@ func dataSourceOutscaleOAPIFlexibleGpuCatalogRead(d *schema.ResourceData, meta i
 			context.Background()).
 			ReadFlexibleGpuCatalogRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil

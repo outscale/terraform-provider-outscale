@@ -33,7 +33,7 @@ func setOSCAPITags(conn *oscgo.APIClient, d *schema.ResourceData) error {
 					if strings.Contains(fmt.Sprint(err), ".NotFound") {
 						return resource.RetryableError(err) // retry
 					}
-					return utils.CheckThrottling(httpResp.StatusCode, err)
+					return utils.CheckThrottling(httpResp, err)
 				}
 				return nil
 			})
@@ -51,7 +51,7 @@ func setOSCAPITags(conn *oscgo.APIClient, d *schema.ResourceData) error {
 					if strings.Contains(fmt.Sprint(err), ".NotFound") {
 						return resource.RetryableError(err) // retry
 					}
-					return utils.CheckThrottling(httpResp.StatusCode, err)
+					return utils.CheckThrottling(httpResp, err)
 				}
 				return nil
 			})
@@ -255,7 +255,7 @@ func assignTags(tag *schema.Set, resourceID string, conn *oscgo.APIClient) error
 			if strings.Contains(fmt.Sprint(err), "NotFound") {
 				return resource.RetryableError(err)
 			}
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})

@@ -502,7 +502,7 @@ func testAccCheckOAPIVMExistsWithProviders(n string, i *oscgo.Vm, providers *[]*
 					Filters: getVMsFilterByVMID(rs.Primary.ID),
 				}).Execute()
 				if err != nil {
-					return utils.CheckThrottling(httpResp.StatusCode, err)
+					return utils.CheckThrottling(httpResp, err)
 				}
 				resp = rp
 				return nil
@@ -565,7 +565,7 @@ func testAccCheckOutscaleOAPIVMDestroyWithProvider(s *terraform.State, provider 
 				Filters: getVMsFilterByVMID(rs.Primary.ID),
 			}).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			statusCode = httpResp.StatusCode
@@ -622,7 +622,7 @@ func testAccCheckOutscaleOAPIVMExistsWithProviders(n string, i *oscgo.Vm, provid
 					Filters: getVMsFilterByVMID(rs.Primary.ID),
 				}).Execute()
 				if err != nil {
-					return utils.CheckThrottling(httpResp.StatusCode, err)
+					return utils.CheckThrottling(httpResp, err)
 				}
 				resp = rp
 				return nil

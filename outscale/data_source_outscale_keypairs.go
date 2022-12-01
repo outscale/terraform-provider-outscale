@@ -44,7 +44,7 @@ func datasourceOutscaleOAPiKeyPairsRead(d *schema.ResourceData, meta interface{}
 		rp, httpResp, err := conn.KeypairApi.ReadKeypairs(context.Background()).ReadKeypairsRequest(req).Execute()
 
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		statusCode = httpResp.StatusCode

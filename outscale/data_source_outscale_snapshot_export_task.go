@@ -98,7 +98,7 @@ func dataSourceOAPISnapshotExportTaskRead(d *schema.ResourceData, meta interface
 				Filters: filtersReq,
 			}).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil

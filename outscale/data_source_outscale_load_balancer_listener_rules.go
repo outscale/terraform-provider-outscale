@@ -120,7 +120,7 @@ func dataSourceOutscaleOAPILoadBalancerLDRulesRead(d *schema.ResourceData, meta 
 			context.Background()).
 			ReadListenerRulesRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil

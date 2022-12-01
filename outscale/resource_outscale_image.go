@@ -267,7 +267,7 @@ func resourceOAPIImageCreate(d *schema.ResourceData, meta interface{}) error {
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.ImageApi.CreateImage(context.Background()).CreateImageRequest(imageRequest).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -326,7 +326,7 @@ func resourceOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
 		var err error
 		rp, httpResp, err := conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -434,7 +434,7 @@ func resourceOAPIImageDelete(d *schema.ResourceData, meta interface{}) error {
 			ImageId: d.Id(),
 		}).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})
@@ -483,7 +483,7 @@ func ImageOAPIStateRefreshFunc(client *oscgo.APIClient, req oscgo.ReadImagesRequ
 			var err error
 			rp, httpResp, err := client.ImageApi.ReadImages(context.Background()).ReadImagesRequest(req).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			return nil

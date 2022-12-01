@@ -168,7 +168,7 @@ func testAccCheckOAPIVpnGatewayAttachmentDestroy(s *terraform.State) error {
 				Filters: &oscgo.FiltersVirtualGateway{VirtualGatewayIds: &[]string{vgwID}},
 			}).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			return nil

@@ -60,7 +60,7 @@ func resourceOAPIKeyPairCreate(d *schema.ResourceData, meta interface{}) error {
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.KeypairApi.CreateKeypair(context.Background()).CreateKeypairRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -99,7 +99,7 @@ func resourceOAPIKeyPairRead(d *schema.ResourceData, meta interface{}) error {
 		var err error
 		rp, httpResp, err := conn.KeypairApi.ReadKeypairs(context.Background()).ReadKeypairsRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -143,7 +143,7 @@ func resourceOAPIKeyPairDelete(d *schema.ResourceData, meta interface{}) error {
 		var err error
 		_, httpResp, err := conn.KeypairApi.DeleteKeypair(context.Background()).DeleteKeypairRequest(request).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})

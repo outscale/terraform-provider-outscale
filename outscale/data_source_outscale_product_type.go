@@ -55,7 +55,7 @@ func dataSourceOutscaleOAPIProductTypeRead(d *schema.ResourceData, meta interfac
 		var err error
 		rp, httpResp, err := conn.ProductTypeApi.ReadProductTypes(context.Background()).ReadProductTypesRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil

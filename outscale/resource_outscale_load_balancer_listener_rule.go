@@ -156,7 +156,7 @@ func resourceOutscaleLoadBalancerListenerRuleCreate(d *schema.ResourceData, meta
 		rp, httpResp, err := conn.ListenerApi.CreateListenerRule(
 			context.Background()).CreateListenerRuleRequest(*req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -190,7 +190,7 @@ func resourceOutscaleLoadBalancerListenerRuleRead(d *schema.ResourceData, meta i
 			context.Background()).ReadListenerRulesRequest(req).
 			Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -273,7 +273,7 @@ func resourceOutscaleLoadBalancerListenerRuleUpdate(d *schema.ResourceData, meta
 				context.Background()).UpdateListenerRuleRequest(req).
 				Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			return nil
 		})
@@ -301,7 +301,7 @@ func resourceOutscaleLoadBalancerListenerRuleDelete(d *schema.ResourceData, meta
 		_, httpResp, err := conn.ListenerApi.DeleteListenerRule(
 			context.Background()).DeleteListenerRuleRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})
@@ -329,7 +329,7 @@ func resourceOutscaleLoadBalancerListenerRuleDelete(d *schema.ResourceData, meta
 					context.Background()).
 					ReadListenerRulesRequest(req).Execute()
 				if err != nil {
-					return utils.CheckThrottling(httpResp.StatusCode, err)
+					return utils.CheckThrottling(httpResp, err)
 				}
 				resp = rp
 				return nil

@@ -105,7 +105,7 @@ func testAccCheckOutscaleOAPIKeyPairDestroy(s *terraform.State) error {
 			}).Execute()
 
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			return nil
@@ -153,7 +153,7 @@ func testAccCheckOutscaleOAPIKeyPairExists(n string, res *oscgo.Keypair) resourc
 			}).Execute()
 
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			statusCode = httpResp.StatusCode

@@ -106,7 +106,7 @@ func dataSourceOutscaleOAPIVMStateRead(d *schema.ResourceData, meta interface{})
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.VmApi.ReadVmsState(context.Background()).ReadVmsStateRequest(params).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil

@@ -104,7 +104,7 @@ func dataSourceOutscaleOAPINatServicesRead(d *schema.ResourceData, meta interfac
 		var err error
 		rp, httpResp, err := conn.NatServiceApi.ReadNatServices(context.Background()).ReadNatServicesRequest(params).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil

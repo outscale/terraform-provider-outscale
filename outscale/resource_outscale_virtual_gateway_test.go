@@ -130,7 +130,7 @@ func testAccOutscaleOAPIVirtualGatewayDisappears(gateway *oscgo.VirtualGateway) 
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 			_, httpResp, err := conn.VirtualGatewayApi.DeleteVirtualGateway(context.Background()).DeleteVirtualGatewayRequest(opts).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			return nil
 		})
@@ -153,7 +153,7 @@ func testAccOutscaleOAPIVirtualGatewayDisappears(gateway *oscgo.VirtualGateway) 
 					return resource.RetryableError(fmt.Errorf(
 						"Waiting for VPN Gateway to be in the correct state: %v", gateway.VirtualGatewayId))
 				}
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			if resp.GetVirtualGateways()[0].GetState() == "deleted" {
 				return nil
@@ -180,7 +180,7 @@ func testAccCheckOAPIVirtualGatewayDestroy(s *terraform.State) error {
 				Filters: &oscgo.FiltersVirtualGateway{VirtualGatewayIds: &[]string{rs.Primary.ID}},
 			}).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			return nil
@@ -229,7 +229,7 @@ func testAccCheckOAPIVirtualGatewayExists(n string, ig *oscgo.VirtualGateway) re
 				Filters: &oscgo.FiltersVirtualGateway{VirtualGatewayIds: &[]string{rs.Primary.ID}},
 			}).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			return nil

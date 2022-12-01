@@ -156,7 +156,7 @@ func resourceOAPISnapshotExportTaskCreate(d *schema.ResourceData, meta interface
 		rp, httpResp, err := conn.SnapshotApi.CreateSnapshotExportTask(context.Background()).
 			CreateSnapshotExportTaskRequest(request).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -194,7 +194,7 @@ func resourceOAPISnapshotExportTaskRead(d *schema.ResourceData, meta interface{}
 				Filters: filter,
 			}).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -317,7 +317,7 @@ func SnapshotTaskStateRefreshFunc(client *oscgo.APIClient, id string) resource.S
 					Filters: filter,
 				}).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			statusCode = httpResp.StatusCode

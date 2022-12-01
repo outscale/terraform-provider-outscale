@@ -93,7 +93,7 @@ func resourceOutscaleOAPILinPeeringCreate(d *schema.ResourceData, meta interface
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.NetPeeringApi.CreateNetPeering(context.Background()).CreateNetPeeringRequest(createOpts).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -144,7 +144,7 @@ func resourceOutscaleOAPILinPeeringRead(d *schema.ResourceData, meta interface{}
 			Filters: &oscgo.FiltersNetPeering{NetPeeringIds: &[]string{d.Id()}},
 		}).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -256,7 +256,7 @@ func resourceOutscaleOAPILinPeeringDelete(d *schema.ResourceData, meta interface
 			NetPeeringId: d.Id(),
 		}).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})
@@ -281,7 +281,7 @@ func resourceOutscaleOAPILinPeeringConnectionStateRefreshFunc(conn *oscgo.APICli
 				Filters: &oscgo.FiltersNetPeering{NetPeeringIds: &[]string{id}},
 			}).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			return nil

@@ -100,7 +100,7 @@ func dataSourceOutscaleLoadBalancerVmsHealRead(d *schema.ResourceData,
 				strings.Contains(fmt.Sprint(err), "Bad Request") {
 				return resource.RetryableError(err)
 			}
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil

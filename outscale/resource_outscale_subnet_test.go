@@ -56,7 +56,7 @@ func testAccCheckOutscaleOAPISubNetExists(n string, res *oscgo.Subnet) resource.
 			}).Execute()
 
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			return nil
@@ -93,7 +93,7 @@ func testAccCheckOutscaleOAPISubNetDestroyed(s *terraform.State) error {
 				},
 			}).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			return nil

@@ -62,7 +62,7 @@ func resourceOutscaleOAPIFlexibleGpuLinkCreate(d *schema.ResourceData, meta inte
 		rp, httpResp, err := conn.FlexibleGpuApi.LinkFlexibleGpu(
 			context.Background()).LinkFlexibleGpuRequest(reqLink).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -81,7 +81,7 @@ func resourceOutscaleOAPIFlexibleGpuLinkCreate(d *schema.ResourceData, meta inte
 		rp, httpResp, err := conn.FlexibleGpuApi.ReadFlexibleGpus(context.Background()).
 			ReadFlexibleGpusRequest(*reqFlex).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		respV = rp
 		return nil
@@ -126,7 +126,7 @@ func resourceOutscaleOAPIFlexibleGpuLinkRead(d *schema.ResourceData, meta interf
 			context.Background()).
 			ReadFlexibleGpusRequest(*req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -174,7 +174,7 @@ func resourceOutscaleOAPIFlexibleGpuLinkDelete(d *schema.ResourceData, meta inte
 		_, httpResp, err := conn.FlexibleGpuApi.UnlinkFlexibleGpu(
 			context.Background()).UnlinkFlexibleGpuRequest(*req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})
@@ -188,7 +188,7 @@ func resourceOutscaleOAPIFlexibleGpuLinkDelete(d *schema.ResourceData, meta inte
 		rp, httpResp, err := conn.FlexibleGpuApi.ReadFlexibleGpus(context.Background()).
 			ReadFlexibleGpusRequest(*reqFlex).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -222,7 +222,7 @@ func changeShutdownBehavior(conn *oscgo.APIClient, vmId string) error {
 				VmIds: &[]string{vmId},
 			}}).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil

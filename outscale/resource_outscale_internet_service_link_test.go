@@ -87,7 +87,7 @@ func testAccCheckOutscaleOSCAPIInternetServiceLinkExists(n string) resource.Test
 		err := resource.Retry(120*time.Second, func() *resource.RetryError {
 			rp, httpResp, err := conn.InternetServiceApi.ReadInternetServices(context.Background()).ReadInternetServicesRequest(filterReq).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			return nil
@@ -115,7 +115,7 @@ func testAccCheckOutscaleOSCAPIInternetServiceLinkDestroyed(s *terraform.State) 
 		err := resource.Retry(120*time.Second, func() *resource.RetryError {
 			rp, httpResp, err := conn.InternetServiceApi.ReadInternetServices(context.Background()).ReadInternetServicesRequest(filterReq).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			return nil

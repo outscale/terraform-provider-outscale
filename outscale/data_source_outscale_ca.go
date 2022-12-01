@@ -58,7 +58,7 @@ func dataSourceOutscaleOAPICaRead(d *schema.ResourceData, meta interface{}) erro
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.CaApi.ReadCas(context.Background()).ReadCasRequest(params).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil

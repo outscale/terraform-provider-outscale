@@ -85,7 +85,7 @@ func resourceOutscaleOAPINetworkInterfaceAttachmentCreate(d *schema.ResourceData
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.NicApi.LinkNic(context.Background()).LinkNicRequest(opts).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -152,7 +152,7 @@ func resourceOutscaleOAPINetworkInterfaceAttachmentDelete(d *schema.ResourceData
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, httpResp, err := conn.NicApi.UnlinkNic(context.Background()).UnlinkNicRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		statusCode = httpResp.StatusCode
 		return nil
@@ -235,7 +235,7 @@ func nicLinkRefreshFunc(conn *oscgo.APIClient, nicID string) resource.StateRefre
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 			rp, httpResp, err := conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(req).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			return nil

@@ -82,7 +82,7 @@ func resourceOutscaleOAPIApiAccessRuleCreate(d *schema.ResourceData, meta interf
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.ApiAccessRuleApi.CreateApiAccessRule(context.Background()).CreateApiAccessRuleRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -107,7 +107,7 @@ func resourceOutscaleOAPIApiAccessRuleRead(d *schema.ResourceData, meta interfac
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.ApiAccessRuleApi.ReadApiAccessRules(context.Background()).ReadApiAccessRulesRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
@@ -191,7 +191,7 @@ func resourceOutscaleOAPIApiAccessRuleUpdate(d *schema.ResourceData, meta interf
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
 		_, httpResp, err := conn.ApiAccessRuleApi.UpdateApiAccessRule(context.Background()).UpdateApiAccessRuleRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})
@@ -212,7 +212,7 @@ func resourceOutscaleOAPIApiAccessRuleDelete(d *schema.ResourceData, meta interf
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
 		_, httpResp, err := conn.ApiAccessRuleApi.DeleteApiAccessRule(context.Background()).DeleteApiAccessRuleRequest(req).Execute()
 		if err != nil {
-			return utils.CheckThrottling(httpResp.StatusCode, err)
+			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})
