@@ -19,7 +19,7 @@ func TestAccOutscaleOAPIFlexibleGpuLink_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIFlexibleGpuLinkConfig(omi, "tinav3.c1r1p2", region),
+				Config: testAccOutscaleOAPIFlexibleGpuLinkConfig(omi, "tinav5.c4r8p2", region),
 			},
 		},
 	})
@@ -31,12 +31,11 @@ func testAccOutscaleOAPIFlexibleGpuLinkConfig(omi, vmType, region string) string
 			image_id     = "%s"
 			vm_type      = "%s"
 			keypair_name = "terraform-basic"
-                        vm_initiated_shutdown_behavior = "restart"
 		}
 
                 resource "outscale_flexible_gpu" "fGPU-1" { 
-                        model_name             =  "nvidia-k2"
-                        generation             =  "v3"
+                        model_name             =  "nvidia-p6"
+                        generation             =  "v5"
                         subregion_name         =  "%s"
                         delete_on_vm_deletion  =   true
                 }
