@@ -27,9 +27,9 @@ func TestAccDataSourceOutscaleOAPIFlexibleGpus_basic(t *testing.T) {
 
 func testAccDataSourceOutscaleOAPIFlexibleGpusConfig(region, region1 string) string {
 	return fmt.Sprintf(`
-                resource "outscale_flexible_gpu" "fGPU-1" { 
-                        model_name             =  "nvidia-k2"
-                        generation             =  "v3"
+                resource "outscale_flexible_gpu" "fGPUS-1" { 
+                        model_name             =  "nvidia-p6"
+                        generation             =  "v5"
                         subregion_name         =  "%s"
                         delete_on_vm_deletion  =   true
                 }
@@ -37,7 +37,7 @@ func testAccDataSourceOutscaleOAPIFlexibleGpusConfig(region, region1 string) str
 		data "outscale_flexible_gpu" "data_fGPU-1" {
 			filter {
 				name = "flexible_gpu_ids"
-				values = [outscale_flexible_gpu.fGPU-1.flexible_gpu_id]
+				values = [outscale_flexible_gpu.fGPUS-1.flexible_gpu_id]
 			}
                         filter {
                                 name = "delete_on_vm_deletion"
@@ -45,7 +45,7 @@ func testAccDataSourceOutscaleOAPIFlexibleGpusConfig(region, region1 string) str
                         }
                         filter {
                                 name = "generations"
-                                values = ["v3"]
+                                values = ["v5"]
                         }
                         filter {
                                 name = "states"
@@ -53,7 +53,7 @@ func testAccDataSourceOutscaleOAPIFlexibleGpusConfig(region, region1 string) str
                         }
                         filter {
                                 name = "model_names"
-                                values = ["nvidia-k2"]
+                                values = ["nvidia-p6"]
                         }
 	                filter {
                                 name = "subregion_names" 
