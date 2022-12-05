@@ -1042,13 +1042,12 @@ func buildCreateVmsRequest(d *schema.ResourceData, meta interface{}) (oscgo.Crea
 
 func expandBlockDeviceOApiMappings(d *schema.ResourceData) ([]oscgo.BlockDeviceMappingVmCreation, error) {
 	var blockDevices []oscgo.BlockDeviceMappingVmCreation
-
 	block := d.Get("block_device_mappings").([]interface{})
 
 	for _, v := range block {
 		blockDevice := oscgo.BlockDeviceMappingVmCreation{}
-
 		value := v.(map[string]interface{})
+
 		if bsu, ok := value["bsu"].([]interface{}); ok && len(bsu) > 0 {
 			expandBSU, err := expandBlockDeviceBSU(bsu[0].(map[string]interface{}))
 			if err != nil {
@@ -1072,7 +1071,6 @@ func expandBlockDeviceOApiMappings(d *schema.ResourceData) ([]oscgo.BlockDeviceM
 
 func expandBlockDeviceBSU(bsu map[string]interface{}) (oscgo.BsuToCreate, error) {
 	bsuToCreate := oscgo.BsuToCreate{}
-
 	snapshotID := bsu["snapshot_id"].(string)
 	volumeType := bsu["volume_type"].(string)
 	volumeSize := int32(bsu["volume_size"].(int))
@@ -1080,11 +1078,13 @@ func expandBlockDeviceBSU(bsu map[string]interface{}) (oscgo.BsuToCreate, error)
 	if snapshotID == "" && volumeSize == 0 {
 		return bsuToCreate, fmt.Errorf("Error: 'volume_size' parameter is required if the volume is not created from a snapshot (SnapshotId unspecified)")
 	}
-	if iops, ok := bsu["iops"]; ok && iops.(int) > 0 {
+	if iops, _ := bsu["iops"]; iops.(int) > 0 {
 		if volumeType != "io1" {
 			return bsuToCreate, fmt.Errorf("Error: %s", utils.VolumeIOPSError)
 		}
 		bsuToCreate.SetIops(int32(iops.(int)))
+	} else {
+		delete(bsu, "iops")
 	}
 	if snapshotID != "" {
 		bsuToCreate.SetSnapshotId(snapshotID)
@@ -1095,7 +1095,6 @@ func expandBlockDeviceBSU(bsu map[string]interface{}) (oscgo.BsuToCreate, error)
 	if volumeType != "" {
 		bsuToCreate.SetVolumeType(volumeType)
 	}
-
 	if deleteOnVMDeletion, ok := bsu["delete_on_vm_deletion"]; ok && deleteOnVMDeletion != "" {
 		bsuToCreate.SetDeleteOnVmDeletion(cast.ToBool(deleteOnVMDeletion))
 	}
@@ -1103,13 +1102,11 @@ func expandBlockDeviceBSU(bsu map[string]interface{}) (oscgo.BsuToCreate, error)
 }
 
 func buildNetworkOApiInterfaceOpts(d *schema.ResourceData) []oscgo.NicForVmCreation {
-
 	nics := d.Get("nics").(*schema.Set).List()
 	networkInterfaces := []oscgo.NicForVmCreation{}
 
 	for i, v := range nics {
 		nic := v.(map[string]interface{})
-
 		ni := oscgo.NicForVmCreation{
 			DeviceNumber: oscgo.PtrInt32(int32(nic["device_number"].(int))),
 		}
@@ -1117,11 +1114,9 @@ func buildNetworkOApiInterfaceOpts(d *schema.ResourceData) []oscgo.NicForVmCreat
 		if v := nic["nic_id"].(string); v != "" {
 			ni.SetNicId(v)
 		}
-
 		if v := nic["secondary_private_ip_count"].(int); v > 0 {
 			ni.SetSecondaryPrivateIpCount(int32(v))
 		}
-
 		if delete, deleteOK := d.GetOk(fmt.Sprintf("nics.%d.delete_on_vm_deletion", i)); deleteOK {
 			log.Printf("[DEBUG] delete=%+v, deleteOK=%+v", delete, deleteOK)
 			ni.SetDeleteOnVmDeletion(delete.(bool))
