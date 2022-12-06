@@ -11,14 +11,14 @@ resource "outscale_vm" "MaVM" {
 }
 
 resource "outscale_flexible_gpu" "fGPU-1" {
-   model_name                   =  "nvidia-k2"
+   model_name                   =  "nvidia-p6"
    generation                   =  var.fgpu_gen
    subregion_name               =  "${var.region}a"
    delete_on_vm_deletion        =   true
 }
 
 resource "outscale_flexible_gpu" "fGPU-2" {
-   model_name                   =  "nvidia-k2"
+   model_name                   =  "nvidia-p6"
    generation                   =  var.fgpu_gen
    subregion_name               =  "${var.region}a"
    delete_on_vm_deletion        =   true
@@ -53,7 +53,7 @@ filter {
     }
   filter {
         name     = "model_names"
-        values   = ["nvidia-k2"]
+        values   = ["nvidia-p6"]
     }
   filter {
         name     = "subregion_names"

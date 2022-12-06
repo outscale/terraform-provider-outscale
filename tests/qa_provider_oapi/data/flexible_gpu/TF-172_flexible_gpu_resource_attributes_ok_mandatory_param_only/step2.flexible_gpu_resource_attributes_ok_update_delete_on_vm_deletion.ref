@@ -16,9 +16,9 @@
                     "attributes": {
                         "delete_on_vm_deletion": true,
                         "flexible_gpu_id": "##id-0##",
-                        "generation": "v3",
+                        "generation": "v5",
                         "id": "##id-0##",
-                        "model_name": "nvidia-k2",
+                        "model_name": "nvidia-p6",
                         "request_id": "########",
                         "state": "allocated",
                         "subregion_name": "###region###a",
