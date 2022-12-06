@@ -90,6 +90,15 @@ func resourceOutscaleOAPISnapshot() *schema.Resource {
 					},
 				},
 			},
+			"global_permission": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
+			"permissions_to_create_volume_accounts": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
 			"progress": {
 				Type:     schema.TypeInt,
 				Computed: true,
@@ -165,13 +174,13 @@ func resourceOutscaleOAPISnapshotCreate(d *schema.ResourceData, meta interface{}
 	if err != nil {
 		return err
 	}
-
-	log.Printf("Waiting for Snapshot %s to become available...", resp.Snapshot.GetSnapshotId())
+	d.SetId(resp.Snapshot.GetSnapshotId())
+	log.Printf("Waiting for Snapshot %s to become available...", d.Id())
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending", "pending/queued", "queued", "importing"},
 		Target:     []string{"completed"},
-		Refresh:    SnapshotOAPIStateRefreshFunc(conn, resp.Snapshot.GetSnapshotId()),
+		Refresh:    SnapshotOAPIStateRefreshFunc(conn, d.Id()),
 		Timeout:    OutscaleImageRetryTimeout,
 		Delay:      OutscaleImageRetryDelay,
 		MinTimeout: OutscaleImageRetryMinTimeout,
@@ -179,17 +188,19 @@ func resourceOutscaleOAPISnapshotCreate(d *schema.ResourceData, meta interface{}
 
 	_, err = stateConf.WaitForState()
 	if err != nil {
-		return fmt.Errorf("Error waiting for Snapshot (%s) to be ready: %s", resp.Snapshot.GetSnapshotId(), err)
+		return fmt.Errorf("Error waiting for Snapshot (%s) to be ready: %s", d.Id(), err)
 	}
-
+	if _, accountOk := d.GetOk("permissions_to_create_volume_accounts"); accountOk || d.Get("global_permission").(bool) {
+		if err := UpdateSnapshot(d, meta); err != nil {
+			return err
+		}
+	}
 	if tags, ok := d.GetOk("tags"); ok {
-		err := assignTags(tags.(*schema.Set), resp.Snapshot.GetSnapshotId(), conn)
+		err := assignTags(tags.(*schema.Set), d.Id(), conn)
 		if err != nil {
 			return err
 		}
 	}
-
-	d.SetId(resp.Snapshot.GetSnapshotId())
 
 	return resourceOutscaleOAPISnapshotRead(d, meta)
 }
@@ -240,6 +251,12 @@ func resourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) 
 		if err := set("permissions_to_create_volume", omiOAPIPermissionToLuch(&permisions)); err != nil {
 			return err
 		}
+		if err := set("global_permission", permisions.GetGlobalPermission()); err != nil {
+			return err
+		}
+		if err := set("permissions_to_create_volume_accounts", permisions.GetAccountIds()); err != nil {
+			return err
+		}
 		if err := set("progress", snapshot.GetProgress()); err != nil {
 			return err
 		}
@@ -259,18 +276,83 @@ func resourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) 
 	})
 }
 
-func resourceOutscaleOAPISnapshotUpdate(d *schema.ResourceData, meta interface{}) error {
+func UpdateSnapshot(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	d.Partial(true)
+	snapshotID := d.Id()
+
+	req := oscgo.UpdateSnapshotRequest{
+		SnapshotId: snapshotID,
+	}
+
+	oldAccount, newAccount := d.GetChange("permissions_to_create_volume_accounts")
+	inter := oldAccount.(*schema.Set).Intersection(newAccount.(*schema.Set))
+	added := newAccount.(*schema.Set).Difference(inter).List()
+	removed := oldAccount.(*schema.Set).Difference(inter).List()
+
+	globalPermission := d.Get("global_permission").(bool)
+
+	if len(added) > 0 || globalPermission {
+		perms := oscgo.PermissionsOnResourceCreation{}
+		addition := oscgo.PermissionsOnResource{}
+		if len(added) > 0 {
+			addition.SetAccountIds(utils.InterfaceSliceToStringSlice(added))
+		}
+		if globalPermission {
+			addition.SetGlobalPermission(true)
+		}
+		perms.SetAdditions(addition)
+		req.SetPermissionsToCreateVolume(perms)
+		var err error
+		err = resource.Retry(2*time.Minute, func() *resource.RetryError {
+			_, httpResp, err := conn.SnapshotApi.UpdateSnapshot(context.Background()).UpdateSnapshotRequest(req).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp, err)
+			}
+			return nil
+		})
+		if err != nil {
+			return fmt.Errorf("Error updating snapshot: %s", err)
+		}
+	}
+	if len(removed) > 0 || !globalPermission {
+		perms := oscgo.PermissionsOnResourceCreation{}
+		removal := oscgo.PermissionsOnResource{}
+		if len(removed) > 0 {
+			removal.SetAccountIds(utils.InterfaceSliceToStringSlice(removed))
+		}
+		if !globalPermission {
+			removal.SetGlobalPermission(true)
+		}
+		perms.SetRemovals(removal)
+		req.SetPermissionsToCreateVolume(perms)
+
+		var err error
+		err = resource.Retry(2*time.Minute, func() *resource.RetryError {
+			_, httpResp, err := conn.SnapshotApi.UpdateSnapshot(context.Background()).UpdateSnapshotRequest(req).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp, err)
+			}
+			return nil
+		})
+		if err != nil {
+			return fmt.Errorf("Error updating snapshot: %s", err)
+		}
+	}
+	return nil
+}
+
+func resourceOutscaleOAPISnapshotUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
-
-	d.SetPartial("tags")
-
-	d.Partial(false)
+	if d.HasChange("global_permission") || d.HasChange("permissions_to_create_volume_accounts") {
+		if err := UpdateSnapshot(d, meta); err != nil {
+			return err
+		}
+	}
 	return resourceOutscaleOAPISnapshotRead(d, meta)
 }
 
