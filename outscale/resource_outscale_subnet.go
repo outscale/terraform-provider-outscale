@@ -87,7 +87,7 @@ func resourceOutscaleOAPISubNetCreate(d *schema.ResourceData, meta interface{}) 
 			_, httpResp, err := conn.SubnetApi.UpdateSubnet(
 				context.Background()).UpdateSubnetRequest(req).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			return nil
 		})
@@ -145,7 +145,7 @@ func resourceOutscaleOAPISubNetUpdate(d *schema.ResourceData, meta interface{}) 
 			_, httpResp, err := conn.SubnetApi.UpdateSubnet(
 				context.Background()).UpdateSubnetRequest(req).Execute()
 			if err != nil {
-				return utils.CheckThrottling(httpResp.StatusCode, err)
+				return utils.CheckThrottling(httpResp, err)
 			}
 			return nil
 		})
