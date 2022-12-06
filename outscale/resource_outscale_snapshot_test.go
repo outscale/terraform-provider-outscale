@@ -36,14 +36,14 @@ func TestAccOutscaleOAPISnapshot_basic(t *testing.T) {
 func TestAccOutscaleOAPISnapshot_withDescription(t *testing.T) {
 	t.Parallel()
 	region := os.Getenv("OUTSCALE_REGION")
-
+	accountId := os.Getenv("OUTSCALE_ACCOUNT")
 	var v oscgo.Snapshot
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISnapshotConfigWithDescription(region),
+				Config: testAccOutscaleOAPISnapshotConfigWithDescription(region, accountId),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPISnapshotExists("outscale_snapshot.test", &v),
 					resource.TestCheckResourceAttr("outscale_snapshot.test", "description", "Snapshot Acceptance Test"),
@@ -173,7 +173,7 @@ resource "outscale_snapshot_attributes" "outscale_snapshot_attributes" {
 	`, region)
 }
 
-func testAccOutscaleOAPISnapshotConfigWithDescription(region string) string {
+func testAccOutscaleOAPISnapshotConfigWithDescription(region, accountId string) string {
 	return fmt.Sprintf(`
 		resource "outscale_volume" "description_test" {
 			subregion_name = "%sa"
@@ -183,8 +183,10 @@ func testAccOutscaleOAPISnapshotConfigWithDescription(region string) string {
 		resource "outscale_snapshot" "test" {
 			volume_id = "${outscale_volume.description_test.id}"
 			description = "Snapshot Acceptance Test"
+			global_permission = true
+			permissions_to_create_volume_accounts = ["%s"]
 		}
-	`, region)
+	`, region, accountId)
 }
 
 func testAccOutscaleOAPISnapshotConfigCopySnapshot(region string) string {
