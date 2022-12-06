@@ -17,10 +17,10 @@ variable "service_name" {
 
 variable "fgpu_gen" {
   type    = string
-  default = "v3"
+  default = "v5"
 }
 
 variable "fgpu_vm_type" {
   type    = string
-  default = "tinav3.c2r2p2"
+  default = "tinav5.c2r2p2"
 }
