@@ -34,7 +34,7 @@ func testAccOAPIVMSDataSourceConfig(omi, vmType string) string {
 		resource "outscale_vm" "basic" {
 			image_id			= "%s"
 			vm_type				= "%s"
-			keypair_name	= "terraform-basic"
+			#keypair_name	= "terraform-basic"
 		}
 
 		data "outscale_vms" "basic_web" {

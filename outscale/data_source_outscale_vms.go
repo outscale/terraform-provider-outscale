@@ -17,49 +17,8 @@ func datasourceOutscaleOApiVMS() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceOutscaleOApiVMSRead,
 
-		Schema: datasourceOutscaleOApiVMSSchema(),
+		Schema: GetDataSourcesSchema("vms", VMSchema()),
 	}
-}
-
-func dataSourceFiltersSchema() *schema.Schema {
-	return &schema.Schema{
-		Type:     schema.TypeSet,
-		Optional: true,
-		ForceNew: true,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"name": {
-					Type:     schema.TypeString,
-					Required: true,
-				},
-
-				"values": {
-					Type:     schema.TypeList,
-					Required: true,
-					Elem:     &schema.Schema{Type: schema.TypeString},
-				},
-			},
-		},
-	}
-}
-
-func datasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
-	wholeSchema := map[string]*schema.Schema{
-		"filter": dataSourceFiltersSchema(),
-		"vms": {
-			Type:     schema.TypeList,
-			Computed: true,
-			Elem: &schema.Resource{
-				Schema: getOApiVMAttributesSchema(),
-			},
-		},
-		"request_id": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-	}
-
-	return wholeSchema
 }
 
 func dataSourceOutscaleOApiVMSRead(d *schema.ResourceData, meta interface{}) error {

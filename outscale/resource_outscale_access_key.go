@@ -13,6 +13,42 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
+func AccessKeySchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"access_key_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"creation_date": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"expiration_date": {
+			Type:     schema.TypeString,
+			Optional: true,
+			DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+				date1, _ := datetime.Parse(new, time.UTC)
+				date2, _ := datetime.Parse(old, time.UTC)
+				return date1.Equal(date2)
+			},
+		},
+		"last_modification_date": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"secret_key": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"state": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			Default:      "ACTIVE",
+			ValidateFunc: validation.StringInSlice([]string{"ACTIVE", "INACTIVE"}, false),
+		},
+	}
+}
+
 func resourceOutscaleAccessKey() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceOutscaleAccessKeyCreate,
@@ -22,44 +58,7 @@ func resourceOutscaleAccessKey() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
-
-		Schema: map[string]*schema.Schema{
-			"access_key_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"creation_date": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"expiration_date": {
-				Type:     schema.TypeString,
-				Optional: true,
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					date1, _ := datetime.Parse(new, time.UTC)
-					date2, _ := datetime.Parse(old, time.UTC)
-					return date1.Equal(date2)
-				},
-			},
-			"last_modification_date": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"secret_key": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"state": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Default:      "ACTIVE",
-				ValidateFunc: validation.StringInSlice([]string{"ACTIVE", "INACTIVE"}, false),
-			},
-			"request_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-		},
+		Schema: GetResourceSchema(AccessKeySchema()),
 	}
 }
 

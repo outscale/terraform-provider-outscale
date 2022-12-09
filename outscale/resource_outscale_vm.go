@@ -18,6 +18,490 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
+func VMSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"block_device_mappings": {
+			Type:     schema.TypeList,
+			Optional: true,
+			//ForceNew: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"bsu": {
+						Type:     schema.TypeList,
+						Optional: true,
+						Computed: true,
+						MaxItems: 1,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"delete_on_vm_deletion": {
+									Type:     schema.TypeBool,
+									Optional: true,
+								},
+								"iops": {
+									Type:     schema.TypeInt,
+									Optional: true,
+									ForceNew: true,
+									ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+										iopsVal := val.(int)
+										if iopsVal < utils.MinIops || iopsVal > utils.MaxIops {
+											errs = append(errs, fmt.Errorf("%q must be between %d and %d inclusive, got: %d", key, utils.MinIops, utils.MaxIops, iopsVal))
+										}
+										return
+									},
+								},
+								"snapshot_id": {
+									Type:     schema.TypeString,
+									Optional: true,
+									ForceNew: true,
+								},
+								"volume_size": {
+									Type:     schema.TypeInt,
+									Optional: true,
+									ForceNew: true,
+									ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+										vSize := val.(int)
+										if vSize < 1 || vSize > utils.MaxSize {
+											errs = append(errs, fmt.Errorf("%q must be between 1 and %d gibibytes inclusive, got: %d", key, utils.MaxSize, vSize))
+										}
+										return
+									},
+								},
+								"volume_type": {
+									Type:     schema.TypeString,
+									Optional: true,
+									ForceNew: true,
+								},
+							},
+						},
+					},
+					"device_name": {
+						Type:     schema.TypeString,
+						Optional: true,
+						ForceNew: true,
+					},
+					"no_device": {
+						Type:     schema.TypeString,
+						Optional: true,
+						ForceNew: true,
+					},
+					"virtual_device_name": {
+						Type:     schema.TypeString,
+						Optional: true,
+						ForceNew: true,
+					},
+				},
+			},
+		},
+		"bsu_optimized": {
+			Type:     schema.TypeBool,
+			Optional: true,
+			Computed: true,
+		},
+		"client_token": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"creation_date": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"deletion_protection": {
+			Type:     schema.TypeBool,
+			Optional: true,
+			Computed: true,
+		},
+		"image_id": {
+			Type:     schema.TypeString,
+			Required: true,
+			ForceNew: true,
+		},
+		"keypair_name": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Computed: true,
+		},
+		"nics": {
+			Type:     schema.TypeSet,
+			Optional: true,
+			Computed: true,
+			ForceNew: true,
+			Set: func(v interface{}) int {
+				return v.(map[string]interface{})["device_number"].(int)
+			},
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"delete_on_vm_deletion": {
+						Type:     schema.TypeBool,
+						Optional: true,
+						Computed: true,
+						ForceNew: true,
+					},
+					"description": {
+						Type:     schema.TypeString,
+						Computed: true,
+						Optional: true,
+						ForceNew: true,
+					},
+					"device_number": {
+						Type:     schema.TypeInt,
+						Required: true,
+						ForceNew: true,
+					},
+					"nic_id": {
+						Type:     schema.TypeString,
+						Optional: true,
+						Computed: true,
+						ForceNew: true,
+					},
+					"private_ips": {
+						Type:     schema.TypeSet,
+						Optional: true,
+						Computed: true,
+						ForceNew: true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"is_primary": {
+									Type:     schema.TypeBool,
+									Optional: true,
+									Computed: true,
+									ForceNew: true,
+								},
+								"link_public_ip": {
+									Type:     schema.TypeSet,
+									Computed: true,
+									Elem: &schema.Resource{
+										Schema: map[string]*schema.Schema{
+											"public_dns_name": {
+												Type:     schema.TypeString,
+												Computed: true,
+											},
+											"public_ip": {
+												Type:     schema.TypeString,
+												Computed: true,
+											},
+											"public_ip_account_id": {
+												Type:     schema.TypeString,
+												Computed: true,
+											},
+										},
+									},
+								},
+								"private_dns_name": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+								"private_ip": {
+									Type:     schema.TypeString,
+									Optional: true,
+									Computed: true,
+									ForceNew: true,
+								},
+							},
+						},
+					},
+					"secondary_private_ip_count": {
+						Type:     schema.TypeInt,
+						Optional: true,
+						Computed: true,
+						ForceNew: true,
+					},
+					"account_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+
+					"is_source_dest_checked": {
+						Type:     schema.TypeBool,
+						Computed: true,
+					},
+
+					"subnet_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+						Optional: true,
+						ForceNew: true,
+					},
+					"link_nic": {
+						Type:     schema.TypeList,
+						MaxItems: 1,
+						Computed: true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"delete_on_vm_deletion": {
+									Type:     schema.TypeBool,
+									Computed: true,
+								},
+								"device_number": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+								"link_nic_id": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+								"state": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+							},
+						},
+					},
+					"link_public_ip": {
+						Type:     schema.TypeSet,
+						Computed: true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"public_dns_name": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+								"public_ip": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+								"public_ip_account_id": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+							},
+						},
+					},
+					"mac_address": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"net_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+
+					"private_dns_name": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"security_group_ids": {
+						Type:     schema.TypeList,
+						Optional: true,
+						ForceNew: true,
+						Elem:     &schema.Schema{Type: schema.TypeString},
+					},
+					"security_groups": {
+						Type:     schema.TypeList,
+						Computed: true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"security_group_id": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+								"security_group_name": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+							},
+						},
+					},
+					"state": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+				},
+			},
+		},
+		"placement_subregion_name": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Computed: true,
+		},
+		"placement_tenancy": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Computed: true,
+		},
+		"private_ips": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem:     &schema.Schema{Type: schema.TypeString},
+		},
+		"security_group_ids": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem:     &schema.Schema{Type: schema.TypeString},
+		},
+		"security_group_names": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem:     &schema.Schema{Type: schema.TypeString},
+		},
+		"subnet_id": {
+			Type:     schema.TypeString,
+			ForceNew: true,
+			Optional: true,
+			Computed: true,
+		},
+
+		"security_groups": {
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"security_group_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"security_group_name": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+				},
+			},
+		},
+		"architecture": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"block_device_mappings_created": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Computed: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"bsu": {
+						Type:     schema.TypeMap,
+						Optional: true,
+						Computed: true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"delete_on_vm_deletion": {
+									Type:     schema.TypeBool,
+									Computed: true,
+								},
+								"link_date": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+								"state": {
+									Type:     schema.TypeInt,
+									Computed: true,
+								},
+								"volume_id": {
+									Type:     schema.TypeFloat,
+									Computed: true,
+								},
+							},
+						},
+					},
+					"device_name": {
+						Type:     schema.TypeString,
+						Optional: true,
+					},
+				},
+			},
+		},
+		"hypervisor": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"is_source_dest_checked": {
+			Type:     schema.TypeBool,
+			Optional: true,
+			Computed: true,
+		},
+		"launch_number": {
+			Type:     schema.TypeInt,
+			Computed: true,
+		},
+		"nested_virtualization": {
+			Type:     schema.TypeBool,
+			Optional: true,
+			Default:  false,
+		},
+		"net_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"os_family": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"performance": {
+			Type:     schema.TypeString,
+			Computed: true,
+			Optional: true,
+		},
+		"private_dns_name": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"private_ip": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"product_codes": {
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem:     &schema.Schema{Type: schema.TypeString},
+		},
+		"public_dns_name": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"public_ip": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"reservation_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"root_device_name": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"root_device_type": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"state": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Default:  "running",
+		},
+		"state_reason": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"user_data": {
+			Type:     schema.TypeString,
+			Optional: true,
+		},
+		"vm_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+			Optional: true,
+		},
+		"vm_initiated_shutdown_behavior": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Computed: true,
+		},
+		"vm_type": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Computed: true,
+		},
+		"admin_password": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"get_admin_password": {
+			Type:     schema.TypeBool,
+			Optional: true,
+		},
+		"tags": tagsListOAPISchema(),
+	}
+}
+
 func resourceOutscaleOApiVM() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceOAPIVMCreate,
@@ -33,491 +517,7 @@ func resourceOutscaleOApiVM() *schema.Resource {
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 
-		Schema: map[string]*schema.Schema{
-			"block_device_mappings": {
-				Type:     schema.TypeList,
-				Optional: true,
-				//ForceNew: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"bsu": {
-							Type:     schema.TypeList,
-							Optional: true,
-							Computed: true,
-							MaxItems: 1,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"delete_on_vm_deletion": {
-										Type:     schema.TypeBool,
-										Optional: true,
-									},
-									"iops": {
-										Type:     schema.TypeInt,
-										Optional: true,
-										ForceNew: true,
-										ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
-											iopsVal := val.(int)
-											if iopsVal < utils.MinIops || iopsVal > utils.MaxIops {
-												errs = append(errs, fmt.Errorf("%q must be between %d and %d inclusive, got: %d", key, utils.MinIops, utils.MaxIops, iopsVal))
-											}
-											return
-										},
-									},
-									"snapshot_id": {
-										Type:     schema.TypeString,
-										Optional: true,
-										ForceNew: true,
-									},
-									"volume_size": {
-										Type:     schema.TypeInt,
-										Optional: true,
-										ForceNew: true,
-										ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
-											vSize := val.(int)
-											if vSize < 1 || vSize > utils.MaxSize {
-												errs = append(errs, fmt.Errorf("%q must be between 1 and %d gibibytes inclusive, got: %d", key, utils.MaxSize, vSize))
-											}
-											return
-										},
-									},
-									"volume_type": {
-										Type:     schema.TypeString,
-										Optional: true,
-										ForceNew: true,
-									},
-								},
-							},
-						},
-						"device_name": {
-							Type:     schema.TypeString,
-							Optional: true,
-							ForceNew: true,
-						},
-						"no_device": {
-							Type:     schema.TypeString,
-							Optional: true,
-							ForceNew: true,
-						},
-						"virtual_device_name": {
-							Type:     schema.TypeString,
-							Optional: true,
-							ForceNew: true,
-						},
-					},
-				},
-			},
-			"bsu_optimized": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Computed: true,
-			},
-			"client_token": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"creation_date": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"deletion_protection": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Computed: true,
-			},
-			"image_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
-			},
-			"keypair_name": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-			},
-			"nics": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
-				Set: func(v interface{}) int {
-					return v.(map[string]interface{})["device_number"].(int)
-				},
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"delete_on_vm_deletion": {
-							Type:     schema.TypeBool,
-							Optional: true,
-							Computed: true,
-							ForceNew: true,
-						},
-						"description": {
-							Type:     schema.TypeString,
-							Computed: true,
-							Optional: true,
-							ForceNew: true,
-						},
-						"device_number": {
-							Type:     schema.TypeInt,
-							Required: true,
-							ForceNew: true,
-						},
-						"nic_id": {
-							Type:     schema.TypeString,
-							Optional: true,
-							Computed: true,
-							ForceNew: true,
-						},
-						"private_ips": {
-							Type:     schema.TypeSet,
-							Optional: true,
-							Computed: true,
-							ForceNew: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"is_primary": {
-										Type:     schema.TypeBool,
-										Optional: true,
-										Computed: true,
-										ForceNew: true,
-									},
-									"link_public_ip": {
-										Type:     schema.TypeSet,
-										Computed: true,
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"public_dns_name": {
-													Type:     schema.TypeString,
-													Computed: true,
-												},
-												"public_ip": {
-													Type:     schema.TypeString,
-													Computed: true,
-												},
-												"public_ip_account_id": {
-													Type:     schema.TypeString,
-													Computed: true,
-												},
-											},
-										},
-									},
-									"private_dns_name": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"private_ip": {
-										Type:     schema.TypeString,
-										Optional: true,
-										Computed: true,
-										ForceNew: true,
-									},
-								},
-							},
-						},
-						"secondary_private_ip_count": {
-							Type:     schema.TypeInt,
-							Optional: true,
-							Computed: true,
-							ForceNew: true,
-						},
-						"account_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-
-						"is_source_dest_checked": {
-							Type:     schema.TypeBool,
-							Computed: true,
-						},
-
-						"subnet_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-							Optional: true,
-							ForceNew: true,
-						},
-						"link_nic": {
-							Type:     schema.TypeList,
-							MaxItems: 1,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"delete_on_vm_deletion": {
-										Type:     schema.TypeBool,
-										Computed: true,
-									},
-									"device_number": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"link_nic_id": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"state": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
-							},
-						},
-						"link_public_ip": {
-							Type:     schema.TypeSet,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"public_dns_name": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"public_ip": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"public_ip_account_id": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
-							},
-						},
-						"mac_address": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"net_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-
-						"private_dns_name": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"security_group_ids": {
-							Type:     schema.TypeList,
-							Optional: true,
-							ForceNew: true,
-							Elem:     &schema.Schema{Type: schema.TypeString},
-						},
-						"security_groups": {
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"security_group_id": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"security_group_name": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
-							},
-						},
-						"state": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
-			},
-			"placement_subregion_name": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-			},
-			"placement_tenancy": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-			},
-			"private_ips": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
-			"security_group_ids": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
-			"security_group_names": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
-			"subnet_id": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Optional: true,
-				Computed: true,
-			},
-
-			"security_groups": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"security_group_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"security_group_name": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
-			},
-			"architecture": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"block_device_mappings_created": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"bsu": {
-							Type:     schema.TypeMap,
-							Optional: true,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"delete_on_vm_deletion": {
-										Type:     schema.TypeBool,
-										Computed: true,
-									},
-									"link_date": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"state": {
-										Type:     schema.TypeInt,
-										Computed: true,
-									},
-									"volume_id": {
-										Type:     schema.TypeFloat,
-										Computed: true,
-									},
-								},
-							},
-						},
-						"device_name": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-					},
-				},
-			},
-			"hypervisor": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"is_source_dest_checked": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Computed: true,
-			},
-			"launch_number": {
-				Type:     schema.TypeInt,
-				Computed: true,
-			},
-			"nested_virtualization": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
-			},
-			"net_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"os_family": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"performance": {
-				Type:     schema.TypeString,
-				Computed: true,
-				Optional: true,
-			},
-			"private_dns_name": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"private_ip": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"product_codes": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
-			"public_dns_name": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"public_ip": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"reservation_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"root_device_name": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"root_device_type": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"state": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "running",
-			},
-			"state_reason": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"user_data": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
-			"vm_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-				Optional: true,
-			},
-			"vm_initiated_shutdown_behavior": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-			},
-			"vm_type": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-			},
-			"request_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"admin_password": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"get_admin_password": {
-				Type:     schema.TypeBool,
-				Optional: true,
-			},
-			"tags": tagsListOAPISchema(),
-		},
+		Schema: GetResourceSchema(VMSchema()),
 	}
 }
 
