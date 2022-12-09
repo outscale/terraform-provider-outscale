@@ -20,6 +20,8 @@ import (
 const (
 	randMin         float32 = 1.0
 	randMax         float32 = 20.0
+	MinPort         int     = 1
+	MaxPort         int     = 65535
 	MinIops         int     = 100
 	MaxIops         int     = 13000
 	DefaultIops     int     = 150
@@ -84,6 +86,14 @@ func GetErrorResponse(err error) error {
 		}
 	}
 	return err
+}
+
+func ParseStringToInt32(str string) int32 {
+	parsed, err := strconv.ParseInt(str, 10, 32)
+	if err != nil {
+		panic(err)
+	}
+	return int32(parsed)
 }
 
 // StringSliceToPtrInt64Slice ...

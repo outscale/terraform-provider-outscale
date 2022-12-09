@@ -219,7 +219,7 @@ func testAccOutscaleOAPILBUPublicIpConfig(r int) string {
 		  load_balancer_port     = 80
 		}
 	  
-		public_ip =  "${outscale_public_ip.my_public_ip.public_ip}"
+		public_ip = outscale_public_ip.my_public_ip.public_ip
 	  
 		tags {
 		  key = "name"

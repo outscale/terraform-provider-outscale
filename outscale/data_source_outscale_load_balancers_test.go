@@ -54,7 +54,7 @@ func testAccDSOutscaleOAPILBsUConfig(zone string, numLbu int) string {
 	}
 
 	data "outscale_load_balancers" "test" {
-		load_balancer_name = ["${outscale_load_balancer.bar.id}"]
+		load_balancer_name = [outscale_load_balancer.bar.id]
 	}
 `, zone, numLbu)
 }

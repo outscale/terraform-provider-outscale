@@ -15,41 +15,7 @@ import (
 
 func napSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"net_access_point_ids": {
-			Type:     schema.TypeList,
-			Optional: true,
-			Elem:     &schema.Schema{Type: schema.TypeString},
-		},
-		"net_ids": {
-			Type:     schema.TypeList,
-			Optional: true,
-			Elem:     &schema.Schema{Type: schema.TypeString},
-		},
-		"service_names": {
-			Type:     schema.TypeList,
-			Optional: true,
-			Elem:     &schema.Schema{Type: schema.TypeString},
-		},
-		"states": {
-			Type:     schema.TypeList,
-			Optional: true,
-			Elem:     &schema.Schema{Type: schema.TypeString},
-		},
-		"tag_keys": {
-			Type:     schema.TypeList,
-			Optional: true,
-			Elem:     &schema.Schema{Type: schema.TypeString},
-		},
-		"tag_values": {
-			Type:     schema.TypeList,
-			Optional: true,
-			Elem:     &schema.Schema{Type: schema.TypeString},
-		},
-		"tags": {
-			Type:     schema.TypeList,
-			Optional: true,
-			Elem:     &schema.Schema{Type: schema.TypeString},
-		},
+		"filter": dataSourceFiltersSchema(),
 		"net_access_points": {
 			Type:     schema.TypeList,
 			Computed: true,
@@ -95,8 +61,8 @@ func dataSourceOutscaleNetAccessPoints() *schema.Resource {
 	}
 }
 
-func buildOutscaleDataSourcesNAPFilters(set *schema.Set) *oscgo.FiltersNetAccessPoint {
-	filters := new(oscgo.FiltersNetAccessPoint)
+func buildOutscaleDataSourcesNAPFilters(set *schema.Set) oscgo.FiltersNetAccessPoint {
+	filters := oscgo.FiltersNetAccessPoint{}
 
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -118,7 +84,7 @@ func buildOutscaleDataSourcesNAPFilters(set *schema.Set) *oscgo.FiltersNetAccess
 			filters.TagValues = &filterValues
 		case "tags":
 			filters.Tags = &filterValues
-		case "net_access_point_id":
+		case "net_access_point_ids":
 			filters.NetAccessPointIds = &filterValues
 		default:
 			filters.NetAccessPointIds = &filterValues
@@ -131,48 +97,34 @@ func buildOutscaleDataSourcesNAPFilters(set *schema.Set) *oscgo.FiltersNetAccess
 func dataSourceOutscaleNetAccessPointsRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	napid, napidOk := d.GetOk("net_access_point_ids")
 	filters, filtersOk := d.GetOk("filter")
-	filter := new(oscgo.FiltersNetAccessPoint)
-
-	if !napidOk && !filtersOk {
-		return fmt.Errorf("One of filters, or net_access_point_ids must be assigned")
-	}
-
-	if filtersOk {
-		filter = buildOutscaleDataSourcesNAPFilters(filters.(*schema.Set))
-	} else {
-		filter = &oscgo.FiltersNetAccessPoint{
-			NetAccessPointIds: &[]string{napid.(string)},
-		}
-	}
-
-	req := &oscgo.ReadNetAccessPointsRequest{
-		Filters: filter,
-	}
-
+	req := oscgo.ReadNetAccessPointsRequest{}
 	var resp oscgo.ReadNetAccessPointsResponse
 	var err error
 
+	if filtersOk {
+		req.SetFilters(buildOutscaleDataSourcesNAPFilters(filters.(*schema.Set)))
+	}
 	err = resource.Retry(30*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.NetAccessPointApi.ReadNetAccessPoints(
 			context.Background()).
-			ReadNetAccessPointsRequest(*req).Execute()
+			ReadNetAccessPointsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}
 
-	naps := *resp.NetAccessPoints
-	nap_len := len(naps)
-	nap_ret := make([]map[string]interface{}, nap_len)
+	naps := resp.GetNetAccessPoints()[:]
+	if len(naps) < 1 {
+		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
+	}
 
+	nap_ret := make([]map[string]interface{}, len(naps))
 	for k, v := range naps {
 		n := make(map[string]interface{})
 

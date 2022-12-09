@@ -57,7 +57,7 @@ func testAccDSOutscaleOAPILBUConfig(zone string) string {
 	}
 
 	data "outscale_load_balancer" "test" {
-		load_balancer_name = "${outscale_load_balancer.bar.id}"
+		load_balancer_name = outscale_load_balancer.bar.id
 	}
 `, zone)
 }
