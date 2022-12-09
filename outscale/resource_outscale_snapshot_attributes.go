@@ -17,7 +17,6 @@ func resourcedOutscaleOAPISnapshotAttributes() *schema.Resource {
 		Create: resourcedOutscaleOAPISnapshotAttributesCreate,
 		Read:   resourcedOutscaleOAPISnapshotAttributesRead,
 		Delete: resourcedOutscaleOAPISnapshotAttributesDelete,
-
 		Schema: map[string]*schema.Schema{
 			"permissions_to_create_volume_additions": {
 				Type:     schema.TypeList,
@@ -29,10 +28,12 @@ func resourcedOutscaleOAPISnapshotAttributes() *schema.Resource {
 						"account_ids": {
 							Type:     schema.TypeList,
 							Optional: true,
+							ForceNew: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
 						"global_permission": {
 							Type:     schema.TypeBool,
+							ForceNew: true,
 							Optional: true,
 						},
 					},
@@ -47,11 +48,13 @@ func resourcedOutscaleOAPISnapshotAttributes() *schema.Resource {
 						"account_ids": {
 							Type:     schema.TypeList,
 							Optional: true,
+							ForceNew: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
 						"global_permission": {
 							Type:     schema.TypeBool,
 							Optional: true,
+							ForceNew: true,
 						},
 					},
 				},
@@ -147,6 +150,11 @@ func resourcedOutscaleOAPISnapshotAttributesCreate(d *schema.ResourceData, meta 
 		return fmt.Errorf("Error createing snapshot createVolumePermission: %s", err)
 	}
 	d.SetId(snapshotID)
+
+	return resourcedOutscaleOAPISnapshotAttributesRead(d, meta)
+}
+
+func resourceSnapshotAttributesUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	return resourcedOutscaleOAPISnapshotAttributesRead(d, meta)
 }
