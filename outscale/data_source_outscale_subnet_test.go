@@ -84,19 +84,19 @@ const testAccDataSourceOutscaleOAPISubnetConfig = `
 	}
 
 	resource "outscale_subnet" "outscale_subnet" {
-		net_id        = "${outscale_net.outscale_net.net_id}"
+		net_id        = outscale_net.outscale_net.net_id
 		ip_range      = "10.0.0.0/16"
 		subregion_name = "eu-west-2a"
 	}
 
 	data "outscale_subnet" "by_id" {
-		subnet_id = "${outscale_subnet.outscale_subnet.id}"
+		subnet_id = outscale_subnet.outscale_subnet.id
 	}
 
 	data "outscale_subnet" "by_filter" {
 		filter {
 			name   = "subnet_ids"
-			values = ["${outscale_subnet.outscale_subnet.id}"]
+			values = [outscale_subnet.outscale_subnet.id]
 		}
 	}
 `
@@ -120,7 +120,7 @@ func testAccDataSourceOutscaleOAPISubnetWithAvailableIpsCountsFilter() string {
 		data "outscale_subnet" "by_filter" {
 			filter {
 				name   = "available_ips_counts"
-				values = ["${outscale_subnet.outscale_subnet.available_ips_count}"]
+				values = [outscale_subnet.outscale_subnet.available_ips_count]
 			}
 		}
 	`

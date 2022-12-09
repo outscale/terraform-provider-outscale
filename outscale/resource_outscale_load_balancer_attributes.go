@@ -68,16 +68,28 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"healthy_threshold": {
-							Type:     schema.TypeString,
-							Optional: true,
-							Computed: true,
+							Type:     schema.TypeInt,
+							Required: true,
 							ForceNew: true,
+							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+								htVal := val.(int)
+								if htVal < 5 || htVal > 600 {
+									errs = append(errs, fmt.Errorf("%q must be between 5 and 600 inclusive, got: %d", key, htVal))
+								}
+								return
+							},
 						},
 						"unhealthy_threshold": {
-							Type:     schema.TypeString,
-							Optional: true,
-							Computed: true,
+							Type:     schema.TypeInt,
+							Required: true,
 							ForceNew: true,
+							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+								uhtVal := val.(int)
+								if uhtVal < 2 || uhtVal > 10 {
+									errs = append(errs, fmt.Errorf("%q must be between 2 and 10 inclusive, got: %d", key, uhtVal))
+								}
+								return
+							},
 						},
 						"path": {
 							Type:     schema.TypeString,
@@ -91,9 +103,16 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 							Optional: true,
 						},
 						"port": {
-							Type:     schema.TypeString,
+							Type:     schema.TypeInt,
 							Required: true,
 							ForceNew: true,
+							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+								portVal := val.(int)
+								if portVal < utils.MinPort || portVal > utils.MaxPort {
+									errs = append(errs, fmt.Errorf("%q must be between %d and %d inclusive, got: %d", key, utils.MinPort, utils.MaxPort, portVal))
+								}
+								return
+							},
 						},
 						"protocol": {
 							Type:     schema.TypeString,
@@ -101,16 +120,28 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 							ForceNew: true,
 						},
 						"check_interval": {
-							Type:     schema.TypeString,
-							Optional: true,
-							Computed: true,
+							Type:     schema.TypeInt,
+							Required: true,
 							ForceNew: true,
+							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+								ciVal := val.(int)
+								if ciVal < 5 || ciVal > 600 {
+									errs = append(errs, fmt.Errorf("%q must be between 5 and 600 inclusive, got: %d", key, ciVal))
+								}
+								return
+							},
 						},
 						"timeout": {
-							Type:     schema.TypeString,
-							Optional: true,
-							Computed: true,
+							Type:     schema.TypeInt,
+							Required: true,
 							ForceNew: true,
+							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+								tVal := val.(int)
+								if tVal < 5 || tVal > 60 {
+									errs = append(errs, fmt.Errorf("%q must be between 5 and 60 inclusive, got: %d", key, tVal))
+								}
+								return
+							},
 						},
 					},
 				},
@@ -294,7 +325,6 @@ func resourceOutscaleOAPILoadBalancerAttributesCreate_(d *schema.ResourceData, m
 		req.PolicyNames = &a
 	} else if isUpdate {
 		a := make([]string, 0)
-
 		req.PolicyNames = &a
 	}
 	if isUpdate {
@@ -341,47 +371,19 @@ func resourceOutscaleOAPILoadBalancerAttributesCreate_(d *schema.ResourceData, m
 		hc := hcs.([]interface{})
 		check := hc[0].(map[string]interface{})
 
-		ht, ut, sucess := 0, 0, false
-		if ht, sucess = lb_atoi_at(check, "healthy_threshold"); sucess == false {
-			return fmt.Errorf("please provide an number in health_check.healthy_threshold argument")
-
+		req.HealthCheck.SetHealthyThreshold(int32(check["healthy_threshold"].(int)))
+		req.HealthCheck.SetUnhealthyThreshold(int32(check["unhealthy_threshold"].(int)))
+		req.HealthCheck.SetCheckInterval(int32(check["check_interval"].(int)))
+		protocol := check["protocol"].(string)
+		if protocol == "" {
+			return fmt.Errorf("please provide protocol in health_check argument")
 		}
-
-		if ut, sucess = lb_atoi_at(check, "unhealthy_threshold"); sucess == false {
-			return fmt.Errorf("please provide an number in health_check.unhealthy_threshold argument")
+		req.HealthCheck.SetProtocol(protocol)
+		if path := check["path"].(string); path != "" {
+			req.HealthCheck.SetPath(path)
 		}
-
-		i, ierr := lb_atoi_at(check, "check_interval")
-		t, terr := lb_atoi_at(check, "timeout")
-		p, perr := lb_atoi_at(check, "port")
-
-		if ierr != true {
-			return fmt.Errorf("please provide an number in health_check.check_interval argument")
-		}
-
-		if terr != true {
-			return fmt.Errorf("please provide an number in health_check.timeout argument")
-		}
-
-		if perr != true {
-			return fmt.Errorf("please provide an number in health_check.port argument")
-		}
-
-		var hc_req oscgo.HealthCheck
-		hc_req.HealthyThreshold = int32(ht)
-		hc_req.UnhealthyThreshold = int32(ut)
-		hc_req.CheckInterval = int32(i)
-		hc_req.Protocol = check["protocol"].(string)
-		if check["path"] != nil {
-			p := check["path"].(string)
-			if p != "" {
-				hc_req.Path = &p
-			}
-		}
-		hc_req.Port = int32(p)
-		hc_req.Timeout = int32(t)
-		req.HealthCheck = &hc_req
-
+		req.HealthCheck.SetPort(int32(check["port"].(int)))
+		req.HealthCheck.SetTimeout(int32(check["time_out"].(int)))
 	}
 
 	return loadBalancerAttributesDoRequest(d, meta, req)

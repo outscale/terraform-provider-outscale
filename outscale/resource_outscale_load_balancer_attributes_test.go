@@ -72,7 +72,7 @@ resource "outscale_load_balancer_attributes" "bar2" {
 		is_enabled = "false"
 		osu_bucket_prefix = "donustestbucket"
 	}
-	load_balancer_name = "${outscale_load_balancer.bar.id}"
+	load_balancer_name = outscale_load_balancer.bar.id
 }
 `, r)
 }

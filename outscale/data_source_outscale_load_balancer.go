@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -186,8 +187,8 @@ func dataSourceOutscaleOAPILoadBalancer() *schema.Resource {
 	}
 }
 
-func buildOutscaleDataSourceLBFilters(set *schema.Set) *oscgo.FiltersLoadBalancer {
-	filters := new(oscgo.FiltersLoadBalancer)
+func buildOutscaleDataSourceLBFilters(set *schema.Set) oscgo.FiltersLoadBalancer {
+	filters := oscgo.FiltersLoadBalancer{}
 
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -214,33 +215,27 @@ func readLbs(conn *oscgo.APIClient, d *schema.ResourceData) (*oscgo.ReadLoadBala
 func readLbs_(conn *oscgo.APIClient, d *schema.ResourceData, t schema.ValueType) (*oscgo.ReadLoadBalancersResponse, *string, error) {
 	ename, nameOk := d.GetOk("load_balancer_name")
 	filters, filtersOk := d.GetOk("filter")
-	filter := new(oscgo.FiltersLoadBalancer)
+	req := oscgo.ReadLoadBalancersRequest{
+		Filters: &oscgo.FiltersLoadBalancer{},
+	}
 
 	if !nameOk && !filtersOk {
 		return nil, nil, fmt.Errorf("One of filters, or load_balancer_name must be assigned")
 	}
 
 	if filtersOk {
-		filter = buildOutscaleDataSourceLBFilters(filters.(*schema.Set))
+		req.SetFilters(buildOutscaleDataSourceLBFilters(filters.(*schema.Set)))
 	} else if t == schema.TypeString {
-		elbName := ename.(string)
-		filter = &oscgo.FiltersLoadBalancer{
-			LoadBalancerNames: &[]string{elbName},
-		}
+		req.Filters.SetLoadBalancerNames([]string{ename.(string)})
 	} else { /* assuming typelist */
-		filter = &oscgo.FiltersLoadBalancer{
+		req.Filters = &oscgo.FiltersLoadBalancer{
 			LoadBalancerNames: utils.InterfaceSliceToStringSlicePtr(ename.([]interface{})),
 		}
-
 	}
-	elbName := (*filter.LoadBalancerNames)[0]
-
-	req := oscgo.ReadLoadBalancersRequest{
-		Filters: filter,
-	}
-
+	elbName := (*req.Filters.LoadBalancerNames)[0]
 	var resp oscgo.ReadLoadBalancersResponse
 	var err error
+	var statusCode int
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.LoadBalancerApi.
 			ReadLoadBalancers(context.Background()).
@@ -249,13 +244,14 @@ func readLbs_(conn *oscgo.APIClient, d *schema.ResourceData, t schema.ValueType)
 			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
+		statusCode = httpResp.StatusCode
 		return nil
 	})
 
 	if err != nil {
-		if isLoadBalancerNotFound(err) {
+		if statusCode == http.StatusNotFound {
 			d.SetId("")
-			return nil, nil, fmt.Errorf("Unknow error")
+			return nil, nil, fmt.Errorf("Loadbalancer Not Found")
 		}
 
 		return nil, nil, fmt.Errorf("Error retrieving ELB: %s", err)

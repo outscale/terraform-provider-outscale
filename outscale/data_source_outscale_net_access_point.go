@@ -14,34 +14,22 @@ import (
 
 func napdSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
+		"filter": dataSourceFiltersSchema(),
 		"net_access_point_id": {
 			Type:     schema.TypeString,
-			Optional: true,
 			Computed: true,
 		},
 		"net_id": {
 			Type:     schema.TypeString,
-			Optional: true,
 			Computed: true,
 		},
 		"service_name": {
 			Type:     schema.TypeString,
-			Optional: true,
 			Computed: true,
 		},
 		"state": {
 			Type:     schema.TypeString,
-			Optional: true,
 			Computed: true,
-		},
-		"tag_key": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"tag_value": {
-			Type:     schema.TypeString,
-			Computed: true,
-			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 		"tags": dataSourceTagsSchema(),
 		"route_table_ids": {
@@ -67,33 +55,20 @@ func dataSourceOutscaleNetAccessPoint() *schema.Resource {
 func dataSourceOutscaleNetAccessPointRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	napid, napidOk := d.GetOk("net_access_point_ids")
 	filters, filtersOk := d.GetOk("filter")
-	filter := new(oscgo.FiltersNetAccessPoint)
-
-	if !napidOk && !filtersOk {
-		return fmt.Errorf("One of filters, or net_access_point_ids must be assigned")
-	}
-
-	if filtersOk {
-		filter = buildOutscaleDataSourcesNAPFilters(filters.(*schema.Set))
-	} else {
-		filter = &oscgo.FiltersNetAccessPoint{
-			NetAccessPointIds: &[]string{napid.(string)},
-		}
-	}
-
-	req := &oscgo.ReadNetAccessPointsRequest{
-		Filters: filter,
+	if !filtersOk {
+		return fmt.Errorf("One of filters must be assigned")
 	}
 
 	var resp oscgo.ReadNetAccessPointsResponse
 	var err error
+	req := oscgo.ReadNetAccessPointsRequest{}
 
+	req.SetFilters(buildOutscaleDataSourcesNAPFilters(filters.(*schema.Set)))
 	err = resource.Retry(30*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.NetAccessPointApi.ReadNetAccessPoints(
 			context.Background()).
-			ReadNetAccessPointsRequest(*req).Execute()
+			ReadNetAccessPointsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
