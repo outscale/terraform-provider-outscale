@@ -22,5 +22,5 @@ variable "fgpu_gen" {
 
 variable "fgpu_vm_type" {
   type    = string
-  default = "tinav5.c2r2p2"
+  default = "tinav5.c2r2p1"
 }

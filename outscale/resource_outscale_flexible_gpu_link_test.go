@@ -19,7 +19,7 @@ func TestAccOutscaleOAPIFlexibleGpuLink_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIFlexibleGpuLinkConfig(omi, "tinav5.c4r8p2", region),
+				Config: testAccOutscaleOAPIFlexibleGpuLinkConfig(omi, "tinav5.c2r2p1", region),
 			},
 		},
 	})
