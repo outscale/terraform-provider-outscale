@@ -104,10 +104,9 @@ func resourceOutscaleOAPICaRead(d *schema.ResourceData, meta interface{}) error 
 	if !resp.HasCas() {
 		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
 	}
-
-	if len(resp.GetCas()) == 0 {
+	if utils.IsResponseEmpty(len(resp.GetCas()), "Ca", d.Id()) {
 		d.SetId("")
-		return fmt.Errorf("Certificate authority not found")
+		return nil
 	}
 
 	ca := resp.GetCas()[0]

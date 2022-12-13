@@ -122,10 +122,11 @@ func resourceOutscaleOAPISubNetRead(d *schema.ResourceData, meta interface{}) er
 		errString := err.Error()
 		return fmt.Errorf("[DEBUG] Error reading Subnet (%s)", errString)
 	}
-	if len(resp.GetSubnets()) > 0 {
-		return readOutscaleOAPISubNet(d, &resp.GetSubnets()[0])
+	if utils.IsResponseEmpty(len(resp.GetSubnets()), "Subnet", d.Id()) {
+		d.SetId("")
+		return nil
 	}
-	return fmt.Errorf("No subnet (%s) found", d.Id())
+	return readOutscaleOAPISubNet(d, &resp.GetSubnets()[0])
 }
 func resourceOutscaleOAPISubNetUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI

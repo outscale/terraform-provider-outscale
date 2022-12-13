@@ -144,32 +144,32 @@ func resourceOutscaleOAPIVirtualGatewayLinkRead(d *schema.ResourceData, meta int
 		}
 		return err
 	}
-
-	if len(resp.GetVirtualGateways()) > 0 {
-		vgw := resp.GetVirtualGateways()[0]
-		if vgw.GetState() == "deleted" {
-			log.Printf("[INFO] VPN Gateway %q appears to have been deleted.", vgwID)
-			d.SetId("")
-			return nil
-		}
-
-		vga := oapiVpnGatewayGetLink(vgw)
-		if len(vgw.GetNetToVirtualGatewayLinks()) == 0 || vga.GetState() == "detached" {
-			//d.Set("net_id", "")
-			return nil
-		}
-
-		if err := d.Set("net_id", vga.GetNetId()); err != nil {
-			return err
-		}
-		if err := d.Set("virtual_gateway_id", vgw.GetVirtualGatewayId()); err != nil {
-			return err
-		}
-		if err := d.Set("net_to_virtual_gateway_links", flattenNetToVirtualGatewayLinks(vgw.NetToVirtualGatewayLinks)); err != nil {
-			return err
-		}
+	if utils.IsResponseEmpty(len(resp.GetVirtualGateways()), "VirtualGateway", d.Id()) {
+		d.SetId("")
+		return nil
+	}
+	vgw := resp.GetVirtualGateways()[0]
+	if vgw.GetState() == "deleted" {
+		log.Printf("[INFO] VPN Gateway %q appears to have been deleted.", vgwID)
+		d.SetId("")
+		return nil
 	}
 
+	vga := oapiVpnGatewayGetLink(vgw)
+	if len(vgw.GetNetToVirtualGatewayLinks()) == 0 || vga.GetState() == "detached" {
+		//d.Set("net_id", "")
+		return nil
+	}
+
+	if err := d.Set("net_id", vga.GetNetId()); err != nil {
+		return err
+	}
+	if err := d.Set("virtual_gateway_id", vgw.GetVirtualGatewayId()); err != nil {
+		return err
+	}
+	if err := d.Set("net_to_virtual_gateway_links", flattenNetToVirtualGatewayLinks(vgw.NetToVirtualGatewayLinks)); err != nil {
+		return err
+	}
 	return nil
 }
 

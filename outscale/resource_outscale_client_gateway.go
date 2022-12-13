@@ -113,6 +113,11 @@ func resourceOutscaleClientGatewayRead(d *schema.ResourceData, meta interface{})
 	}
 
 	resp := r.(oscgo.ReadClientGatewaysResponse)
+	if !resp.HasClientGateways() || utils.IsResponseEmpty(len(resp.GetClientGateways()), "ClientGateway", d.Id()) {
+		d.SetId("")
+		return nil
+	}
+
 	clientGateway := resp.GetClientGateways()[0]
 
 	if err := d.Set("bgp_asn", clientGateway.GetBgpAsn()); err != nil {

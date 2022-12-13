@@ -203,6 +203,7 @@ func resourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface{}
 		return err
 	}
 	if rtRaw == nil {
+		utils.LogManuallyDeleted("RouteTable", d.Id())
 		d.SetId("")
 		return nil
 	}
@@ -340,10 +341,8 @@ func readOAPIRouteTable(conn *oscgo.APIClient, routeTableID string, linkIds ...s
 	var requestID string
 	if err != nil {
 		errString = err.Error()
-
 		return nil, requestID, fmt.Errorf("Error getting route table: %s", errString)
 	}
-
 	if len(resp.GetRouteTables()) <= 0 {
 		return nil, resp.ResponseContext.GetRequestId(), err
 	}

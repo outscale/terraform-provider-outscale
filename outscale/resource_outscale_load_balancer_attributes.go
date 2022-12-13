@@ -395,6 +395,11 @@ func resourceOutscaleOAPILoadBalancerAttributesRead(d *schema.ResourceData, meta
 	if err != nil {
 		return err
 	}
+	if lb == nil {
+		utils.LogManuallyDeleted("LoadBalancerAttributes", elbName)
+		d.SetId("")
+		return nil
+	}
 
 	a := lb.AccessLog
 

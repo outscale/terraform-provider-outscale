@@ -211,12 +211,12 @@ func resourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) 
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		return fmt.Errorf("Error reading the snapshot %snapshot", err)
 	}
-	if len(resp.GetSnapshots()) == 0 {
-		return fmt.Errorf("Error reading the snapshot: there are not snapshots with id %s", d.Id())
+	if utils.IsResponseEmpty(len(resp.GetSnapshots()), "Snapshot", d.Id()) {
+		d.SetId("")
+		return nil
 	}
 
 	snapshot := resp.GetSnapshots()[0]

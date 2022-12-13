@@ -205,7 +205,10 @@ func resourceOutscaleOAPIImageLaunchPermissionRead(d *schema.ResourceData, meta 
 
 		return fmt.Errorf("Error reading Outscale image permission: %s", errString)
 	}
-
+	if utils.IsResponseEmpty(len(resp.GetImages()), "ImageLaunchPermission", d.Id()) {
+		d.SetId("")
+		return nil
+	}
 	result := resp.GetImages()[0]
 
 	if err := d.Set("description", result.Description); err != nil {

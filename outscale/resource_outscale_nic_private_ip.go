@@ -123,10 +123,10 @@ func resourceOutscaleOAPINetworkInterfacePrivateIPRead(d *schema.ResourceData, m
 		return fmt.Errorf("Could not find network interface: %s", errString)
 
 	}
-	if len(resp.GetNics()) == 0 {
-		return fmt.Errorf("Unable to find ENI (%s): %#v", d.Id(), resp.GetNics())
+	if utils.IsResponseEmpty(len(resp.GetNics()), "NicPrivateIp", d.Id()) {
+		d.SetId("")
+		return nil
 	}
-
 	eni := resp.GetNics()[0]
 
 	if eni.GetNicId() == "" {

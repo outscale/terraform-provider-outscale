@@ -116,7 +116,6 @@ func resourceOAPIKeyPairRead(d *schema.ResourceData, meta interface{}) error {
 
 		return fmt.Errorf("Error retrieving OAPIKeyPair: %s", errString)
 	}
-
 	for _, keyPair := range resp.GetKeypairs() {
 		if keyPair.GetKeypairName() == d.Id() {
 			if err := d.Set("keypair_name", keyPair.GetKeypairName()); err != nil {
@@ -128,8 +127,9 @@ func resourceOAPIKeyPairRead(d *schema.ResourceData, meta interface{}) error {
 			return nil
 		}
 	}
-
-	return fmt.Errorf("Unable to find key pair within: %#v", resp.GetKeypairs())
+	utils.LogManuallyDeleted("Keypair", d.Id())
+	d.SetId("")
+	return nil
 }
 
 func resourceOAPIKeyPairDelete(d *schema.ResourceData, meta interface{}) error {

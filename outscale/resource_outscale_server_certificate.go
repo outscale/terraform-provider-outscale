@@ -143,8 +143,9 @@ func resourceOutscaleOAPIServerCertificateRead(d *schema.ResourceData, meta inte
 	}
 
 	if len(resp.GetServerCertificates()) == 0 {
+		utils.LogManuallyDeleted("ServerCertificate", d.Id())
 		d.SetId("")
-		return fmt.Errorf("ServerCertificates not found")
+		return nil
 	}
 
 	var server oscgo.ServerCertificate

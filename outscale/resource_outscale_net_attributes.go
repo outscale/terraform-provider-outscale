@@ -134,10 +134,9 @@ func resourceOutscaleOAPILinAttrRead(d *schema.ResourceData, meta interface{}) e
 	if err != nil {
 		log.Printf("[DEBUG] Error reading lin (%s)", utils.GetErrorResponse(err))
 	}
-
-	if len(resp.GetNets()) == 0 {
+	if utils.IsResponseEmpty(len(resp.GetNets()), "NetAttributes", d.Id()) {
 		d.SetId("")
-		return fmt.Errorf("network is not found")
+		return nil
 	}
 	if err := d.Set("net_id", resp.GetNets()[0].GetNetId()); err != nil {
 		return err

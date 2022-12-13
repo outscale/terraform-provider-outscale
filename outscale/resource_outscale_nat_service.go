@@ -152,12 +152,10 @@ func resourceOAPINatServiceRead(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	resp := value.(oscgo.ReadNatServicesResponse)
-
-	if len(resp.GetNatServices()) == 0 {
+	if utils.IsResponseEmpty(len(resp.GetNatServices()), "NatService", d.Id()) {
 		d.SetId("")
-		return fmt.Errorf("oAPI nat services not found")
+		return nil
 	}
-
 	natService := resp.GetNatServices()[0]
 
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {

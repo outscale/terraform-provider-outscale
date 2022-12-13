@@ -335,12 +335,10 @@ func resourceOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return fmt.Errorf("Error reading for OMI (%s): %v", id, err)
 	}
-
-	if len(resp.GetImages()) == 0 {
+	if utils.IsResponseEmpty(len(resp.GetImages()), "Image", d.Id()) {
 		d.SetId("")
 		return nil
 	}
-
 	image := resp.GetImages()[0]
 
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {

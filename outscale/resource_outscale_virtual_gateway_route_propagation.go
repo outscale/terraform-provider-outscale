@@ -128,7 +128,10 @@ func resourceOutscaleOAPIVpnGatewayRoutePropagationRead(d *schema.ResourceData, 
 	if err != nil {
 		return err
 	}
-
+	if utils.IsResponseEmpty(len(resp.GetRouteTables()), "VirtualGatewayRoutePropagation", d.Id()) {
+		d.SetId("")
+		return nil
+	}
 	rt := resp.GetRouteTables()[0]
 
 	exists := false

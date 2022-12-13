@@ -132,10 +132,10 @@ func resourceOutscaleOAPIInternetServiceLinkRead(d *schema.ResourceData, meta in
 	if err != nil {
 		return fmt.Errorf("error waiting for NAT Service (%s) to become available: %s", d.Id(), err)
 	}
-
 	resp := value.(oscgo.ReadInternetServicesResponse)
-	if !resp.HasInternetServices() || len(resp.GetInternetServices()) == 0 {
-		return fmt.Errorf("Error retrieving Internet Service Link: not found")
+	if utils.IsResponseEmpty(len(resp.GetInternetServices()), "InternetServiceLink", d.Id()) {
+		d.SetId("")
+		return nil
 	}
 	internetService := resp.GetInternetServices()[0]
 

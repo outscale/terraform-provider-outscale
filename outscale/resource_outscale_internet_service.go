@@ -100,13 +100,9 @@ func resourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta interf
 		return fmt.Errorf("[DEBUG] Error reading Internet Service id (%s)", utils.GetErrorResponse(err))
 
 	}
-	if !resp.HasInternetServices() {
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
-	}
-
-	if len(resp.GetInternetServices()) == 0 {
+	if utils.IsResponseEmpty(len(resp.GetInternetServices()), "InternetService", d.Id()) {
 		d.SetId("")
-		return fmt.Errorf("InternetServices not found")
+		return nil
 	}
 	if err := d.Set("internet_service_id", resp.GetInternetServices()[0].GetInternetServiceId()); err != nil {
 		return err

@@ -490,9 +490,8 @@ func readResourceLb(conn *oscgo.APIClient, elbName string) (*oscgo.LoadBalancer,
 	if err != nil {
 		return nil, nil, fmt.Errorf("Error retrieving Load Balancer: %s", err)
 	}
-
-	if err := utils.IsResponseEmptyOrMutiple(len(resp.GetLoadBalancers()), "LoadBalancer"); err != nil {
-		return nil, nil, err
+	if len(resp.GetLoadBalancers()) == 0 {
+		return nil, nil, nil
 	}
 
 	lb := (*resp.LoadBalancers)[0]
@@ -508,6 +507,11 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 		return err
 	}
 
+	if lb == nil {
+		utils.LogManuallyDeleted("LoadBalancer", d.Id())
+		d.SetId("")
+		return nil
+	}
 	d.Set("subregion_names", utils.StringSlicePtrToInterfaceSlice(lb.SubregionNames))
 	d.Set("dns_name", lb.DnsName)
 	d.Set("health_check", flattenOAPIHealthCheck(lb.HealthCheck))

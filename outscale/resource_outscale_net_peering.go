@@ -159,10 +159,9 @@ func resourceOutscaleOAPILinPeeringRead(d *schema.ResourceData, meta interface{}
 		errString = err.Error()
 		return fmt.Errorf("Error reading Net Peering details: %s", errString)
 	}
-
-	if len(resp.GetNetPeerings()) == 0 {
+	if utils.IsResponseEmpty(len(resp.GetNetPeerings()), "NetPeering", d.Id()) {
 		d.SetId("")
-		return fmt.Errorf("oAPI network peering not found")
+		return nil
 	}
 	pc := resp.GetNetPeerings()[0]
 
