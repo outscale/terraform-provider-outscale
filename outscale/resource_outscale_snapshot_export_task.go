@@ -204,9 +204,9 @@ func resourceOAPISnapshotExportTaskRead(d *schema.ResourceData, meta interface{}
 	if err != nil {
 		return fmt.Errorf("error reading task image %s", err)
 	}
-
-	if len(resp.GetSnapshotExportTasks()) == 0 {
-		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
+	if utils.IsResponseEmpty(len(resp.GetSnapshotExportTasks()), "SnapshotExportTask", d.Id()) {
+		d.SetId("")
+		return nil
 	}
 	v := resp.GetSnapshotExportTasks()[0]
 

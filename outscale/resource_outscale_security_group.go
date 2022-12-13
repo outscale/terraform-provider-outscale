@@ -229,6 +229,7 @@ func resourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interfac
 		return err
 	}
 	if sg == nil {
+		utils.LogManuallyDeleted("SecurityGroup", d.Id())
 		d.SetId("")
 		return nil
 	}
@@ -289,6 +290,9 @@ func SGOAPIStateRefreshFunc(conn *oscgo.APIClient, id string) resource.StateRefr
 		if err != nil {
 			return nil, "failed", err
 		}
+		if securityGroup == nil {
+			return nil, "failed", nil
+		}
 		return securityGroup, "exists", nil
 	}
 }
@@ -330,8 +334,7 @@ func readSecurityGroups(client *oscgo.APIClient, securityGroupID string) (*oscgo
 	}
 
 	if len(*resp.SecurityGroups) == 0 {
-		return nil, nil, fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
+		return nil, nil, nil
 	}
-
 	return &resp.GetSecurityGroups()[0], &resp, nil
 }

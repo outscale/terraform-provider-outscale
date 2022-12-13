@@ -212,9 +212,9 @@ func resourceOAPIImageExportTaskRead(d *schema.ResourceData, meta interface{}) e
 	if err != nil {
 		return fmt.Errorf("Error reading task image %s", err)
 	}
-
-	if len(resp.GetImageExportTasks()) == 0 {
-		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
+	if utils.IsResponseEmpty(len(resp.GetImageExportTasks()), "ImageExportTask", d.Id()) {
+		d.SetId("")
+		return nil
 	}
 	v := resp.GetImageExportTasks()[0]
 

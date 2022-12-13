@@ -135,9 +135,9 @@ func resourceOutscaleOAPIFlexibleGpuRead(d *schema.ResourceData, meta interface{
 	if err != nil {
 		return err
 	}
-
-	if err := utils.IsResponseEmptyOrMutiple(len(resp.GetFlexibleGpus()), "FlexibleGpu"); err != nil {
-		return err
+	if utils.IsResponseEmpty(len(resp.GetFlexibleGpus()), "FlexibleGpu", d.Id()) {
+		d.SetId("")
+		return nil
 	}
 
 	fg := (*resp.FlexibleGpus)[0]

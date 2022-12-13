@@ -174,11 +174,8 @@ func resourceOutscaleOAPIRouteCreate(d *schema.ResourceData, meta interface{}) e
 			return fmt.Errorf("Error finding route after creating it: %s", err)
 		}
 	}
-
 	d.SetId(d.Get("route_table_id").(string) + "_" + d.Get("destination_ip_range").(string))
-
-	resourceOutscaleOAPIRouteSetResourceData(d, route, requestID)
-	return nil
+	return resourceOutscaleOAPIRouteSetResourceData(d, route, requestID)
 }
 
 func resourceOutscaleOAPIRouteRead(d *schema.ResourceData, meta interface{}) error {
@@ -191,6 +188,11 @@ func resourceOutscaleOAPIRouteRead(d *schema.ResourceData, meta interface{}) err
 	route, requestID, err := findResourceOAPIRoute(conn, routeTableID, destinationIPRange)
 	if err != nil {
 		return err
+	}
+	if route == nil {
+		utils.LogManuallyDeleted("Route", d.Id())
+		d.SetId("")
+		return nil
 	}
 	return resourceOutscaleOAPIRouteSetResourceData(d, route, requestID)
 }
@@ -226,7 +228,9 @@ func resourceOutscaleOAPIRouteSetResourceData(d *schema.ResourceData, route *osc
 	if err := d.Set("state", route.GetState()); err != nil {
 		return err
 	}
-
+	if err := d.Set("request_id", requestID); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -454,7 +458,7 @@ func findResourceOAPIRoute(conn *oscgo.APIClient, rtbid string, cidr string) (*o
 	requestID := resp.ResponseContext.GetRequestId()
 
 	if len(resp.GetRouteTables()) < 1 || reflect.DeepEqual(resp.GetRouteTables()[0], oscgo.RouteTable{}) {
-		return nil, requestID, fmt.Errorf("Route Table %q is gone, or route does not exist", routeTableID)
+		return nil, requestID, nil
 	}
 
 	if cidr != "" {
@@ -484,15 +488,14 @@ func resourceOutscaleOAPIRouteImportState(d *schema.ResourceData, meta interface
 	routeTableID := parts[0]
 	destinationIPRange := parts[1]
 
-	_, _, err := findResourceOAPIRoute(conn, routeTableID, destinationIPRange)
+	route, _, err := findResourceOAPIRoute(conn, routeTableID, destinationIPRange)
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "InvalidRouteTableID.NotFound") {
-			log.Printf("[WARN] Route Table %q could not be found. Removing Route from state.", routeTableID)
-			return nil, err
-		}
 		return nil, err
 	}
-
+	if route == nil {
+		d.SetId("")
+		return nil, fmt.Errorf("Route Table %q is gone, or route does not exist", routeTableID)
+	}
 	if err := d.Set("route_table_id", routeTableID); err != nil {
 		return nil, fmt.Errorf("error setting `%s` for Outscale Route(%s): %s", "route_table_id", routeTableID, err)
 	}

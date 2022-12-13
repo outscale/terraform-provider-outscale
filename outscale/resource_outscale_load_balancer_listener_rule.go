@@ -199,9 +199,9 @@ func resourceOutscaleLoadBalancerListenerRuleRead(d *schema.ResourceData, meta i
 	if err != nil {
 		return err
 	}
-
-	if len(*resp.ListenerRules) < 1 {
-		return fmt.Errorf("can't find listener rule")
+	if utils.IsResponseEmpty(len(resp.GetListenerRules()), "LoadBalancerListenerRule", d.Id()) {
+		d.SetId("")
+		return nil
 	}
 	lr := (*resp.ListenerRules)[0]
 	lrsl := make([]interface{}, 1)

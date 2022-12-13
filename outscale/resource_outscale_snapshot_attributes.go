@@ -171,7 +171,10 @@ func resourcedOutscaleOAPISnapshotAttributesRead(d *schema.ResourceData, meta in
 	if err != nil {
 		return fmt.Errorf("Error refreshing snapshot createVolumePermission state: %s", err)
 	}
-
+	if utils.IsResponseEmpty(len(resp.GetSnapshots()), "SnapshotAtribute", d.Id()) {
+		d.SetId("")
+		return nil
+	}
 	lp := make([]map[string]interface{}, 1)
 	lp[0] = make(map[string]interface{})
 	lp[0]["global_permission"] = resp.GetSnapshots()[0].PermissionsToCreateVolume.GetGlobalPermission()

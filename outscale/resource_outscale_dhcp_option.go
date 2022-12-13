@@ -125,7 +125,7 @@ func resourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) er
 	}
 
 	dhcps := resp.GetDhcpOptionsSets()
-	if len(dhcps) == 0 {
+	if utils.IsResponseEmpty(len(dhcps), "DhcpOption", d.Id()) {
 		d.SetId("")
 		return nil
 	}

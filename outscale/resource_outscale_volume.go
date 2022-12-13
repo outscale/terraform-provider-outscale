@@ -210,7 +210,6 @@ func resourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 		statusCode = httpResp.StatusCode
 		return nil
 	})
-
 	if err != nil {
 		if statusCode == http.StatusNotFound {
 			d.SetId("")
@@ -219,6 +218,10 @@ func resourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error reading Outscale volume %s: %s", d.Id(), err)
 	}
 
+	if utils.IsResponseEmpty(len(resp.GetVolumes()), "Snapshot", d.Id()) {
+		d.SetId("")
+		return nil
+	}
 	return readOAPIVolume(d, resp.GetVolumes()[0])
 }
 

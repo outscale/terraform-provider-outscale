@@ -652,16 +652,17 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return fmt.Errorf("error reading the VM (%s): %s", d.Id(), err)
 	}
-
-	// If nothing was found, then return no state
-	if !resp.HasVms() || len(resp.GetVms()) == 0 {
+	if utils.IsResponseEmpty(len(resp.GetVms()), "Snapshot", d.Id()) {
 		d.SetId("")
 		return nil
 	}
 
 	vm := resp.GetVms()[0]
-
-	// Get the admin password from the server to save in the state
+	if vm.GetState() == "terminated" {
+		utils.LogManuallyDeleted("Vm", d.Id())
+		d.SetId("")
+		return nil
+	}
 	adminPassword, err := getOAPIVMAdminPassword(vm.GetVmId(), conn)
 	if err != nil {
 		return err

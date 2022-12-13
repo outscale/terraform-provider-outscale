@@ -99,6 +99,11 @@ func resourceOutscaleOAPILinkRouteTableRead(d *schema.ResourceData, meta interfa
 	if err != nil {
 		return err
 	}
+	if linkRTable == nil {
+		utils.LogManuallyDeleted("RouteTableLink", d.Id())
+		d.SetId("")
+		return nil
+	}
 	if err := d.Set("link_route_table_id", linkRTable.GetLinkRouteTableId()); err != nil {
 		return fmt.Errorf(errorLinkRouteTableSetting, "link_route_table_id", linkRTable.GetLinkRouteTableId(), err)
 	}
@@ -153,7 +158,9 @@ func resourceOutscaleOAPILinkRouteTableImportState(d *schema.ResourceData, meta 
 	if err != nil {
 		return nil, fmt.Errorf("couldn't import Link Route Table(%s), error: %s", linkRouteTableID, err)
 	}
-
+	if linkRTable == nil {
+		return nil, fmt.Errorf("oAPI route tables for get link table not found")
+	}
 	if err := d.Set("route_table_id", linkRTable.GetRouteTableId()); err != nil {
 		return nil, fmt.Errorf(errorLinkRouteTableSetting, "route_table_id", linkRTable.GetLinkRouteTableId(), err)
 	}
@@ -192,7 +199,7 @@ func readOutscaleLinkRouteTable(meta *OutscaleClient, routeTableID, linkRouteTab
 	}
 
 	if len(resp.GetRouteTables()) == 0 {
-		return nil, fmt.Errorf("oAPI route tables for get link table not found")
+		return nil, nil
 	}
 
 	var linkRTable oscgo.LinkRouteTable

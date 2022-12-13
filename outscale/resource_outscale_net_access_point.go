@@ -255,11 +255,10 @@ func resourceOutscaleNetAccessPointRead(d *schema.ResourceData, meta interface{}
 	if err != nil {
 		return err
 	}
-
-	if err := utils.IsResponseEmptyOrMutiple(len(resp.GetNetAccessPoints()), "NetAccessPoint"); err != nil {
-		return err
+	if utils.IsResponseEmpty(len(resp.GetNetAccessPoints()), "NetAccessPoint", d.Id()) {
+		d.SetId("")
+		return nil
 	}
-
 	nap := (*resp.NetAccessPoints)[0]
 
 	d.Set("route_table_ids", utils.StringSlicePtrToInterfaceSlice(nap.RouteTableIds))

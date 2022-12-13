@@ -119,10 +119,9 @@ func resourceOutscaleOAPIApiAccessRuleRead(d *schema.ResourceData, meta interfac
 	if !resp.HasApiAccessRules() {
 		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
 	}
-
-	if len(resp.GetApiAccessRules()) == 0 {
+	if utils.IsResponseEmpty(len(resp.GetApiAccessRules()), "ApiAccessRule", d.Id()) {
 		d.SetId("")
-		return fmt.Errorf("Api Access Rule not found")
+		return nil
 	}
 
 	accRule := resp.GetApiAccessRules()[0]

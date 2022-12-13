@@ -178,6 +178,10 @@ func resourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{})
 	}
 
 	resp := r.(oscgo.ReadVpnConnectionsResponse)
+	if utils.IsResponseEmpty(len(resp.GetVpnConnections()), "VpnConnection", d.Id()) {
+		d.SetId("")
+		return nil
+	}
 	vpnConnection := resp.GetVpnConnections()[0]
 
 	if err := d.Set("client_gateway_configuration", vpnConnection.GetClientGatewayConfiguration()); err != nil {

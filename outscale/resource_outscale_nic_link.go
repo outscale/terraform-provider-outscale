@@ -121,6 +121,10 @@ func resourceOutscaleOAPINetworkInterfaceAttachmentRead(d *schema.ResourceData, 
 	}
 
 	r := resp.(oscgo.ReadNicsResponse)
+	if utils.IsResponseEmpty(len(r.GetNics()), "NicLink", d.Id()) {
+		d.SetId("")
+		return nil
+	}
 	linkNic := r.GetNics()[0].GetLinkNic()
 
 	if err := d.Set("device_number", linkNic.GetDeviceNumber()); err != nil {

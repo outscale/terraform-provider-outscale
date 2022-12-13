@@ -334,11 +334,10 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 		}
 		return fmt.Errorf("Error retrieving ENI: %s", err)
 	}
-
-	if err := utils.IsResponseEmptyOrMutiple(len(resp.GetNics()), "Nic"); err != nil {
-		return err
+	if utils.IsResponseEmpty(len(resp.GetNics()), "Nic", d.Id()) {
+		d.SetId("")
+		return nil
 	}
-
 	eni := resp.GetNics()[0]
 	if err := d.Set("description", eni.GetDescription()); err != nil {
 		return err

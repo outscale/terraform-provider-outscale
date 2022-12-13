@@ -246,8 +246,12 @@ func resourceOAPIVolumeLinkRead(d *schema.ResourceData, meta interface{}) error 
 		}
 		return fmt.Errorf("Error reading Outscale volume %s for instance: %s: %#v", d.Get("volume_id").(string), d.Get("vm_id").(string), err)
 	}
-
+	if utils.IsResponseEmpty(len(resp.GetVolumes()), "VolumeLink", d.Id()) {
+		d.SetId("")
+		return nil
+	}
 	var linkedVolume oscgo.LinkedVolume
+
 	for _, vol := range resp.GetVolumes()[0].GetLinkedVolumes() {
 		linkedVolume = vol
 	}

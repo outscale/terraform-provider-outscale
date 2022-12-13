@@ -89,9 +89,13 @@ func resourceOutscaleOAPILBUAttachmentRead(d *schema.ResourceData, meta interfac
 	e := d.Get("load_balancer_name").(string)
 	lb, _, err := readResourceLb(conn, e)
 	expected := d.Get("backend_vm_ids").([]interface{})
-
 	if err != nil {
 		return err
+	}
+	if lb == nil {
+		utils.LogManuallyDeleted("LoadBalancerVms", d.Id())
+		d.SetId("")
+		return nil
 	}
 	for _, v := range *lb.BackendVmIds {
 		for k1 := range expected {

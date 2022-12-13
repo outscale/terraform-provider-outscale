@@ -145,6 +145,11 @@ func resourceOutscaleOAPIOutboundRuleRead(d *schema.ResourceData, meta interface
 	if err != nil {
 		return err
 	}
+	if sg == nil {
+		utils.LogManuallyDeleted("SecurityGroupeRule", d.Id())
+		d.SetId("")
+		return nil
+	}
 
 	if err := d.Set("inbound_rules", flattenRules(sg.GetInboundRules())); err != nil {
 		return fmt.Errorf("error setting `inbound_rules` for Outscale Security Group Rule(%s): %s", d.Id(), err)

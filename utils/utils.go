@@ -3,6 +3,7 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"math/rand"
 	"net/http"
 	"strconv"
@@ -131,6 +132,18 @@ func StringSliceToFloat32Slice(src []string) (res []float32) {
 		res = append(res, cast.ToFloat32(str))
 	}
 	return
+}
+
+func LogManuallyDeleted(name, id string) {
+	log.Printf("[WARN] %s %s not found, probably deleted manually, removing from state", name, id)
+}
+
+func IsResponseEmpty(len int, name, id string) bool {
+	if len == 0 {
+		LogManuallyDeleted(name, id)
+		return true
+	}
+	return false
 }
 
 func IsResponseEmptyOrMutiple(rLen int, resName string) error {

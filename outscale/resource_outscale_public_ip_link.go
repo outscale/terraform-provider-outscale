@@ -121,9 +121,7 @@ func resourceOutscaleOAPIPublicIPLinkRead(d *schema.ResourceData, meta interface
 		log.Printf("[WARN] ERROR resourceOutscaleOAPIPublicIPLinkRead (%s)", err)
 		return fmt.Errorf("Error reading Outscale VM Public IP %s: %#v", d.Get("public_ip_id").(string), err)
 	}
-
-	if response.GetPublicIps() == nil || len(response.GetPublicIps()) == 0 {
-		log.Printf("[INFO] EIP Association ID Not Found. Refreshing from state")
+	if utils.IsResponseEmpty(len(response.GetPublicIps()), "PublicIpLink", d.Id()) {
 		d.SetId("")
 		return nil
 	}
