@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -12,6 +11,40 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
+
+func getOAPINetSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"ip_range": {
+			Type:     schema.TypeString,
+			ForceNew: true,
+			Required: true,
+		},
+		"tenancy": {
+			Type:     schema.TypeString,
+			ForceNew: true,
+			Optional: true,
+			Computed: true,
+		},
+		"dhcp_options_set_id": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Computed: true,
+		},
+		"state": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"tags": tagsListOAPISchema(),
+		"net_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"request_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+	}
+}
 
 func resourceOutscaleOAPINet() *schema.Resource {
 	return &schema.Resource{
@@ -53,34 +86,36 @@ func resourceOutscaleOAPINetCreate(d *schema.ResourceData, meta interface{}) err
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		return fmt.Errorf("error creating Outscale Net: %s", utils.GetErrorResponse(err))
 	}
+	d.SetId(resp.Net.GetNetId())
 
-	//SetTags
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"pending"},
+		Target:     []string{"available"},
+		Refresh:    netStateRefreshFunc(conn, d.Id()),
+		Timeout:    10 * time.Minute,
+		Delay:      10 * time.Second,
+		MinTimeout: 3 * time.Second,
+	}
+	_, err = stateConf.WaitForState()
+	if err != nil {
+		return fmt.Errorf("Error waiting for net (%s) to create: %s", d.Id(), err)
+	}
+
 	if tags, ok := d.GetOk("tags"); ok {
-		err := assignTags(tags.(*schema.Set), resp.Net.GetNetId(), conn)
+		err := assignTags(tags.(*schema.Set), d.Id(), conn)
 		if err != nil {
 			return err
 		}
 	}
 
-	d.SetId(resp.Net.GetNetId())
+	if _, ok := d.GetOk("dhcp_options_set_id"); ok {
+		return updateNet(d, conn)
+	}
 
-	return resource.Retry(120*time.Second, func() *resource.RetryError {
-		err = resourceOutscaleOAPINetRead(d, meta)
-		if err != nil {
-			return resource.NonRetryableError(err)
-		}
-		if c, ok := d.GetOk("state"); ok {
-			state := c.(string)
-			if strings.Compare(state, "available") != 0 {
-				return resource.RetryableError(fmt.Errorf("Expected Net to be available but was in state %s", state))
-			}
-		}
-		return nil
-	})
+	return resourceOutscaleOAPINetRead(d, meta)
 }
 
 func resourceOutscaleOAPINetRead(d *schema.ResourceData, meta interface{}) error {
@@ -100,7 +135,6 @@ func resourceOutscaleOAPINetRead(d *schema.ResourceData, meta interface{}) error
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.NetApi.ReadNets(context.Background()).ReadNetsRequest(req).Execute()
-
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -117,34 +151,53 @@ func resourceOutscaleOAPINetRead(d *schema.ResourceData, meta interface{}) error
 	if err := d.Set("ip_range", resp.GetNets()[0].GetIpRange()); err != nil {
 		return err
 	}
-	if err := d.Set("tenancy", resp.GetNets()[0].Tenancy); err != nil {
-		return err
-	}
-	if err := d.Set("dhcp_options_set_id", resp.GetNets()[0].GetDhcpOptionsSetId()); err != nil {
-		return err
-	}
-	if err := d.Set("net_id", resp.GetNets()[0].GetNetId()); err != nil {
-		return err
-	}
-	if err := d.Set("state", resp.GetNets()[0].GetState()); err != nil {
-		return err
+	return netSetter(d, &resp.GetNets()[0])
+}
+
+func updateNet(d *schema.ResourceData, conn *oscgo.APIClient) error {
+	req := oscgo.UpdateNetRequest{
+		NetId:            d.Id(),
+		DhcpOptionsSetId: d.Get("dhcp_options_set_id").(string),
 	}
 
-	return d.Set("tags", tagsOSCAPIToMap(resp.GetNets()[0].GetTags()))
+	err := resource.Retry(120*time.Second, func() *resource.RetryError {
+		_, httpResp, err := conn.NetApi.UpdateNet(context.Background()).UpdateNetRequest(req).Execute()
+		if err != nil {
+			return utils.CheckThrottling(httpResp, err)
+		}
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("[DEBUG] Error updating net (%s)", utils.GetErrorResponse(err))
+	}
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"pending"},
+		Target:     []string{"available"},
+		Refresh:    netStateRefreshFunc(conn, d.Id()),
+		Timeout:    10 * time.Minute,
+		Delay:      10 * time.Second,
+		MinTimeout: 3 * time.Second,
+	}
+
+	resp, err := stateConf.WaitForState()
+	if err != nil {
+		return fmt.Errorf("Error waiting for net (%s) to create: %s", d.Id(), err)
+	}
+	rp := resp.(oscgo.ReadNetsResponse)
+	return netSetter(d, &rp.GetNets()[0])
 }
 
 func resourceOutscaleOAPINetUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	d.Partial(true)
-
 	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
 
-	d.SetPartial("tags")
-
-	d.Partial(false)
+	if d.HasChange("dhcp_options_set_id") {
+		return updateNet(d, conn)
+	}
 	return resourceOutscaleOAPINetRead(d, meta)
 }
 
@@ -156,29 +209,26 @@ func resourceOutscaleOAPINetDelete(d *schema.ResourceData, meta interface{}) err
 	req := oscgo.DeleteNetRequest{
 		NetId: id,
 	}
-
-	stateConf := &resource.StateChangeConf{
-		Pending: []string{"pending"},
-		Target:  []string{"deleted", "failed"},
-		Refresh: func() (interface{}, string, error) {
-			err := resource.Retry(120*time.Second, func() *resource.RetryError {
-				_, httpResp, err := conn.NetApi.DeleteNet(context.Background()).DeleteNetRequest(req).Execute()
-				if err != nil {
-					return utils.CheckThrottling(httpResp, err)
-				}
-				return nil
-			})
-			if err != nil {
-				return nil, "failed", err
-			}
-			return "", "deleted", nil
-		},
-		Timeout:    10 * time.Minute,
-		MinTimeout: 30 * time.Second,
-		Delay:      1 * time.Minute,
+	err := resource.Retry(120*time.Second, func() *resource.RetryError {
+		_, httpResp, err := conn.NetApi.DeleteNet(context.Background()).DeleteNetRequest(req).Execute()
+		if err != nil {
+			return utils.CheckThrottling(httpResp, err)
+		}
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("error deleting Net Service(%s): %s", d.Id(), err)
 	}
 
-	_, err := stateConf.WaitForState()
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"pending"},
+		Target:     []string{"deleted", "failed"},
+		Refresh:    netStateRefreshFunc(conn, id),
+		Timeout:    10 * time.Minute,
+		MinTimeout: 30 * time.Second,
+		Delay:      20 * time.Second,
+	}
+	_, err = stateConf.WaitForState()
 	if err != nil {
 		return fmt.Errorf("error deleting Net Service(%s): %s", d.Id(), err)
 	}
@@ -188,37 +238,53 @@ func resourceOutscaleOAPINetDelete(d *schema.ResourceData, meta interface{}) err
 	return nil
 }
 
-func getOAPINetSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"ip_range": {
-			Type:     schema.TypeString,
-			ForceNew: true,
-			Required: true,
-		},
-		"tenancy": {
-			Type:     schema.TypeString,
-			ForceNew: true,
-			Computed: true,
-			Optional: true,
-		},
+func netStateRefreshFunc(conn *oscgo.APIClient, netID string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		var resp oscgo.ReadNetsResponse
+		filters := oscgo.FiltersNet{
+			NetIds: &[]string{netID},
+		}
 
-		// Attributes
-		"dhcp_options_set_id": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"state": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"tags": tagsListOAPISchema(),
-		"net_id": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"request_id": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
+		req := oscgo.ReadNetsRequest{
+			Filters: &filters,
+		}
+
+		var err error
+		err = resource.Retry(120*time.Second, func() *resource.RetryError {
+			rp, httpResp, err := conn.NetApi.ReadNets(context.Background()).ReadNetsRequest(req).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp, err)
+			}
+			resp = rp
+			return nil
+		})
+		if err != nil {
+			return nil, "failed", fmt.Errorf("[DEBUG] Error reading network (%s)", err)
+		}
+		if !resp.HasNets() || len(resp.GetNets()) < 1 {
+			return resp, "deleted", nil
+		}
+		net := &resp.GetNets()[0]
+		state := net.GetState()
+		return resp, state, nil
 	}
+}
+
+func netSetter(d *schema.ResourceData, net *oscgo.Net) error {
+	if err := d.Set("ip_range", net.GetIpRange()); err != nil {
+		return err
+	}
+	if err := d.Set("tenancy", net.GetTenancy()); err != nil {
+		return err
+	}
+	if err := d.Set("dhcp_options_set_id", net.GetDhcpOptionsSetId()); err != nil {
+		return err
+	}
+	if err := d.Set("net_id", net.GetNetId()); err != nil {
+		return err
+	}
+	if err := d.Set("state", net.GetState()); err != nil {
+		return err
+	}
+	return d.Set("tags", tagsOSCAPIToMap(net.GetTags()))
 }
