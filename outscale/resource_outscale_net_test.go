@@ -13,32 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPILin_basic(t *testing.T) {
-	t.Parallel()
-	var conf1 oscgo.Net
-	var conf2 oscgo.Net
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
-		// CheckDestroy: testAccCheckOutscaleLinDestroyed, // we need to create the destroyed test case
-		Steps: []resource.TestStep{
-			{
-				Config: testAccOutscaleOAPILinConfig,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPILinExists("outscale_net.vpc.0", &conf1),
-					testAccCheckOutscaleOAPILinExists("outscale_net.vpc.1", &conf2),
-					resource.TestCheckResourceAttr(
-						"outscale_net.vpc.0", "ip_range", "10.0.0.0/16"),
-					resource.TestCheckResourceAttr(
-						"outscale_net.vpc.1", "ip_range", "10.0.0.0/16"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccOutscaleOAPILin_UpdateTags(t *testing.T) {
+func TestAccOutscaleOAPINet_Update(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -46,18 +21,18 @@ func TestAccOutscaleOAPILin_UpdateTags(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleOAPINICDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPILinConfigUpdateTags("Terraform_net"),
+				Config: testAccOutscaleOAPINetConfigUpdateTags("Terraform_net", false),
 				Check:  resource.ComposeTestCheckFunc(),
 			},
 			{
-				Config: testAccOutscaleOAPILinConfigUpdateTags("Terraform_net2"),
+				Config: testAccOutscaleOAPINetConfigUpdateTags("Terraform_net2", true),
 				Check:  resource.ComposeTestCheckFunc(),
 			},
 		},
 	})
 }
 
-func testAccCheckOutscaleOAPILinExists(n string, res *oscgo.Net) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPINetExists(n string, res *oscgo.Net) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -95,26 +70,25 @@ func testAccCheckOutscaleOAPILinExists(n string, res *oscgo.Net) resource.TestCh
 	}
 }
 
-const testAccOutscaleOAPILinConfig = `
-	resource "outscale_net" "vpc" {
-		ip_range = "10.0.0.0/16"
-		count = 2
-
-		tags {
-			key = "Name" 
-			value = "testacc-net-rs"
-		}	
+func testAccOutscaleOAPINetConfigUpdateTags(value string, dhcp bool) string {
+	dhcpVal := ""
+	if dhcp {
+		dhcpVal = "dhcp_options_set_id = outscale_dhcp_option.foo.id"
 	}
-`
 
-func testAccOutscaleOAPILinConfigUpdateTags(value string) string {
 	return fmt.Sprintf(`
+	resource "outscale_dhcp_option" "foo" {
+		domain_name         = "test.fr"
+		domain_name_servers = ["192.168.12.1"]
+	}
+
 	resource "outscale_net" "outscale_net" { 
 		ip_range = "10.0.0.0/16"
+		%s
 		tags { 
 			key = "name" 
 			value = "%s"
 		}
-	   }
-`, value)
+	}
+`, dhcpVal, value)
 }
