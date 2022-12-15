@@ -21,7 +21,7 @@ func TestAccOutscaleOAPILBUBasic(t *testing.T) {
 
 	resourceName := "outscale_load_balancer.bar"
 
-	r := utils.RandIntRange(0, 50)
+	r := utils.RandIntRange(0, 10)
 	region := os.Getenv("OUTSCALE_REGION")
 	zone := fmt.Sprintf("%sa", region)
 
@@ -52,7 +52,7 @@ func TestAccOutscaleOAPILBUPublicIp(t *testing.T) {
 
 	resourceName := "outscale_load_balancer.bar"
 
-	r := utils.RandIntRange(0, 50)
+	r := utils.RandIntRange(10, 20)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {

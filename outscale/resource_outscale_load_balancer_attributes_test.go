@@ -15,7 +15,7 @@ func TestAccOutscaleOAPILBUAttr_basic(t *testing.T) {
 	t.Parallel()
 	var conf oscgo.AccessLog
 
-	r := utils.RandIntRange(0, 10)
+	r := utils.RandIntRange(20, 30)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
