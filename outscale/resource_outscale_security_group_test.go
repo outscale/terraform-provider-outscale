@@ -40,8 +40,8 @@ func testAccCheckOutscaleOAPISGRuleDestroy(s *terraform.State) error {
 			continue
 		}
 
-		_, resp, err := readSecurityGroups(conn, rs.Primary.ID)
-		if err == nil || len(resp.GetSecurityGroups()) > 0 {
+		sg, _, err := readSecurityGroups(conn, rs.Primary.ID)
+		if sg != nil && err == nil {
 			return fmt.Errorf("Outscale Security Group(%s) still exists", rs.Primary.ID)
 		}
 	}
