@@ -79,7 +79,6 @@ func Provider() terraform.ResourceProvider {
 			"outscale_net_access_point":                  resourceOutscaleNetAccessPoint(),
 			"outscale_nic_link":                          resourceOutscaleOAPINetworkInterfaceAttachment(),
 			"outscale_nic_private_ip":                    resourceOutscaleOAPINetworkInterfacePrivateIP(),
-			"outscale_snapshot_attributes":               resourcedOutscaleOAPISnapshotAttributes(),
 			"outscale_dhcp_option":                       resourceOutscaleDHCPOption(),
 			"outscale_client_gateway":                    resourceOutscaleClientGateway(),
 			"outscale_virtual_gateway":                   resourceOutscaleOAPIVirtualGateway(),
