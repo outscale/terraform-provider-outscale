@@ -29,7 +29,6 @@ func init() {
 			"outscale_outbound_rule":           resourceOutscaleOAPIOutboundRule,
 			"outscale_security_group_rule":     resourceOutscaleOAPIOutboundRule,
 			"outscale_tag":                     resourceOutscaleOAPITags,
-			"outscale_net_attributes":          resourceOutscaleOAPILinAttributes,
 			"outscale_net":                     resourceOutscaleOAPINet,
 			"outscale_internet_service":        resourceOutscaleOAPIInternetService,
 			"outscale_internet_service_link":   resourceOutscaleOAPIInternetServiceLink,
