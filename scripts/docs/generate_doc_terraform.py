@@ -46,16 +46,12 @@ class DataType(Enum):
 def print_dict(item, path, profondeur):
     result = str()
     if isinstance(item, schema.ObjectField):
-        # if path not in code_file:
-        #    print('    - {} not found'.format(path))
         result += '    ' * profondeur + '* `{}` - {}\n'.format(path,
                                                             item.description)
         profondeur += 1
         for x, y in sorted(item.properties.items()):
             next_path = utils.camel_case_to_snake_case(x)
             if isinstance(y, schema.TerminalField):
-                # if next_path not in code_file:
-                #    print('    - {} not found'.format(next_path))
                 result += '    ' * profondeur + '* `{}` - {}\n'.format(next_path, y.description)
             else:
                 result += print_dict(
@@ -64,15 +60,11 @@ def print_dict(item, path, profondeur):
         return result
     elif isinstance(item, schema.ArrayField):
         if isinstance(item.item, schema.ObjectField):
-            #if path not in code_file:
-            #    print('    - {} not found'.format(path))
             result += '    ' * profondeur + '* `{}` - {}\n'.format(path, item.description)
             profondeur += 1
             for x, y in sorted(item.item.properties.items()):
                 next_path = utils.camel_case_to_snake_case(x)
                 if isinstance(y, schema.TerminalField):
-                    #if next_path not in code_file:
-                    #    print('{} not found'.format(next_path))
                     result += '    ' * profondeur + '* `{}` - {}\n'.format(next_path, y.description)
                 else:
                     result += '{}'.format(print_dict(
@@ -80,12 +72,8 @@ def print_dict(item, path, profondeur):
                         y, next_path, profondeur))
             return result
         elif isinstance(item.item, schema.TerminalField):
-            #if path not in code_file:
-            #    print('    - {} not found'.format(path))
             return '    ' * profondeur + '* `{}` - {}\n'.format(path, item.description)
     elif isinstance(item, schema.TerminalField):
-        #if path not in code_file:
-        #    print('    - {} not found'.format(path))
         return '    ' * profondeur + '* `{}` - {}\n'.format(path, item.description)
     else:
         return path + '\n'
@@ -94,16 +82,12 @@ def print_dict(item, path, profondeur):
 def print_dict_input(item, path, profondeur, mandatories=[]):
     result = str()
     if isinstance(item, schema.ObjectField):
-        #if path not in code_file:
-        #    print('    - {} not found'.format(path))
         result += '    ' * profondeur + '* `{}` - {}\n'.format(path,
                                                               item.description)
         profondeur += 1
         for x, y in sorted(item.properties.items()):
             next_path = utils.camel_case_to_snake_case(x)
             if isinstance(y, schema.TerminalField):
-                #if next_path not in code_file:
-                #    print('    - {} not found'.format(next_path))
                 result += '    ' * profondeur + '* `{}` - ({}) {}\n'.format(next_path,
                                                       'Required'
                                                       if y.name in mandatories
@@ -120,8 +104,6 @@ def print_dict_input(item, path, profondeur, mandatories=[]):
         return result
     elif isinstance(item, schema.ArrayField):
         if isinstance(item.item, schema.ObjectField):
-            #if path not in code_file:
-            #    print('    - {} not found'.format(path))
             result += '    ' * profondeur + '* `{}` - ({}) {}\n'.format(path,
                                                   'Required'
                                                   if item.name in mandatories
@@ -131,8 +113,6 @@ def print_dict_input(item, path, profondeur, mandatories=[]):
             for x, y in sorted(item.item.properties.items()):
                 next_path = utils.camel_case_to_snake_case(x)
                 if isinstance(y, schema.TerminalField):
-                    #if next_path not in code_file:
-                    #    print('    - {} not found'.format(next_path))
                     result += '    ' * profondeur + '* `{}` - ({}) {}\n'.format(next_path,
                                                           'Required'
                                                           if y.name in mandatories
@@ -146,16 +126,12 @@ def print_dict_input(item, path, profondeur, mandatories=[]):
                     result += '{}'.format(result_calculed)
             return result
         elif isinstance(item.item, schema.TerminalField):
-            #if path not in code_file:
-            #    print('    - {} not found'.format(path))
             return '    ' * profondeur + '* `{}` - ({}) {}\n'.format(path,
                                                'Required'
                                                if item.name in mandatories
                                                else 'Optional',
                                                item.description)
     elif isinstance(item, schema.TerminalField):
-        #if path not in code_file:
-        #    print('    - {} not found'.format(path))
         return '    ' * profondeur + '* `{}` - ({}) {}\n'.format(path,
                                            'Required'
                                            if item.name in mandatories
