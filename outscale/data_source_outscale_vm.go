@@ -88,11 +88,9 @@ func dataSourceOutscaleOAPIVMRead(d *schema.ResourceData, meta interface{}) erro
 
 // Populate instance attribute fields with the returned instance
 func oapiVMDescriptionAttributes(set AttributeSetter, vm *oscgo.Vm) error {
-
 	if err := set("architecture", vm.GetArchitecture()); err != nil {
 		return err
 	}
-
 	if err := set("block_device_mappings_created", getOscAPIVMBlockDeviceMapping(vm.GetBlockDeviceMappings())); err != nil {
 		log.Printf("[DEBUG] BLOCKING DEVICE MAPPING ERR %+v", err)
 		return err
@@ -133,7 +131,6 @@ func oapiVMDescriptionAttributes(set AttributeSetter, vm *oscgo.Vm) error {
 	if err := set("nics", getOAPIVMNetworkInterfaceLightSet(vm.GetNics())); err != nil {
 		return err
 	}
-
 	if err := set("os_family", vm.GetOsFamily()); err != nil {
 		return err
 	}
@@ -195,7 +192,6 @@ func oapiVMDescriptionAttributes(set AttributeSetter, vm *oscgo.Vm) error {
 	if err := set("tags", getOscAPITagSet(vm.GetTags())); err != nil {
 		return err
 	}
-
 	return set("vm_type", vm.GetVmType())
 }
 
