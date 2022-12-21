@@ -667,14 +667,17 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-
-	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
+	bsu := d.Get("bsu_optimized")
+	if err := resourceDataAttrSetter(d, func(set AttributeSetter) error {
 		if err := d.Set("admin_password", adminPassword); err != nil {
 			return err
 		}
 		d.SetId(vm.GetVmId())
 		return oapiVMDescriptionAttributes(set, &vm)
-	})
+	}); err != nil {
+		return err
+	}
+	return d.Set("bsu_optimized", bsu)
 }
 
 func getOAPIVMAdminPassword(VMID string, conn *oscgo.APIClient) (string, error) {
@@ -729,11 +732,9 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	}
 
-	if d.HasChange("vm_type") && !d.IsNewResource() ||
-		d.HasChange("user_data") && !d.IsNewResource() ||
-		d.HasChange("bsu_optimized") && !d.IsNewResource() ||
-		d.HasChange("performance") && !d.IsNewResource() ||
-		d.HasChange("nested_virtualization") && !d.IsNewResource() {
+	if !d.IsNewResource() &&
+		(d.HasChange("vm_type") || d.HasChange("user_data") ||
+			d.HasChange("performance") || d.HasChange("nested_virtualization")) {
 		if err := stopVM(id, conn); err != nil {
 			return err
 		}
@@ -751,15 +752,6 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 	if d.HasChange("user_data") && !d.IsNewResource() {
 		opts := oscgo.UpdateVmRequest{VmId: id}
 		opts.SetUserData(d.Get("user_data").(string))
-
-		if err := updateVmAttr(conn, opts); err != nil {
-			return err
-		}
-	}
-
-	if d.HasChange("bsu_optimized") && !d.IsNewResource() {
-		opts := oscgo.UpdateVmRequest{VmId: id}
-		opts.SetBsuOptimized(d.Get("bsu_optimized").(bool))
 
 		if err := updateVmAttr(conn, opts); err != nil {
 			return err
@@ -964,7 +956,6 @@ func buildCreateVmsRequest(d *schema.ResourceData, meta interface{}) (oscgo.Crea
 	request := oscgo.CreateVmsRequest{
 		DeletionProtection: oscgo.PtrBool(d.Get("deletion_protection").(bool)),
 		BootOnCreation:     oscgo.PtrBool(true),
-		BsuOptimized:       oscgo.PtrBool(d.Get("bsu_optimized").(bool)),
 		MaxVmsCount:        oscgo.PtrInt32(1),
 		MinVmsCount:        oscgo.PtrInt32(1),
 		ImageId:            d.Get("image_id").(string),
