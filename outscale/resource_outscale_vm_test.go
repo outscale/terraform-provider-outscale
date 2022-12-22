@@ -657,8 +657,8 @@ func testAccCheckOutscaleOAPIVMConfigBasic(omi, vmType, region, keypair string) 
 			vm_type                  = "%[2]s"
 			keypair_name             = "%[4]s"
 			placement_subregion_name = "%[3]s"
-			placement_tenancy        = "dedicated"
-			nested_virtualization    = true
+			#placement_tenancy        = "dedicated"
+			#nested_virtualization    = true
 			tags {
 				key   = "name"
 				value = "Terraform-VM"
