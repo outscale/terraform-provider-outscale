@@ -370,20 +370,21 @@ func resourceOutscaleOAPILoadBalancerAttributesCreate_(d *schema.ResourceData, m
 	if hok {
 		hc := hcs.([]interface{})
 		check := hc[0].(map[string]interface{})
-
-		req.HealthCheck.SetHealthyThreshold(int32(check["healthy_threshold"].(int)))
-		req.HealthCheck.SetUnhealthyThreshold(int32(check["unhealthy_threshold"].(int)))
-		req.HealthCheck.SetCheckInterval(int32(check["check_interval"].(int)))
+		var healthCheck oscgo.HealthCheck
+		healthCheck.SetHealthyThreshold(int32(check["healthy_threshold"].(int)))
+		healthCheck.SetUnhealthyThreshold(int32(check["unhealthy_threshold"].(int)))
+		healthCheck.SetCheckInterval(int32(check["check_interval"].(int)))
 		protocol := check["protocol"].(string)
 		if protocol == "" {
 			return fmt.Errorf("please provide protocol in health_check argument")
 		}
-		req.HealthCheck.SetProtocol(protocol)
+		healthCheck.SetProtocol(protocol)
 		if path := check["path"].(string); path != "" {
-			req.HealthCheck.SetPath(path)
+			healthCheck.SetPath(path)
 		}
-		req.HealthCheck.SetPort(int32(check["port"].(int)))
-		req.HealthCheck.SetTimeout(int32(check["time_out"].(int)))
+		healthCheck.SetPort(int32(check["port"].(int)))
+		healthCheck.SetTimeout(int32(check["timeout"].(int)))
+		req.SetHealthCheck(healthCheck)
 	}
 
 	return loadBalancerAttributesDoRequest(d, meta, req)
