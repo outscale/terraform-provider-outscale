@@ -283,7 +283,6 @@ func resourceOutscaleOAPISecurityGroupDelete(d *schema.ResourceData, meta interf
 	})
 }
 
-// SGOAPIStateRefreshFunc ...
 func SGOAPIStateRefreshFunc(conn *oscgo.APIClient, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		securityGroup, _, err := readSecurityGroups(conn, id)
@@ -291,7 +290,7 @@ func SGOAPIStateRefreshFunc(conn *oscgo.APIClient, id string) resource.StateRefr
 			return nil, "failed", err
 		}
 		if securityGroup == nil {
-			return nil, "failed", nil
+			return nil, "failed", fmt.Errorf("SecurityGroup Not Found")
 		}
 		return securityGroup, "exists", nil
 	}
