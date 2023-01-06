@@ -9,8 +9,8 @@ import (
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
@@ -51,7 +51,7 @@ func attrLBchema() map[string]*schema.Schema {
 			Optional: true,
 		},
 		"access_log": {
-			Type:     schema.TypeMap,
+			Type:     schema.TypeList,
 			Optional: true,
 			Computed: true,
 			Elem: &schema.Resource{
@@ -76,29 +76,37 @@ func attrLBchema() map[string]*schema.Schema {
 			},
 		},
 		"health_check": {
-			Type:     schema.TypeMap,
+			Type:     schema.TypeList,
 			Computed: true,
 			Optional: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"healthy_threshold": {
-						Type:     schema.TypeString,
+						Type:     schema.TypeInt,
 						Computed: true,
 					},
 					"unhealthy_threshold": {
-						Type:     schema.TypeString,
+						Type:     schema.TypeInt,
 						Computed: true,
 					},
-					"checked_vm": {
+					"path": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
 					"check_interval": {
+						Type:     schema.TypeInt,
+						Computed: true,
+					},
+					"port": {
+						Type:     schema.TypeInt,
+						Computed: true,
+					},
+					"protocol": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
 					"timeout": {
-						Type:     schema.TypeString,
+						Type:     schema.TypeInt,
 						Computed: true,
 					},
 				},
@@ -337,16 +345,16 @@ func dataSourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interfa
 	} else {
 		d.Set("security_groups", make([]map[string]interface{}, 0))
 	}
-	ssg := make(map[string]string)
+
 	if lb.SourceSecurityGroup != nil {
-		ssg["security_group_account_id"] = *lb.SourceSecurityGroup.SecurityGroupAccountId
-		ssg["security_group_name"] = *lb.SourceSecurityGroup.SecurityGroupName
+		d.Set("source_security_group", flattenSource_sg(lb.SourceSecurityGroup))
+	} else {
+		d.Set("source_security_group", make([]map[string]interface{}, 0))
 	}
 
 	d.Set("public_ip", lb.PublicIp)
 	d.Set("secured_cookies", lb.SecuredCookies)
 	d.Set("net_id", lb.NetId)
-	d.Set("source_security_group", ssg)
 	d.Set("subnets", utils.StringSlicePtrToInterfaceSlice(lb.Subnets))
 	d.SetId(*lb.LoadBalancerName)
 

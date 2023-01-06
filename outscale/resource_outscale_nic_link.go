@@ -12,8 +12,8 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceOutscaleOAPINetworkInterfaceAttachment() *schema.Resource {
@@ -117,7 +117,7 @@ func resourceOutscaleOAPINetworkInterfaceAttachmentRead(d *schema.ResourceData, 
 	resp, err := stateConf.WaitForState()
 	if err != nil {
 		return fmt.Errorf(
-			"Error waiting for Volume to attach to Instance: %s, error: %s", nicID, err)
+			"Error waiting for NIC to attach to Instance: %s, error: %s", nicID, err)
 	}
 
 	r := resp.(oscgo.ReadNicsResponse)

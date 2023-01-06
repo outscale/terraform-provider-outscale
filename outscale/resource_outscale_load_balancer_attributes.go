@@ -11,8 +11,8 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
@@ -69,7 +69,8 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"healthy_threshold": {
 							Type:     schema.TypeInt,
-							Required: true,
+							Optional: true,
+							Computed: true,
 							ForceNew: true,
 							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 								htVal := val.(int)
@@ -81,7 +82,8 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 						},
 						"unhealthy_threshold": {
 							Type:     schema.TypeInt,
-							Required: true,
+							Optional: true,
+							Computed: true,
 							ForceNew: true,
 							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 								uhtVal := val.(int)
@@ -121,7 +123,8 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 						},
 						"check_interval": {
 							Type:     schema.TypeInt,
-							Required: true,
+							Optional: true,
+							Computed: true,
 							ForceNew: true,
 							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 								ciVal := val.(int)
@@ -133,7 +136,8 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 						},
 						"timeout": {
 							Type:     schema.TypeInt,
-							Required: true,
+							Optional: true,
+							Computed: true,
 							ForceNew: true,
 							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 								tVal := val.(int)
@@ -422,12 +426,11 @@ func resourceOutscaleOAPILoadBalancerAttributesRead(d *schema.ResourceData, meta
 		d.Set("access_log", make([]interface{}, 0))
 	}
 
-	sgr := make(map[string]string)
 	if lb.SourceSecurityGroup != nil {
-		sgr["security_group_name"] = *lb.SourceSecurityGroup.SecurityGroupName
-		sgr["security_group_account_id"] = *lb.SourceSecurityGroup.SecurityGroupAccountId
+		d.Set("source_security_group", flattenSource_sg(lb.SourceSecurityGroup))
+	} else {
+		d.Set("security_groups", make([]map[string]interface{}, 0))
 	}
-	d.Set("source_security_group", sgr)
 
 	if lb.SecurityGroups != nil {
 		d.Set("security_groups", utils.StringSlicePtrToInterfaceSlice(lb.SecurityGroups))
@@ -484,9 +487,7 @@ func resourceOutscaleOAPILoadBalancerAttributesRead(d *schema.ResourceData, meta
 		d.Set("load_balancer_sticky_cookie_policies", lbc)
 	}
 
-	hls := make([]interface{}, 1)
-	hls[0] = flattenOAPIHealthCheck(lb.HealthCheck)
-	d.Set("health_check", hls)
+	d.Set("health_check", flattenOAPIHealthCheck(lb.HealthCheck))
 	d.Set("listeners", flattenOAPIListeners(lb.Listeners))
 	d.Set("dns_name", lb.DnsName)
 

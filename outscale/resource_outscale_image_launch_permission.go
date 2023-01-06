@@ -13,8 +13,8 @@ import (
 
 	"github.com/spf13/cast"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceOutscaleOAPIImageLaunchPermission() *schema.Resource {
@@ -82,9 +82,8 @@ func resourceOutscaleOAPIImageLaunchPermission() *schema.Resource {
 				Computed: true,
 			},
 			"permissions_to_launch": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Computed: true,
-				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"global_permission": {
