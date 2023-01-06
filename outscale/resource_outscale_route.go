@@ -13,8 +13,8 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 var errOAPIRoute = errors.New("Error: more than 1 target specified. Only 1 of gateway_id, " +
@@ -142,6 +142,7 @@ func resourceOutscaleOAPIRouteCreate(d *schema.ResourceData, meta interface{}) e
 		_, httpResp, err := conn.RouteApi.CreateRoute(context.Background()).CreateRouteRequest(createOpts).Execute()
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), utils.InvalidState) {
+				log.Printf("[OKHT] === ERROR: %v ====\n", err)
 				log.Printf("[DEBUG] Trying to create route again: %q", err)
 				return resource.RetryableError(err)
 			}
@@ -168,7 +169,10 @@ func resourceOutscaleOAPIRouteCreate(d *schema.ResourceData, meta interface{}) e
 					return resource.RetryableError(fmt.Errorf("still await route to be active"))
 				}
 			}
-			return resource.RetryableError(err)
+			if err != nil {
+				return resource.NonRetryableError(err)
+			}
+			return nil
 		})
 		if err != nil {
 			return fmt.Errorf("Error finding route after creating it: %s", err)

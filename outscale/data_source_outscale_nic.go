@@ -10,8 +10,8 @@ import (
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/spf13/cast"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
@@ -27,7 +27,6 @@ func dataSourceOutscaleOAPINic() *schema.Resource {
 			// Argument
 			"nic_id": {
 				Type:     schema.TypeString,
-				Optional: true,
 				Computed: true,
 			},
 
@@ -51,7 +50,7 @@ func dataSourceOutscaleOAPINic() *schema.Resource {
 			},
 			// Attributes
 			"link_public_ip": {
-				Type:     schema.TypeMap,
+				Type:     schema.TypeSet,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -75,7 +74,7 @@ func dataSourceOutscaleOAPINic() *schema.Resource {
 				},
 			},
 			"link_nic": {
-				Type:     schema.TypeMap,
+				Type:     schema.TypeSet,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -146,7 +145,7 @@ func dataSourceOutscaleOAPINic() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"link_public_ip": {
-							Type:     schema.TypeMap,
+							Type:     schema.TypeSet,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -217,21 +216,13 @@ func dataSourceOutscaleOAPINic() *schema.Resource {
 func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	nicID, okID := d.GetOk("nic_id")
 	filters, okFilters := d.GetOk("filter")
 
-	if okID && okFilters {
-		return errors.New("nic_id and filter set")
+	if !okFilters {
+		return errors.New("filters must be assigned")
 	}
 
 	dnri := oscgo.ReadNicsRequest{}
-
-	if okID {
-		dnri.Filters = &oscgo.FiltersNic{
-			NicIds: &[]string{nicID.(string)},
-		}
-	}
-
 	if okFilters {
 		dnri.SetFilters(buildOutscaleOAPIDataSourceNicFilters(filters.(*schema.Set)))
 	}
@@ -250,7 +241,6 @@ func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) err
 	})
 
 	if err != nil {
-
 		return fmt.Errorf("Error describing Network Interfaces : %s", err)
 	}
 
@@ -262,7 +252,6 @@ func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) err
 		}
 		return fmt.Errorf("Error retrieving ENI: %s", err)
 	}
-
 	if err := utils.IsResponseEmptyOrMutiple(len(resp.GetNics()), "Nic"); err != nil {
 		return err
 	}
@@ -281,33 +270,16 @@ func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) err
 	if err := d.Set("subnet_id", eni.GetSubnetId()); err != nil {
 		return err
 	}
-
-	b := make(map[string]interface{})
-
-	link := eni.GetLinkPublicIp()
-	b["public_ip_id"] = link.GetPublicIpId()
-	b["link_public_ip_id"] = link.GetLinkPublicIpId()
-	b["public_ip_account_id"] = link.GetPublicIpAccountId()
-	b["public_dns_name"] = link.GetPublicDnsName()
-	b["public_ip"] = link.GetPublicIp()
-
-	if err := d.Set("link_public_ip", b); err != nil {
-		return err
+	if linkIp, ok := eni.GetLinkPublicIpOk(); ok {
+		if err := d.Set("link_public_ip", flattenLinkPublicIp(linkIp)); err != nil {
+			return err
+		}
 	}
 
-	bb := make(map[string]interface{})
-
-	linkNic := eni.GetLinkNic()
-
-	bb["link_nic_id"] = linkNic.GetLinkNicId()
-	bb["delete_on_vm_deletion"] = fmt.Sprintf("%t", linkNic.GetDeleteOnVmDeletion())
-	bb["device_number"] = fmt.Sprintf("%d", linkNic.GetDeviceNumber())
-	bb["vm_id"] = linkNic.GetVmId()
-	bb["vm_account_id"] = linkNic.GetVmAccountId()
-	bb["state"] = linkNic.GetState()
-
-	if err := d.Set("link_nic", bb); err != nil {
-		return err
+	if linkNic, ok := eni.GetLinkNicOk(); ok {
+		if err := d.Set("link_nic", flattenLinkNic(linkNic)); err != nil {
+			return err
+		}
 	}
 
 	if err := d.Set("subregion_name", eni.GetSubregionName()); err != nil {
@@ -321,7 +293,6 @@ func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) err
 		b["security_group_name"] = v.GetSecurityGroupName()
 		x[k] = b
 	}
-
 	if err := d.Set("security_groups", x); err != nil {
 		return err
 	}
@@ -343,23 +314,22 @@ func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) err
 	if eni.PrivateIps != nil {
 		for k, v := range eni.GetPrivateIps() {
 			b := make(map[string]interface{})
-
-			d := make(map[string]interface{})
-			assoc := v.GetLinkPublicIp()
-			d["public_ip_id"] = assoc.GetPublicIpId()
-			d["link_public_ip_id"] = assoc.GetLinkPublicIpId()
-			d["public_ip_account_id"] = assoc.GetPublicIpAccountId()
-			d["public_dns_name"] = assoc.GetPublicDnsName()
-			d["public_ip"] = assoc.GetPublicIp()
-
-			b["link_public_ip"] = d
+			if assoc, ok := v.GetLinkPublicIpOk(); ok {
+				d := make(map[string]interface{})
+				d["public_ip_id"] = assoc.GetPublicIpId()
+				d["link_public_ip_id"] = assoc.GetLinkPublicIpId()
+				d["public_ip_account_id"] = assoc.GetPublicIpAccountId()
+				d["public_dns_name"] = assoc.GetPublicDnsName()
+				d["public_ip"] = assoc.GetPublicIp()
+				b["link_public_ip"] = d
+			}
 			b["private_dns_name"] = v.GetPrivateDnsName()
 			b["private_ip"] = v.GetPrivateIp()
 			b["is_primary"] = v.GetIsPrimary()
-
 			y[k] = b
 		}
 	}
+
 	if err := d.Set("private_ips", y); err != nil {
 		return err
 	}

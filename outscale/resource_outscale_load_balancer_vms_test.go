@@ -5,8 +5,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 )
@@ -16,6 +17,7 @@ func TestAccOutscaleOAPILBUAttachment_basic(t *testing.T) {
 	var conf oscgo.LoadBalancer
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
+	rand := acctest.RandIntRange(0, 50)
 
 	testCheckInstanceAttached := func(count int) resource.TestCheckFunc {
 		return func(*terraform.State) error {
@@ -36,7 +38,7 @@ func TestAccOutscaleOAPILBUAttachment_basic(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscaleOAPILBUDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPILBUAttachmentConfig1(omi, region),
+				Config: testAccOutscaleOAPILBUAttachmentConfig1(rand, omi, region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPILBUExists("outscale_load_balancer.bar", &conf),
 					testCheckInstanceAttached(1),
@@ -47,10 +49,10 @@ func TestAccOutscaleOAPILBUAttachment_basic(t *testing.T) {
 }
 
 // add one attachment
-func testAccOutscaleOAPILBUAttachmentConfig1(omi, region string) string {
+func testAccOutscaleOAPILBUAttachmentConfig1(num int, omi, region string) string {
 	return fmt.Sprintf(`
 resource "outscale_load_balancer" "bar" {
-	load_balancer_name = "load-test12"
+	load_balancer_name = "load-test-%d"
 	subregion_names = ["%sa"]
     listeners {
     backend_port = 8000
@@ -69,5 +71,5 @@ resource "outscale_load_balancer_vms" "foo1" {
   load_balancer_name      = "${outscale_load_balancer.bar.id}"
   backend_vm_ids = ["${outscale_vm.foo1.id}"]
 }
-`, region, omi)
+`, num, region, omi)
 }
