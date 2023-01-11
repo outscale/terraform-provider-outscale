@@ -35,17 +35,21 @@ func testAccOutscaleOAPIFlexibleGpuLinkConfig(omi, vmType, region string) string
 
 		}
 
-                resource "outscale_flexible_gpu" "fGPU-1" { 
+                resource "outscale_flexible_gpu" "fGPU-1" {
                         model_name             =  "nvidia-p6"
                         generation             =  "v5"
-                        subregion_name         =  "%[3]sa"
+                        subregion_name         =  "%[3]s"
                         delete_on_vm_deletion  =   true
                 }
-
+                resource "outscale_flexible_gpu" "fGPU-2" {
+                        model_name             =  "nvidia-p6"
+                        generation             =  "v5"
+                        subregion_name         =  "%[3]s"
+                        delete_on_vm_deletion  =   true
+                }
                 resource "outscale_flexible_gpu_link" "link_fGPU" {
-                         flexible_gpu_id = outscale_flexible_gpu.fGPU-1.flexible_gpu_id
+                         flexible_gpu_ids = [outscale_flexible_gpu.fGPU-1.flexible_gpu_id,outscale_flexible_gpu.fGPU-2.flexible_gpu_id]
                          vm_id           = outscale_vm.basic.vm_id
                 }
-		
 	`, omi, vmType, region)
 }
