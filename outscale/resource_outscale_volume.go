@@ -238,7 +238,7 @@ func resourceOAPIVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"creating"},
-		Target:     []string{"available"},
+		Target:     []string{"available", "in-use"},
 		Refresh:    volumeOAPIStateRefreshFunc(conn, d.Id()),
 		Timeout:    5 * time.Minute,
 		Delay:      10 * time.Second,
