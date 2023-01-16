@@ -39,7 +39,7 @@ func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 
 					resource.TestCheckResourceAttr(resourceName, "image_id", omi),
 					resource.TestCheckResourceAttr(resourceName, "vm_type", "tinav4.c2r2p2"),
-					resource.TestCheckResourceAttr(resourceName, "nested_virtualization", "true"),
+					resource.TestCheckResourceAttr(resourceName, "nested_virtualization", "false"),
 				),
 			},
 		},
