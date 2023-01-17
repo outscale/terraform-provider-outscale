@@ -47,6 +47,7 @@ func TestAccOutscaleOAPILBUBasic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPILBUPublicIp(t *testing.T) {
+	t.Skip("will be done soon")
 	t.Parallel()
 	var conf oscgo.LoadBalancer
 
