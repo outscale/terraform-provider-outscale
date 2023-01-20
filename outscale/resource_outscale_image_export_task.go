@@ -161,7 +161,7 @@ func resourceOAPIImageExportTaskCreate(d *schema.ResourceData, meta interface{})
 	var resp oscgo.CreateImageExportTaskResponse
 	var err error
 
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err = resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
 		rp, httpResp, err := conn.ImageApi.CreateImageExportTask(context.Background()).
 			CreateImageExportTaskRequest(request).Execute()
 		if err != nil {
@@ -183,7 +183,7 @@ func resourceOAPIImageExportTaskCreate(d *schema.ResourceData, meta interface{})
 		}
 		d.SetPartial("tags")
 	}
-	_, err = resourceOutscaleImageTaskWaitForAvailable(id, conn)
+	_, err = resourceOutscaleImageTaskWaitForAvailable(id, conn, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return err
 	}
@@ -290,14 +290,14 @@ func resourceOAPIImageExportTaskUpdate(d *schema.ResourceData, meta interface{})
 	return resourceOAPIImageExportTaskRead(d, meta)
 }
 
-func resourceOutscaleImageTaskWaitForAvailable(id string, client *oscgo.APIClient) (oscgo.ImageExportTask, error) {
+func resourceOutscaleImageTaskWaitForAvailable(id string, client *oscgo.APIClient, timeout time.Duration) (oscgo.ImageExportTask, error) {
 	log.Printf("Waiting for Image Task %s to become available...", id)
 	var image oscgo.ImageExportTask
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending", "pending/queued", "queued"},
 		Target:     []string{"completed"},
 		Refresh:    ImageTaskStateRefreshFunc(client, id),
-		Timeout:    OutscaleImageRetryTimeout,
+		Timeout:    timeout,
 		Delay:      OutscaleImageRetryDelay,
 		MinTimeout: OutscaleImageRetryMinTimeout,
 	}
