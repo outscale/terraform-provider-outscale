@@ -37,7 +37,7 @@ resource "local_file" "connect_script" {
   file_permission = "0770"
   content         = <<EOF
   #!/bin/bash
-  ssh -l outscale -i ${local_file.my_key.filename} ${outscale_vm.my_vms[count.index].public_ip}
+  ssh -l outscale -o IdentitiesOnly=yes -i ${local_file.my_key.filename} ${outscale_vm.my_vms[count.index].public_ip}
   EOF
 }
 
