@@ -1,8 +1,5 @@
 ---
-layout: "outscale"
 page_title: "Provider: OUTSCALE"
-description: |-
-  The OUTSCALE provider is used to manage OUTSCALE Cloud resources. The provider needs to be configured with the proper credentials before it can be used.
 ---
 
 # OUTSCALE Provider
