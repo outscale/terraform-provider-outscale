@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -11,7 +10,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func dataSourceOutscaleAccessKey() *schema.Resource {
@@ -21,7 +19,7 @@ func dataSourceOutscaleAccessKey() *schema.Resource {
 			"filter": dataSourceFiltersSchema(),
 			"access_key_id": {
 				Type:     schema.TypeString,
-				Optional: true,
+				Computed: true,
 			},
 			"creation_date": {
 				Type:     schema.TypeString,
@@ -36,9 +34,8 @@ func dataSourceOutscaleAccessKey() *schema.Resource {
 				Computed: true,
 			},
 			"state": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validation.StringInSlice([]string{"ACTIVE", "INACTIVE"}, false),
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 			"request_id": {
 				Type:     schema.TypeString,
@@ -51,23 +48,9 @@ func dataSourceOutscaleAccessKey() *schema.Resource {
 func dataSourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	filters, filtersOk := d.GetOk("filter")
-	accessKeyID, accessKeyOk := d.GetOk("access_key_id")
-	state, stateOk := d.GetOk("state")
-
-	if !filtersOk && !accessKeyOk && !stateOk {
-		return fmt.Errorf("One of filters, access_key_id or state must be assigned")
-	}
-
 	filterReq := &oscgo.FiltersAccessKeys{}
-	if filtersOk {
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
 		filterReq = buildOutscaleDataSourceAccessKeyFilters(filters.(*schema.Set))
-	}
-	if accessKeyOk {
-		filterReq.SetAccessKeyIds([]string{accessKeyID.(string)})
-	}
-	if stateOk {
-		filterReq.SetStates([]string{state.(string)})
 	}
 
 	var resp oscgo.ReadAccessKeysResponse
@@ -84,12 +67,8 @@ func dataSourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) e
 		return err
 	}
 
-	if len(resp.GetAccessKeys()) == 0 {
-		return fmt.Errorf("Unable to find Access Key")
-	}
-
-	if len(resp.GetAccessKeys()) > 1 {
-		return fmt.Errorf("multiple results returned, please use a more specific criteria in your query")
+	if err = utils.IsResponseEmptyOrMutiple(len(resp.GetAccessKeys()), "Access Key"); err != nil {
+		return err
 	}
 
 	accessKey := resp.GetAccessKeys()[0]
