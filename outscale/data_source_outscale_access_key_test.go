@@ -6,68 +6,53 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccOutscaleDataSourceAccessKey_basic(t *testing.T) {
+func TestAcc_AccessKey_DataSource(t *testing.T) {
 	t.Parallel()
-	dataSourceName := "outscale_access_key.outscale_access_key"
-
+	dataSourceName := "data.outscale_access_key.outscale_access_key_d"
+	dataSourcesName := "data.outscale_access_keys.outscale_access_keys_d"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccClientAccessKeyDataSourceBasic(),
+				Config: testAcc_AccessKey_DataSource_Config(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(dataSourceName, "access_key_id"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "creation_date"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "last_modification_date"),
-					resource.TestCheckResourceAttrSet(dataSourceName, "secret_key"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "state"),
+
+					resource.TestCheckResourceAttrSet(dataSourcesName, "access_keys.#"),
+					resource.TestCheckResourceAttrSet(dataSourcesName, "filter.#"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccOutscaleDataSourceAccessKey_withFilters(t *testing.T) {
-	t.Parallel()
-	dataSourceName := "outscale_access_key.outscale_access_key"
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccClientAccessKeyDataSourceWithFilters(),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(dataSourceName, "access_key_id"),
-					resource.TestCheckResourceAttrSet(dataSourceName, "creation_date"),
-					resource.TestCheckResourceAttrSet(dataSourceName, "last_modification_date"),
-					resource.TestCheckResourceAttrSet(dataSourceName, "secret_key"),
-					resource.TestCheckResourceAttrSet(dataSourceName, "state"),
-				),
-			},
-		},
-	})
-}
-
-func testAccClientAccessKeyDataSourceBasic() string {
+func testAcc_AccessKey_DataSource_Config() string {
 	return `
 		resource "outscale_access_key" "outscale_access_key" {}
 
-		data "outscale_access_key" "outscale_access_key" {
-			access_key_id = outscale_access_key.outscale_access_key.id
-		}
-	`
-}
-
-func testAccClientAccessKeyDataSourceWithFilters() string {
-	return `
-		resource "outscale_access_key" "outscale_access_key" {}
-
-		data "outscale_access_key" "outscale_access_key" {
+		data "outscale_access_key" "outscale_access_key_d" {
 			filter {
 				name = "access_key_ids"
 				values = [outscale_access_key.outscale_access_key.id]
+			}
+			filter {
+				name = "states"
+				values = [outscale_access_key.outscale_access_key.state]
+			}
+		}
+
+		data "outscale_access_keys" "outscale_access_keys_d" {
+			filter {
+				name = "access_key_ids"
+				values = [outscale_access_key.outscale_access_key.id]
+			}
+			filter {
+				name = "states"
+				values = [outscale_access_key.outscale_access_key.state]
 			}
 		}
 	`
