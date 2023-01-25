@@ -94,14 +94,10 @@ func dataSourceAccounts() *schema.Resource {
 }
 
 func dataSourceAccountsRead(d *schema.ResourceData, meta interface{}) error {
-
 	conn := meta.(*OutscaleClient).OSCAPI
-
 	req := oscgo.ReadAccountsRequest{}
-
 	var resp oscgo.ReadAccountsResponse
 	var err error
-
 	err = resource.Retry(30*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.AccountApi.ReadAccounts(context.Background()).ReadAccountsRequest(req).Execute()
 		if err != nil {
