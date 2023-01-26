@@ -455,19 +455,6 @@ def main():
     extention = '.md' if ARGS.new_format else '.html.markdown'
     index_dirpath = ARGS.output_directory + ('/docs'
                                                if ARGS.new_format else '/website/docs')
-    navbar_dirpath = ARGS.output_directory + ('/docs'
-                                               if ARGS.new_format else '/website')
-    navbar_file = """<% wrap_layout :inner do %>
-  <% content_for :sidebar do %>
-    <h4>OUTSCALE</h4>
-
-    <ul class="nav docs-sidenav">
-      <li>
-        <a href="#">Data Sources</a>
-        <ul class="nav">
-"""
-    navbar_data_source={}
-    navbar_resource={}
     print('Parsing API from {}...'.format(ARGS.api))
     oapi = openapi_parser.parse(ARGS.api)
 
@@ -490,7 +477,6 @@ def main():
             dirpath = ARGS.output_directory + (
                 '/docs/data-sources' if ARGS.new_format else '/website/docs/d')
             resource_name = re.search('outscale/data_source_outscale_(.*).go', filename).group(1)
-            navbar_data_source[resource_name] = '/docs/providers/outscale/d/{}.html'.format(resource_name)
             template = template_datasource
             # Load example, import and addprop
             try:
@@ -537,7 +523,6 @@ def main():
             dirpath = ARGS.output_directory + (
                 '/docs/resources' if ARGS.new_format else '/website/docs/r')
             resource_name = re.search('outscale/resource_outscale_(.*).go', filename).group(1)
-            navbar_resource[resource_name] = '/docs/providers/outscale/r/{}.html'.format(resource_name)
             template = template_resource
             # Load example, import and addprop
             try:
@@ -702,45 +687,9 @@ def main():
         with io.open('{}/{}{}'.format(dirpath, resource_name, extention),
                      'w', encoding='utf8') as f:
             f.write(content_file)
-                
-    for k, v in navbar_data_source.items():
-        navbar_file += """
-          <li>
-            <a href="{}">{}</a>
-          </li>
-""".format(v, k)
-    
-    navbar_file += """
-        </ul>
-      </li>
-      <li>
-        <a href="#">Resources</a>
-        <ul class="nav">
-"""
-    for k, v in navbar_resource.items():
-        navbar_file += """
-          <li>
-            <a href="{}">{}</a>
-          </li>
-""".format(v, k)
 
-    navbar_file += """
-        </ul>
-      </li>
-    </ul>
-
-    <%= partial("layouts/otherdocs", :locals => { :skip => "Terraform Enterprise" }) %>
-  <% end %>
-  <%= yield %>
-<% end %>
-"""
-    if not os.path.exists(navbar_dirpath):
-        os.makedirs(navbar_dirpath)
     if not os.path.exists(index_dirpath):
         os.makedirs(index_dirpath)
-    with io.open('{}/outscale.erb'.format(navbar_dirpath),
-                 'w', encoding='utf-8') as f:
-        f.write(navbar_file)
 
     index_source_path = os.path.join(ARGS.template_directory, INDEX_PATH)
     if not os.path.exists(index_source_path):
