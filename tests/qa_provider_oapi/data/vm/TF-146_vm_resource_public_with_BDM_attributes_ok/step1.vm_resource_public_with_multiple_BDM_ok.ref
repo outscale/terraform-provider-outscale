@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_keypair",
             "name": "my_keypair",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -31,7 +31,7 @@
             "mode": "managed",
             "type": "outscale_snapshot",
             "name": "my_snapshot",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -66,7 +66,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "outscale_vm2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -78,7 +78,7 @@
                                 "bsu": [
                                     {
                                         "delete_on_vm_deletion": false,
-                                        "iops": 0,
+                                        "iops": null,
                                         "snapshot_id": "",
                                         "volume_size": 100,
                                         "volume_type": "standard"
@@ -92,7 +92,7 @@
                                 "bsu": [
                                     {
                                         "delete_on_vm_deletion": false,
-                                        "iops": 0,
+                                        "iops": null,
                                         "snapshot_id": "",
                                         "volume_size": 15,
                                         "volume_type": "standard"
@@ -208,7 +208,7 @@
             "mode": "managed",
             "type": "outscale_volume",
             "name": "my_volume",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
