@@ -68,12 +68,8 @@ func dataSourceOutscaleOAPIQuotas() *schema.Resource {
 
 func dataSourceOutscaleOAPIQuotasRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
 	req := oscgo.ReadQuotasRequest{}
-
-	filters, filtersOk := d.GetOk("filter")
-
-	if filtersOk {
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
 		req.Filters = buildOutscaleOAPIQuotaDataSourceFilters(filters.(*schema.Set))
 	}
 
