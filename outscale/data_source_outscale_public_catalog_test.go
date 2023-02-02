@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccDataSourceOutscaleOAPIPublicCatalog_basic(t *testing.T) {
+func TestAcc_PublicCatalog_DataSource(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -16,13 +16,13 @@ func TestAccDataSourceOutscaleOAPIPublicCatalog_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPIPublicCatalogConfig(),
+				Config: testAcc_PublicCatalog_DataSource_Config(),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleOAPIPublicCatalogConfig() string {
+func testAcc_PublicCatalog_DataSource_Config() string {
 	return fmt.Sprintf(`
               data "outscale_public_catalog" "catalog" { }
 	`)
