@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -23,26 +22,13 @@ func dataSourceOutscaleOAPIVM() *schema.Resource {
 func dataSourceOutscaleOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*OutscaleClient).OSCAPI
 
-	filters, filtersOk := d.GetOk("filter")
-	instanceID, instanceIDOk := d.GetOk("vm_id")
-
-	if !filtersOk && !instanceIDOk {
-		return fmt.Errorf("One of filters, or instance_id must be assigned")
+	req := oscgo.ReadVmsRequest{}
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
+		req.Filters = buildOutscaleOAPIDataSourceVMFilters(filters.(*schema.Set))
 	}
-	// Build up search parameters
-	params := oscgo.ReadVmsRequest{}
-	if filtersOk {
-		params.Filters = buildOutscaleOAPIDataSourceVMFilters(filters.(*schema.Set))
-	}
-	if instanceIDOk {
-		params.Filters.VmIds = &[]string{instanceID.(string)}
-	}
-
-	log.Printf("[DEBUG] ReadVmsRequest -> %+v\n", params)
-
 	var resp oscgo.ReadVmsResponse
 	err := resource.Retry(30*time.Second, func() *resource.RetryError {
-		rp, httpResp, err := client.VmApi.ReadVms(context.Background()).ReadVmsRequest(params).Execute()
+		rp, httpResp, err := client.VmApi.ReadVms(context.Background()).ReadVmsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -68,15 +54,9 @@ func dataSourceOutscaleOAPIVMRead(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	var vm oscgo.Vm
-	if len(filteredVms) < 1 {
-		return errors.New("Your query returned no results. Please change your search criteria and try again")
+	if err = utils.IsResponseEmptyOrMutiple(len(filteredVms), "Vm"); err != nil {
+		return err
 	}
-
-	if len(filteredVms) > 1 {
-		return errors.New("Your query returned more than one result. Please try a more " +
-			"specific search criteria")
-	}
-
 	vm = filteredVms[0]
 
 	// Populate vm attribute fields with the returned vm
@@ -305,7 +285,7 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 					},
 					"device_name": {
 						Type:     schema.TypeString,
-						Optional: true,
+						Computed: true,
 					},
 				},
 			},
@@ -438,12 +418,10 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-
 					"is_source_dest_checked": {
 						Type:     schema.TypeBool,
 						Computed: true,
 					},
-
 					"subnet_id": {
 						Type:     schema.TypeString,
 						Computed: true,
