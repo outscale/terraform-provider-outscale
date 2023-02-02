@@ -26,11 +26,6 @@ func dataSourceOutscaleOAPISnapshotExportTask() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"dry_run": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Computed: true,
-			},
 			"osu_export": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -82,21 +77,15 @@ func dataSourceOutscaleOAPISnapshotExportTask() *schema.Resource {
 
 func dataSourceOAPISnapshotExportTaskRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
-	filters, filtersOk := d.GetOk("filter")
-
-	filtersReq := &oscgo.FiltersExportTask{}
-	if filtersOk {
-		filtersReq = buildOutscaleOSCAPIDataSourceSnapshotExportTaskFilters(filters.(*schema.Set))
+	req := oscgo.ReadSnapshotExportTasksRequest{}
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
+		req.SetFilters(buildOutscaleOSCAPIDataSourceSnapshotExportTaskFilters(filters.(*schema.Set)))
 	}
-
 	var resp oscgo.ReadSnapshotExportTasksResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.SnapshotApi.ReadSnapshotExportTasks(context.Background()).
-			ReadSnapshotExportTasksRequest(oscgo.ReadSnapshotExportTasksRequest{
-				Filters: filtersReq,
-			}).Execute()
+			ReadSnapshotExportTasksRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -107,9 +96,8 @@ func dataSourceOAPISnapshotExportTaskRead(d *schema.ResourceData, meta interface
 	if err != nil {
 		return fmt.Errorf("Error reading task snapshot export %s", err)
 	}
-
-	if len(resp.GetSnapshotExportTasks()) == 0 {
-		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
+	if err = utils.IsResponseEmptyOrMutiple(len(resp.GetSnapshotExportTasks()), "Snapshot Export Task"); err != nil {
+		return err
 	}
 	v := resp.GetSnapshotExportTasks()[0]
 
@@ -149,7 +137,7 @@ func dataSourceOAPISnapshotExportTaskRead(d *schema.ResourceData, meta interface
 	return nil
 }
 
-func buildOutscaleOSCAPIDataSourceSnapshotExportTaskFilters(set *schema.Set) *oscgo.FiltersExportTask {
+func buildOutscaleOSCAPIDataSourceSnapshotExportTaskFilters(set *schema.Set) oscgo.FiltersExportTask {
 	var filters oscgo.FiltersExportTask
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -165,5 +153,5 @@ func buildOutscaleOSCAPIDataSourceSnapshotExportTaskFilters(set *schema.Set) *os
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)
 		}
 	}
-	return &filters
+	return filters
 }
