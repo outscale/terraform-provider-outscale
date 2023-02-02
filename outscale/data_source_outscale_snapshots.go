@@ -17,24 +17,7 @@ func dataSourceOutscaleOAPISnapshots() *schema.Resource {
 		Read: dataSourceOutscaleOAPISnapshotsRead,
 
 		Schema: map[string]*schema.Schema{
-			//selection criteria
 			"filter": dataSourceFiltersSchema(),
-			"account_id": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
-			"snapshot_id": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
-			"permission_to_create_volume": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
-			//Computed values returned
 			"snapshots": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -107,40 +90,14 @@ func dataSourceOutscaleOAPISnapshots() *schema.Resource {
 
 func dataSourceOutscaleOAPISnapshotsRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
-	restorableUsers, restorableUsersOk := d.GetOk("permission_to_create_volume")
-	filters, filtersOk := d.GetOk("filter")
-	snapshotIds, snapshotIdsOk := d.GetOk("snapshot_id")
-	owners, ownersOk := d.GetOk("account_id")
-
-	if restorableUsers == false && !filtersOk && snapshotIds == false && !ownersOk {
-		return fmt.Errorf("One of snapshot_ids, filters, restorable_by_user_ids, or owners must be assigned")
+	req := oscgo.ReadSnapshotsRequest{}
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
+		req.SetFilters(buildOutscaleOapiSnapshootDataSourceFilters(filters.(*schema.Set)))
 	}
-
-	params := oscgo.ReadSnapshotsRequest{
-		Filters: &oscgo.FiltersSnapshot{},
-	}
-	filter := oscgo.FiltersSnapshot{}
-	if restorableUsersOk {
-		filter.SetPermissionsToCreateVolumeAccountIds(utils.InterfaceSliceToStringSlice(restorableUsers.([]interface{})))
-		params.SetFilters(filter)
-	}
-	if filtersOk {
-		buildOutscaleOapiSnapshootDataSourceFilters(filters.(*schema.Set), params.Filters)
-	}
-	if ownersOk {
-		filter.SetAccountIds(utils.InterfaceSliceToStringSlice(owners.([]interface{})))
-		params.SetFilters(filter)
-	}
-	if snapshotIdsOk {
-		filter.SetSnapshotIds(utils.InterfaceSliceToStringSlice(snapshotIds.([]interface{})))
-		params.SetFilters(filter)
-	}
-
 	var resp oscgo.ReadSnapshotsResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		rp, httpResp, err := conn.SnapshotApi.ReadSnapshots(context.Background()).ReadSnapshotsRequest(params).Execute()
+		rp, httpResp, err := conn.SnapshotApi.ReadSnapshots(context.Background()).ReadSnapshotsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -181,6 +138,5 @@ func dataSourceOutscaleOAPISnapshotsRead(d *schema.ResourceData, meta interface{
 	}
 
 	d.SetId(resource.UniqueId())
-	//Single Snapshot found so set to state
 	return d.Set("snapshots", snapshots)
 }
