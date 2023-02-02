@@ -193,22 +193,8 @@ func getDSOAPINicsSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"tags": {
-						Type:     schema.TypeList,
-						Computed: true,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"key": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"value": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-							},
-						},
-					}},
+					"tags": dataSourceTagsSchema(),
+				},
 			},
 		},
 		"request_id": {
@@ -221,19 +207,16 @@ func getDSOAPINicsSchema() map[string]*schema.Schema {
 // Read Nic
 func dataSourceOutscaleOAPINicsRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
-	filters, filtersOk := d.GetOk("filter")
-
-	params := oscgo.ReadNicsRequest{}
-	if filtersOk {
-		params.SetFilters(buildOutscaleOAPIDataSourceNicFilters(filters.(*schema.Set)))
+	req := oscgo.ReadNicsRequest{}
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
+		req.SetFilters(buildOutscaleOAPIDataSourceNicFilters(filters.(*schema.Set)))
 	}
 
 	var resp oscgo.ReadNicsResponse
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		rp, httpResp, err := conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(params).Execute()
+		rp, httpResp, err := conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -244,11 +227,9 @@ func dataSourceOutscaleOAPINicsRead(d *schema.ResourceData, meta interface{}) er
 	if err != nil {
 		return fmt.Errorf("Error reading Network Interface Cards : %s", err)
 	}
-
 	if resp.GetNics() == nil {
 		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
 	}
-
 	if len(resp.GetNics()) == 0 {
 		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
 	}

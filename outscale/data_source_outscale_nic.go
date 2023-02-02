@@ -2,10 +2,8 @@ package outscale
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
-	"net/http"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -23,14 +21,10 @@ func dataSourceOutscaleOAPINic() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			// This is attribute part for schema Nic
-			// Argument
 			"nic_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
-			// Attributes
 			"description": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -212,45 +206,26 @@ func dataSourceOutscaleOAPINic() *schema.Resource {
 	}
 }
 
-// Read Nic
 func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
-	filters, okFilters := d.GetOk("filter")
-
-	if !okFilters {
-		return errors.New("filters must be assigned")
-	}
-
-	dnri := oscgo.ReadNicsRequest{}
-	if okFilters {
-		dnri.SetFilters(buildOutscaleOAPIDataSourceNicFilters(filters.(*schema.Set)))
+	req := oscgo.ReadNicsRequest{}
+	if filters, okFilters := d.GetOk("filter"); okFilters {
+		req.SetFilters(buildOutscaleOAPIDataSourceNicFilters(filters.(*schema.Set)))
 	}
 
 	var resp oscgo.ReadNicsResponse
 	var err error
-	var statusCode int
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		rp, httpResp, err := conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(dnri).Execute()
+		rp, httpResp, err := conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
-		statusCode = httpResp.StatusCode
 		return nil
 	})
 
 	if err != nil {
 		return fmt.Errorf("Error describing Network Interfaces : %s", err)
-	}
-
-	if err != nil {
-		if statusCode == http.StatusNotFound {
-			// The ENI is gone now, so just remove it from the state
-			d.SetId("")
-			return nil
-		}
-		return fmt.Errorf("Error retrieving ENI: %s", err)
 	}
 	if err := utils.IsResponseEmptyOrMutiple(len(resp.GetNics()), "Nic"); err != nil {
 		return err
