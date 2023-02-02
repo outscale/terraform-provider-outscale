@@ -7,8 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccDataSourceOutscaleOAPIApiAccessPolicy_basic(t *testing.T) {
-
+func TestAcc_ApiAccessPolicy_DataSource(t *testing.T) {
+	dataSourceName := "data.outscale_api_access_policy.api_access_policy"
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
@@ -16,13 +16,16 @@ func TestAccDataSourceOutscaleOAPIApiAccessPolicy_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPIApiAccessPolicyConfig(),
+				Config: testAcc_ApiAccessPolicy_DataSource_Config(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(dataSourceName, "max_access_key_expiration_seconds"),
+				),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleOAPIApiAccessPolicyConfig() string {
+func testAcc_ApiAccessPolicy_DataSource_Config() string {
 	return fmt.Sprintf(`
               data "outscale_api_access_policy" "api_access_policy" {}
 	`)
