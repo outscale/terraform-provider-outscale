@@ -16,20 +16,9 @@ import (
 
 func datasourceOutscaleOApiKeyPairRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-	req := oscgo.ReadKeypairsRequest{
-		Filters: &oscgo.FiltersKeypair{KeypairNames: &[]string{d.Id()}},
-	}
+	req := oscgo.ReadKeypairsRequest{}
 
-	KeyName, KeyNameisOk := d.GetOk("keypair_name")
-	if KeyNameisOk {
-		filter := oscgo.FiltersKeypair{}
-		filter.SetKeypairNames([]string{KeyName.(string)})
-		req.SetFilters(filter)
-	}
-
-	filters, filtersOk := d.GetOk("filter")
-
-	if filtersOk {
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
 		req.SetFilters(buildOutscaleOAPIKeyPairsDataSourceFilters(filters.(*schema.Set)))
 	}
 
@@ -59,12 +48,8 @@ func datasourceOutscaleOApiKeyPairRead(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("Error retrieving OAPIKeyPair: %s", errString)
 	}
 
-	if len(resp.GetKeypairs()) < 1 {
-		return fmt.Errorf("Unable to find key pair, please provide a better query criteria ")
-	}
-	if len(resp.GetKeypairs()) > 1 {
-
-		return fmt.Errorf("Found to many key pairs, please provide a better query criteria ")
+	if err := utils.IsResponseEmptyOrMutiple(len(resp.GetKeypairs()), "KeyPair"); err != nil {
+		return err
 	}
 
 	keypair := resp.GetKeypairs()[0]
@@ -88,7 +73,6 @@ func datasourceOutscaleOAPIKeyPair() *schema.Resource {
 			// Attributes
 			"keypair_name": {
 				Type:     schema.TypeString,
-				Optional: true,
 				Computed: true,
 			},
 			"keypair_fingerprint": {
