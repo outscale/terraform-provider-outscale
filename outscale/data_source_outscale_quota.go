@@ -61,12 +61,8 @@ func dataSourceOutscaleOAPIQuota() *schema.Resource {
 
 func dataSourceOutscaleOAPIQuotaRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
 	req := oscgo.ReadQuotasRequest{}
-
-	filters, filtersOk := d.GetOk("filter")
-
-	if filtersOk {
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
 		req.Filters = buildOutscaleOAPIQuotaDataSourceFilters(filters.(*schema.Set))
 	}
 
@@ -85,15 +81,9 @@ func dataSourceOutscaleOAPIQuotaRead(d *schema.ResourceData, meta interface{}) e
 		errString := err.Error()
 		return fmt.Errorf("[DEBUG] Error reading quotaType (%s)", errString)
 	}
-
-	if len(resp.GetQuotaTypes()) == 0 {
-		return fmt.Errorf("no matching quotas type found")
+	if err = utils.IsResponseEmptyOrMutiple(len(resp.GetQuotaTypes()), "Quota"); err != nil {
+		return err
 	}
-
-	if len(resp.GetQuotaTypes()) > 1 {
-		return fmt.Errorf("multiple quotas type matched; use additional constraints to reduce matches to a single quotaType")
-	}
-
 	quotaType := resp.GetQuotaTypes()[0]
 
 	d.SetId(resource.UniqueId())
