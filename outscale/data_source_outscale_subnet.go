@@ -31,7 +31,6 @@ func dataSourceOutscaleOAPISubnet() *schema.Resource {
 			},
 			"subnet_id": {
 				Type:     schema.TypeString,
-				Optional: true,
 				Computed: true,
 			},
 			"state": {
@@ -61,16 +60,8 @@ func dataSourceOutscaleOAPISubnet() *schema.Resource {
 
 func dataSourceOutscaleOAPISubnetRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
 	req := oscgo.ReadSubnetsRequest{}
-
-	if id := d.Get("subnet_id"); id != "" {
-		req.Filters = &oscgo.FiltersSubnet{SubnetIds: &[]string{id.(string)}}
-	}
-
-	filters, filtersOk := d.GetOk("filter")
-
-	if filtersOk {
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
 		req.Filters = buildOutscaleOAPISubnetDataSourceFilters(filters.(*schema.Set))
 	}
 
@@ -91,12 +82,8 @@ func dataSourceOutscaleOAPISubnetRead(d *schema.ResourceData, meta interface{}) 
 		return fmt.Errorf("[DEBUG] Error reading Subnet (%s)", errString)
 	}
 
-	if len(resp.GetSubnets()) == 0 {
-		return fmt.Errorf("no matching subnet found")
-	}
-
-	if len(resp.GetSubnets()) > 1 {
-		return fmt.Errorf("multiple subnets matched; use additional constraints to reduce matches to a single subnet")
+	if err = utils.IsResponseEmptyOrMutiple(len(resp.GetSubnets()), "Subnet"); err != nil {
+		return err
 	}
 
 	subnet := resp.GetSubnets()[0]
