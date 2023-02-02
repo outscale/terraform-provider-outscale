@@ -1,91 +1,48 @@
 package outscale
 
 import (
-	"context"
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func TestAccDataOutscaleOAPIApiAccessRule_basic(t *testing.T) {
+func TestAcc_ApiAccessRule_DataSource(t *testing.T) {
 	t.Parallel()
-	resourceName := "outscale_api_access_rule.rule_data"
-
+	dataSourceName := "data.outscale_api_access_rule.rule"
+	dataSourcesName := "data.outscale_api_access_rules.filters_rules"
+	dataSourcesAllName := "data.outscale_api_access_rules.all_rules"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccDataCheckOutscaleApiAccessRuleDestroy,
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataOutscaleOAPIApiAccessRuleConfig(utils.TestCaPem),
+				Config: testAcc_ApiAccessRule_DataSource_Config(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleApiAccessRuleExists(resourceName),
+					resource.TestCheckResourceAttrSet(dataSourceName, "ip_ranges.#"),
+
+					resource.TestCheckResourceAttrSet(dataSourcesName, "api_access_rules.#"),
+					resource.TestCheckResourceAttrSet(dataSourcesName, "filter.#"),
+
+					resource.TestCheckResourceAttrSet(dataSourcesAllName, "api_access_rules.#"),
 				),
 			},
 		},
 	})
 }
 
-func testAccDataCheckOutscaleApiAccessRuleDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
-
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "outscale_api_access_rule" {
-			continue
-		}
-		req := oscgo.ReadApiAccessRulesRequest{
-			Filters: &oscgo.FiltersApiAccessRule{ApiAccessRuleIds: &[]string{rs.Primary.ID}},
-		}
-
-		var resp oscgo.ReadApiAccessRulesResponse
-		var err error
-		exists := false
-		err = resource.Retry(120*time.Second, func() *resource.RetryError {
-			rp, httpResp, err := conn.ApiAccessRuleApi.ReadApiAccessRules(context.Background()).ReadApiAccessRulesRequest(req).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
-		if err != nil {
-			return fmt.Errorf("Api Access Rule reading (%s)", rs.Primary.ID)
-		}
-
-		for _, r := range resp.GetApiAccessRules() {
-			if r.GetApiAccessRuleId() == rs.Primary.ID {
-				exists = true
-			}
-		}
-		if exists {
-			return fmt.Errorf("Api Access Rule still exists (%s)", rs.Primary.ID)
-		}
-	}
-	return nil
-}
-
-func testAccDataOutscaleOAPIApiAccessRuleConfig(ca_pem string) string {
+func testAcc_ApiAccessRule_DataSource_Config() string {
 	return fmt.Sprintf(`
-resource "outscale_ca" "ca_rule" { 
-   ca_pem       = %[1]q
-   description  = "Ca data test create"
-}
-
 resource "outscale_api_access_rule" "rule_data" {
-  ca_ids      = ["${outscale_ca.ca_rule.id}"]
   ip_ranges   = ["192.4.2.32/16"]
   description = "test api access rule"
 }
 
-data "outscale_api_access_rule" "api_access_rule" {
+
+data "outscale_api_access_rules" "filters_rules" {
   filter {
     name   = "api_access_rule_ids"
-    values = ["${outscale_api_access_rule.rule_data.id}"]
+    values = [outscale_api_access_rule.rule_data.id]
   }
 
   filter {
@@ -98,5 +55,25 @@ data "outscale_api_access_rule" "api_access_rule" {
     values = ["test api access rule"]
   }
 }
-	`, ca_pem)
+
+data "outscale_api_access_rules" "all_rules" {}
+
+data "outscale_api_access_rule" "rule" {
+  filter {
+    name   = "api_access_rule_ids"
+    values = [outscale_api_access_rule.rule_data.id]
+  }
+	
+  filter {
+    name   = "ip_ranges"
+    values = ["192.4.2.32/16"]
+  }
+	 
+  filter {
+    name   = "descriptions"
+    values = ["test api access rule"]
+  }
+}
+
+`)
 }
