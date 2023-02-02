@@ -23,24 +23,20 @@ func attrLBchema() map[string]*schema.Schema {
 		},
 		"load_balancer_name": {
 			Type:     schema.TypeString,
-			Optional: true,
 			Computed: true,
 		},
 		"load_balancer_type": {
 			Type:     schema.TypeString,
-			Optional: true,
 			Computed: true,
 		},
 		"security_groups": {
 			Type:     schema.TypeList,
 			Computed: true,
-			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 		"subnets": {
 			Type:     schema.TypeList,
 			Computed: true,
-			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 		"source_security_group": lb_sg_schema(),
@@ -48,11 +44,9 @@ func attrLBchema() map[string]*schema.Schema {
 		"dns_name": {
 			Type:     schema.TypeString,
 			Computed: true,
-			Optional: true,
 		},
 		"access_log": {
 			Type:     schema.TypeMap,
-			Optional: true,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
@@ -78,7 +72,6 @@ func attrLBchema() map[string]*schema.Schema {
 		"health_check": {
 			Type:     schema.TypeMap,
 			Computed: true,
-			Optional: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"healthy_threshold": {
@@ -107,13 +100,11 @@ func attrLBchema() map[string]*schema.Schema {
 		"backend_vm_ids": {
 			Type:     schema.TypeList,
 			Computed: true,
-			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 		"listeners": {
 			Type:     schema.TypeList,
 			Computed: true,
-			Optional: true,
 			Elem: &schema.Resource{
 				Schema: lb_listener_schema(true),
 			},
@@ -128,9 +119,7 @@ func attrLBchema() map[string]*schema.Schema {
 		},
 		"net_id": {
 			Type:     schema.TypeString,
-			Optional: true,
 			Computed: true,
-			ForceNew: true,
 		},
 		"application_sticky_cookie_policies": {
 			Type:     schema.TypeList,
@@ -201,38 +190,21 @@ func buildOutscaleDataSourceLBFilters(set *schema.Set) oscgo.FiltersLoadBalancer
 		case "load_balancer_name":
 			filters.LoadBalancerNames = &filterValues
 		default:
-			filters.LoadBalancerNames = &filterValues
 			log.Printf("[Debug] Unknown Filter Name: %s. default to 'load_balancer_name'", name)
 		}
 	}
 	return filters
 }
 
-func readLbs(conn *oscgo.APIClient, d *schema.ResourceData) (*oscgo.ReadLoadBalancersResponse, *string, error) {
+func readLbs(conn *oscgo.APIClient, d *schema.ResourceData) (*oscgo.ReadLoadBalancersResponse, error) {
 	return readLbs_(conn, d, schema.TypeString)
 }
 
-func readLbs_(conn *oscgo.APIClient, d *schema.ResourceData, t schema.ValueType) (*oscgo.ReadLoadBalancersResponse, *string, error) {
-	ename, nameOk := d.GetOk("load_balancer_name")
-	filters, filtersOk := d.GetOk("filter")
-	req := oscgo.ReadLoadBalancersRequest{
-		Filters: &oscgo.FiltersLoadBalancer{},
-	}
-
-	if !nameOk && !filtersOk {
-		return nil, nil, fmt.Errorf("One of filters, or load_balancer_name must be assigned")
-	}
-
-	if filtersOk {
+func readLbs_(conn *oscgo.APIClient, d *schema.ResourceData, t schema.ValueType) (*oscgo.ReadLoadBalancersResponse, error) {
+	req := oscgo.ReadLoadBalancersRequest{}
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
 		req.SetFilters(buildOutscaleDataSourceLBFilters(filters.(*schema.Set)))
-	} else if t == schema.TypeString {
-		req.Filters.SetLoadBalancerNames([]string{ename.(string)})
-	} else { /* assuming typelist */
-		req.Filters = &oscgo.FiltersLoadBalancer{
-			LoadBalancerNames: utils.InterfaceSliceToStringSlicePtr(ename.([]interface{})),
-		}
 	}
-	elbName := (*req.Filters.LoadBalancerNames)[0]
 	var resp oscgo.ReadLoadBalancersResponse
 	var err error
 	var statusCode int
@@ -247,20 +219,19 @@ func readLbs_(conn *oscgo.APIClient, d *schema.ResourceData, t schema.ValueType)
 		statusCode = httpResp.StatusCode
 		return nil
 	})
-
 	if err != nil {
 		if statusCode == http.StatusNotFound {
 			d.SetId("")
-			return nil, nil, fmt.Errorf("Loadbalancer Not Found")
+			return nil, fmt.Errorf("Loadbalancer Not Found")
 		}
 
-		return nil, nil, fmt.Errorf("Error retrieving ELB: %s", err)
+		return nil, fmt.Errorf("Error retrieving ELB: %s", err)
 	}
-	return &resp, &elbName, nil
+	return &resp, nil
 }
 
 func readLbs0(conn *oscgo.APIClient, d *schema.ResourceData) (*oscgo.LoadBalancer, *oscgo.ReadLoadBalancersResponse, error) {
-	resp, _, err := readLbs(conn, d)
+	resp, err := readLbs(conn, d)
 	if err != nil {
 		return nil, nil, err
 	}
