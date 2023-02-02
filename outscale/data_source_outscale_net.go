@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -31,7 +30,6 @@ func dataSourceOutscaleOAPIVpc() *schema.Resource {
 
 			"net_id": {
 				Type:     schema.TypeString,
-				Optional: true,
 				Computed: true,
 			},
 
@@ -56,15 +54,9 @@ func dataSourceOutscaleOAPIVpc() *schema.Resource {
 
 func dataSourceOutscaleOAPIVpcRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
 	req := oscgo.ReadNetsRequest{}
-
-	if v, ok := d.GetOk("filter"); ok {
-		req.SetFilters(buildOutscaleOAPIDataSourceNetFilters(v.(*schema.Set)))
-	}
-
-	if id := d.Get("net_id"); id != "" {
-		req.Filters.SetNetIds([]string{id.(string)})
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
+		req.SetFilters(buildOutscaleOAPIDataSourceNetFilters(filters.(*schema.Set)))
 	}
 
 	var err error
@@ -81,11 +73,8 @@ func dataSourceOutscaleOAPIVpcRead(d *schema.ResourceData, meta interface{}) err
 	if err != nil {
 		return err
 	}
-	if len(resp.GetNets()) == 0 {
-		return fmt.Errorf("No matching Net found")
-	}
-	if len(resp.GetNets()) > 1 {
-		return fmt.Errorf("Multiple Nets matched; use additional constraints to reduce matches to a single Net")
+	if err = utils.IsResponseEmptyOrMutiple(len(resp.GetNets()), "Net"); err != nil {
+		return err
 	}
 
 	net := resp.GetNets()[0]
