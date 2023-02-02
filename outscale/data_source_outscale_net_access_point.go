@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -54,18 +53,12 @@ func dataSourceOutscaleNetAccessPoint() *schema.Resource {
 
 func dataSourceOutscaleNetAccessPointRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
-	filters, filtersOk := d.GetOk("filter")
-	if !filtersOk {
-		return fmt.Errorf("One of filters must be assigned")
-	}
-
 	var resp oscgo.ReadNetAccessPointsResponse
-	var err error
 	req := oscgo.ReadNetAccessPointsRequest{}
-
-	req.SetFilters(buildOutscaleDataSourcesNAPFilters(filters.(*schema.Set)))
-	err = resource.Retry(30*time.Second, func() *resource.RetryError {
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
+		req.SetFilters(buildOutscaleDataSourcesNAPFilters(filters.(*schema.Set)))
+	}
+	err := resource.Retry(30*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.NetAccessPointApi.ReadNetAccessPoints(
 			context.Background()).
 			ReadNetAccessPointsRequest(req).Execute()
@@ -75,15 +68,12 @@ func dataSourceOutscaleNetAccessPointRead(d *schema.ResourceData, meta interface
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}
-
 	if err := utils.IsResponseEmptyOrMutiple(len(resp.GetNetAccessPoints()), "NetAccessPoint"); err != nil {
 		return err
 	}
-
 	nap := resp.GetNetAccessPoints()[0]
 
 	d.Set("net_access_point_id", nap.NetAccessPointId)
