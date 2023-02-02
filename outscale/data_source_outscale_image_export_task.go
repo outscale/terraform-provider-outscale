@@ -28,11 +28,6 @@ func dataSourceOutscaleOAPIImageExportTask() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"dry_run": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Computed: true,
-			},
 			"osu_export": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -89,10 +84,8 @@ func dataSourceOutscaleOAPIImageExportTask() *schema.Resource {
 func dataSourceOAPISnapshotImageTaskRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	filters, filtersOk := d.GetOk("filter")
-
 	filtersReq := &oscgo.FiltersExportTask{}
-	if filtersOk {
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
 		filtersReq = buildOutscaleOSCAPIDataSourceImageExportTaskFilters(filters.(*schema.Set))
 	}
 
@@ -114,9 +107,10 @@ func dataSourceOAPISnapshotImageTaskRead(d *schema.ResourceData, meta interface{
 		return fmt.Errorf("Error reading task image %s", err)
 	}
 
-	if len(resp.GetImageExportTasks()) == 0 {
-		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
+	if err := utils.IsResponseEmptyOrMutiple(len(resp.GetImageExportTasks()), "Image Export Task"); err != nil {
+		return err
 	}
+
 	v := resp.GetImageExportTasks()[0]
 
 	if err = d.Set("progress", v.GetProgress()); err != nil {
