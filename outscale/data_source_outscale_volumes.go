@@ -3,13 +3,11 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
@@ -20,10 +18,6 @@ func datasourceOutscaleOAPIVolumes() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"volume_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
 			"volumes": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -95,7 +89,7 @@ func datasourceOutscaleOAPIVolumes() *schema.Resource {
 			},
 			"request_id": {
 				Type:     schema.TypeString,
-				Optional: true,
+				Computed: true,
 			},
 		},
 	}
@@ -103,26 +97,11 @@ func datasourceOutscaleOAPIVolumes() *schema.Resource {
 
 func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
+	params := oscgo.ReadVolumesRequest{}
 
-	filters, filtersOk := d.GetOk("filter")
-	volumeIds, volumeIdsOk := d.GetOk("volume_id")
-	params := oscgo.ReadVolumesRequest{
-		Filters: &oscgo.FiltersVolume{},
-	}
-
-	if volumeIdsOk {
-		volIDs := utils.InterfaceSliceToStringSlice(volumeIds.([]interface{}))
-		filter := oscgo.FiltersVolume{}
-		filter.SetVolumeIds(volIDs)
-		params.SetFilters(filter)
-	}
-
-	if filtersOk {
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
 		params.SetFilters(buildOutscaleOSCAPIDataSourceVolumesFilters(filters.(*schema.Set)))
 	}
-
-	log.Printf("LOG____ params: %#+v\n", params.GetFilters())
-
 	var resp oscgo.ReadVolumesResponse
 	var err error
 
@@ -137,15 +116,11 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-
-	log.Printf("Found These Volumes %s", spew.Sdump(resp.GetVolumes()))
-
 	volumes := resp.GetVolumes()
 
 	if len(volumes) < 1 {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
-
 	if err := d.Set("volumes", getOAPIVolumes(volumes)); err != nil {
 		return err
 	}

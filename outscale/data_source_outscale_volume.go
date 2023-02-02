@@ -2,14 +2,12 @@ package outscale
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/spf13/cast"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
@@ -82,11 +80,11 @@ func datasourceOutscaleOAPIVolume() *schema.Resource {
 			"tags": dataSourceTagsSchema(),
 			"volume_id": {
 				Type:     schema.TypeString,
-				Optional: true,
+				Computed: true,
 			},
 			"request_id": {
 				Type:     schema.TypeString,
-				Optional: true,
+				Computed: true,
 			},
 		},
 	}
@@ -95,25 +93,17 @@ func datasourceOutscaleOAPIVolume() *schema.Resource {
 func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	filters, filtersOk := d.GetOk("filter")
-	volumeIds, VolumeIdsOk := d.GetOk("volume_id")
+	req := oscgo.ReadVolumesRequest{}
 
-	params := oscgo.ReadVolumesRequest{
-		Filters: &oscgo.FiltersVolume{},
-	}
-	if VolumeIdsOk {
-		params.Filters.SetVolumeIds([]string{volumeIds.(string)})
-	}
-
-	if filtersOk {
-		params.SetFilters(buildOutscaleOSCAPIDataSourceVolumesFilters(filters.(*schema.Set)))
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
+		req.SetFilters(buildOutscaleOSCAPIDataSourceVolumesFilters(filters.(*schema.Set)))
 	}
 
 	var resp oscgo.ReadVolumesResponse
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		rp, httpResp, err := conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(params).Execute()
+		rp, httpResp, err := conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -124,26 +114,12 @@ func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
+	volumes := resp.GetVolumes()
 
-	log.Printf("Found These Volumes %s", spew.Sdump(resp.Volumes))
-
-	filteredVolumes := resp.GetVolumes()[:]
-
-	var volume oscgo.Volume
-	if len(filteredVolumes) < 1 {
-		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
+	if err = utils.IsResponseEmptyOrMutiple(len(volumes), "Access Key"); err != nil {
+		return err
 	}
-
-	if len(filteredVolumes) > 1 {
-		return fmt.Errorf("your query returned more than one result, please try a more " +
-			"specific search criteria")
-	}
-
-	// Query returned single result.
-	volume = filteredVolumes[0]
-	log.Printf("[DEBUG] outscale_volume - Single Volume found: %s", volume.GetVolumeId())
-	return volumeOAPIDescriptionAttributes(d, &volume)
-
+	return volumeOAPIDescriptionAttributes(d, &volumes[0])
 }
 
 func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oscgo.Volume) error {
