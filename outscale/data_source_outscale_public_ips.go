@@ -22,7 +22,6 @@ func dataSourceOutscaleOAPIPublicIPS() *schema.Resource {
 
 func oapiGetPublicIPSDataSourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		// Attributes
 		"filter": dataSourceFiltersSchema(),
 		"public_ips": {
 			Type:     schema.TypeList,
@@ -70,12 +69,8 @@ func oapiGetPublicIPSDataSourceSchema() map[string]*schema.Schema {
 
 func dataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
 	req := oscgo.ReadPublicIpsRequest{}
-
-	filters, filtersOk := d.GetOk("filter")
-
-	if filtersOk {
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
 		req.Filters = buildOutscaleOAPIDataSourcePublicIpsFilters(filters.(*schema.Set))
 	}
 
@@ -101,7 +96,6 @@ func dataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{}) e
 		return fmt.Errorf("Error retrieving EIP: %s", err)
 	}
 
-	// Verify Outscale returned our EIP
 	if len(resp.GetPublicIps()) == 0 {
 		return fmt.Errorf("Unable to find EIP: %#v", resp.GetPublicIps())
 	}

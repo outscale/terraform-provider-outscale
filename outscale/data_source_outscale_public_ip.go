@@ -27,12 +27,10 @@ func getOAPIPublicIPDataSourceSchema() map[string]*schema.Schema {
 		"filter": dataSourceFiltersSchema(),
 		"public_ip_id": {
 			Type:     schema.TypeString,
-			Optional: true,
 			Computed: true,
 		},
 		"public_ip": {
 			Type:     schema.TypeString,
-			Optional: true,
 			Computed: true,
 		},
 		"link_public_ip_id": {
@@ -65,21 +63,8 @@ func getOAPIPublicIPDataSourceSchema() map[string]*schema.Schema {
 
 func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
-	req := oscgo.ReadPublicIpsRequest{
-		Filters: &oscgo.FiltersPublicIp{},
-	}
-
-	if p, ok := d.GetOk("public_ip_id"); ok {
-		req.Filters.SetPublicIpIds([]string{p.(string)})
-	}
-
-	if id, ok := d.GetOk("public_ip"); ok {
-		req.Filters.SetPublicIps([]string{id.(string)})
-	}
-
-	filters, filtersOk := d.GetOk("filter")
-	if filtersOk {
+	req := oscgo.ReadPublicIpsRequest{}
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
 		req.Filters = buildOutscaleOAPIDataSourcePublicIpsFilters(filters.(*schema.Set))
 	}
 
@@ -104,46 +89,36 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 		return fmt.Errorf("Error retrieving EIP: %s", err)
 	}
 
-	// Verify Outscale returned our EIP
-	if err := utils.IsResponseEmptyOrMutiple(len(response.GetPublicIps()), "PublicIp"); err != nil {
+	if err := utils.IsResponseEmptyOrMutiple(len(response.GetPublicIps()), "Public Ip"); err != nil {
 		return err
 	}
 
 	address := response.GetPublicIps()[0]
-
-	log.Printf("[DEBUG] EIP read configuration: %+v", address)
-
 	if err := d.Set("link_public_ip_id", address.GetLinkPublicIpId()); err != nil {
 		return err
 	}
 	if err := d.Set("vm_id", address.GetVmId()); err != nil {
 		return err
 	}
-
 	if err := d.Set("nic_id", address.GetNicId()); err != nil {
 		return err
 	}
-
 	if err := d.Set("nic_account_id", address.GetNicAccountId()); err != nil {
 		return err
 	}
-
 	if err := d.Set("private_ip", address.GetPrivateIp()); err != nil {
 		return err
 	}
-
+	if err := d.Set("public_ip", address.GetPublicIp()); err != nil {
+		return err
+	}
 	if err := d.Set("public_ip_id", address.GetPublicIpId()); err != nil {
 		return err
 	}
-
 	if err := d.Set("tags", tagsOSCAPIToMap(address.GetTags())); err != nil {
 		return fmt.Errorf("Error setting PublicIp tags: %s", err)
 	}
-
-	d.Set("public_ip", address.PublicIp)
-
 	d.SetId(address.GetPublicIp())
-
 	return nil
 }
 
