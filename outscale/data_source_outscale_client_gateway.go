@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -24,7 +23,7 @@ func dataSourceOutscaleClientGateway() *schema.Resource {
 			},
 			"client_gateway_id": {
 				Type:     schema.TypeString,
-				Optional: true,
+				Computed: true,
 			},
 			"connection_type": {
 				Type:     schema.TypeString,
@@ -50,22 +49,8 @@ func dataSourceOutscaleClientGateway() *schema.Resource {
 func dataSourceOutscaleClientGatewayRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	filters, filtersOk := d.GetOk("filter")
-	clientGatewayID, clientGatewayOk := d.GetOk("client_gateway_id")
-
-	if !filtersOk && !clientGatewayOk {
-		return fmt.Errorf("One of filters, or client_gateway_id must be assigned")
-	}
-
 	params := oscgo.ReadClientGatewaysRequest{}
-
-	if clientGatewayOk {
-		params.Filters = &oscgo.FiltersClientGateway{
-			ClientGatewayIds: &[]string{clientGatewayID.(string)},
-		}
-	}
-
-	if filtersOk {
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
 		params.Filters = buildOutscaleDataSourceClientGatewayFilters(filters.(*schema.Set))
 	}
 
@@ -83,12 +68,8 @@ func dataSourceOutscaleClientGatewayRead(d *schema.ResourceData, meta interface{
 		return err
 	}
 
-	if len(resp.GetClientGateways()) == 0 {
-		return fmt.Errorf("Unable to find Client Gateway")
-	}
-
-	if len(resp.GetClientGateways()) > 1 {
-		return fmt.Errorf("multiple results returned, please use a more specific criteria in your query")
+	if err = utils.IsResponseEmptyOrMutiple(len(resp.GetClientGateways()), "Client Gateway"); err != nil {
+		return err
 	}
 
 	clientGateway := resp.GetClientGateways()[0]
