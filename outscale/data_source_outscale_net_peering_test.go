@@ -1,15 +1,15 @@
 package outscale
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccDataSourceOutscaleOAPILinPeeringConnection_basic(t *testing.T) {
+func TestAcc_NetPeering_DataSource(t *testing.T) {
 	t.Parallel()
+	dataSourceName := "data.outscale_net_peering.net_peering"
+	dataSourcesName := "data.outscale_net_peerings.net_peerings"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -17,37 +17,13 @@ func TestAccDataSourceOutscaleOAPILinPeeringConnection_basic(t *testing.T) {
 			{
 				Config: testAccDataSourceOutscaleOAPILinPeeringConnectionConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccDataSourceOutscaleOAPILinPeeringConnectionCheck("outscale_net_peering.net_peering"),
+					resource.TestCheckResourceAttrSet(dataSourceName, "net_peering_id"),
+
+					resource.TestCheckResourceAttr(dataSourcesName, "net_peerings.#", "1"),
 				),
 			},
 		},
 	})
-}
-
-func testAccDataSourceOutscaleOAPILinPeeringConnectionCheck(name string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[name]
-		if !ok {
-			return fmt.Errorf("root module has no resource called %s", name)
-		}
-
-		pcxRs, ok := s.RootModule().Resources["outscale_net_peering.net_peering"]
-		if !ok {
-			return fmt.Errorf("can't find outscale_net_peering.net_peering in state")
-		}
-
-		attr := rs.Primary.Attributes
-
-		if attr["id"] != pcxRs.Primary.Attributes["id"] {
-			return fmt.Errorf(
-				"id is %s; want %s",
-				attr["id"],
-				pcxRs.Primary.Attributes["id"],
-			)
-		}
-
-		return nil
-	}
 }
 
 const testAccDataSourceOutscaleOAPILinPeeringConnectionConfig = `
@@ -72,7 +48,14 @@ const testAccDataSourceOutscaleOAPILinPeeringConnectionConfig = `
 		source_net_id   = "${outscale_net.net2.net_id}"
 	}
 
-	data "outscale_net_peering" "net_peering_data" {
+	data "outscale_net_peering" "net_peering" {
+		filter {
+			name   = "net_peering_ids"
+			values = ["${outscale_net_peering.net_peering.net_peering_id}"]
+		}
+	}
+
+	data "outscale_net_peerings" "net_peerings" {
 		filter {
 			name   = "net_peering_ids"
 			values = ["${outscale_net_peering.net_peering.net_peering_id}"]
