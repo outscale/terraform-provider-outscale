@@ -96,16 +96,12 @@ func buildOutscaleDataSourcesNAPFilters(set *schema.Set) oscgo.FiltersNetAccessP
 
 func dataSourceOutscaleNetAccessPointsRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
-	filters, filtersOk := d.GetOk("filter")
 	req := oscgo.ReadNetAccessPointsRequest{}
-	var resp oscgo.ReadNetAccessPointsResponse
-	var err error
-
-	if filtersOk {
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
 		req.SetFilters(buildOutscaleDataSourcesNAPFilters(filters.(*schema.Set)))
 	}
-	err = resource.Retry(30*time.Second, func() *resource.RetryError {
+	var resp oscgo.ReadNetAccessPointsResponse
+	err := resource.Retry(30*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.NetAccessPointApi.ReadNetAccessPoints(
 			context.Background()).
 			ReadNetAccessPointsRequest(req).Execute()
