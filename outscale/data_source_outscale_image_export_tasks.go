@@ -27,11 +27,6 @@ func dataSourceOutscaleOAPIImageExportTasks() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"dry_run": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Computed: true,
-			},
 			"image_export_tasks": {
 				Type:     schema.TypeList,
 				Computed: true,
