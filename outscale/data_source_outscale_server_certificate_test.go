@@ -8,10 +8,53 @@ import (
 	"github.com/hashicorp/terraform/helper/acctest"
 )
 
-func TestAccOutscaleOAPIServerCertificateDatasource_basic(t *testing.T) {
+func TestAcc_ServerCertificate_Datasource(t *testing.T) {
 	t.Parallel()
 	rName := acctest.RandomWithPrefix("acc-test")
-	body := `-----BEGIN CERTIFICATE-----
+	dataSourceName := "data.outscale_server_certificate.test"
+	dataSourcesName := "data.outscale_server_certificates.test"
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAcc_ServerCertificate_Datasource_Config(rName, body, private),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(dataSourcesName, "server_certificates.#"),
+
+					resource.TestCheckResourceAttrSet(dataSourceName, "path"),
+				),
+			},
+		},
+	})
+}
+
+func testAcc_ServerCertificate_Datasource_Config(name, body, privateKey string) string {
+	return fmt.Sprintf(`
+resource "outscale_server_certificate" "test" { 
+   name        =  %[1]q
+   body        =  %[2]q
+   private_key =  %[3]q
+   path        = "/datasource/"
+}
+
+data "outscale_server_certificate" "test" {
+	filter {
+		name = "paths"
+		values = [outscale_server_certificate.test.path]
+	}
+}
+
+data "outscale_server_certificates" "test" {
+	filter {
+		name = "paths"
+		values = [outscale_server_certificate.test.path]
+	}
+}
+	`, name, body, privateKey)
+}
+
+var body = `-----BEGIN CERTIFICATE-----
 MIIFETCCAvkCFE1QlISgW8h5/akhNlZzb+or8HgYMA0GCSqGSIb3DQEBCwUAMEUx
 CzAJBgNVBAYTAkFVMRMwEQYDVQQIDApTb21lLVN0YXRlMSEwHwYDVQQKDBhJbnRl
 cm5ldCBXaWRnaXRzIFB0eSBMdGQwHhcNMjEwOTA5MDAyNDQzWhcNMzEwOTA3MDAy
@@ -42,7 +85,7 @@ zz2wyUFLztD3nO3US8tPSz/I5kXWGpOrPt+UcUPQEGzu5WQ+ZOeD+mQQMCVv0wiz
 nmS35ug=
 -----END CERTIFICATE-----
 `
-	private := `-----BEGIN PRIVATE KEY-----
+var private = `-----BEGIN PRIVATE KEY-----
 MIIJQwIBADANBgkqhkiG9w0BAQEFAASCCS0wggkpAgEAAoICAQDThPt5Q3OR20wO
 VxanOC7/FKD3xm+GcMHvmznbw5eDDTxQUz0amoZi7XbFu3TbPQ8mYEEk/LuqbcOn
 Y60u4NwBMvpAlOLQpfnG+4tOYGe5Kgd7kRxsw7HZgdHoeL2FS2XozgTbLgvFzlNC
@@ -94,31 +137,3 @@ mUsRJKg0Iz5dk/1xIAWlhOdcx8tKIXrOY9tv7470XVZcVWXzzcKhOSzZwDNkiAn7
 kbcI5Y2wveEgMqPSRya2OapYGiPeqYhg6JAGPRXtOfOq9IUDcPuc2emnihNpSa8y
 0UFH3oBALPqPwDIt0F+wjSaY2bcmCjo=
 -----END PRIVATE KEY-----`
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccOutscaleOAPIServerCertificateDatasourceConfig(rName, body, private),
-			},
-		},
-	})
-}
-
-func testAccOutscaleOAPIServerCertificateDatasourceConfig(name, body, privateKey string) string {
-	return fmt.Sprintf(`
-resource "outscale_server_certificate" "test" { 
-   name        =  %[1]q
-   body        =  %[2]q
-   private_key =  %[3]q
-}
-
-data "outscale_server_certificates" "test" {
-	filter {
-		name = "paths"
-		values = [outscale_server_certificate.test.path]
-	}
-}
-	`, name, body, privateKey)
-}
