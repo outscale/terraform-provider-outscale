@@ -48,12 +48,8 @@ func dataSourceOutscaleOAPIProductTypes() *schema.Resource {
 
 func dataSourceOutscaleOAPIProductTypesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
 	req := oscgo.ReadProductTypesRequest{}
-
-	filters, filtersOk := d.GetOk("filter")
-
-	if filtersOk {
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
 		req.Filters = buildOutscaleOAPIProductTypeDataSourceFilters(filters.(*schema.Set))
 	}
 
