@@ -1,46 +1,32 @@
 package outscale
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPINatServiceDataSource_Instance(t *testing.T) {
+func TestAcc_NatService_DataSource(t *testing.T) {
 	t.Parallel()
+	dataSourceName := "data.outscale_nat_service.nat"
+	dataSourcesName := "data.outscale_nat_services.nats"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPINatServiceDataSourceConfig,
+				Config: testAcc_NatService_DataSource_Config,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleNatServiceDataSourceID("data.outscale_nat_service.nat"),
-					resource.TestCheckResourceAttrSet("data.outscale_nat_service.nat", "subnet_id"),
+					resource.TestCheckResourceAttrSet(dataSourceName, "subnet_id"),
+					resource.TestCheckResourceAttr(dataSourcesName, "nat_services.#", "1"),
+					resource.TestCheckResourceAttrSet(dataSourcesName, "nat_services.0.subnet_id"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckOutscaleNatServiceDataSourceID(n string) resource.TestCheckFunc {
-	// Wait for IAM role
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("Can't find Nat Service data source: %s", n)
-		}
-
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("Nat Service data source ID not set")
-		}
-		return nil
-	}
-}
-
-const testAccCheckOutscaleOAPINatServiceDataSourceConfig = `
+const testAcc_NatService_DataSource_Config = `
 	resource "outscale_net" "outscale_net" {
 		ip_range = "10.0.0.0/16"
 		tags {
@@ -84,7 +70,20 @@ const testAccCheckOutscaleOAPINatServiceDataSourceConfig = `
 		internet_service_id = "${outscale_internet_service.outscale_internet_service.id}"
 	}
 
+
+
+
 	data "outscale_nat_service" "nat" {
-		nat_service_id = "${outscale_nat_service.outscale_nat_service.id}"
+		filter {
+			name   = "nat_service_ids"
+			values = ["${outscale_nat_service.outscale_nat_service.id}"]
+		}
+	}
+
+	data "outscale_nat_services" "nats" {
+		filter {
+			name   = "nat_service_ids"
+			values = ["${outscale_nat_service.outscale_nat_service.id}"]
+		}
 	}
 `
