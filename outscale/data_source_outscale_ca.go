@@ -44,13 +44,9 @@ func dataSourceOutscaleOAPICa() *schema.Resource {
 func dataSourceOutscaleOAPICaRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	filters, filtersOk := d.GetOk("filter")
-	if !filtersOk {
-		return fmt.Errorf("filters must be assigned")
-	}
-
 	params := oscgo.ReadCasRequest{}
-	if filtersOk {
+
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
 		params.Filters = buildOutscaleOAPIDataSourceCaFilters(filters.(*schema.Set))
 	}
 	var resp oscgo.ReadCasResponse
@@ -70,13 +66,9 @@ func dataSourceOutscaleOAPICaRead(d *schema.ResourceData, meta interface{}) erro
 	if !resp.HasCas() {
 		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
 	}
-	if len(resp.GetCas()) == 0 {
-		d.SetId("")
-		return fmt.Errorf("Certificate authority not found")
-	}
 
-	if len(resp.GetCas()) > 1 {
-		return fmt.Errorf("your query returned more than one result, please try a more specific search criteria")
+	if err := utils.IsResponseEmptyOrMutiple(len(resp.GetCas()), "Certificate authority"); err != nil {
+		return err
 	}
 
 	ca := resp.GetCas()[0]
