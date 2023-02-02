@@ -7,8 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccDataSourceOutscaleOAPIFlexibleGpuCatalog_basic(t *testing.T) {
-
+func TestAcc_FlexibleGpuCatalog_DataSource(t *testing.T) {
+	dataSourceName := "data.outscale_flexible_gpu_catalog.catalog-fGPU"
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
@@ -16,13 +16,17 @@ func TestAccDataSourceOutscaleOAPIFlexibleGpuCatalog_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPIFlexibleGpuCatalogConfig(),
+				Config: testAcc_FlexibleGpuCatalog_DataSource_Config(),
+				Check: resource.ComposeTestCheckFunc(
+					// data source validations
+					resource.TestCheckResourceAttrSet(dataSourceName, "flexible_gpu_catalog.#"),
+				),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleOAPIFlexibleGpuCatalogConfig() string {
+func testAcc_FlexibleGpuCatalog_DataSource_Config() string {
 	return fmt.Sprintf(`
               data "outscale_flexible_gpu_catalog" "catalog-fGPU" { }
 	`)
