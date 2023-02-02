@@ -18,13 +18,6 @@ func dataSourceOutscaleOAPINatServices() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"nat_service_ids": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
-
-			// Attributes
 			"nat_services": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -76,33 +69,15 @@ func dataSourceOutscaleOAPINatServices() *schema.Resource {
 
 func dataSourceOutscaleOAPINatServicesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
-	filters, filtersOk := d.GetOk("filter")
-	natGatewayID, natGatewayIDOK := d.GetOk("nat_service_ids")
-
-	if !filtersOk && !natGatewayIDOK {
-		return fmt.Errorf("filters, or owner must be assigned, or nat_service_id must be provided")
-	}
-
-	params := oscgo.ReadNatServicesRequest{}
-	if filtersOk {
-		params.SetFilters(buildOutscaleOAPINatServiceDataSourceFilters(filters.(*schema.Set)))
-	}
-	if natGatewayIDOK {
-		ids := make([]string, len(natGatewayID.([]interface{})))
-
-		for k, v := range natGatewayID.([]interface{}) {
-			ids[k] = v.(string)
-		}
-		filter := oscgo.FiltersNatService{}
-		filter.SetNatServiceIds(ids)
-		params.SetFilters(filter)
+	req := oscgo.ReadNatServicesRequest{}
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
+		req.SetFilters(buildOutscaleOAPINatServiceDataSourceFilters(filters.(*schema.Set)))
 	}
 
 	var resp oscgo.ReadNatServicesResponse
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
-		rp, httpResp, err := conn.NatServiceApi.ReadNatServices(context.Background()).ReadNatServicesRequest(params).Execute()
+		rp, httpResp, err := conn.NatServiceApi.ReadNatServices(context.Background()).ReadNatServicesRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
