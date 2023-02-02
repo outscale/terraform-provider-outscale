@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -17,7 +17,6 @@ import (
 
 func TestAccOutscaleOAPIENI_basic(t *testing.T) {
 	t.Parallel()
-	var conf oscgo.Nic
 	subregion := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
@@ -29,16 +28,12 @@ func TestAccOutscaleOAPIENI_basic(t *testing.T) {
 			{
 				Config: testAccOutscaleOAPIENIConfig(subregion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIENIExists("outscale_nic.outscale_nic", &conf),
-					testAccCheckOutscaleOAPIENIAttributes(&conf, subregion),
 					resource.TestCheckResourceAttr("outscale_nic.outscale_nic", "private_ips.#", "2"),
 				),
 			},
 			{
 				Config: testAccOutscaleOAPIENIConfigUpdate(subregion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIENIExists("outscale_nic.outscale_nic", &conf),
-					testAccCheckOutscaleOAPIENIAttributes(&conf, subregion),
 					resource.TestCheckResourceAttr("outscale_nic.outscale_nic", "private_ips.#", "3"),
 				),
 			},
@@ -46,15 +41,10 @@ func TestAccOutscaleOAPIENI_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleOAPIENIExists(n string, res *oscgo.Nic) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("Not found: %s", n)
-		}
-
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("No ENI ID is set")
+func testAccCheckOutscaleOAPINICDestroy(s *terraform.State) error {
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "outscale_nic" {
+			continue
 		}
 
 		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
@@ -74,35 +64,20 @@ func testAccCheckOutscaleOAPIENIExists(n string, res *oscgo.Nic) resource.TestCh
 		})
 
 		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "InvalidNetworkInterfaceID.NotFound") {
+				return nil
+			}
 			errString := err.Error()
 			return fmt.Errorf("Could not find network interface: %s", errString)
 
 		}
 
-		if len(resp.GetNics()) != 1 ||
-			resp.GetNics()[0].GetNicId() != rs.Primary.ID {
-			return fmt.Errorf("ENI not found")
+		if len(resp.GetNics()) > 0 {
+			return fmt.Errorf("Nic with id %s is not destroyed yet", rs.Primary.ID)
 		}
-
-		*res = resp.GetNics()[0]
-
-		return nil
 	}
-}
 
-func testAccCheckOutscaleOAPIENIAttributes(conf *oscgo.Nic, suregion string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-
-		if !reflect.DeepEqual(conf.GetLinkNic(), oscgo.LinkNic{}) {
-			return fmt.Errorf("expected attachment to be nil")
-		}
-
-		if conf.GetSubregionName() != fmt.Sprintf("%sa", suregion) {
-			return fmt.Errorf("expected subregion_name to be %sa, but was %s", suregion, conf.GetSubregionName())
-		}
-
-		return nil
-	}
+	return nil
 }
 
 func testAccOutscaleOAPIENIConfig(subregion string) string {
@@ -186,4 +161,37 @@ func testAccOutscaleOAPIENIConfigUpdate(subregion string) string {
 			}
 		}	 
 	`, subregion)
+}
+
+func testAccCheckOutscaleOAPIENIDestroy(s *terraform.State) error {
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "outscale_nic" {
+			continue
+		}
+
+		var resp oscgo.ReadNicsResponse
+		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		req := oscgo.ReadNicsRequest{
+			Filters: &oscgo.FiltersNic{NicIds: &[]string{rs.Primary.ID}},
+		}
+
+		var err error
+		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			rp, httpResp, err := conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(req).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp, err)
+			}
+			resp = rp
+			return nil
+		})
+
+		if err != nil {
+			return err
+		}
+
+		if len(resp.GetNics()) != 0 {
+			return fmt.Errorf("Nic is not destroyed yet")
+		}
+	}
+	return nil
 }

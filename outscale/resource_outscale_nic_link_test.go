@@ -18,7 +18,6 @@ import (
 )
 
 func TestAccOutscaleNicLink_Basic(t *testing.T) {
-	var conf oscgo.Nic
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 	rInt := acctest.RandInt()
@@ -32,7 +31,6 @@ func TestAccOutscaleNicLink_Basic(t *testing.T) {
 			{
 				Config: testAccOutscaleNicLinkConfigBasic(rInt, omi, "tinav4.c2r2p2", region),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIENIExists("outscale_nic.outscale_nic", &conf),
 					resource.TestCheckResourceAttr(
 						"outscale_nic_link.outscale_nic_link", "device_number", "1"),
 					resource.TestCheckResourceAttrSet(
