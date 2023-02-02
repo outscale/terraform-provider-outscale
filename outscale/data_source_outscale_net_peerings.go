@@ -60,21 +60,15 @@ func dataSourceOutscaleOAPILinPeeringsConnection() *schema.Resource {
 
 func dataSourceOutscaleOAPILinPeeringsConnectionRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
-	log.Printf("[DEBUG] Reading VPC Peering Connections.")
-
-	filters, filtersOk := d.GetOk("filter")
-	if !filtersOk {
-		return fmt.Errorf("One of filters must be assigned")
+	req := oscgo.ReadNetPeeringsRequest{}
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
+		req.SetFilters(buildOutscaleOAPILinPeeringConnectionFilters(filters.(*schema.Set)))
 	}
-
-	params := oscgo.ReadNetPeeringsRequest{}
-	params.SetFilters(buildOutscaleOAPILinPeeringConnectionFilters(filters.(*schema.Set)))
 
 	var resp oscgo.ReadNetPeeringsResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		rp, httpResp, err := conn.NetPeeringApi.ReadNetPeerings(context.Background()).ReadNetPeeringsRequest(params).Execute()
+		rp, httpResp, err := conn.NetPeeringApi.ReadNetPeerings(context.Background()).ReadNetPeeringsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}

@@ -55,16 +55,10 @@ func dataSourceOutscaleOAPILinPeeringConnection() *schema.Resource {
 
 func dataSourceOutscaleOAPILinPeeringConnectionRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
-	log.Printf("[DEBUG] Reading Net Peering Connections.")
-
 	req := oscgo.ReadNetPeeringsRequest{}
-
-	filters, filtersOk := d.GetOk("filter")
-	if !filtersOk {
-		return fmt.Errorf("filters must be assigned")
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
+		req.SetFilters(buildOutscaleOAPILinPeeringConnectionFilters(filters.(*schema.Set)))
 	}
-	req.SetFilters(buildOutscaleOAPILinPeeringConnectionFilters(filters.(*schema.Set)))
 
 	var resp oscgo.ReadNetPeeringsResponse
 	var err error
@@ -87,8 +81,8 @@ func dataSourceOutscaleOAPILinPeeringConnectionRead(d *schema.ResourceData, meta
 		return fmt.Errorf("Error reading Net Peering Connection details: %s", err)
 	}
 
-	if len(resp.GetNetPeerings()) > 1 {
-		return fmt.Errorf("multiple Net Peering connections matched; use additional constraints to reduce matches to a single Net Peering Connection")
+	if err = utils.IsResponseEmptyOrMutiple(len(resp.GetNetPeerings()), "Net Peering"); err != nil {
+		return err
 	}
 	netPeering := resp.GetNetPeerings()[0]
 
