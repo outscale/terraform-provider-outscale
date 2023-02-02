@@ -2,15 +2,15 @@ package outscale
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccDataSourceOutscaleOAPIVMTypes_basic(t *testing.T) {
+func TestAcc_VMTypes_DataSource(t *testing.T) {
 	t.Parallel()
-	omi := os.Getenv("OUTSCALE_IMAGEID")
+	dataSourcesName := "data.outscale_vm_types.vm_types"
+	dataSourcesAllName := "data.outscale_vm_types.all-types"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -19,20 +19,18 @@ func TestAccDataSourceOutscaleOAPIVMTypes_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPIVMTypesConfig(omi, "tinav4.c1r1p1"),
+				Config: testAcc_VMTypes_DataSource_Config(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(dataSourcesName, "vm_types.#"),
+					resource.TestCheckResourceAttrSet(dataSourcesAllName, "vm_types.#"),
+				),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleOAPIVMTypesConfig(omi, vmType string) string {
+func testAcc_VMTypes_DataSource_Config() string {
 	return fmt.Sprintf(`
-		resource "outscale_vm" "basic" {
-			image_id     = "%s"
-			vm_type      = "%s"
-			keypair_name = "terraform-basic"
-		}
-
 		data "outscale_vm_types" "vm_types" {
 			filter {
 				name = "bsu_optimized"
@@ -41,5 +39,5 @@ func testAccDataSourceOutscaleOAPIVMTypesConfig(omi, vmType string) string {
 		}
 
 		data "outscale_vm_types" "all-types" { }
-	`, omi, vmType)
+	`)
 }
