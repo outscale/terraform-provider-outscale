@@ -58,9 +58,8 @@ func dataSourceOutscaleOAPIApiAccessRules() *schema.Resource {
 func dataSourceOutscaleOAPIApiAccessRulesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	filters, filtersOk := d.GetOk("filter")
 	req := oscgo.ReadApiAccessRulesRequest{}
-	if filtersOk {
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
 		req.Filters = buildOutscaleApiAccessRuleFilters(filters.(*schema.Set))
 	}
 
