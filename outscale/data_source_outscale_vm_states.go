@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -23,11 +22,6 @@ func dataSourceOutscaleOAPIVMStates() *schema.Resource {
 func getOAPIVMStatesDataSourceSchema() map[string]*schema.Schema {
 	wholeSchema := map[string]*schema.Schema{
 		"filter": dataSourceFiltersSchema(),
-		"vm_ids": {
-			Type:     schema.TypeList,
-			Optional: true,
-			Elem:     &schema.Schema{Type: schema.TypeString},
-		},
 		"vm_states": {
 			Type:     schema.TypeList,
 			Computed: true,
@@ -46,29 +40,15 @@ func getOAPIVMStatesDataSourceSchema() map[string]*schema.Schema {
 
 func dataSourceOutscaleOAPIVMStatesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
-	filters, filtersOk := d.GetOk("filter")
-	instanceIds, instanceIdsOk := d.GetOk("vm_ids")
-
-	if !instanceIdsOk && !filtersOk {
-		return errors.New("vm_id or filter must be set")
+	req := oscgo.ReadVmsStateRequest{}
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
+		req.SetFilters(buildOutscaleOAPIDataSourceVMStateFilters(filters.(*schema.Set)))
 	}
-
-	params := oscgo.ReadVmsStateRequest{}
-	if filtersOk {
-		params.SetFilters(buildOutscaleOAPIDataSourceVMStateFilters(filters.(*schema.Set)))
-	}
-	if instanceIdsOk {
-		filter := oscgo.FiltersVmsState{}
-		filter.SetVmIds(utils.InterfaceSliceToStringSlice(instanceIds.([]interface{})))
-		params.SetFilters(filter)
-	}
-
 	var resp oscgo.ReadVmsStateResponse
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		rp, httpResp, err := conn.VmApi.ReadVmsState(context.Background()).ReadVmsStateRequest(params).Execute()
+		rp, httpResp, err := conn.VmApi.ReadVmsState(context.Background()).ReadVmsStateRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
