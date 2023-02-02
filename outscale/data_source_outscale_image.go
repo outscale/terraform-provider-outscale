@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -20,16 +19,13 @@ func dataSourceOutscaleOAPIImage() *schema.Resource {
 			"filter": dataSourceFiltersSchema(),
 			"permission": {
 				Type:     schema.TypeList,
-				Optional: true,
-				ForceNew: true,
+				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"image_id": {
 				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Computed: true,
 			},
-			// Computed values.
 			"architecture": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -84,39 +80,32 @@ func dataSourceOutscaleOAPIImage() *schema.Resource {
 			},
 			"block_device_mappings": {
 				Type:     schema.TypeList,
-				Optional: true,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"bsu": {
 							Type:     schema.TypeList,
-							Optional: true,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"delete_on_vm_deletion": {
 										Type:     schema.TypeBool,
-										Optional: true,
 										Computed: true,
 									},
 									"iops": {
 										Type:     schema.TypeInt,
-										Optional: true,
 										Computed: true,
 									},
 									"snapshot_id": {
 										Type:     schema.TypeString,
-										Optional: true,
 										Computed: true,
 									},
 									"volume_size": {
 										Type:     schema.TypeInt,
-										Optional: true,
 										Computed: true,
 									},
 									"volume_type": {
 										Type:     schema.TypeString,
-										Optional: true,
 										Computed: true,
 									},
 								},
@@ -124,12 +113,10 @@ func dataSourceOutscaleOAPIImage() *schema.Resource {
 						},
 						"device_name": {
 							Type:     schema.TypeString,
-							Optional: true,
 							Computed: true,
 						},
 						"virtual_device_name": {
 							Type:     schema.TypeString,
-							Optional: true,
 							Computed: true,
 						},
 					},
@@ -197,29 +184,10 @@ func dataSourceOutscaleOAPIImage() *schema.Resource {
 func dataSourceOutscaleOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	filters, filtersOk := d.GetOk("filter")
-	executableUsers, executableUsersOk := d.GetOk("permission")
-	ai, aisOk := d.GetOk("account_id")
-	imageID, imageIDOk := d.GetOk("image_id")
-	if !executableUsersOk && !filtersOk && !aisOk && !imageIDOk {
-		return fmt.Errorf("One of executable_users, filters, or account_id must be assigned, or image_id must be provided")
+	req := oscgo.ReadImagesRequest{}
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
+		req.Filters = buildOutscaleOAPIDataSourceImagesFilters(filters.(*schema.Set))
 	}
-
-	filtersReq := &oscgo.FiltersImage{}
-	if filtersOk {
-		filtersReq = buildOutscaleOAPIDataSourceImagesFilters(filters.(*schema.Set))
-	}
-	if imageIDOk {
-		filtersReq.SetImageIds([]string{imageID.(string)})
-	}
-	if aisOk {
-		filtersReq.SetAccountIds([]string{ai.(string)})
-	}
-	if executableUsersOk {
-		filtersReq.SetPermissionsToLaunchAccountIds(utils.InterfaceSliceToStringSlice(executableUsers.([]interface{})))
-	}
-
-	req := oscgo.ReadImagesRequest{Filters: filtersReq}
 
 	var resp oscgo.ReadImagesResponse
 	var err error
@@ -237,12 +205,8 @@ func dataSourceOutscaleOAPIImageRead(d *schema.ResourceData, meta interface{}) e
 	}
 
 	images := resp.GetImages()
-
-	if len(images) < 1 {
-		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
-	}
-	if len(images) > 1 {
-		return fmt.Errorf("your query returned more than one result, please try a more specific search criteria")
+	if err := utils.IsResponseEmptyOrMutiple(len(images), "Image Export Task"); err != nil {
+		return err
 	}
 
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
