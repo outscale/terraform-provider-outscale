@@ -2,16 +2,16 @@ package outscale
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccOutscaleOAPISubregionsDataSource_Basic(t *testing.T) {
+func TestAcc_Subregions_DataSource(t *testing.T) {
 	t.Parallel()
-	subregionName := "eu-west-2b"
-
+	subregionName := fmt.Sprintf("%sb", os.Getenv("OUTSCALE_REGION"))
+	dataSourcesName := "data.outscale_subregions.test"
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
@@ -19,49 +19,33 @@ func TestAccOutscaleOAPISubregionsDataSource_Basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPISubregionsDataSourceConfig(subregionName),
+				Config: testAcc_Subregions_DataSource_Config(subregionName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPISubregionsDataSourceID("data.outscale_subregions.test"),
+					resource.TestCheckResourceAttr(dataSourcesName, "subregions.#", "1"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccOutscaleOAPISubregionsDataSource_All(t *testing.T) {
+func TestAcc_Subregions_DataSource_All(t *testing.T) {
 	t.Parallel()
+	dataSourcesName := "data.outscale_subregions.test"
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheck(t)
-		},
+		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPISubregionsDataSourceConfigAll,
+				Config: testAcc_Subregions_DataSource_All_Config,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPISubregionsDataSourceID("data.outscale_subregions.test"),
+					resource.TestCheckResourceAttrSet(dataSourcesName, "subregions.#"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckOutscaleOAPISubregionsDataSourceID(n string) resource.TestCheckFunc {
-	// Wait for IAM role
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("can't find subregions data source: %s", n)
-		}
-
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("subregions data source ID not set")
-		}
-		return nil
-	}
-}
-
-func testAccCheckOutscaleOAPISubregionsDataSourceConfig(subregionName string) string {
+func testAcc_Subregions_DataSource_Config(subregionName string) string {
 	return fmt.Sprintf(`
 		data "outscale_subregions" "test" {
 			filter {
@@ -72,7 +56,6 @@ func testAccCheckOutscaleOAPISubregionsDataSourceConfig(subregionName string) st
 	`, subregionName)
 }
 
-var testAccCheckOutscaleOAPISubregionsDataSourceConfigAll = `
-		data "outscale_subregions" "test" {
-		}
+var testAcc_Subregions_DataSource_All_Config = `
+		data "outscale_subregions" "test" {}
 	`
