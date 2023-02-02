@@ -2,28 +2,27 @@ package outscale
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccOutscaleOAPITagDataSource(t *testing.T) {
-	omi := os.Getenv("OUTSCALE_IMAGEID")
+func TestAcc_Tag_DataSource(t *testing.T) {
+	dataSourceName := "data.outscale_tag.vg"
+	dataSourcesName := "data.outscale_tags.vg"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPITagDataSourceConfig(omi, "tinav4.c2r2p2"),
+				Config: testAcc_Tag_DataSource_Config(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(
-						"data.outscale_tag.web", "key", "Name"),
-					resource.TestCheckResourceAttr(
-						"data.outscale_tag.web", "value", "test-vm"),
-					resource.TestCheckResourceAttr(
-						"data.outscale_tag.web", "resource_type", "vm"),
+					resource.TestCheckResourceAttr(dataSourceName, "key", "name"),
+					resource.TestCheckResourceAttr(dataSourceName, "value", "test acc"),
+					resource.TestCheckResourceAttr(dataSourceName, "resource_type", "virtual-private-gateway"),
+
+					resource.TestCheckResourceAttrSet(dataSourcesName, "tags.#"),
 				),
 			},
 		},
@@ -31,24 +30,28 @@ func TestAccOutscaleOAPITagDataSource(t *testing.T) {
 }
 
 // Lookup based on InstanceID
-func testAccOAPITagDataSourceConfig(omi, vmType string) string {
+func testAcc_Tag_DataSource_Config() string {
 	return fmt.Sprintf(`
-		resource "outscale_vm" "basic" {
-			image_id            = "%s"
-			vm_type             = "%s"
-			keypair_name        = "terraform-basic"
+	resource "outscale_virtual_gateway" "vg" {
+		connection_type = "ipsec.1"	
 
-			tags {
-				key = "Name"
-				value = "test-vm"
-			}
+		tags {
+			key   = "name"
+			value = "test acc"
 		}
+	}
 
-		data "outscale_tag" "web" {
+		data "outscale_tag" "vg" {
 			filter {
 				name = "resource_ids"
-				values = [outscale_vm.basic.id]
+				values = [outscale_virtual_gateway.vg.id]
 			}
 		}
-	`, omi, vmType)
+		data "outscale_tags" "vg" {
+			filter {
+				name   = "resource_type"
+				values = [outscale_virtual_gateway.vg.id]
+			}
+		}
+	`)
 }
