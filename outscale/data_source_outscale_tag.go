@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -40,21 +39,16 @@ func dataSourceOutscaleOAPITag() *schema.Resource {
 
 func dataSourceOutscaleOAPITagRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
-	// Build up search parameters
-	params := oscgo.ReadTagsRequest{}
-
-	filters, filtersOk := d.GetOk("filter")
-
-	if filtersOk {
-		params.SetFilters(oapiBuildOutscaleDataSourceFilters(filters.(*schema.Set)))
+	req := oscgo.ReadTagsRequest{}
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
+		req.SetFilters(oapiBuildOutscaleDataSourceFilters(filters.(*schema.Set)))
 	}
 
 	var resp oscgo.ReadTagsResponse
 	var err error
 
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
-		rp, httpResp, err := conn.TagApi.ReadTags(context.Background()).ReadTagsRequest(params).Execute()
+		rp, httpResp, err := conn.TagApi.ReadTags(context.Background()).ReadTagsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -66,13 +60,8 @@ func dataSourceOutscaleOAPITagRead(d *schema.ResourceData, meta interface{}) err
 		return err
 	}
 
-	if len(resp.GetTags()) < 1 {
-		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
-	}
-
-	if len(resp.GetTags()) > 1 {
-		return fmt.Errorf("your query returned more than one result, Please try a more " +
-			"specific search criteria")
+	if err = utils.IsResponseEmptyOrMutiple(len(resp.GetTags()), "Tag"); err != nil {
+		return err
 	}
 
 	tag := resp.GetTags()[0]
