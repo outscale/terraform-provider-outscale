@@ -8,10 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccOutscaleDHCPOption_basic(t *testing.T) {
+func TestAcc_DHCPOption_DataSource(t *testing.T) {
 	t.Parallel()
-	resourceName := "outscale_dhcp_option.foo"
 	dataSourceName := "data.outscale_dhcp_option.test"
+	dataSourcesName := "data.outscale_dhcp_options.test"
 	value := fmt.Sprintf("test-acc-value-%s", acctest.RandString(5))
 
 	resource.Test(t, resource.TestCase{
@@ -19,73 +19,21 @@ func TestAccOutscaleDHCPOption_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccClientDHCPOptionBasic(value),
+				Config: testAcc_DHCPOption_DataSource_Config(value),
 				Check: resource.ComposeTestCheckFunc(
-					// resource validations
-					testAccCheckOutscaleDHCPOptionExists(resourceName),
-					resource.TestCheckResourceAttrSet(resourceName, "domain_name"),
-					resource.TestCheckResourceAttrSet(resourceName, "domain_name_servers.#"),
-					resource.TestCheckResourceAttrSet(resourceName, "ntp_servers.#"),
-					resource.TestCheckResourceAttrSet(resourceName, "log_servers.#"),
-					//resource.TestCheckResourceAttrSet(resourceName, "tags.#"),
-
-					resource.TestCheckResourceAttr(resourceName, "domain_name", "test.fr"),
-					resource.TestCheckResourceAttr(resourceName, "domain_name_servers.0", "192.168.12.1"),
-					resource.TestCheckResourceAttr(resourceName, "ntp_servers.0", "192.0.0.2"),
-					resource.TestCheckResourceAttr(resourceName, "log_servers.0", "192.0.0.12"),
-					//resource.TestCheckResourceAttr(resourceName, "tags.#", "1"),
-					//resource.TestCheckResourceAttr(resourceName, "tags.0.key", "name"),
-					//resource.TestCheckResourceAttr(resourceName, "tags.0.value", value),
 
 					// data source validations
 					resource.TestCheckResourceAttrSet(dataSourceName, "dhcp_options_set_id"),
+					resource.TestCheckResourceAttr(dataSourcesName, "dhcp_options.#", "2"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccOutscaleDHCPOption_withFilters(t *testing.T) {
-	t.Parallel()
-	resourceName := "outscale_dhcp_option.foo"
-	dataSourceName := "data.outscale_dhcp_option.test"
-	value := fmt.Sprintf("test-acc-value-%s", acctest.RandString(5))
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccClientDHCPOptionWithFilters(value),
-				Check: resource.ComposeTestCheckFunc(
-					// resource validations
-					testAccCheckOutscaleDHCPOptionExists(resourceName),
-					resource.TestCheckResourceAttrSet(resourceName, "domain_name"),
-					resource.TestCheckResourceAttrSet(resourceName, "domain_name_servers.#"),
-					resource.TestCheckResourceAttrSet(resourceName, "ntp_servers.#"),
-					resource.TestCheckResourceAttrSet(resourceName, "log_servers.#"),
-					//resource.TestCheckResourceAttrSet(resourceName, "tags.#"),
-
-					resource.TestCheckResourceAttr(resourceName, "domain_name", "test.fr"),
-					resource.TestCheckResourceAttr(resourceName, "domain_name_servers.0", "192.168.12.1"),
-					resource.TestCheckResourceAttr(resourceName, "ntp_servers.0", "192.0.0.2"),
-					resource.TestCheckResourceAttr(resourceName, "log_servers.0", "192.0.0.12"),
-					//resource.TestCheckResourceAttr(resourceName, "tags.#", "1"),
-					//resource.TestCheckResourceAttr(resourceName, "tags.0.key", "name"),
-					//resource.TestCheckResourceAttr(resourceName, "tags.0.value", value),
-
-					// data source validations
-					resource.TestCheckResourceAttrSet(dataSourceName, "filter.#"),
-					resource.TestCheckResourceAttr(dataSourceName, "filter.#", "2"),
-				),
-			},
-		},
-	})
-}
-
-func testAccClientDHCPOptionBasic(value string) string {
+func testAcc_DHCPOption_DataSource_Config(value string) string {
 	return fmt.Sprintf(`
-		resource "outscale_dhcp_option" "foo" {
+		resource "outscale_dhcp_option" "foo1" {
 			domain_name         = "test.fr"
 			domain_name_servers = ["192.168.12.1"]
 			ntp_servers         = ["192.0.0.2"]
@@ -97,38 +45,29 @@ func testAccClientDHCPOptionBasic(value string) string {
 			}
 		}
 
-		data "outscale_dhcp_option" "test" {
-			filter {
-				name = "dhcp_options_set_ids"
-				values = ["${outscale_dhcp_option.foo.id}"]
-			}
-		}
-
-	`, value)
-}
-
-func testAccClientDHCPOptionWithFilters(value string) string {
-	return fmt.Sprintf(`
-		resource "outscale_dhcp_option" "foo" {
+		resource "outscale_dhcp_option" "foo2" {
 			domain_name         = "test.fr"
-			domain_name_servers = ["192.168.12.1"]
-			ntp_servers         = ["192.0.0.2"]
-			log_servers         = ["192.0.0.12"]
-
+			domain_name_servers = ["192.168.12.2"]
+			ntp_servers         = ["192.0.0.3"]
+			log_servers         = ["192.0.0.13"]
+			
 			tags {
 				key   = "name"
-				value = "%s"
+				value = "%[1]s"
 			}
 		}
 
 		data "outscale_dhcp_option" "test" {
 			filter {
 				name = "dhcp_options_set_ids"
-				values = ["${outscale_dhcp_option.foo.id}"]
+				values = ["${outscale_dhcp_option.foo1.id}"]
 			}
+		}
+
+		data "outscale_dhcp_options" "test" {
 			filter {
-				name = "tag_keys"
-				values = ["name"]
+				name = "dhcp_options_set_ids"
+				values = ["${outscale_dhcp_option.foo1.id}", "${outscale_dhcp_option.foo2.id}"]
 			}
 		}
 	`, value)
