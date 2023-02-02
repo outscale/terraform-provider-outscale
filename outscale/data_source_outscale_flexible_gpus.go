@@ -66,14 +66,10 @@ func dataSourceOutscaleOAPIFlexibleGpusRead(d *schema.ResourceData, meta interfa
 
 	conn := meta.(*OutscaleClient).OSCAPI
 	filters, filtersOk := d.GetOk("filter")
-	_, IDOk := d.GetOk("flexible_gpu_id")
-
-	if !filtersOk && !IDOk {
-		return fmt.Errorf("One of filters, or flexible_gpu_id must be assigned")
-	}
-
 	req := oscgo.ReadFlexibleGpusRequest{}
-	req.SetFilters(buildOutscaleOAPIDataSourceFlexibleGpuFilters(filters.(*schema.Set)))
+	if filtersOk {
+		req.SetFilters(buildOutscaleOAPIDataSourceFlexibleGpuFilters(filters.(*schema.Set)))
+	}
 
 	var resp oscgo.ReadFlexibleGpusResponse
 	var err error

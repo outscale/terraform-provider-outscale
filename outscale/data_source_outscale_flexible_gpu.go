@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -58,21 +57,10 @@ func dataSourceOutscaleOAPIFlexibleGpu() *schema.Resource {
 func dataSourceOutscaleOAPIFlexibleGpuRead(d *schema.ResourceData, meta interface{}) error {
 
 	conn := meta.(*OutscaleClient).OSCAPI
-
-	filters, filtersOk := d.GetOk("filter")
-	flexID, IDOk := d.GetOk("flexible_gpu_id")
-
-	if !filtersOk && !IDOk {
-		return fmt.Errorf("One of filters, or flexible_gpu_id must be assigned")
-	}
-
 	req := oscgo.ReadFlexibleGpusRequest{}
-
-	req.Filters = &oscgo.FiltersFlexibleGpu{
-		FlexibleGpuIds: &[]string{flexID.(string)},
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
+		req.SetFilters(buildOutscaleOAPIDataSourceFlexibleGpuFilters(filters.(*schema.Set)))
 	}
-
-	req.SetFilters(buildOutscaleOAPIDataSourceFlexibleGpuFilters(filters.(*schema.Set)))
 
 	var resp oscgo.ReadFlexibleGpusResponse
 	var err error
