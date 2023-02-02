@@ -51,13 +51,9 @@ func dataSourceOutscaleOAPIApiAccessRule() *schema.Resource {
 func dataSourceOutscaleOAPIApiAccessRuleRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	filters, filtersOk := d.GetOk("filter")
-	if !filtersOk {
-		return fmt.Errorf("filters must be assigned")
-	}
-
-	req := oscgo.ReadApiAccessRulesRequest{
-		Filters: buildOutscaleApiAccessRuleFilters(filters.(*schema.Set)),
+	req := oscgo.ReadApiAccessRulesRequest{}
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
+		req.Filters = buildOutscaleApiAccessRuleFilters(filters.(*schema.Set))
 	}
 
 	var resp oscgo.ReadApiAccessRulesResponse
@@ -74,16 +70,10 @@ func dataSourceOutscaleOAPIApiAccessRuleRead(d *schema.ResourceData, meta interf
 	if err != nil {
 		return fmt.Errorf("[DEBUG] Error reading api access rule id (%s)", utils.GetErrorResponse(err))
 	}
-	apiAccessRules := resp.GetApiAccessRules()[:]
-	if len(apiAccessRules) < 1 {
-		d.SetId("")
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
+	if err = utils.IsResponseEmptyOrMutiple(len(resp.GetApiAccessRules()), "Api Access Rules"); err != nil {
+		return err
 	}
-	if len(apiAccessRules) > 1 {
-		return fmt.Errorf("Your query returned more results. Please change your search criteria and try again")
-	}
-
-	accRule := apiAccessRules[0]
+	accRule := resp.GetApiAccessRules()[0]
 	if err := d.Set("api_access_rule_id", accRule.GetApiAccessRuleId()); err != nil {
 		return err
 	}
