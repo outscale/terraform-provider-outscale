@@ -17,11 +17,6 @@ func dataSourceOutscaleOAPIRouteTables() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"route_table_id": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -141,35 +136,15 @@ func dataSourceOutscaleOAPIRouteTables() *schema.Resource {
 
 func dataSourceOutscaleOAPIRouteTablesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-	rtbID, rtbOk := d.GetOk("route_table_id")
-	filter, filterOk := d.GetOk("filter")
-	if !filterOk && !rtbOk {
-		return fmt.Errorf("One of route_table_id or filters must be assigned")
-	}
-
-	params := oscgo.ReadRouteTablesRequest{
-		Filters: &oscgo.FiltersRouteTable{},
-	}
-
-	if rtbOk {
-		i := rtbID.([]interface{})
-		in := make([]string, len(i))
-		for k, v := range i {
-			in[k] = v.(string)
-		}
-		filter := oscgo.FiltersRouteTable{}
-		filter.SetRouteTableIds(in)
-		params.SetFilters(filter)
-	}
-
-	if filterOk {
-		params.Filters = buildOutscaleOAPIDataSourceRouteTableFilters(filter.(*schema.Set))
+	req := oscgo.ReadRouteTablesRequest{}
+	if filter, filterOk := d.GetOk("filter"); filterOk {
+		req.Filters = buildOutscaleOAPIDataSourceRouteTableFilters(filter.(*schema.Set))
 	}
 
 	var resp oscgo.ReadRouteTablesResponse
 	var err error
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
-		rp, httpResp, err := conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(params).Execute()
+		rp, httpResp, err := conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
