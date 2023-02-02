@@ -8,10 +8,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccDataSourceOutscaleOAPINetAccessPointServices_basic(t *testing.T) {
+func TestAcc_NetAccessPointServices_DataSource(t *testing.T) {
 	t.Parallel()
 	serviceName := fmt.Sprintf("com.outscale.%s.api", os.Getenv("OUTSCALE_REGION"))
-
+	dataSourcesName := "data.outscale_net_access_point_services.services"
+	dataSourcesAllName := "data.outscale_net_access_point_services.all"
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
@@ -19,13 +20,17 @@ func TestAccDataSourceOutscaleOAPINetAccessPointServices_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPINetAccessPointServicesConfig(serviceName, serviceName),
+				Config: testAcc_NetAccessPointServices_DataSource_Config(serviceName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(dataSourcesName, "services.#", "1"),
+					resource.TestCheckResourceAttrSet(dataSourcesAllName, "services.#"),
+				),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleOAPINetAccessPointServicesConfig(sName, sName2 string) string {
+func testAcc_NetAccessPointServices_DataSource_Config(sName string) string {
 	return fmt.Sprintf(`
                 resource "outscale_net" "outscale_net" {
                         ip_range = "10.0.0.0/16"
@@ -38,7 +43,7 @@ func testAccDataSourceOutscaleOAPINetAccessPointServicesConfig(sName, sName2 str
                 resource "outscale_net_access_point" "net_access_point_1" {
                         net_id          = outscale_net.outscale_net.net_id
                         route_table_ids = [outscale_route_table.route_table-1.route_table_id] 
-                        service_name    = "%s"
+                        service_name    = "%[1]s"
                         tags { 
                               key       = "name" 
                               value     = "terraform-Net-Access-Point" 
@@ -46,14 +51,14 @@ func testAccDataSourceOutscaleOAPINetAccessPointServicesConfig(sName, sName2 str
 
                 }
 
-               data "outscale_net_access_point_services" "all-services" {
+               data "outscale_net_access_point_services" "services" {
                         filter {
                                name     = "service_names"
-                               values   = [ "%s"]
+                               values   = [ "%[1]s"]
                         }
                }
 
-               data "outscale_net_access_point_services" "all-services2" { }
+               data "outscale_net_access_point_services" "all" { }
 
-	`, sName, sName2)
+	`, sName)
 }
