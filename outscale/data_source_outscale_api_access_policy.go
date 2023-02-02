@@ -33,9 +33,7 @@ func dataSourceOutscaleOAPIApiAccessPolicy() *schema.Resource {
 
 func dataSourceOutscaleOAPIApiAccessPolicyRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
 	req := oscgo.ReadApiAccessPolicyRequest{}
-
 	var resp oscgo.ReadApiAccessPolicyResponse
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
@@ -46,11 +44,9 @@ func dataSourceOutscaleOAPIApiAccessPolicyRead(d *schema.ResourceData, meta inte
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		return fmt.Errorf("[DEBUG] Error reading Api Access Policy id (%s)", utils.GetErrorResponse(err))
 	}
-
 	if !resp.HasApiAccessPolicy() {
 		d.SetId("")
 		return fmt.Errorf("Api Access Policy not found")
