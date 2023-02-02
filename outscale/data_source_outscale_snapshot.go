@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"strconv"
 	"time"
@@ -19,7 +18,6 @@ func dataSourceOutscaleOAPISnapshot() *schema.Resource {
 		Read: dataSourceOutscaleOAPISnapshotRead,
 
 		Schema: map[string]*schema.Schema{
-			//selection criteria
 			"filter": dataSourceFiltersSchema(),
 			"permissions_to_create_volume": {
 				Type:     schema.TypeList,
@@ -38,8 +36,6 @@ func dataSourceOutscaleOAPISnapshot() *schema.Resource {
 					},
 				},
 			},
-
-			//Computed values returned
 			"progress": {
 				Type:     schema.TypeInt,
 				Computed: true,
@@ -50,7 +46,6 @@ func dataSourceOutscaleOAPISnapshot() *schema.Resource {
 			},
 			"snapshot_id": {
 				Type:     schema.TypeString,
-				Optional: true,
 				Computed: true,
 			},
 			"volume_id": {
@@ -64,7 +59,6 @@ func dataSourceOutscaleOAPISnapshot() *schema.Resource {
 			"account_id": {
 				Type:     schema.TypeString,
 				Computed: true,
-				Optional: true,
 			},
 			"account_alias": {
 				Type:     schema.TypeString,
@@ -89,41 +83,14 @@ func dataSourceOutscaleOAPISnapshot() *schema.Resource {
 
 func dataSourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
-	restorableUsers, restorableUsersOk := d.GetOk("permission_to_create_volume")
-	filters, filtersOk := d.GetOk("filter")
-	snapshotIds, snapshotIdsOk := d.GetOk("snapshot_id")
-	owners, ownersOk := d.GetOk("account_id")
-
-	if restorableUsers == false && !filtersOk && snapshotIds == false && !ownersOk {
-		return fmt.Errorf("One of snapshot_ids, filters, restorable_by_user_ids, or owners must be assigned")
+	req := oscgo.ReadSnapshotsRequest{}
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
+		req.SetFilters(buildOutscaleOapiSnapshootDataSourceFilters(filters.(*schema.Set)))
 	}
-
-	params := oscgo.ReadSnapshotsRequest{
-		Filters: &oscgo.FiltersSnapshot{},
-	}
-
-	filter := oscgo.FiltersSnapshot{}
-	if restorableUsersOk {
-		filter.SetPermissionsToCreateVolumeAccountIds(utils.InterfaceSliceToStringSlice(restorableUsers.([]interface{})))
-		params.SetFilters(filter)
-	}
-	if filtersOk {
-		buildOutscaleOapiSnapshootDataSourceFilters(filters.(*schema.Set), params.Filters)
-	}
-	if ownersOk {
-		filter.SetAccountIds([]string{owners.(string)})
-		params.SetFilters(filter)
-	}
-	if snapshotIdsOk {
-		filter.SetSnapshotIds([]string{snapshotIds.(string)})
-		params.SetFilters(filter)
-	}
-
 	var resp oscgo.ReadSnapshotsResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		rp, httpResp, err := conn.SnapshotApi.ReadSnapshots(context.Background()).ReadSnapshotsRequest(params).Execute()
+		rp, httpResp, err := conn.SnapshotApi.ReadSnapshots(context.Background()).ReadSnapshotsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -133,17 +100,10 @@ func dataSourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}
 	if err != nil {
 		return err
 	}
-
-	if len(resp.GetSnapshots()) < 1 {
-		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
+	if err = utils.IsResponseEmptyOrMutiple(len(resp.GetSnapshots()), "Snapshot"); err != nil {
+		return err
 	}
-	if len(resp.GetSnapshots()) > 1 {
-		return fmt.Errorf("your query returned more than one result, please try a more specific search criteria")
-	}
-
 	snapshot := resp.GetSnapshots()[0]
-
-	//Single Snapshot found so set to state
 	return snapshotOAPIDescriptionAttributes(d, &snapshot)
 }
 
@@ -189,8 +149,8 @@ func snapshotOAPIDescriptionAttributes(d *schema.ResourceData, snapshot *oscgo.S
 	return d.Set("tags", tagsOSCAPIToMap(snapshot.GetTags()))
 }
 
-func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set, filter *oscgo.FiltersSnapshot) *oscgo.FiltersSnapshot {
-
+func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set) oscgo.FiltersSnapshot {
+	filter := oscgo.FiltersSnapshot{}
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var values []string
