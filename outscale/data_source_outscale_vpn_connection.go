@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -21,7 +20,7 @@ func dataSourceOutscaleVPNConnection() *schema.Resource {
 			"filter": dataSourceFiltersSchema(),
 			"vpn_connection_id": {
 				Type:     schema.TypeString,
-				Optional: true,
+				Computed: true,
 			},
 			"client_gateway_id": {
 				Type:     schema.TypeString,
@@ -106,30 +105,15 @@ func dataSourceOutscaleVPNConnection() *schema.Resource {
 
 func dataSourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
-	filters, filtersOk := d.GetOk("filter")
-	vpnConnectionID, vpnConnectionOk := d.GetOk("vpn_connection_id")
-
-	if !filtersOk && !vpnConnectionOk {
-		return fmt.Errorf("One of filters, or vpn_connection_id must be assigned")
-	}
-
-	params := oscgo.ReadVpnConnectionsRequest{}
-
-	if vpnConnectionOk {
-		params.Filters = &oscgo.FiltersVpnConnection{
-			VpnConnectionIds: &[]string{vpnConnectionID.(string)},
-		}
-	}
-
-	if filtersOk {
-		params.Filters = buildOutscaleDataSourceVPNConnectionFilters(filters.(*schema.Set))
+	req := oscgo.ReadVpnConnectionsRequest{}
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
+		req.Filters = buildOutscaleDataSourceVPNConnectionFilters(filters.(*schema.Set))
 	}
 
 	var resp oscgo.ReadVpnConnectionsResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		rp, httpResp, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(params).Execute()
+		rp, httpResp, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -140,12 +124,8 @@ func dataSourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{
 		return err
 	}
 
-	if len(resp.GetVpnConnections()) == 0 {
-		return fmt.Errorf("Unable to find Client Gateway")
-	}
-
-	if len(resp.GetVpnConnections()) > 1 {
-		return fmt.Errorf("multiple results returned, please use a more specific criteria in your query")
+	if err = utils.IsResponseEmptyOrMutiple(len(resp.GetVpnConnections()), "Vpn Connection"); err != nil {
+		return err
 	}
 
 	vpnConnection := resp.GetVpnConnections()[0]

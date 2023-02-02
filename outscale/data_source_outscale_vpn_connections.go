@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -18,11 +17,6 @@ func dataSourceOutscaleVPNConnections() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"vpn_connection_ids": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
 			"vpn_connections": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -118,31 +112,15 @@ func dataSourceOutscaleVPNConnections() *schema.Resource {
 
 func dataSourceOutscaleVPNConnectionsRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
-	filters, filtersOk := d.GetOk("filter")
-	vpnConnectionIDs, vpnConnectionOk := d.GetOk("vpn_connection_ids")
-
-	if !filtersOk && !vpnConnectionOk {
-		return fmt.Errorf("One of filters, or vpn_connection_ids must be assigned")
-	}
-
-	log.Printf("vpnConnectionIDs: %#+v\n", vpnConnectionIDs)
-	params := oscgo.ReadVpnConnectionsRequest{}
-
-	if vpnConnectionOk {
-		params.Filters = &oscgo.FiltersVpnConnection{
-			VpnConnectionIds: utils.InterfaceSliceToStringSlicePtr(vpnConnectionIDs.([]interface{})),
-		}
-	}
-
-	if filtersOk {
-		params.Filters = buildOutscaleDataSourceVPNConnectionFilters(filters.(*schema.Set))
+	req := oscgo.ReadVpnConnectionsRequest{}
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
+		req.Filters = buildOutscaleDataSourceVPNConnectionFilters(filters.(*schema.Set))
 	}
 
 	var resp oscgo.ReadVpnConnectionsResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		rp, httpResp, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(params).Execute()
+		rp, httpResp, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
