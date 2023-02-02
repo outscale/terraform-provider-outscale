@@ -8,12 +8,7 @@ import (
 
 func attrLBSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"load_balancer_name": {
-			Type:     schema.TypeList,
-			Optional: true,
-			Elem:     &schema.Schema{Type: schema.TypeString},
-		},
-		"load_balancer": {
+		"load_balancers": {
 			Type:     schema.TypeList,
 			Computed: true,
 			Elem: &schema.Resource{
@@ -105,7 +100,7 @@ func attrLBSchema() map[string]*schema.Schema {
 					},
 					"listeners": {
 						Type:     schema.TypeList,
-						Required: true,
+						Computed: true,
 						Elem: &schema.Resource{
 							Schema: lb_listener_schema(true),
 						},
@@ -193,8 +188,7 @@ func attrLBSchema() map[string]*schema.Schema {
 
 func dataSourceOutscaleOAPILoadBalancers() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPILoadBalancersRead,
-
+		Read:   dataSourceOutscaleOAPILoadBalancersRead,
 		Schema: getDataSourceSchemas(attrLBSchema()),
 	}
 }
@@ -202,7 +196,7 @@ func dataSourceOutscaleOAPILoadBalancers() *schema.Resource {
 func dataSourceOutscaleOAPILoadBalancersRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	resp, _, err := readLbs_(conn, d, schema.TypeList)
+	resp, err := readLbs_(conn, d, schema.TypeList)
 	if err != nil {
 		return err
 	}
@@ -283,7 +277,7 @@ func dataSourceOutscaleOAPILoadBalancersRead(d *schema.ResourceData, meta interf
 		lbs_ret[k] = l
 	}
 
-	err = d.Set("load_balancer", lbs_ret)
+	err = d.Set("load_balancers", lbs_ret)
 	if err != nil {
 		return err
 	}
