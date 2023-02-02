@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -18,13 +17,6 @@ func datasourceOutscaleOAPIInternetServices() *schema.Resource {
 		Read: datasourceOutscaleOAPIInternetServicesRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"internet_service_ids": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
 			"internet_services": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -56,35 +48,15 @@ func datasourceOutscaleOAPIInternetServices() *schema.Resource {
 
 func datasourceOutscaleOAPIInternetServicesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
-	filters, filtersOk := d.GetOk("filter")
-	internetID, internetIDOk := d.GetOk("internet_service_ids")
-
-	if !filtersOk && !internetIDOk {
-		return fmt.Errorf("One of filters, or instance_id must be assigned")
-	}
-
-	// Build up search parameters
-	params := oscgo.ReadInternetServicesRequest{
-		Filters: &oscgo.FiltersInternetService{},
-	}
-	filter := oscgo.FiltersInternetService{}
-	if internetIDOk {
-		i := internetID.([]string)
-		in := make([]string, len(i))
-		copy(in, i)
-		filter.SetInternetServiceIds(in)
-		params.SetFilters(filter)
-	}
-
-	if filtersOk {
-		params.Filters = buildOutscaleOSCAPIDataSourceInternetServiceFilters(filters.(*schema.Set))
+	req := oscgo.ReadInternetServicesRequest{}
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
+		req.Filters = buildOutscaleOSCAPIDataSourceInternetServiceFilters(filters.(*schema.Set))
 	}
 
 	var resp oscgo.ReadInternetServicesResponse
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		rp, httpResp, err := conn.InternetServiceApi.ReadInternetServices(context.Background()).ReadInternetServicesRequest(params).Execute()
+		rp, httpResp, err := conn.InternetServiceApi.ReadInternetServices(context.Background()).ReadInternetServicesRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -92,19 +64,17 @@ func datasourceOutscaleOAPIInternetServicesRead(d *schema.ResourceData, meta int
 		return nil
 	})
 
-	var errString string
-
 	if err != nil {
-		errString = err.Error()
-
-		return fmt.Errorf("[DEBUG] Error reading Internet Services (%s)", errString)
+		return fmt.Errorf("[DEBUG] Error reading Internet Services (%s)", err.Error())
 	}
 
-	log.Printf("[DEBUG] Setting OAPI LIN Internet Gateways id (%s)", err)
+	result := resp.GetInternetServices()
+	if len(result) == 0 {
+		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
+	}
 
 	d.SetId(resource.UniqueId())
 
-	result := resp.GetInternetServices()
 	return internetServicesOAPIDescriptionAttributes(d, result)
 }
 
