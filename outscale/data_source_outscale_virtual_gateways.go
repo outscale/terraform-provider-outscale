@@ -17,12 +17,6 @@ func dataSourceOutscaleOAPIVirtualGateways() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"virtual_gateway_id": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
 			"virtual_gateways": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -70,25 +64,17 @@ func dataSourceOutscaleOAPIVirtualGateways() *schema.Resource {
 
 func dataSourceOutscaleOAPIVirtualGatewaysRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
+	req := oscgo.ReadVirtualGatewaysRequest{}
 
-	filter, filtersOk := d.GetOk("filter")
-	_, vpnOk := d.GetOk("virtual_gateway_id")
-
-	if !filtersOk && !vpnOk {
-		return fmt.Errorf("One of virtual_gateway_id or filter must be assigned")
-	}
-
-	params := oscgo.ReadVirtualGatewaysRequest{}
-
-	if filtersOk {
-		params.SetFilters(buildOutscaleAPIVirtualGatewayFilters(filter.(*schema.Set)))
+	if filter, filtersOk := d.GetOk("filter"); filtersOk {
+		req.SetFilters(buildOutscaleAPIVirtualGatewayFilters(filter.(*schema.Set)))
 	}
 
 	var resp oscgo.ReadVirtualGatewaysResponse
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		rp, httpResp, err := conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(params).Execute()
+		rp, httpResp, err := conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -99,8 +85,8 @@ func dataSourceOutscaleOAPIVirtualGatewaysRead(d *schema.ResourceData, meta inte
 	if err != nil {
 		return err
 	}
-	if resp.GetVirtualGateways() == nil || len(resp.GetVirtualGateways()) == 0 {
-		return fmt.Errorf("no matching VPN gateway found: %#v", params)
+	if !resp.HasVirtualGateways() || len(resp.GetVirtualGateways()) < 1 {
+		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
 
 	vpns := make([]map[string]interface{}, len(resp.GetVirtualGateways()))
