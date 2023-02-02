@@ -18,13 +18,6 @@ func dataSourceOutscaleOAPISubnets() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"subnet_ids": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
 			"subnets": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -74,20 +67,8 @@ func dataSourceOutscaleOAPISubnets() *schema.Resource {
 
 func dataSourceOutscaleOAPISubnetsRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
 	req := oscgo.ReadSubnetsRequest{}
-
-	if id := d.Get("subnet_ids"); id != "" {
-		var ids []string
-		for _, v := range id.([]interface{}) {
-			ids = append(ids, v.(string))
-		}
-		req.SetFilters(oscgo.FiltersSubnet{SubnetIds: &ids})
-	}
-
-	filters, filtersOk := d.GetOk("filter")
-
-	if filtersOk {
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
 		req.Filters = buildOutscaleOAPISubnetDataSourceFilters(filters.(*schema.Set))
 	}
 
@@ -106,7 +87,6 @@ func dataSourceOutscaleOAPISubnetsRead(d *schema.ResourceData, meta interface{})
 
 	if err != nil {
 		errString = err.Error()
-
 		return fmt.Errorf("[DEBUG] Error reading Subnet (%s)", errString)
 	}
 
