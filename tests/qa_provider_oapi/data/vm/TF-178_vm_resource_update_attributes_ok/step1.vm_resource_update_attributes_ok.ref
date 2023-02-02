@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_keypair",
             "name": "keypair-TF66",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "index_key": 0,
@@ -47,7 +47,7 @@
             "mode": "managed",
             "type": "outscale_security_group",
             "name": "security_group_TF66",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "index_key": 0,
@@ -95,7 +95,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "outscale_vm-TF66",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -107,7 +107,7 @@
                                 "bsu": [
                                     {
                                         "delete_on_vm_deletion": false,
-                                        "iops": 0,
+                                        "iops": null,
                                         "snapshot_id": "",
                                         "volume_size": 20,
                                         "volume_type": "standard"
@@ -186,7 +186,7 @@
                         "user_data": "",
                         "vm_id": "##id-7##",
                         "vm_initiated_shutdown_behavior": "restart",
-                        "vm_type": "tinav4.c2r2"
+                        "vm_type": "tinav4.c2r2p3"
                     },
                     "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
