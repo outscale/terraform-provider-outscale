@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_load_balancer_vm_health",
             "name": "outscale_load_balancer_vm_health",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -38,7 +38,7 @@
             "mode": "managed",
             "type": "outscale_keypair",
             "name": "my_keypair",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -60,7 +60,7 @@
             "mode": "managed",
             "type": "outscale_load_balancer",
             "name": "public_lbu2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -126,7 +126,7 @@
             "mode": "managed",
             "type": "outscale_load_balancer_attributes",
             "name": "attributes-1",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -144,13 +144,13 @@
                         "dns_name": "########",
                         "health_check": [
                             {
-                                "check_interval": "30",
-                                "healthy_threshold": "10",
-                                "path": "/",
-                                "port": "8080",
+                                "check_interval": 30,
+                                "healthy_threshold": 10,
+                                "path": "",
+                                "port": 8080,
                                 "protocol": "HTTP",
-                                "timeout": "5",
-                                "unhealthy_threshold": "5"
+                                "timeout": 5,
+                                "unhealthy_threshold": 5
                             }
                         ],
                         "id": "##id-3##",
@@ -199,7 +199,7 @@
             "mode": "managed",
             "type": "outscale_load_balancer_vms",
             "name": "outscale_load_balancer_vms",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -226,7 +226,7 @@
             "mode": "managed",
             "type": "outscale_security_group",
             "name": "public_sg",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -253,7 +253,7 @@
             "mode": "managed",
             "type": "outscale_security_group_rule",
             "name": "outscale_security_group_rule",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -295,7 +295,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "outscale_vm-1",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
