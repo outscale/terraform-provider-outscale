@@ -17,10 +17,14 @@ For more information on this resource actions, see the [API documentation](https
 
 ```hcl
 data "outscale_route_tables" "route_tables01" {
-  filter {
-    name   = "route_table_ids"
-    values = ["rtb-12345678", "rtb-12345679"]
-  }
+    filter {
+        name   = "net_ids"
+        values = ["vpc-12345678", "vpc-87654321"]
+    }
+    filter {
+        name   = "link_route_table_main"
+        values = ["true"]
+    }
 }
 ```
 
@@ -45,7 +49,7 @@ The following arguments are supported:
     * `route_vm_ids` - (Optional) The IDs of the VMs specified in routes in the tables.
     * `tag_keys` - (Optional) The keys of the tags associated with the route tables.
     * `tag_values` - (Optional) The values of the tags associated with the route tables.
-    * `tags` - (Optional) The key/value combination of the tags associated with the route tables, in the following format: &quot;Filters&quot;:{&quot;Tags&quot;:[&quot;TAGKEY=TAGVALUE&quot;]}.
+    * `tags` - (Optional) The key/value combinations of the tags associated with the route tables, in the following format: `TAGKEY=TAGVALUE`.
 
 ## Attribute Reference
 

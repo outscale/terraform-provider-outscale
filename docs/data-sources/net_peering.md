@@ -17,10 +17,10 @@ For more information on this resource actions, see the [API documentation](https
 
 ```hcl
 data "outscale_net_peering" "net_peering01" {
-  filter {
-    name   = "net_peering_ids"
-    values = ["pcx-12345678"]
-  }    
+    filter {
+        name   = "net_peering_ids"
+        values = ["pcx-12345678"]
+    }    
 }
 ```
 
@@ -40,7 +40,7 @@ The following arguments are supported:
     * `state_names` - (Optional) The states of the Net peerings (`pending-acceptance` \| `active` \| `rejected` \| `failed` \| `expired` \| `deleted`).
     * `tag_keys` - (Optional) The keys of the tags associated with the Net peerings.
     * `tag_values` - (Optional) The values of the tags associated with the Net peerings.
-    * `tags` - (Optional) The key/value combination of the tags associated with the Net peerings, in the following format: &quot;Filters&quot;:{&quot;Tags&quot;:[&quot;TAGKEY=TAGVALUE&quot;]}.
+    * `tags` - (Optional) The key/value combinations of the tags associated with the Net peerings, in the following format: `TAGKEY=TAGVALUE`.
 
 ## Attribute Reference
 

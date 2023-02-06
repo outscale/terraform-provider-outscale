@@ -17,10 +17,10 @@ For more information on this resource actions, see the [API documentation](https
 
 ```hcl
 data "outscale_image" "image01" {
-  filter {
-    name   = "image_ids"
-    values = ["ami-12345678"]
-  }
+    filter {
+        name   = "image_ids"
+        values = ["ami-12345678"]
+    }
 }
 ```
 
@@ -50,7 +50,7 @@ The following arguments are supported:
     * `states` - (Optional) The states of the OMIs (`pending` \| `available` \| `failed`).
     * `tag_keys` - (Optional) The keys of the tags associated with the OMIs.
     * `tag_values` - (Optional) The values of the tags associated with the OMIs.
-    * `tags` - (Optional) The key/value combination of the tags associated with the OMIs, in the following format: &quot;Filters&quot;:{&quot;Tags&quot;:[&quot;TAGKEY=TAGVALUE&quot;]}.
+    * `tags` - (Optional) The key/value combinations of the tags associated with the OMIs, in the following format: `TAGKEY=TAGVALUE`.
     * `virtualization_types` - (Optional) The virtualization types (always `hvm`).
 
 ## Attribute Reference
@@ -72,7 +72,7 @@ If you specify a snapshot ID but no volume size, the volume is created with a si
 For more information about volume types, see [About Volumes > Volume Types and IOPS](https://docs.outscale.com/en/userguide/About-Volumes.html#_volume_types_and_iops).
     * `device_name` - The device name for the volume. For a root device, you must use `/dev/sda1`. For other volumes, you must use `/dev/sdX`, `/dev/sdXX`, `/dev/xvdX`, or `/dev/xvdXX` (where the first `X` is a letter between `b` and `z`, and the second `X` is a letter between `a` and `z`).
     * `virtual_device_name` - The name of the virtual device (`ephemeralN`).
-* `creation_date` - The date and time at which the OMI was created.
+* `creation_date` - The date and time of creation of the OMI.
 * `description` - The description of the OMI.
 * `file_location` - The location of the bucket where the OMI files are stored.
 * `image_id` - The ID of the OMI.

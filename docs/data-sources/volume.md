@@ -17,10 +17,10 @@ For more information on this resource actions, see the [API documentation](https
 
 ```hcl
 data "outscale_volume" "outscale_volume01" {
-  filter {
-    name   = "volume_ids"
-    values = ["vol-12345678"]
-  }
+    filter {
+        name   = "volume_ids"
+        values = ["vol-12345678"]
+    }
 }
 ```
 
@@ -29,17 +29,17 @@ data "outscale_volume" "outscale_volume01" {
 The following arguments are supported:
 
 * `filter` - (Optional) A combination of a filter name and one or more filter values. You can specify this argument for as many filter names as you need. The filter name can be any of the following:
-    * `creation_dates` - (Optional) The dates and times at which the volumes were created.
+    * `creation_dates` - (Optional) The dates and times of creation of the volumes.
     * `link_volume_delete_on_vm_deletion` - (Optional) Whether the volumes are deleted or not when terminating the VMs.
     * `link_volume_device_names` - (Optional) The VM device names.
-    * `link_volume_link_dates` - (Optional) The dates and times at which the volumes were created.
+    * `link_volume_link_dates` - (Optional) The dates and times of creation of the volumes.
     * `link_volume_link_states` - (Optional) The attachment states of the volumes (`attaching` \| `detaching` \| `attached` \| `detached`).
     * `link_volume_vm_ids` - (Optional) One or more IDs of VMs.
     * `snapshot_ids` - (Optional) The snapshots from which the volumes were created.
     * `subregion_names` - (Optional) The names of the Subregions in which the volumes were created.
     * `tag_keys` - (Optional) The keys of the tags associated with the volumes.
     * `tag_values` - (Optional) The values of the tags associated with the volumes.
-    * `tags` - (Optional) The key/value combination of the tags associated with the volumes, in the following format: &quot;Filters&quot;:{&quot;Tags&quot;:[&quot;TAGKEY=TAGVALUE&quot;]}.
+    * `tags` - (Optional) The key/value combinations of the tags associated with the volumes, in the following format: `TAGKEY=TAGVALUE`.
     * `volume_ids` - (Optional) The IDs of the volumes.
     * `volume_sizes` - (Optional) The sizes of the volumes, in gibibytes (GiB).
     * `volume_states` - (Optional) The states of the volumes (`creating` \| `available` \| `in-use` \| `updating` \| `deleting` \| `error`).

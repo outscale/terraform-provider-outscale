@@ -17,10 +17,14 @@ For more information on this resource actions, see the [API documentation](https
 
 ```hcl
 data "outscale_virtual_gateways" "virtual_gateways01" {
-  filter {
-    name   = "virtual_gateway_ids"
-    values = ["vgw-12345678", "vgw-87654321"]
-  }
+    filter {
+        name   = "states"
+        values = ["available"]
+    }
+    filter {
+        name   = "link_states"
+        values = ["attached", "detached"]
+    }
 }
 ```
 
@@ -35,7 +39,7 @@ The following arguments are supported:
     * `states` - (Optional) The states of the virtual gateways (`pending` \| `available` \| `deleting` \| `deleted`).
     * `tag_keys` - (Optional) The keys of the tags associated with the virtual gateways.
     * `tag_values` - (Optional) The values of the tags associated with the virtual gateways.
-    * `tags` - (Optional) The key/value combination of the tags associated with the virtual gateways, in the following format: &quot;Filters&quot;:{&quot;Tags&quot;:[&quot;TAGKEY=TAGVALUE&quot;]}.
+    * `tags` - (Optional) The key/value combinations of the tags associated with the virtual gateways, in the following format: `TAGKEY=TAGVALUE`.
     * `virtual_gateway_ids` - (Optional) The IDs of the virtual gateways.
 
 ## Attribute Reference

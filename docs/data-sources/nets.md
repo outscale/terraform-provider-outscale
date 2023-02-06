@@ -17,10 +17,14 @@ For more information on this resource actions, see the [API documentation](https
 
 ```hcl
 data "outscale_nets" "nets01" {
-  filter {
-    name   = "net_ids"
-    values = ["vpc-12345678", "vpc-12345679", "vpc-12345680"]
-  }
+    filter {
+        name   = "net_ids"
+        values = ["vpc-12345678", "vpc-87654321"]
+    }
+    filter {
+        name   = "ip_ranges"
+        values = ["10.0.0.0/16"]
+    }
 }
 ```
 
@@ -35,7 +39,7 @@ The following arguments are supported:
     * `states` - (Optional) The states of the Nets (`pending` \| `available` \| `deleted`).
     * `tag_keys` - (Optional) The keys of the tags associated with the Nets.
     * `tag_values` - (Optional) The values of the tags associated with the Nets.
-    * `tags` - (Optional) The key/value combination of the tags associated with the Nets, in the following format: &quot;Filters&quot;:{&quot;Tags&quot;:[&quot;TAGKEY=TAGVALUE&quot;]}.
+    * `tags` - (Optional) The key/value combinations of the tags associated with the Nets, in the following format: `TAGKEY=TAGVALUE`.
 
 ## Attribute Reference
 

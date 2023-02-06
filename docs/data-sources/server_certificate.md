@@ -17,10 +17,10 @@ For more information on this resource actions, see the [API documentation](https
 
 ```hcl
 data "outscale_server_certificate" "server_certificate01" {
-  filter {
-    name   = "paths"
-    values = "<PATH>"
-  }
+    filter {
+        name   = "paths"
+        values = "<PATH>"
+    }
 }
 ```
 

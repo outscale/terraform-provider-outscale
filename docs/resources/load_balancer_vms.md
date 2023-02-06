@@ -34,14 +34,14 @@ resource "outscale_load_balancer" "load_balancer01" {
     load_balancer_name = "load-balancer-for-backend-vms"
     subregion_names    = ["${var.region}a"]
     listeners {
-       backend_port           = 80
-       backend_protocol       = "TCP"
-       load_balancer_protocol = "TCP"
-       load_balancer_port     = 80
+        backend_port           = 80
+        backend_protocol       = "TCP"
+        load_balancer_protocol = "TCP"
+        load_balancer_port     = 80
     }
     tags {
-       key   = "name"
-       value = "outscale_load_balancer01"
+        key   = "name"
+        value = "outscale_load_balancer01"
     }
 }
 ```
