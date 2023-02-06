@@ -16,11 +16,15 @@ For more information on this resource actions, see the [API documentation](https
 ## Example Usage
 
 ```hcl
-data "outscale_api_access_rules" "api_access_rules_01" {
-  filter {
-    name   = "api_access_rule_ids"
-    values = ["aar-12345678", "aar-87654321"]
-  }
+data "outscale_api_access_rules" "api_access_rules01" {
+    filter {
+        name   = "ca_ids"
+        values = ["ca-12345678", "ca-87654321"]
+    }
+    filter {
+        name   = "ip_ranges"
+        values = ["192.0.2.0/16"]
+    }
 }
 ```
 

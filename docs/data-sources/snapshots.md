@@ -17,10 +17,14 @@ For more information on this resource actions, see the [API documentation](https
 
 ```hcl
 data "outscale_snapshots" "snapshots01" {
-  filter {
-    name   = "snapshot_ids"
-    values = ["snap-12345678", "snap-12345679"]
-  }
+    filter {
+        name   = "tag_keys"
+        values = ["env"]
+    }
+    filter {
+        name   = "tag_values"
+        values = ["prod", "test"]
+    }
 }
 ```
 
@@ -39,7 +43,7 @@ The following arguments are supported:
     * `states` - (Optional) The states of the snapshots (`in-queue` \| `completed` \| `error`).
     * `tag_keys` - (Optional) The keys of the tags associated with the snapshots.
     * `tag_values` - (Optional) The values of the tags associated with the snapshots.
-    * `tags` - (Optional) The key/value combination of the tags associated with the snapshots, in the following format: &quot;Filters&quot;:{&quot;Tags&quot;:[&quot;TAGKEY=TAGVALUE&quot;]}.
+    * `tags` - (Optional) The key/value combinations of the tags associated with the snapshots, in the following format: `TAGKEY=TAGVALUE`.
     * `volume_ids` - (Optional) The IDs of the volumes used to create the snapshots.
     * `volume_sizes` - (Optional) The sizes of the volumes used to create the snapshots, in gibibytes (GiB).
 

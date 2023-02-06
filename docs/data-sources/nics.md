@@ -17,10 +17,14 @@ For more information on this resource actions, see the [API documentation](https
 
 ```hcl
 data "outscale_nics" "nics01" {
-  filter {
-    name   = "nic_ids"
-    values = ["eni-12345678", "eni-12345679"]
-  }
+    filter {
+        name   = "nic_ids"
+        values = ["eni-12345678", "eni-87654321"]
+    }
+    filter {
+        name   = "link_nic_vm_ids"
+        values = ["i-12345678"]
+    }
 }
 ```
 
@@ -56,7 +60,7 @@ The following arguments are supported:
     * `subregion_names` - (Optional) The Subregions where the NICs are located.
     * `tag_keys` - (Optional) The keys of the tags associated with the NICs.
     * `tag_values` - (Optional) The values of the tags associated with the NICs.
-    * `tags` - (Optional) The key/value combination of the tags associated with the NICs, in the following format: &quot;Filters&quot;:{&quot;Tags&quot;:[&quot;TAGKEY=TAGVALUE&quot;]}.
+    * `tags` - (Optional) The key/value combinations of the tags associated with the NICs, in the following format: `TAGKEY=TAGVALUE`.
 
 ## Attribute Reference
 

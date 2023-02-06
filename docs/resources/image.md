@@ -19,9 +19,9 @@ For more information on this resource actions, see the [API documentation](https
 
 ```hcl
 resource "outscale_image" "image01" {
-  image_name = "terraform-omi-create"
-  vm_id      = var.vm_id
-  no_reboot  = "true"
+    image_name = "terraform-omi-create"
+    vm_id      = var.vm_id
+    no_reboot  = "true"
 }
 ```
 
@@ -30,9 +30,9 @@ resource "outscale_image" "image01" {
 
 ```hcl
 resource "outscale_image" "image02" {
-  description   = "Terraform register OMI"
-  image_name    = "terraform-omi-register"
-  file_location = "<URL>"
+    description   = "Terraform register OMI"
+    image_name    = "terraform-omi-register"
+    file_location = "<URL>"
 }
 ```
 
@@ -40,10 +40,10 @@ resource "outscale_image" "image02" {
 
 ```hcl
 resource "outscale_image" "image03" {
-  description        = "Terraform copy OMI"
-  image_name         = "terraform-omi-copy"
-  source_image_id    = "ami-12345678"
-  source_region_name = "eu-west-2"
+    description        = "Terraform copy OMI"
+    image_name         = "terraform-omi-copy"
+    source_image_id    = "ami-12345678"
+    source_region_name = "eu-west-2"
 }
 ```
 
@@ -51,19 +51,19 @@ resource "outscale_image" "image03" {
 
 ```hcl
 resource "outscale_image" "image04" {
-  image_name = "terraform-omi-bsu"
-  block_device_mappings {
-    device_name = "/dev/sda1" 
-    bsu {
-      snapshot_id           = "snap-12345678"
-      volume_size           = "120"
-      volume_type           = "io1"
-      iops                  = 150
-      delete_on_vm_deletion = "true"
+    image_name = "terraform-omi-bsu"
+    block_device_mappings {
+        device_name = "/dev/sda1" 
+        bsu {
+        snapshot_id           = "snap-12345678"
+        volume_size           = "120"
+        volume_type           = "io1"
+        iops                  = 150
+        delete_on_vm_deletion = "true"
+        }
     }
-  }
-  root_device_name = "/dev/sda1"
-  description      = "Terraform OMI with BSU"
+    root_device_name = "/dev/sda1"
+    description      = "Terraform OMI with BSU"
 }
 ```
 
@@ -116,7 +116,7 @@ If you specify a snapshot ID but no volume size, the volume is created with a si
 For more information about volume types, see [About Volumes > Volume Types and IOPS](https://docs.outscale.com/en/userguide/About-Volumes.html#_volume_types_and_iops).
     * `device_name` - The device name for the volume. For a root device, you must use `/dev/sda1`. For other volumes, you must use `/dev/sdX`, `/dev/sdXX`, `/dev/xvdX`, or `/dev/xvdXX` (where the first `X` is a letter between `b` and `z`, and the second `X` is a letter between `a` and `z`).
     * `virtual_device_name` - The name of the virtual device (`ephemeralN`).
-* `creation_date` - The date and time at which the OMI was created.
+* `creation_date` - The date and time of creation of the OMI.
 * `description` - The description of the OMI.
 * `file_location` - The location of the bucket where the OMI files are stored.
 * `image_id` - The ID of the OMI.

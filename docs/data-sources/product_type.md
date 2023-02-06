@@ -17,10 +17,10 @@ For more information on this resource actions, see the [API documentation](https
 
 ```hcl
 data "outscale_product_type" "product_type01" {
-  filter {
-    name   = "product_type_ids"
-    values = ["0001"]
-  }
+    filter {
+        name   = "product_type_ids"
+        values = ["0001"]
+    }
 }
 ```
 

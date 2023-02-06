@@ -17,10 +17,10 @@ For more information on this resource actions, see the [API documentation](https
 
 ```hcl
 data "outscale_flexible_gpu" "flexible_gpu01" {
-  filter {
-    name   = "flexible_gpu_ids"
-    values = ["fgpu-12345678"]
-  }
+    filter {
+        name   = "flexible_gpu_ids"
+        values = ["fgpu-12345678"]
+    }
 }
 ```
 

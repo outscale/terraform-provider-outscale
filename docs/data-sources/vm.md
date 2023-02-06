@@ -16,11 +16,11 @@ For more information on this resource actions, see the [API documentation](https
 ## Example Usage
 
 ```hcl
-data "outscale_vm" "vm_01" {
-  filter {
-    name   = "vm_ids"
-    values = ["i-12345678"]
-  }
+data "outscale_vm" "vm01" {
+    filter {
+        name   = "vm_ids"
+        values = ["i-12345678"]
+    }
 }
 ```
 
@@ -31,7 +31,7 @@ The following arguments are supported:
 * `filter` - (Optional) A combination of a filter name and one or more filter values. You can specify this argument for as many filter names as you need. The filter name can be any of the following:
     * `tag_keys` - (Optional) The keys of the tags associated with the VMs.
     * `tag_values` - (Optional) The values of the tags associated with the VMs.
-    * `tags` - (Optional) The key/value combination of the tags associated with the VMs, in the following format: &quot;Filters&quot;:{&quot;Tags&quot;:[&quot;TAGKEY=TAGVALUE&quot;]}.
+    * `tags` - (Optional) The key/value combinations of the tags associated with the VMs, in the following format: `TAGKEY=TAGVALUE`.
     * `vm_ids` - (Optional) One or more IDs of VMs.
 
 ## Attribute Reference
@@ -46,9 +46,8 @@ The following attributes are exported:
         * `state` - The state of the volume.
         * `volume_id` - The ID of the volume.
     * `device_name` - The name of the device.
-* `bsu_optimized` - This parameter is not available. It is present in our API for the sake of historical compatibility with AWS.
 * `client_token` - The idempotency token provided when launching the VM.
-* `creation_date` - The date and time at which the VM was created.
+* `creation_date` - The date and time of creation of the VM.
 * `deletion_protection` - If true, you cannot delete the VM unless you change this parameter back to false.
 * `hypervisor` - The hypervisor type of the VMs (`ovm` \| `xen`).
 * `image_id` - The ID of the OMI used to create the VM.

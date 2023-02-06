@@ -17,10 +17,10 @@ For more information on this resource actions, see the [API documentation](https
 
 ```hcl
 data "outscale_internet_service" "internet_service01" {
-  filter {
-    name   = "internet_service_ids"
-    values = ["igw-12345678"]
-  }
+    filter {
+        name   = "internet_service_ids"
+        values = ["igw-12345678"]
+    }
 }
 ```
 
@@ -34,7 +34,7 @@ The following arguments are supported:
     * `link_states` - (Optional) The current states of the attachments between the Internet services and the Nets (only `available`, if the Internet gateway is attached to a VPC).
     * `tag_keys` - (Optional) The keys of the tags associated with the Internet services.
     * `tag_values` - (Optional) The values of the tags associated with the Internet services.
-    * `tags` - (Optional) The key/value combination of the tags associated with the Internet services, in the following format: &quot;Filters&quot;:{&quot;Tags&quot;:[&quot;TAGKEY=TAGVALUE&quot;]}.
+    * `tags` - (Optional) The key/value combinations of the tags associated with the Internet services, in the following format: `TAGKEY=TAGVALUE`.
 
 ## Attribute Reference
 
