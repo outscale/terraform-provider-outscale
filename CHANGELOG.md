@@ -1,3 +1,27 @@
+0.8.0 (February 09, 2023)
+========================
+
+BUG FIXES:
+----------
+
+* Timeout for Image/Snapshot export task is too long ([GH-87](https://github.com/outscale/terraform-provider-outscale/issues/87))
+* Terminated VMs cannot be restarted ([GH-89](https://github.com/outscale/terraform-provider-outscale/issues/89))
+* Better handle "is_source_dest_checked" option on outscale_vm ([GH-108](https://github.com/outscale/terraform-provider-outscale/issues/108))
+* Error message when updating tags on linked volumes ([GH-221](https://github.com/outscale/terraform-provider-outscale/issues/221))
+* Incorrect iops value in block_device_mappings ([GH-239](https://github.com/outscale/terraform-provider-outscale/issues/239))
+* Improve error message when the used endpoint/proxy is invalid ([GH-245](https://github.com/outscale/terraform-provider-outscale/issues/245))
+
+FEATURES:
+---------
+
+* Check the behaviour of the provider when the resource is removed manually by the user ([GH-19](https://github.com/outscale/terraform-provider-outscale/issues/19))
+* "bsu_optimized" parameter in VM is deprecated in our API ([GH-217](https://github.com/outscale/terraform-provider-outscale/issues/217))
+
+IMPROVEMENT:
+-----------
+
+* Move ```terraform-provider-outscale``` repository form ```outscale-dev``` to ```outscale``` organization
+
 0.7.0 (November 24, 2022)
 ========================
 

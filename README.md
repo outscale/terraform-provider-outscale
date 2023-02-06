@@ -20,8 +20,8 @@ Add the following lines in the Terraform configuration to permit to get the prov
 terraform {
   required_providers {
     outscale = {
-      source = "outscale-dev/outscale"
-      version = "0.7.0"
+      source = "outscale/outscale"
+      version = "0.8.0"
     }
   }
 }
@@ -48,8 +48,8 @@ terraform {
   required_version = ">= 0.13"
   required_providers {
     outscale = {
-      source = "outscale-dev/outscale"
-      version = "0.7.0"
+      source = "outscale/outscale"
+      version = "0.8.0"
     }
   }
 }
@@ -73,22 +73,22 @@ Clone repository to: `$GOPATH/src/github.com/terraform-providers/terraform-provi
 ```sh
 mkdir -p $GOPATH/src/github.com/terraform-providers
 cd  $GOPATH/src/github.com/terraform-providers
-git clone --branch v0.7.0 https://github.com/outscale-dev/terraform-provider-outscale
+git clone --branch v0.8.0 https://github.com/outscale/terraform-provider-outscale
 ```
 Enter the provider directory and build the provider
 ```sh
 cd  $GOPATH/src/github.com/terraform-providers/terraform-provider-outscale
-go build -o terraform-provider-outscale_v0.7.0
+go build -o terraform-provider-outscale_v0.8.0
 ```
 ## Using the provider
 ### On Linux
 
 1. Download and install [Terraform](https://www.terraform.io/downloads.html)
 
-2. Move the plugin to the repository ~/.terraform.d/plugins/registry.terraform.io/outscale-dev/outscale/0.7.0/linux_amd64/.
+2. Move the plugin to the repository ~/.terraform.d/plugins/registry.terraform.io/outscale/outscale/0.8.0/linux_amd64/.
 ```shell
-mkdir -p ~/.terraform.d/plugins/regisutry.terraform.io/outscale-dev/outscale/0.7.0/linux_amd64
-mv terraform-provider-outscale_v0.7.0 ~/.terraform.d/plugins/registry.terraform.io/outscale-dev/outscale/0.7.0/linux_amd64
+mkdir -p ~/.terraform.d/plugins/regisutry.terraform.io/outscale/outscale/0.8.0/linux_amd64
+mv terraform-provider-outscale_v0.8.0 ~/.terraform.d/plugins/registry.terraform.io/outscale/outscale/0.8.0/linux_amd64
 ```
 3. Execute `terraform init
 
@@ -97,10 +97,10 @@ mv terraform-provider-outscale_v0.7.0 ~/.terraform.d/plugins/registry.terraform.
 ### On macOS
 1. Download and install [Terraform](https://www.terraform.io/downloads.html)
 
-2. Move the plugin to the repository ~/.terraform.d/plugins/registry.terraform.io/outscale-dev/outscale/0.7.0/darwin_arm64
+2. Move the plugin to the repository ~/.terraform.d/plugins/registry.terraform.io/outscale/outscale/0.8.0/darwin_arm64
 ```shell
-mkdir -p ~/.terraform.d/plugins/registry.terraform.io/outscale-dev/outscale/0.7.0/darwin_arm64
-mv terraform-provider-outscale_v0.7.0 ~/.terraform.d/plugins/registry.terraform.io/outscale-dev/outscale/0.7.0/darwin_arm64
+mkdir -p ~/.terraform.d/plugins/registry.terraform.io/outscale/outscale/0.8.0/darwin_arm64
+mv terraform-provider-outscale_v0.8.0 ~/.terraform.d/plugins/registry.terraform.io/outscale/outscale/0.8.0/darwin_arm64
 ```  
 
 3. Execute `terraform init`
