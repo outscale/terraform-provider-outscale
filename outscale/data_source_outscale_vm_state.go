@@ -68,6 +68,11 @@ func getVMStateAttrsSchema() map[string]*schema.Schema {
 				},
 			},
 		},
+		"all_vms": {
+			Type:     schema.TypeBool,
+			Optional: true,
+			Default:  false,
+		},
 		"vm_id": {
 			Type:     schema.TypeString,
 			Optional: true,
@@ -98,8 +103,7 @@ func dataSourceOutscaleOAPIVMStateRead(d *schema.ResourceData, meta interface{})
 		filter.SetVmIds([]string{instanceID.(string)})
 		params.SetFilters(filter)
 	}
-
-	params.SetAllVms(false)
+	params.SetAllVms(d.Get("all_vms").(bool))
 
 	var resp oscgo.ReadVmsStateResponse
 	var err error

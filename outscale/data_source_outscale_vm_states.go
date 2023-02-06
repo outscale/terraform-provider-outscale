@@ -23,6 +23,11 @@ func dataSourceOutscaleOAPIVMStates() *schema.Resource {
 func getOAPIVMStatesDataSourceSchema() map[string]*schema.Schema {
 	wholeSchema := map[string]*schema.Schema{
 		"filter": dataSourceFiltersSchema(),
+		"all_vms": {
+			Type:     schema.TypeBool,
+			Optional: true,
+			Default:  false,
+		},
 		"vm_ids": {
 			Type:     schema.TypeList,
 			Optional: true,
@@ -63,7 +68,7 @@ func dataSourceOutscaleOAPIVMStatesRead(d *schema.ResourceData, meta interface{}
 		filter.SetVmIds(utils.InterfaceSliceToStringSlice(instanceIds.([]interface{})))
 		params.SetFilters(filter)
 	}
-
+	params.SetAllVms(d.Get("all_vms").(bool))
 	var resp oscgo.ReadVmsStateResponse
 	var err error
 
