@@ -16,10 +16,14 @@ For more information on this resource actions, see the [API documentation](https
 ## Example Usage
 
 ```hcl
-data "outscale_vpn_connections" "data_vpn_connections" {
+data "outscale_vpn_connections" "vpn_connections01" {
 	filter {
-		name   = "vpn_connection_ids"
-		values = ["vpn-12345678","vpn-87654321"]
+		name   = "client_gateway_ids"
+		values = ["cgw-12345678"]
+	}
+	filter {
+		name   = "virtual_gateway_ids"
+		values = ["vgw-12345678", "vgw-12345678"]
 	}
 }
 ```
@@ -37,7 +41,7 @@ The following arguments are supported:
     * `static_routes_only` - (Optional) If false, the VPN connection uses dynamic routing with Border Gateway Protocol (BGP). If true, routing is controlled using static routes. For more information about how to create and delete static routes, see [CreateVpnConnectionRoute](https://docs.outscale.com/api#createvpnconnectionroute) and [DeleteVpnConnectionRoute](https://docs.outscale.com/api#deletevpnconnectionroute).
     * `tag_keys` - (Optional) The keys of the tags associated with the VPN connections.
     * `tag_values` - (Optional) The values of the tags associated with the VPN connections.
-    * `tags` - (Optional) The key/value combination of the tags associated with the VPN connections, in the following format: &quot;Filters&quot;:{&quot;Tags&quot;:[&quot;TAGKEY=TAGVALUE&quot;]}.
+    * `tags` - (Optional) The key/value combinations of the tags associated with the VPN connections, in the following format: `TAGKEY=TAGVALUE`.
     * `virtual_gateway_ids` - (Optional) The IDs of the virtual gateways.
     * `vpn_connection_ids` - (Optional) The IDs of the VPN connections.
 

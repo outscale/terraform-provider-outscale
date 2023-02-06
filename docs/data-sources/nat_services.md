@@ -17,10 +17,14 @@ For more information on this resource actions, see the [API documentation](https
 
 ```hcl
 data "outscale_nat_services" "nat_services01" {
-  filter {
-    name   = "nat_service_ids"
-    values = ["nat-12345678", "nat-12345679"]
-  }
+    filter {
+        name   = "net_ids"
+        values = ["vpc-12345678", "vpc-87654321"]
+    }
+    filter {
+        name   = "subnet_ids"
+        values = ["eu-west-2a"]
+    }
 }
 ```
 
@@ -35,7 +39,7 @@ The following arguments are supported:
     * `subnet_ids` - (Optional) The IDs of the Subnets in which the NAT services are.
     * `tag_keys` - (Optional) The keys of the tags associated with the NAT services.
     * `tag_values` - (Optional) The values of the tags associated with the NAT services.
-    * `tags` - (Optional) The key/value combination of the tags associated with the NAT services, in the following format: &quot;Filters&quot;:{&quot;Tags&quot;:[&quot;TAGKEY=TAGVALUE&quot;]}.
+    * `tags` - (Optional) The key/value combinations of the tags associated with the NAT services, in the following format: `TAGKEY=TAGVALUE`.
 
 ## Attribute Reference
 

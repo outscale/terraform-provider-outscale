@@ -17,7 +17,7 @@ For more information on this resource actions, see the [API documentation](https
 
 ```hcl
 data "outscale_net_attributes" "net_attributes01" {
-  net_id = "vpc-12345678"
+    net_id = "vpc-12345678"
 }
 ```
 

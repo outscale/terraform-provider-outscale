@@ -27,7 +27,7 @@ data "outscale_vm_types" "vm_types01" {
     filter {
         name   = "bsu_optimized"
         values = [true]
-        }
+    }
 }
 ```
 
@@ -37,7 +37,7 @@ data "outscale_vm_types" "vm_types02" {
     filter {
         name   = "vm_type_names"
         values = ["m3.large"]
-        }
+    }
 }
 ```
 

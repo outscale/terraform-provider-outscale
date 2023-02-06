@@ -17,7 +17,6 @@ For more information on this resource actions, see the [API documentation](https
 
 ```hcl
 data "outscale_regions" "all_regions" {
-  
 }
 ```
 

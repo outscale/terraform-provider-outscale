@@ -17,10 +17,10 @@ For more information on this resource actions, see the [API documentation](https
 
 ```hcl
 data "outscale_public_ip" "public_ip01" {
-  filter {
-    name   = "public_ips"
-    values = ["111.11.111.1"]
-  }
+    filter {
+        name   = "public_ips"
+        values = ["111.11.111.1"]
+    }
 }
 ```
 
@@ -38,7 +38,7 @@ The following arguments are supported:
     * `public_ips` - (Optional) The public IPs.
     * `tag_keys` - (Optional) The keys of the tags associated with the public IPs.
     * `tag_values` - (Optional) The values of the tags associated with the public IPs.
-    * `tags` - (Optional) The key/value combination of the tags associated with the public IPs, in the following format: &quot;Filters&quot;:{&quot;Tags&quot;:[&quot;TAGKEY=TAGVALUE&quot;]}.
+    * `tags` - (Optional) The key/value combinations of the tags associated with the public IPs, in the following format: `TAGKEY=TAGVALUE`.
     * `vm_ids` - (Optional) The IDs of the VMs.
 
 ## Attribute Reference

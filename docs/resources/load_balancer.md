@@ -19,18 +19,18 @@ For more information on this resource actions, see the [API documentation](https
 
 ```hcl
 resource "outscale_load_balancer" "load_balancer01" {
-  load_balancer_name = "terraform-public-load-balancer"
-  subregion_names    = ["${var.region}a"]
-  listeners {
-      backend_port           = 8080
-      backend_protocol       = "HTTP"
-      load_balancer_protocol = "HTTP"
-      load_balancer_port     = 8080
-  }
-  tags {
-      key   = "name"
-      value = "terraform-public-load-balancer"
-  }
+    load_balancer_name = "terraform-public-load-balancer"
+    subregion_names    = ["${var.region}a"]
+    listeners {
+        backend_port           = 8080
+        backend_protocol       = "HTTP"
+        load_balancer_protocol = "HTTP"
+        load_balancer_port     = 8080
+    }
+    tags {
+        key   = "name"
+        value = "terraform-public-load-balancer"
+    }
 }
 ```
 
@@ -38,43 +38,43 @@ resource "outscale_load_balancer" "load_balancer01" {
 
 ```hcl
 resource "outscale_net" "net01" {
-  ip_range = "10.0.0.0/16"
+    ip_range = "10.0.0.0/16"
 }
 
 resource "outscale_subnet" "subnet01" {
-  net_id   = outscale_net.net01.net_id
-  ip_range = "10.0.0.0/24"
-  tags {
-      key   = "Name"
-      value = "terraform-subnet-for-internal-load-balancer"
-  }
+    net_id   = outscale_net.net01.net_id
+    ip_range = "10.0.0.0/24"
+    tags {
+        key   = "Name"
+        value = "terraform-subnet-for-internal-load-balancer"
+    }
 }
 
 resource "outscale_security_group" "security_group01" {
-  description         = "Terraform security group for internal load balancer"
-  security_group_name = "terraform-security-group-for-internal-load-balancer"
-  net_id              = outscale_net.net01.net_id
-  tags {
-      key   = "Name"
-      value = "terraform-security-group-for-internal-load-balancer"
-  }
+    description         = "Terraform security group for internal load balancer"
+    security_group_name = "terraform-security-group-for-internal-load-balancer"
+    net_id              = outscale_net.net01.net_id
+    tags {
+        key   = "Name"
+        value = "terraform-security-group-for-internal-load-balancer"
+    }
 }
 
 resource "outscale_load_balancer" "load_balancer02" {
-  load_balancer_name = "terraform-private-load-balancer"
-  listeners {
-      backend_port           = 80
-      backend_protocol       = "TCP"
-      load_balancer_protocol = "TCP"
-      load_balancer_port     = 80
-  }
-  subnets            = [outscale_subnet.subnet01.subnet_id]
-  security_groups    = [outscale_security_group.security_group01.security_group_id]
-  load_balancer_type = "internal"
-  tags {
-      key   = "name"
-      value = "terraform-private-load-balancer"
-  }
+    load_balancer_name = "terraform-private-load-balancer"
+    listeners {
+        backend_port           = 80
+        backend_protocol       = "TCP"
+        load_balancer_protocol = "TCP"
+        load_balancer_port     = 80
+    }
+    subnets            = [outscale_subnet.subnet01.subnet_id]
+    security_groups    = [outscale_security_group.security_group01.security_group_id]
+    load_balancer_type = "internal"
+    tags {
+        key   = "name"
+        value = "terraform-private-load-balancer"
+    }
 }
 ```
 
@@ -82,67 +82,68 @@ resource "outscale_load_balancer" "load_balancer02" {
 
 ```hcl
 resource "outscale_net" "net02" {
-  ip_range = "10.0.0.0/16"
+    ip_range = "10.0.0.0/16"
 }
 
 resource "outscale_subnet" "subnet02" {
-  net_id   = outscale_net.net02.net_id
-  ip_range = "10.0.0.0/24"
-  tags {
-      key   = "Name"
-      value = "terraform-security-group-for-load-balancer"
-  }
+    net_id   = outscale_net.net02.net_id
+    ip_range = "10.0.0.0/24"
+    tags {
+        key   = "Name"
+        value = "terraform-security-group-for-load-balancer"
+    }
 }
 
 resource "outscale_internet_service" "internet_service01" {
-  depends_on = [outscale_net.net02]
+    depends_on = [outscale_net.net02]
 }
 
 resource "outscale_internet_service_link" "internet_service_link01" {
-  internet_service_id = outscale_internet_service.internet_service01.internet_service_id
-  net_id              = outscale_net.net02.net_id
+    internet_service_id = outscale_internet_service.internet_service01.internet_service_id
+    net_id              = outscale_net.net02.net_id
 }
 
 resource "outscale_route_table" "route_table01" {
-  net_id = outscale_net.net02.net_id
-  tags {
-      key   = "name"
-      value = "terraform-route-table-for-load-balancer"
-  }
+    net_id = outscale_net.net02.net_id
+    tags {
+        key   = "name"
+        value = "terraform-route-table-for-load-balancer"
+    }
 }
 
 resource "outscale_route" "route01" {
-  gateway_id           = outscale_internet_service.internet_service01.id
-  destination_ip_range = "10.0.0.0/0"
-  route_table_id       = outscale_route_table.route_table01.route_table_id
+    gateway_id           = outscale_internet_service.internet_service01.id
+    destination_ip_range = "10.0.0.0/0"
+    route_table_id       = outscale_route_table.route_table01.route_table_id
 }
 
 resource "outscale_route_table_link" "route_table_link01" {
-  route_table_id = outscale_route_table.route_table01.route_table_id
-  subnet_id      = outscale_subnet.subnet02.subnet_id
+    route_table_id = outscale_route_table.route_table01.route_table_id
+    subnet_id      = outscale_subnet.subnet02.subnet_id
 }
 
 resource "outscale_load_balancer" "load_balancer03" {
-  load_balancer_name = "terraform-internet-facing-private-load-balancer"
-  listeners {
-      backend_port           = 80
-      backend_protocol       = "TCP"
-      load_balancer_protocol = "TCP"
-      load_balancer_port     = 80
-  }
-  listeners {
-      backend_port           = 8080
-      backend_protocol       = "HTTP"
-      load_balancer_protocol = "HTTP"
-      load_balancer_port     = 8080
-  }
-  subnets            = [outscale_subnet.subnet02.subnet_id]
-  load_balancer_type = "internet-facing"
-  tags {
-      key   = "name"
-      value = "terraform-internet-facing-private-load-balancer"
-  }
-  depends_on = [outscale_route.route01,outscale_route_table_link.route_table_link01]
+    load_balancer_name = "terraform-internet-private-lb"
+    listeners {
+        backend_port           = 80
+        backend_protocol       = "TCP"
+        load_balancer_protocol = "TCP"
+        load_balancer_port     = 80
+    }
+    listeners {
+        backend_port           = 8080
+        backend_protocol       = "HTTP"
+        load_balancer_protocol = "HTTP"
+        load_balancer_port     = 8080
+    }
+    subnets            = [outscale_subnet.subnet02.subnet_id]
+    load_balancer_type = "internet-facing"
+    public_ip          = "192.0.2.0"
+    tags {s
+        key   = "name"
+        value = "terraform-internet-private-lb"
+    }
+    depends_on = [outscale_route.route01,outscale_route_table_link.route_table_link01]
 }
 ```
 
@@ -158,6 +159,7 @@ The following arguments are supported:
     * `server_certificate_id` - (Optional) The OUTSCALE Resource Name (ORN) of the server certificate. For more information, see [Resource Identifiers > OUTSCALE Resource Names (ORNs)](https://docs.outscale.com/en/userguide/Resource-Identifiers.html#_outscale_resource_names_orns).
 * `load_balancer_name` - (Required) The unique name of the load balancer (32 alphanumeric or hyphen characters maximum, but cannot start or end with a hyphen).
 * `load_balancer_type` - (Optional) The type of load balancer: `internet-facing` or `internal`. Use this parameter only for load balancers in a Net.
+* `public_ip` - (Optional) (internet-facing only) The public IP you want to associate with the load balancer. If not specified, a public IP owned by 3DS OUTSCALE is associated.
 * `security_groups` - (Optional) (Net only) One or more IDs of security groups you want to assign to the load balancer. If not specified, the default security group of the Net is assigned to the load balancer.
 * `subnets` - (Optional) (Net only) The ID of the Subnet in which you want to create the load balancer. Regardless of this Subnet, the load balancer can distribute traffic to all Subnets. This parameter is required in a Net.
 * `subregion_names` - (Optional) (public Cloud only) The Subregion in which you want to create the load balancer. Regardless of this Subregion, the load balancer can distribute traffic to all Subregions. This parameter is required in the public Cloud.
@@ -201,6 +203,7 @@ The following attributes are exported:
 If `load_balancer_type` is `internet-facing`, the load balancer has a public DNS name that resolves to a public IP.<br />
 If `load_balancer_type` is `internal`, the load balancer has a public DNS name that resolves to a private IP.
 * `net_id` - The ID of the Net for the load balancer.
+* `public_ip` - (internet-facing only) The public IP associated with the load balancer.
 * `secured_cookies` - Whether secure cookies are enabled for the load balancer.
 * `security_groups` - One or more IDs of security groups for the load balancers. Valid only for load balancers in a Net.
 * `source_security_group` - Information about the source security group of the load balancer, which you can use as part of your inbound rules for your registered VMs.<br />

@@ -19,10 +19,10 @@ For more information on this resource actions, see the [API documentation](https
 
 ```hcl
 data "outscale_subregions" "subregions01" {
-  filter {
-    name   = "subregion_names"
-    values = ["eu-west-2a"]
-  }
+    filter {
+        name   = "subregion_names"
+        values = ["eu-west-2a"]
+    }
 }
 ```
 
@@ -30,10 +30,10 @@ data "outscale_subregions" "subregions01" {
 
 ```hcl
 data "outscale_subregions" "subregions02" {
-  filter {
-    name   = "subregion_names"
-    values = ["eu-west-2a", "eu-west-2b"]
-  }
+    filter {
+        name   = "subregion_names"
+        values = ["eu-west-2a", "eu-west-2b"]
+    }
 }
 ```
 ### List all accessible Subregions in the current Region
