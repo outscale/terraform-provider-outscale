@@ -185,7 +185,7 @@
                         "net_id": "",
                         "nics": [],
                         "os_family": "",
-                        "performance": "high",
+                        "performance": "highest",
                         "placement_subregion_name": "###region###a",
                         "placement_tenancy": "default",
                         "private_dns_name": "########",
