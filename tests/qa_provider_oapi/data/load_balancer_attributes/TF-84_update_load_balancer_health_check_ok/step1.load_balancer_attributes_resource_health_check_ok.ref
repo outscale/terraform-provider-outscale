@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_load_balancer",
             "name": "public_lbu1",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -87,7 +87,7 @@
             "mode": "managed",
             "type": "outscale_load_balancer_attributes",
             "name": "attributes-health-check",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -105,13 +105,13 @@
                         "dns_name": "########",
                         "health_check": [
                             {
-                                "check_interval": "36",
-                                "healthy_threshold": "10",
+                                "check_interval": 36,
+                                "healthy_threshold": 10,
                                 "path": "/index.html",
-                                "port": "80",
+                                "port": 80,
                                 "protocol": "HTTP",
-                                "timeout": "6",
-                                "unhealthy_threshold": "6"
+                                "timeout": 6,
+                                "unhealthy_threshold": 6
                             }
                         ],
                         "id": "##id-0##",
