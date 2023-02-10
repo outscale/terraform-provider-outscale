@@ -1,3 +1,13 @@
+0.8.2 (February 10, 2023)
+========================
+
+* Update gpg_key for new organization
+
+0.8.1 (February 09, 2023)
+========================
+
+* Fix wrong tags
+
 0.8.0 (February 09, 2023)
 ========================
 
