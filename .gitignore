@@ -33,6 +33,7 @@ terraformStatePull.json
 /tests/test.tf
 /tests/old.py
 /tests/tmp.txt
+/tests/qa_provider_oapi/terraform.d/
 
 # docs
 docs/generation_log.txt
