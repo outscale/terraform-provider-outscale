@@ -79,8 +79,6 @@ func resourceOutscaleOAPIOutboundRule() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"inbound_rules":  getRulesSchema(true),
-			"outbound_rules": getRulesSchema(true),
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -151,12 +149,6 @@ func resourceOutscaleOAPIOutboundRuleRead(d *schema.ResourceData, meta interface
 		return nil
 	}
 
-	if err := d.Set("inbound_rules", flattenRules(sg.GetInboundRules())); err != nil {
-		return fmt.Errorf("error setting `inbound_rules` for Outscale Security Group Rule(%s): %s", d.Id(), err)
-	}
-	if err := d.Set("outbound_rules", flattenRules(sg.GetOutboundRules())); err != nil {
-		return fmt.Errorf("error setting `outbound_rules` for Outscale Security Group Rule(%s): %s", d.Id(), err)
-	}
 	if err := d.Set("security_group_name", sg.GetSecurityGroupName()); err != nil {
 		return fmt.Errorf("error setting `security_group_name` for Outscale Security Group Rule(%s): %s", d.Id(), err)
 	}
@@ -436,10 +428,6 @@ func resourceOutscaleOAPISecurityGroupRuleImportState(d *schema.ResourceData, me
 	if err != nil {
 		return nil, err
 	}
-
-	resultInbound := []oscgo.SecurityGroupRule{}
-	resultOutbound := []oscgo.SecurityGroupRule{}
-
 	var ipRange, ipProtocol, fromRange, toRange string
 
 	if strings.EqualFold(ruleType, "inbound") {
@@ -451,7 +439,6 @@ func resourceOutscaleOAPISecurityGroupRuleImportState(d *schema.ResourceData, me
 						ipProtocol = protocol
 						fromRange = fromPort
 						toRange = toPort
-						resultInbound = append(resultInbound, inbound)
 					}
 				}
 			}
@@ -467,19 +454,12 @@ func resourceOutscaleOAPISecurityGroupRuleImportState(d *schema.ResourceData, me
 						ipProtocol = protocol
 						fromRange = fromPort
 						toRange = toPort
-						resultOutbound = append(resultOutbound, outbound)
 					}
 				}
 			}
 		}
 	}
 
-	if err := d.Set("inbound_rules", flattenRules(resultInbound)); err != nil {
-		return nil, fmt.Errorf("error setting `inbound_rules` for Outscale Security Group Rule(%s): %s", d.Id(), err)
-	}
-	if err := d.Set("outbound_rules", flattenRules(resultOutbound)); err != nil {
-		return nil, fmt.Errorf("error setting `outbound_rules` for Outscale Security Group Rule(%s): %s", d.Id(), err)
-	}
 	if err := d.Set("security_group_name", sg.GetSecurityGroupName()); err != nil {
 		return nil, fmt.Errorf("error setting `security_group_name` for Outscale Security Group Rule(%s): %s", d.Id(), err)
 	}
