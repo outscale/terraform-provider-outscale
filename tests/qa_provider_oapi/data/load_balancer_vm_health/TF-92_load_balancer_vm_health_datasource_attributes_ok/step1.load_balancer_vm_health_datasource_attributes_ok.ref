@@ -261,20 +261,9 @@
                         "flow": "Inbound",
                         "from_port_range": 8080,
                         "id": "##id-7##",
-                        "inbound_rules": [
-                            {
-                                "from_port_range": 8080,
-                                "ip_protocol": "tcp",
-                                "ip_ranges": "########",
-                                "security_groups_members": [],
-                                "service_ids": [],
-                                "to_port_range": 8080
-                            }
-                        ],
                         "ip_protocol": "tcp",
                         "ip_range": "0.0.0.0/0",
                         "net_id": "",
-                        "outbound_rules": [],
                         "request_id": "########",
                         "rules": [],
                         "security_group_account_id_to_link": null,

@@ -338,29 +338,9 @@
                         "flow": "Inbound",
                         "from_port_range": 80,
                         "id": "##id-1##",
-                        "inbound_rules": [
-                            {
-                                "from_port_range": 80,
-                                "ip_protocol": "tcp",
-                                "ip_ranges": "########",
-                                "security_groups_members": [],
-                                "service_ids": [],
-                                "to_port_range": 80
-                            }
-                        ],
                         "ip_protocol": "tcp",
                         "ip_range": "46.231.147.88/32",
                         "net_id": "##id-2##",
-                        "outbound_rules": [
-                            {
-                                "from_port_range": -1,
-                                "ip_protocol": "-1",
-                                "ip_ranges": "########",
-                                "security_groups_members": [],
-                                "service_ids": [],
-                                "to_port_range": -1
-                            }
-                        ],
                         "request_id": "########",
                         "rules": [],
                         "security_group_account_id_to_link": null,
