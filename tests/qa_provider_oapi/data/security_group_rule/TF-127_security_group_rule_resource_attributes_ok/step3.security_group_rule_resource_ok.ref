@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_security_group",
             "name": "outscale_security_group",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -36,7 +36,7 @@
             "mode": "managed",
             "type": "outscale_security_group_rule",
             "name": "outscale_security_group_rule_https",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -44,20 +44,9 @@
                         "flow": "Inbound",
                         "from_port_range": 443,
                         "id": "##id-1##",
-                        "inbound_rules": [
-                            {
-                                "from_port_range": 443,
-                                "ip_protocol": "tcp",
-                                "ip_ranges": "########",
-                                "security_groups_members": [],
-                                "service_ids": [],
-                                "to_port_range": 443
-                            }
-                        ],
                         "ip_protocol": "tcp",
                         "ip_range": "192.168.0.1/32",
                         "net_id": "",
-                        "outbound_rules": [],
                         "request_id": "########",
                         "rules": [],
                         "security_group_account_id_to_link": null,
