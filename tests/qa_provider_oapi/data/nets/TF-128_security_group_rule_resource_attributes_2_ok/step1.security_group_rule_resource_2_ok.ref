@@ -131,35 +131,9 @@
                         "flow": "Inbound",
                         "from_port_range": null,
                         "id": "##id-3##",
-                        "inbound_rules": [
-                            {
-                                "from_port_range": 22,
-                                "ip_protocol": "tcp",
-                                "ip_ranges": "########",
-                                "security_groups_members": [
-                                    {
-                                        "account_id": "##id-2##",
-                                        "security_group_id": "##id-4##",
-                                        "security_group_name": "sg2-terraform-test"
-                                    }
-                                ],
-                                "service_ids": [],
-                                "to_port_range": 22
-                            }
-                        ],
                         "ip_protocol": null,
                         "ip_range": null,
                         "net_id": "##id-1##",
-                        "outbound_rules": [
-                            {
-                                "from_port_range": -1,
-                                "ip_protocol": "-1",
-                                "ip_ranges": "########",
-                                "security_groups_members": [],
-                                "service_ids": [],
-                                "to_port_range": -1
-                            }
-                        ],
                         "request_id": "########",
                         "rules": [
                             {
@@ -205,49 +179,9 @@
                         "flow": "Outbound",
                         "from_port_range": null,
                         "id": "##id-3##",
-                        "inbound_rules": [
-                            {
-                                "from_port_range": 22,
-                                "ip_protocol": "tcp",
-                                "ip_ranges": "########",
-                                "security_groups_members": [
-                                    {
-                                        "account_id": "##id-2##",
-                                        "security_group_id": "##id-4##",
-                                        "security_group_name": "sg2-terraform-test"
-                                    }
-                                ],
-                                "service_ids": [],
-                                "to_port_range": 22
-                            }
-                        ],
                         "ip_protocol": null,
                         "ip_range": null,
                         "net_id": "##id-1##",
-                        "outbound_rules": [
-                            {
-                                "from_port_range": -1,
-                                "ip_protocol": "-1",
-                                "ip_ranges": "########",
-                                "security_groups_members": [],
-                                "service_ids": [],
-                                "to_port_range": -1
-                            },
-                            {
-                                "from_port_range": 22,
-                                "ip_protocol": "tcp",
-                                "ip_ranges": "########",
-                                "security_groups_members": [
-                                    {
-                                        "account_id": "##id-2##",
-                                        "security_group_id": "##id-4##",
-                                        "security_group_name": "sg2-terraform-test"
-                                    }
-                                ],
-                                "service_ids": [],
-                                "to_port_range": 22
-                            }
-                        ],
                         "request_id": "########",
                         "rules": [
                             {

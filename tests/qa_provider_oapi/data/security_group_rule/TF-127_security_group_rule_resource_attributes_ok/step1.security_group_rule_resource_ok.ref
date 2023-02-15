@@ -44,20 +44,9 @@
                         "flow": "Inbound",
                         "from_port_range": 0,
                         "id": "##id-1##",
-                        "inbound_rules": [
-                            {
-                                "from_port_range": 0,
-                                "ip_protocol": "tcp",
-                                "ip_ranges": "########",
-                                "security_groups_members": [],
-                                "service_ids": [],
-                                "to_port_range": 0
-                            }
-                        ],
                         "ip_protocol": "tcp",
                         "ip_range": "0.0.0.0/0",
                         "net_id": "",
-                        "outbound_rules": [],
                         "request_id": "########",
                         "rules": [],
                         "security_group_account_id_to_link": null,
@@ -86,28 +75,9 @@
                         "flow": "Inbound",
                         "from_port_range": 22,
                         "id": "##id-1##",
-                        "inbound_rules": [
-                            {
-                                "from_port_range": 0,
-                                "ip_protocol": "tcp",
-                                "ip_ranges": "########",
-                                "security_groups_members": [],
-                                "service_ids": [],
-                                "to_port_range": 0
-                            },
-                            {
-                                "from_port_range": 22,
-                                "ip_protocol": "tcp",
-                                "ip_ranges": "########",
-                                "security_groups_members": [],
-                                "service_ids": [],
-                                "to_port_range": 22
-                            }
-                        ],
                         "ip_protocol": "tcp",
                         "ip_range": "192.168.0.1/32",
                         "net_id": "",
-                        "outbound_rules": [],
                         "request_id": "########",
                         "rules": [],
                         "security_group_account_id_to_link": null,
