@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - master
+      - v1
 jobs:
   goreleaser:
     runs-on: ubuntu-latest

@@ -3,6 +3,7 @@ name: Credential Scanner
 on:
   pull_request:
     branches: [ master ]
+    branches: [ v1 ]
 
 jobs:
   cred-scan:
