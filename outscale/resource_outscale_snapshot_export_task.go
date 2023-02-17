@@ -170,7 +170,7 @@ func resourceOAPISnapshotExportTaskCreate(d *schema.ResourceData, meta interface
 	id := resp.SnapshotExportTask.GetTaskId()
 	d.SetId(id)
 	if d.IsNewResource() {
-		if err := setOSCAPITags(conn, d); err != nil {
+		if err := setOSCAPITags(conn, d, "tags"); err != nil {
 			return err
 		}
 		d.SetPartial("tags")
@@ -266,7 +266,7 @@ func resourceOAPISnapshotExportTaskUpdate(d *schema.ResourceData, meta interface
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	d.Partial(true)
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := setOSCAPITags(conn, d, "tags"); err != nil {
 		return err
 	}
 	d.SetPartial("tags")

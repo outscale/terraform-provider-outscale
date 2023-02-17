@@ -14,25 +14,42 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func setOSCAPITags(conn *oscgo.APIClient, d *schema.ResourceData) error {
+func setOSCAPITags(conn *oscgo.APIClient, d *schema.ResourceData, tags string) error {
 
-	if d.HasChange("tags") {
-		oraw, nraw := d.GetChange("tags")
+	if d.HasChange(tags) {
+		oraw, nraw := d.GetChange(tags)
 		o := oraw.(*schema.Set)
 		n := nraw.(*schema.Set)
 		create, remove := diffOSCAPITags(tagsFromSliceMap(o), tagsFromSliceMap(n))
+		resourceId := d.Id()
+		if tags == "boot_disk_tags" {
+			var resp oscgo.ReadVmsResponse
+			err := resource.Retry(60*time.Second, func() *resource.RetryError {
+				rp, httpResp, err := conn.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
+					Filters: &oscgo.FiltersVm{
+						VmIds: &[]string{resourceId},
+					},
+				}).Execute()
 
+				if err != nil {
+					return utils.CheckThrottling(httpResp, err)
+				}
+				resp = rp
+				return nil
+			})
+			if err != nil {
+				return err
+			}
+			resourceId = utils.GetBootDiskId(resp.GetVms()[0])
+		}
 		// Set tag
 		if len(remove) > 0 {
 			err := resource.Retry(60*time.Second, func() *resource.RetryError {
 				_, httpResp, err := conn.TagApi.DeleteTags(context.Background()).DeleteTagsRequest(oscgo.DeleteTagsRequest{
-					ResourceIds: []string{d.Id()},
+					ResourceIds: []string{resourceId},
 					Tags:        remove,
 				}).Execute()
 				if err != nil {
-					if strings.Contains(fmt.Sprint(err), ".NotFound") {
-						return resource.RetryableError(err) // retry
-					}
 					return utils.CheckThrottling(httpResp, err)
 				}
 				return nil
@@ -44,13 +61,10 @@ func setOSCAPITags(conn *oscgo.APIClient, d *schema.ResourceData) error {
 		if len(create) > 0 {
 			err := resource.Retry(60*time.Second, func() *resource.RetryError {
 				_, httpResp, err := conn.TagApi.CreateTags(context.Background()).CreateTagsRequest(oscgo.CreateTagsRequest{
-					ResourceIds: []string{d.Id()},
+					ResourceIds: []string{resourceId},
 					Tags:        create,
 				}).Execute()
 				if err != nil {
-					if strings.Contains(fmt.Sprint(err), ".NotFound") {
-						return resource.RetryableError(err) // retry
-					}
 					return utils.CheckThrottling(httpResp, err)
 				}
 				return nil
