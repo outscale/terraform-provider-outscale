@@ -280,7 +280,7 @@ func resourceOutscaleOAPINicCreate(d *schema.ResourceData, meta interface{}) err
 	d.SetId(resp.Nic.GetNicId())
 
 	if d.IsNewResource() {
-		if err := setOSCAPITags(conn, d); err != nil {
+		if err := setOSCAPITags(conn, d, "tags"); err != nil {
 			return err
 		}
 		d.SetPartial("tags")
@@ -707,7 +707,7 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 		d.SetPartial("description")
 	}
 
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := setOSCAPITags(conn, d, "tags"); err != nil {
 		return err
 	}
 

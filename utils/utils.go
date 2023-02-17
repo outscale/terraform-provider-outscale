@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -79,6 +80,39 @@ func PrintToJSON(v interface{}, msg string) {
 func ToJSONString(v interface{}) string {
 	pretty, _ := json.MarshalIndent(v, "", "  ")
 	return string(pretty)
+}
+
+func GetBootDiskId(vmResp oscgo.Vm) string {
+	bootDiskID := ""
+	blocks := vmResp.GetBlockDeviceMappings()
+
+	for _, v := range blocks {
+		if v.GetDeviceName() == vmResp.GetRootDeviceName() {
+			bootDiskID = aws.StringValue(v.GetBsu().VolumeId)
+			break
+		}
+	}
+	return bootDiskID
+}
+
+func GetBootDiskTags(volumeId string, conn *oscgo.APIClient) ([]oscgo.ResourceTag, error) {
+	request := oscgo.ReadVolumesRequest{
+		Filters: &oscgo.FiltersVolume{VolumeIds: &[]string{volumeId}},
+	}
+
+	var resp oscgo.ReadVolumesResponse
+	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+		r, httpResp, err := conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(request).Execute()
+		if err != nil {
+			return CheckThrottling(httpResp, err)
+		}
+		resp = r
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return resp.GetVolumes()[0].GetTags(), nil
 }
 
 func GetErrorResponse(err error) error {

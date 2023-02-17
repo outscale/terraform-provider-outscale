@@ -212,7 +212,7 @@ func resourceOutscaleOAPISecurityGroupCreate(d *schema.ResourceData, meta interf
 	}
 
 	if d.IsNewResource() {
-		if err := setOSCAPITags(conn, d); err != nil {
+		if err := setOSCAPITags(conn, d, "tags"); err != nil {
 			return err
 		}
 		d.SetPartial("tags")
@@ -301,7 +301,7 @@ func resourceOutscaleOAPISecurityGroupUpdate(d *schema.ResourceData, meta interf
 
 	d.Partial(true)
 
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := setOSCAPITags(conn, d, "tags"); err != nil {
 		return err
 	}
 

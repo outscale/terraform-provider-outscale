@@ -109,7 +109,7 @@ func resourceOutscaleOAPIVirtualGatewayCreate(d *schema.ResourceData, meta inter
 	d.SetId(virtualGateway.GetVirtualGatewayId())
 
 	if d.IsNewResource() {
-		if err := setOSCAPITags(conn, d); err != nil {
+		if err := setOSCAPITags(conn, d, "tags"); err != nil {
 			return err
 		}
 		d.SetPartial("tag")
@@ -183,7 +183,7 @@ func resourceOutscaleOAPIVirtualGatewayRead(d *schema.ResourceData, meta interfa
 func resourceOutscaleOAPIVirtualGatewayUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	d.Partial(true)
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := setOSCAPITags(conn, d, "tags"); err != nil {
 		return err
 	}
 	d.SetPartial("tags")

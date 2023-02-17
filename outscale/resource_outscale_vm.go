@@ -376,13 +376,11 @@ func resourceOutscaleOApiVM() *schema.Resource {
 			},
 			"block_device_mappings_created": {
 				Type:     schema.TypeList,
-				Optional: true,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"bsu": {
 							Type:     schema.TypeMap,
-							Optional: true,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -407,7 +405,23 @@ func resourceOutscaleOApiVM() *schema.Resource {
 						},
 						"device_name": {
 							Type:     schema.TypeString,
-							Optional: true,
+							Computed: true,
+						},
+						"boot_disk_tags": {
+							Type: schema.TypeList,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"key": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"value": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
+							},
+							Computed: true,
 						},
 					},
 				},
@@ -516,7 +530,8 @@ func resourceOutscaleOApiVM() *schema.Resource {
 				Type:     schema.TypeBool,
 				Optional: true,
 			},
-			"tags": tagsListOAPISchema(),
+			"boot_disk_tags": tagsListOAPISchema(),
+			"tags":           tagsListOAPISchema(),
 		},
 	}
 }
@@ -578,9 +593,14 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	log.Println("[DEBUG] imprimo log subnet")
 	if tags, ok := d.GetOk("tags"); ok {
 		err := assignTags(tags.(*schema.Set), vm.GetVmId(), conn)
+		if err != nil {
+			return err
+		}
+	}
+	if tags, ok := d.GetOk("boot_disk_tags"); ok {
+		err := assignTags(tags.(*schema.Set), utils.GetBootDiskId(vm), conn)
 		if err != nil {
 			return err
 		}
@@ -668,6 +688,17 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 			return err
 		}
 		d.SetId(vm.GetVmId())
+
+		booTags, errTags := utils.GetBootDiskTags(utils.GetBootDiskId(vm), conn)
+		if errTags != nil {
+			return errTags
+		}
+
+		if err := d.Set("block_device_mappings_created", getOscAPIVMBlockDeviceMapping(
+			booTags, vm.GetBlockDeviceMappings())); err != nil {
+			return err
+		}
+
 		return oapiVMDescriptionAttributes(set, &vm)
 	}); err != nil {
 		return err
@@ -694,9 +725,6 @@ func getOAPIVMAdminPassword(VMID string, conn *oscgo.APIClient) (string, error) 
 
 func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
-	d.Partial(true)
-
 	id := d.Get("vm_id").(string)
 
 	nothingToDo := true
@@ -868,13 +896,16 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := setOSCAPITags(conn, d, "tags"); err != nil {
 		return err
 	}
 
-	d.SetPartial("tags")
-
-	d.Partial(false)
+	if !d.IsNewResource() && d.HasChange("boot_disk_tags") {
+		onlyTags = true
+		if err := setOSCAPITags(conn, d, "boot_disk_tags"); err != nil {
+			return err
+		}
+	}
 
 	if onlyTags {
 		goto out

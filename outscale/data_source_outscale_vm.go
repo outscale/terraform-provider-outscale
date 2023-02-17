@@ -82,6 +82,16 @@ func dataSourceOutscaleOAPIVMRead(d *schema.ResourceData, meta interface{}) erro
 	// Populate vm attribute fields with the returned vm
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
 		d.SetId(vm.GetVmId())
+
+		booTags, errTags := utils.GetBootDiskTags(utils.GetBootDiskId(vm), client)
+		if errTags != nil {
+			return errTags
+		}
+		if err := d.Set("block_device_mappings_created", getOscAPIVMBlockDeviceMapping(
+			booTags, vm.GetBlockDeviceMappings())); err != nil {
+			return err
+		}
+
 		return oapiVMDescriptionAttributes(set, &vm)
 	})
 }
@@ -89,10 +99,6 @@ func dataSourceOutscaleOAPIVMRead(d *schema.ResourceData, meta interface{}) erro
 // Populate instance attribute fields with the returned instance
 func oapiVMDescriptionAttributes(set AttributeSetter, vm *oscgo.Vm) error {
 	if err := set("architecture", vm.GetArchitecture()); err != nil {
-		return err
-	}
-	if err := set("block_device_mappings_created", getOscAPIVMBlockDeviceMapping(vm.GetBlockDeviceMappings())); err != nil {
-		log.Printf("[DEBUG] BLOCKING DEVICE MAPPING ERR %+v", err)
 		return err
 	}
 	if err := set("bsu_optimized", vm.GetBsuOptimized()); err != nil {
@@ -195,7 +201,7 @@ func oapiVMDescriptionAttributes(set AttributeSetter, vm *oscgo.Vm) error {
 	return set("vm_type", vm.GetVmType())
 }
 
-func getOscAPIVMBlockDeviceMapping(blockDeviceMappings []oscgo.BlockDeviceMappingCreated) []map[string]interface{} {
+func getOscAPIVMBlockDeviceMapping(booTags []oscgo.ResourceTag, blockDeviceMappings []oscgo.BlockDeviceMappingCreated) []map[string]interface{} {
 	blockDeviceMapping := make([]map[string]interface{}, len(blockDeviceMappings))
 
 	for k, v := range blockDeviceMappings {
@@ -207,6 +213,9 @@ func getOscAPIVMBlockDeviceMapping(blockDeviceMappings []oscgo.BlockDeviceMappin
 				"state":                 aws.StringValue(v.GetBsu().State),
 				"link_date":             aws.StringValue(v.GetBsu().LinkDate),
 			},
+		}
+		if aws.StringValue(v.DeviceName) == "/dev/sda1" {
+			blockDeviceMapping[k]["boot_disk_tags"] = getOscAPITagSet(booTags)
 		}
 	}
 	return blockDeviceMapping
@@ -311,6 +320,22 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 					"device_name": {
 						Type:     schema.TypeString,
 						Optional: true,
+					},
+					"boot_disk_tags": {
+						Type: schema.TypeList,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"key": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+								"value": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+							},
+						},
+						Computed: true,
 					},
 				},
 			},

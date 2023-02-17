@@ -131,7 +131,7 @@ func resourceOutscaleOAPISubNetRead(d *schema.ResourceData, meta interface{}) er
 func resourceOutscaleOAPISubNetUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := setOSCAPITags(conn, d, "tags"); err != nil {
 		return err
 	}
 

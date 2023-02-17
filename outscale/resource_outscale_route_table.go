@@ -178,7 +178,7 @@ func resourceOutscaleOAPIRouteTableCreate(d *schema.ResourceData, meta interface
 	}
 
 	if d.IsNewResource() {
-		if err := setOSCAPITags(conn, d); err != nil {
+		if err := setOSCAPITags(conn, d, "tags"); err != nil {
 			return err
 		}
 		d.SetPartial("tags")
@@ -236,7 +236,7 @@ func resourceOutscaleOAPIRouteTableUpdate(d *schema.ResourceData, meta interface
 
 	d.Partial(true)
 
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := setOSCAPITags(conn, d, "tags"); err != nil {
 		return err
 	}
 

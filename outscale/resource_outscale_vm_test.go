@@ -642,6 +642,10 @@ func testAccCheckOutscaleOAPIVMConfigBasic(omi, vmType, region, keypair string) 
 				key   = "name"
 				value = "Terraform-VM"
 			}
+			boot_disk_tags {
+				key   = "Name"
+				value = "boot_dist-test"
+			}
 		}`, omi, vmType, region, keypair)
 }
 
