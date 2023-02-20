@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_vm",
             "name": "outscale_vm",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -17,12 +17,14 @@
                         "architecture": "x86_64",
                         "block_device_mappings_created": [
                             {
-                                "bsu": {
-                                    "delete_on_vm_deletion": "true",
-                                    "link_date": "########",
-                                    "state": "attached",
-                                    "volume_id": "##id-0##"
-                                },
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "link_date": "########",
+                                        "state": "attached",
+                                        "volume_id": "##id-0##"
+                                    }
+                                ],
                                 "device_name": "/dev/sda1"
                             }
                         ],
@@ -90,7 +92,7 @@
             "mode": "data",
             "type": "outscale_vm",
             "name": "outscale_vm_2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -98,12 +100,14 @@
                         "architecture": "x86_64",
                         "block_device_mappings_created": [
                             {
-                                "bsu": {
-                                    "delete_on_vm_deletion": "true",
-                                    "link_date": "########",
-                                    "state": "attached",
-                                    "volume_id": "##id-0##"
-                                },
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "link_date": "########",
+                                        "state": "attached",
+                                        "volume_id": "##id-0##"
+                                    }
+                                ],
                                 "device_name": "/dev/sda1"
                             }
                         ],
@@ -171,7 +175,7 @@
             "mode": "data",
             "type": "outscale_vm",
             "name": "outscale_vm_3",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -179,12 +183,14 @@
                         "architecture": "x86_64",
                         "block_device_mappings_created": [
                             {
-                                "bsu": {
-                                    "delete_on_vm_deletion": "true",
-                                    "link_date": "########",
-                                    "state": "attached",
-                                    "volume_id": "##id-0##"
-                                },
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "link_date": "########",
+                                        "state": "attached",
+                                        "volume_id": "##id-0##"
+                                    }
+                                ],
                                 "device_name": "/dev/sda1"
                             }
                         ],
@@ -252,7 +258,7 @@
             "mode": "data",
             "type": "outscale_vm",
             "name": "outscale_vm_centos2_0",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -260,12 +266,14 @@
                         "architecture": "x86_64",
                         "block_device_mappings_created": [
                             {
-                                "bsu": {
-                                    "delete_on_vm_deletion": "true",
-                                    "link_date": "########",
-                                    "state": "attached",
-                                    "volume_id": "##id-5##"
-                                },
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "link_date": "########",
+                                        "state": "attached",
+                                        "volume_id": "##id-5##"
+                                    }
+                                ],
                                 "device_name": "/dev/sda1"
                             }
                         ],
@@ -329,7 +337,7 @@
             "mode": "data",
             "type": "outscale_vm",
             "name": "outscale_vm_centos2_1",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -337,12 +345,14 @@
                         "architecture": "x86_64",
                         "block_device_mappings_created": [
                             {
-                                "bsu": {
-                                    "delete_on_vm_deletion": "true",
-                                    "link_date": "########",
-                                    "state": "attached",
-                                    "volume_id": "##id-8##"
-                                },
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "link_date": "########",
+                                        "state": "attached",
+                                        "volume_id": "##id-8##"
+                                    }
+                                ],
                                 "device_name": "/dev/sda1"
                             }
                         ],
@@ -406,7 +416,7 @@
             "mode": "managed",
             "type": "outscale_keypair",
             "name": "my_keypair",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -428,7 +438,7 @@
             "mode": "managed",
             "type": "outscale_security_group",
             "name": "public_sg",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -455,7 +465,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "outscale_vm_centos",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -465,12 +475,14 @@
                         "block_device_mappings": [],
                         "block_device_mappings_created": [
                             {
-                                "bsu": {
-                                    "delete_on_vm_deletion": "true",
-                                    "link_date": "########",
-                                    "state": "attached",
-                                    "volume_id": "##id-0##"
-                                },
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "link_date": "########",
+                                        "state": "attached",
+                                        "volume_id": "##id-0##"
+                                    }
+                                ],
                                 "device_name": "/dev/sda1"
                             }
                         ],
@@ -546,7 +558,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "outscale_vm_centos2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "index_key": 0,
@@ -557,12 +569,14 @@
                         "block_device_mappings": [],
                         "block_device_mappings_created": [
                             {
-                                "bsu": {
-                                    "delete_on_vm_deletion": "true",
-                                    "link_date": "########",
-                                    "state": "attached",
-                                    "volume_id": "##id-5##"
-                                },
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "link_date": "########",
+                                        "state": "attached",
+                                        "volume_id": "##id-5##"
+                                    }
+                                ],
                                 "device_name": "/dev/sda1"
                             }
                         ],
@@ -637,12 +651,14 @@
                         "block_device_mappings": [],
                         "block_device_mappings_created": [
                             {
-                                "bsu": {
-                                    "delete_on_vm_deletion": "true",
-                                    "link_date": "########",
-                                    "state": "attached",
-                                    "volume_id": "##id-8##"
-                                },
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "link_date": "########",
+                                        "state": "attached",
+                                        "volume_id": "##id-8##"
+                                    }
+                                ],
                                 "device_name": "/dev/sda1"
                             }
                         ],

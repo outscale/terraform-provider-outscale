@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_keypair",
             "name": "my_keypair",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -31,7 +31,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "outscale_vm",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -41,12 +41,14 @@
                         "block_device_mappings": [],
                         "block_device_mappings_created": [
                             {
-                                "bsu": {
-                                    "delete_on_vm_deletion": "true",
-                                    "link_date": "########",
-                                    "state": "attached",
-                                    "volume_id": "##id-1##"
-                                },
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "link_date": "########",
+                                        "state": "attached",
+                                        "volume_id": "##id-1##"
+                                    }
+                                ],
                                 "device_name": "/dev/sda1"
                             }
                         ],

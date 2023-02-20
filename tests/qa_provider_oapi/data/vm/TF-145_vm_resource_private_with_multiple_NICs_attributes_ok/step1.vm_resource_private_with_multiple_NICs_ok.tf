@@ -4,12 +4,12 @@ resource "outscale_keypair" "my_keypair" {
 ## Test Private VM with multiple NICs  ##
 
 resource "outscale_net" "outscale_net" {
-    ip_range = "10.0.0.0/16"
+    ip_range = "10.22.0.0/16"
 }
 
 resource "outscale_subnet" "outscale_subnet" {
  net_id              = outscale_net.outscale_net.net_id
- ip_range            = "10.0.0.0/24"
+ ip_range            = "10.22.0.0/24"
  subregion_name      = "${var.region}a"
 }
 
@@ -38,7 +38,7 @@ resource "outscale_vm" "outscale_vm" {
        subnet_id = outscale_subnet.outscale_subnet.subnet_id
        security_group_ids = [outscale_security_group.outscale_security_group.security_group_id]
        private_ips  {
-             private_ip ="10.0.0.123"
+             private_ip ="10.22.0.123"
              is_primary = true
         }
        device_number = "0"

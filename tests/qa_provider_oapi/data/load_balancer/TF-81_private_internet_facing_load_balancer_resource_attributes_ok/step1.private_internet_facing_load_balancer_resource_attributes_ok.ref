@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_internet_service",
             "name": "outscale_internet_service",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -30,7 +30,7 @@
             "mode": "managed",
             "type": "outscale_internet_service_link",
             "name": "outscale_internet_service_link",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -55,29 +55,33 @@
             "mode": "managed",
             "type": "outscale_load_balancer",
             "name": "private_lbu_1",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "access_log": {
-                            "is_enabled": "false",
-                            "osu_bucket_name": "",
-                            "osu_bucket_prefix": "",
-                            "publication_interval": "60"
-                        },
+                        "access_log": [
+                            {
+                                "is_enabled": false,
+                                "osu_bucket_name": "",
+                                "osu_bucket_prefix": "",
+                                "publication_interval": 60
+                            }
+                        ],
                         "application_sticky_cookie_policies": [],
                         "backend_vm_ids": [],
                         "dns_name": "########",
-                        "health_check": {
-                            "check_interval": "30",
-                            "healthy_threshold": "10",
-                            "path": "",
-                            "port": "8080",
-                            "protocol": "TCP",
-                            "timeout": "5",
-                            "unhealthy_threshold": "2"
-                        },
+                        "health_check": [
+                            {
+                                "check_interval": 30,
+                                "healthy_threshold": 10,
+                                "path": "",
+                                "port": 8080,
+                                "protocol": "TCP",
+                                "timeout": 5,
+                                "unhealthy_threshold": 2
+                            }
+                        ],
                         "id": "##id-2##",
                         "listeners": [
                             {
@@ -108,10 +112,12 @@
                             "##id-3##",
                             "##id-4##"
                         ],
-                        "source_security_group": {
-                            "security_group_account_id": "##id-5##",
-                            "security_group_name": "terraform-sg-lbu-2"
-                        },
+                        "source_security_group": [
+                            {
+                                "security_group_account_id": "##id-5##",
+                                "security_group_name": "terraform-sg-lbu-2"
+                            }
+                        ],
                         "subnets": [
                             "##id-6##"
                         ],
@@ -144,7 +150,7 @@
             "mode": "managed",
             "type": "outscale_net",
             "name": "outscale_net",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -167,7 +173,7 @@
             "mode": "managed",
             "type": "outscale_route",
             "name": "outscale_route",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -183,7 +189,7 @@
                         "net_peering_id": "",
                         "nic_id": "",
                         "request_id": "########",
-                        "route_table_id": "##id-8##",
+                        "route_table_id": "##id-9##",
                         "state": "active",
                         "vm_account_id": "",
                         "vm_id": ""
@@ -202,17 +208,17 @@
             "mode": "managed",
             "type": "outscale_route_table",
             "name": "outscale_route_table",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-8##",
+                        "id": "##id-9##",
                         "link_route_tables": [],
                         "net_id": "##id-1##",
                         "request_id": "########",
                         "route_propagating_virtual_gateways": [],
-                        "route_table_id": "##id-8##",
+                        "route_table_id": "##id-9##",
                         "routes": [
                             {
                                 "creation_method": "CreateRouteTable",
@@ -247,16 +253,16 @@
             "mode": "managed",
             "type": "outscale_route_table_link",
             "name": "outscale_route_table_link",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-9##",
-                        "link_route_table_id": "##id-9##",
+                        "id": "##id-10##",
+                        "link_route_table_id": "##id-10##",
                         "main": false,
                         "request_id": "########",
-                        "route_table_id": "##id-8##",
+                        "route_table_id": "##id-9##",
                         "subnet_id": "##id-6##"
                     },
                     "sensitive_attributes": [],
@@ -273,50 +279,7 @@
             "mode": "managed",
             "type": "outscale_security_group",
             "name": "outscale_security_group",
-            "provider": "provider[\"local/test/outscale\"]",
-            "instances": [
-                {
-                    "schema_version": 0,
-                    "attributes": {
-                        "account_id": "##id-5##",
-                        "description": "test lbu-2",
-                        "id": "##id-3##",
-                        "inbound_rules": [],
-                        "net_id": "##id-1##",
-                        "outbound_rules": [
-                            {
-                                "from_port_range": -1,
-                                "ip_protocol": "-1",
-                                "ip_ranges": "########",
-                                "security_groups_members": [],
-                                "to_port_range": -1
-                            }
-                        ],
-                        "remove_default_outbound_rule": false,
-                        "request_id": "########",
-                        "security_group_id": "##id-3##",
-                        "security_group_name": "terraform-sg-lbu-1",
-                        "tag": null,
-                        "tags": [
-                            {
-                                "key": "Name",
-                                "value": "outscale_terraform_lbu_sg"
-                            }
-                        ]
-                    },
-                    "sensitive_attributes": [],
-                    "private": "bnVsbA==",
-                    "dependencies": [
-                        "outscale_net.outscale_net"
-                    ]
-                }
-            ]
-        },
-        {
-            "mode": "managed",
-            "type": "outscale_security_group",
-            "name": "outscale_security_group-2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -338,6 +301,49 @@
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-4##",
+                        "security_group_name": "terraform-sg-lbu-1",
+                        "tag": null,
+                        "tags": [
+                            {
+                                "key": "Name",
+                                "value": "outscale_terraform_lbu_sg"
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA==",
+                    "dependencies": [
+                        "outscale_net.outscale_net"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_security_group",
+            "name": "outscale_security_group-2",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-5##",
+                        "description": "test lbu-2",
+                        "id": "##id-3##",
+                        "inbound_rules": [],
+                        "net_id": "##id-1##",
+                        "outbound_rules": [
+                            {
+                                "from_port_range": -1,
+                                "ip_protocol": "-1",
+                                "ip_ranges": "########",
+                                "security_groups_members": [],
+                                "to_port_range": -1
+                            }
+                        ],
+                        "remove_default_outbound_rule": false,
+                        "request_id": "########",
+                        "security_group_id": "##id-3##",
                         "security_group_name": "terraform-sg-lbu-2",
                         "tag": null,
                         "tags": [
@@ -359,7 +365,7 @@
             "mode": "managed",
             "type": "outscale_subnet",
             "name": "subnet-1",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,

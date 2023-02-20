@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_image",
             "name": "outscale_image",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -87,7 +87,7 @@
             "mode": "managed",
             "type": "outscale_image",
             "name": "outscale_image_2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -153,7 +153,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "my-vm",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -163,12 +163,14 @@
                         "block_device_mappings": [],
                         "block_device_mappings_created": [
                             {
-                                "bsu": {
-                                    "delete_on_vm_deletion": "true",
-                                    "link_date": "########",
-                                    "state": "attached",
-                                    "volume_id": "##id-7##"
-                                },
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "link_date": "########",
+                                        "state": "attached",
+                                        "volume_id": "##id-7##"
+                                    }
+                                ],
                                 "device_name": "/dev/sda1"
                             }
                         ],

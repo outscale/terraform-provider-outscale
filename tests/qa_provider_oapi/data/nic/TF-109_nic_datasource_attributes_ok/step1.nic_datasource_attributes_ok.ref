@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_nic",
             "name": "nic-0",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -19,21 +19,8 @@
                         "filter": "########",
                         "id": "##id-1##",
                         "is_source_dest_checked": true,
-                        "link_nic": {
-                            "delete_on_vm_deletion": "false",
-                            "device_number": "0",
-                            "link_nic_id": "",
-                            "state": "",
-                            "vm_account_id": "",
-                            "vm_id": ""
-                        },
-                        "link_public_ip": {
-                            "link_public_ip_id": "",
-                            "public_dns_name": "########",
-                            "public_ip": "########",
-                            "public_ip_account_id": "",
-                            "public_ip_id": ""
-                        },
+                        "link_nic": [],
+                        "link_public_ip": [],
                         "mac_address": "########",
                         "net_id": "##id-2##",
                         "nic_id": "##id-1##",
@@ -42,25 +29,13 @@
                         "private_ips": [
                             {
                                 "is_primary": true,
-                                "link_public_ip": {
-                                    "link_public_ip_id": "",
-                                    "public_dns_name": "########",
-                                    "public_ip": "########",
-                                    "public_ip_account_id": "",
-                                    "public_ip_id": ""
-                                },
+                                "link_public_ip": [],
                                 "private_dns_name": "########",
                                 "private_ip": "########"
                             },
                             {
                                 "is_primary": false,
-                                "link_public_ip": {
-                                    "link_public_ip_id": "",
-                                    "public_dns_name": "########",
-                                    "public_ip": "########",
-                                    "public_ip_account_id": "",
-                                    "public_ip_id": ""
-                                },
+                                "link_public_ip": [],
                                 "private_dns_name": "########",
                                 "private_ip": "########"
                             }
@@ -96,7 +71,7 @@
             "mode": "data",
             "type": "outscale_nic",
             "name": "nic-1",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -106,21 +81,8 @@
                         "filter": "########",
                         "id": "##id-1##",
                         "is_source_dest_checked": true,
-                        "link_nic": {
-                            "delete_on_vm_deletion": "false",
-                            "device_number": "0",
-                            "link_nic_id": "",
-                            "state": "",
-                            "vm_account_id": "",
-                            "vm_id": ""
-                        },
-                        "link_public_ip": {
-                            "link_public_ip_id": "",
-                            "public_dns_name": "########",
-                            "public_ip": "########",
-                            "public_ip_account_id": "",
-                            "public_ip_id": ""
-                        },
+                        "link_nic": [],
+                        "link_public_ip": [],
                         "mac_address": "########",
                         "net_id": "##id-2##",
                         "nic_id": "##id-1##",
@@ -129,25 +91,13 @@
                         "private_ips": [
                             {
                                 "is_primary": true,
-                                "link_public_ip": {
-                                    "link_public_ip_id": "",
-                                    "public_dns_name": "########",
-                                    "public_ip": "########",
-                                    "public_ip_account_id": "",
-                                    "public_ip_id": ""
-                                },
+                                "link_public_ip": [],
                                 "private_dns_name": "########",
                                 "private_ip": "########"
                             },
                             {
                                 "is_primary": false,
-                                "link_public_ip": {
-                                    "link_public_ip_id": "",
-                                    "public_dns_name": "########",
-                                    "public_ip": "########",
-                                    "public_ip_account_id": "",
-                                    "public_ip_id": ""
-                                },
+                                "link_public_ip": [],
                                 "private_dns_name": "########",
                                 "private_ip": "########"
                             }
@@ -183,7 +133,7 @@
             "mode": "data",
             "type": "outscale_nic",
             "name": "nic-2-main",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -193,21 +143,17 @@
                         "filter": "########",
                         "id": "##id-5##",
                         "is_source_dest_checked": true,
-                        "link_nic": {
-                            "delete_on_vm_deletion": "true",
-                            "device_number": "0",
-                            "link_nic_id": "##id-6##",
-                            "state": "attached",
-                            "vm_account_id": "##id-0##",
-                            "vm_id": "##id-7##"
-                        },
-                        "link_public_ip": {
-                            "link_public_ip_id": "",
-                            "public_dns_name": "########",
-                            "public_ip": "########",
-                            "public_ip_account_id": "",
-                            "public_ip_id": ""
-                        },
+                        "link_nic": [
+                            {
+                                "delete_on_vm_deletion": "true",
+                                "device_number": 0,
+                                "link_nic_id": "##id-6##",
+                                "state": "attached",
+                                "vm_account_id": "##id-0##",
+                                "vm_id": "##id-7##"
+                            }
+                        ],
+                        "link_public_ip": [],
                         "mac_address": "########",
                         "net_id": "##id-2##",
                         "nic_id": "##id-5##",
@@ -216,13 +162,7 @@
                         "private_ips": [
                             {
                                 "is_primary": true,
-                                "link_public_ip": {
-                                    "link_public_ip_id": "",
-                                    "public_dns_name": "########",
-                                    "public_ip": "########",
-                                    "public_ip_account_id": "",
-                                    "public_ip_id": ""
-                                },
+                                "link_public_ip": [],
                                 "private_dns_name": "########",
                                 "private_ip": "########"
                             }
@@ -249,7 +189,7 @@
             "mode": "data",
             "type": "outscale_nic",
             "name": "nic-4",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -259,21 +199,8 @@
                         "filter": "########",
                         "id": "##id-9##",
                         "is_source_dest_checked": true,
-                        "link_nic": {
-                            "delete_on_vm_deletion": "false",
-                            "device_number": "0",
-                            "link_nic_id": "",
-                            "state": "",
-                            "vm_account_id": "",
-                            "vm_id": ""
-                        },
-                        "link_public_ip": {
-                            "link_public_ip_id": "",
-                            "public_dns_name": "########",
-                            "public_ip": "########",
-                            "public_ip_account_id": "",
-                            "public_ip_id": ""
-                        },
+                        "link_nic": [],
+                        "link_public_ip": [],
                         "mac_address": "########",
                         "net_id": "##id-2##",
                         "nic_id": "##id-9##",
@@ -282,25 +209,13 @@
                         "private_ips": [
                             {
                                 "is_primary": true,
-                                "link_public_ip": {
-                                    "link_public_ip_id": "",
-                                    "public_dns_name": "########",
-                                    "public_ip": "########",
-                                    "public_ip_account_id": "",
-                                    "public_ip_id": ""
-                                },
+                                "link_public_ip": [],
                                 "private_dns_name": "########",
                                 "private_ip": "########"
                             },
                             {
                                 "is_primary": false,
-                                "link_public_ip": {
-                                    "link_public_ip_id": "",
-                                    "public_dns_name": "########",
-                                    "public_ip": "########",
-                                    "public_ip_account_id": "",
-                                    "public_ip_id": ""
-                                },
+                                "link_public_ip": [],
                                 "private_dns_name": "########",
                                 "private_ip": "########"
                             }
@@ -332,7 +247,7 @@
             "mode": "data",
             "type": "outscale_nic",
             "name": "nic-5",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -342,21 +257,8 @@
                         "filter": "########",
                         "id": "##id-1##",
                         "is_source_dest_checked": true,
-                        "link_nic": {
-                            "delete_on_vm_deletion": "false",
-                            "device_number": "0",
-                            "link_nic_id": "",
-                            "state": "",
-                            "vm_account_id": "",
-                            "vm_id": ""
-                        },
-                        "link_public_ip": {
-                            "link_public_ip_id": "",
-                            "public_dns_name": "########",
-                            "public_ip": "########",
-                            "public_ip_account_id": "",
-                            "public_ip_id": ""
-                        },
+                        "link_nic": [],
+                        "link_public_ip": [],
                         "mac_address": "########",
                         "net_id": "##id-2##",
                         "nic_id": "##id-1##",
@@ -365,25 +267,13 @@
                         "private_ips": [
                             {
                                 "is_primary": true,
-                                "link_public_ip": {
-                                    "link_public_ip_id": "",
-                                    "public_dns_name": "########",
-                                    "public_ip": "########",
-                                    "public_ip_account_id": "",
-                                    "public_ip_id": ""
-                                },
+                                "link_public_ip": [],
                                 "private_dns_name": "########",
                                 "private_ip": "########"
                             },
                             {
                                 "is_primary": false,
-                                "link_public_ip": {
-                                    "link_public_ip_id": "",
-                                    "public_dns_name": "########",
-                                    "public_ip": "########",
-                                    "public_ip_account_id": "",
-                                    "public_ip_id": ""
-                                },
+                                "link_public_ip": [],
                                 "private_dns_name": "########",
                                 "private_ip": "########"
                             }
@@ -419,7 +309,7 @@
             "mode": "data",
             "type": "outscale_nic",
             "name": "nic-6",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -429,21 +319,8 @@
                         "filter": "########",
                         "id": "##id-1##",
                         "is_source_dest_checked": true,
-                        "link_nic": {
-                            "delete_on_vm_deletion": "false",
-                            "device_number": "0",
-                            "link_nic_id": "",
-                            "state": "",
-                            "vm_account_id": "",
-                            "vm_id": ""
-                        },
-                        "link_public_ip": {
-                            "link_public_ip_id": "",
-                            "public_dns_name": "########",
-                            "public_ip": "########",
-                            "public_ip_account_id": "",
-                            "public_ip_id": ""
-                        },
+                        "link_nic": [],
+                        "link_public_ip": [],
                         "mac_address": "########",
                         "net_id": "##id-2##",
                         "nic_id": "##id-1##",
@@ -452,25 +329,13 @@
                         "private_ips": [
                             {
                                 "is_primary": true,
-                                "link_public_ip": {
-                                    "link_public_ip_id": "",
-                                    "public_dns_name": "########",
-                                    "public_ip": "########",
-                                    "public_ip_account_id": "",
-                                    "public_ip_id": ""
-                                },
+                                "link_public_ip": [],
                                 "private_dns_name": "########",
                                 "private_ip": "########"
                             },
                             {
                                 "is_primary": false,
-                                "link_public_ip": {
-                                    "link_public_ip_id": "",
-                                    "public_dns_name": "########",
-                                    "public_ip": "########",
-                                    "public_ip_account_id": "",
-                                    "public_ip_id": ""
-                                },
+                                "link_public_ip": [],
                                 "private_dns_name": "########",
                                 "private_ip": "########"
                             }
@@ -506,7 +371,7 @@
             "mode": "managed",
             "type": "outscale_net",
             "name": "outscale_net",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -529,7 +394,7 @@
             "mode": "managed",
             "type": "outscale_nic",
             "name": "outscale_nic",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -538,21 +403,8 @@
                         "description": "TF-109",
                         "id": "##id-1##",
                         "is_source_dest_checked": true,
-                        "link_nic": {
-                            "delete_on_vm_deletion": "false",
-                            "device_number": "0",
-                            "link_nic_id": "",
-                            "state": "",
-                            "vm_account_id": "",
-                            "vm_id": ""
-                        },
-                        "link_public_ip": {
-                            "link_public_ip_id": "",
-                            "public_dns_name": "########",
-                            "public_ip": "########",
-                            "public_ip_account_id": "",
-                            "public_ip_id": ""
-                        },
+                        "link_nic": [],
+                        "link_public_ip": [],
                         "mac_address": "########",
                         "net_id": "##id-2##",
                         "nic_id": "##id-1##",
@@ -560,26 +412,14 @@
                         "private_ip": "########",
                         "private_ips": [
                             {
-                                "is_primary": false,
-                                "link_public_ip": {
-                                    "link_public_ip_id": "",
-                                    "public_dns_name": "########",
-                                    "public_ip": "########",
-                                    "public_ip_account_id": "",
-                                    "public_ip_id": ""
-                                },
+                                "is_primary": true,
+                                "link_public_ip": [],
                                 "private_dns_name": "########",
                                 "private_ip": "########"
                             },
                             {
-                                "is_primary": true,
-                                "link_public_ip": {
-                                    "link_public_ip_id": "",
-                                    "public_dns_name": "########",
-                                    "public_ip": "########",
-                                    "public_ip_account_id": "",
-                                    "public_ip_id": ""
-                                },
+                                "is_primary": false,
+                                "link_public_ip": [],
                                 "private_dns_name": "########",
                                 "private_ip": "########"
                             }
@@ -624,7 +464,7 @@
             "mode": "managed",
             "type": "outscale_nic",
             "name": "outscale_nic_2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -633,21 +473,8 @@
                         "description": "",
                         "id": "##id-9##",
                         "is_source_dest_checked": true,
-                        "link_nic": {
-                            "delete_on_vm_deletion": "false",
-                            "device_number": "0",
-                            "link_nic_id": "",
-                            "state": "",
-                            "vm_account_id": "",
-                            "vm_id": ""
-                        },
-                        "link_public_ip": {
-                            "link_public_ip_id": "",
-                            "public_dns_name": "########",
-                            "public_ip": "########",
-                            "public_ip_account_id": "",
-                            "public_ip_id": ""
-                        },
+                        "link_nic": [],
+                        "link_public_ip": [],
                         "mac_address": "########",
                         "net_id": "##id-2##",
                         "nic_id": "##id-9##",
@@ -655,26 +482,14 @@
                         "private_ip": "########",
                         "private_ips": [
                             {
-                                "is_primary": false,
-                                "link_public_ip": {
-                                    "link_public_ip_id": "",
-                                    "public_dns_name": "########",
-                                    "public_ip": "########",
-                                    "public_ip_account_id": "",
-                                    "public_ip_id": ""
-                                },
+                                "is_primary": true,
+                                "link_public_ip": [],
                                 "private_dns_name": "########",
                                 "private_ip": "########"
                             },
                             {
-                                "is_primary": true,
-                                "link_public_ip": {
-                                    "link_public_ip_id": "",
-                                    "public_dns_name": "########",
-                                    "public_ip": "########",
-                                    "public_ip_account_id": "",
-                                    "public_ip_id": ""
-                                },
+                                "is_primary": false,
+                                "link_public_ip": [],
                                 "private_dns_name": "########",
                                 "private_ip": "########"
                             }
@@ -712,7 +527,7 @@
             "mode": "managed",
             "type": "outscale_nic",
             "name": "outscale_nic_3",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -721,21 +536,8 @@
                         "description": "",
                         "id": "##id-11##",
                         "is_source_dest_checked": true,
-                        "link_nic": {
-                            "delete_on_vm_deletion": "false",
-                            "device_number": "0",
-                            "link_nic_id": "",
-                            "state": "",
-                            "vm_account_id": "",
-                            "vm_id": ""
-                        },
-                        "link_public_ip": {
-                            "link_public_ip_id": "",
-                            "public_dns_name": "########",
-                            "public_ip": "########",
-                            "public_ip_account_id": "",
-                            "public_ip_id": ""
-                        },
+                        "link_nic": [],
+                        "link_public_ip": [],
                         "mac_address": "########",
                         "net_id": "##id-2##",
                         "nic_id": "##id-11##",
@@ -744,13 +546,7 @@
                         "private_ips": [
                             {
                                 "is_primary": true,
-                                "link_public_ip": {
-                                    "link_public_ip_id": "",
-                                    "public_dns_name": "########",
-                                    "public_ip": "########",
-                                    "public_ip_account_id": "",
-                                    "public_ip_id": ""
-                                },
+                                "link_public_ip": [],
                                 "private_dns_name": "########",
                                 "private_ip": "########"
                             }
@@ -792,7 +588,7 @@
             "mode": "managed",
             "type": "outscale_nic_link",
             "name": "nic_link01",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -823,7 +619,7 @@
             "mode": "managed",
             "type": "outscale_nic_link",
             "name": "nic_link02",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -853,7 +649,7 @@
             "mode": "managed",
             "type": "outscale_security_group",
             "name": "security_group01",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -891,7 +687,7 @@
             "mode": "managed",
             "type": "outscale_subnet",
             "name": "subnet01",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -920,7 +716,7 @@
             "mode": "managed",
             "type": "outscale_subnet",
             "name": "subnet02",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -949,7 +745,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "vm01",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -959,12 +755,14 @@
                         "block_device_mappings": [],
                         "block_device_mappings_created": [
                             {
-                                "bsu": {
-                                    "delete_on_vm_deletion": "true",
-                                    "link_date": "########",
-                                    "state": "attached",
-                                    "volume_id": "##id-15##"
-                                },
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "link_date": "########",
+                                        "state": "attached",
+                                        "volume_id": "##id-15##"
+                                    }
+                                ],
                                 "device_name": "/dev/sda1"
                             }
                         ],

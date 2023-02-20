@@ -3,7 +3,7 @@ resource "outscale_net" "outscale_net" {
 }
 
 resource "outscale_net" "outscale_net2" {
-    ip_range = "10.31.0.0/16"
+    ip_range = "10.32.0.0/16"
 }
 
 resource "outscale_net_peering" "outscale_net_peering" {
