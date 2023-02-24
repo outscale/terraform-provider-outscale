@@ -14,6 +14,12 @@
 
 ## Using the Provider
 
+> **Warning**
+>
+> Our provider terraform has been moved from [outscale-dev](https://registry.terraform.io/providers/outscale-dev/outscale/latest) to [outscale](https://registry.terraform.io/providers/outscale/outscale/latest) organisation on terraform registry
+>
+> The next releases will be only publish under [outscale organization on terraform registry](https://registry.terraform.io/providers/outscale/outscale/latest)
+
 Add the following lines in the Terraform configuration to permit to get the provider from the Terrafom registry:
 
 ```sh
