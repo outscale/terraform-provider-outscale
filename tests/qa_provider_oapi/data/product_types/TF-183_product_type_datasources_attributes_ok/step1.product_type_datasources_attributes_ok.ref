@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_product_types",
             "name": "product_type_2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,

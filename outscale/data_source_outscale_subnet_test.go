@@ -85,7 +85,7 @@ const testAccDataSourceOutscaleOAPISubnetConfig = `
 
 	resource "outscale_subnet" "outscale_subnet" {
 		net_id        = outscale_net.outscale_net.net_id
-		ip_range      = "10.0.0.0/16"
+		ip_range      = "10.0.0.0/24"
 		subregion_name = "eu-west-2a"
 	}
 
@@ -112,8 +112,8 @@ func testAccDataSourceOutscaleOAPISubnetWithAvailableIpsCountsFilter() string {
 		}
 
 		resource "outscale_subnet" "outscale_subnet" {
-			subregion_name = "eu-west-2a"
-			ip_range       = "10.0.0.0/16"
+			subregion_name = "eu-west-2b"
+			ip_range       = "10.0.0.0/24"
 			net_id         = outscale_net.outscale_net.net_id
 		}
 

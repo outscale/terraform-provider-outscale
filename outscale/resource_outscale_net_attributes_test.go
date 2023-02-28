@@ -70,8 +70,8 @@ const testAccOutscaleOAPILinAttrConfig = `
 	}
 
 	resource "outscale_net_attributes" "outscale_net_attributes" {
-		net_id              = "${outscale_net.vpc.id}"
-		dhcp_options_set_id = "${outscale_net.vpc2.dhcp_options_set_id}"
+		net_id              = outscale_net.vpc.id
+		dhcp_options_set_id = outscale_net.vpc2.dhcp_options_set_id
 	}
 `
 

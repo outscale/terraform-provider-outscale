@@ -138,7 +138,7 @@ func testAccOutscaleOAPISubnetConfig(region string, mapPublicIpOnLaunch bool) st
 		resource "outscale_subnet" "subnet" {
 			ip_range       = "10.0.0.0/16"
 			subregion_name = "%sa"
-			net_id         = "${outscale_net.net.id}"
+			net_id         = outscale_net.net.id
 			map_public_ip_on_launch = %v
 			tags {
 				key   = "name"

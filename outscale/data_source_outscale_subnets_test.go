@@ -52,8 +52,8 @@ func testAccDataSourceOutscaleOAPISubnetsConfig(rInt int) string {
 
 		resource "outscale_subnet" "subnet" {
 			ip_range       = "172.%[1]d.123.0/24"
-			subregion_name = "eu-west-2a"
-			net_id         = "${outscale_net.net.id}"
+			subregion_name = "eu-west-2b"
+			net_id         = outscale_net.net.id
 
 			tags {
 				key   = "name"
@@ -64,7 +64,7 @@ func testAccDataSourceOutscaleOAPISubnetsConfig(rInt int) string {
 		data "outscale_subnets" "by_filter" {
 			filter {
 				name   = "subnet_ids"
-				values = ["${outscale_subnet.subnet.id}"]
+				values = [outscale_subnet.subnet.id]
 			}
 		}
 	`, rInt)
@@ -90,13 +90,13 @@ func testAccDataSourceOutscaleOAPISubnetsWithAvailableIpsCountsFilter() string {
 
 		resource "outscale_subnet" "sub1" {
 			subregion_name = "eu-west-2a"
-			ip_range       = "10.0.0.0/16"
+			ip_range       = "10.0.0.0/24"
 			net_id         = outscale_net.outscale_net1.net_id
 		}
 
 		resource "outscale_subnet" "sub2" {
-			subregion_name = "eu-west-2a"
-			ip_range       = "10.0.0.0/16"
+			subregion_name = "eu-west-2b"
+			ip_range       = "10.0.0.0/24"
 			net_id         = outscale_net.outscale_net2.net_id
 		}
 
@@ -104,7 +104,7 @@ func testAccDataSourceOutscaleOAPISubnetsWithAvailableIpsCountsFilter() string {
 		data "outscale_subnets" "by_filter" {
 			filter {
 				name   = "available_ips_counts"
-				values = ["${outscale_subnet.sub1.available_ips_count}", "${outscale_subnet.sub2.available_ips_count}"]
+				values = [outscale_subnet.sub1.available_ips_count, outscale_subnet.sub2.available_ips_count]
 			}
 		}
 	`

@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_internet_service",
             "name": "nomad",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -33,7 +33,7 @@
             "mode": "managed",
             "type": "outscale_internet_service_link",
             "name": "nomad",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -58,7 +58,7 @@
             "mode": "managed",
             "type": "outscale_nat_service",
             "name": "adm",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -93,7 +93,7 @@
             "mode": "managed",
             "type": "outscale_net",
             "name": "nomad",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -121,7 +121,7 @@
             "mode": "managed",
             "type": "outscale_public_ip",
             "name": "EIP",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -152,7 +152,7 @@
             "mode": "managed",
             "type": "outscale_public_ip",
             "name": "EIP2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -183,7 +183,7 @@
             "mode": "managed",
             "type": "outscale_public_ip",
             "name": "nat",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -214,7 +214,7 @@
             "mode": "managed",
             "type": "outscale_public_ip_link",
             "name": "eip_link",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -253,7 +253,7 @@
             "mode": "managed",
             "type": "outscale_public_ip_link",
             "name": "eip_link2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -292,7 +292,7 @@
             "mode": "managed",
             "type": "outscale_route",
             "name": "internet",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -308,7 +308,7 @@
                         "net_peering_id": "",
                         "nic_id": "",
                         "request_id": "########",
-                        "route_table_id": "##id-15##",
+                        "route_table_id": "##id-16##",
                         "state": "active",
                         "vm_account_id": "",
                         "vm_id": ""
@@ -327,7 +327,7 @@
             "mode": "managed",
             "type": "outscale_route",
             "name": "nat_internet",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -337,13 +337,13 @@
                         "destination_ip_range": "0.0.0.0/0",
                         "destination_service_id": "",
                         "gateway_id": "",
-                        "id": "##id-16##",
+                        "id": "##id-17##",
                         "nat_access_point": "",
                         "nat_service_id": "##id-2##",
                         "net_peering_id": "",
                         "nic_id": "",
                         "request_id": "########",
-                        "route_table_id": "##id-16##",
+                        "route_table_id": "##id-18##",
                         "state": "active",
                         "vm_account_id": "",
                         "vm_id": ""
@@ -367,17 +367,17 @@
             "mode": "managed",
             "type": "outscale_route_table",
             "name": "nat",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-16##",
+                        "id": "##id-18##",
                         "link_route_tables": [],
                         "net_id": "##id-1##",
                         "request_id": "########",
                         "route_propagating_virtual_gateways": [],
-                        "route_table_id": "##id-16##",
+                        "route_table_id": "##id-18##",
                         "routes": [
                             {
                                 "creation_method": "CreateRouteTable",
@@ -407,17 +407,17 @@
             "mode": "managed",
             "type": "outscale_route_table",
             "name": "public",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-15##",
+                        "id": "##id-16##",
                         "link_route_tables": [],
                         "net_id": "##id-1##",
                         "request_id": "########",
                         "route_propagating_virtual_gateways": [],
-                        "route_table_id": "##id-15##",
+                        "route_table_id": "##id-16##",
                         "routes": [
                             {
                                 "creation_method": "CreateRouteTable",
@@ -447,16 +447,16 @@
             "mode": "managed",
             "type": "outscale_route_table_link",
             "name": "igw",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-17##",
-                        "link_route_table_id": "##id-17##",
+                        "id": "##id-19##",
+                        "link_route_table_id": "##id-19##",
                         "main": false,
                         "request_id": "########",
-                        "route_table_id": "##id-15##",
+                        "route_table_id": "##id-16##",
                         "subnet_id": "##id-4##"
                     },
                     "sensitive_attributes": [],
@@ -473,17 +473,17 @@
             "mode": "managed",
             "type": "outscale_route_table_link",
             "name": "nat",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-18##",
-                        "link_route_table_id": "##id-18##",
+                        "id": "##id-20##",
+                        "link_route_table_id": "##id-20##",
                         "main": false,
                         "request_id": "########",
-                        "route_table_id": "##id-16##",
-                        "subnet_id": "##id-19##"
+                        "route_table_id": "##id-18##",
+                        "subnet_id": "##id-21##"
                     },
                     "sensitive_attributes": [],
                     "private": "bnVsbA==",
@@ -499,14 +499,14 @@
             "mode": "managed",
             "type": "outscale_security_group",
             "name": "nomad-sg1",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "account_id": "##id-9##",
                         "description": "sg for terraform tests",
-                        "id": "##id-20##",
+                        "id": "##id-22##",
                         "inbound_rules": [],
                         "net_id": "##id-1##",
                         "outbound_rules": [
@@ -520,7 +520,7 @@
                         ],
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
-                        "security_group_id": "##id-20##",
+                        "security_group_id": "##id-22##",
                         "security_group_name": "terraform-sg-12",
                         "tag": null,
                         "tags": []
@@ -537,14 +537,14 @@
             "mode": "managed",
             "type": "outscale_security_group",
             "name": "nomad-sg2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "account_id": "##id-9##",
                         "description": "sg for terraform tests",
-                        "id": "##id-21##",
+                        "id": "##id-23##",
                         "inbound_rules": [],
                         "net_id": "##id-1##",
                         "outbound_rules": [
@@ -558,7 +558,7 @@
                         ],
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
-                        "security_group_id": "##id-21##",
+                        "security_group_id": "##id-23##",
                         "security_group_name": "terraform-sg-22",
                         "tag": null,
                         "tags": []
@@ -575,14 +575,14 @@
             "mode": "managed",
             "type": "outscale_security_group_rule",
             "name": "rule1-sg1",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "flow": "Inbound",
                         "from_port_range": 0,
-                        "id": "##id-20##",
+                        "id": "##id-22##",
                         "inbound_rules": [
                             {
                                 "from_port_range": 0,
@@ -609,7 +609,7 @@
                         "request_id": "########",
                         "rules": [],
                         "security_group_account_id_to_link": null,
-                        "security_group_id": "##id-20##",
+                        "security_group_id": "##id-22##",
                         "security_group_name": "terraform-sg-12",
                         "security_group_name_to_link": null,
                         "to_port_range": 0
@@ -627,14 +627,14 @@
             "mode": "managed",
             "type": "outscale_security_group_rule",
             "name": "rule1-sg2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "flow": "Inbound",
                         "from_port_range": 0,
-                        "id": "##id-21##",
+                        "id": "##id-23##",
                         "inbound_rules": [
                             {
                                 "from_port_range": 0,
@@ -661,7 +661,7 @@
                         "request_id": "########",
                         "rules": [],
                         "security_group_account_id_to_link": null,
-                        "security_group_id": "##id-21##",
+                        "security_group_id": "##id-23##",
                         "security_group_name": "terraform-sg-22",
                         "security_group_name_to_link": null,
                         "to_port_range": 0
@@ -679,14 +679,14 @@
             "mode": "managed",
             "type": "outscale_security_group_rule",
             "name": "rule2-sg1",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "flow": "Inbound",
                         "from_port_range": 22,
-                        "id": "##id-20##",
+                        "id": "##id-22##",
                         "inbound_rules": [
                             {
                                 "from_port_range": 0,
@@ -721,7 +721,7 @@
                         "request_id": "########",
                         "rules": [],
                         "security_group_account_id_to_link": null,
-                        "security_group_id": "##id-20##",
+                        "security_group_id": "##id-22##",
                         "security_group_name": "terraform-sg-12",
                         "security_group_name_to_link": null,
                         "to_port_range": 22
@@ -740,14 +740,14 @@
             "mode": "managed",
             "type": "outscale_security_group_rule",
             "name": "rule2-sg2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "flow": "Inbound",
                         "from_port_range": 80,
-                        "id": "##id-21##",
+                        "id": "##id-23##",
                         "inbound_rules": [
                             {
                                 "from_port_range": 0,
@@ -782,7 +782,7 @@
                         "request_id": "########",
                         "rules": [],
                         "security_group_account_id_to_link": null,
-                        "security_group_id": "##id-21##",
+                        "security_group_id": "##id-23##",
                         "security_group_name": "terraform-sg-22",
                         "security_group_name_to_link": null,
                         "to_port_range": 80
@@ -801,14 +801,14 @@
             "mode": "managed",
             "type": "outscale_security_group_rule",
             "name": "rule3-sg1",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "flow": "Inbound",
                         "from_port_range": 1024,
-                        "id": "##id-20##",
+                        "id": "##id-22##",
                         "inbound_rules": [
                             {
                                 "from_port_range": 0,
@@ -851,7 +851,7 @@
                         "request_id": "########",
                         "rules": [],
                         "security_group_account_id_to_link": null,
-                        "security_group_id": "##id-20##",
+                        "security_group_id": "##id-22##",
                         "security_group_name": "terraform-sg-12",
                         "security_group_name_to_link": null,
                         "to_port_range": 1024
@@ -871,14 +871,14 @@
             "mode": "managed",
             "type": "outscale_security_group_rule",
             "name": "rule3-sg2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "flow": "Inbound",
                         "from_port_range": 1024,
-                        "id": "##id-21##",
+                        "id": "##id-23##",
                         "inbound_rules": [
                             {
                                 "from_port_range": 0,
@@ -921,7 +921,7 @@
                         "request_id": "########",
                         "rules": [],
                         "security_group_account_id_to_link": null,
-                        "security_group_id": "##id-21##",
+                        "security_group_id": "##id-23##",
                         "security_group_name": "terraform-sg-22",
                         "security_group_name_to_link": null,
                         "to_port_range": 1024
@@ -941,19 +941,19 @@
             "mode": "managed",
             "type": "outscale_subnet",
             "name": "adm",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "available_ips_count": 251,
-                        "id": "##id-19##",
+                        "id": "##id-21##",
                         "ip_range": "10.0.1.0/24",
                         "map_public_ip_on_launch": false,
                         "net_id": "##id-1##",
                         "request_id": "########",
                         "state": "available",
-                        "subnet_id": "##id-19##",
+                        "subnet_id": "##id-21##",
                         "subregion_name": "###region###a",
                         "tags": [
                             {
@@ -975,7 +975,7 @@
             "mode": "managed",
             "type": "outscale_subnet",
             "name": "bastion",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -1009,7 +1009,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "consul_server_1",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "index_key": 0,
@@ -1020,15 +1020,17 @@
                         "block_device_mappings": [],
                         "block_device_mappings_created": [
                             {
+                                "boot_disk_tags": [],
                                 "bsu": {
                                     "delete_on_vm_deletion": "true",
                                     "link_date": "########",
                                     "state": "attached",
-                                    "volume_id": "##id-22##"
+                                    "volume_id": "##id-24##"
                                 },
                                 "device_name": "/dev/sda1"
                             }
                         ],
+                        "boot_disk_tags": [],
                         "bsu_optimized": false,
                         "client_token": "",
                         "creation_date": "########",
@@ -1036,7 +1038,7 @@
                         "get_admin_password": null,
                         "hypervisor": "xen",
                         "id": "##id-11##",
-                        "image_id": "##id-23##",
+                        "image_id": "##id-25##",
                         "is_source_dest_checked": true,
                         "keypair_name": "",
                         "launch_number": 0,
@@ -1053,7 +1055,7 @@
                                     {
                                         "delete_on_vm_deletion": true,
                                         "device_number": "0",
-                                        "link_nic_id": "##id-24##",
+                                        "link_nic_id": "##id-26##",
                                         "state": "attached"
                                     }
                                 ],
@@ -1072,11 +1074,11 @@
                                 ],
                                 "secondary_private_ip_count": 0,
                                 "security_group_ids": [
-                                    "##id-21##"
+                                    "##id-23##"
                                 ],
                                 "security_groups": [
                                     {
-                                        "security_group_id": "##id-21##",
+                                        "security_group_id": "##id-23##",
                                         "security_group_name": "terraform-sg-22"
                                     }
                                 ],
@@ -1097,16 +1099,16 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-25##",
+                        "reservation_id": "##id-27##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
                         "security_group_ids": [
-                            "##id-21##"
+                            "##id-23##"
                         ],
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-21##",
+                                "security_group_id": "##id-23##",
                                 "security_group_name": "terraform-sg-22"
                             }
                         ],
@@ -1142,15 +1144,17 @@
                         "block_device_mappings": [],
                         "block_device_mappings_created": [
                             {
+                                "boot_disk_tags": [],
                                 "bsu": {
                                     "delete_on_vm_deletion": "true",
                                     "link_date": "########",
                                     "state": "attached",
-                                    "volume_id": "##id-26##"
+                                    "volume_id": "##id-28##"
                                 },
                                 "device_name": "/dev/sda1"
                             }
                         ],
+                        "boot_disk_tags": [],
                         "bsu_optimized": false,
                         "client_token": "",
                         "creation_date": "########",
@@ -1158,7 +1162,7 @@
                         "get_admin_password": null,
                         "hypervisor": "xen",
                         "id": "##id-14##",
-                        "image_id": "##id-23##",
+                        "image_id": "##id-25##",
                         "is_source_dest_checked": true,
                         "keypair_name": "",
                         "launch_number": 0,
@@ -1175,7 +1179,7 @@
                                     {
                                         "delete_on_vm_deletion": true,
                                         "device_number": "0",
-                                        "link_nic_id": "##id-27##",
+                                        "link_nic_id": "##id-29##",
                                         "state": "attached"
                                     }
                                 ],
@@ -1194,11 +1198,11 @@
                                 ],
                                 "secondary_private_ip_count": 0,
                                 "security_group_ids": [
-                                    "##id-21##"
+                                    "##id-23##"
                                 ],
                                 "security_groups": [
                                     {
-                                        "security_group_id": "##id-21##",
+                                        "security_group_id": "##id-23##",
                                         "security_group_name": "terraform-sg-22"
                                     }
                                 ],
@@ -1219,16 +1223,16 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-28##",
+                        "reservation_id": "##id-30##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
                         "security_group_ids": [
-                            "##id-21##"
+                            "##id-23##"
                         ],
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-21##",
+                                "security_group_id": "##id-23##",
                                 "security_group_name": "terraform-sg-22"
                             }
                         ],
@@ -1264,23 +1268,25 @@
                         "block_device_mappings": [],
                         "block_device_mappings_created": [
                             {
+                                "boot_disk_tags": [],
                                 "bsu": {
                                     "delete_on_vm_deletion": "true",
                                     "link_date": "########",
                                     "state": "attached",
-                                    "volume_id": "##id-29##"
+                                    "volume_id": "##id-31##"
                                 },
                                 "device_name": "/dev/sda1"
                             }
                         ],
+                        "boot_disk_tags": [],
                         "bsu_optimized": false,
                         "client_token": "",
                         "creation_date": "########",
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-30##",
-                        "image_id": "##id-23##",
+                        "id": "##id-32##",
+                        "image_id": "##id-25##",
                         "is_source_dest_checked": true,
                         "keypair_name": "",
                         "launch_number": 0,
@@ -1297,14 +1303,14 @@
                                     {
                                         "delete_on_vm_deletion": true,
                                         "device_number": "0",
-                                        "link_nic_id": "##id-31##",
+                                        "link_nic_id": "##id-33##",
                                         "state": "attached"
                                     }
                                 ],
                                 "link_public_ip": [],
                                 "mac_address": "########",
                                 "net_id": "##id-1##",
-                                "nic_id": "##id-32##",
+                                "nic_id": "##id-34##",
                                 "private_dns_name": "########",
                                 "private_ips": [
                                     {
@@ -1316,11 +1322,11 @@
                                 ],
                                 "secondary_private_ip_count": 0,
                                 "security_group_ids": [
-                                    "##id-21##"
+                                    "##id-23##"
                                 ],
                                 "security_groups": [
                                     {
-                                        "security_group_id": "##id-21##",
+                                        "security_group_id": "##id-23##",
                                         "security_group_name": "terraform-sg-22"
                                     }
                                 ],
@@ -1341,16 +1347,16 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-33##",
+                        "reservation_id": "##id-35##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
                         "security_group_ids": [
-                            "##id-21##"
+                            "##id-23##"
                         ],
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-21##",
+                                "security_group_id": "##id-23##",
                                 "security_group_name": "terraform-sg-22"
                             }
                         ],
@@ -1365,7 +1371,7 @@
                         ],
                         "timeouts": null,
                         "user_data": "",
-                        "vm_id": "##id-30##",
+                        "vm_id": "##id-32##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
@@ -1383,7 +1389,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "vm2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "index_key": 0,
@@ -1394,23 +1400,25 @@
                         "block_device_mappings": [],
                         "block_device_mappings_created": [
                             {
+                                "boot_disk_tags": [],
                                 "bsu": {
                                     "delete_on_vm_deletion": "true",
                                     "link_date": "########",
                                     "state": "attached",
-                                    "volume_id": "##id-34##"
+                                    "volume_id": "##id-36##"
                                 },
                                 "device_name": "/dev/sda1"
                             }
                         ],
+                        "boot_disk_tags": [],
                         "bsu_optimized": false,
                         "client_token": "",
                         "creation_date": "########",
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-35##",
-                        "image_id": "##id-23##",
+                        "id": "##id-37##",
+                        "image_id": "##id-25##",
                         "is_source_dest_checked": true,
                         "keypair_name": "",
                         "launch_number": 0,
@@ -1427,14 +1435,14 @@
                                     {
                                         "delete_on_vm_deletion": true,
                                         "device_number": "0",
-                                        "link_nic_id": "##id-36##",
+                                        "link_nic_id": "##id-38##",
                                         "state": "attached"
                                     }
                                 ],
                                 "link_public_ip": [],
                                 "mac_address": "########",
                                 "net_id": "##id-1##",
-                                "nic_id": "##id-37##",
+                                "nic_id": "##id-39##",
                                 "private_dns_name": "########",
                                 "private_ips": [
                                     {
@@ -1446,16 +1454,16 @@
                                 ],
                                 "secondary_private_ip_count": 0,
                                 "security_group_ids": [
-                                    "##id-20##"
+                                    "##id-22##"
                                 ],
                                 "security_groups": [
                                     {
-                                        "security_group_id": "##id-20##",
+                                        "security_group_id": "##id-22##",
                                         "security_group_name": "terraform-sg-12"
                                     }
                                 ],
                                 "state": "in-use",
-                                "subnet_id": "##id-19##"
+                                "subnet_id": "##id-21##"
                             }
                         ],
                         "os_family": "",
@@ -1471,22 +1479,22 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-38##",
+                        "reservation_id": "##id-40##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
                         "security_group_ids": [
-                            "##id-20##"
+                            "##id-22##"
                         ],
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-20##",
+                                "security_group_id": "##id-22##",
                                 "security_group_name": "terraform-sg-12"
                             }
                         ],
                         "state": "running",
                         "state_reason": "",
-                        "subnet_id": "##id-19##",
+                        "subnet_id": "##id-21##",
                         "tags": [
                             {
                                 "key": "name",
@@ -1495,7 +1503,7 @@
                         ],
                         "timeouts": null,
                         "user_data": "",
-                        "vm_id": "##id-35##",
+                        "vm_id": "##id-37##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
@@ -1516,23 +1524,25 @@
                         "block_device_mappings": [],
                         "block_device_mappings_created": [
                             {
+                                "boot_disk_tags": [],
                                 "bsu": {
                                     "delete_on_vm_deletion": "true",
                                     "link_date": "########",
                                     "state": "attached",
-                                    "volume_id": "##id-39##"
+                                    "volume_id": "##id-41##"
                                 },
                                 "device_name": "/dev/sda1"
                             }
                         ],
+                        "boot_disk_tags": [],
                         "bsu_optimized": false,
                         "client_token": "",
                         "creation_date": "########",
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-40##",
-                        "image_id": "##id-23##",
+                        "id": "##id-42##",
+                        "image_id": "##id-25##",
                         "is_source_dest_checked": true,
                         "keypair_name": "",
                         "launch_number": 0,
@@ -1549,14 +1559,14 @@
                                     {
                                         "delete_on_vm_deletion": true,
                                         "device_number": "0",
-                                        "link_nic_id": "##id-41##",
+                                        "link_nic_id": "##id-43##",
                                         "state": "attached"
                                     }
                                 ],
                                 "link_public_ip": [],
                                 "mac_address": "########",
                                 "net_id": "##id-1##",
-                                "nic_id": "##id-42##",
+                                "nic_id": "##id-44##",
                                 "private_dns_name": "########",
                                 "private_ips": [
                                     {
@@ -1568,16 +1578,16 @@
                                 ],
                                 "secondary_private_ip_count": 0,
                                 "security_group_ids": [
-                                    "##id-20##"
+                                    "##id-22##"
                                 ],
                                 "security_groups": [
                                     {
-                                        "security_group_id": "##id-20##",
+                                        "security_group_id": "##id-22##",
                                         "security_group_name": "terraform-sg-12"
                                     }
                                 ],
                                 "state": "in-use",
-                                "subnet_id": "##id-19##"
+                                "subnet_id": "##id-21##"
                             }
                         ],
                         "os_family": "",
@@ -1593,22 +1603,22 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-43##",
+                        "reservation_id": "##id-45##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
                         "security_group_ids": [
-                            "##id-20##"
+                            "##id-22##"
                         ],
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-20##",
+                                "security_group_id": "##id-22##",
                                 "security_group_name": "terraform-sg-12"
                             }
                         ],
                         "state": "running",
                         "state_reason": "",
-                        "subnet_id": "##id-19##",
+                        "subnet_id": "##id-21##",
                         "tags": [
                             {
                                 "key": "name",
@@ -1617,7 +1627,7 @@
                         ],
                         "timeouts": null,
                         "user_data": "",
-                        "vm_id": "##id-40##",
+                        "vm_id": "##id-42##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
@@ -1638,23 +1648,25 @@
                         "block_device_mappings": [],
                         "block_device_mappings_created": [
                             {
+                                "boot_disk_tags": [],
                                 "bsu": {
                                     "delete_on_vm_deletion": "true",
                                     "link_date": "########",
                                     "state": "attached",
-                                    "volume_id": "##id-44##"
+                                    "volume_id": "##id-46##"
                                 },
                                 "device_name": "/dev/sda1"
                             }
                         ],
+                        "boot_disk_tags": [],
                         "bsu_optimized": false,
                         "client_token": "",
                         "creation_date": "########",
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-45##",
-                        "image_id": "##id-23##",
+                        "id": "##id-47##",
+                        "image_id": "##id-25##",
                         "is_source_dest_checked": true,
                         "keypair_name": "",
                         "launch_number": 0,
@@ -1671,14 +1683,14 @@
                                     {
                                         "delete_on_vm_deletion": true,
                                         "device_number": "0",
-                                        "link_nic_id": "##id-46##",
+                                        "link_nic_id": "##id-48##",
                                         "state": "attached"
                                     }
                                 ],
                                 "link_public_ip": [],
                                 "mac_address": "########",
                                 "net_id": "##id-1##",
-                                "nic_id": "##id-47##",
+                                "nic_id": "##id-49##",
                                 "private_dns_name": "########",
                                 "private_ips": [
                                     {
@@ -1690,16 +1702,16 @@
                                 ],
                                 "secondary_private_ip_count": 0,
                                 "security_group_ids": [
-                                    "##id-20##"
+                                    "##id-22##"
                                 ],
                                 "security_groups": [
                                     {
-                                        "security_group_id": "##id-20##",
+                                        "security_group_id": "##id-22##",
                                         "security_group_name": "terraform-sg-12"
                                     }
                                 ],
                                 "state": "in-use",
-                                "subnet_id": "##id-19##"
+                                "subnet_id": "##id-21##"
                             }
                         ],
                         "os_family": "",
@@ -1715,22 +1727,22 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-48##",
+                        "reservation_id": "##id-50##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
                         "security_group_ids": [
-                            "##id-20##"
+                            "##id-22##"
                         ],
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-20##",
+                                "security_group_id": "##id-22##",
                                 "security_group_name": "terraform-sg-12"
                             }
                         ],
                         "state": "running",
                         "state_reason": "",
-                        "subnet_id": "##id-19##",
+                        "subnet_id": "##id-21##",
                         "tags": [
                             {
                                 "key": "name",
@@ -1739,7 +1751,7 @@
                         ],
                         "timeouts": null,
                         "user_data": "",
-                        "vm_id": "##id-45##",
+                        "vm_id": "##id-47##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },

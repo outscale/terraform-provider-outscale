@@ -228,7 +228,7 @@ const testAccOAPIVpcPeeringConfig = `
 	}
 
 	resource "outscale_net_peering" "foo" {
-		source_net_id   = "${outscale_net.foo.id}"
-		accepter_net_id = "${outscale_net.bar.id}"
+		source_net_id   = outscale_net.foo.id
+		accepter_net_id = outscale_net.bar.id
 	}
 `

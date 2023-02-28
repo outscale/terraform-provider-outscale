@@ -89,7 +89,7 @@ func testAccOutscaleOAPISecurityGroupConfig(rInt int) string {
 				value = "tf-acc-test"
 			}
 
-			net_id = "${outscale_net.net.id}"
+			net_id = outscale_net.net.id
 		}
 	`, rInt)
 }

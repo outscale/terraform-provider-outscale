@@ -54,7 +54,7 @@ const testAccOutscaleOAPILinPeeringConnectionAccepterSameAccountConfig = `
 	}
 
 	resource "outscale_net" "bar" {
-		ip_range = "10.1.0.0/16"
+		ip_range = "10.0.0.0/16"
 
 		tags {
 			key   = "Name"
@@ -63,8 +63,8 @@ const testAccOutscaleOAPILinPeeringConnectionAccepterSameAccountConfig = `
 	}
 
 	resource "outscale_net_peering" "foo" {
-		source_net_id   = "${outscale_net.foo.id}"
-		accepter_net_id = "${outscale_net.bar.id}"
+		source_net_id   = outscale_net.foo.id
+		accepter_net_id = outscale_net.bar.id
 
 		tags {
 			key   = "Side"
@@ -72,8 +72,7 @@ const testAccOutscaleOAPILinPeeringConnectionAccepterSameAccountConfig = `
 		}
 	}
 
-	// Accepter's side of the connection.
 	resource "outscale_net_peering_acceptation" "peer" {
-		net_peering_id = "${outscale_net_peering.foo.id}"
+		net_peering_id = outscale_net_peering.foo.id
 	}
 `
