@@ -190,6 +190,6 @@ func testAccOutscaleOAPIENIDataSourceConfigFilter(subregion string) string {
 			name = "nic_ids"
 			values = [outscale_nic.outscale_nic.nic_id]
 		}
-	}  
+	}
 `, subregion)
 }

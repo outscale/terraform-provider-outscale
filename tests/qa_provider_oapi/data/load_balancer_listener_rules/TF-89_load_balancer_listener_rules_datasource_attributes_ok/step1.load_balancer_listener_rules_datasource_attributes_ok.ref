@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_load_balancer_listener_rules",
             "name": "outscale_load_balancer_listener_rules",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -19,24 +19,24 @@
                         "listener_rules": [
                             {
                                 "action": "forward",
-                                "host_name_pattern": "*.abc.-.abc.*.com",
+                                "host_name_pattern": "",
                                 "listener_id": "##id-1##",
                                 "listener_rule_id": "##id-2##",
-                                "listener_rule_name": "listener-rule-2",
-                                "path_pattern": "",
-                                "priority": 1,
+                                "listener_rule_name": "listener-rule-1",
+                                "path_pattern": "*.abc.*.abc.*.com",
+                                "priority": 10,
                                 "vm_ids": [
                                     "##id-3##"
                                 ]
                             },
                             {
                                 "action": "forward",
-                                "host_name_pattern": "",
+                                "host_name_pattern": "*.abc.-.abc.*.com",
                                 "listener_id": "##id-1##",
                                 "listener_rule_id": "##id-4##",
-                                "listener_rule_name": "listener-rule-1",
-                                "path_pattern": "*.abc.*.abc.*.com",
-                                "priority": 10,
+                                "listener_rule_name": "listener-rule-2",
+                                "path_pattern": "",
+                                "priority": 1,
                                 "vm_ids": [
                                     "##id-3##"
                                 ]
@@ -52,7 +52,7 @@
             "mode": "managed",
             "type": "outscale_keypair",
             "name": "my_keypair",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -74,7 +74,7 @@
             "mode": "managed",
             "type": "outscale_load_balancer",
             "name": "public_lbu2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -140,7 +140,7 @@
             "mode": "managed",
             "type": "outscale_load_balancer_listener_rule",
             "name": "rule-1",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -157,7 +157,7 @@
                                 "action": "forward",
                                 "host_name_pattern": "",
                                 "listener_id": "##id-1##",
-                                "listener_rule_id": "##id-4##",
+                                "listener_rule_id": "##id-2##",
                                 "listener_rule_name": "listener-rule-1",
                                 "path_pattern": "*.abc.*.abc.*.com",
                                 "priority": 10
@@ -182,7 +182,7 @@
             "mode": "managed",
             "type": "outscale_load_balancer_listener_rule",
             "name": "rule-2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -199,7 +199,7 @@
                                 "action": "forward",
                                 "host_name_pattern": "*.abc.-.abc.*.com",
                                 "listener_id": "##id-1##",
-                                "listener_rule_id": "##id-2##",
+                                "listener_rule_id": "##id-4##",
                                 "listener_rule_name": "listener-rule-2",
                                 "path_pattern": "",
                                 "priority": 1
@@ -224,7 +224,7 @@
             "mode": "managed",
             "type": "outscale_load_balancer_vms",
             "name": "outscale_load_balancer_vms",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -250,7 +250,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "public_vm_1",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -260,6 +260,7 @@
                         "block_device_mappings": [],
                         "block_device_mappings_created": [
                             {
+                                "boot_disk_tags": [],
                                 "bsu": {
                                     "delete_on_vm_deletion": "true",
                                     "link_date": "########",
@@ -269,6 +270,7 @@
                                 "device_name": "/dev/sda1"
                             }
                         ],
+                        "boot_disk_tags": [],
                         "bsu_optimized": false,
                         "client_token": "",
                         "creation_date": "########",

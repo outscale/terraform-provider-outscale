@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_keypair",
             "name": "my_keypair",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -31,7 +31,7 @@
             "mode": "managed",
             "type": "outscale_load_balancer",
             "name": "public_lbu1",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -108,13 +108,13 @@
             "mode": "managed",
             "type": "outscale_load_balancer_vms",
             "name": "outscale_load_balancer_vms",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "backend_vm_ids": [
-                            "##id-2##"
+                            "##id-1##"
                         ],
                         "id": "##id-5##",
                         "load_balancer_name": "lbu-TF-93",
@@ -133,7 +133,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "outscale_vms_lbu",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "index_key": 0,
@@ -144,6 +144,7 @@
                         "block_device_mappings": [],
                         "block_device_mappings_created": [
                             {
+                                "boot_disk_tags": [],
                                 "bsu": {
                                     "delete_on_vm_deletion": "true",
                                     "link_date": "########",
@@ -153,13 +154,14 @@
                                 "device_name": "/dev/sda1"
                             }
                         ],
+                        "boot_disk_tags": [],
                         "bsu_optimized": false,
                         "client_token": "",
                         "creation_date": "########",
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-2##",
+                        "id": "##id-1##",
                         "image_id": "##id-7##",
                         "is_source_dest_checked": true,
                         "keypair_name": "KP-TF93",
@@ -202,7 +204,7 @@
                         ],
                         "timeouts": null,
                         "user_data": "ICAgICAjIS9iaW4vYmFzaAogICAgcHVzaGQgL2hvbWUKICAgIG5vaHVwIHB5dGhvbiAtbSBTaW1wbGVIVFRQU2VydmVyIDgwODAK",
-                        "vm_id": "##id-2##",
+                        "vm_id": "##id-1##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
@@ -221,6 +223,7 @@
                         "block_device_mappings": [],
                         "block_device_mappings_created": [
                             {
+                                "boot_disk_tags": [],
                                 "bsu": {
                                     "delete_on_vm_deletion": "true",
                                     "link_date": "########",
@@ -230,13 +233,14 @@
                                 "device_name": "/dev/sda1"
                             }
                         ],
+                        "boot_disk_tags": [],
                         "bsu_optimized": false,
                         "client_token": "",
                         "creation_date": "########",
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-1##",
+                        "id": "##id-2##",
                         "image_id": "##id-7##",
                         "is_source_dest_checked": true,
                         "keypair_name": "KP-TF93",
@@ -279,7 +283,7 @@
                         ],
                         "timeouts": null,
                         "user_data": "ICAgICAjIS9iaW4vYmFzaAogICAgcHVzaGQgL2hvbWUKICAgIG5vaHVwIHB5dGhvbiAtbSBTaW1wbGVIVFRQU2VydmVyIDgwODAK",
-                        "vm_id": "##id-1##",
+                        "vm_id": "##id-2##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },

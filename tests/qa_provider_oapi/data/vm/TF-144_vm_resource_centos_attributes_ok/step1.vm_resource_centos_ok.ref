@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_internet_service",
             "name": "outscale_internet_service",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -38,7 +38,7 @@
             "mode": "managed",
             "type": "outscale_internet_service_link",
             "name": "outscale_internet_service_link",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -68,7 +68,7 @@
             "mode": "managed",
             "type": "outscale_keypair",
             "name": "my_keypair",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -90,7 +90,7 @@
             "mode": "managed",
             "type": "outscale_net",
             "name": "outscale_net",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -118,7 +118,7 @@
             "mode": "managed",
             "type": "outscale_public_ip",
             "name": "outscale_public_ip",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -149,7 +149,7 @@
             "mode": "managed",
             "type": "outscale_public_ip_link",
             "name": "outscale_public_ip_link",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -189,7 +189,7 @@
             "mode": "managed",
             "type": "outscale_route",
             "name": "outscale_route",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -205,7 +205,7 @@
                         "net_peering_id": "",
                         "nic_id": "",
                         "request_id": "########",
-                        "route_table_id": "##id-9##",
+                        "route_table_id": "##id-10##",
                         "state": "active",
                         "vm_account_id": "",
                         "vm_id": ""
@@ -224,17 +224,17 @@
             "mode": "managed",
             "type": "outscale_route_table",
             "name": "outscale_route_table",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-9##",
+                        "id": "##id-10##",
                         "link_route_tables": [],
                         "net_id": "##id-1##",
                         "request_id": "########",
                         "route_propagating_virtual_gateways": [],
-                        "route_table_id": "##id-9##",
+                        "route_table_id": "##id-10##",
                         "routes": [
                             {
                                 "creation_method": "CreateRouteTable",
@@ -269,17 +269,17 @@
             "mode": "managed",
             "type": "outscale_route_table_link",
             "name": "outscale_route_table_link",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-10##",
-                        "link_route_table_id": "##id-10##",
+                        "id": "##id-11##",
+                        "link_route_table_id": "##id-11##",
                         "main": false,
                         "request_id": "########",
-                        "route_table_id": "##id-9##",
-                        "subnet_id": "##id-11##"
+                        "route_table_id": "##id-10##",
+                        "subnet_id": "##id-12##"
                     },
                     "sensitive_attributes": [],
                     "private": "bnVsbA==",
@@ -295,14 +295,14 @@
             "mode": "managed",
             "type": "outscale_security_group",
             "name": "outscale_sg",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "account_id": "##id-6##",
                         "description": "sg for terraform tests",
-                        "id": "##id-12##",
+                        "id": "##id-13##",
                         "inbound_rules": [],
                         "net_id": "##id-1##",
                         "outbound_rules": [
@@ -316,7 +316,7 @@
                         ],
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
-                        "security_group_id": "##id-12##",
+                        "security_group_id": "##id-13##",
                         "security_group_name": "terraform-sg",
                         "tag": null,
                         "tags": [
@@ -338,20 +338,20 @@
             "mode": "managed",
             "type": "outscale_security_group",
             "name": "public_sg_terraform",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "account_id": "##id-6##",
                         "description": "test vms_2",
-                        "id": "##id-13##",
+                        "id": "##id-14##",
                         "inbound_rules": [],
                         "net_id": "",
                         "outbound_rules": [],
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
-                        "security_group_id": "##id-13##",
+                        "security_group_id": "##id-14##",
                         "security_group_name": "terraform-public-sg_for_vms",
                         "tag": null,
                         "tags": []
@@ -365,19 +365,19 @@
             "mode": "managed",
             "type": "outscale_subnet",
             "name": "outscale_subnet",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "available_ips_count": 251,
-                        "id": "##id-11##",
+                        "id": "##id-12##",
                         "ip_range": "10.0.0.0/24",
                         "map_public_ip_on_launch": false,
                         "net_id": "##id-1##",
                         "request_id": "########",
                         "state": "available",
-                        "subnet_id": "##id-11##",
+                        "subnet_id": "##id-12##",
                         "subregion_name": "###region###a",
                         "tags": [
                             {
@@ -399,7 +399,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "outscale_vm",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -409,23 +409,25 @@
                         "block_device_mappings": [],
                         "block_device_mappings_created": [
                             {
+                                "boot_disk_tags": [],
                                 "bsu": {
                                     "delete_on_vm_deletion": "true",
                                     "link_date": "########",
                                     "state": "attached",
-                                    "volume_id": "##id-14##"
+                                    "volume_id": "##id-15##"
                                 },
                                 "device_name": "/dev/sda1"
                             }
                         ],
+                        "boot_disk_tags": [],
                         "bsu_optimized": false,
                         "client_token": "",
                         "creation_date": "########",
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-15##",
-                        "image_id": "##id-16##",
+                        "id": "##id-16##",
+                        "image_id": "##id-17##",
                         "is_source_dest_checked": true,
                         "keypair_name": "KP-TF144",
                         "launch_number": 0,
@@ -445,16 +447,16 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-17##",
+                        "reservation_id": "##id-18##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
                         "security_group_ids": [
-                            "##id-13##"
+                            "##id-14##"
                         ],
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-13##",
+                                "security_group_id": "##id-14##",
                                 "security_group_name": "terraform-public-sg_for_vms"
                             }
                         ],
@@ -469,7 +471,7 @@
                         ],
                         "timeouts": null,
                         "user_data": "",
-                        "vm_id": "##id-15##",
+                        "vm_id": "##id-16##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
@@ -486,7 +488,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "outscale_vm2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -496,23 +498,25 @@
                         "block_device_mappings": [],
                         "block_device_mappings_created": [
                             {
+                                "boot_disk_tags": [],
                                 "bsu": {
                                     "delete_on_vm_deletion": "true",
                                     "link_date": "########",
                                     "state": "attached",
-                                    "volume_id": "##id-18##"
+                                    "volume_id": "##id-19##"
                                 },
                                 "device_name": "/dev/sda1"
                             }
                         ],
+                        "boot_disk_tags": [],
                         "bsu_optimized": false,
                         "client_token": "",
                         "creation_date": "########",
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-19##",
-                        "image_id": "##id-16##",
+                        "id": "##id-20##",
+                        "image_id": "##id-17##",
                         "is_source_dest_checked": true,
                         "keypair_name": "KP-TF144",
                         "launch_number": 0,
@@ -532,7 +536,7 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-20##",
+                        "reservation_id": "##id-21##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
                         "security_group_ids": null,
@@ -541,7 +545,7 @@
                         ],
                         "security_groups": [
                             {
-                                "security_group_id": "##id-13##",
+                                "security_group_id": "##id-14##",
                                 "security_group_name": "terraform-public-sg_for_vms"
                             }
                         ],
@@ -556,7 +560,7 @@
                         ],
                         "timeouts": null,
                         "user_data": "",
-                        "vm_id": "##id-19##",
+                        "vm_id": "##id-20##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
@@ -573,7 +577,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "outscale_vmnet",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -583,15 +587,17 @@
                         "block_device_mappings": [],
                         "block_device_mappings_created": [
                             {
+                                "boot_disk_tags": [],
                                 "bsu": {
                                     "delete_on_vm_deletion": "true",
                                     "link_date": "########",
                                     "state": "attached",
-                                    "volume_id": "##id-21##"
+                                    "volume_id": "##id-22##"
                                 },
                                 "device_name": "/dev/sda1"
                             }
                         ],
+                        "boot_disk_tags": [],
                         "bsu_optimized": false,
                         "client_token": "",
                         "creation_date": "########",
@@ -599,7 +605,7 @@
                         "get_admin_password": null,
                         "hypervisor": "xen",
                         "id": "##id-8##",
-                        "image_id": "##id-16##",
+                        "image_id": "##id-17##",
                         "is_source_dest_checked": true,
                         "keypair_name": "KP-TF144",
                         "launch_number": 0,
@@ -616,7 +622,7 @@
                                     {
                                         "delete_on_vm_deletion": true,
                                         "device_number": "0",
-                                        "link_nic_id": "##id-22##",
+                                        "link_nic_id": "##id-23##",
                                         "state": "attached"
                                     }
                                 ],
@@ -635,16 +641,16 @@
                                 ],
                                 "secondary_private_ip_count": 0,
                                 "security_group_ids": [
-                                    "##id-12##"
+                                    "##id-13##"
                                 ],
                                 "security_groups": [
                                     {
-                                        "security_group_id": "##id-12##",
+                                        "security_group_id": "##id-13##",
                                         "security_group_name": "terraform-sg"
                                     }
                                 ],
                                 "state": "in-use",
-                                "subnet_id": "##id-11##"
+                                "subnet_id": "##id-12##"
                             }
                         ],
                         "os_family": "",
@@ -660,22 +666,22 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-23##",
+                        "reservation_id": "##id-24##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
                         "security_group_ids": [
-                            "##id-12##"
+                            "##id-13##"
                         ],
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-12##",
+                                "security_group_id": "##id-13##",
                                 "security_group_name": "terraform-sg"
                             }
                         ],
                         "state": "running",
                         "state_reason": "",
-                        "subnet_id": "##id-11##",
+                        "subnet_id": "##id-12##",
                         "tags": [],
                         "timeouts": null,
                         "user_data": "",

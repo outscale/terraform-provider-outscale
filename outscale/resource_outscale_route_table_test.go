@@ -424,7 +424,7 @@ func testAccOAPIRouteTableConfigInstance(omi, vmType, region string) string {
 			vm_type                  = "%s"
 			keypair_name             = "terraform-basic"
 			subnet_id                = outscale_subnet.foo.id
-			placement_subregion_name = "%sa"
+			placement_subregion_name = "%sb"
 			placement_tenancy        = "default"
 		}
 

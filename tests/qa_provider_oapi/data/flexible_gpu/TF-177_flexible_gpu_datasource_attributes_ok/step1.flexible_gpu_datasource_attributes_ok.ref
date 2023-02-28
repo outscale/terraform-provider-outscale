@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_flexible_gpu",
             "name": "data-fGPU-1",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -33,7 +33,7 @@
             "mode": "data",
             "type": "outscale_flexible_gpu",
             "name": "data-fGPU-2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -57,7 +57,7 @@
             "mode": "data",
             "type": "outscale_flexible_gpu",
             "name": "data-fGPU-3",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -81,7 +81,7 @@
             "mode": "managed",
             "type": "outscale_flexible_gpu",
             "name": "fGPU-1",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -105,7 +105,7 @@
             "mode": "managed",
             "type": "outscale_flexible_gpu_link",
             "name": "link_fGPU",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -129,7 +129,7 @@
             "mode": "managed",
             "type": "outscale_keypair",
             "name": "my_keypair",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -151,7 +151,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "MaVM",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -161,6 +161,7 @@
                         "block_device_mappings": [],
                         "block_device_mappings_created": [
                             {
+                                "boot_disk_tags": [],
                                 "bsu": {
                                     "delete_on_vm_deletion": "true",
                                     "link_date": "########",
@@ -170,6 +171,7 @@
                                 "device_name": "/dev/sda1"
                             }
                         ],
+                        "boot_disk_tags": [],
                         "bsu_optimized": false,
                         "client_token": "",
                         "creation_date": "########",

@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_nics",
             "name": "nic-0",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -97,7 +97,7 @@
             "mode": "data",
             "type": "outscale_nics",
             "name": "nic-2-main",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -164,7 +164,7 @@
             "mode": "data",
             "type": "outscale_nics",
             "name": "nic-4",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -305,7 +305,7 @@
             "mode": "data",
             "type": "outscale_nics",
             "name": "nic-5",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -450,7 +450,7 @@
             "mode": "data",
             "type": "outscale_nics",
             "name": "nic-6",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -595,7 +595,7 @@
             "mode": "data",
             "type": "outscale_nics",
             "name": "nic-7",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -671,7 +671,7 @@
             "mode": "managed",
             "type": "outscale_net",
             "name": "outscale_net",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -694,7 +694,7 @@
             "mode": "managed",
             "type": "outscale_nic",
             "name": "outscale_nic",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -789,7 +789,7 @@
             "mode": "managed",
             "type": "outscale_nic",
             "name": "outscale_nic_2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -877,7 +877,7 @@
             "mode": "managed",
             "type": "outscale_nic",
             "name": "outscale_nic_3",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -960,7 +960,7 @@
             "mode": "managed",
             "type": "outscale_nic_link",
             "name": "nic_link01",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -991,7 +991,7 @@
             "mode": "managed",
             "type": "outscale_nic_link",
             "name": "nic_link02",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -1021,7 +1021,7 @@
             "mode": "managed",
             "type": "outscale_security_group",
             "name": "security_group01",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -1059,7 +1059,7 @@
             "mode": "managed",
             "type": "outscale_subnet",
             "name": "subnet01",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -1088,7 +1088,7 @@
             "mode": "managed",
             "type": "outscale_subnet",
             "name": "subnet02",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -1117,7 +1117,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "vm01",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -1127,6 +1127,7 @@
                         "block_device_mappings": [],
                         "block_device_mappings_created": [
                             {
+                                "boot_disk_tags": [],
                                 "bsu": {
                                     "delete_on_vm_deletion": "true",
                                     "link_date": "########",
@@ -1136,6 +1137,7 @@
                                 "device_name": "/dev/sda1"
                             }
                         ],
+                        "boot_disk_tags": [],
                         "bsu_optimized": false,
                         "client_token": "",
                         "creation_date": "########",

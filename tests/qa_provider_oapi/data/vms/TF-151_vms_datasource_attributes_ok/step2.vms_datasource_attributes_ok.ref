@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_vms",
             "name": "outscale_vms",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -22,6 +22,7 @@
                                 "architecture": "x86_64",
                                 "block_device_mappings_created": [
                                     {
+                                        "boot_disk_tags": [],
                                         "bsu": {
                                             "delete_on_vm_deletion": "true",
                                             "link_date": "########",
@@ -80,6 +81,7 @@
                                 "architecture": "x86_64",
                                 "block_device_mappings_created": [
                                     {
+                                        "boot_disk_tags": [],
                                         "bsu": {
                                             "delete_on_vm_deletion": "true",
                                             "link_date": "########",
@@ -144,7 +146,7 @@
             "mode": "data",
             "type": "outscale_vms",
             "name": "outscale_vms-2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -157,6 +159,7 @@
                                 "architecture": "x86_64",
                                 "block_device_mappings_created": [
                                     {
+                                        "boot_disk_tags": [],
                                         "bsu": {
                                             "delete_on_vm_deletion": "true",
                                             "link_date": "########",
@@ -230,7 +233,7 @@
             "mode": "data",
             "type": "outscale_vms",
             "name": "outscale_vms-3",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -243,6 +246,7 @@
                                 "architecture": "x86_64",
                                 "block_device_mappings_created": [
                                     {
+                                        "boot_disk_tags": [],
                                         "bsu": {
                                             "delete_on_vm_deletion": "true",
                                             "link_date": "########",
@@ -316,7 +320,7 @@
             "mode": "data",
             "type": "outscale_vms",
             "name": "outscale_vms-4",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -329,6 +333,7 @@
                                 "architecture": "x86_64",
                                 "block_device_mappings_created": [
                                     {
+                                        "boot_disk_tags": [],
                                         "bsu": {
                                             "delete_on_vm_deletion": "true",
                                             "link_date": "########",
@@ -402,7 +407,7 @@
             "mode": "managed",
             "type": "outscale_keypair",
             "name": "my_keypair",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -424,7 +429,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "outscale_vm_centos",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "index_key": 0,
@@ -435,78 +440,7 @@
                         "block_device_mappings": [],
                         "block_device_mappings_created": [
                             {
-                                "bsu": {
-                                    "delete_on_vm_deletion": "true",
-                                    "link_date": "########",
-                                    "state": "attached",
-                                    "volume_id": "##id-1##"
-                                },
-                                "device_name": "/dev/sda1"
-                            }
-                        ],
-                        "bsu_optimized": false,
-                        "client_token": "",
-                        "creation_date": "########",
-                        "deletion_protection": false,
-                        "get_admin_password": null,
-                        "hypervisor": "xen",
-                        "id": "##id-5##",
-                        "image_id": "##id-2##",
-                        "is_source_dest_checked": true,
-                        "keypair_name": "KP-TF151",
-                        "launch_number": 0,
-                        "nested_virtualization": false,
-                        "net_id": "",
-                        "nics": [],
-                        "os_family": "",
-                        "performance": "high",
-                        "placement_subregion_name": "###region###a",
-                        "placement_tenancy": "default",
-                        "private_dns_name": "########",
-                        "private_ip": "########",
-                        "private_ips": null,
-                        "product_codes": [
-                            "0001"
-                        ],
-                        "public_dns_name": "########",
-                        "public_ip": "########",
-                        "request_id": "########",
-                        "reservation_id": "##id-3##",
-                        "root_device_name": "/dev/sda1",
-                        "root_device_type": "ebs",
-                        "security_group_ids": null,
-                        "security_group_names": null,
-                        "security_groups": [
-                            {
-                                "security_group_id": "##id-4##",
-                                "security_group_name": "default"
-                            }
-                        ],
-                        "state": "running",
-                        "state_reason": "",
-                        "subnet_id": "",
-                        "tags": [],
-                        "timeouts": null,
-                        "user_data": "",
-                        "vm_id": "##id-5##",
-                        "vm_initiated_shutdown_behavior": "stop",
-                        "vm_type": "###vm_type###"
-                    },
-                    "sensitive_attributes": [],
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
-                    "dependencies": [
-                        "outscale_keypair.my_keypair"
-                    ]
-                },
-                {
-                    "index_key": 1,
-                    "schema_version": 0,
-                    "attributes": {
-                        "admin_password": "",
-                        "architecture": "x86_64",
-                        "block_device_mappings": [],
-                        "block_device_mappings_created": [
-                            {
+                                "boot_disk_tags": [],
                                 "bsu": {
                                     "delete_on_vm_deletion": "true",
                                     "link_date": "########",
@@ -516,6 +450,7 @@
                                 "device_name": "/dev/sda1"
                             }
                         ],
+                        "boot_disk_tags": [],
                         "bsu_optimized": false,
                         "client_token": "",
                         "creation_date": "########",
@@ -569,6 +504,80 @@
                     "dependencies": [
                         "outscale_keypair.my_keypair"
                     ]
+                },
+                {
+                    "index_key": 1,
+                    "schema_version": 0,
+                    "attributes": {
+                        "admin_password": "",
+                        "architecture": "x86_64",
+                        "block_device_mappings": [],
+                        "block_device_mappings_created": [
+                            {
+                                "boot_disk_tags": [],
+                                "bsu": {
+                                    "delete_on_vm_deletion": "true",
+                                    "link_date": "########",
+                                    "state": "attached",
+                                    "volume_id": "##id-1##"
+                                },
+                                "device_name": "/dev/sda1"
+                            }
+                        ],
+                        "boot_disk_tags": [],
+                        "bsu_optimized": false,
+                        "client_token": "",
+                        "creation_date": "########",
+                        "deletion_protection": false,
+                        "get_admin_password": null,
+                        "hypervisor": "xen",
+                        "id": "##id-5##",
+                        "image_id": "##id-2##",
+                        "is_source_dest_checked": true,
+                        "keypair_name": "KP-TF151",
+                        "launch_number": 0,
+                        "nested_virtualization": false,
+                        "net_id": "",
+                        "nics": [],
+                        "os_family": "",
+                        "performance": "high",
+                        "placement_subregion_name": "###region###a",
+                        "placement_tenancy": "default",
+                        "private_dns_name": "########",
+                        "private_ip": "########",
+                        "private_ips": null,
+                        "product_codes": [
+                            "0001"
+                        ],
+                        "public_dns_name": "########",
+                        "public_ip": "########",
+                        "request_id": "########",
+                        "reservation_id": "##id-3##",
+                        "root_device_name": "/dev/sda1",
+                        "root_device_type": "ebs",
+                        "security_group_ids": null,
+                        "security_group_names": null,
+                        "security_groups": [
+                            {
+                                "security_group_id": "##id-4##",
+                                "security_group_name": "default"
+                            }
+                        ],
+                        "state": "running",
+                        "state_reason": "",
+                        "subnet_id": "",
+                        "tags": [],
+                        "timeouts": null,
+                        "user_data": "",
+                        "vm_id": "##id-5##",
+                        "vm_initiated_shutdown_behavior": "stop",
+                        "vm_type": "###vm_type###"
+                    },
+                    "sensitive_attributes": [],
+                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
+                    "dependencies": [
+                        "outscale_keypair.my_keypair"
+                    ]
                 }
             ]
         },
@@ -576,7 +585,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "outscale_vm_tags",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -586,6 +595,7 @@
                         "block_device_mappings": [],
                         "block_device_mappings_created": [
                             {
+                                "boot_disk_tags": [],
                                 "bsu": {
                                     "delete_on_vm_deletion": "true",
                                     "link_date": "########",
@@ -595,6 +605,7 @@
                                 "device_name": "/dev/sda1"
                             }
                         ],
+                        "boot_disk_tags": [],
                         "bsu_optimized": false,
                         "client_token": "",
                         "creation_date": "########",

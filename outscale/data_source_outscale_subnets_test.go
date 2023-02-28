@@ -53,7 +53,7 @@ func testAccDataSourceOutscaleOAPISubnetsConfig(rInt int, region string) string 
 		resource "outscale_subnet" "subnet" {
 			ip_range       = "10.%[1]d.123.0/24"
 			subregion_name = "%[2]sa"
-			net_id         = "${outscale_net.net.id}"
+			net_id         = outscale_net.net.id
 
 			tags {
 				key   = "name"
@@ -64,7 +64,7 @@ func testAccDataSourceOutscaleOAPISubnetsConfig(rInt int, region string) string 
 		data "outscale_subnets" "by_filter" {
 			filter {
 				name   = "subnet_ids"
-				values = ["${outscale_subnet.subnet.id}"]
+				values = [outscale_subnet.subnet.id]
 			}
 		}
 	`, rInt, region)
@@ -90,13 +90,13 @@ func testAccDataSourceOutscaleOAPISubnetsWithAvailableIpsCountsFilter(region str
 
 		resource "outscale_subnet" "sub1" {
 			subregion_name = "%[1]sa"
-			ip_range       = "10.0.0.0/16"
+			ip_range       = "10.0.0.0/24"
 			net_id         = outscale_net.outscale_net1.net_id
 		}
 
 		resource "outscale_subnet" "sub2" {
 			subregion_name = "%[1]sa"
-			ip_range       = "10.0.0.0/16"
+			ip_range       = "10.0.0.0/24"
 			net_id         = outscale_net.outscale_net2.net_id
 		}
 

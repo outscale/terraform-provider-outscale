@@ -153,12 +153,12 @@ func testAccOutscaleNicLinkConfigBasic(sg int, omi, vmType, region string) strin
 			vm_type                  = "%s"
 			keypair_name             = "terraform-basic"
 			security_group_ids       = [outscale_security_group.outscale_security_group.id]
-			placement_subregion_name = "%[4]sa"
+			placement_subregion_name = "%[4]sb"
 			subnet_id                = outscale_subnet.outscale_subnet.id
 		}
 
 		resource "outscale_subnet" "outscale_subnet" {
-			subregion_name = "%[4]sa"
+			subregion_name = "%[4]sb"
 			ip_range       = "10.0.0.0/16"
 			net_id         = outscale_net.net.id
 

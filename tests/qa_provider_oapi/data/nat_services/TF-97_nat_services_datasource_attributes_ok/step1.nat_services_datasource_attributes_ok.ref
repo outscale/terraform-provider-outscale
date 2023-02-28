@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_nat_services",
             "name": "outscale_nat_services",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -73,7 +73,7 @@
             "mode": "data",
             "type": "outscale_nat_services",
             "name": "outscale_nat_services-2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -115,7 +115,7 @@
             "mode": "data",
             "type": "outscale_nat_services",
             "name": "outscale_nat_services-3",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -179,7 +179,7 @@
             "mode": "data",
             "type": "outscale_nat_services",
             "name": "outscale_nat_services-4",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -243,7 +243,7 @@
             "mode": "data",
             "type": "outscale_nat_services",
             "name": "outscale_nat_services-5",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -307,7 +307,7 @@
             "mode": "data",
             "type": "outscale_nat_services",
             "name": "outscale_nat_services-6",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -371,7 +371,7 @@
             "mode": "managed",
             "type": "outscale_internet_service",
             "name": "outscale_internet_service",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -392,7 +392,7 @@
             "mode": "managed",
             "type": "outscale_internet_service_link",
             "name": "outscale_internet_service_link",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -417,7 +417,7 @@
             "mode": "managed",
             "type": "outscale_nat_service",
             "name": "outscale_nat_service",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -463,7 +463,7 @@
             "mode": "managed",
             "type": "outscale_nat_service",
             "name": "outscale_nat_service2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -509,7 +509,7 @@
             "mode": "managed",
             "type": "outscale_net",
             "name": "outscale_net",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -532,7 +532,7 @@
             "mode": "managed",
             "type": "outscale_public_ip",
             "name": "outscale_public_ip",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -558,7 +558,7 @@
             "mode": "managed",
             "type": "outscale_public_ip",
             "name": "outscale_public_ip2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -584,7 +584,7 @@
             "mode": "managed",
             "type": "outscale_route",
             "name": "outscale_route",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -600,7 +600,7 @@
                         "net_peering_id": "",
                         "nic_id": "",
                         "request_id": "########",
-                        "route_table_id": "##id-15##",
+                        "route_table_id": "##id-16##",
                         "state": "active",
                         "vm_account_id": "",
                         "vm_id": ""
@@ -619,7 +619,7 @@
             "mode": "managed",
             "type": "outscale_route",
             "name": "outscale_route2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -629,13 +629,13 @@
                         "destination_ip_range": "0.0.0.0/0",
                         "destination_service_id": "",
                         "gateway_id": "##id-13##",
-                        "id": "##id-16##",
+                        "id": "##id-17##",
                         "nat_access_point": "",
                         "nat_service_id": "",
                         "net_peering_id": "",
                         "nic_id": "",
                         "request_id": "########",
-                        "route_table_id": "##id-16##",
+                        "route_table_id": "##id-18##",
                         "state": "active",
                         "vm_account_id": "",
                         "vm_id": ""
@@ -654,17 +654,17 @@
             "mode": "managed",
             "type": "outscale_route_table",
             "name": "outscale_route_table",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-15##",
+                        "id": "##id-16##",
                         "link_route_tables": [],
                         "net_id": "##id-2##",
                         "request_id": "########",
                         "route_propagating_virtual_gateways": [],
-                        "route_table_id": "##id-15##",
+                        "route_table_id": "##id-16##",
                         "routes": [
                             {
                                 "creation_method": "CreateRouteTable",
@@ -694,17 +694,17 @@
             "mode": "managed",
             "type": "outscale_route_table",
             "name": "outscale_route_table2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-16##",
+                        "id": "##id-18##",
                         "link_route_tables": [],
                         "net_id": "##id-2##",
                         "request_id": "########",
                         "route_propagating_virtual_gateways": [],
-                        "route_table_id": "##id-16##",
+                        "route_table_id": "##id-18##",
                         "routes": [
                             {
                                 "creation_method": "CreateRouteTable",
@@ -734,16 +734,16 @@
             "mode": "managed",
             "type": "outscale_route_table_link",
             "name": "outscale_route_table_link",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-17##",
-                        "link_route_table_id": "##id-17##",
+                        "id": "##id-19##",
+                        "link_route_table_id": "##id-19##",
                         "main": false,
                         "request_id": "########",
-                        "route_table_id": "##id-15##",
+                        "route_table_id": "##id-16##",
                         "subnet_id": "##id-7##"
                     },
                     "sensitive_attributes": [],
@@ -760,16 +760,16 @@
             "mode": "managed",
             "type": "outscale_route_table_link",
             "name": "outscale_route_table_link2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-18##",
-                        "link_route_table_id": "##id-18##",
+                        "id": "##id-20##",
+                        "link_route_table_id": "##id-20##",
                         "main": false,
                         "request_id": "########",
-                        "route_table_id": "##id-16##",
+                        "route_table_id": "##id-18##",
                         "subnet_id": "##id-4##"
                     },
                     "sensitive_attributes": [],
@@ -786,7 +786,7 @@
             "mode": "managed",
             "type": "outscale_subnet",
             "name": "outscale_subnet",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -815,7 +815,7 @@
             "mode": "managed",
             "type": "outscale_subnet",
             "name": "outscale_subnet2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
