@@ -4,6 +4,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -37,5 +38,14 @@ func testAccPreCheck(t *testing.T) {
 		os.Getenv("OUTSCALE_IMAGEID") == "" ||
 		os.Getenv("OUTSCALE_ACCOUNT") == "" {
 		t.Fatal("`OUTSCALE_ACCESSKEYID`, `OUTSCALE_SECRETKEYID`, `OUTSCALE_REGION`, `OUTSCALE_ACCOUNT` and `OUTSCALE_IMAGEID` must be set for acceptance testing")
+	}
+}
+
+func providerScottwinklerShell() map[string]resource.ExternalProvider {
+	return map[string]resource.ExternalProvider{
+		"shell": {
+			VersionConstraint: "1.7.10",
+			Source:            "scottwinkler/shell",
+		},
 	}
 }

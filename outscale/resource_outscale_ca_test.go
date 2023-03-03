@@ -17,18 +17,19 @@ func TestAccOutscaleOAPICa_basic(t *testing.T) {
 	resourceName := "outscale_ca.ca_test"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleCaDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		Providers:         testAccProviders,
+		ExternalProviders: providerScottwinklerShell(),
+		CheckDestroy:      testAccCheckOutscaleCaDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPICaConfig(utils.TestCaPem),
+				Config: testAccOutscaleOAPICaConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleCaExists(resourceName),
 				),
 			},
 			{
-				Config: testAccOutscaleOAPICaConfigUpdateDescription(utils.TestCaPem),
+				Config: testAccOutscaleOAPICaConfigUpdateDescription(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleCaExists(resourceName),
 				),
@@ -120,20 +121,47 @@ func testAccCheckOutscaleCaDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccOutscaleOAPICaConfig(ca_pem string) string {
+func testAccOutscaleOAPICaConfig() string {
 	return fmt.Sprintf(`
-resource "outscale_ca" "ca_test" { 
-   ca_pem        =  %[1]q
-   description        = "Ca testacc create"
-}
-	`, ca_pem)
+
+resource "shell_script" "ca_gen" {
+	lifecycle_commands {
+		create = <<-EOF
+			openssl req -x509 -sha256 -nodes -newkey rsa:4096 -keyout resource_ca.key -days 2 -out resource_ca.pem -subj '/CN=domain.com'
+		EOF
+		read   = <<-EOF
+			echo "{\"filename\":  \"resource_ca.pem\"}"
+		EOF
+		delete = "rm -f resource_ca.pem resource_ca.key"
+	}
+	working_directory = "${path.module}/."
 }
 
-func testAccOutscaleOAPICaConfigUpdateDescription(ca_pem string) string {
-	return fmt.Sprintf(`
 resource "outscale_ca" "ca_test" { 
-   ca_pem        =  %[1]q
-   description        = "Ca testacc update"
+   ca_pem      = file(shell_script.ca_gen.output.filename)
+   description = "Ca testacc create"
 }
-	`, ca_pem)
+	`)
+}
+
+func testAccOutscaleOAPICaConfigUpdateDescription() string {
+	return fmt.Sprintf(`
+	resource "shell_script" "ca_gen" {
+		lifecycle_commands {
+			create = <<-EOF
+				openssl req -x509 -sha256 -nodes -newkey rsa:4096 -keyout resource_ca.key -days 2 -out resource_ca.pem -subj '/CN=domain.com'
+			EOF
+			read   = <<-EOF
+				echo "{\"filename\":  \"resource_ca.pem\"}"
+			EOF
+			delete = "rm -f resource_ca.pem resource_ca.key"
+		}
+		working_directory = "${path.module}/."
+	}
+	
+	resource "outscale_ca" "ca_test" { 
+		ca_pem      = file(shell_script.ca_gen.output.filename)
+		description        = "Ca testacc update"
+	}
+	`)
 }
