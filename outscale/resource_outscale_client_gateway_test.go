@@ -14,7 +14,7 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func TestAccOutscaleClientGateway_basic(t *testing.T) {
+func TestAccOthers_ClientGateway_basic(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_client_gateway.foo"
 	rBgpAsn := utils.RandIntRange(64512, 65534)
@@ -52,7 +52,7 @@ func TestAccOutscaleClientGateway_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleClientGateway_withTags(t *testing.T) {
+func TestAccOthers_ClientGateway_withTags(t *testing.T) {
 	resourceName := "outscale_client_gateway.foo"
 	value := fmt.Sprintf("testacc-%s", acctest.RandString(5))
 	valueUpdated := fmt.Sprintf("testacc-%s", acctest.RandString(5))

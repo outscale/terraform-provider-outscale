@@ -14,9 +14,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPIVolume_basic(t *testing.T) {
+func TestAccOthers_Volume_basic(t *testing.T) {
 	t.Parallel()
-	region := os.Getenv("OUTSCALE_REGION")
 
 	var v oscgo.Volume
 	resource.Test(t, resource.TestCase{
@@ -25,7 +24,7 @@ func TestAccOutscaleOAPIVolume_basic(t *testing.T) {
 		Providers:     testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIVolumeConfig(region),
+				Config: testAccOutscaleOAPIVolumeConfig(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIVolumeExists("outscale_volume.test", &v),
 				),
@@ -39,9 +38,9 @@ func TestAccOutscaleOAPIVolume_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIVolume_updateSize(t *testing.T) {
+func TestAccOthers_Volume_updateSize(t *testing.T) {
 	t.Parallel()
-	region := os.Getenv("OUTSCALE_REGION")
+	region := utils.GetRegion()
 
 	var v oscgo.Volume
 	resource.Test(t, resource.TestCase{
@@ -70,23 +69,46 @@ func TestAccOutscaleOAPIVolume_updateSize(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIVolume_io1Type(t *testing.T) {
+func TestAccOthers_Volume_io1Type(t *testing.T) {
 	t.Parallel()
-	region := os.Getenv("OUTSCALE_REGION")
+	if os.Getenv("IS_IO1_TEST_QUOTA") == "true" {
+		var v oscgo.Volume
+		resource.Test(t, resource.TestCase{
+			PreCheck: func() {
+				testAccPreCheck(t)
 
+			},
+			IDRefreshName: "outscale_volume.test-io1",
+			Providers:     testAccProviders,
+			Steps: []resource.TestStep{
+				{
+					Config: test_IO1VolumeTypeConfig(utils.GetRegion()),
+					Check: resource.ComposeTestCheckFunc(
+						testAccCheckOAPIVolumeExists("outscale_volume.test-io1", &v),
+					),
+				},
+			},
+		})
+	} else {
+		t.Skip("will be done soon")
+	}
+}
+
+func TestAccOthers_GP2_Volume_Type(t *testing.T) {
+	t.Parallel()
 	var v oscgo.Volume
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 
 		},
-		IDRefreshName: "outscale_volume.test-io",
+		IDRefreshName: "outscale_volume.test-gp2",
 		Providers:     testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testOutscaleOAPIVolumeConfigIO1Type(region),
+				Config: test_GP2VolumeTypeConfig(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPIVolumeExists("outscale_volume.test-io", &v),
+					testAccCheckOAPIVolumeExists("outscale_volume.test-gp2", &v),
 				),
 			},
 		},
@@ -161,13 +183,23 @@ func testOutscaleOAPIVolumeConfigUpdateSize(region string) string {
 	`, region)
 }
 
-func testOutscaleOAPIVolumeConfigIO1Type(region string) string {
+func test_IO1VolumeTypeConfig(region string) string {
 	return fmt.Sprintf(`
-		resource "outscale_volume" "test-io" {
+		resource "outscale_volume" "test-io1" {
 			subregion_name = "%sa"
-			volume_type    = "io1"
+			volume_type    = "gp2"
 			size           = 10
 			iops           = 100
+		}
+	`, region)
+}
+
+func test_GP2VolumeTypeConfig(region string) string {
+	return fmt.Sprintf(`
+		resource "outscale_volume" "test-gp2" {
+			subregion_name = "%sa"
+			volume_type    = "gp2"
+			size           = 10
 		}
 	`, region)
 }

@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPISecurityGroup(t *testing.T) {
+func TestAccNet_WithSecurityGroup(t *testing.T) {
 	var group oscgo.SecurityGroup
 	rInt := acctest.RandInt()
 
@@ -89,7 +89,7 @@ func testAccOutscaleOAPISecurityGroupConfig(rInt int) string {
 				value = "tf-acc-test"
 			}
 
-			net_id = "${outscale_net.net.id}"
+			net_id = outscale_net.net.id
 		}
 	`, rInt)
 }

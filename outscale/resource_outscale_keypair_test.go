@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPIKeyPair_basic(t *testing.T) {
+func TestAccOthers_Keypair_basic(t *testing.T) {
 	t.Parallel()
 	var conf oscgo.Keypair
 
@@ -37,7 +37,7 @@ func TestAccOutscaleOAPIKeyPair_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIKeyPair_retrieveName(t *testing.T) {
+func TestAccOthers_Keypair_retrieveName(t *testing.T) {
 	t.Parallel()
 	var conf oscgo.Keypair
 
@@ -60,7 +60,8 @@ func TestAccOutscaleOAPIKeyPair_retrieveName(t *testing.T) {
 		},
 	})
 }
-func TestAccOutscaleOAPIKeyPair_generatedName(t *testing.T) {
+
+func TestAccOthers_Keypair_generatedName(t *testing.T) {
 	t.Parallel()
 	var conf oscgo.Keypair
 

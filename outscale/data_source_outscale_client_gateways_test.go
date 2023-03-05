@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccOutscaleClientGatewaysDatasource_basic(t *testing.T) {
+func TestAccOthers_ClientGatewaysDatasource_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -18,7 +18,7 @@ func TestAccOutscaleClientGatewaysDatasource_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleClientGatewaysDatasource_withFilters(t *testing.T) {
+func TestAccOthers_ClientGatewaysDatasource_withFilters(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -49,7 +49,7 @@ const testAccOutscaleClientGatewaysDatasourceConfigBasic = `
 	}
 
 	data "outscale_client_gateways" "test" {
-		client_gateway_ids = ["${outscale_client_gateway.foo1.id}", "${outscale_client_gateway.foo2.id}"]
+		client_gateway_ids = [outscale_client_gateway.foo1.id, outscale_client_gateway.foo2.id]
 	}
 `
 
@@ -74,7 +74,7 @@ const testAccOutscaleClientGatewaysDatasourceConfigWithFilters = `
 	data "outscale_client_gateways" "test" {
 		filter {
 			name = "client_gateway_ids"
-			values = ["${outscale_client_gateway.foo1.id}", "${outscale_client_gateway.foo2.id}"]
+			values = [outscale_client_gateway.foo1.id, outscale_client_gateway.foo2.id]
 		}
 	}
 `

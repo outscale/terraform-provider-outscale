@@ -2,23 +2,22 @@ package outscale
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func TestAccOutscaleOAPIVolumeDataSource_basic(t *testing.T) {
+func TestAccOthers_VolumeDataSource_basic(t *testing.T) {
 	t.Parallel()
-	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVolumeDataSourceConfig(region),
+				Config: testAccCheckOutscaleOAPIVolumeDataSourceConfig(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIVolumeDataSourceID("data.outscale_volume.ebs_volume"),
 					resource.TestCheckResourceAttr("data.outscale_volume.ebs_volume", "size", "10"),
@@ -29,16 +28,15 @@ func TestAccOutscaleOAPIVolumeDataSource_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIVolumeDataSource_filterByTags(t *testing.T) {
+func TestAccOthers_VolumeDataSource_filterByTags(t *testing.T) {
 	t.Parallel()
-	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVolumeDataSourceConfigFilterByTags(region),
+				Config: testAccCheckOutscaleOAPIVolumeDataSourceConfigFilterByTags(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIVolumeDataSourceID("data.outscale_volume.ebs_volume"),
 					resource.TestCheckResourceAttr("data.outscale_volume.ebs_volume", "size", "10"),
@@ -79,7 +77,7 @@ func testAccCheckOutscaleOAPIVolumeDataSourceConfig(region string) string {
 		data "outscale_volume" "ebs_volume" {
 			filter {
 				name   = "volume_ids"
-				values = ["${outscale_volume.example.id}"]
+				values = [outscale_volume.example.id]
 			}
 		}
 	`, region)
@@ -106,7 +104,7 @@ func testAccCheckOutscaleOAPIVolumeDataSourceConfigFilterByTags(region string) s
 
 			filter {
 				name   = "volume_ids"
-				values = ["${outscale_volume.example.id}"]
+				values = [outscale_volume.example.id]
 			}
 
 		}

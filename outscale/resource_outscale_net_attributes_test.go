@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccOutscaleOAPILinAttr_basic(t *testing.T) {
+func TestAccNet_Attributes_basic(t *testing.T) {
 	resourceName := "outscale_net_attributes.outscale_net_attributes"
 
 	resource.Test(t, resource.TestCase{
@@ -25,7 +25,7 @@ func TestAccOutscaleOAPILinAttr_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPILinAttr_withoutDHCPID(t *testing.T) {
+func TestAccNet_Attributes_withoutDHCPID(t *testing.T) {
 	resourceName := "outscale_net_attributes.outscale_net_attributes"
 
 	resource.Test(t, resource.TestCase{

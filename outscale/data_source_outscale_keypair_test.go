@@ -9,7 +9,7 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func TestAccOutscaleOAPIKeypairDataSource_Instance(t *testing.T) {
+func TestAccOthers_KeypairDataSource_Instance(t *testing.T) {
 	t.Parallel()
 	keyPairName := fmt.Sprintf("acc-test-keypair-%d", utils.RandIntRange(0, 400))
 
@@ -50,10 +50,9 @@ func testAccCheckOutscaleOAPIKeypairDataSourceConfig(keypairName string) string 
 		}
 		
 		data "outscale_keypair" "nat_ami" {
-			#keypair_name = "${outscale_keypair.a_key_pair.id}"
 			filter {
 				name   = "keypair_names"
-				values = ["${outscale_keypair.a_key_pair.keypair_name}"]
+				values = [outscale_keypair.a_key_pair.keypair_name]
 			}
 		}
 	`, keypairName)

@@ -17,9 +17,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPIImageLaunchPermission_Basic(t *testing.T) {
+func TestAccNet_WithImageLaunchPermission_Basic(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	region := os.Getenv("OUTSCALE_REGION")
+	region := utils.GetRegion()
 	accountID := os.Getenv("OUTSCALE_ACCOUNT")
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
 	sgId := os.Getenv("OUTSCALE_SECURITYGROUPID")
@@ -66,9 +66,9 @@ func TestAccOutscaleOAPIImageLaunchPermission_Basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIImageLaunchPermissionDestruction_Basic(t *testing.T) {
+func TestAccNet_ImageLaunchPermissionDestruction_Basic(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	region := os.Getenv("OUTSCALE_REGION")
+	region := utils.GetRegion()
 	accountID := os.Getenv("OUTSCALE_ACCOUNT")
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
 	sgId := os.Getenv("OUTSCALE_SECURITYGROUPID")

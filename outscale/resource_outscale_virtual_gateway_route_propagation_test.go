@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPIVirtualRoutePropagation_basic(t *testing.T) {
+func TestAccNet_WithVirtualRoutePropagation_basic(t *testing.T) {
 	t.Parallel()
 	rBgpAsn := utils.RandIntRange(64512, 65534)
 

@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPILinkRouteTable_basic(t *testing.T) {
+func TestAccNet_WithLinkRouteTable_basic(t *testing.T) {
 	t.Parallel()
 	var v oscgo.RouteTable
 	resource.Test(t, resource.TestCase{
@@ -37,7 +37,7 @@ func TestAccOutscaleOAPILinkRouteTable_basic(t *testing.T) {
 	})
 }
 
-func TestAccResourceOAPILinkRouteTable_importBasic(t *testing.T) {
+func TestAccNet_ImportLinkRouteTable_Basic(t *testing.T) {
 	resourceName := "outscale_route_table_link.foo"
 
 	resource.ParallelTest(t, resource.TestCase{

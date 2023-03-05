@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPIServerCertificate_basic(t *testing.T) {
+func TestAccOthers_ServerCertificate_basic(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_server_certificate.test"
 	rName := acctest.RandomWithPrefix("acc-test")

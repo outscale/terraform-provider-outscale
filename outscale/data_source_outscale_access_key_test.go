@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccOutscaleDataSourceAccessKey_basic(t *testing.T) {
+func TestAccOthers_DatasourceAccessKey_basic(t *testing.T) {
 	t.Parallel()
 	dataSourceName := "outscale_access_key.outscale_access_key"
 
@@ -28,7 +28,7 @@ func TestAccOutscaleDataSourceAccessKey_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleDataSourceAccessKey_withFilters(t *testing.T) {
+func TestAccOthers_AccessKey_withFilters(t *testing.T) {
 	t.Parallel()
 	dataSourceName := "outscale_access_key.outscale_access_key"
 

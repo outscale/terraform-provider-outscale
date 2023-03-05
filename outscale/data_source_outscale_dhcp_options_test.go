@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccOutscaleDHCPOptionsDatasource_basic(t *testing.T) {
+func TestAccOthers_DHCPOptionsDatasource_basic(t *testing.T) {
 	t.Parallel()
 	value := fmt.Sprintf("test-acc-value-%s", acctest.RandString(5))
 
@@ -23,7 +23,7 @@ func TestAccOutscaleDHCPOptionsDatasource_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleDHCPOptionsDatasource_withFilters(t *testing.T) {
+func TestAccOthers_DHCPOptionsDatasource_withFilters(t *testing.T) {
 	t.Parallel()
 	value := fmt.Sprintf("test-acc-value-%s", acctest.RandString(5))
 

@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccDataSourceOutscaleOAPISecurityGroup_basic(t *testing.T) {
+func TestAccNet_WithSecurityGroupDataSource_basic(t *testing.T) {
 	t.Parallel()
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
@@ -27,7 +27,7 @@ func TestAccDataSourceOutscaleOAPISecurityGroup_basic(t *testing.T) {
 	})
 }
 
-func TestAccDataSourceOutscaleOAPISecurityGroupPublic(t *testing.T) {
+func TestAccNet_WithSecurityGroupPublic_(t *testing.T) {
 	t.Parallel()
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
@@ -102,7 +102,7 @@ func testAccDataSourceOutscaleOAPISecurityGroupConfig(rInt int) string {
 		#data "outscale_security_group" "by_filter" {
 		#	filter {
 		#		name = "security_group_names"
-		#		values = ["${outscale_security_group.test.security_group_name}"]
+		#		values = [outscale_security_group.test.security_group_name]
 		#	}
 		#}`, rInt, rInt)
 }
@@ -123,7 +123,7 @@ func testAccDataSourceOutscaleOAPISecurityGroupPublicConfig(rInt int) string {
 		    name = "security_group_names"
 
 				// name = "group_name"
-				values = ["${outscale_security_group.test.security_group_name}"]
+				values = [outscale_security_group.test.security_group_name]
 			}
 		}`, rInt, rInt)
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccOutscaleOAPIServerCertificatesDatasource_basic(t *testing.T) {
+func TestAccOthers_ServerCertificatesDatasource_basic(t *testing.T) {
 	t.Parallel()
 	rName := acctest.RandomWithPrefix("acc-test")
 	body := `-----BEGIN CERTIFICATE-----

@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPILinPeeringConnectionAccepter_sameAccount(t *testing.T) {
+func TestAccNet_PeeringConnectionAccepter_sameAccount(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -63,8 +63,8 @@ const testAccOutscaleOAPILinPeeringConnectionAccepterSameAccountConfig = `
 	}
 
 	resource "outscale_net_peering" "foo" {
-		source_net_id   = "${outscale_net.foo.id}"
-		accepter_net_id = "${outscale_net.bar.id}"
+		source_net_id   = outscale_net.foo.id
+		accepter_net_id = outscale_net.bar.id
 
 		tags {
 			key   = "Side"
@@ -74,6 +74,6 @@ const testAccOutscaleOAPILinPeeringConnectionAccepterSameAccountConfig = `
 
 	// Accepter's side of the connection.
 	resource "outscale_net_peering_acceptation" "peer" {
-		net_peering_id = "${outscale_net_peering.foo.id}"
+		net_peering_id = outscale_net_peering.foo.id
 	}
 `

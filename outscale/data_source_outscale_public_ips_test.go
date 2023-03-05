@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccDataSourceOutscaleOAPIPublicIPS(t *testing.T) {
+func TestAccOthers_DataSourcePublicIPS(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -28,7 +28,7 @@ func TestAccDataSourceOutscaleOAPIPublicIPS(t *testing.T) {
 	})
 }
 
-func TestAccDataSourceOutscaleOAPIPublicIPS_withTags(t *testing.T) {
+func TestAccOthers_DataSourcePublicIPS_withTags(t *testing.T) {
 	t.Parallel()
 	if os.Getenv("TEST_QUOTA") == "true" {
 		resource.Test(t, resource.TestCase{

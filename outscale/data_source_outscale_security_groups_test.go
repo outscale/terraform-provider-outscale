@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccDataSourceOutscaleOAPISecurityGroups_vpc(t *testing.T) {
+func TestAccNet_WIthSecurityGroups_DataSource(t *testing.T) {
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },

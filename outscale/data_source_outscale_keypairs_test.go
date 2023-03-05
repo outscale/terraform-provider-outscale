@@ -9,7 +9,7 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func TestAccOutscaleOAPIKeypairsDataSource_Instance(t *testing.T) {
+func TestAccOthers_KeypairsDataSource_Instance(t *testing.T) {
 	t.Parallel()
 	keyPairName := fmt.Sprintf("testacc-keypair-%d", utils.RandIntRange(0, 400))
 	resource.Test(t, resource.TestCase{

@@ -17,7 +17,7 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 )
 
-func TestAccOutscaleOAPIDhcpOptional_basic(t *testing.T) {
+func TestAccOthers_DhcpOptional_basic(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_dhcp_option.foo"
 	value := fmt.Sprintf("test-acc-value-%s", acctest.RandString(5))
@@ -67,7 +67,7 @@ func TestAccOutscaleOAPIDhcpOptional_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIDhcpOptional_withEmptyAttrs(t *testing.T) {
+func TestAccOthers_DhcpOptional_withEmptyAttrs(t *testing.T) {
 	resourceName := "outscale_dhcp_option.foo"
 
 	value := fmt.Sprintf("test-acc-value-%s", acctest.RandString(5))
@@ -116,18 +116,18 @@ func TestAccOutscaleOAPIDhcpOptional_withEmptyAttrs(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIDhcpOptional_withNet(t *testing.T) {
+func TestAccNet_withDhcpOptional(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_dhcp_option.outscale_dhcp_option"
-
-	domainName := fmt.Sprintf("eu-west-2.compute%s.internal", acctest.RandString(3))
+	domainName := fmt.Sprintf("%s.compute%s.internal", utils.GetRegion(), acctest.RandString(3))
 	domainServers := []string{"192.168.12.12", "192.168.12.132"}
+
 	tags := &oscgo.Tag{
 		Key:   pointy.String(acctest.RandomWithPrefix("name")),
 		Value: pointy.String(acctest.RandomWithPrefix("test-MZI")),
 	}
 
-	domainNameUpdated := fmt.Sprintf("eu-west-2.compute%s.internal", acctest.RandString(3))
+	domainNameUpdated := fmt.Sprintf("%s.compute%s.internal", utils.GetRegion(), acctest.RandString(3))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
@@ -164,7 +164,7 @@ func TestAccOutscaleOAPIDhcpOptional_withNet(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleDHCPOption_importBasic(t *testing.T) {
+func TestAccOthers_DHCPOption_importBasic(t *testing.T) {
 	resourceName := "outscale_dhcp_option.foo"
 	value := fmt.Sprintf("test-acc-value-%s", acctest.RandString(5))
 

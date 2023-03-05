@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccOutscaleOAPIInternetServicesDatasource_basic(t *testing.T) {
+func TestAccOthers_InternetServicesDatasource_basic(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -25,7 +25,7 @@ const testAccOutscaleOAPIInternetServicesDatasourceConfig = `
 	data "outscale_internet_services" "outscale_internet_services" {
 		filter {
 			name = "internet_service_id"
-			values = ["${outscale_internet_service.gateway.id}"]
+			values = [outscale_internet_service.gateway.id]
 		}
 	}
 `

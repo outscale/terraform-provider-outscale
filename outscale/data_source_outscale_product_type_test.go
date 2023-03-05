@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccDataSourceOutscaleOAPIProductType(t *testing.T) {
+func TestAccOthers_DataSourceProductType(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },

@@ -2,19 +2,18 @@ package outscale
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func TestAccOutscaleCookieStickinessPolicy_basic(t *testing.T) {
+func TestAccOthers_CookieStickinessPolicy_basic(t *testing.T) {
 	t.Parallel()
-	lbName := fmt.Sprintf("tf-test-lb-%s", acctest.RandString(5))
-	region := os.Getenv("OUTSCALE_REGION")
-	zone := fmt.Sprintf("%sa", region)
+	lbName := fmt.Sprintf("tf-test-lb-%s", acctest.RandString(10))
+	zone := fmt.Sprintf("%sa", utils.GetRegion())
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -88,14 +87,14 @@ resource "outscale_load_balancer" "lb" {
 resource "outscale_load_balancer_policy" "app-policy" {
 	policy_type = "app"
 	policy_name = "foo-policy"
-	load_balancer_name = "${outscale_load_balancer.lb.id}"
+	load_balancer_name = outscale_load_balancer.lb.id
 	cookie_name = "MyAppCookie"
 }
 
 resource "outscale_load_balancer_policy" "lb-policy" {
 	policy_type = "load_balancer"
 	policy_name = "lb-policy"
-	load_balancer_name = "${outscale_load_balancer.lb.id}"
+	load_balancer_name = outscale_load_balancer.lb.id
 	cookie_expiration_period = 180
 }
 `, rName, zone)
@@ -118,14 +117,14 @@ resource "outscale_load_balancer" "lb" {
 resource "outscale_load_balancer_policy" "app-policy" {
 	policy_type = "app"
 	policy_name = "foo-policy"
-	load_balancer_name = "${outscale_load_balancer.lb.id}"
+	load_balancer_name = outscale_load_balancer.lb.id
 	cookie_name = "MyOtherAppCookie"
 }
 
 resource "outscale_load_balancer_policy" "lb-policy" {
 	policy_type = "load_balancer"
 	policy_name = "lb-policy"
-	load_balancer_name = "${outscale_load_balancer.lb.id}"
+	load_balancer_name = outscale_load_balancer.lb.id
 	cookie_expiration_period = 100
 }`, rName, zone)
 }

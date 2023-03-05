@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleSecurityGroupRule_basic(t *testing.T) {
+func TestAccOthers_SecurityGroupRule_basic(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_security_group_rule.outscale_security_group_rule_https"
 
@@ -50,7 +50,7 @@ func TestAccOutscaleSecurityGroupRule_basic(t *testing.T) {
 	}
 }
 
-func TestAccOutscaleSecurityGroupRule_withSecurityGroupMember(t *testing.T) {
+func TestAccOthers_SecurityGroupRule_withSecurityGroupMember(t *testing.T) {
 	t.Parallel()
 	rInt := acctest.RandInt()
 	accountID := os.Getenv("OUTSCALE_ACCOUNT")

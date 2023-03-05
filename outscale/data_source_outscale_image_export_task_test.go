@@ -7,13 +7,14 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccOutscaleOAPIImageExportTaskDataSource_basic(t *testing.T) {
+func TestAccVM_withImageExportTaskDataSource_basic(t *testing.T) {
+	t.Parallel()
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	region := os.Getenv("OUTSCALE_REGION")
 	imageName := acctest.RandomWithPrefix("test-image-name")
 
 	if os.Getenv("TEST_QUOTA") == "true" {
@@ -24,7 +25,7 @@ func TestAccOutscaleOAPIImageExportTaskDataSource_basic(t *testing.T) {
 			Providers: testAccProviders,
 			Steps: []resource.TestStep{
 				{
-					Config: testAccOutscaleOAPIImageExportTaskDataSourceConfig(omi, "tinav4.c2r2p2", region, imageName),
+					Config: testAccOutscaleOAPIImageExportTaskDataSourceConfig(omi, "tinav4.c2r2p2", utils.GetRegion(), imageName),
 					Check: resource.ComposeTestCheckFunc(
 						testAccCheckOutscaleImageExportTaskDataSourceID("data.outscale_image_export_task.test"),
 					),
@@ -53,7 +54,7 @@ func testAccCheckOutscaleImageExportTaskDataSourceID(n string) resource.TestChec
 
 func testAccOutscaleOAPIImageExportTaskDataSourceConfig(omi, vmType, region, imageName string) string {
 	return fmt.Sprintf(`
-	resource "outscale_vm" "basic" {
+	resource "outscale_vm" "basicExport" {
 		image_id	         = "%s"
 		vm_type                  = "%s"
 		keypair_name	         = "terraform-basic"
@@ -62,7 +63,7 @@ func testAccOutscaleOAPIImageExportTaskDataSourceConfig(omi, vmType, region, ima
 
 	resource "outscale_image" "foo" {
 		image_name  = "%s"
-		vm_id       = outscale_vm.basic.id
+		vm_id       = outscale_vm.basicExport.id
 		no_reboot   = "true"
 		description = "terraform testing"
 	}

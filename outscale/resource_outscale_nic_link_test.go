@@ -18,10 +18,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleNicLink_Basic(t *testing.T) {
+func TestAccNet_withNicLink_Basic(t *testing.T) {
 	var conf oscgo.Nic
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	region := os.Getenv("OUTSCALE_REGION")
+	region := utils.GetRegion()
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
@@ -46,10 +46,10 @@ func TestAccOutscaleNicLink_Basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleNicLink_importBasic(t *testing.T) {
+func TestAccNet_ImportNicLink_Basic(t *testing.T) {
 	resourceName := "outscale_nic_link.outscale_nic_link"
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	region := os.Getenv("OUTSCALE_REGION")
+	region := utils.GetRegion()
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{

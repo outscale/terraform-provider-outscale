@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPILinPeeringConnection_basic(t *testing.T) {
+func TestAccNet_PeeringConnection_basic(t *testing.T) {
 	var connection oscgo.NetPeering
 
 	resource.Test(t, resource.TestCase{
@@ -35,7 +35,7 @@ func TestAccOutscaleOAPILinPeeringConnection_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPILinPeeringConnection_importBasic(t *testing.T) {
+func TestAccNet_PeeringConnection_importBasic(t *testing.T) {
 	resourceName := "outscale_net_peering.foo"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -67,7 +67,7 @@ func testAccCheckOutscaleOAPILinkPeeeringConnectionImportStateIDFunc(resourceNam
 	}
 }
 
-func TestAccOutscaleOAPILinPeeringConnection_plan(t *testing.T) {
+func TestAccNet_PeeringConnection_plan(t *testing.T) {
 	var connection oscgo.NetPeering
 
 	// reach out and DELETE the VPC Peering connection outside of Terraform
@@ -228,7 +228,7 @@ const testAccOAPIVpcPeeringConfig = `
 	}
 
 	resource "outscale_net_peering" "foo" {
-		source_net_id   = "${outscale_net.foo.id}"
-		accepter_net_id = "${outscale_net.bar.id}"
+		source_net_id   = outscale_net.foo.id
+		accepter_net_id = outscale_net.bar.id
 	}
 `

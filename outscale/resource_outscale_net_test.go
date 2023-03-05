@@ -13,8 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPILin_basic(t *testing.T) {
-	t.Parallel()
+func TestAccNet_basic(t *testing.T) {
 	var conf1 oscgo.Net
 	var conf2 oscgo.Net
 
@@ -38,7 +37,7 @@ func TestAccOutscaleOAPILin_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPILin_UpdateTags(t *testing.T) {
+func TestAccNet_UpdateTags(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

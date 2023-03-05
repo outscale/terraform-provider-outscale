@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPIRoute_noopdiff(t *testing.T) {
+func TestAccNet_OutscaleOAPIRoute_noopdiff(t *testing.T) {
 	var route oscgo.Route
 
 	resource.Test(t, resource.TestCase{
@@ -39,7 +39,7 @@ func TestAccOutscaleOAPIRoute_noopdiff(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIRoute_importBasic(t *testing.T) {
+func TestAccNet_ImportRoute_Basic(t *testing.T) {
 
 	resourceName := "outscale_route.test"
 
@@ -62,7 +62,7 @@ func TestAccOutscaleOAPIRoute_importBasic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIRoute_importWithNatService(t *testing.T) {
+func TestAccNet_Route_importWithNatService(t *testing.T) {
 
 	resourceName := "outscale_route.outscale_route_nat"
 	resource.ParallelTest(t, resource.TestCase{
@@ -84,7 +84,7 @@ func TestAccOutscaleOAPIRoute_importWithNatService(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIRoute_changeTarget(t *testing.T) {
+func TestAccNet_Route_changeTarget(t *testing.T) {
 	var route oscgo.Route
 
 	resource.Test(t, resource.TestCase{
@@ -111,7 +111,7 @@ func TestAccOutscaleOAPIRoute_changeTarget(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIRoute_onlyOneTarget(t *testing.T) {
+func TestAccNet_Route_onlyOneTarget(t *testing.T) {
 	regex := regexp.MustCompile(".*")
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
