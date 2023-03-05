@@ -2,15 +2,14 @@ package outscale
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func TestAccDataSourceOutscaleOAPIFlexibleGpu_basic(t *testing.T) {
 	t.Parallel()
-	region := fmt.Sprintf("%sa", os.Getenv("OUTSCALE_REGION"))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -19,18 +18,18 @@ func TestAccDataSourceOutscaleOAPIFlexibleGpu_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPIFlexibleGpuConfig(region, region),
+				Config: testAccDataSourceOutscaleOAPIFlexibleGpuConfig(utils.GetRegion()),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleOAPIFlexibleGpuConfig(region, region1 string) string {
+func testAccDataSourceOutscaleOAPIFlexibleGpuConfig(region string) string {
 	return fmt.Sprintf(`
-                resource "outscale_flexible_gpu" "fGPU-data1" {
+                resource "outscale_flexible_gpu" "fGPU-1" { 
                         model_name             =  "nvidia-p6"
                         generation             =  "v5"
-                        subregion_name         =  "%s"
+                        subregion_name         =  "%sa"
                         delete_on_vm_deletion  =   true
                 }
 
@@ -57,8 +56,8 @@ func testAccDataSourceOutscaleOAPIFlexibleGpuConfig(region, region1 string) stri
                         }
 	                filter {
                                 name = "subregion_names" 
-                                values = ["%s"]
+                                values = ["%[1]s"]
                         }
 		}
-	`, region, region)
+	`, region)
 }

@@ -6,11 +6,11 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func TestAccOutscaleOAPISubregionsDataSource_Basic(t *testing.T) {
 	t.Parallel()
-	subregionName := "eu-west-2b"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -19,7 +19,7 @@ func TestAccOutscaleOAPISubregionsDataSource_Basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPISubregionsDataSourceConfig(subregionName),
+				Config: testAccCheckOutscaleOAPISubregionsDataSourceConfig(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPISubregionsDataSourceID("data.outscale_subregions.test"),
 				),

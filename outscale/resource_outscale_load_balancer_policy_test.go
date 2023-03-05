@@ -2,19 +2,18 @@ package outscale
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func TestAccOutscaleCookieStickinessPolicy_basic(t *testing.T) {
 	t.Parallel()
-	lbName := fmt.Sprintf("tf-test-lb-%s", acctest.RandString(5))
-	region := os.Getenv("OUTSCALE_REGION")
-	zone := fmt.Sprintf("%sa", region)
+	lbName := fmt.Sprintf("tf-test-lb-%s", acctest.RandString(10))
+	zone := fmt.Sprintf("%sa", utils.GetRegion())
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -14,7 +15,6 @@ import (
 func TestAccOutscaleOAPIVolumeAttachment_basic(t *testing.T) {
 	t.Parallel()
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	region := os.Getenv("OUTSCALE_REGION")
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
 	sgId := os.Getenv("OUTSCALE_SECURITYGROUPID")
 
@@ -30,7 +30,7 @@ func TestAccOutscaleOAPIVolumeAttachment_basic(t *testing.T) {
 		CheckDestroy: testAccCheckOAPIVolumeAttachmentDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIVolumeAttachmentConfig(omi, "tinav4.c2r2p2", region, keypair, sgId),
+				Config: testAccOAPIVolumeAttachmentConfig(omi, "tinav4.c2r2p2", utils.GetRegion(), keypair, sgId),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"outscale_volumes_link.ebs_att", "device_name", "/dev/sdh"),
@@ -45,7 +45,6 @@ func TestAccOutscaleOAPIVolumeAttachment_basic(t *testing.T) {
 
 func TestAccOutscaleOAPIVolumeAttachment_importBasic(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	region := os.Getenv("OUTSCALE_REGION")
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
 	sgId := os.Getenv("OUTSCALE_SECURITYGROUPID")
 
@@ -57,7 +56,7 @@ func TestAccOutscaleOAPIVolumeAttachment_importBasic(t *testing.T) {
 		CheckDestroy: testAccCheckOAPIVolumeAttachmentDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIVolumeAttachmentConfig(omi, "tinav4.c2r2p2", region, keypair, sgId),
+				Config: testAccOAPIVolumeAttachmentConfig(omi, "tinav4.c2r2p2", utils.GetRegion(), keypair, sgId),
 			},
 			{
 				ResourceName:            resourceName,

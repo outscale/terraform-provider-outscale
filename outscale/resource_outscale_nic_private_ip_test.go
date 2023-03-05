@@ -2,16 +2,15 @@ package outscale
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
 func TestAccOutscaleOAPINetworkInterfacePrivateIPBasic(t *testing.T) {
-	region := os.Getenv("OUTSCALE_REGION")
 	var conf oscgo.Nic
 
 	resource.Test(t, resource.TestCase{
@@ -21,7 +20,7 @@ func TestAccOutscaleOAPINetworkInterfacePrivateIPBasic(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscaleOAPIENIDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPINetworkInterfacePrivateIPConfigBasic(region),
+				Config: testAccOutscaleOAPINetworkInterfacePrivateIPConfigBasic(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIENIExists("outscale_nic.outscale_nic", &conf),
 					resource.TestCheckResourceAttr("outscale_nic_private_ip.outscale_nic_private_ip", "private_ips.#", "1"),
@@ -33,7 +32,6 @@ func TestAccOutscaleOAPINetworkInterfacePrivateIPBasic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPINetworkInterfacePrivateIP_importBasic(t *testing.T) {
-	region := os.Getenv("OUTSCALE_REGION")
 	resourceName := "outscale_nic_private_ip.outscale_nic_private_ip"
 
 	resource.Test(t, resource.TestCase{
@@ -43,7 +41,7 @@ func TestAccOutscaleOAPINetworkInterfacePrivateIP_importBasic(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscaleOAPIENIDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPINetworkInterfacePrivateIPConfigBasic(region),
+				Config: testAccOutscaleOAPINetworkInterfacePrivateIPConfigBasic(utils.GetRegion()),
 			},
 			{
 				ResourceName:            resourceName,

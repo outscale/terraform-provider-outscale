@@ -2,15 +2,14 @@ package outscale
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func TestAccOutscaleOAPIFlexibleGpu_basic(t *testing.T) {
 	t.Parallel()
-	region := fmt.Sprintf("%sa", os.Getenv("OUTSCALE_REGION"))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -19,7 +18,7 @@ func TestAccOutscaleOAPIFlexibleGpu_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIFlexibleGpuConfig(region),
+				Config: testAccOutscaleOAPIFlexibleGpuConfig(utils.GetRegion()),
 			},
 		},
 	})
@@ -30,7 +29,7 @@ func testAccOutscaleOAPIFlexibleGpuConfig(region string) string {
                 resource "outscale_flexible_gpu" "fGPU-1" { 
                         model_name             =  "nvidia-p6"
                         generation             =  "v5"
-                        subregion_name         =  "%s"
+                        subregion_name         =  "%sb"
                         delete_on_vm_deletion  =   true
                 }
 

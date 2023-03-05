@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"os"
 	"testing"
 	"time"
 
@@ -16,7 +15,6 @@ import (
 
 func TestAccOutscaleOAPISnapshot_basic(t *testing.T) {
 	t.Parallel()
-	region := os.Getenv("OUTSCALE_REGION")
 
 	var v oscgo.Snapshot
 	resource.Test(t, resource.TestCase{
@@ -24,7 +22,7 @@ func TestAccOutscaleOAPISnapshot_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISnapshotConfig(region),
+				Config: testAccOutscaleOAPISnapshotConfig(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPISnapshotExists("outscale_snapshot.outscale_snapshot", &v),
 				),
@@ -35,7 +33,6 @@ func TestAccOutscaleOAPISnapshot_basic(t *testing.T) {
 
 func TestAccOutscaleOAPISnapshot_withDescription(t *testing.T) {
 	t.Parallel()
-	region := os.Getenv("OUTSCALE_REGION")
 
 	var v oscgo.Snapshot
 	resource.Test(t, resource.TestCase{
@@ -43,7 +40,7 @@ func TestAccOutscaleOAPISnapshot_withDescription(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISnapshotConfigWithDescription(region),
+				Config: testAccOutscaleOAPISnapshotConfigWithDescription(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPISnapshotExists("outscale_snapshot.test", &v),
 					resource.TestCheckResourceAttr("outscale_snapshot.test", "description", "Snapshot Acceptance Test"),
@@ -55,7 +52,6 @@ func TestAccOutscaleOAPISnapshot_withDescription(t *testing.T) {
 
 func TestAccOutscaleOAPISnapshot_CopySnapshot(t *testing.T) {
 	t.Parallel()
-	region := os.Getenv("OUTSCALE_REGION")
 
 	var v oscgo.Snapshot
 	resource.Test(t, resource.TestCase{
@@ -63,7 +59,7 @@ func TestAccOutscaleOAPISnapshot_CopySnapshot(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISnapshotConfigCopySnapshot(region),
+				Config: testAccOutscaleOAPISnapshotConfigCopySnapshot(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPISnapshotExists("outscale_snapshot.test", &v),
 					resource.TestCheckResourceAttr("outscale_snapshot.test", "description", "Target Snapshot Acceptance Test"),
@@ -74,7 +70,7 @@ func TestAccOutscaleOAPISnapshot_CopySnapshot(t *testing.T) {
 }
 
 func TestAccOutscaleOAPISnapshot_UpdateTags(t *testing.T) {
-	region := os.Getenv("OUTSCALE_REGION")
+	region := utils.GetRegion()
 
 	//var v oscgo.Snapshot
 	resource.Test(t, resource.TestCase{
@@ -94,7 +90,6 @@ func TestAccOutscaleOAPISnapshot_UpdateTags(t *testing.T) {
 }
 
 func TestAccOutscaleOAPISnapshot_importBasic(t *testing.T) {
-	region := os.Getenv("OUTSCALE_REGION")
 
 	var v oscgo.Snapshot
 	resource.Test(t, resource.TestCase{
@@ -102,7 +97,7 @@ func TestAccOutscaleOAPISnapshot_importBasic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISnapshotConfig(region),
+				Config: testAccOutscaleOAPISnapshotConfig(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPISnapshotExists("outscale_snapshot.outscale_snapshot", &v),
 				),

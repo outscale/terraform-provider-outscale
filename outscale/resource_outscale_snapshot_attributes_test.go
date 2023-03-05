@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func TestAccOutscaleOAPISnapshotAttributes_Basic(t *testing.T) {
@@ -18,13 +19,13 @@ func TestAccOutscaleOAPISnapshotAttributes_Basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISnapshotAttributesConfig(true, false, accountID),
+				Config: testAccOutscaleOAPISnapshotAttributesConfig(true, false, accountID, utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckResourceGetAttr("outscale_snapshot.test", "id", &snapshotID),
 				),
 			},
 			{
-				Config: testAccOutscaleOAPISnapshotAttributesConfig(true, true, accountID),
+				Config: testAccOutscaleOAPISnapshotAttributesConfig(true, true, accountID, utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckResourceGetAttr("outscale_snapshot.test", "id", &snapshotID),
 				),
@@ -33,10 +34,10 @@ func TestAccOutscaleOAPISnapshotAttributes_Basic(t *testing.T) {
 	})
 }
 
-func testAccOutscaleOAPISnapshotAttributesConfig(includeAddition, includeRemoval bool, aid string) string {
+func testAccOutscaleOAPISnapshotAttributesConfig(includeAddition, includeRemoval bool, aid, region string) string {
 	base := fmt.Sprintf(`
 		resource "outscale_volume" "description_test" {
-			subregion_name = "eu-west-2a"
+			subregion_name = "%[2]sa"
 			size           = 1
 		}
 		
@@ -49,10 +50,10 @@ func testAccOutscaleOAPISnapshotAttributesConfig(includeAddition, includeRemoval
 			snapshot_id = "${outscale_snapshot.test.id}"
 		
 			permissions_to_create_volume_removals {
-				account_ids = ["%s"]
+				account_ids = ["%[1]s"]
 			}
 		}
-	`, aid)
+	`, aid, region)
 
 	if includeAddition {
 		return base + fmt.Sprintf(`

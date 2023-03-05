@@ -9,6 +9,7 @@ import (
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -39,7 +40,7 @@ func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
 	t.Parallel()
 	var conf oscgo.PublicIp
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	region := os.Getenv("OUTSCALE_REGION")
+	region := utils.GetRegion()
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
 	sgId := os.Getenv("OUTSCALE_SECURITYGROUPID")
 
@@ -74,7 +75,7 @@ func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
 func TestAccOutscaleOAPIPublicIP_associated_user_private_ip(t *testing.T) {
 	var one oscgo.PublicIp
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	region := os.Getenv("OUTSCALE_REGION")
+	region := utils.GetRegion()
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
 	sgId := os.Getenv("OUTSCALE_SECURITYGROUPID")
 

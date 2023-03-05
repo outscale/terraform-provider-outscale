@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func TestAccDataSourceOutscaleOAPIPublicIP(t *testing.T) {
@@ -35,7 +36,7 @@ func TestAccDataSourceOutscaleOAPIPublicIPWithVM(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPIPublicIPConfigwithVM(omi),
+				Config: testAccDataSourceOutscaleOAPIPublicIPConfigwithVM(omi, utils.GetRegion()),
 			},
 		},
 	})
@@ -125,7 +126,7 @@ const testAccDataSourceOutscaleOAPIPublicIPConfigWithTags = `
 	}
 `
 
-func testAccDataSourceOutscaleOAPIPublicIPConfigwithVM(omi string) string {
+func testAccDataSourceOutscaleOAPIPublicIPConfigwithVM(omi, region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_vm" "outscale_vm" {
 			image_id     = "%s"
@@ -140,7 +141,7 @@ func testAccDataSourceOutscaleOAPIPublicIPConfigwithVM(omi string) string {
 			}
 			tags {
 				key   = "platform"
-				value = "eu-west-2"
+				value = "%[2]s"
 			}
 			tags {
 				key   = "project"
@@ -159,5 +160,5 @@ func testAccDataSourceOutscaleOAPIPublicIPConfigwithVM(omi string) string {
 				values = [outscale_public_ip_link.outscale_public_ip_link.link_public_ip_id]
 			}
 		}
-	`, omi)
+	`, omi, region)
 }

@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -11,8 +10,7 @@ import (
 
 func TestAccOutscaleOAPIDSLBSU_basic(t *testing.T) {
 	t.Parallel()
-	region := os.Getenv("OUTSCALE_REGION")
-	zone := fmt.Sprintf("%sa", region)
+	region := fmt.Sprintf("%sa", utils.GetRegion())
 	numLbu := utils.RandIntRange(0, 50)
 
 	resource.Test(t, resource.TestCase{
@@ -24,7 +22,7 @@ func TestAccOutscaleOAPIDSLBSU_basic(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscaleOAPILBUDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDSOutscaleOAPILBsUConfig(zone, numLbu),
+				Config: testAccDSOutscaleOAPILBsUConfig(region, numLbu),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.outscale_load_balancers.test", "load_balancer.#", "1"),
 				)},
@@ -32,10 +30,10 @@ func TestAccOutscaleOAPIDSLBSU_basic(t *testing.T) {
 	})
 }
 
-func testAccDSOutscaleOAPILBsUConfig(zone string, numLbu int) string {
+func testAccDSOutscaleOAPILBsUConfig(region string, numLbu int) string {
 	return fmt.Sprintf(`
 	resource "outscale_load_balancer" "bar" {
-		subregion_names = ["%s"]
+		subregion_names = ["%sa"]
 		load_balancer_name        = "foobar-terraform-elb%d"
 
 		listeners {
@@ -56,5 +54,5 @@ func testAccDSOutscaleOAPILBsUConfig(zone string, numLbu int) string {
 	data "outscale_load_balancers" "test" {
 		load_balancer_name = [outscale_load_balancer.bar.id]
 	}
-`, zone, numLbu)
+`, region, numLbu)
 }

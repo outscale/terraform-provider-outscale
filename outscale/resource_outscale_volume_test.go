@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"os"
 	"testing"
 	"time"
 
@@ -16,7 +15,6 @@ import (
 
 func TestAccOutscaleOAPIVolume_basic(t *testing.T) {
 	t.Parallel()
-	region := os.Getenv("OUTSCALE_REGION")
 
 	var v oscgo.Volume
 	resource.Test(t, resource.TestCase{
@@ -25,7 +23,7 @@ func TestAccOutscaleOAPIVolume_basic(t *testing.T) {
 		Providers:     testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIVolumeConfig(region),
+				Config: testAccOutscaleOAPIVolumeConfig(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIVolumeExists("outscale_volume.test", &v),
 				),
@@ -41,7 +39,7 @@ func TestAccOutscaleOAPIVolume_basic(t *testing.T) {
 
 func TestAccOutscaleOAPIVolume_updateSize(t *testing.T) {
 	t.Parallel()
-	region := os.Getenv("OUTSCALE_REGION")
+	region := utils.GetRegion()
 
 	var v oscgo.Volume
 	resource.Test(t, resource.TestCase{
@@ -72,7 +70,6 @@ func TestAccOutscaleOAPIVolume_updateSize(t *testing.T) {
 
 func TestAccOutscaleOAPIVolume_io1Type(t *testing.T) {
 	t.Parallel()
-	region := os.Getenv("OUTSCALE_REGION")
 
 	var v oscgo.Volume
 	resource.Test(t, resource.TestCase{
@@ -84,7 +81,7 @@ func TestAccOutscaleOAPIVolume_io1Type(t *testing.T) {
 		Providers:     testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testOutscaleOAPIVolumeConfigIO1Type(region),
+				Config: testOutscaleOAPIVolumeConfigIO1Type(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIVolumeExists("outscale_volume.test-io", &v),
 				),

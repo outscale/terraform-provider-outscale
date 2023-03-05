@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -20,7 +21,7 @@ func TestAccOutscaleOAPISnapshotExportTaskDataSource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISnapshotExportTaskDataSourceConfig(imageName),
+				Config: testAccOutscaleOAPISnapshotExportTaskDataSourceConfig(imageName, utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleSnapshotExportTaskDataSourceID("data.outscale_snapshot_export_task.export_task"),
 				),
@@ -44,10 +45,10 @@ func testAccCheckOutscaleSnapshotExportTaskDataSourceID(n string) resource.TestC
 	}
 }
 
-func testAccOutscaleOAPISnapshotExportTaskDataSourceConfig(testName string) string {
+func testAccOutscaleOAPISnapshotExportTaskDataSourceConfig(testName, region string) string {
 	var stringTemplate = `
 		resource "outscale_volume" "outscale_volume_snap" {
-			subregion_name   = "eu-west-2a"
+			subregion_name   = "%[2]sa"
 			size                = 10
 		}
 

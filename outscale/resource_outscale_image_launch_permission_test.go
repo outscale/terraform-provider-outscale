@@ -19,7 +19,7 @@ import (
 
 func TestAccOutscaleOAPIImageLaunchPermission_Basic(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	region := os.Getenv("OUTSCALE_REGION")
+	region := utils.GetRegion()
 	accountID := os.Getenv("OUTSCALE_ACCOUNT")
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
 	sgId := os.Getenv("OUTSCALE_SECURITYGROUPID")
@@ -68,7 +68,7 @@ func TestAccOutscaleOAPIImageLaunchPermission_Basic(t *testing.T) {
 
 func TestAccOutscaleOAPIImageLaunchPermissionDestruction_Basic(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	region := os.Getenv("OUTSCALE_REGION")
+	region := utils.GetRegion()
 	accountID := os.Getenv("OUTSCALE_ACCOUNT")
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
 	sgId := os.Getenv("OUTSCALE_SECURITYGROUPID")

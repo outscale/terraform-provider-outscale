@@ -119,15 +119,15 @@ func TestAccOutscaleOAPIDhcpOptional_withEmptyAttrs(t *testing.T) {
 func TestAccOutscaleOAPIDhcpOptional_withNet(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_dhcp_option.outscale_dhcp_option"
-
-	domainName := fmt.Sprintf("eu-west-2.compute%s.internal", acctest.RandString(3))
+	domainName := fmt.Sprintf("%s.compute%s.internal", utils.GetRegion(), acctest.RandString(3))
 	domainServers := []string{"192.168.12.12", "192.168.12.132"}
+
 	tags := &oscgo.Tag{
 		Key:   pointy.String(acctest.RandomWithPrefix("name")),
 		Value: pointy.String(acctest.RandomWithPrefix("test-MZI")),
 	}
 
-	domainNameUpdated := fmt.Sprintf("eu-west-2.compute%s.internal", acctest.RandString(3))
+	domainNameUpdated := fmt.Sprintf("%s.compute%s.internal", utils.GetRegion(), acctest.RandString(3))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },

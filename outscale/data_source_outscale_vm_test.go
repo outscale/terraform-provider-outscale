@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func TestAccOutscaleOAPIVMDataSource_basic(t *testing.T) {
@@ -18,7 +19,7 @@ func TestAccOutscaleOAPIVMDataSource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIVMDataSourceConfig(omi, "tinav4.c2r2p2"),
+				Config: testAccOAPIVMDataSourceConfig(omi, "tinav4.c2r2p2", utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(datasourcceName, "image_id", omi),
 					resource.TestCheckResourceAttr(datasourcceName, "vm_type", "tinav4.c2r2p2"),
@@ -29,7 +30,7 @@ func TestAccOutscaleOAPIVMDataSource_basic(t *testing.T) {
 	})
 }
 
-func testAccOAPIVMDataSourceConfig(omi, vmType string) string {
+func testAccOAPIVMDataSourceConfig(omi, vmType, region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "outscale_net" {
 			ip_range = "10.0.0.0/16"
@@ -43,12 +44,12 @@ func testAccOAPIVMDataSourceConfig(omi, vmType string) string {
  		resource "outscale_subnet" "outscale_subnet" {
 			net_id         = outscale_net.outscale_net.net_id
 			ip_range       = "10.0.0.0/24"
-			subregion_name = "eu-west-2a"
+			subregion_name = "%[3]sa"
 		}
 
- 		resource "outscale_vm" "outscale_vm" {
-			image_id     = "%s"
-			vm_type      = "%s"
+		resource "outscale_vm" "outscale_vm" {
+			image_id     = "%[1]s"
+			vm_type      = "%[2]s"
 			keypair_name = "terraform-basic"
 			subnet_id    = outscale_subnet.outscale_subnet.subnet_id
 
@@ -58,11 +59,11 @@ func testAccOAPIVMDataSourceConfig(omi, vmType string) string {
 			}
 		}
 
-    data "outscale_vm" "basic_web" {
-		 filter {
+		data "outscale_vm" "basic_web" {
+			filter {
 				name   = "vm_ids"
 				values = [outscale_vm.outscale_vm.vm_id]
-		  }
+			}
 		}
-	`, omi, vmType)
+	`, omi, vmType, region)
 }

@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 	"time"
@@ -17,7 +16,6 @@ import (
 func TestAccOutscaleOAPISubNet_basic(t *testing.T) {
 	t.Parallel()
 	var conf oscgo.Subnet
-	region := os.Getenv("OUTSCALE_REGION")
 
 	resourceName := "outscale_subnet.subnet"
 
@@ -27,14 +25,14 @@ func TestAccOutscaleOAPISubNet_basic(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleOAPISubNetDestroyed, // we need to create the destroyed test case
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISubnetConfig(region, false),
+				Config: testAccOutscaleOAPISubnetConfig(utils.GetRegion(), false),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPISubNetExists(resourceName, &conf),
 					resource.TestCheckResourceAttr(resourceName, "map_public_ip_on_launch", "false"),
 				),
 			},
 			{
-				Config: testAccOutscaleOAPISubnetConfig(region, true),
+				Config: testAccOutscaleOAPISubnetConfig(utils.GetRegion(), true),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPISubNetExists(resourceName, &conf),
 					resource.TestCheckResourceAttr(resourceName, "map_public_ip_on_launch", "true"),
@@ -136,9 +134,9 @@ func testAccOutscaleOAPISubnetConfig(region string, mapPublicIpOnLaunch bool) st
 		}
 
 		resource "outscale_subnet" "subnet" {
-			ip_range       = "10.0.0.0/16"
-			subregion_name = "%sa"
-			net_id         = "${outscale_net.net.id}"
+			ip_range       = "10.0.0.0/24"
+			subregion_name = "%sb"
+			net_id         = outscale_net.net.id
 			map_public_ip_on_launch = %v
 			tags {
 				key   = "name"

@@ -8,12 +8,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func TestAccOutscaleOAPIImagesDataSource_Instance(t *testing.T) {
 	t.Parallel()
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	region := os.Getenv("OUTSCALE_REGION")
 	imageName := fmt.Sprintf("image-test-%d", acctest.RandInt())
 
 	resource.Test(t, resource.TestCase{
@@ -23,7 +23,7 @@ func TestAccOutscaleOAPIImagesDataSource_Instance(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIImagesDataSourceConfig(omi, "tinav4.c2r2p2", region, imageName),
+				Config: testAccCheckOutscaleOAPIImagesDataSourceConfig(omi, "tinav4.c2r2p2", utils.GetRegion(), imageName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIImagesDataSourceID("data.outscale_images.nat_ami"),
 				),

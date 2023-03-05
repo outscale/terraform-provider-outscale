@@ -1,9 +1,11 @@
 package outscale
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func TestAccOutscaleOAPISnapshotsDataSource_basic(t *testing.T) {
@@ -12,7 +14,7 @@ func TestAccOutscaleOAPISnapshotsDataSource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPISnapshotsDataSourceConfig,
+				Config: testAccCheckOutscaleOAPISnapshotsDataSourceConfig(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.outscale_snapshots.outscale_snapshots", "snapshots.#", "1"),
 				),
@@ -21,9 +23,10 @@ func TestAccOutscaleOAPISnapshotsDataSource_basic(t *testing.T) {
 	})
 }
 
-const testAccCheckOutscaleOAPISnapshotsDataSourceConfig = `
+func testAccCheckOutscaleOAPISnapshotsDataSourceConfig(region string) string {
+	return fmt.Sprintf(`
 	resource "outscale_volume" "example" {
-		subregion_name = "eu-west-2a"
+		subregion_name = "%sa"
 		size           = 1
 	}
 
@@ -34,4 +37,5 @@ const testAccCheckOutscaleOAPISnapshotsDataSourceConfig = `
 	data "outscale_snapshots" "outscale_snapshots" {
 		snapshot_id = ["${outscale_snapshot.snapshot.id}"]
 	}
-`
+`, region)
+}

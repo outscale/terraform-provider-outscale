@@ -2,14 +2,14 @@ package outscale
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func TestAccOutscaleOAPINetAccessPoint_basic(t *testing.T) {
-	ServiceName := fmt.Sprintf("com.outscale.%s.api", os.Getenv("OUTSCALE_REGION"))
+	ServiceName := fmt.Sprintf("com.outscale.%s.api", utils.GetRegion())
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {

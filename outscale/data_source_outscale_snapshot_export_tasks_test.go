@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func TestAccOutscaleOAPISnapshotExportTasksDataSource_basic(t *testing.T) {
@@ -17,7 +18,7 @@ func TestAccOutscaleOAPISnapshotExportTasksDataSource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISnapshotExportTasksDataSourceConfig(imageName),
+				Config: testAccOutscaleOAPISnapshotExportTasksDataSourceConfig(imageName, utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleSnapshotExportTaskDataSourceID("data.outscale_snapshot_export_tasks.export_tasks"),
 				),
@@ -26,14 +27,14 @@ func TestAccOutscaleOAPISnapshotExportTasksDataSource_basic(t *testing.T) {
 	})
 }
 
-func testAccOutscaleOAPISnapshotExportTasksDataSourceConfig(testName string) string {
-	var stringTemplate = `
+func testAccOutscaleOAPISnapshotExportTasksDataSourceConfig(testName, region string) string {
+	return fmt.Sprintf(`
 			resource "outscale_volume" "outscale_volume_snap" {
-				subregion_name   = "eu-west-2a"
+				subregion_name   = "%[2]sa"
 				size                = 10
 			}
 
-			resource "outscale_snapshot" "outscale_snapshot" {
+   			resource "outscale_snapshot" "outscale_snapshot" {
 				volume_id = outscale_volume.outscale_volume_snap.volume_id
 			}
 
@@ -41,7 +42,7 @@ func testAccOutscaleOAPISnapshotExportTasksDataSourceConfig(testName string) str
 				snapshot_id                     = outscale_snapshot.outscale_snapshot.snapshot_id
 				osu_export {
 					disk_image_format = "qcow2"
-					osu_bucket        = "%s"
+					osu_bucket        = "%[1]s"
 					osu_prefix        = "new-export"
 					}
 			}
@@ -52,6 +53,5 @@ func testAccOutscaleOAPISnapshotExportTasksDataSourceConfig(testName string) str
 					values = [outscale_snapshot_export_task.outscale_snapshot_export_task.id]
 				}
 			}
-			`
-	return fmt.Sprintf(stringTemplate, testName)
+`, testName, region)
 }

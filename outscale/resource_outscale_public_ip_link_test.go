@@ -20,7 +20,6 @@ import (
 func TestAccOutscaleOAPIPublicIPLink_basic(t *testing.T) {
 	var a oscgo.PublicIp
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	region := os.Getenv("OUTSCALE_REGION")
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
 	sgId := os.Getenv("OUTSCALE_SECURITYGROUPID")
 
@@ -30,7 +29,7 @@ func TestAccOutscaleOAPIPublicIPLink_basic(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleOAPIPublicIPLinkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIPublicIPLinkConfig(omi, "tinav4.c2r2p2", region, keypair, sgId),
+				Config: testAccOutscaleOAPIPublicIPLinkConfig(omi, "tinav4.c2r2p2", utils.GetRegion(), keypair, sgId),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPLExists(
 						"outscale_public_ip.ip", &a),

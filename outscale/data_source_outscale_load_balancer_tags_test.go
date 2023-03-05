@@ -2,19 +2,17 @@ package outscale
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func TestAccOutscaleOAPIDSLoadBalancerTags_basic(t *testing.T) {
 	t.Parallel()
 	r := acctest.RandString(4)
-	region := os.Getenv("OUTSCALE_REGION")
-	zone := fmt.Sprintf("%sa", region)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -23,7 +21,7 @@ func TestAccOutscaleOAPIDSLoadBalancerTags_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: getTestAccDSODSutscaleOAPILBUDSTagsConfig(r, zone),
+				Config: getTestAccDSODSutscaleOAPILBUDSTagsConfig(r, utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckODSutscaleOAPILBUDSTagsExists("data.outscale_load_balancer_tags.testds"),
 					resource.TestCheckResourceAttr(
@@ -51,7 +49,7 @@ func testAccCheckODSutscaleOAPILBUDSTagsExists(n string) resource.TestCheckFunc 
 func getTestAccDSODSutscaleOAPILBUDSTagsConfig(r string, zone string) string {
 	return fmt.Sprintf(`
 		resource "outscale_load_balancer" "bar" {
-			subregion_names    = ["%s"]
+			subregion_names    = ["%sa"]
 			load_balancer_name = "foobar-terraform-elb-%s"
 		
 			listeners {

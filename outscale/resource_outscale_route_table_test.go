@@ -78,7 +78,6 @@ func TestAccOutscaleOAPIRouteTable_basic(t *testing.T) {
 
 func TestAccOutscaleOAPIRouteTable_instance(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	region := os.Getenv("OUTSCALE_REGION")
 
 	var v oscgo.RouteTable
 
@@ -105,7 +104,7 @@ func TestAccOutscaleOAPIRouteTable_instance(t *testing.T) {
 		CheckDestroy:  testAccCheckOAPIRouteTableDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIRouteTableConfigInstance(omi, "tinav4.c2r2p2", region),
+				Config: testAccOAPIRouteTableConfigInstance(omi, "tinav4.c2r2p2", utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIRouteTableExists(
 						"outscale_route_table.foo", &v, nil),

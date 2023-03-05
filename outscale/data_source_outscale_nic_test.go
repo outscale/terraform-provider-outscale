@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"os"
 	"strings"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -19,7 +18,6 @@ import (
 func TestAccOutscaleOAPIENIDataSource_basic(t *testing.T) {
 	t.Parallel()
 	var conf oscgo.Nic
-	subregion := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
@@ -28,10 +26,10 @@ func TestAccOutscaleOAPIENIDataSource_basic(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscaleOAPIENIDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIENIDataSourceConfig(subregion),
+				Config: testAccOutscaleOAPIENIDataSourceConfig(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIENIExists("outscale_nic.outscale_nic", &conf),
-					testAccCheckOutscaleOAPIENIAttributes(&conf, subregion),
+					testAccCheckOutscaleOAPIENIAttributes(&conf, utils.GetRegion()),
 				),
 			},
 		},
@@ -42,11 +40,6 @@ func TestAccOutscaleOAPIENIDataSource_basicFilter(t *testing.T) {
 	t.Parallel()
 	var conf oscgo.Nic
 
-	subregion := os.Getenv("OUTSCALE_REGION")
-	if subregion == "" {
-		subregion = "in-west-2"
-	}
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_nic.outscale_nic",
@@ -54,10 +47,10 @@ func TestAccOutscaleOAPIENIDataSource_basicFilter(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscaleOAPIENIDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIENIDataSourceConfigFilter,
+				Config: testAccOutscaleOAPIENIDataSourceConfigFilter(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIENIExists("outscale_nic.outscale_nic", &conf),
-					testAccCheckOutscaleOAPIENIAttributes(&conf, subregion),
+					testAccCheckOutscaleOAPIENIAttributes(&conf, utils.GetRegion()),
 				),
 			},
 		},
@@ -149,12 +142,12 @@ func testAccOutscaleOAPIENIDataSourceConfig(subregion string) string {
 			
 		resource "outscale_subnet" "outscale_subnet" {
 			subregion_name = "%sa"
-			ip_range       = "10.0.0.0/16"
-			net_id         = "${outscale_net.outscale_net.id}"
+			ip_range       = "10.0.0.0/24"
+			net_id         = outscale_net.outscale_net.id
 		}
 
 		resource "outscale_nic" "outscale_nic" {
-			subnet_id = "${outscale_subnet.outscale_subnet.id}"
+			subnet_id = outscale_subnet.outscale_subnet.id
 			tags {
 				value = "tf-value"
 				key   = "tf-key"
@@ -162,12 +155,13 @@ func testAccOutscaleOAPIENIDataSourceConfig(subregion string) string {
 		}
 
 		data "outscale_nic" "outscale_nic" {
-			nic_id = "${outscale_nic.outscale_nic.id}"
+			nic_id = outscale_nic.outscale_nic.id
 		}
 	`, subregion)
 }
 
-const testAccOutscaleOAPIENIDataSourceConfigFilter = `
+func testAccOutscaleOAPIENIDataSourceConfigFilter(subregion string) string {
+	return fmt.Sprintf(`
 	resource "outscale_net" "outscale_net" {
 		ip_range = "10.0.0.0/16"
 
@@ -178,13 +172,13 @@ const testAccOutscaleOAPIENIDataSourceConfigFilter = `
 	}
 	
 	resource "outscale_subnet" "outscale_subnet" {
-		subregion_name = "eu-west-2a"
-		ip_range       = "10.0.0.0/16"
-		net_id         = "${outscale_net.outscale_net.id}"
+		subregion_name = "%sb"
+		ip_range       = "10.0.0.0/24"
+		net_id         = outscale_net.outscale_net.id
 	}
 
 	resource "outscale_nic" "outscale_nic" {
-		subnet_id = "${outscale_subnet.outscale_subnet.id}"
+		subnet_id = outscale_subnet.outscale_subnet.id
 		tags {
 			value = "tf-value"
 			key   = "tf-key"
@@ -194,7 +188,8 @@ const testAccOutscaleOAPIENIDataSourceConfigFilter = `
 	data "outscale_nic" "outscale_nic" {
 		filter {
 			name = "nic_ids"
-			values = ["${outscale_nic.outscale_nic.nic_id}"]
-		} 
+			values = [outscale_nic.outscale_nic.nic_id]
+		}
 	}  
-`
+`, subregion)
+}

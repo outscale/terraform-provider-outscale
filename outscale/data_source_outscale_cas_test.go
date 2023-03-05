@@ -72,17 +72,25 @@ func testAccDataCheckOutscaleCasDestroy(s *terraform.State) error {
 
 func testAccDataOutscaleOAPICasConfig(ca_pem string) string {
 	return fmt.Sprintf(`
-resource "outscale_ca" "ca_test" { 
+resource "outscale_ca" "ca_test" {
    ca_pem        =  %[1]q
    description        = "Ca testacc create"
 }
 
-data "outscale_cas" "cas_data" { 
- filter {
-    name   = "ca_ids"
-     values = ["${outscale_ca.ca_test.id}"]
-  }
+resource "outscale_ca" "ca_test2" { 
+   ca_pem        =  %[1]q
+   description        = "Ca testacc create2"
 }
-data "outscale_cas" "all_cas" {}
+
+data "outscale_cas" "cas_data" {
+   filter {
+      name   = "ca_ids"
+      values = [outscale_ca.ca_test.id]
+   }
+   filter {
+      name   = "description"
+      values = ["Ca testacc create2"]
+   }
+}
 `, ca_pem)
 }

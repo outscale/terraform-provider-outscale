@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/hashicorp/terraform/helper/acctest"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func TestAccOutscaleOAPISnapshotExportTask_basic(t *testing.T) {
@@ -29,13 +30,13 @@ func TestAccOutscaleOAPISnapshotExportTask_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISnapshotExportTaskConfig("", osuBucketNames[0]),
+				Config: testAccOutscaleOAPISnapshotExportTaskConfig("", osuBucketNames[0], utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPISnapshotExportTaskExists("outscale_snapshot_export_task.outscale_snapshot_export_task"),
 				),
 			},
 			{
-				Config: testAccOutscaleOAPISnapshotExportTaskConfig(tags, osuBucketNames[1]),
+				Config: testAccOutscaleOAPISnapshotExportTaskConfig(tags, osuBucketNames[1], utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPISnapshotExportTaskExists("outscale_snapshot_export_task.outscale_snapshot_export_task"),
 				),
@@ -59,10 +60,10 @@ func testAccCheckOutscaleOAPISnapshotExportTaskExists(n string) resource.TestChe
 	}
 }
 
-func testAccOutscaleOAPISnapshotExportTaskConfig(tags, osuBucketName string) string {
+func testAccOutscaleOAPISnapshotExportTaskConfig(tags, osuBucketName, region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_volume" "outscale_volume_snap" {
-    subregion_name   = "eu-west-2a"
+    subregion_name   = "%[3]sa"
     size                = 10
 }
 resource "outscale_snapshot" "outscale_snapshot" {
@@ -77,5 +78,5 @@ resource "outscale_snapshot_export_task" "outscale_snapshot_export_task" {
 	}
 	%[1]s
 }
-	`, tags, osuBucketName)
+	`, tags, osuBucketName, region)
 }

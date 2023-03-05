@@ -72,16 +72,16 @@ func testAccDataCheckOutscaleCaDestroy(s *terraform.State) error {
 
 func testAccDataOutscaleOAPICaConfig(ca_pem string) string {
 	return fmt.Sprintf(`
-resource "outscale_ca" "ca_test" { 
+resource "outscale_ca" "ca_test" {
    ca_pem        =  %[1]q
    description        = "Ca testacc create"
 }
 
 data "outscale_ca" "ca_data" { 
- filter {
-    name   = "ca_ids"
-     values = ["${outscale_ca.ca_test.id}"]
-  }
+   filter {
+      name   = "ca_ids"
+      values = [outscale_ca.ca_test.id]
+   }
 }
 `, ca_pem)
 }

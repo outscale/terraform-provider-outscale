@@ -2,15 +2,15 @@ package outscale
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func TestAccDataSourceOutscaleOAPINetAccessPoints_basic(t *testing.T) {
 	t.Parallel()
-	serviceName := fmt.Sprintf("com.outscale.%s.api", os.Getenv("OUTSCALE_REGION"))
+	serviceName := fmt.Sprintf("com.outscale.%s.api", utils.GetRegion())
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -19,13 +19,13 @@ func TestAccDataSourceOutscaleOAPINetAccessPoints_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPINetAccessPointsConfig(serviceName, serviceName),
+				Config: testAccDataSourceOutscaleOAPINetAccessPointsConfig(serviceName),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleOAPINetAccessPointsConfig(sName, sName2 string) string {
+func testAccDataSourceOutscaleOAPINetAccessPointsConfig(sName string) string {
 	return fmt.Sprintf(`
                 resource "outscale_net" "outscale_net" {
                         ip_range = "10.0.0.0/16"
@@ -38,7 +38,7 @@ func testAccDataSourceOutscaleOAPINetAccessPointsConfig(sName, sName2 string) st
                 resource "outscale_net_access_point" "net_access_point_1" {
                         net_id          = outscale_net.outscale_net.net_id
                         route_table_ids = [outscale_route_table.route_table-1.route_table_id] 
-                        service_name    = "%s"
+                        service_name    = "%[1]s"
                         tags { 
                               key       = "name" 
                               value     = "terraform-Net-Access-Point" 
@@ -57,7 +57,7 @@ func testAccDataSourceOutscaleOAPINetAccessPointsConfig(sName, sName2 string) st
                         }
                         filter {
                                name     = "service_names"
-                               values   = [ "%s"]
+                               values   = [ "%[1]s"]
                         }
                         filter {
                                name     = "states"
@@ -73,5 +73,5 @@ func testAccDataSourceOutscaleOAPINetAccessPointsConfig(sName, sName2 string) st
                         }
                }
 
-	`, sName, sName2)
+	`, sName)
 }

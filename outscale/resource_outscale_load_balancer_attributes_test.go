@@ -5,10 +5,10 @@ import (
 	"testing"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func TestAccOutscaleOAPILBUAttr_basic(t *testing.T) {
@@ -25,7 +25,7 @@ func TestAccOutscaleOAPILBUAttr_basic(t *testing.T) {
 		Providers:     testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPILBUAttrConfig(r),
+				Config: testAccOutscaleOAPILBUAttrConfig(utils.GetRegion(), r),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPILBUAttrExists("outscale_load_balancer_attributes.bar2", &conf),
 				)},
@@ -48,10 +48,10 @@ func testAccCheckOutscaleOAPILBUAttrExists(n string, res *oscgo.AccessLog) resou
 	}
 }
 
-func testAccOutscaleOAPILBUAttrConfig(r int) string {
+func testAccOutscaleOAPILBUAttrConfig(region string, r int) string {
 	return fmt.Sprintf(`
 resource "outscale_load_balancer" "bar" {
-  subregion_names = ["eu-west-2a"]
+  subregion_names = ["%sa"]
   load_balancer_name               = "foobar-terraform-elb-%d"
   listeners {
     backend_port = 8000
@@ -74,5 +74,5 @@ resource "outscale_load_balancer_attributes" "bar2" {
 	}
 	load_balancer_name = outscale_load_balancer.bar.id
 }
-`, r)
+`, region, r)
 }

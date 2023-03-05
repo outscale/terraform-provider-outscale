@@ -21,7 +21,6 @@ import (
 func TestAccOutscaleOAPIVM_tags(t *testing.T) {
 	v := &oscgo.Vm{}
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	region := os.Getenv("OUTSCALE_REGION")
 
 	if os.Getenv("TEST_QUOTA") == "true" {
 		resource.Test(t, resource.TestCase{
@@ -30,7 +29,7 @@ func TestAccOutscaleOAPIVM_tags(t *testing.T) {
 			CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: testAccCheckOAPIInstanceConfigTags(omi, "tinav4.c2r2p2", region, "keyOriginal", "valueOriginal"),
+					Config: testAccCheckOAPIInstanceConfigTags(omi, "tinav4.c2r2p2", utils.GetRegion(), "keyOriginal", "valueOriginal"),
 					Check: resource.ComposeTestCheckFunc(
 						oapiTestAccCheckOutscaleVMExists("outscale_vm.vm", v),
 						testAccCheckOAPIVMTags(v, "keyOriginal", "valueOriginal"),
@@ -40,7 +39,7 @@ func TestAccOutscaleOAPIVM_tags(t *testing.T) {
 					),
 				},
 				{
-					Config: testAccCheckOAPIInstanceConfigTags(omi, "tinav4.c2r2p2", region, "keyUpdated", "valueUpdated"),
+					Config: testAccCheckOAPIInstanceConfigTags(omi, "tinav4.c2r2p2", utils.GetRegion(), "keyUpdated", "valueUpdated"),
 					Check: resource.ComposeTestCheckFunc(
 						oapiTestAccCheckOutscaleVMExists("outscale_vm.vm", v),
 						testAccCheckOAPIVMTags(v, "keyUpdated", "valueUpdated"),
@@ -161,13 +160,13 @@ func testAccCheckOAPIInstanceConfigTags(omi, vmType, region, key, value string) 
 		resource "outscale_subnet" "outscale_subnet" {
 			net_id              = outscale_net.outscale_net.net_id
 			ip_range            = "10.0.0.0/24"
-			subregion_name      = "eu-west-2a"
+			subregion_name      = "%[3]sa"
 		}
 		resource "outscale_vm" "vm" {
 			image_id                 = "%s"
 			vm_type                  = "%s"
 			keypair_name             = "terraform-basic"
-			placement_subregion_name = "%sa"
+			placement_subregion_name = "%[3]sa"
 			subnet_id                = outscale_subnet.outscale_subnet.subnet_id
 			private_ips              =  ["10.0.0.12"]
 		}
