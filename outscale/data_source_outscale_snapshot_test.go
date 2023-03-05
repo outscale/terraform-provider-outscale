@@ -2,23 +2,22 @@ package outscale
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func TestAccOutscaleOAPISnapshotDataSource_basic(t *testing.T) {
+func TestAccOthers_SnapshotDataSource_basic(t *testing.T) {
 	t.Parallel()
-	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPISnapshotDataSourceConfig(region),
+				Config: testAccCheckOutscaleOAPISnapshotDataSourceConfig(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPISnapshotDataSourceID("data.outscale_snapshot.snapshot"),
 					resource.TestCheckResourceAttr("data.outscale_snapshot.snapshot", "volume_size", "1"),
@@ -28,16 +27,15 @@ func TestAccOutscaleOAPISnapshotDataSource_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPISnapshotDataSource_multipleFilters(t *testing.T) {
+func TestAccOthers_SnapshotDataSource_multipleFilters(t *testing.T) {
 	t.Parallel()
-	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPISnapshotDataSourceConfigWithMultipleFilters(region),
+				Config: testAccCheckOutscaleOAPISnapshotDataSourceConfigWithMultipleFilters(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPISnapshotDataSourceID("data.outscale_snapshot.snapshot"),
 					resource.TestCheckResourceAttr("data.outscale_snapshot.snapshot", "volume_size", "10"),
@@ -69,11 +67,11 @@ func testAccCheckOutscaleOAPISnapshotDataSourceConfig(region string) string {
 		}
 
 		resource "outscale_snapshot" "snapshot" {
-			volume_id = "${outscale_volume.example.id}"
+			volume_id = outscale_volume.example.id
 		}
 
 		data "outscale_snapshot" "snapshot" {
-			snapshot_id = "${outscale_snapshot.snapshot.id}"
+			snapshot_id = outscale_snapshot.snapshot.id
 		}
 	`, region)
 }
@@ -86,11 +84,11 @@ func testAccCheckOutscaleOAPISnapshotDataSourceConfigWithMultipleFilters(region 
 		}
 
 		resource "outscale_snapshot" "snapshot" {
-			volume_id = "${outscale_volume.external1.id}"
+			volume_id = outscale_volume.external1.id
 		}
 
 		data "outscale_snapshot" "snapshot" {
-			snapshot_id = "${outscale_snapshot.snapshot.id}"
+			snapshot_id = outscale_snapshot.snapshot.id
 
 			filter {
 				name   = "volume_sizes"

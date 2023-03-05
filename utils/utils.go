@@ -6,6 +6,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -232,4 +233,12 @@ func StringSlicePtrToInterfaceSlice(list *[]string) []interface{} {
 
 func I32toa(i int32) string {
 	return strconv.FormatInt(int64(i), 10)
+}
+
+func GetRegion() string {
+	region := fmt.Sprintf("%s", os.Getenv("OUTSCALE_REGION"))
+	if region == "" {
+		region = fmt.Sprintf("%s", os.Getenv("OSC_REGION"))
+	}
+	return region
 }

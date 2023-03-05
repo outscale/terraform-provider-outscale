@@ -9,7 +9,7 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func TestAccOutscaleVPNConnectionDataSource_basic(t *testing.T) {
+func TestAccOthers_VPNConnectionDataSource_basic(t *testing.T) {
 	t.Parallel()
 	publicIP := fmt.Sprintf("172.0.0.%d", utils.RandIntRange(1, 255))
 
@@ -24,7 +24,7 @@ func TestAccOutscaleVPNConnectionDataSource_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleVPNConnectionDataSource_withFilters(t *testing.T) {
+func TestAccOthers_VPNConnectionDataSource_withFilters(t *testing.T) {
 	t.Parallel()
 	publicIP := fmt.Sprintf("172.0.0.%d", utils.RandIntRange(1, 255))
 

@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccDataSourceOutscaleOAPIVpnGateways_unattached(t *testing.T) {
+func TestAccOthers_DataSourceVpnGateways_unattached(t *testing.T) {
 	//t.Skip()
 	t.Parallel()
 	rInt := acctest.RandInt()
@@ -33,7 +33,7 @@ func testAccDataSourceOutscaleOAPIVpnGatewaysUnattachedConfig(rInt int) string {
 		}
 		
 		data "outscale_virtual_gateways" "test_by_id" {
-			virtual_gateway_id = ["${outscale_virtual_gateway.unattached.id}"]
+			virtual_gateway_id = [outscale_virtual_gateway.unattached.id]
 		}
 	`)
 }

@@ -15,7 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPIVirtualGateway_basic(t *testing.T) {
+func TestAccNet_WithVirtualGateway_basic(t *testing.T) {
 	t.Parallel()
 	var v, v2 oscgo.VirtualGateway
 
@@ -46,7 +46,7 @@ func TestAccOutscaleOAPIVirtualGateway_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIVirtualGatewayChangeTags(t *testing.T) {
+func TestAccNet_WithVirtualGatewayChangeTags(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
@@ -64,7 +64,7 @@ func TestAccOutscaleOAPIVirtualGatewayChangeTags(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIVirtualGateway_delete(t *testing.T) {
+func TestAccNet_withVirtualGateway_delete(t *testing.T) {
 	var virtualGateway oscgo.VirtualGateway
 
 	testDeleted := func(r string) resource.TestCheckFunc {
@@ -98,7 +98,7 @@ func TestAccOutscaleOAPIVirtualGateway_delete(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIVirtualGateway_importBasic(t *testing.T) {
+func TestAccNet_ImportVirtualGateway_Basic(t *testing.T) {
 	resourceName := "outscale_virtual_gateway.foo"
 
 	resource.ParallelTest(t, resource.TestCase{

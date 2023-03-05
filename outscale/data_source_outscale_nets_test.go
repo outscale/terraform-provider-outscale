@@ -10,7 +10,7 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func TestAccDataSourceOutscaleOAPIVpcs_basic(t *testing.T) {
+func TestAccNets_DataSource_basic(t *testing.T) {
 
 	rand.Seed(time.Now().UTC().UnixNano())
 	ipRange := utils.RandVpcCidr()

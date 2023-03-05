@@ -9,7 +9,7 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func TestAccOutscaleGatewayDatasource_basic(t *testing.T) {
+func TestAccOthers_GatewayDatasource_basic(t *testing.T) {
 	t.Parallel()
 	rBgpAsn := utils.RandIntRange(64512, 65534)
 	value := fmt.Sprintf("testacc-%s", acctest.RandString(5))
@@ -25,7 +25,7 @@ func TestAccOutscaleGatewayDatasource_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleGatewayDatasource_withFilters(t *testing.T) {
+func TestAccOthers_GatewayDatasource_withFilters(t *testing.T) {
 	t.Parallel()
 	// datasourceName := "data.outscale_client_gateway.test"
 	rBgpAsn := utils.RandIntRange(64512, 65534)
@@ -42,7 +42,7 @@ func TestAccOutscaleGatewayDatasource_withFilters(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleGatewayDatasource_withFiltersNoLocalhost(t *testing.T) {
+func TestAccOthers_GatewayDatasource_withFiltersNoLocalhost(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -69,7 +69,7 @@ func testAccClientGatewayDatasourceBasic(rBgpAsn int, value string) string {
 		}
 
 		data "outscale_client_gateway" "test" {
-			client_gateway_id = "${outscale_client_gateway.foo.id}"
+			client_gateway_id = outscale_client_gateway.foo.id
 		}
 	`, rBgpAsn, value)
 }
@@ -90,7 +90,7 @@ func testAccClientGatewayDatasourceWithFilters(rBgpAsn int, value string) string
 		data "outscale_client_gateway" "test" {
 			filter {
 				name = "client_gateway_ids"
-				values = ["${outscale_client_gateway.foo.id}"]
+				values = [outscale_client_gateway.foo.id]
 			}
 		}
 	`, rBgpAsn, value)

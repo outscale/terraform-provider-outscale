@@ -2,21 +2,20 @@ package outscale
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func TestAccOutscaleOAPINicsDataSource(t *testing.T) {
-	subregion := os.Getenv("OUTSCALE_REGION")
+func TestAccNet_WithNicsDataSource(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPINicsDataSourceConfig(subregion),
+				Config: testAccCheckOutscaleOAPINicsDataSourceConfig(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.outscale_nics.outscale_nics", "nics.#", "1"),
 				),
@@ -38,18 +37,18 @@ func testAccCheckOutscaleOAPINicsDataSourceConfig(subregion string) string {
 		
 		resource "outscale_subnet" "outscale_subnet" {
 			subregion_name = "%sa"
-			ip_range       = "10.0.0.0/16"
-			net_id         = "${outscale_net.outscale_net.net_id}"
+			ip_range       = "10.0.0.0/24"
+			net_id         = outscale_net.outscale_net.net_id
 		}
 		
 		resource "outscale_nic" "outscale_nic" {
-			subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
+			subnet_id = outscale_subnet.outscale_subnet.subnet_id
 		}
 		
 		data "outscale_nics" "outscale_nics" {
 			filter {
 				name   = "nic_ids"
-				values = ["${outscale_nic.outscale_nic.id}"]
+				values = [outscale_nic.outscale_nic.id]
 			}
 		}
 	`, subregion)

@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccOutscaleDHCPOption_basic(t *testing.T) {
+func TestAccOthers_DHCPOption_basic(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_dhcp_option.foo"
 	dataSourceName := "data.outscale_dhcp_option.test"
@@ -45,7 +45,7 @@ func TestAccOutscaleDHCPOption_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleDHCPOption_withFilters(t *testing.T) {
+func TestAccOthers_DHCPOption_withFilters(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_dhcp_option.foo"
 	dataSourceName := "data.outscale_dhcp_option.test"

@@ -12,7 +12,7 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func TestAccOutscaleAccessKey_basic(t *testing.T) {
+func TestAccOthers_AccessKey_basic(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_access_key.outscale_access_key"
 
@@ -38,7 +38,7 @@ func TestAccOutscaleAccessKey_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleAccessKey_updatedToInactivedKey(t *testing.T) {
+func TestAccOthers_AccessKey_updatedToInactivedKey(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_access_key.outscale_access_key"
 
@@ -80,7 +80,7 @@ func TestAccOutscaleAccessKey_updatedToInactivedKey(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleAccessKey_updatedToActivedKey(t *testing.T) {
+func TestAccOthers_AccessKey_updatedToActivedKey(t *testing.T) {
 	resourceName := "outscale_access_key.outscale_access_key"
 
 	state := "INACTIVE"
@@ -121,7 +121,7 @@ func TestAccOutscaleAccessKey_updatedToActivedKey(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleAccessKey_updatedExpirationDate(t *testing.T) {
+func TestAccOthers_AccessKey_updatedExpirationDate(t *testing.T) {
 	resourceName := "outscale_access_key.outscale_access_key"
 	expirDate := time.Now().AddDate(1, 1, 0).Format("2006-01-02")
 	expirDateUpdated := time.Now().AddDate(1, 4, 0).Format("2006-01-02")

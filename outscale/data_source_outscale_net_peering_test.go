@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccDataSourceOutscaleOAPILinPeeringConnection_basic(t *testing.T) {
+func TestAccNet_PeeringConnectionDataSource_basic(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -68,14 +68,14 @@ const testAccDataSourceOutscaleOAPILinPeeringConnectionConfig = `
 	}
 
 	resource "outscale_net_peering" "net_peering" {
-		accepter_net_id = "${outscale_net.net.net_id}"
-		source_net_id   = "${outscale_net.net2.net_id}"
+		accepter_net_id = outscale_net.net.net_id
+		source_net_id   = outscale_net.net2.net_id
 	}
 
 	data "outscale_net_peering" "net_peering_data" {
 		filter {
 			name   = "net_peering_ids"
-			values = ["${outscale_net_peering.net_peering.net_peering_id}"]
+			values = [outscale_net_peering.net_peering.net_peering_id]
 		}
 	}
 `

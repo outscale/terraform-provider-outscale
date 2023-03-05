@@ -6,11 +6,11 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func TestAccOutscaleOAPIFlexibleGpuLink_basic(t *testing.T) {
+func TestAccVM_withFlexibleGpuLink_basic(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	region := fmt.Sprintf("%sa", os.Getenv("OUTSCALE_REGION"))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -19,7 +19,7 @@ func TestAccOutscaleOAPIFlexibleGpuLink_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIFlexibleGpuLinkConfig(omi, "tinav5.c2r2p1", region),
+				Config: testAccOutscaleOAPIFlexibleGpuLinkConfig(omi, "tinav5.c2r2p2", utils.GetRegion()),
 			},
 		},
 	})
@@ -31,12 +31,14 @@ func testAccOutscaleOAPIFlexibleGpuLinkConfig(omi, vmType, region string) string
 			image_id     = "%s"
 			vm_type      = "%s"
 			keypair_name = "terraform-basic"
+			placement_subregion_name = "%[3]sa"
+
 		}
 
                 resource "outscale_flexible_gpu" "fGPU-1" { 
                         model_name             =  "nvidia-p6"
                         generation             =  "v5"
-                        subregion_name         =  "%s"
+                        subregion_name         =  "%[3]sa"
                         delete_on_vm_deletion  =   true
                 }
 

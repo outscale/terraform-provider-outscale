@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform/helper/acctest"
 )
 
-func TestAccOutscaleOAPIServerCertificateDatasource_basic(t *testing.T) {
+func TestAccOthers_ServerCertificateDatasource_basic(t *testing.T) {
 	t.Parallel()
 	rName := acctest.RandomWithPrefix("acc-test")
 	body := `-----BEGIN CERTIFICATE-----

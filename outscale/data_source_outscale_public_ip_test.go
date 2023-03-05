@@ -7,9 +7,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func TestAccDataSourceOutscaleOAPIPublicIP(t *testing.T) {
+func TestAccOthers_DataSourcePublicIP(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -26,7 +27,7 @@ func TestAccDataSourceOutscaleOAPIPublicIP(t *testing.T) {
 	})
 }
 
-func TestAccDataSourceOutscaleOAPIPublicIPWithVM(t *testing.T) {
+func TestAccVM_WithPublicIP(t *testing.T) {
 	t.Parallel()
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 
@@ -35,7 +36,7 @@ func TestAccDataSourceOutscaleOAPIPublicIPWithVM(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPIPublicIPConfigwithVM(omi),
+				Config: testAccDataSourceOutscaleOAPIPublicIPConfigwithVM(omi, utils.GetRegion()),
 			},
 		},
 	})
@@ -76,7 +77,7 @@ func testAccDataSourceOutscaleOAPIPublicIPCheck(name string) resource.TestCheckF
 	}
 }
 
-func TestAccDataSourceOutscaleOAPIPublicIP_withTags(t *testing.T) {
+func TestAccOthers_DataSourcePublicIP_withTags(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -93,13 +94,13 @@ const testAccDataSourceOutscaleOAPIPublicIPConfig = `
 	resource "outscale_public_ip" "test" {}
 
 	data "outscale_public_ip" "by_public_ip_id" {
-	  public_ip_id = "${outscale_public_ip.test.public_ip_id}"
+	  public_ip_id = outscale_public_ip.test.public_ip_id
 	}
 
 	data "outscale_public_ip" "by_public_ip" {
 		filter {
 			name = "public_ips"
-			values = ["${outscale_public_ip.test.public_ip}"]
+			values = [outscale_public_ip.test.public_ip]
 		}
 	}
 `
@@ -125,7 +126,7 @@ const testAccDataSourceOutscaleOAPIPublicIPConfigWithTags = `
 	}
 `
 
-func testAccDataSourceOutscaleOAPIPublicIPConfigwithVM(omi string) string {
+func testAccDataSourceOutscaleOAPIPublicIPConfigwithVM(omi, region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_vm" "outscale_vm" {
 			image_id     = "%s"
@@ -140,7 +141,7 @@ func testAccDataSourceOutscaleOAPIPublicIPConfigwithVM(omi string) string {
 			}
 			tags {
 				key   = "platform"
-				value = "eu-west-2"
+				value = "%[2]s"
 			}
 			tags {
 				key   = "project"
@@ -159,5 +160,5 @@ func testAccDataSourceOutscaleOAPIPublicIPConfigwithVM(omi string) string {
 				values = [outscale_public_ip_link.outscale_public_ip_link.link_public_ip_id]
 			}
 		}
-	`, omi)
+	`, omi, region)
 }

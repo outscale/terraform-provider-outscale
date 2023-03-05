@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPICa_basic(t *testing.T) {
+func TestAccOthers_Ca_basic(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_ca.ca_test"
 

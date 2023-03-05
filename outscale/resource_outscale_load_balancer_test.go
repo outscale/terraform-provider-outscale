@@ -15,15 +15,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPILBUBasic(t *testing.T) {
+func TestAccOthers_LBUBasic(t *testing.T) {
 	t.Parallel()
 	var conf oscgo.LoadBalancer
 
 	resourceName := "outscale_load_balancer.bar"
-
 	r := utils.RandIntRange(0, 10)
-	region := os.Getenv("OUTSCALE_REGION")
-	zone := fmt.Sprintf("%sa", region)
+	zone := fmt.Sprintf("%sa", utils.GetRegion())
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -46,7 +44,7 @@ func TestAccOutscaleOAPILBUBasic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPILBUPublicIp(t *testing.T) {
+func TestAccOthers_LBUPublicIp(t *testing.T) {
 	t.Skip("will be done soon")
 	t.Parallel()
 	var conf oscgo.LoadBalancer
@@ -200,7 +198,7 @@ resource "outscale_load_balancer" "bar" {
 	}
 
 }
-`, os.Getenv("OUTSCALE_REGION"), r)
+`, utils.GetRegion(), r)
 }
 
 func testAccOutscaleOAPILBUPublicIpConfig(r int) string {

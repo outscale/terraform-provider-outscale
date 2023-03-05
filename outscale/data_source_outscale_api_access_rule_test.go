@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccDataOutscaleOAPIApiAccessRule_basic(t *testing.T) {
+func TestAccOthers_DataOutscaleOAPIApiAccessRule_basic(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_api_access_rule.rule_data"
 
@@ -78,7 +78,7 @@ resource "outscale_ca" "ca_rule" {
 }
 
 resource "outscale_api_access_rule" "rule_data" {
-  ca_ids      = ["${outscale_ca.ca_rule.id}"]
+  ca_ids      = [outscale_ca.ca_rule.id]
   ip_ranges   = ["192.4.2.32/16"]
   description = "test api access rule"
 }
@@ -86,7 +86,7 @@ resource "outscale_api_access_rule" "rule_data" {
 data "outscale_api_access_rule" "api_access_rule" {
   filter {
     name   = "api_access_rule_ids"
-    values = ["${outscale_api_access_rule.rule_data.id}"]
+    values = [outscale_api_access_rule.rule_data.id]
   }
 
   filter {

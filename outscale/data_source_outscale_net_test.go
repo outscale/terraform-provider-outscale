@@ -11,7 +11,7 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func TestAccDataSourceOutscaleOAPIVpc_basic(t *testing.T) {
+func TestAccNet_DataSource_basic(t *testing.T) {
 	t.Parallel()
 	rand.Seed(time.Now().UTC().UnixNano())
 	ipRange := utils.RandVpcCidr()
@@ -74,7 +74,7 @@ func testAccDataSourceOutscaleOAPIVpcConfig(ipRange, tag string) string {
 		data "outscale_net" "by_id" {
 			filter {
 				name   = "net_ids"
-				values = ["${outscale_net.test.id}"]
+				values = [outscale_net.test.id]
 			}
 		}
 	`, ipRange, tag)

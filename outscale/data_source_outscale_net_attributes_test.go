@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPIDSLinAttr_basic(t *testing.T) {
+func TestAccNet_AttributesDataSource_basic(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -58,14 +58,12 @@ const testAccOutscaleOAPIDSLinAttrConfig = `
 		}
 	}
 
-
-
 	resource "outscale_net_attributes" "outscale_net_attributes" {
-		net_id = "${outscale_net.vpc.id}"
+		net_id = outscale_net.vpc.id
 		dhcp_options_set_id = outscale_net.vpc2.dhcp_options_set_id
 	}
 
 	data "outscale_net_attributes" "test" {
-		net_id = "${outscale_net.vpc.id}"
+		net_id = outscale_net.vpc.id
 	}
 `

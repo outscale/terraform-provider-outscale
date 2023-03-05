@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPIInternetServiceLink_basic(t *testing.T) {
+func TestAccNet_WithInternetServiceLink_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -35,7 +35,7 @@ func TestAccOutscaleOAPIInternetServiceLink_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIInternetServiceLink_importBasic(t *testing.T) {
+func TestAccNet_WithImportInternetServiceLink_Basic(t *testing.T) {
 	resourceName := "outscale_internet_service_link.outscale_internet_service_link"
 
 	resource.ParallelTest(t, resource.TestCase{

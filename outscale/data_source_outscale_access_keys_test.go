@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccOutscaleDataSourceAccessKeys_basic(t *testing.T) {
+func TestAccOthers_DataSourceAccessKeys_basic(t *testing.T) {
 	t.Parallel()
 	dataSourceName := "data.outscale_access_keys.outscale_access_key"
 
@@ -25,7 +25,7 @@ func TestAccOutscaleDataSourceAccessKeys_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleDataSourceAccessKeys_withFilters(t *testing.T) {
+func TestAccOthers_DataSourceAccessKeys_withFilters(t *testing.T) {
 	t.Parallel()
 	dataSourceName := "data.outscale_access_keys.outscale_access_key"
 
@@ -49,7 +49,7 @@ func testAccClientAccessKeysDataSourceBasic() string {
 		resource "outscale_access_key" "outscale_access_key" {}
 
 		data "outscale_access_keys" "outscale_access_key" {
-			access_key_ids = ["${outscale_access_key.outscale_access_key.id}"]
+			access_key_ids = [outscale_access_key.outscale_access_key.id]
 		}
 	`
 }
@@ -61,7 +61,7 @@ func testAccClientAccessKeysDataSourceWithFilters() string {
 		data "outscale_access_keys" "outscale_access_key" {
 			filter {
 				name = "access_key_ids"
-				values = ["${outscale_access_key.outscale_access_key.id}"]
+				values = [outscale_access_key.outscale_access_key.id]
 			}
 		}
 	`

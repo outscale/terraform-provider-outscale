@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPINatService_basic(t *testing.T) {
+func TestAccNet_WithNatService_basic(t *testing.T) {
 	var natService oscgo.NatService
 
 	resource.Test(t, resource.TestCase{
@@ -31,7 +31,7 @@ func TestAccOutscaleOAPINatService_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPINatService_basicWithDataSource(t *testing.T) {
+func TestAccNet_NatService_basicWithDataSource(t *testing.T) {
 	var natService oscgo.NatService
 
 	resource.Test(t, resource.TestCase{
@@ -126,7 +126,7 @@ const testAccOAPINatGatewayConfig = `
 	}
 
 	resource "outscale_subnet" "outscale_subnet" {
-		net_id   = "${outscale_net.outscale_net.net_id}"
+		net_id   = outscale_net.outscale_net.net_id
 		ip_range = "10.0.0.0/18"
 	}
 
@@ -134,8 +134,8 @@ const testAccOAPINatGatewayConfig = `
 
 	resource "outscale_nat_service" "outscale_nat_service" {
 		depends_on   = ["outscale_route.outscale_route"]
-		subnet_id    = "${outscale_subnet.outscale_subnet.subnet_id}"
-		public_ip_id = "${outscale_public_ip.outscale_public_ip.public_ip_id}"
+		subnet_id    = outscale_subnet.outscale_subnet.subnet_id
+		public_ip_id = outscale_public_ip.outscale_public_ip.public_ip_id
 	}
 
 	resource "outscale_route_table" "outscale_route_table" {

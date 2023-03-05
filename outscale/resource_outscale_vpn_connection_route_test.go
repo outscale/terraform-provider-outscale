@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleVPNConnectionRoute_basic(t *testing.T) {
+func TestAccOthers_VPNConnectionRoute_basic(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_vpn_connection_route.foo"
 
@@ -38,7 +38,7 @@ func TestAccOutscaleVPNConnectionRoute_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleVPNConnectionRouteimport_basic(t *testing.T) {
+func TestAccOthers_ImportVPNConnectionRoute_basic(t *testing.T) {
 	t.Parallel()
 	if os.Getenv("TEST_QUOTA") == "true" {
 		resourceName := "outscale_vpn_connection_route.foo"
@@ -177,15 +177,15 @@ func testAccOutscaleVPNConnectionRouteConfig(publicIP, destinationIPRange string
 		}
 
 		resource "outscale_vpn_connection" "vpn_connection" {
-			client_gateway_id  = "${outscale_client_gateway.customer_gateway.id}"
-			virtual_gateway_id = "${outscale_virtual_gateway.virtual_gateway.id}"
+			client_gateway_id  = outscale_client_gateway.customer_gateway.id
+			virtual_gateway_id = outscale_virtual_gateway.virtual_gateway.id
 			connection_type    = "ipsec.1"
 			static_routes_only  = true
 		}
 
 		resource "outscale_vpn_connection_route" "foo" {
 			destination_ip_range = "%s"
-			vpn_connection_id    = "${outscale_vpn_connection.vpn_connection.id}"
+			vpn_connection_id    = outscale_vpn_connection.vpn_connection.id
 		}
 	`, publicIP, destinationIPRange)
 }

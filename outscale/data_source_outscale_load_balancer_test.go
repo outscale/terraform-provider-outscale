@@ -2,20 +2,19 @@ package outscale
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccOutscaleOAPIDSLBU_basic(t *testing.T) {
+func TestAccOthers_LBU_basic(t *testing.T) {
 	t.Parallel()
 	var conf oscgo.LoadBalancer
 
-	region := os.Getenv("OUTSCALE_REGION")
-	zone := fmt.Sprintf("%sa", region)
+	zone := fmt.Sprintf("%sa", utils.GetRegion())
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
