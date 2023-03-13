@@ -18,7 +18,7 @@ func dataSourceOutscaleOAPISecurityGroups() *schema.Resource {
 		Read: dataSourceOutscaleOAPISecurityGroupsRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(false),
 			"security_groups": {
 				Type:     schema.TypeList,
 				Computed: true,

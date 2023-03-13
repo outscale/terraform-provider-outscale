@@ -15,7 +15,7 @@ func dataSourceOutscaleOAPIApiAccessRules() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceOutscaleOAPIApiAccessRulesRead,
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(false),
 			"api_access_rules": {
 				Type:     schema.TypeList,
 				Computed: true,

@@ -18,7 +18,7 @@ func dataSourceOutscaleOAPISnapshot() *schema.Resource {
 		Read: dataSourceOutscaleOAPISnapshotRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(true),
 			"permissions_to_create_volume": {
 				Type:     schema.TypeList,
 				Computed: true,

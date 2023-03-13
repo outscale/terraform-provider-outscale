@@ -17,7 +17,7 @@ func dataSourceOutscaleOAPIVpc() *schema.Resource {
 		Read: dataSourceOutscaleOAPIVpcRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(true),
 			"ip_range": {
 				Type:     schema.TypeString,
 				Computed: true,

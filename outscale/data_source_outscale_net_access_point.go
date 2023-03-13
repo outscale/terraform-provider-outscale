@@ -13,7 +13,7 @@ import (
 
 func napdSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"filter": dataSourceFiltersSchema(),
+		"filter": dataSourceFiltersSchema(true),
 		"net_access_point_id": {
 			Type:     schema.TypeString,
 			Computed: true,

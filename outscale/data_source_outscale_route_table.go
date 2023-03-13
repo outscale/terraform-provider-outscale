@@ -19,7 +19,7 @@ func dataSourceOutscaleOAPIRouteTable() *schema.Resource {
 		Read: dataSourceOutscaleOAPIRouteTableRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(true),
 			"route_table_id": {
 				Type:     schema.TypeString,
 				Computed: true,

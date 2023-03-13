@@ -13,9 +13,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func attrLBListenerRule() map[string]*schema.Schema {
+func attrLBListenerRule(filterRequired bool) map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"filter": dataSourceFiltersSchema(),
+		"filter": dataSourceFiltersSchema(filterRequired),
 		"action": {
 			Type:     schema.TypeString,
 			Computed: true,
@@ -59,7 +59,7 @@ func attrLBListenerRule() map[string]*schema.Schema {
 func dataSourceOutscaleOAPILoadBalancerLDRule() *schema.Resource {
 	return &schema.Resource{
 		Read:   dataSourceOutscaleOAPILoadBalancerLDRuleRead,
-		Schema: getDataSourceSchemas(attrLBListenerRule()),
+		Schema: getDataSourceSchemas(attrLBListenerRule(true)),
 	}
 }
 

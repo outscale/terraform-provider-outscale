@@ -17,7 +17,7 @@ func dataSourceOutscaleOAPINetAccessPointServices() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceOutscaleOAPINetAccessPointServicesRead,
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(false),
 			"services": {
 				Type:     schema.TypeList,
 				Computed: true,

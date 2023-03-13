@@ -16,7 +16,7 @@ func dataSourceOutscaleClientGateways() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceOutscaleClientGatewaysRead,
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(false),
 			"client_gateways": {
 				Type:     schema.TypeList,
 				Computed: true,

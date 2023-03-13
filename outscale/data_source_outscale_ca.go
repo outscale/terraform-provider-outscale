@@ -16,7 +16,7 @@ func dataSourceOutscaleOAPICa() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceOutscaleOAPICaRead,
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(true),
 			"ca_pem": {
 				Type:     schema.TypeString,
 				Computed: true,

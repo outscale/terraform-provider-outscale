@@ -16,7 +16,7 @@ func datasourceOutscaleOAPIInternetServices() *schema.Resource {
 	return &schema.Resource{
 		Read: datasourceOutscaleOAPIInternetServicesRead,
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(false),
 			"internet_services": {
 				Type:     schema.TypeList,
 				Computed: true,

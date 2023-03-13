@@ -19,7 +19,7 @@ func datasourceOutscaleOAPIVolume() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			// Arguments
-			"filter": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(true),
 			"subregion_name": {
 				Type:     schema.TypeString,
 				Computed: true,

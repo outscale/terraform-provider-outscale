@@ -15,7 +15,7 @@ func datasourceOutscaleOAPIServerCertificates() *schema.Resource {
 	return &schema.Resource{
 		Read: datasourceOutscaleOAPIServerCertificatesRead,
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(false),
 			"server_certificates": {
 				Type:     schema.TypeList,
 				Computed: true,

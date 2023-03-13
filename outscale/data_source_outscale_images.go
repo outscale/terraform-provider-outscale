@@ -19,7 +19,7 @@ func dataSourceOutscaleOAPIImages() *schema.Resource {
 		Read: dataSourceOutscaleOAPIImagesRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(false),
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,

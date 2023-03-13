@@ -16,7 +16,7 @@ func dataSourceOutscaleOAPIVirtualGateways() *schema.Resource {
 		Read: dataSourceOutscaleOAPIVirtualGatewaysRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(false),
 			"virtual_gateways": {
 				Type:     schema.TypeList,
 				Computed: true,

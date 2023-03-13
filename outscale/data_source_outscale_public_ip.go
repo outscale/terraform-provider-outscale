@@ -24,7 +24,7 @@ func dataSourceOutscaleOAPIPublicIP() *schema.Resource {
 func getOAPIPublicIPDataSourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		// Attributes
-		"filter": dataSourceFiltersSchema(),
+		"filter": dataSourceFiltersSchema(true),
 		"public_ip_id": {
 			Type:     schema.TypeString,
 			Computed: true,

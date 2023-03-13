@@ -22,7 +22,7 @@ func dataSourceOutscaleOAPIPublicIPS() *schema.Resource {
 
 func oapiGetPublicIPSDataSourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"filter": dataSourceFiltersSchema(),
+		"filter": dataSourceFiltersSchema(false),
 		"public_ips": {
 			Type:     schema.TypeList,
 			Computed: true,

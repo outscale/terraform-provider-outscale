@@ -21,11 +21,12 @@ func datasourceOutscaleOApiVMS() *schema.Resource {
 	}
 }
 
-func dataSourceFiltersSchema() *schema.Schema {
+func dataSourceFiltersSchema(required bool) *schema.Schema {
 	return &schema.Schema{
 		Type:     schema.TypeSet,
-		Optional: true,
+		Optional: !required,
 		ForceNew: true,
+		Required: required,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"name": {
@@ -45,7 +46,7 @@ func dataSourceFiltersSchema() *schema.Schema {
 
 func datasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
 	wholeSchema := map[string]*schema.Schema{
-		"filter": dataSourceFiltersSchema(),
+		"filter": dataSourceFiltersSchema(false),
 		"vms": {
 			Type:     schema.TypeList,
 			Computed: true,

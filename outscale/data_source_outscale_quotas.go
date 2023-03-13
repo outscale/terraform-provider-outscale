@@ -17,7 +17,7 @@ func dataSourceOutscaleOAPIQuotas() *schema.Resource {
 		Read: dataSourceOutscaleOAPIQuotasRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(false),
 			"quotas": {
 				Type:     schema.TypeList,
 				Computed: true,

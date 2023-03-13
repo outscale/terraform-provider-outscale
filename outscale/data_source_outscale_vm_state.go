@@ -21,7 +21,7 @@ func dataSourceOutscaleOAPIVMState() *schema.Resource {
 
 func getOAPIVMStateDataSourceSchema() map[string]*schema.Schema {
 	wholeSchema := map[string]*schema.Schema{
-		"filter": dataSourceFiltersSchema(),
+		"filter": dataSourceFiltersSchema(true),
 	}
 
 	for k, v := range getVMStateAttrsSchema() {

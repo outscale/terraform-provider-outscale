@@ -17,7 +17,7 @@ func dataSourceOutscaleOAPISubregions() *schema.Resource {
 		Read: dataSourceOutscaleOAPISubregionsRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(false),
 			// Computed values.
 			"request_id": {
 				Type:     schema.TypeString,

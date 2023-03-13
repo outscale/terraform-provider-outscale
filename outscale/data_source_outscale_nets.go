@@ -17,7 +17,7 @@ func dataSourceOutscaleOAPIVpcs() *schema.Resource {
 		Read: dataSourceOutscaleOAPIVpcsRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(false),
 			"nets": {
 				Type:     schema.TypeList,
 				Computed: true,

@@ -20,7 +20,7 @@ func dataSourceOutscaleOAPISubnet() *schema.Resource {
 		Read: dataSourceOutscaleOAPISubnetRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(true),
 			"subregion_name": {
 				Type:     schema.TypeString,
 				Computed: true,

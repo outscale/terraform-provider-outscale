@@ -18,7 +18,7 @@ func dataSourceOutscaleOAPILinPeeringsConnection() *schema.Resource {
 		Read: dataSourceOutscaleOAPILinPeeringsConnectionRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(false),
 			"net_peerings": {
 				Type:     schema.TypeList,
 				Computed: true,

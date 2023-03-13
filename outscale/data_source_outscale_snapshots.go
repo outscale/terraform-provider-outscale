@@ -17,7 +17,7 @@ func dataSourceOutscaleOAPISnapshots() *schema.Resource {
 		Read: dataSourceOutscaleOAPISnapshotsRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(false),
 			"snapshots": {
 				Type:     schema.TypeList,
 				Computed: true,

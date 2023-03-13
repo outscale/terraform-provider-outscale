@@ -20,7 +20,7 @@ func dataSourceOutscaleOAPINic() *schema.Resource {
 		Read: dataSourceOutscaleOAPINicRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(true),
 			"nic_id": {
 				Type:     schema.TypeString,
 				Computed: true,
