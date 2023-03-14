@@ -186,14 +186,14 @@ func TestAccOutscaleOAPIVM_withNics(t *testing.T) {
 	var server oscgo.Vm
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
-
+	region := os.Getenv("OUTSCALE_REGION")
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVMConfigBasicWithNics(omi, "tinav4.c2r2p2", keypair),
+				Config: testAccCheckOutscaleOAPIVMConfigBasicWithNics(region, omi, "tinav4.c2r2p2", keypair),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &server),
 					testAccCheckOutscaleOAPIVMAttributes(t, &server, omi),
@@ -695,7 +695,7 @@ func testAccCheckOutscaleOAPIVMConfigBasicWithNicAttached(omi, vmType, region, k
 		}`, omi, vmType, region, keypair)
 }
 
-func testAccCheckOutscaleOAPIVMConfigBasicWithNics(omi, vmType, keypair string) string {
+func testAccCheckOutscaleOAPIVMConfigBasicWithNics(region, omi, vmType, keypair string) string {
 	return fmt.Sprintf(`resource "outscale_net" "outscale_net" {
 		ip_range = "10.0.0.0/16"
 	  }
@@ -703,7 +703,7 @@ func testAccCheckOutscaleOAPIVMConfigBasicWithNics(omi, vmType, keypair string) 
 	  resource "outscale_subnet" "outscale_subnet" {
 		net_id         = outscale_net.outscale_net.net_id
 		ip_range       = "10.0.0.0/24"
-		subregion_name = "eu-west-2a"
+		subregion_name = "%sa"
 	  }
 
 	  resource "outscale_nic" "outscale_nic" {
@@ -736,7 +736,7 @@ func testAccCheckOutscaleOAPIVMConfigBasicWithNics(omi, vmType, keypair string) 
 			is_primary = false
 		  }
 		}
-	  }`, omi, vmType, keypair)
+	  }`, region, omi, vmType, keypair)
 }
 
 func testAccVmsConfigUpdateOAPIVMTags(omi, vmType string, region, value, keypair, sgId string) string {
