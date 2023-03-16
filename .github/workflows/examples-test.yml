@@ -15,7 +15,7 @@ on:
 
 jobs:
   Examples_tests:
-    runs-on: [self-hosted, linux]
+    runs-on: [self-hosted, linux, eu-west-2]
     steps:
       - uses: actions/checkout@v3
         with:
