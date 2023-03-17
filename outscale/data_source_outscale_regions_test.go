@@ -1,45 +1,28 @@
 package outscale
 
 import (
-	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccOutscaleOAPIRegionsDataSource_basic(t *testing.T) {
+func TestAcc_Regions_DataSource(t *testing.T) {
 	t.Parallel()
+	dataSourcesName := "data.outscale_regions.regions"
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheck(t)
-		},
+		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIRegionsDataSourceConfig,
+				Config: testAcc_Regions_DataSource_Config,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIRegionsDataSourceID("data.outscale_regions.regions"),
+					resource.TestCheckResourceAttrSet(dataSourcesName, "regions.#"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckOutscaleOAPIRegionsDataSourceID(n string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("can't find regions data source: %s", n)
-		}
-
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("regions data source ID not set")
-		}
-		return nil
-	}
-}
-
-var testAccCheckOutscaleOAPIRegionsDataSourceConfig = `
+var testAcc_Regions_DataSource_Config = `
 		data "outscale_regions" "regions" {}
 	`

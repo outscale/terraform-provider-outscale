@@ -7,10 +7,10 @@ import (
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceOutscaleOAPINatService() *schema.Resource {
@@ -18,10 +18,10 @@ func dataSourceOutscaleOAPINatService() *schema.Resource {
 		Read: dataSourceOutscaleOAPINatServiceRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(true),
 			"nat_service_id": {
 				Type:     schema.TypeString,
-				Optional: true,
+				Computed: true,
 			},
 			"subnet_id": {
 				Type:     schema.TypeString,
@@ -63,29 +63,14 @@ func dataSourceOutscaleOAPINatService() *schema.Resource {
 
 func dataSourceOutscaleOAPINatServiceRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
-	filters, filtersOk := d.GetOk("filter")
-	natGatewayID, natGatewayIDOK := d.GetOk("nat_service_id")
-
-	if !filtersOk && !natGatewayIDOK {
-		return fmt.Errorf("filters, or owner must be assigned, or nat_service_id must be provided")
+	req := oscgo.ReadNatServicesRequest{}
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
+		req.SetFilters(buildOutscaleOAPINatServiceDataSourceFilters(filters.(*schema.Set)))
 	}
-
-	params := oscgo.ReadNatServicesRequest{}
-
-	if filtersOk {
-		params.SetFilters(buildOutscaleOAPINatServiceDataSourceFilters(filters.(*schema.Set)))
-	}
-	if natGatewayIDOK && natGatewayID.(string) != "" {
-		filter := oscgo.FiltersNatService{}
-		filter.SetNatServiceIds([]string{natGatewayID.(string)})
-		params.SetFilters(filter)
-	}
-
 	var resp oscgo.ReadNatServicesResponse
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
-		rp, httpResp, err := conn.NatServiceApi.ReadNatServices(context.Background()).ReadNatServicesRequest(params).Execute()
+		rp, httpResp, err := conn.NatServiceApi.ReadNatServices(context.Background()).ReadNatServicesRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -100,14 +85,8 @@ func dataSourceOutscaleOAPINatServiceRead(d *schema.ResourceData, meta interface
 
 		return fmt.Errorf("[DEBUG] Error reading Nar Service (%s)", errString)
 	}
-
-	if len(resp.GetNatServices()) < 1 {
-		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
-	}
-
-	if len(resp.GetNatServices()) > 1 {
-		return fmt.Errorf("your query returned more than one result, please try a more " +
-			"specific search criteria")
+	if err = utils.IsResponseEmptyOrMutiple(len(resp.GetNatServices()), "Nat Service"); err != nil {
+		return err
 	}
 
 	return ngOAPIDescriptionAttributes(d, resp.GetNatServices()[0])

@@ -1,8 +1,7 @@
 package outscale
 
 import (
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 var endpointServiceNames []string
@@ -14,7 +13,7 @@ func init() {
 }
 
 // Provider ...
-func Provider() terraform.ResourceProvider {
+func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"access_key_id": {
@@ -149,7 +148,6 @@ func Provider() terraform.ResourceProvider {
 			"outscale_load_balancer":                dataSourceOutscaleOAPILoadBalancer(),
 			"outscale_load_balancer_listener_rule":  dataSourceOutscaleOAPILoadBalancerLDRule(),
 			"outscale_load_balancer_listener_rules": dataSourceOutscaleOAPILoadBalancerLDRules(),
-			"outscale_load_balancer_tags":           dataSourceOutscaleOAPILBUTags(),
 			"outscale_load_balancer_vm_health":      dataSourceOutscaleLoadBalancerVmsHeals(),
 			"outscale_load_balancers":               dataSourceOutscaleOAPILoadBalancers(),
 			"outscale_vm_types":                     dataSourceOutscaleOAPIVMTypes(),

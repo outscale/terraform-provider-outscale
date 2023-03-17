@@ -6,17 +6,18 @@ import (
 	"log"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func datasourceOutscaleOAPIServerCertificate() *schema.Resource {
 	return &schema.Resource{
 		Read: datasourceOutscaleOAPIServerCertificateRead,
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(true),
 			"expiration_date": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -47,24 +48,15 @@ func datasourceOutscaleOAPIServerCertificate() *schema.Resource {
 
 func datasourceOutscaleOAPIServerCertificateRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
-	filters, filtersOk := d.GetOk("filter")
-
-	if !filtersOk {
-		return fmt.Errorf("filters must be assigned")
-	}
-
-	// Build up search parameters
-	params := oscgo.ReadServerCertificatesRequest{}
-
-	if filtersOk {
-		params.Filters = buildOutscaleOSCAPIDataSourceServerCertificateFilters(filters.(*schema.Set))
+	req := oscgo.ReadServerCertificatesRequest{}
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
+		req.Filters = buildOutscaleOSCAPIDataSourceServerCertificateFilters(filters.(*schema.Set))
 	}
 
 	var resp oscgo.ReadServerCertificatesResponse
 	err := resource.Retry(120*time.Second, func() *resource.RetryError {
 		var err error
-		rp, httpResp, err := conn.ServerCertificateApi.ReadServerCertificates(context.Background()).ReadServerCertificatesRequest(params).Execute()
+		rp, httpResp, err := conn.ServerCertificateApi.ReadServerCertificates(context.Background()).ReadServerCertificatesRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -75,18 +67,11 @@ func datasourceOutscaleOAPIServerCertificateRead(d *schema.ResourceData, meta in
 	if err != nil {
 		return fmt.Errorf("[DEBUG] Error reading Server Certificate id (%s)", utils.GetErrorResponse(err))
 	}
-
-	if !resp.HasServerCertificates() || len(resp.GetServerCertificates()) == 0 {
-		return fmt.Errorf("Error reading Server Certificate: Server Certificates is not found with the seatch criteria")
-	}
-
-	if len(resp.GetServerCertificates()) > 1 {
-		return fmt.Errorf("your query returned more than one result, please try a more specific search criteria")
+	if err = utils.IsResponseEmptyOrMutiple(len(resp.GetServerCertificates()), "Server Certificate"); err != nil {
+		return err
 	}
 
 	result := resp.GetServerCertificates()[0]
-
-	log.Printf("[DEBUG] Setting Server Certificate id (%s)", err)
 
 	d.Set("expiration_date", result.GetExpirationDate())
 	d.Set("name", result.GetName())

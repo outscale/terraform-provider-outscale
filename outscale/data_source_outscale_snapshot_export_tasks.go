@@ -6,10 +6,10 @@ import (
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceOutscaleOAPISnapshotExportTasks() *schema.Resource {
@@ -25,12 +25,7 @@ func dataSourceOutscaleOAPISnapshotExportTasks() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
-			"dry_run": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Computed: true,
-			},
+			"filter": dataSourceFiltersSchema(false),
 			"snapshot_export_tasks": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -90,21 +85,16 @@ func dataSourceOutscaleOAPISnapshotExportTasks() *schema.Resource {
 
 func dataSourceOAPISnapshotExportTasksRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
-	filters, filtersOk := d.GetOk("filter")
-
-	filtersReq := &oscgo.FiltersExportTask{}
-	if filtersOk {
-		filtersReq = buildOutscaleOSCAPIDataSourceSnapshotExportTaskFilters(filters.(*schema.Set))
+	req := oscgo.ReadSnapshotExportTasksRequest{}
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
+		req.SetFilters(buildOutscaleOSCAPIDataSourceSnapshotExportTaskFilters(filters.(*schema.Set)))
 	}
 
 	var resp oscgo.ReadSnapshotExportTasksResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.SnapshotApi.ReadSnapshotExportTasks(context.Background()).
-			ReadSnapshotExportTasksRequest(oscgo.ReadSnapshotExportTasksRequest{
-				Filters: filtersReq,
-			}).Execute()
+			ReadSnapshotExportTasksRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -115,7 +105,6 @@ func dataSourceOAPISnapshotExportTasksRead(d *schema.ResourceData, meta interfac
 	if err != nil {
 		return fmt.Errorf("Error reading task image %s", err)
 	}
-
 	if len(resp.GetSnapshotExportTasks()) == 0 {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}

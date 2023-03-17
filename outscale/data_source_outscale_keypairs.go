@@ -7,34 +7,17 @@ import (
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func datasourceOutscaleOAPiKeyPairsRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-	req := oscgo.ReadKeypairsRequest{
-		Filters: &oscgo.FiltersKeypair{},
-	}
+	req := oscgo.ReadKeypairsRequest{}
 
-	//filters, filtersOk := d.GetOk("filter")
-	KeyName, KeyNameisOk := d.GetOk("keypair_names")
-
-	if KeyNameisOk {
-		var names []string
-		for _, v := range KeyName.([]interface{}) {
-			names = append(names, v.(string))
-		}
-		filter := oscgo.FiltersKeypair{}
-		filter.SetKeypairNames(names)
-		req.SetFilters(filter)
-	}
-
-	filters, filtersOk := d.GetOk("filter")
-
-	if filtersOk {
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
 		req.SetFilters(buildOutscaleOAPIKeyPairsDataSourceFilters(filters.(*schema.Set)))
 	}
 
@@ -64,13 +47,14 @@ func datasourceOutscaleOAPiKeyPairsRead(d *schema.ResourceData, meta interface{}
 		return fmt.Errorf("Error retrieving OAPIKeyPair: %s", errString)
 	}
 
-	if len(resp.GetKeypairs()) < 1 {
-		return fmt.Errorf("Unable to find key pair, please provide a better query criteria ")
+	result_len := len(resp.GetKeypairs())
+	if result_len == 0 {
+		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
 
 	d.SetId(resource.UniqueId())
 
-	keypairs := make([]map[string]interface{}, len(resp.GetKeypairs()))
+	keypairs := make([]map[string]interface{}, result_len)
 	for k, v := range resp.GetKeypairs() {
 		keypair := make(map[string]interface{})
 		if v.GetKeypairName() != "" {
@@ -90,15 +74,8 @@ func datasourceOutscaleOAPIKeyPairs() *schema.Resource {
 		Read: datasourceOutscaleOAPiKeyPairsRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(false),
 			// Attributes
-			"keypair_names": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
 			"keypairs": {
 				Type:     schema.TypeList,
 				Computed: true,

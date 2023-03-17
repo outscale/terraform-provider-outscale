@@ -3,14 +3,13 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func attrLBListenerRules() map[string]*schema.Schema {
@@ -30,7 +29,6 @@ func attrLBListenerRules() map[string]*schema.Schema {
 					},
 					"listener_rule_name": {
 						Type:     schema.TypeString,
-						Optional: true,
 						Computed: true,
 					},
 					"path_pattern": {
@@ -73,44 +71,10 @@ func dataSourceOutscaleOAPILoadBalancerLDRules() *schema.Resource {
 
 func dataSourceOutscaleOAPILoadBalancerLDRulesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
+	req := oscgo.ReadListenerRulesRequest{}
 
-	lrNamei, nameOk := d.GetOk("listener_rule_name")
-	filters, filtersOk := d.GetOk("filter")
-	filter := &oscgo.FiltersListenerRule{}
-
-	if !nameOk && !filtersOk {
-		return fmt.Errorf("listener_rule_name must be assigned")
-	}
-
-	if filtersOk {
-		set := filters.(*schema.Set)
-
-		if set.Len() < 1 {
-			return fmt.Errorf("filter can't be empty")
-		}
-		for _, v := range set.List() {
-			m := v.(map[string]interface{})
-			filterValues := make([]string, 0)
-			for _, e := range m["values"].([]interface{}) {
-				filterValues = append(filterValues, e.(string))
-			}
-
-			switch name := m["name"].(string); name {
-			case "listener_rule_name":
-				filter.ListenerRuleNames = &filterValues
-			default:
-				filter.ListenerRuleNames = &filterValues
-				log.Printf("[Debug] Unknown Filter Name: %s. default to 'load_balancer_name'", name)
-			}
-		}
-	} else {
-		filter = &oscgo.FiltersListenerRule{
-			ListenerRuleNames: &[]string{lrNamei.(string)},
-		}
-	}
-
-	req := oscgo.ReadListenerRulesRequest{
-		Filters: filter,
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
+		req.SetFilters(buildOutscaleOAPILoadBalancerListenerRuleDataSourceFilters(filters.(*schema.Set)))
 	}
 
 	var resp oscgo.ReadListenerRulesResponse
@@ -130,14 +94,14 @@ func dataSourceOutscaleOAPILoadBalancerLDRulesRead(d *schema.ResourceData, meta 
 		return err
 	}
 
-	lrs := *resp.ListenerRules
-	lrs_len := len(lrs)
-	if lrs_len < 1 {
-		return fmt.Errorf("can't find listener rule")
+	result := *resp.ListenerRules
+	result_len := len(result)
+	if result_len == 0 {
+		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
 
-	lrs_ret := make([]map[string]interface{}, lrs_len)
-	for k, lr := range lrs {
+	lrs_ret := make([]map[string]interface{}, result_len)
+	for k, lr := range result {
 		l := make(map[string]interface{})
 		if lr.Action != nil {
 			l["action"] = lr.Action

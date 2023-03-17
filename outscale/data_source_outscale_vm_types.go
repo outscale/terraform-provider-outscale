@@ -6,8 +6,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/spf13/cast"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
@@ -18,7 +18,7 @@ func dataSourceOutscaleOAPIVMTypes() *schema.Resource {
 		Read: dataSourceOutscaleOAPIVMTypesRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(false),
 			"vm_types": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -65,14 +65,10 @@ func dataSourceOutscaleOAPIVMTypes() *schema.Resource {
 
 func dataSourceOutscaleOAPIVMTypesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
-	filter, filterOk := d.GetOk("filter")
-	filtersReq := oscgo.FiltersVmType{}
-
-	if filterOk {
-		filtersReq = buildOutscaleOAPIDataSourceVMTypesFilters(filter.(*schema.Set))
+	req := oscgo.ReadVmTypesRequest{}
+	if filter, filterOk := d.GetOk("filter"); filterOk {
+		req.SetFilters(buildOutscaleOAPIDataSourceVMTypesFilters(filter.(*schema.Set)))
 	}
-	req := oscgo.ReadVmTypesRequest{Filters: &filtersReq}
 
 	var resp oscgo.ReadVmTypesResponse
 	var err error

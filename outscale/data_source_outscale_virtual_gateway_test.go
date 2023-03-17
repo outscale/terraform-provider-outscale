@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccDataSourceOutscaleOAPIVirtualGateway_unattached(t *testing.T) {
-	//t.Skip()
+func TestAcc_VirtualGateway_DataSource(t *testing.T) {
 	t.Parallel()
-	rInt := acctest.RandInt()
+	dataSourceName := "data.outscale_virtual_gateway.vg"
+	dataSourcesName := "data.outscale_virtual_gateways.vgs"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -20,27 +19,33 @@ func TestAccDataSourceOutscaleOAPIVirtualGateway_unattached(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPIVirtualGatewayUnattachedConfig(rInt),
+				Config: testAcc_VirtualGateway_DataSource_Config(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair(
-						"data.outscale_virtual_gateway.test_by_id", "id",
-						"outscale_virtual_gateway.unattached", "id"),
-					resource.TestCheckResourceAttrSet("data.outscale_virtual_gateway.test_by_id", "state"),
-					resource.TestCheckNoResourceAttr("data.outscale_virtual_gateway.test_by_id", "attached_vpc_id"),
+					resource.TestCheckResourceAttr(dataSourcesName, "virtual_gateways.#", "1"),
+					resource.TestCheckResourceAttrSet(dataSourceName, "virtual_gateway_id"),
 				),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleOAPIVirtualGatewayUnattachedConfig(rInt int) string {
+func testAcc_VirtualGateway_DataSource_Config() string {
 	return fmt.Sprintf(`
 		resource "outscale_virtual_gateway" "unattached" {
 			connection_type = "ipsec.1"	
 		}
 		
-		data "outscale_virtual_gateway" "test_by_id" {
-			virtual_gateway_id = "${outscale_virtual_gateway.unattached.id}"
+		data "outscale_virtual_gateway" "vg" {
+			filter {
+				name = "virtual_gateway_ids"
+				values = [outscale_virtual_gateway.unattached.id]
+			}
+		}
+		data "outscale_virtual_gateways" "vgs" {
+			filter {
+				name = "virtual_gateway_ids"
+				values = [outscale_virtual_gateway.unattached.id]
+			}
 		}
 	`)
 }

@@ -5,17 +5,15 @@ import (
 	"os"
 	"testing"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccOutscaleOAPIDSLBU_basic(t *testing.T) {
+func TestAcc_LoadBalancer_DataSource(t *testing.T) {
 	t.Parallel()
-	var conf oscgo.LoadBalancer
-
 	region := os.Getenv("OUTSCALE_REGION")
 	zone := fmt.Sprintf("%sa", region)
+	dataSourceName := "data.outscale_load_balancer.test"
+	dataSourcesName := "data.outscale_load_balancers.test"
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
@@ -25,39 +23,48 @@ func TestAccOutscaleOAPIDSLBU_basic(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscaleOAPILBUDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDSOutscaleOAPILBUConfig(zone),
+				Config: testAcc_LoadBalancer_DataSource_Config(zone),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPILBUExists("outscale_load_balancer.bar", &conf),
-					resource.TestCheckResourceAttr(
-						"data.outscale_load_balancer.test", "subregion_names.#", "1"),
-					resource.TestCheckResourceAttr(
-						"data.outscale_load_balancer.test", "subregion_names.0", zone),
+					resource.TestCheckResourceAttr(dataSourceName, "subregion_names.#", "1"),
+					resource.TestCheckResourceAttr(dataSourceName, "subregion_names.0", zone),
+
+					resource.TestCheckResourceAttr(dataSourcesName, "load_balancers.#", "1"),
 				)},
 		},
 	})
 }
 
-func testAccDSOutscaleOAPILBUConfig(zone string) string {
+func testAcc_LoadBalancer_DataSource_Config(zone string) string {
 	return fmt.Sprintf(`
-	resource "outscale_load_balancer" "bar" {
+	resource "outscale_load_balancer" "dataLb" {
 		subregion_names    = ["%s"]
-		load_balancer_name = "foobar-terraform-elb"
+		load_balancer_name = "data-terraform-elb"
 
 		listeners {
 			backend_port           = 8000
 			backend_protocol       = "HTTP"
-			load_balancer_port = 80
+			load_balancer_port     = 80
 			load_balancer_protocol = "HTTP"
 		}
 
 		tags {
-			key = "name"
+			key   = "name"
 			value = "baz"
 		}
 	}
 
 	data "outscale_load_balancer" "test" {
-		load_balancer_name = outscale_load_balancer.bar.id
+		filter {
+			name   = "load_balancer_names"
+			values = [outscale_load_balancer.dataLb.id]
+		}
+	}
+
+	data "outscale_load_balancers" "test" {
+		filter {
+			name   = "load_balancer_names"
+			values = [outscale_load_balancer.dataLb.id]
+		}
 	}
 `, zone)
 }

@@ -8,28 +8,17 @@ import (
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func datasourceOutscaleOApiKeyPairRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-	req := oscgo.ReadKeypairsRequest{
-		Filters: &oscgo.FiltersKeypair{KeypairNames: &[]string{d.Id()}},
-	}
+	req := oscgo.ReadKeypairsRequest{}
 
-	KeyName, KeyNameisOk := d.GetOk("keypair_name")
-	if KeyNameisOk {
-		filter := oscgo.FiltersKeypair{}
-		filter.SetKeypairNames([]string{KeyName.(string)})
-		req.SetFilters(filter)
-	}
-
-	filters, filtersOk := d.GetOk("filter")
-
-	if filtersOk {
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
 		req.SetFilters(buildOutscaleOAPIKeyPairsDataSourceFilters(filters.(*schema.Set)))
 	}
 
@@ -59,12 +48,8 @@ func datasourceOutscaleOApiKeyPairRead(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("Error retrieving OAPIKeyPair: %s", errString)
 	}
 
-	if len(resp.GetKeypairs()) < 1 {
-		return fmt.Errorf("Unable to find key pair, please provide a better query criteria ")
-	}
-	if len(resp.GetKeypairs()) > 1 {
-
-		return fmt.Errorf("Found to many key pairs, please provide a better query criteria ")
+	if err := utils.IsResponseEmptyOrMutiple(len(resp.GetKeypairs()), "KeyPair"); err != nil {
+		return err
 	}
 
 	keypair := resp.GetKeypairs()[0]
@@ -84,11 +69,10 @@ func datasourceOutscaleOAPIKeyPair() *schema.Resource {
 		Read: datasourceOutscaleOApiKeyPairRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(true),
 			// Attributes
 			"keypair_name": {
 				Type:     schema.TypeString,
-				Optional: true,
 				Computed: true,
 			},
 			"keypair_fingerprint": {

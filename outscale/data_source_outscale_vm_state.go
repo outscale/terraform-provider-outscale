@@ -2,16 +2,14 @@ package outscale
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"log"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceOutscaleOAPIVMState() *schema.Resource {
@@ -23,7 +21,7 @@ func dataSourceOutscaleOAPIVMState() *schema.Resource {
 
 func getOAPIVMStateDataSourceSchema() map[string]*schema.Schema {
 	wholeSchema := map[string]*schema.Schema{
-		"filter": dataSourceFiltersSchema(),
+		"filter": dataSourceFiltersSchema(true),
 	}
 
 	for k, v := range getVMStateAttrsSchema() {
@@ -70,7 +68,7 @@ func getVMStateAttrsSchema() map[string]*schema.Schema {
 		},
 		"vm_id": {
 			Type:     schema.TypeString,
-			Optional: true,
+			Computed: true,
 		},
 		"vm_state": {
 			Type:     schema.TypeString,
@@ -81,30 +79,16 @@ func getVMStateAttrsSchema() map[string]*schema.Schema {
 
 func dataSourceOutscaleOAPIVMStateRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
-	filters, filtersOk := d.GetOk("filter")
-	instanceID, instanceIDOk := d.GetOk("vm_id")
-
-	if !instanceIDOk && !filtersOk {
-		return errors.New("vm_id or filter must be set")
+	req := oscgo.ReadVmsStateRequest{}
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
+		req.SetFilters(buildOutscaleOAPIDataSourceVMStateFilters(filters.(*schema.Set)))
 	}
-
-	params := oscgo.ReadVmsStateRequest{}
-	if filtersOk {
-		params.SetFilters(buildOutscaleOAPIDataSourceVMStateFilters(filters.(*schema.Set)))
-	}
-	if instanceIDOk {
-		filter := oscgo.FiltersVmsState{}
-		filter.SetVmIds([]string{instanceID.(string)})
-		params.SetFilters(filter)
-	}
-
-	params.SetAllVms(false)
+	req.SetAllVms(false)
 
 	var resp oscgo.ReadVmsStateResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		rp, httpResp, err := conn.VmApi.ReadVmsState(context.Background()).ReadVmsStateRequest(params).Execute()
+		rp, httpResp, err := conn.VmApi.ReadVmsState(context.Background()).ReadVmsStateRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -116,21 +100,13 @@ func dataSourceOutscaleOAPIVMStateRead(d *schema.ResourceData, meta interface{})
 		return err
 	}
 
-	filteredStates := resp.GetVmStates()[:]
+	filteredStates := resp.GetVmStates()
 
 	var state oscgo.VmStates
-	if len(filteredStates) < 1 {
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
+	if err = utils.IsResponseEmptyOrMutiple(len(filteredStates), "Vm State"); err != nil {
+		return err
 	}
-
-	if len(filteredStates) > 1 {
-		return fmt.Errorf("Your query returned more than one result. Please try a more " +
-			"specific search criteria.")
-	}
-
 	state = filteredStates[0]
-
-	log.Printf("[DEBUG] outscale_oapi_vm_state - Single State found: %s", state.GetVmId())
 	return vmStateDataAttrSetter(d, &state)
 }
 
@@ -198,7 +174,6 @@ func buildOutscaleOAPIDataSourceVMStateFilters(set *schema.Set) oscgo.FiltersVms
 			filters.SetVmIds(filterValues)
 		case "vm_states":
 			filters.SetVmStates(filterValues)
-
 		default:
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)
 		}

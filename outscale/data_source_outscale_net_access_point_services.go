@@ -2,21 +2,22 @@ package outscale
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceOutscaleOAPINetAccessPointServices() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceOutscaleOAPINetAccessPointServicesRead,
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(false),
 			"services": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -48,18 +49,12 @@ func dataSourceOutscaleOAPINetAccessPointServices() *schema.Resource {
 
 func dataSourceOutscaleOAPINetAccessPointServicesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
-	filters, filtersOk := d.GetOk("filter")
-
-	filtersReq := oscgo.FiltersService{}
-	if filtersOk {
-		filtersReq = buildOutscaleDataSourcesNAPSFilters(filters.(*schema.Set))
+	req := oscgo.ReadNetAccessPointServicesRequest{}
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
+		req.SetFilters(buildOutscaleDataSourcesNAPSFilters(filters.(*schema.Set)))
 	}
-	req := oscgo.ReadNetAccessPointServicesRequest{Filters: &filtersReq}
-
 	var resp oscgo.ReadNetAccessPointServicesResponse
 	var err error
-
 	err = resource.Retry(20*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.NetAccessPointApi.ReadNetAccessPointServices(
 			context.Background()).
@@ -74,10 +69,11 @@ func dataSourceOutscaleOAPINetAccessPointServicesRead(d *schema.ResourceData, me
 	if err != nil {
 		return err
 	}
-
-	naps := resp.GetServices()[:]
+	if resp.GetServices() == nil || len(resp.GetServices()) == 0 {
+		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
+	}
+	naps := resp.GetServices()
 	nap_ret := make([]map[string]interface{}, len(naps))
-
 	for k, v := range naps {
 		n := make(map[string]interface{})
 		n["ip_ranges"] = v.GetIpRanges()

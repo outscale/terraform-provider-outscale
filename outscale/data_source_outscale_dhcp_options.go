@@ -6,10 +6,10 @@ import (
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceOutscaleDHCPOptions() *schema.Resource {
@@ -17,14 +17,7 @@ func dataSourceOutscaleDHCPOptions() *schema.Resource {
 		Read: dataSourceOutscaleDHCPOptionsRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
-			"dhcp_options_set_ids": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
+			"filter": dataSourceFiltersSchema(false),
 			"dhcp_options": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -77,27 +70,14 @@ func dataSourceOutscaleDHCPOptions() *schema.Resource {
 
 func dataSourceOutscaleDHCPOptionsRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
-	filters, filtersOk := d.GetOk("filter")
-	dhcpIDs, dhcpIDOk := d.GetOk("dhcp_options_set_ids")
-	if !dhcpIDOk && !filtersOk {
-		return fmt.Errorf("One of filters, or dhcp_options_set_id must be provided")
+	req := oscgo.ReadDhcpOptionsRequest{}
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
+		req.Filters = buildOutscaleDataSourceDHCPOptionFilters(filters.(*schema.Set))
 	}
-
-	params := oscgo.ReadDhcpOptionsRequest{}
-	if dhcpIDOk {
-		params.Filters = &oscgo.FiltersDhcpOptions{
-			DhcpOptionsSetIds: utils.InterfaceSliceToStringList(dhcpIDs.([]interface{})),
-		}
-	}
-	if filtersOk {
-		params.Filters = buildOutscaleDataSourceDHCPOptionFilters(filters.(*schema.Set))
-	}
-
 	var resp oscgo.ReadDhcpOptionsResponse
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		rp, httpResp, err := conn.DhcpOptionApi.ReadDhcpOptions(context.Background()).ReadDhcpOptionsRequest(params).Execute()
+		rp, httpResp, err := conn.DhcpOptionApi.ReadDhcpOptions(context.Background()).ReadDhcpOptionsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}

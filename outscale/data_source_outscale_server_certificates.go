@@ -3,11 +3,10 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
@@ -16,7 +15,7 @@ func datasourceOutscaleOAPIServerCertificates() *schema.Resource {
 	return &schema.Resource{
 		Read: datasourceOutscaleOAPIServerCertificatesRead,
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(false),
 			"server_certificates": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -59,20 +58,15 @@ func datasourceOutscaleOAPIServerCertificates() *schema.Resource {
 
 func datasourceOutscaleOAPIServerCertificatesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
-	filters, filtersOk := d.GetOk("filter")
-
-	// Build up search parameters
-	params := oscgo.ReadServerCertificatesRequest{}
-
-	if filtersOk {
-		params.Filters = buildOutscaleOSCAPIDataSourceServerCertificateFilters(filters.(*schema.Set))
+	req := oscgo.ReadServerCertificatesRequest{}
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
+		req.Filters = buildOutscaleOSCAPIDataSourceServerCertificateFilters(filters.(*schema.Set))
 	}
 
 	var resp oscgo.ReadServerCertificatesResponse
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		rp, httpResp, err := conn.ServerCertificateApi.ReadServerCertificates(context.Background()).ReadServerCertificatesRequest(params).Execute()
+		rp, httpResp, err := conn.ServerCertificateApi.ReadServerCertificates(context.Background()).ReadServerCertificatesRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -85,8 +79,6 @@ func datasourceOutscaleOAPIServerCertificatesRead(d *schema.ResourceData, meta i
 		errString = err.Error()
 		return fmt.Errorf("[DEBUG] Error reading Server Certificates (%s)", errString)
 	}
-
-	log.Printf("[DEBUG] Setting Server Certificates id (%s)", err)
 	d.Set("server_certificates", flattenServerCertificates(resp.GetServerCertificates()))
 	d.SetId(resource.UniqueId())
 	return nil

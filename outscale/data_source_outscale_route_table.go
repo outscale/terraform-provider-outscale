@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -11,8 +10,8 @@ import (
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceOutscaleOAPIRouteTable() *schema.Resource {
@@ -20,10 +19,9 @@ func dataSourceOutscaleOAPIRouteTable() *schema.Resource {
 		Read: dataSourceOutscaleOAPIRouteTableRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(true),
 			"route_table_id": {
 				Type:     schema.TypeString,
-				Optional: true,
 				Computed: true,
 			},
 			"request_id": {
@@ -133,28 +131,15 @@ func dataSourceOutscaleOAPIRouteTable() *schema.Resource {
 
 func dataSourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-	routeTableID, routeTableIDOk := d.GetOk("route_table_id")
-	filter, filterOk := d.GetOk("filter")
-
-	if !filterOk && !routeTableIDOk {
-		return fmt.Errorf("One of route_table_id or filters must be assigned")
-	}
-
-	params := oscgo.ReadRouteTablesRequest{}
-	if routeTableIDOk {
-		params.Filters = &oscgo.FiltersRouteTable{
-			RouteTableIds: &[]string{routeTableID.(string)},
-		}
-	}
-
-	if filterOk {
-		params.Filters = buildOutscaleOAPIDataSourceRouteTableFilters(filter.(*schema.Set))
+	req := oscgo.ReadRouteTablesRequest{}
+	if filter, filterOk := d.GetOk("filter"); filterOk {
+		req.Filters = buildOutscaleOAPIDataSourceRouteTableFilters(filter.(*schema.Set))
 	}
 
 	var resp oscgo.ReadRouteTablesResponse
 	var err error
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
-		rp, httpResp, err := conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(params).Execute()
+		rp, httpResp, err := conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -164,13 +149,8 @@ func dataSourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface
 	if err != nil {
 		return err
 	}
-
-	numRouteTables := len(resp.GetRouteTables())
-	if numRouteTables <= 0 {
-		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
-	}
-	if numRouteTables > 1 {
-		return fmt.Errorf("Multiple Route Table matched; use additional constraints to reduce matches to a single Route Table")
+	if err = utils.IsResponseEmptyOrMutiple(len(resp.GetRouteTables()), "Route Table"); err != nil {
+		return err
 	}
 
 	rt := resp.GetRouteTables()[0]

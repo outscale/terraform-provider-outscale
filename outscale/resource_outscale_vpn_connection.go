@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/spf13/cast"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
@@ -220,16 +220,9 @@ func resourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{})
 func resourceOutscaleVPNConnectionUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	d.Partial(true)
-
 	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
-
-	d.SetPartial("tags")
-
-	d.Partial(false)
-
 	return resourceOutscaleVPNConnectionRead(d, meta)
 }
 

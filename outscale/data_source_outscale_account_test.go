@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccDataSourceAccount_basic(t *testing.T) {
-
+func TestAcc_Account_DataSource(t *testing.T) {
+	dataSourceName := "data.outscale_account.account"
+	dataSourcesName := "data.outscale_accounts.accounts"
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
@@ -16,14 +17,20 @@ func TestAccDataSourceAccount_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceAccountConfig(),
+				Config: testAcc_Account_DataSource_Config(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(dataSourcesName, "accounts.#"),
+					resource.TestCheckResourceAttrSet(dataSourceName, "account_id"),
+				),
 			},
 		},
 	})
 }
 
-func testAccDataSourceAccountConfig() string {
+func testAcc_Account_DataSource_Config() string {
 	return fmt.Sprintf(`
-              data "outscale_account" "account" { }
+        data "outscale_account" "account" { }
+
+		data "outscale_accounts" "accounts" { }
 	`)
 }

@@ -5,16 +5,18 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccOutscaleOAPIImageExportTaskDataSource_basic(t *testing.T) {
+func TestAcc_ImageExportTask_DataSource(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 	imageName := acctest.RandomWithPrefix("test-image-name")
+
+	dataSourceName := "data.outscale_image_export_task.export_task"
+	dataSourcesName := "data.outscale_image_export_tasks.export_tasks"
 
 	if os.Getenv("TEST_QUOTA") == "true" {
 		resource.Test(t, resource.TestCase{
@@ -24,9 +26,10 @@ func TestAccOutscaleOAPIImageExportTaskDataSource_basic(t *testing.T) {
 			Providers: testAccProviders,
 			Steps: []resource.TestStep{
 				{
-					Config: testAccOutscaleOAPIImageExportTaskDataSourceConfig(omi, "tinav4.c2r2p2", region, imageName),
+					Config: testAcc_ImageExportTask_DataSource_Config(omi, "tinav4.c2r2p2", region, imageName),
 					Check: resource.ComposeTestCheckFunc(
-						testAccCheckOutscaleImageExportTaskDataSourceID("data.outscale_image_export_task.test"),
+						resource.TestCheckResourceAttrSet(dataSourceName, "task_id"),
+						resource.TestCheckResourceAttrSet(dataSourcesName, "image_export_tasks.#"),
 					),
 				},
 			},
@@ -36,22 +39,7 @@ func TestAccOutscaleOAPIImageExportTaskDataSource_basic(t *testing.T) {
 	}
 }
 
-func testAccCheckOutscaleImageExportTaskDataSourceID(n string) resource.TestCheckFunc {
-	// Wait for IAM role
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("can't find Image Export Task data source: %s", n)
-		}
-
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("image Export Task data source ID not set")
-		}
-		return nil
-	}
-}
-
-func testAccOutscaleOAPIImageExportTaskDataSourceConfig(omi, vmType, region, imageName string) string {
+func testAcc_ImageExportTask_DataSource_Config(omi, vmType, region, imageName string) string {
 	return fmt.Sprintf(`
 	resource "outscale_vm" "basic" {
 		image_id	         = "%s"
@@ -66,6 +54,7 @@ func testAccOutscaleOAPIImageExportTaskDataSourceConfig(omi, vmType, region, ima
 		no_reboot   = "true"
 		description = "terraform testing"
 	}
+
 	resource "outscale_image_export_task" "outscale_image_export_task" {
 		image_id                  = outscale_image.foo.id
 		osu_export {
@@ -74,10 +63,16 @@ func testAccOutscaleOAPIImageExportTaskDataSourceConfig(omi, vmType, region, ima
          }
 	}
 
-
-	data "outscale_image_export_task" "test" {
+	data "outscale_image_export_task" "export_task" {
 		filter {
 			name   = "task_ids"
+			values = [outscale_image_export_task.outscale_image_export_task.id]
+		}
+	}
+
+	data "outscale_image_export_tasks" "export_tasks" {
+		filter {
+			name = "tags_ids"
 			values = [outscale_image_export_task.outscale_image_export_task.id]
 		}
 	}

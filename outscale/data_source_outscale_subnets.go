@@ -6,10 +6,10 @@ import (
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceOutscaleOAPISubnets() *schema.Resource {
@@ -17,14 +17,7 @@ func dataSourceOutscaleOAPISubnets() *schema.Resource {
 		Read: dataSourceOutscaleOAPISubnetsRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
-			"subnet_ids": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
+			"filter": dataSourceFiltersSchema(false),
 			"subnets": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -74,20 +67,8 @@ func dataSourceOutscaleOAPISubnets() *schema.Resource {
 
 func dataSourceOutscaleOAPISubnetsRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
 	req := oscgo.ReadSubnetsRequest{}
-
-	if id := d.Get("subnet_ids"); id != "" {
-		var ids []string
-		for _, v := range id.([]interface{}) {
-			ids = append(ids, v.(string))
-		}
-		req.SetFilters(oscgo.FiltersSubnet{SubnetIds: &ids})
-	}
-
-	filters, filtersOk := d.GetOk("filter")
-
-	if filtersOk {
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
 		req.Filters = buildOutscaleOAPISubnetDataSourceFilters(filters.(*schema.Set))
 	}
 
@@ -106,7 +87,6 @@ func dataSourceOutscaleOAPISubnetsRead(d *schema.ResourceData, meta interface{})
 
 	if err != nil {
 		errString = err.Error()
-
 		return fmt.Errorf("[DEBUG] Error reading Subnet (%s)", errString)
 	}
 

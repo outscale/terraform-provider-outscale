@@ -6,24 +6,17 @@ import (
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceOutscaleClientGateways() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceOutscaleClientGatewaysRead,
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
-			"client_gateway_ids": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
+			"filter": dataSourceFiltersSchema(false),
 			"client_gateways": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -35,7 +28,7 @@ func dataSourceOutscaleClientGateways() *schema.Resource {
 						},
 						"client_gateway_id": {
 							Type:     schema.TypeString,
-							Optional: true,
+							Computed: true,
 						},
 						"connection_type": {
 							Type:     schema.TypeString,
@@ -65,19 +58,7 @@ func dataSourceOutscaleClientGatewaysRead(d *schema.ResourceData, meta interface
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
-	clientGatewayIDs, clientGatewayOk := d.GetOk("client_gateway_ids")
-
-	if !filtersOk && !clientGatewayOk {
-		return fmt.Errorf("One of filters, or client_gateway_id must be assigned")
-	}
-
 	params := oscgo.ReadClientGatewaysRequest{}
-
-	if clientGatewayOk {
-		params.Filters = &oscgo.FiltersClientGateway{
-			ClientGatewayIds: utils.InterfaceSliceToStringList(clientGatewayIDs.([]interface{})),
-		}
-	}
 
 	if filtersOk {
 		params.Filters = buildOutscaleDataSourceClientGatewayFilters(filters.(*schema.Set))

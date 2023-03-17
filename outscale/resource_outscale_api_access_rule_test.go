@@ -6,11 +6,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 func TestAccOutscaleOAPIApiAccessRule_basic(t *testing.T) {
@@ -18,12 +17,13 @@ func TestAccOutscaleOAPIApiAccessRule_basic(t *testing.T) {
 	resourceName := "outscale_api_access_rule.rule_test"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleApiAccessRuleDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		Providers:         testAccProviders,
+		ExternalProviders: providerScottwinklerShell(),
+		CheckDestroy:      testAccCheckOutscaleApiAccessRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIApiAccessRuleConfig(utils.TestCaPem),
+				Config: testAccOutscaleOAPIApiAccessRuleConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleApiAccessRuleExists(resourceName),
 				),
@@ -116,10 +116,24 @@ func testAccCheckOutscaleApiAccessRuleDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccOutscaleOAPIApiAccessRuleConfig(ca_pem string) string {
+func testAccOutscaleOAPIApiAccessRuleConfig() string {
 	return fmt.Sprintf(`
+
+resource "shell_script" "ca_gen" {
+	lifecycle_commands {
+		create = <<-EOF
+			openssl req -x509 -sha256 -nodes -newkey rsa:4096 -keyout resource_apiaccessrule.key -days 2 -out resource_apiaccessrule.pem -subj '/CN=domain.com'
+		EOF
+		read   = <<-EOF
+			echo "{\"filename\":  \"resource_apiaccessrule.pem\"}"
+		EOF
+		delete = "rm -f resource_apiaccessrule.pem resource_apiaccessrule.key"
+	}
+	working_directory = "${path.module}/."
+}
+
 resource "outscale_ca" "ca_rule" { 
-   ca_pem       = %[1]q
+   ca_pem       = file(shell_script.ca_gen.output.filename)
    description  = "Ca testacc create"
 }
 
@@ -128,5 +142,5 @@ resource "outscale_api_access_rule" "rule_test" {
   ip_ranges   = ["192.0.2.0/16"]
   description = "testing api access rule"
 }
-	`, ca_pem)
+	`)
 }

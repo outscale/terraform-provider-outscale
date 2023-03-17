@@ -7,10 +7,10 @@ import (
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceOutscaleOAPIPublicIPS() *schema.Resource {
@@ -22,8 +22,7 @@ func dataSourceOutscaleOAPIPublicIPS() *schema.Resource {
 
 func oapiGetPublicIPSDataSourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		// Attributes
-		"filter": dataSourceFiltersSchema(),
+		"filter": dataSourceFiltersSchema(false),
 		"public_ips": {
 			Type:     schema.TypeList,
 			Computed: true,
@@ -70,12 +69,8 @@ func oapiGetPublicIPSDataSourceSchema() map[string]*schema.Schema {
 
 func dataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
 	req := oscgo.ReadPublicIpsRequest{}
-
-	filters, filtersOk := d.GetOk("filter")
-
-	if filtersOk {
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
 		req.Filters = buildOutscaleOAPIDataSourcePublicIpsFilters(filters.(*schema.Set))
 	}
 
@@ -101,7 +96,6 @@ func dataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{}) e
 		return fmt.Errorf("Error retrieving EIP: %s", err)
 	}
 
-	// Verify Outscale returned our EIP
 	if len(resp.GetPublicIps()) == 0 {
 		return fmt.Errorf("Unable to find EIP: %#v", resp.GetPublicIps())
 	}

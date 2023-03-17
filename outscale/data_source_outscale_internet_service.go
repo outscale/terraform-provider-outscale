@@ -9,15 +9,15 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func datasourceOutscaleOAPIInternetService() *schema.Resource {
 	return &schema.Resource{
 		Read: datasourceOutscaleOAPIInternetServiceRead,
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(true),
 			"state": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -41,25 +41,8 @@ func datasourceOutscaleOAPIInternetService() *schema.Resource {
 
 func datasourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
-	filters, filtersOk := d.GetOk("filter")
-	internetID, insternetIDOk := d.GetOk("internet_service_id")
-
-	if !filtersOk && !insternetIDOk {
-		return fmt.Errorf("One of filters, or instance_id must be assigned")
-	}
-
-	// Build up search parameters
 	params := oscgo.ReadInternetServicesRequest{}
-
-	if insternetIDOk {
-		params.Filters = &oscgo.FiltersInternetService{
-			InternetServiceIds: &[]string{internetID.(string)},
-		}
-
-	}
-
-	if filtersOk {
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
 		params.Filters = buildOutscaleOSCAPIDataSourceInternetServiceFilters(filters.(*schema.Set))
 	}
 
@@ -78,23 +61,18 @@ func datasourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta inte
 	if err != nil {
 		return fmt.Errorf("[DEBUG] Error reading Internet Service id (%s)", utils.GetErrorResponse(err))
 	}
-
-	if !resp.HasInternetServices() || len(resp.GetInternetServices()) == 0 {
-		return fmt.Errorf("Error reading Internet Service: Internet Services is not found with the seatch criteria")
+	if err := utils.IsResponseEmptyOrMutiple(len(resp.GetInternetServices()), "Image Export Task"); err != nil {
+		return err
 	}
 
 	result := resp.GetInternetServices()[0]
 
-	log.Printf("[DEBUG] Setting OAPI Internet Service id (%s)", err)
-
 	if err := d.Set("internet_service_id", result.GetInternetServiceId()); err != nil {
 		return err
 	}
-
 	if err := d.Set("state", result.GetState()); err != nil {
 		return err
 	}
-
 	if err := d.Set("net_id", result.GetNetId()); err != nil {
 		return err
 	}

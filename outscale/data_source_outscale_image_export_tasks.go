@@ -7,10 +7,10 @@ import (
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceOutscaleOAPIImageExportTasks() *schema.Resource {
@@ -26,12 +26,7 @@ func dataSourceOutscaleOAPIImageExportTasks() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
-			"dry_run": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Computed: true,
-			},
+			"filter": dataSourceFiltersSchema(false),
 			"image_export_tasks": {
 				Type:     schema.TypeList,
 				Computed: true,

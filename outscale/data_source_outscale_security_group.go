@@ -9,8 +9,8 @@ import (
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
@@ -19,15 +19,13 @@ func dataSourceOutscaleOAPISecurityGroup() *schema.Resource {
 		Read: dataSourceOutscaleOAPISecurityGroupRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(true),
 			"security_group_name": {
 				Type:     schema.TypeString,
-				Optional: true,
 				Computed: true,
 			},
 			"security_group_id": {
 				Type:     schema.TypeString,
-				Optional: true,
 				Computed: true,
 			},
 			"description": {
@@ -80,7 +78,6 @@ func dataSourceOutscaleOAPISecurityGroup() *schema.Resource {
 							Computed: true,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
-								// ValidateFunc: validateCIDRNetworkAddress,
 							},
 						},
 						"prefix_list_ids": {
@@ -133,7 +130,6 @@ func dataSourceOutscaleOAPISecurityGroup() *schema.Resource {
 							Computed: true,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
-								// ValidateFunc: validateCIDRNetworkAddress,
 							},
 						},
 						"prefix_list_ids": {
@@ -160,23 +156,7 @@ func dataSourceOutscaleOAPISecurityGroup() *schema.Resource {
 func dataSourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	req := oscgo.ReadSecurityGroupsRequest{}
-
-	filters, filtersOk := d.GetOk("filter")
-	gn, gnOk := d.GetOk("security_group_name")
-	gid, gidOk := d.GetOk("security_group_id")
-
-	var filter oscgo.FiltersSecurityGroup
-	if gnOk {
-		filter.SetSecurityGroupNames([]string{gn.(string)})
-		req.SetFilters(filter)
-	}
-
-	if gidOk {
-		filter.SetSecurityGroupIds([]string{gid.(string)})
-		req.SetFilters(filter)
-	}
-
-	if filtersOk {
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
 		req.SetFilters(buildOutscaleOAPIDataSourceSecurityGroupFilters(filters.(*schema.Set)))
 	}
 
@@ -205,12 +185,8 @@ func dataSourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interf
 		return fmt.Errorf("Error on SGStateRefresh: %s", errString)
 	}
 
-	if resp.GetSecurityGroups() == nil || len(resp.GetSecurityGroups()) == 0 {
-		return fmt.Errorf("Unable to find Security Group")
-	}
-
-	if len(resp.GetSecurityGroups()) > 1 {
-		return fmt.Errorf("multiple results returned, please use a more specific criteria in your query")
+	if err = utils.IsResponseEmptyOrMutiple(len(resp.GetSecurityGroups()), "Security Group"); err != nil {
+		return err
 	}
 
 	sg := resp.GetSecurityGroups()[0]

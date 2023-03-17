@@ -7,10 +7,10 @@ import (
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceOutscaleOAPIProductType() *schema.Resource {
@@ -18,7 +18,7 @@ func dataSourceOutscaleOAPIProductType() *schema.Resource {
 		Read: dataSourceOutscaleOAPIProductTypeRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(true),
 			"description": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -41,12 +41,8 @@ func dataSourceOutscaleOAPIProductType() *schema.Resource {
 
 func dataSourceOutscaleOAPIProductTypeRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
 	req := oscgo.ReadProductTypesRequest{}
-
-	filters, filtersOk := d.GetOk("filter")
-
-	if filtersOk {
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
 		req.Filters = buildOutscaleOAPIProductTypeDataSourceFilters(filters.(*schema.Set))
 	}
 
@@ -65,13 +61,8 @@ func dataSourceOutscaleOAPIProductTypeRead(d *schema.ResourceData, meta interfac
 		errString := err.Error()
 		return fmt.Errorf("[DEBUG] Error reading ProductType (%s)", errString)
 	}
-
-	if len(resp.GetProductTypes()) == 0 {
-		return fmt.Errorf("no matching product type found")
-	}
-
-	if len(resp.GetProductTypes()) > 1 {
-		return fmt.Errorf("multiple product type matched; use additional constraints to reduce matches to a single product type")
+	if err := utils.IsResponseEmptyOrMutiple(len(resp.GetProductTypes()), "Product Type"); err != nil {
+		return err
 	}
 
 	productType := resp.GetProductTypes()[0]

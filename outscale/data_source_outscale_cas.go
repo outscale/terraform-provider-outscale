@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
@@ -15,7 +15,7 @@ func dataSourceOutscaleOAPICas() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceOutscaleOAPICasRead,
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(false),
 			"cas": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -46,11 +46,8 @@ func dataSourceOutscaleOAPICas() *schema.Resource {
 
 func dataSourceOutscaleOAPICasRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
-	filters, filtersOk := d.GetOk("filter")
 	params := oscgo.ReadCasRequest{}
-
-	if filtersOk {
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
 		params.Filters = buildOutscaleOAPIDataSourceCaFilters(filters.(*schema.Set))
 	}
 	var resp oscgo.ReadCasResponse

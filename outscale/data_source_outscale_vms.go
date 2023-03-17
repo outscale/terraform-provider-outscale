@@ -7,8 +7,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
@@ -21,11 +21,12 @@ func datasourceOutscaleOApiVMS() *schema.Resource {
 	}
 }
 
-func dataSourceFiltersSchema() *schema.Schema {
+func dataSourceFiltersSchema(required bool) *schema.Schema {
 	return &schema.Schema{
 		Type:     schema.TypeSet,
-		Optional: true,
+		Optional: !required,
 		ForceNew: true,
+		Required: required,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"name": {
@@ -45,7 +46,7 @@ func dataSourceFiltersSchema() *schema.Schema {
 
 func datasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
 	wholeSchema := map[string]*schema.Schema{
-		"filter": dataSourceFiltersSchema(),
+		"filter": dataSourceFiltersSchema(false),
 		"vms": {
 			Type:     schema.TypeList,
 			Computed: true,
@@ -64,26 +65,13 @@ func datasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
 
 func dataSourceOutscaleOApiVMSRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*OutscaleClient).OSCAPI
-
-	filters, filtersOk := d.GetOk("filter")
-	vmID, vmIDOk := d.GetOk("vm_id")
-
-	if !filtersOk && !vmIDOk {
-		return fmt.Errorf("One of filters, and vm ID must be assigned")
+	req := oscgo.ReadVmsRequest{}
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
+		req.Filters = buildOutscaleOAPIDataSourceVMFilters(filters.(*schema.Set))
 	}
-
-	// Build up search parameters
-	params := oscgo.ReadVmsRequest{}
-	if filtersOk {
-		params.Filters = buildOutscaleOAPIDataSourceVMFilters(filters.(*schema.Set))
-	}
-	if vmIDOk {
-		params.Filters.VmIds = &[]string{vmID.(string)}
-	}
-
 	var resp oscgo.ReadVmsResponse
 	err := resource.Retry(30*time.Second, func() *resource.RetryError {
-		rp, httpResp, err := client.VmApi.ReadVms(context.Background()).ReadVmsRequest(params).Execute()
+		rp, httpResp, err := client.VmApi.ReadVms(context.Background()).ReadVmsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}

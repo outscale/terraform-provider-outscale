@@ -9,8 +9,8 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/spf13/cast"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
@@ -19,26 +19,7 @@ func dataSourceOutscaleOAPIImages() *schema.Resource {
 		Read: dataSourceOutscaleOAPIImagesRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
-			"permissions": {
-				Type:     schema.TypeList,
-				Optional: true,
-				ForceNew: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
-			"image_ids": {
-				Type:     schema.TypeList,
-				Optional: true,
-				ForceNew: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
-			"account_ids": {
-				Type:     schema.TypeList,
-				Optional: true,
-				ForceNew: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
-			// Computed values.
+			"filter": dataSourceFiltersSchema(false),
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -62,39 +43,32 @@ func dataSourceOutscaleOAPIImages() *schema.Resource {
 						},
 						"block_device_mappings": {
 							Type:     schema.TypeList,
-							Optional: true,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"bsu": {
 										Type:     schema.TypeList,
-										Optional: true,
 										Computed: true,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"delete_on_vm_deletion": {
 													Type:     schema.TypeBool,
-													Optional: true,
 													Computed: true,
 												},
 												"iops": {
 													Type:     schema.TypeInt,
-													Optional: true,
 													Computed: true,
 												},
 												"snapshot_id": {
 													Type:     schema.TypeString,
-													Optional: true,
 													Computed: true,
 												},
 												"volume_size": {
 													Type:     schema.TypeInt,
-													Optional: true,
 													Computed: true,
 												},
 												"volume_type": {
 													Type:     schema.TypeString,
-													Optional: true,
 													Computed: true,
 												},
 											},
@@ -102,12 +76,10 @@ func dataSourceOutscaleOAPIImages() *schema.Resource {
 									},
 									"device_name": {
 										Type:     schema.TypeString,
-										Optional: true,
 										Computed: true,
 									},
 									"virtual_device_name": {
 										Type:     schema.TypeString,
-										Optional: true,
 										Computed: true,
 									},
 								},
@@ -214,25 +186,10 @@ func dataSourceOutscaleOAPIImages() *schema.Resource {
 func dataSourceOutscaleOAPIImagesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	executableUsers, executableUsersOk := d.GetOk("permissions")
-	filters, filtersOk := d.GetOk("filter")
-	aids, ownersOk := d.GetOk("account_ids")
-	if !executableUsersOk && !filtersOk && !ownersOk {
-		return fmt.Errorf("One of executable_users, filters, or account_ids must be assigned")
+	req := oscgo.ReadImagesRequest{}
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
+		req.Filters = buildOutscaleOAPIDataSourceImagesFilters(filters.(*schema.Set))
 	}
-
-	filtersReq := &oscgo.FiltersImage{}
-	if filtersOk {
-		filtersReq = buildOutscaleOAPIDataSourceImagesFilters(filters.(*schema.Set))
-	}
-	if ownersOk {
-		filtersReq.SetAccountIds([]string{aids.(string)})
-	}
-	if executableUsersOk {
-		filtersReq.SetPermissionsToLaunchAccountIds(utils.InterfaceSliceToStringSlice(executableUsers.([]interface{})))
-	}
-
-	req := oscgo.ReadImagesRequest{Filters: filtersReq}
 
 	var resp oscgo.ReadImagesResponse
 	var err error
@@ -250,6 +207,10 @@ func dataSourceOutscaleOAPIImagesRead(d *schema.ResourceData, meta interface{}) 
 	}
 
 	images := resp.GetImages()
+
+	if len(images) == 0 {
+		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
+	}
 
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
 		d.SetId(resource.UniqueId())

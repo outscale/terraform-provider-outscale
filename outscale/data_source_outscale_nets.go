@@ -6,10 +6,10 @@ import (
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceOutscaleOAPIVpcs() *schema.Resource {
@@ -17,12 +17,7 @@ func dataSourceOutscaleOAPIVpcs() *schema.Resource {
 		Read: dataSourceOutscaleOAPIVpcsRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
-			"net_id": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
+			"filter": dataSourceFiltersSchema(false),
 			"nets": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -66,30 +61,10 @@ func dataSourceOutscaleOAPIVpcs() *schema.Resource {
 
 func dataSourceOutscaleOAPIVpcsRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
 	req := oscgo.ReadNetsRequest{}
 
-	filters, filtersOk := d.GetOk("filter")
-	netIds, netIdsOk := d.GetOk("net_id")
-
-	if !filtersOk && !netIdsOk {
-		return fmt.Errorf("filters or net_id(s) must be provided")
-	}
-
-	if filtersOk {
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
 		req.SetFilters(buildOutscaleOAPIDataSourceNetFilters(filters.(*schema.Set)))
-	}
-
-	if netIdsOk {
-		ids := make([]string, len(netIds.([]interface{})))
-
-		for k, v := range netIds.([]interface{}) {
-			ids[k] = v.(string)
-		}
-		var filters oscgo.FiltersNet
-		filters.SetNetIds(ids)
-		req.SetFilters(filters)
-
 	}
 
 	var err error

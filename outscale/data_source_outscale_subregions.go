@@ -5,11 +5,10 @@ import (
 	"log"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/spf13/cast"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
@@ -18,7 +17,7 @@ func dataSourceOutscaleOAPISubregions() *schema.Resource {
 		Read: dataSourceOutscaleOAPISubregionsRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(false),
 			// Computed values.
 			"request_id": {
 				Type:     schema.TypeString,
@@ -54,16 +53,10 @@ func dataSourceOutscaleOAPISubregions() *schema.Resource {
 
 func dataSourceOutscaleOAPISubregionsRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
-	filters, filtersOk := d.GetOk("filter")
-
-	filtersReq := &oscgo.FiltersSubregion{}
-	if filtersOk {
-		filtersReq = buildOutscaleOAPIDataSourceSubregionsFilters(filters.(*schema.Set))
+	req := oscgo.ReadSubregionsRequest{}
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
+		req.Filters = buildOutscaleOAPIDataSourceSubregionsFilters(filters.(*schema.Set))
 	}
-
-	req := oscgo.ReadSubregionsRequest{Filters: filtersReq}
-
 	var resp oscgo.ReadSubregionsResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -74,11 +67,9 @@ func dataSourceOutscaleOAPISubregionsRead(d *schema.ResourceData, meta interface
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}
-
 	subregions := resp.GetSubregions()
 
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {

@@ -2,15 +2,13 @@ package outscale
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/spf13/cast"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
@@ -19,7 +17,7 @@ func dataSourceOutscaleDHCPOption() *schema.Resource {
 		Read: dataSourceOutscaleDHCPOptionRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(true),
 			"dhcp_options_set_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -64,23 +62,10 @@ func dataSourceOutscaleDHCPOption() *schema.Resource {
 
 func dataSourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
-	filters, filtersOk := d.GetOk("filter")
-	dhcpID, dhcpIDOk := d.GetOk("dhcp_options_set_id")
-	if !dhcpIDOk && !filtersOk {
-		return fmt.Errorf("One of filters, or dhcp_options_set_id must be provided")
-	}
-
 	params := oscgo.ReadDhcpOptionsRequest{}
-	if dhcpIDOk {
-		params.Filters = &oscgo.FiltersDhcpOptions{
-			DhcpOptionsSetIds: &[]string{dhcpID.(string)},
-		}
-	}
-	if filtersOk {
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
 		params.Filters = buildOutscaleDataSourceDHCPOptionFilters(filters.(*schema.Set))
 	}
-
 	var resp oscgo.ReadDhcpOptionsResponse
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
@@ -94,13 +79,8 @@ func dataSourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) 
 	if err != nil {
 		return err
 	}
-
-	if len(resp.GetDhcpOptionsSets()) == 0 {
-		return fmt.Errorf("Unable to find DHCP Option")
-	}
-
-	if len(resp.GetDhcpOptionsSets()) > 1 {
-		return fmt.Errorf("multiple results returned, please use a more specific criteria in your query")
+	if err = utils.IsResponseEmptyOrMutiple(len(resp.GetDhcpOptionsSets()), "DHCP Option"); err != nil {
+		return err
 	}
 
 	dhcpOption := resp.GetDhcpOptionsSets()[0]

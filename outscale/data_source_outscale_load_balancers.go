@@ -1,19 +1,14 @@
 package outscale
 
 import (
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func attrLBSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"load_balancer_name": {
-			Type:     schema.TypeList,
-			Optional: true,
-			Elem:     &schema.Schema{Type: schema.TypeString},
-		},
-		"load_balancer": {
+		"load_balancers": {
 			Type:     schema.TypeList,
 			Computed: true,
 			Elem: &schema.Resource{
@@ -32,7 +27,7 @@ func attrLBSchema() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"access_log": {
-						Type:     schema.TypeMap,
+						Type:     schema.TypeSet,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
@@ -56,24 +51,24 @@ func attrLBSchema() map[string]*schema.Schema {
 						},
 					},
 					"health_check": {
-						Type:     schema.TypeMap,
+						Type:     schema.TypeList,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"healthy_threshold": {
-									Type:     schema.TypeString,
+									Type:     schema.TypeInt,
 									Computed: true,
 								},
 								"unhealthy_threshold": {
-									Type:     schema.TypeString,
+									Type:     schema.TypeInt,
 									Computed: true,
 								},
-								"checked_vm": {
+								"path": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
 								"check_interval": {
-									Type:     schema.TypeString,
+									Type:     schema.TypeInt,
 									Computed: true,
 								},
 								"port": {
@@ -85,7 +80,7 @@ func attrLBSchema() map[string]*schema.Schema {
 									Computed: true,
 								},
 								"timeout": {
-									Type:     schema.TypeString,
+									Type:     schema.TypeInt,
 									Computed: true,
 								},
 							},
@@ -105,7 +100,7 @@ func attrLBSchema() map[string]*schema.Schema {
 					},
 					"listeners": {
 						Type:     schema.TypeList,
-						Required: true,
+						Computed: true,
 						Elem: &schema.Resource{
 							Schema: lb_listener_schema(true),
 						},
@@ -149,7 +144,7 @@ func attrLBSchema() map[string]*schema.Schema {
 						Elem:     &schema.Schema{Type: schema.TypeString},
 					},
 					"source_security_group": {
-						Type:     schema.TypeMap,
+						Type:     schema.TypeSet,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
@@ -193,8 +188,7 @@ func attrLBSchema() map[string]*schema.Schema {
 
 func dataSourceOutscaleOAPILoadBalancers() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPILoadBalancersRead,
-
+		Read:   dataSourceOutscaleOAPILoadBalancersRead,
 		Schema: getDataSourceSchemas(attrLBSchema()),
 	}
 }
@@ -202,7 +196,7 @@ func dataSourceOutscaleOAPILoadBalancers() *schema.Resource {
 func dataSourceOutscaleOAPILoadBalancersRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	resp, _, err := readLbs_(conn, d, schema.TypeList)
+	resp, err := readLbs_(conn, d, schema.TypeList)
 	if err != nil {
 		return err
 	}
@@ -267,13 +261,14 @@ func dataSourceOutscaleOAPILoadBalancersRead(d *schema.ResourceData, meta interf
 
 		l["load_balancer_type"] = v.LoadBalancerType
 		l["security_groups"] = utils.StringSlicePtrToInterfaceSlice(v.SecurityGroups)
-		ssg := make(map[string]string)
 
+		ssg := make([]map[string]interface{}, 0)
 		if v.SourceSecurityGroup != nil {
-			ssg["security_group_account_id"] = *v.SourceSecurityGroup.SecurityGroupAccountId
-			ssg["security_group_name"] = *v.SourceSecurityGroup.SecurityGroupName
+			l["source_security_group"] = flattenSource_sg(v.SourceSecurityGroup)
+		} else {
+			l["source_security_group"] = ssg
+
 		}
-		l["source_security_group"] = ssg
 		l["subnet_id"] = utils.StringSlicePtrToInterfaceSlice(v.Subnets)
 		l["public_ip"] = v.PublicIp
 		l["secured_cookies"] = v.SecuredCookies
@@ -282,7 +277,7 @@ func dataSourceOutscaleOAPILoadBalancersRead(d *schema.ResourceData, meta interf
 		lbs_ret[k] = l
 	}
 
-	err = d.Set("load_balancer", lbs_ret)
+	err = d.Set("load_balancers", lbs_ret)
 	if err != nil {
 		return err
 	}

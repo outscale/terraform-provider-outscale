@@ -6,10 +6,10 @@ import (
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceOutscaleOAPIFlexibleGpus() *schema.Resource {
@@ -17,7 +17,7 @@ func dataSourceOutscaleOAPIFlexibleGpus() *schema.Resource {
 		Read: dataSourceOutscaleOAPIFlexibleGpusRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(false),
 			"flexible_gpus": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -66,14 +66,10 @@ func dataSourceOutscaleOAPIFlexibleGpusRead(d *schema.ResourceData, meta interfa
 
 	conn := meta.(*OutscaleClient).OSCAPI
 	filters, filtersOk := d.GetOk("filter")
-	_, IDOk := d.GetOk("flexible_gpu_id")
-
-	if !filtersOk && !IDOk {
-		return fmt.Errorf("One of filters, or flexible_gpu_id must be assigned")
-	}
-
 	req := oscgo.ReadFlexibleGpusRequest{}
-	req.SetFilters(buildOutscaleOAPIDataSourceFlexibleGpuFilters(filters.(*schema.Set)))
+	if filtersOk {
+		req.SetFilters(buildOutscaleOAPIDataSourceFlexibleGpuFilters(filters.(*schema.Set)))
+	}
 
 	var resp oscgo.ReadFlexibleGpusResponse
 	var err error

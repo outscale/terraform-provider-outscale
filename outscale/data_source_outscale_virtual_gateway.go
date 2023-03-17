@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -10,8 +9,8 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceOutscaleOAPIVirtualGateway() *schema.Resource {
@@ -19,20 +18,17 @@ func dataSourceOutscaleOAPIVirtualGateway() *schema.Resource {
 		Read: dataSourceOutscaleOAPIVirtualGatewayRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(true),
 			"virtual_gateway_id": {
 				Type:     schema.TypeString,
-				Optional: true,
 				Computed: true,
 			},
 			"state": {
 				Type:     schema.TypeString,
-				Optional: true,
 				Computed: true,
 			},
 			"connection_type": {
 				Type:     schema.TypeString,
-				Optional: true,
 				Computed: true,
 			},
 			"net_to_virtual_gateway_links": {
@@ -62,29 +58,16 @@ func dataSourceOutscaleOAPIVirtualGateway() *schema.Resource {
 
 func dataSourceOutscaleOAPIVirtualGatewayRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
-	filters, filtersOk := d.GetOk("filter")
-	virtualId, vpnOk := d.GetOk("virtual_gateway_id")
-
-	if !filtersOk && !vpnOk {
-		return fmt.Errorf("One of virtual_gateway_id or filter must be assigned")
-	}
-
-	params := oscgo.ReadVirtualGatewaysRequest{}
-
-	if vpnOk {
-		params.SetFilters(oscgo.FiltersVirtualGateway{VirtualGatewayIds: &[]string{virtualId.(string)}})
-	}
-
-	if filtersOk {
-		params.SetFilters(buildOutscaleAPIVirtualGatewayFilters(filters.(*schema.Set)))
+	req := oscgo.ReadVirtualGatewaysRequest{}
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
+		req.SetFilters(buildOutscaleAPIVirtualGatewayFilters(filters.(*schema.Set)))
 	}
 
 	var resp oscgo.ReadVirtualGatewaysResponse
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		rp, httpResp, err := conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(params).Execute()
+		rp, httpResp, err := conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -95,13 +78,10 @@ func dataSourceOutscaleOAPIVirtualGatewayRead(d *schema.ResourceData, meta inter
 	if err != nil {
 		return err
 	}
-	if resp.GetVirtualGateways() == nil || len(resp.GetVirtualGateways()) == 0 {
-		return fmt.Errorf("no matching virtual gateway found: %#v", params)
-	}
-	if len(resp.GetVirtualGateways()) > 1 {
-		return fmt.Errorf("multiple virtual gateways matched; use additional constraints to reduce matches to a single virtual gateway")
-	}
 
+	if err = utils.IsResponseEmptyOrMutiple(len(resp.GetVirtualGateways()), "Virtual Gateway"); err != nil {
+		return err
+	}
 	vgw := resp.GetVirtualGateways()[0]
 
 	d.SetId(vgw.GetVirtualGatewayId())
@@ -115,7 +95,7 @@ func dataSourceOutscaleOAPIVirtualGatewayRead(d *schema.ResourceData, meta inter
 
 		vs[k] = vp
 	}
-
+	d.Set("virtual_gateway_id", vgw.GetVirtualGatewayId())
 	d.Set("net_to_virtual_gateway_links", vs)
 	d.Set("state", aws.StringValue(vgw.State))
 	d.Set("connection_type", vgw.ConnectionType)

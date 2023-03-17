@@ -3,14 +3,13 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
@@ -19,21 +18,7 @@ func dataSourceOutscaleOAPISecurityGroups() *schema.Resource {
 		Read: dataSourceOutscaleOAPISecurityGroupsRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
-			"security_group_names": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
-			"security_group_ids": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
+			"filter": dataSourceFiltersSchema(false),
 			"security_groups": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -97,7 +82,6 @@ func dataSourceOutscaleOAPISecurityGroups() *schema.Resource {
 										Computed: true,
 										Elem: &schema.Schema{
 											Type: schema.TypeString,
-											// ValidateFunc: validateCIDRNetworkAddress,
 										},
 									},
 									"prefix_list_ids": {
@@ -150,7 +134,6 @@ func dataSourceOutscaleOAPISecurityGroups() *schema.Resource {
 										Computed: true,
 										Elem: &schema.Schema{
 											Type: schema.TypeString,
-											// ValidateFunc: validateCIDRNetworkAddress,
 										},
 									},
 									"prefix_list_ids": {
@@ -179,32 +162,8 @@ func dataSourceOutscaleOAPISecurityGroups() *schema.Resource {
 
 func dataSourceOutscaleOAPISecurityGroupsRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
 	req := oscgo.ReadSecurityGroupsRequest{}
-
-	filters, filtersOk := d.GetOk("filter")
-	gn, gnOk := d.GetOk("security_group_names")
-	gid, gidOk := d.GetOk("security_group_ids")
-	var filter oscgo.FiltersSecurityGroup
-	if gnOk {
-		var g []string
-		for _, v := range gn.([]interface{}) {
-			g = append(g, v.(string))
-		}
-		filter.SetSecurityGroupNames(g)
-		req.SetFilters(filter)
-	}
-
-	if gidOk {
-		var g []string
-		for _, v := range gid.([]interface{}) {
-			g = append(g, v.(string))
-		}
-		filter.SetSecurityGroupIds(g)
-		req.SetFilters(filter)
-	}
-
-	if filtersOk {
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
 		req.SetFilters(buildOutscaleOAPIDataSourceSecurityGroupFilters(filters.(*schema.Set)))
 	}
 
@@ -253,9 +212,6 @@ func dataSourceOutscaleOAPISecurityGroupsRead(d *schema.ResourceData, meta inter
 		s["outbound_rules"] = flattenOAPISecurityGroupRule(v.GetOutboundRules())
 		sg[k] = s
 	}
-
-	log.Printf("[DEBUG] security_groups %+v", sg)
-
 	d.SetId(resource.UniqueId())
 
 	err = d.Set("security_groups", sg)
@@ -277,7 +233,6 @@ func flattenOAPISecurityGroupRule(p []oscgo.SecurityGroupRule) []map[string]inte
 		if v.GetToPortRange() != 0 {
 			ip["to_port_range"] = v.GetToPortRange()
 		}
-
 		if v.GetIpRanges() != nil && len(v.GetIpRanges()) > 0 {
 			ip["ip_ranges"] = v.GetIpRanges()
 		}

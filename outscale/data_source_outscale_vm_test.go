@@ -5,64 +5,79 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccOutscaleOAPIVMDataSource_basic(t *testing.T) {
+func TestAcc_VM_DataSource(t *testing.T) {
 	t.Parallel()
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	datasourcceName := "data.outscale_vm.basic_web"
-
+	vmType := "tinav4.c2r2p2"
+	dataSourceVmName := "data.outscale_vm.vm"
+	dataSourcesVmName := "data.outscale_vms.vms"
+	dataSourceVmStateName := "data.outscale_vm_state.state"
+	dataSourcesVmStateName := "data.outscale_vm_states.state"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIVMDataSourceConfig(omi, "tinav4.c2r2p2"),
+				Config: testAcc_VM_DataSource_Config(omi, vmType),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(datasourcceName, "image_id", omi),
-					resource.TestCheckResourceAttr(datasourcceName, "vm_type", "tinav4.c2r2p2"),
-					resource.TestCheckResourceAttr(datasourcceName, "tags.#", "1"),
+					resource.TestCheckResourceAttr(dataSourceVmName, "image_id", omi),
+					resource.TestCheckResourceAttr(dataSourceVmName, "vm_type", vmType),
+					resource.TestCheckResourceAttr(dataSourceVmName, "tags.#", "1"),
+
+					resource.TestCheckResourceAttr(dataSourcesVmName, "vms.0.image_id", omi),
+					resource.TestCheckResourceAttr(dataSourcesVmName, "vms.0.vm_type", vmType),
+
+					resource.TestCheckResourceAttrSet(dataSourceVmStateName, "vm_id"),
+
+					resource.TestCheckResourceAttr(dataSourcesVmStateName, "vm_states.#", "1"),
 				),
 			},
 		},
 	})
 }
 
-func testAccOAPIVMDataSourceConfig(omi, vmType string) string {
+func testAcc_VM_DataSource_Config(omi, vmType string) string {
 	return fmt.Sprintf(`
-		resource "outscale_net" "outscale_net" {
-			ip_range = "10.0.0.0/16"
+	resource "outscale_vm" "basic" {
+		image_id			= "%s"
+		vm_type				= "%s"
+		keypair_name	= "terraform-basic"
 
-			tags {
-				key = "Name"
-				value = "testacc-vm-ds"
-			}
+		tags {
+			key   = "name"
+			value = "test acc"
 		}
+	}
 
- 		resource "outscale_subnet" "outscale_subnet" {
-			net_id         = outscale_net.outscale_net.net_id
-			ip_range       = "10.0.0.0/24"
-			subregion_name = "eu-west-2a"
+	data "outscale_vms" "vms" {
+		filter {
+			name   = "vm_ids"
+			values = [outscale_vm.basic.id]
 		}
-
- 		resource "outscale_vm" "outscale_vm" {
-			image_id     = "%s"
-			vm_type      = "%s"
-			keypair_name = "terraform-basic"
-			subnet_id    = outscale_subnet.outscale_subnet.subnet_id
-
-			tags {
-				key   = "name"
-				value = "Terraform-VM"
-			}
+	}
+    
+	data "outscale_vm" "vm" {
+		filter {
+			name   = "vm_ids"
+			values = [outscale_vm.basic.id]
 		}
+	}
 
-    data "outscale_vm" "basic_web" {
-		 filter {
-				name   = "vm_ids"
-				values = [outscale_vm.outscale_vm.vm_id]
-		  }
+	data "outscale_vm_state" "state" {
+		filter {
+			name   = "vm_ids"
+			values = [outscale_vm.basic.id]
 		}
+	}
+
+	data "outscale_vm_states" "state" {
+		filter {
+			name   = "vm_ids"
+			values = [outscale_vm.basic.id]
+		}
+	}
 	`, omi, vmType)
 }

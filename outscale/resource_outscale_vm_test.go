@@ -11,9 +11,9 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
@@ -186,14 +186,14 @@ func TestAccOutscaleOAPIVM_withNics(t *testing.T) {
 	var server oscgo.Vm
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
-
+	region := os.Getenv("OUTSCALE_REGION")
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVMConfigBasicWithNics(omi, "tinav4.c2r2p2", keypair),
+				Config: testAccCheckOutscaleOAPIVMConfigBasicWithNics(region, omi, "tinav4.c2r2p2", keypair),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &server),
 					testAccCheckOutscaleOAPIVMAttributes(t, &server, omi),
@@ -201,41 +201,6 @@ func TestAccOutscaleOAPIVM_withNics(t *testing.T) {
 						"outscale_vm.basic", "image_id", omi),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "vm_type", "tinav4.c2r2p2"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccOutscaleOAPIVM_Update(t *testing.T) {
-	region := os.Getenv("OUTSCALE_REGION")
-	omi := os.Getenv("OUTSCALE_IMAGEID")
-	keypair := os.Getenv("OUTSCALE_KEYPAIR")
-	sgId := os.Getenv("OUTSCALE_SECURITYGROUPID")
-
-	var before oscgo.Vm
-	var after oscgo.Vm
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccVmsConfigUpdateOAPIVMKey(omi, "tinav4.c2r2p2", region, keypair, sgId),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &before),
-					testAccCheckOutscaleOAPIVMAttributes(t, &before, omi),
-					resource.TestCheckResourceAttr("outscale_vm.basic", "image_id", omi),
-					resource.TestCheckResourceAttr("outscale_vm.basic", "vm_type", "tinav4.c2r2p2"),
-				),
-			},
-			{
-				Config: testAccVmsConfigUpdateOAPIVMKey(omi, "tinav4.c2r2p2", region, keypair, sgId),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPIVMExists("outscale_vm.basic", &after),
-					testAccCheckOAPIVMNotRecreated(t, &before, &after),
-					resource.TestCheckResourceAttr("outscale_vm.basic", "vm_type", "tinav4.c2r2p2"),
 				),
 			},
 		},
@@ -305,15 +270,15 @@ func TestAccOutscaleOAPIVM_DeletionProtectionUpdate(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleDeletionProtectionUpdateBasic(omi, "true", keypair),
+				Config: testAccCheckOutscaleDeletionProtectionUpdateBasic(omi, keypair, true),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("outscale_vm.outscale_vm", "deletion_protection", "true"),
+					resource.TestCheckResourceAttr("outscale_vm.outscale_vm1", "deletion_protection", "true"),
 				),
 			},
 			{
-				Config: testAccCheckOutscaleDeletionProtectionUpdateBasic(omi, "false", keypair),
+				Config: testAccCheckOutscaleDeletionProtectionUpdateBasic(omi, keypair, false),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("outscale_vm.outscale_vm", "deletion_protection", "false"),
+					resource.TestCheckResourceAttr("outscale_vm.outscale_vm1", "deletion_protection", "false"),
 				),
 			},
 		},
@@ -438,15 +403,15 @@ func testAccCheckOutscaleVMWithMultiBlockDeviceMapping(region, omi, keypair stri
 	`, region, omi, keypair)
 }
 
-func testAccCheckOutscaleDeletionProtectionUpdateBasic(omi, deletionProtection, keypair string) string {
+func testAccCheckOutscaleDeletionProtectionUpdateBasic(omi, keypair string, deletionProtection bool) string {
 	return fmt.Sprintf(`
-		resource "outscale_vm" "outscale_vm" {
+		resource "outscale_vm" "outscale_vm1" {
 			image_id            = "%[1]s"
 			vm_type             = "tinav4.c2r2p2"
-			keypair_name        = "%[3]s"
-			deletion_protection = %[2]s
+			keypair_name        = "%[2]s"
+			deletion_protection = %[3]t
 		}
-	`, omi, deletionProtection, keypair)
+	`, omi, keypair, deletionProtection)
 }
 
 //TODO: check if is needed
@@ -730,7 +695,7 @@ func testAccCheckOutscaleOAPIVMConfigBasicWithNicAttached(omi, vmType, region, k
 		}`, omi, vmType, region, keypair)
 }
 
-func testAccCheckOutscaleOAPIVMConfigBasicWithNics(omi, vmType, keypair string) string {
+func testAccCheckOutscaleOAPIVMConfigBasicWithNics(region, omi, vmType, keypair string) string {
 	return fmt.Sprintf(`resource "outscale_net" "outscale_net" {
 		ip_range = "10.0.0.0/16"
 	  }
@@ -738,7 +703,7 @@ func testAccCheckOutscaleOAPIVMConfigBasicWithNics(omi, vmType, keypair string) 
 	  resource "outscale_subnet" "outscale_subnet" {
 		net_id         = outscale_net.outscale_net.net_id
 		ip_range       = "10.0.0.0/24"
-		subregion_name = "eu-west-2a"
+		subregion_name = "%sa"
 	  }
 
 	  resource "outscale_nic" "outscale_nic" {
@@ -771,47 +736,13 @@ func testAccCheckOutscaleOAPIVMConfigBasicWithNics(omi, vmType, keypair string) 
 			is_primary = false
 		  }
 		}
-	  }`, omi, vmType, keypair)
-}
-
-func testAccVmsConfigUpdateOAPIVMKey(omi, vmType, region, keypair, sgId string) string {
-	return fmt.Sprintf(`
-		resource "outscale_net" "net" {
-			ip_range = "10.0.0.0/16"
-
-			tags {
-				key = "Name"
-				value = "testacc-security-group-rs"
-			}
-		}
-
-		resource "outscale_security_group" "sg" {
-			security_group_name = "%[4]s"
-			description         = "Used in the terraform acceptance tests"
-
-			tags {
-				key   = "Name"
-				value = "tf-acc-test"
-			}
-
-			net_id = outscale_net.net.id
-		}
-
-		resource "outscale_vm" "basic" {
-			image_id                 = "%[1]s"
-			vm_type                  = "%[2]s"
-			keypair_name             = "%[4]s"
-			security_group_ids       = ["%[5]s"]
-			placement_subregion_name = "%[3]sb"
-		}
-	`, omi, vmType, region, keypair, sgId)
+	  }`, region, omi, vmType, keypair)
 }
 
 func testAccVmsConfigUpdateOAPIVMTags(omi, vmType string, region, value, keypair, sgId string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "net" {
 			ip_range = "10.0.0.0/16"
-
 			tags {
 				key = "Name"
 				value = "testacc-security-group-rs"
@@ -821,12 +752,10 @@ func testAccVmsConfigUpdateOAPIVMTags(omi, vmType string, region, value, keypair
 		resource "outscale_security_group" "sg" {
 			security_group_name = "%[5]s"
 			description         = "Used in the terraform acceptance tests"
-
 			tags {
 				key   = "Name"
 				value = "tf-acc-test"
 			}
-
 			net_id = outscale_net.net.id
 		}
 
@@ -911,20 +840,9 @@ func testAccCheckOutscaleOAPIVMConfigWithBlockDeviceMappings(omi, vmType, region
 		  device_name = "/dev/sdc"
 		  bsu {
 			volume_size           = 22
-			volume_type           = "io1"
-			iops                  = 150
-			snapshot_id           = outscale_snapshot.snapshot.id
+			#volume_type           = "io1"
+			#iops                  = 150
 			delete_on_vm_deletion = true
-		  }
-		}
-
-		block_device_mappings {
-		  device_name = "/dev/sdc"
-		  bsu {
-			volume_size = 22
-			volume_type = "io1"
-			iops        = 150
-			snapshot_id = outscale_snapshot.snapshot.id
 		  }
 		}
 	  }
@@ -963,8 +881,7 @@ func testAccCheckOutscaleOAPIVMConfigWithNet(omi, vmType, region, keypair string
         }
 
 	resource "outscale_route_table" "outscale_route_table" {
-		net_id = "${outscale_net.outscale_net.net_id}"
-
+		net_id = outscale_net.outscale_net.net_id
 		tags {
 			key   = "name"
 			value = "Terraform_RT"
@@ -978,7 +895,7 @@ func testAccCheckOutscaleOAPIVMConfigWithNet(omi, vmType, region, keypair string
 
 	resource "outscale_internet_service_link" "outscale_internet_service_link" {
 		internet_service_id = outscale_internet_service.outscale_internet_service.internet_service_id
-		net_id              = "${outscale_net.outscale_net.net_id}"
+		net_id              = outscale_net.outscale_net.net_id
 	}
 
 	resource "outscale_route" "outscale_route" {

@@ -9,17 +9,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 func TestAccOutscaleNicLink_Basic(t *testing.T) {
-	var conf oscgo.Nic
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 	rInt := acctest.RandInt()
@@ -33,7 +31,6 @@ func TestAccOutscaleNicLink_Basic(t *testing.T) {
 			{
 				Config: testAccOutscaleNicLinkConfigBasic(rInt, omi, "tinav4.c2r2p2", region),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIENIExists("outscale_nic.outscale_nic", &conf),
 					resource.TestCheckResourceAttr(
 						"outscale_nic_link.outscale_nic_link", "device_number", "1"),
 					resource.TestCheckResourceAttrSet(

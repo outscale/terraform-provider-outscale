@@ -8,12 +8,11 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/hashicorp/errwrap"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
-
-	"github.com/hashicorp/errwrap"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func dataSourceOutscaleOAPILinPeeringConnection() *schema.Resource {
@@ -21,7 +20,7 @@ func dataSourceOutscaleOAPILinPeeringConnection() *schema.Resource {
 		Read: dataSourceOutscaleOAPILinPeeringConnectionRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter":       dataSourceFiltersSchema(),
+			"filter":       dataSourceFiltersSchema(true),
 			"accepter_net": vpcOAPIPeeringConnectionOptionsSchema(),
 			"net_peering_id": {
 				Type:     schema.TypeString,
@@ -29,7 +28,7 @@ func dataSourceOutscaleOAPILinPeeringConnection() *schema.Resource {
 			},
 			"source_net": vpcOAPIPeeringConnectionOptionsSchema(),
 			"state": {
-				Type:     schema.TypeMap,
+				Type:     schema.TypeSet,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -55,16 +54,10 @@ func dataSourceOutscaleOAPILinPeeringConnection() *schema.Resource {
 
 func dataSourceOutscaleOAPILinPeeringConnectionRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
-	log.Printf("[DEBUG] Reading Net Peering Connections.")
-
 	req := oscgo.ReadNetPeeringsRequest{}
-
-	filters, filtersOk := d.GetOk("filter")
-	if !filtersOk {
-		return fmt.Errorf("filters must be assigned")
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
+		req.SetFilters(buildOutscaleOAPILinPeeringConnectionFilters(filters.(*schema.Set)))
 	}
-	req.SetFilters(buildOutscaleOAPILinPeeringConnectionFilters(filters.(*schema.Set)))
 
 	var resp oscgo.ReadNetPeeringsResponse
 	var err error
@@ -87,8 +80,8 @@ func dataSourceOutscaleOAPILinPeeringConnectionRead(d *schema.ResourceData, meta
 		return fmt.Errorf("Error reading Net Peering Connection details: %s", err)
 	}
 
-	if len(resp.GetNetPeerings()) > 1 {
-		return fmt.Errorf("multiple Net Peering connections matched; use additional constraints to reduce matches to a single Net Peering Connection")
+	if err = utils.IsResponseEmptyOrMutiple(len(resp.GetNetPeerings()), "Net Peering"); err != nil {
+		return err
 	}
 	netPeering := resp.GetNetPeerings()[0]
 
@@ -113,33 +106,21 @@ func dataSourceOutscaleOAPILinPeeringConnectionRead(d *schema.ResourceData, meta
 
 	log.Printf("[DEBUG] Net Peering Connection Source %s, Accepter %s", netPeering.SourceNet.GetAccountId(), netPeering.AccepterNet.GetAccountId())
 
-	accepter := make(map[string]interface{})
-	requester := make(map[string]interface{})
-	stat := make(map[string]interface{})
-
 	if !reflect.DeepEqual(netPeering.GetAccepterNet(), oscgo.AccepterNet{}) {
-		accepter["ip_range"] = netPeering.AccepterNet.GetIpRange()
-		accepter["account_id"] = netPeering.AccepterNet.GetAccountId()
-		accepter["net_id"] = netPeering.AccepterNet.GetNetId()
+		if err := d.Set("accepter_net", getOAPINetPeeringAccepterNet(*netPeering.AccepterNet)); err != nil {
+			return err
+		}
 	}
+
 	if !reflect.DeepEqual(netPeering.SourceNet, oscgo.SourceNet{}) {
-		requester["ip_range"] = netPeering.SourceNet.GetIpRange()
-		requester["account_id"] = netPeering.SourceNet.GetAccountId()
-		requester["net_id"] = netPeering.SourceNet.GetNetId()
+		if err := d.Set("source_net", getOAPINetPeeringSourceNet(*netPeering.SourceNet)); err != nil {
+			return err
+		}
 	}
 	if netPeering.State.GetName() != "" {
-		stat["name"] = netPeering.State.GetName()
-		stat["message"] = netPeering.State.GetMessage()
-	}
-
-	if err := d.Set("accepter_net", accepter); err != nil {
-		return err
-	}
-	if err := d.Set("source_net", requester); err != nil {
-		return err
-	}
-	if err := d.Set("state", stat); err != nil {
-		return err
+		if err := d.Set("state", getOAPINetPeeringState(netPeering.GetState())); err != nil {
+			return err
+		}
 	}
 	if err := d.Set("net_peering_id", netPeering.GetNetPeeringId()); err != nil {
 		return err
