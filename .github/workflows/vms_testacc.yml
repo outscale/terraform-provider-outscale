@@ -13,8 +13,8 @@ on:
 
 jobs:
   Vms_Acceptances_tests:
-    environment: us-east-2
-    runs-on: [self-hosted, linux, us-east-2]
+    environment: eu-west-2
+    runs-on: [self-hosted, linux, eu-west-2]
     steps:
       - uses: actions/checkout@v3
         with:
