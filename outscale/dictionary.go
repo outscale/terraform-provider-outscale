@@ -44,7 +44,6 @@ func init() {
 			"outscale_nic_private_ip":          resourceOutscaleOAPINetworkInterfacePrivateIP,
 			"outscale_nic_link":                resourceOutscaleOAPINetworkInterfaceAttachment,
 			"outscale_nic":                     resourceOutscaleOAPINic,
-			"outscale_snapshot_attributes":     resourcedOutscaleOAPISnapshotAttributes,
 			"outscale_image_export_task":       resourceOutscaleOAPIIMageExportTask,
 			"outscale_net_peering_acceptation": resourceOutscaleOAPILinPeeringConnectionAccepter,
 			"outscale_server_certificate":      resourceOutscaleOAPIServerCertificate,

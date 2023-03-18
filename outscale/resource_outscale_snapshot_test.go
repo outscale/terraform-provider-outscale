@@ -14,9 +14,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPISnapshot_basic(t *testing.T) {
+func TestAccResourceSnapshot_complete(t *testing.T) {
 	t.Parallel()
 	region := os.Getenv("OUTSCALE_REGION")
+	resourceName := "outscale_snapshot.outscale_snapshot"
 
 	var v oscgo.Snapshot
 	resource.Test(t, resource.TestCase{
@@ -24,87 +25,27 @@ func TestAccOutscaleOAPISnapshot_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISnapshotConfig(region),
+				Config: testAccOutscaleOAPISnapshotConfig(region, "Terraform-Snapshot"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPISnapshotExists("outscale_snapshot.outscale_snapshot", &v),
+					testAccCheckOAPISnapshotExists(resourceName, &v),
+					resource.TestCheckResourceAttr(resourceName, "description", "Snapshot Acceptance Test"),
+					resource.TestCheckResourceAttr(resourceName, "permissions_to_create_volume_global_permission", "false"),
 				),
 			},
-		},
-	})
-}
-
-func TestAccOutscaleOAPISnapshot_withDescription(t *testing.T) {
-	t.Parallel()
-	region := os.Getenv("OUTSCALE_REGION")
-
-	var v oscgo.Snapshot
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
-		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISnapshotConfigWithDescription(region),
+				Config: testAccOutscaleOAPISnapshotUpdateWithCopy(region, "Terraform-Snapshot-2"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPISnapshotExists("outscale_snapshot.test", &v),
-					resource.TestCheckResourceAttr("outscale_snapshot.test", "description", "Snapshot Acceptance Test"),
+					testAccCheckOAPISnapshotExists("outscale_snapshot.outscale_snapshot_copy", &v),
+					testAccCheckOAPISnapshotExists(resourceName, &v),
+					resource.TestCheckResourceAttr("outscale_snapshot.outscale_snapshot_copy", "description", "Target Snapshot Acceptance Test"),
+					resource.TestCheckResourceAttr(resourceName, "permissions_to_create_volume_global_permission", "true"),
 				),
 			},
-		},
-	})
-}
-
-func TestAccOutscaleOAPISnapshot_CopySnapshot(t *testing.T) {
-	t.Parallel()
-	region := os.Getenv("OUTSCALE_REGION")
-
-	var v oscgo.Snapshot
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
-		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISnapshotConfigCopySnapshot(region),
+				Config: testAccOutscaleOAPISnapshotUpdate(region, "Terraform-Snapshot-2"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPISnapshotExists("outscale_snapshot.test", &v),
-					resource.TestCheckResourceAttr("outscale_snapshot.test", "description", "Target Snapshot Acceptance Test"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccOutscaleOAPISnapshot_UpdateTags(t *testing.T) {
-	region := os.Getenv("OUTSCALE_REGION")
-
-	//var v oscgo.Snapshot
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccOutscaleOAPISnapshotConfigUpdateTags(region, "Terraform-Snapshot"),
-				Check:  resource.ComposeTestCheckFunc(),
-			},
-			{
-				Config: testAccOutscaleOAPISnapshotConfigUpdateTags(region, "Terraform-Snapshot-2"),
-				Check:  resource.ComposeTestCheckFunc(),
-			},
-		},
-	})
-}
-
-func TestAccOutscaleOAPISnapshot_importBasic(t *testing.T) {
-	region := os.Getenv("OUTSCALE_REGION")
-
-	var v oscgo.Snapshot
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccOutscaleOAPISnapshotConfig(region),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPISnapshotExists("outscale_snapshot.outscale_snapshot", &v),
+					testAccCheckOAPISnapshotExists(resourceName, &v),
+					resource.TestCheckResourceAttr(resourceName, "permissions_to_create_volume_global_permission", "false"),
 				),
 			},
 			{
@@ -115,6 +56,71 @@ func TestAccOutscaleOAPISnapshot_importBasic(t *testing.T) {
 			},
 		},
 	})
+}
+
+func testAccOutscaleOAPISnapshotConfig(region, tag string) string {
+	return fmt.Sprintf(`
+		resource "outscale_volume" "outscale_volume" {
+			subregion_name = "%sa"
+			size            = 1
+		}
+
+		resource "outscale_snapshot" "outscale_snapshot" {
+    		volume_id = outscale_volume.outscale_volume.volume_id
+			description = "Snapshot Acceptance Test"
+			tags {
+				key   = "Name"
+				value = "%s"
+			}
+		}
+	`, region, tag)
+}
+
+func testAccOutscaleOAPISnapshotUpdateWithCopy(region, tag string) string {
+	return fmt.Sprintf(`
+		resource "outscale_volume" "outscale_volume" {
+			subregion_name = "%sa"
+			size            = 1
+		}
+
+		resource "outscale_snapshot" "outscale_snapshot" {
+    		volume_id = outscale_volume.outscale_volume.volume_id
+			description = "Snapshot Acceptance Test"
+			permissions_to_create_volume_global_permission = true
+			permissions_to_create_volume_account_ids = ["458594607190", "458594607191"]
+			tags {
+				key   = "Name"
+				value = "%s"
+			}
+		}
+
+		resource "outscale_snapshot" "outscale_snapshot_copy" {
+			source_region_name = "%[1]s"
+			source_snapshot_id = "${outscale_snapshot.outscale_snapshot.id}"
+			description        = "Target Snapshot Acceptance Test"
+		}
+
+	`, region, tag)
+}
+
+func testAccOutscaleOAPISnapshotUpdate(region, tag string) string {
+	return fmt.Sprintf(`
+		resource "outscale_volume" "outscale_volume" {
+			subregion_name = "%sa"
+			size            = 1
+		}
+
+		resource "outscale_snapshot" "outscale_snapshot" {
+    		volume_id = outscale_volume.outscale_volume.volume_id
+			description = "Snapshot Acceptance Test"
+			permissions_to_create_volume_global_permission = false
+			permissions_to_create_volume_account_ids = ["458594607192", "458594607191"]
+			tags {
+				key   = "Name"
+				value = "%s"
+			}
+		}
+	`, region, tag)
 }
 
 func testAccCheckOAPISnapshotExists(n string, v *oscgo.Snapshot) resource.TestCheckFunc {
@@ -153,73 +159,4 @@ func testAccCheckOAPISnapshotExists(n string, v *oscgo.Snapshot) resource.TestCh
 		}
 		return fmt.Errorf("Error finding Snapshot %s", rs.Primary.ID)
 	}
-}
-
-func testAccOutscaleOAPISnapshotConfig(region string) string {
-	return fmt.Sprintf(`
-		 resource "outscale_volume" "outscale_volume" {
-    subregion_name = "%sa"
-    size            = 40
-}
-resource "outscale_snapshot" "outscale_snapshot" {
-    volume_id = outscale_volume.outscale_volume.volume_id
-}
-resource "outscale_snapshot_attributes" "outscale_snapshot_attributes" {
-    snapshot_id = outscale_snapshot.outscale_snapshot.snapshot_id
-    permissions_to_create_volume_additions  {
-                        account_ids = ["458594607190"]
-        }
-}
-	`, region)
-}
-
-func testAccOutscaleOAPISnapshotConfigWithDescription(region string) string {
-	return fmt.Sprintf(`
-		resource "outscale_volume" "description_test" {
-			subregion_name = "%sa"
-			size = 1
-		}
-
-		resource "outscale_snapshot" "test" {
-			volume_id = "${outscale_volume.description_test.id}"
-			description = "Snapshot Acceptance Test"
-		}
-	`, region)
-}
-
-func testAccOutscaleOAPISnapshotConfigCopySnapshot(region string) string {
-	return fmt.Sprintf(`
-		resource "outscale_volume" "description_test" {
-			subregion_name = "%[1]sb"
-			size           = 1
-		}
-
-		resource "outscale_snapshot" "source" {
-			volume_id   = "${outscale_volume.description_test.id}"
-			description = "Source Snapshot Acceptance Test"
-		}
-
-		resource "outscale_snapshot" "test" {
-			source_region_name = "%[1]s"
-			source_snapshot_id = "${outscale_snapshot.source.id}"
-			description        = "Target Snapshot Acceptance Test"
-		}
-	`, region)
-}
-
-func testAccOutscaleOAPISnapshotConfigUpdateTags(region, value string) string {
-	return fmt.Sprintf(`
-	resource "outscale_volume" "outscale_volume" {
-		subregion_name = "%sa"
-		size           = 10
-	  }
-	  resource "outscale_snapshot" "outscale_snapshot" {
-		volume_id = "${outscale_volume.outscale_volume.volume_id}"
-		
-		tags {
-		  key   = "Name"
-		  value = "%s"
-		}
-	  }	  
-	`, region, value)
 }
