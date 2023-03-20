@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - master
+      - label-worflow-test
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
