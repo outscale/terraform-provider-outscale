@@ -2,6 +2,7 @@ name: Others Acceptances tests
 
 on:
   pull_request_target:
+    types: [secure]
     branches:
       - master
     paths:
