@@ -9,6 +9,7 @@ WEBSITE_REPO=github.com/hashicorp/terraform-website
 .PHONY: default
 default: build
 
+
 .PHONY: build
 build: fmtcheck
 	go build -ldflags "-X github.com/terraform-providers/terraform-provider-outscale/version.version=${VERSION}"
