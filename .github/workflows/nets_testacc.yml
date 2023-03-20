@@ -2,7 +2,7 @@ name: Nets Acceptances tests
 
 on:
   pull_request_target:
-      types: [secure]
+    types: [secure]
     branches:
       - master
       - label-worflow-test
