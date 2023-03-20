@@ -2,6 +2,7 @@ name: vms Acceptances tests
 
 on:
   pull_request_target:
+    types: [labeled]
     branches:
       - master
     paths:
