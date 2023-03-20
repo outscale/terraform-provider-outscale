@@ -5,6 +5,7 @@ on:
       types: [secure]
     branches:
       - master
+      - label-worflow-test
     paths:
       - '**.go'
       - '**.sum'
