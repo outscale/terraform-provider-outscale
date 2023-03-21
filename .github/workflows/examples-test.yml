@@ -1,7 +1,7 @@
 name: Examples tests
 
 on:
-  pull_request_target:
+  pull_request:
     branches:
       - master
     paths:
@@ -15,6 +15,7 @@ on:
 
 jobs:
   Examples_tests:
+    environment: eu-west-2
     runs-on: [self-hosted, linux, eu-west-2]
     steps:
       - uses: actions/checkout@v3
