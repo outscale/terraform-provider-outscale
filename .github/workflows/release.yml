@@ -16,6 +16,7 @@ on:
       - 'v*'
 jobs:
   goreleaser:
+    environment: release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -40,4 +41,4 @@ jobs:
           args: release --rm-dist
         env:
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
