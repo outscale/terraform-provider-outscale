@@ -14,7 +14,7 @@ on:
 
 jobs:
   Integration_tests:
-    environment: eu-west-2
+    environment: test-eu-west-2
     runs-on: [self-hosted, linux, eu-west-2]
     steps:
       - uses: actions/checkout@v3

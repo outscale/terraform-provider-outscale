@@ -1,4 +1,4 @@
-name: Credential and Sanity Scanner
+name: Credential Scanner
 
 on:
   pull_request:
@@ -9,10 +9,6 @@ jobs:
     runs-on: [self-hosted, linux]
     steps:
     - uses: actions/checkout@v3
-    - name: Github sanity scanner
-      uses: outscale/github-sanity-scan@main
-      with:
-        no-pull-request-target: true
     - name: Scan credentials
       uses: outscale-dev/cred-scan@main
       with:
