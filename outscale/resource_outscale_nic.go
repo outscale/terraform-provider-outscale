@@ -485,10 +485,11 @@ func resourceOutscaleOAPINicDetach(meta interface{}, nicID string) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	stateConf := &resource.StateChangeConf{
-		Pending: []string{"attaching", "detaching"},
-		Target:  []string{"attached", "detached", "failed"},
-		Refresh: nicLinkRefreshFunc(conn, nicID),
-		Timeout: 10 * time.Minute,
+		Pending:    []string{"attaching", "detaching"},
+		Target:     []string{"attached", "detached", "failed"},
+		Refresh:    nicLinkRefreshFunc(conn, nicID),
+		Timeout:    10 * time.Minute,
+		MinTimeout: 5 * time.Second,
 	}
 	resp, err := stateConf.WaitForState()
 	if err != nil {

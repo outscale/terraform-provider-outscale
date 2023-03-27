@@ -174,7 +174,7 @@ func resourceOutscaleOAPINetworkInterfaceAttachmentDelete(d *schema.ResourceData
 	// log.Printf("[DEBUG] Waiting for ENI (%s) to become dettached", interfaceID)
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"detaching"},
-		Target:     []string{"detached", "failed"},
+		Target:     []string{"detached", "terminated", "failed"},
 		Refresh:    nicLinkRefreshFunc(conn, nicID),
 		Timeout:    5 * time.Minute,
 		Delay:      10 * time.Second,
@@ -200,8 +200,7 @@ func resourceOutscaleNetworkInterfaceAttachmentImportState(d *schema.ResourceDat
 		Target:     []string{"attached", "detached", "failed"},
 		Refresh:    nicLinkRefreshFunc(meta.(*OutscaleClient).OSCAPI, d.Id()),
 		Timeout:    5 * time.Minute,
-		Delay:      10 * time.Second,
-		MinTimeout: 3 * time.Second,
+		MinTimeout: 5 * time.Second,
 	}
 
 	resp, err := stateConf.WaitForState()
@@ -250,7 +249,7 @@ func nicLinkRefreshFunc(conn *oscgo.APIClient, nicID string) resource.StateRefre
 			return nil, "failed", err
 		}
 		if len(resp.GetNics()) < 1 {
-			return nil, "failed", fmt.Errorf("error to find the Outscale Nic(%s): %#v", nicID, resp.GetNics())
+			return resp, "terminated", nil
 		}
 
 		linkNic := resp.GetNics()[0].GetLinkNic()
