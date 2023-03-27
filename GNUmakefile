@@ -17,6 +17,7 @@ build: fmtcheck
 fmtcheck:
 	@sh -c "'$(CURDIR)/scripts/gofmtcheck.sh'"
 
+
 .PHONY: test
 test: fmtcheck
 	go test $(TEST) -count 1 -timeout=30s -parallel=4
