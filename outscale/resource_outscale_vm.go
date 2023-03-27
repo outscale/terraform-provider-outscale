@@ -934,8 +934,7 @@ func resourceOAPIVMDelete(d *schema.ResourceData, meta interface{}) error {
 		Target:     []string{"terminated"},
 		Refresh:    vmStateRefreshFunc(conn, id, ""),
 		Timeout:    d.Timeout(schema.TimeoutDelete),
-		Delay:      10 * time.Second,
-		MinTimeout: 3 * time.Second,
+		MinTimeout: 5 * time.Second,
 	}
 
 	_, err = stateConf.WaitForState()

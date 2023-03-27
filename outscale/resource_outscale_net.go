@@ -174,8 +174,7 @@ func resourceOutscaleOAPINetDelete(d *schema.ResourceData, meta interface{}) err
 			return "", "deleted", nil
 		},
 		Timeout:    10 * time.Minute,
-		MinTimeout: 30 * time.Second,
-		Delay:      1 * time.Minute,
+		MinTimeout: 5 * time.Second,
 	}
 
 	_, err := stateConf.WaitForState()

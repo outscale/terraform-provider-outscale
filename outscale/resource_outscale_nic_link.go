@@ -200,8 +200,7 @@ func resourceOutscaleNetworkInterfaceAttachmentImportState(d *schema.ResourceDat
 		Target:     []string{"attached", "detached", "failed"},
 		Refresh:    nicLinkRefreshFunc(meta.(*OutscaleClient).OSCAPI, d.Id()),
 		Timeout:    5 * time.Minute,
-		Delay:      10 * time.Second,
-		MinTimeout: 3 * time.Second,
+		MinTimeout: 5 * time.Second,
 	}
 
 	resp, err := stateConf.WaitForState()
