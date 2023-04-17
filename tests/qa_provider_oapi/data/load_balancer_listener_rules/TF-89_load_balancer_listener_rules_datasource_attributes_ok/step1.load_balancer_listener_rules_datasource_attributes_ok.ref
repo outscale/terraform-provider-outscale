@@ -19,24 +19,24 @@
                         "listener_rules": [
                             {
                                 "action": "forward",
-                                "host_name_pattern": "*.abc.-.abc.*.com",
+                                "host_name_pattern": "",
                                 "listener_id": "##id-1##",
                                 "listener_rule_id": "##id-2##",
-                                "listener_rule_name": "listener-rule-2",
-                                "path_pattern": "",
-                                "priority": 1,
+                                "listener_rule_name": "listener-rule-1",
+                                "path_pattern": "*.abc.*.abc.*.com",
+                                "priority": 10,
                                 "vm_ids": [
                                     "##id-3##"
                                 ]
                             },
                             {
                                 "action": "forward",
-                                "host_name_pattern": "",
+                                "host_name_pattern": "*.abc.-.abc.*.com",
                                 "listener_id": "##id-1##",
                                 "listener_rule_id": "##id-4##",
-                                "listener_rule_name": "listener-rule-1",
-                                "path_pattern": "*.abc.*.abc.*.com",
-                                "priority": 10,
+                                "listener_rule_name": "listener-rule-2",
+                                "path_pattern": "",
+                                "priority": 1,
                                 "vm_ids": [
                                     "##id-3##"
                                 ]
@@ -163,7 +163,7 @@
                                 "action": "forward",
                                 "host_name_pattern": "",
                                 "listener_id": "##id-1##",
-                                "listener_rule_id": "##id-4##",
+                                "listener_rule_id": "##id-2##",
                                 "listener_rule_name": "listener-rule-1",
                                 "path_pattern": "*.abc.*.abc.*.com",
                                 "priority": 10
@@ -206,7 +206,7 @@
                                 "action": "forward",
                                 "host_name_pattern": "*.abc.-.abc.*.com",
                                 "listener_id": "##id-1##",
-                                "listener_rule_id": "##id-2##",
+                                "listener_rule_id": "##id-4##",
                                 "listener_rule_name": "listener-rule-2",
                                 "path_pattern": "",
                                 "priority": 1
@@ -301,7 +301,8 @@
                                         "delete_on_vm_deletion": true,
                                         "link_date": "########",
                                         "state": "attached",
-                                        "volume_id": "##id-13##"
+                                        "tags": [],
+                                        "volume_id": "##id-14##"
                                     }
                                 ],
                                 "device_name": "/dev/sda1"

@@ -109,6 +109,7 @@
                                         "delete_on_vm_deletion": false,
                                         "iops": null,
                                         "snapshot_id": "",
+                                        "tags": [],
                                         "volume_size": 20,
                                         "volume_type": "standard"
                                     }
@@ -125,6 +126,7 @@
                                         "delete_on_vm_deletion": true,
                                         "link_date": "########",
                                         "state": "attached",
+                                        "tags": [],
                                         "volume_id": "##id-5##"
                                     }
                                 ],
@@ -136,6 +138,7 @@
                                         "delete_on_vm_deletion": false,
                                         "link_date": "########",
                                         "state": "attached",
+                                        "tags": [],
                                         "volume_id": "##id-6##"
                                     }
                                 ],

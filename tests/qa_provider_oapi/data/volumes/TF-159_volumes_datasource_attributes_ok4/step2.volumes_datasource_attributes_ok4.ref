@@ -152,6 +152,7 @@
                                         "delete_on_vm_deletion": true,
                                         "link_date": "########",
                                         "state": "attached",
+                                        "tags": [],
                                         "volume_id": "##id-8##"
                                     }
                                 ],
@@ -163,6 +164,12 @@
                                         "delete_on_vm_deletion": false,
                                         "link_date": "########",
                                         "state": "attached",
+                                        "tags": [
+                                            {
+                                                "key": "type",
+                                                "value": "io1"
+                                            }
+                                        ],
                                         "volume_id": "##id-3##"
                                     }
                                 ],

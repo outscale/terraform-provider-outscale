@@ -27,6 +27,7 @@
                                                 "delete_on_vm_deletion": true,
                                                 "link_date": "########",
                                                 "state": "attached",
+                                                "tags": [],
                                                 "volume_id": "##id-1##"
                                             }
                                         ],
@@ -88,6 +89,7 @@
                                                 "delete_on_vm_deletion": true,
                                                 "link_date": "########",
                                                 "state": "attached",
+                                                "tags": [],
                                                 "volume_id": "##id-6##"
                                             }
                                         ],
@@ -215,6 +217,7 @@
                                         "delete_on_vm_deletion": true,
                                         "link_date": "########",
                                         "state": "attached",
+                                        "tags": [],
                                         "volume_id": "##id-6##"
                                     }
                                 ],
@@ -293,6 +296,7 @@
                                         "delete_on_vm_deletion": true,
                                         "link_date": "########",
                                         "state": "attached",
+                                        "tags": [],
                                         "volume_id": "##id-1##"
                                     }
                                 ],
@@ -378,6 +382,7 @@
                                         "delete_on_vm_deletion": true,
                                         "link_date": "########",
                                         "state": "attached",
+                                        "tags": [],
                                         "volume_id": "##id-11##"
                                     }
                                 ],
