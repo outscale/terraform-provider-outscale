@@ -107,6 +107,7 @@
                                         "delete_on_vm_deletion": false,
                                         "iops": null,
                                         "snapshot_id": "",
+                                        "tags": [],
                                         "volume_size": 100,
                                         "volume_type": "standard"
                                     }
@@ -121,6 +122,7 @@
                                         "delete_on_vm_deletion": false,
                                         "iops": null,
                                         "snapshot_id": "",
+                                        "tags": [],
                                         "volume_size": 15,
                                         "volume_type": "standard"
                                     }
@@ -135,6 +137,7 @@
                                         "delete_on_vm_deletion": true,
                                         "iops": 150,
                                         "snapshot_id": "##id-3##",
+                                        "tags": [],
                                         "volume_size": 22,
                                         "volume_type": "io1"
                                     }
@@ -151,6 +154,7 @@
                                         "delete_on_vm_deletion": false,
                                         "link_date": "########",
                                         "state": "attached",
+                                        "tags": [],
                                         "volume_id": "##id-5##"
                                     }
                                 ],
@@ -162,6 +166,7 @@
                                         "delete_on_vm_deletion": false,
                                         "link_date": "########",
                                         "state": "attached",
+                                        "tags": [],
                                         "volume_id": "##id-6##"
                                     }
                                 ],
@@ -173,6 +178,7 @@
                                         "delete_on_vm_deletion": true,
                                         "link_date": "########",
                                         "state": "attached",
+                                        "tags": [],
                                         "volume_id": "##id-7##"
                                     }
                                 ],
