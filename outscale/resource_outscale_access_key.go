@@ -74,8 +74,9 @@ func resourceOutscaleAccessKeyCreate(d *schema.ResourceData, meta interface{}) e
 		if err = checkDateFormat(expirDate); err != nil {
 			return err
 		}
+		req.ExpirationDate = &expirDate
 	}
-	req.ExpirationDate = &expirDate
+
 	var resp oscgo.CreateAccessKeyResponse
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.AccessKeyApi.CreateAccessKey(context.Background()).CreateAccessKeyRequest(req).Execute()
