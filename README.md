@@ -19,7 +19,7 @@
 >
 > We have a broken change on our api when creating access_key without expiration date for all version less then v0.9.0. ([GH-issues](https://github.com/outscale/terraform-provider-outscale/issues/342))
 >
-> We recommende to upgrade on the latest (v0.9.0)
+> We recommende to upgrade on the latest ([v0.9.0](https://registry.terraform.io/providers/outscale/outscale/latest))
 
 ## Using the Provider
 
