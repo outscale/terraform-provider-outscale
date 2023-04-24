@@ -186,7 +186,6 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 		if err := setOSCAPITags(conn, d); err != nil {
 			return err
 		}
-		d.SetPartial("tags")
 	}
 
 	return resourceOAPIVolumeRead(d, meta)
@@ -228,13 +227,9 @@ func resourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 func resourceOAPIVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	d.Partial(true)
-
 	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
-
-	d.SetPartial("tags")
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"creating"},
@@ -250,7 +245,6 @@ func resourceOAPIVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error waiting for Volume (%s) to update: %s", d.Id(), err)
 	}
 
-	d.Partial(false)
 	return resourceOAPIVolumeRead(d, meta)
 }
 

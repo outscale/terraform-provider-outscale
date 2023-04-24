@@ -220,15 +220,9 @@ func resourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{})
 func resourceOutscaleVPNConnectionUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	d.Partial(true)
-
 	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
-
-	d.SetPartial("tags")
-
-	d.Partial(false)
 
 	return resourceOutscaleVPNConnectionRead(d, meta)
 }

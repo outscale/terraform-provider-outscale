@@ -181,15 +181,10 @@ func resourceOutscaleOAPIPublicIPUpdate(d *schema.ResourceData, meta interface{}
 		}
 
 	}
-	d.Partial(true)
 
 	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
-
-	d.SetPartial("tags")
-
-	d.Partial(false)
 
 	return resourceOutscaleOAPIPublicIPRead(d, meta)
 }
