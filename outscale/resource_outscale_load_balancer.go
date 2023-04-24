@@ -586,7 +586,6 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	var err error
-	d.Partial(true)
 
 	if d.HasChange("security_groups") {
 		req := oscgo.UpdateLoadBalancerRequest{
@@ -917,8 +916,6 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 			return fmt.Errorf("Failure updating SecruedCookies: %s", err)
 		}
 	}
-
-	d.Partial(false)
 
 	return resourceOutscaleOAPILoadBalancerRead(d, meta)
 }

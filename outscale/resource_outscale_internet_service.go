@@ -122,15 +122,10 @@ func resourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta interf
 func resourceOutscaleOAPIInternetServiceUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	d.Partial(true)
-
 	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
 
-	d.SetPartial("tags")
-
-	d.Partial(false)
 	return resourceOutscaleOAPIInternetServiceRead(d, meta)
 }
 

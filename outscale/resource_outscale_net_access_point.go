@@ -115,15 +115,10 @@ func resourceOutscaleNetAccessPointUpdate(d *schema.ResourceData, meta interface
 
 	if d.HasChange("tags") {
 
-		d.Partial(true)
-
 		if err := setOSCAPITags(conn, d); err != nil {
 			return err
 		}
 
-		d.SetPartial("tags")
-
-		d.Partial(false)
 	}
 	return resourceOutscaleNetAccessPointRead(d, meta)
 }

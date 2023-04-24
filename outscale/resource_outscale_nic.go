@@ -283,7 +283,6 @@ func resourceOutscaleOAPINicCreate(d *schema.ResourceData, meta interface{}) err
 		if err := setOSCAPITags(conn, d); err != nil {
 			return err
 		}
-		d.SetPartial("tags")
 	}
 
 	if err := d.Set("tags", make([]map[string]interface{}, 0)); err != nil {
@@ -527,7 +526,6 @@ func resourceOutscaleOAPINicDetach(meta interface{}, nicID string) error {
 // Update OAPINic
 func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-	d.Partial(true)
 	var err error
 
 	if d.HasChange("link_nic") {
@@ -559,7 +557,6 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 				return fmt.Errorf("Error Attaching Network Interface: %s", err)
 			}
 		}
-		d.SetPartial("link_nic")
 	}
 
 	if d.HasChange("private_ips") {
@@ -603,7 +600,6 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 				return fmt.Errorf("Failure to assign Private IPs: %s", err)
 			}
 		}
-		d.SetPartial("private_ip")
 	}
 
 	if d.HasChange("private_ips_count") {
@@ -660,7 +656,6 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 					return fmt.Errorf("Failure to unassign Private IPs: %s", err)
 				}
 			}
-			d.SetPartial("private_ips_count")
 		}
 	}
 
@@ -683,7 +678,6 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 			return fmt.Errorf("Failure updating ENI: %s", err)
 		}
 
-		d.SetPartial("security_groups")
 	}
 
 	if d.HasChange("description") {
@@ -704,16 +698,11 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 		if err != nil {
 			return fmt.Errorf("Failure updating ENI: %s", err)
 		}
-		d.SetPartial("description")
 	}
 
 	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
-
-	d.SetPartial("tags")
-
-	d.Partial(false)
 
 	return resourceOutscaleOAPINicRead(d, meta)
 }

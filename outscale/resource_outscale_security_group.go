@@ -215,7 +215,6 @@ func resourceOutscaleOAPISecurityGroupCreate(d *schema.ResourceData, meta interf
 		if err := setOSCAPITags(conn, d); err != nil {
 			return err
 		}
-		d.SetPartial("tags")
 	}
 
 	return resourceOutscaleOAPISecurityGroupRead(d, meta)
@@ -299,15 +298,10 @@ func SGOAPIStateRefreshFunc(conn *oscgo.APIClient, id string) resource.StateRefr
 func resourceOutscaleOAPISecurityGroupUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	d.Partial(true)
-
 	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
 
-	d.SetPartial("tags")
-
-	d.Partial(false)
 	return resourceOutscaleOAPISecurityGroupRead(d, meta)
 }
 
