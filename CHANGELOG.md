@@ -1,3 +1,22 @@
+0.9.0 (April 24, 2023)
+========================
+
+BUG FIXES:
+----------
+
+* Cannot create access_key without "expiration_date" ([GH-342](https://github.com/outscale/terraform-provider-outscale/issues/342))
+
+FEATURES:
+---------
+
+* Implement all_vmsparametter in vm_state datasource(s) ([GH-291](https://github.com/outscale/terraform-provider-outscale/issues/291))
+
+IMPROVEMENT:
+-----------
+
+* Using environment secret and remove pull_request_target
+* Split acceptances tests
+
 0.8.2 (February 10, 2023)
 ========================
 
