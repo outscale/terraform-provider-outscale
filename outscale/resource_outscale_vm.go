@@ -37,7 +37,6 @@ func resourceOutscaleOApiVM() *schema.Resource {
 			"block_device_mappings": {
 				Type:     schema.TypeList,
 				Optional: true,
-				//ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"bsu": {
@@ -86,6 +85,7 @@ func resourceOutscaleOApiVM() *schema.Resource {
 										Optional: true,
 										ForceNew: true,
 									},
+									"tags": tagsListOAPISchema(),
 								},
 							},
 						},
@@ -574,7 +574,7 @@ func resourceOutscaleOApiVM() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"bsu": {
-							Type:     schema.TypeList,
+							Type:     schema.TypeSet,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -594,12 +594,13 @@ func resourceOutscaleOApiVM() *schema.Resource {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
+									"tags": tagsListOAPISchema(),
 								},
 							},
 						},
 						"device_name": {
 							Type:     schema.TypeString,
-							Optional: true,
+							Computed: true,
 						},
 					},
 				},
@@ -716,11 +717,10 @@ func resourceOutscaleOApiVM() *schema.Resource {
 func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	vmOpts, err := buildCreateVmsRequest(d, meta)
+	vmOpts, bsuMapsTags, err := buildCreateVmsRequest(d, meta)
 	if err != nil {
 		return err
 	}
-
 	vState := d.Get("state").(string)
 	if vState != "stopped" && vState != "running" {
 		return fmt.Errorf("Error: state should be `stopped or running`")
@@ -770,7 +770,17 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	log.Println("[DEBUG] imprimo log subnet")
+	if bsuMapsTags != nil {
+		for _, tMaps := range bsuMapsTags {
+			for dName, tags := range tMaps {
+				err := assignTags(tags.(*schema.Set), utils.GetBsuId(vm, dName), conn)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+
 	if tags, ok := d.GetOk("tags"); ok {
 		err := assignTags(tags.(*schema.Set), vm.GetVmId(), conn)
 		if err != nil {
@@ -865,6 +875,17 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 			}
 		}
 		d.SetId(vm.GetVmId())
+
+		bsuTagsMaps, errTags := utils.GetBsuTagsMaps(vm, conn)
+		if errTags != nil {
+			return errTags
+		}
+
+		if err := d.Set("block_device_mappings_created", getOscAPIVMBlockDeviceMapping(
+			bsuTagsMaps, vm.GetBlockDeviceMappings())); err != nil {
+			return err
+		}
+
 		return oapiVMDescriptionAttributes(set, &vm)
 	}); err != nil {
 		return err
@@ -975,8 +996,15 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	if d.HasChange("block_device_mappings") && !d.IsNewResource() {
 		maps := d.Get("block_device_mappings").([]interface{})
-		mappings := []oscgo.BlockDeviceMappingVmUpdate{}
+		oldT, newT := d.GetChange("block_device_mappings")
+		oldMapsTags, newMapsTags := getChangeTags(oldT, newT)
+		if oldMapsTags != nil || newMapsTags != nil {
 
+			if err := updateBsuTags(conn, d, oldMapsTags, newMapsTags); err != nil {
+				return err
+			}
+		}
+		mappings := []oscgo.BlockDeviceMappingVmUpdate{}
 		for _, m := range maps {
 			f := m.(map[string]interface{})
 			mapping := oscgo.BlockDeviceMappingVmUpdate{}
@@ -1005,7 +1033,6 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 					mapping.SetBsu(bsu)
 				}
 			}
-
 			mappings = append(mappings, mapping)
 		}
 		updateRequest.SetBlockDeviceMappings(mappings)
@@ -1049,6 +1076,38 @@ out:
 	return resourceOAPIVMRead(d, meta)
 }
 
+func getChangeTags(oldCh interface{}, newCh interface{}) (map[string]interface{}, map[string]interface{}) {
+	oldMapsTags := getbsuMapsTags(oldCh.([]interface{}))
+	newMapsTags := getbsuMapsTags(newCh.([]interface{}))
+	addMapsTags := make(map[string]interface{})
+	delMapsTags := make(map[string]interface{})
+
+	for v := range oldMapsTags {
+		inter := oldMapsTags[v].(*schema.Set).Intersection(newMapsTags[v].(*schema.Set))
+		if add := oldMapsTags[v].(*schema.Set).Difference(inter); len(add.List()) > 0 {
+			addMapsTags[v] = add
+		}
+		if del := newMapsTags[v].(*schema.Set).Difference(inter); len(del.List()) > 0 {
+			delMapsTags[v] = del
+		}
+	}
+	return delMapsTags, addMapsTags
+}
+
+func getbsuMapsTags(changeMaps []interface{}) map[string]interface{} {
+	mapsTags := make(map[string]interface{})
+
+	for _, value := range changeMaps {
+		val := value.(map[string]interface{})
+		bsuMaps := val["bsu"].([]interface{})
+		for _, v := range bsuMaps {
+			bsu := v.(map[string]interface{})
+			bsu_tags, _ := bsu["tags"]
+			mapsTags[val["device_name"].(string)] = bsu_tags
+		}
+	}
+	return mapsTags
+}
 func resourceOAPIVMDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
@@ -1092,7 +1151,7 @@ func resourceOAPIVMDelete(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func buildCreateVmsRequest(d *schema.ResourceData, meta interface{}) (oscgo.CreateVmsRequest, error) {
+func buildCreateVmsRequest(d *schema.ResourceData, meta interface{}) (oscgo.CreateVmsRequest, []map[string]interface{}, error) {
 	request := oscgo.CreateVmsRequest{
 		DeletionProtection: oscgo.PtrBool(d.Get("deletion_protection").(bool)),
 		BootOnCreation:     oscgo.PtrBool(true),
@@ -1103,7 +1162,7 @@ func buildCreateVmsRequest(d *schema.ResourceData, meta interface{}) (oscgo.Crea
 
 	placement, err := expandPlacement(d)
 	if err != nil {
-		return request, err
+		return request, nil, err
 	} else if placement != nil {
 		request.SetPlacement(*placement)
 	}
@@ -1112,9 +1171,9 @@ func buildCreateVmsRequest(d *schema.ResourceData, meta interface{}) (oscgo.Crea
 	if subNet != "" {
 		request.SetSubnetId(subNet)
 	}
-	blockDevices, err := expandBlockDeviceOApiMappings(d)
+	blockDevices, bsuMapsTags, err := expandBlockDeviceOApiMappings(d)
 	if err != nil {
-		return request, err
+		return request, nil, err
 	}
 	if len(blockDevices) > 0 {
 		request.SetBlockDeviceMappings(blockDevices)
@@ -1122,7 +1181,7 @@ func buildCreateVmsRequest(d *schema.ResourceData, meta interface{}) (oscgo.Crea
 
 	if nics := buildNetworkOApiInterfaceOpts(d); len(nics) > 0 {
 		if subNet != "" || placement != nil {
-			return request, errors.New("If you specify nics parameter, you must not specify subnet_id and placement parameters.")
+			return request, nil, errors.New("If you specify nics parameter, you must not specify subnet_id and placement parameters.")
 		}
 		request.SetNics(nics)
 	}
@@ -1141,7 +1200,7 @@ func buildCreateVmsRequest(d *schema.ResourceData, meta interface{}) (oscgo.Crea
 
 	nestedVirtualization := d.Get("nested_virtualization").(bool)
 	if tenacy := d.Get("placement_tenancy").(string); nestedVirtualization && tenacy != "dedicated" {
-		return request, errors.New("The field nested_virtualization can be true, only if placement_tenancy is \"dedicated\".")
+		return request, nil, errors.New("The field nested_virtualization can be true, only if placement_tenancy is \"dedicated\".")
 	}
 	request.SetNestedVirtualization(nestedVirtualization)
 
@@ -1169,21 +1228,21 @@ func buildCreateVmsRequest(d *schema.ResourceData, meta interface{}) (oscgo.Crea
 		request.SetPerformance(v)
 	}
 
-	return request, nil
+	return request, bsuMapsTags, nil
 }
 
-func expandBlockDeviceOApiMappings(d *schema.ResourceData) ([]oscgo.BlockDeviceMappingVmCreation, error) {
+func expandBlockDeviceOApiMappings(d *schema.ResourceData) ([]oscgo.BlockDeviceMappingVmCreation, []map[string]interface{}, error) {
 	var blockDevices []oscgo.BlockDeviceMappingVmCreation
 	block := d.Get("block_device_mappings").([]interface{})
-
-	for _, v := range block {
+	bsuMapsTags := make([]map[string]interface{}, len(block))
+	for k, v := range block {
 		blockDevice := oscgo.BlockDeviceMappingVmCreation{}
 		value := v.(map[string]interface{})
-
 		if bsu := value["bsu"].(*schema.Set).List(); len(bsu) > 0 {
-			expandBSU, err := expandBlockDeviceBSU(bsu[0].(map[string]interface{}))
+			expandBSU, mapsTags, err := expandBlockDeviceBSU(bsu[0].(map[string]interface{}), value["device_name"].(string))
+			bsuMapsTags[k] = mapsTags
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
 			blockDevice.SetBsu(expandBSU)
 		}
@@ -1198,21 +1257,22 @@ func expandBlockDeviceOApiMappings(d *schema.ResourceData) ([]oscgo.BlockDeviceM
 		}
 		blockDevices = append(blockDevices, blockDevice)
 	}
-	return blockDevices, nil
+	return blockDevices, bsuMapsTags, nil
 }
 
-func expandBlockDeviceBSU(bsu map[string]interface{}) (oscgo.BsuToCreate, error) {
+func expandBlockDeviceBSU(bsu map[string]interface{}, deviceName string) (oscgo.BsuToCreate, map[string]interface{}, error) {
+	bsuMapsTags := make(map[string]interface{})
 	bsuToCreate := oscgo.BsuToCreate{}
 	snapshotID := bsu["snapshot_id"].(string)
 	volumeType := bsu["volume_type"].(string)
 	volumeSize := int32(bsu["volume_size"].(int))
 
 	if snapshotID == "" && volumeSize == 0 {
-		return bsuToCreate, fmt.Errorf("Error: 'volume_size' parameter is required if the volume is not created from a snapshot (SnapshotId unspecified)")
+		return bsuToCreate, nil, fmt.Errorf("Error: 'volume_size' parameter is required if the volume is not created from a snapshot (SnapshotId unspecified)")
 	}
 	if iops, _ := bsu["iops"]; iops.(int) > 0 {
 		if volumeType != "io1" {
-			return bsuToCreate, fmt.Errorf("Error: %s", utils.VolumeIOPSError)
+			return bsuToCreate, nil, fmt.Errorf("Error: %s", utils.VolumeIOPSError)
 		}
 		bsuToCreate.SetIops(int32(iops.(int)))
 	} else {
@@ -1230,7 +1290,11 @@ func expandBlockDeviceBSU(bsu map[string]interface{}) (oscgo.BsuToCreate, error)
 	if deleteOnVMDeletion, ok := bsu["delete_on_vm_deletion"]; ok && deleteOnVMDeletion != "" {
 		bsuToCreate.SetDeleteOnVmDeletion(cast.ToBool(deleteOnVMDeletion))
 	}
-	return bsuToCreate, nil
+	if bsu_tags, _ := bsu["tags"]; len(bsu_tags.(*schema.Set).List()) != 0 {
+		bsuMapsTags[deviceName] = bsu_tags
+	}
+
+	return bsuToCreate, bsuMapsTags, nil
 }
 
 func buildNetworkOApiInterfaceOpts(d *schema.ResourceData) []oscgo.NicForVmCreation {

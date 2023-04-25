@@ -114,10 +114,10 @@ func dataSourceOutscaleOApiVMSRead(d *schema.ResourceData, meta interface{}) err
 	}
 
 	d.SetId(resource.UniqueId())
-	return d.Set("vms", dataSourceOAPIVMS(filteredVms))
+	return d.Set("vms", dataSourceOAPIVMS(filteredVms, client))
 }
 
-func dataSourceOAPIVMS(i []oscgo.Vm) []map[string]interface{} {
+func dataSourceOAPIVMS(i []oscgo.Vm, conn *oscgo.APIClient) []map[string]interface{} {
 	vms := make([]map[string]interface{}, len(i))
 	for index, v := range i {
 		vm := make(map[string]interface{})
@@ -130,6 +130,8 @@ func dataSourceOAPIVMS(i []oscgo.Vm) []map[string]interface{} {
 		if err := oapiVMDescriptionAttributes(setterFunc, &v); err != nil {
 			log.Fatalf("[DEBUG] oapiVMDescriptionAttributes ERROR %+v", err)
 		}
+		mapsTags, _ := utils.GetBsuTagsMaps(v, conn)
+		vm["block_device_mappings_created"] = getOscAPIVMBlockDeviceMapping(mapsTags, v.GetBlockDeviceMappings())
 
 		vm["tags"] = getOscAPITagSet(v.GetTags())
 		vms[index] = vm

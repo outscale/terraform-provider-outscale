@@ -403,6 +403,10 @@ func testAccCheckOutscaleVMWithMultiBlockDeviceMapping(region, omi, keypair stri
 					volume_type           = "gp2"
 					snapshot_id           = outscale_snapshot.snapshot.id
 					delete_on_vm_deletion = false
+					tags {
+						key           = "name"
+						value         = "bsu-tags-gp2"
+					}
 				}
 			}
 
