@@ -82,6 +82,16 @@ func dataSourceOutscaleOAPIVMRead(d *schema.ResourceData, meta interface{}) erro
 	// Populate vm attribute fields with the returned vm
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
 		d.SetId(vm.GetVmId())
+
+		booTags, errTags := utils.GetBsuTagsMaps(vm, client)
+		if errTags != nil {
+			return errTags
+		}
+		if err := d.Set("block_device_mappings_created", getOscAPIVMBlockDeviceMapping(
+			booTags, vm.GetBlockDeviceMappings())); err != nil {
+			return err
+		}
+
 		return oapiVMDescriptionAttributes(set, &vm)
 	})
 }
@@ -91,10 +101,6 @@ func oapiVMDescriptionAttributes(set AttributeSetter, vm *oscgo.Vm) error {
 	if err := set("architecture", vm.GetArchitecture()); err != nil {
 		return err
 	}
-	if err := set("block_device_mappings_created", getOscAPIVMBlockDeviceMapping(vm.GetBlockDeviceMappings())); err != nil {
-		return err
-	}
-
 	if err := set("bsu_optimized", vm.GetBsuOptimized()); err != nil {
 		return err
 	}
@@ -198,18 +204,26 @@ func oapiVMDescriptionAttributes(set AttributeSetter, vm *oscgo.Vm) error {
 	return set("vm_type", vm.GetVmType())
 }
 
-func getOscAPIVMBlockDeviceMapping(blkMappings []oscgo.BlockDeviceMappingCreated) []map[string]interface{} {
-	res := []map[string]interface{}{}
-	for _, v := range blkMappings {
-		blk := map[string]interface{}{
+func getOscAPIVMBlockDeviceMapping(busTagsMaps map[string]interface{}, blockDeviceMappings []oscgo.BlockDeviceMappingCreated) (blockDeviceMapping []map[string]interface{}) {
+	for _, v := range blockDeviceMappings {
+		blockDevice := map[string]interface{}{
 			"device_name": v.GetDeviceName(),
+			"bsu":         getbusToSet(v.GetBsu(), busTagsMaps, *v.DeviceName),
 		}
-		if bsu, ok := v.GetBsuOk(); ok {
-			blk["bsu"] = getOAPIBsuSet(*bsu)
-		}
-		res = append(res, blk)
+		blockDeviceMapping = append(blockDeviceMapping, blockDevice)
 	}
-	return res
+	return
+}
+
+func getbusToSet(bsu oscgo.BsuCreated, busTagsMaps map[string]interface{}, deviceName string) (res []map[string]interface{}) {
+	res = append(res, map[string]interface{}{
+		"delete_on_vm_deletion": bsu.GetDeleteOnVmDeletion(),
+		"volume_id":             bsu.GetVolumeId(),
+		"state":                 bsu.GetState(),
+		"link_date":             bsu.GetLinkDate(),
+		"tags":                  getOscAPITagSet(busTagsMaps[deviceName].([]oscgo.ResourceTag)),
+	})
+	return
 }
 
 func getSecurityGroups(groupSet []oscgo.SecurityGroupLight) []map[string]interface{} {
@@ -291,7 +305,8 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"bsu": {
-						Type:     schema.TypeSet,
+						Type:     schema.TypeList,
+						Optional: true,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
@@ -311,6 +326,7 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
+								"tags": tagsListOAPISchema(),
 							},
 						},
 					},
