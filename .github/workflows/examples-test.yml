@@ -15,7 +15,7 @@ on:
 
 jobs:
   Examples_tests:
-    environment: eu-west-2
+    environment: test-eu-west-2
     runs-on: [self-hosted, linux, eu-west-2]
     steps:
       - uses: actions/checkout@v3
@@ -40,3 +40,4 @@ jobs:
           TF_VAR_access_key_id: ${{ secrets.OSC_ACCESS_KEY }}
           TF_VAR_secret_key_id: ${{ secrets.OSC_SECRET_KEY }}
           TF_VAR_region: ${{ secrets.OSC_REGION }}
+          TF_VAR_image_id: ${{ secrets.OSC_OMI_EXEMPLE }}
