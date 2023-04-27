@@ -17,6 +17,7 @@ For more information on this resource actions, see the [API documentation](https
 
 ```hcl
 data "outscale_vm_state" "vm_state01" {
+    all_vms    = true
     filter {
         name   = "vm_ids"
         values = ["i-12345678"]
@@ -28,6 +29,7 @@ data "outscale_vm_state" "vm_state01" {
 
 The following arguments are supported:
 
+* `all_vms` - (Optional) If true, includes the status of all VMs. By default or if set to false, only includes the status of running VMs.
 * `filter` - (Optional) A combination of a filter name and one or more filter values. You can specify this argument for as many filter names as you need. The filter name can be any of the following:
     * `maintenance_event_codes` - (Optional) The code for the scheduled event (`system-reboot` \| `system-maintenance`).
     * `maintenance_event_descriptions` - (Optional) The description of the scheduled event.
@@ -35,6 +37,7 @@ The following arguments are supported:
     * `maintenance_events_not_before` - (Optional) The earliest time the event can start.
     * `subregion_names` - (Optional) The names of the Subregions of the VMs.
     * `vm_ids` - (Optional) One or more IDs of VMs.
+    * `vm_states` - (Optional) The states of the VMs (`pending` \| `running` \| `stopping` \| `stopped` \| `shutting-down` \| `terminated` \| `quarantine`).
 
 ## Attribute Reference
 
@@ -47,4 +50,4 @@ The following attributes are exported:
     * `not_before` - The earliest scheduled start time for the event.
 * `subregion_name` - The name of the Subregion of the VM.
 * `vm_id` - The ID of the VM.
-* `vm_state` - The state of the VM. Currently, only `running` VMs are returned.
+* `vm_state` - The state of the VM (`pending` \| `running` \| `stopping` \| `stopped` \| `shutting-down` \| `terminated` \| `quarantine`).
