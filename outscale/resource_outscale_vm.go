@@ -894,10 +894,6 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 				return err
 			}
 		}
-	} else {
-		if err := startVM(id, conn); err != nil {
-			return err
-		}
 	}
 
 out:
