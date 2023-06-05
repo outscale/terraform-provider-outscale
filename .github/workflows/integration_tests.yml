@@ -27,9 +27,9 @@ jobs:
           secret_key: ${{ secrets.OSC_SECRET_KEY }}
           region: ${{ secrets.OSC_REGION }}
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
-          go-version: '>=1.18.0'
+          go-version: 'stable'
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
