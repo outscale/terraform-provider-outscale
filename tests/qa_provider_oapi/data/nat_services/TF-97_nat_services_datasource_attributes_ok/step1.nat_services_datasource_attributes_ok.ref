@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_nat_services",
             "name": "outscale_nat_services",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -31,8 +31,8 @@
                                 "subnet_id": "##id-4##",
                                 "tags": [
                                     {
-                                        "key": "Key",
-                                        "value": "value-tags"
+                                        "key": "Key-1",
+                                        "value": "value-tags-1"
                                     },
                                     {
                                         "key": "Key:2",
@@ -53,8 +53,8 @@
                                 "subnet_id": "##id-7##",
                                 "tags": [
                                     {
-                                        "key": "Key-1",
-                                        "value": "value-tags-1"
+                                        "key": "Key",
+                                        "value": "value-tags"
                                     },
                                     {
                                         "key": "Key:2",
@@ -73,7 +73,7 @@
             "mode": "data",
             "type": "outscale_nat_services",
             "name": "outscale_nat_services-2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -83,16 +83,16 @@
                         "nat_service_ids": null,
                         "nat_services": [
                             {
-                                "nat_service_id": "##id-5##",
+                                "nat_service_id": "##id-1##",
                                 "net_id": "##id-2##",
                                 "public_ips": [
                                     {
                                         "public_ip": "########",
-                                        "public_ip_id": "##id-6##"
+                                        "public_ip_id": "##id-3##"
                                     }
                                 ],
                                 "state": "available",
-                                "subnet_id": "##id-7##",
+                                "subnet_id": "##id-4##",
                                 "tags": [
                                     {
                                         "key": "Key-1",
@@ -115,7 +115,7 @@
             "mode": "data",
             "type": "outscale_nat_services",
             "name": "outscale_nat_services-3",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -137,8 +137,8 @@
                                 "subnet_id": "##id-4##",
                                 "tags": [
                                     {
-                                        "key": "Key",
-                                        "value": "value-tags"
+                                        "key": "Key-1",
+                                        "value": "value-tags-1"
                                     },
                                     {
                                         "key": "Key:2",
@@ -159,8 +159,8 @@
                                 "subnet_id": "##id-7##",
                                 "tags": [
                                     {
-                                        "key": "Key-1",
-                                        "value": "value-tags-1"
+                                        "key": "Key",
+                                        "value": "value-tags"
                                     },
                                     {
                                         "key": "Key:2",
@@ -179,7 +179,7 @@
             "mode": "data",
             "type": "outscale_nat_services",
             "name": "outscale_nat_services-4",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -201,8 +201,8 @@
                                 "subnet_id": "##id-4##",
                                 "tags": [
                                     {
-                                        "key": "Key",
-                                        "value": "value-tags"
+                                        "key": "Key-1",
+                                        "value": "value-tags-1"
                                     },
                                     {
                                         "key": "Key:2",
@@ -221,6 +221,28 @@
                                 ],
                                 "state": "available",
                                 "subnet_id": "##id-7##",
+                                "tags": [
+                                    {
+                                        "key": "Key",
+                                        "value": "value-tags"
+                                    },
+                                    {
+                                        "key": "Key:2",
+                                        "value": "value-tags:2"
+                                    }
+                                ]
+                            },
+                            {
+                                "nat_service_id": "##id-11##",
+                                "net_id": "##id-12##",
+                                "public_ips": [
+                                    {
+                                        "public_ip": "########",
+                                        "public_ip_id": "##id-13##"
+                                    }
+                                ],
+                                "state": "available",
+                                "subnet_id": "##id-14##",
                                 "tags": [
                                     {
                                         "key": "Key-1",
@@ -243,13 +265,13 @@
             "mode": "data",
             "type": "outscale_nat_services",
             "name": "outscale_nat_services-5",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "filter": "########",
-                        "id": "##id-11##",
+                        "id": "##id-15##",
                         "nat_service_ids": null,
                         "nat_services": [
                             {
@@ -265,8 +287,8 @@
                                 "subnet_id": "##id-4##",
                                 "tags": [
                                     {
-                                        "key": "Key",
-                                        "value": "value-tags"
+                                        "key": "Key-1",
+                                        "value": "value-tags-1"
                                     },
                                     {
                                         "key": "Key:2",
@@ -285,6 +307,28 @@
                                 ],
                                 "state": "available",
                                 "subnet_id": "##id-7##",
+                                "tags": [
+                                    {
+                                        "key": "Key",
+                                        "value": "value-tags"
+                                    },
+                                    {
+                                        "key": "Key:2",
+                                        "value": "value-tags:2"
+                                    }
+                                ]
+                            },
+                            {
+                                "nat_service_id": "##id-11##",
+                                "net_id": "##id-12##",
+                                "public_ips": [
+                                    {
+                                        "public_ip": "########",
+                                        "public_ip_id": "##id-13##"
+                                    }
+                                ],
+                                "state": "available",
+                                "subnet_id": "##id-14##",
                                 "tags": [
                                     {
                                         "key": "Key-1",
@@ -307,13 +351,13 @@
             "mode": "data",
             "type": "outscale_nat_services",
             "name": "outscale_nat_services-6",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "filter": "########",
-                        "id": "##id-12##",
+                        "id": "##id-16##",
                         "nat_service_ids": null,
                         "nat_services": [
                             {
@@ -329,8 +373,8 @@
                                 "subnet_id": "##id-4##",
                                 "tags": [
                                     {
-                                        "key": "Key",
-                                        "value": "value-tags"
+                                        "key": "Key-1",
+                                        "value": "value-tags-1"
                                     },
                                     {
                                         "key": "Key:2",
@@ -349,6 +393,28 @@
                                 ],
                                 "state": "available",
                                 "subnet_id": "##id-7##",
+                                "tags": [
+                                    {
+                                        "key": "Key",
+                                        "value": "value-tags"
+                                    },
+                                    {
+                                        "key": "Key:2",
+                                        "value": "value-tags:2"
+                                    }
+                                ]
+                            },
+                            {
+                                "nat_service_id": "##id-11##",
+                                "net_id": "##id-12##",
+                                "public_ips": [
+                                    {
+                                        "public_ip": "########",
+                                        "public_ip_id": "##id-13##"
+                                    }
+                                ],
+                                "state": "available",
+                                "subnet_id": "##id-14##",
                                 "tags": [
                                     {
                                         "key": "Key-1",
@@ -371,13 +437,13 @@
             "mode": "managed",
             "type": "outscale_internet_service",
             "name": "outscale_internet_service",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-13##",
-                        "internet_service_id": "##id-13##",
+                        "id": "##id-17##",
+                        "internet_service_id": "##id-17##",
                         "net_id": "",
                         "request_id": "########",
                         "state": "",
@@ -392,13 +458,13 @@
             "mode": "managed",
             "type": "outscale_internet_service_link",
             "name": "outscale_internet_service_link",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-13##",
-                        "internet_service_id": "##id-13##",
+                        "id": "##id-17##",
+                        "internet_service_id": "##id-17##",
                         "net_id": "##id-2##",
                         "request_id": "########",
                         "state": "available",
@@ -417,24 +483,24 @@
             "mode": "managed",
             "type": "outscale_nat_service",
             "name": "outscale_nat_service",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-5##",
-                        "nat_service_id": "##id-5##",
+                        "id": "##id-1##",
+                        "nat_service_id": "##id-1##",
                         "net_id": "##id-2##",
-                        "public_ip_id": "##id-6##",
+                        "public_ip_id": "##id-3##",
                         "public_ips": [
                             {
                                 "public_ip": "########",
-                                "public_ip_id": "##id-6##"
+                                "public_ip_id": "##id-3##"
                             }
                         ],
                         "request_id": "########",
                         "state": "available",
-                        "subnet_id": "##id-7##",
+                        "subnet_id": "##id-4##",
                         "tags": [
                             {
                                 "key": "Key-1",
@@ -463,24 +529,24 @@
             "mode": "managed",
             "type": "outscale_nat_service",
             "name": "outscale_nat_service2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-1##",
-                        "nat_service_id": "##id-1##",
+                        "id": "##id-5##",
+                        "nat_service_id": "##id-5##",
                         "net_id": "##id-2##",
-                        "public_ip_id": "##id-3##",
+                        "public_ip_id": "##id-6##",
                         "public_ips": [
                             {
                                 "public_ip": "########",
-                                "public_ip_id": "##id-3##"
+                                "public_ip_id": "##id-6##"
                             }
                         ],
                         "request_id": "########",
                         "state": "available",
-                        "subnet_id": "##id-4##",
+                        "subnet_id": "##id-7##",
                         "tags": [
                             {
                                 "key": "Key",
@@ -509,12 +575,12 @@
             "mode": "managed",
             "type": "outscale_net",
             "name": "outscale_net",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "dhcp_options_set_id": "##id-14##",
+                        "dhcp_options_set_id": "##id-18##",
                         "id": "##id-2##",
                         "ip_range": "10.0.0.0/16",
                         "net_id": "##id-2##",
@@ -532,33 +598,7 @@
             "mode": "managed",
             "type": "outscale_public_ip",
             "name": "outscale_public_ip",
-            "provider": "provider[\"local/test/outscale\"]",
-            "instances": [
-                {
-                    "schema_version": 0,
-                    "attributes": {
-                        "id": "##id-6##",
-                        "link_public_ip_id": "",
-                        "nic_account_id": "",
-                        "nic_id": "",
-                        "private_ip": "########",
-                        "public_ip": "########",
-                        "public_ip_id": "##id-6##",
-                        "request_id": "########",
-                        "tags": [],
-                        "timeouts": null,
-                        "vm_id": ""
-                    },
-                    "sensitive_attributes": [],
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxODAwMDAwMDAwMDAwLCJkZWxldGUiOjE4MDAwMDAwMDAwMDB9fQ=="
-                }
-            ]
-        },
-        {
-            "mode": "managed",
-            "type": "outscale_public_ip",
-            "name": "outscale_public_ip2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -582,9 +622,35 @@
         },
         {
             "mode": "managed",
+            "type": "outscale_public_ip",
+            "name": "outscale_public_ip2",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "id": "##id-6##",
+                        "link_public_ip_id": "",
+                        "nic_account_id": "",
+                        "nic_id": "",
+                        "private_ip": "########",
+                        "public_ip": "########",
+                        "public_ip_id": "##id-6##",
+                        "request_id": "########",
+                        "tags": [],
+                        "timeouts": null,
+                        "vm_id": ""
+                    },
+                    "sensitive_attributes": [],
+                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxODAwMDAwMDAwMDAwLCJkZWxldGUiOjE4MDAwMDAwMDAwMDB9fQ=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
             "type": "outscale_route",
             "name": "outscale_route",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -593,14 +659,14 @@
                         "creation_method": "CreateRoute",
                         "destination_ip_range": "0.0.0.0/0",
                         "destination_service_id": "",
-                        "gateway_id": "##id-13##",
-                        "id": "##id-15##",
+                        "gateway_id": "##id-17##",
+                        "id": "##id-19##",
                         "nat_access_point": "",
                         "nat_service_id": "",
                         "net_peering_id": "",
                         "nic_id": "",
                         "request_id": "########",
-                        "route_table_id": "##id-15##",
+                        "route_table_id": "##id-20##",
                         "state": "active",
                         "vm_account_id": "",
                         "vm_id": ""
@@ -619,7 +685,7 @@
             "mode": "managed",
             "type": "outscale_route",
             "name": "outscale_route2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -628,14 +694,14 @@
                         "creation_method": "CreateRoute",
                         "destination_ip_range": "0.0.0.0/0",
                         "destination_service_id": "",
-                        "gateway_id": "##id-13##",
-                        "id": "##id-16##",
+                        "gateway_id": "##id-17##",
+                        "id": "##id-21##",
                         "nat_access_point": "",
                         "nat_service_id": "",
                         "net_peering_id": "",
                         "nic_id": "",
                         "request_id": "########",
-                        "route_table_id": "##id-16##",
+                        "route_table_id": "##id-22##",
                         "state": "active",
                         "vm_account_id": "",
                         "vm_id": ""
@@ -654,17 +720,17 @@
             "mode": "managed",
             "type": "outscale_route_table",
             "name": "outscale_route_table",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-15##",
+                        "id": "##id-20##",
                         "link_route_tables": [],
                         "net_id": "##id-2##",
                         "request_id": "########",
                         "route_propagating_virtual_gateways": [],
-                        "route_table_id": "##id-15##",
+                        "route_table_id": "##id-20##",
                         "routes": [
                             {
                                 "creation_method": "CreateRouteTable",
@@ -694,17 +760,17 @@
             "mode": "managed",
             "type": "outscale_route_table",
             "name": "outscale_route_table2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-16##",
+                        "id": "##id-22##",
                         "link_route_tables": [],
                         "net_id": "##id-2##",
                         "request_id": "########",
                         "route_propagating_virtual_gateways": [],
-                        "route_table_id": "##id-16##",
+                        "route_table_id": "##id-22##",
                         "routes": [
                             {
                                 "creation_method": "CreateRouteTable",
@@ -734,17 +800,17 @@
             "mode": "managed",
             "type": "outscale_route_table_link",
             "name": "outscale_route_table_link",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-17##",
-                        "link_route_table_id": "##id-17##",
+                        "id": "##id-23##",
+                        "link_route_table_id": "##id-23##",
                         "main": false,
                         "request_id": "########",
-                        "route_table_id": "##id-15##",
-                        "subnet_id": "##id-7##"
+                        "route_table_id": "##id-20##",
+                        "subnet_id": "##id-4##"
                     },
                     "sensitive_attributes": [],
                     "private": "bnVsbA==",
@@ -760,17 +826,17 @@
             "mode": "managed",
             "type": "outscale_route_table_link",
             "name": "outscale_route_table_link2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-18##",
-                        "link_route_table_id": "##id-18##",
+                        "id": "##id-24##",
+                        "link_route_table_id": "##id-24##",
                         "main": false,
                         "request_id": "########",
-                        "route_table_id": "##id-16##",
-                        "subnet_id": "##id-4##"
+                        "route_table_id": "##id-22##",
+                        "subnet_id": "##id-7##"
                     },
                     "sensitive_attributes": [],
                     "private": "bnVsbA==",
@@ -786,19 +852,19 @@
             "mode": "managed",
             "type": "outscale_subnet",
             "name": "outscale_subnet",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "available_ips_count": 251,
-                        "id": "##id-7##",
+                        "id": "##id-4##",
                         "ip_range": "10.0.0.0/24",
                         "map_public_ip_on_launch": false,
                         "net_id": "##id-2##",
                         "request_id": "########",
                         "state": "available",
-                        "subnet_id": "##id-7##",
+                        "subnet_id": "##id-4##",
                         "subregion_name": "###region###a",
                         "tags": [],
                         "timeouts": null
@@ -815,19 +881,19 @@
             "mode": "managed",
             "type": "outscale_subnet",
             "name": "outscale_subnet2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "available_ips_count": 251,
-                        "id": "##id-4##",
+                        "id": "##id-7##",
                         "ip_range": "10.0.1.0/24",
                         "map_public_ip_on_launch": false,
                         "net_id": "##id-2##",
                         "request_id": "########",
                         "state": "available",
-                        "subnet_id": "##id-4##",
+                        "subnet_id": "##id-7##",
                         "subregion_name": "###region###a",
                         "tags": [],
                         "timeouts": null

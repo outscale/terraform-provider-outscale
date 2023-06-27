@@ -18,21 +18,31 @@
                         "flexible_gpu_catalog": [
                             {
                                 "generations": [
-                                    "v5"
+                                    "v3",
+                                    "v4"
                                 ],
                                 "max_cpu": 80,
                                 "max_ram": 512,
-                                "model_name": "nvidia-p6",
-                                "v_ram": 16000
+                                "model_name": "nvidia-k2",
+                                "v_ram": 4096
                             },
                             {
                                 "generations": [
                                     "v5"
                                 ],
+                                "max_cpu": 80,
+                                "max_ram": 512,
+                                "model_name": "nvidia-p100",
+                                "v_ram": 16000
+                            },
+                            {
+                                "generations": [
+                                    "v6"
+                                ],
                                 "max_cpu": 35,
                                 "max_ram": 250,
-                                "model_name": "nvidia-v100",
-                                "v_ram": 16000
+                                "model_name": "nvidia-a100-80",
+                                "v_ram": 80000
                             },
                             {
                                 "generations": [
@@ -46,13 +56,12 @@
                             },
                             {
                                 "generations": [
-                                    "v3",
-                                    "v4"
+                                    "v5"
                                 ],
                                 "max_cpu": 80,
                                 "max_ram": 512,
-                                "model_name": "nvidia-k2",
-                                "v_ram": 4096
+                                "model_name": "nvidia-p6",
+                                "v_ram": 16000
                             },
                             {
                                 "generations": [
@@ -68,9 +77,9 @@
                                 "generations": [
                                     "v5"
                                 ],
-                                "max_cpu": 80,
-                                "max_ram": 512,
-                                "model_name": "nvidia-p100",
+                                "max_cpu": 35,
+                                "max_ram": 250,
+                                "model_name": "nvidia-v100",
                                 "v_ram": 16000
                             }
                         ],

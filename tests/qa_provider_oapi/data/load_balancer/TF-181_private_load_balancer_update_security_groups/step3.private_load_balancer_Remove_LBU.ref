@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_net",
             "name": "outscale_net",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -32,7 +32,7 @@
             "mode": "managed",
             "type": "outscale_security_group",
             "name": "outscale_security_group",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -70,7 +70,7 @@
             "mode": "managed",
             "type": "outscale_security_group",
             "name": "outscale_security_group-2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -108,12 +108,12 @@
             "mode": "managed",
             "type": "outscale_subnet",
             "name": "subnet-1",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "available_ips_count": 250,
+                        "available_ips_count": 251,
                         "id": "##id-5##",
                         "ip_range": "10.0.0.0/24",
                         "map_public_ip_on_launch": false,

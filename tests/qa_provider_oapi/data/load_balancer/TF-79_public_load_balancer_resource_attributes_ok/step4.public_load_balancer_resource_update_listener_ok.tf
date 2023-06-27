@@ -1,7 +1,7 @@
 resource "outscale_server_certificate" "my_server_certificate" {
    name                   =  "Certificate-TF-79"
-   body                   =  file("data/server_certificate/TF-187_server_certificate_resource_attributes_ok/test-cert.pem")
-   private_key            =  file("data/server_certificate/TF-187_server_certificate_resource_attributes_ok/test-key.pem")
+   body                   =  file("data/cert_example/certificate.pem")
+   private_key            =  file("data/cert_example/certificate.key")
 }
 
 resource "outscale_load_balancer" "public_lbu1" {

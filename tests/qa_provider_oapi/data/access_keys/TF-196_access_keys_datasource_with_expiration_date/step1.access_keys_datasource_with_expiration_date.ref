@@ -19,14 +19,14 @@
                             {
                                 "access_key_id": "##id-0##",
                                 "creation_date": "########",
-                                "expiration_date": "2024-02-20T10:04:05.000Z",
+                                "expiration_date": "",
                                 "last_modification_date": "########",
                                 "state": "ACTIVE"
                             },
                             {
                                 "access_key_id": "##id-1##",
                                 "creation_date": "########",
-                                "expiration_date": "",
+                                "expiration_date": "2024-02-20T10:04:05.000+0000",
                                 "last_modification_date": "########",
                                 "state": "ACTIVE"
                             }
@@ -52,8 +52,8 @@
                     "attributes": {
                         "access_key_id": "##id-0##",
                         "creation_date": "########",
-                        "expiration_date": "2024-02-20T10:04:05.000Z",
-                        "id": "##id-0##",
+                        "expiration_date": "2024-02-20T10:04:05.000+0000",
+                        "id": "##id-1##",
                         "last_modification_date": "########",
                         "request_id": "########",
                         "secret_key": "########",
@@ -68,7 +68,7 @@
                     "attributes": {
                         "access_key_id": "##id-3##",
                         "creation_date": "########",
-                        "expiration_date": "2024-02-20T10:04:05.000Z",
+                        "expiration_date": "2024-02-20T10:04:05.000+0000",
                         "id": "##id-3##",
                         "last_modification_date": "########",
                         "request_id": "########",
@@ -84,7 +84,7 @@
                     "attributes": {
                         "access_key_id": "##id-4##",
                         "creation_date": "########",
-                        "expiration_date": "2024-02-20T10:04:05.000Z",
+                        "expiration_date": "2024-02-20T10:04:05.000+0000",
                         "id": "##id-4##",
                         "last_modification_date": "########",
                         "request_id": "########",

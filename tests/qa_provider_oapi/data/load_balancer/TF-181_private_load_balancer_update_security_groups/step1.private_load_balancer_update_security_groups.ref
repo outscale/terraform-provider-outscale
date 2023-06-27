@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_load_balancer",
             "name": "private_lbu",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -83,7 +83,7 @@
             "mode": "managed",
             "type": "outscale_net",
             "name": "outscale_net",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -106,7 +106,7 @@
             "mode": "managed",
             "type": "outscale_security_group",
             "name": "outscale_security_group",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -144,7 +144,7 @@
             "mode": "managed",
             "type": "outscale_security_group",
             "name": "outscale_security_group-2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -182,7 +182,7 @@
             "mode": "managed",
             "type": "outscale_subnet",
             "name": "subnet-1",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,

@@ -53,12 +53,12 @@
                                 "static_routes_only": false,
                                 "tags": [
                                     {
-                                        "key": "Type:TF-180",
-                                        "value": "Dynamic-TF:180"
-                                    },
-                                    {
                                         "key": "Test-TF180",
                                         "value": "Terraform"
+                                    },
+                                    {
+                                        "key": "Type:TF-180",
+                                        "value": "Dynamic-TF:180"
                                     }
                                 ],
                                 "vgw_telemetries": [
