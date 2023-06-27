@@ -1,16 +1,16 @@
 resource "outscale_server_certificate" "my_server_certificate3-1" { 
    name                   =  "Certificate-TF189-1"
-   body                   =  file("data/server_certificate/TF-187_server_certificate_resource_attributes_ok/test-cert.pem")
-   chain                  =  file("data/server_certificate/TF-187_server_certificate_resource_attributes_ok/test-cert-chain.pem")
-   private_key            =  file("data/server_certificate/TF-187_server_certificate_resource_attributes_ok/test-key.pem")
+   body                   =  file("data/cert_example/certificate.pem")
+   chain                  =  file("data/cert_example/certificate.pem")
+   private_key            =  file("data/cert_example/certificate.key")
    path                   =  "/terraform/test1/"
 }
 
 resource "outscale_server_certificate" "my_server_certificate3-2" {
    name                   =  "Certificate-TF189-2"
-   body                   =  file("data/server_certificate/TF-187_server_certificate_resource_attributes_ok/test-cert.pem")
-   chain                  =  file("data/server_certificate/TF-187_server_certificate_resource_attributes_ok/test-cert-chain.pem")
-   private_key            =  file("data/server_certificate/TF-187_server_certificate_resource_attributes_ok/test-key.pem")
+   body                   =  file("data/cert_example/certificate.pem")
+   chain                  =  file("data/cert_example/certificate.pem")
+   private_key            =  file("data/cert_example/certificate.key")
    path                   =  "/terraform/test2/"
 }
 

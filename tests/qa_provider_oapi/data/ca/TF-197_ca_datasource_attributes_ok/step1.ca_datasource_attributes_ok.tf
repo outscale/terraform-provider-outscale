@@ -1,5 +1,5 @@
 resource "outscale_ca" "new_ca" {
-  ca_pem      = file("data/ca/TF-197_ca_datasource_attributes_ok/terraform-ca-certificate.pem.crt")
+  ca_pem      = file("data/cert_example/certificate.pem")
   description = "test-TF197"
 }
 

@@ -23,10 +23,9 @@
                                 ],
                                 "cns": [
                                     "outscale-1",
-                                    "test-TF202",
-                                    "test-TF202-2"
+                                    "test-TF202"
                                 ],
-                                "description": "API Access rules-TF-202-1",
+                                "description": "AAR-TF-202-1",
                                 "ip_ranges": "########"
                             },
                             {
@@ -37,9 +36,10 @@
                                 ],
                                 "cns": [
                                     "outscale-1",
-                                    "test-TF202"
+                                    "test-TF202",
+                                    "test-TF202-2"
                                 ],
-                                "description": "AAR-TF-202-1",
+                                "description": "API Access rules-TF-202-1",
                                 "ip_ranges": "########"
                             }
                         ],
@@ -69,10 +69,9 @@
                                 ],
                                 "cns": [
                                     "outscale-1",
-                                    "test-TF202",
-                                    "test-TF202-2"
+                                    "test-TF202"
                                 ],
-                                "description": "API Access rules-TF-202-1",
+                                "description": "AAR-TF-202-1",
                                 "ip_ranges": "########"
                             },
                             {
@@ -83,9 +82,10 @@
                                 ],
                                 "cns": [
                                     "outscale-1",
-                                    "test-TF202"
+                                    "test-TF202",
+                                    "test-TF202-2"
                                 ],
-                                "description": "AAR-TF-202-1",
+                                "description": "API Access rules-TF-202-1",
                                 "ip_ranges": "########"
                             }
                         ],
@@ -115,10 +115,9 @@
                                 ],
                                 "cns": [
                                     "outscale-1",
-                                    "test-TF202",
-                                    "test-TF202-2"
+                                    "test-TF202"
                                 ],
-                                "description": "API Access rules-TF-202-1",
+                                "description": "AAR-TF-202-1",
                                 "ip_ranges": "########"
                             },
                             {
@@ -129,9 +128,10 @@
                                 ],
                                 "cns": [
                                     "outscale-1",
-                                    "test-TF202"
+                                    "test-TF202",
+                                    "test-TF202-2"
                                 ],
-                                "description": "AAR-TF-202-1",
+                                "description": "API Access rules-TF-202-1",
                                 "ip_ranges": "########"
                             }
                         ],
@@ -161,10 +161,9 @@
                                 ],
                                 "cns": [
                                     "outscale-1",
-                                    "test-TF202",
-                                    "test-TF202-2"
+                                    "test-TF202"
                                 ],
-                                "description": "API Access rules-TF-202-1",
+                                "description": "AAR-TF-202-1",
                                 "ip_ranges": "########"
                             },
                             {
@@ -175,9 +174,10 @@
                                 ],
                                 "cns": [
                                     "outscale-1",
-                                    "test-TF202"
+                                    "test-TF202",
+                                    "test-TF202-2"
                                 ],
-                                "description": "AAR-TF-202-1",
+                                "description": "API Access rules-TF-202-1",
                                 "ip_ranges": "########"
                             }
                         ],

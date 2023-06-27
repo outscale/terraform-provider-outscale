@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_product_types",
             "name": "all-product-types",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -61,6 +61,336 @@
                                 "description": "SQL Server Entreprise",
                                 "product_type_id": "##id-9##",
                                 "vendor": "Microsoft"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - TEST - pro-rqvtjuw4 vfjazwwvn6dzaggkzmvg",
+                                "product_type_id": "##id-10##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "Partner-Test - 3DSWYMER - pro-t56p49jo lp8vtp09ug94q58yhn88",
+                                "product_type_id": "##id-11##",
+                                "vendor": "Partner-Test"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - AAAA - pro-07qi1cn6 7al6f2llqsrw56g8pt3m",
+                                "product_type_id": "##id-12##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - nom - pro-34ghuy7o 3t5j96fhdw3k5wgrdy24",
+                                "product_type_id": "##id-13##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - test - pro-vhf81jbd upsshldmvj4ihz40htdl",
+                                "product_type_id": "##id-14##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - test - pro-hys3x2bc pu0w0r3uu9n2wpe4wibc",
+                                "product_type_id": "##id-15##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - test - pro-yk01ld3i bmlul23lv92c9ucq0h81",
+                                "product_type_id": "##id-16##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - test - pro-cpbh4zoj 57y5z9yxoewhlqlqb915",
+                                "product_type_id": "##id-17##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - vesdvds - pro-2v27a90h dabnrelfk3qgptkx5fg3",
+                                "product_type_id": "##id-18##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - qa product - pro-fnro3jc4 qvgzqq20zo68j1deb4r2",
+                                "product_type_id": "##id-19##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "Partner-Test - zertyghj - pro-t7kdfem5 xvztxfta8wkmt9blzhss",
+                                "product_type_id": "##id-20##",
+                                "vendor": "Partner-Test"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - Product QA - pro-ilmshg9c vfe8inqrej2vzo5zrye9",
+                                "product_type_id": "##id-21##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - aa - pro-97nhwczg lsut17sbbkdtaib4whyc",
+                                "product_type_id": "##id-22##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - qa product - pro-d4ntz4qj qc1mh4bo9qqa2ero8c7r",
+                                "product_type_id": "##id-23##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - test - pro-up4i6k8d piotw3lthkki914cbxkt",
+                                "product_type_id": "##id-24##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - test - pro-klbylatm fqh370yzm20gmxgnj0q3",
+                                "product_type_id": "##id-25##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - qa product - pro-8p0pfui2 eujkpufk0p80r4pwcjla",
+                                "product_type_id": "##id-26##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "Partner-Test - Front de David - pro-nbyp8in1 fwc9tvhrqgkau7l464lr",
+                                "product_type_id": "##id-27##",
+                                "vendor": "Partner-Test"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - qa produc  - pro-ghp06tta 6qimlrogl4ajkcdqn4ao",
+                                "product_type_id": "##id-28##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - aa - pro-7ranf8gm 2ofr74c5t66dzxazvhm0",
+                                "product_type_id": "##id-29##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - qa prod - pro-v58a70gt ebpw1ymwgjk77p7lykl4",
+                                "product_type_id": "##id-30##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "Partner-Test - Nom - pro-hiobv4i7 7akjao11n4gmrroe684h",
+                                "product_type_id": "##id-31##",
+                                "vendor": "Partner-Test"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - aa - pro-vdqg2b7c xork84kp3a7eegqpovub",
+                                "product_type_id": "##id-32##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - aaa - pro-tuh3neye n55pips0n6nbtzjpgccq",
+                                "product_type_id": "##id-33##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - test - pro-e9rh2cwu ib3j3t1j7kp8pnm1rhdt",
+                                "product_type_id": "##id-34##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - testproduct - pro-rl8iwn71 y6nq65p2ucypge7dzez5",
+                                "product_type_id": "##id-35##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - 3DSWYMER - pro-1w5pkfvk skp5crmrab4t6urwd9br",
+                                "product_type_id": "##id-36##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - Product OMI - pro-63k8p1yr 0svaurh9ix7mmn839di0",
+                                "product_type_id": "##id-37##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "Partner-Test - Produit de test - pro-4ajbkswv ycujd7tkfy9uqgxyxv3s",
+                                "product_type_id": "##id-38##",
+                                "vendor": "Partner-Test"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - qa produc 2 - pro-z9fe9tj5 9tzcjitz1wnvwor7cvd8",
+                                "product_type_id": "##id-39##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - qa prod - pro-7mgky5ub jpn8maslxf2v291nx4v5",
+                                "product_type_id": "##id-40##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - qa product - pro-7qzkmfnd l1nkfs61uyndcqdq97gk",
+                                "product_type_id": "##id-41##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - product-1 - pro-omtj8tcf m9wv5v6y2pkuj0aj36jt",
+                                "product_type_id": "##id-42##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - foo - pro-30dv738r cn4evw642x3pdctbe7e2",
+                                "product_type_id": "##id-43##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - prod - pro-nqab807v 3pe4qvykvgotu8u1j08n",
+                                "product_type_id": "##id-44##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "Amine Inc - prod1 - pro-3efwwq1z xt4l9ouoc4e8bttmbgck",
+                                "product_type_id": "##id-45##",
+                                "vendor": "Amine Inc"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - fdv - pro-m9k8jtxg byfwcgiinedzsqtd4hto",
+                                "product_type_id": "##id-46##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - aa - pro-x9fw3b3j 15imj4m4krjqyy2np9h8",
+                                "product_type_id": "##id-47##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - fezafeza - pro-vj62sbai fejp49z4bni08bkiycmd",
+                                "product_type_id": "##id-48##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "Partner-Test - test  - pro-5ozswrt8 m08xvg4vu7b42n0yad2t",
+                                "product_type_id": "##id-49##",
+                                "vendor": "Partner-Test"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - test qa 1 - pro-2wz45bci dtjgq0g4syh4qnkxcut4",
+                                "product_type_id": "##id-50##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - test - pro-q5oyxqed hwfk3cp6eaf5szykns0l",
+                                "product_type_id": "##id-51##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - TEST - pro-i05x3wbt 0e32yxxo5a4vasn3v0q6",
+                                "product_type_id": "##id-52##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "Amine Inc - Best product - pro-7a9zcmhw sy8h1gxr4tydzvg2b8xs",
+                                "product_type_id": "##id-53##",
+                                "vendor": "Amine Inc"
+                            },
+                            {
+                                "description": "Amine Inc - qsd - pro-2biar45i pdyy8clrfyj0emqmrmi2",
+                                "product_type_id": "##id-54##",
+                                "vendor": "Amine Inc"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - Product One - pro-5gyh586f alyh70lusdd9ek7u93fd",
+                                "product_type_id": "##id-55##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - Product QA - pro-f60qcqiw ne5qckeymopuauaot2zd",
+                                "product_type_id": "##id-56##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - a - pro-ugqq799q snzsb9df5vel2kqrz1ng",
+                                "product_type_id": "##id-57##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - aa - pro-79y7dys3 ccju16zfny3o7cwz2nih",
+                                "product_type_id": "##id-58##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - mkp qa product - pro-fp6u5an8 dfuibt27mjisiw657mdr",
+                                "product_type_id": "##id-59##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - Qa Product - pro-jcbn2j1g c0t0ha1s4fryi54zw08k",
+                                "product_type_id": "##id-60##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "Partner-Test - test - pro-2xnhi5vh p6ypm4pnxzdzhyc8bpe0",
+                                "product_type_id": "##id-61##",
+                                "vendor": "Partner-Test"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - Outscale - pro-ix8duum5 kqpad9o83iy8mzcn5itn",
+                                "product_type_id": "##id-62##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "Partner-Test - TEST - pro-xcev7xlv qh6c7xvdsuu138p73il8",
+                                "product_type_id": "##id-63##",
+                                "vendor": "Partner-Test"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - sqdcs<vs< - pro-5fjyyryl 35am33kxf6j95p6d65jx",
+                                "product_type_id": "##id-64##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - test - pro-g9qawify cy5zis8tk2ssjj888ova",
+                                "product_type_id": "##id-65##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - qa product - pro-hnm9uwkn lkjldybxwvaqrcb1vqmf",
+                                "product_type_id": "##id-66##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - test - pro-9jg95ih7 x6gnlz29vb7i07g4pfc6",
+                                "product_type_id": "##id-67##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - test - pro-4gnv6soa ki3t3n0iyrjm60jlxgv6",
+                                "product_type_id": "##id-68##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - fdsqf - pro-2b04ptv6 8tzatteapbvwk1gvvqhl",
+                                "product_type_id": "##id-69##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - aa - pro-zglsf5td gwgv4fe8eyvwmtba3hax",
+                                "product_type_id": "##id-70##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - qa product - pro-0gjbl10p d9hp3r1p36gcuzj6bihe",
+                                "product_type_id": "##id-71##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - 3DSWYMER - pro-bompmf2i hxe4hbl0gw9mectvltpo",
+                                "product_type_id": "##id-72##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - Test - pro-uzjw9lyq djil6izu1prdp0stn1vd",
+                                "product_type_id": "##id-73##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "OUTSCALE SAS - MKP - pro-noxa5e2c s21rqn74fhgrme241t2w",
+                                "product_type_id": "##id-74##",
+                                "vendor": "OUTSCALE SAS"
+                            },
+                            {
+                                "description": "Partner-Test - x - pro-d5uxacm1 v1mr4dskfqi6z2xu4lpy",
+                                "product_type_id": "##id-75##",
+                                "vendor": "Partner-Test"
                             }
                         ],
                         "request_id": "########"

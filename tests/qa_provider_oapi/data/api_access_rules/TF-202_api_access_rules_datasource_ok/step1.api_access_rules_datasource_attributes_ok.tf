@@ -1,9 +1,9 @@
 resource "outscale_ca" "ca_for_api_access_rule" {
-  ca_pem      = file("data/ca/TF-197_ca_datasource_attributes_ok/terraform-ca-certificate.pem.crt")
+  ca_pem      = file("data/cert_example/certificate.pem")
 }
 
 resource "outscale_ca" "ca_for_api_access_rule_2" {
-  ca_pem      = file("data/ca/TF-197_ca_datasource_attributes_ok/terraform-ca-certificate.pem.crt")
+  ca_pem      = file("data/cert_example/certificate.pem")
 } 
 
 
