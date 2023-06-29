@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_server_certificates",
             "name": "my_server_certificates",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -44,7 +44,7 @@
             "mode": "managed",
             "type": "outscale_server_certificate",
             "name": "my_server_certificate3-1",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -70,7 +70,7 @@
             "mode": "managed",
             "type": "outscale_server_certificate",
             "name": "my_server_certificate3-2",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,

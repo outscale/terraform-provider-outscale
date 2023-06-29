@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_vm",
             "name": "outscale_vm",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -42,7 +42,7 @@
                         "nics": [],
                         "os_family": "",
                         "performance": "high",
-                        "placement_subregion_name": "###region###a",
+                        "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "private_dns_name": "########",
                         "private_ip": "########",
@@ -90,7 +90,7 @@
             "mode": "data",
             "type": "outscale_vm",
             "name": "outscale_vm_2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -123,7 +123,7 @@
                         "nics": [],
                         "os_family": "",
                         "performance": "high",
-                        "placement_subregion_name": "###region###a",
+                        "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "private_dns_name": "########",
                         "private_ip": "########",
@@ -171,7 +171,7 @@
             "mode": "data",
             "type": "outscale_vm",
             "name": "outscale_vm_3",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -204,7 +204,7 @@
                         "nics": [],
                         "os_family": "",
                         "performance": "high",
-                        "placement_subregion_name": "###region###a",
+                        "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "private_dns_name": "########",
                         "private_ip": "########",
@@ -252,7 +252,7 @@
             "mode": "data",
             "type": "outscale_vm",
             "name": "outscale_vm_centos2_0",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -285,7 +285,7 @@
                         "nics": [],
                         "os_family": "",
                         "performance": "high",
-                        "placement_subregion_name": "###region###a",
+                        "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "private_dns_name": "########",
                         "private_ip": "########",
@@ -329,7 +329,7 @@
             "mode": "data",
             "type": "outscale_vm",
             "name": "outscale_vm_centos2_1",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -362,7 +362,7 @@
                         "nics": [],
                         "os_family": "",
                         "performance": "high",
-                        "placement_subregion_name": "###region###a",
+                        "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "private_dns_name": "########",
                         "private_ip": "########",
@@ -406,7 +406,7 @@
             "mode": "managed",
             "type": "outscale_keypair",
             "name": "my_keypair",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -428,7 +428,7 @@
             "mode": "managed",
             "type": "outscale_security_group",
             "name": "public_sg",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -455,7 +455,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "outscale_vm_centos",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -490,7 +490,7 @@
                         "nics": [],
                         "os_family": "",
                         "performance": "high",
-                        "placement_subregion_name": "###region###a",
+                        "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "private_dns_name": "########",
                         "private_ip": "########",
@@ -546,7 +546,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "outscale_vm_centos2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "index_key": 0,
@@ -582,7 +582,7 @@
                         "nics": [],
                         "os_family": "",
                         "performance": "high",
-                        "placement_subregion_name": "###region###a",
+                        "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "private_dns_name": "########",
                         "private_ip": "########",
@@ -662,7 +662,7 @@
                         "nics": [],
                         "os_family": "",
                         "performance": "high",
-                        "placement_subregion_name": "###region###a",
+                        "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "private_dns_name": "########",
                         "private_ip": "########",

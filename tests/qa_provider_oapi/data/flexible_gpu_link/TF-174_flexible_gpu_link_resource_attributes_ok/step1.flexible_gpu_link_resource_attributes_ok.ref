@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_flexible_gpu",
             "name": "fGPU-1",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -21,7 +21,7 @@
                         "model_name": "nvidia-p6",
                         "request_id": "########",
                         "state": "allocated",
-                        "subregion_name": "###region###a",
+                        "subregion_name": "eu-west-2a",
                         "vm_id": ""
                     },
                     "sensitive_attributes": [],
@@ -33,7 +33,7 @@
             "mode": "managed",
             "type": "outscale_flexible_gpu_link",
             "name": "link_fGPU",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -57,7 +57,7 @@
             "mode": "managed",
             "type": "outscale_keypair",
             "name": "my_keypair",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -79,7 +79,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "MaVM",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -114,7 +114,7 @@
                         "nics": [],
                         "os_family": "",
                         "performance": "highest",
-                        "placement_subregion_name": "###region###a",
+                        "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "private_dns_name": "########",
                         "private_ip": "########",

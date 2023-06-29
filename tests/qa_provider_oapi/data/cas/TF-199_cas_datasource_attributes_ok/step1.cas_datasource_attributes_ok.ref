@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_cas",
             "name": "data_cas_1",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -38,7 +38,7 @@
             "mode": "data",
             "type": "outscale_cas",
             "name": "data_cas_2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -67,16 +67,16 @@
             "mode": "managed",
             "type": "outscale_ca",
             "name": "new_ca_for_data",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "ca_fingerprint": "########",
-                        "ca_id": "##id-1##",
+                        "ca_id": "##id-0##",
                         "ca_pem": "########",
                         "description": "test-TF199",
-                        "id": "##id-1##",
+                        "id": "##id-0##",
                         "request_id": "########"
                     },
                     "sensitive_attributes": [],
@@ -88,16 +88,16 @@
             "mode": "managed",
             "type": "outscale_ca",
             "name": "new_ca_for_data_2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "ca_fingerprint": "########",
-                        "ca_id": "##id-0##",
+                        "ca_id": "##id-1##",
                         "ca_pem": "########",
                         "description": "test-TF199-2",
-                        "id": "##id-0##",
+                        "id": "##id-1##",
                         "request_id": "########"
                     },
                     "sensitive_attributes": [],

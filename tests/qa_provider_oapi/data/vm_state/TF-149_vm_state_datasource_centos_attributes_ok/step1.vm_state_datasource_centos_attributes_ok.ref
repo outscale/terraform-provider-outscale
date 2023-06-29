@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_vm_state",
             "name": "outscale_vm_state",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -19,7 +19,7 @@
                         "id": "##id-0##",
                         "maintenance_events": [],
                         "request_id": "########",
-                        "subregion_name": "###region###a",
+                        "subregion_name": "eu-west-2a",
                         "vm_id": "##id-0##",
                         "vm_state": "running"
                     },
@@ -31,7 +31,7 @@
             "mode": "managed",
             "type": "outscale_keypair",
             "name": "my_keypair",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -53,7 +53,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "outscale_vm",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -88,7 +88,7 @@
                         "nics": [],
                         "os_family": "",
                         "performance": "high",
-                        "placement_subregion_name": "###region###a",
+                        "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "private_dns_name": "########",
                         "private_ip": "########",

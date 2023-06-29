@@ -1,0 +1,90 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "managed",
+            "type": "outscale_net",
+            "name": "outscale_net",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "dhcp_options_set_id": "##id-0##",
+                        "id": "##id-1##",
+                        "ip_range": "10.0.0.0/16",
+                        "net_id": "##id-1##",
+                        "request_id": "########",
+                        "state": "available",
+                        "tags": [],
+                        "tenancy": "default"
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_virtual_gateway",
+            "name": "outscale_virtual_gateway2",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "connection_type": "ipsec.1",
+                        "id": "##id-2##",
+                        "net_to_virtual_gateway_links": [],
+                        "request_id": "########",
+                        "state": "available",
+                        "tags": [
+                            {
+                                "key": "name",
+                                "value": "test-VGW-2"
+                            }
+                        ],
+                        "virtual_gateway_id": "##id-2##"
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_virtual_gateway_link",
+            "name": "outscale_virtual_gateway_link",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "dry_run": null,
+                        "id": "##id-2##",
+                        "net_id": "##id-1##",
+                        "net_to_virtual_gateway_links": [
+                            {
+                                "net_id": "##id-1##",
+                                "state": "attached"
+                            }
+                        ],
+                        "request_id": "########",
+                        "virtual_gateway_id": "##id-2##"
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA==",
+                    "dependencies": [
+                        "outscale_net.outscale_net",
+                        "outscale_virtual_gateway.outscale_virtual_gateway2"
+                    ]
+                }
+            ]
+        }
+    ],
+    "check_results": "########"
+}

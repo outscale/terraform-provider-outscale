@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_dhcp_option",
             "name": "dhcp_option_1",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -47,7 +47,7 @@
             "mode": "managed",
             "type": "outscale_dhcp_option",
             "name": "dhcp_option_2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -78,14 +78,14 @@
             "mode": "managed",
             "type": "outscale_dhcp_option",
             "name": "dhcp_option_3",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "default": false,
                         "dhcp_options_set_id": "##id-2##",
-                        "domain_name": "###region###.compute.internal",
+                        "domain_name": "eu-west-2.compute.internal",
                         "domain_name_servers": [
                             "192.168.12.32",
                             "192.168.12.33"
@@ -110,14 +110,14 @@
             "mode": "managed",
             "type": "outscale_dhcp_option",
             "name": "dhcp_option_4",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "default": false,
                         "dhcp_options_set_id": "##id-3##",
-                        "domain_name": "###region###.compute.internal",
+                        "domain_name": "eu-west-2.compute.internal",
                         "domain_name_servers": [
                             "OutscaleProvidedDNS"
                         ],
@@ -144,14 +144,14 @@
             "mode": "managed",
             "type": "outscale_dhcp_option",
             "name": "dhcp_option_5",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
                         "default": false,
                         "dhcp_options_set_id": "##id-4##",
-                        "domain_name": "###region###.compute.internal",
+                        "domain_name": "eu-west-2.compute.internal",
                         "domain_name_servers": [
                             "OutscaleProvidedDNS"
                         ],

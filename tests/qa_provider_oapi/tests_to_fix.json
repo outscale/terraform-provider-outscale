@@ -5,5 +5,7 @@
     "test_snapshot_export_task_TF-193_snapshot_export_task_resource_attributes_ok",
     "test_image_export_task_TF-191_image_export_task_datasource_attributes_ok",
     "test_snapshot_export_tasks_TF-195_snapshot_export_tasks_datasource_attributes_ok",
-    "test_load_balancer_attributes_TF-86_update_load_balancer_listener_ssl_certificate_ok"
+    "test_load_balancer_attributes_TF-86_update_load_balancer_listener_ssl_certificate_ok",
+    "test_product_types_TF-184_product_type_datasources_all_ok",
+    "test_volume_TF-154_volume_resource_attributes_ok2"
 ]

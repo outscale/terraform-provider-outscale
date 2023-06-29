@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_vm_states",
             "name": "outscale_vm_states",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -23,14 +23,14 @@
                             {
                                 "all_vms": false,
                                 "maintenance_events": [],
-                                "subregion_name": "###region###a",
+                                "subregion_name": "eu-west-2a",
                                 "vm_id": "##id-1##",
                                 "vm_state": "running"
                             },
                             {
                                 "all_vms": false,
                                 "maintenance_events": [],
-                                "subregion_name": "###region###a",
+                                "subregion_name": "eu-west-2a",
                                 "vm_id": "##id-2##",
                                 "vm_state": "running"
                             }
@@ -44,7 +44,7 @@
             "mode": "managed",
             "type": "outscale_keypair",
             "name": "my_keypair",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -66,7 +66,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "outscale_vm",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -91,7 +91,7 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-1##",
+                        "id": "##id-2##",
                         "image_id": "##id-5##",
                         "is_source_dest_checked": true,
                         "keypair_name": "KP-TF150",
@@ -101,7 +101,7 @@
                         "nics": [],
                         "os_family": "",
                         "performance": "high",
-                        "placement_subregion_name": "###region###a",
+                        "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "private_dns_name": "########",
                         "private_ip": "########",
@@ -129,7 +129,7 @@
                         "tags": [],
                         "timeouts": null,
                         "user_data": "",
-                        "vm_id": "##id-1##",
+                        "vm_id": "##id-2##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
@@ -145,7 +145,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "outscale_vm2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -170,7 +170,7 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-2##",
+                        "id": "##id-1##",
                         "image_id": "##id-5##",
                         "is_source_dest_checked": true,
                         "keypair_name": "KP-TF150",
@@ -180,7 +180,7 @@
                         "nics": [],
                         "os_family": "",
                         "performance": "high",
-                        "placement_subregion_name": "###region###a",
+                        "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "private_dns_name": "########",
                         "private_ip": "########",
@@ -208,7 +208,7 @@
                         "tags": [],
                         "timeouts": null,
                         "user_data": "",
-                        "vm_id": "##id-2##",
+                        "vm_id": "##id-1##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },

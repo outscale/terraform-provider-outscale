@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_images",
             "name": "outscale_images",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -129,7 +129,7 @@
             "mode": "data",
             "type": "outscale_images",
             "name": "outscale_images_2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -249,7 +249,7 @@
             "mode": "data",
             "type": "outscale_images",
             "name": "outscale_images_4",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -259,55 +259,6 @@
                         "id": "##id-7##",
                         "image_ids": null,
                         "images": [
-                            {
-                                "account_alias": "",
-                                "account_id": "##id-1##",
-                                "architecture": "x86_64",
-                                "block_device_mappings": [
-                                    {
-                                        "bsu": [
-                                            {
-                                                "delete_on_vm_deletion": true,
-                                                "iops": 0,
-                                                "snapshot_id": "##id-4##",
-                                                "volume_size": 10,
-                                                "volume_type": "standard"
-                                            }
-                                        ],
-                                        "device_name": "/dev/sda1",
-                                        "virtual_device_name": ""
-                                    }
-                                ],
-                                "creation_date": "########",
-                                "description": "",
-                                "file_location": "########",
-                                "image_id": "##id-5##",
-                                "image_name": "########",
-                                "image_type": "machine",
-                                "permissions_to_launch": [],
-                                "product_codes": [
-                                    "0001"
-                                ],
-                                "root_device_name": "/dev/sda1",
-                                "root_device_type": "bsu",
-                                "state": "available",
-                                "state_comment": [
-                                    {
-                                        "state_code": "",
-                                        "state_message": ""
-                                    }
-                                ],
-                                "tags": [
-                                    {
-                                        "key": "Key-2",
-                                        "value": "value:TF69"
-                                    },
-                                    {
-                                        "key": "Key:TF69",
-                                        "value": "value-tags"
-                                    }
-                                ]
-                            },
                             {
                                 "account_alias": "",
                                 "account_id": "##id-1##",
@@ -356,6 +307,55 @@
                                         "value": "value:TF69"
                                     }
                                 ]
+                            },
+                            {
+                                "account_alias": "",
+                                "account_id": "##id-1##",
+                                "architecture": "x86_64",
+                                "block_device_mappings": [
+                                    {
+                                        "bsu": [
+                                            {
+                                                "delete_on_vm_deletion": true,
+                                                "iops": 0,
+                                                "snapshot_id": "##id-4##",
+                                                "volume_size": 10,
+                                                "volume_type": "standard"
+                                            }
+                                        ],
+                                        "device_name": "/dev/sda1",
+                                        "virtual_device_name": ""
+                                    }
+                                ],
+                                "creation_date": "########",
+                                "description": "",
+                                "file_location": "########",
+                                "image_id": "##id-5##",
+                                "image_name": "########",
+                                "image_type": "machine",
+                                "permissions_to_launch": [],
+                                "product_codes": [
+                                    "0001"
+                                ],
+                                "root_device_name": "/dev/sda1",
+                                "root_device_type": "bsu",
+                                "state": "available",
+                                "state_comment": [
+                                    {
+                                        "state_code": "",
+                                        "state_message": ""
+                                    }
+                                ],
+                                "tags": [
+                                    {
+                                        "key": "Key-2",
+                                        "value": "value:TF69"
+                                    },
+                                    {
+                                        "key": "Key:TF69",
+                                        "value": "value-tags"
+                                    }
+                                ]
                             }
                         ],
                         "permissions": null,
@@ -369,7 +369,7 @@
             "mode": "data",
             "type": "outscale_images",
             "name": "outscale_images_5",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -489,7 +489,7 @@
             "mode": "data",
             "type": "outscale_images",
             "name": "outscale_images_6",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -560,7 +560,7 @@
             "mode": "managed",
             "type": "outscale_image",
             "name": "outscale_image1",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -638,7 +638,7 @@
             "mode": "managed",
             "type": "outscale_image",
             "name": "outscale_image2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -716,7 +716,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "outscale_vm",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -751,7 +751,7 @@
                         "nics": [],
                         "os_family": "",
                         "performance": "medium",
-                        "placement_subregion_name": "###region###a",
+                        "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "private_dns_name": "########",
                         "private_ip": "########",

@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_image",
             "name": "outscale_image",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -87,7 +87,7 @@
             "mode": "managed",
             "type": "outscale_image",
             "name": "outscale_image_2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -122,7 +122,7 @@
                         "permissions_to_launch": [
                             {
                                 "account_ids": [],
-                                "global_permission": true
+                                "global_permission": false
                             }
                         ],
                         "product_codes": [
@@ -132,7 +132,7 @@
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "bsu",
                         "source_image_id": "##id-6##",
-                        "source_region_name": "###region###",
+                        "source_region_name": "eu-west-2",
                         "state": "available",
                         "state_comment": [
                             {
@@ -153,7 +153,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "my-vm",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -188,7 +188,7 @@
                         "nics": [],
                         "os_family": "",
                         "performance": "medium",
-                        "placement_subregion_name": "###region###a",
+                        "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "private_dns_name": "########",
                         "private_ip": "########",

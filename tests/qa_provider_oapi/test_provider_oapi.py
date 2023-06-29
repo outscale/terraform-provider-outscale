@@ -46,10 +46,11 @@ IGNORE_END_ELEMENTS = ['request_id',
                        'ca_pem',
                        'orn',
                        'last_state_change_date',
-                       'outside_ip_address']
+                       'outside_ip_address',
+                       'available_ips_count']
 IGNORE_END_PATHS = []
 TINA_ID_PREFIXES = ['i', 'subnet', 'snap', 'img', 'vol', 'eni', 'vpc', 'igw', 'nat', 'vgw', 'pcx', 'sg', 'rtb', 'rtbassoc', 'vpn', 'vpcconn', 'ami', 'dxvif','vpce','fgpu','aar','ca']
-VARIABLES_FILE_NAME = ['provider.auto.tfvars', 'resources.auto.tfvars']
+VARIABLES_FILE_NAME = ['resources.auto.tfvars']
 VARIABLES = ['region']
 SET_KEY_VALUES = ['resources', 'tags']
 ID_PREFIX = '##id-'
@@ -323,6 +324,12 @@ class ProviderOapiMeta(type):
             return func
 
         for resource in os.listdir(ROOT_DIR):
+            if os.getenv('SKIP_NETS', False):
+                if resource == "nets":
+                    continue
+            if os.getenv('RUN_NETS_ONLY', False):
+                if resource != "nets":
+                    continue
             path = "{}/{}".format(ROOT_DIR, resource)
             if not os.path.isdir(path):
                 logger.warning("Unexpected file: '%s'", path)

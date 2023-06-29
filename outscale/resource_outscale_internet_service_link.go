@@ -174,7 +174,7 @@ func resourceOutscaleOAPIInternetServiceLinkDelete(d *schema.ResourceData, meta 
 		Refresh:    LISOAPIStateRefreshFunction(conn, filterReq, "failed"),
 		Timeout:    10 * time.Minute,
 		MinTimeout: 30 * time.Second,
-		// Delay:      3 * time.Minute,
+		Delay:      3 * time.Second,
 	}
 
 	value, err := stateConf.WaitForState()

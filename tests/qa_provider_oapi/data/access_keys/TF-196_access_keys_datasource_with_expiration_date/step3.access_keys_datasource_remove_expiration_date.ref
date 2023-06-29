@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_access_keys",
             "name": "my_access_keys",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -19,14 +19,14 @@
                             {
                                 "access_key_id": "##id-0##",
                                 "creation_date": "########",
-                                "expiration_date": "",
+                                "expiration_date": "2024-02-20T10:04:05.000+0000",
                                 "last_modification_date": "########",
                                 "state": "ACTIVE"
                             },
                             {
                                 "access_key_id": "##id-1##",
                                 "creation_date": "########",
-                                "expiration_date": "2024-02-20T10:04:05.000+0000",
+                                "expiration_date": "",
                                 "last_modification_date": "########",
                                 "state": "ACTIVE"
                             }
@@ -44,16 +44,16 @@
             "mode": "managed",
             "type": "outscale_access_key",
             "name": "my_access_key",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "index_key": 0,
                     "schema_version": 0,
                     "attributes": {
-                        "access_key_id": "##id-1##",
+                        "access_key_id": "##id-0##",
                         "creation_date": "########",
                         "expiration_date": "2024-02-20T10:04:05.000+0000",
-                        "id": "##id-1##",
+                        "id": "##id-0##",
                         "last_modification_date": "########",
                         "request_id": "########",
                         "secret_key": "########",
@@ -100,7 +100,7 @@
             "mode": "managed",
             "type": "outscale_access_key",
             "name": "my_access_key_2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,

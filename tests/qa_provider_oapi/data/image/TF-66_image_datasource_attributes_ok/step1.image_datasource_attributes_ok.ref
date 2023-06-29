@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_image",
             "name": "outscale_image",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -75,7 +75,7 @@
             "mode": "data",
             "type": "outscale_image",
             "name": "outscale_image_2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -141,7 +141,7 @@
             "mode": "data",
             "type": "outscale_image",
             "name": "outscale_image_3",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -207,7 +207,7 @@
             "mode": "data",
             "type": "outscale_image",
             "name": "outscale_image_4",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -273,7 +273,7 @@
             "mode": "data",
             "type": "outscale_image",
             "name": "outscale_image_5",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -339,7 +339,7 @@
             "mode": "data",
             "type": "outscale_image",
             "name": "outscale_image_6",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -405,7 +405,7 @@
             "mode": "data",
             "type": "outscale_image",
             "name": "outscale_image_7",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -471,7 +471,7 @@
             "mode": "managed",
             "type": "outscale_image",
             "name": "outscale_image",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -549,7 +549,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "my-vm",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -584,7 +584,7 @@
                         "nics": [],
                         "os_family": "",
                         "performance": "medium",
-                        "placement_subregion_name": "###region###a",
+                        "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "private_dns_name": "########",
                         "private_ip": "########",

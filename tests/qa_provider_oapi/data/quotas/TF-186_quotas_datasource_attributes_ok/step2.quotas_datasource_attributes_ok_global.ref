@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_quotas",
             "name": "lbu-global",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -38,7 +38,7 @@
             "mode": "managed",
             "type": "outscale_load_balancer",
             "name": "load_balancer01",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -86,7 +86,7 @@
                         },
                         "subnets": [],
                         "subregion_names": [
-                            "###region###a"
+                            "eu-west-2a"
                         ],
                         "tags": []
                     },

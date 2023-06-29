@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_load_balancer",
             "name": "public_lbu1",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -69,7 +69,7 @@
                         },
                         "subnets": [],
                         "subregion_names": [
-                            "###region###a"
+                            "eu-west-2a"
                         ],
                         "tags": [
                             {
@@ -91,7 +91,7 @@
             "mode": "managed",
             "type": "outscale_load_balancer_attributes",
             "name": "attributes-policy",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -149,7 +149,7 @@
                         },
                         "subnets": [],
                         "subregion_names": [
-                            "###region###a"
+                            "eu-west-2a"
                         ],
                         "tags": [
                             {
@@ -175,7 +175,7 @@
             "mode": "managed",
             "type": "outscale_load_balancer_policy",
             "name": "policy-1",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -239,7 +239,7 @@
                         },
                         "subnets": [],
                         "subregion_names": [
-                            "###region###a"
+                            "eu-west-2a"
                         ],
                         "tags": [
                             {

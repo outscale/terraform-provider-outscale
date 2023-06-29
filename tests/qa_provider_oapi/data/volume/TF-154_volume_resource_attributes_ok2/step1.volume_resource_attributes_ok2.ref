@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_volume",
             "name": "outscale_volume",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -22,7 +22,7 @@
                         "size": 10,
                         "snapshot_id": "",
                         "state": "available",
-                        "subregion_name": "###region###a",
+                        "subregion_name": "eu-west-2a",
                         "tags": [
                             {
                                 "key": "name",
