@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_client_gateways",
             "name": "outscale_client_gateways",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -59,7 +59,7 @@
             "mode": "data",
             "type": "outscale_client_gateways",
             "name": "outscale_client_gateways-2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -96,7 +96,7 @@
             "mode": "data",
             "type": "outscale_client_gateways",
             "name": "outscale_client_gateways-3",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -146,7 +146,7 @@
             "mode": "data",
             "type": "outscale_client_gateways",
             "name": "outscale_client_gateways-4",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -196,7 +196,7 @@
             "mode": "managed",
             "type": "outscale_client_gateway",
             "name": "outscale_client_gateway",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -228,7 +228,7 @@
             "mode": "managed",
             "type": "outscale_client_gateway",
             "name": "outscale_client_gateway_2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,

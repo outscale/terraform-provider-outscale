@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_image",
             "name": "outscale_image",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -79,7 +79,7 @@
             "mode": "managed",
             "type": "outscale_image_launch_permission",
             "name": "outscale_image_launch_permission",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -120,7 +120,7 @@
             "mode": "managed",
             "type": "outscale_keypair",
             "name": "my_keypair",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -142,7 +142,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "outscale_vm",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -177,7 +177,7 @@
                         "nics": [],
                         "os_family": "",
                         "performance": "high",
-                        "placement_subregion_name": "###region###a",
+                        "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "private_dns_name": "########",
                         "private_ip": "########",

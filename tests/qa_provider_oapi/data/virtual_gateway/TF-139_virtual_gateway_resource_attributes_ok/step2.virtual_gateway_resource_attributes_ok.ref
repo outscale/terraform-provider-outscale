@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_virtual_gateway",
             "name": "outscale_virtual_gateway",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,

@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_virtual_gateways",
             "name": "outscale_virtual_gateways",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -37,12 +37,12 @@
                                 "state": "available",
                                 "tags": [
                                     {
-                                        "key": "Project-Datasources",
-                                        "value": "Terraform-Datasources"
-                                    },
-                                    {
                                         "key": "name-Datasources",
                                         "value": "VGW-1-Datasources"
+                                    },
+                                    {
+                                        "key": "Project-Datasources",
+                                        "value": "Terraform-Datasources"
                                     }
                                 ],
                                 "virtual_gateway_id": "##id-2##"
@@ -57,7 +57,7 @@
             "mode": "managed",
             "type": "outscale_virtual_gateway",
             "name": "outscale_virtual_gateway",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -88,7 +88,7 @@
             "mode": "managed",
             "type": "outscale_virtual_gateway",
             "name": "outscale_virtual_gateway2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,

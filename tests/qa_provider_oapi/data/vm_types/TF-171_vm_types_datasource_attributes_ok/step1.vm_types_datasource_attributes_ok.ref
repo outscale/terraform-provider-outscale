@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_vm_types",
             "name": "vm_types_4",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,

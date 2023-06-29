@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_keypair",
             "name": "keypair-TF66",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "index_key": 0,
@@ -47,7 +47,7 @@
             "mode": "managed",
             "type": "outscale_security_group",
             "name": "security_group_TF66",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "index_key": 0,
@@ -95,7 +95,7 @@
             "mode": "managed",
             "type": "outscale_vm",
             "name": "outscale_vm-TF66",
-            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -154,7 +154,7 @@
                         "nics": [],
                         "os_family": "",
                         "performance": "medium",
-                        "placement_subregion_name": "###region###a",
+                        "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "private_dns_name": "########",
                         "private_ip": "########",

@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_dhcp_option",
             "name": "outscale_dhcp_option",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -51,7 +51,7 @@
             "mode": "data",
             "type": "outscale_dhcp_option",
             "name": "outscale_dhcp_option-2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -93,7 +93,7 @@
             "mode": "managed",
             "type": "outscale_dhcp_option",
             "name": "outscale_dhcp_option",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,

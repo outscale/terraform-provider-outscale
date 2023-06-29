@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_snapshot",
             "name": "outscale_snapshot",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -49,7 +49,7 @@
             "mode": "managed",
             "type": "outscale_snapshot",
             "name": "outscale_snapshot_2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -65,7 +65,7 @@
                         "request_id": "########",
                         "snapshot_id": "##id-3##",
                         "snapshot_size": null,
-                        "source_region_name": "###region###",
+                        "source_region_name": "eu-west-2",
                         "source_snapshot_id": "##id-1##",
                         "state": "completed",
                         "tags": [
@@ -90,7 +90,7 @@
             "mode": "managed",
             "type": "outscale_volume",
             "name": "outscale_volume_snap",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -103,7 +103,7 @@
                         "size": 40,
                         "snapshot_id": "",
                         "state": "available",
-                        "subregion_name": "###region###a",
+                        "subregion_name": "eu-west-2a",
                         "tags": [],
                         "volume_id": "##id-2##",
                         "volume_type": "standard"

@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_client_gateway",
             "name": "My_CGW",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -32,7 +32,7 @@
             "mode": "managed",
             "type": "outscale_client_gateway",
             "name": "My_CGW_2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -55,7 +55,7 @@
             "mode": "managed",
             "type": "outscale_virtual_gateway",
             "name": "My_VGW",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -77,7 +77,7 @@
             "mode": "managed",
             "type": "outscale_vpn_connection",
             "name": "dynamic_vpn_connection",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,

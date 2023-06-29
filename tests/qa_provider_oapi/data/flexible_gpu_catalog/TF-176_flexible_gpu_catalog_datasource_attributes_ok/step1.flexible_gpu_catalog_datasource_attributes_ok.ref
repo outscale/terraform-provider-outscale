@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_flexible_gpu_catalog",
             "name": "catalog-fGPU",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,

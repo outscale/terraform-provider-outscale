@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_keypairs",
             "name": "outscale_keypairs",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -37,7 +37,7 @@
             "mode": "managed",
             "type": "outscale_keypair",
             "name": "outscale_keypair",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -59,7 +59,7 @@
             "mode": "managed",
             "type": "outscale_keypair",
             "name": "outscale_keypair2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,

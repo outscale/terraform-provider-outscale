@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_volumes",
             "name": "outscale_volumes",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -26,7 +26,7 @@
                                 "size": 13,
                                 "snapshot_id": "",
                                 "state": "available",
-                                "subregion_name": "###region###a",
+                                "subregion_name": "eu-west-2a",
                                 "tags": [
                                     {
                                         "key": "Name",
@@ -43,7 +43,7 @@
                                 "size": 12,
                                 "snapshot_id": "",
                                 "state": "available",
-                                "subregion_name": "###region###b",
+                                "subregion_name": "eu-west-2b",
                                 "tags": [
                                     {
                                         "key": "Name",
@@ -63,7 +63,7 @@
             "mode": "managed",
             "type": "outscale_volume",
             "name": "outscale_volume",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -76,7 +76,7 @@
                         "size": 12,
                         "snapshot_id": "",
                         "state": "available",
-                        "subregion_name": "###region###b",
+                        "subregion_name": "eu-west-2b",
                         "tags": [
                             {
                                 "key": "Name",
@@ -95,7 +95,7 @@
             "mode": "managed",
             "type": "outscale_volume",
             "name": "outscale_volume2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -108,7 +108,7 @@
                         "size": 13,
                         "snapshot_id": "",
                         "state": "available",
-                        "subregion_name": "###region###a",
+                        "subregion_name": "eu-west-2a",
                         "tags": [
                             {
                                 "key": "Name",

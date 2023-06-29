@@ -9,7 +9,7 @@
             "mode": "data",
             "type": "outscale_internet_service",
             "name": "outscale_internet_serviced",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -39,7 +39,7 @@
             "mode": "managed",
             "type": "outscale_internet_service",
             "name": "outscale_internet_service",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,

@@ -9,7 +9,7 @@
             "mode": "managed",
             "type": "outscale_api_access_rule",
             "name": "aar_1",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -38,7 +38,7 @@
             "mode": "managed",
             "type": "outscale_ca",
             "name": "ca_for_aar",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
@@ -59,7 +59,7 @@
             "mode": "managed",
             "type": "outscale_ca",
             "name": "ca_for_aar_2",
-            "provider": "provider[\"local/test/outscale\"]",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
