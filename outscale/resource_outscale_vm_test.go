@@ -70,7 +70,7 @@ func TestAccVM_Behavior_Basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckOutscaleOAPIVMBehaviorConfigBasic(omi, "tinav4.c2r2p2", region, keypair, "highest", "restart"),
+				Config: testAccCheckOutscaleOAPIVMBehaviorConfigBasic(omi, "tinav4.c2r2p2", region, keypair, "high", "restart"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIVMExists("outscale_vm.basicr1", &server),
 					testAccCheckOutscaleOAPIVMAttributes(t, &server, omi),
