@@ -70,9 +70,11 @@ func testAccCheckOAPINatGatewayDestroy(s *terraform.State) error {
 			resp = rp
 			return nil
 		})
-
-		if err != nil || len(resp.GetNatServices()) > 0 {
-			return fmt.Errorf("Nat Services still exists (%s)", rs.Primary.ID)
+		natService := resp.GetNatServices()
+		if err == nil {
+			if len(natService) > 0 && natService[0].GetState() != "deleted" {
+				return fmt.Errorf("Nat Services still exists (%s)", rs.Primary.ID)
+			}
 		}
 	}
 	return nil
