@@ -14,11 +14,15 @@ func DataSourceOutscaleLoadBalancerVms() *schema.Resource {
 				ForceNew: true,
 				Required: true,
 			},
-
 			"backend_vm_ids": {
 				Type:     schema.TypeList,
 				ForceNew: true,
 				Required: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
+			"backend_ips": {
+				Type:     schema.TypeSet,
+				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"request_id": {
@@ -39,5 +43,6 @@ func DataSourceOutscaleLoadBalancerVmsRead(d *schema.ResourceData,
 	}
 
 	d.Set("backend_vm_ids", utils.StringSlicePtrToInterfaceSlice(lb.BackendVmIds))
+	d.Set("backend_ips", utils.StringSlicePtrToInterfaceSlice(lb.BackendIps))
 	return nil
 }

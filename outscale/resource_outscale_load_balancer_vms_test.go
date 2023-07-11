@@ -38,15 +38,16 @@ func TestAccVM_WithLBUAttachment_basic(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscaleLBUDestroy,
 		Steps: []resource.TestStep{
 			{
+				Config: testAccOutscaleLBUAttachmentConfig1(rand, omi, region),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPILBUExists("outscale_load_balancer.bar", &conf),
+					testAccCheckOutscaleLBUExists("outscale_load_balancer.bar", &conf),
 					testCheckInstanceAttached(1),
 				),
 			},
 			{
 				Config: testAcc_ConfigLBUAttachmentAddUpdate(omi, region),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPILBUExists("outscale_load_balancer.bar", &conf),
+					testAccCheckOutscaleLBUExists("outscale_load_balancer.bar", &conf),
 					testCheckInstanceAttached(2),
 				),
 			},
@@ -208,66 +209,6 @@ resource "outscale_vm" "foo2" {
 resource "outscale_load_balancer_vms" "foo1" {
   load_balancer_name      = outscale_load_balancer.barTach.id
   backend_vm_ids = [outscale_vm.foo2.id]
-}
-`, region, omi)
-}
-
-func testAcc_ConfigLBUAttachmentAddUpdate(omi, region string) string {
-	return fmt.Sprintf(`
-resource "outscale_load_balancer" "bar" {
-  load_balancer_name = "load-test12"
-  subregion_names = ["%sa"]
-  listeners {
-    backend_port = 8000
-    backend_protocol = "HTTP"
-    load_balancer_port = 80
-    load_balancer_protocol = "HTTP"
-  }
-}
-
-resource "outscale_vm" "foo1" {
-  image_id = "%[2]s"
-  vm_type = "tinav4.c1r1p1"
-}
-
-resource "outscale_vm" "foo2" {
-  image_id = "%[2]s"
-  vm_type = "tinav4.c1r1p1"
-}
-
-resource "outscale_load_balancer_vms" "foo1" {
-  load_balancer_name      = "${outscale_load_balancer.bar.id}"
-  backend_vm_ids = ["${outscale_vm.foo1.id}", "${outscale_vm.foo2.id}"]
-}
-`, region, omi)
-}
-
-func testAcc_ConfigLBUAttachmentRemoveUpdate(omi, region string) string {
-	return fmt.Sprintf(`
-resource "outscale_load_balancer" "bar" {
-  load_balancer_name = "load-test12"
-  subregion_names = ["%sa"]
-  listeners {
-    backend_port = 8000
-    backend_protocol = "HTTP"
-    load_balancer_port = 80
-    load_balancer_protocol = "HTTP"
-  }
-}
-
-resource "outscale_vm" "foo1" {
-  image_id = "%[2]s"
-  vm_type = "tinav4.c1r1p1"
-}
-
-resource "outscale_vm" "foo2" {
-  image_id = "%[2]s"
-  vm_type = "tinav4.c1r1p1"
-}
-
-resource "outscale_load_balancer_vms" "foo1" {
-  load_balancer_name      = "${outscale_load_balancer.bar.id}"
-  backend_vm_ids = ["${outscale_vm.foo2.id}"]
 }
 `, region, omi)
 }
