@@ -110,7 +110,7 @@ func resourceOutscaleOAPINetworkInterfaceAttachmentRead(d *schema.ResourceData, 
 		Target:     []string{"attached", "detached", "failed"},
 		Refresh:    nicLinkRefreshFunc(conn, nicID),
 		Timeout:    5 * time.Minute,
-		Delay:      10 * time.Second,
+		Delay:      2 * time.Second,
 		MinTimeout: 3 * time.Second,
 	}
 
@@ -177,7 +177,7 @@ func resourceOutscaleOAPINetworkInterfaceAttachmentDelete(d *schema.ResourceData
 		Target:     []string{"detached", "failed"},
 		Refresh:    nicLinkRefreshFunc(conn, nicID),
 		Timeout:    5 * time.Minute,
-		Delay:      10 * time.Second,
+		Delay:      5 * time.Second,
 		MinTimeout: 3 * time.Second,
 	}
 
@@ -200,7 +200,6 @@ func resourceOutscaleNetworkInterfaceAttachmentImportState(d *schema.ResourceDat
 		Target:     []string{"attached", "detached", "failed"},
 		Refresh:    nicLinkRefreshFunc(meta.(*OutscaleClient).OSCAPI, d.Id()),
 		Timeout:    5 * time.Minute,
-		Delay:      10 * time.Second,
 		MinTimeout: 3 * time.Second,
 	}
 

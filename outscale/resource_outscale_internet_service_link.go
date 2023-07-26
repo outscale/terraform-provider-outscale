@@ -98,8 +98,7 @@ func resourceOutscaleOAPIInternetServiceLinkCreate(d *schema.ResourceData, meta 
 		Target:     []string{"available"},
 		Refresh:    LISOAPIStateRefreshFunction(conn, filterReq, "failed"),
 		Timeout:    10 * time.Minute,
-		MinTimeout: 30 * time.Second,
-		// Delay:      3 * time.Minute,
+		MinTimeout: 20 * time.Second,
 	}
 
 	if _, err := stateConf.WaitForState(); err != nil {
@@ -124,8 +123,7 @@ func resourceOutscaleOAPIInternetServiceLinkRead(d *schema.ResourceData, meta in
 		Target:     []string{"deleted", "available"},
 		Refresh:    LISOAPIStateRefreshFunction(conn, filterReq, "failed"),
 		Timeout:    10 * time.Minute,
-		MinTimeout: 30 * time.Second,
-		// Delay:      3 * time.Minute,
+		MinTimeout: 20 * time.Second,
 	}
 
 	value, err := stateConf.WaitForState()
@@ -172,9 +170,8 @@ func resourceOutscaleOAPIInternetServiceLinkDelete(d *schema.ResourceData, meta 
 		Pending:    []string{"pending"},
 		Target:     []string{"deleted", "available"},
 		Refresh:    LISOAPIStateRefreshFunction(conn, filterReq, "failed"),
-		Timeout:    10 * time.Minute,
-		MinTimeout: 30 * time.Second,
-		Delay:      3 * time.Second,
+		Timeout:    5 * time.Minute,
+		MinTimeout: 10 * time.Second,
 	}
 
 	value, err := stateConf.WaitForState()

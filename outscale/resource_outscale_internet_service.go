@@ -133,29 +133,11 @@ func resourceOutscaleOAPIInternetServiceDelete(d *schema.ResourceData, meta inte
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	internetServiceID := d.Id()
-	filterReq := oscgo.ReadInternetServicesRequest{
-		Filters: &oscgo.FiltersInternetService{InternetServiceIds: &[]string{internetServiceID}},
-	}
-
-	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"pending"},
-		Target:     []string{"deleted", "available"},
-		Refresh:    LISOAPIStateRefreshFunction(conn, filterReq, "failed"),
-		Timeout:    10 * time.Minute,
-		MinTimeout: 30 * time.Second,
-		Delay:      1 * time.Minute,
-	}
-
-	_, err := stateConf.WaitForState()
-	if err != nil {
-		return fmt.Errorf("error waiting for Internet Service (%s) to become deleted: %s", d.Id(), err)
-	}
-
 	req := oscgo.DeleteInternetServiceRequest{
 		InternetServiceId: internetServiceID,
 	}
 
-	err = resource.Retry(120*time.Second, func() *resource.RetryError {
+	err := resource.Retry(120*time.Second, func() *resource.RetryError {
 		_, httpResp, err := conn.InternetServiceApi.DeleteInternetService(context.Background()).DeleteInternetServiceRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)

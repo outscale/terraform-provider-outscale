@@ -341,7 +341,8 @@ func resourceOutscaleLoadBalancerListenerRuleDelete(d *schema.ResourceData, meta
 
 			return &(*resp.ListenerRules)[0], "ready", nil
 		},
-		Timeout: 5 * time.Minute,
+		Timeout:    5 * time.Minute,
+		MinTimeout: 10 * time.Second,
 	}
 	if _, err := stateConf.WaitForState(); err != nil {
 		return fmt.Errorf("Error waiting for listener rule (%s) to become nil: %s", d.Id(), err)

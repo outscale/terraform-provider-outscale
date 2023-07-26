@@ -100,8 +100,8 @@ func resourceOutscaleOAPIVirtualGatewayLinkCreate(d *schema.ResourceData, meta i
 		Target:     []string{"attached"},
 		Refresh:    vpnGatewayLinkStateRefresh(conn, netID, vgwID),
 		Timeout:    15 * time.Minute,
-		Delay:      10 * time.Second,
-		MinTimeout: 5 * time.Second,
+		Delay:      2 * time.Second,
+		MinTimeout: 3 * time.Second,
 	}
 
 	_, err = stateConf.WaitForState()

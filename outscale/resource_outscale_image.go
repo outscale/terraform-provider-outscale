@@ -293,7 +293,7 @@ func resourceOAPIImageCreate(d *schema.ResourceData, meta interface{}) error {
 		Refresh:    ImageOAPIStateRefreshFunc(conn, req, "failed"),
 		Timeout:    10 * time.Minute,
 		MinTimeout: 30 * time.Second,
-		Delay:      1 * time.Minute,
+		Delay:      5 * time.Second,
 	}
 
 	_, err = stateConf.WaitForState()
@@ -458,7 +458,7 @@ func resourceOutscaleOAPIImageWaitForDestroy(id string, conn *oscgo.APIClient) e
 		Refresh:    ImageOAPIStateRefreshFunc(conn, filterReq, "failed"),
 		Timeout:    10 * time.Minute,
 		MinTimeout: 30 * time.Second,
-		Delay:      1 * time.Minute,
+		Delay:      5 * time.Second,
 	}
 
 	if _, err := stateConf.WaitForState(); err != nil {

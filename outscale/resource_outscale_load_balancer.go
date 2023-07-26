@@ -955,7 +955,8 @@ func resourceOutscaleOAPILoadBalancerDelete(d *schema.ResourceData, meta interfa
 			}
 			return lb, "ready", nil
 		},
-		Timeout: 5 * time.Minute,
+		Timeout:    5 * time.Minute,
+		MinTimeout: 10 * time.Second,
 	}
 	if _, err := stateConf.WaitForState(); err != nil {
 		return fmt.Errorf("Error waiting for load balancer (%s) to become null: %s", d.Id(), err)

@@ -228,7 +228,7 @@ func resourceOAPINatServiceDelete(d *schema.ResourceData, meta interface{}) erro
 		Target:     []string{"deleted", "available"},
 		Refresh:    NGOAPIStateRefreshFunc(conn, filterReq, "failed"),
 		Timeout:    30 * time.Minute,
-		Delay:      10 * time.Second,
+		Delay:      5 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
 

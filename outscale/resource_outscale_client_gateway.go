@@ -103,7 +103,7 @@ func resourceOutscaleClientGatewayRead(d *schema.ResourceData, meta interface{})
 		Target:     []string{"available", "failed"},
 		Refresh:    clientGatewayRefreshFunc(conn, &clientGatewayID),
 		Timeout:    10 * time.Minute,
-		Delay:      10 * time.Second,
+		Delay:      5 * time.Second,
 		MinTimeout: 3 * time.Second,
 	}
 
@@ -177,7 +177,7 @@ func resourceOutscaleClientGatewayDelete(d *schema.ResourceData, meta interface{
 		Target:     []string{"deleted", "failed"},
 		Refresh:    clientGatewayRefreshFunc(conn, &gatewayID),
 		Timeout:    10 * time.Minute,
-		Delay:      10 * time.Second,
+		Delay:      5 * time.Second,
 		MinTimeout: 3 * time.Second,
 	}
 

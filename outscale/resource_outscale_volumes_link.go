@@ -109,7 +109,6 @@ func resourceOAPIVolumeLinkCreate(d *schema.ResourceData, meta interface{}) erro
 			Target:     []string{"running"},
 			Refresh:    vmStateRefreshFunc(conn, iID, ""),
 			Timeout:    10 * time.Minute,
-			Delay:      10 * time.Second,
 			MinTimeout: 3 * time.Second,
 		}
 
@@ -148,7 +147,7 @@ func resourceOAPIVolumeLinkCreate(d *schema.ResourceData, meta interface{}) erro
 		Target:     []string{"attached"},
 		Refresh:    volumeOAPIAttachmentStateRefreshFunc(conn, vID, iID),
 		Timeout:    5 * time.Minute,
-		Delay:      10 * time.Second,
+		Delay:      1 * time.Second,
 		MinTimeout: 3 * time.Second,
 	}
 
@@ -323,7 +322,7 @@ func resourceOAPIVolumeLinkDelete(d *schema.ResourceData, meta interface{}) erro
 		Target:     []string{"detached"},
 		Refresh:    volumeOAPIAttachmentStateRefreshFunc(conn, vID, iID),
 		Timeout:    5 * time.Minute,
-		Delay:      10 * time.Second,
+		Delay:      2 * time.Second,
 		MinTimeout: 3 * time.Second,
 	}
 
