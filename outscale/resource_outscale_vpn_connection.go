@@ -168,7 +168,7 @@ func resourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{})
 		Target:     []string{"available", "failed"},
 		Refresh:    vpnConnectionRefreshFunc(conn, &vpnConnectionID),
 		Timeout:    10 * time.Minute,
-		Delay:      10 * time.Second,
+		Delay:      5 * time.Second,
 		MinTimeout: 3 * time.Second,
 	}
 
@@ -251,7 +251,7 @@ func resourceOutscaleVPNConnectionDelete(d *schema.ResourceData, meta interface{
 		Target:     []string{"deleted", "failed"},
 		Refresh:    vpnConnectionRefreshFunc(conn, &vpnConnectionID),
 		Timeout:    10 * time.Minute,
-		Delay:      10 * time.Second,
+		Delay:      5 * time.Second,
 		MinTimeout: 3 * time.Second,
 	}
 

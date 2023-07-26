@@ -80,7 +80,7 @@ func resourceOutscaleVPNConnectionRouteRead(d *schema.ResourceData, meta interfa
 		Target:     []string{"available", "failed"},
 		Refresh:    vpnConnectionRouteRefreshFunc(conn, &destinationIPRange, &vpnConnectionID),
 		Timeout:    10 * time.Minute,
-		Delay:      10 * time.Second,
+		Delay:      5 * time.Second,
 		MinTimeout: 3 * time.Second,
 	}
 
@@ -122,7 +122,7 @@ func resourceOutscaleVPNConnectionRouteDelete(d *schema.ResourceData, meta inter
 		Target:     []string{"deleted", "failed"},
 		Refresh:    vpnConnectionRouteRefreshFunc(conn, &destinationIPRange, &vpnConnectionID),
 		Timeout:    10 * time.Minute,
-		Delay:      10 * time.Second,
+		Delay:      5 * time.Second,
 		MinTimeout: 3 * time.Second,
 	}
 
@@ -195,7 +195,7 @@ func resourceOutscaleOAPIVPNConnectionRouteImportState(d *schema.ResourceData, m
 		Target:     []string{"available", "failed"},
 		Refresh:    vpnConnectionRouteRefreshFunc(conn, &destinationIPRange, &vpnConnectionID),
 		Timeout:    10 * time.Minute,
-		Delay:      10 * time.Second,
+		Delay:      1 * time.Second,
 		MinTimeout: 3 * time.Second,
 	}
 

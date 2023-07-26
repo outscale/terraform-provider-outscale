@@ -591,7 +591,7 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 		Target:     vmStateTarget,
 		Refresh:    vmStateRefreshFunc(conn, vm.GetVmId(), "terminated"),
 		Timeout:    d.Timeout(schema.TimeoutCreate),
-		Delay:      10 * time.Second,
+		Delay:      15 * time.Second,
 		MinTimeout: 3 * time.Second,
 	}
 

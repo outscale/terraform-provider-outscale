@@ -86,10 +86,8 @@ func resourceOutscaleOAPINetCreate(d *schema.ResourceData, meta interface{}) err
 func resourceOutscaleOAPINetRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	id := d.Id()
-
 	filters := oscgo.FiltersNet{
-		NetIds: &[]string{id},
+		NetIds: &[]string{d.Id()},
 	}
 
 	req := oscgo.ReadNetsRequest{
@@ -146,40 +144,64 @@ func resourceOutscaleOAPINetUpdate(d *schema.ResourceData, meta interface{}) err
 func resourceOutscaleOAPINetDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	id := d.Id()
-
 	req := oscgo.DeleteNetRequest{
-		NetId: id,
+		NetId: d.Id(),
+	}
+	err := resource.Retry(120*time.Second, func() *resource.RetryError {
+		_, httpResp, err := conn.NetApi.DeleteNet(context.Background()).DeleteNetRequest(req).Execute()
+		if err != nil {
+			return utils.CheckThrottling(httpResp, err)
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	var resp oscgo.ReadNetsResponse
+	filters := oscgo.FiltersNet{
+		NetIds: &[]string{d.Id()},
+	}
+	readReq := oscgo.ReadNetsRequest{
+		Filters: &filters,
 	}
 
 	stateConf := &resource.StateChangeConf{
-		Pending: []string{"pending"},
-		Target:  []string{"deleted", "failed"},
+		Pending: []string{"pending", "available"},
+		Target:  []string{"deleting", "deleted"},
 		Refresh: func() (interface{}, string, error) {
 			err := resource.Retry(120*time.Second, func() *resource.RetryError {
-				_, httpResp, err := conn.NetApi.DeleteNet(context.Background()).DeleteNetRequest(req).Execute()
+				rp, httpResp, err := conn.NetApi.ReadNets(context.Background()).ReadNetsRequest(readReq).Execute()
 				if err != nil {
 					return utils.CheckThrottling(httpResp, err)
 				}
+				resp = rp
 				return nil
 			})
 			if err != nil {
-				return nil, "failed", err
+				return nil, "", err
 			}
-			return "", "deleted", nil
+			state := "deleting"
+			if resp.HasNets() && len(resp.GetNets()) > 0 {
+				nats := resp.GetNets()
+				state = nats[0].GetState()
+				return resp, state, nil
+			}
+			return nil, state, nil
 		},
-		Timeout:    10 * time.Minute,
+		Timeout:    8 * time.Minute,
 		MinTimeout: 30 * time.Second,
-		Delay:      1 * time.Minute,
+		Delay:      3 * time.Second,
 	}
 
-	_, err := stateConf.WaitForState()
-	if err != nil {
+	if _, err := stateConf.WaitForState(); err != nil {
+		if strings.Contains(err.Error(), "couldn't find resource") {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("error deleting Net Service(%s): %s", d.Id(), err)
 	}
 
 	d.SetId("")
-
 	return nil
 }
 

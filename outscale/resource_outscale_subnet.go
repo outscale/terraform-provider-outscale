@@ -66,8 +66,8 @@ func resourceOutscaleOAPISubNetCreate(d *schema.ResourceData, meta interface{}) 
 			Target:     []string{"available"},
 			Refresh:    SubnetStateOApiRefreshFunc(conn, result.GetSubnetId()),
 			Timeout:    d.Timeout(schema.TimeoutCreate),
-			Delay:      6 * time.Second,
-			MinTimeout: 1 * time.Second,
+			Delay:      3 * time.Second,
+			MinTimeout: 2 * time.Second,
 		}
 		_, err = stateConf.WaitForState()
 		if err != nil {
@@ -183,8 +183,8 @@ func resourceOutscaleOAPISubNetDelete(d *schema.ResourceData, meta interface{}) 
 		Target:     []string{"deleted"},
 		Refresh:    SubnetStateOApiRefreshFunc(conn, id),
 		Timeout:    d.Timeout(schema.TimeoutCreate),
-		Delay:      2 * time.Second,
-		MinTimeout: 1 * time.Second,
+		Delay:      1 * time.Second,
+		MinTimeout: 2 * time.Second,
 	}
 	_, err = stateConf.WaitForState()
 	if err != nil {

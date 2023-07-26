@@ -171,7 +171,7 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 		Target:     []string{"available"},
 		Refresh:    volumeOAPIStateRefreshFunc(conn, resp.Volume.GetVolumeId()),
 		Timeout:    5 * time.Minute,
-		Delay:      10 * time.Second,
+		Delay:      4 * time.Second,
 		MinTimeout: 3 * time.Second,
 	}
 
@@ -236,7 +236,7 @@ func resourceOAPIVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 		Target:     []string{"available", "in-use"},
 		Refresh:    volumeOAPIStateRefreshFunc(conn, d.Id()),
 		Timeout:    5 * time.Minute,
-		Delay:      10 * time.Second,
+		Delay:      5 * time.Second,
 		MinTimeout: 3 * time.Second,
 	}
 
