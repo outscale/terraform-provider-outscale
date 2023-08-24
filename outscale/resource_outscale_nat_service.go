@@ -139,19 +139,18 @@ func resourceOAPINatServiceRead(d *schema.ResourceData, meta interface{}) error 
 		Filters: &oscgo.FiltersNatService{NatServiceIds: &[]string{d.Id()}},
 	}
 
-	stateConf := &resource.StateChangeConf{
-		Pending: []string{"pending"},
-		Target:  []string{"available", "deleted"},
-		Refresh: NGOAPIStateRefreshFunc(conn, filterReq, "failed"),
-		Timeout: 10 * time.Minute,
-	}
-
-	value, err := stateConf.WaitForState()
+	var resp oscgo.ReadNatServicesResponse
+	err := resource.Retry(120*time.Second, func() *resource.RetryError {
+		rp, httpResp, err := conn.NatServiceApi.ReadNatServices(context.Background()).ReadNatServicesRequest(filterReq).Execute()
+		if err != nil {
+			return utils.CheckThrottling(httpResp, err)
+		}
+		resp = rp
+		return nil
+	})
 	if err != nil {
 		return fmt.Errorf("error waiting for NAT Service (%s) to become available: %s", d.Id(), err)
 	}
-
-	resp := value.(oscgo.ReadNatServicesResponse)
 	if utils.IsResponseEmpty(len(resp.GetNatServices()), "NatService", d.Id()) {
 		d.SetId("")
 		return nil
