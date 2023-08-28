@@ -21,7 +21,7 @@ func TestAccOthers_DataOutscaleCa_basic(t *testing.T) {
 		CheckDestroy: testAccDataCheckOutscaleCaDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataOutscaleOAPICaConfig(utils.TestCaPem),
+				Config: testAccDataOutscaleOAPICaConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleCaExists(resourceName),
 				),
@@ -70,18 +70,18 @@ func testAccDataCheckOutscaleCaDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccDataOutscaleOAPICaConfig(ca_pem string) string {
+func testAccDataOutscaleOAPICaConfig() string {
 	return fmt.Sprintf(`
 resource "outscale_ca" "ca_test" {
-   ca_pem        =  %[1]q
-   description        = "Ca testacc create"
+   ca_pem        = file("./test-cert.pem")
+   description   = "Ca testacc create"
 }
 
-data "outscale_ca" "ca_data" { 
+data "outscale_ca" "ca_data" {
    filter {
       name   = "ca_ids"
       values = [outscale_ca.ca_test.id]
    }
 }
-`, ca_pem)
+`)
 }

@@ -25,6 +25,11 @@ jobs:
           access_key: ${{ secrets.OSC_ACCESS_KEY }}
           secret_key: ${{ secrets.OSC_SECRET_KEY }}
           region: ${{ secrets.OSC_REGION }}
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.3.5
+          terraform_wrapper: false
       - name: Set up Go
         uses: actions/setup-go@v4
         with:

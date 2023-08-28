@@ -34,7 +34,7 @@ test-vm: fmtcheck
 	TF_ACC=1 go test $(TEST) -run=TestAccVM -count 1 -v -parallel 8 $(TESTARGS) -timeout 240m -cover
 
 .PHONY: test-others
-test-others: fmtcheck
+test-others: fmtcheck test-gen-cert
 	TF_ACC=1 go test $(TEST) -run=TestAccOthers -count 1 -v -parallel 8 $(TESTARGS) -timeout 240m -cover
 
 .PHONY: fmt
@@ -67,6 +67,10 @@ test-examples:
 .PHONY: test-integration
 test-integration:
 	@sh -c "'$(CURDIR)/scripts/integration.sh'"
+
+.PHONY: test-gen-cert
+test-gen-cert:
+	@sh -c "'$(CURDIR)/scripts/generate-certificate.sh'"
 
 .PHONY: website
 website:

@@ -22,7 +22,7 @@ func TestAccDataOutscaleOAPIApiAccessRules_basic(t *testing.T) {
 		CheckDestroy: testAccDataCheckOutscaleApiAccessRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataOutscaleOAPIApiAccessRulesConfig(utils.TestCaPem),
+				Config: testAccDataOutscaleOAPIApiAccessRulesConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleApiAccessRuleExists(resourceName),
 				),
@@ -69,24 +69,23 @@ func testAccDataCheckOutscaleApiAccessRulesDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccDataOutscaleOAPIApiAccessRulesConfig(ca_pem string) string {
+func testAccDataOutscaleOAPIApiAccessRulesConfig() string {
 	return fmt.Sprintf(`
 resource "outscale_ca" "ca_rule" { 
-   ca_pem       = %[1]q
+   ca_pem       = file("./test-cert.pem")
    description  = "Ca testacc create"
 }
 
 resource "outscale_api_access_rule" "rule_data" {
-  ca_ids      = ["${outscale_ca.ca_rule.id}"]
+  ca_ids      = [outscale_ca.ca_rule.id]
   ip_ranges   = ["192.4.2.32/16"]
   description = "test api access rule"
 }
 
-
 data "outscale_api_access_rules" "filters_rules" {
   filter {
     name   = "api_access_rule_ids"
-    values = ["${outscale_api_access_rule.rule_data.id}"]
+    values = [outscale_api_access_rule.rule_data.id]
   }
 
   filter {
@@ -101,5 +100,5 @@ data "outscale_api_access_rules" "filters_rules" {
 }
 
 data "outscale_api_access_rules" "all_rules" {}
-	`, ca_pem)
+	`)
 }
