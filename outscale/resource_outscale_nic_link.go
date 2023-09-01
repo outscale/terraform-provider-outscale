@@ -117,7 +117,7 @@ func resourceOutscaleOAPINetworkInterfaceAttachmentRead(d *schema.ResourceData, 
 	resp, err := stateConf.WaitForState()
 	if err != nil {
 		return fmt.Errorf(
-			"Error waiting for Volume to attach to Instance: %s, error: %s", nicID, err)
+			"Error waiting for NIC to attach to Instance: %s, error: %s", nicID, err)
 	}
 
 	r := resp.(oscgo.ReadNicsResponse)
@@ -206,7 +206,7 @@ func resourceOutscaleNetworkInterfaceAttachmentImportState(d *schema.ResourceDat
 	resp, err := stateConf.WaitForState()
 	if err != nil {
 		return nil, fmt.Errorf(
-			"Error waiting for Volume to attach to Instance: %s, error: %s", d.Id(), err)
+			"Error waiting for NIC to attach to Instance: %s, error: %s", d.Id(), err)
 	}
 	r := resp.(oscgo.ReadNicsResponse)
 	linkNic := r.GetNics()[0].GetLinkNic()
