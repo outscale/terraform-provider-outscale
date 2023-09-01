@@ -26,7 +26,7 @@ const (
 	MaxPort         int     = 65535
 	MinIops         int     = 100
 	MaxIops         int     = 13000
-	DefaultIops     int     = 150
+	DefaultIops     int32   = 150
 	MaxSize         int     = 14901
 	InvalidState    string  = "InvalidState"
 	VolumeIOPSError string  = `

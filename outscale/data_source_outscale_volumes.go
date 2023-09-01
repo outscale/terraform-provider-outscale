@@ -190,5 +190,5 @@ func getIops(volumeType string, iops int32) int32 {
 	if volumeType != "standard" {
 		return iops
 	}
-	return defaultIops
+	return utils.DefaultIops
 }
