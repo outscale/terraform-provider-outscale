@@ -67,6 +67,10 @@ func resourceOutscaleOAPIVolume() *schema.Resource {
 				ForceNew: true,
 				Computed: true,
 			},
+			"termination_snapshot_name": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 			"volume_type": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -234,7 +238,7 @@ func resourceOAPIVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 		Target:     []string{"available", "in-use"},
 		Refresh:    volumeOAPIStateRefreshFunc(conn, d.Id()),
 		Timeout:    5 * time.Minute,
-		Delay:      5 * time.Second,
+		Delay:      2 * time.Second,
 		MinTimeout: 3 * time.Second,
 	}
 
@@ -248,6 +252,47 @@ func resourceOAPIVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 
 func resourceOAPIVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
+
+	if snpName, ok := d.GetOk("termination_snapshot_name"); ok {
+		volId := d.Get("volume_id").(string)
+		description := "Created before volume deletion"
+		resp := oscgo.CreateSnapshotResponse{}
+		request := oscgo.CreateSnapshotRequest{
+			Description: &description,
+			VolumeId:    &volId,
+		}
+		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+			var err error
+			r, httpResp, err := conn.SnapshotApi.CreateSnapshot(context.Background()).CreateSnapshotRequest(request).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp, err)
+			}
+			resp = r
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+		snapTagsReq := oscgo.CreateTagsRequest{
+			ResourceIds: []string{resp.Snapshot.GetSnapshotId()},
+			Tags: []oscgo.ResourceTag{
+				{
+					Key:   "Name",
+					Value: snpName.(string),
+				},
+			},
+		}
+		err = resource.Retry(60*time.Second, func() *resource.RetryError {
+			_, httpResp, err := conn.TagApi.CreateTags(context.Background()).CreateTagsRequest(snapTagsReq).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp, err)
+			}
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+	}
 
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
 		request := oscgo.DeleteVolumeRequest{
@@ -316,6 +361,11 @@ func readOAPIVolume(d *schema.ResourceData, volume oscgo.Volume) error {
 	}
 	if err := d.Set("creation_date", volume.GetCreationDate()); err != nil {
 		return err
+	}
+	if snapName, ok := d.GetOk("termination_snapshot_name"); ok {
+		if err := d.Set("termination_snapshot_name", snapName.(string)); err != nil {
+			return err
+		}
 	}
 	if err := d.Set("iops", getIops(volume.GetVolumeType(), volume.GetIops())); err != nil {
 		return err
