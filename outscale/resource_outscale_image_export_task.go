@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
+	"github.com/outscale/terraform-provider-outscale/utils"
 
 	"github.com/openlyinc/pointy"
 	oscgo "github.com/outscale/osc-sdk-go/v2"

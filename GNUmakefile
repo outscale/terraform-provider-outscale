@@ -11,7 +11,7 @@ default: build
 
 .PHONY: build
 build: fmtcheck
-	go build -ldflags "-X github.com/terraform-providers/terraform-provider-outscale/version.version=${VERSION}"
+	go build -ldflags "-X github.com/outscale/terraform-provider-outscale/version.version=${VERSION}"
 
 .PHONY: fmtcheck
 fmtcheck:

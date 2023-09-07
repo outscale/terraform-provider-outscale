@@ -12,7 +12,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
+	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
 func datasourceOutscaleOAPIVolume() *schema.Resource {

@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/plugin"
-	"github.com/terraform-providers/terraform-provider-outscale/outscale"
+	"github.com/outscale/terraform-provider-outscale/outscale"
 )
 
 func main() {

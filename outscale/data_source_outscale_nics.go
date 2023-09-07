@@ -9,7 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
+	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
 // Creates a network interface in the specified subnet
