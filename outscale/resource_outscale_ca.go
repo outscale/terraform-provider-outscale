@@ -9,8 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/openlyinc/pointy"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/terraform-provider-outscale/utils"
 	"github.com/spf13/cast"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleOAPICa() *schema.Resource {

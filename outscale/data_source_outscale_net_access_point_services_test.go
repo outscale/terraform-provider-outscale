@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
+	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
 func TestAccNet_AccessPointServicesDataSource_basic(t *testing.T) {

@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/logging"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
-	"github.com/terraform-providers/terraform-provider-outscale/version"
+	"github.com/outscale/terraform-provider-outscale/version"
 )
 
 // Config ...

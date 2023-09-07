@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
+	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
 func dataSourceOutscaleAccessKey() *schema.Resource {
