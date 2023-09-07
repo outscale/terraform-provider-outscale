@@ -225,6 +225,14 @@ func getOAPIVMSecurityGroups(groupSet []oscgo.SecurityGroupLight) []map[string]i
 	return res
 }
 
+func getVMSecurityGroupIds(sgIds []oscgo.SecurityGroupLight) []string {
+	res := make([]string, len(sgIds))
+	for k, ids := range sgIds {
+		res[k] = ids.GetSecurityGroupId()
+	}
+	return res
+}
+
 func getDataSourceOAPIVMSchemas() map[string]*schema.Schema {
 	wholeSchema := map[string]*schema.Schema{
 		"filter": dataSourceFiltersSchema(),
@@ -354,7 +362,7 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 			Computed: true,
 		},
 		"security_group_ids": {
-			Type:     schema.TypeList,
+			Type:     schema.TypeSet,
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
