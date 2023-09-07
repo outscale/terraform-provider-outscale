@@ -338,7 +338,7 @@ func resourceOutscaleOApiVM() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"security_group_ids": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
@@ -667,6 +667,11 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 		if err := d.Set("admin_password", adminPassword); err != nil {
 			return err
 		}
+		if len(utils.SetToStringSlice(d.Get("security_group_ids").(*schema.Set))) > 0 {
+			if err := set("security_group_ids", getVMSecurityGroupIds(vm.GetSecurityGroups())); err != nil {
+				return err
+			}
+		}
 		d.SetId(vm.GetVmId())
 		return oapiVMDescriptionAttributes(set, &vm)
 	}); err != nil {
@@ -789,7 +794,7 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 	if d.HasChange("security_group_ids") && !d.IsNewResource() {
 		opts := oscgo.UpdateVmRequest{VmId: id}
 
-		opts.SetSecurityGroupIds(utils.InterfaceSliceToStringSlice(d.Get("security_group_ids").([]interface{})))
+		opts.SetSecurityGroupIds(utils.SetToStringSlice(d.Get("security_group_ids").(*schema.Set)))
 		if err := updateVmAttr(conn, opts); err != nil {
 			return err
 		}
@@ -976,7 +981,7 @@ func buildCreateVmsRequest(d *schema.ResourceData, meta interface{}) (oscgo.Crea
 		request.SetPrivateIps(privateIPs)
 	}
 
-	if sgIDs := utils.InterfaceSliceToStringSlice(d.Get("security_group_ids").([]interface{})); len(sgIDs) > 0 {
+	if sgIDs := utils.SetToStringSlice(d.Get("security_group_ids").(*schema.Set)); len(sgIDs) > 0 {
 		request.SetSecurityGroupIds(sgIDs)
 	}
 
