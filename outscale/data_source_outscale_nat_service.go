@@ -13,9 +13,9 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPINatService() *schema.Resource {
+func DataSourceOutscaleOAPINatService() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPINatServiceRead,
+		Read: DataSourceOutscaleOAPINatServiceRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -61,7 +61,7 @@ func dataSourceOutscaleOAPINatService() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPINatServiceRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleOAPINatServiceRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")

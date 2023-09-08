@@ -13,9 +13,9 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPIQuota() *schema.Resource {
+func DataSourceOutscaleOAPIQuota() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPIQuotaRead,
+		Read: DataSourceOutscaleOAPIQuotaRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -59,7 +59,7 @@ func dataSourceOutscaleOAPIQuota() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPIQuotaRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleOAPIQuotaRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	req := oscgo.ReadQuotasRequest{}

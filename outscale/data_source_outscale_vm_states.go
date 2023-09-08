@@ -13,9 +13,9 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPIVMStates() *schema.Resource {
+func DataSourceOutscaleOAPIVMStates() *schema.Resource {
 	return &schema.Resource{
-		Read:   dataSourceOutscaleOAPIVMStatesRead,
+		Read:   DataSourceOutscaleOAPIVMStatesRead,
 		Schema: getOAPIVMStatesDataSourceSchema(),
 	}
 }
@@ -49,7 +49,7 @@ func getOAPIVMStatesDataSourceSchema() map[string]*schema.Schema {
 	return wholeSchema
 }
 
-func dataSourceOutscaleOAPIVMStatesRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleOAPIVMStatesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")

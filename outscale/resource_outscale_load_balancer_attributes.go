@@ -15,12 +15,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
+func ResourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPILoadBalancerAttributesCreate,
-		Update: resourceOutscaleOAPILoadBalancerAttributesUpdate,
-		Read:   resourceOutscaleOAPILoadBalancerAttributesRead,
-		Delete: resourceOutscaleOAPILoadBalancerAttributesDelete,
+		Create: ResourceOutscaleOAPILoadBalancerAttributesCreate,
+		Update: ResourceOutscaleOAPILoadBalancerAttributesUpdate,
+		Read:   ResourceOutscaleOAPILoadBalancerAttributesRead,
+		Delete: ResourceOutscaleOAPILoadBalancerAttributesDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -268,13 +268,13 @@ func lb_atoi_at(hc map[string]interface{}, el string) (int, bool) {
 	return r, err == nil
 }
 
-func resourceOutscaleOAPILoadBalancerAttributesUpdate(d *schema.ResourceData,
+func ResourceOutscaleOAPILoadBalancerAttributesUpdate(d *schema.ResourceData,
 	meta interface{}) error {
-	return resourceOutscaleOAPILoadBalancerAttributesCreate_(d, meta, true)
+	return ResourceOutscaleOAPILoadBalancerAttributesCreate_(d, meta, true)
 }
 
-func resourceOutscaleOAPILoadBalancerAttributesCreate(d *schema.ResourceData, meta interface{}) error {
-	return resourceOutscaleOAPILoadBalancerAttributesCreate_(d, meta, false)
+func ResourceOutscaleOAPILoadBalancerAttributesCreate(d *schema.ResourceData, meta interface{}) error {
+	return ResourceOutscaleOAPILoadBalancerAttributesCreate_(d, meta, false)
 }
 
 func loadBalancerAttributesDoRequest(d *schema.ResourceData, meta interface{}, req oscgo.UpdateLoadBalancerRequest) error {
@@ -296,11 +296,11 @@ func loadBalancerAttributesDoRequest(d *schema.ResourceData, meta interface{}, r
 	d.SetId(req.LoadBalancerName)
 	log.Printf("[INFO] LBU Attr ID: %s", d.Id())
 
-	return resourceOutscaleOAPILoadBalancerAttributesRead(d, meta)
+	return ResourceOutscaleOAPILoadBalancerAttributesRead(d, meta)
 
 }
 
-func resourceOutscaleOAPILoadBalancerAttributesCreate_(d *schema.ResourceData, meta interface{}, isUpdate bool) error {
+func ResourceOutscaleOAPILoadBalancerAttributesCreate_(d *schema.ResourceData, meta interface{}, isUpdate bool) error {
 	ename, ok := d.GetOk("load_balancer_name")
 
 	if !ok {
@@ -390,7 +390,7 @@ func resourceOutscaleOAPILoadBalancerAttributesCreate_(d *schema.ResourceData, m
 	return loadBalancerAttributesDoRequest(d, meta, req)
 }
 
-func resourceOutscaleOAPILoadBalancerAttributesRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPILoadBalancerAttributesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	elbName := d.Id()
 
@@ -493,7 +493,7 @@ func resourceOutscaleOAPILoadBalancerAttributesRead(d *schema.ResourceData, meta
 	return nil
 }
 
-func resourceOutscaleOAPILoadBalancerAttributesDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPILoadBalancerAttributesDelete(d *schema.ResourceData, meta interface{}) error {
 	var err error
 
 	conn := meta.(*OutscaleClient).OSCAPI

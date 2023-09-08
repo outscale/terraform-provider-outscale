@@ -12,12 +12,12 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func resourceOutscaleOAPIInternetService() *schema.Resource {
+func ResourceOutscaleOAPIInternetService() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPIInternetServiceCreate,
-		Read:   resourceOutscaleOAPIInternetServiceRead,
-		Update: resourceOutscaleOAPIInternetServiceUpdate,
-		Delete: resourceOutscaleOAPIInternetServiceDelete,
+		Create: ResourceOutscaleOAPIInternetServiceCreate,
+		Read:   ResourceOutscaleOAPIInternetServiceRead,
+		Update: ResourceOutscaleOAPIInternetServiceUpdate,
+		Delete: ResourceOutscaleOAPIInternetServiceDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -44,7 +44,7 @@ func resourceOutscaleOAPIInternetService() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPIInternetServiceCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPIInternetServiceCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	var resp oscgo.CreateInternetServiceResponse
@@ -71,10 +71,10 @@ func resourceOutscaleOAPIInternetServiceCreate(d *schema.ResourceData, meta inte
 
 	d.SetId(resp.InternetService.GetInternetServiceId())
 
-	return resourceOutscaleOAPIInternetServiceRead(d, meta)
+	return ResourceOutscaleOAPIInternetServiceRead(d, meta)
 }
 
-func resourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	id := d.Id()
@@ -119,17 +119,17 @@ func resourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta interf
 	return d.Set("tags", tagsOSCAPIToMap(resp.GetInternetServices()[0].GetTags()))
 }
 
-func resourceOutscaleOAPIInternetServiceUpdate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPIInternetServiceUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
 
-	return resourceOutscaleOAPIInternetServiceRead(d, meta)
+	return ResourceOutscaleOAPIInternetServiceRead(d, meta)
 }
 
-func resourceOutscaleOAPIInternetServiceDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPIInternetServiceDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	internetServiceID := d.Id()

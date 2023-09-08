@@ -17,7 +17,7 @@ import (
 
 const defaultIops = 150
 
-func resourceOutscaleOAPIVolume() *schema.Resource {
+func ResourceOutscaleOAPIVolume() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceOAPIVolumeCreate,
 		Read:   resourceOAPIVolumeRead,

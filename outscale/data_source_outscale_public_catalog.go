@@ -11,9 +11,9 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPIPublicCatalog() *schema.Resource {
+func DataSourceOutscaleOAPIPublicCatalog() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPIPublicCatalogRead,
+		Read: DataSourceOutscaleOAPIPublicCatalogRead,
 		Schema: map[string]*schema.Schema{
 			"catalog": {
 				Type:     schema.TypeSet,
@@ -71,7 +71,7 @@ func dataSourceOutscaleOAPIPublicCatalog() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPIPublicCatalogRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleOAPIPublicCatalogRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	req := oscgo.ReadPublicCatalogRequest{}

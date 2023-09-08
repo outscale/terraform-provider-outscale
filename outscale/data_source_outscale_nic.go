@@ -17,9 +17,9 @@ import (
 )
 
 // Creates a network interface in the specified subnet
-func dataSourceOutscaleOAPINic() *schema.Resource {
+func DataSourceOutscaleOAPINic() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPINicRead,
+		Read: DataSourceOutscaleOAPINicRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -214,7 +214,7 @@ func dataSourceOutscaleOAPINic() *schema.Resource {
 }
 
 // Read Nic
-func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	nicID, okID := d.GetOk("nic_id")

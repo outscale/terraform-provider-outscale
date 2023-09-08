@@ -16,9 +16,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func dataSourceOutscaleOAPILinPeeringConnection() *schema.Resource {
+func DataSourceOutscaleOAPILinPeeringConnection() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPILinPeeringConnectionRead,
+		Read: DataSourceOutscaleOAPILinPeeringConnectionRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter":       dataSourceFiltersSchema(),
@@ -53,7 +53,7 @@ func dataSourceOutscaleOAPILinPeeringConnection() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPILinPeeringConnectionRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleOAPILinPeeringConnectionRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	log.Printf("[DEBUG] Reading Net Peering Connections.")

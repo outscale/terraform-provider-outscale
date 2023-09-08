@@ -5,9 +5,9 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleLoadBalancerVms() *schema.Resource {
+func DataSourceOutscaleLoadBalancerVms() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleLoadBalancerVmsRead,
+		Read: DataSourceOutscaleLoadBalancerVmsRead,
 		Schema: getDataSourceSchemas(map[string]*schema.Schema{
 			"load_balancer_name": {
 				Type:     schema.TypeString,
@@ -29,7 +29,7 @@ func dataSourceOutscaleLoadBalancerVms() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleLoadBalancerVmsRead(d *schema.ResourceData,
+func DataSourceOutscaleLoadBalancerVmsRead(d *schema.ResourceData,
 	meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 

@@ -14,9 +14,9 @@ import (
 	"github.com/spf13/cast"
 )
 
-func dataSourceOutscaleOAPIFlexibleGpu() *schema.Resource {
+func DataSourceOutscaleOAPIFlexibleGpu() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPIFlexibleGpuRead,
+		Read: DataSourceOutscaleOAPIFlexibleGpuRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"request_id": {
@@ -55,7 +55,7 @@ func dataSourceOutscaleOAPIFlexibleGpu() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPIFlexibleGpuRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleOAPIFlexibleGpuRead(d *schema.ResourceData, meta interface{}) error {
 
 	conn := meta.(*OutscaleClient).OSCAPI
 

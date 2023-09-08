@@ -12,15 +12,15 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPILBUTags() *schema.Resource {
+func DataSourceOutscaleOAPILBUTags() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPILBUTagsRead,
+		Read: DataSourceOutscaleOAPILBUTagsRead,
 
 		Schema: getDataSourceSchemas(getDSOAPILBUTagsSchema()),
 	}
 }
 
-func dataSourceOutscaleOAPILBUTagsRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleOAPILBUTagsRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	ename, nameOk := d.GetOk("load_balancer_names")

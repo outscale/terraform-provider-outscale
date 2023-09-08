@@ -13,11 +13,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func resourceOutscaleOAPINetworkInterfacePrivateIP() *schema.Resource {
+func ResourceOutscaleOAPINetworkInterfacePrivateIP() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPINetworkInterfacePrivateIPCreate,
-		Read:   resourceOutscaleOAPINetworkInterfacePrivateIPRead,
-		Delete: resourceOutscaleOAPINetworkInterfacePrivateIPDelete,
+		Create: ResourceOutscaleOAPINetworkInterfacePrivateIPCreate,
+		Read:   ResourceOutscaleOAPINetworkInterfacePrivateIPRead,
+		Delete: ResourceOutscaleOAPINetworkInterfacePrivateIPDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -57,7 +57,7 @@ func resourceOutscaleOAPINetworkInterfacePrivateIP() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPINetworkInterfacePrivateIPCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPINetworkInterfacePrivateIPCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	input := oscgo.LinkPrivateIpsRequest{
@@ -91,10 +91,10 @@ func resourceOutscaleOAPINetworkInterfacePrivateIPCreate(d *schema.ResourceData,
 
 	d.SetId(input.NicId)
 
-	return resourceOutscaleOAPINetworkInterfacePrivateIPRead(d, meta)
+	return ResourceOutscaleOAPINetworkInterfacePrivateIPRead(d, meta)
 }
 
-func resourceOutscaleOAPINetworkInterfacePrivateIPRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPINetworkInterfacePrivateIPRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	req := oscgo.ReadNicsRequest{
@@ -171,7 +171,7 @@ func resourceOutscaleOAPINetworkInterfacePrivateIPRead(d *schema.ResourceData, m
 	return nil
 }
 
-func resourceOutscaleOAPINetworkInterfacePrivateIPDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPINetworkInterfacePrivateIPDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	input := oscgo.UnlinkPrivateIpsRequest{

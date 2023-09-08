@@ -12,9 +12,9 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPIImage() *schema.Resource {
+func DataSourceOutscaleOAPIImage() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPIImageRead,
+		Read: DataSourceOutscaleOAPIImageRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -194,7 +194,7 @@ func dataSourceOutscaleOAPIImage() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")

@@ -12,12 +12,12 @@ import (
 	"github.com/spf13/cast"
 )
 
-func resourceOutscaleOAPIApiAccessRule() *schema.Resource {
+func ResourceOutscaleOAPIApiAccessRule() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPIApiAccessRuleCreate,
-		Read:   resourceOutscaleOAPIApiAccessRuleRead,
-		Update: resourceOutscaleOAPIApiAccessRuleUpdate,
-		Delete: resourceOutscaleOAPIApiAccessRuleDelete,
+		Create: ResourceOutscaleOAPIApiAccessRuleCreate,
+		Read:   ResourceOutscaleOAPIApiAccessRuleRead,
+		Update: ResourceOutscaleOAPIApiAccessRuleUpdate,
+		Delete: ResourceOutscaleOAPIApiAccessRuleDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -53,7 +53,7 @@ func resourceOutscaleOAPIApiAccessRule() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPIApiAccessRuleCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPIApiAccessRuleCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	var checkParam = false
 	req := oscgo.CreateApiAccessRuleRequest{}
@@ -92,10 +92,10 @@ func resourceOutscaleOAPIApiAccessRuleCreate(d *schema.ResourceData, meta interf
 	}
 	d.SetId(cast.ToString(resp.ApiAccessRule.GetApiAccessRuleId()))
 
-	return resourceOutscaleOAPIApiAccessRuleRead(d, meta)
+	return ResourceOutscaleOAPIApiAccessRuleRead(d, meta)
 }
 
-func resourceOutscaleOAPIApiAccessRuleRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPIApiAccessRuleRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	req := oscgo.ReadApiAccessRulesRequest{
@@ -153,7 +153,7 @@ func resourceOutscaleOAPIApiAccessRuleRead(d *schema.ResourceData, meta interfac
 	return nil
 }
 
-func resourceOutscaleOAPIApiAccessRuleUpdate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPIApiAccessRuleUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	accRid, isIdOk := d.GetOk("api_access_rule_id")
@@ -197,10 +197,10 @@ func resourceOutscaleOAPIApiAccessRuleUpdate(d *schema.ResourceData, meta interf
 	if err != nil {
 		return err
 	}
-	return resourceOutscaleOAPIApiAccessRuleRead(d, meta)
+	return ResourceOutscaleOAPIApiAccessRuleRead(d, meta)
 }
 
-func resourceOutscaleOAPIApiAccessRuleDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPIApiAccessRuleDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	req := oscgo.DeleteApiAccessRuleRequest{

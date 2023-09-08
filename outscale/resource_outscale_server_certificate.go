@@ -14,12 +14,12 @@ import (
 	"github.com/spf13/cast"
 )
 
-func resourceOutscaleOAPIServerCertificate() *schema.Resource {
+func ResourceOutscaleOAPIServerCertificate() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPIServerCertificateCreate,
-		Read:   resourceOutscaleOAPIServerCertificateRead,
-		Update: resourceOutscaleOAPIServerCertificateUpdate,
-		Delete: resourceOutscaleOAPIServerCertificateDelete,
+		Create: ResourceOutscaleOAPIServerCertificateCreate,
+		Read:   ResourceOutscaleOAPIServerCertificateRead,
+		Update: ResourceOutscaleOAPIServerCertificateUpdate,
+		Delete: ResourceOutscaleOAPIServerCertificateDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -71,7 +71,7 @@ func resourceOutscaleOAPIServerCertificate() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPIServerCertificateCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPIServerCertificateCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	req := oscgo.CreateServerCertificateRequest{
@@ -113,10 +113,10 @@ func resourceOutscaleOAPIServerCertificateCreate(d *schema.ResourceData, meta in
 
 	d.SetId(cast.ToString(resp.ServerCertificate.Id))
 
-	return resourceOutscaleOAPIServerCertificateRead(d, meta)
+	return ResourceOutscaleOAPIServerCertificateRead(d, meta)
 }
 
-func resourceOutscaleOAPIServerCertificateRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPIServerCertificateRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	id := d.Id()
@@ -165,7 +165,7 @@ func resourceOutscaleOAPIServerCertificateRead(d *schema.ResourceData, meta inte
 	return nil
 }
 
-func resourceOutscaleOAPIServerCertificateUpdate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPIServerCertificateUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	oldName, newName := d.GetChange("name")
@@ -192,10 +192,10 @@ func resourceOutscaleOAPIServerCertificateUpdate(d *schema.ResourceData, meta in
 		return fmt.Errorf("[DEBUG] Error update Server Certificate: %s", utils.GetErrorResponse(err))
 	}
 
-	return resourceOutscaleOAPIServerCertificateRead(d, meta)
+	return ResourceOutscaleOAPIServerCertificateRead(d, meta)
 }
 
-func resourceOutscaleOAPIServerCertificateDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPIServerCertificateDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	req := oscgo.DeleteServerCertificateRequest{

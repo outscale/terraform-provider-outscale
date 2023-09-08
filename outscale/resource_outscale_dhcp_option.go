@@ -12,12 +12,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func resourceOutscaleDHCPOption() *schema.Resource {
+func ResourceOutscaleDHCPOption() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleDHCPOptionCreate,
-		Read:   resourceOutscaleDHCPOptionRead,
-		Update: resourceOutscaleDHCPOptionUpdate,
-		Delete: resourceOutscaleDHCPOptionDelete,
+		Create: ResourceOutscaleDHCPOptionCreate,
+		Read:   ResourceOutscaleDHCPOptionRead,
+		Update: ResourceOutscaleDHCPOptionUpdate,
+		Delete: ResourceOutscaleDHCPOptionDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -72,7 +72,7 @@ func resourceOutscaleDHCPOption() *schema.Resource {
 	}
 }
 
-func resourceOutscaleDHCPOptionCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleDHCPOptionCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	createOpts := oscgo.CreateDhcpOptionsRequest{}
@@ -112,10 +112,10 @@ func resourceOutscaleDHCPOptionCreate(d *schema.ResourceData, meta interface{}) 
 
 	d.SetId(dhcp.GetDhcpOptionsSetId())
 
-	return resourceOutscaleDHCPOptionRead(d, meta)
+	return ResourceOutscaleDHCPOptionRead(d, meta)
 }
 
-func resourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	dhcpID := d.Id()
 
@@ -156,17 +156,17 @@ func resourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) er
 	return nil
 }
 
-func resourceOutscaleDHCPOptionUpdate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleDHCPOptionUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
 
-	return resourceOutscaleDHCPOptionRead(d, meta)
+	return ResourceOutscaleDHCPOptionRead(d, meta)
 }
 
-func resourceOutscaleDHCPOptionDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleDHCPOptionDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	dhcpID := d.Id()

@@ -14,12 +14,12 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 )
 
-func resourceOutscaleVPNConnection() *schema.Resource {
+func ResourceOutscaleVPNConnection() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleVPNConnectionCreate,
-		Read:   resourceOutscaleVPNConnectionRead,
-		Update: resourceOutscaleVPNConnectionUpdate,
-		Delete: resourceOutscaleVPNConnectionDelete,
+		Create: ResourceOutscaleVPNConnectionCreate,
+		Read:   ResourceOutscaleVPNConnectionRead,
+		Update: ResourceOutscaleVPNConnectionUpdate,
+		Delete: ResourceOutscaleVPNConnectionDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -120,7 +120,7 @@ func resourceOutscaleVPNConnection() *schema.Resource {
 	}
 }
 
-func resourceOutscaleVPNConnectionCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleVPNConnectionCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	req := oscgo.CreateVpnConnectionRequest{
@@ -155,10 +155,10 @@ func resourceOutscaleVPNConnectionCreate(d *schema.ResourceData, meta interface{
 
 	d.SetId(*resp.GetVpnConnection().VpnConnectionId)
 
-	return resourceOutscaleVPNConnectionRead(d, meta)
+	return ResourceOutscaleVPNConnectionRead(d, meta)
 }
 
-func resourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	vpnConnectionID := d.Id()
@@ -217,17 +217,17 @@ func resourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{})
 	return nil
 }
 
-func resourceOutscaleVPNConnectionUpdate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleVPNConnectionUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
 
-	return resourceOutscaleVPNConnectionRead(d, meta)
+	return ResourceOutscaleVPNConnectionRead(d, meta)
 }
 
-func resourceOutscaleVPNConnectionDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleVPNConnectionDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	vpnConnectionID := d.Id()

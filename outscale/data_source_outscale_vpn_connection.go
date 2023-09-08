@@ -14,9 +14,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func dataSourceOutscaleVPNConnection() *schema.Resource {
+func DataSourceOutscaleVPNConnection() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleVPNConnectionRead,
+		Read: DataSourceOutscaleVPNConnectionRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"vpn_connection_id": {
@@ -104,7 +104,7 @@ func dataSourceOutscaleVPNConnection() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")

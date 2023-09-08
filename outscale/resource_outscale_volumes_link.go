@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func resourceOutscaleOAPIVolumeLink() *schema.Resource {
+func ResourceOutscaleOAPIVolumeLink() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceOAPIVolumeLinkCreate,
 		Read:   resourceOAPIVolumeLinkRead,

@@ -13,11 +13,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func resourceOutscaleOAPIVirtualGatewayRoutePropagation() *schema.Resource {
+func ResourceOutscaleOAPIVirtualGatewayRoutePropagation() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPIVpnGatewayRoutePropagationEnable,
-		Read:   resourceOutscaleOAPIVpnGatewayRoutePropagationRead,
-		Delete: resourceOutscaleOAPIVpnGatewayRoutePropagationDisable,
+		Create: ResourceOutscaleOAPIVpnGatewayRoutePropagationEnable,
+		Read:   ResourceOutscaleOAPIVpnGatewayRoutePropagationRead,
+		Delete: ResourceOutscaleOAPIVpnGatewayRoutePropagationDisable,
 
 		Schema: map[string]*schema.Schema{
 			"virtual_gateway_id": {
@@ -43,7 +43,7 @@ func resourceOutscaleOAPIVirtualGatewayRoutePropagation() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPIVpnGatewayRoutePropagationEnable(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPIVpnGatewayRoutePropagationEnable(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	gwID := d.Get("virtual_gateway_id").(string)
@@ -75,7 +75,7 @@ func resourceOutscaleOAPIVpnGatewayRoutePropagationEnable(d *schema.ResourceData
 	return nil
 }
 
-func resourceOutscaleOAPIVpnGatewayRoutePropagationDisable(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPIVpnGatewayRoutePropagationDisable(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	gwID := d.Get("virtual_gateway_id").(string)
@@ -106,7 +106,7 @@ func resourceOutscaleOAPIVpnGatewayRoutePropagationDisable(d *schema.ResourceDat
 	return nil
 }
 
-func resourceOutscaleOAPIVpnGatewayRoutePropagationRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPIVpnGatewayRoutePropagationRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	gwID := d.Get("virtual_gateway_id").(string)

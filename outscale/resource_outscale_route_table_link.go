@@ -20,13 +20,13 @@ const (
 	errorLinkRouteTableSetting = "error setting `%s` for Link Route Table (%s): %s"
 )
 
-func resourceOutscaleOAPILinkRouteTable() *schema.Resource {
+func ResourceOutscaleOAPILinkRouteTable() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPILinkRouteTableCreate,
-		Read:   resourceOutscaleOAPILinkRouteTableRead,
-		Delete: resourceOutscaleOAPILinkRouteTableDelete,
+		Create: ResourceOutscaleOAPILinkRouteTableCreate,
+		Read:   ResourceOutscaleOAPILinkRouteTableRead,
+		Delete: ResourceOutscaleOAPILinkRouteTableDelete,
 		Importer: &schema.ResourceImporter{
-			State: resourceOutscaleOAPILinkRouteTableImportState,
+			State: ResourceOutscaleOAPILinkRouteTableImportState,
 		},
 		Schema: map[string]*schema.Schema{
 			"subnet_id": {
@@ -55,7 +55,7 @@ func resourceOutscaleOAPILinkRouteTable() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPILinkRouteTableCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPILinkRouteTableCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	subnetID := d.Get("subnet_id").(string)
 	routeTableID := d.Get("route_table_id").(string)
@@ -90,10 +90,10 @@ func resourceOutscaleOAPILinkRouteTableCreate(d *schema.ResourceData, meta inter
 
 	d.SetId(resp.GetLinkRouteTableId())
 
-	return resourceOutscaleOAPILinkRouteTableRead(d, meta)
+	return ResourceOutscaleOAPILinkRouteTableRead(d, meta)
 }
 
-func resourceOutscaleOAPILinkRouteTableRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPILinkRouteTableRead(d *schema.ResourceData, meta interface{}) error {
 	routeTableID := d.Get("route_table_id").(string)
 	linkRTable, err := readOutscaleLinkRouteTable(meta.(*OutscaleClient), routeTableID, d.Id())
 	if err != nil {
@@ -117,7 +117,7 @@ func resourceOutscaleOAPILinkRouteTableRead(d *schema.ResourceData, meta interfa
 	return nil
 }
 
-func resourceOutscaleOAPILinkRouteTableDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPILinkRouteTableDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	log.Printf("[INFO] Deleting link route table: %s", d.Id())
@@ -145,7 +145,7 @@ func resourceOutscaleOAPILinkRouteTableDelete(d *schema.ResourceData, meta inter
 	return nil
 }
 
-func resourceOutscaleOAPILinkRouteTableImportState(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+func ResourceOutscaleOAPILinkRouteTableImportState(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	parts := strings.SplitN(d.Id(), "_", 2)
 	if len(parts) != 2 {
 		return nil, errors.New("import format error: to import a Link Route Table, use the format {route_table_id}_{link_route_table_id}")

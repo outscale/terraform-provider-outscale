@@ -28,15 +28,15 @@ var allowedTargets = []string{
 	"net_peering_id",
 }
 
-func resourceOutscaleOAPIRoute() *schema.Resource {
+func ResourceOutscaleOAPIRoute() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPIRouteCreate,
-		Read:   resourceOutscaleOAPIRouteRead,
-		Update: resourceOutscaleOAPIRouteUpdate,
-		Delete: resourceOutscaleOAPIRouteDelete,
-		Exists: resourceOutscaleOAPIRouteExists,
+		Create: ResourceOutscaleOAPIRouteCreate,
+		Read:   ResourceOutscaleOAPIRouteRead,
+		Update: ResourceOutscaleOAPIRouteUpdate,
+		Delete: ResourceOutscaleOAPIRouteDelete,
+		Exists: ResourceOutscaleOAPIRouteExists,
 		Importer: &schema.ResourceImporter{
-			State: resourceOutscaleOAPIRouteImportState,
+			State: ResourceOutscaleOAPIRouteImportState,
 		},
 		Schema: map[string]*schema.Schema{
 			"creation_method": {
@@ -108,7 +108,7 @@ func resourceOutscaleOAPIRoute() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPIRouteCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPIRouteCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	numTargets, target := getTarget(d)
 	awaitActiveState := d.Get("await_active_state").(bool)
@@ -175,10 +175,10 @@ func resourceOutscaleOAPIRouteCreate(d *schema.ResourceData, meta interface{}) e
 		}
 	}
 	d.SetId(d.Get("route_table_id").(string) + "_" + d.Get("destination_ip_range").(string))
-	return resourceOutscaleOAPIRouteSetResourceData(d, route, requestID)
+	return ResourceOutscaleOAPIRouteSetResourceData(d, route, requestID)
 }
 
-func resourceOutscaleOAPIRouteRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPIRouteRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	routeTableID := d.Get("route_table_id").(string)
 
@@ -194,10 +194,10 @@ func resourceOutscaleOAPIRouteRead(d *schema.ResourceData, meta interface{}) err
 		d.SetId("")
 		return nil
 	}
-	return resourceOutscaleOAPIRouteSetResourceData(d, route, requestID)
+	return ResourceOutscaleOAPIRouteSetResourceData(d, route, requestID)
 }
 
-func resourceOutscaleOAPIRouteSetResourceData(d *schema.ResourceData, route *oscgo.Route, requestID string) error {
+func ResourceOutscaleOAPIRouteSetResourceData(d *schema.ResourceData, route *oscgo.Route, requestID string) error {
 	if err := d.Set("destination_service_id", route.GetDestinationServiceId()); err != nil {
 		return err
 	}
@@ -246,7 +246,7 @@ func getTarget(d *schema.ResourceData) (n int, target string) {
 	return
 }
 
-func resourceOutscaleOAPIRouteUpdate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPIRouteUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	nothingToDo := true
 	o, n := d.GetChange("")
@@ -340,10 +340,10 @@ func resourceOutscaleOAPIRouteUpdate(d *schema.ResourceData, meta interface{}) e
 		return fmt.Errorf("error updating route: %s", utils.GetErrorResponse(err))
 	}
 
-	return resourceOutscaleOAPIRouteRead(d, meta)
+	return ResourceOutscaleOAPIRouteRead(d, meta)
 }
 
-func resourceOutscaleOAPIRouteDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPIRouteDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	deleteOpts := oscgo.DeleteRouteRequest{
@@ -375,7 +375,7 @@ func resourceOutscaleOAPIRouteDelete(d *schema.ResourceData, meta interface{}) e
 	return nil
 }
 
-func resourceOutscaleOAPIRouteExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+func ResourceOutscaleOAPIRouteExists(d *schema.ResourceData, meta interface{}) (bool, error) {
 	conn := meta.(*OutscaleClient).OSCAPI
 	routeTableID := d.Get("route_table_id").(string)
 
@@ -477,7 +477,7 @@ func findResourceOAPIRoute(conn *oscgo.APIClient, rtbid string, cidr string) (*o
 
 }
 
-func resourceOutscaleOAPIRouteImportState(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+func ResourceOutscaleOAPIRouteImportState(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	parts := strings.SplitN(d.Id(), "_", 2)

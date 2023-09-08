@@ -16,13 +16,13 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 )
 
-func resourceOutscaleVPNConnectionRoute() *schema.Resource {
+func ResourceOutscaleVPNConnectionRoute() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleVPNConnectionRouteCreate,
-		Read:   resourceOutscaleVPNConnectionRouteRead,
-		Delete: resourceOutscaleVPNConnectionRouteDelete,
+		Create: ResourceOutscaleVPNConnectionRouteCreate,
+		Read:   ResourceOutscaleVPNConnectionRouteRead,
+		Delete: ResourceOutscaleVPNConnectionRouteDelete,
 		Importer: &schema.ResourceImporter{
-			State: resourceOutscaleOAPIVPNConnectionRouteImportState,
+			State: ResourceOutscaleOAPIVPNConnectionRouteImportState,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -44,7 +44,7 @@ func resourceOutscaleVPNConnectionRoute() *schema.Resource {
 	}
 }
 
-func resourceOutscaleVPNConnectionRouteCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleVPNConnectionRouteCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	destinationIPRange := d.Get("destination_ip_range").(string)
@@ -67,13 +67,13 @@ func resourceOutscaleVPNConnectionRouteCreate(d *schema.ResourceData, meta inter
 
 	d.SetId(fmt.Sprintf("%s:%s", destinationIPRange, vpnConnectionID))
 
-	return resourceOutscaleVPNConnectionRouteRead(d, meta)
+	return ResourceOutscaleVPNConnectionRouteRead(d, meta)
 }
 
-func resourceOutscaleVPNConnectionRouteRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleVPNConnectionRouteRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	destinationIPRange, vpnConnectionID := resourceOutscaleVPNConnectionRouteParseID(d.Id())
+	destinationIPRange, vpnConnectionID := ResourceOutscaleVPNConnectionRouteParseID(d.Id())
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending"},
@@ -96,10 +96,10 @@ func resourceOutscaleVPNConnectionRouteRead(d *schema.ResourceData, meta interfa
 	return nil
 }
 
-func resourceOutscaleVPNConnectionRouteDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleVPNConnectionRouteDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	destinationIPRange, vpnConnectionID := resourceOutscaleVPNConnectionRouteParseID(d.Id())
+	destinationIPRange, vpnConnectionID := ResourceOutscaleVPNConnectionRouteParseID(d.Id())
 
 	req := oscgo.DeleteVpnConnectionRouteRequest{
 		DestinationIpRange: destinationIPRange,
@@ -174,12 +174,12 @@ func vpnConnectionRouteRefreshFunc(conn *oscgo.APIClient, destinationIPRange, vp
 	}
 }
 
-func resourceOutscaleVPNConnectionRouteParseID(ID string) (string, string) {
+func ResourceOutscaleVPNConnectionRouteParseID(ID string) (string, string) {
 	parts := strings.SplitN(ID, ":", 2)
 	return parts[0], parts[1]
 }
 
-func resourceOutscaleOAPIVPNConnectionRouteImportState(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+func ResourceOutscaleOAPIVPNConnectionRouteImportState(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	parts := strings.SplitN(d.Id(), "_", 2)

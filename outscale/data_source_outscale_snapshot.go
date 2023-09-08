@@ -13,9 +13,9 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPISnapshot() *schema.Resource {
+func DataSourceOutscaleOAPISnapshot() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPISnapshotRead,
+		Read: DataSourceOutscaleOAPISnapshotRead,
 
 		Schema: map[string]*schema.Schema{
 			//selection criteria
@@ -86,7 +86,7 @@ func dataSourceOutscaleOAPISnapshot() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	restorableUsers, restorableUsersOk := d.GetOk("permission_to_create_volume")

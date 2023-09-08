@@ -16,13 +16,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func resourceOutscaleOAPINetworkInterfaceAttachment() *schema.Resource {
+func ResourceOutscaleOAPINetworkInterfaceAttachment() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPINetworkInterfaceAttachmentCreate,
-		Read:   resourceOutscaleOAPINetworkInterfaceAttachmentRead,
-		Delete: resourceOutscaleOAPINetworkInterfaceAttachmentDelete,
+		Create: ResourceOutscaleOAPINetworkInterfaceAttachmentCreate,
+		Read:   ResourceOutscaleOAPINetworkInterfaceAttachmentRead,
+		Delete: ResourceOutscaleOAPINetworkInterfaceAttachmentDelete,
 		Importer: &schema.ResourceImporter{
-			State: resourceOutscaleNetworkInterfaceAttachmentImportState,
+			State: ResourceOutscaleNetworkInterfaceAttachmentImportState,
 		},
 		Schema: map[string]*schema.Schema{
 			"device_number": {
@@ -66,7 +66,7 @@ func resourceOutscaleOAPINetworkInterfaceAttachment() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPINetworkInterfaceAttachmentCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPINetworkInterfaceAttachmentCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	di := d.Get("device_number").(int)
@@ -97,10 +97,10 @@ func resourceOutscaleOAPINetworkInterfaceAttachmentCreate(d *schema.ResourceData
 	}
 
 	d.SetId(resp.GetLinkNicId())
-	return resourceOutscaleOAPINetworkInterfaceAttachmentRead(d, meta)
+	return ResourceOutscaleOAPINetworkInterfaceAttachmentRead(d, meta)
 }
 
-func resourceOutscaleOAPINetworkInterfaceAttachmentRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPINetworkInterfaceAttachmentRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	nicID := d.Get("nic_id").(string)
@@ -143,7 +143,7 @@ func resourceOutscaleOAPINetworkInterfaceAttachmentRead(d *schema.ResourceData, 
 	return nil
 }
 
-func resourceOutscaleOAPINetworkInterfaceAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPINetworkInterfaceAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	interfaceID := d.Id()
@@ -190,7 +190,7 @@ func resourceOutscaleOAPINetworkInterfaceAttachmentDelete(d *schema.ResourceData
 	return nil
 }
 
-func resourceOutscaleNetworkInterfaceAttachmentImportState(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+func ResourceOutscaleNetworkInterfaceAttachmentImportState(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	if d.Id() == "" {
 		return nil, errors.New("import error: to import a Nic Link, use the format {nic_id} it must not be empty")
 	}

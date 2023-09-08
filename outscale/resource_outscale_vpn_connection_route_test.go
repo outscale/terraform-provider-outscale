@@ -86,7 +86,7 @@ func testAccOutscaleVPNConnectionRouteExists(resourceName string) resource.TestC
 			return fmt.Errorf("No VPN Connection Route ID is set")
 		}
 
-		destinationIPRange, vpnConnectionID := resourceOutscaleVPNConnectionRouteParseID(rs.Primary.ID)
+		destinationIPRange, vpnConnectionID := ResourceOutscaleVPNConnectionRouteParseID(rs.Primary.ID)
 
 		filter := oscgo.ReadVpnConnectionsRequest{
 			Filters: &oscgo.FiltersVpnConnection{
@@ -128,7 +128,7 @@ func testAccOutscaleVPNConnectionRouteDestroy(s *terraform.State) error {
 			continue
 		}
 
-		destinationIPRange, vpnConnectionID := resourceOutscaleVPNConnectionRouteParseID(rs.Primary.ID)
+		destinationIPRange, vpnConnectionID := ResourceOutscaleVPNConnectionRouteParseID(rs.Primary.ID)
 
 		filter := oscgo.ReadVpnConnectionsRequest{
 			Filters: &oscgo.FiltersVpnConnection{

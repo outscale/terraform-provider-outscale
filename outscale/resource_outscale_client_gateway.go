@@ -15,12 +15,12 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 )
 
-func resourceOutscaleClientGateway() *schema.Resource {
+func ResourceOutscaleClientGateway() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleClientGatewayCreate,
-		Read:   resourceOutscaleClientGatewayRead,
-		Update: resourceOutscaleClientGatewayUpdate,
-		Delete: resourceOutscaleClientGatewayDelete,
+		Create: ResourceOutscaleClientGatewayCreate,
+		Read:   ResourceOutscaleClientGatewayRead,
+		Update: ResourceOutscaleClientGatewayUpdate,
+		Delete: ResourceOutscaleClientGatewayDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -58,7 +58,7 @@ func resourceOutscaleClientGateway() *schema.Resource {
 	}
 }
 
-func resourceOutscaleClientGatewayCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleClientGatewayCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	req := oscgo.CreateClientGatewayRequest{
@@ -90,10 +90,10 @@ func resourceOutscaleClientGatewayCreate(d *schema.ResourceData, meta interface{
 
 	d.SetId(*resp.GetClientGateway().ClientGatewayId)
 
-	return resourceOutscaleClientGatewayRead(d, meta)
+	return ResourceOutscaleClientGatewayRead(d, meta)
 }
 
-func resourceOutscaleClientGatewayRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleClientGatewayRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	clientGatewayID := d.Id()
@@ -142,17 +142,17 @@ func resourceOutscaleClientGatewayRead(d *schema.ResourceData, meta interface{})
 	return nil
 }
 
-func resourceOutscaleClientGatewayUpdate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleClientGatewayUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
 
-	return resourceOutscaleClientGatewayRead(d, meta)
+	return ResourceOutscaleClientGatewayRead(d, meta)
 }
 
-func resourceOutscaleClientGatewayDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleClientGatewayDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	gatewayID := d.Id()

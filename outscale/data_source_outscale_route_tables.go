@@ -11,9 +11,9 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPIRouteTables() *schema.Resource {
+func DataSourceOutscaleOAPIRouteTables() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPIRouteTablesRead,
+		Read: DataSourceOutscaleOAPIRouteTablesRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -139,7 +139,7 @@ func dataSourceOutscaleOAPIRouteTables() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPIRouteTablesRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleOAPIRouteTablesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	rtbID, rtbOk := d.GetOk("route_table_id")
 	filter, filterOk := d.GetOk("filter")

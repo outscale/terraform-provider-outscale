@@ -12,12 +12,12 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func resourceOutscaleOAPISubNet() *schema.Resource {
+func ResourceOutscaleOAPISubNet() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPISubNetCreate,
-		Read:   resourceOutscaleOAPISubNetRead,
-		Update: resourceOutscaleOAPISubNetUpdate,
-		Delete: resourceOutscaleOAPISubNetDelete,
+		Create: ResourceOutscaleOAPISubNetCreate,
+		Read:   ResourceOutscaleOAPISubNetRead,
+		Update: ResourceOutscaleOAPISubNetUpdate,
+		Delete: ResourceOutscaleOAPISubNetDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -30,7 +30,7 @@ func resourceOutscaleOAPISubNet() *schema.Resource {
 }
 
 // Create SubNet
-func resourceOutscaleOAPISubNetCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPISubNetCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	req := oscgo.CreateSubnetRequest{
 		IpRange: d.Get("ip_range").(string),
@@ -96,11 +96,11 @@ func resourceOutscaleOAPISubNetCreate(d *schema.ResourceData, meta interface{}) 
 			return fmt.Errorf("Failure updating MapPublicIpOnLaunch: %s", err)
 		}
 	}
-	return resourceOutscaleOAPISubNetRead(d, meta)
+	return ResourceOutscaleOAPISubNetRead(d, meta)
 }
 
 // Read SubNet
-func resourceOutscaleOAPISubNetRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPISubNetRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	id := d.Id()
 	log.Printf("[DEBUG] Reading Subnet(%s)", id)
@@ -128,7 +128,7 @@ func resourceOutscaleOAPISubNetRead(d *schema.ResourceData, meta interface{}) er
 	}
 	return readOutscaleOAPISubNet(d, &resp.GetSubnets()[0])
 }
-func resourceOutscaleOAPISubNetUpdate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPISubNetUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	if err := setOSCAPITags(conn, d); err != nil {
@@ -156,10 +156,10 @@ func resourceOutscaleOAPISubNetUpdate(d *schema.ResourceData, meta interface{}) 
 		}
 	}
 
-	return resourceOutscaleOAPISubNetRead(d, meta)
+	return ResourceOutscaleOAPISubNetRead(d, meta)
 }
 
-func resourceOutscaleOAPISubNetDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPISubNetDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	id := d.Id()
 	log.Printf("[DEBUG] Deleting Subnet (%s)", id)

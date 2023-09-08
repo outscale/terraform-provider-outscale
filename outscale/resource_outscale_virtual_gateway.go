@@ -15,12 +15,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func resourceOutscaleOAPIVirtualGateway() *schema.Resource {
+func ResourceOutscaleOAPIVirtualGateway() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPIVirtualGatewayCreate,
-		Read:   resourceOutscaleOAPIVirtualGatewayRead,
-		Update: resourceOutscaleOAPIVirtualGatewayUpdate,
-		Delete: resourceOutscaleOAPIVirtualGatewayDelete,
+		Create: ResourceOutscaleOAPIVirtualGatewayCreate,
+		Read:   ResourceOutscaleOAPIVirtualGatewayRead,
+		Update: ResourceOutscaleOAPIVirtualGatewayUpdate,
+		Delete: ResourceOutscaleOAPIVirtualGatewayDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -68,7 +68,7 @@ func resourceOutscaleOAPIVirtualGateway() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPIVirtualGatewayCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPIVirtualGatewayCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	connectType, connecTypeOk := d.GetOk("connection_type")
 	createOpts := oscgo.CreateVirtualGatewayRequest{}
@@ -114,10 +114,10 @@ func resourceOutscaleOAPIVirtualGatewayCreate(d *schema.ResourceData, meta inter
 		}
 	}
 
-	return resourceOutscaleOAPIVirtualGatewayRead(d, meta)
+	return ResourceOutscaleOAPIVirtualGatewayRead(d, meta)
 }
 
-func resourceOutscaleOAPIVirtualGatewayRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPIVirtualGatewayRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	var resp oscgo.ReadVirtualGatewaysResponse
@@ -179,7 +179,7 @@ func resourceOutscaleOAPIVirtualGatewayRead(d *schema.ResourceData, meta interfa
 	return nil
 }
 
-func resourceOutscaleOAPIVirtualGatewayUpdate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPIVirtualGatewayUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	if err := setOSCAPITags(conn, d); err != nil {
 		return err
@@ -188,7 +188,7 @@ func resourceOutscaleOAPIVirtualGatewayUpdate(d *schema.ResourceData, meta inter
 	return nil
 }
 
-func resourceOutscaleOAPIVirtualGatewayDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPIVirtualGatewayDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {

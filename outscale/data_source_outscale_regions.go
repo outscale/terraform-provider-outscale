@@ -10,9 +10,9 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPIRegions() *schema.Resource {
+func DataSourceOutscaleOAPIRegions() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPIRegionsRead,
+		Read: DataSourceOutscaleOAPIRegionsRead,
 		Schema: map[string]*schema.Schema{
 			"request_id": {
 				Type:     schema.TypeString,
@@ -38,7 +38,7 @@ func dataSourceOutscaleOAPIRegions() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPIRegionsRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleOAPIRegionsRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	var resp oscgo.ReadRegionsResponse

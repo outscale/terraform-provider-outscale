@@ -13,12 +13,12 @@ import (
 	"github.com/spf13/cast"
 )
 
-func resourceOutscaleOAPICa() *schema.Resource {
+func ResourceOutscaleOAPICa() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPICaCreate,
-		Read:   resourceOutscaleOAPICaRead,
-		Update: resourceOutscaleOAPICaUpdate,
-		Delete: resourceOutscaleOAPICaDelete,
+		Create: ResourceOutscaleOAPICaCreate,
+		Read:   ResourceOutscaleOAPICaRead,
+		Update: ResourceOutscaleOAPICaUpdate,
+		Delete: ResourceOutscaleOAPICaDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -48,7 +48,7 @@ func resourceOutscaleOAPICa() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPICaCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPICaCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	if _, ok := d.GetOk("ca_pem"); ok == false {
@@ -77,10 +77,10 @@ func resourceOutscaleOAPICaCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 	d.SetId(cast.ToString(resp.Ca.GetCaId()))
 
-	return resourceOutscaleOAPICaRead(d, meta)
+	return ResourceOutscaleOAPICaRead(d, meta)
 }
 
-func resourceOutscaleOAPICaRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPICaRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	req := oscgo.ReadCasRequest{
@@ -122,7 +122,7 @@ func resourceOutscaleOAPICaRead(d *schema.ResourceData, meta interface{}) error 
 	return nil
 }
 
-func resourceOutscaleOAPICaUpdate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPICaUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	req := oscgo.UpdateCaRequest{
@@ -145,10 +145,10 @@ func resourceOutscaleOAPICaUpdate(d *schema.ResourceData, meta interface{}) erro
 	if err != nil {
 		return err
 	}
-	return resourceOutscaleOAPICaRead(d, meta)
+	return ResourceOutscaleOAPICaRead(d, meta)
 }
 
-func resourceOutscaleOAPICaDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPICaDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	req := oscgo.DeleteCaRequest{

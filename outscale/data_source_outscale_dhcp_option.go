@@ -14,9 +14,9 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleDHCPOption() *schema.Resource {
+func DataSourceOutscaleDHCPOption() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleDHCPOptionRead,
+		Read: DataSourceOutscaleDHCPOptionRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -62,7 +62,7 @@ func dataSourceOutscaleDHCPOption() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")

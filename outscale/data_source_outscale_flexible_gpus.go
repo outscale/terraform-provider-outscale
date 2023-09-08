@@ -12,9 +12,9 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPIFlexibleGpus() *schema.Resource {
+func DataSourceOutscaleOAPIFlexibleGpus() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPIFlexibleGpusRead,
+		Read: DataSourceOutscaleOAPIFlexibleGpusRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -62,7 +62,7 @@ func dataSourceOutscaleOAPIFlexibleGpus() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPIFlexibleGpusRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleOAPIFlexibleGpusRead(d *schema.ResourceData, meta interface{}) error {
 
 	conn := meta.(*OutscaleClient).OSCAPI
 	filters, filtersOk := d.GetOk("filter")

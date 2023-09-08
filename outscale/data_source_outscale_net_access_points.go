@@ -53,9 +53,9 @@ func napSchema() map[string]*schema.Schema {
 	}
 }
 
-func dataSourceOutscaleNetAccessPoints() *schema.Resource {
+func DataSourceOutscaleNetAccessPoints() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleNetAccessPointsRead,
+		Read: DataSourceOutscaleNetAccessPointsRead,
 
 		Schema: getDataSourceSchemas(napSchema()),
 	}
@@ -94,7 +94,7 @@ func buildOutscaleDataSourcesNAPFilters(set *schema.Set) oscgo.FiltersNetAccessP
 	return filters
 }
 
-func dataSourceOutscaleNetAccessPointsRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleNetAccessPointsRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")

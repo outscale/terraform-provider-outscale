@@ -14,12 +14,12 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func resourceOutscaleOAPISnapshot() *schema.Resource {
+func ResourceOutscaleOAPISnapshot() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPISnapshotCreate,
-		Read:   resourceOutscaleOAPISnapshotRead,
-		Update: resourceOutscaleOAPISnapshotUpdate,
-		Delete: resourceOutscaleOAPISnapshotDelete,
+		Create: ResourceOutscaleOAPISnapshotCreate,
+		Read:   ResourceOutscaleOAPISnapshotRead,
+		Update: ResourceOutscaleOAPISnapshotUpdate,
+		Delete: ResourceOutscaleOAPISnapshotDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -115,7 +115,7 @@ func resourceOutscaleOAPISnapshot() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPISnapshotCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPISnapshotCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	v, ok := d.GetOk("volume_id")
@@ -191,10 +191,10 @@ func resourceOutscaleOAPISnapshotCreate(d *schema.ResourceData, meta interface{}
 
 	d.SetId(resp.Snapshot.GetSnapshotId())
 
-	return resourceOutscaleOAPISnapshotRead(d, meta)
+	return ResourceOutscaleOAPISnapshotRead(d, meta)
 }
 
-func resourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	req := oscgo.ReadSnapshotsRequest{
@@ -259,17 +259,17 @@ func resourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) 
 	})
 }
 
-func resourceOutscaleOAPISnapshotUpdate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPISnapshotUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
 
-	return resourceOutscaleOAPISnapshotRead(d, meta)
+	return ResourceOutscaleOAPISnapshotRead(d, meta)
 }
 
-func resourceOutscaleOAPISnapshotDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPISnapshotDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {

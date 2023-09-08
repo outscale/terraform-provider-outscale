@@ -15,9 +15,9 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPISubnet() *schema.Resource {
+func DataSourceOutscaleOAPISubnet() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPISubnetRead,
+		Read: DataSourceOutscaleOAPISubnetRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -59,7 +59,7 @@ func dataSourceOutscaleOAPISubnet() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPISubnetRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleOAPISubnetRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	req := oscgo.ReadSubnetsRequest{}

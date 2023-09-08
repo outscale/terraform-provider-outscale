@@ -14,9 +14,9 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPISecurityGroups() *schema.Resource {
+func DataSourceOutscaleOAPISecurityGroups() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPISecurityGroupsRead,
+		Read: DataSourceOutscaleOAPISecurityGroupsRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -177,7 +177,7 @@ func dataSourceOutscaleOAPISecurityGroups() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPISecurityGroupsRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleOAPISecurityGroupsRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	req := oscgo.ReadSecurityGroupsRequest{}

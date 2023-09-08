@@ -13,9 +13,9 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPIPublicIPS() *schema.Resource {
+func DataSourceOutscaleOAPIPublicIPS() *schema.Resource {
 	return &schema.Resource{
-		Read:   dataSourceOutscalePublicIPSRead,
+		Read:   DataSourceOutscalePublicIPSRead,
 		Schema: oapiGetPublicIPSDataSourceSchema(),
 	}
 }
@@ -68,7 +68,7 @@ func oapiGetPublicIPSDataSourceSchema() map[string]*schema.Schema {
 	}
 }
 
-func dataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	req := oscgo.ReadPublicIpsRequest{}

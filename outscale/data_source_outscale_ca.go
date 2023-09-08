@@ -12,9 +12,9 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPICa() *schema.Resource {
+func DataSourceOutscaleOAPICa() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPICaRead,
+		Read: DataSourceOutscaleOAPICaRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"ca_pem": {
@@ -41,7 +41,7 @@ func dataSourceOutscaleOAPICa() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPICaRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleOAPICaRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")

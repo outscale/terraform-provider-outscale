@@ -14,11 +14,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func resourceOutscaleOAPIPublicIPLink() *schema.Resource {
+func ResourceOutscaleOAPIPublicIPLink() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPIPublicIPLinkCreate,
-		Read:   resourceOutscaleOAPIPublicIPLinkRead,
-		Delete: resourceOutscaleOAPIPublicIPLinkDelete,
+		Create: ResourceOutscaleOAPIPublicIPLinkCreate,
+		Read:   ResourceOutscaleOAPIPublicIPLinkRead,
+		Delete: ResourceOutscaleOAPIPublicIPLinkDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -32,7 +32,7 @@ func resourceOutscaleOAPIPublicIPLink() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPIPublicIPLinkCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPIPublicIPLinkCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	request := oscgo.LinkPublicIpRequest{}
@@ -72,7 +72,7 @@ func resourceOutscaleOAPIPublicIPLinkCreate(d *schema.ResourceData, meta interfa
 	})
 
 	if err != nil {
-		log.Printf("[WARN] ERROR resourceOutscaleOAPIPublicIPLinkCreate (%s)", err)
+		log.Printf("[WARN] ERROR ResourceOutscaleOAPIPublicIPLinkCreate (%s)", err)
 		return err
 	}
 	//Using validation with request.
@@ -82,10 +82,10 @@ func resourceOutscaleOAPIPublicIPLinkCreate(d *schema.ResourceData, meta interfa
 		d.SetId(request.GetPublicIp())
 	}
 
-	return resourceOutscaleOAPIPublicIPLinkRead(d, meta)
+	return ResourceOutscaleOAPIPublicIPLinkRead(d, meta)
 }
 
-func resourceOutscaleOAPIPublicIPLinkRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPIPublicIPLinkRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	id := d.Id()
@@ -118,7 +118,7 @@ func resourceOutscaleOAPIPublicIPLinkRead(d *schema.ResourceData, meta interface
 	})
 
 	if err != nil {
-		log.Printf("[WARN] ERROR resourceOutscaleOAPIPublicIPLinkRead (%s)", err)
+		log.Printf("[WARN] ERROR ResourceOutscaleOAPIPublicIPLinkRead (%s)", err)
 		return fmt.Errorf("Error reading Outscale VM Public IP %s: %#v", d.Get("public_ip_id").(string), err)
 	}
 	if utils.IsResponseEmpty(len(response.GetPublicIps()), "PublicIpLink", d.Id()) {
@@ -133,7 +133,7 @@ func resourceOutscaleOAPIPublicIPLinkRead(d *schema.ResourceData, meta interface
 	return readOutscaleOAPIPublicIPLink(d, &response.GetPublicIps()[0])
 }
 
-func resourceOutscaleOAPIPublicIPLinkDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPIPublicIPLinkDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	linkID := d.Get("link_public_ip_id")
@@ -152,7 +152,7 @@ func resourceOutscaleOAPIPublicIPLinkDelete(d *schema.ResourceData, meta interfa
 	})
 
 	if err != nil {
-		log.Printf("[WARN] ERROR resourceOutscaleOAPIPublicIPLinkDelete (%s)", err)
+		log.Printf("[WARN] ERROR ResourceOutscaleOAPIPublicIPLinkDelete (%s)", err)
 		return fmt.Errorf("Error deleting Elastic IP association: %s", err)
 	}
 

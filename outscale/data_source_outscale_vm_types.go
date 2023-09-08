@@ -13,9 +13,9 @@ import (
 	"github.com/spf13/cast"
 )
 
-func dataSourceOutscaleOAPIVMTypes() *schema.Resource {
+func DataSourceOutscaleOAPIVMTypes() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPIVMTypesRead,
+		Read: DataSourceOutscaleOAPIVMTypesRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -63,7 +63,7 @@ func dataSourceOutscaleOAPIVMTypes() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPIVMTypesRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleOAPIVMTypesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filter, filterOk := d.GetOk("filter")

@@ -11,9 +11,9 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPIApiAccessRules() *schema.Resource {
+func DataSourceOutscaleOAPIApiAccessRules() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPIApiAccessRulesRead,
+		Read: DataSourceOutscaleOAPIApiAccessRulesRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"api_access_rules": {
@@ -55,7 +55,7 @@ func dataSourceOutscaleOAPIApiAccessRules() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPIApiAccessRulesRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleOAPIApiAccessRulesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")

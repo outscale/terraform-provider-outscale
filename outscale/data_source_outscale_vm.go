@@ -14,13 +14,13 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPIVM() *schema.Resource {
+func DataSourceOutscaleOAPIVM() *schema.Resource {
 	return &schema.Resource{
-		Read:   dataSourceOutscaleOAPIVMRead,
+		Read:   DataSourceOutscaleOAPIVMRead,
 		Schema: getDataSourceOAPIVMSchemas(),
 	}
 }
-func dataSourceOutscaleOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")

@@ -12,11 +12,11 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func resourceOutscaleOAPIFlexibleGpuLink() *schema.Resource {
+func ResourceOutscaleOAPIFlexibleGpuLink() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPIFlexibleGpuLinkCreate,
-		Read:   resourceOutscaleOAPIFlexibleGpuLinkRead,
-		Delete: resourceOutscaleOAPIFlexibleGpuLinkDelete,
+		Create: ResourceOutscaleOAPIFlexibleGpuLinkCreate,
+		Read:   ResourceOutscaleOAPIFlexibleGpuLinkRead,
+		Delete: ResourceOutscaleOAPIFlexibleGpuLinkDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -40,7 +40,7 @@ func resourceOutscaleOAPIFlexibleGpuLink() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPIFlexibleGpuLinkCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPIFlexibleGpuLinkCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	flexGpuID := d.Get("flexible_gpu_id").(string)
@@ -103,10 +103,10 @@ func resourceOutscaleOAPIFlexibleGpuLinkCreate(d *schema.ResourceData, meta inte
 		return fmt.Errorf("Unable to change ShutdownBehavior: %s\n", err)
 	}
 
-	return resourceOutscaleOAPIFlexibleGpuLinkRead(d, meta)
+	return ResourceOutscaleOAPIFlexibleGpuLinkRead(d, meta)
 }
 
-func resourceOutscaleOAPIFlexibleGpuLinkRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPIFlexibleGpuLinkRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	flexGpuID := d.Get("flexible_gpu_id").(string)
@@ -152,7 +152,7 @@ func resourceOutscaleOAPIFlexibleGpuLinkRead(d *schema.ResourceData, meta interf
 	return nil
 }
 
-func resourceOutscaleOAPIFlexibleGpuLinkDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPIFlexibleGpuLinkDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	flexGpuID := d.Get("flexible_gpu_id").(string)

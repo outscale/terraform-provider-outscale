@@ -180,9 +180,9 @@ func getDataSourceSchemas(attrsSchema map[string]*schema.Schema) map[string]*sch
 
 }
 
-func dataSourceOutscaleOAPILoadBalancer() *schema.Resource {
+func DataSourceOutscaleOAPILoadBalancer() *schema.Resource {
 	return &schema.Resource{
-		Read:   dataSourceOutscaleOAPILoadBalancerRead,
+		Read:   DataSourceOutscaleOAPILoadBalancerRead,
 		Schema: getDataSourceSchemas(attrLBchema()),
 	}
 }
@@ -273,7 +273,7 @@ func readLbs0(conn *oscgo.APIClient, d *schema.ResourceData) (*oscgo.LoadBalance
 	return &lbs[0], resp, nil
 }
 
-func dataSourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	lb, _, err := readLbs0(conn, d)

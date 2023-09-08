@@ -13,11 +13,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func resourceOutscaleOAPILBUAttachment() *schema.Resource {
+func ResourceOutscaleOAPILBUAttachment() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPILBUAttachmentCreate,
-		Read:   resourceOutscaleOAPILBUAttachmentRead,
-		Delete: resourceOutscaleOAPILBUAttachmentDelete,
+		Create: ResourceOutscaleOAPILBUAttachmentCreate,
+		Read:   ResourceOutscaleOAPILBUAttachmentRead,
+		Delete: ResourceOutscaleOAPILBUAttachmentDelete,
 
 		Schema: map[string]*schema.Schema{
 			"load_balancer_name": {
@@ -40,7 +40,7 @@ func resourceOutscaleOAPILBUAttachment() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPILBUAttachmentCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPILBUAttachmentCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	e, eok := d.GetOk("load_balancer_name")
@@ -80,10 +80,10 @@ func resourceOutscaleOAPILBUAttachmentCreate(d *schema.ResourceData, meta interf
 
 	d.SetId(resource.PrefixedUniqueId(fmt.Sprintf("%s-", e)))
 
-	return resourceOutscaleOAPILBUAttachmentRead(d, meta)
+	return ResourceOutscaleOAPILBUAttachmentRead(d, meta)
 }
 
-func resourceOutscaleOAPILBUAttachmentRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPILBUAttachmentRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	found := false
 	e := d.Get("load_balancer_name").(string)
@@ -115,7 +115,7 @@ func resourceOutscaleOAPILBUAttachmentRead(d *schema.ResourceData, meta interfac
 	return nil
 }
 
-func resourceOutscaleOAPILBUAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPILBUAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	e := d.Get("load_balancer_name").(string)
 	i := d.Get("backend_vm_ids").([]interface{})

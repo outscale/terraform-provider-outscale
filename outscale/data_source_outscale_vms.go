@@ -15,7 +15,7 @@ import (
 
 func datasourceOutscaleOApiVMS() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOApiVMSRead,
+		Read: DataSourceOutscaleOApiVMSRead,
 
 		Schema: datasourceOutscaleOApiVMSSchema(),
 	}
@@ -62,7 +62,7 @@ func datasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
 	return wholeSchema
 }
 
-func dataSourceOutscaleOApiVMSRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleOApiVMSRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")

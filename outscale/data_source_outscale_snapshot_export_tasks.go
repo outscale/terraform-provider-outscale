@@ -12,7 +12,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPISnapshotExportTasks() *schema.Resource {
+func DataSourceOutscaleOAPISnapshotExportTasks() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceOAPISnapshotExportTasksRead,
 		Importer: &schema.ResourceImporter{

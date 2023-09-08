@@ -13,12 +13,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func resourceOutscaleOAPINet() *schema.Resource {
+func ResourceOutscaleOAPINet() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPINetCreate,
-		Read:   resourceOutscaleOAPINetRead,
-		Update: resourceOutscaleOAPINetUpdate,
-		Delete: resourceOutscaleOAPINetDelete,
+		Create: ResourceOutscaleOAPINetCreate,
+		Read:   ResourceOutscaleOAPINetRead,
+		Update: ResourceOutscaleOAPINetUpdate,
+		Delete: ResourceOutscaleOAPINetDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -27,7 +27,7 @@ func resourceOutscaleOAPINet() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPINetCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPINetCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	req := oscgo.CreateNetRequest{
@@ -69,7 +69,7 @@ func resourceOutscaleOAPINetCreate(d *schema.ResourceData, meta interface{}) err
 	d.SetId(resp.Net.GetNetId())
 
 	return resource.Retry(120*time.Second, func() *resource.RetryError {
-		err = resourceOutscaleOAPINetRead(d, meta)
+		err = ResourceOutscaleOAPINetRead(d, meta)
 		if err != nil {
 			return resource.NonRetryableError(err)
 		}
@@ -83,7 +83,7 @@ func resourceOutscaleOAPINetCreate(d *schema.ResourceData, meta interface{}) err
 	})
 }
 
-func resourceOutscaleOAPINetRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPINetRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters := oscgo.FiltersNet{
@@ -131,17 +131,17 @@ func resourceOutscaleOAPINetRead(d *schema.ResourceData, meta interface{}) error
 	return d.Set("tags", tagsOSCAPIToMap(resp.GetNets()[0].GetTags()))
 }
 
-func resourceOutscaleOAPINetUpdate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPINetUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
 
-	return resourceOutscaleOAPINetRead(d, meta)
+	return ResourceOutscaleOAPINetRead(d, meta)
 }
 
-func resourceOutscaleOAPINetDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOAPINetDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	req := oscgo.DeleteNetRequest{
