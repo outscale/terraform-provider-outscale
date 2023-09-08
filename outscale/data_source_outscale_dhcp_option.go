@@ -19,7 +19,7 @@ func DataSourceOutscaleDHCPOption() *schema.Resource {
 		Read: DataSourceOutscaleDHCPOptionRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": DataSourceFiltersSchema(),
 			"dhcp_options_set_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -53,7 +53,7 @@ func DataSourceOutscaleDHCPOption() *schema.Resource {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
-			"tags": dataSourceTagsSchema(),
+			"tags": DataSourceTagsSchema(),
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,

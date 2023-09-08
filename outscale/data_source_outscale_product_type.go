@@ -18,7 +18,7 @@ func DataSourceOutscaleOAPIProductType() *schema.Resource {
 		Read: DataSourceOutscaleOAPIProductTypeRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": DataSourceFiltersSchema(),
 			"description": {
 				Type:     schema.TypeString,
 				Computed: true,

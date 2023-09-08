@@ -19,7 +19,7 @@ func DataSourceOutscaleOAPISecurityGroups() *schema.Resource {
 		Read: DataSourceOutscaleOAPISecurityGroupsRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": DataSourceFiltersSchema(),
 			"security_group_names": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -165,7 +165,7 @@ func DataSourceOutscaleOAPISecurityGroups() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"tags": dataSourceTagsSchema(),
+						"tags": DataSourceTagsSchema(),
 					},
 				},
 			},

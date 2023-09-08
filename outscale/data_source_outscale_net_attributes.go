@@ -18,7 +18,7 @@ func DataSourceOutscaleOAPIVpcAttr() *schema.Resource {
 		Read: DataSourceOutscaleOAPIVpcAttrRead,
 
 		Schema: map[string]*schema.Schema{
-			//"filter": dataSourceFiltersSchema(),
+			//"filter": DataSourceFiltersSchema(),
 			"dhcp_options_set_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -43,7 +43,7 @@ func DataSourceOutscaleOAPIVpcAttr() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": dataSourceTagsSchema(),
+			"tags": DataSourceTagsSchema(),
 		},
 	}
 }

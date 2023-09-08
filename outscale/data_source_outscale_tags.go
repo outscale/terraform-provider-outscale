@@ -15,7 +15,7 @@ func DataSourceOutscaleOAPITags() *schema.Resource {
 	return &schema.Resource{
 		Read: DataSourceOutscaleOAPITagsRead,
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": DataSourceFiltersSchema(),
 			"tags": {
 				Type:     schema.TypeList,
 				Computed: true,

@@ -21,7 +21,7 @@ func datasourceOutscaleOApiVMS() *schema.Resource {
 	}
 }
 
-func dataSourceFiltersSchema() *schema.Schema {
+func DataSourceFiltersSchema() *schema.Schema {
 	return &schema.Schema{
 		Type:     schema.TypeSet,
 		Optional: true,
@@ -45,7 +45,7 @@ func dataSourceFiltersSchema() *schema.Schema {
 
 func datasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
 	wholeSchema := map[string]*schema.Schema{
-		"filter": dataSourceFiltersSchema(),
+		"filter": DataSourceFiltersSchema(),
 		"vms": {
 			Type:     schema.TypeList,
 			Computed: true,
@@ -114,10 +114,10 @@ func DataSourceOutscaleOApiVMSRead(d *schema.ResourceData, meta interface{}) err
 	}
 
 	d.SetId(resource.UniqueId())
-	return d.Set("vms", dataSourceOAPIVMS(filteredVms))
+	return d.Set("vms", DataSourceOAPIVMS(filteredVms))
 }
 
-func dataSourceOAPIVMS(i []oscgo.Vm) []map[string]interface{} {
+func DataSourceOAPIVMS(i []oscgo.Vm) []map[string]interface{} {
 	vms := make([]map[string]interface{}, len(i))
 	for index, v := range i {
 		vm := make(map[string]interface{})

@@ -11,7 +11,7 @@ import (
 func TestAccOthers_DHCPOption_basic(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_dhcp_option.foo"
-	dataSourceName := "data.outscale_dhcp_option.test"
+	DataSourceName := "data.outscale_dhcp_option.test"
 	value := fmt.Sprintf("test-acc-value-%s", acctest.RandString(5))
 
 	resource.Test(t, resource.TestCase{
@@ -38,7 +38,7 @@ func TestAccOthers_DHCPOption_basic(t *testing.T) {
 					//resource.TestCheckResourceAttr(resourceName, "tags.0.value", value),
 
 					// data source validations
-					resource.TestCheckResourceAttrSet(dataSourceName, "dhcp_options_set_id"),
+					resource.TestCheckResourceAttrSet(DataSourceName, "dhcp_options_set_id"),
 				),
 			},
 		},
@@ -48,7 +48,7 @@ func TestAccOthers_DHCPOption_basic(t *testing.T) {
 func TestAccOthers_DHCPOption_withFilters(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_dhcp_option.foo"
-	dataSourceName := "data.outscale_dhcp_option.test"
+	DataSourceName := "data.outscale_dhcp_option.test"
 	value := fmt.Sprintf("test-acc-value-%s", acctest.RandString(5))
 
 	resource.Test(t, resource.TestCase{
@@ -75,8 +75,8 @@ func TestAccOthers_DHCPOption_withFilters(t *testing.T) {
 					//resource.TestCheckResourceAttr(resourceName, "tags.0.value", value),
 
 					// data source validations
-					resource.TestCheckResourceAttrSet(dataSourceName, "filter.#"),
-					resource.TestCheckResourceAttr(dataSourceName, "filter.#", "2"),
+					resource.TestCheckResourceAttrSet(DataSourceName, "filter.#"),
+					resource.TestCheckResourceAttr(DataSourceName, "filter.#", "2"),
 				),
 			},
 		},

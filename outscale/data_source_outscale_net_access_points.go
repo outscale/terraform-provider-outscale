@@ -15,7 +15,7 @@ import (
 
 func napSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"filter": dataSourceFiltersSchema(),
+		"filter": DataSourceFiltersSchema(),
 		"net_access_points": {
 			Type:     schema.TypeList,
 			Computed: true,
@@ -42,7 +42,7 @@ func napSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"tags": dataSourceTagsSchema(),
+					"tags": DataSourceTagsSchema(),
 				},
 			},
 		},

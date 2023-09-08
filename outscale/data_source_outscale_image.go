@@ -17,7 +17,7 @@ func DataSourceOutscaleOAPIImage() *schema.Resource {
 		Read: DataSourceOutscaleOAPIImageRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": DataSourceFiltersSchema(),
 			"permission": {
 				Type:     schema.TypeList,
 				Optional: true,

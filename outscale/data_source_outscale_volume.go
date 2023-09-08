@@ -21,7 +21,7 @@ func datasourceOutscaleOAPIVolume() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			// Arguments
-			"filter": dataSourceFiltersSchema(),
+			"filter": DataSourceFiltersSchema(),
 			"subregion_name": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -79,7 +79,7 @@ func datasourceOutscaleOAPIVolume() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": dataSourceTagsSchema(),
+			"tags": DataSourceTagsSchema(),
 			"volume_id": {
 				Type:     schema.TypeString,
 				Optional: true,

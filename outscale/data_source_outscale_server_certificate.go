@@ -16,7 +16,7 @@ func datasourceOutscaleOAPIServerCertificate() *schema.Resource {
 	return &schema.Resource{
 		Read: datasourceOutscaleOAPIServerCertificateRead,
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": DataSourceFiltersSchema(),
 			"expiration_date": {
 				Type:     schema.TypeString,
 				Computed: true,

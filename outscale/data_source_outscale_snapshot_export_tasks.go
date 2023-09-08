@@ -14,7 +14,7 @@ import (
 
 func DataSourceOutscaleOAPISnapshotExportTasks() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOAPISnapshotExportTasksRead,
+		Read: DataSourceOAPISnapshotExportTasksRead,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -25,7 +25,7 @@ func DataSourceOutscaleOAPISnapshotExportTasks() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": DataSourceFiltersSchema(),
 			"dry_run": {
 				Type:     schema.TypeBool,
 				Optional: true,
@@ -76,7 +76,7 @@ func DataSourceOutscaleOAPISnapshotExportTasks() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"tags": dataSourceTagsSchema(),
+						"tags": DataSourceTagsSchema(),
 					},
 				},
 			},
@@ -88,7 +88,7 @@ func DataSourceOutscaleOAPISnapshotExportTasks() *schema.Resource {
 	}
 }
 
-func dataSourceOAPISnapshotExportTasksRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOAPISnapshotExportTasksRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")

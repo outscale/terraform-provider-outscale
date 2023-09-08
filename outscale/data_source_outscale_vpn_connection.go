@@ -18,7 +18,7 @@ func DataSourceOutscaleVPNConnection() *schema.Resource {
 	return &schema.Resource{
 		Read: DataSourceOutscaleVPNConnectionRead,
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": DataSourceFiltersSchema(),
 			"vpn_connection_id": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -67,7 +67,7 @@ func DataSourceOutscaleVPNConnection() *schema.Resource {
 					},
 				},
 			},
-			"tags": dataSourceTagsSchema(),
+			"tags": DataSourceTagsSchema(),
 			"vgw_telemetries": {
 				Type:     schema.TypeList,
 				Computed: true,

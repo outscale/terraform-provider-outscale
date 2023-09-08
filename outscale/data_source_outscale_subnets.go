@@ -17,7 +17,7 @@ func DataSourceOutscaleOAPISubnets() *schema.Resource {
 		Read: DataSourceOutscaleOAPISubnetsRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": DataSourceFiltersSchema(),
 			"subnet_ids": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -47,7 +47,7 @@ func DataSourceOutscaleOAPISubnets() *schema.Resource {
 							Computed: true,
 						},
 
-						"tags": dataSourceTagsSchema(),
+						"tags": DataSourceTagsSchema(),
 
 						"net_id": {
 							Type:     schema.TypeString,

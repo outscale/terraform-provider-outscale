@@ -8,7 +8,7 @@ import (
 
 func TestAccOthers_DatasourceAccessKey_basic(t *testing.T) {
 	t.Parallel()
-	dataSourceName := "outscale_access_key.outscale_access_key"
+	DataSourceName := "outscale_access_key.outscale_access_key"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -17,11 +17,11 @@ func TestAccOthers_DatasourceAccessKey_basic(t *testing.T) {
 			{
 				Config: testAccClientAccessKeyDataSourceBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(dataSourceName, "access_key_id"),
-					resource.TestCheckResourceAttrSet(dataSourceName, "creation_date"),
-					resource.TestCheckResourceAttrSet(dataSourceName, "last_modification_date"),
-					resource.TestCheckResourceAttrSet(dataSourceName, "secret_key"),
-					resource.TestCheckResourceAttrSet(dataSourceName, "state"),
+					resource.TestCheckResourceAttrSet(DataSourceName, "access_key_id"),
+					resource.TestCheckResourceAttrSet(DataSourceName, "creation_date"),
+					resource.TestCheckResourceAttrSet(DataSourceName, "last_modification_date"),
+					resource.TestCheckResourceAttrSet(DataSourceName, "secret_key"),
+					resource.TestCheckResourceAttrSet(DataSourceName, "state"),
 				),
 			},
 		},
@@ -30,7 +30,7 @@ func TestAccOthers_DatasourceAccessKey_basic(t *testing.T) {
 
 func TestAccOthers_AccessKey_withFilters(t *testing.T) {
 	t.Parallel()
-	dataSourceName := "outscale_access_key.outscale_access_key"
+	DataSourceName := "outscale_access_key.outscale_access_key"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -39,11 +39,11 @@ func TestAccOthers_AccessKey_withFilters(t *testing.T) {
 			{
 				Config: testAccClientAccessKeyDataSourceWithFilters(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(dataSourceName, "access_key_id"),
-					resource.TestCheckResourceAttrSet(dataSourceName, "creation_date"),
-					resource.TestCheckResourceAttrSet(dataSourceName, "last_modification_date"),
-					resource.TestCheckResourceAttrSet(dataSourceName, "secret_key"),
-					resource.TestCheckResourceAttrSet(dataSourceName, "state"),
+					resource.TestCheckResourceAttrSet(DataSourceName, "access_key_id"),
+					resource.TestCheckResourceAttrSet(DataSourceName, "creation_date"),
+					resource.TestCheckResourceAttrSet(DataSourceName, "last_modification_date"),
+					resource.TestCheckResourceAttrSet(DataSourceName, "secret_key"),
+					resource.TestCheckResourceAttrSet(DataSourceName, "state"),
 				),
 			},
 		},

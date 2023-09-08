@@ -18,7 +18,7 @@ func DataSourceOutscaleOAPISnapshots() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			//selection criteria
-			"filter": dataSourceFiltersSchema(),
+			"filter": DataSourceFiltersSchema(),
 			"account_id": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -93,7 +93,7 @@ func DataSourceOutscaleOAPISnapshots() *schema.Resource {
 								},
 							},
 						},
-						"tags": dataSourceTagsSchema(),
+						"tags": DataSourceTagsSchema(),
 					},
 				},
 			},

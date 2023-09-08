@@ -14,7 +14,7 @@ import (
 
 func napdSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"filter": dataSourceFiltersSchema(),
+		"filter": DataSourceFiltersSchema(),
 		"net_access_point_id": {
 			Type:     schema.TypeString,
 			Computed: true,
@@ -31,7 +31,7 @@ func napdSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"tags": dataSourceTagsSchema(),
+		"tags": DataSourceTagsSchema(),
 		"route_table_ids": {
 			Type:     schema.TypeList,
 			Computed: true,

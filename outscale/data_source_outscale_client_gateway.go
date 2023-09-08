@@ -17,7 +17,7 @@ func DataSourceOutscaleClientGateway() *schema.Resource {
 	return &schema.Resource{
 		Read: DataSourceOutscaleClientGatewayRead,
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": DataSourceFiltersSchema(),
 			"bgp_asn": {
 				Type:     schema.TypeInt,
 				Computed: true,
@@ -38,7 +38,7 @@ func DataSourceOutscaleClientGateway() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": dataSourceTagsSchema(),
+			"tags": DataSourceTagsSchema(),
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,

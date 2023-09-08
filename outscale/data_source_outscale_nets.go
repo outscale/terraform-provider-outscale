@@ -17,7 +17,7 @@ func DataSourceOutscaleOAPIVpcs() *schema.Resource {
 		Read: DataSourceOutscaleOAPIVpcsRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": DataSourceFiltersSchema(),
 			"net_id": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -52,7 +52,7 @@ func DataSourceOutscaleOAPIVpcs() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"tags": dataSourceTagsSchema(),
+						"tags": DataSourceTagsSchema(),
 					},
 				},
 			},

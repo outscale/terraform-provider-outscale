@@ -15,7 +15,7 @@ func DataSourceOutscaleOAPICas() *schema.Resource {
 	return &schema.Resource{
 		Read: DataSourceOutscaleOAPICasRead,
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": DataSourceFiltersSchema(),
 			"cas": {
 				Type:     schema.TypeList,
 				Computed: true,

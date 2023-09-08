@@ -18,7 +18,7 @@ func DataSourceOutscaleOAPIVMTypes() *schema.Resource {
 		Read: DataSourceOutscaleOAPIVMTypesRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": DataSourceFiltersSchema(),
 			"vm_types": {
 				Type:     schema.TypeList,
 				Computed: true,

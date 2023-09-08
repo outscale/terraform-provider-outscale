@@ -265,7 +265,7 @@ func assignTags(tag *schema.Set, resourceID string, conn *oscgo.APIClient) error
 	return nil
 }
 
-func dataSourceTagsSchema() *schema.Schema {
+func DataSourceTagsSchema() *schema.Schema {
 	return &schema.Schema{
 		Type:     schema.TypeList,
 		Computed: true,

@@ -19,7 +19,7 @@ func datasourceOutscaleOAPIVolumes() *schema.Resource {
 		Read: datasourceOAPIVolumesRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": DataSourceFiltersSchema(),
 			"volume_id": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -81,7 +81,7 @@ func datasourceOutscaleOAPIVolumes() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"tags": dataSourceTagsSchema(),
+						"tags": DataSourceTagsSchema(),
 						"volume_id": {
 							Type:     schema.TypeString,
 							Computed: true,

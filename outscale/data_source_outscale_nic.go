@@ -22,7 +22,7 @@ func DataSourceOutscaleOAPINic() *schema.Resource {
 		Read: DataSourceOutscaleOAPINicRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": DataSourceFiltersSchema(),
 			// This is attribute part for schema Nic
 			// Argument
 			"nic_id": {
@@ -204,7 +204,7 @@ func DataSourceOutscaleOAPINic() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": dataSourceTagsSchema(),
+			"tags": DataSourceTagsSchema(),
 			"net_id": {
 				Type:     schema.TypeString,
 				Computed: true,

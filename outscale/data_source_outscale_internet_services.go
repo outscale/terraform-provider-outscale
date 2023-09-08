@@ -17,7 +17,7 @@ func datasourceOutscaleOAPIInternetServices() *schema.Resource {
 	return &schema.Resource{
 		Read: datasourceOutscaleOAPIInternetServicesRead,
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": DataSourceFiltersSchema(),
 			"internet_service_ids": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -42,7 +42,7 @@ func datasourceOutscaleOAPIInternetServices() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"tags": dataSourceTagsSchema(),
+						"tags": DataSourceTagsSchema(),
 					},
 				},
 			},

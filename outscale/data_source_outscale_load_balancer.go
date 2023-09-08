@@ -169,7 +169,7 @@ func attrLBchema() map[string]*schema.Schema {
 
 func getDataSourceSchemas(attrsSchema map[string]*schema.Schema) map[string]*schema.Schema {
 	wholeSchema := map[string]*schema.Schema{
-		"filter": dataSourceFiltersSchema(),
+		"filter": DataSourceFiltersSchema(),
 	}
 
 	for k, v := range attrsSchema {

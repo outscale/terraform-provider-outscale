@@ -227,7 +227,7 @@ func getOAPIVMSecurityGroups(groupSet []oscgo.SecurityGroupLight) []map[string]i
 
 func getDataSourceOAPIVMSchemas() map[string]*schema.Schema {
 	wholeSchema := map[string]*schema.Schema{
-		"filter": dataSourceFiltersSchema(),
+		"filter": DataSourceFiltersSchema(),
 	}
 
 	attrsSchema := getOApiVMAttributesSchema()

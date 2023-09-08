@@ -18,7 +18,7 @@ func DataSourceOutscaleOAPIFlexibleGpu() *schema.Resource {
 	return &schema.Resource{
 		Read: DataSourceOutscaleOAPIFlexibleGpuRead,
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": DataSourceFiltersSchema(),
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,

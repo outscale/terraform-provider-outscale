@@ -23,7 +23,7 @@ func DataSourceOutscaleOAPINics() *schema.Resource {
 func getDSOAPINicsSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		//  This is attribute part for schema Nic
-		"filter": dataSourceFiltersSchema(),
+		"filter": DataSourceFiltersSchema(),
 		"nics": {
 			Type:     schema.TypeList,
 			Computed: true,

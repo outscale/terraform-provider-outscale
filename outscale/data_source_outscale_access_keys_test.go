@@ -8,7 +8,7 @@ import (
 
 func TestAccOthers_DataSourceAccessKeys_basic(t *testing.T) {
 	t.Parallel()
-	dataSourceName := "data.outscale_access_keys.outscale_access_key"
+	DataSourceName := "data.outscale_access_keys.outscale_access_key"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -17,8 +17,8 @@ func TestAccOthers_DataSourceAccessKeys_basic(t *testing.T) {
 			{
 				Config: testAccClientAccessKeysDataSourceBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(dataSourceName, "access_keys.#"),
-					resource.TestCheckResourceAttrSet(dataSourceName, "access_key_ids.#"),
+					resource.TestCheckResourceAttrSet(DataSourceName, "access_keys.#"),
+					resource.TestCheckResourceAttrSet(DataSourceName, "access_key_ids.#"),
 				),
 			},
 		},
@@ -27,7 +27,7 @@ func TestAccOthers_DataSourceAccessKeys_basic(t *testing.T) {
 
 func TestAccOthers_DataSourceAccessKeys_withFilters(t *testing.T) {
 	t.Parallel()
-	dataSourceName := "data.outscale_access_keys.outscale_access_key"
+	DataSourceName := "data.outscale_access_keys.outscale_access_key"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -36,8 +36,8 @@ func TestAccOthers_DataSourceAccessKeys_withFilters(t *testing.T) {
 			{
 				Config: testAccClientAccessKeysDataSourceWithFilters(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(dataSourceName, "access_keys.#"),
-					resource.TestCheckResourceAttrSet(dataSourceName, "filter.#"),
+					resource.TestCheckResourceAttrSet(DataSourceName, "access_keys.#"),
+					resource.TestCheckResourceAttrSet(DataSourceName, "filter.#"),
 				),
 			},
 		},

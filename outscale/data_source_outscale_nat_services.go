@@ -17,7 +17,7 @@ func DataSourceOutscaleOAPINatServices() *schema.Resource {
 		Read: DataSourceOutscaleOAPINatServicesRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": DataSourceFiltersSchema(),
 			"nat_service_ids": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -62,7 +62,7 @@ func DataSourceOutscaleOAPINatServices() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"tags": dataSourceTagsSchema(),
+						"tags": DataSourceTagsSchema(),
 					},
 				},
 			},

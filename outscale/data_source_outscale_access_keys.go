@@ -17,7 +17,7 @@ func DataSourceOutscaleAccessKeys() *schema.Resource {
 	return &schema.Resource{
 		Read: DataSourceOutscaleAccessKeysRead,
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": DataSourceFiltersSchema(),
 			"access_key_ids": {
 				Type:     schema.TypeList,
 				Optional: true,

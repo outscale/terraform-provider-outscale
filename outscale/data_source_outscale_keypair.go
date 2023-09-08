@@ -84,7 +84,7 @@ func datasourceOutscaleOAPIKeyPair() *schema.Resource {
 		Read: datasourceOutscaleOApiKeyPairRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": DataSourceFiltersSchema(),
 			// Attributes
 			"keypair_name": {
 				Type:     schema.TypeString,
