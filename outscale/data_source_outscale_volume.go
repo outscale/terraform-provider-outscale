@@ -15,9 +15,9 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func datasourceOutscaleOAPIVolume() *schema.Resource {
+func DatasourceOutscaleOAPIVolume() *schema.Resource {
 	return &schema.Resource{
-		Read: datasourceOAPIVolumeRead,
+		Read: DatasourceOAPIVolumeRead,
 
 		Schema: map[string]*schema.Schema{
 			// Arguments
@@ -92,7 +92,7 @@ func datasourceOutscaleOAPIVolume() *schema.Resource {
 	}
 }
 
-func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
+func DatasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")

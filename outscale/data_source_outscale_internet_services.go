@@ -13,9 +13,9 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func datasourceOutscaleOAPIInternetServices() *schema.Resource {
+func DatasourceOutscaleOAPIInternetServices() *schema.Resource {
 	return &schema.Resource{
-		Read: datasourceOutscaleOAPIInternetServicesRead,
+		Read: DatasourceOutscaleOAPIInternetServicesRead,
 		Schema: map[string]*schema.Schema{
 			"filter": DataSourceFiltersSchema(),
 			"internet_service_ids": {
@@ -54,7 +54,7 @@ func datasourceOutscaleOAPIInternetServices() *schema.Resource {
 	}
 }
 
-func datasourceOutscaleOAPIInternetServicesRead(d *schema.ResourceData, meta interface{}) error {
+func DatasourceOutscaleOAPIInternetServicesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")

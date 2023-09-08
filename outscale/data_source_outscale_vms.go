@@ -13,11 +13,11 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func datasourceOutscaleOApiVMS() *schema.Resource {
+func DatasourceOutscaleOApiVMS() *schema.Resource {
 	return &schema.Resource{
 		Read: DataSourceOutscaleOApiVMSRead,
 
-		Schema: datasourceOutscaleOApiVMSSchema(),
+		Schema: DatasourceOutscaleOApiVMSSchema(),
 	}
 }
 
@@ -43,7 +43,7 @@ func DataSourceFiltersSchema() *schema.Schema {
 	}
 }
 
-func datasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
+func DatasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
 	wholeSchema := map[string]*schema.Schema{
 		"filter": DataSourceFiltersSchema(),
 		"vms": {

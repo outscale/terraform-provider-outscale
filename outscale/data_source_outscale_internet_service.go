@@ -13,9 +13,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func datasourceOutscaleOAPIInternetService() *schema.Resource {
+func DatasourceOutscaleOAPIInternetService() *schema.Resource {
 	return &schema.Resource{
-		Read: datasourceOutscaleOAPIInternetServiceRead,
+		Read: DatasourceOutscaleOAPIInternetServiceRead,
 		Schema: map[string]*schema.Schema{
 			"filter": DataSourceFiltersSchema(),
 			"state": {
@@ -39,7 +39,7 @@ func datasourceOutscaleOAPIInternetService() *schema.Resource {
 	}
 }
 
-func datasourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta interface{}) error {
+func DatasourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")

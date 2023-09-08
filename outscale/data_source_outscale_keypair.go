@@ -14,7 +14,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func datasourceOutscaleOApiKeyPairRead(d *schema.ResourceData, meta interface{}) error {
+func DatasourceOutscaleOApiKeyPairRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	req := oscgo.ReadKeypairsRequest{
 		Filters: &oscgo.FiltersKeypair{KeypairNames: &[]string{d.Id()}},
@@ -79,9 +79,9 @@ func datasourceOutscaleOApiKeyPairRead(d *schema.ResourceData, meta interface{})
 	return nil
 }
 
-func datasourceOutscaleOAPIKeyPair() *schema.Resource {
+func DatasourceOutscaleOAPIKeyPair() *schema.Resource {
 	return &schema.Resource{
-		Read: datasourceOutscaleOApiKeyPairRead,
+		Read: DatasourceOutscaleOApiKeyPairRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": DataSourceFiltersSchema(),

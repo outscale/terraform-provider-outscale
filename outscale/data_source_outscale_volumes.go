@@ -14,9 +14,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func datasourceOutscaleOAPIVolumes() *schema.Resource {
+func DatasourceOutscaleOAPIVolumes() *schema.Resource {
 	return &schema.Resource{
-		Read: datasourceOAPIVolumesRead,
+		Read: DatasourceOAPIVolumesRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": DataSourceFiltersSchema(),
@@ -101,7 +101,7 @@ func datasourceOutscaleOAPIVolumes() *schema.Resource {
 	}
 }
 
-func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
+func DatasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")

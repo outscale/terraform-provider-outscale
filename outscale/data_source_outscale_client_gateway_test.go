@@ -27,7 +27,7 @@ func TestAccOthers_GatewayDatasource_basic(t *testing.T) {
 
 func TestAccOthers_GatewayDatasource_withFilters(t *testing.T) {
 	t.Parallel()
-	// datasourceName := "data.outscale_client_gateway.test"
+	// DatasourceName := "data.outscale_client_gateway.test"
 	rBgpAsn := utils.RandIntRange(64512, 65534)
 	value := fmt.Sprintf("testacc-%s", acctest.RandString(5))
 
