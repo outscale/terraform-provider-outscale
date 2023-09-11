@@ -186,15 +186,24 @@ func Provider() terraform.ResourceProvider {
 }
 
 func ProviderConfigureClient(d *schema.ResourceData) (interface{}, error) {
-	config := Config{
-		AccessKeyID: d.Get("access_key_id").(string),
-		SecretKeyID: d.Get("secret_key_id").(string),
-		Region:      d.Get("region").(string),
+	config := outscale.Config{
 		Endpoints:   make(map[string]interface{}),
 		X509cert:    d.Get("x509_cert_path").(string),
 		X509key:     d.Get("x509_key_path").(string),
 	}
 
+
+
+
+	if ak, ok := d.GetOk("access_key_id"); ok {	
+		config.AccessKeyID = ak.(string)
+	}
+	if sk, ok := d.GetOk("secret_key_id"); ok {	
+		config.SecretKeyID = sk.(string)
+	}
+	if region, ok := d.GetOk("region"); ok {	
+		config.Region = region.(string)
+	}
 	endpointsSet := d.Get("endpoints").(*schema.Set)
 
 	for _, endpointsSetI := range endpointsSet.List() {
