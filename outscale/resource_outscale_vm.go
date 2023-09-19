@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 
@@ -133,6 +132,201 @@ func resourceOutscaleOApiVM() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
+			},
+			"primary_nic": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Computed: true,
+				ForceNew: true,
+				Set: func(v interface{}) int {
+					return v.(map[string]interface{})["device_number"].(int)
+				},
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"delete_on_vm_deletion": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Computed: true,
+							ForceNew: true,
+						},
+						"description": {
+							Type:     schema.TypeString,
+							Computed: true,
+							Optional: true,
+							ForceNew: true,
+						},
+						"device_number": {
+							Type:     schema.TypeInt,
+							Required: true,
+							ForceNew: true,
+							ValidateFunc: func(number interface{}, key string) (warns []string, errs []error) {
+								deviceNumber := number.(int)
+								if deviceNumber != 0 {
+									errs = append(errs, fmt.Errorf("%q in primary_nic must be only '0', got: %d", key, deviceNumber))
+								}
+								return
+							},
+						},
+						"nic_id": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+							ForceNew: true,
+						},
+						"private_ips": {
+							Type:     schema.TypeSet,
+							Optional: true,
+							Computed: true,
+							ForceNew: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"is_primary": {
+										Type:     schema.TypeBool,
+										Optional: true,
+										Computed: true,
+										ForceNew: true,
+									},
+									"link_public_ip": {
+										Type:     schema.TypeSet,
+										Computed: true,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"public_dns_name": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+												"public_ip": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+												"public_ip_account_id": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+											},
+										},
+									},
+									"private_dns_name": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"private_ip": {
+										Type:     schema.TypeString,
+										Optional: true,
+										Computed: true,
+										ForceNew: true,
+									},
+								},
+							},
+						},
+						"secondary_private_ip_count": {
+							Type:     schema.TypeInt,
+							Optional: true,
+							Computed: true,
+							ForceNew: true,
+						},
+						"account_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+
+						"is_source_dest_checked": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+
+						"subnet_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+							Optional: true,
+							ForceNew: true,
+						},
+						"link_nic": {
+							Type:     schema.TypeList,
+							MaxItems: 1,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"delete_on_vm_deletion": {
+										Type:     schema.TypeBool,
+										Computed: true,
+									},
+									"device_number": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"link_nic_id": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"state": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
+							},
+						},
+						"link_public_ip": {
+							Type:     schema.TypeSet,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"public_dns_name": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"public_ip": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"public_ip_account_id": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
+							},
+						},
+						"mac_address": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"net_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+
+						"private_dns_name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"security_group_ids": {
+							Type:     schema.TypeList,
+							Optional: true,
+							ForceNew: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
+						},
+						"security_groups": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"security_group_id": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"security_group_name": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
+							},
+						},
+						"state": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
 			},
 			"nics": {
 				Type:     schema.TypeSet,
@@ -1084,10 +1278,20 @@ func expandBlockDeviceBSU(bsu map[string]interface{}) (oscgo.BsuToCreate, error)
 }
 
 func buildNetworkOApiInterfaceOpts(d *schema.ResourceData) []oscgo.NicForVmCreation {
-	nics := d.Get("nics").(*schema.Set).List()
-	networkInterfaces := []oscgo.NicForVmCreation{}
 
-	for i, v := range nics {
+	networkInterfaces := []oscgo.NicForVmCreation{}
+	if nics := d.Get("primary_nic").(*schema.Set).List(); len(nics) > 0 {
+		buildNicForVmCreation(nics, &networkInterfaces)
+	}
+	if nics := d.Get("nics").(*schema.Set).List(); len(nics) > 0 {
+		buildNicForVmCreation(nics, &networkInterfaces)
+	}
+	return networkInterfaces
+}
+
+func buildNicForVmCreation(nics []interface{}, listNics *[]oscgo.NicForVmCreation) {
+
+	for _, v := range nics {
 		nic := v.(map[string]interface{})
 		ni := oscgo.NicForVmCreation{
 			DeviceNumber: oscgo.PtrInt32(int32(nic["device_number"].(int))),
@@ -1099,29 +1303,19 @@ func buildNetworkOApiInterfaceOpts(d *schema.ResourceData) []oscgo.NicForVmCreat
 		if v := nic["secondary_private_ip_count"].(int); v > 0 {
 			ni.SetSecondaryPrivateIpCount(int32(v))
 		}
-		if delete, deleteOK := d.GetOk(fmt.Sprintf("nics.%d.delete_on_vm_deletion", i)); deleteOK {
-			log.Printf("[DEBUG] delete=%+v, deleteOK=%+v", delete, deleteOK)
-			ni.SetDeleteOnVmDeletion(delete.(bool))
+		if v := nic["delete_on_vm_deletion"]; v != nil {
+			ni.SetDeleteOnVmDeletion(v.(bool))
 		}
-
 		ni.SetDescription(nic["description"].(string))
-
 		ni.SetPrivateIps(expandPrivatePublicIps(nic["private_ips"].(*schema.Set)))
 		ni.SetSubnetId(nic["subnet_id"].(string))
 
 		if sg := utils.InterfaceSliceToStringSlice(nic["security_group_ids"].([]interface{})); len(sg) > 0 {
 			ni.SetSecurityGroupIds(sg)
 		}
-
-		if v, ok := d.GetOk("private_ip"); ok {
-			ni.SetPrivateIps([]oscgo.PrivateIpLight{{
-				PrivateIp: aws.String(v.(string)),
-			}})
-		}
-		networkInterfaces = append(networkInterfaces, ni)
+		*listNics = append(*listNics, ni)
 	}
 
-	return networkInterfaces
 }
 
 func expandPrivatePublicIps(p *schema.Set) []oscgo.PrivateIpLight {

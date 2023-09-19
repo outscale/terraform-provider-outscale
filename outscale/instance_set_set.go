@@ -109,7 +109,7 @@ func getOAPIPrivateIPs(privateIPs []oscgo.PrivateIp) (res []map[string]interface
 	return
 }
 
-func getOAPIVMNetworkInterfaceLightSet(nics []oscgo.NicLight) (res []map[string]interface{}) {
+func getOAPIVMNetworkInterfaceLightSet(nics []oscgo.NicLight) (primaryNic []map[string]interface{}, secondaryNic []map[string]interface{}) {
 	for _, nic := range nics {
 		securityGroups, securityGroupIds := getOAPISecurityGroups(nic.GetSecurityGroups())
 
@@ -143,8 +143,10 @@ func getOAPIVMNetworkInterfaceLightSet(nics []oscgo.NicLight) (res []map[string]
 		if nic.HasLinkNic() {
 			nicMap["link_nic"] = getOAPILinkNicLight(nic.GetLinkNic())
 		}
-
-		res = append(res, nicMap)
+		if nic.LinkNic.GetDeviceNumber() == 0 {
+			primaryNic = append(primaryNic, nicMap)
+		}
+		secondaryNic = append(secondaryNic, nicMap)
 	}
 	return
 }
