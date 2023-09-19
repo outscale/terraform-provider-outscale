@@ -68,6 +68,7 @@
                         "performance": "high",
                         "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
+                        "primary_nic": [],
                         "private_dns_name": "########",
                         "private_ip": "########",
                         "private_ips": null,

@@ -436,6 +436,7 @@
                         "performance": "high",
                         "placement_subregion_name": "us-east-2a",
                         "placement_tenancy": "default",
+                        "primary_nic": [],
                         "private_dns_name": "########",
                         "private_ip": "########",
                         "private_ips": null,
@@ -523,6 +524,7 @@
                         "performance": "high",
                         "placement_subregion_name": "us-east-2a",
                         "placement_tenancy": "default",
+                        "primary_nic": [],
                         "private_dns_name": "########",
                         "private_ip": "########",
                         "private_ips": null,
@@ -651,6 +653,48 @@
                         "performance": "medium",
                         "placement_subregion_name": "us-east-2a",
                         "placement_tenancy": "default",
+                        "primary_nic": [
+                            {
+                                "account_id": "##id-6##",
+                                "delete_on_vm_deletion": true,
+                                "description": "Primary network interface",
+                                "device_number": 0,
+                                "is_source_dest_checked": true,
+                                "link_nic": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "device_number": "0",
+                                        "link_nic_id": "##id-23##",
+                                        "state": "attached"
+                                    }
+                                ],
+                                "link_public_ip": [],
+                                "mac_address": "########",
+                                "net_id": "##id-1##",
+                                "nic_id": "##id-7##",
+                                "private_dns_name": "########",
+                                "private_ips": [
+                                    {
+                                        "is_primary": true,
+                                        "link_public_ip": [],
+                                        "private_dns_name": "########",
+                                        "private_ip": "########"
+                                    }
+                                ],
+                                "secondary_private_ip_count": 0,
+                                "security_group_ids": [
+                                    "##id-13##"
+                                ],
+                                "security_groups": [
+                                    {
+                                        "security_group_id": "##id-13##",
+                                        "security_group_name": "terraform-sg"
+                                    }
+                                ],
+                                "state": "in-use",
+                                "subnet_id": "##id-12##"
+                            }
+                        ],
                         "private_dns_name": "########",
                         "private_ip": "########",
                         "private_ips": null,

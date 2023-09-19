@@ -156,6 +156,7 @@
                         "performance": "medium",
                         "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
+                        "primary_nic": [],
                         "private_dns_name": "########",
                         "private_ip": "########",
                         "private_ips": null,
@@ -169,8 +170,8 @@
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
                         "security_group_ids": [
-                            "##id-3##",
-                            "##id-4##"
+                            "##id-4##",
+                            "##id-3##"
                         ],
                         "security_group_names": null,
                         "security_groups": [

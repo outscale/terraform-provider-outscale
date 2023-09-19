@@ -21,6 +21,31 @@
                         "volumes": [
                             {
                                 "creation_date": "########",
+                                "iops": 100,
+                                "linked_volumes": [
+                                    {
+                                        "delete_on_vm_deletion": false,
+                                        "device_name": "/dev/xvdc",
+                                        "state": "attached",
+                                        "vm_id": "##id-1##",
+                                        "volume_id": "##id-2##"
+                                    }
+                                ],
+                                "size": 40,
+                                "snapshot_id": "",
+                                "state": "in-use",
+                                "subregion_name": "eu-west-2a",
+                                "tags": [
+                                    {
+                                        "key": "type",
+                                        "value": "io1"
+                                    }
+                                ],
+                                "volume_id": "##id-2##",
+                                "volume_type": "io1"
+                            },
+                            {
+                                "creation_date": "########",
                                 "iops": 150,
                                 "linked_volumes": [],
                                 "size": 15,
@@ -33,7 +58,7 @@
                                         "value": "volume-standard-1"
                                     }
                                 ],
-                                "volume_id": "##id-1##",
+                                "volume_id": "##id-3##",
                                 "volume_type": "standard"
                             },
                             {
@@ -50,33 +75,8 @@
                                         "value": "volume-standard-2"
                                     }
                                 ],
-                                "volume_id": "##id-2##",
-                                "volume_type": "standard"
-                            },
-                            {
-                                "creation_date": "########",
-                                "iops": 100,
-                                "linked_volumes": [
-                                    {
-                                        "delete_on_vm_deletion": false,
-                                        "device_name": "/dev/xvdc",
-                                        "state": "attached",
-                                        "vm_id": "##id-3##",
-                                        "volume_id": "##id-4##"
-                                    }
-                                ],
-                                "size": 40,
-                                "snapshot_id": "",
-                                "state": "in-use",
-                                "subregion_name": "eu-west-2a",
-                                "tags": [
-                                    {
-                                        "key": "type",
-                                        "value": "io1"
-                                    }
-                                ],
                                 "volume_id": "##id-4##",
-                                "volume_type": "io1"
+                                "volume_type": "standard"
                             }
                         ]
                     },
@@ -156,6 +156,7 @@
                         "performance": "high",
                         "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
+                        "primary_nic": [],
                         "private_dns_name": "########",
                         "private_ip": "########",
                         "private_ips": null,

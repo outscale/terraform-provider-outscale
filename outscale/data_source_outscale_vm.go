@@ -128,7 +128,11 @@ func oapiVMDescriptionAttributes(set AttributeSetter, vm *oscgo.Vm) error {
 	if err := set("nested_virtualization", vm.GetNestedVirtualization()); err != nil {
 		return err
 	}
-	if err := set("nics", getOAPIVMNetworkInterfaceLightSet(vm.GetNics())); err != nil {
+	prNic, secNic := getOAPIVMNetworkInterfaceLightSet(vm.GetNics())
+	if err := set("primary_nic", prNic); err != nil {
+		return err
+	}
+	if err := set("nics", secNic); err != nil {
 		return err
 	}
 	if err := set("os_family", vm.GetOsFamily()); err != nil {
@@ -382,6 +386,174 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 		"net_id": {
 			Type:     schema.TypeString,
 			Computed: true,
+		},
+		"primary_nic": {
+			Type:     schema.TypeSet,
+			Computed: true,
+			Set: func(v interface{}) int {
+				return v.(map[string]interface{})["device_number"].(int)
+			},
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"delete_on_vm_deletion": {
+						Type:     schema.TypeBool,
+						Computed: true,
+					},
+					"description": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"device_number": {
+						Type:     schema.TypeInt,
+						Computed: true,
+					},
+					"nic_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"private_ips": {
+						Type:     schema.TypeSet,
+						Computed: true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"is_primary": {
+									Type:     schema.TypeBool,
+									Computed: true,
+								},
+								"link_public_ip": {
+									Type:     schema.TypeSet,
+									Computed: true,
+									Elem: &schema.Resource{
+										Schema: map[string]*schema.Schema{
+											"public_dns_name": {
+												Type:     schema.TypeString,
+												Computed: true,
+											},
+											"public_ip": {
+												Type:     schema.TypeString,
+												Computed: true,
+											},
+											"public_ip_account_id": {
+												Type:     schema.TypeString,
+												Computed: true,
+											},
+										},
+									},
+								},
+								"private_dns_name": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+								"private_ip": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+							},
+						},
+					},
+					"secondary_private_ip_count": {
+						Type:     schema.TypeInt,
+						Computed: true,
+					},
+					"account_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+
+					"is_source_dest_checked": {
+						Type:     schema.TypeBool,
+						Computed: true,
+					},
+
+					"subnet_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"link_nic": {
+						Type:     schema.TypeList,
+						MaxItems: 1,
+						Computed: true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"delete_on_vm_deletion": {
+									Type:     schema.TypeBool,
+									Computed: true,
+								},
+								"device_number": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+								"link_nic_id": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+								"state": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+							},
+						},
+					},
+					"link_public_ip": {
+						Type:     schema.TypeSet,
+						Computed: true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"public_dns_name": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+								"public_ip": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+								"public_ip_account_id": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+							},
+						},
+					},
+					"mac_address": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"net_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+
+					"private_dns_name": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"security_group_ids": {
+						Type:     schema.TypeList,
+						Computed: true,
+						Elem:     &schema.Schema{Type: schema.TypeString},
+					},
+					"security_groups": {
+						Type:     schema.TypeList,
+						Computed: true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"security_group_id": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+								"security_group_name": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+							},
+						},
+					},
+					"state": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+				},
+			},
 		},
 		"nics": {
 			Type:     schema.TypeList,
