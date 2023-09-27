@@ -11,6 +11,5 @@ resource "outscale_volume" "outscale_volume" {
     tags {
       key = "name"
       value = "volume-io1"
-     }
-   
+    }
 }
