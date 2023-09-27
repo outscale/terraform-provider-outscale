@@ -6,5 +6,6 @@
     "test_image_export_task_TF-191_image_export_task_datasource_attributes_ok",
     "test_snapshot_export_tasks_TF-195_snapshot_export_tasks_datasource_attributes_ok",
     "test_load_balancer_attributes_TF-86_update_load_balancer_listener_ssl_certificate_ok",
-    "test_product_types_TF-184_product_type_datasources_all_ok"
+    "test_product_types_TF-184_product_type_datasources_all_ok",
+    "test_image_TF-67_image_resource_attributes_ok"
 ]
