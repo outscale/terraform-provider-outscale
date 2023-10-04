@@ -130,6 +130,7 @@
                                 "value": "standard"
                             }
                         ],
+                        "termination_snapshot_name": null,
                         "volume_id": "##id-6##",
                         "volume_type": "standard"
                     },

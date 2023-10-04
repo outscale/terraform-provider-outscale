@@ -209,6 +209,7 @@
                                 "value": "volume-standard-1"
                             }
                         ],
+                        "termination_snapshot_name": null,
                         "volume_id": "##id-1##",
                         "volume_type": "standard"
                     },
@@ -241,6 +242,7 @@
                                 "value": "volume-standard-2"
                             }
                         ],
+                        "termination_snapshot_name": null,
                         "volume_id": "##id-2##",
                         "volume_type": "standard"
                     },
@@ -273,6 +275,7 @@
                                 "value": "io1"
                             }
                         ],
+                        "termination_snapshot_name": null,
                         "volume_id": "##id-4##",
                         "volume_type": "io1"
                     },
