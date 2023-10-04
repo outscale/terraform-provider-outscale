@@ -29,6 +29,7 @@
                                 "value": "volume-standard"
                             }
                         ],
+                        "termination_snapshot_name": null,
                         "volume_id": "##id-0##",
                         "volume_type": "standard"
                     },

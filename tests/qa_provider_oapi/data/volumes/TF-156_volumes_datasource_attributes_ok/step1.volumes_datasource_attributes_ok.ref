@@ -91,6 +91,7 @@
                                 "value": "volume-io1-1"
                             }
                         ],
+                        "termination_snapshot_name": null,
                         "volume_id": "##id-1##",
                         "volume_type": "io1"
                     },
@@ -123,6 +124,7 @@
                                 "value": "volume-io1-2"
                             }
                         ],
+                        "termination_snapshot_name": null,
                         "volume_id": "##id-2##",
                         "volume_type": "io1"
                     },

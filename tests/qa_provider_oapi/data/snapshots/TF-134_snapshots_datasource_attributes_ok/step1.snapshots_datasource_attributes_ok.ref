@@ -180,6 +180,7 @@
                         "state": "available",
                         "subregion_name": "eu-west-2a",
                         "tags": [],
+                        "termination_snapshot_name": null,
                         "volume_id": "##id-3##",
                         "volume_type": "standard"
                     },
