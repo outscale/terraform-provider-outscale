@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/nav-inc/datetime"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
@@ -108,7 +109,9 @@ func dataSourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}
 		params.SetFilters(filter)
 	}
 	if filtersOk {
-		buildOutscaleOapiSnapshootDataSourceFilters(filters.(*schema.Set), params.Filters)
+		if err := buildOutscaleOapiSnapshootDataSourceFilters(filters.(*schema.Set), params.Filters); err != nil {
+			return err
+		}
 	}
 	if ownersOk {
 		filter.SetAccountIds([]string{owners.(string)})
@@ -188,7 +191,7 @@ func snapshotOAPIDescriptionAttributes(d *schema.ResourceData, snapshot *oscgo.S
 	return d.Set("tags", tagsOSCAPIToMap(snapshot.GetTags()))
 }
 
-func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set, filter *oscgo.FiltersSnapshot) *oscgo.FiltersSnapshot {
+func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set, filter *oscgo.FiltersSnapshot) error {
 
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -207,12 +210,28 @@ func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set, filter *oscgo.
 
 		case "descriptions":
 			filter.SetDescriptions(values)
+		case "to_creation_date":
+			valDate, err := parsingfilterDateFormat("to_creation_date", values[0])
+			if err != nil {
+				return err
+			}
+			filter.SetToCreationDate(valDate)
+
+		case "from_creation_date":
+			valDate, err := parsingfilterDateFormat("from_creation_date", values[0])
+			if err != nil {
+				return err
+			}
+			filter.SetFromCreationDate(valDate)
 
 		case "permissions_to_create_volume_account_ids":
 			filter.SetPermissionsToCreateVolumeAccountIds(values)
 
 		case "permissions_to_create_volume_global_permission":
-			boolean, _ := strconv.ParseBool(values[0])
+			boolean, err := strconv.ParseBool(values[0])
+			if err != nil {
+				return err
+			}
 			filter.SetPermissionsToCreateVolumeGlobalPermission(boolean)
 
 		case "progresses":
@@ -243,5 +262,14 @@ func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set, filter *oscgo.
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)
 		}
 	}
-	return filter
+	return nil
+}
+func parsingfilterDateFormat(filterName, value string) (time.Time, error) {
+	var err error
+	var filterDate time.Time
+
+	if filterDate, err = datetime.Parse(value, time.UTC); err != nil {
+		return filterDate, fmt.Errorf("%s value should be 'ISO 8601' format ('2017-06-14' or '2017-06-14T00:00:00Z, ...) %s", filterName, err)
+	}
+	return filterDate, nil
 }

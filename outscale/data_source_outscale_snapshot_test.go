@@ -94,6 +94,10 @@ func testAccCheckOutscaleOAPISnapshotDataSourceConfigWithMultipleFilters(region 
 				name   = "volume_sizes"
 				values = ["10"]
 			}
+			filter {
+				name   = "from_creation_date"
+				values = ["2023"]
+			}
 		}
 	`, region)
 }

@@ -125,9 +125,13 @@ func dataSourceOutscaleOAPISnapshotsRead(d *schema.ResourceData, meta interface{
 		filter.SetPermissionsToCreateVolumeAccountIds(utils.InterfaceSliceToStringSlice(restorableUsers.([]interface{})))
 		params.SetFilters(filter)
 	}
+
 	if filtersOk {
-		buildOutscaleOapiSnapshootDataSourceFilters(filters.(*schema.Set), params.Filters)
+		if err := buildOutscaleOapiSnapshootDataSourceFilters(filters.(*schema.Set), params.Filters); err != nil {
+			return err
+		}
 	}
+
 	if ownersOk {
 		filter.SetAccountIds(utils.InterfaceSliceToStringSlice(owners.([]interface{})))
 		params.SetFilters(filter)

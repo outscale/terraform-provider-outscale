@@ -20,4 +20,8 @@ data "outscale_snapshot" "outscale_snapshot" {
         name   = "snapshot_ids"
         values = [outscale_snapshot.outscale_snapshot.snapshot_id]
     }
+  filter {
+    name   = "from_creation_date"
+    values = ["2023"]
+  }
 }
