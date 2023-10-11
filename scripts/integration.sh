@@ -13,8 +13,24 @@ pip --version || (echo "We need 'pip' intalled to run integration tests"; exit 1
 make fmt
 make test
 go build -o terraform-provider-outscale_v0.5.32
-mkdir -p $BUILD_DIR/terraform.d/plugins/registry.terraform.io/outscale/outscale/0.5.32/linux_amd64/
-cp terraform-provider-outscale_v0.5.32 $BUILD_DIR/terraform.d/plugins/registry.terraform.io/outscale/outscale/0.5.32/linux_amd64/
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    mkdir -p $BUILD_DIR/terraform.d/plugins/registry.terraform.io/outscale/outscale/0.5.32/linux_amd64/
+    cp terraform-provider-outscale_v0.5.32 $BUILD_DIR/terraform.d/plugins/registry.terraform.io/outscale/outscale/0.5.32/linux_amd64/
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    case $(uname -m) in
+	arm64)
+	    mkdir -p $BUILD_DIR/terraform.d/plugins/registry.terraform.io/outscale/outscale/0.5.32/darwin_arm64/
+	    cp terraform-provider-outscale_v0.5.32 $BUILD_DIR/terraform.d/plugins/registry.terraform.io/outscale/outscale/0.5.32/darwin_arm64/
+	    ;;
+	*)
+	    mkdir -p $BUILD_DIR/terraform.d/plugins/registry.terraform.io/outscale/outscale/0.5.32/darwin_amd64/
+	    cp terraform-provider-outscale_v0.5.32 $BUILD_DIR/terraform.d/plugins/registry.terraform.io/outscale/outscale/0.5.32/darwin_amd64/
+	    ;;
+    esac
+else
+    echo "OS $OSTYPE is not supported yet for testing"
+    exit 1
+fi
 
 cd $BUILD_DIR
 pip install -r requirements.txt
