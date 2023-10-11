@@ -178,8 +178,14 @@ func resourceOAPINatServiceRead(d *schema.ResourceData, meta interface{}) error 
 			return err
 		}
 
-		if err := set("public_ip_id", public_ips[0].GetPublicIpId()); err != nil {
-			return err
+		if len(public_ips) > 0 {
+			if err := set("public_ip_id", public_ips[0].GetPublicIpId()); err != nil {
+				return err
+			}
+		} else {
+			if err := set("public_ip_id", ""); err != nil {
+				return err
+			}
 		}
 
 		if err := d.Set("tags", tagsOSCAPIToMap(natService.GetTags())); err != nil {
