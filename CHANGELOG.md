@@ -1,3 +1,26 @@
+0.10.0 (November 10, 2023)
+========================
+
+BUG FIXES:
+----------
+
+* Delete igw with TF take always more than 1m ([GH-366](https://github.com/outscale/terraform-provider-outscale/issues/366)
+* Security Group not restored on VMs when removed outside of terraform ([GH-369](https://github.com/outscale/terraform-provider-outscale/issues/369)
+* Plugin crashed when NAT not found ([GH-373](https://github.com/outscale/terraform-provider-outscale/issues/373)
+
+FEATURES:
+---------
+
+* Add "ToCreationDate" and "FromCreationDate" to snapshots data_source(s) filters ([GH-344](https://github.com/outscale/terraform-provider-outscale/issues/344))
+* Add block for primary_nic in VM to avoid conflict with nic block inside VM and link_nic resouces ([GH-376](https://github.com/outscale/terraform-provider-outscale/issues/376))
+* Implement snapshot creation before volume deletion by terraform destroy ([GH-367](https://github.com/outscale/terraform-provider-outscale/issues/367))
+* Support differential updates for outscale_load_balancer_vms ([GH-54](https://github.com/outscale/terraform-provider-outscale/issues/54))
+
+IMPROVEMENT:
+-----------
+
+* Remove other inbound_rules and outbound_rules from outscale_security_group_rule ([GH-286](https://github.com/outscale/terraform-provider-outscale/issues/286))
+
 0.9.1 (April 27, 2023)
 ========================
 
