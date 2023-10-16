@@ -18,7 +18,7 @@
                         "id": "##id-0##",
                         "product_types": [
                             {
-                                "description": "Linux/UNIX",
+                                "description": "Linux",
                                 "product_type_id": "##id-1##",
                                 "vendor": ""
                             },

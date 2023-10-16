@@ -7,5 +7,7 @@
     "test_snapshot_export_tasks_TF-195_snapshot_export_tasks_datasource_attributes_ok",
     "test_load_balancer_attributes_TF-86_update_load_balancer_listener_ssl_certificate_ok",
     "test_product_types_TF-184_product_type_datasources_all_ok",
+    "waiting for io1 to fix volume test tf-154",
+    "test_volume_TF-154_volume_resource_attributes_ok2",
     "test_image_TF-67_image_resource_attributes_ok"
 ]

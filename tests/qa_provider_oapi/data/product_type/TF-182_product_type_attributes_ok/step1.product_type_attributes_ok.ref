@@ -14,7 +14,7 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "description": "Linux/UNIX",
+                        "description": "Linux",
                         "filter": "########",
                         "id": "##id-0##",
                         "product_type_id": "##id-0##",
