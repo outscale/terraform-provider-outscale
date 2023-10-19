@@ -12,9 +12,9 @@ pip3 install -r "${docs_dir}/requirements.txt" 1>"${docs_dir}/generation_log.txt
 && python3 "${docs_dir}/generate_doc_terraform.py" \
             --new_format \
             --provider_directory "${project_root}/outscale/" \
-            --api "${docs_dir}/doc-terraform-template/osc-api/outscale.yaml"  \
+            --api "${docs_dir}/doc-terraform-template/osc-api-deploy/outscale.yaml"  \
             --output_directory "$output_dir" \
-            --template_directory "${docs_dir}/doc-terraform-template/"  1>"${docs_dir}/generation_log.txt" 2>&1
+            --template_directory "${docs_dir}/doc-terraform-template/"  1>>"${docs_dir}/generation_log.txt" 2>&1
 RES=$?
 deactivate
 
