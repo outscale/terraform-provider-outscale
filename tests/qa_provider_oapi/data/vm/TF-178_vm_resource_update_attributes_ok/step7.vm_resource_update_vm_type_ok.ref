@@ -170,8 +170,8 @@
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
                         "security_group_ids": [
-                            "##id-3##",
-                            "##id-4##"
+                            "##id-4##",
+                            "##id-3##"
                         ],
                         "security_group_names": null,
                         "security_groups": [
@@ -195,7 +195,7 @@
                         "vm_type": "tinav4.c3r3p2"
                     },
                     "sensitive_attributes": [],
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
+                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
                         "outscale_keypair.keypair-TF66",
                         "outscale_security_group.security_group_TF66"
