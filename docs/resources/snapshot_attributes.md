@@ -71,5 +71,6 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `account_id` - The account ID of the owner of the snapshot.
+* `creation_date` - The date and time of creation of the snapshot.
 * `snapshot_id` - The ID of the snapshot.
 

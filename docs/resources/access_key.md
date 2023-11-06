@@ -29,7 +29,7 @@ resource "outscale_access_key" "access_key01" {
 
 The following arguments are supported:
 
-* `expiration_date` - (Optional) The date and time at which you want the access key to expire, in ISO 8601 format (for example, `2017-06-14` or `2017-06-14T00:00:00Z`). To remove an existing expiration date, use the method without specifying this parameter.
+* `expiration_date` - (Optional) The date and time, or the date, at which you want the access key to expire, in ISO 8601 format (for example, `2020-06-14T00:00:00.000Z`, or `2020-06-14`). To remove an existing expiration date, use the method without specifying this parameter.
 * `state` - (Optional) The state for the access key (`ACTIVE` | `INACTIVE`).
 
 ## Attribute Reference

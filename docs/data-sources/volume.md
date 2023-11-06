@@ -29,10 +29,10 @@ data "outscale_volume" "outscale_volume01" {
 The following arguments are supported:
 
 * `filter` - (Optional) A combination of a filter name and one or more filter values. You can specify this argument for as many filter names as you need. The filter name can be any of the following:
-    * `creation_dates` - (Optional) The dates and times of creation of the volumes.
+    * `creation_dates` - (Optional) The dates and times of creation of the volumes, in ISO 8601 date-time format (for example, `2020-06-30T00:00:00.000Z`).
     * `link_volume_delete_on_vm_deletion` - (Optional) Whether the volumes are deleted or not when terminating the VMs.
     * `link_volume_device_names` - (Optional) The VM device names.
-    * `link_volume_link_dates` - (Optional) The dates and times of creation of the volumes.
+    * `link_volume_link_dates` - (Optional) The dates and times of creation of the volumes, in ISO 8601 date-time format (for example, `2020-06-30T00:00:00.000Z`).
     * `link_volume_link_states` - (Optional) The attachment states of the volumes (`attaching` \| `detaching` \| `attached` \| `detached`).
     * `link_volume_vm_ids` - (Optional) One or more IDs of VMs.
     * `snapshot_ids` - (Optional) The snapshots from which the volumes were created.

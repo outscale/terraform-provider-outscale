@@ -44,7 +44,7 @@ The following arguments are supported:
     * `image_names` - (Optional) The names of the OMIs, provided when they were created.
     * `permissions_to_launch_account_ids` - (Optional) The account IDs of the users who have launch permissions for the OMIs.
     * `permissions_to_launch_global_permission` - (Optional) If true, lists all public OMIs. If false, lists all private OMIs.
-    * `product_codes` - (Optional) The product code associated with the OMI (`0001` Linux/Unix \| `0002` Windows \| `0004` Linux/Oracle \| `0005` Windows 10).
+    * `product_codes` - (Optional) The product codes associated with the OMI.
     * `root_device_names` - (Optional) The name of the root device. This value must be /dev/sda1.
     * `root_device_types` - (Optional) The types of root device used by the OMIs (always `bsu`).
     * `states` - (Optional) The states of the OMIs (`pending` \| `available` \| `failed`).
@@ -72,16 +72,18 @@ If you specify a snapshot ID but no volume size, the volume is created with a si
 For more information about volume types, see [About Volumes > Volume Types and IOPS](https://docs.outscale.com/en/userguide/About-Volumes.html#_volume_types_and_iops).
     * `device_name` - The device name for the volume. For a root device, you must use `/dev/sda1`. For other volumes, you must use `/dev/sdX`, `/dev/sdXX`, `/dev/xvdX`, or `/dev/xvdXX` (where the first `X` is a letter between `b` and `z`, and the second `X` is a letter between `a` and `z`).
     * `virtual_device_name` - The name of the virtual device (`ephemeralN`).
-* `creation_date` - The date and time of creation of the OMI.
+* `creation_date` - The date and time of creation of the OMI, in ISO 8601 date-time format.
 * `description` - The description of the OMI.
 * `file_location` - The location of the bucket where the OMI files are stored.
 * `image_id` - The ID of the OMI.
 * `image_name` - The name of the OMI.
 * `image_type` - The type of the OMI.
-* `permissions_to_launch` - Information about the users who have permissions for the resource.
-    * `account_ids` - The account ID of one or more users who have permissions for the resource.
-    * `global_permission` - If true, the resource is public. If false, the resource is private.
-* `product_codes` - The product code associated with the OMI (`0001` Linux/Unix \| `0002` Windows \| `0004` Linux/Oracle \| `0005` Windows 10).
+* `permissions_to_launch` - Permissions for the resource.
+    * `account_ids` - One or more account IDs that the permission is associated with.
+    * `global_permission` - A global permission for all accounts.<br />
+(Request) Set this parameter to true to make the resource public (if the parent parameter is `Additions`) or to make the resource private (if the parent parameter is `Removals`).<br />
+(Response) If true, the resource is public. If false, the resource is private.
+* `product_codes` - The product codes associated with the OMI.
 * `root_device_name` - The name of the root device.
 * `root_device_type` - The type of root device used by the OMI (always `bsu`).
 * `state_comment` - Information about the change of state.

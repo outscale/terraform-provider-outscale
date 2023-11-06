@@ -42,7 +42,7 @@ The following attributes are exported:
 * `block_device_mappings_created` - The block device mapping of the VM.
     * `bsu` - Information about the created BSU volume.
         * `delete_on_vm_deletion` - If true, the volume is deleted when terminating the VM. If false, the volume is not deleted when terminating the VM.
-        * `link_date` - The time and date of attachment of the volume to the VM.
+        * `link_date` - The date and time of attachment of the volume to the VM, in ISO 8601 date-time format.
         * `state` - The state of the volume.
         * `volume_id` - The ID of the volume.
     * `device_name` - The name of the device.
@@ -93,7 +93,7 @@ The following attributes are exported:
     * `tenancy` - The tenancy of the VM (`default` \| `dedicated`).
 * `private_dns_name` - The name of the private DNS.
 * `private_ip` - The primary private IP of the VM.
-* `product_codes` - The product code associated with the OMI used to create the VM (`0001` Linux/Unix \| `0002` Windows \| `0004` Linux/Oracle \| `0005` Windows 10).
+* `product_codes` - The product codes associated with the OMI used to create the VM.
 * `public_dns_name` - The name of the public DNS.
 * `public_ip` - The public IP of the VM.
 * `reservation_id` - The reservation ID of the VM.
