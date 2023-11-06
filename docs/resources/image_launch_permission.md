@@ -55,7 +55,9 @@ The following attributes are exported:
 
 * `description` - The description of the OMI.
 * `image_id` - The ID of the OMI.
-* `permissions_to_launch` - Information about the users who have permissions for the resource.
-    * `account_ids` - The account ID of one or more users who have permissions for the resource.
-    * `global_permission` - If true, the resource is public. If false, the resource is private.
+* `permissions_to_launch` - Permissions for the resource.
+    * `account_ids` - One or more account IDs that the permission is associated with.
+    * `global_permission` - A global permission for all accounts.<br />
+(Request) Set this parameter to true to make the resource public (if the parent parameter is `additions`) or to make the resource private (if the parent parameter is `removals`).<br />
+(Response) If true, the resource is public. If false, the resource is private.
 

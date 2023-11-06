@@ -32,6 +32,7 @@ The following arguments are supported:
     * `account_aliases` - (Optional) The account aliases of the owners of the snapshots.
     * `account_ids` - (Optional) The account IDs of the owners of the snapshots.
     * `descriptions` - (Optional) The descriptions of the snapshots.
+    * `from_creation_date` - (Optional) The beginning of the time period, in ISO 8601 date-time format (for example, `2020-06-14T00:00:00.000Z`).
     * `permissions_to_create_volume_account_ids` - (Optional) The account IDs of one or more users who have permissions to create volumes.
     * `permissions_to_create_volume_global_permission` - (Optional) If true, lists all public volumes. If false, lists all private volumes.
     * `progresses` - (Optional) The progresses of the snapshots, as a percentage.
@@ -40,6 +41,7 @@ The following arguments are supported:
     * `tag_keys` - (Optional) The keys of the tags associated with the snapshots.
     * `tag_values` - (Optional) The values of the tags associated with the snapshots.
     * `tags` - (Optional) The key/value combinations of the tags associated with the snapshots, in the following format: `TAGKEY=TAGVALUE`.
+    * `to_creation_date` - (Optional) The end of the time period, in ISO 8601 date-time format (for example, `2020-06-30T00:00:00.000Z`).
     * `volume_ids` - (Optional) The IDs of the volumes used to create the snapshots.
     * `volume_sizes` - (Optional) The sizes of the volumes used to create the snapshots, in gibibytes (GiB).
 
@@ -51,9 +53,11 @@ The following attributes are exported:
 * `account_id` - The account ID of the owner of the snapshot.
 * `creation_date` - The date and time of creation of the snapshot.
 * `description` - The description of the snapshot.
-* `permissions_to_create_volume` - Information about the users who have permissions for the resource.
-    * `account_ids` - The account ID of one or more users who have permissions for the resource.
-    * `global_permission` - If true, the resource is public. If false, the resource is private.
+* `permissions_to_create_volume` - Permissions for the resource.
+    * `account_ids` - One or more account IDs that the permission is associated with.
+    * `global_permission` - A global permission for all accounts.<br />
+(Request) Set this parameter to true to make the resource public (if the parent parameter is `Additions`) or to make the resource private (if the parent parameter is `Removals`).<br />
+(Response) If true, the resource is public. If false, the resource is private.
 * `progress` - The progress of the snapshot, as a percentage.
 * `snapshot_id` - The ID of the snapshot.
 * `state` - The state of the snapshot (`in-queue` \| `completed` \| `error`).

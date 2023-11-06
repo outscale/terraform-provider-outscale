@@ -64,9 +64,11 @@ The following attributes are exported:
 * `account_id` - The account ID of the owner of the snapshot.
 * `creation_date` - The date and time of creation of the snapshot.
 * `description` - The description of the snapshot.
-* `permissions_to_create_volume` - Information about the users who have permissions for the resource.
-    * `account_ids` - The account ID of one or more users who have permissions for the resource.
-    * `global_permission` - If true, the resource is public. If false, the resource is private.
+* `permissions_to_create_volume` - Permissions for the resource.
+    * `account_ids` - One or more account IDs that the permission is associated with.
+    * `global_permission` - A global permission for all accounts.<br />
+(Request) Set this parameter to true to make the resource public (if the parent parameter is `Additions`) or to make the resource private (if the parent parameter is `Removals`).<br />
+(Response) If true, the resource is public. If false, the resource is private.
 * `progress` - The progress of the snapshot, as a percentage.
 * `snapshot_id` - The ID of the snapshot.
 * `state` - The state of the snapshot (`in-queue` \| `completed` \| `error`).

@@ -31,6 +31,7 @@ The following arguments are supported:
 * `filter` - (Optional) A combination of a filter name and one or more filter values. You can specify this argument for as many filter names as you need. The filter name can be any of the following:
     * `access_key_ids` - (Optional) The IDs of the access keys.
     * `states` - (Optional) The states of the access keys (`ACTIVE` \| `INACTIVE`).
+* `user_name` - (Optional) The name of the EIM user. By default, the user who sends the request (which can be the root account).
 
 ## Attribute Reference
 
