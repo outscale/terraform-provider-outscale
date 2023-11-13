@@ -48,6 +48,12 @@ func Provider() terraform.ResourceProvider {
 				DefaultFunc: schema.EnvDefaultFunc("OUTSCALE_X509KEY", nil),
 				Description: "The path to your x509 key",
 			},
+			"insecure": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "tls insecure connection",
+			},
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -193,6 +199,7 @@ func providerConfigureClient(d *schema.ResourceData) (interface{}, error) {
 		Endpoints:   make(map[string]interface{}),
 		X509cert:    d.Get("x509_cert_path").(string),
 		X509key:     d.Get("x509_key_path").(string),
+		Insecure:    d.Get("insecure").(bool),
 	}
 
 	endpointsSet := d.Get("endpoints").(*schema.Set)
