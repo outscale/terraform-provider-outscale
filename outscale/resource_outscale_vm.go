@@ -1120,9 +1120,41 @@ func resourceOAPIVMDelete(d *schema.ResourceData, meta interface{}) error {
 	log.Printf("[DEBUG] Waiting for VM (%s) to become terminated", id)
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"pending", "running", "shutting-down", "stopped", "stopping"},
-		Target:     []string{"terminated"},
-		Refresh:    vmStateRefreshFunc(conn, id, ""),
+		Pending: []string{"pending", "running", "shutting-down", "stopped", "stopping"},
+		Target:  []string{"terminated"},
+		Refresh: func() (interface{}, string, error) {
+			var resp oscgo.ReadVmsResponse
+			err := resource.Retry(30*time.Second, func() *resource.RetryError {
+				rp, httpResp, err := conn.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
+					Filters: &oscgo.FiltersVm{
+						VmIds: &[]string{id},
+					},
+				}).Execute()
+				if err != nil {
+					return utils.CheckThrottling(httpResp, err)
+				}
+				resp = rp
+				return nil
+			})
+			if err != nil {
+				log.Printf("[ERROR] error on InstanceStateRefresh: %s", err)
+				return nil, "", err
+			}
+
+			if !resp.HasVms() || len(resp.GetVms()) < 1 {
+				return resp, "terminated", nil
+			}
+
+			vm := resp.GetVms()[0]
+			state := vm.GetState()
+
+			if state != "terminated" {
+				return vm, state, fmt.Errorf("Failed to reach target state. Reason: %v", *vm.State)
+
+			}
+
+			return vm, state, nil
+		},
 		Timeout:    d.Timeout(schema.TimeoutDelete),
 		Delay:      10 * time.Second,
 		MinTimeout: 3 * time.Second,
