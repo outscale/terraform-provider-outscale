@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -93,7 +94,7 @@ func resourceOutscaleOAPIOutboundRuleCreate(d *schema.ResourceData, meta interfa
 	req := oscgo.CreateSecurityGroupRuleRequest{
 		Flow:            d.Get("flow").(string),
 		SecurityGroupId: d.Get("security_group_id").(string),
-		Rules:           expandRules(d),
+		Rules:           expandRules(d, conn),
 	}
 
 	if v, ok := d.GetOkExists("from_port_range"); ok {
@@ -165,7 +166,7 @@ func resourceOutscaleOAPIOutboundRuleDelete(d *schema.ResourceData, meta interfa
 	req := oscgo.DeleteSecurityGroupRuleRequest{
 		Flow:            d.Get("flow").(string),
 		SecurityGroupId: d.Get("security_group_id").(string),
-		Rules:           expandRules(d),
+		Rules:           expandRules(d, conn),
 	}
 
 	if v, ok := d.GetOkExists("from_port_range"); ok {
@@ -196,7 +197,7 @@ func resourceOutscaleOAPIOutboundRuleDelete(d *schema.ResourceData, meta interfa
 	return nil
 }
 
-func expandRules(d *schema.ResourceData) *[]oscgo.SecurityGroupRule {
+func expandRules(d *schema.ResourceData, conn *oscgo.APIClient) *[]oscgo.SecurityGroupRule {
 	if len(d.Get("rules").([]interface{})) > 0 {
 		rules := make([]oscgo.SecurityGroupRule, len(d.Get("rules").([]interface{})))
 
@@ -204,7 +205,7 @@ func expandRules(d *schema.ResourceData) *[]oscgo.SecurityGroupRule {
 			r := rule.(map[string]interface{})
 
 			rules[i] = oscgo.SecurityGroupRule{
-				SecurityGroupsMembers: expandSecurityGroupsMembers(r["security_groups_members"].([]interface{})),
+				SecurityGroupsMembers: expandSecurityGroupsMembers(r["security_groups_members"].([]interface{}), conn),
 			}
 
 			if ipRanges := utils.InterfaceSliceToStringSlicePtr(r["ip_ranges"].([]interface{})); len(*ipRanges) > 0 {
@@ -257,7 +258,7 @@ func flattenSecurityGroupsMembers(securityGroupMembers []oscgo.SecurityGroupsMem
 	return sgms
 }
 
-func expandSecurityGroupsMembers(gps []interface{}) *[]oscgo.SecurityGroupsMember {
+func expandSecurityGroupsMembers(gps []interface{}, conn *oscgo.APIClient) *[]oscgo.SecurityGroupsMember {
 	groups := make([]oscgo.SecurityGroupsMember, len(gps))
 
 	for i, group := range gps {
@@ -267,14 +268,54 @@ func expandSecurityGroupsMembers(gps []interface{}) *[]oscgo.SecurityGroupsMembe
 		if v, ok := g["account_id"]; ok && v != "" {
 			groups[i].AccountId = pointy.String(cast.ToString(v))
 		}
+		if v, ok := g["security_group_name"]; ok && v != "" {
+			groups[i].SecurityGroupName = pointy.String(cast.ToString(v))
+			if sgID := getSgIdinVPC(conn, cast.ToString(v)); sgID != "" {
+				groups[i].SecurityGroupId = pointy.String(cast.ToString(sgID))
+			}
+		}
 		if v, ok := g["security_group_id"]; ok && v != "" {
 			groups[i].SecurityGroupId = pointy.String(cast.ToString(v))
 		}
-		if v, ok := g["security_group_name"]; ok && v != "" {
-			groups[i].SecurityGroupName = pointy.String(cast.ToString(v))
-		}
 	}
 	return &groups
+}
+
+func getSgIdinVPC(client *oscgo.APIClient, sgName string) string {
+
+	filters := oscgo.ReadSecurityGroupsRequest{
+		Filters: &oscgo.FiltersSecurityGroup{
+			SecurityGroupNames: &[]string{sgName},
+		},
+	}
+
+	var err error
+	var resp oscgo.ReadSecurityGroupsResponse
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		rp, httpResp, err := client.SecurityGroupApi.ReadSecurityGroups(context.Background()).ReadSecurityGroupsRequest(filters).Execute()
+		if err != nil {
+			return utils.CheckThrottling(httpResp, err)
+		}
+		resp = rp
+		return nil
+	})
+	if err != nil {
+		log.Printf("[DEBUG]: error reading the Outscale Security Group(%s): %s\n", sgName, err)
+		return ""
+	}
+	if resp.GetSecurityGroups() == nil || len(resp.GetSecurityGroups()) == 0 {
+		log.Printf("[DEBUG]: Unable to find Security Group: %s\n", sgName)
+		return ""
+	}
+
+	if len(resp.GetSecurityGroups()) > 1 {
+		log.Printf("[DEBUG]: Multiple results returned with '%v', please use Security Group ID\n", sgName)
+		return ""
+	}
+	if resp.GetSecurityGroups()[0].GetNetId() != "" {
+		return resp.GetSecurityGroups()[0].GetSecurityGroupId()
+	}
+	return ""
 }
 
 func getRulesSchema(isForAttr bool) *schema.Schema {
