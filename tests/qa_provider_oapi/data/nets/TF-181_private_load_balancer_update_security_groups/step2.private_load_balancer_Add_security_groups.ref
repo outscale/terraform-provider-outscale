@@ -74,6 +74,7 @@
                     "sensitive_attributes": [],
                     "private": "bnVsbA==",
                     "dependencies": [
+                        "outscale_net.outscale_net",
                         "outscale_security_group.outscale_security_group",
                         "outscale_security_group.outscale_security_group-2",
                         "outscale_subnet.subnet-1"

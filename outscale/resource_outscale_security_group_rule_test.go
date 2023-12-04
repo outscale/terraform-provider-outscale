@@ -50,6 +50,22 @@ func TestAccOthers_SecurityGroupRule_basic(t *testing.T) {
 	}
 }
 
+func TestAccNet_AddSecurityGroupRuleMembersWithSgName(t *testing.T) {
+
+	rInt := acctest.RandInt()
+	accountID := os.Getenv("OUTSCALE_ACCOUNT")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccAddSecurityGroupRuleMembersWithSgName(rInt, accountID),
+			},
+		},
+	})
+}
+
 func TestAccOthers_SecurityGroupRule_withSecurityGroupMember(t *testing.T) {
 	t.Parallel()
 	rInt := acctest.RandInt()
@@ -294,5 +310,33 @@ func testAccOutscaleOAPISecurityGroupRuleWithGroupMembers(rInt int, accountID st
 			}
                      depends_on = [outscale_security_group.outscale_security_group2]
 		}
+	`, accountID, rInt)
+}
+
+func testAccAddSecurityGroupRuleMembersWithSgName(rInt int, accountID string) string {
+	return fmt.Sprintf(`
+
+resource "outscale_net" "netSgtest" {
+    ip_range = "10.0.0.0/16"
+}
+
+resource "outscale_security_group" "security_group" {
+    description         = "testing security group"
+    security_group_name = "terraform-test_%[2]d"
+    net_id              = outscale_net.netSgtest.net_id
+}
+resource "outscale_security_group_rule" "rule_group" {
+    security_group_id = outscale_security_group.security_group.security_group_id
+    flow              = "Inbound"
+    rules {
+        from_port_range   = 22
+        to_port_range     = 22
+        ip_protocol       = "tcp"
+        security_groups_members {
+            account_id          = "%[1]s"
+            security_group_name = outscale_security_group.security_group.security_group_name
+        }
+    }
+}
 	`, accountID, rInt)
 }
