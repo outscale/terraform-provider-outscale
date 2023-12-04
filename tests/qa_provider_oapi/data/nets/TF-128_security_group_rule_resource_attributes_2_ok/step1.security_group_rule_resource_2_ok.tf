@@ -50,7 +50,7 @@ resource "outscale_security_group_rule" "outscale_security_group_rule-3_2" {
      ip_protocol       = "tcp"
       security_groups_members {
            account_id         = outscale_security_group.outscale_security_group2.account_id
-           security_group_id  = outscale_security_group.outscale_security_group2.id
+           security_group_name  = outscale_security_group.outscale_security_group2.security_group_name
        }
      }
 depends_on = [outscale_security_group.outscale_security_group2, outscale_security_group_rule.outscale_security_group_rule-3]

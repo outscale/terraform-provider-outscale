@@ -222,7 +222,7 @@
                                         "security_group_name": ""
                                     }
                                 ],
-                                "service_ids": [],
+                                "service_ids": null,
                                 "to_port_range": 22
                             }
                         ],
