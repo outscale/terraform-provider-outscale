@@ -191,8 +191,8 @@
                                 "security_groups_members": [
                                     {
                                         "account_id": "##id-2##",
-                                        "security_group_id": "##id-4##",
-                                        "security_group_name": ""
+                                        "security_group_id": "",
+                                        "security_group_name": "sg2-terraform-test"
                                     }
                                 ],
                                 "service_ids": null,
