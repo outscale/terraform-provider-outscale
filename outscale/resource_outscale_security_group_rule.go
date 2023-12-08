@@ -309,7 +309,7 @@ func getSgIdinVPC(client *oscgo.APIClient, sgName string) string {
 	}
 
 	if len(resp.GetSecurityGroups()) > 1 {
-		log.Printf("[DEBUG]: Multiple results returned with '%v', please use Security Group ID\n", sgName)
+		log.Printf("[DEBUG]: Multiple results returned with '%v', Please use Security Group ID\n", sgName)
 		return ""
 	}
 	if resp.GetSecurityGroups()[0].GetNetId() != "" {
