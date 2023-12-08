@@ -941,7 +941,7 @@ func resourceOAPIVMDelete(d *schema.ResourceData, meta interface{}) error {
 				return nil, "", err
 			}
 
-			if !resp.HasVms() {
+			if !resp.HasVms() || len(resp.GetVms()) < 1 {
 				return resp, "terminated", nil
 			}
 
