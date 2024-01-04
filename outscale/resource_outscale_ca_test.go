@@ -3,19 +3,20 @@ package outscale
 import (
 	"context"
 	"fmt"
+	"os"
 	"testing"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 func TestAccOthers_Ca_basic(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_ca.ca_test"
+	ca_path := os.Getenv("CA_PATH")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -23,13 +24,13 @@ func TestAccOthers_Ca_basic(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleCaDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPICaConfig(),
+				Config: testAccOutscaleOAPICaConfig(ca_path),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleCaExists(resourceName),
 				),
 			},
 			{
-				Config: testAccOutscaleOAPICaConfigUpdateDescription(),
+				Config: testAccOutscaleOAPICaConfigUpdateDescription(ca_path),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleCaExists(resourceName),
 				),
@@ -121,20 +122,18 @@ func testAccCheckOutscaleCaDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccOutscaleOAPICaConfig() string {
+func testAccOutscaleOAPICaConfig(path string) string {
 	return fmt.Sprintf(`
 resource "outscale_ca" "ca_test" { 
-   ca_pem       = file("./test-cert.pem")
+   ca_pem       = file(%q)
    description  = "Ca testacc create"
-}
-	`)
+}`, path)
 }
 
-func testAccOutscaleOAPICaConfigUpdateDescription() string {
+func testAccOutscaleOAPICaConfigUpdateDescription(path string) string {
 	return fmt.Sprintf(`
 resource "outscale_ca" "ca_test" { 
-   ca_pem       = file("./test-cert.pem")
+   ca_pem       = file(%q)
    description  = "Ca testacc update"
-}
-	`)
+}`, path)
 }

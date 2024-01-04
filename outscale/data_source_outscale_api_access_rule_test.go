@@ -3,19 +3,20 @@ package outscale
 import (
 	"context"
 	"fmt"
+	"os"
 	"testing"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 func TestAccOthers_DataOutscaleOAPIApiAccessRule_basic(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_api_access_rule.rule_data"
+	ca_path := os.Getenv("CA_PATH")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -23,7 +24,7 @@ func TestAccOthers_DataOutscaleOAPIApiAccessRule_basic(t *testing.T) {
 		CheckDestroy: testAccDataCheckOutscaleApiAccessRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataOutscaleOAPIApiAccessRuleConfig(),
+				Config: testAccDataOutscaleOAPIApiAccessRuleConfig(ca_path),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleApiAccessRuleExists(resourceName),
 				),
@@ -70,10 +71,10 @@ func testAccDataCheckOutscaleApiAccessRuleDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccDataOutscaleOAPIApiAccessRuleConfig() string {
+func testAccDataOutscaleOAPIApiAccessRuleConfig(path string) string {
 	return fmt.Sprintf(`
 resource "outscale_ca" "ca_rule" { 
-   ca_pem       = file("./test-cert.pem")
+   ca_pem       = file(%q)
    description  = "Ca data test create"
 }
 
@@ -98,6 +99,5 @@ data "outscale_api_access_rule" "api_access_rule" {
     name   = "descriptions"
     values = ["test api access rule"]
   }
-}
-	`)
+}`, path)
 }

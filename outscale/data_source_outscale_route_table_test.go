@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccNet_WithRouteTableDataSource_basic(t *testing.T) {
@@ -19,7 +19,6 @@ func TestAccNet_WithRouteTableDataSource_basic(t *testing.T) {
 					testAccDataSourceOutscaleOAPIRouteTableCheck("data.outscale_route_table.by_filter"),
 					testAccDataSourceOutscaleOAPIRouteTableCheck("data.outscale_route_table.by_id"),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
@@ -96,7 +95,7 @@ const testAccDataSourceOutscaleOAPIRouteTableGroupConfig = `
 
 	resource "outscale_subnet" "test" {
 		ip_range = "172.16.0.0/24"
-		net_id   = "${outscale_net.test.id}"
+		net_id   = outscale_net.test.id
 
 		#tag {
 		#  Name = "terraform-testacc-data-source"
@@ -104,7 +103,7 @@ const testAccDataSourceOutscaleOAPIRouteTableGroupConfig = `
 	}
 
 	resource "outscale_route_table" "test" {
-		net_id = "${outscale_net.test.id}"
+		net_id = outscale_net.test.id
 
 		tags {
 			key   = "Name"
@@ -113,21 +112,21 @@ const testAccDataSourceOutscaleOAPIRouteTableGroupConfig = `
 	}
 
 	resource "outscale_route_table_link" "a" {
-		subnet_id      = "${outscale_subnet.test.id}"
-		route_table_id = "${outscale_route_table.test.id}"
+		subnet_id      = outscale_subnet.test.id
+		route_table_id = outscale_route_table.test.id
 	}
 
 	data "outscale_route_table" "by_filter" {
 		filter {
 			name   = "route_table_ids"
-			values = ["${outscale_route_table.test.id}"]
+			values = [outscale_route_table.test.id]
 		}
 
-		depends_on = ["outscale_route_table_link.a"]
+		depends_on = [outscale_route_table_link.a]
 	}
 
 	data "outscale_route_table" "by_id" {
-		route_table_id = "${outscale_route_table.test.id}"
-		depends_on     = ["outscale_route_table_link.a"]
+		route_table_id = outscale_route_table.test.id
+		depends_on     = [outscale_route_table_link.a]
 	}
 `

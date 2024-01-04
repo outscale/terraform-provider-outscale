@@ -13,8 +13,8 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/errwrap"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceOutscaleOAPILinPeeringConnection() *schema.Resource {
@@ -49,7 +49,7 @@ func resourceOutscaleOAPILinPeeringConnection() *schema.Resource {
 				Computed: true,
 			},
 			"state": {
-				Type:     schema.TypeMap,
+				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -187,38 +187,27 @@ func resourceOutscaleOAPILinPeeringRead(d *schema.ResourceData, meta interface{}
 
 	log.Printf("[DEBUG] VPC PeerConn Source %s, Accepter %s", pc.SourceNet.GetAccountId(), pc.AccepterNet.GetAccountId())
 
-	accepter := make(map[string]interface{})
-	requester := make(map[string]interface{})
-	stat := make(map[string]interface{})
-
 	if !reflect.DeepEqual(pc.GetAccepterNet(), oscgo.AccepterNet{}) {
-		accepter["ip_range"] = pc.AccepterNet.GetIpRange()
-		accepter["account_id"] = pc.AccepterNet.GetAccountId()
-		accepter["net_id"] = pc.AccepterNet.GetNetId()
+		if err := d.Set("accepter_net", getOAPINetPeeringAccepterNet(pc.GetAccepterNet())); err != nil {
+			return err
+		}
 	}
-	if !reflect.DeepEqual(pc.GetSourceNet(), oscgo.SourceNet{}) {
-		requester["ip_range"] = pc.SourceNet.GetIpRange()
-		requester["account_id"] = pc.SourceNet.GetAccountId()
-		requester["net_id"] = pc.SourceNet.GetNetId()
+	if !reflect.DeepEqual(pc.SourceNet, oscgo.SourceNet{}) {
+		if err := d.Set("source_net", getOAPINetPeeringSourceNet(pc.GetSourceNet())); err != nil {
+			return err
+		}
 	}
+
 	if pc.State.GetName() != "" {
-		stat["name"] = pc.State.GetName()
-		stat["message"] = pc.State.GetMessage()
+		if err := d.Set("state", getOAPINetPeeringState(pc.GetState())); err != nil {
+			return err
+		}
 	}
 
 	if err := d.Set("accepter_net_id", pc.GetAccepterNet().NetId); err != nil {
 		return err
 	}
 	if err := d.Set("source_net_id", pc.GetSourceNet().NetId); err != nil {
-		return err
-	}
-	if err := d.Set("accepter_net", accepter); err != nil {
-		return err
-	}
-	if err := d.Set("source_net", requester); err != nil {
-		return err
-	}
-	if err := d.Set("state", stat); err != nil {
 		return err
 	}
 	if err := d.Set("net_peering_id", pc.GetNetPeeringId()); err != nil {
@@ -237,7 +226,6 @@ func resourceOutscaleOAPINetPeeringUpdate(d *schema.ResourceData, meta interface
 	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
-
 	return resourceOutscaleOAPILinPeeringRead(d, meta)
 }
 
@@ -307,7 +295,7 @@ func resourceOutscaleOAPILinPeeringConnectionStateRefreshFunc(conn *oscgo.APICli
 
 func vpcOAPIPeeringConnectionOptionsSchema() *schema.Schema {
 	return &schema.Schema{
-		Type:     schema.TypeMap,
+		Type:     schema.TypeList,
 		Computed: true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
@@ -17,7 +17,7 @@ func TestAccOthers_LBUs_basic(t *testing.T) {
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
-		IDRefreshName: "outscale_load_balancer.bar",
+		IDRefreshName: "outscale_load_balancer.bars",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOutscaleOAPILBUDestroy,
 		Steps: []resource.TestStep{
@@ -32,7 +32,7 @@ func TestAccOthers_LBUs_basic(t *testing.T) {
 
 func testAccDSOutscaleOAPILBsUConfig(region string, numLbu int) string {
 	return fmt.Sprintf(`
-	resource "outscale_load_balancer" "bar" {
+	resource "outscale_load_balancer" "bars" {
 		subregion_names = ["%s"]
 		load_balancer_name        = "foobar-terraform-elb%d"
 
@@ -52,7 +52,7 @@ func testAccDSOutscaleOAPILBsUConfig(region string, numLbu int) string {
 	}
 
 	data "outscale_load_balancers" "test" {
-		load_balancer_name = [outscale_load_balancer.bar.id]
+		load_balancer_name = [outscale_load_balancer.bars.id]
 	}
 `, region, numLbu)
 }

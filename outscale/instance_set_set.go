@@ -3,11 +3,10 @@ package outscale
 import (
 	"bytes"
 	"fmt"
-	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func getOAPISecurityGroups(groups []oscgo.SecurityGroupLight) (SecurityGroup []map[string]interface{}, SecurityGroupIds []string) {
@@ -30,15 +29,24 @@ func getOAPILinkNicLight(l oscgo.LinkNicLight) []map[string]interface{} {
 	}}
 }
 
-func getOAPILinkNic(l oscgo.LinkNic) map[string]interface{} {
-	return map[string]interface{}{
-		"delete_on_vm_deletion": strconv.FormatBool(l.GetDeleteOnVmDeletion()),
-		"device_number":         fmt.Sprintf("%d", l.GetDeviceNumber()),
+func getOAPILinkNic(l oscgo.LinkNic) []map[string]interface{} {
+	return []map[string]interface{}{{
+		"delete_on_vm_deletion": l.GetDeleteOnVmDeletion(),
+		"device_number":         l.GetDeviceNumber(),
 		"link_nic_id":           l.GetLinkNicId(),
 		"state":                 l.GetState(),
 		"vm_account_id":         l.GetVmAccountId(),
 		"vm_id":                 l.GetVmId(),
-	}
+	}}
+}
+
+func getOAPIBsuSet(bsu oscgo.BsuCreated) []map[string]interface{} {
+	return []map[string]interface{}{{
+		"delete_on_vm_deletion": bsu.GetDeleteOnVmDeletion(),
+		"link_date":             bsu.GetLinkDate(),
+		"state":                 bsu.GetState(),
+		"volume_id":             bsu.GetVolumeId(),
+	}}
 }
 
 func getOAPILinkPublicIPLight(l oscgo.LinkPublicIpLightForVm) *schema.Set {
@@ -48,7 +56,7 @@ func getOAPILinkPublicIPLight(l oscgo.LinkPublicIpLightForVm) *schema.Set {
 			m := v.(map[string]interface{})
 			buf.WriteString(fmt.Sprintf("%s-", m["public_ip"].(string)))
 			buf.WriteString(fmt.Sprintf("%s-", m["public_ip_account_id"].(string)))
-			return hashcode.String(buf.String())
+			return utils.String(buf.String())
 		},
 	}
 
@@ -77,7 +85,7 @@ func getOAPIPrivateIPsLight(privateIPs []oscgo.PrivateIpLightForVm) *schema.Set 
 			m := v.(map[string]interface{})
 			buf.WriteString(fmt.Sprintf("%s-", m["private_ip"].(string)))
 			buf.WriteString(fmt.Sprintf("%s-", m["private_dns_name"].(string)))
-			return hashcode.String(buf.String())
+			return utils.String(buf.String())
 		},
 	}
 
@@ -99,12 +107,15 @@ func getOAPIPrivateIPsLight(privateIPs []oscgo.PrivateIpLightForVm) *schema.Set 
 
 func getOAPIPrivateIPs(privateIPs []oscgo.PrivateIp) (res []map[string]interface{}) {
 	for _, p := range privateIPs {
-		res = append(res, map[string]interface{}{
+		r := map[string]interface{}{
 			"is_primary":       p.GetIsPrimary(),
-			"link_public_ip":   getOAPILinkPublicIP(p.GetLinkPublicIp()),
 			"private_dns_name": p.GetPrivateDnsName(),
 			"private_ip":       p.GetPrivateIp(),
-		})
+		}
+		if _, ok := p.GetLinkPublicIpOk(); ok {
+			r["link_public_ip"] = getOAPILinkPublicIP(p.GetLinkPublicIp())
+		}
+		res = append(res, r)
 	}
 	return
 }
@@ -152,14 +163,13 @@ func getOAPIVMNetworkInterfaceLightSet(nics []oscgo.NicLight) (primaryNic []map[
 }
 
 func getOAPIVMNetworkInterfaceSet(nics []oscgo.Nic) (res []map[string]interface{}) {
+
 	for _, nic := range nics {
 		securityGroups, _ := getOAPISecurityGroups(*nic.SecurityGroups)
-		res = append(res, map[string]interface{}{
+		r := map[string]interface{}{
 			"account_id":             nic.GetAccountId(),
 			"description":            nic.GetDescription(),
 			"is_source_dest_checked": nic.GetIsSourceDestChecked(),
-			"link_nic":               getOAPILinkNic(nic.GetLinkNic()),
-			"link_public_ip":         getOAPILinkPublicIP(nic.GetLinkPublicIp()),
 			"mac_address":            nic.GetMacAddress(),
 			"net_id":                 nic.GetNetId(),
 			"nic_id":                 nic.GetNicId(),
@@ -170,7 +180,15 @@ func getOAPIVMNetworkInterfaceSet(nics []oscgo.Nic) (res []map[string]interface{
 			"subnet_id":              nic.GetSubnetId(),
 			"subregion_name":         nic.GetSubregionName(),
 			"tags":                   getOapiTagSet(nic.Tags),
-		})
+		}
+		if _, ok := nic.GetLinkNicOk(); ok {
+			r["link_nic"] = getOAPILinkNic(nic.GetLinkNic())
+		}
+		if _, ok := nic.GetLinkPublicIpOk(); ok {
+			r["link_public_ip"] = getOAPILinkPublicIP(nic.GetLinkPublicIp())
+		}
+		res = append(res, r)
 	}
+
 	return
 }

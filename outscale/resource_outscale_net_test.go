@@ -9,13 +9,13 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccNet_basic(t *testing.T) {
-	var conf1 oscgo.Net
-	var conf2 oscgo.Net
+func TestAccOutscaleOAPILin_basic(t *testing.T) {
+	t.Parallel()
+	var conf oscgo.Net
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -25,12 +25,9 @@ func TestAccNet_basic(t *testing.T) {
 			{
 				Config: testAccOutscaleOAPILinConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPILinExists("outscale_net.vpc.0", &conf1),
-					testAccCheckOutscaleOAPILinExists("outscale_net.vpc.1", &conf2),
+					testAccCheckOutscaleOAPILinExists("outscale_net.vpc", &conf),
 					resource.TestCheckResourceAttr(
-						"outscale_net.vpc.0", "ip_range", "10.0.0.0/16"),
-					resource.TestCheckResourceAttr(
-						"outscale_net.vpc.1", "ip_range", "10.0.0.0/16"),
+						"outscale_net.vpc", "ip_range", "10.0.0.0/16"),
 				),
 			},
 		},
@@ -97,8 +94,6 @@ func testAccCheckOutscaleOAPILinExists(n string, res *oscgo.Net) resource.TestCh
 const testAccOutscaleOAPILinConfig = `
 	resource "outscale_net" "vpc" {
 		ip_range = "10.0.0.0/16"
-		count = 2
-
 		tags {
 			key = "Name" 
 			value = "testacc-net-rs"

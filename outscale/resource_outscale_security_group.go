@@ -8,10 +8,10 @@ import (
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceOutscaleOAPISecurityGroup() *schema.Resource {
@@ -216,7 +216,6 @@ func resourceOutscaleOAPISecurityGroupCreate(d *schema.ResourceData, meta interf
 			return err
 		}
 	}
-
 	return resourceOutscaleOAPISecurityGroupRead(d, meta)
 }
 
@@ -301,7 +300,6 @@ func resourceOutscaleOAPISecurityGroupUpdate(d *schema.ResourceData, meta interf
 	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
-
 	return resourceOutscaleOAPISecurityGroupRead(d, meta)
 }
 

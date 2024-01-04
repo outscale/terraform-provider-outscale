@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccNet_WithNicDataSource_basic(t *testing.T) {
@@ -142,7 +142,7 @@ func testAccOutscaleOAPIENIDataSourceConfig(subregion string) string {
 			
 		resource "outscale_subnet" "outscale_subnet" {
 			subregion_name = "%sa"
-			ip_range       = "10.0.0.0/24"
+			ip_range       = "10.0.0.0/16"
 			net_id         = outscale_net.outscale_net.id
 		}
 
@@ -155,7 +155,10 @@ func testAccOutscaleOAPIENIDataSourceConfig(subregion string) string {
 		}
 
 		data "outscale_nic" "outscale_nic" {
-			nic_id = outscale_nic.outscale_nic.id
+		     filter {
+			name = "nic_ids"
+			values = [outscale_nic.outscale_nic.nic_id]
+		     }
 		}
 	`, subregion)
 }
@@ -173,7 +176,7 @@ func testAccOutscaleOAPIENIDataSourceConfigFilter(subregion string) string {
 	
 	resource "outscale_subnet" "outscale_subnet" {
 		subregion_name = "%sa"
-		ip_range       = "10.0.0.0/24"
+		ip_range       = "10.0.0.0/16"
 		net_id         = outscale_net.outscale_net.id
 	}
 
@@ -190,6 +193,6 @@ func testAccOutscaleOAPIENIDataSourceConfigFilter(subregion string) string {
 			name = "nic_ids"
 			values = [outscale_nic.outscale_nic.nic_id]
 		}
-	}  
+	}
 `, subregion)
 }

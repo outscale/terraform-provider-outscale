@@ -4,13 +4,14 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"reflect"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceOutscaleOAPILinPeeringsConnection() *schema.Resource {
@@ -31,11 +32,11 @@ func dataSourceOutscaleOAPILinPeeringsConnection() *schema.Resource {
 						},
 						"source_net": vpcOAPIPeeringConnectionOptionsSchema(),
 						"state": {
-							Type:     schema.TypeMap,
+							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"code": {
+									"name": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
@@ -85,56 +86,67 @@ func dataSourceOutscaleOAPILinPeeringsConnectionRead(d *schema.ResourceData, met
 	if err != nil {
 		return fmt.Errorf("Error reading the Net Peerings %s", err)
 	}
-
-	if resp.GetNetPeerings() == nil || len(resp.GetNetPeerings()) == 0 {
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
-	}
-
 	peerings := resp.GetNetPeerings()
 
+	if peerings == nil || len(peerings) == 0 {
+		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
+	}
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
 		d.SetId(resource.UniqueId())
 
-		if err := set("net_peerings", getOAPINetPeerings(peerings)); err != nil {
-			log.Printf("[DEBUG] Net Peerings ERR %+v", err)
+		if err := set("net_peerings", setNetPeeringsAttributtes(peerings)); err != nil {
 			return err
 		}
 		return nil
 	})
 }
 
-func getOAPINetPeerings(peerings []oscgo.NetPeering) (res []map[string]interface{}) {
+func setNetPeeringsAttributtes(peerings []oscgo.NetPeering) (res []map[string]interface{}) {
+
 	for _, p := range peerings {
-		res = append(res, map[string]interface{}{
-			"accepter_net":   getOAPINetPeeringAccepterNet(p.GetAccepterNet()),
+		netP := map[string]interface{}{
 			"net_peering_id": p.GetNetPeeringId(),
-			"source_net":     getOAPINetPeeringSourceNet(p.GetSourceNet()),
-			"state":          getOAPINetPeeringState(p.GetState()),
-			//"tags":           getOapiTagSet(p.Tags),
-		})
+		}
+		if p.HasAccepterNet() {
+			if !reflect.DeepEqual(p.GetAccepterNet(), oscgo.AccepterNet{}) {
+				netP["accepter_net"] = getOAPINetPeeringAccepterNet(p.GetAccepterNet())
+			}
+		}
+		if p.HasSourceNet() {
+			if !reflect.DeepEqual(p.GetSourceNet(), oscgo.SourceNet{}) {
+				netP["source_net"] = getOAPINetPeeringSourceNet(p.GetSourceNet())
+			}
+		}
+		if p.HasState() {
+			netP["state"] = getOAPINetPeeringState(p.GetState())
+		}
+		if p.HasTags() {
+			netP["tags"] = getOapiTagSet(p.Tags)
+		}
+		res = append(res, netP)
 	}
-	return res
+	return
 }
 
-func getOAPINetPeeringAccepterNet(a oscgo.AccepterNet) map[string]interface{} {
-	return map[string]interface{}{
+func getOAPINetPeeringAccepterNet(a oscgo.AccepterNet) []map[string]interface{} {
+	return []map[string]interface{}{{
 		"ip_range":   a.GetIpRange(),
 		"account_id": a.GetAccountId(),
 		"net_id":     a.GetNetId(),
-	}
+	}}
 }
 
-func getOAPINetPeeringSourceNet(a oscgo.SourceNet) map[string]interface{} {
-	return map[string]interface{}{
+func getOAPINetPeeringSourceNet(a oscgo.SourceNet) []map[string]interface{} {
+	return []map[string]interface{}{{
 		"ip_range":   a.GetIpRange(),
 		"account_id": a.GetAccountId(),
 		"net_id":     a.GetNetId(),
-	}
+	}}
 }
 
-func getOAPINetPeeringState(a oscgo.NetPeeringState) map[string]interface{} {
-	return map[string]interface{}{
-		"name":    a.Name,
-		"message": a.Message,
-	}
+func getOAPINetPeeringState(a oscgo.NetPeeringState) []map[string]interface{} {
+	return []map[string]interface{}{{
+		"name":    a.GetName(),
+		"message": a.GetMessage(),
+	}}
 }

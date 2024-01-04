@@ -11,8 +11,8 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceOutscaleOAPIVolume() *schema.Resource {
@@ -189,7 +189,6 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 			return err
 		}
 	}
-
 	return resourceOAPIVolumeRead(d, meta)
 }
 
@@ -246,7 +245,6 @@ func resourceOAPIVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return fmt.Errorf("Error waiting for Volume (%s) to update: %s", d.Id(), err)
 	}
-
 	return resourceOAPIVolumeRead(d, meta)
 }
 

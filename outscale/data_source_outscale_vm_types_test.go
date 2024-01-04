@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccVM_TypesDataSource_basic(t *testing.T) {
@@ -27,7 +27,7 @@ func TestAccVM_TypesDataSource_basic(t *testing.T) {
 
 func testAccDataSourceOutscaleOAPIVMTypesConfig(omi, vmType string) string {
 	return fmt.Sprintf(`
-		resource "outscale_vm" "basic" {
+		resource "outscale_vm" "basicTypes" {
 			image_id     = "%s"
 			vm_type      = "%s"
 			keypair_name = "terraform-basic"

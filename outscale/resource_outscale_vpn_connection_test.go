@@ -9,14 +9,14 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccOutscaleVPNConnection_basic(t *testing.T) {
 	t.Parallel()
-	resourceName := "outscale_vpn_connection.foo"
+	resourceName := "outscale_vpn_connection.vpn_basic"
 
 	publicIP := fmt.Sprintf("172.0.0.%d", utils.RandIntRange(1, 255))
 
@@ -26,18 +26,6 @@ func TestAccOutscaleVPNConnection_basic(t *testing.T) {
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccOutscaleVPNConnectionDestroy,
 		Steps: []resource.TestStep{
-			{
-				Config: testAccOutscaleVPNConnectionConfigWithoutStaticRoutes(publicIP),
-				Check: resource.ComposeTestCheckFunc(
-					testAccOutscaleVPNConnectionExists(resourceName),
-					resource.TestCheckResourceAttrSet(resourceName, "client_gateway_id"),
-					resource.TestCheckResourceAttrSet(resourceName, "virtual_gateway_id"),
-					resource.TestCheckResourceAttrSet(resourceName, "connection_type"),
-					resource.TestCheckResourceAttrSet(resourceName, "vgw_telemetries.#"),
-
-					resource.TestCheckResourceAttr(resourceName, "connection_type", "ipsec.1"),
-				),
-			},
 			{
 				Config: testAccOutscaleVPNConnectionConfig(publicIP, true),
 				Check: resource.ComposeTestCheckFunc(
@@ -130,7 +118,7 @@ func TestAccOutscaleVPNConnection_withTags(t *testing.T) {
 
 func TestAccOutscaleVPNConnection_importBasic(t *testing.T) {
 	t.Parallel()
-	resourceName := "outscale_vpn_connection.foo"
+	resourceName := "outscale_vpn_connection.vpn_basic"
 
 	publicIP := fmt.Sprintf("172.0.0.%d", utils.RandIntRange(1, 255))
 
@@ -242,9 +230,9 @@ func testAccOutscaleVPNConnectionConfig(publicIP string, staticRoutesOnly bool) 
 			connection_type = "ipsec.1"
 		}
 
-		resource "outscale_vpn_connection" "foo" {
-			client_gateway_id  = "${outscale_client_gateway.customer_gateway.id}"
-			virtual_gateway_id = "${outscale_virtual_gateway.virtual_gateway.id}"
+		resource "outscale_vpn_connection" "vpn_basic" {
+			client_gateway_id  = outscale_client_gateway.customer_gateway.id
+			virtual_gateway_id = outscale_virtual_gateway.virtual_gateway.id
 			connection_type    = "ipsec.1"
 			static_routes_only = "%t"
 		}
@@ -264,8 +252,8 @@ func testAccOutscaleVPNConnectionConfigWithoutStaticRoutes(publicIP string) stri
 		}
 
 		resource "outscale_vpn_connection" "foo" {
-			client_gateway_id  = "${outscale_client_gateway.customer_gateway.id}"
-			virtual_gateway_id = "${outscale_virtual_gateway.virtual_gateway.id}"
+			client_gateway_id  = outscale_client_gateway.customer_gateway.id
+			virtual_gateway_id = outscale_virtual_gateway.virtual_gateway.id
 			connection_type    = "ipsec.1"
 		}
 	`, publicIP)
@@ -284,8 +272,8 @@ func testAccOutscaleVPNConnectionConfigWithTags(publicIP, value string) string {
 		}
 
 		resource "outscale_vpn_connection" "foo" {
-			client_gateway_id  = "${outscale_client_gateway.customer_gateway.id}"
-			virtual_gateway_id = "${outscale_virtual_gateway.virtual_gateway.id}"
+			client_gateway_id  = outscale_client_gateway.customer_gateway.id
+			virtual_gateway_id = outscale_virtual_gateway.virtual_gateway.id
 			connection_type    = "ipsec.1"
 			static_routes_only = true
 

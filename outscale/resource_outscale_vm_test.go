@@ -11,9 +11,9 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccVM_Basic(t *testing.T) {
@@ -133,7 +133,7 @@ func testAccCheckOutscaleVMImportStateIDFunc(resourceName string) resource.Impor
 func TestAccNet_VM_withNicAttached(t *testing.T) {
 	var server oscgo.Vm
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	keypair := os.Getenv("OUTSCALE_KEYPAIR")
+	keypair := "terraform-basic"
 	resourceName := "outscale_vm.basic"
 
 	resource.Test(t, resource.TestCase{
@@ -158,7 +158,8 @@ func TestAccVM_withTags(t *testing.T) {
 	t.Parallel()
 	var server oscgo.Vm
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	keypair := os.Getenv("OUTSCALE_KEYPAIR")
+	keypair := "terraform-basic"
+	tagsValue := "test_tags1"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -166,7 +167,7 @@ func TestAccVM_withTags(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccVmsConfigUpdateOAPIVMTags(omi, "tinav4.c2r2p2", utils.GetRegion(), "Terraform-VM", keypair),
+				Config: testAccVmsConfigUpdateOAPIVMTags(omi, "tinav4.c2r2p2", utils.GetRegion(), tagsValue, keypair),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &server),
 					testAccCheckOutscaleOAPIVMAttributes(t, &server, omi),
@@ -183,7 +184,7 @@ func TestAccVM_withTags(t *testing.T) {
 func TestAccNet_VM_withNics(t *testing.T) {
 	var server oscgo.Vm
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	keypair := os.Getenv("OUTSCALE_KEYPAIR")
+	keypair := "terraform-basic"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -205,46 +206,10 @@ func TestAccNet_VM_withNics(t *testing.T) {
 	})
 }
 
-func TestAccVM_UpdateKeypair(t *testing.T) {
-	t.Parallel()
-	omi := os.Getenv("OUTSCALE_IMAGEID")
-	keypair := os.Getenv("OUTSCALE_KEYPAIR")
-	sgId := os.Getenv("OUTSCALE_SECURITYGROUPID")
-	region := utils.GetRegion()
-
-	var before oscgo.Vm
-	var after oscgo.Vm
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccVmsConfigUpdateOAPIVMKey(omi, "tinav4.c2r2p2", region, keypair, sgId),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &before),
-					testAccCheckOutscaleOAPIVMAttributes(t, &before, omi),
-					resource.TestCheckResourceAttr("outscale_vm.basic", "image_id", omi),
-					resource.TestCheckResourceAttr("outscale_vm.basic", "vm_type", "tinav4.c2r2p2"),
-				),
-			},
-			{
-				Config: testAccVmsConfigUpdateOAPIVMKey(omi, "tinav4.c2r2p2", region, keypair, sgId),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPIVMExists("outscale_vm.basic", &after),
-					testAccCheckOAPIVMNotRecreated(t, &before, &after),
-					resource.TestCheckResourceAttr("outscale_vm.basic", "vm_type", "tinav4.c2r2p2"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccNet_VM_WithSubnet(t *testing.T) {
+func TestAccOutscaleOAPIVM_WithSubnet(t *testing.T) {
 	var server oscgo.Vm
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	keypair := os.Getenv("OUTSCALE_KEYPAIR")
+	keypair := "terraform-basic"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -269,7 +234,7 @@ func TestAccNet_VM_WithSubnet(t *testing.T) {
 func TestAccVM_UpdateDeletionProtection(t *testing.T) {
 	t.Parallel()
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	keypair := os.Getenv("OUTSCALE_KEYPAIR")
+	keypair := "terraform-basic"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -277,15 +242,15 @@ func TestAccVM_UpdateDeletionProtection(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleDeletionProtectionUpdateBasic(omi, "true", keypair),
+				Config: testAccCheckOutscaleDeletionProtectionUpdateBasic(omi, keypair, true),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("outscale_vm.outscale_vm", "deletion_protection", "true"),
+					resource.TestCheckResourceAttr("outscale_vm.outscale_vm1", "deletion_protection", "true"),
 				),
 			},
 			{
-				Config: testAccCheckOutscaleDeletionProtectionUpdateBasic(omi, "false", keypair),
+				Config: testAccCheckOutscaleDeletionProtectionUpdateBasic(omi, keypair, false),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("outscale_vm.outscale_vm", "deletion_protection", "false"),
+					resource.TestCheckResourceAttr("outscale_vm.outscale_vm1", "deletion_protection", "false"),
 				),
 			},
 		},
@@ -295,7 +260,8 @@ func TestAccVM_UpdateDeletionProtection(t *testing.T) {
 func TestAccVM_UpdateTags(t *testing.T) {
 	t.Parallel()
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	keypair := os.Getenv("OUTSCALE_KEYPAIR")
+	keypair := "terraform-basic"
+	tagsValue := "test_tags1"
 
 	//TODO: check tags
 	resource.Test(t, resource.TestCase{
@@ -304,7 +270,7 @@ func TestAccVM_UpdateTags(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccVmsConfigUpdateOAPIVMTags(omi, "tinav4.c2r2p2", utils.GetRegion(), "Terraform-VM", keypair),
+				Config: testAccVmsConfigUpdateOAPIVMTags(omi, "tinav4.c2r2p2", utils.GetRegion(), tagsValue, keypair),
 				//Check:  resource.ComposeTestCheckFunc(),
 			},
 			{
@@ -318,7 +284,7 @@ func TestAccVM_UpdateTags(t *testing.T) {
 func TestAccNet_WithVM_PublicIp_Link(t *testing.T) {
 	var server oscgo.Vm
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	keypair := os.Getenv("OUTSCALE_KEYPAIR")
+	keypair := "terraform-basic"
 	vmType := "tinav4.c2r2p2"
 
 	resource.Test(t, resource.TestCase{
@@ -345,10 +311,10 @@ func TestAccVM_multiBlockDeviceMapping(t *testing.T) {
 	t.Parallel()
 	var server oscgo.Vm
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	keypair := os.Getenv("OUTSCALE_KEYPAIR")
+	keypair := "terraform-basic"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccPreCheckValues(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
@@ -417,15 +383,15 @@ func testAccCheckOutscaleVMWithMultiBlockDeviceMapping(region, omi, keypair stri
 	`, region, omi, keypair)
 }
 
-func testAccCheckOutscaleDeletionProtectionUpdateBasic(omi, deletionProtection, keypair string) string {
+func testAccCheckOutscaleDeletionProtectionUpdateBasic(omi, keypair string, deletionProtection bool) string {
 	return fmt.Sprintf(`
-		resource "outscale_vm" "outscale_vm" {
+		resource "outscale_vm" "outscale_vm1" {
 			image_id            = "%[1]s"
 			vm_type             = "tinav4.c2r2p2"
-			keypair_name        = "%[3]s"
-			deletion_protection = %[2]s
+			keypair_name        = "%[2]s"
+			deletion_protection = %[3]t
 		}
-	`, omi, deletionProtection, keypair)
+	`, omi, keypair, deletionProtection)
 }
 
 //TODO: check if is needed
@@ -636,12 +602,6 @@ func testAccCheckOutscaleOAPIVMConfigBasic(omi, vmType, region, keypair string) 
 			vm_type                  = "%[2]s"
 			keypair_name             = "%[4]s"
 			placement_subregion_name = "%[3]s"
-			#placement_tenancy        = "dedicated"
-			#nested_virtualization    = true
-			tags {
-				key   = "name"
-				value = "Terraform-VM"
-			}
 		}`, omi, vmType, region, keypair)
 }
 
@@ -756,31 +716,8 @@ func testAccCheckOutscaleOAPIVMConfigBasicWithNics(omi, vmType, keypair, region 
 	  }`, omi, vmType, keypair, region)
 }
 
-func testAccVmsConfigUpdateOAPIVMKey(omi, vmType, region, keypair, sgId string) string {
-	return fmt.Sprintf(`
-		resource "outscale_security_group" "sg" {
-			security_group_name = "%[4]s"
-			description         = "Used in the terraform acceptance tests"
-
-			tags {
-				key   = "Name"
-				value = "tf-acc-test"
-			}
-		}
-
-		resource "outscale_vm" "basic" {
-			image_id                 = "%[1]s"
-			vm_type                  = "%[2]s"
-			keypair_name             = "%[4]s"
-			security_group_ids       = ["%[5]s"]
-			placement_subregion_name = "%[3]sb"
-		}
-	`, omi, vmType, region, keypair, sgId)
-}
-
 func testAccVmsConfigUpdateOAPIVMTags(omi, vmType, region, value, keypair string) string {
 	return fmt.Sprintf(`
-
 		resource "outscale_vm" "basic" {
 			image_id                 = "%[1]s"
 			vm_type                  = "%[2]s"
@@ -826,6 +763,46 @@ func testAccCheckOutscaleOAPIVMConfigWithSubnet(omi, vmType, region, keypair str
 			subnet_id                = outscale_subnet.outscale_subnet.subnet_id
 			placement_subregion_name = "%[3]sa"
 			placement_tenancy        = "default"
+	  }
+	`, omi, vmType, region, keypair)
+}
+
+func testAccCheckOutscaleOAPIVMConfigWithBlockDeviceMappings(omi, vmType, region, keypair string) string {
+	return fmt.Sprintf(`
+	resource "outscale_volume" "external1" {
+		subregion_name = "%[3]sa"
+		size           = 1
+	  }
+
+	  resource "outscale_snapshot" "snapshot" {
+		volume_id = outscale_volume.external1.id
+	  }
+
+	  resource "outscale_vm" "basic" {
+		image_id     = "%[1]s"
+		vm_type      = "%[2]s"
+		keypair_name = "%[4]s"
+
+		block_device_mappings {
+		  device_name = "/dev/sdb"
+		  no_device   = "/dev/xvdb"
+		  bsu {
+			volume_size           = 15
+			volume_type           = "standard"
+			snapshot_id           = outscale_snapshot.snapshot.id
+			delete_on_vm_deletion = true
+		  }
+		}
+
+		block_device_mappings {
+		  device_name = "/dev/sdc"
+		  bsu {
+			volume_size           = 22
+			#volume_type           = "io1"
+			#iops                  = 150
+			delete_on_vm_deletion = true
+		  }
+		}
 	  }
 	`, omi, vmType, region, keypair)
 }

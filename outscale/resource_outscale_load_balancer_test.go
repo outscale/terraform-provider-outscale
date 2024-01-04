@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 	"time"
@@ -11,15 +10,15 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccOthers_LBUBasic(t *testing.T) {
 	t.Parallel()
 	var conf oscgo.LoadBalancer
 
-	resourceName := "outscale_load_balancer.bar"
+	lbResourceName := "outscale_load_balancer.barRes"
 	r := utils.RandIntRange(0, 10)
 	zone := fmt.Sprintf("%sa", utils.GetRegion())
 
@@ -27,18 +26,18 @@ func TestAccOthers_LBUBasic(t *testing.T) {
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
-		IDRefreshName: resourceName,
+		IDRefreshName: lbResourceName,
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOutscaleOAPILBUDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleOAPILBUConfig(r),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPILBUExists(resourceName, &conf),
-					resource.TestCheckResourceAttr(resourceName, "subregion_names.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "subregion_names.0", zone),
-					resource.TestCheckResourceAttr(resourceName, "listeners.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "secured_cookies", "true"),
+					testAccCheckOutscaleOAPILBUExists(lbResourceName, &conf),
+					resource.TestCheckResourceAttr(lbResourceName, "subregion_names.#", "1"),
+					resource.TestCheckResourceAttr(lbResourceName, "subregion_names.0", zone),
+					resource.TestCheckResourceAttr(lbResourceName, "listeners.#", "1"),
+					resource.TestCheckResourceAttr(lbResourceName, "secured_cookies", "true"),
 				)},
 		},
 	})
@@ -49,7 +48,7 @@ func TestAccOthers_LBUPublicIp(t *testing.T) {
 	t.Parallel()
 	var conf oscgo.LoadBalancer
 
-	resourceName := "outscale_load_balancer.bar"
+	resourceName := "outscale_load_balancer.barIp"
 
 	r := utils.RandIntRange(10, 20)
 
@@ -179,7 +178,7 @@ func testAccCheckOutscaleOAPILBUExists(n string, res *oscgo.LoadBalancer) resour
 
 func testAccOutscaleOAPILBUConfig(r int) string {
 	return fmt.Sprintf(`
-resource "outscale_load_balancer" "bar" {
+resource "outscale_load_balancer" "barRes" {
 	subregion_names = ["%sa"]
 	load_balancer_name               = "foobar-terraform-elb-%d"
 	
@@ -207,7 +206,7 @@ func testAccOutscaleOAPILBUPublicIpConfig(r int) string {
 	resource "outscale_public_ip" "my_public_ip" {
 	}
 
-	resource "outscale_load_balancer" "bar" {
+	resource "outscale_load_balancer" "barIp" {
 		subregion_names = ["%[1]sa"]
 		load_balancer_name = "foobar-terraform-elb-%[2]d"
 	  
@@ -225,5 +224,5 @@ func testAccOutscaleOAPILBUPublicIpConfig(r int) string {
 		  value = "terraform-internet-facing-lb-with-eip"
 		}
 	  }
-`, os.Getenv("OUTSCALE_REGION"), r)
+`, utils.GetRegion(), r)
 }

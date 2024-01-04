@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
@@ -48,7 +48,7 @@ func testAccCheckODSutscaleOAPILBUDSTagsExists(n string) resource.TestCheckFunc 
 
 func getTestAccDSODSutscaleOAPILBUDSTagsConfig(r string, zone string) string {
 	return fmt.Sprintf(`
-		resource "outscale_load_balancer" "bar" {
+		resource "outscale_load_balancer" "barTags" {
 			subregion_names    = ["%sa"]
 			load_balancer_name = "foobar-terraform-elb-%s"
 		
@@ -65,9 +65,8 @@ func getTestAccDSODSutscaleOAPILBUDSTagsConfig(r string, zone string) string {
 			}
 		}
 		
-		
 		data "outscale_load_balancer_tags" "testds" {
-			load_balancer_names = ["${outscale_load_balancer.bar.id}"]
+			load_balancer_names = [outscale_load_balancer.barTags.id]
 		}
 	`, zone, r)
 }
