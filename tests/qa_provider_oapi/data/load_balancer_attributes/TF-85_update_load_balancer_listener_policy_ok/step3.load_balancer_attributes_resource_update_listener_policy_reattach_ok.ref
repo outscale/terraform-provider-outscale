@@ -14,24 +14,28 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "access_log": {
-                            "is_enabled": "false",
-                            "osu_bucket_name": "",
-                            "osu_bucket_prefix": "",
-                            "publication_interval": "60"
-                        },
+                        "access_log": [
+                            {
+                                "is_enabled": false,
+                                "osu_bucket_name": "",
+                                "osu_bucket_prefix": "",
+                                "publication_interval": 60
+                            }
+                        ],
                         "application_sticky_cookie_policies": [],
                         "backend_vm_ids": [],
                         "dns_name": "########",
-                        "health_check": {
-                            "check_interval": "30",
-                            "healthy_threshold": "10",
-                            "path": "",
-                            "port": "80",
-                            "protocol": "TCP",
-                            "timeout": "5",
-                            "unhealthy_threshold": "2"
-                        },
+                        "health_check": [
+                            {
+                                "check_interval": 30,
+                                "healthy_threshold": 10,
+                                "path": "",
+                                "port": 80,
+                                "protocol": "TCP",
+                                "timeout": 5,
+                                "unhealthy_threshold": 2
+                            }
+                        ],
                         "id": "##id-0##",
                         "listeners": [
                             {
@@ -63,10 +67,12 @@
                         "request_id": "########",
                         "secured_cookies": false,
                         "security_groups": [],
-                        "source_security_group": {
-                            "security_group_account_id": "##id-1##",
-                            "security_group_name": "outscale-elb-sg"
-                        },
+                        "source_security_group": [
+                            {
+                                "security_group_account_id": "##id-1##",
+                                "security_group_name": "outscale-elb-sg"
+                            }
+                        ],
                         "subnets": [],
                         "subregion_names": [
                             "eu-west-2a"
@@ -107,7 +113,17 @@
                         "application_sticky_cookie_policies": [],
                         "backend_vm_ids": [],
                         "dns_name": "########",
-                        "health_check": [],
+                        "health_check": [
+                            {
+                                "check_interval": 30,
+                                "healthy_threshold": 10,
+                                "path": "",
+                                "port": 80,
+                                "protocol": "TCP",
+                                "timeout": 5,
+                                "unhealthy_threshold": 2
+                            }
+                        ],
                         "id": "##id-0##",
                         "listeners": [
                             {
@@ -143,10 +159,12 @@
                         "request_id": "########",
                         "security_groups": [],
                         "server_certificate_id": null,
-                        "source_security_group": {
-                            "security_group_account_id": "##id-1##",
-                            "security_group_name": "outscale-elb-sg"
-                        },
+                        "source_security_group": [
+                            {
+                                "security_group_account_id": "##id-1##",
+                                "security_group_name": "outscale-elb-sg"
+                            }
+                        ],
                         "subnets": [],
                         "subregion_names": [
                             "eu-west-2a"
@@ -180,26 +198,30 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "access_log": {
-                            "is_enabled": "false",
-                            "osu_bucket_name": "",
-                            "osu_bucket_prefix": "",
-                            "publication_interval": "60"
-                        },
+                        "access_log": [
+                            {
+                                "is_enabled": false,
+                                "osu_bucket_name": "",
+                                "osu_bucket_prefix": "",
+                                "publication_interval": 60
+                            }
+                        ],
                         "application_sticky_cookie_policies": [],
                         "backend_vm_ids": [],
                         "cookie_expiration_period": 1,
                         "cookie_name": "########",
                         "dns_name": "########",
-                        "health_check": {
-                            "check_interval": "30",
-                            "healthy_threshold": "10",
-                            "path": "",
-                            "port": "80",
-                            "protocol": "TCP",
-                            "timeout": "5",
-                            "unhealthy_threshold": "2"
-                        },
+                        "health_check": [
+                            {
+                                "check_interval": 30,
+                                "healthy_threshold": 10,
+                                "path": "",
+                                "port": 80,
+                                "protocol": "TCP",
+                                "timeout": 5,
+                                "unhealthy_threshold": 2
+                            }
+                        ],
                         "id": "##id-2##",
                         "listeners": [
                             {
@@ -233,10 +255,12 @@
                         "request_id": "########",
                         "secured_cookies": false,
                         "security_groups": [],
-                        "source_security_group": {
-                            "security_group_account_id": "##id-1##",
-                            "security_group_name": "outscale-elb-sg"
-                        },
+                        "source_security_group": [
+                            {
+                                "security_group_account_id": "##id-1##",
+                                "security_group_name": "outscale-elb-sg"
+                            }
+                        ],
                         "subnets": [],
                         "subregion_names": [
                             "eu-west-2a"

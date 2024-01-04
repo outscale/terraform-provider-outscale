@@ -17,12 +17,14 @@
                         "architecture": "x86_64",
                         "block_device_mappings_created": [
                             {
-                                "bsu": {
-                                    "delete_on_vm_deletion": "true",
-                                    "link_date": "########",
-                                    "state": "attached",
-                                    "volume_id": "##id-0##"
-                                },
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "link_date": "########",
+                                        "state": "attached",
+                                        "volume_id": "##id-0##"
+                                    }
+                                ],
                                 "device_name": "/dev/sda1"
                             }
                         ],
@@ -99,12 +101,14 @@
                         "architecture": "x86_64",
                         "block_device_mappings_created": [
                             {
-                                "bsu": {
-                                    "delete_on_vm_deletion": "true",
-                                    "link_date": "########",
-                                    "state": "attached",
-                                    "volume_id": "##id-0##"
-                                },
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "link_date": "########",
+                                        "state": "attached",
+                                        "volume_id": "##id-0##"
+                                    }
+                                ],
                                 "device_name": "/dev/sda1"
                             }
                         ],
@@ -181,12 +185,14 @@
                         "architecture": "x86_64",
                         "block_device_mappings_created": [
                             {
-                                "bsu": {
-                                    "delete_on_vm_deletion": "true",
-                                    "link_date": "########",
-                                    "state": "attached",
-                                    "volume_id": "##id-0##"
-                                },
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "link_date": "########",
+                                        "state": "attached",
+                                        "volume_id": "##id-0##"
+                                    }
+                                ],
                                 "device_name": "/dev/sda1"
                             }
                         ],
@@ -263,12 +269,14 @@
                         "architecture": "x86_64",
                         "block_device_mappings_created": [
                             {
-                                "bsu": {
-                                    "delete_on_vm_deletion": "true",
-                                    "link_date": "########",
-                                    "state": "attached",
-                                    "volume_id": "##id-5##"
-                                },
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "link_date": "########",
+                                        "state": "attached",
+                                        "volume_id": "##id-5##"
+                                    }
+                                ],
                                 "device_name": "/dev/sda1"
                             }
                         ],
@@ -341,12 +349,14 @@
                         "architecture": "x86_64",
                         "block_device_mappings_created": [
                             {
-                                "bsu": {
-                                    "delete_on_vm_deletion": "true",
-                                    "link_date": "########",
-                                    "state": "attached",
-                                    "volume_id": "##id-8##"
-                                },
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "link_date": "########",
+                                        "state": "attached",
+                                        "volume_id": "##id-8##"
+                                    }
+                                ],
                                 "device_name": "/dev/sda1"
                             }
                         ],
@@ -470,12 +480,14 @@
                         "block_device_mappings": [],
                         "block_device_mappings_created": [
                             {
-                                "bsu": {
-                                    "delete_on_vm_deletion": "true",
-                                    "link_date": "########",
-                                    "state": "attached",
-                                    "volume_id": "##id-0##"
-                                },
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "link_date": "########",
+                                        "state": "attached",
+                                        "volume_id": "##id-0##"
+                                    }
+                                ],
                                 "device_name": "/dev/sda1"
                             }
                         ],
@@ -563,12 +575,14 @@
                         "block_device_mappings": [],
                         "block_device_mappings_created": [
                             {
-                                "bsu": {
-                                    "delete_on_vm_deletion": "true",
-                                    "link_date": "########",
-                                    "state": "attached",
-                                    "volume_id": "##id-5##"
-                                },
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "link_date": "########",
+                                        "state": "attached",
+                                        "volume_id": "##id-5##"
+                                    }
+                                ],
                                 "device_name": "/dev/sda1"
                             }
                         ],
@@ -644,12 +658,14 @@
                         "block_device_mappings": [],
                         "block_device_mappings_created": [
                             {
-                                "bsu": {
-                                    "delete_on_vm_deletion": "true",
-                                    "link_date": "########",
-                                    "state": "attached",
-                                    "volume_id": "##id-8##"
-                                },
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "link_date": "########",
+                                        "state": "attached",
+                                        "volume_id": "##id-8##"
+                                    }
+                                ],
                                 "device_name": "/dev/sda1"
                             }
                         ],

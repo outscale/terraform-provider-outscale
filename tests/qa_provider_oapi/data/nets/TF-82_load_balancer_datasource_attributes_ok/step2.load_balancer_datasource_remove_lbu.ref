@@ -16,7 +16,7 @@
                     "attributes": {
                         "dhcp_options_set_id": "##id-0##",
                         "id": "##id-1##",
-                        "ip_range": "10.0.0.0/16",
+                        "ip_range": "10.20.0.0/16",
                         "net_id": "##id-1##",
                         "request_id": "########",
                         "state": "available",
@@ -82,7 +82,7 @@
                     "attributes": {
                         "available_ips_count": "########",
                         "id": "##id-4##",
-                        "ip_range": "10.0.0.0/24",
+                        "ip_range": "10.20.0.0/24",
                         "map_public_ip_on_launch": false,
                         "net_id": "##id-1##",
                         "request_id": "########",

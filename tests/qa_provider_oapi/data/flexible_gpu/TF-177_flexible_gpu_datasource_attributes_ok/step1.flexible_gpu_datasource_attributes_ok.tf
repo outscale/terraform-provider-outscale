@@ -20,7 +20,7 @@ resource "outscale_flexible_gpu" "fGPU-1" {
 
 
 resource "outscale_flexible_gpu_link" "link_fGPU" {
-   flexible_gpu_id              =  outscale_flexible_gpu.fGPU-1.flexible_gpu_id
+  flexible_gpu_ids              =  [outscale_flexible_gpu.fGPU-1.flexible_gpu_id]
     vm_id                        = outscale_vm.MaVM.vm_id
 }
 

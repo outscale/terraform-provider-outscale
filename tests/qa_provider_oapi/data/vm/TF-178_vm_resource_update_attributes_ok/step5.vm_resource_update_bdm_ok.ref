@@ -107,7 +107,7 @@
                                 "bsu": [
                                     {
                                         "delete_on_vm_deletion": true,
-                                        "iops": 0,
+                                        "iops": null,
                                         "snapshot_id": "",
                                         "volume_size": 20,
                                         "volume_type": "standard"
@@ -120,21 +120,25 @@
                         ],
                         "block_device_mappings_created": [
                             {
-                                "bsu": {
-                                    "delete_on_vm_deletion": "true",
-                                    "link_date": "########",
-                                    "state": "attached",
-                                    "volume_id": "##id-5##"
-                                },
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "link_date": "########",
+                                        "state": "attached",
+                                        "volume_id": "##id-5##"
+                                    }
+                                ],
                                 "device_name": "/dev/sda1"
                             },
                             {
-                                "bsu": {
-                                    "delete_on_vm_deletion": "true",
-                                    "link_date": "########",
-                                    "state": "attached",
-                                    "volume_id": "##id-6##"
-                                },
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "link_date": "########",
+                                        "state": "attached",
+                                        "volume_id": "##id-6##"
+                                    }
+                                ],
                                 "device_name": "/dev/sdb"
                             }
                         ],
@@ -170,18 +174,18 @@
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
                         "security_group_ids": [
-                            "##id-4##",
-                            "##id-3##"
+                            "##id-3##",
+                            "##id-4##"
                         ],
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-4##",
-                                "security_group_name": "terraform-sg-TF66-1"
-                            },
-                            {
                                 "security_group_id": "##id-3##",
                                 "security_group_name": "terraform-sg-TF66-0"
+                            },
+                            {
+                                "security_group_id": "##id-4##",
+                                "security_group_name": "terraform-sg-TF66-1"
                             }
                         ],
                         "state": "running",
@@ -191,7 +195,7 @@
                         "timeouts": null,
                         "user_data": "",
                         "vm_id": "##id-7##",
-                        "vm_initiated_shutdown_behavior": "restart",
+                        "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "tinav4.c2r2p3"
                     },
                     "sensitive_attributes": [],

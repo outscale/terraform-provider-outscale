@@ -65,24 +65,28 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "access_log": {
-                            "is_enabled": "false",
-                            "osu_bucket_name": "",
-                            "osu_bucket_prefix": "",
-                            "publication_interval": "60"
-                        },
+                        "access_log": [
+                            {
+                                "is_enabled": false,
+                                "osu_bucket_name": "",
+                                "osu_bucket_prefix": "",
+                                "publication_interval": 60
+                            }
+                        ],
                         "application_sticky_cookie_policies": [],
                         "backend_vm_ids": [],
                         "dns_name": "########",
-                        "health_check": {
-                            "check_interval": "30",
-                            "healthy_threshold": "10",
-                            "path": "",
-                            "port": "8080",
-                            "protocol": "TCP",
-                            "timeout": "5",
-                            "unhealthy_threshold": "2"
-                        },
+                        "health_check": [
+                            {
+                                "check_interval": 30,
+                                "healthy_threshold": 10,
+                                "path": "",
+                                "port": 8080,
+                                "protocol": "TCP",
+                                "timeout": 5,
+                                "unhealthy_threshold": 2
+                            }
+                        ],
                         "id": "##id-3##",
                         "listeners": [
                             {
@@ -102,10 +106,12 @@
                         "request_id": "########",
                         "secured_cookies": false,
                         "security_groups": [],
-                        "source_security_group": {
-                            "security_group_account_id": "##id-4##",
-                            "security_group_name": "outscale-elb-sg"
-                        },
+                        "source_security_group": [
+                            {
+                                "security_group_account_id": "##id-4##",
+                                "security_group_name": "outscale-elb-sg"
+                            }
+                        ],
                         "subnets": [],
                         "subregion_names": [
                             "eu-west-2a"
@@ -146,7 +152,7 @@
                             {
                                 "check_interval": 30,
                                 "healthy_threshold": 10,
-                                "path": "",
+                                "path": "/",
                                 "port": 8080,
                                 "protocol": "HTTP",
                                 "timeout": 5,
@@ -172,10 +178,12 @@
                         "request_id": "########",
                         "security_groups": [],
                         "server_certificate_id": null,
-                        "source_security_group": {
-                            "security_group_account_id": "##id-4##",
-                            "security_group_name": "outscale-elb-sg"
-                        },
+                        "source_security_group": [
+                            {
+                                "security_group_account_id": "##id-4##",
+                                "security_group_name": "outscale-elb-sg"
+                            }
+                        ],
                         "subnets": [],
                         "subregion_names": [
                             "eu-west-2a"
@@ -294,12 +302,14 @@
                         "block_device_mappings": [],
                         "block_device_mappings_created": [
                             {
-                                "bsu": {
-                                    "delete_on_vm_deletion": "true",
-                                    "link_date": "########",
-                                    "state": "attached",
-                                    "volume_id": "##id-8##"
-                                },
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "link_date": "########",
+                                        "state": "attached",
+                                        "volume_id": "##id-8##"
+                                    }
+                                ],
                                 "device_name": "/dev/sda1"
                             }
                         ],

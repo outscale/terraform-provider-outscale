@@ -14,24 +14,30 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "accepter_net": {
-                            "account_id": "##id-0##",
-                            "ip_range": "10.10.0.0/24",
-                            "net_id": "##id-1##"
-                        },
+                        "accepter_net": [
+                            {
+                                "account_id": "##id-0##",
+                                "ip_range": "10.10.0.0/24",
+                                "net_id": "##id-1##"
+                            }
+                        ],
                         "filter": "########",
                         "id": "##id-2##",
                         "net_peering_id": "##id-2##",
                         "request_id": "########",
-                        "source_net": {
-                            "account_id": "##id-0##",
-                            "ip_range": "10.31.0.0/16",
-                            "net_id": "##id-3##"
-                        },
-                        "state": {
-                            "message": "########",
-                            "name": "pending-acceptance"
-                        },
+                        "source_net": [
+                            {
+                                "account_id": "##id-0##",
+                                "ip_range": "10.31.0.0/16",
+                                "net_id": "##id-3##"
+                            }
+                        ],
+                        "state": [
+                            {
+                                "message": "########",
+                                "name": "pending-acceptance"
+                            }
+                        ],
                         "tags": [
                             {
                                 "key": "Key-2",
@@ -102,26 +108,32 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "accepter_net": {
-                            "account_id": "##id-0##",
-                            "ip_range": "10.10.0.0/24",
-                            "net_id": "##id-1##"
-                        },
+                        "accepter_net": [
+                            {
+                                "account_id": "##id-0##",
+                                "ip_range": "10.10.0.0/24",
+                                "net_id": "##id-1##"
+                            }
+                        ],
                         "accepter_net_id": "##id-1##",
                         "id": "##id-2##",
                         "net_peering_id": "##id-2##",
                         "request_id": "########",
-                        "source_net": {
-                            "account_id": "##id-0##",
-                            "ip_range": "10.31.0.0/16",
-                            "net_id": "##id-3##"
-                        },
+                        "source_net": [
+                            {
+                                "account_id": "##id-0##",
+                                "ip_range": "10.31.0.0/16",
+                                "net_id": "##id-3##"
+                            }
+                        ],
                         "source_net_account_id": null,
                         "source_net_id": "##id-3##",
-                        "state": {
-                            "message": "########",
-                            "name": "pending-acceptance"
-                        },
+                        "state": [
+                            {
+                                "message": "########",
+                                "name": "pending-acceptance"
+                            }
+                        ],
                         "tags": [
                             {
                                 "key": "Key-2",

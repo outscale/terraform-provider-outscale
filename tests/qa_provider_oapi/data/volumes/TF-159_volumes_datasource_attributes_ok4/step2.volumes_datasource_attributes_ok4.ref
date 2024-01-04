@@ -21,28 +21,20 @@
                         "volumes": [
                             {
                                 "creation_date": "########",
-                                "iops": 100,
-                                "linked_volumes": [
-                                    {
-                                        "delete_on_vm_deletion": false,
-                                        "device_name": "/dev/xvdc",
-                                        "state": "attached",
-                                        "vm_id": "##id-1##",
-                                        "volume_id": "##id-2##"
-                                    }
-                                ],
-                                "size": 40,
+                                "iops": 150,
+                                "linked_volumes": [],
+                                "size": 13,
                                 "snapshot_id": "",
-                                "state": "in-use",
+                                "state": "available",
                                 "subregion_name": "eu-west-2a",
                                 "tags": [
                                     {
-                                        "key": "type",
-                                        "value": "io1"
+                                        "key": "Name",
+                                        "value": "volume-standard-2"
                                     }
                                 ],
-                                "volume_id": "##id-2##",
-                                "volume_type": "io1"
+                                "volume_id": "##id-1##",
+                                "volume_type": "standard"
                             },
                             {
                                 "creation_date": "########",
@@ -58,25 +50,33 @@
                                         "value": "volume-standard-1"
                                     }
                                 ],
-                                "volume_id": "##id-3##",
+                                "volume_id": "##id-2##",
                                 "volume_type": "standard"
                             },
                             {
                                 "creation_date": "########",
-                                "iops": 150,
-                                "linked_volumes": [],
-                                "size": 13,
+                                "iops": 100,
+                                "linked_volumes": [
+                                    {
+                                        "delete_on_vm_deletion": false,
+                                        "device_name": "/dev/xvdc",
+                                        "state": "attached",
+                                        "vm_id": "##id-3##",
+                                        "volume_id": "##id-4##"
+                                    }
+                                ],
+                                "size": 40,
                                 "snapshot_id": "",
-                                "state": "available",
+                                "state": "in-use",
                                 "subregion_name": "eu-west-2a",
                                 "tags": [
                                     {
-                                        "key": "Name",
-                                        "value": "volume-standard-2"
+                                        "key": "type",
+                                        "value": "io1"
                                     }
                                 ],
                                 "volume_id": "##id-4##",
-                                "volume_type": "standard"
+                                "volume_type": "io1"
                             }
                         ]
                     },
@@ -120,21 +120,25 @@
                         "block_device_mappings": [],
                         "block_device_mappings_created": [
                             {
-                                "bsu": {
-                                    "delete_on_vm_deletion": "true",
-                                    "link_date": "########",
-                                    "state": "attached",
-                                    "volume_id": "##id-6##"
-                                },
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "link_date": "########",
+                                        "state": "attached",
+                                        "volume_id": "##id-6##"
+                                    }
+                                ],
                                 "device_name": "/dev/sda1"
                             },
                             {
-                                "bsu": {
-                                    "delete_on_vm_deletion": "false",
-                                    "link_date": "########",
-                                    "state": "attached",
-                                    "volume_id": "##id-4##"
-                                },
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": false,
+                                        "link_date": "########",
+                                        "state": "attached",
+                                        "volume_id": "##id-4##"
+                                    }
+                                ],
                                 "device_name": "/dev/xvdc"
                             }
                         ],
@@ -205,7 +209,7 @@
                     "schema_version": 0,
                     "attributes": {
                         "creation_date": "########",
-                        "id": "##id-1##",
+                        "id": "##id-2##",
                         "iops": 150,
                         "linked_volumes": [],
                         "request_id": "########",
@@ -220,7 +224,7 @@
                             }
                         ],
                         "termination_snapshot_name": null,
-                        "volume_id": "##id-1##",
+                        "volume_id": "##id-2##",
                         "volume_type": "standard"
                     },
                     "sensitive_attributes": [],
@@ -238,7 +242,7 @@
                     "schema_version": 0,
                     "attributes": {
                         "creation_date": "########",
-                        "id": "##id-2##",
+                        "id": "##id-1##",
                         "iops": 150,
                         "linked_volumes": [],
                         "request_id": "########",
@@ -253,7 +257,7 @@
                             }
                         ],
                         "termination_snapshot_name": null,
-                        "volume_id": "##id-2##",
+                        "volume_id": "##id-1##",
                         "volume_type": "standard"
                     },
                     "sensitive_attributes": [],

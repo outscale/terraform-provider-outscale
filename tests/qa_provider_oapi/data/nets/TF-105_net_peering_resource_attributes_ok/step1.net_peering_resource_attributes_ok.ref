@@ -39,7 +39,7 @@
                     "attributes": {
                         "dhcp_options_set_id": "##id-0##",
                         "id": "##id-2##",
-                        "ip_range": "10.31.0.0/16",
+                        "ip_range": "10.32.0.0/16",
                         "net_id": "##id-2##",
                         "request_id": "########",
                         "state": "available",
@@ -60,26 +60,32 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "accepter_net": {
-                            "account_id": "##id-3##",
-                            "ip_range": "10.10.0.0/24",
-                            "net_id": "##id-1##"
-                        },
+                        "accepter_net": [
+                            {
+                                "account_id": "##id-3##",
+                                "ip_range": "10.10.0.0/24",
+                                "net_id": "##id-1##"
+                            }
+                        ],
                         "accepter_net_id": "##id-1##",
                         "id": "##id-4##",
                         "net_peering_id": "##id-4##",
                         "request_id": "########",
-                        "source_net": {
-                            "account_id": "##id-3##",
-                            "ip_range": "10.31.0.0/16",
-                            "net_id": "##id-2##"
-                        },
+                        "source_net": [
+                            {
+                                "account_id": "##id-3##",
+                                "ip_range": "10.32.0.0/16",
+                                "net_id": "##id-2##"
+                            }
+                        ],
                         "source_net_account_id": null,
                         "source_net_id": "##id-2##",
-                        "state": {
-                            "message": "########",
-                            "name": "pending-acceptance"
-                        },
+                        "state": [
+                            {
+                                "message": "########",
+                                "name": "pending-acceptance"
+                            }
+                        ],
                         "tags": []
                     },
                     "sensitive_attributes": [],

@@ -110,8 +110,10 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "flexible_gpu_id": "##id-0##",
-                        "id": "##id-0##",
+                        "flexible_gpu_ids": [
+                            "##id-0##"
+                        ],
+                        "id": "##id-2##",
                         "request_id": "########",
                         "timeouts": null,
                         "vm_id": "##id-1##"
@@ -135,7 +137,7 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-2##",
+                        "id": "##id-3##",
                         "keypair_fingerprint": "########",
                         "keypair_name": "KP-TF177",
                         "private_key": "########",
@@ -162,12 +164,14 @@
                         "block_device_mappings": [],
                         "block_device_mappings_created": [
                             {
-                                "bsu": {
-                                    "delete_on_vm_deletion": "true",
-                                    "link_date": "########",
-                                    "state": "attached",
-                                    "volume_id": "##id-3##"
-                                },
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "link_date": "########",
+                                        "state": "attached",
+                                        "volume_id": "##id-4##"
+                                    }
+                                ],
                                 "device_name": "/dev/sda1"
                             }
                         ],
@@ -178,7 +182,7 @@
                         "get_admin_password": null,
                         "hypervisor": "xen",
                         "id": "##id-1##",
-                        "image_id": "##id-4##",
+                        "image_id": "##id-5##",
                         "is_source_dest_checked": true,
                         "keypair_name": "KP-TF177",
                         "launch_number": 0,
@@ -199,14 +203,14 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-5##",
+                        "reservation_id": "##id-6##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
                         "security_group_ids": null,
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-6##",
+                                "security_group_id": "##id-7##",
                                 "security_group_name": "default"
                             }
                         ],

@@ -60,24 +60,28 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "access_log": {
-                            "is_enabled": "false",
-                            "osu_bucket_name": "",
-                            "osu_bucket_prefix": "",
-                            "publication_interval": "60"
-                        },
+                        "access_log": [
+                            {
+                                "is_enabled": false,
+                                "osu_bucket_name": "",
+                                "osu_bucket_prefix": "",
+                                "publication_interval": 60
+                            }
+                        ],
                         "application_sticky_cookie_policies": [],
                         "backend_vm_ids": [],
                         "dns_name": "########",
-                        "health_check": {
-                            "check_interval": "30",
-                            "healthy_threshold": "10",
-                            "path": "",
-                            "port": "8080",
-                            "protocol": "TCP",
-                            "timeout": "5",
-                            "unhealthy_threshold": "2"
-                        },
+                        "health_check": [
+                            {
+                                "check_interval": 30,
+                                "healthy_threshold": 10,
+                                "path": "",
+                                "port": 8080,
+                                "protocol": "TCP",
+                                "timeout": 5,
+                                "unhealthy_threshold": 2
+                            }
+                        ],
                         "id": "##id-2##",
                         "listeners": [
                             {
@@ -108,10 +112,12 @@
                             "##id-3##",
                             "##id-4##"
                         ],
-                        "source_security_group": {
-                            "security_group_account_id": "##id-5##",
-                            "security_group_name": "terraform-sg-lbu-2"
-                        },
+                        "source_security_group": [
+                            {
+                                "security_group_account_id": "##id-5##",
+                                "security_group_name": "terraform-sg-lbu-2"
+                            }
+                        ],
                         "subnets": [
                             "##id-6##"
                         ],
@@ -280,7 +286,7 @@
                     "attributes": {
                         "account_id": "##id-5##",
                         "description": "test lbu-2",
-                        "id": "##id-3##",
+                        "id": "##id-4##",
                         "inbound_rules": [],
                         "net_id": "##id-1##",
                         "outbound_rules": [
@@ -294,7 +300,7 @@
                         ],
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
-                        "security_group_id": "##id-3##",
+                        "security_group_id": "##id-4##",
                         "security_group_name": "terraform-sg-lbu-1",
                         "tag": null,
                         "tags": [
@@ -323,7 +329,7 @@
                     "attributes": {
                         "account_id": "##id-5##",
                         "description": "test lbu-2",
-                        "id": "##id-4##",
+                        "id": "##id-3##",
                         "inbound_rules": [],
                         "net_id": "##id-1##",
                         "outbound_rules": [
@@ -337,7 +343,7 @@
                         ],
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
-                        "security_group_id": "##id-4##",
+                        "security_group_id": "##id-3##",
                         "security_group_name": "terraform-sg-lbu-2",
                         "tag": null,
                         "tags": [
