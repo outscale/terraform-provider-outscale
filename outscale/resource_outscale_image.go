@@ -9,8 +9,8 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -415,7 +415,6 @@ func resourceOAPIImageUpdate(d *schema.ResourceData, meta interface{}) error {
 	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
-
 	return resourceOAPIImageRead(d, meta)
 }
 

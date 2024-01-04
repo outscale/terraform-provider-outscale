@@ -3,17 +3,19 @@ package outscale
 import (
 	"context"
 	"fmt"
+	"os"
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func TestAccOthers_DataOutscaleCa_basic(t *testing.T) {
 	resourceName := "outscale_ca.ca_test"
+	ca_path := os.Getenv("CA_PATH")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -21,7 +23,7 @@ func TestAccOthers_DataOutscaleCa_basic(t *testing.T) {
 		CheckDestroy: testAccDataCheckOutscaleCaDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataOutscaleOAPICaConfig(),
+				Config: testAccDataOutscaleOAPICaConfig(ca_path),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleCaExists(resourceName),
 				),
@@ -70,10 +72,10 @@ func testAccDataCheckOutscaleCaDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccDataOutscaleOAPICaConfig() string {
+func testAccDataOutscaleOAPICaConfig(path string) string {
 	return fmt.Sprintf(`
 resource "outscale_ca" "ca_test" {
-   ca_pem        = file("./test-cert.pem")
+   ca_pem        = file(%q)
    description   = "Ca testacc create"
 }
 
@@ -82,6 +84,5 @@ data "outscale_ca" "ca_data" {
       name   = "ca_ids"
       values = [outscale_ca.ca_test.id]
    }
-}
-`)
+}`, path)
 }

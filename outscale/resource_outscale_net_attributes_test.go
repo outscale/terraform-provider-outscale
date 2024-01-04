@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccNet_Attributes_basic(t *testing.T) {
@@ -70,8 +70,8 @@ const testAccOutscaleOAPILinAttrConfig = `
 	}
 
 	resource "outscale_net_attributes" "outscale_net_attributes" {
-		net_id              = "${outscale_net.vpc.id}"
-		dhcp_options_set_id = "${outscale_net.vpc2.dhcp_options_set_id}"
+		net_id              = outscale_net.vpc.id
+		dhcp_options_set_id = outscale_net.vpc2.dhcp_options_set_id
 	}
 `
 
@@ -97,7 +97,6 @@ func testAccOutscaleOAPILinAttrConfigwithoutDHCPID(vpc string) string {
 
 		resource "outscale_net_attributes" "outscale_net_attributes" {
 			net_id = %s
-
 			depends_on = ["outscale_net.vpc", "outscale_net.vpc2"]
 		}
 	`, vpc)

@@ -9,8 +9,8 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccNet_withpnGatewayAttachment_basic(t *testing.T) {
@@ -23,6 +23,7 @@ func TestAccNet_withpnGatewayAttachment_basic(t *testing.T) {
 		},
 		IDRefreshName: "outscale_virtual_gateway_link.test",
 		Providers:     testAccProviders,
+		CheckDestroy:  testAccCheckOAPIVpnGatewayAttachmentDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOAPIVpnGatewayAttachmentConfig,
@@ -33,6 +34,8 @@ func TestAccNet_withpnGatewayAttachment_basic(t *testing.T) {
 					testAccCheckOAPIVirtualGatewayExists(
 						"outscale_virtual_gateway.test",
 						&vgw),
+					testAccCheckOAPIVpnGatewayAttachmentExists(
+						"outscale_virtual_gateway_link.test"),
 				),
 			},
 		},
@@ -73,8 +76,8 @@ func testAccCheckVpnGatewayAttachmentImportStateIDFunc(resourceName string) reso
 
 func TestAccNet_WithVpnGatewayAttachment_deleted(t *testing.T) {
 	t.Parallel()
-	var vgw oscgo.VirtualGateway
 	var vpc oscgo.Net
+	var vgw oscgo.VirtualGateway
 
 	testDeleted := func(n string) resource.TestCheckFunc {
 		return func(s *terraform.State) error {
@@ -104,8 +107,7 @@ func TestAccNet_WithVpnGatewayAttachment_deleted(t *testing.T) {
 						"outscale_virtual_gateway.test",
 						&vgw),
 					testAccCheckOAPIVpnGatewayAttachmentExists(
-						"outscale_virtual_gateway_link.test",
-						&vgw),
+						"outscale_virtual_gateway_link.test"),
 				),
 			},
 			{
@@ -118,8 +120,9 @@ func TestAccNet_WithVpnGatewayAttachment_deleted(t *testing.T) {
 	})
 }
 
-func testAccCheckOAPIVpnGatewayAttachmentExists(n string, vgw *oscgo.VirtualGateway) resource.TestCheckFunc {
+func testAccCheckOAPIVpnGatewayAttachmentExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
+		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("Not found: %s", n)
@@ -129,23 +132,36 @@ func testAccCheckOAPIVpnGatewayAttachmentExists(n string, vgw *oscgo.VirtualGate
 			return fmt.Errorf("No ID is set")
 		}
 
-		vpcID := rs.Primary.Attributes["net_id"]
-		vgwID := rs.Primary.Attributes["virtual_gateway_id"]
+		var resp oscgo.ReadVirtualGatewaysResponse
+		var err error
 
-		if len(vgw.GetNetToVirtualGatewayLinks()) == 0 {
-			return fmt.Errorf("vpn gateway %q has no attachments", vgwID)
+		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			rp, httpResp, err := conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(oscgo.ReadVirtualGatewaysRequest{
+				Filters: &oscgo.FiltersVirtualGateway{VirtualGatewayIds: &[]string{rs.Primary.ID}},
+			}).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp, err)
+			}
+			resp = rp
+			return nil
+		})
+		if err != nil {
+			return err
 		}
 
+		if len(resp.GetVirtualGateways()) == 0 {
+			return fmt.Errorf("Virtual gateway has no attachments")
+		}
+		vgw := resp.GetVirtualGateways()[0]
 		if vgw.GetNetToVirtualGatewayLinks()[0].GetState() != "attached" {
-			return fmt.Errorf("Expected VPN Gateway %q to be in attached state, but got: %q",
-				vgwID, vgw.GetNetToVirtualGatewayLinks()[0].GetState())
+			return fmt.Errorf("Expected Virtual Gateway to be in attached state, but got: %q",
+				vgw.GetNetToVirtualGatewayLinks()[0].GetState())
 		}
 
-		if vgw.GetNetToVirtualGatewayLinks()[0].GetNetId() != vpcID {
-			return fmt.Errorf("Expected VPN Gateway %q to be attached to VPC %q, but got: %q",
-				vgwID, vpcID, vgw.GetNetToVirtualGatewayLinks()[0].GetNetId())
+		if vgw.GetNetToVirtualGatewayLinks()[0].GetNetId() == "" {
+			return fmt.Errorf("Expected Virtual Gateway to be attached to VPC, but got: %q",
+				vgw.GetNetToVirtualGatewayLinks()[0].GetNetId())
 		}
-
 		return nil
 	}
 }
@@ -158,8 +174,7 @@ func testAccCheckOAPIVpnGatewayAttachmentDestroy(s *terraform.State) error {
 			continue
 		}
 
-		vgwID := rs.Primary.Attributes["vpn_gateway_id"]
-
+		vgwID := rs.Primary.Attributes["virtual_gateway_id"]
 		var resp oscgo.ReadVirtualGatewaysResponse
 		var err error
 

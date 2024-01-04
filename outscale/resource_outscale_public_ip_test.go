@@ -3,6 +3,7 @@ package outscale
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
 	"testing"
@@ -11,8 +12,8 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccOthers_PublicIP_basic(t *testing.T) {
@@ -146,18 +147,22 @@ func testAccCheckOutscaleOAPIPublicIPDestroy(s *terraform.State) error {
 		}
 
 		var response oscgo.ReadPublicIpsResponse
+		var statusCode int
 		err := resource.Retry(60*time.Second, func() *resource.RetryError {
-			var err error
-			response, _, err = conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
-			return resource.RetryableError(err)
+			rp, httpResp, err := conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp, err)
+			}
+			response = rp
+			statusCode = httpResp.StatusCode
+			return nil
 		})
 
 		if err != nil {
 			// Verify the error is what we want
-			if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidPublicIps.NotFound") {
+			if statusCode == http.StatusNotFound {
 				return nil
 			}
-
 			return err
 		}
 

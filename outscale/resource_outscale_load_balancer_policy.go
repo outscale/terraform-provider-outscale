@@ -10,8 +10,8 @@ import (
 	"github.com/spf13/cast"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
@@ -35,7 +35,8 @@ func resourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
 				},
 			},
 			"access_log": {
-				Type:     schema.TypeMap,
+				Type:     schema.TypeList,
+				Optional: true,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -59,16 +60,16 @@ func resourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
 				},
 			},
 			"health_check": {
-				Type:     schema.TypeMap,
+				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"healthy_threshold": {
-							Type:     schema.TypeString,
+							Type:     schema.TypeInt,
 							Computed: true,
 						},
 						"unhealthy_threshold": {
-							Type:     schema.TypeString,
+							Type:     schema.TypeInt,
 							Computed: true,
 						},
 						"path": {
@@ -76,11 +77,11 @@ func resourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
 							Computed: true,
 						},
 						"check_interval": {
-							Type:     schema.TypeString,
+							Type:     schema.TypeInt,
 							Computed: true,
 						},
 						"port": {
-							Type:     schema.TypeString,
+							Type:     schema.TypeInt,
 							Computed: true,
 						},
 						"protocol": {
@@ -88,7 +89,7 @@ func resourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
 							Computed: true,
 						},
 						"timeout": {
-							Type:     schema.TypeString,
+							Type:     schema.TypeInt,
 							Computed: true,
 						},
 					},
@@ -130,7 +131,7 @@ func resourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
 				},
 			},
 			"source_security_group": {
-				Type:     schema.TypeMap,
+				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -340,12 +341,10 @@ func resourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, met
 			}
 			d.Set("load_balancer_sticky_cookie_policies", lbc)
 		}
-		ssg := make(map[string]string)
+
 		if lb.SourceSecurityGroup != nil {
-			ssg["security_group_name"] = *lb.SourceSecurityGroup.SecurityGroupName
-			ssg["security_group_account_id"] = *lb.SourceSecurityGroup.SecurityGroupAccountId
+			d.Set("source_security_group", flattenSource_sg(lb.SourceSecurityGroup))
 		}
-		d.Set("source_security_group", ssg)
 		d.Set("public_ip", lb.PublicIp)
 		d.Set("secured_cookies", lb.SecuredCookies)
 		d.Set("net_id", lb.NetId)

@@ -7,12 +7,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
-
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func resourceOutscaleOAPIVirtualGateway() *schema.Resource {
@@ -113,7 +112,6 @@ func resourceOutscaleOAPIVirtualGatewayCreate(d *schema.ResourceData, meta inter
 			return err
 		}
 	}
-
 	return resourceOutscaleOAPIVirtualGatewayRead(d, meta)
 }
 
@@ -153,26 +151,20 @@ func resourceOutscaleOAPIVirtualGatewayRead(d *schema.ResourceData, meta interfa
 		d.SetId("")
 		return nil
 	}
-	vpnLink := oapiVpnGatewayGetLink(virtualGateway)
-	if len(virtualGateway.GetNetToVirtualGatewayLinks()) == 0 || vpnLink.GetState() == "detached" {
-		d.Set("net_id", "")
-	} else {
-		d.Set("net_id", vpnLink.GetNetId())
-	}
-
-	vs := make([]map[string]interface{}, len(virtualGateway.GetNetToVirtualGatewayLinks()))
-
-	for k, v := range virtualGateway.GetNetToVirtualGatewayLinks() {
-		vp := make(map[string]interface{})
-		vp["state"] = v.GetState()
-		vp["net_id"] = v.GetNetId()
-
-		vs[k] = vp
+	if virtualGateway.HasNetToVirtualGatewayLinks() {
+		vs := make([]map[string]interface{}, len(virtualGateway.GetNetToVirtualGatewayLinks()))
+		for k, v := range virtualGateway.GetNetToVirtualGatewayLinks() {
+			vp := make(map[string]interface{})
+			vp["state"] = v.GetState()
+			vp["net_id"] = v.GetNetId()
+			vs[k] = vp
+		}
+		d.Set("net_to_virtual_gateway_links", vs)
 	}
 
 	d.Set("connection_type", virtualGateway.GetConnectionType())
 	d.Set("virtual_gateway_id", virtualGateway.GetVirtualGatewayId())
-	d.Set("net_to_virtual_gateway_links", vs)
+
 	d.Set("state", virtualGateway.State)
 	d.Set("tags", tagsOSCAPIToMap(virtualGateway.GetTags()))
 
@@ -184,7 +176,6 @@ func resourceOutscaleOAPIVirtualGatewayUpdate(d *schema.ResourceData, meta inter
 	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
-
 	return nil
 }
 

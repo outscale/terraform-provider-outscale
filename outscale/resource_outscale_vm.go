@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/spf13/cast"
@@ -41,7 +41,7 @@ func resourceOutscaleOApiVM() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"bsu": {
-							Type:     schema.TypeList,
+							Type:     schema.TypeSet,
 							Optional: true,
 							Computed: true,
 							MaxItems: 1,
@@ -50,6 +50,7 @@ func resourceOutscaleOApiVM() *schema.Resource {
 									"delete_on_vm_deletion": {
 										Type:     schema.TypeBool,
 										Optional: true,
+										Computed: true,
 									},
 									"iops": {
 										Type:     schema.TypeInt,
@@ -244,7 +245,6 @@ func resourceOutscaleOApiVM() *schema.Resource {
 						},
 						"link_nic": {
 							Type:     schema.TypeList,
-							MaxItems: 1,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -431,8 +431,7 @@ func resourceOutscaleOApiVM() *schema.Resource {
 							ForceNew: true,
 						},
 						"link_nic": {
-							Type:     schema.TypeList,
-							MaxItems: 1,
+							Type:     schema.TypeSet,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -571,13 +570,11 @@ func resourceOutscaleOApiVM() *schema.Resource {
 			},
 			"block_device_mappings_created": {
 				Type:     schema.TypeList,
-				Optional: true,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"bsu": {
-							Type:     schema.TypeMap,
-							Optional: true,
+							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -590,11 +587,11 @@ func resourceOutscaleOApiVM() *schema.Resource {
 										Computed: true,
 									},
 									"state": {
-										Type:     schema.TypeInt,
+										Type:     schema.TypeString,
 										Computed: true,
 									},
 									"volume_id": {
-										Type:     schema.TypeFloat,
+										Type:     schema.TypeString,
 										Computed: true,
 									},
 								},
@@ -894,7 +891,6 @@ func getOAPIVMAdminPassword(VMID string, conn *oscgo.APIClient) (string, error) 
 
 func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
 	id := d.Get("vm_id").(string)
 
 	nothingToDo := true
@@ -1184,7 +1180,7 @@ func expandBlockDeviceOApiMappings(d *schema.ResourceData) ([]oscgo.BlockDeviceM
 		blockDevice := oscgo.BlockDeviceMappingVmCreation{}
 		value := v.(map[string]interface{})
 
-		if bsu, ok := value["bsu"].([]interface{}); ok && len(bsu) > 0 {
+		if bsu := value["bsu"].(*schema.Set).List(); len(bsu) > 0 {
 			expandBSU, err := expandBlockDeviceBSU(bsu[0].(map[string]interface{}))
 			if err != nil {
 				return nil, err

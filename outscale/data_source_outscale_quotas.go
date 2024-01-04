@@ -3,13 +3,14 @@ package outscale
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceOutscaleOAPIQuotas() *schema.Resource {
@@ -140,4 +141,29 @@ func dataSourceOutscaleOAPIQuotasRead(d *schema.ResourceData, meta interface{}) 
 	d.SetId(resource.UniqueId())
 
 	return nil
+}
+
+func buildOutscaleOAPIQuotaDataSourceFilters(set *schema.Set) *oscgo.FiltersQuota {
+	var filters oscgo.FiltersQuota
+	for _, v := range set.List() {
+		m := v.(map[string]interface{})
+		var filterValues []string
+		for _, e := range m["values"].([]interface{}) {
+			filterValues = append(filterValues, e.(string))
+		}
+
+		switch name := m["name"].(string); name {
+		case "quota_types":
+			filters.QuotaTypes = &filterValues
+		case "quota_names":
+			filters.QuotaNames = &filterValues
+		case "collections":
+			filters.Collections = &filterValues
+		case "short_descriptions":
+			filters.ShortDescriptions = &filterValues
+		default:
+			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+		}
+	}
+	return &filters
 }

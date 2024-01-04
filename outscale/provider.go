@@ -1,8 +1,8 @@
 package outscale
 
 import (
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 var endpointServiceNames []string
@@ -14,38 +14,33 @@ func init() {
 }
 
 // Provider ...
-func Provider() terraform.ResourceProvider {
+func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"access_key_id": {
 				Type:        schema.TypeString,
-				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("OUTSCALE_ACCESSKEYID", nil),
+				Optional:    true,
 				Description: "The Access Key ID for API operations.",
 			},
 			"secret_key_id": {
 				Type:        schema.TypeString,
-				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("OUTSCALE_SECRETKEYID", nil),
+				Optional:    true,
 				Description: "The Secret Key ID for API operations.",
 			},
 			"region": {
 				Type:        schema.TypeString,
-				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("OUTSCALE_REGION", nil),
+				Optional:    true,
 				Description: "The Region for API operations.",
 			},
 			"endpoints": endpointsSchema(),
 			"x509_cert_path": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("OUTSCALE_X509CERT", nil),
 				Description: "The path to your x509 cert",
 			},
 			"x509_key_path": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("OUTSCALE_X509KEY", nil),
 				Description: "The path to your x509 key",
 			},
 			"insecure": {
@@ -169,7 +164,6 @@ func Provider() terraform.ResourceProvider {
 			"outscale_flexible_gpu_catalog":         dataSourceOutscaleOAPIFlexibleGpuCatalog(),
 			"outscale_product_type":                 dataSourceOutscaleOAPIProductType(),
 			"outscale_product_types":                dataSourceOutscaleOAPIProductTypes(),
-			"outscale_quota":                        dataSourceOutscaleOAPIQuota(),
 			"outscale_quotas":                       dataSourceOutscaleOAPIQuotas(),
 			"outscale_image_export_task":            dataSourceOutscaleOAPIImageExportTask(),
 			"outscale_image_export_tasks":           dataSourceOutscaleOAPIImageExportTasks(),
@@ -202,6 +196,7 @@ func providerConfigureClient(d *schema.ResourceData) (interface{}, error) {
 		Insecure:    d.Get("insecure").(bool),
 	}
 
+	setProviderDefaultEnv(&config)
 	endpointsSet := d.Get("endpoints").(*schema.Set)
 
 	for _, endpointsSetI := range endpointsSet.List() {
@@ -210,7 +205,6 @@ func providerConfigureClient(d *schema.ResourceData) (interface{}, error) {
 			config.Endpoints[endpointServiceName] = endpoints[endpointServiceName].(string)
 		}
 	}
-
 	return config.Client()
 }
 
@@ -233,4 +227,43 @@ func endpointsSchema() *schema.Schema {
 			Schema: endpointsAttributes,
 		},
 	}
+}
+
+func setProviderDefaultEnv(conf *Config) {
+	if conf.AccessKeyID == "" {
+		if accessKeyId := utils.GetEnvVariableValue([]string{"OSC_ACCESS_KEY", "OUTSCALE_ACCESSKEYID"}); accessKeyId != "" {
+			conf.AccessKeyID = accessKeyId
+		}
+	}
+	if conf.SecretKeyID == "" {
+		if secretKeyId := utils.GetEnvVariableValue([]string{"OSC_SECRET_KEY", "OUTSCALE_SECRETKEYID"}); secretKeyId != "" {
+			conf.SecretKeyID = secretKeyId
+		}
+	}
+
+	if conf.Region == "" {
+		if region := utils.GetEnvVariableValue([]string{"OSC_REGION", "OUTSCALE_REGION"}); region != "" {
+			conf.Region = region
+		}
+	}
+
+	if conf.X509cert == "" {
+		if x509Cert := utils.GetEnvVariableValue([]string{"OSC_X509_CLIENT_CERT", "OUTSCALE_X509CERT"}); x509Cert != "" {
+			conf.X509cert = x509Cert
+		}
+	}
+
+	if conf.X509key == "" {
+		if x509Key := utils.GetEnvVariableValue([]string{"OSC_X509_CLIENT_KEY", "OUTSCALE_X509KEY"}); x509Key != "" {
+			conf.X509key = x509Key
+		}
+	}
+
+	/*
+		if data.Endpoints.IsNull() {
+			if endpoints := getEnvVariableValue([]string{"OSC_ENDPOINT_API", "OUTSCALE_OAPI_URL"}); endpoints != "" {
+				data.Endpoints = types.StringValue(endpoints)
+			}
+		}
+	*/
 }

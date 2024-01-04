@@ -11,14 +11,14 @@ import (
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func lb_sg_schema() *schema.Schema {
 	return &schema.Schema{
-		Type:     schema.TypeMap,
+		Type:     schema.TypeList,
 		Computed: true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -84,7 +84,7 @@ func resourceOutscaleOAPILoadBalancer() *schema.Resource {
 				Computed: true,
 			},
 			"access_log": {
-				Type:     schema.TypeMap,
+				Type:     schema.TypeList,
 				Optional: true,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -109,16 +109,16 @@ func resourceOutscaleOAPILoadBalancer() *schema.Resource {
 				},
 			},
 			"health_check": {
-				Type:     schema.TypeMap,
+				Type:     schema.TypeSet,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"healthy_threshold": {
-							Type:     schema.TypeString,
+							Type:     schema.TypeInt,
 							Computed: true,
 						},
 						"unhealthy_threshold": {
-							Type:     schema.TypeString,
+							Type:     schema.TypeInt,
 							Computed: true,
 						},
 						"path": {
@@ -126,11 +126,11 @@ func resourceOutscaleOAPILoadBalancer() *schema.Resource {
 							Computed: true,
 						},
 						"check_interval": {
-							Type:     schema.TypeString,
+							Type:     schema.TypeInt,
 							Computed: true,
 						},
 						"port": {
-							Type:     schema.TypeString,
+							Type:     schema.TypeInt,
 							Computed: true,
 						},
 						"protocol": {
@@ -138,7 +138,7 @@ func resourceOutscaleOAPILoadBalancer() *schema.Resource {
 							Computed: true,
 						},
 						"timeout": {
-							Type:     schema.TypeString,
+							Type:     schema.TypeInt,
 							Computed: true,
 						},
 					},
@@ -567,14 +567,11 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 	} else {
 		d.Set("security_groups", make([]map[string]interface{}, 0))
 	}
-	ssg := make(map[string]string)
-	if lb.SourceSecurityGroup != nil {
-		ssg["security_group_name"] = *lb.SourceSecurityGroup.SecurityGroupName
-		ssg["security_group_account_id"] = *lb.SourceSecurityGroup.SecurityGroupAccountId
-	}
-	d.Set("source_security_group", ssg)
-	d.Set("subnets", utils.StringSlicePtrToInterfaceSlice(lb.Subnets))
 
+	if lb.SourceSecurityGroup != nil {
+		d.Set("source_security_group", flattenSource_sg(lb.SourceSecurityGroup))
+	}
+	d.Set("subnets", utils.StringSlicePtrToInterfaceSlice(lb.Subnets))
 	d.Set("public_ip", lb.PublicIp)
 	d.Set("secured_cookies", lb.SecuredCookies)
 
@@ -875,27 +872,6 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 		}
 	}
 
-	if d.HasChange("public_ip") {
-		req := oscgo.UpdateLoadBalancerRequest{
-			LoadBalancerName: d.Id(),
-		}
-		req.SetPublicIp(d.Get("public_ip").(string))
-
-		var err error
-		err = resource.Retry(1*time.Minute, func() *resource.RetryError {
-			_, httpResp, err := conn.LoadBalancerApi.UpdateLoadBalancer(
-				context.Background()).UpdateLoadBalancerRequest(req).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			return nil
-		})
-
-		if err != nil {
-			return fmt.Errorf("Failure updating PublicIp: %s", err)
-		}
-	}
-
 	if d.HasChange("secured_cookies") {
 		req := oscgo.UpdateLoadBalancerRequest{
 			LoadBalancerName: d.Id(),
@@ -970,39 +946,43 @@ func resourceOutscaleOAPILoadBalancerDelete(d *schema.ResourceData, meta interfa
 	return nil
 }
 
-func flattenOAPIHealthCheck(check *oscgo.HealthCheck) map[string]interface{} {
-	chk := make(map[string]interface{})
-
-	if check != nil {
-		h := utils.I32toa(check.HealthyThreshold)
-		i := utils.I32toa(check.CheckInterval)
-		pa := check.Path
-		po := utils.I32toa(check.Port)
-		pr := check.Protocol
-		ti := utils.I32toa(check.Timeout)
-		u := utils.I32toa(check.UnhealthyThreshold)
-
-		chk["healthy_threshold"] = h
-		chk["check_interval"] = i
-		chk["path"] = pa
-		chk["port"] = po
-		chk["protocol"] = pr
-		chk["timeout"] = ti
-		chk["unhealthy_threshold"] = u
+// Expands an array of String Instance IDs into a []Instances
+func expandInstanceString(list []interface{}) []string {
+	result := make([]string, 0, len(list))
+	for _, i := range list {
+		result = append(result, i.(string))
 	}
-
-	return chk
+	return result
 }
 
-func flattenOAPIAccessLog(aclog *oscgo.AccessLog) map[string]interface{} {
-	accl := make(map[string]interface{})
+func formatInt32(n int32) string {
+	return strconv.FormatInt(int64(n), 10)
+}
 
-	if aclog != nil {
-		accl["is_enabled"] = strconv.FormatBool(*aclog.IsEnabled)
-		accl["osu_bucket_name"] = aclog.OsuBucketName
-		accl["osu_bucket_prefix"] = aclog.OsuBucketPrefix
-		accl["publication_interval"] = strconv.Itoa(int(*aclog.PublicationInterval))
-	}
+func flattenOAPIHealthCheck(check *oscgo.HealthCheck) []map[string]interface{} {
+	return []map[string]interface{}{{
+		"healthy_threshold":   check.GetHealthyThreshold(),
+		"unhealthy_threshold": check.GetUnhealthyThreshold(),
+		"path":                check.GetPath(),
+		"check_interval":      check.GetCheckInterval(),
+		"port":                check.GetPort(),
+		"protocol":            check.GetProtocol(),
+		"timeout":             check.GetTimeout(),
+	}}
+}
 
-	return accl
+func flattenOAPIAccessLog(aclog *oscgo.AccessLog) []map[string]interface{} {
+	return []map[string]interface{}{{
+		"is_enabled":           aclog.GetIsEnabled(),
+		"osu_bucket_name":      aclog.GetOsuBucketName(),
+		"osu_bucket_prefix":    aclog.GetOsuBucketPrefix(),
+		"publication_interval": aclog.GetPublicationInterval(),
+	}}
+}
+
+func flattenSource_sg(ssg *oscgo.SourceSecurityGroup) []map[string]interface{} {
+	return []map[string]interface{}{{
+		"security_group_name":       ssg.GetSecurityGroupName(),
+		"security_group_account_id": ssg.GetSecurityGroupAccountId(),
+	}}
 }

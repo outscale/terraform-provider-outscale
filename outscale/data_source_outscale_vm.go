@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
@@ -92,9 +92,9 @@ func oapiVMDescriptionAttributes(set AttributeSetter, vm *oscgo.Vm) error {
 		return err
 	}
 	if err := set("block_device_mappings_created", getOscAPIVMBlockDeviceMapping(vm.GetBlockDeviceMappings())); err != nil {
-		log.Printf("[DEBUG] BLOCKING DEVICE MAPPING ERR %+v", err)
 		return err
 	}
+
 	if err := set("bsu_optimized", vm.GetBsuOptimized()); err != nil {
 		return err
 	}
@@ -199,21 +199,18 @@ func oapiVMDescriptionAttributes(set AttributeSetter, vm *oscgo.Vm) error {
 	return set("vm_type", vm.GetVmType())
 }
 
-func getOscAPIVMBlockDeviceMapping(blockDeviceMappings []oscgo.BlockDeviceMappingCreated) []map[string]interface{} {
-	blockDeviceMapping := make([]map[string]interface{}, len(blockDeviceMappings))
-
-	for k, v := range blockDeviceMappings {
-		blockDeviceMapping[k] = map[string]interface{}{
-			"device_name": aws.StringValue(v.DeviceName),
-			"bsu": map[string]interface{}{
-				"delete_on_vm_deletion": fmt.Sprintf("%t", aws.BoolValue(v.GetBsu().DeleteOnVmDeletion)),
-				"volume_id":             aws.StringValue(v.GetBsu().VolumeId),
-				"state":                 aws.StringValue(v.GetBsu().State),
-				"link_date":             aws.StringValue(v.GetBsu().LinkDate),
-			},
+func getOscAPIVMBlockDeviceMapping(blkMappings []oscgo.BlockDeviceMappingCreated) []map[string]interface{} {
+	res := []map[string]interface{}{}
+	for _, v := range blkMappings {
+		blk := map[string]interface{}{
+			"device_name": v.GetDeviceName(),
 		}
+		if bsu, ok := v.GetBsuOk(); ok {
+			blk["bsu"] = getOAPIBsuSet(*bsu)
+		}
+		res = append(res, blk)
 	}
-	return blockDeviceMapping
+	return res
 }
 
 func getOAPIVMSecurityGroups(groupSet []oscgo.SecurityGroupLight) []map[string]interface{} {
@@ -295,7 +292,7 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"bsu": {
-						Type:     schema.TypeMap,
+						Type:     schema.TypeSet,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
@@ -308,11 +305,11 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 									Computed: true,
 								},
 								"state": {
-									Type:     schema.TypeInt,
+									Type:     schema.TypeString,
 									Computed: true,
 								},
 								"volume_id": {
-									Type:     schema.TypeFloat,
+									Type:     schema.TypeString,
 									Computed: true,
 								},
 							},
@@ -358,7 +355,7 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 			Computed: true,
 		},
 		"security_group_ids": {
-			Type:     schema.TypeSet,
+			Type:     schema.TypeList,
 			Computed: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
@@ -463,7 +460,6 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 					},
 					"link_nic": {
 						Type:     schema.TypeList,
-						MaxItems: 1,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
@@ -632,9 +628,8 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"link_nic": {
-						Type:     schema.TypeList,
+						Type:     schema.TypeSet,
 						Computed: true,
-						MaxItems: 1,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"delete_on_vm_deletion": {
@@ -816,7 +811,6 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 		},
 		"vm_id": {
 			Type:     schema.TypeString,
-			Optional: true,
 			Computed: true,
 		},
 		"vm_initiated_shutdown_behavior": {

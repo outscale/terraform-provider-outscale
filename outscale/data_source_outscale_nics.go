@@ -6,10 +6,10 @@ import (
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 // Creates a network interface in the specified subnet
@@ -42,7 +42,7 @@ func getDSOAPINicsSchema() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"link_nic": {
-						Type:     schema.TypeMap,
+						Type:     schema.TypeSet,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
@@ -54,7 +54,7 @@ func getDSOAPINicsSchema() map[string]*schema.Schema {
 									Type:     schema.TypeInt,
 									Computed: true,
 								},
-								"nic_link_id": {
+								"link_nic_id": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
@@ -74,7 +74,7 @@ func getDSOAPINicsSchema() map[string]*schema.Schema {
 						},
 					},
 					"link_public_ip": {
-						Type:     schema.TypeMap,
+						Type:     schema.TypeSet,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
@@ -127,7 +127,7 @@ func getDSOAPINicsSchema() map[string]*schema.Schema {
 									Computed: true,
 								},
 								"link_public_ip": {
-									Type:     schema.TypeMap,
+									Type:     schema.TypeSet,
 									Computed: true,
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
@@ -195,18 +195,15 @@ func getDSOAPINicsSchema() map[string]*schema.Schema {
 					},
 					"tags": {
 						Type:     schema.TypeList,
-						Optional: true,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"key": {
 									Type:     schema.TypeString,
-									Optional: true,
 									Computed: true,
 								},
 								"value": {
 									Type:     schema.TypeString,
-									Optional: true,
 									Computed: true,
 								},
 							},
@@ -226,9 +223,6 @@ func dataSourceOutscaleOAPINicsRead(d *schema.ResourceData, meta interface{}) er
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
-	if !filtersOk {
-		return fmt.Errorf("filters, or owner must be assigned, or nic_id must be provided")
-	}
 
 	params := oscgo.ReadNicsRequest{}
 	if filtersOk {
@@ -258,7 +252,6 @@ func dataSourceOutscaleOAPINicsRead(d *schema.ResourceData, meta interface{}) er
 	if len(resp.GetNics()) == 0 {
 		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
 	}
-
 	nics := resp.GetNics()
 
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
@@ -267,7 +260,6 @@ func dataSourceOutscaleOAPINicsRead(d *schema.ResourceData, meta interface{}) er
 		if err := set("nics", getOAPIVMNetworkInterfaceSet(nics)); err != nil {
 			return err
 		}
-
 		return nil
 	})
 }

@@ -13,8 +13,8 @@ import (
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
@@ -60,7 +60,7 @@ func getOAPINicSchema() map[string]*schema.Schema {
 		},
 		// Attributes
 		"link_public_ip": {
-			Type:     schema.TypeMap,
+			Type:     schema.TypeSet,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
@@ -88,7 +88,7 @@ func getOAPINicSchema() map[string]*schema.Schema {
 			},
 		},
 		"link_nic": {
-			Type:     schema.TypeMap,
+			Type:     schema.TypeSet,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
@@ -158,14 +158,14 @@ func getOAPINicSchema() map[string]*schema.Schema {
 		},
 
 		"private_ips": {
-			Type:     schema.TypeSet,
+			Type:     schema.TypeList,
 			Computed: true,
 			Optional: true,
 			ForceNew: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"link_public_ip": {
-						Type:     schema.TypeMap,
+						Type:     schema.TypeList,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
@@ -256,7 +256,7 @@ func resourceOutscaleOAPINicCreate(d *schema.ResourceData, meta interface{}) err
 	}
 
 	if v, ok := d.GetOk("private_ips"); ok {
-		request.SetPrivateIps(expandPrivateIPLight(v.(*schema.Set).List()))
+		request.SetPrivateIps(expandPrivateIPLight(v.([]interface{})))
 	}
 
 	log.Printf("[DEBUG] Creating network interface")
@@ -306,7 +306,6 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 	var resp oscgo.ReadNicsResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-
 		rp, httpResp, err := conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(dnir).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -316,7 +315,6 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 	})
 
 	if err != nil {
-
 		return fmt.Errorf("Error describing Network Interfaces : %s", err)
 	}
 
@@ -335,35 +333,19 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 	if err := d.Set("description", eni.GetDescription()); err != nil {
 		return err
 	}
-
 	if err := d.Set("subnet_id", eni.GetSubnetId()); err != nil {
 		return err
 	}
-
-	b := make(map[string]interface{})
-	link := eni.GetLinkPublicIp()
-	b["public_ip_id"] = link.GetPublicIpId()
-	b["link_public_ip_id"] = link.GetLinkPublicIpId()
-	b["public_ip_account_id"] = link.GetPublicIpAccountId()
-	b["public_dns_name"] = link.GetPublicDnsName()
-	b["public_ip"] = link.GetPublicIp()
-
-	if err := d.Set("link_public_ip", b); err != nil {
-		return err
+	if linkIp, ok := eni.GetLinkPublicIpOk(); ok {
+		if err := d.Set("link_public_ip", flattenLinkPublicIp(linkIp)); err != nil {
+			return err
+		}
 	}
 
-	//aa := make([]map[string]interface{}, 1)
-	bb := make(map[string]interface{})
-	att := eni.GetLinkNic()
-	bb["link_nic_id"] = att.GetLinkNicId()
-	bb["delete_on_vm_deletion"] = strconv.FormatBool(att.GetDeleteOnVmDeletion())
-	bb["device_number"] = fmt.Sprintf("%d", att.GetDeviceNumber())
-	bb["vm_id"] = att.GetVmId()
-	bb["vm_account_id"] = att.GetVmAccountId()
-	bb["state"] = att.GetState()
-
-	if err := d.Set("link_nic", bb); err != nil {
-		return err
+	if linkNic, ok := eni.GetLinkNicOk(); ok {
+		if err := d.Set("link_nic", flattenLinkNic(linkNic)); err != nil {
+			return err
+		}
 	}
 
 	if err := d.Set("subregion_name", eni.GetSubregionName()); err != nil {
@@ -393,7 +375,6 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 	if err := d.Set("private_dns_name", eni.GetPrivateDnsName()); err != nil {
 		return err
 	}
-	//d.Set("private_ip", eni.)
 
 	y := make([]map[string]interface{}, len(eni.GetPrivateIps()))
 	if eni.PrivateIps != nil {
@@ -401,14 +382,14 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 			b := make(map[string]interface{})
 
 			d := make(map[string]interface{})
-			assoc := v.GetLinkPublicIp()
-			d["public_ip_id"] = assoc.GetPublicIpId()
-			d["link_public_ip_id"] = assoc.GetLinkPublicIpId()
-			d["public_ip_account_id"] = assoc.GetPublicIpAccountId()
-			d["public_dns_name"] = assoc.GetPublicDnsName()
-			d["public_ip"] = assoc.GetPublicIp()
-
-			b["link_public_ip"] = d
+			if assoc, ok := v.GetLinkPublicIpOk(); ok {
+				d["public_ip_id"] = assoc.GetPublicIpId()
+				d["link_public_ip_id"] = assoc.GetLinkPublicIpId()
+				d["public_ip_account_id"] = assoc.GetPublicIpAccountId()
+				d["public_dns_name"] = assoc.GetPublicDnsName()
+				d["public_ip"] = assoc.GetPublicIp()
+				b["link_public_ip"] = d
+			}
 			b["private_dns_name"] = v.GetPrivateDnsName()
 			b["private_ip"] = v.GetPrivateIp()
 			b["is_primary"] = v.GetIsPrimary()
@@ -611,7 +592,6 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 				input := oscgo.LinkPrivateIpsRequest{
 					NicId: d.Id(),
 				}
-
 				input.SetSecondaryPrivateIpCount(int32(diff))
 
 				err := resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -689,7 +669,6 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
-
 	return resourceOutscaleOAPINicRead(d, meta)
 }
 
@@ -715,4 +694,25 @@ func flattenPrivateIPLightToStringSlice(pIPs []interface{}) []string {
 		privateIPs = append(privateIPs, privateIPMap["private_ip"].(string))
 	}
 	return privateIPs
+}
+
+func flattenLinkPublicIp(linkIp *oscgo.LinkPublicIp) []map[string]interface{} {
+	return []map[string]interface{}{{
+		"public_ip_id":         linkIp.GetPublicIpId(),
+		"link_public_ip_id":    linkIp.GetLinkPublicIpId(),
+		"public_ip_account_id": linkIp.GetPublicIpAccountId(),
+		"public_dns_name":      linkIp.GetPublicDnsName(),
+		"public_ip":            linkIp.GetPublicIp(),
+	}}
+}
+
+func flattenLinkNic(linkNic *oscgo.LinkNic) []map[string]interface{} {
+	return []map[string]interface{}{{
+		"link_nic_id":           linkNic.GetLinkNicId(),
+		"delete_on_vm_deletion": strconv.FormatBool(linkNic.GetDeleteOnVmDeletion()),
+		"device_number":         linkNic.GetDeviceNumber(),
+		"vm_id":                 linkNic.GetVmId(),
+		"vm_account_id":         linkNic.GetVmAccountId(),
+		"state":                 linkNic.GetState(),
+	}}
 }
