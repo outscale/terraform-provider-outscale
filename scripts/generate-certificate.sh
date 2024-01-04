@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -e -x
 
 project_dir=$(cd "$(dirname $0)" && pwd)
 project_root=$(cd $project_dir/.. && pwd)
@@ -27,7 +27,7 @@ EOF
 EOF
     delete = ""
   }
-  working_directory = "${path.module}/."
+  working_directory = path.module
 }
 ' > "outscale/$tf_file"
 
