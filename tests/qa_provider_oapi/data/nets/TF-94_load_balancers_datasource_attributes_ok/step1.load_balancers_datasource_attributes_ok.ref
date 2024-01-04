@@ -18,24 +18,28 @@
                         "id": "##id-0##",
                         "load_balancer": [
                             {
-                                "access_log": {
-                                    "is_enabled": "false",
-                                    "osu_bucket_name": "",
-                                    "osu_bucket_prefix": "",
-                                    "publication_interval": "60"
-                                },
+                                "access_log": [
+                                    {
+                                        "is_enabled": false,
+                                        "osu_bucket_name": "",
+                                        "osu_bucket_prefix": "",
+                                        "publication_interval": 60
+                                    }
+                                ],
                                 "application_sticky_cookie_policies": [],
                                 "backend_vm_ids": [],
                                 "dns_name": "########",
-                                "health_check": {
-                                    "check_interval": "30",
-                                    "healthy_threshold": "10",
-                                    "path": "",
-                                    "port": "80",
-                                    "protocol": "TCP",
-                                    "timeout": "5",
-                                    "unhealthy_threshold": "2"
-                                },
+                                "health_check": [
+                                    {
+                                        "check_interval": 30,
+                                        "healthy_threshold": 10,
+                                        "path": "",
+                                        "port": 80,
+                                        "protocol": "TCP",
+                                        "timeout": 5,
+                                        "unhealthy_threshold": 2
+                                    }
+                                ],
                                 "listeners": [
                                     {
                                         "backend_port": 80,
@@ -53,10 +57,12 @@
                                 "public_ip": "########",
                                 "secured_cookies": false,
                                 "security_groups": [],
-                                "source_security_group": {
-                                    "security_group_account_id": "##id-1##",
-                                    "security_group_name": "outscale-elb-sg"
-                                },
+                                "source_security_group": [
+                                    {
+                                        "security_group_account_id": "##id-1##",
+                                        "security_group_name": "outscale-elb-sg"
+                                    }
+                                ],
                                 "subnet_id": [],
                                 "subregion_names": [
                                     "us-east-2a"
@@ -73,24 +79,28 @@
                                 ]
                             },
                             {
-                                "access_log": {
-                                    "is_enabled": "false",
-                                    "osu_bucket_name": "",
-                                    "osu_bucket_prefix": "",
-                                    "publication_interval": "60"
-                                },
+                                "access_log": [
+                                    {
+                                        "is_enabled": false,
+                                        "osu_bucket_name": "",
+                                        "osu_bucket_prefix": "",
+                                        "publication_interval": 60
+                                    }
+                                ],
                                 "application_sticky_cookie_policies": [],
                                 "backend_vm_ids": [],
                                 "dns_name": "########",
-                                "health_check": {
-                                    "check_interval": "30",
-                                    "healthy_threshold": "10",
-                                    "path": "",
-                                    "port": "8080",
-                                    "protocol": "TCP",
-                                    "timeout": "5",
-                                    "unhealthy_threshold": "2"
-                                },
+                                "health_check": [
+                                    {
+                                        "check_interval": 30,
+                                        "healthy_threshold": 10,
+                                        "path": "",
+                                        "port": 8080,
+                                        "protocol": "TCP",
+                                        "timeout": 5,
+                                        "unhealthy_threshold": 2
+                                    }
+                                ],
                                 "listeners": [
                                     {
                                         "backend_port": 8080,
@@ -110,10 +120,12 @@
                                 "security_groups": [
                                     "##id-3##"
                                 ],
-                                "source_security_group": {
-                                    "security_group_account_id": "##id-4##",
-                                    "security_group_name": "sg1-terraform-lbu-test"
-                                },
+                                "source_security_group": [
+                                    {
+                                        "security_group_account_id": "##id-4##",
+                                        "security_group_name": "sg1-terraform-lbu-test"
+                                    }
+                                ],
                                 "subnet_id": [
                                     "##id-5##"
                                 ],
@@ -144,24 +156,28 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "access_log": {
-                            "is_enabled": "false",
-                            "osu_bucket_name": "",
-                            "osu_bucket_prefix": "",
-                            "publication_interval": "60"
-                        },
+                        "access_log": [
+                            {
+                                "is_enabled": false,
+                                "osu_bucket_name": "",
+                                "osu_bucket_prefix": "",
+                                "publication_interval": 60
+                            }
+                        ],
                         "application_sticky_cookie_policies": [],
                         "backend_vm_ids": [],
                         "dns_name": "########",
-                        "health_check": {
-                            "check_interval": "30",
-                            "healthy_threshold": "10",
-                            "path": "",
-                            "port": "8080",
-                            "protocol": "TCP",
-                            "timeout": "5",
-                            "unhealthy_threshold": "2"
-                        },
+                        "health_check": [
+                            {
+                                "check_interval": 30,
+                                "healthy_threshold": 10,
+                                "path": "",
+                                "port": 8080,
+                                "protocol": "TCP",
+                                "timeout": 5,
+                                "unhealthy_threshold": 2
+                            }
+                        ],
                         "id": "##id-6##",
                         "listeners": [
                             {
@@ -183,10 +199,12 @@
                         "security_groups": [
                             "##id-3##"
                         ],
-                        "source_security_group": {
-                            "security_group_account_id": "##id-4##",
-                            "security_group_name": "sg1-terraform-lbu-test"
-                        },
+                        "source_security_group": [
+                            {
+                                "security_group_account_id": "##id-4##",
+                                "security_group_name": "sg1-terraform-lbu-test"
+                            }
+                        ],
                         "subnets": [
                             "##id-5##"
                         ],
@@ -219,24 +237,28 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "access_log": {
-                            "is_enabled": "false",
-                            "osu_bucket_name": "",
-                            "osu_bucket_prefix": "",
-                            "publication_interval": "60"
-                        },
+                        "access_log": [
+                            {
+                                "is_enabled": false,
+                                "osu_bucket_name": "",
+                                "osu_bucket_prefix": "",
+                                "publication_interval": 60
+                            }
+                        ],
                         "application_sticky_cookie_policies": [],
                         "backend_vm_ids": [],
                         "dns_name": "########",
-                        "health_check": {
-                            "check_interval": "30",
-                            "healthy_threshold": "10",
-                            "path": "",
-                            "port": "80",
-                            "protocol": "TCP",
-                            "timeout": "5",
-                            "unhealthy_threshold": "2"
-                        },
+                        "health_check": [
+                            {
+                                "check_interval": 30,
+                                "healthy_threshold": 10,
+                                "path": "",
+                                "port": 80,
+                                "protocol": "TCP",
+                                "timeout": 5,
+                                "unhealthy_threshold": 2
+                            }
+                        ],
                         "id": "##id-7##",
                         "listeners": [
                             {
@@ -256,10 +278,12 @@
                         "request_id": "########",
                         "secured_cookies": false,
                         "security_groups": [],
-                        "source_security_group": {
-                            "security_group_account_id": "##id-1##",
-                            "security_group_name": "outscale-elb-sg"
-                        },
+                        "source_security_group": [
+                            {
+                                "security_group_account_id": "##id-1##",
+                                "security_group_name": "outscale-elb-sg"
+                            }
+                        ],
                         "subnets": [],
                         "subregion_names": [
                             "us-east-2a"

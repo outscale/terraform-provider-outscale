@@ -120,21 +120,25 @@
                         ],
                         "block_device_mappings_created": [
                             {
-                                "bsu": {
-                                    "delete_on_vm_deletion": "true",
-                                    "link_date": "########",
-                                    "state": "attached",
-                                    "volume_id": "##id-5##"
-                                },
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "link_date": "########",
+                                        "state": "attached",
+                                        "volume_id": "##id-5##"
+                                    }
+                                ],
                                 "device_name": "/dev/sda1"
                             },
                             {
-                                "bsu": {
-                                    "delete_on_vm_deletion": "true",
-                                    "link_date": "########",
-                                    "state": "attached",
-                                    "volume_id": "##id-6##"
-                                },
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "link_date": "########",
+                                        "state": "attached",
+                                        "volume_id": "##id-6##"
+                                    }
+                                ],
                                 "device_name": "/dev/sdb"
                             }
                         ],
@@ -181,17 +185,17 @@
                                 ],
                                 "secondary_private_ip_count": 0,
                                 "security_group_ids": [
-                                    "##id-4##",
-                                    "##id-3##"
+                                    "##id-3##",
+                                    "##id-4##"
                                 ],
                                 "security_groups": [
                                     {
-                                        "security_group_id": "##id-4##",
-                                        "security_group_name": "terraform-sg-TF66-1"
-                                    },
-                                    {
                                         "security_group_id": "##id-3##",
                                         "security_group_name": "terraform-sg-TF66-0"
+                                    },
+                                    {
+                                        "security_group_id": "##id-4##",
+                                        "security_group_name": "terraform-sg-TF66-1"
                                     }
                                 ],
                                 "state": "in-use",
@@ -232,17 +236,17 @@
                                 ],
                                 "secondary_private_ip_count": 0,
                                 "security_group_ids": [
-                                    "##id-4##",
-                                    "##id-3##"
+                                    "##id-3##",
+                                    "##id-4##"
                                 ],
                                 "security_groups": [
                                     {
-                                        "security_group_id": "##id-4##",
-                                        "security_group_name": "terraform-sg-TF66-1"
-                                    },
-                                    {
                                         "security_group_id": "##id-3##",
                                         "security_group_name": "terraform-sg-TF66-0"
+                                    },
+                                    {
+                                        "security_group_id": "##id-4##",
+                                        "security_group_name": "terraform-sg-TF66-1"
                                     }
                                 ],
                                 "state": "in-use",
@@ -262,18 +266,18 @@
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
                         "security_group_ids": [
-                            "##id-4##",
-                            "##id-3##"
+                            "##id-3##",
+                            "##id-4##"
                         ],
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-4##",
-                                "security_group_name": "terraform-sg-TF66-1"
-                            },
-                            {
                                 "security_group_id": "##id-3##",
                                 "security_group_name": "terraform-sg-TF66-0"
+                            },
+                            {
+                                "security_group_id": "##id-4##",
+                                "security_group_name": "terraform-sg-TF66-1"
                             }
                         ],
                         "state": "running",

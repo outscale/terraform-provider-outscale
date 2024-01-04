@@ -744,7 +744,7 @@
                         "main": false,
                         "request_id": "########",
                         "route_table_id": "##id-16##",
-                        "subnet_id": "##id-4##"
+                        "subnet_id": "##id-7##"
                     },
                     "sensitive_attributes": [],
                     "private": "bnVsbA==",
@@ -770,7 +770,7 @@
                         "main": false,
                         "request_id": "########",
                         "route_table_id": "##id-18##",
-                        "subnet_id": "##id-7##"
+                        "subnet_id": "##id-4##"
                     },
                     "sensitive_attributes": [],
                     "private": "bnVsbA==",

@@ -14,25 +14,29 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "access_log": {
-                            "is_enabled": "false",
-                            "osu_bucket_name": "",
-                            "osu_bucket_prefix": "",
-                            "publication_interval": "60"
-                        },
+                        "access_log": [
+                            {
+                                "is_enabled": false,
+                                "osu_bucket_name": "",
+                                "osu_bucket_prefix": "",
+                                "publication_interval": 60
+                            }
+                        ],
                         "application_sticky_cookie_policies": [],
                         "backend_vm_ids": [],
                         "dns_name": "########",
                         "filter": "########",
-                        "health_check": {
-                            "check_interval": "30",
-                            "healthy_threshold": "10",
-                            "path": "",
-                            "port": "80",
-                            "protocol": "TCP",
-                            "timeout": "5",
-                            "unhealthy_threshold": "2"
-                        },
+                        "health_check": [
+                            {
+                                "check_interval": 30,
+                                "healthy_threshold": 10,
+                                "path": "",
+                                "port": 80,
+                                "protocol": "TCP",
+                                "timeout": 5,
+                                "unhealthy_threshold": 2
+                            }
+                        ],
                         "id": "##id-0##",
                         "listeners": [
                             {
@@ -54,10 +58,12 @@
                         "security_groups": [
                             "##id-2##"
                         ],
-                        "source_security_group": {
-                            "security_group_account_id": "##id-3##",
-                            "security_group_name": "sg1-terraform-lbu-test"
-                        },
+                        "source_security_group": [
+                            {
+                                "security_group_account_id": "##id-3##",
+                                "security_group_name": "sg1-terraform-lbu-test"
+                            }
+                        ],
                         "subnets": [
                             "##id-4##"
                         ],
@@ -88,24 +94,28 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "access_log": {
-                            "is_enabled": "false",
-                            "osu_bucket_name": "",
-                            "osu_bucket_prefix": "",
-                            "publication_interval": "60"
-                        },
+                        "access_log": [
+                            {
+                                "is_enabled": false,
+                                "osu_bucket_name": "",
+                                "osu_bucket_prefix": "",
+                                "publication_interval": 60
+                            }
+                        ],
                         "application_sticky_cookie_policies": [],
                         "backend_vm_ids": [],
                         "dns_name": "########",
-                        "health_check": {
-                            "check_interval": "30",
-                            "healthy_threshold": "10",
-                            "path": "",
-                            "port": "80",
-                            "protocol": "TCP",
-                            "timeout": "5",
-                            "unhealthy_threshold": "2"
-                        },
+                        "health_check": [
+                            {
+                                "check_interval": 30,
+                                "healthy_threshold": 10,
+                                "path": "",
+                                "port": 80,
+                                "protocol": "TCP",
+                                "timeout": 5,
+                                "unhealthy_threshold": 2
+                            }
+                        ],
                         "id": "##id-0##",
                         "listeners": [
                             {
@@ -127,10 +137,12 @@
                         "security_groups": [
                             "##id-2##"
                         ],
-                        "source_security_group": {
-                            "security_group_account_id": "##id-3##",
-                            "security_group_name": "sg1-terraform-lbu-test"
-                        },
+                        "source_security_group": [
+                            {
+                                "security_group_account_id": "##id-3##",
+                                "security_group_name": "sg1-terraform-lbu-test"
+                            }
+                        ],
                         "subnets": [
                             "##id-4##"
                         ],
@@ -169,7 +181,7 @@
                     "attributes": {
                         "dhcp_options_set_id": "##id-5##",
                         "id": "##id-1##",
-                        "ip_range": "10.0.0.0/16",
+                        "ip_range": "10.20.0.0/16",
                         "net_id": "##id-1##",
                         "request_id": "########",
                         "state": "available",
@@ -235,7 +247,7 @@
                     "attributes": {
                         "available_ips_count": "########",
                         "id": "##id-4##",
-                        "ip_range": "10.0.0.0/24",
+                        "ip_range": "10.20.0.0/24",
                         "map_public_ip_on_launch": false,
                         "net_id": "##id-1##",
                         "request_id": "########",

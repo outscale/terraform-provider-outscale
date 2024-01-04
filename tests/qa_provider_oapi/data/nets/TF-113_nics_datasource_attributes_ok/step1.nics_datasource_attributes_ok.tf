@@ -1,16 +1,16 @@
 resource "outscale_net" "outscale_net" {
-    ip_range = "10.0.0.0/16"
+    ip_range = "10.5.0.0/16"
 }
 
 resource "outscale_subnet" "subnet01" {
     subregion_name = "${var.region}a"
-    ip_range       = "10.0.0.0/24"
+    ip_range       = "10.5.0.0/24"
     net_id         = outscale_net.outscale_net.net_id
 }
 
 resource "outscale_subnet" "subnet02" {
     subregion_name = "${var.region}b"
-    ip_range       = "10.0.2.0/24"
+    ip_range       = "10.5.2.0/24"
     net_id         = outscale_net.outscale_net.net_id
 }
 
@@ -33,12 +33,12 @@ resource "outscale_nic" "outscale_nic" {
     security_group_ids = [outscale_security_group.security_group01.security_group_id]
     private_ips {
       is_primary       = true
-      private_ip       = "10.0.0.45"
+      private_ip       = "10.5.0.45"
     }
 
     private_ips {
       is_primary       = false
-      private_ip       = "10.0.0.46"
+      private_ip       = "10.5.0.46"
     }
     tags {
       key              = "Key:"
@@ -54,11 +54,11 @@ resource "outscale_nic" "outscale_nic_2" {
     subnet_id = outscale_subnet.subnet01.subnet_id
     private_ips {
       is_primary = true
-      private_ip = "10.0.0.41"
+      private_ip = "10.5.0.41"
     }
     private_ips { 
       is_primary = false
-      private_ip = "10.0.0.42"
+      private_ip = "10.5.0.42"
     }
     tags {             
       key        = "Name"
@@ -71,7 +71,7 @@ resource "outscale_nic" "outscale_nic_3" {
    security_group_ids = [outscale_security_group.security_group01.security_group_id] 
    private_ips {
       is_primary = true
-      private_ip = "10.0.2.21"
+      private_ip = "10.5.2.21"
     }
     tags {
       key              = "Key:"
@@ -117,12 +117,10 @@ data "outscale_nics" "nic-2-main" {
 depends_on =[outscale_nic_link.nic_link01,outscale_nic_link.nic_link02]
 }
 
-
-
 data "outscale_nics" "nic-4" {
     filter {
         name = "private_ips_private_ips"
-        values = ["10.0.0.42","10.0.2.21"]
+        values = ["10.5.0.42","10.5.2.21"]
     }
 depends_on=[outscale_nic.outscale_nic,outscale_nic.outscale_nic_2,outscale_nic.outscale_nic_3,outscale_nic_link.nic_link01,outscale_nic_link.nic_link02]
 }

@@ -41,21 +41,8 @@
                         "description": "",
                         "id": "##id-3##",
                         "is_source_dest_checked": true,
-                        "link_nic": {
-                            "delete_on_vm_deletion": "false",
-                            "device_number": "0",
-                            "link_nic_id": "",
-                            "state": "",
-                            "vm_account_id": "",
-                            "vm_id": ""
-                        },
-                        "link_public_ip": {
-                            "link_public_ip_id": "",
-                            "public_dns_name": "########",
-                            "public_ip": "########",
-                            "public_ip_account_id": "",
-                            "public_ip_id": ""
-                        },
+                        "link_nic": [],
+                        "link_public_ip": [],
                         "mac_address": "########",
                         "net_id": "##id-1##",
                         "nic_id": "##id-3##",
@@ -64,13 +51,7 @@
                         "private_ips": [
                             {
                                 "is_primary": true,
-                                "link_public_ip": {
-                                    "link_public_ip_id": "",
-                                    "public_dns_name": "########",
-                                    "public_ip": "########",
-                                    "public_ip_account_id": "",
-                                    "public_ip_id": ""
-                                },
+                                "link_public_ip": [],
                                 "private_dns_name": "########",
                                 "private_ip": "########"
                             }
@@ -115,21 +96,8 @@
                         "description": "",
                         "id": "##id-6##",
                         "is_source_dest_checked": true,
-                        "link_nic": {
-                            "delete_on_vm_deletion": "false",
-                            "device_number": "0",
-                            "link_nic_id": "",
-                            "state": "",
-                            "vm_account_id": "",
-                            "vm_id": ""
-                        },
-                        "link_public_ip": {
-                            "link_public_ip_id": "",
-                            "public_dns_name": "########",
-                            "public_ip": "########",
-                            "public_ip_account_id": "",
-                            "public_ip_id": ""
-                        },
+                        "link_nic": [],
+                        "link_public_ip": [],
                         "mac_address": "########",
                         "net_id": "##id-1##",
                         "nic_id": "##id-6##",
@@ -137,26 +105,14 @@
                         "private_ip": "########",
                         "private_ips": [
                             {
-                                "is_primary": false,
-                                "link_public_ip": {
-                                    "link_public_ip_id": "",
-                                    "public_dns_name": "########",
-                                    "public_ip": "########",
-                                    "public_ip_account_id": "",
-                                    "public_ip_id": ""
-                                },
+                                "is_primary": true,
+                                "link_public_ip": [],
                                 "private_dns_name": "########",
                                 "private_ip": "########"
                             },
                             {
-                                "is_primary": true,
-                                "link_public_ip": {
-                                    "link_public_ip_id": "",
-                                    "public_dns_name": "########",
-                                    "public_ip": "########",
-                                    "public_ip_account_id": "",
-                                    "public_ip_id": ""
-                                },
+                                "is_primary": false,
+                                "link_public_ip": [],
                                 "private_dns_name": "########",
                                 "private_ip": "########"
                             }
