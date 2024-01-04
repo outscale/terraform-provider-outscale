@@ -44,6 +44,12 @@ jobs:
           terraform_wrapper: false
       - name: Build go test
         run: make test
+        env:
+          OUTSCALE_ACCESSKEYID: ${{ secrets.OSC_ACCESS_KEY }}
+          OUTSCALE_SECRETKEYID: ${{ secrets.OSC_SECRET_KEY }}
+          OUTSCALE_REGION: ${{ secrets.OSC_REGION }}
+          OUTSCALE_ACCOUNT: ${{ secrets.OSC_ACCOUNT_ID }}
+          OUTSCALE_IMAGEID: ${{ secrets.OUTSCALE_IMAGEID }}
       - name: Run nets integration tests
         run: make test-integration
         env:
