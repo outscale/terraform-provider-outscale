@@ -714,7 +714,6 @@ func resourceOutscaleOApiVM() *schema.Resource {
 			"wait_tag_before_start": {
 				Type:     schema.TypeBool,
 				Optional: true,
-				Default:  false,
 			},
 			"tags": tagsListOAPISchema(),
 		},
@@ -738,8 +737,8 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 		vmStateTarget[0] = "stopped"
 		vmOpts.BootOnCreation = oscgo.PtrBool(false)
 	}
-	vmWaitTag := d.Get("wait_tag_before_start").(bool)
-	if vmWaitTag {
+	vmWaitTag, ok := d.GetOk("wait_tag_before_start")
+	if ok && vmWaitTag.(bool) {
 		vmOpts.BootOnCreation = oscgo.PtrBool(false)
 	}
 
@@ -789,7 +788,7 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 			return err
 		}
 	}
-	if vmWaitTag {
+	if vmWaitTag.(bool) {
 		stateConf := &resource.StateChangeConf{
 			Pending:    []string{"pending"},
 			Target:     []string{"stopped"},
