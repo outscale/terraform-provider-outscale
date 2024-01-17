@@ -962,7 +962,7 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if d.HasChange("security_group_names") && !d.IsNewResource() {
-		updateRequest.SetSecurityGroupIds(utils.InterfaceSliceToStringSlice(d.Get("security_group_names").([]interface{})))
+		updateRequest.SetSecurityGroupIds(utils.SetToStringSlice(d.Get("security_group_names").(*schema.Set)))
 	}
 
 	if d.HasChange("vm_initiated_shutdown_behavior") && !d.IsNewResource() {
