@@ -110,9 +110,6 @@ func (p *frameworkProvider) Configure(ctx context.Context, req provider.Configur
 		return
 	}
 
-	// If practitioner provided a configuration value for any of the
-	// attributes, it must be a known value.
-
 	if config.AccessKeyId.IsUnknown() {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("access_key_id"),

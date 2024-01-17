@@ -259,11 +259,11 @@ func setProviderDefaultEnv(conf *Config) {
 		}
 	}
 
-	/*
-		if data.Endpoints.IsNull() {
-			if endpoints := getEnvVariableValue([]string{"OSC_ENDPOINT_API", "OUTSCALE_OAPI_URL"}); endpoints != "" {
-				data.Endpoints = types.StringValue(endpoints)
-			}
+	if len(conf.Endpoints) == 0 {
+		if endpoints := utils.GetEnvVariableValue([]string{"OSC_ENDPOINT_API", "OUTSCALE_OAPI_URL"}); endpoints != "" {
+			endpointsAttributes := make(map[string]interface{})
+			endpointsAttributes["api"] = endpoints
+			conf.Endpoints = endpointsAttributes
 		}
-	*/
+	}
 }

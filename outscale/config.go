@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -44,17 +45,22 @@ func (c *Config) Client() (*OutscaleClient, error) {
 			Proxy:           http.ProxyFromEnvironment,
 		},
 	}
-
 	skipClient.Transport = logging.NewTransport("Outscale", skipClient.Transport)
-
 	skipClient.Transport = NewTransport(c.AccessKeyID, c.SecretKeyID, c.Region, skipClient.Transport)
 
 	basePath := fmt.Sprintf("api.%s.outscale.com", c.Region)
+	oscConfig := oscgo.NewConfiguration()
+
 	if endpoint, ok := c.Endpoints["api"]; ok {
 		basePath = endpoint.(string)
+		if strings.Contains(basePath, "://") {
+			if scheme, host, found := strings.Cut(basePath, "://"); found {
+				oscConfig.Scheme = scheme
+				basePath = host
+			}
+		}
 	}
 
-	oscConfig := oscgo.NewConfiguration()
 	oscConfig.Debug = true
 	oscConfig.HTTPClient = skipClient
 	oscConfig.Host = basePath
