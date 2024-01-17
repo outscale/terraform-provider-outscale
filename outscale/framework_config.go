@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -22,7 +23,6 @@ type OutscaleClient_fw struct {
 // Client ...
 func (c *frameworkProvider) Client_fw(ctx context.Context, data *ProviderModel, diags *diag.Diagnostics) (*OutscaleClient_fw, error) {
 
-	//setdefaut environnemant varibles
 	setDefaultEnv(data)
 	tlsconfig := &tls.Config{InsecureSkipVerify: c.insecure}
 	cert, err := tls.LoadX509KeyPair(data.X509CertPath.ValueString(), data.X509KeyPath.ValueString())
@@ -43,22 +43,23 @@ func (c *frameworkProvider) Client_fw(ctx context.Context, data *ProviderModel, 
 	skipClient.Transport = logging.NewTransport("Outscale", skipClient.Transport)
 
 	skipClient.Transport = NewTransport(data.AccessKeyId.ValueString(), data.SecretKeyId.ValueString(), data.Region.ValueString(), skipClient.Transport)
-
+	oscConfig := oscgo.NewConfiguration()
 	basePath := fmt.Sprintf("api.%s.outscale.com", data.Region.ValueString())
-	fmt.Printf("\n CONF_CLI: basePath=  %##++v\n", basePath)
+
 	if endpoint, ok := data.Endpoints["api"]; ok {
 		basePath = endpoint.(string)
+		if strings.Contains(basePath, "://") {
+			if scheme, host, found := strings.Cut(basePath, "://"); found {
+				oscConfig.Scheme = scheme
+				basePath = host
+			}
+		}
 	}
-	fmt.Printf("\n APRES CONF_CLI: basePath=  %##++v\n", basePath)
-
-	oscConfig := oscgo.NewConfiguration()
 	oscConfig.Debug = true
 	oscConfig.HTTPClient = skipClient
 	oscConfig.Host = basePath
 	oscConfig.UserAgent = fmt.Sprintf("terraform-provider-outscale/%s", version.GetVersion())
-
 	oscClient := oscgo.NewAPIClient(oscConfig)
-
 	client := &OutscaleClient_fw{
 		OSCAPI: oscClient,
 	}
@@ -94,11 +95,11 @@ func setDefaultEnv(data *ProviderModel) {
 			data.X509KeyPath = types.StringValue(x509Key)
 		}
 	}
-	/*
-		if data.Endpoints.IsNull() {
-			if endpoints := getEnvVariableValue([]string{"OSC_ENDPOINT_API", "OUTSCALE_OAPI_URL"}); endpoints != "" {
-				data.Endpoints = types.StringValue(endpoints)
-			}
+	if len(data.Endpoints) == 0 {
+		if endpoints := utils.GetEnvVariableValue([]string{"OSC_ENDPOINT_API", "OUTSCALE_OAPI_URL"}); endpoints != "" {
+			endpointsAttributes := make(map[string]interface{})
+			endpointsAttributes["api"] = endpoints
+			data.Endpoints = endpointsAttributes
 		}
-	*/
+	}
 }

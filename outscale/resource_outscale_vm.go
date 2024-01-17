@@ -537,7 +537,7 @@ func resourceOutscaleOApiVM() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"security_group_names": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
@@ -859,8 +859,8 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 		if err := d.Set("admin_password", adminPassword); err != nil {
 			return err
 		}
-		if len(utils.SetToStringSlice(d.Get("security_group_ids").(*schema.Set))) > 0 {
-			if err := set("security_group_ids", getVMSecurityGroupIds(vm.GetSecurityGroups())); err != nil {
+		if nics := buildNetworkOApiInterfaceOpts(d); len(nics) == 0 {
+			if err := set("security_group_ids", getSecurityGroupIds(vm.GetSecurityGroups())); err != nil {
 				return err
 			}
 		}
@@ -1135,7 +1135,7 @@ func buildCreateVmsRequest(d *schema.ResourceData, meta interface{}) (oscgo.Crea
 		request.SetSecurityGroupIds(sgIDs)
 	}
 
-	if sgNames := utils.InterfaceSliceToStringSlice(d.Get("security_group_names").([]interface{})); len(sgNames) > 0 {
+	if sgNames := utils.SetToStringSlice(d.Get("security_group_names").(*schema.Set)); len(sgNames) > 0 {
 		request.SetSecurityGroups(sgNames)
 	}
 

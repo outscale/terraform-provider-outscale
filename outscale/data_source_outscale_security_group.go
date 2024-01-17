@@ -250,8 +250,6 @@ func buildOutscaleOAPIDataSourceSecurityGroupFilters(set *schema.Set) oscgo.Filt
 		}
 
 		switch name := m["name"].(string); name {
-		case "account_ids":
-			filters.SetAccountIds(filterValues)
 		case "descriptions":
 			filters.SetDescriptions(filterValues)
 		case "inbound_rule_account_ids":
