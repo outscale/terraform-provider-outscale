@@ -171,8 +171,7 @@ func oapiVMDescriptionAttributes(set AttributeSetter, vm *oscgo.Vm) error {
 	if err := set("root_device_type", vm.GetRootDeviceType()); err != nil {
 		return err
 	}
-	if err := set("security_groups", getOAPIVMSecurityGroups(vm.GetSecurityGroups())); err != nil {
-		log.Printf("[DEBUG] SECURITY GROUPS ERR %+v", err)
+	if err := set("security_groups", getSecurityGroups(vm.GetSecurityGroups())); err != nil {
 		return err
 	}
 	if err := set("state", vm.GetState()); err != nil {
@@ -216,7 +215,7 @@ func getOscAPIVMBlockDeviceMapping(blockDeviceMappings []oscgo.BlockDeviceMappin
 	return blockDeviceMapping
 }
 
-func getOAPIVMSecurityGroups(groupSet []oscgo.SecurityGroupLight) []map[string]interface{} {
+func getSecurityGroups(groupSet []oscgo.SecurityGroupLight) []map[string]interface{} {
 	res := []map[string]interface{}{}
 	for _, g := range groupSet {
 		r := map[string]interface{}{
@@ -229,7 +228,7 @@ func getOAPIVMSecurityGroups(groupSet []oscgo.SecurityGroupLight) []map[string]i
 	return res
 }
 
-func getVMSecurityGroupIds(sgIds []oscgo.SecurityGroupLight) []string {
+func getSecurityGroupIds(sgIds []oscgo.SecurityGroupLight) []string {
 	res := make([]string, len(sgIds))
 	for k, ids := range sgIds {
 		res[k] = ids.GetSecurityGroupId()

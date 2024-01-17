@@ -51,7 +51,7 @@ func getOAPINicSchema() map[string]*schema.Schema {
 			Computed: true,
 		},
 		"security_group_ids": {
-			Type:     schema.TypeList,
+			Type:     schema.TypeSet,
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
@@ -246,16 +246,9 @@ func resourceOutscaleOAPINicCreate(d *schema.ResourceData, meta interface{}) err
 	if v, ok := d.GetOk("description"); ok {
 		request.SetDescription(v.(string))
 	}
-
-	if v, ok := d.GetOk("security_group_ids"); ok {
-		m := v.([]interface{})
-		a := make([]string, len(m))
-		for k, v := range m {
-			a[k] = v.(string)
-		}
-		request.SetSecurityGroupIds(a)
+	if sgIDs := utils.SetToStringSlice(d.Get("security_group_ids").(*schema.Set)); len(sgIDs) > 0 {
+		request.SetSecurityGroupIds(sgIDs)
 	}
-
 	if v, ok := d.GetOk("private_ips"); ok {
 		request.SetPrivateIps(expandPrivateIPLight(v.(*schema.Set).List()))
 	}
@@ -380,18 +373,12 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 	if err := d.Set("subregion_name", eni.GetSubregionName()); err != nil {
 		return err
 	}
-
-	x := make([]map[string]interface{}, len(eni.GetSecurityGroups()))
-	for k, v := range eni.GetSecurityGroups() {
-		b := make(map[string]interface{})
-		b["security_group_id"] = v.GetSecurityGroupId()
-		b["security_group_name"] = v.GetSecurityGroupName()
-		x[k] = b
-	}
-	if err := d.Set("security_groups", x); err != nil {
+	if err := d.Set("security_groups", getSecurityGroups(eni.GetSecurityGroups())); err != nil {
 		return err
 	}
-
+	if err := d.Set("security_group_ids", getSecurityGroupIds(eni.GetSecurityGroups())); err != nil {
+		return err
+	}
 	if err := d.Set("mac_address", eni.GetMacAddress()); err != nil {
 		return err
 	}
@@ -660,11 +647,10 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 	}
 
 	if d.HasChange("security_group_ids") {
-		stringValueList := utils.InterfaceSliceToStringSlice(d.Get("security_group_ids").([]interface{}))
 		request := oscgo.UpdateNicRequest{
-			NicId:            d.Id(),
-			SecurityGroupIds: &stringValueList,
+			NicId: d.Id(),
 		}
+		request.SetSecurityGroupIds(utils.SetToStringSlice(d.Get("security_group_ids").(*schema.Set)))
 
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 			_, httpResp, err := conn.NicApi.UpdateNic(context.Background()).UpdateNicRequest(request).Execute()
