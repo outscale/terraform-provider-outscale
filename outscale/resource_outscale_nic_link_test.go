@@ -137,7 +137,7 @@ func testAccOutscaleNicLinkConfigBasic(sg int, omi, vmType, region string) strin
 			}
 		}
 
-		resource "outscale_security_group" "outscale_security_group" {
+		resource "outscale_security_group" "security_group_nic" {
 			security_group_name = "terraform_test_%d"
 			description         = "Used in the terraform acceptance tests"
 			net_id              = outscale_net.net.id
@@ -152,7 +152,7 @@ func testAccOutscaleNicLinkConfigBasic(sg int, omi, vmType, region string) strin
 			image_id                 = "%s"
 			vm_type                  = "%s"
 			keypair_name             = "terraform-basic"
-			security_group_ids       = [outscale_security_group.outscale_security_group.id]
+			security_group_ids       = [outscale_security_group.security_group_nic.security_group_id]
 			placement_subregion_name = "%[4]sa"
 			subnet_id                = outscale_subnet.outscale_subnet.id
 		}
@@ -161,12 +161,11 @@ func testAccOutscaleNicLinkConfigBasic(sg int, omi, vmType, region string) strin
 			subregion_name = "%[4]sa"
 			ip_range       = "10.0.0.0/16"
 			net_id         = outscale_net.net.id
-
-			depends_on = [outscale_security_group.outscale_security_group]
 		}
 
 		resource "outscale_nic" "outscale_nic" {
 			subnet_id = outscale_subnet.outscale_subnet.subnet_id
+			security_group_ids   = [outscale_security_group.security_group_nic.security_group_id]
 		}
 
 		resource "outscale_nic_link" "outscale_nic_link" {

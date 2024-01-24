@@ -50,14 +50,13 @@ func TestAccVM_withVolumesDataSource(t *testing.T) {
 	t.Parallel()
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
-	sgId := os.Getenv("OUTSCALE_SECURITYGROUPID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVolumesDataSourceConfigWithVM(utils.GetRegion(), omi, keypair, sgId),
+				Config: testAccCheckOutscaleOAPIVolumesDataSourceConfigWithVM(utils.GetRegion(), omi, keypair),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIVolumeDataSourceID("data.outscale_volumes.outscale_volumes"),
 					// resource.TestCheckResourceAttr("data.outscale_volumes.outscale_volumes", "volumes.0.size", "1"),
@@ -116,7 +115,7 @@ func testAccCheckOutscaleOAPIVolumesDataSourceConfigWithMultipleVolumeIDsFilter(
 	`, region)
 }
 
-func testAccCheckOutscaleOAPIVolumesDataSourceConfigWithVM(region, imageID, keypair, sgId string) string {
+func testAccCheckOutscaleOAPIVolumesDataSourceConfigWithVM(region, imageID, keypair string) string {
 	return fmt.Sprintf(`
 		resource "outscale_volume" "outscale_volume" {
 			subregion_name = "%[1]sa"
@@ -148,8 +147,8 @@ func testAccCheckOutscaleOAPIVolumesDataSourceConfigWithVM(region, imageID, keyp
 			}
 		}
 
-		resource "outscale_security_group" "sg" {
-			security_group_name = "%[3]s"
+		resource "outscale_security_group" "sg_volumes" {
+			security_group_name = "sg_vols"
 			description         = "Used in the terraform acceptance tests"
 
 			tags {
@@ -161,7 +160,7 @@ func testAccCheckOutscaleOAPIVolumesDataSourceConfigWithVM(region, imageID, keyp
 		resource "outscale_vm" "outscale_vm" {
 			image_id           = "%[2]s"
 			keypair_name       = "%[3]s"
-			security_group_ids = ["%[4]s"]
+			security_group_ids = [outscale_security_group.sg_volumes.security_group_id]
 			vm_type            = "tinav4.c2r2p2"
 		}
 
@@ -189,5 +188,5 @@ func testAccCheckOutscaleOAPIVolumesDataSourceConfigWithVM(region, imageID, keyp
 				values = [outscale_vm.outscale_vm.vm_id]
 			}
 		}
-	`, region, imageID, keypair, sgId)
+	`, region, imageID, keypair)
 }

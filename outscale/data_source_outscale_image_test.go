@@ -49,11 +49,22 @@ func testAccCheckOutscaleOAPIImageDataSourceID(n string) resource.TestCheckFunc 
 
 func testAccCheckOutscaleOAPIImageDataSourceBasicConfig(omi, vmType, region, imageName string) string {
 	return fmt.Sprintf(`
+		resource "outscale_security_group" "sg_img_data" {
+			security_group_name = "sg_imgData"
+			description         = "Used in the terraform acceptance tests"
+
+			tags {
+				key   = "Name"
+				value = "tf-acc-test"
+			}
+		}
+
 		resource "outscale_vm" "basicIm" {
 			image_id                 = "%[1]s"
 			vm_type                  = "%[2]s"
 			keypair_name             = "terraform-basic"
 			placement_subregion_name = "%[3]sa"
+			security_group_ids = [outscale_security_group.sg_img_data.security_group_id]
 		}
 		
 		resource "outscale_image" "image" {

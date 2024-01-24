@@ -33,11 +33,21 @@ func TestAccVM_WithTagDataSource(t *testing.T) {
 // Lookup based on InstanceID
 func testAccOAPITagDataSourceConfig(omi, vmType string) string {
 	return fmt.Sprintf(`
-		resource "outscale_vm" "basic" {
+		resource "outscale_security_group" "sg_vm_tag" {
+			security_group_name = "sg_tag"
+			description         = "Used in the terraform acceptance tests"
+
+			tags {
+				key   = "Name"
+				value = "tf-acc-test"
+			}
+		}
+
+		resource "outscale_vm" "basicTag" {
 			image_id            = "%s"
 			vm_type             = "%s"
 			keypair_name        = "terraform-basic"
-
+			security_group_ids = [outscale_security_group.sg_vm_tag.security_group_id]
 			tags {
 				key = "Name"
 				value = "test-vm"
@@ -47,7 +57,7 @@ func testAccOAPITagDataSourceConfig(omi, vmType string) string {
 		data "outscale_tag" "web" {
 			filter {
 				name = "resource_ids"
-				values = [outscale_vm.basic.id]
+				values = [outscale_vm.basicTag.id]
 			}
 		}
 	`, omi, vmType)

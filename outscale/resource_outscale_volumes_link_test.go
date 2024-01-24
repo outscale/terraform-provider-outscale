@@ -112,11 +112,16 @@ func testAccCheckOAPIVolumeAttachmentExists(n string, i *oscgo.Vm, v *oscgo.Volu
 
 func testAccOAPIVolumeAttachmentConfig(omi, vmType, region, keypair string) string {
 	return fmt.Sprintf(`
+		resource "outscale_security_group" "sg_vol_link" {
+			description                  = "testAcc Terraform security group"
+			security_group_name          = "sg_volumes_link"
+		}
 		resource "outscale_vm" "web" {
 			image_id                 = "%[1]s"
 			vm_type                  = "%[2]s"
 			keypair_name             = "%[4]s"
 			placement_subregion_name = "%[3]sb"
+			security_group_ids = [outscale_security_group.sg_vol_link.security_group_id]
 		}
 
 		resource "outscale_volume" "volume" {
