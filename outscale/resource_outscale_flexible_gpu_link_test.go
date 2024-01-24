@@ -30,12 +30,22 @@ func TestAccVM_withFlexibleGpuLink_basic(t *testing.T) {
 
 func testAccOutscaleOAPIFlexibleGpuLinkConfig(omi, vmType, region string) string {
 	return fmt.Sprintf(`
+		resource "outscale_security_group" "sg_fgpu" {
+			security_group_name = "sg_GPU"
+			description         = "Used in the terraform acceptance tests"
+
+			tags {
+				key   = "Name"
+				value = "tf-acc-test"
+			}
+		}
+
 		resource "outscale_vm" "basic" {
 			image_id     = "%s"
 			vm_type      = "%s"
 			keypair_name = "terraform-basic"
 			placement_subregion_name = "%[3]sa"
-
+			security_group_ids = [outscale_security_group.sg_fgpu.security_group_id]
 		}
 
                 resource "outscale_flexible_gpu" "fGPU-1" {

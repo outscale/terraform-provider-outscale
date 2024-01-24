@@ -419,6 +419,13 @@ func testAccOAPIRouteTableConfigInstance(omi, vmType, region string) string {
 			net_id   = outscale_net.foo.id
 		}
 
+		resource "outscale_security_group" "sg_route" {
+			description           = "testAcc Terraform security group"
+			security_group_name   = "sgRoute"
+			net_id                = outscale_net.foo.net_id
+
+		}
+
 		resource "outscale_vm" "foo" {
 			image_id                 = "%s"
 			vm_type                  = "%s"
@@ -426,6 +433,7 @@ func testAccOAPIRouteTableConfigInstance(omi, vmType, region string) string {
 			subnet_id                = outscale_subnet.foo.id
 			placement_subregion_name = "%sa"
 			placement_tenancy        = "default"
+			security_group_ids = [outscale_security_group.sg_route.security_group_id]
 		}
 
 		resource "outscale_route_table" "foo" {
