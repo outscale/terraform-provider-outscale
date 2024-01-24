@@ -35,7 +35,7 @@ func testAccDataSourceOutscaleOAPIVMStateCheck(name string) resource.TestCheckFu
 			return fmt.Errorf("root module has no resource called %s", name)
 		}
 
-		vm, ok := s.RootModule().Resources["outscale_vm.basic"]
+		vm, ok := s.RootModule().Resources["outscale_vm.basic_state"]
 		if !ok {
 			return fmt.Errorf("can't find outscale_public_ip.test in state")
 		}
@@ -55,17 +55,32 @@ func testAccDataSourceOutscaleOAPIVMStateCheck(name string) resource.TestCheckFu
 
 func testAccDataSourceOutscaleOAPIVmStateConfig(omi, vmType string) string {
 	return fmt.Sprintf(`
-		resource "outscale_vm" "basic" {
+		resource "outscale_security_group" "sg_vm_state" {
+			security_group_name = "sg_vmState"
+			description         = "Used in the terraform acceptance tests"
+
+			tags {
+				key   = "Name"
+				value = "tf-acc-test"
+			}
+		}
+
+		resource "outscale_vm" "basic_state" {
 			image_id     = "%s"
 			vm_type      = "%s"
 			keypair_name = "terraform-basic"
+			security_group_ids = [outscale_security_group.sg_vm_state.security_group_id]
 		}
 
 		data "outscale_vm_state" "state" {
 			all_vms = false
 			filter {
 				name   = "vm_ids"
-				values = [outscale_vm.basic.id]
+				values = [outscale_vm.basic_state.id]
+			}
+			filter {
+				name   = "vm_states"
+				values = ["running"]
 			}
 		}
 	`, omi, vmType)

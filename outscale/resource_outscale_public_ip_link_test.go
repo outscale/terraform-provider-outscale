@@ -17,11 +17,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccNet_WithPublicIPLink_basic(t *testing.T) {
+func TestAccVM_WithPublicIPLink_basic(t *testing.T) {
 	var a oscgo.PublicIp
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
-	sgId := os.Getenv("OUTSCALE_SECURITYGROUPID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -29,10 +28,10 @@ func TestAccNet_WithPublicIPLink_basic(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleOAPIPublicIPLinkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIPublicIPLinkConfig(omi, "tinav4.c2r2p2", utils.GetRegion(), keypair, sgId),
+				Config: testAccOutscaleOAPIPublicIPLinkConfig(omi, "tinav4.c2r2p2", utils.GetRegion(), keypair),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPLExists(
-						"outscale_public_ip.ip", &a),
+						"outscale_public_ip.ip_link", &a),
 					testAccCheckOutscaleOAPIPublicIPLinkExists(
 						"outscale_public_ip_link.by_public_ip", &a),
 				),
@@ -211,18 +210,9 @@ func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oscgo.PublicIp) reso
 	}
 }
 
-func testAccOutscaleOAPIPublicIPLinkConfig(omi, vmType, region, keypair, sgId string) string {
+func testAccOutscaleOAPIPublicIPLinkConfig(omi, vmType, region, keypair string) string {
 	return fmt.Sprintf(`
-		resource "outscale_net" "net" {
-			ip_range = "10.0.0.0/16"
-
-			tags {
-				key = "Name"
-				value = "testacc-security-group-rs"
-			}
-		}
-
-		resource "outscale_security_group" "sg" {
+		resource "outscale_security_group" "sg_link" {
 			security_group_name = "%[4]s"
 			description         = "Used in the terraform acceptance tests"
 
@@ -230,23 +220,21 @@ func testAccOutscaleOAPIPublicIPLinkConfig(omi, vmType, region, keypair, sgId st
 				key   = "Name"
 				value = "tf-acc-test"
 			}
-
-			net_id = "${outscale_net.net.id}"
 		}
 
-		resource "outscale_vm" "vm" {
+		resource "outscale_vm" "vm_link" {
 			image_id                 = "%[1]s"
 			vm_type                  = "%[2]s"
 			keypair_name             = "%[4]s"
-			security_group_ids       = ["%[5]s"]
+			security_group_ids       = [outscale_security_group.sg_link.security_group_id]
 			placement_subregion_name = "%[3]sa"
 		}
 		
-		resource "outscale_public_ip" "ip" {}
+		resource "outscale_public_ip" "ip_link" {}
 		
 		resource "outscale_public_ip_link" "by_public_ip" {
-			public_ip = "${outscale_public_ip.ip.public_ip}"
-			vm_id     = "${outscale_vm.vm.id}"
+			public_ip = outscale_public_ip.ip_link.public_ip
+			vm_id     = outscale_vm.vm_link.id
 		}
-	`, omi, vmType, region, keypair, sgId)
+	`, omi, vmType, region, keypair)
 }

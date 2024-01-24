@@ -61,14 +61,34 @@ resource "outscale_load_balancer" "barTach" {
   }
 }
 
+resource "outscale_security_group" "sg_lb1" {
+  security_group_name = "terraform_test_lb01"
+  description         = "Used in the terraform acceptance tests"
+  tags {
+	key   = "Name"
+	value = "tf-acc-test"
+	}
+}
+
 resource "outscale_vm" "foo1" {
   image_id = "%[3]s"
   vm_type = "tinav4.c1r1p1"
+  security_group_ids   = [outscale_security_group.sg_lb1.security_group_id]
+}
+
+resource "outscale_security_group" "sg_lb02" {
+  security_group_name = "terraform_test_lb02"
+  description         = "Used in the terraform acceptance tests"
+  tags {
+	key   = "Name"
+	value = "tf-acc-test"
+	}
 }
 
 resource "outscale_vm" "foo2" {
   image_id = "%[3]s"
   vm_type = "tinav4.c1r1p1"
+  security_group_ids   = [outscale_security_group.sg_lb02.security_group_id]
 }
 
 resource "outscale_load_balancer_vms" "foo1" {
@@ -91,14 +111,34 @@ resource "outscale_load_balancer" "barTach" {
   }
 }
 
+resource "outscale_security_group" "sg_lb1" {
+  security_group_name = "terraform_test_lb01"
+  description         = "Used in the terraform acceptance tests"
+  tags {
+	key   = "Name"
+	value = "tf-acc-test"
+	}
+}
+
 resource "outscale_vm" "foo1" {
   image_id = "%[2]s"
   vm_type = "tinav4.c1r1p1"
+  security_group_ids   = [outscale_security_group.sg_lb1.security_group_id]
+}
+
+resource "outscale_security_group" "sg_lb02" {
+  security_group_name = "terraform_test_lb02"
+  description         = "Used in the terraform acceptance tests"
+  tags {
+	key   = "Name"
+	value = "tf-acc-test"
+	}
 }
 
 resource "outscale_vm" "foo2" {
   image_id = "%[2]s"
   vm_type = "tinav4.c1r1p1"
+  security_group_ids   = [outscale_security_group.sg_lb02.security_group_id]
 }
 
 resource "outscale_load_balancer_vms" "foo1" {
@@ -121,14 +161,34 @@ resource "outscale_load_balancer" "barTach" {
   }
 }
 
+resource "outscale_security_group" "sg_lb1" {
+  security_group_name = "terraform_test_lb01"
+  description         = "Used in the terraform acceptance tests"
+  tags {
+	key   = "Name"
+	value = "tf-acc-test"
+	}
+}
+
 resource "outscale_vm" "foo1" {
   image_id = "%[2]s"
   vm_type = "tinav4.c1r1p1"
+  security_group_ids   = [outscale_security_group.sg_lb1.security_group_id]
+}
+
+resource "outscale_security_group" "sg_lb02" {
+  security_group_name = "terraform_test_lb02"
+  description         = "Used in the terraform acceptance tests"
+  tags {
+	key   = "Name"
+	value = "tf-acc-test"
+	}
 }
 
 resource "outscale_vm" "foo2" {
   image_id = "%[2]s"
   vm_type = "tinav4.c1r1p1"
+  security_group_ids   = [outscale_security_group.sg_lb02.security_group_id]
 }
 
 resource "outscale_load_balancer_vms" "foo1" {

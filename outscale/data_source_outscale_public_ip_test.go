@@ -128,10 +128,21 @@ const testAccDataSourceOutscaleOAPIPublicIPConfigWithTags = `
 
 func testAccDataSourceOutscaleOAPIPublicIPConfigwithVM(omi, region string) string {
 	return fmt.Sprintf(`
+		resource "outscale_security_group" "sg_Pbip" {
+			security_group_name = "sg_data_ip"
+			description         = "Used in the terraform acceptance tests"
+
+			tags {
+				key   = "Name"
+				value = "tf-acc-test"
+			}
+		}
+
 		resource "outscale_vm" "outscale_vm" {
 			image_id     = "%s"
 			vm_type      = "tinav4.c2r2p2"
 			keypair_name = "terraform-basic"
+			security_group_ids = [outscale_security_group.sg_Pbip.security_group_id]
 		}
 
 		resource "outscale_public_ip" "outscale_public_ip" {

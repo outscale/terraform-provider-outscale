@@ -31,16 +31,27 @@ func TestAccVMS_DataSource_basic(t *testing.T) {
 
 func testAccOAPIVMSDataSourceConfig(omi, vmType string) string {
 	return fmt.Sprintf(`
-		resource "outscale_vm" "basic" {
+		resource "outscale_security_group" "sg_vms" {
+			security_group_name = "sg_vms_test"
+			description         = "Used in the terraform acceptance tests"
+
+			tags {
+				key   = "Name"
+				value = "tf-acc-test"
+			}
+		}
+
+		resource "outscale_vm" "databasic" {
 			image_id			= "%s"
 			vm_type				= "%s"
 			keypair_name	= "terraform-basic"
+			security_group_ids = [outscale_security_group.sg_vms.security_group_id]
 		}
 
 		data "outscale_vms" "basic_web" {
 			filter {
 				name   = "vm_ids"
-				values = [outscale_vm.basic.id]
+				values = [outscale_vm.databasic.id]
 			}
 		}`, omi, vmType)
 }

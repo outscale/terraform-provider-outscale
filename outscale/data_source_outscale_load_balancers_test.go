@@ -17,9 +17,8 @@ func TestAccOthers_LBUs_basic(t *testing.T) {
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
-		IDRefreshName: "outscale_load_balancer.bars",
-		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscaleOAPILBUDestroy,
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckOutscaleOAPILBUDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDSOutscaleOAPILBsUConfig(region, numLbu),
