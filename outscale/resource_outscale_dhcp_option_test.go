@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/openlyinc/pointy"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -122,10 +121,9 @@ func TestAccNet_withDhcpOptional(t *testing.T) {
 	domainName := fmt.Sprintf("%s.compute%s.internal", utils.GetRegion(), acctest.RandString(3))
 	domainServers := []string{"192.168.12.12", "192.168.12.132"}
 
-	tags := &oscgo.Tag{
-		Key:   pointy.String(acctest.RandomWithPrefix("name")),
-		Value: pointy.String(acctest.RandomWithPrefix("test-MZI")),
-	}
+	tags := &oscgo.Tag{}
+	tags.SetKey(acctest.RandomWithPrefix("name"))
+	tags.SetValue(acctest.RandomWithPrefix("test-MZI"))
 
 	domainNameUpdated := fmt.Sprintf("%s.compute%s.internal", utils.GetRegion(), acctest.RandString(3))
 

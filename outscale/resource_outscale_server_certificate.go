@@ -8,7 +8,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/openlyinc/pointy"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/spf13/cast"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
@@ -88,14 +87,14 @@ func resourceOutscaleOAPIServerCertificateCreate(d *schema.ResourceData, meta in
 		return fmt.Errorf("[DEBUG] Error 'private_key' field is require for server certificate creation")
 	}
 
-	if v, ok := d.GetOk("chain"); ok {
-		req.Chain = pointy.String(v.(string))
+	if _, ok := d.GetOk("chain"); ok {
+		req.SetChain(d.Get("chain").(string))
 	}
-	if v, ok := d.GetOk("dry_run"); ok {
-		req.DryRun = pointy.Bool(v.(bool))
+	if _, ok := d.GetOk("dry_run"); ok {
+		req.SetDryRun(d.Get("dry_run").(bool))
 	}
-	if v, ok := d.GetOk("path"); ok {
-		req.Path = pointy.String(v.(string))
+	if _, ok := d.GetOk("path"); ok {
+		req.SetPath(d.Get("path").(string))
 	}
 	var resp oscgo.CreateServerCertificateResponse
 	var err error
@@ -168,16 +167,16 @@ func resourceOutscaleOAPIServerCertificateRead(d *schema.ResourceData, meta inte
 func resourceOutscaleOAPIServerCertificateUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	oldName, newName := d.GetChange("name")
+	oldName, _ := d.GetChange("name")
 	req := oscgo.UpdateServerCertificateRequest{
 		Name: oldName.(string),
 	}
 
 	if d.HasChange("name") {
-		req.NewName = pointy.String(newName.(string))
+		req.SetNewName(d.Get("name").(string))
 	}
 	if d.HasChange("path") {
-		req.NewPath = pointy.String(d.Get("path").(string))
+		req.SetNewPath(d.Get("path").(string))
 	}
 
 	var err error

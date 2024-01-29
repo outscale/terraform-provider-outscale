@@ -15,7 +15,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/openlyinc/pointy"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
@@ -291,11 +290,7 @@ func resourceOutscaleOAPINicCreate(d *schema.ResourceData, meta interface{}) err
 	if err := d.Set("private_ip", ""); err != nil {
 		return err
 	}
-
-	log.Printf("[INFO] ENI ID: %s", d.Id())
-
 	return resourceOutscaleOAPINicRead(d, meta)
-
 }
 
 // Read OAPINic
@@ -327,7 +322,6 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 
 	if err != nil {
 		if strings.Contains(err.Error(), "Unable to find Nic") {
-			// The ENI is gone now, so just remove it from the state
 			d.SetId("")
 			return nil
 		}
@@ -367,11 +361,6 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 	bb["vm_id"] = att.GetVmId()
 	bb["vm_account_id"] = att.GetVmAccountId()
 	bb["state"] = att.GetState()
-
-	//aa[0] = bb
-	// if err := d.Set("link_nic", aa); err != nil {
-	// 	return err
-	// }
 
 	if err := d.Set("link_nic", bb); err != nil {
 		return err
@@ -619,12 +608,11 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 
 			// Surplus of IPs, add the diff
 			if diff > 0 {
-				dif := int32(diff)
 				input := oscgo.LinkPrivateIpsRequest{
-					NicId:                   d.Id(),
-					SecondaryPrivateIpCount: pointy.Int32(dif),
+					NicId: d.Id(),
 				}
-				// _, err := conn.VM.AssignPrivateIpAddresses(input)
+
+				input.SetSecondaryPrivateIpCount(int32(diff))
 
 				err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 					var err error
@@ -677,15 +665,13 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 		if err != nil {
 			return fmt.Errorf("Failure updating ENI: %s", err)
 		}
-
 	}
 
 	if d.HasChange("description") {
 		request := oscgo.UpdateNicRequest{
-			NicId:       d.Id(),
-			Description: pointy.String(d.Get("description").(string)),
+			NicId: d.Id(),
 		}
-
+		request.SetDescription(d.Get("description").(string))
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 			_, httpResp, err := conn.NicApi.UpdateNic(context.Background()).UpdateNicRequest(request).Execute()

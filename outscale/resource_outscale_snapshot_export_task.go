@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/openlyinc/pointy"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
@@ -142,10 +141,8 @@ func resourceOAPISnapshotExportTaskCreate(d *schema.ResourceData, meta interface
 
 			if len(a) > 0 {
 				w := a[0].(map[string]interface{})
-				et.OsuApiKey = &oscgo.OsuApiKey{
-					ApiKeyId:  pointy.String(w["api_key_id"].(string)),
-					SecretKey: pointy.String(w["secret_key"].(string)),
-				}
+				et.OsuApiKey.SetApiKeyId(w["api_key_id"].(string))
+				et.OsuApiKey.SetSecretKey(w["secret_key"].(string))
 			}
 		}
 		request.SetOsuExport(et)

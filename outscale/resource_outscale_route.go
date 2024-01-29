@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/openlyinc/pointy"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
@@ -286,39 +285,22 @@ func resourceOutscaleOAPIRouteUpdate(d *schema.ResourceData, meta interface{}) e
 		return errors.New("no target found for the update")
 	}
 
-	replaceOpts := oscgo.UpdateRouteRequest{}
+	replaceOpts := oscgo.UpdateRouteRequest{
+		RouteTableId:       d.Get("route_table_id").(string),
+		DestinationIpRange: d.Get("destination_ip_range").(string),
+	}
 
 	switch target {
 	case "gateway_id":
-		replaceOpts = oscgo.UpdateRouteRequest{
-			RouteTableId:       d.Get("route_table_id").(string),
-			DestinationIpRange: d.Get("destination_ip_range").(string),
-			GatewayId:          pointy.String(d.Get("gateway_id").(string)),
-		}
+		replaceOpts.SetGatewayId(d.Get("gateway_id").(string))
 	case "nat_service_id":
-		replaceOpts = oscgo.UpdateRouteRequest{
-			RouteTableId:       d.Get("route_table_id").(string),
-			DestinationIpRange: d.Get("destination_ip_range").(string),
-			NatServiceId:       pointy.String(d.Get("nat_service_id").(string)),
-		}
+		replaceOpts.SetNatServiceId(d.Get("nat_service_id").(string))
 	case "vm_id":
-		replaceOpts = oscgo.UpdateRouteRequest{
-			RouteTableId:       d.Get("route_table_id").(string),
-			DestinationIpRange: d.Get("destination_ip_range").(string),
-			VmId:               pointy.String(d.Get("vm_id").(string)),
-		}
+		replaceOpts.SetVmId(d.Get("vm_id").(string))
 	case "nic_id":
-		replaceOpts = oscgo.UpdateRouteRequest{
-			RouteTableId:       d.Get("route_table_id").(string),
-			DestinationIpRange: d.Get("destination_ip_range").(string),
-			NicId:              pointy.String(d.Get("nic_id").(string)),
-		}
+		replaceOpts.SetNicId(d.Get("nic_id").(string))
 	case "net_peering_id":
-		replaceOpts = oscgo.UpdateRouteRequest{
-			RouteTableId:       d.Get("route_table_id").(string),
-			DestinationIpRange: d.Get("destination_ip_range").(string),
-			NetPeeringId:       pointy.String(d.Get("net_peering_id").(string)),
-		}
+		replaceOpts.SetNetPeeringId(d.Get("net_peering_id").(string))
 	default:
 		return fmt.Errorf("An invalid target type specified: %s", target)
 	}

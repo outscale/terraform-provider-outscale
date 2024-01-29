@@ -7,9 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/openlyinc/pointy"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
-	"github.com/spf13/cast"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -291,10 +289,7 @@ func resourceOAPIVolumeLinkDelete(d *schema.ResourceData, meta interface{}) erro
 	iID := d.Get("vm_id").(string)
 
 	opts := oscgo.UnlinkVolumeRequest{
-		//VmId:       iID,
-		//DeviceName: d.Get("device_name").(string), //Removed due oAPI Bug.
-		ForceUnlink: pointy.Bool(cast.ToBool(d.Get("force_unlink"))),
-		VolumeId:    vID,
+		VolumeId: vID,
 	}
 
 	force, forceOk := d.GetOk("force_unlink")
