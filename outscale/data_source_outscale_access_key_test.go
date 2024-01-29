@@ -8,7 +8,7 @@ import (
 
 func TestAccOthers_DatasourceAccessKey_basic(t *testing.T) {
 	t.Parallel()
-	dataSourceName := "outscale_access_key.outscale_access_key"
+	dataSourceName := "outscale_access_key.access_key_basic"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -30,7 +30,7 @@ func TestAccOthers_DatasourceAccessKey_basic(t *testing.T) {
 
 func TestAccOthers_AccessKey_withFilters(t *testing.T) {
 	t.Parallel()
-	dataSourceName := "outscale_access_key.outscale_access_key"
+	dataSourceName := "outscale_access_key.keyFilters"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -52,22 +52,22 @@ func TestAccOthers_AccessKey_withFilters(t *testing.T) {
 
 func testAccClientAccessKeyDataSourceBasic() string {
 	return `
-		resource "outscale_access_key" "outscale_access_key" {}
+		resource "outscale_access_key" "access_key_basic" {}
 
-		data "outscale_access_key" "outscale_access_key" {
-			access_key_id = outscale_access_key.outscale_access_key.id
+		data "outscale_access_key" "access_keyBasic" {
+			access_key_id = outscale_access_key.access_key_basic.id
 		}
 	`
 }
 
 func testAccClientAccessKeyDataSourceWithFilters() string {
 	return `
-		resource "outscale_access_key" "outscale_access_key" {}
+		resource "outscale_access_key" "keyFilters" {}
 
-		data "outscale_access_key" "outscale_access_key" {
+		data "outscale_access_key" "access_key_filters" {
 			filter {
 				name = "access_key_ids"
-				values = [outscale_access_key.outscale_access_key.id]
+				values = [outscale_access_key.keyFilters.id]
 			}
 		}
 	`

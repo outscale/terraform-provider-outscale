@@ -7,7 +7,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/openlyinc/pointy"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/spf13/cast"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
@@ -58,8 +57,8 @@ func resourceOutscaleOAPICaCreate(d *schema.ResourceData, meta interface{}) erro
 	req := oscgo.CreateCaRequest{
 		CaPem: d.Get("ca_pem").(string),
 	}
-	if v, ok := d.GetOk("description"); ok {
-		req.Description = pointy.String(v.(string))
+	if _, ok := d.GetOk("description"); ok {
+		req.SetDescription(d.Get("description").(string))
 	}
 
 	var resp oscgo.CreateCaResponse
@@ -130,8 +129,7 @@ func resourceOutscaleOAPICaUpdate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	if d.HasChange("description") {
-		_, des := d.GetChange("description")
-		req.Description = pointy.String(des.(string))
+		req.SetDescription(d.Get("description").(string))
 	}
 
 	var err error

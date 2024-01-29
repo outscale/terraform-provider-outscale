@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/openlyinc/pointy"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/spf13/cast"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
@@ -98,22 +97,22 @@ func resourceOutscaleOAPIOutboundRuleCreate(d *schema.ResourceData, meta interfa
 	}
 
 	if v, ok := d.GetOkExists("from_port_range"); ok {
-		req.FromPortRange = pointy.Int32(cast.ToInt32(v))
+		req.SetFromPortRange(cast.ToInt32(v))
 	}
 	if v, ok := d.GetOkExists("to_port_range"); ok {
-		req.ToPortRange = pointy.Int32(cast.ToInt32(v))
+		req.SetToPortRange(cast.ToInt32(v))
 	}
 	if v, ok := d.GetOk("ip_protocol"); ok {
-		req.IpProtocol = pointy.String(v.(string))
+		req.SetIpProtocol(v.(string))
 	}
 	if v, ok := d.GetOk("ip_range"); ok {
-		req.IpRange = pointy.String(v.(string))
+		req.SetIpRange(v.(string))
 	}
 	if v, ok := d.GetOk("security_group_account_id_to_link"); ok {
-		req.SecurityGroupAccountIdToLink = pointy.String(v.(string))
+		req.SetSecurityGroupAccountIdToLink(v.(string))
 	}
 	if v, ok := d.GetOk("security_group_name_to_link"); ok {
-		req.SecurityGroupNameToLink = pointy.String(v.(string))
+		req.SetSecurityGroupNameToLink(v.(string))
 	}
 
 	var err error
@@ -170,16 +169,16 @@ func resourceOutscaleOAPIOutboundRuleDelete(d *schema.ResourceData, meta interfa
 	}
 
 	if v, ok := d.GetOkExists("from_port_range"); ok {
-		req.FromPortRange = pointy.Int32(cast.ToInt32(v))
+		req.SetFromPortRange(cast.ToInt32(v))
 	}
 	if v, ok := d.GetOkExists("to_port_range"); ok {
-		req.ToPortRange = pointy.Int32(cast.ToInt32(v))
+		req.SetToPortRange(cast.ToInt32(v))
 	}
 	if v, ok := d.GetOk("ip_protocol"); ok {
-		req.IpProtocol = pointy.String(v.(string))
+		req.SetIpProtocol(v.(string))
 	}
 	if v, ok := d.GetOk("ip_range"); ok {
-		req.IpRange = pointy.String(v.(string))
+		req.SetIpRange(v.(string))
 	}
 
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -215,13 +214,13 @@ func expandRules(d *schema.ResourceData, conn *oscgo.APIClient) *[]oscgo.Securit
 				rules[i].ServiceIds = utils.InterfaceSliceToStringSlicePtr(r["service_ids"].([]interface{}))
 			}
 			if v, ok := r["from_port_range"]; ok {
-				rules[i].FromPortRange = pointy.Int32(cast.ToInt32(v))
+				rules[i].SetFromPortRange(cast.ToInt32(v))
 			}
 			if v, ok := r["ip_protocol"]; ok && v != "" {
-				rules[i].IpProtocol = pointy.String(cast.ToString(v))
+				rules[i].SetIpProtocol(cast.ToString(v))
 			}
 			if v, ok := r["to_port_range"]; ok {
-				rules[i].ToPortRange = pointy.Int32(cast.ToInt32(v))
+				rules[i].SetToPortRange(cast.ToInt32(v))
 			}
 		}
 		return &rules
@@ -266,16 +265,16 @@ func expandSecurityGroupsMembers(gps []interface{}, conn *oscgo.APIClient) *[]os
 		groups[i] = oscgo.SecurityGroupsMember{}
 
 		if v, ok := g["account_id"]; ok && v != "" {
-			groups[i].AccountId = pointy.String(cast.ToString(v))
+			groups[i].SetAccountId(cast.ToString(v))
 		}
 		if v, ok := g["security_group_name"]; ok && v != "" {
-			groups[i].SecurityGroupName = pointy.String(cast.ToString(v))
+			groups[i].SetSecurityGroupName(cast.ToString(v))
 			if sgID := getSgIdinVPC(conn, cast.ToString(v)); sgID != "" {
-				groups[i].SecurityGroupId = pointy.String(cast.ToString(sgID))
+				groups[i].SetSecurityGroupId(cast.ToString(sgID))
 			}
 		}
 		if v, ok := g["security_group_id"]; ok && v != "" {
-			groups[i].SecurityGroupId = pointy.String(cast.ToString(v))
+			groups[i].SetSecurityGroupId(cast.ToString(v))
 		}
 	}
 	return &groups

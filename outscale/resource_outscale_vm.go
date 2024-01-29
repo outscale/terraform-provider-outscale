@@ -925,100 +925,56 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	}
 
+	updateRequest := oscgo.UpdateVmRequest{VmId: id}
+	mustStartVM := false
 	if !d.IsNewResource() &&
 		(d.HasChange("vm_type") || d.HasChange("user_data") ||
 			d.HasChange("performance") || d.HasChange("nested_virtualization")) {
+
 		if err := stopVM(id, conn, d.Timeout(schema.TimeoutUpdate)); err != nil {
 			return err
 		}
-	}
+		mustStartVM = true
 
-	if d.HasChange("vm_type") && !d.IsNewResource() {
-		opts := oscgo.UpdateVmRequest{VmId: id}
-		opts.SetVmType(d.Get("vm_type").(string))
-
-		if err := updateVmAttr(conn, opts); err != nil {
-			return err
+		if d.HasChange("vm_type") {
+			updateRequest.SetVmType(d.Get("vm_type").(string))
 		}
-	}
 
-	if d.HasChange("user_data") && !d.IsNewResource() {
-		opts := oscgo.UpdateVmRequest{VmId: id}
-		opts.SetUserData(d.Get("user_data").(string))
-
-		if err := updateVmAttr(conn, opts); err != nil {
-			return err
+		if d.HasChange("user_data") {
+			updateRequest.SetUserData(d.Get("user_data").(string))
 		}
-	}
 
-	if d.HasChange("performance") && !d.IsNewResource() {
-		opts := oscgo.UpdateVmRequest{VmId: id}
-		opts.SetPerformance(d.Get("performance").(string))
-
-		if err := updateVmAttr(conn, opts); err != nil {
-			return err
+		if d.HasChange("performance") {
+			updateRequest.SetPerformance(d.Get("performance").(string))
 		}
-	}
 
-	if d.HasChange("nested_virtualization") && !d.IsNewResource() {
-		opts := oscgo.UpdateVmRequest{VmId: id}
-		opts.SetNestedVirtualization(d.Get("nested_virtualization").(bool))
-
-		if err := updateVmAttr(conn, opts); err != nil {
-			return err
+		if d.HasChange("nested_virtualization") {
+			updateRequest.SetNestedVirtualization(d.Get("nested_virtualization").(bool))
 		}
 	}
 
 	if d.HasChange("deletion_protection") && !d.IsNewResource() {
-		opts := oscgo.UpdateVmRequest{VmId: id}
-		opts.SetDeletionProtection(d.Get("deletion_protection").(bool))
-
-		if err := updateVmAttr(conn, opts); err != nil {
-			return err
-		}
+		updateRequest.SetDeletionProtection(d.Get("deletion_protection").(bool))
 	}
 
 	if d.HasChange("keypair_name") && !d.IsNewResource() {
-		opts := oscgo.UpdateVmRequest{VmId: id}
-		opts.SetKeypairName(d.Get("keypair_name").(string))
-		if err := updateVmAttr(conn, opts); err != nil {
-			return err
-		}
+		updateRequest.SetKeypairName(d.Get("keypair_name").(string))
 	}
 
 	if d.HasChange("security_group_ids") && !d.IsNewResource() {
-		opts := oscgo.UpdateVmRequest{VmId: id}
-
-		opts.SetSecurityGroupIds(utils.SetToStringSlice(d.Get("security_group_ids").(*schema.Set)))
-		if err := updateVmAttr(conn, opts); err != nil {
-			return err
-		}
+		updateRequest.SetSecurityGroupIds(utils.SetToStringSlice(d.Get("security_group_ids").(*schema.Set)))
 	}
 
 	if d.HasChange("security_group_names") && !d.IsNewResource() {
-		opts := oscgo.UpdateVmRequest{VmId: id}
-		opts.SetSecurityGroupIds(utils.InterfaceSliceToStringSlice(d.Get("security_group_names").([]interface{})))
-		if err := updateVmAttr(conn, opts); err != nil {
-			return err
-		}
+		updateRequest.SetSecurityGroupIds(utils.InterfaceSliceToStringSlice(d.Get("security_group_names").([]interface{})))
 	}
 
 	if d.HasChange("vm_initiated_shutdown_behavior") && !d.IsNewResource() {
-		opts := oscgo.UpdateVmRequest{VmId: id}
-		opts.SetVmInitiatedShutdownBehavior(d.Get("vm_initiated_shutdown_behavior").(string))
-
-		if err := updateVmAttr(conn, opts); err != nil {
-			return err
-		}
+		updateRequest.SetVmInitiatedShutdownBehavior(d.Get("vm_initiated_shutdown_behavior").(string))
 	}
 
 	if d.HasChange("is_source_dest_checked") && !d.IsNewResource() {
-		opts := oscgo.UpdateVmRequest{VmId: id}
-		opts.SetIsSourceDestChecked(d.Get("is_source_dest_checked").(bool))
-
-		if err := updateVmAttr(conn, opts); err != nil {
-			return err
-		}
+		updateRequest.SetIsSourceDestChecked(d.Get("is_source_dest_checked").(bool))
 	}
 
 	if d.HasChange("block_device_mappings") && !d.IsNewResource() {
@@ -1056,18 +1012,15 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 
 			mappings = append(mappings, mapping)
 		}
-
-		opts := oscgo.UpdateVmRequest{VmId: id}
-
-		opts.SetBlockDeviceMappings(mappings)
-
-		if err := updateVmAttr(conn, opts); err != nil {
-			return utils.GetErrorResponse(err)
-		}
+		updateRequest.SetBlockDeviceMappings(mappings)
 	}
 
 	if err := setOSCAPITags(conn, d); err != nil {
 		return err
+	}
+
+	if err := updateVmAttr(conn, updateRequest); err != nil {
+		return utils.GetErrorResponse(err)
 	}
 
 	if onlyTags {
@@ -1079,6 +1032,7 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 		if upState != "stopped" && upState != "running" {
 			return fmt.Errorf("Error: state should be `stopped or running`")
 		}
+		mustStartVM = false
 		if upState == "stopped" {
 			if err := stopVM(id, conn, d.Timeout(schema.TimeoutUpdate)); err != nil {
 				return err
@@ -1087,6 +1041,11 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 			if err := startVM(id, conn, d.Timeout(schema.TimeoutUpdate)); err != nil {
 				return err
 			}
+		}
+	}
+	if mustStartVM {
+		if err := startVM(id, conn, d.Timeout(schema.TimeoutUpdate)); err != nil {
+			return err
 		}
 	}
 
