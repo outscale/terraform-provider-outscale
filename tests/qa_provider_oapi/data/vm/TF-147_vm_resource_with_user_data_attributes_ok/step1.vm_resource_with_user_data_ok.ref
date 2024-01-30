@@ -29,6 +29,33 @@
         },
         {
             "mode": "managed",
+            "type": "outscale_security_group",
+            "name": "sg_usd",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-1##",
+                        "description": "test vms",
+                        "id": "##id-2##",
+                        "inbound_rules": [],
+                        "net_id": "",
+                        "outbound_rules": [],
+                        "remove_default_outbound_rule": false,
+                        "request_id": "########",
+                        "security_group_id": "##id-2##",
+                        "security_group_name": "test-sgusd",
+                        "tag": null,
+                        "tags": []
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
             "type": "outscale_vm",
             "name": "outscale_vm",
             "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
@@ -45,7 +72,7 @@
                                     "delete_on_vm_deletion": "true",
                                     "link_date": "########",
                                     "state": "attached",
-                                    "volume_id": "##id-1##"
+                                    "volume_id": "##id-3##"
                                 },
                                 "device_name": "/dev/sda1"
                             }
@@ -56,16 +83,16 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-2##",
-                        "image_id": "##id-3##",
+                        "id": "##id-4##",
+                        "image_id": "##id-5##",
                         "is_source_dest_checked": true,
                         "keypair_name": "KP-TF147",
                         "launch_number": 0,
                         "nested_virtualization": false,
-                        "net_id": "##id-4##",
+                        "net_id": "##id-6##",
                         "nics": [
                             {
-                                "account_id": "##id-5##",
+                                "account_id": "##id-1##",
                                 "delete_on_vm_deletion": true,
                                 "description": "Primary network interface",
                                 "device_number": 0,
@@ -74,14 +101,14 @@
                                     {
                                         "delete_on_vm_deletion": true,
                                         "device_number": "0",
-                                        "link_nic_id": "##id-6##",
+                                        "link_nic_id": "##id-7##",
                                         "state": "attached"
                                     }
                                 ],
                                 "link_public_ip": [],
                                 "mac_address": "########",
-                                "net_id": "##id-4##",
-                                "nic_id": "##id-7##",
+                                "net_id": "##id-6##",
+                                "nic_id": "##id-8##",
                                 "private_dns_name": "########",
                                 "private_ips": [
                                     {
@@ -93,12 +120,12 @@
                                 ],
                                 "secondary_private_ip_count": 0,
                                 "security_group_ids": [
-                                    "##id-8##"
+                                    "##id-2##"
                                 ],
                                 "security_groups": [
                                     {
-                                        "security_group_id": "##id-8##",
-                                        "security_group_name": "default"
+                                        "security_group_id": "##id-2##",
+                                        "security_group_name": "test-sgusd"
                                     }
                                 ],
                                 "state": "in-use",
@@ -111,7 +138,7 @@
                         "placement_tenancy": "default",
                         "primary_nic": [
                             {
-                                "account_id": "##id-5##",
+                                "account_id": "##id-1##",
                                 "delete_on_vm_deletion": true,
                                 "description": "Primary network interface",
                                 "device_number": 0,
@@ -120,14 +147,14 @@
                                     {
                                         "delete_on_vm_deletion": true,
                                         "device_number": "0",
-                                        "link_nic_id": "##id-6##",
+                                        "link_nic_id": "##id-7##",
                                         "state": "attached"
                                     }
                                 ],
                                 "link_public_ip": [],
                                 "mac_address": "########",
-                                "net_id": "##id-4##",
-                                "nic_id": "##id-7##",
+                                "net_id": "##id-6##",
+                                "nic_id": "##id-8##",
                                 "private_dns_name": "########",
                                 "private_ips": [
                                     {
@@ -139,12 +166,12 @@
                                 ],
                                 "secondary_private_ip_count": 0,
                                 "security_group_ids": [
-                                    "##id-8##"
+                                    "##id-2##"
                                 ],
                                 "security_groups": [
                                     {
-                                        "security_group_id": "##id-8##",
-                                        "security_group_name": "default"
+                                        "security_group_id": "##id-2##",
+                                        "security_group_name": "test-sgusd"
                                     }
                                 ],
                                 "state": "in-use",
@@ -163,12 +190,16 @@
                         "reservation_id": "##id-10##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
-                        "security_group_ids": null,
-                        "security_group_names": null,
+                        "security_group_ids": [
+                            "##id-2##"
+                        ],
+                        "security_group_names": [
+                            "test-sgusd"
+                        ],
                         "security_groups": [
                             {
-                                "security_group_id": "##id-8##",
-                                "security_group_name": "default"
+                                "security_group_id": "##id-2##",
+                                "security_group_name": "test-sgusd"
                             }
                         ],
                         "state": "running",
@@ -182,14 +213,15 @@
                         ],
                         "timeouts": null,
                         "user_data": "LS0tLS1CRUdJTiBPVVRTQ0FMRSBTRUNUSU9OLS0tLS0KCnByaXZhdGVfb25seT10cnVlCgotLS0tLUVORCBPVVRTQ0FMRSBTRUNUSU9OLS0tLS0=",
-                        "vm_id": "##id-2##",
+                        "vm_id": "##id-4##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
                     "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
-                        "outscale_keypair.my_keypair"
+                        "outscale_keypair.my_keypair",
+                        "outscale_security_group.sg_usd"
                     ]
                 }
             ]

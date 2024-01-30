@@ -52,6 +52,7 @@ resource "outscale_nic" "outscale_nic" {
 
 resource "outscale_nic" "outscale_nic_2" {
     subnet_id = outscale_subnet.subnet01.subnet_id
+    security_group_ids = [outscale_security_group.security_group01.security_group_id]
     private_ips {
       is_primary = true
       private_ip = "10.0.0.41"
@@ -68,6 +69,7 @@ resource "outscale_nic" "outscale_nic_2" {
 
 resource "outscale_nic" "outscale_nic_3" {
     subnet_id = outscale_subnet.subnet02.subnet_id
+    security_group_ids = [outscale_security_group.security_group01.security_group_id]
     private_ips {
       is_primary = true
       private_ip = "10.0.2.21"
@@ -82,13 +84,11 @@ resource "outscale_nic" "outscale_nic_3" {
     }
 }
 
-
 resource "outscale_nic_link" "nic_link01" {
     device_number = "1"
     vm_id         = outscale_vm.vm01.vm_id
     nic_id        = outscale_nic.outscale_nic.nic_id
 }
-
 
 resource "outscale_nic_link" "nic_link02" {
     device_number = "2"
@@ -100,17 +100,21 @@ data "outscale_nic" "nic-0" {
     filter {
         name = "nic_ids"
         values = [outscale_nic.outscale_nic.nic_id]
-    }    
+    }
 }
 
 data "outscale_nic" "nic-1" {
     filter {
-        name = "descriptions"
+        name   = "descriptions"
         values = [outscale_nic.outscale_nic.description]
     }
-filter {
-        name = "states"
+    filter {
+        name   = "states"
         values = [outscale_nic.outscale_nic.state]
+    }
+    filter {
+        name   = "private_ips_primary_ip"
+        values = ["10.0.0.45"]
     }
 }
 
@@ -125,28 +129,33 @@ data "outscale_nic" "nic-2-main" {
     }
 }
 
-#data "outscale_nic" "nic-3" {
-#    filter {
-#        name = "private_ips_primary_ip"
-#        values = ["10.0.0.41"]
-#    } 
-#depends_on=[outscale_nic.outscale_nic,outscale_nic.outscale_nic_2,outscale_nic.outscale_nic_3]
-#}
-
 data "outscale_nic" "nic-4" {
     filter {
-        name = "private_ips_private_ips"
+        name   = "private_ips_private_ips"
         values = ["10.0.0.42"]
     }
-depends_on=[outscale_nic.outscale_nic,outscale_nic.outscale_nic_2,outscale_nic.outscale_nic_3]
+    filter {
+        name   = "Name"
+        values = ["Nic-2"]
+    }
+    depends_on=[outscale_nic.outscale_nic,outscale_nic.outscale_nic_2,outscale_nic.outscale_nic_3]
 }
 
 data "outscale_nic" "nic-5" {
     filter {
-        name = "security_group_ids"
+        name   = "security_group_ids"
         values = [outscale_security_group.security_group01.security_group_id]
     }
-depends_on=[outscale_nic.outscale_nic,outscale_nic.outscale_nic_2,outscale_nic.outscale_nic_3]
+    filter {
+        name   = "Key-2"
+        values = ["value-tags-2"]
+    }
+    filter {
+        name   = "private_ips_private_ips"
+        values = ["10.0.0.46"]
+    }
+
+    depends_on=[outscale_nic.outscale_nic,outscale_nic.outscale_nic_2,outscale_nic.outscale_nic_3]
 }
 
 data "outscale_nic" "nic-6" {
@@ -154,41 +163,14 @@ data "outscale_nic" "nic-6" {
         name = "security_group_names"
         values = [outscale_security_group.security_group01.security_group_name]
     }
-depends_on=[outscale_nic.outscale_nic,outscale_nic.outscale_nic_2,outscale_nic.outscale_nic_3]
+    filter {
+        name   = "private_ips_private_ips"
+        values = ["10.0.2.21"]
+    }
+    filter {
+        name   = "private_ips_primary_ip"
+        values = ["true"]
+    }
+
+    depends_on=[outscale_nic.outscale_nic,outscale_nic.outscale_nic_2,outscale_nic.outscale_nic_3]
 }
-
-#data "outscale_nic" "nic-7" {
-#    filter {
-#        name   = "subnet_ids"
-#        values = [outscale_nic.outscale_nic.subnet_id]
-#    }
-#    filter{
-#        name   = "tag_keys"
-#        values = ["Key:"]
-#    }
-#depends_on=[outscale_nic.outscale_nic,outscale_nic.outscale_nic_2,outscale_nic.outscale_nic_3]
-#}
-
-#data "outscale_nic" "nic-8" {
-#    filter {
-#        name   = "subnet_ids"
-#        values = [outscale_nic.outscale_nic.subnet_id]
-#    }
-#    filter{
-#        name   = "tag_values"
-#        values = [":value-tags"]
-#    }
-#depends_on=[outscale_nic.outscale_nic,outscale_nic.outscale_nic_2,outscale_nic.outscale_nic_3]
-#}
-
-#data "outscale_nic" "nic-9" {
-#    filter {
-#        name   = "subnet_ids"
-#        values = [outscale_nic.outscale_nic.subnet_id]
-#    }
-#    filter{
-#        name   = "tags"
-#        values = ["Key:=:value-tags"]
-#    }
-#depends_on=[outscale_nic.outscale_nic,outscale_nic.outscale_nic_2,outscale_nic.outscale_nic_3]
-#}

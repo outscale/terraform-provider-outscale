@@ -29,6 +29,33 @@
         },
         {
             "mode": "managed",
+            "type": "outscale_security_group",
+            "name": "sg_snap",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-1##",
+                        "description": "test vms",
+                        "id": "##id-2##",
+                        "inbound_rules": [],
+                        "net_id": "",
+                        "outbound_rules": [],
+                        "remove_default_outbound_rule": false,
+                        "request_id": "########",
+                        "security_group_id": "##id-2##",
+                        "security_group_name": "test-sgSnap",
+                        "tag": null,
+                        "tags": []
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
             "type": "outscale_snapshot",
             "name": "my_snapshot",
             "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
@@ -41,17 +68,17 @@
                         "creation_date": "########",
                         "description": "",
                         "file_location": "########",
-                        "id": "##id-2##",
+                        "id": "##id-3##",
                         "permissions_to_create_volume": [],
                         "progress": 100,
                         "request_id": "########",
-                        "snapshot_id": "##id-2##",
+                        "snapshot_id": "##id-3##",
                         "snapshot_size": null,
                         "source_region_name": null,
                         "source_snapshot_id": null,
                         "state": "completed",
                         "tags": [],
-                        "volume_id": "##id-3##",
+                        "volume_id": "##id-4##",
                         "volume_size": 20
                     },
                     "sensitive_attributes": [],
@@ -107,7 +134,7 @@
                                     {
                                         "delete_on_vm_deletion": true,
                                         "iops": 150,
-                                        "snapshot_id": "##id-2##",
+                                        "snapshot_id": "##id-3##",
                                         "volume_size": 22,
                                         "volume_type": "io1"
                                     }
@@ -123,7 +150,7 @@
                                     "delete_on_vm_deletion": "true",
                                     "link_date": "########",
                                     "state": "attached",
-                                    "volume_id": "##id-4##"
+                                    "volume_id": "##id-5##"
                                 },
                                 "device_name": "/dev/sda1"
                             },
@@ -132,7 +159,7 @@
                                     "delete_on_vm_deletion": "false",
                                     "link_date": "########",
                                     "state": "attached",
-                                    "volume_id": "##id-5##"
+                                    "volume_id": "##id-6##"
                                 },
                                 "device_name": "/dev/sdb"
                             },
@@ -141,7 +168,7 @@
                                     "delete_on_vm_deletion": "true",
                                     "link_date": "########",
                                     "state": "attached",
-                                    "volume_id": "##id-6##"
+                                    "volume_id": "##id-7##"
                                 },
                                 "device_name": "/dev/sdc"
                             }
@@ -152,8 +179,8 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-7##",
-                        "image_id": "##id-8##",
+                        "id": "##id-8##",
+                        "image_id": "##id-9##",
                         "is_source_dest_checked": true,
                         "keypair_name": "KP-TF146",
                         "launch_number": 0,
@@ -174,15 +201,17 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-9##",
+                        "reservation_id": "##id-10##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
-                        "security_group_ids": null,
-                        "security_group_names": null,
+                        "security_group_ids": [],
+                        "security_group_names": [
+                            "test-sgSnap"
+                        ],
                         "security_groups": [
                             {
-                                "security_group_id": "##id-10##",
-                                "security_group_name": "default"
+                                "security_group_id": "##id-2##",
+                                "security_group_name": "test-sgSnap"
                             }
                         ],
                         "state": "running",
@@ -191,7 +220,7 @@
                         "tags": [],
                         "timeouts": null,
                         "user_data": "",
-                        "vm_id": "##id-7##",
+                        "vm_id": "##id-8##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
@@ -199,6 +228,7 @@
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
                         "outscale_keypair.my_keypair",
+                        "outscale_security_group.sg_snap",
                         "outscale_snapshot.my_snapshot",
                         "outscale_volume.my_volume"
                     ]
@@ -215,7 +245,7 @@
                     "schema_version": 0,
                     "attributes": {
                         "creation_date": "########",
-                        "id": "##id-3##",
+                        "id": "##id-4##",
                         "iops": 150,
                         "linked_volumes": [],
                         "request_id": "########",
@@ -225,7 +255,7 @@
                         "subregion_name": "eu-west-2a",
                         "tags": [],
                         "termination_snapshot_name": null,
-                        "volume_id": "##id-3##",
+                        "volume_id": "##id-4##",
                         "volume_type": "standard"
                     },
                     "sensitive_attributes": [],

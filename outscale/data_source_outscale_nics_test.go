@@ -40,9 +40,17 @@ func testAccCheckOutscaleOAPINicsDataSourceConfig(subregion string) string {
 			ip_range       = "10.0.0.0/24"
 			net_id         = outscale_net.outscale_net.net_id
 		}
-		
+
+		resource "outscale_security_group" "sg_dataNic" {
+			description         = "sg for terraform tests"
+			security_group_name = "terraform-sg"
+			net_id              = outscale_net.outscale_net.net_id
+		}
+
 		resource "outscale_nic" "outscale_nic" {
 			subnet_id = outscale_subnet.outscale_subnet.subnet_id
+			security_group_ids = [outscale_security_group.sg_dataNic.security_group_id]
+
 		}
 		
 		data "outscale_nics" "outscale_nics" {

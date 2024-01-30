@@ -65,7 +65,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-4##",
-                                        "security_group_name": "default"
+                                        "security_group_name": "terraform-sg-151"
                                     }
                                 ],
                                 "state": "running",
@@ -124,7 +124,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-4##",
-                                        "security_group_name": "default"
+                                        "security_group_name": "terraform-sg-151"
                                     }
                                 ],
                                 "state": "running",
@@ -166,85 +166,39 @@
         },
         {
             "mode": "managed",
+            "type": "outscale_security_group",
+            "name": "security_group_TF151",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-10##",
+                        "description": "test-terraform-TF151",
+                        "id": "##id-4##",
+                        "inbound_rules": [],
+                        "net_id": "",
+                        "outbound_rules": [],
+                        "remove_default_outbound_rule": false,
+                        "request_id": "########",
+                        "security_group_id": "##id-4##",
+                        "security_group_name": "terraform-sg-151",
+                        "tag": null,
+                        "tags": []
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
             "type": "outscale_vm",
             "name": "outscale_vm_centos",
             "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "index_key": 0,
-                    "schema_version": 0,
-                    "attributes": {
-                        "admin_password": "",
-                        "architecture": "x86_64",
-                        "block_device_mappings": [],
-                        "block_device_mappings_created": [
-                            {
-                                "bsu": {
-                                    "delete_on_vm_deletion": "true",
-                                    "link_date": "########",
-                                    "state": "attached",
-                                    "volume_id": "##id-6##"
-                                },
-                                "device_name": "/dev/sda1"
-                            }
-                        ],
-                        "bsu_optimized": false,
-                        "client_token": "",
-                        "creation_date": "########",
-                        "deletion_protection": false,
-                        "get_admin_password": null,
-                        "hypervisor": "xen",
-                        "id": "##id-8##",
-                        "image_id": "##id-2##",
-                        "is_source_dest_checked": true,
-                        "keypair_name": "KP-TF151",
-                        "launch_number": 0,
-                        "nested_virtualization": false,
-                        "net_id": "",
-                        "nics": [],
-                        "os_family": "",
-                        "performance": "high",
-                        "placement_subregion_name": "eu-west-2a",
-                        "placement_tenancy": "default",
-                        "primary_nic": [],
-                        "private_dns_name": "########",
-                        "private_ip": "########",
-                        "private_ips": null,
-                        "product_codes": [
-                            "0001"
-                        ],
-                        "public_dns_name": "########",
-                        "public_ip": "########",
-                        "request_id": "########",
-                        "reservation_id": "##id-7##",
-                        "root_device_name": "/dev/sda1",
-                        "root_device_type": "ebs",
-                        "security_group_ids": null,
-                        "security_group_names": null,
-                        "security_groups": [
-                            {
-                                "security_group_id": "##id-4##",
-                                "security_group_name": "default"
-                            }
-                        ],
-                        "state": "running",
-                        "state_reason": "",
-                        "subnet_id": "",
-                        "tags": [],
-                        "timeouts": null,
-                        "user_data": "",
-                        "vm_id": "##id-8##",
-                        "vm_initiated_shutdown_behavior": "stop",
-                        "vm_type": "###vm_type###"
-                    },
-                    "sensitive_attributes": [],
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
-                    "dependencies": [
-                        "outscale_keypair.my_keypair"
-                    ]
-                },
-                {
-                    "index_key": 1,
                     "schema_version": 0,
                     "attributes": {
                         "admin_password": "",
@@ -292,12 +246,14 @@
                         "reservation_id": "##id-3##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
-                        "security_group_ids": null,
+                        "security_group_ids": [
+                            "##id-4##"
+                        ],
                         "security_group_names": null,
                         "security_groups": [
                             {
                                 "security_group_id": "##id-4##",
-                                "security_group_name": "default"
+                                "security_group_name": "terraform-sg-151"
                             }
                         ],
                         "state": "running",
@@ -313,7 +269,84 @@
                     "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
-                        "outscale_keypair.my_keypair"
+                        "outscale_keypair.my_keypair",
+                        "outscale_security_group.security_group_TF151"
+                    ]
+                },
+                {
+                    "index_key": 1,
+                    "schema_version": 0,
+                    "attributes": {
+                        "admin_password": "",
+                        "architecture": "x86_64",
+                        "block_device_mappings": [],
+                        "block_device_mappings_created": [
+                            {
+                                "bsu": {
+                                    "delete_on_vm_deletion": "true",
+                                    "link_date": "########",
+                                    "state": "attached",
+                                    "volume_id": "##id-6##"
+                                },
+                                "device_name": "/dev/sda1"
+                            }
+                        ],
+                        "bsu_optimized": false,
+                        "client_token": "",
+                        "creation_date": "########",
+                        "deletion_protection": false,
+                        "get_admin_password": null,
+                        "hypervisor": "xen",
+                        "id": "##id-8##",
+                        "image_id": "##id-2##",
+                        "is_source_dest_checked": true,
+                        "keypair_name": "KP-TF151",
+                        "launch_number": 0,
+                        "nested_virtualization": false,
+                        "net_id": "",
+                        "nics": [],
+                        "os_family": "",
+                        "performance": "high",
+                        "placement_subregion_name": "eu-west-2a",
+                        "placement_tenancy": "default",
+                        "primary_nic": [],
+                        "private_dns_name": "########",
+                        "private_ip": "########",
+                        "private_ips": null,
+                        "product_codes": [
+                            "0001"
+                        ],
+                        "public_dns_name": "########",
+                        "public_ip": "########",
+                        "request_id": "########",
+                        "reservation_id": "##id-7##",
+                        "root_device_name": "/dev/sda1",
+                        "root_device_type": "ebs",
+                        "security_group_ids": [
+                            "##id-4##"
+                        ],
+                        "security_group_names": null,
+                        "security_groups": [
+                            {
+                                "security_group_id": "##id-4##",
+                                "security_group_name": "terraform-sg-151"
+                            }
+                        ],
+                        "state": "running",
+                        "state_reason": "",
+                        "subnet_id": "",
+                        "tags": [],
+                        "timeouts": null,
+                        "user_data": "",
+                        "vm_id": "##id-8##",
+                        "vm_initiated_shutdown_behavior": "stop",
+                        "vm_type": "###vm_type###"
+                    },
+                    "sensitive_attributes": [],
+                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
+                    "dependencies": [
+                        "outscale_keypair.my_keypair",
+                        "outscale_security_group.security_group_TF151"
                     ]
                 }
             ]
@@ -336,7 +369,7 @@
                                     "delete_on_vm_deletion": "true",
                                     "link_date": "########",
                                     "state": "attached",
-                                    "volume_id": "##id-10##"
+                                    "volume_id": "##id-11##"
                                 },
                                 "device_name": "/dev/sda1"
                             }
@@ -347,7 +380,7 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-11##",
+                        "id": "##id-12##",
                         "image_id": "##id-2##",
                         "is_source_dest_checked": true,
                         "keypair_name": "KP-TF151",
@@ -369,15 +402,17 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-12##",
+                        "reservation_id": "##id-13##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
-                        "security_group_ids": null,
+                        "security_group_ids": [
+                            "##id-4##"
+                        ],
                         "security_group_names": null,
                         "security_groups": [
                             {
                                 "security_group_id": "##id-4##",
-                                "security_group_name": "default"
+                                "security_group_name": "terraform-sg-151"
                             }
                         ],
                         "state": "running",
@@ -395,14 +430,15 @@
                         ],
                         "timeouts": null,
                         "user_data": "",
-                        "vm_id": "##id-11##",
+                        "vm_id": "##id-12##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
                     "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
-                        "outscale_keypair.my_keypair"
+                        "outscale_keypair.my_keypair",
+                        "outscale_security_group.security_group_TF151"
                     ]
                 }
             ]

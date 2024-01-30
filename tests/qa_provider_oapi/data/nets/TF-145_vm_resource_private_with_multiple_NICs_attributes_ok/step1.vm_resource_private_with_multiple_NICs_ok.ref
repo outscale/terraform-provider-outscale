@@ -99,7 +99,9 @@
                         ],
                         "request_id": "########",
                         "requester_managed": null,
-                        "security_group_ids": null,
+                        "security_group_ids": [
+                            "##id-5##"
+                        ],
                         "security_groups": [
                             {
                                 "security_group_id": "##id-5##",

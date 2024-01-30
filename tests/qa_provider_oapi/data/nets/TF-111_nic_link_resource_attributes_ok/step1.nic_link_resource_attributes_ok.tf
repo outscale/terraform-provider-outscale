@@ -27,7 +27,8 @@ resource "outscale_subnet" "outscale_subnet" {
 }
 
 resource "outscale_nic" "outscale_nic" {
-    subnet_id = outscale_subnet.outscale_subnet.subnet_id
+   subnet_id          = outscale_subnet.outscale_subnet.subnet_id
+   security_group_ids = [outscale_security_group.outscale_security_group.id]
 }
 
 resource "outscale_nic_link" "outscale_nic_link" {

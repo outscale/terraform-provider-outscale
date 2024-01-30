@@ -29,6 +29,33 @@
         },
         {
             "mode": "managed",
+            "type": "outscale_security_group",
+            "name": "security_group_TF160",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-1##",
+                        "description": "test-terraform-TF160",
+                        "id": "##id-2##",
+                        "inbound_rules": [],
+                        "net_id": "",
+                        "outbound_rules": [],
+                        "remove_default_outbound_rule": false,
+                        "request_id": "########",
+                        "security_group_id": "##id-2##",
+                        "security_group_name": "terraform-sg-160",
+                        "tag": null,
+                        "tags": []
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
             "type": "outscale_vm",
             "name": "outscale_vm",
             "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
@@ -45,7 +72,7 @@
                                     "delete_on_vm_deletion": "true",
                                     "link_date": "########",
                                     "state": "attached",
-                                    "volume_id": "##id-1##"
+                                    "volume_id": "##id-3##"
                                 },
                                 "device_name": "/dev/sda1"
                             }
@@ -56,8 +83,8 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-2##",
-                        "image_id": "##id-3##",
+                        "id": "##id-4##",
+                        "image_id": "##id-5##",
                         "is_source_dest_checked": true,
                         "keypair_name": "KP-TF160",
                         "launch_number": 0,
@@ -78,15 +105,17 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-4##",
+                        "reservation_id": "##id-6##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
-                        "security_group_ids": null,
+                        "security_group_ids": [
+                            "##id-2##"
+                        ],
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-5##",
-                                "security_group_name": "default"
+                                "security_group_id": "##id-2##",
+                                "security_group_name": "terraform-sg-160"
                             }
                         ],
                         "state": "running",
@@ -95,14 +124,15 @@
                         "tags": [],
                         "timeouts": null,
                         "user_data": "",
-                        "vm_id": "##id-2##",
+                        "vm_id": "##id-4##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
                     "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
-                        "outscale_keypair.my_keypair"
+                        "outscale_keypair.my_keypair",
+                        "outscale_security_group.security_group_TF160"
                     ]
                 }
             ]
@@ -117,7 +147,7 @@
                     "schema_version": 0,
                     "attributes": {
                         "creation_date": "########",
-                        "id": "##id-6##",
+                        "id": "##id-7##",
                         "iops": 150,
                         "linked_volumes": [],
                         "request_id": "########",
@@ -132,7 +162,7 @@
                             }
                         ],
                         "termination_snapshot_name": null,
-                        "volume_id": "##id-6##",
+                        "volume_id": "##id-7##",
                         "volume_type": "standard"
                     },
                     "sensitive_attributes": [],
@@ -152,17 +182,18 @@
                         "delete_on_vm_termination": false,
                         "device_name": "/dev/xvdc",
                         "force_unlink": null,
-                        "id": "##id-6##",
+                        "id": "##id-7##",
                         "request_id": "########",
                         "state": "attached",
                         "timeouts": null,
-                        "vm_id": "##id-2##",
-                        "volume_id": "##id-6##"
+                        "vm_id": "##id-4##",
+                        "volume_id": "##id-7##"
                     },
                     "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
                         "outscale_keypair.my_keypair",
+                        "outscale_security_group.security_group_TF160",
                         "outscale_vm.outscale_vm",
                         "outscale_volume.outscale_volume"
                     ]
