@@ -67,7 +67,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-4##",
-                                        "security_group_name": "default"
+                                        "security_group_name": "terraform-sg-151"
                                     }
                                 ],
                                 "state": "running",
@@ -128,7 +128,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-4##",
-                                        "security_group_name": "default"
+                                        "security_group_name": "terraform-sg-151"
                                     }
                                 ],
                                 "state": "running",
@@ -208,7 +208,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-4##",
-                                        "security_group_name": "default"
+                                        "security_group_name": "terraform-sg-151"
                                     }
                                 ],
                                 "state": "running",
@@ -297,7 +297,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-4##",
-                                        "security_group_name": "default"
+                                        "security_group_name": "terraform-sg-151"
                                     }
                                 ],
                                 "state": "running",
@@ -386,7 +386,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-4##",
-                                        "security_group_name": "default"
+                                        "security_group_name": "terraform-sg-151"
                                     }
                                 ],
                                 "state": "running",
@@ -432,6 +432,33 @@
                     },
                     "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJyZWFkIjo2MDAwMDAwMDAwMDB9fQ=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_security_group",
+            "name": "security_group_TF151",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-16##",
+                        "description": "test-terraform-TF151",
+                        "id": "##id-4##",
+                        "inbound_rules": [],
+                        "net_id": "",
+                        "outbound_rules": [],
+                        "remove_default_outbound_rule": false,
+                        "request_id": "########",
+                        "security_group_id": "##id-4##",
+                        "security_group_name": "terraform-sg-151",
+                        "tag": null,
+                        "tags": []
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA=="
                 }
             ]
         },
@@ -492,12 +519,14 @@
                         "reservation_id": "##id-7##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
-                        "security_group_ids": null,
+                        "security_group_ids": [
+                            "##id-4##"
+                        ],
                         "security_group_names": null,
                         "security_groups": [
                             {
                                 "security_group_id": "##id-4##",
-                                "security_group_name": "default"
+                                "security_group_name": "terraform-sg-151"
                             }
                         ],
                         "state": "running",
@@ -513,7 +542,8 @@
                     "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
-                        "outscale_keypair.my_keypair"
+                        "outscale_keypair.my_keypair",
+                        "outscale_security_group.security_group_TF151"
                     ]
                 },
                 {
@@ -567,12 +597,14 @@
                         "reservation_id": "##id-3##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
-                        "security_group_ids": null,
+                        "security_group_ids": [
+                            "##id-4##"
+                        ],
                         "security_group_names": null,
                         "security_groups": [
                             {
                                 "security_group_id": "##id-4##",
-                                "security_group_name": "default"
+                                "security_group_name": "terraform-sg-151"
                             }
                         ],
                         "state": "running",
@@ -588,7 +620,8 @@
                     "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
-                        "outscale_keypair.my_keypair"
+                        "outscale_keypair.my_keypair",
+                        "outscale_security_group.security_group_TF151"
                     ]
                 }
             ]
@@ -649,12 +682,14 @@
                         "reservation_id": "##id-11##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
-                        "security_group_ids": null,
+                        "security_group_ids": [
+                            "##id-4##"
+                        ],
                         "security_group_names": null,
                         "security_groups": [
                             {
                                 "security_group_id": "##id-4##",
-                                "security_group_name": "default"
+                                "security_group_name": "terraform-sg-151"
                             }
                         ],
                         "state": "running",
@@ -679,7 +714,8 @@
                     "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
-                        "outscale_keypair.my_keypair"
+                        "outscale_keypair.my_keypair",
+                        "outscale_security_group.security_group_TF151"
                     ]
                 }
             ]

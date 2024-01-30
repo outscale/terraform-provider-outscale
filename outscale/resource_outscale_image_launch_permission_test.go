@@ -31,21 +31,21 @@ func TestAccVM_WithImageLaunchPermission_Basic(t *testing.T) {
 		Steps: []r.TestStep{
 			// Scaffold everything
 			{
-				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(omi, "tinav4.c2r2p2", region, accountID, true, rInt, keypair),
+				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(omi, "tinav4.c2r2p2", region, accountID, keypair, true, rInt),
 				Check: r.ComposeTestCheckFunc(
 					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
 				),
 			},
 			// Drop just launch permission to test destruction
 			{
-				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(omi, "tinav4.c2r2p2", region, accountID, false, rInt, keypair),
+				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(omi, "tinav4.c2r2p2", region, accountID, keypair, false, rInt),
 				Check: r.ComposeTestCheckFunc(
 					testAccOutscaleOAPIImageLaunchPermissionDestroyed(accountID, &imageID),
 				),
 			},
 			// Re-add everything so we can test when AMI disappears
 			{
-				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(omi, "tinav4.c2r2p2", region, accountID, true, rInt, keypair),
+				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(omi, "tinav4.c2r2p2", region, accountID, keypair, true, rInt),
 				Check: r.ComposeTestCheckFunc(
 					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
 				),
@@ -53,7 +53,7 @@ func TestAccVM_WithImageLaunchPermission_Basic(t *testing.T) {
 			// Here we delete the AMI to verify the follow-on refresh after this step
 			// should not error.
 			{
-				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(omi, "tinav4.c2r2p2", region, accountID, true, rInt, keypair),
+				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(omi, "tinav4.c2r2p2", region, accountID, keypair, true, rInt),
 				Check: r.ComposeTestCheckFunc(
 					testAccOutscaleOAPIImageDisappears(&imageID),
 				),
@@ -78,14 +78,14 @@ func TestAccVM_ImageLaunchPermissionDestruction_Basic(t *testing.T) {
 		Steps: []r.TestStep{
 			// Scaffold everything
 			{
-				Config: testAccOutscaleOAPIImageLaunchPermissionCreateConfig(omi, "tinav4.c2r2p2", region, rInt, true, false, keypair),
+				Config: testAccOutscaleOAPIImageLaunchPermissionCreateConfig(omi, "tinav4.c2r2p2", region, keypair, rInt, true, false),
 				Check: r.ComposeTestCheckFunc(
 					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
 					testAccOutscaleOAPIImageLaunchPermissionExists(accountID, &imageID),
 				),
 			},
 			{
-				Config: testAccOutscaleOAPIImageLaunchPermissionCreateConfig(omi, "tinav4.c2r2p2", region, rInt, true, true, keypair),
+				Config: testAccOutscaleOAPIImageLaunchPermissionCreateConfig(omi, "tinav4.c2r2p2", region, keypair, rInt, true, true),
 				Check: r.ComposeTestCheckFunc(
 					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
 				),
@@ -180,10 +180,10 @@ func testCheckResourceGetAttr(name, key string, value *string) r.TestCheckFunc {
 	}
 }
 
-func testAccOutscaleOAPIImageLaunchPermissionConfig(omi, vmType, region, accountID string, includeLaunchPermission bool, r int, keypair string) string {
+func testAccOutscaleOAPIImageLaunchPermissionConfig(omi, vmType, region, accountID, keypair string, includeLaunchPermission bool, r int) string {
 	base := fmt.Sprintf(`
 		resource "outscale_security_group" "sg_perm" {
-			security_group_name = "%[5]s"
+			security_group_name = "sgLPerm"
 			description         = "Used in the terraform acceptance tests"
 
 			tags {
@@ -221,10 +221,10 @@ func testAccOutscaleOAPIImageLaunchPermissionConfig(omi, vmType, region, account
 	`, accountID)
 }
 
-func testAccOutscaleOAPIImageLaunchPermissionCreateConfig(omi, vmType, region string, r int, includeAddtion, includeRemoval bool, keypair string) string {
+func testAccOutscaleOAPIImageLaunchPermissionCreateConfig(omi, vmType, region, keypair string, r int, includeAddtion, includeRemoval bool) string {
 	base := fmt.Sprintf(`
-		resource "outscale_security_group" "sg_prem" {
-			security_group_name = "%[5]s"
+		resource "outscale_security_group" "sg_perm" {
+			security_group_name = "sgLPerm"
 			description         = "Used in the terraform acceptance tests"
 
 			tags {
@@ -232,7 +232,6 @@ func testAccOutscaleOAPIImageLaunchPermissionCreateConfig(omi, vmType, region st
 				value = "tf-acc-test"
 			}
 		}
-
 		resource "outscale_vm" "outscale_instance" {
 			image_id                 = "%[1]s"
 			vm_type                  = "%[2]s"
@@ -250,26 +249,26 @@ func testAccOutscaleOAPIImageLaunchPermissionCreateConfig(omi, vmType, region st
 
 	if includeAddtion {
 		return base + `
-			resource "outscale_image_launch_permission" "outscale_image_launch_permission" {
-				image_id = outscale_image.outscale_image.image_id
-			
-				permission_additions {
-					account_ids = ["520679080430"]
+				resource "outscale_image_launch_permission" "outscale_image_launch_permission" {
+					image_id = outscale_image.outscale_image.image_id
+
+					permission_additions {
+						account_ids = ["520679080430"]
+					}
 				}
-			}
-		`
+			`
 	}
 
 	if includeRemoval {
 		return base + `
-			resource "outscale_image_launch_permission" "outscale_image_launch_permission_two" {
-				image_id = outscale_image_launch_permission.outscale_image_launch_permission.image_id
+					resource "outscale_image_launch_permission" "outscale_image_launch_permission_two" {
+						image_id = outscale_image_launch_permission.outscale_image_launch_permission.image_id
 
-				permission_removals {
-					account_ids = ["520679080430"]
-				}
-			}
-		`
+						permission_removals {
+							account_ids = ["520679080430"]
+						}
+					}
+				`
 	}
 	return base
 }

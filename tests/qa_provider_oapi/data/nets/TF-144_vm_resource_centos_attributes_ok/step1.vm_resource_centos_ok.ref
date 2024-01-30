@@ -541,7 +541,9 @@
                         "reservation_id": "##id-21##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
-                        "security_group_ids": null,
+                        "security_group_ids": [
+                            "##id-14##"
+                        ],
                         "security_group_names": [
                             "terraform-public-sg_for_vms"
                         ],

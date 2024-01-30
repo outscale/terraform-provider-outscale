@@ -1,12 +1,19 @@
 resource "outscale_keypair" "my_keypair" {
  keypair_name = "KP-TF151"
 }
+
+resource "outscale_security_group" "security_group_TF151" {
+  description         = "test-terraform-TF151"
+  security_group_name = "terraform-sg-151"
+}
+
 resource "outscale_vm" "outscale_vm_centos" {
     count = 2                                             # plus testWebsite one already created
 
      image_id               = var.image_id
      vm_type                = var.vm_type
      keypair_name           = outscale_keypair.my_keypair.keypair_name 
+     security_group_ids     = [outscale_security_group.security_group_TF151.security_group_id]
 }
 
 data "outscale_vms" "outscale_vms" {
@@ -19,17 +26,17 @@ data "outscale_vms" "outscale_vms" {
 }
 
 resource "outscale_vm" "outscale_vm_tags" {
-
      image_id               = var.image_id
      vm_type                = var.vm_type
      keypair_name           = outscale_keypair.my_keypair.keypair_name
-    tags {
-      key = "name-B"
-      value = "test-B"  
-  }
-    tags {
-      key = "Key"
-      value = "value-tags"
+     security_group_ids     = [outscale_security_group.security_group_TF151.security_group_id]
+     tags {
+        key = "name-B"
+        value = "test-B"
+     }
+     tags {
+        key = "Key"
+        value = "value-tags"
      }
 }
 

@@ -7,6 +7,11 @@ resource "outscale_volume" "my_volume" {
     size           = 20
 }
 
+resource "outscale_security_group" "sg_snap" {
+    description         = "test vms"
+    security_group_name = "test-sgSnap"
+}
+
 resource "outscale_snapshot" "my_snapshot" {
     volume_id = outscale_volume.my_volume.volume_id
 }
@@ -17,6 +22,7 @@ resource "outscale_vm" "outscale_vm2" {
     image_id            = var.image_id
     vm_type             = var.vm_type
     keypair_name        = outscale_keypair.my_keypair.keypair_name
+    security_group_names = [outscale_security_group.sg_snap.security_group_name]
     block_device_mappings {
       device_name = "/dev/sda1"   # resizing bootdisk volume
       bsu {

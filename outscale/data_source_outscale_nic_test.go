@@ -131,35 +131,44 @@ func testAccCheckOutscaleOAPINICDestroy(s *terraform.State) error {
 
 func testAccOutscaleOAPIENIDataSourceConfig(subregion string) string {
 	return fmt.Sprintf(`
-		resource "outscale_net" "outscale_net" {
-			ip_range = "10.0.0.0/16"
-
-			tags {
-				key = "Name"
-				value = "testacc-nic-ds"
-			}
+	resource "outscale_net" "outscale_net" {
+		ip_range = "10.0.0.0/16"
+		tags {
+			key = "Name"
+			value = "testacc-nic-ds"
 		}
+	}
 			
-		resource "outscale_subnet" "outscale_subnet" {
-			subregion_name = "%sa"
-			ip_range       = "10.0.0.0/16"
-			net_id         = outscale_net.outscale_net.id
+	resource "outscale_subnet" "outscale_subnet" {
+		subregion_name = "%sa"
+		ip_range       = "10.0.0.0/24"
+		net_id         = outscale_net.outscale_net.id
+	}
+	resource "outscale_security_group" "sgdatNic" {
+		security_group_name = "test_sgNic"
+		description         = "Used in the terraform acceptance tests"
+		tags {
+			key   = "Name"
+			value = "tf-acc-test"
 		}
+		net_id       = outscale_net.outscale_net.net_id
+	}
 
-		resource "outscale_nic" "outscale_nic" {
-			subnet_id = outscale_subnet.outscale_subnet.id
-			tags {
-				value = "tf-value"
-				key   = "tf-key"
-			}
+	resource "outscale_nic" "outscale_nic" {
+		subnet_id = outscale_subnet.outscale_subnet.id
+		security_group_ids = [outscale_security_group.sgdatNic.security_group_id]
+		tags {
+			value = "tf-value"
+			key   = "tf-key"
 		}
+	}
 
-		data "outscale_nic" "outscale_nic" {
-		     filter {
+	data "outscale_nic" "outscale_nic" {
+		filter {
 			name = "nic_ids"
 			values = [outscale_nic.outscale_nic.nic_id]
-		     }
 		}
+	}
 	`, subregion)
 }
 
@@ -179,9 +188,19 @@ func testAccOutscaleOAPIENIDataSourceConfigFilter(subregion string) string {
 		ip_range       = "10.0.0.0/16"
 		net_id         = outscale_net.outscale_net.id
 	}
+	resource "outscale_security_group" "sgdatNic" {
+		security_group_name = "test_sgNic"
+		description         = "Used in the terraform acceptance tests"
+		tags {
+			key   = "Name"
+			value = "tf-acc-test"
+		}
+		 net_id       = outscale_net.outscale_net.net_id
+	}
 
 	resource "outscale_nic" "outscale_nic" {
 		subnet_id = outscale_subnet.outscale_subnet.id
+		security_group_ids = [outscale_security_group.sgdatNic.security_group_id]
 		tags {
 			value = "tf-value"
 			key   = "tf-key"

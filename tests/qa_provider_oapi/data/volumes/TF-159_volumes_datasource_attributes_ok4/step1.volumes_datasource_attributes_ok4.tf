@@ -14,10 +14,16 @@ resource "outscale_volume" "outscale_volume3" {
 
 # the instance is created at the same time to get the attributes of both resources prior to perform the link
 
+resource "outscale_security_group" "security_group_TF159" {
+  description         = "test-terraform-TF159"
+  security_group_name = "terraform-sg-159"
+}
+
 resource "outscale_vm" "outscale_vm" {
     image_id           = var.image_id
     vm_type            = var.vm_type
     keypair_name       = outscale_keypair.my_keypair.keypair_name
+    security_group_ids = [outscale_security_group.security_group_TF159.security_group_id]
 }
 
 resource "outscale_volumes_link" "outscale_volumes_link" {
