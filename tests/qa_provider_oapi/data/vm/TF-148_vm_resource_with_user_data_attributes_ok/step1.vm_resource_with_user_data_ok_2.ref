@@ -29,6 +29,33 @@
         },
         {
             "mode": "managed",
+            "type": "outscale_security_group",
+            "name": "sgUsd",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-1##",
+                        "description": "test vms",
+                        "id": "##id-2##",
+                        "inbound_rules": [],
+                        "net_id": "",
+                        "outbound_rules": [],
+                        "remove_default_outbound_rule": false,
+                        "request_id": "########",
+                        "security_group_id": "##id-2##",
+                        "security_group_name": "test-sgUsd",
+                        "tag": null,
+                        "tags": []
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
             "type": "outscale_vm",
             "name": "outscale_vm1",
             "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
@@ -46,7 +73,7 @@
                                         "delete_on_vm_deletion": true,
                                         "link_date": "########",
                                         "state": "attached",
-                                        "volume_id": "##id-1##"
+                                        "volume_id": "##id-3##"
                                     }
                                 ],
                                 "device_name": "/dev/sda1"
@@ -58,8 +85,8 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-2##",
-                        "image_id": "##id-3##",
+                        "id": "##id-4##",
+                        "image_id": "##id-5##",
                         "is_source_dest_checked": true,
                         "keypair_name": "KP-TF148",
                         "launch_number": 0,
@@ -80,15 +107,19 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-4##",
+                        "reservation_id": "##id-6##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
-                        "security_group_ids": null,
-                        "security_group_names": null,
+                        "security_group_ids": [
+                            "##id-2##"
+                        ],
+                        "security_group_names": [
+                            "test-sgUsd"
+                        ],
                         "security_groups": [
                             {
-                                "security_group_id": "##id-5##",
-                                "security_group_name": "default"
+                                "security_group_id": "##id-2##",
+                                "security_group_name": "test-sgUsd"
                             }
                         ],
                         "state": "running",
@@ -102,14 +133,15 @@
                         ],
                         "timeouts": null,
                         "user_data": "I2Nsb3VkLWNvbmZpZwpjbG91ZF9jb25maWdfbW9kdWxlczoKLSBydW5jbWQKCnJ1bmNtZDoKLSB0b3VjaCAvdG1wL3FhLXZhbGlkLXRlcnJhZm9ybS11c2VyLWRhdGEtY2xvdWQtaW5pdAotIGVjaG8gImJsYWJsYSIgPj4gL2Rldi90dHlTMAo=",
-                        "vm_id": "##id-2##",
+                        "vm_id": "##id-4##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
                     "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
-                        "outscale_keypair.my_keypair"
+                        "outscale_keypair.my_keypair",
+                        "outscale_security_group.sgUsd"
                     ]
                 }
             ]

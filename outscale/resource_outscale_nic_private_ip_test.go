@@ -67,15 +67,22 @@ func testAccOutscaleOAPINetworkInterfacePrivateIPConfigBasic(region string) stri
 		resource "outscale_subnet" "outscale_subnet" {
 			subregion_name = "%sa"
 			ip_range       = "10.0.0.0/16"
-			net_id         = "${outscale_net.outscale_net.net_id}"
+			net_id         = outscale_net.outscale_net.net_id
 		}
-		
+
+		resource "outscale_security_group" "sg_PrNic" {
+			description         = "sg for terraform tests"
+			security_group_name = "terraform-sg"
+			net_id              = outscale_net.outscale_net.net_id
+		}
+
 		resource "outscale_nic" "outscale_nic" {
-			subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
+			subnet_id = outscale_subnet.outscale_subnet.subnet_id
+			security_group_ids = [outscale_security_group.sg_PrNic.security_group_id]
 		}
-		
+
 		resource "outscale_nic_private_ip" "outscale_nic_private_ip" {
-			nic_id      = "${outscale_nic.outscale_nic.nic_id}"
+			nic_id      = outscale_nic.outscale_nic.nic_id
 			private_ips = ["10.0.45.67"]
 		}
 	`, region)

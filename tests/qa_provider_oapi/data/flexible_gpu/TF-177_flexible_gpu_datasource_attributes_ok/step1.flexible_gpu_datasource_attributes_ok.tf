@@ -3,10 +3,16 @@ resource "outscale_keypair" "my_keypair" {
  keypair_name = "KP-TF177"
 }
 
+resource "outscale_security_group" "my_sgfg" {
+   description         = "test security group"
+   security_group_name = "SG-inteFg"
+}
+
 resource "outscale_vm" "MaVM" {
    image_id                       = var.image_id
    vm_type                        = var.fgpu_vm_type
    keypair_name                   = outscale_keypair.my_keypair.keypair_name
+   security_group_ids             = [outscale_security_group.my_sgfg.security_group_id]
    placement_subregion_name       = "${var.region}a"
    vm_initiated_shutdown_behavior = "restart"
 }

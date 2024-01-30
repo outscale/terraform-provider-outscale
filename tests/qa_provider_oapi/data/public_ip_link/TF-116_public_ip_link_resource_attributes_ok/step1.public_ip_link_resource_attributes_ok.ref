@@ -90,8 +90,36 @@
                     "dependencies": [
                         "outscale_keypair.my_keypair",
                         "outscale_public_ip.outscale_public_ip",
+                        "outscale_security_group.sgPub",
                         "outscale_vm.outscale_vm"
                     ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_security_group",
+            "name": "sgPub",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-3##",
+                        "description": "sg for terraform tests",
+                        "id": "##id-6##",
+                        "inbound_rules": [],
+                        "net_id": "",
+                        "outbound_rules": [],
+                        "remove_default_outbound_rule": false,
+                        "request_id": "########",
+                        "security_group_id": "##id-6##",
+                        "security_group_name": "terraform-sg_PubIp",
+                        "tag": null,
+                        "tags": []
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA=="
                 }
             ]
         },
@@ -114,7 +142,7 @@
                                         "delete_on_vm_deletion": true,
                                         "link_date": "########",
                                         "state": "attached",
-                                        "volume_id": "##id-6##"
+                                        "volume_id": "##id-7##"
                                     }
                                 ],
                                 "device_name": "/dev/sda1"
@@ -127,7 +155,7 @@
                         "get_admin_password": null,
                         "hypervisor": "xen",
                         "id": "##id-5##",
-                        "image_id": "##id-7##",
+                        "image_id": "##id-8##",
                         "is_source_dest_checked": true,
                         "keypair_name": "KP-TF116",
                         "launch_number": 0,
@@ -148,15 +176,17 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-8##",
+                        "reservation_id": "##id-9##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
-                        "security_group_ids": null,
+                        "security_group_ids": [
+                            "##id-6##"
+                        ],
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-9##",
-                                "security_group_name": "default"
+                                "security_group_id": "##id-6##",
+                                "security_group_name": "terraform-sg_PubIp"
                             }
                         ],
                         "state": "running",
@@ -172,7 +202,8 @@
                     "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
-                        "outscale_keypair.my_keypair"
+                        "outscale_keypair.my_keypair",
+                        "outscale_security_group.sgPub"
                     ]
                 }
             ]

@@ -1,10 +1,17 @@
 resource "outscale_keypair" "my_keypair" {
  keypair_name = "KP-TF88"
 }
+
+resource "outscale_security_group" "my_sgLbur" {
+   description = "test sg-group-lbur"
+   security_group_name = "SG-inteLbulist"
+}
+
 resource "outscale_vm" "public_vm_1" {
-   image_id                 = var.image_id
-   vm_type                  = var.vm_type
-   keypair_name             = outscale_keypair.my_keypair.keypair_name
+   image_id           = var.image_id
+   vm_type            = var.vm_type
+   keypair_name       = outscale_keypair.my_keypair.keypair_name
+   security_group_ids = [outscale_security_group.my_sgLbur.security_group_id]
 }
 
 resource "outscale_load_balancer" "public_lbu2" {

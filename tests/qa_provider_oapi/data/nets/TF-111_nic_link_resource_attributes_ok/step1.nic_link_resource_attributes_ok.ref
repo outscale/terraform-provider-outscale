@@ -80,11 +80,13 @@
                         ],
                         "request_id": "########",
                         "requester_managed": null,
-                        "security_group_ids": null,
+                        "security_group_ids": [
+                            "##id-5##"
+                        ],
                         "security_groups": [
                             {
                                 "security_group_id": "##id-5##",
-                                "security_group_name": "default"
+                                "security_group_name": "sg1-test-group_test"
                             }
                         ],
                         "state": "available",
@@ -97,6 +99,7 @@
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
                         "outscale_net.outscale_net",
+                        "outscale_security_group.outscale_security_group",
                         "outscale_subnet.outscale_subnet"
                     ]
                 }
@@ -145,7 +148,7 @@
                     "attributes": {
                         "account_id": "##id-3##",
                         "description": "test group",
-                        "id": "##id-9##",
+                        "id": "##id-5##",
                         "inbound_rules": [],
                         "net_id": "##id-2##",
                         "outbound_rules": [
@@ -159,7 +162,7 @@
                         ],
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
-                        "security_group_id": "##id-9##",
+                        "security_group_id": "##id-5##",
                         "security_group_name": "sg1-test-group_test",
                         "tag": null,
                         "tags": []
@@ -220,7 +223,7 @@
                                         "delete_on_vm_deletion": true,
                                         "link_date": "########",
                                         "state": "attached",
-                                        "volume_id": "##id-10##"
+                                        "volume_id": "##id-9##"
                                     }
                                 ],
                                 "device_name": "/dev/sda1"
@@ -233,7 +236,7 @@
                         "get_admin_password": null,
                         "hypervisor": "xen",
                         "id": "##id-8##",
-                        "image_id": "##id-11##",
+                        "image_id": "##id-10##",
                         "is_source_dest_checked": true,
                         "keypair_name": "KP-TF111",
                         "launch_number": 0,
@@ -250,14 +253,14 @@
                                     {
                                         "delete_on_vm_deletion": true,
                                         "device_number": "0",
-                                        "link_nic_id": "##id-12##",
+                                        "link_nic_id": "##id-11##",
                                         "state": "attached"
                                     }
                                 ],
                                 "link_public_ip": [],
                                 "mac_address": "########",
                                 "net_id": "##id-2##",
-                                "nic_id": "##id-13##",
+                                "nic_id": "##id-12##",
                                 "private_dns_name": "########",
                                 "private_ips": [
                                     {
@@ -269,11 +272,11 @@
                                 ],
                                 "secondary_private_ip_count": 0,
                                 "security_group_ids": [
-                                    "##id-9##"
+                                    "##id-5##"
                                 ],
                                 "security_groups": [
                                     {
-                                        "security_group_id": "##id-9##",
+                                        "security_group_id": "##id-5##",
                                         "security_group_name": "sg1-test-group_test"
                                     }
                                 ],
@@ -296,14 +299,14 @@
                                     {
                                         "delete_on_vm_deletion": true,
                                         "device_number": "0",
-                                        "link_nic_id": "##id-12##",
+                                        "link_nic_id": "##id-11##",
                                         "state": "attached"
                                     }
                                 ],
                                 "link_public_ip": [],
                                 "mac_address": "########",
                                 "net_id": "##id-2##",
-                                "nic_id": "##id-13##",
+                                "nic_id": "##id-12##",
                                 "private_dns_name": "########",
                                 "private_ips": [
                                     {
@@ -315,11 +318,11 @@
                                 ],
                                 "secondary_private_ip_count": 0,
                                 "security_group_ids": [
-                                    "##id-9##"
+                                    "##id-5##"
                                 ],
                                 "security_groups": [
                                     {
-                                        "security_group_id": "##id-9##",
+                                        "security_group_id": "##id-5##",
                                         "security_group_name": "sg1-test-group_test"
                                     }
                                 ],
@@ -336,16 +339,16 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-14##",
+                        "reservation_id": "##id-13##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
                         "security_group_ids": [
-                            "##id-9##"
+                            "##id-5##"
                         ],
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-9##",
+                                "security_group_id": "##id-5##",
                                 "security_group_name": "sg1-test-group_test"
                             }
                         ],

@@ -125,6 +125,14 @@ func testAccDataSourceOutscaleOAPISubnetWithAvailableIpsCountsFilter(region stri
 				name   = "available_ips_counts"
 				values = [outscale_subnet.outscale_subnet.available_ips_count]
 			}
+			filter {
+				name   = "ip_ranges"
+				values = ["10.0.0.0/24"]
+			}
+			filter {
+				name   = "net_ids"
+				values = [outscale_net.outscale_net.net_id]
+			}
 		}
 	`, region)
 }

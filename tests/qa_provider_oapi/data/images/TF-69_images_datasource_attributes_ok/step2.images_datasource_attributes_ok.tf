@@ -1,5 +1,11 @@
+resource "outscale_security_group" "my_sgImgs" {
+   description         = "test sg-group"
+   security_group_name = "SG-inteImgs"
+}
+
 resource "outscale_vm" "outscale_vm" {
-    image_id           = var.image_id
+   image_id           = var.image_id
+   security_group_ids = [outscale_security_group.my_sgImgs.security_group_id]
 }
 
 resource "outscale_image" "outscale_image1" {

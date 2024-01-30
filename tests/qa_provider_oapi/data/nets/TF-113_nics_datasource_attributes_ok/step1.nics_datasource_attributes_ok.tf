@@ -24,6 +24,7 @@ resource "outscale_vm" "vm01" {
   image_id           = var.image_id
   vm_type            = var.vm_type
   subnet_id          = outscale_subnet.subnet01.subnet_id
+  security_group_ids = [outscale_security_group.security_group01.security_group_id]
 }
 
 
@@ -51,7 +52,8 @@ resource "outscale_nic" "outscale_nic" {
 }
 
 resource "outscale_nic" "outscale_nic_2" {
-    subnet_id = outscale_subnet.subnet01.subnet_id
+    subnet_id          = outscale_subnet.subnet01.subnet_id
+    security_group_ids = [outscale_security_group.security_group01.security_group_id]
     private_ips {
       is_primary = true
       private_ip = "10.5.0.41"

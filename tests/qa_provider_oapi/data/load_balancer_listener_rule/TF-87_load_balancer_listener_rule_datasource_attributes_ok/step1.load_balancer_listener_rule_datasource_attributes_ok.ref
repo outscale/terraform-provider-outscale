@@ -163,6 +163,7 @@
                     "dependencies": [
                         "outscale_keypair.my_keypair",
                         "outscale_load_balancer.public_lbu2",
+                        "outscale_security_group.my_sgLbl",
                         "outscale_vm.public_vm_1"
                     ]
                 }
@@ -205,6 +206,7 @@
                     "dependencies": [
                         "outscale_keypair.my_keypair",
                         "outscale_load_balancer.public_lbu2",
+                        "outscale_security_group.my_sgLbl",
                         "outscale_vm.public_vm_1"
                     ]
                 }
@@ -231,8 +233,36 @@
                     "dependencies": [
                         "outscale_keypair.my_keypair",
                         "outscale_load_balancer.public_lbu2",
+                        "outscale_security_group.my_sgLbl",
                         "outscale_vm.public_vm_1"
                     ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_security_group",
+            "name": "my_sgLbl",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-11##",
+                        "description": "test sg-group-lbu",
+                        "id": "##id-12##",
+                        "inbound_rules": [],
+                        "net_id": "",
+                        "outbound_rules": [],
+                        "remove_default_outbound_rule": false,
+                        "request_id": "########",
+                        "security_group_id": "##id-12##",
+                        "security_group_name": "SG-inteLbl",
+                        "tag": null,
+                        "tags": []
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA=="
                 }
             ]
         },
@@ -255,7 +285,7 @@
                                         "delete_on_vm_deletion": true,
                                         "link_date": "########",
                                         "state": "attached",
-                                        "volume_id": "##id-11##"
+                                        "volume_id": "##id-13##"
                                     }
                                 ],
                                 "device_name": "/dev/sda1"
@@ -268,7 +298,7 @@
                         "get_admin_password": null,
                         "hypervisor": "xen",
                         "id": "##id-3##",
-                        "image_id": "##id-12##",
+                        "image_id": "##id-14##",
                         "is_source_dest_checked": true,
                         "keypair_name": "KP-TF87",
                         "launch_number": 0,
@@ -289,15 +319,17 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-13##",
+                        "reservation_id": "##id-15##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
-                        "security_group_ids": null,
+                        "security_group_ids": [
+                            "##id-12##"
+                        ],
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-14##",
-                                "security_group_name": "default"
+                                "security_group_id": "##id-12##",
+                                "security_group_name": "SG-inteLbl"
                             }
                         ],
                         "state": "running",
@@ -313,7 +345,8 @@
                     "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
-                        "outscale_keypair.my_keypair"
+                        "outscale_keypair.my_keypair",
+                        "outscale_security_group.my_sgLbl"
                     ]
                 }
             ]

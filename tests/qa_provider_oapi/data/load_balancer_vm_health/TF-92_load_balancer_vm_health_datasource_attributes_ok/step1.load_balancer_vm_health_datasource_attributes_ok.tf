@@ -20,7 +20,7 @@ resource "outscale_vm" "outscale_vm-1" {
    image_id           = var.image_id
    vm_type            = var.vm_type
    keypair_name       = outscale_keypair.my_keypair.keypair_name
-   security_group_ids = [outscale_security_group.public_sg.id] 
+   security_group_ids = [outscale_security_group.public_sg.id]
    placement_subregion_name = "${var.region}a"
    user_data = base64encode(<<EOF
       #!/bin/bash
