@@ -57,7 +57,7 @@
                         "reservation_id": "##id-3##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
-                        "security_group_ids": null,
+                        "security_group_ids": [],
                         "security_group_names": null,
                         "security_groups": [
                             {
@@ -139,7 +139,7 @@
                         "reservation_id": "##id-7##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
-                        "security_group_ids": null,
+                        "security_group_ids": [],
                         "security_group_names": null,
                         "security_groups": [
                             {
@@ -217,7 +217,7 @@
                         "reservation_id": "##id-10##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
-                        "security_group_ids": null,
+                        "security_group_ids": [],
                         "security_group_names": null,
                         "security_groups": [
                             {

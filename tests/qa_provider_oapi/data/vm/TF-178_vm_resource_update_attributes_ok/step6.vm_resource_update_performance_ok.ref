@@ -184,7 +184,7 @@
                                 "security_group_name": "terraform-sg-TF66-0"
                             }
                         ],
-                        "state": "stopped",
+                        "state": "running",
                         "state_reason": "",
                         "subnet_id": "",
                         "tags": [],

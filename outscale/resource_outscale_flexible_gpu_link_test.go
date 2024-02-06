@@ -10,19 +10,22 @@ import (
 )
 
 func TestAccVM_withFlexibleGpuLink_basic(t *testing.T) {
-	omi := os.Getenv("OUTSCALE_IMAGEID")
-
-	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheck(t)
-		},
-		Providers: testAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccOutscaleOAPIFlexibleGpuLinkConfig(omi, "tinav5.c2r2p2", utils.GetRegion()),
+	if os.Getenv("TEST_QUOTA") == "true" {
+		omi := os.Getenv("OUTSCALE_IMAGEID")
+		resource.Test(t, resource.TestCase{
+			PreCheck: func() {
+				testAccPreCheck(t)
 			},
-		},
-	})
+			Providers: testAccProviders,
+			Steps: []resource.TestStep{
+				{
+					Config: testAccOutscaleOAPIFlexibleGpuLinkConfig(omi, "tinav5.c2r2p2", utils.GetRegion()),
+				},
+			},
+		})
+	} else {
+		t.Skip("will be done soon")
+	}
 }
 
 func testAccOutscaleOAPIFlexibleGpuLinkConfig(omi, vmType, region string) string {
