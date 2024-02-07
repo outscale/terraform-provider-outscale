@@ -15,6 +15,8 @@ For more information on this resource actions, see the [API documentation](https
 
 ## Example Usage
 
+### Creating an io1 volume
+
 ```hcl
 resource "outscale_volume" "volume01" {
 	subregion_name = "${var.region}a"
@@ -23,6 +25,16 @@ resource "outscale_volume" "volume01" {
 	volume_type    = "io1"
 }
 ```
+
+### Creating a snapshot before volume deletion
+
+```hcl
+resource "outscale_volume" "volume01" {
+    termination_snapshot_name = "deleting_volume_snap"     
+    subregion_name = "${var.region}a"
+    size           = 40
+}
+``````
 
 ## Argument Reference
 
@@ -35,6 +47,7 @@ The following arguments are supported:
 * `tags` - (Optional) A tag to add to this resource. You can specify this argument several times.
     * `key` - (Required) The key of the tag, with a minimum of 1 character.
     * `value` - (Required) The value of the tag, between 0 and 255 characters.
+* `termination_snapshot_name` - (Optional) Whether you want to create a snapshot before the volume deletion.
 * `volume_type` - (Optional) The type of volume you want to create (`io1` \| `gp2` \| `standard`). If not specified, a `standard` volume is created.<br />
 For more information about volume types, see [About Volumes > Volume Types and IOPS](https://docs.outscale.com/en/userguide/About-Volumes.html#_volume_types_and_iops).
 

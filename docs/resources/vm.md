@@ -162,7 +162,7 @@ resource "outscale_vm" "vm04" {
 	image_id     = var.image_id
 	vm_type      = "c4.large"
 	keypair_name = var.keypair_name
-	nics {
+	primary_nic {
 		nic_id        = outscale_nic.nic01.nic_id
 		device_number = "0"
 	}
@@ -192,10 +192,10 @@ For more information about volume types, see [About Volumes > Volume Types and I
 * `image_id` - (Required) The ID of the OMI used to create the VM. You can find the list of OMIs by calling the [ReadImages](https://docs.outscale.com/api#readimages) method.
 * `keypair_name` - (Optional) The name of the keypair.
 * `nested_virtualization` - (Optional) (dedicated tenancy only) If true, nested virtualization is enabled. If false, it is disabled.
-* `nics` - (Optional) One or more NICs. If you specify this parameter, you must not specify the `subnet_id` and `subregion_name` parameters. You also must define one NIC as the primary network interface of the VM with `0` as its device number.
+* `nics` - (Optional) One or more NICs. If you specify this parameter, you must not specify the `subnet_id` and `subregion_name` parameters. To define a NIC as the primary network interface of the VM, use the `primary_nic` argument.
     * `delete_on_vm_deletion` - (Optional) If true, the NIC is deleted when the VM is terminated. You can specify this parameter only for a new NIC. To modify this value for an existing NIC, see [UpdateNic](https://docs.outscale.com/api#updatenic).
     * `description` - (Optional) The description of the NIC, if you are creating a NIC when creating the VM.
-    * `device_number` - (Optional) The index of the VM device for the NIC attachment (between `0` and `7`, both included). This parameter is required if you create a NIC when creating the VM.
+    * `device_number` - (Optional) The index of the VM device for the NIC attachment (between `1` and `7`, both included). This parameter is required if you create a NIC when creating the VM.
     * `nic_id` - (Optional) The ID of the NIC, if you are attaching an existing NIC when creating a VM.
     * `private_ips` - (Optional) One or more private IPs to assign to the NIC, if you create a NIC when creating a VM. Only one private IP can be the primary private IP.
         * `is_primary` - (Optional) If true, the IP is the primary private IP of the NIC.
@@ -203,9 +203,22 @@ For more information about volume types, see [About Volumes > Volume Types and I
     * `secondary_private_ip_count` - (Optional) The number of secondary private IPs, if you create a NIC when creating a VM. This parameter cannot be specified if you specified more than one private IP in the `private_ips` parameter.
     * `security_group_ids` - (Optional) One or more IDs of security groups for the NIC, if you create a NIC when creating a VM.
     * `subnet_id` - (Optional) The ID of the Subnet for the NIC, if you create a NIC when creating a VM. This parameter is required if you create a NIC when creating the VM.
+
 * `performance` - (Optional) The performance of the VM (`medium` | `high` | `highest`). Updating this parameter will trigger a stop/start of the VM.
 * `placement_subregion_name` - (Optional) The name of the Subregion where the VM is placed.
 * `placement_tenancy` - (Optional) The tenancy of the VM (`default` | `dedicated`).
+* `primary_nic` - (Optional) The primary network interface of the VM.
+    * `delete_on_vm_deletion` - (Optional) If true, the NIC is deleted when the VM is terminated. You can specify this parameter only for a new NIC. To modify this value for an existing NIC, see [UpdateNic](https://docs.outscale.com/api#updatenic).
+    * `description` - (Optional) The description of the NIC, if you are creating a NIC when creating the VM.
+    * `device_number` - (Optional) The index of the VM device for the NIC attachment (must be `0`). This parameter is required if you create a NIC when creating the VM.
+    * `nic_id` - (Optional) The ID of the NIC, if you are attaching an existing NIC when creating a VM.
+    * `private_ips` - (Optional) One or more private IPs to assign to the NIC, if you create a NIC when creating a VM. Only one private IP can be the primary private IP.
+        * `is_primary` - (Optional) If true, the IP is the primary private IP of the NIC.
+        * `private_ip` - (Optional) The private IP of the NIC.
+    * `secondary_private_ip_count` - (Optional) The number of secondary private IPs, if you create a NIC when creating a VM. This parameter cannot be specified if you specified more than one private IP in the `private_ips` parameter.
+    * `security_group_ids` - (Optional) One or more IDs of security groups for the NIC, if you create a NIC when creating a VM.
+    * `subnet_id` - (Optional) The ID of the Subnet for the NIC, if you create a NIC when creating a VM. This parameter is required if you create a NIC when creating the VM.
+
 * `private_ips` - (Optional) One or more private IPs of the VM.
 * `security_group_ids` - (Optional) One or more IDs of security group for the VMs.
 * `security_group_names` - (Optional) One or more names of security groups for the VMs.
