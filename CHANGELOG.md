@@ -1,3 +1,17 @@
+0.11.0 (February 13, 2024)
+========================
+
+FEATURES:
+---------
+
+* Support for Creating Security Group Rules Using Security Group Names ([GH-399](https://github.com/outscale/terraform-provider-outscale/issues/399))
+
+IMPROVEMENT:
+-----------
+
+* Update tests and osc-sdk-go
+* Somes refactoring
+
 0.10.0 (November 10, 2023)
 ========================
 
