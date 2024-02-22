@@ -102,7 +102,7 @@ go build -o terraform-provider-outscale_v0.11.0
 
 2. Move the plugin to the repository ~/.terraform.d/plugins/registry.terraform.io/outscale/outscale/0.11.0/linux_amd64/.
 ```shell
-mkdir -p ~/.terraform.d/plugins/regisutry.terraform.io/outscale/outscale/0.11.0/linux_amd64
+mkdir -p ~/.terraform.d/plugins/registry.terraform.io/outscale/outscale/0.11.0/linux_amd64
 mv terraform-provider-outscale_v0.11.0 ~/.terraform.d/plugins/registry.terraform.io/outscale/outscale/0.11.0/linux_amd64
 ```
 3. Execute `terraform init
