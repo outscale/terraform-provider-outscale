@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e -x
+set -e
 
 project_dir=$(cd "$(dirname $0)" && pwd)
 project_root=$(cd $project_dir/.. && pwd)
