@@ -13,7 +13,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: 'stable'
       - name: Run GoReleaser
@@ -22,7 +22,7 @@ jobs:
           version: latest
           args: build --rm-dist --snapshot
       - name: Upload assets
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: terraform-provider-outscale
           path: dist/terraform-provider-outscale*

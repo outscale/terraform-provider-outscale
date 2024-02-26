@@ -27,7 +27,7 @@ jobs:
           access_key: ${{ secrets.OSC_ACCESS_KEY }}
           secret_key: ${{ secrets.OSC_SECRET_KEY }}
           region: ${{ secrets.OSC_REGION }}
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: 'stable'
       - name: Setup Terraform
