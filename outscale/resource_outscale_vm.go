@@ -1112,10 +1112,23 @@ func resourceOAPIVMDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	id := d.Id()
-
-	log.Printf("[INFO] Terminating VM: %s", id)
-
 	var err error
+
+	err = resource.Retry(d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+		_, httpResp, err := conn.VmApi.StopVms(context.Background()).StopVmsRequest(oscgo.StopVmsRequest{
+			VmIds:     []string{id},
+			ForceStop: oscgo.PtrBool(true),
+		}).Execute()
+		if err != nil {
+			return utils.CheckThrottling(httpResp, err)
+		}
+		return nil
+	})
+
+	if err != nil {
+		return fmt.Errorf("Error Force stopping vms before destroy %s", err)
+	}
+
 	err = resource.Retry(d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
 		_, httpResp, err := conn.VmApi.DeleteVms(context.Background()).DeleteVmsRequest(oscgo.DeleteVmsRequest{
 			VmIds: []string{id},
