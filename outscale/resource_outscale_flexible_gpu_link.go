@@ -174,7 +174,8 @@ func resourceOutscaleOAPIFlexibleGpuLinkDelete(d *schema.ResourceData, meta inte
 		if len(*resp.FlexibleGpus) != 1 {
 			return fmt.Errorf("Unable to find Flexible GPU")
 		}
-		if (*resp.FlexibleGpus)[0].GetState() != "detaching" {
+		if (*resp.FlexibleGpus)[0].GetState() != "detaching" &&
+			(*resp.FlexibleGpus)[0].GetState() != "allocated" {
 			return fmt.Errorf("Unable to unlink Flexible GPU")
 		}
 	}
