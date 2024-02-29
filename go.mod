@@ -1,6 +1,6 @@
 module github.com/terraform-providers/terraform-provider-outscale
 
-go 1.22
+go 1.22.0
 
 require (
 	github.com/aws/aws-sdk-go v1.50.18
