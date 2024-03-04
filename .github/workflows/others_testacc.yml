@@ -38,7 +38,7 @@ jobs:
         run: |
           wget https://github.com/outscale/osc-ricochet-2/releases/download/v0.2.0/osc-ricochet-2_v0.2.0_x86_64-unknown-linux-musl.tar.gz
           tar -xvf osc-ricochet-2_v0.2.0_x86_64-unknown-linux-musl.tar.gz
-          ./ricochet-2 &
+          ./ricochet-2 ./ricochet.json &
           ./local-test.sh
 
       - name: Build go test
