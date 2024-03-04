@@ -66,9 +66,13 @@ test-locally:
 	"$(CURDIR)/scripts/local-test.sh" TestAccOthers_Volume_io1Type
 	"$(CURDIR)/scripts/local-test.sh" TestAccVM_withFlexibleGpuLink_basic
 
-.PHONY: test-examples
-test-examples:
-	@sh -c "'$(CURDIR)/scripts/test-examples.sh'"
+.PHONY: terraform-examples
+terraform-examples:
+	@sh -c "'$(CURDIR)/scripts/terraform-examples.sh'"
+
+.PHONY: tofu-examples
+tofu-examples:
+	@sh -c "'$(CURDIR)/scripts/tofu-examples.sh'"
 
 .PHONY: test-integration
 test-integration:
