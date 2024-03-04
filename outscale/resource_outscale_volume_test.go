@@ -187,7 +187,7 @@ func test_IO1VolumeTypeConfig(region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_volume" "test-io1" {
 			subregion_name = "%sa"
-			volume_type    = "gp2"
+			volume_type    = "io1"
 			size           = 10
 			iops           = 100
 		}
