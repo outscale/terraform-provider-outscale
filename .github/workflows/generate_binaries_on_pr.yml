@@ -3,7 +3,7 @@ name: Generate binaries on PR
 on:
   pull_request:
     branches:
-      - master
+      - v0
 jobs:
   goreleaser:
     runs-on: ubuntu-latest

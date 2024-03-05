@@ -3,7 +3,7 @@ name: Examples tests
 on:
   pull_request:
     branches:
-      - master
+      - v0
     paths:
       - 'examples/**.tfvars'
       - 'examples/**.tf'

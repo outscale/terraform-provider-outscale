@@ -3,7 +3,7 @@ name: Nets integration tests
 on:
   pull_request:
     branches:
-      - master
+      - v0
     paths:
       - '**.go'
       - 'tests/**'
