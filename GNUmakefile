@@ -60,6 +60,11 @@ test-compile:
 	fi
 	go test -c $(TEST) $(TESTARGS)
 
+.PHONY: test-locally
+test-locally:
+	"$(CURDIR)/scripts/local-test.sh" TestAccOthers_Volume_io1Type
+	"$(CURDIR)/scripts/local-test.sh" TestAccVM_withFlexibleGpuLink_basic
+
 .PHONY: test-examples
 test-examples:
 	@sh -c "'$(CURDIR)/scripts/test-examples.sh'"
