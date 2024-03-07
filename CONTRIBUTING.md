@@ -45,3 +45,19 @@ $ export OUTSCALE_ACCOUNT="<ACCOUNTPID>"    # i.e. "XXXXXXXXXXXX"
 ```sh
 $ make testacc
 ```
+
+If you want, you can tests terraform locally using [ricochet-2](https://github.com/outscale/osc-ricochet-2/)
+to do so, you need to get ricochet-2 [release](https://github.com/outscale/osc-ricochet-2/tags)
+extract and start it:
+```
+tar -xvf osc-ricochet-2_v0.2.0_x86_64-unknown-linux-musl.tar.gz
+./ricochet-2 ./ricochet.json
+```
+and in another terminal, either call `make test-locally`, or call the script manually
+```
+# if you want TestAccVM_withFlexibleGpuLink_basic
+scripts/local-test.sh TestAccVM_withFlexibleGpuLink_basic
+```
+
+Note that ricochet-2 been fearly new, doesn't support all Outscale Calls, and some tests will fails.
+Also ricochet-2 work only on Linux for now.
