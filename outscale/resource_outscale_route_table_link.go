@@ -24,6 +24,7 @@ func resourceOutscaleOAPILinkRouteTable() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceOutscaleOAPILinkRouteTableCreate,
 		Read:   resourceOutscaleOAPILinkRouteTableRead,
+		Update: resourceOutscaleLinkRouteTableUpdate,
 		Delete: resourceOutscaleOAPILinkRouteTableDelete,
 		Importer: &schema.ResourceImporter{
 			State: resourceOutscaleOAPILinkRouteTableImportState,
@@ -37,7 +38,6 @@ func resourceOutscaleOAPILinkRouteTable() *schema.Resource {
 			"route_table_id": {
 				Type:     schema.TypeString,
 				Required: true,
-				ForceNew: true,
 			},
 			"link_route_table_id": {
 				Type:     schema.TypeString,
@@ -84,18 +84,48 @@ func resourceOutscaleOAPILinkRouteTableCreate(d *schema.ResourceData, meta inter
 	var errString string
 	if err != nil {
 		errString = err.Error()
-
 		return fmt.Errorf("Error creating route table link: %s", errString)
 	}
 
-	d.SetId(resp.GetLinkRouteTableId())
+	if err := d.Set("link_route_table_id", resp.GetLinkRouteTableId()); err != nil {
+		return err
+	}
+	d.SetId(resource.UniqueId())
+	return resourceOutscaleOAPILinkRouteTableRead(d, meta)
+}
+
+func resourceOutscaleLinkRouteTableUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
+
+	updateRequest := oscgo.UpdateRouteTableLinkRequest{
+		LinkRouteTableId: d.Get("link_route_table_id").(string),
+	}
+	if d.HasChange("route_table_id") && !d.IsNewResource() {
+		updateRequest.SetRouteTableId(d.Get("route_table_id").(string))
+	}
+	resp := oscgo.UpdateRouteTableLinkResponse{}
+	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+		rp, httpResp, err := conn.RouteTableApi.UpdateRouteTableLink(context.Background()).UpdateRouteTableLinkRequest(updateRequest).Execute()
+		if err != nil {
+			return utils.CheckThrottling(httpResp, err)
+		}
+		resp = rp
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	if err := d.Set("link_route_table_id", resp.GetLinkRouteTableId()); err != nil {
+		return err
+	}
 
 	return resourceOutscaleOAPILinkRouteTableRead(d, meta)
 }
 
 func resourceOutscaleOAPILinkRouteTableRead(d *schema.ResourceData, meta interface{}) error {
 	routeTableID := d.Get("route_table_id").(string)
-	linkRTable, err := readOutscaleLinkRouteTable(meta.(*OutscaleClient), routeTableID, d.Id())
+	linkRouteTableID := d.Get("link_route_table_id").(string)
+	linkRTable, err := readOutscaleLinkRouteTable(meta.(*OutscaleClient), routeTableID, linkRouteTableID)
 	if err != nil {
 		return err
 	}
@@ -113,20 +143,28 @@ func resourceOutscaleOAPILinkRouteTableRead(d *schema.ResourceData, meta interfa
 	if err := d.Set("subnet_id", linkRTable.GetSubnetId()); err != nil {
 		return fmt.Errorf(errorLinkRouteTableSetting, "subnet_id", linkRTable.GetLinkRouteTableId(), err)
 	}
+	if err := d.Set("route_table_id", linkRTable.GetRouteTableId()); err != nil {
+		return fmt.Errorf(errorLinkRouteTableSetting, "route_table_id", linkRTable.GetLinkRouteTableId(), err)
+	}
 
 	return nil
 }
 
 func resourceOutscaleOAPILinkRouteTableDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
+	linkRTableId := d.Get("link_route_table_id").(string)
 
-	log.Printf("[INFO] Deleting link route table: %s", d.Id())
+	if linkRTableId == "" {
+		utils.LogManuallyDeleted("RouteTableLink", d.Id())
+		d.SetId("")
+		return nil
+	}
 
 	var err error
 	var statusCode int
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, httpResp, err := conn.RouteTableApi.UnlinkRouteTable(context.Background()).UnlinkRouteTableRequest(oscgo.UnlinkRouteTableRequest{
-			LinkRouteTableId: d.Id(),
+			LinkRouteTableId: linkRTableId,
 		}).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -161,6 +199,10 @@ func resourceOutscaleOAPILinkRouteTableImportState(d *schema.ResourceData, meta 
 	if linkRTable == nil {
 		return nil, fmt.Errorf("oAPI route tables for get link table not found")
 	}
+	if err := d.Set("link_route_table_id", linkRTable.GetLinkRouteTableId()); err != nil {
+		return nil, fmt.Errorf(errorLinkRouteTableSetting, "link_route_table_id", linkRTable.GetLinkRouteTableId(), err)
+	}
+
 	if err := d.Set("route_table_id", linkRTable.GetRouteTableId()); err != nil {
 		return nil, fmt.Errorf(errorLinkRouteTableSetting, "route_table_id", linkRTable.GetLinkRouteTableId(), err)
 	}
