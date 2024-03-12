@@ -107,6 +107,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_ca":                                resourceOutscaleOAPICa(),
 			"outscale_api_access_rule":                   resourceOutscaleOAPIApiAccessRule(),
 			"outscale_api_access_policy":                 resourceOutscaleOAPIApiAccessPolicy(),
+			"outscale_main_route_table_link":             resourceLinkMainRouteTable(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"outscale_vm":                           dataSourceOutscaleOAPIVM(),
