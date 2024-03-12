@@ -1,0 +1,221 @@
+package outscale
+
+import (
+	"context"
+	"fmt"
+	"net/http"
+	"time"
+
+	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+)
+
+func resourceLinkMainRouteTable() *schema.Resource {
+	return &schema.Resource{
+		Create: resourceLinkMainRouteTableCreate,
+		Read:   resourceLinkMainRouteTableRead,
+		Update: resourceLinkMainRouteTableUpdate,
+		Delete: resourceLinkMainRouteTableDelete,
+		Schema: map[string]*schema.Schema{
+			"net_id": {
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
+			},
+			"route_table_id": {
+				Type:     schema.TypeString,
+				Required: true,
+			},
+			"link_route_table_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"default_route_table_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"subnet_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"main": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+		},
+	}
+}
+
+func resourceLinkMainRouteTableCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
+	netID := d.Get("net_id").(string)
+
+	routeTable, err := readMainLinkRouteTable(meta.(*OutscaleClient), netID)
+	if err != nil {
+		return err
+	}
+	linkRouteTable := routeTable.GetLinkRouteTables()
+	oldLinkRouteTableId := linkRouteTable[0].GetLinkRouteTableId()
+	defaultRouteTableId := linkRouteTable[0].GetRouteTableId()
+
+	updateRequest := oscgo.UpdateRouteTableLinkRequest{
+		RouteTableId: d.Get("route_table_id").(string),
+	}
+	updateRequest.SetLinkRouteTableId(oldLinkRouteTableId)
+	resp := oscgo.UpdateRouteTableLinkResponse{}
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		rp, httpResp, err := conn.RouteTableApi.UpdateRouteTableLink(context.Background()).UpdateRouteTableLinkRequest(updateRequest).Execute()
+		if err != nil {
+			return utils.CheckThrottling(httpResp, err)
+		}
+		resp = rp
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	if err := d.Set("link_route_table_id", resp.GetLinkRouteTableId()); err != nil {
+		return err
+	}
+	if err := d.Set("default_route_table_id", defaultRouteTableId); err != nil {
+		return err
+	}
+	d.SetId(resource.UniqueId())
+
+	return resourceOutscaleOAPILinkRouteTableRead(d, meta)
+}
+
+func resourceLinkMainRouteTableRead(d *schema.ResourceData, meta interface{}) error {
+	netID := d.Get("net_id").(string)
+	routeTable, err := readMainLinkRouteTable(meta.(*OutscaleClient), netID)
+	if err != nil {
+		return err
+	}
+	linkRTable := routeTable.GetLinkRouteTables()
+	if linkRTable == nil {
+		utils.LogManuallyDeleted("RouteTableLink", d.Id())
+		d.SetId("")
+		return nil
+	}
+
+	if err := d.Set("net_id", routeTable.GetNetId()); err != nil {
+		return err
+	}
+	if err := d.Set("link_route_table_id", linkRTable[0].GetLinkRouteTableId()); err != nil {
+		return err
+	}
+	if err := d.Set("main", linkRTable[0].GetMain()); err != nil {
+		return err
+	}
+	if err := d.Set("subnet_id", linkRTable[0].GetSubnetId()); err != nil {
+		return err
+	}
+	if err := d.Set("route_table_id", linkRTable[0].GetRouteTableId()); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func resourceLinkMainRouteTableUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
+
+	updateRequest := oscgo.UpdateRouteTableLinkRequest{
+		LinkRouteTableId: d.Get("link_route_table_id").(string),
+	}
+	if d.HasChange("route_table_id") && !d.IsNewResource() {
+		updateRequest.SetRouteTableId(d.Get("route_table_id").(string))
+	}
+
+	resp := oscgo.UpdateRouteTableLinkResponse{}
+	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+		rp, httpResp, err := conn.RouteTableApi.UpdateRouteTableLink(context.Background()).UpdateRouteTableLinkRequest(updateRequest).Execute()
+		if err != nil {
+			return utils.CheckThrottling(httpResp, err)
+		}
+		resp = rp
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	if err := d.Set("link_route_table_id", resp.GetLinkRouteTableId()); err != nil {
+		return err
+	}
+
+	return resourceOutscaleOAPILinkRouteTableRead(d, meta)
+}
+
+func resourceLinkMainRouteTableDelete(d *schema.ResourceData, meta interface{}) error {
+	var err error
+	var statusCode int
+	conn := meta.(*OutscaleClient).OSCAPI
+	netID := d.Get("net_id").(string)
+	routeTable, err := readMainLinkRouteTable(meta.(*OutscaleClient), netID)
+
+	if err != nil {
+		return err
+	}
+	linkRouteTable := routeTable.GetLinkRouteTables()
+	mainLinkRouteTableId := linkRouteTable[0].GetLinkRouteTableId()
+	updateRequest := oscgo.UpdateRouteTableLinkRequest{
+		RouteTableId: d.Get("default_route_table_id").(string),
+	}
+	updateRequest.SetLinkRouteTableId(mainLinkRouteTableId)
+
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		_, httpResp, err := conn.RouteTableApi.UpdateRouteTableLink(context.Background()).UpdateRouteTableLinkRequest(updateRequest).Execute()
+		if err != nil {
+			return utils.CheckThrottling(httpResp, err)
+		}
+		return nil
+	})
+
+	if err != nil {
+		if statusCode == http.StatusNotFound {
+			return nil
+		}
+		return fmt.Errorf("Error deleting link route table: %s", err)
+	}
+
+	return nil
+}
+func readMainLinkRouteTable(meta *OutscaleClient, netID string) (oscgo.RouteTable, error) {
+	conn := meta.OSCAPI
+
+	var resp oscgo.ReadRouteTablesResponse
+	var err error
+	var routeTable oscgo.RouteTable
+
+	rtbRequest := oscgo.ReadRouteTablesRequest{}
+	rtbRequest.Filters = &oscgo.FiltersRouteTable{
+		NetIds:             &[]string{netID},
+		LinkRouteTableMain: &[]bool{true}[0],
+	}
+	err = resource.Retry(15*time.Minute, func() *resource.RetryError {
+		var err error
+		rp, httpResp, err := conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(rtbRequest).Execute()
+		if err != nil {
+			return utils.CheckThrottling(httpResp, err)
+		}
+		resp = rp
+		return nil
+	})
+
+	if err != nil {
+		return routeTable, err
+	}
+	routeTable = resp.GetRouteTables()[0]
+	if len(resp.GetRouteTables()) != 1 {
+		return routeTable, fmt.Errorf("Error Not found default main route table route")
+	}
+	return routeTable, nil
+}
