@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -59,12 +58,10 @@ func resourceOutscaleOAPILinkRouteTableCreate(d *schema.ResourceData, meta inter
 	conn := meta.(*OutscaleClient).OSCAPI
 	subnetID := d.Get("subnet_id").(string)
 	routeTableID := d.Get("route_table_id").(string)
-	log.Printf("[INFO] Creating route table link: %s => %s", subnetID, routeTableID)
 	linkRouteTableOpts := oscgo.LinkRouteTableRequest{
 		RouteTableId: routeTableID,
 		SubnetId:     subnetID,
 	}
-
 	var resp oscgo.LinkRouteTableResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {

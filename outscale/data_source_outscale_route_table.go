@@ -92,10 +92,6 @@ func dataSourceOutscaleOAPIRouteTable() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"route_table_to_subnet_link_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
 						"route_table_id": {
 							Type:     schema.TypeString,
 							Computed: true,
