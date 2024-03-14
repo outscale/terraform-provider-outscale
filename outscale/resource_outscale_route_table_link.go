@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
-	"net/http"
 	"strings"
 	"time"
 
@@ -57,16 +55,13 @@ func resourceOutscaleOAPILinkRouteTable() *schema.Resource {
 
 func resourceOutscaleOAPILinkRouteTableCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-	subnetID := d.Get("subnet_id").(string)
-	routeTableID := d.Get("route_table_id").(string)
-	log.Printf("[INFO] Creating route table link: %s => %s", subnetID, routeTableID)
-	linkRouteTableOpts := oscgo.LinkRouteTableRequest{
-		RouteTableId: routeTableID,
-		SubnetId:     subnetID,
-	}
-
 	var resp oscgo.LinkRouteTableResponse
 	var err error
+
+	linkRouteTableOpts := oscgo.LinkRouteTableRequest{
+		RouteTableId: d.Get("route_table_id").(string),
+		SubnetId:     d.Get("subnet_id").(string),
+	}
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
 		rp, httpResp, err := conn.RouteTableApi.LinkRouteTable(context.Background()).LinkRouteTableRequest(linkRouteTableOpts).Execute()
@@ -120,25 +115,16 @@ func resourceOutscaleOAPILinkRouteTableRead(d *schema.ResourceData, meta interfa
 func resourceOutscaleOAPILinkRouteTableDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	log.Printf("[INFO] Deleting link route table: %s", d.Id())
-
-	var err error
-	var statusCode int
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, httpResp, err := conn.RouteTableApi.UnlinkRouteTable(context.Background()).UnlinkRouteTableRequest(oscgo.UnlinkRouteTableRequest{
 			LinkRouteTableId: d.Id(),
 		}).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
-		statusCode = httpResp.StatusCode
 		return nil
 	})
-
 	if err != nil {
-		if statusCode == http.StatusNotFound {
-			return nil
-		}
 		return fmt.Errorf("Error deleting link route table: %s", err)
 	}
 
