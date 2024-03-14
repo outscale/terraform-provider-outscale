@@ -163,16 +163,16 @@ const testAccOAPILinkRouteTableConfig = `
 	}
 
 	resource "outscale_subnet" "foo" {
-		net_id = "${outscale_net.foo.id}"
+		net_id = outscale_net.foo.id
 		ip_range = "10.1.1.0/24"
 	}
 
 	resource "outscale_route_table" "foo" {
-		net_id = "${outscale_net.foo.id}"
+		net_id = outscale_net.foo.id
 	}
 
 	resource "outscale_route_table_link" "foo" {
-		route_table_id = "${outscale_route_table.foo.id}"
-		subnet_id = "${outscale_subnet.foo.id}"
+		route_table_id = outscale_route_table.foo.id
+		subnet_id = outscale_subnet.foo.id
 	}
 `
