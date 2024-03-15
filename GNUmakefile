@@ -39,6 +39,7 @@ test-others: fmtcheck test-gen-cert
 
 .PHONY: fmt
 fmt:
+	gofmt -s -w ./utils/
 	gofmt -s -w ./main.go
 	gofmt -s -w ./$(PKG_NAME)
 
