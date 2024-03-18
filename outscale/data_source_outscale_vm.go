@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/spf13/cast"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
@@ -25,14 +26,17 @@ func dataSourceOutscaleOAPIVMRead(d *schema.ResourceData, meta interface{}) erro
 
 	filters, filtersOk := d.GetOk("filter")
 	instanceID, instanceIDOk := d.GetOk("vm_id")
-
+	var err error
 	if !filtersOk && !instanceIDOk {
 		return fmt.Errorf("One of filters, or instance_id must be assigned")
 	}
 	// Build up search parameters
 	params := oscgo.ReadVmsRequest{}
 	if filtersOk {
-		params.Filters = buildOutscaleOAPIDataSourceVMFilters(filters.(*schema.Set))
+		params.Filters, err = buildOutscaleOAPIDataSourceVMFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 	if instanceIDOk {
 		params.Filters.VmIds = &[]string{instanceID.(string)}
@@ -41,7 +45,7 @@ func dataSourceOutscaleOAPIVMRead(d *schema.ResourceData, meta interface{}) erro
 	log.Printf("[DEBUG] ReadVmsRequest -> %+v\n", params)
 
 	var resp oscgo.ReadVmsResponse
-	err := resource.Retry(30*time.Second, func() *resource.RetryError {
+	err = resource.Retry(30*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := client.VmApi.ReadVms(context.Background()).ReadVmsRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -256,7 +260,7 @@ func getDataSourceOAPIVMSchemas() map[string]*schema.Schema {
 	return wholeSchema
 }
 
-func buildOutscaleOAPIDataSourceVMFilters(set *schema.Set) *oscgo.FiltersVm {
+func buildOutscaleOAPIDataSourceVMFilters(set *schema.Set) (*oscgo.FiltersVm, error) {
 	filters := new(oscgo.FiltersVm)
 
 	for _, v := range set.List() {
@@ -267,19 +271,155 @@ func buildOutscaleOAPIDataSourceVMFilters(set *schema.Set) *oscgo.FiltersVm {
 		}
 
 		switch name := m["name"].(string); name {
+		case "architectures":
+			filters.SetArchitectures(filterValues)
+		case "Block_device_mapping_delete_on_vm_deletion":
+			filters.SetBlockDeviceMappingDeleteOnVmDeletion(cast.ToBool(filterValues[0]))
+		case "block_device_mapping_device_names":
+			filters.SetBlockDeviceMappingDeviceNames(filterValues)
+		case "block_device_mapping_states":
+			filters.SetBlockDeviceMappingStates(filterValues)
+		case "block_device_mapping_link_dates":
+			linkDates, err := utils.FiltersTimesToStringSlice(
+				filterValues, "block_device_mapping_link_dates")
+			if err != nil {
+				return filters, err
+			}
+			filters.SetBlockDeviceMappingLinkDates(linkDates)
+		case "block_device_mapping_volume_ids":
+			filters.SetBlockDeviceMappingVolumeIds(filterValues)
+		case "ClientTokens":
+			filters.SetClientTokens(filterValues)
+		case "creation_dates":
+			creationDates, err := utils.FiltersTimesToStringSlice(
+				filterValues, "creation_dates")
+			if err != nil {
+				return filters, err
+			}
+			filters.SetCreationDates(creationDates)
+		case "image_ids":
+			filters.SetImageIds(filterValues)
+		case "is_source_dest_checked":
+			filters.SetIsSourceDestChecked(cast.ToBool(filterValues[0]))
+		case "keypair_names":
+			filters.SetKeypairNames(filterValues)
+		case "launch_numbers":
+			filters.SetLaunchNumbers(utils.StringSliceToInt32Slice(filterValues))
+		case "lifecycles":
+			filters.SetLifecycles(filterValues)
+		case "net_ids":
+			filters.SetNetIds(filterValues)
+		case "nic_account_ids":
+			filters.SetNicAccountIds(filterValues)
+		case "nic_descriptions":
+			filters.SetNicDescriptions(filterValues)
+		case "nic_is_source_dest_checked":
+			filters.SetNicIsSourceDestChecked(cast.ToBool(filterValues[0]))
+		case "nic_link_nic_delete_on_vm_deletion":
+			filters.SetNicLinkNicDeleteOnVmDeletion(cast.ToBool(filterValues[0]))
+		case "nic_link_nic_device_numbers":
+			filters.SetNicLinkNicDeviceNumbers(
+				utils.StringSliceToInt32Slice(filterValues))
+		case "nic_link_nic_link_nic_dates":
+			linkDates, err := utils.FiltersTimesToStringSlice(
+				filterValues, "nic_link_nic_link_nic_dates")
+			if err != nil {
+				return filters, err
+			}
+			filters.SetNicLinkNicLinkNicDates(linkDates)
+		case "nic_link_nic_link_nic_ids":
+			filters.SetNicLinkNicLinkNicIds(filterValues)
+		case "nic_link_nic_states":
+			filters.SetNicLinkNicStates(filterValues)
+		case "nic_link_nic_vm_account_ids":
+			filters.SetNicLinkNicVmAccountIds(filterValues)
+		case "nic_link_nic_vm_ids":
+			filters.SetNicLinkNicVmIds(filterValues)
+		case "nic_link_public_ip_account_ids":
+			filters.SetNicLinkPublicIpAccountIds(filterValues)
+		case "nic_link_public_ip_link_public_ip_ids":
+			filters.SetNicLinkPublicIpLinkPublicIpIds(filterValues)
+		case "nic_link_public_ip_public_ip_ids":
+			filters.SetNicLinkPublicIpPublicIpIds(filterValues)
+		case "nic_link_public_Ip_public_ips":
+			filters.SetNicLinkPublicIpPublicIps(filterValues)
+		case "nic_mac_addresses":
+			filters.SetNicMacAddresses(filterValues)
+		case "nic_net_ids":
+			filters.SetNicNetIds(filterValues)
+		case "nic_nic_ids":
+			filters.SetNicNicIds(filterValues)
+		case "nic_private_ips_link_public_ip_account_ids":
+			filters.SetNicPrivateIpsLinkPublicIpAccountIds(filterValues)
+		case "nic_private_ips_primary_ip":
+			filters.SetNicPrivateIpsPrimaryIp(cast.ToBool(filterValues[0]))
+		case "nic_private_ips_private_ips":
+			filters.SetNicPrivateIpsPrivateIps(filterValues)
+		case "nic_security_group_ids":
+			filters.SetNicSecurityGroupIds(filterValues)
+		case "nic_security_group_names":
+			filters.SetNicSecurityGroupNames(filterValues)
+		case "nic_states":
+			filters.SetNicStates(filterValues)
+		case "nic_subnet_ids":
+			filters.SetNicSubnetIds(filterValues)
+		case "nic_subregion_names":
+			filters.SetNicSubregionNames(filterValues)
+		case "platforms":
+			filters.SetPlatforms(filterValues)
+		case "private_ips":
+			filters.SetPrivateIps(filterValues)
+		case "product_codes":
+			filters.SetProductCodes(filterValues)
+		case "public_ips":
+			filters.SetPublicIps(filterValues)
+		case "reservation_ids":
+			filters.SetReservationIds(filterValues)
+		case "root_device_names":
+			filters.SetRootDeviceNames(filterValues)
+		case "root_tevice_types":
+			filters.SetRootDeviceTypes(filterValues)
+		case "security_group_ids":
+			filters.SetSecurityGroupIds(filterValues)
+		case "security_group_names":
+			filters.SetSecurityGroupNames(filterValues)
+		case "state_reason_codes":
+			filters.SetStateReasonCodes(
+				utils.StringSliceToInt32Slice(filterValues))
+		case "state_reason_messages":
+			filters.SetStateReasonMessages(filterValues)
+		case "state_reasons":
+			filters.SetStateReasons(filterValues)
+		case "subnet_ids":
+			filters.SetSubnetIds(filterValues)
+		case "subregion_names":
+			filters.SetSubregionNames(filterValues)
 		case "tag_keys":
-			filters.TagKeys = &filterValues
+			filters.SetTagKeys(filterValues)
 		case "tag_values":
-			filters.TagValues = &filterValues
+			filters.SetTagValues(filterValues)
 		case "tags":
-			filters.Tags = &filterValues
+			filters.SetTags(filterValues)
 		case "vm_ids":
-			filters.VmIds = &filterValues
+			filters.SetVmIds(filterValues)
+		case "tenancies":
+			filters.SetTenancies(filterValues)
+		case "vm_security_group_ids":
+			filters.SetVmSecurityGroupIds(filterValues)
+		case "vm_security_group_names":
+			filters.SetVmSecurityGroupNames(filterValues)
+		case "vm_state_codes":
+			filters.SetVmStateCodes(
+				utils.StringSliceToInt32Slice(filterValues))
+		case "vm_state_names":
+			filters.SetVmStateNames(filterValues)
+		case "VmTypes":
+			filters.SetVmTypes(filterValues)
 		default:
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)
 		}
 	}
-	return filters
+	return filters, nil
 }
 
 func getOApiVMAttributesSchema() map[string]*schema.Schema {

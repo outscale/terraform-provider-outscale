@@ -64,10 +64,13 @@ func dataSourceOutscaleOAPILinPeeringConnectionRead(d *schema.ResourceData, meta
 	if !filtersOk {
 		return fmt.Errorf("filters must be assigned")
 	}
-	req.SetFilters(buildOutscaleOAPILinPeeringConnectionFilters(filters.(*schema.Set)))
+	filtersValues, err := buildOutscaleOAPILinPeeringConnectionFilters(filters.(*schema.Set))
+	if err != nil {
+		return err
+	}
+	req.SetFilters(filtersValues)
 
 	var resp oscgo.ReadNetPeeringsResponse
-	var err error
 	var statusCode int
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.NetPeeringApi.ReadNetPeerings(context.Background()).ReadNetPeeringsRequest(req).Execute()
@@ -153,7 +156,7 @@ func dataSourceOutscaleOAPILinPeeringConnectionRead(d *schema.ResourceData, meta
 	return nil
 }
 
-func buildOutscaleOAPILinPeeringConnectionFilters(set *schema.Set) oscgo.FiltersNetPeering {
+func buildOutscaleOAPILinPeeringConnectionFilters(set *schema.Set) (oscgo.FiltersNetPeering, error) {
 	var filters oscgo.FiltersNetPeering
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -179,6 +182,13 @@ func buildOutscaleOAPILinPeeringConnectionFilters(set *schema.Set) oscgo.Filters
 			filters.SetSourceNetNetIds(filterValues)
 		case "state_messages":
 			filters.SetStateMessages(filterValues)
+		case "expiration_dates":
+			expirationDates, err := utils.StringSliceToTimeSlice(
+				filterValues, "expiration_dates")
+			if err != nil {
+				return filters, err
+			}
+			filters.SetExpirationDates(expirationDates)
 		case "state_names":
 			filters.SetStateNames(filterValues)
 		case "tag_keys":
@@ -191,5 +201,5 @@ func buildOutscaleOAPILinPeeringConnectionFilters(set *schema.Set) oscgo.Filters
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)
 		}
 	}
-	return filters
+	return filters, nil
 }

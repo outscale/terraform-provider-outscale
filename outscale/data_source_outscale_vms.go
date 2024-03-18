@@ -67,7 +67,7 @@ func dataSourceOutscaleOApiVMSRead(d *schema.ResourceData, meta interface{}) err
 
 	filters, filtersOk := d.GetOk("filter")
 	vmID, vmIDOk := d.GetOk("vm_id")
-
+	var err error
 	if !filtersOk && !vmIDOk {
 		return fmt.Errorf("One of filters, and vm ID must be assigned")
 	}
@@ -75,14 +75,17 @@ func dataSourceOutscaleOApiVMSRead(d *schema.ResourceData, meta interface{}) err
 	// Build up search parameters
 	params := oscgo.ReadVmsRequest{}
 	if filtersOk {
-		params.Filters = buildOutscaleOAPIDataSourceVMFilters(filters.(*schema.Set))
+		params.Filters, err = buildOutscaleOAPIDataSourceVMFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 	if vmIDOk {
 		params.Filters.VmIds = &[]string{vmID.(string)}
 	}
 
 	var resp oscgo.ReadVmsResponse
-	err := resource.Retry(30*time.Second, func() *resource.RetryError {
+	err = resource.Retry(30*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := client.VmApi.ReadVms(context.Background()).ReadVmsRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
