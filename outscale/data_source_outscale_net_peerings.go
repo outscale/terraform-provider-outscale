@@ -70,10 +70,13 @@ func dataSourceOutscaleOAPILinPeeringsConnectionRead(d *schema.ResourceData, met
 	}
 
 	params := oscgo.ReadNetPeeringsRequest{}
-	params.SetFilters(buildOutscaleOAPILinPeeringConnectionFilters(filters.(*schema.Set)))
+	filtersValues, err := buildOutscaleOAPILinPeeringConnectionFilters(filters.(*schema.Set))
+	if err != nil {
+		return err
+	}
+	params.SetFilters(filtersValues)
 
 	var resp oscgo.ReadNetPeeringsResponse
-	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.NetPeeringApi.ReadNetPeerings(context.Background()).ReadNetPeeringsRequest(params).Execute()
 		if err != nil {

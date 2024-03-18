@@ -163,6 +163,12 @@ func buildOutscaleOAPIDataSourceVMTypesFilters(set *schema.Set) oscgo.FiltersVmT
 		switch name := m["name"].(string); name {
 		case "bsu_optimized":
 			filters.SetBsuOptimized(cast.ToBool(filterValues[0]))
+		case "ephemerals_types":
+			filters.SetEphemeralsTypes(filterValues)
+		case "eths":
+			filters.SetEths(utils.StringSliceToInt32Slice(filterValues))
+		case "gpus":
+			filters.SetGpus(utils.StringSliceToInt32Slice(filterValues))
 		case "memory_sizes":
 			filters.SetMemorySizes(utils.StringSliceToFloat32Slice(filterValues))
 		case "vcore_counts":
