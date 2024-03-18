@@ -66,7 +66,11 @@ func testAccCheckOutscaleOAPISubregionsDataSourceConfig(subregionName string) st
 		data "outscale_subregions" "test" {
 			filter {
 				name = "subregion_names"
-				values = ["%s"]
+				values = ["%[1]sa"]
+			}
+			filter {
+				name = "region_names"
+				values = ["%[1]s"]
 			}
 		}
 	`, subregionName)
