@@ -111,6 +111,10 @@ func buildOutscaleOAPIDataSourceSubregionsFilters(set *schema.Set) *oscgo.Filter
 		switch name := m["name"].(string); name {
 		case "subregion_names":
 			filters.SetSubregionNames(filterValues)
+		case "states":
+			filters.SetStates(filterValues)
+		case "region_names":
+			filters.SetRegionNames(filterValues)
 		default:
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)
 		}

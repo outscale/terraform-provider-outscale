@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/nav-inc/datetime"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/spf13/cast"
 
@@ -194,6 +195,40 @@ func StringSlicePtrToInterfaceSlice(list *[]string) []interface{} {
 		vs = append(vs, v)
 	}
 	return vs
+}
+
+func ParsingfilterToDateFormat(filterName, value string) (time.Time, error) {
+	var err error
+	var filterDate time.Time
+
+	if filterDate, err = datetime.Parse(value, time.UTC); err != nil {
+		return filterDate, fmt.Errorf("%s value should be 'ISO 8601' format ('2017-06-14' or '2017-06-14T00:00:00Z, ...) %s", filterName, err)
+	}
+	return filterDate, nil
+}
+
+func StringSliceToTimeSlice(filterValues []string, filterName string) ([]time.Time, error) {
+	var sliceDates []time.Time
+	for val := range filterValues {
+		valDate, err := ParsingfilterToDateFormat(filterName, filterValues[val])
+		if err != nil {
+			return sliceDates, err
+		}
+		sliceDates = append(sliceDates, valDate)
+	}
+	return sliceDates, nil
+}
+
+func FiltersTimesToStringSlice(filterValues []string, filterName string) ([]string, error) {
+	var sliceString []string
+	for val := range filterValues {
+		valDate, err := ParsingfilterToDateFormat(filterName, filterValues[val])
+		if err != nil {
+			return sliceString, err
+		}
+		sliceString = append(sliceString, valDate.String())
+	}
+	return sliceString, nil
 }
 
 func I32toa(i int32) string {

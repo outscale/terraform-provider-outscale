@@ -324,6 +324,8 @@ func buildOutscaleOAPIDataSourceImagesFilters(set *schema.Set) *oscgo.FiltersIma
 			filters.SetPermissionsToLaunchGlobalPermission(cast.ToBool(filterValues[0]))
 		case "product_codes":
 			filters.SetProductCodes(filterValues)
+		case "product_code_names":
+			filters.SetProductCodeNames(filterValues)
 		case "root_device_names":
 			filters.SetRootDeviceNames(filterValues)
 		case "root_device_types":

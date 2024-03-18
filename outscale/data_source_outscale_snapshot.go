@@ -9,7 +9,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/nav-inc/datetime"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
@@ -211,14 +210,14 @@ func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set, filter *oscgo.
 		case "descriptions":
 			filter.SetDescriptions(values)
 		case "to_creation_date":
-			valDate, err := parsingfilterDateFormat("to_creation_date", values[0])
+			valDate, err := utils.ParsingfilterToDateFormat("to_creation_date", values[0])
 			if err != nil {
 				return err
 			}
 			filter.SetToCreationDate(valDate)
 
 		case "from_creation_date":
-			valDate, err := parsingfilterDateFormat("from_creation_date", values[0])
+			valDate, err := utils.ParsingfilterToDateFormat("from_creation_date", values[0])
 			if err != nil {
 				return err
 			}
@@ -263,13 +262,4 @@ func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set, filter *oscgo.
 		}
 	}
 	return nil
-}
-func parsingfilterDateFormat(filterName, value string) (time.Time, error) {
-	var err error
-	var filterDate time.Time
-
-	if filterDate, err = datetime.Parse(value, time.UTC); err != nil {
-		return filterDate, fmt.Errorf("%s value should be 'ISO 8601' format ('2017-06-14' or '2017-06-14T00:00:00Z, ...) %s", filterName, err)
-	}
-	return filterDate, nil
 }
