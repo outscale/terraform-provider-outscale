@@ -53,5 +53,14 @@ func testAccOAPIVMSDataSourceConfig(omi, vmType string) string {
 				name   = "vm_ids"
 				values = [outscale_vm.databasic.id]
 			}
+			filter {
+				name   = "keypair_names"
+				values = ["terraform-basic"]
+			}
+			filter {
+				name   = "image_ids"
+				values = ["%[1]s"]
+			}
+
 		}`, omi, vmType)
 }
