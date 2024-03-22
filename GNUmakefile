@@ -31,11 +31,11 @@ test-net: fmtcheck
 
 .PHONY: test-vm
 test-vm: fmtcheck
-	TF_ACC=1 go test $(TEST) -run=TestAccVM -count 1 -v -parallel 8 $(TESTARGS) -timeout 240m -cover
+	TF_ACC=1 go test $(TEST) -run=TestAccVM -count 1 -v -parallel 6 $(TESTARGS) -timeout 240m -cover
 
 .PHONY: test-others
 test-others: fmtcheck test-gen-cert
-	TF_ACC=1 go test $(TEST) -run=TestAccOthers -count 1 -v -parallel 8 $(TESTARGS) -timeout 240m -cover
+	TF_ACC=1 go test $(TEST) -run=TestAccOthers -count 1 -v -parallel 6 $(TESTARGS) -timeout 240m -cover
 
 .PHONY: fmt
 fmt:
