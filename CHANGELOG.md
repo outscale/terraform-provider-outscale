@@ -1,3 +1,25 @@
+0.12.0 (April 13, 2024)
+========================
+BUG FIXES:
+----------
+
+* Update documentation about creating two NICs on a single VM ([GH-424](https://github.com/outscale/terraform-provider-outscale/issues/424))
+
+FEATURES:
+---------
+
+* Update subregion data_source(s) ([filters](https://docs.outscale.com/en/userguide/Home.html#_january_2024)) ([GH-434](https://github.com/outscale/terraform-provider-outscale/issues/434))
+* Update net_peerings data_source(s) ([filters](https://docs.outscale.com/en/userguide/Home.html#_january_2024)) ([GH-433](https://github.com/outscale/terraform-provider-outscale/issues/433))
+* Update vm_types data_source(s) ([filters](https://docs.outscale.com/en/userguide/Home.html#_january_2024)) ([GH-432](https://github.com/outscale/terraform-provider-outscale/issues/432))
+* Update vm data_source(s) ([filters](https://docs.outscale.com/en/userguide/Home.html#_january_2024)) ([GH-431](https://github.com/outscale/terraform-provider-outscale/issues/431))
+* Enable to set a route table as Main ([GH-362](https://github.com/outscale/terraform-provider-outscale/issues/362))
+
+IMPROVEMENT:
+-----------
+
+* Update tests and osc-sdk-go
+* Somes refactoring
+
 0.11.0 (February 13, 2024)
 ========================
 
