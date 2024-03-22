@@ -8,9 +8,9 @@
 
 ## Requirements
 
-- [Terraform](https://www.terraform.io/downloads.html) 1.0.x
+- [Terraform](https://www.terraform.io/downloads.html) 1.x.x
 
-- [Go](https://golang.org/doc/install) 1.13 (to build the provider plugin)
+- [Go](https://golang.org/doc/install) 1.22.0 (to build the provider plugin)
 
 
 ## Breaking change
@@ -19,9 +19,9 @@
 >
 > We have a broken change on our api when creating access_key without expiration date for all version less then v0.9.0. ([GH-issues](https://github.com/outscale/terraform-provider-outscale/issues/342))
 >
-> We recommende to upgrade on the latest ([v0.11.0](https://registry.terraform.io/providers/outscale/outscale/latest))
+> We recommend to upgrade on the latest ([v0.12.0](https://registry.terraform.io/providers/outscale/outscale/latest))
 
-## Using the Provider
+## Using the Provider with Terraform
 
 > **Warning**
 >
@@ -36,7 +36,7 @@ terraform {
   required_providers {
     outscale = {
       source = "outscale/outscale"
-      version = "0.11.0"
+      version = "0.12.0"
     }
   }
 }
@@ -45,6 +45,32 @@ provider "outscale" {
   # Configuration options
 }
 ```
+1. Execute `terraform init`
+
+2. Execute `terraform plan`
+
+## Using the Provider with OpenTofu
+
+```sh
+terraform {
+  required_providers {
+    outscale = {
+      source = "outscale/outscale"
+      version = "0.12.0"
+    }
+  }
+}
+
+provider "outscale" {
+  # Configuration options
+}
+```
+1. Execute `tofu init`
+
+2. Execute `tofu plan`
+
+## Migrating to OpenTofu from Terraform
+Follow [migration link](https://opentofu.org/docs/intro/migration/)
 
 ## Configuring the proxy, if any
 ### on Linux/macOS
@@ -60,11 +86,10 @@ set HTTPS_PROXY=http://192.168.1.24:3128
 Add the following lines in the Terraform configuration to define certificate location:
 ```sh
 terraform {
-  required_version = ">= 0.13"
   required_providers {
     outscale = {
       source = "outscale/outscale"
-      version = "0.11.0"
+      version = "0.12.0"
     }
   }
 }
@@ -88,39 +113,67 @@ Clone repository to: `$GOPATH/src/github.com/outscale/terraform-provider-outscal
 ```sh
 mkdir -p $GOPATH/src/github.com/terraform-providers
 cd  $GOPATH/src/github.com/terraform-providers
-git clone --branch v0.11.0 https://github.com/outscale/terraform-provider-outscale
+git clone --branch v0.12.0 https://github.com/outscale/terraform-provider-outscale
 ```
 Enter the provider directory and build the provider
 ```sh
-cd  $GOPATH/src/github.com/outscale/terraform-provider-outscale
-go build -o terraform-provider-outscale_v0.11.0
+cd  $GOPATH/src/github.com/terraform-providers/terraform-provider-outscale
+go build -o terraform-provider-outscale_v0.12.0
 ```
-## Using the provider
-### On Linux
+## Using the provider built
+### For Terraform
+#### On Linux
 
 1. Download and install [Terraform](https://www.terraform.io/downloads.html)
 
-2. Move the plugin to the repository ~/.terraform.d/plugins/registry.terraform.io/outscale/outscale/0.11.0/linux_amd64/.
+2. Move the plugin to the repository ~/.terraform.d/plugins/registry.terraform.io/outscale/outscale/0.12.0/linux_amd64/.
 ```shell
-mkdir -p ~/.terraform.d/plugins/registry.terraform.io/outscale/outscale/0.11.0/linux_amd64
-mv terraform-provider-outscale_v0.11.0 ~/.terraform.d/plugins/registry.terraform.io/outscale/outscale/0.11.0/linux_amd64
+mkdir -p ~/.terraform.d/plugins/registry.terraform.io/outscale/outscale/0.12.0/linux_amd64
+mv terraform-provider-outscale_v0.12.0 ~/.terraform.d/plugins/registry.terraform.io/outscale/outscale/0.12.0/linux_amd64
 ```
-3. Execute `terraform init
+3. Execute `terraform init`
 
 4. Execute `terraform plan`
 
-### On macOS
+#### On macOS
 1. Download and install [Terraform](https://www.terraform.io/downloads.html)
 
-2. Move the plugin to the repository ~/.terraform.d/plugins/registry.terraform.io/outscale/outscale/0.11.0/darwin_arm64
+2. Move the plugin to the repository ~/.terraform.d/plugins/registry.terraform.io/outscale/outscale/0.12.0/darwin_arm64
 ```shell
-mkdir -p ~/.terraform.d/plugins/registry.terraform.io/outscale/outscale/0.11.0/darwin_arm64
-mv terraform-provider-outscale_v0.11.0 ~/.terraform.d/plugins/registry.terraform.io/outscale/outscale/0.11.0/darwin_arm64
+mkdir -p ~/.terraform.d/plugins/registry.terraform.io/outscale/outscale/0.12.0/darwin_arm64
+mv terraform-provider-outscale_v0.12.0 ~/.terraform.d/plugins/registry.terraform.io/outscale/outscale/0.12.0/darwin_arm64
 ```  
 
 3. Execute `terraform init`
 
 4. Execute `terraform plan`
+
+### For OpenTofu
+#### On Linux
+
+1. Download and install [OpenTofu](https://opentofu.org/docs/intro/install/deb/)
+
+2. Move the plugin to the repository ~/.terraform.d/plugins/registry.opentofu.org/outscale/outscale/0.12.0/linux_amd64/.
+```shell
+mkdir -p ~/.terraform.d/plugins/registry.opentofu.org/outscale/outscale/0.12.0/linux_amd64
+mv terraform-provider-outscale_v0.12.0 ~/.terraform.d/plugins/registry.opentofu.org/outscale/outscale/0.12.0/linux_amd64
+```
+3. Execute `tofu init`
+
+4. Execute `tofu plan`
+
+#### On macOS
+1. Download and install [OpenTofu](https://opentofu.org/docs/intro/install/homebrew/)
+
+2. Move the plugin to the repository ~/.terraform.d/plugins/registry.opentofu.org/outscale/outscale/0.12.0/darwin_arm64
+```shell
+mkdir -p ~/.terraform.d/plugins/registry.opentofu.org/outscale/outscale/0.12.0/darwin_arm64
+mv terraform-provider-outscale_v0.12.0 ~/.terraform.d/plugins/registry.opentofu.org/outscale/outscale/0.12.0/darwin_arm64
+```
+
+3. Execute `tofu init`
+
+4. Execute `tofu plan`
 
 ## Issues and contributions
 Check [CONTRIBUTING.md](./CONTRIBUTING.md) for more details.
