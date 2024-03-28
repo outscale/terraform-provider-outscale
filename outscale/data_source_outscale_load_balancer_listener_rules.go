@@ -161,14 +161,10 @@ func DataSourceOutscaleLoadBalancerLDRulesRead(d *schema.ResourceData, meta inte
 
 		if lr.Priority != nil {
 			l["priority"] = lr.Priority
-		} else {
-			fmt.Errorf("Malformated listener rule")
 		}
 
 		if lr.VmIds != nil {
 			l["vm_ids"] = utils.StringSlicePtrToInterfaceSlice(lr.VmIds)
-		} else {
-			fmt.Errorf("Malformated listener rule")
 		}
 		lrs_ret[k] = l
 	}
