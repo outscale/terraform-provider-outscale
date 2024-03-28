@@ -1,4 +1,4 @@
-module github.com/terraform-providers/terraform-provider-outscale
+module github.com/outscale/terraform-provider-outscale
 
 go 1.22.0
 
