@@ -90,7 +90,6 @@ func resourceLBUAttachmentRead(d *schema.ResourceData, meta interface{}) error {
 
 	if managed.Len() == 0 {
 		log.Printf("[WARN] not expected attachments found in LBU %s", lbuName)
-		log.Printf("[WARN] lbu current attachments are %#v", all_backends)
 		log.Printf("[WARN] we would manage only these attachments %#v", expected)
 		log.Printf("[WARN] no managed attachments are present.")
 		d.SetId("")
