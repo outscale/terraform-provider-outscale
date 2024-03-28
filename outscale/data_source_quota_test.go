@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/terraform-providers/terraform-provider-outscale/version"
+	"github.com/outscale/terraform-provider-outscale/version"
 )
 
 func TestAccFwOthers_DataSourceQuota(t *testing.T) {

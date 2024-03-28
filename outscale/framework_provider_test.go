@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
 	"github.com/hashicorp/terraform-plugin-mux/tf5muxserver"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	vers "github.com/terraform-providers/terraform-provider-outscale/version"
+	vers "github.com/outscale/terraform-provider-outscale/version"
 )
 
 func TestFwProvider_impl(t *testing.T) {
