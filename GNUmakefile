@@ -17,8 +17,12 @@ build: fmtcheck
 fmtcheck:
 	@sh -c "'$(CURDIR)/scripts/gofmtcheck.sh'"
 
+.PHONY: vet
+vet: fmtcheck
+	go vet $(TEST)
+
 .PHONY: test
-test: fmtcheck
+test: fmtcheck vet
 	go test $(TEST) -count 1 -timeout=30s -parallel=4
 
 .PHONY: testacc
