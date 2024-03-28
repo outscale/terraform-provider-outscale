@@ -84,7 +84,7 @@ export OUTSCALE_X509CERT=/myrepository/certificate/client_ca.crt
 export OUTSCALE_X509KEY=/myrepository/certificate/client_ca.key
 ```
 ## Building The Provider
-Clone repository to: `$GOPATH/src/github.com/terraform-providers/terraform-provider-outscale`
+Clone repository to: `$GOPATH/src/github.com/outscale/terraform-provider-outscale`
 ```sh
 mkdir -p $GOPATH/src/github.com/terraform-providers
 cd  $GOPATH/src/github.com/terraform-providers
@@ -92,7 +92,7 @@ git clone --branch v0.11.0 https://github.com/outscale/terraform-provider-outsca
 ```
 Enter the provider directory and build the provider
 ```sh
-cd  $GOPATH/src/github.com/terraform-providers/terraform-provider-outscale
+cd  $GOPATH/src/github.com/outscale/terraform-provider-outscale
 go build -o terraform-provider-outscale_v0.11.0
 ```
 ## Using the provider

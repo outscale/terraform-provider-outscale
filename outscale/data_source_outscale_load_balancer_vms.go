@@ -2,7 +2,7 @@ package outscale
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
+	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
 func dataSourceOutscaleLoadBalancerVms() *schema.Resource {

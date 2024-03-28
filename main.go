@@ -9,8 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov5/tf5server"
 	"github.com/hashicorp/terraform-plugin-mux/tf5muxserver"
-	"github.com/terraform-providers/terraform-provider-outscale/outscale"
-	vers "github.com/terraform-providers/terraform-provider-outscale/version"
+	"github.com/outscale/terraform-provider-outscale/outscale"
+	vers "github.com/outscale/terraform-provider-outscale/version"
 )
 
 var (
