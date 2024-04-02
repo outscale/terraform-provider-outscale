@@ -19,12 +19,12 @@ import (
 )
 
 // Creates a network interface in the specified subnet
-func resourceOutscaleOAPINic() *schema.Resource {
+func ResourceOutscaleNic() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPINicCreate,
-		Read:   resourceOutscaleOAPINicRead,
-		Update: resourceOutscaleOAPINicUpdate,
-		Delete: resourceOutscaleOAPINicDelete,
+		Create: ResourceOutscaleNicCreate,
+		Read:   ResourceOutscaleNicRead,
+		Update: ResourceOutscaleNicUpdate,
+		Delete: ResourceOutscaleNicDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -234,7 +234,7 @@ func getOAPINicSchema() map[string]*schema.Schema {
 }
 
 // Create OAPINic
-func resourceOutscaleOAPINicCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleNicCreate(d *schema.ResourceData, meta interface{}) error {
 
 	conn := meta.(*OutscaleClient).OSCAPI
 
@@ -283,11 +283,11 @@ func resourceOutscaleOAPINicCreate(d *schema.ResourceData, meta interface{}) err
 	if err := d.Set("private_ip", ""); err != nil {
 		return err
 	}
-	return resourceOutscaleOAPINicRead(d, meta)
+	return ResourceOutscaleNicRead(d, meta)
 }
 
 // Read OAPINic
-func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 
 	conn := meta.(*OutscaleClient).OSCAPI
 	dnir := oscgo.ReadNicsRequest{
@@ -405,13 +405,13 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 }
 
 // Delete OAPINic
-func resourceOutscaleOAPINicDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleNicDelete(d *schema.ResourceData, meta interface{}) error {
 
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	log.Printf("[INFO] Deleting ENI: %s", d.Id())
 
-	err := resourceOutscaleOAPINicDetach(meta, d.Id())
+	err := ResourceOutscaleNicDetach(meta, d.Id())
 	if err != nil {
 		return err
 	}
@@ -436,7 +436,7 @@ func resourceOutscaleOAPINicDelete(d *schema.ResourceData, meta interface{}) err
 	return nil
 }
 
-func resourceOutscaleOAPINicDetach(meta interface{}, nicID string) error {
+func ResourceOutscaleNicDetach(meta interface{}, nicID string) error {
 	// if there was an old nic_link, remove it
 	conn := meta.(*OutscaleClient).OSCAPI
 
@@ -481,14 +481,14 @@ func resourceOutscaleOAPINicDetach(meta interface{}, nicID string) error {
 }
 
 // Update OAPINic
-func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleNicUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	var err error
 
 	if d.HasChange("link_nic") {
 		_, na := d.GetChange("link_nic")
 
-		err := resourceOutscaleOAPINicDetach(meta, d.Id())
+		err := ResourceOutscaleNicDetach(meta, d.Id())
 		if err != nil {
 			return err
 		}
@@ -655,7 +655,7 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
-	return resourceOutscaleOAPINicRead(d, meta)
+	return ResourceOutscaleNicRead(d, meta)
 }
 
 func expandPrivateIPLight(pIPs []interface{}) []oscgo.PrivateIpLight {

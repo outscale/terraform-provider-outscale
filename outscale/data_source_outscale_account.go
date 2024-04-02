@@ -12,9 +12,9 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func dataSourceAccount() *schema.Resource {
+func DataSourceAccount() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceAccountRead,
+		Read: DataSourceAccountRead,
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Type:     schema.TypeString,
@@ -85,7 +85,7 @@ func dataSourceAccount() *schema.Resource {
 	}
 }
 
-func dataSourceAccountRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceAccountRead(d *schema.ResourceData, meta interface{}) error {
 
 	conn := meta.(*OutscaleClient).OSCAPI
 

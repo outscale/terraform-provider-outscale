@@ -15,16 +15,16 @@ func TestAccNet_PeeringConnectionDataSource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPILinPeeringConnectionConfig,
+				Config: testAccDataSourceOutscaleLinPeeringConnectionConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccDataSourceOutscaleOAPILinPeeringConnectionCheck("outscale_net_peering.net_peering"),
+					testAccDataSourceOutscaleLinPeeringConnectionCheck("outscale_net_peering.net_peering"),
 				),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleOAPILinPeeringConnectionCheck(name string) resource.TestCheckFunc {
+func testAccDataSourceOutscaleLinPeeringConnectionCheck(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -50,7 +50,7 @@ func testAccDataSourceOutscaleOAPILinPeeringConnectionCheck(name string) resourc
 	}
 }
 
-const testAccDataSourceOutscaleOAPILinPeeringConnectionConfig = `
+const testAccDataSourceOutscaleLinPeeringConnectionConfig = `
 	resource "outscale_net" "net" {
 		ip_range = "10.10.0.0/24"
 		tags {

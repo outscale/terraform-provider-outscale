@@ -28,7 +28,7 @@ func TestAccNet_withpnGatewayAttachment_basic(t *testing.T) {
 			{
 				Config: testAccOAPIVpnGatewayAttachmentConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPILinExists(
+					testAccCheckOutscaleLinExists(
 						"outscale_net.test",
 						&vpc),
 					testAccCheckOAPIVirtualGatewayExists(
@@ -100,7 +100,7 @@ func TestAccNet_WithVpnGatewayAttachment_deleted(t *testing.T) {
 			{
 				Config: testAccOAPIVpnGatewayAttachmentConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPILinExists(
+					testAccCheckOutscaleLinExists(
 						"outscale_net.test",
 						&vpc),
 					testAccCheckOAPIVirtualGatewayExists(

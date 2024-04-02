@@ -34,12 +34,12 @@ func TestAccVM_WithLBUAttachment_basic(t *testing.T) {
 		PreCheck:      func() { testAccPreCheckValues(t) },
 		IDRefreshName: "outscale_load_balancer.barTach",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscaleOAPILBUDestroy,
+		CheckDestroy:  testAccCheckOutscaleLBUDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPILBUAttachmentConfig1(rand, omi, utils.GetRegion()),
+				Config: testAccOutscaleLBUAttachmentConfig1(rand, omi, utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPILBUExists("outscale_load_balancer.barTach", &conf),
+					testAccCheckOutscaleLBUExists("outscale_load_balancer.barTach", &conf),
 					testCheckInstanceAttached(1),
 				),
 			},
@@ -48,7 +48,7 @@ func TestAccVM_WithLBUAttachment_basic(t *testing.T) {
 }
 
 // add one attachment
-func testAccOutscaleOAPILBUAttachmentConfig1(num int, omi, region string) string {
+func testAccOutscaleLBUAttachmentConfig1(num int, omi, region string) string {
 	return fmt.Sprintf(`
 resource "outscale_load_balancer" "barTach" {
 	load_balancer_name = "load-test-%d"

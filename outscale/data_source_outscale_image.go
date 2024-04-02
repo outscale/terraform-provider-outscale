@@ -12,9 +12,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceOutscaleOAPIImage() *schema.Resource {
+func DataSourceOutscaleImage() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPIImageRead,
+		Read: DataSourceOutscaleImageRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -194,7 +194,7 @@ func dataSourceOutscaleOAPIImage() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleImageRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
@@ -207,7 +207,7 @@ func dataSourceOutscaleOAPIImageRead(d *schema.ResourceData, meta interface{}) e
 
 	filtersReq := &oscgo.FiltersImage{}
 	if filtersOk {
-		filtersReq = buildOutscaleOAPIDataSourceImagesFilters(filters.(*schema.Set))
+		filtersReq = buildOutscaleDataSourceImagesFilters(filters.(*schema.Set))
 	}
 	if imageIDOk {
 		filtersReq.SetImageIds([]string{imageID.(string)})

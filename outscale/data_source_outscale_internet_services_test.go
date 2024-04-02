@@ -13,13 +13,13 @@ func TestAccOthers_InternetServicesDatasource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIInternetServicesDatasourceConfig,
+				Config: testAccOutscaleInternetServicesDatasourceConfig,
 			},
 		},
 	})
 }
 
-const testAccOutscaleOAPIInternetServicesDatasourceConfig = `
+const testAccOutscaleInternetServicesDatasourceConfig = `
 	resource "outscale_internet_service" "gateway" {}
 
 	data "outscale_internet_services" "outscale_internet_services" {

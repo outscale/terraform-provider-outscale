@@ -11,9 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceOutscaleOAPIFlexibleGpuCatalog() *schema.Resource {
+func DataSourceOutscaleFlexibleGpuCatalog() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPIFlexibleGpuCatalogRead,
+		Read: DataSourceOutscaleFlexibleGpuCatalogRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"flexible_gpu_catalog": {
@@ -53,7 +53,7 @@ func dataSourceOutscaleOAPIFlexibleGpuCatalog() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPIFlexibleGpuCatalogRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleFlexibleGpuCatalogRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	req := oscgo.ReadFlexibleGpuCatalogRequest{}

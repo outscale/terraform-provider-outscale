@@ -18,13 +18,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-func resourceOutscaleOAPIOutboundRule() *schema.Resource {
+func ResourceOutscaleOutboundRule() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPIOutboundRuleCreate,
-		Read:   resourceOutscaleOAPIOutboundRuleRead,
-		Delete: resourceOutscaleOAPIOutboundRuleDelete,
+		Create: ResourceOutscaleOutboundRuleCreate,
+		Read:   ResourceOutscaleOutboundRuleRead,
+		Delete: ResourceOutscaleOutboundRuleDelete,
 		Importer: &schema.ResourceImporter{
-			State: resourceOutscaleOAPISecurityGroupRuleImportState,
+			State: ResourceOutscaleSecurityGroupRuleImportState,
 		},
 		Schema: map[string]*schema.Schema{
 			"flow": {
@@ -87,7 +87,7 @@ func resourceOutscaleOAPIOutboundRule() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPIOutboundRuleCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOutboundRuleCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	req := oscgo.CreateSecurityGroupRuleRequest{
@@ -133,10 +133,10 @@ func resourceOutscaleOAPIOutboundRuleCreate(d *schema.ResourceData, meta interfa
 
 	d.SetId(*resp.GetSecurityGroup().SecurityGroupId)
 
-	return resourceOutscaleOAPIOutboundRuleRead(d, meta)
+	return ResourceOutscaleOutboundRuleRead(d, meta)
 }
 
-func resourceOutscaleOAPIOutboundRuleRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOutboundRuleRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	sg, _, err := readSecurityGroups(conn, d.Id())
@@ -159,7 +159,7 @@ func resourceOutscaleOAPIOutboundRuleRead(d *schema.ResourceData, meta interface
 	return nil
 }
 
-func resourceOutscaleOAPIOutboundRuleDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleOutboundRuleDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	req := oscgo.DeleteSecurityGroupRuleRequest{
@@ -391,7 +391,7 @@ func getRulesSchema(isForAttr bool) *schema.Schema {
 	}
 }
 
-func resourceOutscaleOAPISecurityGroupRuleImportState(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+func ResourceOutscaleSecurityGroupRuleImportState(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	// example: sg-53173ec7_inbound_tcp_80_80_80.14.129.222/32
 	// example: sg-53173ec7_inbound_tcp_80_80_sg-53173ec7
 

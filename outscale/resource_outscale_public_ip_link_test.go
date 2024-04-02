@@ -25,14 +25,14 @@ func TestAccVM_WithPublicIPLink_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleOAPIPublicIPLinkDestroy,
+		CheckDestroy: testAccCheckOutscalePublicIPLinkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIPublicIPLinkConfig(omi, "tinav4.c2r2p2", utils.GetRegion(), keypair),
+				Config: testAccOutscalePublicIPLinkConfig(omi, "tinav4.c2r2p2", utils.GetRegion(), keypair),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIPublicIPLExists(
+					testAccCheckOutscalePublicIPLExists(
 						"outscale_public_ip.ip_link", &a),
-					testAccCheckOutscaleOAPIPublicIPLinkExists(
+					testAccCheckOutscalePublicIPLinkExists(
 						"outscale_public_ip_link.by_public_ip", &a),
 				),
 			},
@@ -40,7 +40,7 @@ func TestAccVM_WithPublicIPLink_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleOAPIPublicIPLinkExists(name string, res *oscgo.PublicIp) resource.TestCheckFunc {
+func testAccCheckOutscalePublicIPLinkExists(name string, res *oscgo.PublicIp) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -69,7 +69,7 @@ func testAccCheckOutscaleOAPIPublicIPLinkExists(name string, res *oscgo.PublicIp
 		})
 
 		if err != nil {
-			log.Printf("[DEBUG] ERROR testAccCheckOutscaleOAPIPublicIPLinkExists (%s)", err)
+			log.Printf("[DEBUG] ERROR testAccCheckOutscalePublicIPLinkExists (%s)", err)
 			return err
 		}
 
@@ -87,7 +87,7 @@ func testAccCheckOutscaleOAPIPublicIPLinkExists(name string, res *oscgo.PublicIp
 	}
 }
 
-func testAccCheckOutscaleOAPIPublicIPLinkDestroy(s *terraform.State) error {
+func testAccCheckOutscalePublicIPLinkDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_public_ip_link" {
 			continue
@@ -117,7 +117,7 @@ func testAccCheckOutscaleOAPIPublicIPLinkDestroy(s *terraform.State) error {
 		})
 
 		if err != nil {
-			log.Printf("[DEBUG] ERROR testAccCheckOutscaleOAPIPublicIPLinkDestroy (%s)", err)
+			log.Printf("[DEBUG] ERROR testAccCheckOutscalePublicIPLinkDestroy (%s)", err)
 			return err
 		}
 
@@ -128,7 +128,7 @@ func testAccCheckOutscaleOAPIPublicIPLinkDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oscgo.PublicIp) resource.TestCheckFunc {
+func testAccCheckOutscalePublicIPLExists(n string, res *oscgo.PublicIp) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -210,7 +210,7 @@ func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oscgo.PublicIp) reso
 	}
 }
 
-func testAccOutscaleOAPIPublicIPLinkConfig(omi, vmType, region, keypair string) string {
+func testAccOutscalePublicIPLinkConfig(omi, vmType, region, keypair string) string {
 	return fmt.Sprintf(`
 		resource "outscale_security_group" "sg_link" {
 			security_group_name = "%[4]s"

@@ -13,11 +13,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func resourceOutscaleOAPILinPeeringConnectionAccepter() *schema.Resource {
+func ResourceOutscaleLinPeeringConnectionAccepter() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPILinPeeringAccepterCreate,
-		Read:   resourceOutscaleOAPILinPeeringRead,
-		Delete: resourceOutscaleOAPILinPeeringAccepterDelete,
+		Create: ResourceOutscaleLinPeeringAccepterCreate,
+		Read:   ResourceOutscaleLinPeeringRead,
+		Delete: ResourceOutscaleLinPeeringAccepterDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -65,7 +65,7 @@ func resourceOutscaleOAPILinPeeringConnectionAccepter() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPILinPeeringAccepterCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleLinPeeringAccepterCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	id := d.Get("net_peering_id").(string)
@@ -90,10 +90,10 @@ func resourceOutscaleOAPILinPeeringAccepterCreate(d *schema.ResourceData, meta i
 		return fmt.Errorf("Error creating Net Peering accepter. Details: %s", errString)
 	}
 
-	return resourceOutscaleOAPILinPeeringRead(d, meta)
+	return ResourceOutscaleLinPeeringRead(d, meta)
 }
 
-func resourceOutscaleOAPILinPeeringAccepterDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleLinPeeringAccepterDelete(d *schema.ResourceData, meta interface{}) error {
 	log.Printf("[WARN] Will not delete VPC peering connection. Terraform will remove this resource from the state file, however resources may remain.")
 	d.SetId("")
 	return nil

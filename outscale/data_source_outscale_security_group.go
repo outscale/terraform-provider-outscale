@@ -14,9 +14,9 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPISecurityGroup() *schema.Resource {
+func DataSourceOutscaleSecurityGroup() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPISecurityGroupRead,
+		Read: DataSourceOutscaleSecurityGroupRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -157,7 +157,7 @@ func dataSourceOutscaleOAPISecurityGroup() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleSecurityGroupRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	req := oscgo.ReadSecurityGroupsRequest{}
 
@@ -177,7 +177,7 @@ func dataSourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interf
 	}
 
 	if filtersOk {
-		req.SetFilters(buildOutscaleOAPIDataSourceSecurityGroupFilters(filters.(*schema.Set)))
+		req.SetFilters(buildOutscaleDataSourceSecurityGroupFilters(filters.(*schema.Set)))
 	}
 
 	var err error
@@ -240,7 +240,7 @@ func dataSourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interf
 	return d.Set("outbound_rules", flattenOAPISecurityGroupRule(sg.GetOutboundRules()))
 }
 
-func buildOutscaleOAPIDataSourceSecurityGroupFilters(set *schema.Set) oscgo.FiltersSecurityGroup {
+func buildOutscaleDataSourceSecurityGroupFilters(set *schema.Set) oscgo.FiltersSecurityGroup {
 	var filters oscgo.FiltersSecurityGroup
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})

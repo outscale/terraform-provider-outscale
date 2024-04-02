@@ -13,11 +13,11 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func datasourceOutscaleOApiVMS() *schema.Resource {
+func DataSourceOutscaleVMS() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOApiVMSRead,
+		Read: DataSourceOutscaleVMSRead,
 
-		Schema: datasourceOutscaleOApiVMSSchema(),
+		Schema: DataSourceOutscaleVMSSchema(),
 	}
 }
 
@@ -43,7 +43,7 @@ func dataSourceFiltersSchema() *schema.Schema {
 	}
 }
 
-func datasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
+func DataSourceOutscaleVMSSchema() map[string]*schema.Schema {
 	wholeSchema := map[string]*schema.Schema{
 		"filter": dataSourceFiltersSchema(),
 		"vms": {
@@ -62,7 +62,7 @@ func datasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
 	return wholeSchema
 }
 
-func dataSourceOutscaleOApiVMSRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleVMSRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
@@ -75,7 +75,7 @@ func dataSourceOutscaleOApiVMSRead(d *schema.ResourceData, meta interface{}) err
 	// Build up search parameters
 	params := oscgo.ReadVmsRequest{}
 	if filtersOk {
-		params.Filters, err = buildOutscaleOAPIDataSourceVMFilters(filters.(*schema.Set))
+		params.Filters, err = buildOutscaleDataSourceVMFilters(filters.(*schema.Set))
 		if err != nil {
 			return err
 		}

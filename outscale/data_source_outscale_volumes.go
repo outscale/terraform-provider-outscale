@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func datasourceOutscaleOAPIVolumes() *schema.Resource {
+func DataSourceOutscaleVolumes() *schema.Resource {
 	return &schema.Resource{
 		Read: datasourceOAPIVolumesRead,
 

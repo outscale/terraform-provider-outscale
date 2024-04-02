@@ -12,9 +12,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceOutscaleOAPINatServices() *schema.Resource {
+func DataSourceOutscaleNatServices() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPINatServicesRead,
+		Read: DataSourceOutscaleNatServicesRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -74,7 +74,7 @@ func dataSourceOutscaleOAPINatServices() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPINatServicesRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleNatServicesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
@@ -86,7 +86,7 @@ func dataSourceOutscaleOAPINatServicesRead(d *schema.ResourceData, meta interfac
 
 	params := oscgo.ReadNatServicesRequest{}
 	if filtersOk {
-		params.SetFilters(buildOutscaleOAPINatServiceDataSourceFilters(filters.(*schema.Set)))
+		params.SetFilters(buildOutscaleNatServiceDataSourceFilters(filters.(*schema.Set)))
 	}
 	if natGatewayIDOK {
 		ids := make([]string, len(natGatewayID.([]interface{})))

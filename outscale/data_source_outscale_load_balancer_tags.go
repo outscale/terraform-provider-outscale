@@ -12,15 +12,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceOutscaleOAPILBUTags() *schema.Resource {
+func DataSourceOutscaleLBUTags() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPILBUTagsRead,
+		Read: DataSourceOutscaleLBUTagsRead,
 
 		Schema: getDataSourceSchemas(getDSOAPILBUTagsSchema()),
 	}
 }
 
-func dataSourceOutscaleOAPILBUTagsRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleLBUTagsRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	ename, nameOk := d.GetOk("load_balancer_names")

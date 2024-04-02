@@ -17,9 +17,9 @@ func TestAccOthers_VolumesDataSource_multipleFilters(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVolumeDataSourceConfigWithMultipleFilters(utils.GetRegion()),
+				Config: testAccCheckOutscaleVolumeDataSourceConfigWithMultipleFilters(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIVolumeDataSourceID("data.outscale_volumes.ebs_volume"),
+					testAccCheckOutscaleVolumeDataSourceID("data.outscale_volumes.ebs_volume"),
 					resource.TestCheckResourceAttr("data.outscale_volumes.ebs_volume", "volumes.0.size", "1"),
 					resource.TestCheckResourceAttr("data.outscale_volumes.ebs_volume", "volumes.0.volume_type", "standard"),
 				),
@@ -36,9 +36,9 @@ func TestAccOthers_VolumeDataSource_multipleVIdsFilters(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVolumesDataSourceConfigWithMultipleVolumeIDsFilter(utils.GetRegion()),
+				Config: testAccCheckOutscaleVolumesDataSourceConfigWithMultipleVolumeIDsFilter(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIVolumeDataSourceID("data.outscale_volumes.outscale_volumes"),
+					testAccCheckOutscaleVolumeDataSourceID("data.outscale_volumes.outscale_volumes"),
 					resource.TestCheckResourceAttr("data.outscale_volumes.outscale_volumes", "volumes.0.size", "40"),
 				),
 			},
@@ -56,9 +56,9 @@ func TestAccVM_withVolumesDataSource(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVolumesDataSourceConfigWithVM(utils.GetRegion(), omi, keypair),
+				Config: testAccCheckOutscaleVolumesDataSourceConfigWithVM(utils.GetRegion(), omi, keypair),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIVolumeDataSourceID("data.outscale_volumes.outscale_volumes"),
+					testAccCheckOutscaleVolumeDataSourceID("data.outscale_volumes.outscale_volumes"),
 					// resource.TestCheckResourceAttr("data.outscale_volumes.outscale_volumes", "volumes.0.size", "1"),
 					// resource.TestCheckResourceAttr("data.outscale_volumes.outscale_volumes", "volumes.0.volume_type", "standard"),
 				),
@@ -67,7 +67,7 @@ func TestAccVM_withVolumesDataSource(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleOAPIVolumeDataSourceConfigWithMultipleFilters(region string) string {
+func testAccCheckOutscaleVolumeDataSourceConfigWithMultipleFilters(region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_volume" "external" {
 			subregion_name = "%sa"
@@ -94,7 +94,7 @@ func testAccCheckOutscaleOAPIVolumeDataSourceConfigWithMultipleFilters(region st
 	`, region)
 }
 
-func testAccCheckOutscaleOAPIVolumesDataSourceConfigWithMultipleVolumeIDsFilter(region string) string {
+func testAccCheckOutscaleVolumesDataSourceConfigWithMultipleVolumeIDsFilter(region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_volume" "outscale_volume" {
 			subregion_name = "%[1]sa"
@@ -115,7 +115,7 @@ func testAccCheckOutscaleOAPIVolumesDataSourceConfigWithMultipleVolumeIDsFilter(
 	`, region)
 }
 
-func testAccCheckOutscaleOAPIVolumesDataSourceConfigWithVM(region, imageID, keypair string) string {
+func testAccCheckOutscaleVolumesDataSourceConfigWithVM(region, imageID, keypair string) string {
 	return fmt.Sprintf(`
 		resource "outscale_volume" "outscale_volume" {
 			subregion_name = "%[1]sa"

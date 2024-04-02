@@ -15,7 +15,7 @@ func TestAccNet_Attributes_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPILinAttrConfig,
+				Config: testAccOutscaleLinAttrConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "dhcp_options_set_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "net_id"),
@@ -33,14 +33,14 @@ func TestAccNet_Attributes_withoutDHCPID(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPILinAttrConfigwithoutDHCPID("outscale_net.vpc.id"),
+				Config: testAccOutscaleLinAttrConfigwithoutDHCPID("outscale_net.vpc.id"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "dhcp_options_set_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "net_id"),
 				),
 			},
 			{
-				Config: testAccOutscaleOAPILinAttrConfigwithoutDHCPID("outscale_net.vpc2.id"),
+				Config: testAccOutscaleLinAttrConfigwithoutDHCPID("outscale_net.vpc2.id"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "dhcp_options_set_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "net_id"),
@@ -50,7 +50,7 @@ func TestAccNet_Attributes_withoutDHCPID(t *testing.T) {
 	})
 }
 
-const testAccOutscaleOAPILinAttrConfig = `
+const testAccOutscaleLinAttrConfig = `
 	resource "outscale_net" "vpc" {
 		ip_range = "10.0.0.0/16"
 
@@ -75,7 +75,7 @@ const testAccOutscaleOAPILinAttrConfig = `
 	}
 `
 
-func testAccOutscaleOAPILinAttrConfigwithoutDHCPID(vpc string) string {
+func testAccOutscaleLinAttrConfigwithoutDHCPID(vpc string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "vpc" {
 			ip_range = "10.0.0.0/16"

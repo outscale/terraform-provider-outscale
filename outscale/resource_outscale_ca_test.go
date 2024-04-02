@@ -24,13 +24,13 @@ func TestAccOthers_Ca_basic(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleCaDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPICaConfig(ca_path),
+				Config: testAccOutscaleCaConfig(ca_path),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleCaExists(resourceName),
 				),
 			},
 			{
-				Config: testAccOutscaleOAPICaConfigUpdateDescription(ca_path),
+				Config: testAccOutscaleCaConfigUpdateDescription(ca_path),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleCaExists(resourceName),
 				),
@@ -122,7 +122,7 @@ func testAccCheckOutscaleCaDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccOutscaleOAPICaConfig(path string) string {
+func testAccOutscaleCaConfig(path string) string {
 	return fmt.Sprintf(`
 resource "outscale_ca" "ca_test" { 
    ca_pem       = file(%q)
@@ -130,7 +130,7 @@ resource "outscale_ca" "ca_test" {
 }`, path)
 }
 
-func testAccOutscaleOAPICaConfigUpdateDescription(path string) string {
+func testAccOutscaleCaConfigUpdateDescription(path string) string {
 	return fmt.Sprintf(`
 resource "outscale_ca" "ca_test" { 
    ca_pem       = file(%q)

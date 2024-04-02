@@ -15,7 +15,7 @@ func TestAccNet_WithNatServiceDataSource_Instance(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPINatServiceDataSourceConfig,
+				Config: testAccCheckOutscaleNatServiceDataSourceConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleNatServiceDataSourceID("data.outscale_nat_service.nat"),
 					resource.TestCheckResourceAttrSet("data.outscale_nat_service.nat", "subnet_id"),
@@ -40,7 +40,7 @@ func testAccCheckOutscaleNatServiceDataSourceID(n string) resource.TestCheckFunc
 	}
 }
 
-const testAccCheckOutscaleOAPINatServiceDataSourceConfig = `
+const testAccCheckOutscaleNatServiceDataSourceConfig = `
 	resource "outscale_net" "outscale_net" {
 		ip_range = "10.0.0.0/16"
 		tags {

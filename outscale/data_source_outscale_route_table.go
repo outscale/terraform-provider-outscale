@@ -15,9 +15,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceOutscaleOAPIRouteTable() *schema.Resource {
+func DataSourceOutscaleRouteTable() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPIRouteTableRead,
+		Read: DataSourceOutscaleRouteTableRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -131,7 +131,7 @@ func dataSourceOutscaleOAPIRouteTable() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleRouteTableRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	routeTableID, routeTableIDOk := d.GetOk("route_table_id")
 	filter, filterOk := d.GetOk("filter")
@@ -148,7 +148,7 @@ func dataSourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface
 	}
 
 	if filterOk {
-		params.Filters = buildOutscaleOAPIDataSourceRouteTableFilters(filter.(*schema.Set))
+		params.Filters = buildOutscaleDataSourceRouteTableFilters(filter.(*schema.Set))
 	}
 
 	var resp oscgo.ReadRouteTablesResponse
@@ -196,7 +196,7 @@ func dataSourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface
 	return d.Set("link_route_tables", setOSCAPILinkRouteTables(rt.GetLinkRouteTables()))
 }
 
-func buildOutscaleOAPIDataSourceRouteTableFilters(set *schema.Set) *oscgo.FiltersRouteTable {
+func buildOutscaleDataSourceRouteTableFilters(set *schema.Set) *oscgo.FiltersRouteTable {
 	var filters oscgo.FiltersRouteTable
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})

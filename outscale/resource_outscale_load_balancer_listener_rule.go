@@ -13,12 +13,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func resourceOutscaleLoadBalancerListenerRule() *schema.Resource {
+func ResourceOutscaleLoadBalancerListenerRule() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleLoadBalancerListenerRuleCreate,
-		Read:   resourceOutscaleLoadBalancerListenerRuleRead,
-		Update: resourceOutscaleLoadBalancerListenerRuleUpdate,
-		Delete: resourceOutscaleLoadBalancerListenerRuleDelete,
+		Create: ResourceOutscaleLoadBalancerListenerRuleCreate,
+		Read:   ResourceOutscaleLoadBalancerListenerRuleRead,
+		Update: ResourceOutscaleLoadBalancerListenerRuleUpdate,
+		Delete: ResourceOutscaleLoadBalancerListenerRuleDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -97,7 +97,7 @@ func resourceOutscaleLoadBalancerListenerRule() *schema.Resource {
 	}
 }
 
-func resourceOutscaleLoadBalancerListenerRuleCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleLoadBalancerListenerRuleCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	req := &oscgo.CreateListenerRuleRequest{}
 
@@ -168,10 +168,10 @@ func resourceOutscaleLoadBalancerListenerRuleCreate(d *schema.ResourceData, meta
 
 	d.SetId(*resp.ListenerRule.ListenerRuleName)
 
-	return resourceOutscaleLoadBalancerListenerRuleRead(d, meta)
+	return ResourceOutscaleLoadBalancerListenerRuleRead(d, meta)
 }
 
-func resourceOutscaleLoadBalancerListenerRuleRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleLoadBalancerListenerRuleRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	lrName := d.Id()
 
@@ -239,7 +239,7 @@ func resourceOutscaleLoadBalancerListenerRuleRead(d *schema.ResourceData, meta i
 	return nil
 }
 
-func resourceOutscaleLoadBalancerListenerRuleUpdate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleLoadBalancerListenerRuleUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	if d.HasChange("listener_rule") {
@@ -282,10 +282,10 @@ func resourceOutscaleLoadBalancerListenerRuleUpdate(d *schema.ResourceData, meta
 			return err
 		}
 	}
-	return resourceOutscaleLoadBalancerListenerRuleRead(d, meta)
+	return ResourceOutscaleLoadBalancerListenerRuleRead(d, meta)
 }
 
-func resourceOutscaleLoadBalancerListenerRuleDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleLoadBalancerListenerRuleDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	log.Printf("[INFO] Deleting Listener Rule: %s", d.Id())

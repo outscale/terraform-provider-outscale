@@ -13,7 +13,7 @@ func TestAccNet_PeeringsConnectionDataSource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPILinPeeringsConnectionConfig,
+				Config: testAccDataSourceOutscaleLinPeeringsConnectionConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.outscale_net_peerings.outscale_net_peerings", "net_peerings.#", "1"),
 				),
@@ -22,7 +22,7 @@ func TestAccNet_PeeringsConnectionDataSource_basic(t *testing.T) {
 	})
 }
 
-const testAccDataSourceOutscaleOAPILinPeeringsConnectionConfig = `
+const testAccDataSourceOutscaleLinPeeringsConnectionConfig = `
 	resource "outscale_net" "outscale_net" {
 		ip_range = "10.10.0.0/24"
 		tags {

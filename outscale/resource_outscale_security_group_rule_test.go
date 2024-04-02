@@ -27,19 +27,19 @@ func TestAccOthers_SecurityGroupRule_basic(t *testing.T) {
 		resource.Test(t, resource.TestCase{
 			PreCheck:     func() { testAccPreCheck(t) },
 			Providers:    testAccProviders,
-			CheckDestroy: testAccCheckOutscaleOAPISecurityGroupRuleDestroy,
+			CheckDestroy: testAccCheckOutscaleSecurityGroupRuleDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: testAccOutscaleOAPISecurityGroupRuleEgressConfig(rInt),
+					Config: testAccOutscaleSecurityGroupRuleEgressConfig(rInt),
 					Check: resource.ComposeTestCheckFunc(
-						testAccCheckOutscaleOAPIRuleExists(resourceName, &group),
-						testAccCheckOutscaleOAPIRuleAttributes(resourceName, &group, nil, "Inbound"),
+						testAccCheckOutscaleRuleExists(resourceName, &group),
+						testAccCheckOutscaleRuleAttributes(resourceName, &group, nil, "Inbound"),
 					),
 				},
 				{
 					ResourceName:            resourceName,
 					ImportState:             true,
-					ImportStateIdFunc:       testAccCheckOutscaleOAPIRuleImportStateIDFunc(resourceName),
+					ImportStateIdFunc:       testAccCheckOutscaleRuleImportStateIDFunc(resourceName),
 					ImportStateVerify:       true,
 					ImportStateVerifyIgnore: []string{"request_id"},
 				},
@@ -74,16 +74,16 @@ func TestAccOthers_SecurityGroupRule_withSecurityGroupMember(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleOAPISecurityGroupRuleDestroy,
+		CheckDestroy: testAccCheckOutscaleSecurityGroupRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISecurityGroupRuleWithGroupMembers(rInt, accountID),
+				Config: testAccOutscaleSecurityGroupRuleWithGroupMembers(rInt, accountID),
 			},
 		},
 	})
 }
 
-func testAccCheckOutscaleOAPISecurityGroupRuleDestroy(s *terraform.State) error {
+func testAccCheckOutscaleSecurityGroupRuleDestroy(s *terraform.State) error {
 	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
@@ -99,7 +99,7 @@ func testAccCheckOutscaleOAPISecurityGroupRuleDestroy(s *terraform.State) error 
 	return nil
 }
 
-func testAccCheckOutscaleOAPIRuleAttributes(n string, group *oscgo.SecurityGroup, p *oscgo.SecurityGroupRule, ruleType string) resource.TestCheckFunc {
+func testAccCheckOutscaleRuleAttributes(n string, group *oscgo.SecurityGroup, p *oscgo.SecurityGroupRule, ruleType string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -197,7 +197,7 @@ func testAccCheckOutscaleOAPIRuleAttributes(n string, group *oscgo.SecurityGroup
 	}
 }
 
-func testAccCheckOutscaleOAPIRuleExists(n string, group *oscgo.SecurityGroup) resource.TestCheckFunc {
+func testAccCheckOutscaleRuleExists(n string, group *oscgo.SecurityGroup) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -239,7 +239,7 @@ func testAccCheckOutscaleOAPIRuleExists(n string, group *oscgo.SecurityGroup) re
 	}
 }
 
-func testAccCheckOutscaleOAPIRuleImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
+func testAccCheckOutscaleRuleImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
 	return func(s *terraform.State) (string, error) {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
@@ -249,7 +249,7 @@ func testAccCheckOutscaleOAPIRuleImportStateIDFunc(resourceName string) resource
 	}
 }
 
-func testAccOutscaleOAPISecurityGroupRuleEgressConfig(rInt int) string {
+func testAccOutscaleSecurityGroupRuleEgressConfig(rInt int) string {
 	return fmt.Sprintf(`
 		resource "outscale_security_group_rule" "outscale_security_group_rule" {
 			flow              = "Inbound"
@@ -276,7 +276,7 @@ func testAccOutscaleOAPISecurityGroupRuleEgressConfig(rInt int) string {
 	`, rInt)
 }
 
-func testAccOutscaleOAPISecurityGroupRuleWithGroupMembers(rInt int, accountID string) string {
+func testAccOutscaleSecurityGroupRuleWithGroupMembers(rInt int, accountID string) string {
 	return fmt.Sprintf(`
 		resource "outscale_security_group" "outscale_security_group" {
 			description         = "test group"

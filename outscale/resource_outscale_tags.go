@@ -13,11 +13,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func resourceOutscaleOAPITags() *schema.Resource {
+func ResourceOutscaleTags() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPITagsCreate,
-		Read:   resourceOutscaleOAPITagsRead,
-		Delete: resourceOutscaleOAPITagsDelete,
+		Create: ResourceOutscaleTagsCreate,
+		Read:   ResourceOutscaleTagsRead,
+		Delete: ResourceOutscaleTagsDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -31,7 +31,7 @@ func resourceOutscaleOAPITags() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPITagsCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleTagsCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	request := oscgo.CreateTagsRequest{}
@@ -72,10 +72,10 @@ func resourceOutscaleOAPITagsCreate(d *schema.ResourceData, meta interface{}) er
 
 	d.SetId(resource.UniqueId())
 
-	return resourceOutscaleOAPITagsRead(d, meta)
+	return ResourceOutscaleTagsRead(d, meta)
 }
 
-func resourceOutscaleOAPITagsRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleTagsRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	// Build up search parameters
@@ -136,7 +136,7 @@ func resourceOutscaleOAPITagsRead(d *schema.ResourceData, meta interface{}) erro
 	return err
 }
 
-func resourceOutscaleOAPITagsDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleTagsDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	request := oscgo.DeleteTagsRequest{}

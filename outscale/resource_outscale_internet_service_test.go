@@ -21,13 +21,13 @@ func TestAccOthers_InternetService_basic(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleInternetServiceDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIInternetServiceConfig(),
+				Config: testAccOutscaleInternetServiceConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleInternetServiceExists("outscale_internet_service.outscale_internet_service"),
 				),
 			},
 			{
-				Config: testAccOutscaleOAPIInternetServiceConfig(),
+				Config: testAccOutscaleInternetServiceConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleInternetServiceExists("outscale_internet_service.outscale_internet_service"),
 				),
@@ -99,7 +99,7 @@ func testAccCheckOutscaleInternetServiceDestroyed(s *terraform.State) error {
 	return nil
 }
 
-func testAccOutscaleOAPIInternetServiceConfig() string {
+func testAccOutscaleInternetServiceConfig() string {
 	return `
 		resource "outscale_net" "outscale_net" {
 			ip_range = "10.0.0.0/16"

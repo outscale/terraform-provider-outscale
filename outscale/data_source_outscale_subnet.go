@@ -15,9 +15,9 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPISubnet() *schema.Resource {
+func DataSourceOutscaleSubnet() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPISubnetRead,
+		Read: DataSourceOutscaleSubnetRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -59,7 +59,7 @@ func dataSourceOutscaleOAPISubnet() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPISubnetRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleSubnetRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	req := oscgo.ReadSubnetsRequest{}
@@ -71,7 +71,7 @@ func dataSourceOutscaleOAPISubnetRead(d *schema.ResourceData, meta interface{}) 
 	filters, filtersOk := d.GetOk("filter")
 
 	if filtersOk {
-		req.Filters = buildOutscaleOAPISubnetDataSourceFilters(filters.(*schema.Set))
+		req.Filters = buildOutscaleSubnetDataSourceFilters(filters.(*schema.Set))
 	}
 
 	var resp oscgo.ReadSubnetsResponse
@@ -130,7 +130,7 @@ func dataSourceOutscaleOAPISubnetRead(d *schema.ResourceData, meta interface{}) 
 	return nil
 }
 
-func buildOutscaleOAPISubnetDataSourceFilters(set *schema.Set) *oscgo.FiltersSubnet {
+func buildOutscaleSubnetDataSourceFilters(set *schema.Set) *oscgo.FiltersSubnet {
 	var filters oscgo.FiltersSubnet
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})

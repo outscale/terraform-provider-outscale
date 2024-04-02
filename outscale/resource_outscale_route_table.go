@@ -14,12 +14,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func resourceOutscaleOAPIRouteTable() *schema.Resource {
+func ResourceOutscaleRouteTable() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPIRouteTableCreate,
-		Read:   resourceOutscaleOAPIRouteTableRead,
-		Update: resourceOutscaleOAPIRouteTableUpdate,
-		Delete: resourceOutscaleOAPIRouteTableDelete,
+		Create: ResourceOutscaleRouteTableCreate,
+		Read:   ResourceOutscaleRouteTableRead,
+		Update: ResourceOutscaleRouteTableUpdate,
+		Delete: ResourceOutscaleRouteTableDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -136,7 +136,7 @@ func resourceOutscaleOAPIRouteTable() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPIRouteTableCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleRouteTableCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	createOpts := oscgo.CreateRouteTableRequest{
@@ -168,7 +168,7 @@ func resourceOutscaleOAPIRouteTableCreate(d *schema.ResourceData, meta interface
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"pending"},
 		Target:  []string{"ready"},
-		Refresh: resourceOutscaleOAPIRouteTableStateRefreshFunc(conn, d.Id()),
+		Refresh: ResourceOutscaleRouteTableStateRefreshFunc(conn, d.Id()),
 		Timeout: 5 * time.Minute,
 	}
 	if _, err := stateConf.WaitForState(); err != nil {
@@ -193,10 +193,10 @@ func resourceOutscaleOAPIRouteTableCreate(d *schema.ResourceData, meta interface
 		return err
 	}
 
-	return resourceOutscaleOAPIRouteTableRead(d, meta)
+	return ResourceOutscaleRouteTableRead(d, meta)
 }
 
-func resourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleRouteTableRead(d *schema.ResourceData, meta interface{}) error {
 	rtRaw, _, err := readOAPIRouteTable(meta.(*OutscaleClient).OSCAPI, d.Id())
 	if err != nil {
 		return err
@@ -230,16 +230,16 @@ func resourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface{}
 	return nil
 }
 
-func resourceOutscaleOAPIRouteTableUpdate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleRouteTableUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
-	return resourceOutscaleOAPIRouteTableRead(d, meta)
+	return ResourceOutscaleRouteTableRead(d, meta)
 }
 
-func resourceOutscaleOAPIRouteTableDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleRouteTableDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	rtRaw, _, err := readOAPIRouteTable(meta.(*OutscaleClient).OSCAPI, d.Id())
@@ -303,7 +303,7 @@ func resourceOutscaleOAPIRouteTableDelete(d *schema.ResourceData, meta interface
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"ready"},
 		Target:  []string{},
-		Refresh: resourceOutscaleOAPIRouteTableStateRefreshFunc(conn, d.Id()),
+		Refresh: ResourceOutscaleRouteTableStateRefreshFunc(conn, d.Id()),
 		Timeout: 5 * time.Minute,
 	}
 	if _, err := stateConf.WaitForState(); err != nil {
@@ -356,7 +356,7 @@ func readOAPIRouteTable(conn *oscgo.APIClient, routeTableID string, linkIds ...s
 	return resp.GetRouteTables()[0], resp.ResponseContext.GetRequestId(), err
 }
 
-func resourceOutscaleOAPIRouteTableStateRefreshFunc(conn *oscgo.APIClient, routeTableID string, linkIds ...string) resource.StateRefreshFunc {
+func ResourceOutscaleRouteTableStateRefreshFunc(conn *oscgo.APIClient, routeTableID string, linkIds ...string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		rtRaw, _, err := readOAPIRouteTable(conn, routeTableID, linkIds...)
 		if rtRaw == nil {

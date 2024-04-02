@@ -19,13 +19,13 @@ func TestAccVM_TypesDataSource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPIVMTypesConfig(omi, "tinav4.c1r1p1"),
+				Config: testAccDataSourceOutscaleVMTypesConfig(omi, "tinav4.c1r1p1"),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleOAPIVMTypesConfig(omi, vmType string) string {
+func testAccDataSourceOutscaleVMTypesConfig(omi, vmType string) string {
 	return fmt.Sprintf(`
 		resource "outscale_security_group" "sg_vms_types" {
 			security_group_name = "sg_vm_type"

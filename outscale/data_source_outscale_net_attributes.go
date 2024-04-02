@@ -13,9 +13,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceOutscaleOAPIVpcAttr() *schema.Resource {
+func DataSourceOutscaleVpcAttr() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPIVpcAttrRead,
+		Read: DataSourceOutscaleVpcAttrRead,
 
 		Schema: map[string]*schema.Schema{
 			//"filter": dataSourceFiltersSchema(),
@@ -48,7 +48,7 @@ func dataSourceOutscaleOAPIVpcAttr() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPIVpcAttrRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleVpcAttrRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters := oscgo.FiltersNet{

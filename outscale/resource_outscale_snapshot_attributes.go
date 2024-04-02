@@ -12,11 +12,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func resourcedOutscaleOAPISnapshotAttributes() *schema.Resource {
+func ResourcedOutscaleSnapshotAttributes() *schema.Resource {
 	return &schema.Resource{
-		Create: resourcedOutscaleOAPISnapshotAttributesCreate,
-		Read:   resourcedOutscaleOAPISnapshotAttributesRead,
-		Delete: resourcedOutscaleOAPISnapshotAttributesDelete,
+		Create: ResourcedOutscaleSnapshotAttributesCreate,
+		Read:   ResourcedOutscaleSnapshotAttributesRead,
+		Delete: ResourcedOutscaleSnapshotAttributesDelete,
 
 		Schema: map[string]*schema.Schema{
 			"permissions_to_create_volume_additions": {
@@ -73,7 +73,7 @@ func resourcedOutscaleOAPISnapshotAttributes() *schema.Resource {
 	}
 }
 
-func resourcedOutscaleOAPISnapshotAttributesCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourcedOutscaleSnapshotAttributesCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	snapshotID := d.Get("snapshot_id").(string)
@@ -148,10 +148,10 @@ func resourcedOutscaleOAPISnapshotAttributesCreate(d *schema.ResourceData, meta 
 	}
 	d.SetId(snapshotID)
 
-	return resourcedOutscaleOAPISnapshotAttributesRead(d, meta)
+	return ResourcedOutscaleSnapshotAttributesRead(d, meta)
 }
 
-func resourcedOutscaleOAPISnapshotAttributesRead(d *schema.ResourceData, meta interface{}) error {
+func ResourcedOutscaleSnapshotAttributesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	var resp oscgo.ReadSnapshotsResponse
@@ -190,7 +190,7 @@ func resourcedOutscaleOAPISnapshotAttributesRead(d *schema.ResourceData, meta in
 	return nil
 }
 
-func resourcedOutscaleOAPISnapshotAttributesDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourcedOutscaleSnapshotAttributesDelete(d *schema.ResourceData, meta interface{}) error {
 	d.SetId("")
 
 	return nil

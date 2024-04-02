@@ -17,9 +17,9 @@ import (
 )
 
 // Creates a network interface in the specified subnet
-func dataSourceOutscaleOAPINic() *schema.Resource {
+func DataSourceOutscaleNic() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPINicRead,
+		Read: DataSourceOutscaleNicRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -213,7 +213,7 @@ func dataSourceOutscaleOAPINic() *schema.Resource {
 }
 
 // Read Nic
-func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, okFilters := d.GetOk("filter")
@@ -224,7 +224,7 @@ func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) err
 
 	dnri := oscgo.ReadNicsRequest{}
 	if okFilters {
-		dnri.SetFilters(buildOutscaleOAPIDataSourceNicFilters(filters.(*schema.Set)))
+		dnri.SetFilters(buildOutscaleDataSourceNicFilters(filters.(*schema.Set)))
 	}
 
 	var resp oscgo.ReadNicsResponse
@@ -351,7 +351,7 @@ func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) err
 	return nil
 }
 
-func buildOutscaleOAPIDataSourceNicFilters(set *schema.Set) oscgo.FiltersNic {
+func buildOutscaleDataSourceNicFilters(set *schema.Set) oscgo.FiltersNic {
 	var filters oscgo.FiltersNic
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})

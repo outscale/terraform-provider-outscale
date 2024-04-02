@@ -33,7 +33,7 @@ func TestAccVM_WithVolumeAttachment_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"outscale_volumes_link.ebs_att", "device_name", "/dev/sdh"),
-					testAccCheckOutscaleOAPIVMExists("outscale_vm.web", &i),
+					testAccCheckOutscaleVMExists("outscale_vm.web", &i),
 					testAccCheckOAPIVolumeAttachmentExists(
 						"outscale_volumes_link.ebs_att", &i, &v),
 				),

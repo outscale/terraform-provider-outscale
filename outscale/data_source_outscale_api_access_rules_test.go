@@ -12,7 +12,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func TestAccDataOutscaleOAPIApiAccessRules_basic(t *testing.T) {
+func TestAccDataOutscaleApiAccessRules_basic(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_api_access_rule.rule_data"
 	resource.Test(t, resource.TestCase{
@@ -21,7 +21,7 @@ func TestAccDataOutscaleOAPIApiAccessRules_basic(t *testing.T) {
 		CheckDestroy: testAccDataCheckOutscaleApiAccessRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataOutscaleOAPIApiAccessRulesConfig(),
+				Config: testAccDataOutscaleApiAccessRulesConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleApiAccessRuleExists(resourceName),
 				),
@@ -68,7 +68,7 @@ func testAccDataCheckOutscaleApiAccessRulesDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccDataOutscaleOAPIApiAccessRulesConfig() string {
+func testAccDataOutscaleApiAccessRulesConfig() string {
 	return fmt.Sprintf(`
 resource "outscale_ca" "ca_rule" { 
    ca_pem       = file("./test-cert.pem")

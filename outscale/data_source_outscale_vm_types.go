@@ -13,9 +13,9 @@ import (
 	"github.com/spf13/cast"
 )
 
-func dataSourceOutscaleOAPIVMTypes() *schema.Resource {
+func DataSourceOutscaleVMTypes() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPIVMTypesRead,
+		Read: DataSourceOutscaleVMTypesRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -63,14 +63,14 @@ func dataSourceOutscaleOAPIVMTypes() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPIVMTypesRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleVMTypesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filter, filterOk := d.GetOk("filter")
 	filtersReq := oscgo.FiltersVmType{}
 
 	if filterOk {
-		filtersReq = buildOutscaleOAPIDataSourceVMTypesFilters(filter.(*schema.Set))
+		filtersReq = buildOutscaleDataSourceVMTypesFilters(filter.(*schema.Set))
 	}
 	req := oscgo.ReadVmTypesRequest{Filters: &filtersReq}
 
@@ -151,7 +151,7 @@ func statusDescriptionOAPIVMTypesAttributes(d *schema.ResourceData, fTypes []osc
 
 }
 
-func buildOutscaleOAPIDataSourceVMTypesFilters(set *schema.Set) oscgo.FiltersVmType {
+func buildOutscaleDataSourceVMTypesFilters(set *schema.Set) oscgo.FiltersVmType {
 	var filters oscgo.FiltersVmType
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})

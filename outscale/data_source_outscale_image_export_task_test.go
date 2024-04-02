@@ -25,7 +25,7 @@ func TestAccVM_withImageExportTaskDataSource_basic(t *testing.T) {
 			Providers: testAccProviders,
 			Steps: []resource.TestStep{
 				{
-					Config: testAccOutscaleOAPIImageExportTaskDataSourceConfig(omi, "tinav4.c2r2p2", utils.GetRegion(), imageName),
+					Config: testAccOutscaleImageExportTaskDataSourceConfig(omi, "tinav4.c2r2p2", utils.GetRegion(), imageName),
 					Check: resource.ComposeTestCheckFunc(
 						testAccCheckOutscaleImageExportTaskDataSourceID("data.outscale_image_export_task.test"),
 					),
@@ -52,7 +52,7 @@ func testAccCheckOutscaleImageExportTaskDataSourceID(n string) resource.TestChec
 	}
 }
 
-func testAccOutscaleOAPIImageExportTaskDataSourceConfig(omi, vmType, region, imageName string) string {
+func testAccOutscaleImageExportTaskDataSourceConfig(omi, vmType, region, imageName string) string {
 	return fmt.Sprintf(`
 	resource "outscale_vm" "basicExport" {
 		image_id	         = "%s"

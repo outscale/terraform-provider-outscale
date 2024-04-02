@@ -15,10 +15,10 @@ func TestAccNet_WithSubnet_DataSource(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPISubnetConfig(utils.GetRegion()),
+				Config: testAccDataSourceOutscaleSubnetConfig(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
-					testAccDataSourceOutscaleOAPISubnetCheck("data.outscale_subnet.by_id"),
-					testAccDataSourceOutscaleOAPISubnetCheck("data.outscale_subnet.by_filter"),
+					testAccDataSourceOutscaleSubnetCheck("data.outscale_subnet.by_id"),
+					testAccDataSourceOutscaleSubnetCheck("data.outscale_subnet.by_filter"),
 				),
 			},
 		},
@@ -31,16 +31,16 @@ func TestAccNet_SubnetDataSource_withAvailableIpsCountsFilter(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPISubnetWithAvailableIpsCountsFilter(utils.GetRegion()),
+				Config: testAccDataSourceOutscaleSubnetWithAvailableIpsCountsFilter(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
-					testAccDataSourceOutscaleOAPISubnetCheck("data.outscale_subnet.by_filter"),
+					testAccDataSourceOutscaleSubnetCheck("data.outscale_subnet.by_filter"),
 				),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleOAPISubnetCheck(name string) resource.TestCheckFunc {
+func testAccDataSourceOutscaleSubnetCheck(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -74,7 +74,7 @@ func testAccDataSourceOutscaleOAPISubnetCheck(name string) resource.TestCheckFun
 	}
 }
 
-func testAccDataSourceOutscaleOAPISubnetConfig(region string) string {
+func testAccDataSourceOutscaleSubnetConfig(region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "outscale_net" {
 			ip_range = "10.0.0.0/16"
@@ -104,7 +104,7 @@ func testAccDataSourceOutscaleOAPISubnetConfig(region string) string {
         `, region)
 }
 
-func testAccDataSourceOutscaleOAPISubnetWithAvailableIpsCountsFilter(region string) string {
+func testAccDataSourceOutscaleSubnetWithAvailableIpsCountsFilter(region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "outscale_net" {
 			ip_range = "10.0.0.0/16"

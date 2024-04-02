@@ -18,13 +18,13 @@ func TestAccOthers_FlexibleGpu_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIFlexibleGpuConfig(utils.GetRegion()),
+				Config: testAccOutscaleFlexibleGpuConfig(utils.GetRegion()),
 			},
 		},
 	})
 }
 
-func testAccOutscaleOAPIFlexibleGpuConfig(region string) string {
+func testAccOutscaleFlexibleGpuConfig(region string) string {
 	return fmt.Sprintf(`
                 resource "outscale_flexible_gpu" "fGPU-1" { 
                         model_name             =  "nvidia-p6"

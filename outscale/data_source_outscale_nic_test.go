@@ -23,13 +23,13 @@ func TestAccNet_WithNicDataSource_basic(t *testing.T) {
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_nic.outscale_nic",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscaleOAPIENIDestroy,
+		CheckDestroy:  testAccCheckOutscaleENIDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIENIDataSourceConfig(utils.GetRegion()),
+				Config: testAccOutscaleENIDataSourceConfig(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIENIExists("outscale_nic.outscale_nic", &conf),
-					testAccCheckOutscaleOAPIENIAttributes(&conf, utils.GetRegion()),
+					testAccCheckOutscaleENIExists("outscale_nic.outscale_nic", &conf),
+					testAccCheckOutscaleENIAttributes(&conf, utils.GetRegion()),
 				),
 			},
 		},
@@ -44,20 +44,20 @@ func TestAccNet_WithNicDataSource_basicFilter(t *testing.T) {
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_nic.outscale_nic",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscaleOAPIENIDestroy,
+		CheckDestroy:  testAccCheckOutscaleENIDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIENIDataSourceConfigFilter(utils.GetRegion()),
+				Config: testAccOutscaleENIDataSourceConfigFilter(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIENIExists("outscale_nic.outscale_nic", &conf),
-					testAccCheckOutscaleOAPIENIAttributes(&conf, utils.GetRegion()),
+					testAccCheckOutscaleENIExists("outscale_nic.outscale_nic", &conf),
+					testAccCheckOutscaleENIAttributes(&conf, utils.GetRegion()),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckOutscaleOAPIENIDestroy(s *terraform.State) error {
+func testAccCheckOutscaleENIDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_nic" {
 			continue
@@ -90,7 +90,7 @@ func testAccCheckOutscaleOAPIENIDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOutscaleOAPINICDestroy(s *terraform.State) error {
+func testAccCheckOutscaleNICDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_nic" {
 			continue
@@ -129,7 +129,7 @@ func testAccCheckOutscaleOAPINICDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccOutscaleOAPIENIDataSourceConfig(subregion string) string {
+func testAccOutscaleENIDataSourceConfig(subregion string) string {
 	return fmt.Sprintf(`
 	resource "outscale_net" "outscale_net" {
 		ip_range = "10.0.0.0/16"
@@ -172,7 +172,7 @@ func testAccOutscaleOAPIENIDataSourceConfig(subregion string) string {
 	`, subregion)
 }
 
-func testAccOutscaleOAPIENIDataSourceConfigFilter(subregion string) string {
+func testAccOutscaleENIDataSourceConfigFilter(subregion string) string {
 	return fmt.Sprintf(`
 	resource "outscale_net" "outscale_net" {
 		ip_range = "10.0.0.0/16"

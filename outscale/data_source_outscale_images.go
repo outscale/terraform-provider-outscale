@@ -14,9 +14,9 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPIImages() *schema.Resource {
+func DataSourceOutscaleImages() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPIImagesRead,
+		Read: DataSourceOutscaleImagesRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -211,7 +211,7 @@ func dataSourceOutscaleOAPIImages() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPIImagesRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleImagesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	executableUsers, executableUsersOk := d.GetOk("permissions")
@@ -223,7 +223,7 @@ func dataSourceOutscaleOAPIImagesRead(d *schema.ResourceData, meta interface{}) 
 
 	filtersReq := &oscgo.FiltersImage{}
 	if filtersOk {
-		filtersReq = buildOutscaleOAPIDataSourceImagesFilters(filters.(*schema.Set))
+		filtersReq = buildOutscaleDataSourceImagesFilters(filters.(*schema.Set))
 	}
 	if ownersOk {
 		filtersReq.SetAccountIds([]string{aids.(string)})
@@ -281,7 +281,7 @@ func dataSourceOutscaleOAPIImagesRead(d *schema.ResourceData, meta interface{}) 
 	})
 }
 
-func buildOutscaleOAPIDataSourceImagesFilters(set *schema.Set) *oscgo.FiltersImage {
+func buildOutscaleDataSourceImagesFilters(set *schema.Set) *oscgo.FiltersImage {
 	filters := &oscgo.FiltersImage{}
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})

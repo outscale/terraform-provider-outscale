@@ -12,9 +12,9 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func datasourceOutscaleOAPIServerCertificates() *schema.Resource {
+func DataSourceOutscaleServerCertificates() *schema.Resource {
 	return &schema.Resource{
-		Read: datasourceOutscaleOAPIServerCertificatesRead,
+		Read: DataSourceOutscaleServerCertificatesRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"server_certificates": {
@@ -57,7 +57,7 @@ func datasourceOutscaleOAPIServerCertificates() *schema.Resource {
 	}
 }
 
-func datasourceOutscaleOAPIServerCertificatesRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleServerCertificatesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")

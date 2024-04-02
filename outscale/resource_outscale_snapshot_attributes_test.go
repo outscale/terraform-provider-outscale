@@ -9,7 +9,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func TestAccOutscaleOAPISnapshotAttributes_Basic(t *testing.T) {
+func TestAccOutscaleSnapshotAttributes_Basic(t *testing.T) {
 	t.Skip()
 	var snapshotID string
 	accountID := os.Getenv("OUTSCALE_ACCOUNT")
@@ -19,13 +19,13 @@ func TestAccOutscaleOAPISnapshotAttributes_Basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISnapshotAttributesConfig(true, false, accountID, utils.GetRegion()),
+				Config: testAccOutscaleSnapshotAttributesConfig(true, false, accountID, utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckResourceGetAttr("outscale_snapshot.test", "id", &snapshotID),
 				),
 			},
 			{
-				Config: testAccOutscaleOAPISnapshotAttributesConfig(true, true, accountID, utils.GetRegion()),
+				Config: testAccOutscaleSnapshotAttributesConfig(true, true, accountID, utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckResourceGetAttr("outscale_snapshot.test", "id", &snapshotID),
 				),
@@ -34,7 +34,7 @@ func TestAccOutscaleOAPISnapshotAttributes_Basic(t *testing.T) {
 	})
 }
 
-func testAccOutscaleOAPISnapshotAttributesConfig(includeAddition, includeRemoval bool, aid, region string) string {
+func testAccOutscaleSnapshotAttributesConfig(includeAddition, includeRemoval bool, aid, region string) string {
 	base := fmt.Sprintf(`
 		resource "outscale_volume" "description_test" {
 			subregion_name = "%[2]sa"

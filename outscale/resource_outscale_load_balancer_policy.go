@@ -14,11 +14,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func resourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
+func ResourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleAppCookieStickinessPolicyCreate,
-		Read:   resourceOutscaleAppCookieStickinessPolicyRead,
-		Delete: resourceOutscaleAppCookieStickinessPolicyDelete,
+		Create: ResourceOutscaleAppCookieStickinessPolicyCreate,
+		Read:   ResourceOutscaleAppCookieStickinessPolicyRead,
+		Delete: ResourceOutscaleAppCookieStickinessPolicyDelete,
 
 		Schema: map[string]*schema.Schema{
 			"policy_name": {
@@ -239,7 +239,7 @@ func resourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
 	}
 }
 
-func resourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	l := d.Get("load_balancer_name")
@@ -357,11 +357,11 @@ func resourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, met
 	return nil
 }
 
-func resourceOutscaleAppCookieStickinessPolicyRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleAppCookieStickinessPolicyRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceOutscaleAppCookieStickinessPolicyDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleAppCookieStickinessPolicyDelete(d *schema.ResourceData, meta interface{}) error {
 	elbconn := meta.(*OutscaleClient).OSCAPI
 
 	l := d.Get("load_balancer_name").(string)

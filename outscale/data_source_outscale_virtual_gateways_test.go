@@ -20,13 +20,13 @@ func TestAccOthers_DataSourceVpnGateways_unattached(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPIVpnGatewaysUnattachedConfig(rInt),
+				Config: testAccDataSourceOutscaleVpnGatewaysUnattachedConfig(rInt),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleOAPIVpnGatewaysUnattachedConfig(rInt int) string {
+func testAccDataSourceOutscaleVpnGatewaysUnattachedConfig(rInt int) string {
 	return fmt.Sprintf(`
 		resource "outscale_virtual_gateway" "unattached" {
 			connection_type = "ipsec.1"	

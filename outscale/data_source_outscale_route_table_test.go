@@ -14,17 +14,17 @@ func TestAccNet_WithRouteTableDataSource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPIRouteTableGroupConfig,
+				Config: testAccDataSourceOutscaleRouteTableGroupConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccDataSourceOutscaleOAPIRouteTableCheck("data.outscale_route_table.by_filter"),
-					testAccDataSourceOutscaleOAPIRouteTableCheck("data.outscale_route_table.by_id"),
+					testAccDataSourceOutscaleRouteTableCheck("data.outscale_route_table.by_filter"),
+					testAccDataSourceOutscaleRouteTableCheck("data.outscale_route_table.by_id"),
 				),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleOAPIRouteTableCheck(name string) resource.TestCheckFunc {
+func testAccDataSourceOutscaleRouteTableCheck(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 
@@ -83,7 +83,7 @@ func testAccDataSourceOutscaleOAPIRouteTableCheck(name string) resource.TestChec
 	}
 }
 
-const testAccDataSourceOutscaleOAPIRouteTableGroupConfig = `
+const testAccDataSourceOutscaleRouteTableGroupConfig = `
 	resource "outscale_net" "test" {
 		ip_range = "172.16.0.0/16"
 

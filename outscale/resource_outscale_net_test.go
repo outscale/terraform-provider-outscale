@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccOutscaleOAPILin_basic(t *testing.T) {
+func TestAccOutscaleLin_basic(t *testing.T) {
 	t.Parallel()
 	var conf oscgo.Net
 
@@ -23,9 +23,9 @@ func TestAccOutscaleOAPILin_basic(t *testing.T) {
 		// CheckDestroy: testAccCheckOutscaleLinDestroyed, // we need to create the destroyed test case
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPILinConfig,
+				Config: testAccOutscaleLinConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPILinExists("outscale_net.vpc", &conf),
+					testAccCheckOutscaleLinExists("outscale_net.vpc", &conf),
 					resource.TestCheckResourceAttr(
 						"outscale_net.vpc", "ip_range", "10.0.0.0/16"),
 				),
@@ -39,21 +39,21 @@ func TestAccNet_UpdateTags(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleOAPINICDestroy,
+		CheckDestroy: testAccCheckOutscaleNICDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPILinConfigUpdateTags("Terraform_net"),
+				Config: testAccOutscaleLinConfigUpdateTags("Terraform_net"),
 				Check:  resource.ComposeTestCheckFunc(),
 			},
 			{
-				Config: testAccOutscaleOAPILinConfigUpdateTags("Terraform_net2"),
+				Config: testAccOutscaleLinConfigUpdateTags("Terraform_net2"),
 				Check:  resource.ComposeTestCheckFunc(),
 			},
 		},
 	})
 }
 
-func testAccCheckOutscaleOAPILinExists(n string, res *oscgo.Net) resource.TestCheckFunc {
+func testAccCheckOutscaleLinExists(n string, res *oscgo.Net) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -91,7 +91,7 @@ func testAccCheckOutscaleOAPILinExists(n string, res *oscgo.Net) resource.TestCh
 	}
 }
 
-const testAccOutscaleOAPILinConfig = `
+const testAccOutscaleLinConfig = `
 	resource "outscale_net" "vpc" {
 		ip_range = "10.0.0.0/16"
 		tags {
@@ -101,7 +101,7 @@ const testAccOutscaleOAPILinConfig = `
 	}
 `
 
-func testAccOutscaleOAPILinConfigUpdateTags(value string) string {
+func testAccOutscaleLinConfigUpdateTags(value string) string {
 	return fmt.Sprintf(`
 	resource "outscale_net" "outscale_net" { 
 		ip_range = "10.0.0.0/16"

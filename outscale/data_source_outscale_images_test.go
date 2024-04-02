@@ -23,16 +23,16 @@ func TestAccVM_WithImagesDataSource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIImagesDataSourceConfig(omi, "tinav4.c2r2p2", utils.GetRegion(), imageName),
+				Config: testAccCheckOutscaleImagesDataSourceConfig(omi, "tinav4.c2r2p2", utils.GetRegion(), imageName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIImagesDataSourceID("data.outscale_images.nat_ami"),
+					testAccCheckOutscaleImagesDataSourceID("data.outscale_images.nat_ami"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckOutscaleOAPIImagesDataSourceID(n string) resource.TestCheckFunc {
+func testAccCheckOutscaleImagesDataSourceID(n string) resource.TestCheckFunc {
 	// Wait for IAM role
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -47,7 +47,7 @@ func testAccCheckOutscaleOAPIImagesDataSourceID(n string) resource.TestCheckFunc
 	}
 }
 
-func testAccCheckOutscaleOAPIImagesDataSourceConfig(omi, vmType, region, imageName string) string {
+func testAccCheckOutscaleImagesDataSourceConfig(omi, vmType, region, imageName string) string {
 	return fmt.Sprintf(`
 		resource "outscale_security_group" "sg_imgs_data" {
 			security_group_name = "sg_imgsData"

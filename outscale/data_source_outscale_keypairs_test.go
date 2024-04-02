@@ -17,9 +17,9 @@ func TestAccOthers_KeypairsDataSource_Instance(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIKeypairsDataSourceConfig(keyPairName),
+				Config: testAccCheckOutscaleKeypairsDataSourceConfig(keyPairName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIKeypairsDataSourceID("data.outscale_keypairs.nat_ami"),
+					testAccCheckOutscaleKeypairsDataSourceID("data.outscale_keypairs.nat_ami"),
 					resource.TestCheckResourceAttr("data.outscale_keypairs.nat_ami", "keypairs.0.keypair_name", keyPairName),
 				),
 			},
@@ -27,7 +27,7 @@ func TestAccOthers_KeypairsDataSource_Instance(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleOAPIKeypairsDataSourceID(n string) resource.TestCheckFunc {
+func testAccCheckOutscaleKeypairsDataSourceID(n string) resource.TestCheckFunc {
 	// Wait for IAM role
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -42,7 +42,7 @@ func testAccCheckOutscaleOAPIKeypairsDataSourceID(n string) resource.TestCheckFu
 	}
 }
 
-func testAccCheckOutscaleOAPIKeypairsDataSourceConfig(keyPairName string) string {
+func testAccCheckOutscaleKeypairsDataSourceConfig(keyPairName string) string {
 	return fmt.Sprintf(`
 		resource "outscale_keypair" "a_key_pair" {
 			keypair_name = "%s"

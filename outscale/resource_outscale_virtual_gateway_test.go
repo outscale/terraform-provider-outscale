@@ -118,7 +118,7 @@ func TestAccNet_ImportVirtualGateway_Basic(t *testing.T) {
 	})
 }
 
-func testAccOutscaleOAPIVirtualGatewayDisappears(gateway *oscgo.VirtualGateway) resource.TestCheckFunc {
+func testAccOutscaleVirtualGatewayDisappears(gateway *oscgo.VirtualGateway) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 		var err error

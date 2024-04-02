@@ -12,19 +12,19 @@ func TestAccNet_PeeringConnectionAccepter_sameAccount(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccOutscaleOAPILinPeeringConnectionAccepterDestroy,
+		CheckDestroy: testAccOutscaleLinPeeringConnectionAccepterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPILinPeeringConnectionAccepterSameAccountConfig,
+				Config: testAccOutscaleLinPeeringConnectionAccepterSameAccountConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPILinPeeringConnectionAccepterExists("outscale_net_peering_acceptation.peer"),
+					testAccCheckOutscaleLinPeeringConnectionAccepterExists("outscale_net_peering_acceptation.peer"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckOutscaleOAPILinPeeringConnectionAccepterExists(n string) resource.TestCheckFunc {
+func testAccCheckOutscaleLinPeeringConnectionAccepterExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -38,12 +38,12 @@ func testAccCheckOutscaleOAPILinPeeringConnectionAccepterExists(n string) resour
 	}
 }
 
-func testAccOutscaleOAPILinPeeringConnectionAccepterDestroy(s *terraform.State) error {
+func testAccOutscaleLinPeeringConnectionAccepterDestroy(s *terraform.State) error {
 	// We don't destroy the underlying VPC Peering Connection.
 	return nil
 }
 
-const testAccOutscaleOAPILinPeeringConnectionAccepterSameAccountConfig = `
+const testAccOutscaleLinPeeringConnectionAccepterSameAccountConfig = `
 	resource "outscale_net" "foo" {
 		ip_range = "10.0.0.0/16"
 

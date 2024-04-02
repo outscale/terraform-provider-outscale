@@ -17,16 +17,16 @@ func TestAccOthers_RegionsDataSource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIRegionsDataSourceConfig,
+				Config: testAccCheckOutscaleRegionsDataSourceConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIRegionsDataSourceID("data.outscale_regions.regions"),
+					testAccCheckOutscaleRegionsDataSourceID("data.outscale_regions.regions"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckOutscaleOAPIRegionsDataSourceID(n string) resource.TestCheckFunc {
+func testAccCheckOutscaleRegionsDataSourceID(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -40,6 +40,6 @@ func testAccCheckOutscaleOAPIRegionsDataSourceID(n string) resource.TestCheckFun
 	}
 }
 
-var testAccCheckOutscaleOAPIRegionsDataSourceConfig = `
+var testAccCheckOutscaleRegionsDataSourceConfig = `
 		data "outscale_regions" "regions" {}
 	`

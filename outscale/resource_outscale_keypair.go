@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func resourceOutscaleOAPIKeyPair() *schema.Resource {
+func ResourceOutscaleKeyPair() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceOAPIKeyPairCreate,
 		Read:   resourceOAPIKeyPairRead,

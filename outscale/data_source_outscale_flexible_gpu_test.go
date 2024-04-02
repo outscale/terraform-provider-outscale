@@ -17,13 +17,13 @@ func TestAccOthers_DataSourceFlexibleGpu_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPIFlexibleGpuConfig(utils.GetRegion()),
+				Config: testAccDataSourceOutscaleFlexibleGpuConfig(utils.GetRegion()),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleOAPIFlexibleGpuConfig(region string) string {
+func testAccDataSourceOutscaleFlexibleGpuConfig(region string) string {
 	return fmt.Sprintf(`
                 resource "outscale_flexible_gpu" "dataGPU" {
                         model_name             =  "nvidia-p6"
