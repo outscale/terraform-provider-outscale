@@ -15,9 +15,9 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPILinPeeringConnection() *schema.Resource {
+func DataSourceOutscaleLinPeeringConnection() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPILinPeeringConnectionRead,
+		Read: DataSourceOutscaleLinPeeringConnectionRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter":       dataSourceFiltersSchema(),
@@ -52,7 +52,7 @@ func dataSourceOutscaleOAPILinPeeringConnection() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPILinPeeringConnectionRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleLinPeeringConnectionRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	log.Printf("[DEBUG] Reading Net Peering Connections.")
@@ -63,7 +63,7 @@ func dataSourceOutscaleOAPILinPeeringConnectionRead(d *schema.ResourceData, meta
 	if !filtersOk {
 		return fmt.Errorf("filters must be assigned")
 	}
-	filtersValues, err := buildOutscaleOAPILinPeeringConnectionFilters(filters.(*schema.Set))
+	filtersValues, err := buildOutscaleLinPeeringConnectionFilters(filters.(*schema.Set))
 	if err != nil {
 		return err
 	}
@@ -143,7 +143,7 @@ func dataSourceOutscaleOAPILinPeeringConnectionRead(d *schema.ResourceData, meta
 	return nil
 }
 
-func buildOutscaleOAPILinPeeringConnectionFilters(set *schema.Set) (oscgo.FiltersNetPeering, error) {
+func buildOutscaleLinPeeringConnectionFilters(set *schema.Set) (oscgo.FiltersNetPeering, error) {
 	var filters oscgo.FiltersNetPeering
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})

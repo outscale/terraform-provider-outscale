@@ -12,9 +12,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceOutscaleClientGateways() *schema.Resource {
+func DataSourceOutscaleClientGateways() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleClientGatewaysRead,
+		Read: DataSourceOutscaleClientGatewaysRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"client_gateway_ids": {
@@ -61,7 +61,7 @@ func dataSourceOutscaleClientGateways() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleClientGatewaysRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleClientGatewaysRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")

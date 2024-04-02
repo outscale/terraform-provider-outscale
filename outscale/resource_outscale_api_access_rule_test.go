@@ -24,7 +24,7 @@ func TestAccOthers_AccessRule_basic(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleApiAccessRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIApiAccessRuleConfig(ca_path),
+				Config: testAccOutscaleApiAccessRuleConfig(ca_path),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleApiAccessRuleExists(resourceName),
 				),
@@ -117,7 +117,7 @@ func testAccCheckOutscaleApiAccessRuleDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccOutscaleOAPIApiAccessRuleConfig(path string) string {
+func testAccOutscaleApiAccessRuleConfig(path string) string {
 	return fmt.Sprintf(`
 resource "outscale_ca" "ca_rule" { 
    ca_pem       = file(%q)

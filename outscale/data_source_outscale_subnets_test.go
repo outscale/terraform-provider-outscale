@@ -17,7 +17,7 @@ func TestAccNet_WithSubnetsDataSource(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPISubnetsConfig(rInt, utils.GetRegion()),
+				Config: testAccDataSourceOutscaleSubnetsConfig(rInt, utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.outscale_subnets.by_filter", "subnets.#", "1"),
 				),
@@ -33,13 +33,13 @@ func TestAccNet_Subnets_withAvailableIpsCountsFilter(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPISubnetsWithAvailableIpsCountsFilter(utils.GetRegion()),
+				Config: testAccDataSourceOutscaleSubnetsWithAvailableIpsCountsFilter(utils.GetRegion()),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleOAPISubnetsConfig(rInt int, region string) string {
+func testAccDataSourceOutscaleSubnetsConfig(rInt int, region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "net" {
 			ip_range = "10.%[1]d.123.0/24"
@@ -70,7 +70,7 @@ func testAccDataSourceOutscaleOAPISubnetsConfig(rInt int, region string) string 
 	`, rInt, region)
 }
 
-func testAccDataSourceOutscaleOAPISubnetsWithAvailableIpsCountsFilter(region string) string {
+func testAccDataSourceOutscaleSubnetsWithAvailableIpsCountsFilter(region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "outscale_net1" {
 			ip_range = "10.0.0.0/16"

@@ -14,12 +14,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func resourceOutscaleOAPISecurityGroup() *schema.Resource {
+func ResourceOutscaleSecurityGroup() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPISecurityGroupCreate,
-		Read:   resourceOutscaleOAPISecurityGroupRead,
-		Delete: resourceOutscaleOAPISecurityGroupDelete,
-		Update: resourceOutscaleOAPISecurityGroupUpdate,
+		Create: ResourceOutscaleSecurityGroupCreate,
+		Read:   ResourceOutscaleSecurityGroupRead,
+		Delete: ResourceOutscaleSecurityGroupDelete,
+		Update: ResourceOutscaleSecurityGroupUpdate,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -114,7 +114,7 @@ func getOAPIIPPerms() *schema.Schema {
 	}
 }
 
-func resourceOutscaleOAPISecurityGroupCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleSecurityGroupCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	securityGroupOpts := oscgo.CreateSecurityGroupRequest{}
@@ -216,10 +216,10 @@ func resourceOutscaleOAPISecurityGroupCreate(d *schema.ResourceData, meta interf
 			return err
 		}
 	}
-	return resourceOutscaleOAPISecurityGroupRead(d, meta)
+	return ResourceOutscaleSecurityGroupRead(d, meta)
 }
 
-func resourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleSecurityGroupRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	sg, _, err := readSecurityGroups(conn, d.Id())
@@ -262,7 +262,7 @@ func resourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interfac
 	return d.Set("outbound_rules", flattenOAPISecurityGroupRule(sg.GetOutboundRules()))
 }
 
-func resourceOutscaleOAPISecurityGroupDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleSecurityGroupDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	log.Printf("[DEBUG] Security Group destroy: %v", d.Id())
@@ -294,13 +294,13 @@ func SGOAPIStateRefreshFunc(conn *oscgo.APIClient, id string) resource.StateRefr
 	}
 }
 
-func resourceOutscaleOAPISecurityGroupUpdate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleSecurityGroupUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
-	return resourceOutscaleOAPISecurityGroupRead(d, meta)
+	return ResourceOutscaleSecurityGroupRead(d, meta)
 }
 
 func readSecurityGroups(client *oscgo.APIClient, securityGroupID string) (*oscgo.SecurityGroup, *oscgo.ReadSecurityGroupsResponse, error) {

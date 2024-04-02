@@ -14,7 +14,7 @@ func TestAccOthers_DataSourcePublicIPS(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPIPublicIPSConfig,
+				Config: testAccDataSourceOutscalePublicIPSConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
 						"data.outscale_public_ips.by_public_ips", "public_ips.0.public_ip"),
@@ -36,7 +36,7 @@ func TestAccOthers_DataSourcePublicIPS_withTags(t *testing.T) {
 			Providers: testAccProviders,
 			Steps: []resource.TestStep{
 				{
-					Config: testAccDataSourceOutscaleOAPIPublicIPSConfigWithTags,
+					Config: testAccDataSourceOutscalePublicIPSConfigWithTags,
 				},
 			},
 		})
@@ -45,7 +45,7 @@ func TestAccOthers_DataSourcePublicIPS_withTags(t *testing.T) {
 	}
 }
 
-const testAccDataSourceOutscaleOAPIPublicIPSConfig = `
+const testAccDataSourceOutscalePublicIPSConfig = `
 	resource "outscale_public_ip" "test" {}
 	resource "outscale_public_ip" "test1" {}
 	resource "outscale_public_ip" "test2" {}
@@ -58,7 +58,7 @@ const testAccDataSourceOutscaleOAPIPublicIPSConfig = `
 	}
 `
 
-const testAccDataSourceOutscaleOAPIPublicIPSConfigWithTags = `
+const testAccDataSourceOutscalePublicIPSConfigWithTags = `
 	resource "outscale_public_ip" "outscale_public_ip" {
 		tags {
 			key   = "name"

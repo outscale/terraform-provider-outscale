@@ -10,7 +10,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func TestAccOutscaleOAPIDSLoadBalancerTags_basic(t *testing.T) {
+func TestAccOutscaleDSLoadBalancerTags_basic(t *testing.T) {
 	t.Parallel()
 	r := acctest.RandString(4)
 

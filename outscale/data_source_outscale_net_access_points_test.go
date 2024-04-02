@@ -19,13 +19,13 @@ func TestAccNet_AccessPointsDataSource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPINetAccessPointsConfig(serviceName),
+				Config: testAccDataSourceOutscaleNetAccessPointsConfig(serviceName),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleOAPINetAccessPointsConfig(sName string) string {
+func testAccDataSourceOutscaleNetAccessPointsConfig(sName string) string {
 	return fmt.Sprintf(`
                 resource "outscale_net" "outscale_net" {
                         ip_range = "10.0.0.0/16"

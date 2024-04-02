@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func resourceOutscaleOAPIIMageExportTask() *schema.Resource {
+func ResourceOutscaleIMageExportTask() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceOAPIImageExportTaskCreate,
 		Read:   resourceOAPIImageExportTaskRead,
@@ -179,7 +179,7 @@ func resourceOAPIImageExportTaskCreate(d *schema.ResourceData, meta interface{})
 			return err
 		}
 	}
-	_, err = resourceOutscaleImageTaskWaitForAvailable(id, conn, d.Timeout(schema.TimeoutCreate))
+	_, err = ResourceOutscaleImageTaskWaitForAvailable(id, conn, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return err
 	}
@@ -281,7 +281,7 @@ func resourceOAPIImageExportTaskUpdate(d *schema.ResourceData, meta interface{})
 	return resourceOAPIImageExportTaskRead(d, meta)
 }
 
-func resourceOutscaleImageTaskWaitForAvailable(id string, client *oscgo.APIClient, timeout time.Duration) (oscgo.ImageExportTask, error) {
+func ResourceOutscaleImageTaskWaitForAvailable(id string, client *oscgo.APIClient, timeout time.Duration) (oscgo.ImageExportTask, error) {
 	log.Printf("Waiting for Image Task %s to become available...", id)
 	var image oscgo.ImageExportTask
 	stateConf := &resource.StateChangeConf{

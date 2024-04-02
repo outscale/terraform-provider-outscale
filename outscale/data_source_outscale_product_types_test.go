@@ -13,12 +13,12 @@ func TestAccOthers_DataSourceProductTypes(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPIProductTypesConfig,
+				Config: testAccDataSourceOutscaleProductTypesConfig,
 				Check:  resource.ComposeTestCheckFunc(),
 			},
 		},
 	})
 }
 
-const testAccDataSourceOutscaleOAPIProductTypesConfig = `
+const testAccDataSourceOutscaleProductTypesConfig = `
  data "outscale_product_types" "all" {}`

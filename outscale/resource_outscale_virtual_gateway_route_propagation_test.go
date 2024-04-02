@@ -25,9 +25,9 @@ func TestAccNet_WithVirtualRoutePropagation_basic(t *testing.T) {
 		CheckDestroy: testAccCheckOAPIVirtualRoutePropagationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIVpnRoutePropagationConfig(rBgpAsn),
+				Config: testAccOutscaleVpnRoutePropagationConfig(rBgpAsn),
 				Check: resource.ComposeTestCheckFunc(
-					testAccOutscaleOAPIVpnRoutePropagation(
+					testAccOutscaleVpnRoutePropagation(
 						"outscale_virtual_gateway_route_propagation.outscale_virtual_gateway_route_propagation",
 					),
 				),
@@ -82,7 +82,7 @@ func testAccCheckOAPIVirtualRoutePropagationDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccOutscaleOAPIVpnRoutePropagation(routeProp string) resource.TestCheckFunc {
+func testAccOutscaleVpnRoutePropagation(routeProp string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[routeProp]
 		if !ok {
@@ -97,7 +97,7 @@ func testAccOutscaleOAPIVpnRoutePropagation(routeProp string) resource.TestCheck
 	}
 }
 
-func testAccOutscaleOAPIVpnRoutePropagationConfig(rBgpAsn int) string {
+func testAccOutscaleVpnRoutePropagationConfig(rBgpAsn int) string {
 	return fmt.Sprintf(`
 		resource "outscale_virtual_gateway" "outscale_virtual_gateway" {
  connection_type = "ipsec.1"

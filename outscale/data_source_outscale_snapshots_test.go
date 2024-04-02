@@ -16,7 +16,7 @@ func TestAccOthers_SnapshotsDataSource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPISnapshotsDataSourceConfig(utils.GetRegion()),
+				Config: testAccCheckOutscaleSnapshotsDataSourceConfig(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.outscale_snapshots.outscale_snapshots", "snapshots.#", "1"),
 				),
@@ -25,7 +25,7 @@ func TestAccOthers_SnapshotsDataSource_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleOAPISnapshotsDataSourceConfig(region string) string {
+func testAccCheckOutscaleSnapshotsDataSourceConfig(region string) string {
 	return fmt.Sprintf(`
 	resource "outscale_volume" "example" {
 		subregion_name = "%sa"

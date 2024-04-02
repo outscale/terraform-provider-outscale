@@ -14,9 +14,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceOutscaleOAPIVirtualGateway() *schema.Resource {
+func DataSourceOutscaleVirtualGateway() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPIVirtualGatewayRead,
+		Read: DataSourceOutscaleVirtualGatewayRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -60,7 +60,7 @@ func dataSourceOutscaleOAPIVirtualGateway() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPIVirtualGatewayRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleVirtualGatewayRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")

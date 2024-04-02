@@ -86,7 +86,7 @@ func resourceLinkMainRouteTableCreate(d *schema.ResourceData, meta interface{}) 
 	}
 	d.SetId(resp.GetLinkRouteTableId())
 
-	return resourceOutscaleOAPILinkRouteTableRead(d, meta)
+	return ResourceOutscaleLinkRouteTableRead(d, meta)
 }
 
 func resourceLinkMainRouteTableRead(d *schema.ResourceData, meta interface{}) error {

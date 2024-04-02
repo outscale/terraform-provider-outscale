@@ -33,13 +33,13 @@ func TestAccVM_withImageExportTask_basic(t *testing.T) {
 				{
 					Config: testAccOAPIImageExportTaskConfigBasic(omi, "tinav4.c2r2p2", region, imageName, ""),
 					Check: resource.ComposeTestCheckFunc(
-						testAccCheckOutscaleOAPImageExportTaskExists("outscale_image_export_task.outscale_image_export_task"),
+						testAccCheckOutscalemageExportTaskExists("outscale_image_export_task.outscale_image_export_task"),
 					),
 				},
 				{
 					Config: testAccOAPIImageExportTaskConfigBasic(omi, "tinav4.c2r2p2", region, imageName, tags),
 					Check: resource.ComposeTestCheckFunc(
-						testAccCheckOutscaleOAPImageExportTaskExists("outscale_image_export_task.outscale_image_export_task"),
+						testAccCheckOutscalemageExportTaskExists("outscale_image_export_task.outscale_image_export_task"),
 					),
 				},
 			},
@@ -49,7 +49,7 @@ func TestAccVM_withImageExportTask_basic(t *testing.T) {
 	}
 }
 
-func testAccCheckOutscaleOAPImageExportTaskExists(n string) resource.TestCheckFunc {
+func testAccCheckOutscalemageExportTaskExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {

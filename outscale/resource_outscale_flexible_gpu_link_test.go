@@ -19,7 +19,7 @@ func TestAccVM_withFlexibleGpuLink_basic(t *testing.T) {
 			Providers: testAccProviders,
 			Steps: []resource.TestStep{
 				{
-					Config: testAccOutscaleOAPIFlexibleGpuLinkConfig(omi, "tinav5.c2r2p2", utils.GetRegion()),
+					Config: testAccOutscaleFlexibleGpuLinkConfig(omi, "tinav5.c2r2p2", utils.GetRegion()),
 				},
 			},
 		})
@@ -28,7 +28,7 @@ func TestAccVM_withFlexibleGpuLink_basic(t *testing.T) {
 	}
 }
 
-func testAccOutscaleOAPIFlexibleGpuLinkConfig(omi, vmType, region string) string {
+func testAccOutscaleFlexibleGpuLinkConfig(omi, vmType, region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_security_group" "sg_fgpu" {
 			security_group_name = "sg_GPU"

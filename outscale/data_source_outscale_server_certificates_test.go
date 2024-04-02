@@ -100,13 +100,13 @@ kbcI5Y2wveEgMqPSRya2OapYGiPeqYhg6JAGPRXtOfOq9IUDcPuc2emnihNpSa8y
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIServerCertificatesDatasourceConfig(rName, body, private),
+				Config: testAccOutscaleServerCertificatesDatasourceConfig(rName, body, private),
 			},
 		},
 	})
 }
 
-func testAccOutscaleOAPIServerCertificatesDatasourceConfig(name, body, privateKey string) string {
+func testAccOutscaleServerCertificatesDatasourceConfig(name, body, privateKey string) string {
 	return fmt.Sprintf(`
 resource "outscale_server_certificate" "test" { 
    name        =  %[1]q

@@ -15,7 +15,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func datasourceOutscaleOAPIVolume() *schema.Resource {
+func DataSourceOutscaleVolume() *schema.Resource {
 	return &schema.Resource{
 		Read: datasourceOAPIVolumeRead,
 

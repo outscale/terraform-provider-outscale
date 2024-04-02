@@ -18,12 +18,12 @@ func TestAccNet_WithSecurityGroup(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleOAPISGRuleDestroy,
+		CheckDestroy: testAccCheckOutscaleSGRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISecurityGroupConfig(rInt),
+				Config: testAccOutscaleSecurityGroupConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPISecurityGroupRuleExists("outscale_security_group.web", &group),
+					testAccCheckOutscaleSecurityGroupRuleExists("outscale_security_group.web", &group),
 					resource.TestCheckResourceAttr(
 						"outscale_security_group.web", "security_group_name", fmt.Sprintf("terraform_test_%d", rInt)),
 				),
@@ -32,7 +32,7 @@ func TestAccNet_WithSecurityGroup(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleOAPISGRuleDestroy(s *terraform.State) error {
+func testAccCheckOutscaleSGRuleDestroy(s *terraform.State) error {
 	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
@@ -48,7 +48,7 @@ func testAccCheckOutscaleOAPISGRuleDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOutscaleOAPISecurityGroupRuleExists(n string, group *oscgo.SecurityGroup) resource.TestCheckFunc {
+func testAccCheckOutscaleSecurityGroupRuleExists(n string, group *oscgo.SecurityGroup) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 
@@ -69,7 +69,7 @@ func testAccCheckOutscaleOAPISecurityGroupRuleExists(n string, group *oscgo.Secu
 	}
 }
 
-func testAccOutscaleOAPISecurityGroupConfig(rInt int) string {
+func testAccOutscaleSecurityGroupConfig(rInt int) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "net" {
 			ip_range = "10.0.0.0/16"

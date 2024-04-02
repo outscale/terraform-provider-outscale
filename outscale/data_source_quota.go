@@ -145,7 +145,7 @@ func (d *dataSourceQuota) Read(ctx context.Context, req datasource.ReadRequest, 
 	if err != nil {
 		goto CHECK_ERR
 	}
-	filters, err = buildOutscaleQuotaDataSourceFilters(listFilters)
+	filters, err = buildOutscaleQuotaDataSourceFrameworkFilters(listFilters)
 	if err != nil {
 		goto CHECK_ERR
 	}
@@ -222,7 +222,7 @@ CHECK_ERR:
 	}
 }
 
-func buildOutscaleQuotaDataSourceFilters(listFilters []tftypes.Value) (*oscgo.FiltersQuota, error) {
+func buildOutscaleQuotaDataSourceFrameworkFilters(listFilters []tftypes.Value) (*oscgo.FiltersQuota, error) {
 	var filters oscgo.FiltersQuota
 
 	for _, val := range listFilters {

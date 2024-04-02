@@ -18,16 +18,16 @@ func TestAccVM_StateDataSource(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPIVmStateConfig(omi, "tinav4.c2r2p2"),
+				Config: testAccDataSourceOutscaleVmStateConfig(omi, "tinav4.c2r2p2"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccDataSourceOutscaleOAPIVMStateCheck("data.outscale_vm_state.state"),
+					testAccDataSourceOutscaleVMStateCheck("data.outscale_vm_state.state"),
 				),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleOAPIVMStateCheck(name string) resource.TestCheckFunc {
+func testAccDataSourceOutscaleVMStateCheck(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 
@@ -53,7 +53,7 @@ func testAccDataSourceOutscaleOAPIVMStateCheck(name string) resource.TestCheckFu
 	}
 }
 
-func testAccDataSourceOutscaleOAPIVmStateConfig(omi, vmType string) string {
+func testAccDataSourceOutscaleVmStateConfig(omi, vmType string) string {
 	return fmt.Sprintf(`
 		resource "outscale_security_group" "sg_vm_state" {
 			security_group_name = "sg_vmState"

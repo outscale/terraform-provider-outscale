@@ -13,12 +13,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func resourceLBUAttachment() *schema.Resource {
+func ResourceLBUAttachment() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceLBUAttachmentCreate,
-		Read:   resourceLBUAttachmentRead,
-		Update: resourceLBUAttachmentUpdate,
-		Delete: resourceLBUAttachmentDelete,
+		Create: ResourceLBUAttachmentCreate,
+		Read:   ResourceLBUAttachmentRead,
+		Update: ResourceLBUAttachmentUpdate,
+		Delete: ResourceLBUAttachmentDelete,
 
 		Schema: map[string]*schema.Schema{
 			"load_balancer_name": {
@@ -39,7 +39,7 @@ func resourceLBUAttachment() *schema.Resource {
 		},
 	}
 }
-func resourceLBUAttachmentCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceLBUAttachmentCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	lbuName := d.Get("load_balancer_name").(string)
 	vmIds := d.Get("backend_vm_ids").(*schema.Set)
@@ -63,10 +63,10 @@ func resourceLBUAttachmentCreate(d *schema.ResourceData, meta interface{}) error
 		return fmt.Errorf("Failure registering backend_vm_ids with LBU: %s", err)
 	}
 	d.SetId(resource.PrefixedUniqueId(fmt.Sprintf("%s-", lbuName)))
-	return resourceLBUAttachmentRead(d, meta)
+	return ResourceLBUAttachmentRead(d, meta)
 }
 
-func resourceLBUAttachmentRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceLBUAttachmentRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	lbuName := d.Get("load_balancer_name").(string)
 	lb, _, err := readResourceLb(conn, lbuName)
@@ -99,7 +99,7 @@ func resourceLBUAttachmentRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceLBUAttachmentUpdate(d *schema.ResourceData, meta interface{}) error {
+func ResourceLBUAttachmentUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	lbuName := d.Get("load_balancer_name").(string)
 	var err error
@@ -151,10 +151,10 @@ func resourceLBUAttachmentUpdate(d *schema.ResourceData, meta interface{}) error
 			return fmt.Errorf("Failure deregistering old backend_vm_ids from LBU: %s", err)
 		}
 	}
-	return resourceLBUAttachmentRead(d, meta)
+	return ResourceLBUAttachmentRead(d, meta)
 }
 
-func resourceLBUAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceLBUAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	lbuName := d.Get("load_balancer_name").(string)
 	vmIds := d.Get("backend_vm_ids").(*schema.Set)

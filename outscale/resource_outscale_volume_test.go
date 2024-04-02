@@ -24,7 +24,7 @@ func TestAccOthers_Volume_basic(t *testing.T) {
 		Providers:     testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIVolumeConfig(utils.GetRegion()),
+				Config: testAccOutscaleVolumeConfig(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIVolumeExists("outscale_volume.test", &v),
 				),
@@ -52,14 +52,14 @@ func TestAccOthers_Volume_updateSize(t *testing.T) {
 		Providers:     testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIVolumeConfig(region),
+				Config: testAccOutscaleVolumeConfig(region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIVolumeExists("outscale_volume.test", &v),
 					resource.TestCheckResourceAttr("outscale_volume.test", "size", "1"),
 				),
 			},
 			{
-				Config: testOutscaleOAPIVolumeConfigUpdateSize(region),
+				Config: testOutscaleVolumeConfigUpdateSize(region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIVolumeExists("outscale_volume.test", &v),
 					resource.TestCheckResourceAttr("outscale_volume.test", "size", "10"),
@@ -153,7 +153,7 @@ func testAccCheckOAPIVolumeExists(n string, v *oscgo.Volume) resource.TestCheckF
 	}
 }
 
-func testAccOutscaleOAPIVolumeConfig(region string) string {
+func testAccOutscaleVolumeConfig(region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_volume" "test" {
 			subregion_name = "%sa"
@@ -168,7 +168,7 @@ func testAccOutscaleOAPIVolumeConfig(region string) string {
 	`, region)
 }
 
-func testOutscaleOAPIVolumeConfigUpdateSize(region string) string {
+func testOutscaleVolumeConfigUpdateSize(region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_volume" "test" {
 			subregion_name = "%sa"

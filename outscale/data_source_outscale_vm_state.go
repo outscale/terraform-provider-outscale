@@ -14,9 +14,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceOutscaleOAPIVMState() *schema.Resource {
+func DataSourceOutscaleVMState() *schema.Resource {
 	return &schema.Resource{
-		Read:   dataSourceOutscaleOAPIVMStateRead,
+		Read:   DataSourceOutscaleVMStateRead,
 		Schema: getOAPIVMStateDataSourceSchema(),
 	}
 }
@@ -84,7 +84,7 @@ func getVMStateAttrsSchema() map[string]*schema.Schema {
 	}
 }
 
-func dataSourceOutscaleOAPIVMStateRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleVMStateRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
@@ -96,7 +96,7 @@ func dataSourceOutscaleOAPIVMStateRead(d *schema.ResourceData, meta interface{})
 
 	params := oscgo.ReadVmsStateRequest{}
 	if filtersOk {
-		params.SetFilters(buildOutscaleOAPIDataSourceVMStateFilters(filters.(*schema.Set)))
+		params.SetFilters(buildOutscaleDataSourceVMStateFilters(filters.(*schema.Set)))
 	}
 	if instanceIDOk {
 		filter := oscgo.FiltersVmsState{}
@@ -178,7 +178,7 @@ func statusSetOAPIVMState(status []oscgo.MaintenanceEvent) []map[string]interfac
 	return s
 }
 
-func buildOutscaleOAPIDataSourceVMStateFilters(set *schema.Set) oscgo.FiltersVmsState {
+func buildOutscaleDataSourceVMStateFilters(set *schema.Set) oscgo.FiltersVmsState {
 	var filters oscgo.FiltersVmsState
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})

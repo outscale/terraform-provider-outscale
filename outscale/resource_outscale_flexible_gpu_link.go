@@ -12,12 +12,12 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func resourceOutscaleOAPIFlexibleGpuLink() *schema.Resource {
+func ResourceOutscaleFlexibleGpuLink() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPIFlexibleGpuLinkCreate,
-		Read:   resourceOutscaleOAPIFlexibleGpuLinkRead,
+		Create: ResourceOutscaleFlexibleGpuLinkCreate,
+		Read:   ResourceOutscaleFlexibleGpuLinkRead,
 		Update: resourceFlexibleGpuLinkUpdate,
-		Delete: resourceOutscaleOAPIFlexibleGpuLinkDelete,
+		Delete: ResourceOutscaleFlexibleGpuLinkDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -50,7 +50,7 @@ func resourceOutscaleOAPIFlexibleGpuLink() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPIFlexibleGpuLinkCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleFlexibleGpuLinkCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	vmId := d.Get("vm_id").(string)
 	GpuIdsList := utils.SetToStringSlice(d.Get("flexible_gpu_ids").(*schema.Set))
@@ -83,10 +83,10 @@ func resourceOutscaleOAPIFlexibleGpuLinkCreate(d *schema.ResourceData, meta inte
 		return fmt.Errorf("Unable to change ShutdownBehavior: %s\n", err)
 	}
 
-	return resourceOutscaleOAPIFlexibleGpuLinkRead(d, meta)
+	return ResourceOutscaleFlexibleGpuLinkRead(d, meta)
 }
 
-func resourceOutscaleOAPIFlexibleGpuLinkRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleFlexibleGpuLinkRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	vmId := d.Get("vm_id").(string)
 	req := &oscgo.ReadFlexibleGpusRequest{
@@ -129,7 +129,7 @@ func resourceOutscaleOAPIFlexibleGpuLinkRead(d *schema.ResourceData, meta interf
 	return nil
 }
 
-func resourceOutscaleOAPIFlexibleGpuLinkDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleFlexibleGpuLinkDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	GpuIdsList := utils.SetToStringSlice(d.Get("flexible_gpu_ids").(*schema.Set))
 	vmId := d.Get("vm_id").(string)
@@ -239,7 +239,7 @@ func resourceFlexibleGpuLinkUpdate(d *schema.ResourceData, meta interface{}) err
 		return fmt.Errorf("Unable to change ShutdownBehavior: %s\n", err)
 	}
 
-	return resourceOutscaleOAPIFlexibleGpuLinkRead(d, meta)
+	return ResourceOutscaleFlexibleGpuLinkRead(d, meta)
 }
 
 func changeShutdownBehavior(conn *oscgo.APIClient, vmId string, timeOut time.Duration) error {

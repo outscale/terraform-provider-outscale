@@ -15,7 +15,7 @@ func TestAccNet_Attr_import(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPILinAttrConfig,
+				Config: testAccOutscaleLinAttrConfig,
 			},
 			{
 				ResourceName:            resourceName,

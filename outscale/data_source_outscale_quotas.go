@@ -13,9 +13,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceOutscaleOAPIQuotas() *schema.Resource {
+func DataSourceOutscaleQuotas() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPIQuotasRead,
+		Read: DataSourceOutscaleQuotasRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -67,7 +67,7 @@ func dataSourceOutscaleOAPIQuotas() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPIQuotasRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleQuotasRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	req := oscgo.ReadQuotasRequest{}
@@ -75,7 +75,7 @@ func dataSourceOutscaleOAPIQuotasRead(d *schema.ResourceData, meta interface{}) 
 	filters, filtersOk := d.GetOk("filter")
 
 	if filtersOk {
-		req.Filters = buildOutscaleOAPIQuotaDataSourceFilters(filters.(*schema.Set))
+		req.Filters = buildOutscaleQuotaDataSourceFilters(filters.(*schema.Set))
 	}
 
 	var resp oscgo.ReadQuotasResponse
@@ -143,7 +143,7 @@ func dataSourceOutscaleOAPIQuotasRead(d *schema.ResourceData, meta interface{}) 
 	return nil
 }
 
-func buildOutscaleOAPIQuotaDataSourceFilters(set *schema.Set) *oscgo.FiltersQuota {
+func buildOutscaleQuotaDataSourceFilters(set *schema.Set) *oscgo.FiltersQuota {
 	var filters oscgo.FiltersQuota
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})

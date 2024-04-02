@@ -13,9 +13,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceOutscaleOAPIPublicIPS() *schema.Resource {
+func DataSourceOutscalePublicIPS() *schema.Resource {
 	return &schema.Resource{
-		Read:   dataSourceOutscalePublicIPSRead,
+		Read:   DataSourceOutscalePublicIPSRead,
 		Schema: oapiGetPublicIPSDataSourceSchema(),
 	}
 }
@@ -68,7 +68,7 @@ func oapiGetPublicIPSDataSourceSchema() map[string]*schema.Schema {
 	}
 }
 
-func dataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	req := oscgo.ReadPublicIpsRequest{}
@@ -76,7 +76,7 @@ func dataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{}) e
 	filters, filtersOk := d.GetOk("filter")
 
 	if filtersOk {
-		req.Filters = buildOutscaleOAPIDataSourcePublicIpsFilters(filters.(*schema.Set))
+		req.Filters = buildOutscaleDataSourcePublicIpsFilters(filters.(*schema.Set))
 	}
 
 	var resp oscgo.ReadPublicIpsResponse

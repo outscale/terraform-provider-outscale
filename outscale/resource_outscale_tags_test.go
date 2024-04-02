@@ -26,7 +26,7 @@ func TestAccVM_tags(t *testing.T) {
 		resource.Test(t, resource.TestCase{
 			PreCheck:     func() { testAccPreCheck(t) },
 			Providers:    testAccProviders,
-			CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
+			CheckDestroy: testAccCheckOutscaleVMDestroy,
 			Steps: []resource.TestStep{
 				{
 					Config: testAccCheckOAPIInstanceConfigTags(omi, "tinav4.c2r2p2", utils.GetRegion(), "keyOriginal", "valueOriginal"),

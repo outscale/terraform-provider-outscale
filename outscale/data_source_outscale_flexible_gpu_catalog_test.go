@@ -16,13 +16,13 @@ func TestAccOthers_DataSourceFlexibleGpuCatalog_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPIFlexibleGpuCatalogConfig(),
+				Config: testAccDataSourceOutscaleFlexibleGpuCatalogConfig(),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleOAPIFlexibleGpuCatalogConfig() string {
+func testAccDataSourceOutscaleFlexibleGpuCatalogConfig() string {
 	return fmt.Sprintf(`
               data "outscale_flexible_gpu_catalog" "catalog-fGPU" { }
 	`)

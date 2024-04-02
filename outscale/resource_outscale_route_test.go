@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccNet_OutscaleOAPIRoute_noopdiff(t *testing.T) {
+func TestAccNet_OutscaleRoute_noopdiff(t *testing.T) {
 	var route oscgo.Route
 
 	resource.Test(t, resource.TestCase{
@@ -24,15 +24,15 @@ func TestAccNet_OutscaleOAPIRoute_noopdiff(t *testing.T) {
 		CheckDestroy: testAccCheckOAPIOutscaleRouteDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIRouteNoopChange,
+				Config: testAccOutscaleRouteNoopChange,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIRouteExists("outscale_route.test", &route),
+					testAccCheckOutscaleRouteExists("outscale_route.test", &route),
 				),
 			},
 			{
-				Config: testAccOutscaleOAPIRouteNoopChange,
+				Config: testAccOutscaleRouteNoopChange,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIRouteExists("outscale_route.test", &route),
+					testAccCheckOutscaleRouteExists("outscale_route.test", &route),
 				),
 			},
 		},
@@ -49,11 +49,11 @@ func TestAccNet_ImportRoute_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckOAPIOutscaleRouteDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIRouteNoopChange,
+				Config: testAccOutscaleRouteNoopChange,
 			},
 			{
 				ResourceName:            resourceName,
-				ImportStateIdFunc:       testAccCheckOutscaleOAPIRouteImportStateIDFunc(resourceName),
+				ImportStateIdFunc:       testAccCheckOutscaleRouteImportStateIDFunc(resourceName),
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"request_id", "await_active_state"},
@@ -71,11 +71,11 @@ func TestAccNet_Route_importWithNatService(t *testing.T) {
 		CheckDestroy: testAccCheckOAPIOutscaleRouteDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIRouteWithNatService,
+				Config: testAccOutscaleRouteWithNatService,
 			},
 			{
 				ResourceName:            resourceName,
-				ImportStateIdFunc:       testAccCheckOutscaleOAPIRouteImportStateIDFunc(resourceName),
+				ImportStateIdFunc:       testAccCheckOutscaleRouteImportStateIDFunc(resourceName),
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"request_id", "await_active_state", "routes"}, /*we will remove 'routes' when autorefresh after link resources Ok*/
@@ -98,13 +98,13 @@ func TestAccNet_Route_changeTarget(t *testing.T) {
 			{
 				Config: computeConfigTestChangeTarget([]string{"nat_service_id"}),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIRouteExists("outscale_route.rtnatdef", &route),
+					testAccCheckOutscaleRouteExists("outscale_route.rtnatdef", &route),
 				),
 			},
 			{
 				Config: computeConfigTestChangeTarget([]string{"gateway_id"}),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIRouteExists("outscale_route.rtnatdef", &route),
+					testAccCheckOutscaleRouteExists("outscale_route.rtnatdef", &route),
 				),
 			},
 		},
@@ -204,7 +204,7 @@ func TestAccNet_Route_onlyOneTarget(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleOAPIRouteImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
+func testAccCheckOutscaleRouteImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
 	return func(s *terraform.State) (string, error) {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
@@ -214,7 +214,7 @@ func testAccCheckOutscaleOAPIRouteImportStateIDFunc(resourceName string) resourc
 	}
 }
 
-func testAccCheckOutscaleOAPIRouteExists(n string, res *oscgo.Route) resource.TestCheckFunc {
+func testAccCheckOutscaleRouteExists(n string, res *oscgo.Route) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -267,7 +267,7 @@ func testAccCheckOAPIOutscaleRouteDestroy(s *terraform.State) error {
 	return nil
 }
 
-var testAccOutscaleOAPIRouteNoopChange = fmt.Sprint(`
+var testAccOutscaleRouteNoopChange = fmt.Sprint(`
 	resource "outscale_net" "test" {
 		ip_range = "10.0.0.0/24"
 	}
@@ -290,7 +290,7 @@ var testAccOutscaleOAPIRouteNoopChange = fmt.Sprint(`
 	}
 `)
 
-var testAccOutscaleOAPIRouteWithNatService = fmt.Sprint(`
+var testAccOutscaleRouteWithNatService = fmt.Sprint(`
 	resource "outscale_net" "outscale_net" {
 		ip_range = "10.0.0.0/16"
 		tags {
@@ -382,10 +382,10 @@ func computeConfigTestChangeTarget(targets []string) string {
 		}
 	}
 
-	return fmt.Sprintf(testAccOutscaleOAPIRouteTemplateChangeTarget, strings.Join(extra_configs, "\n"))
+	return fmt.Sprintf(testAccOutscaleRouteTemplateChangeTarget, strings.Join(extra_configs, "\n"))
 }
 
-var testAccOutscaleOAPIRouteTemplateChangeTarget = `
+var testAccOutscaleRouteTemplateChangeTarget = `
 resource "outscale_net" "net" {
     ip_range = "10.0.0.0/16"
   tags {

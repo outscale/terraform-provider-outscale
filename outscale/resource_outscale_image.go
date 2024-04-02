@@ -24,7 +24,7 @@ const (
 	OutscaleImageRetryMinTimeout = 3 * time.Second
 )
 
-func resourceOutscaleOAPIImage() *schema.Resource {
+func ResourceOutscaleImage() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceOAPIImageCreate,
 		Read:   resourceOAPIImageRead,
@@ -436,7 +436,7 @@ func resourceOAPIImageDelete(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error deleting the image %s", err)
 	}
 
-	if err := resourceOutscaleOAPIImageWaitForDestroy(d.Id(), conn); err != nil {
+	if err := ResourceOutscaleImageWaitForDestroy(d.Id(), conn); err != nil {
 		return err
 	}
 
@@ -444,7 +444,7 @@ func resourceOAPIImageDelete(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceOutscaleOAPIImageWaitForDestroy(id string, conn *oscgo.APIClient) error {
+func ResourceOutscaleImageWaitForDestroy(id string, conn *oscgo.APIClient) error {
 	log.Printf("[INFO] Waiting for OMI %s to be deleted...", id)
 
 	filterReq := oscgo.ReadImagesRequest{

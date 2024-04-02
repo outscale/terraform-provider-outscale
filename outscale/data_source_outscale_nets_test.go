@@ -20,7 +20,7 @@ func TestAccNets_DataSource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPIVpcsConfig(ipRange, tag),
+				Config: testAccDataSourceOutscaleVpcsConfig(ipRange, tag),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.outscale_nets.by_id", "nets.#", "1"),
 				),
@@ -29,7 +29,7 @@ func TestAccNets_DataSource_basic(t *testing.T) {
 	})
 }
 
-func testAccDataSourceOutscaleOAPIVpcsConfig(ipRange, tag string) string {
+func testAccDataSourceOutscaleVpcsConfig(ipRange, tag string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "test" {
 			ip_range = "%s"

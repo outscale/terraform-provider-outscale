@@ -15,16 +15,16 @@ func TestAccNet_AttributesDataSource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIDSLinAttrConfig,
+				Config: testAccOutscaleDSLinAttrConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccDataSourceOutscaleOAPIVpcAttrCheck("data.outscale_net_attributes.test"),
+					testAccDataSourceOutscaleVpcAttrCheck("data.outscale_net_attributes.test"),
 				),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleOAPIVpcAttrCheck(name string) resource.TestCheckFunc {
+func testAccDataSourceOutscaleVpcAttrCheck(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -41,7 +41,7 @@ func testAccDataSourceOutscaleOAPIVpcAttrCheck(name string) resource.TestCheckFu
 	}
 }
 
-const testAccOutscaleOAPIDSLinAttrConfig = `
+const testAccOutscaleDSLinAttrConfig = `
 	resource "outscale_net" "vpc" {
 		ip_range = "10.0.0.0/16"
 		tags {

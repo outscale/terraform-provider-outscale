@@ -12,9 +12,9 @@ import (
 	"github.com/spf13/cast"
 )
 
-func dataSourceOutscaleOAPISubregions() *schema.Resource {
+func DataSourceOutscaleSubregions() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPISubregionsRead,
+		Read: DataSourceOutscaleSubregionsRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -51,14 +51,14 @@ func dataSourceOutscaleOAPISubregions() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPISubregionsRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleSubregionsRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
 
 	filtersReq := &oscgo.FiltersSubregion{}
 	if filtersOk {
-		filtersReq = buildOutscaleOAPIDataSourceSubregionsFilters(filters.(*schema.Set))
+		filtersReq = buildOutscaleDataSourceSubregionsFilters(filters.(*schema.Set))
 	}
 
 	req := oscgo.ReadSubregionsRequest{Filters: filtersReq}
@@ -97,7 +97,7 @@ func dataSourceOutscaleOAPISubregionsRead(d *schema.ResourceData, meta interface
 	})
 }
 
-func buildOutscaleOAPIDataSourceSubregionsFilters(set *schema.Set) *oscgo.FiltersSubregion {
+func buildOutscaleDataSourceSubregionsFilters(set *schema.Set) *oscgo.FiltersSubregion {
 	filters := &oscgo.FiltersSubregion{}
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})

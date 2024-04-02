@@ -20,7 +20,7 @@ func TestAccOthers_DataSourceVirtualGateway_unattached(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPIVirtualGatewayUnattachedConfig(rInt),
+				Config: testAccDataSourceOutscaleVirtualGatewayUnattachedConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
 						"data.outscale_virtual_gateway.test_by_id", "id",
@@ -33,7 +33,7 @@ func TestAccOthers_DataSourceVirtualGateway_unattached(t *testing.T) {
 	})
 }
 
-func testAccDataSourceOutscaleOAPIVirtualGatewayUnattachedConfig(rInt int) string {
+func testAccDataSourceOutscaleVirtualGatewayUnattachedConfig(rInt int) string {
 	return fmt.Sprintf(`
 		resource "outscale_virtual_gateway" "unattached" {
 			connection_type = "ipsec.1"	

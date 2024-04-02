@@ -13,9 +13,9 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleClientGateway() *schema.Resource {
+func DataSourceOutscaleClientGateway() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleClientGatewayRead,
+		Read: DataSourceOutscaleClientGatewayRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"bgp_asn": {
@@ -47,7 +47,7 @@ func dataSourceOutscaleClientGateway() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleClientGatewayRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleClientGatewayRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")

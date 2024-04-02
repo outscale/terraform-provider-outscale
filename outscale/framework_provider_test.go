@@ -48,7 +48,7 @@ func TestMuxServer(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: fwtestAccDataSourceOutscaleOAPIQuotaConfig,
+				Config: fwtestAccDataSourceOutscaleQuotaConfig,
 			},
 		},
 	})
@@ -64,7 +64,7 @@ func TestDataSource_UpgradeFromVersion(t *testing.T) {
 						Source:            "outscale/outscale",
 					},
 				},
-				Config: fwtestAccDataSourceOutscaleOAPIQuotaConfig,
+				Config: fwtestAccDataSourceOutscaleQuotaConfig,
 			},
 			{
 				ProtoV5ProviderFactories: map[string]func() (tfprotov5.ProviderServer, error){
@@ -83,14 +83,14 @@ func TestDataSource_UpgradeFromVersion(t *testing.T) {
 						return muxServer.ProviderServer(), nil
 					},
 				},
-				Config:   fwtestAccDataSourceOutscaleOAPIQuotaConfig,
+				Config:   fwtestAccDataSourceOutscaleQuotaConfig,
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-const fwtestAccDataSourceOutscaleOAPIQuotaConfig = `
+const fwtestAccDataSourceOutscaleQuotaConfig = `
 	data "outscale_quota" "lbuquota1" { 
   filter {
         name     = "quota_names"

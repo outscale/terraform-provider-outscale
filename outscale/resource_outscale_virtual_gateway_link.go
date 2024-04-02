@@ -14,11 +14,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func resourceOutscaleOAPIVirtualGatewayLink() *schema.Resource {
+func ResourceOutscaleVirtualGatewayLink() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPIVirtualGatewayLinkCreate,
-		Read:   resourceOutscaleOAPIVirtualGatewayLinkRead,
-		Delete: resourceOutscaleOAPIVirtualGatewayLinkDelete,
+		Create: ResourceOutscaleVirtualGatewayLinkCreate,
+		Read:   ResourceOutscaleVirtualGatewayLinkRead,
+		Delete: ResourceOutscaleVirtualGatewayLinkDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -64,7 +64,7 @@ func resourceOutscaleOAPIVirtualGatewayLink() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPIVirtualGatewayLinkCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleVirtualGatewayLinkCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	netID := d.Get("net_id").(string)
@@ -113,10 +113,10 @@ func resourceOutscaleOAPIVirtualGatewayLinkCreate(d *schema.ResourceData, meta i
 
 	d.SetId(vgwID)
 
-	return resourceOutscaleOAPIVirtualGatewayLinkRead(d, meta)
+	return ResourceOutscaleVirtualGatewayLinkRead(d, meta)
 }
 
-func resourceOutscaleOAPIVirtualGatewayLinkRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleVirtualGatewayLinkRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	vgwID := d.Id()
@@ -187,7 +187,7 @@ func flattenNetToVirtualGatewayLinks(netToVirtualGatewayLinks *[]oscgo.NetToVirt
 	return res
 }
 
-func resourceOutscaleOAPIVirtualGatewayLinkDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleVirtualGatewayLinkDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	// Get the old VPC ID to detach from

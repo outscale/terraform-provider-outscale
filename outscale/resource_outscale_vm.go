@@ -17,7 +17,7 @@ import (
 	"github.com/spf13/cast"
 )
 
-func resourceOutscaleOApiVM() *schema.Resource {
+func ResourceOutscaleVM() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceOAPIVMCreate,
 		Read:   resourceOAPIVMRead,

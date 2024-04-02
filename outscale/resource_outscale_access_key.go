@@ -13,12 +13,12 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func resourceOutscaleAccessKey() *schema.Resource {
+func ResourceOutscaleAccessKey() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleAccessKeyCreate,
-		Read:   resourceOutscaleAccessKeyRead,
-		Update: resourceOutscaleAccessKeyUpdate,
-		Delete: resourceOutscaleAccessKeyDelete,
+		Create: ResourceOutscaleAccessKeyCreate,
+		Read:   ResourceOutscaleAccessKeyRead,
+		Update: ResourceOutscaleAccessKeyUpdate,
+		Delete: ResourceOutscaleAccessKeyDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -63,7 +63,7 @@ func resourceOutscaleAccessKey() *schema.Resource {
 	}
 }
 
-func resourceOutscaleAccessKeyCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleAccessKeyCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	var err error
@@ -98,10 +98,10 @@ func resourceOutscaleAccessKeyCreate(d *schema.ResourceData, meta interface{}) e
 		}
 	}
 
-	return resourceOutscaleAccessKeyRead(d, meta)
+	return ResourceOutscaleAccessKeyRead(d, meta)
 }
 
-func resourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filter := oscgo.ReadSecretAccessKeyRequest{
@@ -149,7 +149,7 @@ func resourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) err
 	return nil
 }
 
-func resourceOutscaleAccessKeyUpdate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleAccessKeyUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	req := oscgo.UpdateAccessKeyRequest{AccessKeyId: d.Id()}
 
@@ -178,10 +178,10 @@ func resourceOutscaleAccessKeyUpdate(d *schema.ResourceData, meta interface{}) e
 	if err != nil {
 		return err
 	}
-	return resourceOutscaleAccessKeyRead(d, meta)
+	return ResourceOutscaleAccessKeyRead(d, meta)
 }
 
-func resourceOutscaleAccessKeyDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleAccessKeyDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	req := oscgo.DeleteAccessKeyRequest{

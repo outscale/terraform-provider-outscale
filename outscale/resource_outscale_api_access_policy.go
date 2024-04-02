@@ -11,12 +11,12 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func resourceOutscaleOAPIApiAccessPolicy() *schema.Resource {
+func ResourceOutscaleApiAccessPolicy() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPIApiAccessPolicyCreate,
-		Read:   resourceOutscaleOAPIApiAccessPolicyRead,
-		Update: resourceOutscaleOAPIApiAccessPolicyUpdate,
-		Delete: resourceOutscaleOAPIApiAccessPolicyDelete,
+		Create: ResourceOutscaleApiAccessPolicyCreate,
+		Read:   ResourceOutscaleApiAccessPolicyRead,
+		Update: ResourceOutscaleApiAccessPolicyUpdate,
+		Delete: ResourceOutscaleApiAccessPolicyDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -37,7 +37,7 @@ func resourceOutscaleOAPIApiAccessPolicy() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPIApiAccessPolicyCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleApiAccessPolicyCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	maxAcc := d.Get("max_access_key_expiration_seconds")
@@ -63,10 +63,10 @@ func resourceOutscaleOAPIApiAccessPolicyCreate(d *schema.ResourceData, meta inte
 	if err != nil {
 		return err
 	}
-	return resourceOutscaleOAPIApiAccessPolicyRead(d, meta)
+	return ResourceOutscaleApiAccessPolicyRead(d, meta)
 }
 
-func resourceOutscaleOAPIApiAccessPolicyRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleApiAccessPolicyRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	req := oscgo.ReadApiAccessPolicyRequest{}
@@ -102,7 +102,7 @@ func resourceOutscaleOAPIApiAccessPolicyRead(d *schema.ResourceData, meta interf
 	return nil
 }
 
-func resourceOutscaleOAPIApiAccessPolicyUpdate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleApiAccessPolicyUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	_, maxAcc := d.GetChange("max_access_key_expiration_seconds")
@@ -128,10 +128,10 @@ func resourceOutscaleOAPIApiAccessPolicyUpdate(d *schema.ResourceData, meta inte
 	if err != nil {
 		return err
 	}
-	return resourceOutscaleOAPIApiAccessPolicyRead(d, meta)
+	return ResourceOutscaleApiAccessPolicyRead(d, meta)
 }
 
-func resourceOutscaleOAPIApiAccessPolicyDelete(d *schema.ResourceData, _ interface{}) error {
+func ResourceOutscaleApiAccessPolicyDelete(d *schema.ResourceData, _ interface{}) error {
 	d.SetId("")
 	return nil
 }

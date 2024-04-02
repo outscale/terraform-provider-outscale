@@ -13,9 +13,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func datasourceOutscaleOAPIServerCertificate() *schema.Resource {
+func DataSourceOutscaleServerCertificate() *schema.Resource {
 	return &schema.Resource{
-		Read: datasourceOutscaleOAPIServerCertificateRead,
+		Read: DataSourceOutscaleServerCertificateRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"expiration_date": {
@@ -46,7 +46,7 @@ func datasourceOutscaleOAPIServerCertificate() *schema.Resource {
 	}
 }
 
-func datasourceOutscaleOAPIServerCertificateRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleServerCertificateRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")

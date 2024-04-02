@@ -108,13 +108,13 @@ kbcI5Y2wveEgMqPSRya2OapYGiPeqYhg6JAGPRXtOfOq9IUDcPuc2emnihNpSa8y
 		CheckDestroy: testAccCheckOutscaleServerCertificateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIServerCertificateConfig(rName, body, private),
+				Config: testAccOutscaleServerCertificateConfig(rName, body, private),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleServerCertificateExists(resourceName),
 				),
 			},
 			{
-				Config: testAccOutscaleOAPIServerCertificateConfig(rNameUpdated, body, private),
+				Config: testAccOutscaleServerCertificateConfig(rNameUpdated, body, private),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleServerCertificateExists(resourceName),
 				),
@@ -208,7 +208,7 @@ func testAccCheckOutscaleServerCertificateDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccOutscaleOAPIServerCertificateConfig(name, body, privateKey string) string {
+func testAccOutscaleServerCertificateConfig(name, body, privateKey string) string {
 	return fmt.Sprintf(`
 resource "outscale_server_certificate" "test" { 
    name        =  %[1]q

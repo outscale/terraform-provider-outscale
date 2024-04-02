@@ -13,9 +13,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceOutscaleOAPITag() *schema.Resource {
+func DataSourceOutscaleTag() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPITagRead,
+		Read: DataSourceOutscaleTagRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"key": {
@@ -38,7 +38,7 @@ func dataSourceOutscaleOAPITag() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPITagRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleTagRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	// Build up search parameters

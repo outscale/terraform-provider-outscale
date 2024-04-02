@@ -13,9 +13,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceOutscaleOAPIVpc() *schema.Resource {
+func DataSourceOutscaleVpc() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPIVpcRead,
+		Read: DataSourceOutscaleVpcRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -54,13 +54,13 @@ func dataSourceOutscaleOAPIVpc() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPIVpcRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleVpcRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	req := oscgo.ReadNetsRequest{}
 
 	if v, ok := d.GetOk("filter"); ok {
-		req.SetFilters(buildOutscaleOAPIDataSourceNetFilters(v.(*schema.Set)))
+		req.SetFilters(buildOutscaleDataSourceNetFilters(v.(*schema.Set)))
 	}
 
 	if id := d.Get("net_id"); id != "" {
@@ -112,7 +112,7 @@ func dataSourceOutscaleOAPIVpcRead(d *schema.ResourceData, meta interface{}) err
 	return d.Set("tags", tagsOSCAPIToMap(net.GetTags()))
 }
 
-func buildOutscaleOAPIDataSourceNetFilters(set *schema.Set) oscgo.FiltersNet {
+func buildOutscaleDataSourceNetFilters(set *schema.Set) oscgo.FiltersNet {
 	var filters oscgo.FiltersNet
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})

@@ -13,9 +13,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-func dataSourceOutscaleAccessKeys() *schema.Resource {
+func DataSourceOutscaleAccessKeys() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleAccessKeysRead,
+		Read: DataSourceOutscaleAccessKeysRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"access_key_ids": {
@@ -67,7 +67,7 @@ func dataSourceOutscaleAccessKeys() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleAccessKeysRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleAccessKeysRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")

@@ -15,7 +15,7 @@ func TestAccNet_WithNicsDataSource(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPINicsDataSourceConfig(utils.GetRegion()),
+				Config: testAccCheckOutscaleNicsDataSourceConfig(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.outscale_nics.outscale_nics", "nics.#", "1"),
 				),
@@ -24,7 +24,7 @@ func TestAccNet_WithNicsDataSource(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleOAPINicsDataSourceConfig(subregion string) string {
+func testAccCheckOutscaleNicsDataSourceConfig(subregion string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "outscale_net" {
 			ip_range = "10.0.0.0/16"

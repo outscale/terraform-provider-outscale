@@ -13,9 +13,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceOutscaleOAPINatService() *schema.Resource {
+func DataSourceOutscaleNatService() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPINatServiceRead,
+		Read: DataSourceOutscaleNatServiceRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -61,7 +61,7 @@ func dataSourceOutscaleOAPINatService() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPINatServiceRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleNatServiceRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
@@ -74,7 +74,7 @@ func dataSourceOutscaleOAPINatServiceRead(d *schema.ResourceData, meta interface
 	params := oscgo.ReadNatServicesRequest{}
 
 	if filtersOk {
-		params.SetFilters(buildOutscaleOAPINatServiceDataSourceFilters(filters.(*schema.Set)))
+		params.SetFilters(buildOutscaleNatServiceDataSourceFilters(filters.(*schema.Set)))
 	}
 	if natGatewayIDOK && natGatewayID.(string) != "" {
 		filter := oscgo.FiltersNatService{}
@@ -163,7 +163,7 @@ func ngOAPIDescriptionAttributes(d *schema.ResourceData, ng oscgo.NatService) er
 	return nil
 }
 
-func buildOutscaleOAPINatServiceDataSourceFilters(set *schema.Set) oscgo.FiltersNatService {
+func buildOutscaleNatServiceDataSourceFilters(set *schema.Set) oscgo.FiltersNatService {
 	var filters oscgo.FiltersNatService
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})

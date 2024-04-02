@@ -18,7 +18,7 @@ func TestAccOthers_SnapshotExportTasksDataSource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISnapshotExportTasksDataSourceConfig(imageName, utils.GetRegion()),
+				Config: testAccOutscaleSnapshotExportTasksDataSourceConfig(imageName, utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleSnapshotExportTaskDataSourceID("data.outscale_snapshot_export_tasks.export_tasks"),
 				),
@@ -27,7 +27,7 @@ func TestAccOthers_SnapshotExportTasksDataSource_basic(t *testing.T) {
 	})
 }
 
-func testAccOutscaleOAPISnapshotExportTasksDataSourceConfig(testName, region string) string {
+func testAccOutscaleSnapshotExportTasksDataSourceConfig(testName, region string) string {
 	return fmt.Sprintf(`
 			resource "outscale_volume" "outscale_volume_snap" {
 				subregion_name   = "%[2]sa"

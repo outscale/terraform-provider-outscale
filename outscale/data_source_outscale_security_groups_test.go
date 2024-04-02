@@ -15,7 +15,7 @@ func TestAccNet_WIthSecurityGroups_DataSource(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPISecurityGroupConfigVPC(rInt),
+				Config: testAccDataSourceOutscaleSecurityGroupConfigVPC(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"data.outscale_security_groups.by_id", "security_groups.#", "3"),
@@ -27,7 +27,7 @@ func TestAccNet_WIthSecurityGroups_DataSource(t *testing.T) {
 	})
 }
 
-func testAccDataSourceOutscaleOAPISecurityGroupConfigVPC(rInt int) string {
+func testAccDataSourceOutscaleSecurityGroupConfigVPC(rInt int) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "outscale_net" {
 			ip_range = "10.0.0.0/16"

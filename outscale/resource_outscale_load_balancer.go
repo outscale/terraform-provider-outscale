@@ -35,12 +35,12 @@ func lb_sg_schema() *schema.Schema {
 	}
 }
 
-func resourceOutscaleOAPILoadBalancer() *schema.Resource {
+func ResourceOutscaleLoadBalancer() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPILoadBalancerCreate,
-		Read:   resourceOutscaleOAPILoadBalancerRead,
-		Update: resourceOutscaleOAPILoadBalancerUpdate,
-		Delete: resourceOutscaleOAPILoadBalancerDelete,
+		Create: ResourceOutscaleLoadBalancerCreate,
+		Read:   ResourceOutscaleLoadBalancerRead,
+		Update: ResourceOutscaleLoadBalancerUpdate,
+		Delete: ResourceOutscaleLoadBalancerDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -365,11 +365,11 @@ func lb_listener_schema(computed bool) map[string]*schema.Schema {
 	}
 }
 
-func resourceOutscaleOAPILoadBalancerCreate(d *schema.ResourceData, meta interface{}) error {
-	return resourceOutscaleOAPILoadBalancerCreate_(d, meta, false)
+func ResourceOutscaleLoadBalancerCreate(d *schema.ResourceData, meta interface{}) error {
+	return ResourceOutscaleLoadBalancerCreate_(d, meta, false)
 }
 
-func resourceOutscaleOAPILoadBalancerCreate_(d *schema.ResourceData, meta interface{}, isUpdate bool) error {
+func ResourceOutscaleLoadBalancerCreate_(d *schema.ResourceData, meta interface{}, isUpdate bool) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	req := &oscgo.CreateLoadBalancerRequest{}
@@ -462,7 +462,7 @@ func resourceOutscaleOAPILoadBalancerCreate_(d *schema.ResourceData, meta interf
 		}
 	}
 
-	return resourceOutscaleOAPILoadBalancerRead(d, meta)
+	return ResourceOutscaleLoadBalancerRead(d, meta)
 }
 
 func readResourceLb(conn *oscgo.APIClient, elbName string) (*oscgo.LoadBalancer, *oscgo.ReadLoadBalancersResponse, error) {
@@ -498,7 +498,7 @@ func readResourceLb(conn *oscgo.APIClient, elbName string) (*oscgo.LoadBalancer,
 	return &lb, &resp, nil
 }
 
-func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	elbName := d.Id()
 
@@ -580,7 +580,7 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 	return nil
 }
 
-func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	var err error
 
@@ -893,10 +893,10 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 		}
 	}
 
-	return resourceOutscaleOAPILoadBalancerRead(d, meta)
+	return ResourceOutscaleLoadBalancerRead(d, meta)
 }
 
-func resourceOutscaleOAPILoadBalancerDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleLoadBalancerDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	log.Printf("[INFO] Deleting Load Balancer: %s", d.Id())

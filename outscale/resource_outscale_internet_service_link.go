@@ -12,11 +12,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func resourceOutscaleOAPIInternetServiceLink() *schema.Resource {
+func ResourceOutscaleInternetServiceLink() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPIInternetServiceLinkCreate,
-		Read:   resourceOutscaleOAPIInternetServiceLinkRead,
-		Delete: resourceOutscaleOAPIInternetServiceLinkDelete,
+		Create: ResourceOutscaleInternetServiceLinkCreate,
+		Read:   ResourceOutscaleInternetServiceLinkRead,
+		Delete: ResourceOutscaleInternetServiceLinkDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -63,7 +63,7 @@ func resourceOutscaleOAPIInternetServiceLink() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPIInternetServiceLinkCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleInternetServiceLinkCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	internetServiceID := d.Get("internet_service_id").(string)
@@ -107,10 +107,10 @@ func resourceOutscaleOAPIInternetServiceLinkCreate(d *schema.ResourceData, meta 
 
 	d.SetId(internetServiceID)
 
-	return resourceOutscaleOAPIInternetServiceLinkRead(d, meta)
+	return ResourceOutscaleInternetServiceLinkRead(d, meta)
 }
 
-func resourceOutscaleOAPIInternetServiceLinkRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleInternetServiceLinkRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	internetServiceID := d.Id()
@@ -158,7 +158,7 @@ func resourceOutscaleOAPIInternetServiceLinkRead(d *schema.ResourceData, meta in
 	})
 }
 
-func resourceOutscaleOAPIInternetServiceLinkDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleInternetServiceLinkDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	internetServiceID := d.Id()

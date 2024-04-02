@@ -30,22 +30,22 @@ func TestAccOthers_SnapshotExportTask_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISnapshotExportTaskConfig("", osuBucketNames[0], utils.GetRegion()),
+				Config: testAccOutscaleSnapshotExportTaskConfig("", osuBucketNames[0], utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPISnapshotExportTaskExists("outscale_snapshot_export_task.outscale_snapshot_export_task"),
+					testAccCheckOutscaleSnapshotExportTaskExists("outscale_snapshot_export_task.outscale_snapshot_export_task"),
 				),
 			},
 			{
-				Config: testAccOutscaleOAPISnapshotExportTaskConfig(tags, osuBucketNames[1], utils.GetRegion()),
+				Config: testAccOutscaleSnapshotExportTaskConfig(tags, osuBucketNames[1], utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPISnapshotExportTaskExists("outscale_snapshot_export_task.outscale_snapshot_export_task"),
+					testAccCheckOutscaleSnapshotExportTaskExists("outscale_snapshot_export_task.outscale_snapshot_export_task"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckOutscaleOAPISnapshotExportTaskExists(n string) resource.TestCheckFunc {
+func testAccCheckOutscaleSnapshotExportTaskExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -60,7 +60,7 @@ func testAccCheckOutscaleOAPISnapshotExportTaskExists(n string) resource.TestChe
 	}
 }
 
-func testAccOutscaleOAPISnapshotExportTaskConfig(tags, osuBucketName, region string) string {
+func testAccOutscaleSnapshotExportTaskConfig(tags, osuBucketName, region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_volume" "outscale_volume_snap" {
     subregion_name   = "%[3]sa"

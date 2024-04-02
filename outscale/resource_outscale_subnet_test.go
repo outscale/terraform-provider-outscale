@@ -22,19 +22,19 @@ func TestAccNet_WithSubNet_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleOAPISubNetDestroyed, // we need to create the destroyed test case
+		CheckDestroy: testAccCheckOutscaleSubNetDestroyed, // we need to create the destroyed test case
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISubnetConfig(utils.GetRegion(), false),
+				Config: testAccOutscaleSubnetConfig(utils.GetRegion(), false),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPISubNetExists(resourceName, &conf),
+					testAccCheckOutscaleSubNetExists(resourceName, &conf),
 					resource.TestCheckResourceAttr(resourceName, "map_public_ip_on_launch", "false"),
 				),
 			},
 			{
-				Config: testAccOutscaleOAPISubnetConfig(utils.GetRegion(), true),
+				Config: testAccOutscaleSubnetConfig(utils.GetRegion(), true),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPISubNetExists(resourceName, &conf),
+					testAccCheckOutscaleSubNetExists(resourceName, &conf),
 					resource.TestCheckResourceAttr(resourceName, "map_public_ip_on_launch", "true"),
 				),
 			},
@@ -42,7 +42,7 @@ func TestAccNet_WithSubNet_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleOAPISubNetExists(n string, res *oscgo.Subnet) resource.TestCheckFunc {
+func testAccCheckOutscaleSubNetExists(n string, res *oscgo.Subnet) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -85,7 +85,7 @@ func testAccCheckOutscaleOAPISubNetExists(n string, res *oscgo.Subnet) resource.
 	}
 }
 
-func testAccCheckOutscaleOAPISubNetDestroyed(s *terraform.State) error {
+func testAccCheckOutscaleSubNetDestroyed(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_subnet" {
 			continue
@@ -122,7 +122,7 @@ func testAccCheckOutscaleOAPISubNetDestroyed(s *terraform.State) error {
 	return nil
 }
 
-func testAccOutscaleOAPISubnetConfig(region string, mapPublicIpOnLaunch bool) string {
+func testAccOutscaleSubnetConfig(region string, mapPublicIpOnLaunch bool) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "net" {
 			ip_range = "10.0.0.0/16"

@@ -13,7 +13,7 @@ func TestAccNet_WithRouteTablesDataSource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPIRouteTablesGroupConfig,
+				Config: testAccDataSourceOutscaleRouteTablesGroupConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.outscale_route_tables.by_filter", "route_tables.#", "1"),
 					resource.TestCheckResourceAttr("data.outscale_route_tables.by_id", "route_tables.#", "1"),
@@ -23,7 +23,7 @@ func TestAccNet_WithRouteTablesDataSource_basic(t *testing.T) {
 	})
 }
 
-const testAccDataSourceOutscaleOAPIRouteTablesGroupConfig = `
+const testAccDataSourceOutscaleRouteTablesGroupConfig = `
 	resource "outscale_net" "test" {
 		ip_range = "172.16.0.0/16"
 

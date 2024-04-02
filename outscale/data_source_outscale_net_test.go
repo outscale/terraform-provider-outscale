@@ -21,16 +21,16 @@ func TestAccNet_DataSource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPIVpcConfig(ipRange, tag),
+				Config: testAccDataSourceOutscaleVpcConfig(ipRange, tag),
 				Check: resource.ComposeTestCheckFunc(
-					testAccDataSourceOutscaleOAPIVpcCheck("data.outscale_net.by_id", ipRange, tag),
+					testAccDataSourceOutscaleVpcCheck("data.outscale_net.by_id", ipRange, tag),
 				),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleOAPIVpcCheck(name, ipRange, tag string) resource.TestCheckFunc {
+func testAccDataSourceOutscaleVpcCheck(name, ipRange, tag string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -60,7 +60,7 @@ func testAccDataSourceOutscaleOAPIVpcCheck(name, ipRange, tag string) resource.T
 	}
 }
 
-func testAccDataSourceOutscaleOAPIVpcConfig(ipRange, tag string) string {
+func testAccDataSourceOutscaleVpcConfig(ipRange, tag string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "test" {
 			ip_range = "%s"

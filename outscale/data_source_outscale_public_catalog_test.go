@@ -16,13 +16,13 @@ func TestAccOthers_DataSourcePublicCatalog_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPIPublicCatalogConfig(),
+				Config: testAccDataSourceOutscalePublicCatalogConfig(),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleOAPIPublicCatalogConfig() string {
+func testAccDataSourceOutscalePublicCatalogConfig() string {
 	return fmt.Sprintf(`
               data "outscale_public_catalog" "catalog" { }
 	`)

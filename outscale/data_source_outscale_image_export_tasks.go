@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceOutscaleOAPIImageExportTasks() *schema.Resource {
+func DataSourceOutscaleImageExportTasks() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceOAPIImageExportTasksRead,
 		Importer: &schema.ResourceImporter{

@@ -17,9 +17,9 @@ func TestAccOthers_SnapshotDataSource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPISnapshotDataSourceConfig(utils.GetRegion()),
+				Config: testAccCheckOutscaleSnapshotDataSourceConfig(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPISnapshotDataSourceID("data.outscale_snapshot.snapshot"),
+					testAccCheckOutscaleSnapshotDataSourceID("data.outscale_snapshot.snapshot"),
 					resource.TestCheckResourceAttr("data.outscale_snapshot.snapshot", "volume_size", "1"),
 				),
 			},
@@ -35,9 +35,9 @@ func TestAccOthers_SnapshotDataSource_multipleFilters(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPISnapshotDataSourceConfigWithMultipleFilters(utils.GetRegion()),
+				Config: testAccCheckOutscaleSnapshotDataSourceConfigWithMultipleFilters(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPISnapshotDataSourceID("data.outscale_snapshot.snapshot"),
+					testAccCheckOutscaleSnapshotDataSourceID("data.outscale_snapshot.snapshot"),
 					resource.TestCheckResourceAttr("data.outscale_snapshot.snapshot", "volume_size", "10"),
 				),
 			},
@@ -45,7 +45,7 @@ func TestAccOthers_SnapshotDataSource_multipleFilters(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleOAPISnapshotDataSourceID(n string) resource.TestCheckFunc {
+func testAccCheckOutscaleSnapshotDataSourceID(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -59,7 +59,7 @@ func testAccCheckOutscaleOAPISnapshotDataSourceID(n string) resource.TestCheckFu
 	}
 }
 
-func testAccCheckOutscaleOAPISnapshotDataSourceConfig(region string) string {
+func testAccCheckOutscaleSnapshotDataSourceConfig(region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_volume" "example" {
 			subregion_name = "%sa"
@@ -76,7 +76,7 @@ func testAccCheckOutscaleOAPISnapshotDataSourceConfig(region string) string {
 	`, region)
 }
 
-func testAccCheckOutscaleOAPISnapshotDataSourceConfigWithMultipleFilters(region string) string {
+func testAccCheckOutscaleSnapshotDataSourceConfigWithMultipleFilters(region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_volume" "external1" {
 			subregion_name = "%sa"

@@ -13,9 +13,9 @@ import (
 	"github.com/spf13/cast"
 )
 
-func dataSourceOutscaleDHCPOption() *schema.Resource {
+func DataSourceOutscaleDHCPOption() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleDHCPOptionRead,
+		Read: DataSourceOutscaleDHCPOptionRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -61,7 +61,7 @@ func dataSourceOutscaleDHCPOption() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")

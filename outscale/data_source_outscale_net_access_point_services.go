@@ -12,9 +12,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceOutscaleOAPINetAccessPointServices() *schema.Resource {
+func DataSourceOutscaleNetAccessPointServices() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPINetAccessPointServicesRead,
+		Read: DataSourceOutscaleNetAccessPointServicesRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"services": {
@@ -46,7 +46,7 @@ func dataSourceOutscaleOAPINetAccessPointServices() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPINetAccessPointServicesRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleNetAccessPointServicesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")

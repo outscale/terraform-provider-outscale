@@ -17,13 +17,13 @@ func TestAccVM_StatesDataSource(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPIVMStatesConfig(omi, "tinav4.c2r2p2"),
+				Config: testAccDataSourceOutscaleVMStatesConfig(omi, "tinav4.c2r2p2"),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleOAPIVMStatesConfig(omi, vmType string) string {
+func testAccDataSourceOutscaleVMStatesConfig(omi, vmType string) string {
 	return fmt.Sprintf(`
 		resource "outscale_security_group" "sg_vStates" {
 			description                  = "testAcc Terraform security group"

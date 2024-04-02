@@ -12,9 +12,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceOutscaleOAPIFlexibleGpus() *schema.Resource {
+func DataSourceOutscaleFlexibleGpus() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPIFlexibleGpusRead,
+		Read: DataSourceOutscaleFlexibleGpusRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -62,7 +62,7 @@ func dataSourceOutscaleOAPIFlexibleGpus() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPIFlexibleGpusRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleFlexibleGpusRead(d *schema.ResourceData, meta interface{}) error {
 
 	conn := meta.(*OutscaleClient).OSCAPI
 	filters, filtersOk := d.GetOk("filter")
@@ -73,7 +73,7 @@ func dataSourceOutscaleOAPIFlexibleGpusRead(d *schema.ResourceData, meta interfa
 	}
 
 	req := oscgo.ReadFlexibleGpusRequest{}
-	req.SetFilters(buildOutscaleOAPIDataSourceFlexibleGpuFilters(filters.(*schema.Set)))
+	req.SetFilters(buildOutscaleDataSourceFlexibleGpuFilters(filters.(*schema.Set)))
 
 	var resp oscgo.ReadFlexibleGpusResponse
 	var err error

@@ -20,14 +20,14 @@ func TestAccFwOthers_DataSourceQuota(t *testing.T) {
 		PreCheck: func() { TestAccFwPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFwDataSourceOutscaleOAPIQuotaConfig,
+				Config: testAccFwDataSourceOutscaleQuotaConfig,
 				Check:  resource.ComposeTestCheckFunc(),
 			},
 		},
 	})
 }
 
-const testAccFwDataSourceOutscaleOAPIQuotaConfig = `
+const testAccFwDataSourceOutscaleQuotaConfig = `
 	data "outscale_quota" "lbuQuota1" { 
 	   filter {
 	      name     = "quota_names"

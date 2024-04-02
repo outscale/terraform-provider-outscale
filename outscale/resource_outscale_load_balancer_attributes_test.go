@@ -25,15 +25,15 @@ func TestAccOthers_LBUAttr_basic(t *testing.T) {
 		Providers:     testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPILBUAttrConfig(utils.GetRegion(), r),
+				Config: testAccOutscaleLBUAttrConfig(utils.GetRegion(), r),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPILBUAttrExists("outscale_load_balancer_attributes.bar2", &conf),
+					testAccCheckOutscaleLBUAttrExists("outscale_load_balancer_attributes.bar2", &conf),
 				)},
 		},
 	})
 }
 
-func testAccCheckOutscaleOAPILBUAttrExists(n string, res *oscgo.AccessLog) resource.TestCheckFunc {
+func testAccCheckOutscaleLBUAttrExists(n string, res *oscgo.AccessLog) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -48,7 +48,7 @@ func testAccCheckOutscaleOAPILBUAttrExists(n string, res *oscgo.AccessLog) resou
 	}
 }
 
-func testAccOutscaleOAPILBUAttrConfig(region string, r int) string {
+func testAccOutscaleLBUAttrConfig(region string, r int) string {
 	return fmt.Sprintf(`
 resource "outscale_load_balancer" "barAtt" {
   subregion_names = ["%sa"]

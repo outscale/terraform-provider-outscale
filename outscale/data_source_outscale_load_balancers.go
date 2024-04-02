@@ -191,15 +191,15 @@ func attrLBSchema() map[string]*schema.Schema {
 	}
 }
 
-func dataSourceOutscaleOAPILoadBalancers() *schema.Resource {
+func DataSourceOutscaleLoadBalancers() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPILoadBalancersRead,
+		Read: DataSourceOutscaleLoadBalancersRead,
 
 		Schema: getDataSourceSchemas(attrLBSchema()),
 	}
 }
 
-func dataSourceOutscaleOAPILoadBalancersRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleLoadBalancersRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	resp, _, err := readLbs_(conn, d, schema.TypeList)

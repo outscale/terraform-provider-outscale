@@ -14,9 +14,9 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleOAPIPublicIP() *schema.Resource {
+func DataSourceOutscalePublicIP() *schema.Resource {
 	return &schema.Resource{
-		Read:   dataSourceOutscaleOAPIPublicIPRead,
+		Read:   DataSourceOutscalePublicIPRead,
 		Schema: getOAPIPublicIPDataSourceSchema(),
 	}
 }
@@ -63,7 +63,7 @@ func getOAPIPublicIPDataSourceSchema() map[string]*schema.Schema {
 	}
 }
 
-func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscalePublicIPRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	req := oscgo.ReadPublicIpsRequest{
@@ -80,7 +80,7 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 
 	filters, filtersOk := d.GetOk("filter")
 	if filtersOk {
-		req.Filters = buildOutscaleOAPIDataSourcePublicIpsFilters(filters.(*schema.Set))
+		req.Filters = buildOutscaleDataSourcePublicIpsFilters(filters.(*schema.Set))
 	}
 
 	var response oscgo.ReadPublicIpsResponse
@@ -147,7 +147,7 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 	return nil
 }
 
-func buildOutscaleOAPIDataSourcePublicIpsFilters(set *schema.Set) *oscgo.FiltersPublicIp {
+func buildOutscaleDataSourcePublicIpsFilters(set *schema.Set) *oscgo.FiltersPublicIp {
 	var filters oscgo.FiltersPublicIp
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})

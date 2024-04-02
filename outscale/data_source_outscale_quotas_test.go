@@ -13,13 +13,13 @@ func TestAccOthers_DataSourcesQuotas(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourcesOutscaleOAPIQuotasConfig,
+				Config: testAccDataSourcesOutscaleQuotasConfig,
 				Check:  resource.ComposeTestCheckFunc(),
 			},
 		},
 	})
 }
 
-const testAccDataSourcesOutscaleOAPIQuotasConfig = `
+const testAccDataSourcesOutscaleQuotasConfig = `
 data "outscale_quotas" "all-quotas" {}
 `

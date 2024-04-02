@@ -18,10 +18,10 @@ func TestAccOthers_LBUs_basic(t *testing.T) {
 			testAccPreCheck(t)
 		},
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleOAPILBUDestroy,
+		CheckDestroy: testAccCheckOutscaleLBUDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDSOutscaleOAPILBsUConfig(region, numLbu),
+				Config: testAccDSOutscaleLBsUConfig(region, numLbu),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.outscale_load_balancers.test", "load_balancer.#", "1"),
 				)},
@@ -29,7 +29,7 @@ func TestAccOthers_LBUs_basic(t *testing.T) {
 	})
 }
 
-func testAccDSOutscaleOAPILBsUConfig(region string, numLbu int) string {
+func testAccDSOutscaleLBsUConfig(region string, numLbu int) string {
 	return fmt.Sprintf(`
 	resource "outscale_load_balancer" "bars" {
 		subregion_names = ["%s"]

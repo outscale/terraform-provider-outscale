@@ -14,9 +14,9 @@ import (
 	"github.com/spf13/cast"
 )
 
-func dataSourceOutscaleOAPIFlexibleGpu() *schema.Resource {
+func DataSourceOutscaleFlexibleGpu() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPIFlexibleGpuRead,
+		Read: DataSourceOutscaleFlexibleGpuRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"request_id": {
@@ -55,7 +55,7 @@ func dataSourceOutscaleOAPIFlexibleGpu() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPIFlexibleGpuRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceOutscaleFlexibleGpuRead(d *schema.ResourceData, meta interface{}) error {
 
 	conn := meta.(*OutscaleClient).OSCAPI
 
@@ -72,7 +72,7 @@ func dataSourceOutscaleOAPIFlexibleGpuRead(d *schema.ResourceData, meta interfac
 		FlexibleGpuIds: &[]string{flexID.(string)},
 	}
 
-	req.SetFilters(buildOutscaleOAPIDataSourceFlexibleGpuFilters(filters.(*schema.Set)))
+	req.SetFilters(buildOutscaleDataSourceFlexibleGpuFilters(filters.(*schema.Set)))
 
 	var resp oscgo.ReadFlexibleGpusResponse
 	var err error
@@ -122,7 +122,7 @@ func dataSourceOutscaleOAPIFlexibleGpuRead(d *schema.ResourceData, meta interfac
 	return nil
 }
 
-func buildOutscaleOAPIDataSourceFlexibleGpuFilters(set *schema.Set) oscgo.FiltersFlexibleGpu {
+func buildOutscaleDataSourceFlexibleGpuFilters(set *schema.Set) oscgo.FiltersFlexibleGpu {
 	var filters oscgo.FiltersFlexibleGpu
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})

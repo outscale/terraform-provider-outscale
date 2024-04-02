@@ -22,7 +22,7 @@ func TestAccOthers_Snapshot_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISnapshotConfig(utils.GetRegion()),
+				Config: testAccOutscaleSnapshotConfig(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPISnapshotExists("outscale_snapshot.outscale_snapshot", &v),
 				),
@@ -40,7 +40,7 @@ func TestAccOthers_Snapshot_withDescription(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISnapshotConfigWithDescription(utils.GetRegion()),
+				Config: testAccOutscaleSnapshotConfigWithDescription(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPISnapshotExists("outscale_snapshot.test", &v),
 					resource.TestCheckResourceAttr("outscale_snapshot.test", "description", "Snapshot Acceptance Test"),
@@ -59,7 +59,7 @@ func TestAccOthers_Snapshot_CopySnapshot(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISnapshotConfigCopySnapshot(utils.GetRegion()),
+				Config: testAccOutscaleSnapshotConfigCopySnapshot(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPISnapshotExists("outscale_snapshot.test", &v),
 					resource.TestCheckResourceAttr("outscale_snapshot.test", "description", "Target Snapshot Acceptance Test"),
@@ -79,11 +79,11 @@ func TestAccOthers_Snapshot_UpdateTags(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISnapshotConfigUpdateTags(region, "Terraform-Snapshot"),
+				Config: testAccOutscaleSnapshotConfigUpdateTags(region, "Terraform-Snapshot"),
 				Check:  resource.ComposeTestCheckFunc(),
 			},
 			{
-				Config: testAccOutscaleOAPISnapshotConfigUpdateTags(region, "Terraform-Snapshot-2"),
+				Config: testAccOutscaleSnapshotConfigUpdateTags(region, "Terraform-Snapshot-2"),
 				Check:  resource.ComposeTestCheckFunc(),
 			},
 		},
@@ -99,7 +99,7 @@ func TestAccOthers_Snapshot_importBasic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISnapshotConfig(utils.GetRegion()),
+				Config: testAccOutscaleSnapshotConfig(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPISnapshotExists("outscale_snapshot.outscale_snapshot", &v),
 				),
@@ -152,7 +152,7 @@ func testAccCheckOAPISnapshotExists(n string, v *oscgo.Snapshot) resource.TestCh
 	}
 }
 
-func testAccOutscaleOAPISnapshotConfig(region string) string {
+func testAccOutscaleSnapshotConfig(region string) string {
 	return fmt.Sprintf(`
 		 resource "outscale_volume" "outscale_volume" {
     subregion_name = "%sa"
@@ -170,7 +170,7 @@ resource "outscale_snapshot_attributes" "outscale_snapshot_attributes" {
 	`, region)
 }
 
-func testAccOutscaleOAPISnapshotConfigWithDescription(region string) string {
+func testAccOutscaleSnapshotConfigWithDescription(region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_volume" "description_test" {
 			subregion_name = "%sa"
@@ -184,7 +184,7 @@ func testAccOutscaleOAPISnapshotConfigWithDescription(region string) string {
 	`, region)
 }
 
-func testAccOutscaleOAPISnapshotConfigCopySnapshot(region string) string {
+func testAccOutscaleSnapshotConfigCopySnapshot(region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_volume" "description_test" {
 			subregion_name = "%[1]sb"
@@ -204,7 +204,7 @@ func testAccOutscaleOAPISnapshotConfigCopySnapshot(region string) string {
 	`, region)
 }
 
-func testAccOutscaleOAPISnapshotConfigUpdateTags(region, value string) string {
+func testAccOutscaleSnapshotConfigUpdateTags(region, value string) string {
 	return fmt.Sprintf(`
 	resource "outscale_volume" "outscale_volume" {
 		subregion_name = "%sa"

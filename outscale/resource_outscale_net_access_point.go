@@ -13,12 +13,12 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func resourceOutscaleNetAccessPoint() *schema.Resource {
+func ResourceOutscaleNetAccessPoint() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleNetAccessPointCreate,
-		Read:   resourceOutscaleNetAccessPointRead,
-		Delete: resourceOutscaleNetAccessPointDelete,
-		Update: resourceOutscaleNetAccessPointUpdate,
+		Create: ResourceOutscaleNetAccessPointCreate,
+		Read:   ResourceOutscaleNetAccessPointRead,
+		Delete: ResourceOutscaleNetAccessPointDelete,
+		Update: ResourceOutscaleNetAccessPointUpdate,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -56,7 +56,7 @@ func resourceOutscaleNetAccessPoint() *schema.Resource {
 	}
 }
 
-func resourceOutscaleNetAccessPointUpdate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleNetAccessPointUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	if d.HasChange("route_table_ids") {
@@ -118,7 +118,7 @@ func resourceOutscaleNetAccessPointUpdate(d *schema.ResourceData, meta interface
 			return err
 		}
 	}
-	return resourceOutscaleNetAccessPointRead(d, meta)
+	return ResourceOutscaleNetAccessPointRead(d, meta)
 }
 
 func napStateRefreshFunc(conn *oscgo.APIClient, id string) resource.StateRefreshFunc {
@@ -157,7 +157,7 @@ func napStateRefreshFunc(conn *oscgo.APIClient, id string) resource.StateRefresh
 	}
 }
 
-func resourceOutscaleNetAccessPointCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleNetAccessPointCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	req := &oscgo.CreateNetAccessPointRequest{}
@@ -215,10 +215,10 @@ func resourceOutscaleNetAccessPointCreate(d *schema.ResourceData, meta interface
 	d.Set("net_access_point_id", id)
 	d.SetId(id)
 
-	return resourceOutscaleNetAccessPointRead(d, meta)
+	return ResourceOutscaleNetAccessPointRead(d, meta)
 }
 
-func resourceOutscaleNetAccessPointRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleNetAccessPointRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	napid := d.Id()
@@ -264,7 +264,7 @@ func resourceOutscaleNetAccessPointRead(d *schema.ResourceData, meta interface{}
 	return nil
 }
 
-func resourceOutscaleNetAccessPointDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleNetAccessPointDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	req := &oscgo.DeleteNetAccessPointRequest{

@@ -13,12 +13,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func resourceOutscaleOAPINatService() *schema.Resource {
+func ResourceOutscaleNatService() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceOAPINatServiceCreate,
 		Read:   resourceOAPINatServiceRead,
 		Delete: resourceOAPINatServiceDelete,
-		Update: resourceOutscaleOAPINatServiceUpdate,
+		Update: ResourceOutscaleNatServiceUpdate,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -196,7 +196,7 @@ func resourceOAPINatServiceRead(d *schema.ResourceData, meta interface{}) error 
 	})
 }
 
-func resourceOutscaleOAPINatServiceUpdate(d *schema.ResourceData, meta interface{}) error {
+func ResourceOutscaleNatServiceUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	if err := setOSCAPITags(conn, d); err != nil {

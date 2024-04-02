@@ -13,7 +13,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func resourceOutscaleOAPIVolumeLink() *schema.Resource {
+func ResourceOutscaleVolumeLink() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceOAPIVolumeLinkCreate,
 		Read:   resourceOAPIVolumeLinkRead,
