@@ -31,7 +31,7 @@ The following arguments are supported:
 * `filter` - (Optional) A combination of a filter name and one or more filter values. You can specify this argument for as many filter names as you need. The filter name can be any of the following:
     * `internet_service_ids` - (Optional) The IDs of the Internet services.
     * `link_net_ids` - (Optional) The IDs of the Nets the Internet services are attached to.
-    * `link_states` - (Optional) The current states of the attachments between the Internet services and the Nets (only `available`, if the Internet gateway is attached to a VPC).
+    * `link_states` - (Optional) The current states of the attachments between the Internet services and the Nets (only `available`, if the Internet gateway is attached to a Net).
     * `tag_keys` - (Optional) The keys of the tags associated with the Internet services.
     * `tag_values` - (Optional) The values of the tags associated with the Internet services.
     * `tags` - (Optional) The key/value combinations of the tags associated with the Internet services, in the following format: `TAGKEY=TAGVALUE`.

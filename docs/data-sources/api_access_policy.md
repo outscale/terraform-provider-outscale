@@ -29,4 +29,5 @@ No argument is supported.
 The following attributes are exported:
 
 * `max_access_key_expiration_seconds` - The maximum possible lifetime for your access keys, in seconds. If `0`, your access keys can have unlimited lifetimes.
-* `require_trusted_env` - If true, a trusted session is activated, allowing you to bypass Certificate Authorities (CAs) enforcement. For more information, see the `ApiKeyAuth` authentication scheme in the [Authentication](https://docs.outscale.com/api#authentication) section.
+* `require_trusted_env` - If true, a trusted session is activated, allowing you to bypass Certificate Authorities (CAs) enforcement. For more information, see [About Your API Access Policy](https://docs.outscale.com/en/userguide/About-Your-API-Access-Policy.html).<br />
+If this is enabled, it is required that you and all your users log in to Cockpit v2 using the WebAuthn method for multi-factor authentication. For more information, see [About Authentication > Multi-Factor Authentication](https://docs.outscale.com/en/userguide/About-Authentication.html#_multi_factor_authentication).

@@ -83,13 +83,13 @@ The following attributes are exported:
 * `backend_vm_ids` - One or more IDs of back-end VMs for the load balancer.
 * `dns_name` - The DNS name of the load balancer.
 * `health_check` - Information about the health check configuration.
-    * `check_interval` - The number of seconds between two pings (between `5` and `600` both included).
-    * `healthy_threshold` - The number of consecutive successful pings before considering the VM as healthy (between `2` and `10` both included).
-    * `path` - If you use the HTTP or HTTPS protocols, the ping path.
+    * `check_interval` - The number of seconds between two requests (between `5` and `600` both included).
+    * `healthy_threshold` - The number of consecutive successful requests before considering the VM as healthy (between `2` and `10` both included).
+    * `path` - If you use the HTTP or HTTPS protocols, the request URL path.
     * `port` - The port number (between `1` and `65535`, both included).
     * `protocol` - The protocol for the URL of the VM (`HTTP` \| `HTTPS` \| `TCP` \| `SSL`).
     * `timeout` - The maximum waiting time for a response before considering the VM as unhealthy, in seconds (between `2` and `60` both included).
-    * `unhealthy_threshold` - The number of consecutive failed pings before considering the VM as unhealthy (between `2` and `10` both included).
+    * `unhealthy_threshold` - The number of consecutive failed requests before considering the VM as unhealthy (between `2` and `10` both included).
 * `listeners` - The listeners for the load balancer.
     * `backend_port` - The port on which the back-end VM is listening (between `1` and `65535`, both included).
     * `backend_protocol` - The protocol for routing traffic to back-end VMs (`HTTP` \| `HTTPS` \| `TCP` \| `SSL`).

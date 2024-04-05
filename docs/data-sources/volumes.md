@@ -48,11 +48,14 @@ The following arguments are supported:
     * `volume_sizes` - (Optional) The sizes of the volumes, in gibibytes (GiB).
     * `volume_states` - (Optional) The states of the volumes (`creating` \| `available` \| `in-use` \| `updating` \| `deleting` \| `error`).
     * `volume_types` - (Optional) The types of the volumes (`standard` \| `gp2` \| `io1`).
+* `next_page_token` - (Optional) The token to request the next page of results. Each token refers to a specific page.
+* `results_per_page` - (Optional) The maximum number of logs returned in a single response (between `1`and `1000`, both included). By default, `100`.
 
 ## Attribute Reference
 
 The following attributes are exported:
 
+* `next_page_token` - The token to request the next page of results. Each token refers to a specific page.
 * `volumes` - Information about one or more volumes.
     * `creation_date` - The date and time of creation of the volume.
     * `iops` - The number of I/O operations per second (IOPS):<br />- For `io1` volumes, the number of provisioned IOPS.<br />- For `gp2` volumes, the baseline performance of the volume.

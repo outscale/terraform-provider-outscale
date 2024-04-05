@@ -37,6 +37,8 @@ The following arguments are supported:
     * `tag_values` - (Optional) The values of the tags associated with the virtual gateways.
     * `tags` - (Optional) The key/value combinations of the tags associated with the virtual gateways, in the following format: `TAGKEY=TAGVALUE`.
     * `virtual_gateway_ids` - (Optional) The IDs of the virtual gateways.
+* `next_page_token` - (Optional) The token to request the next page of results. Each token refers to a specific page.
+* `results_per_page` - (Optional) The maximum number of logs returned in a single response (between `1`and `1000`, both included). By default, `100`.
 
 ## Attribute Reference
 
@@ -46,6 +48,7 @@ The following attributes are exported:
 * `net_to_virtual_gateway_links` - The Net to which the virtual gateway is attached.
     * `net_id` - The ID of the Net to which the virtual gateway is attached.
     * `state` - The state of the attachment (`attaching` \| `attached` \| `detaching` \| `detached`).
+* `next_page_token` - The token to request the next page of results. Each token refers to a specific page.
 * `state` - The state of the virtual gateway (`pending` \| `available` \| `deleting` \| `deleted`).
 * `tags` - One or more tags associated with the virtual gateway.
     * `key` - The key of the tag, with a minimum of 1 character.

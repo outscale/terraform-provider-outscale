@@ -112,13 +112,13 @@ The following arguments are supported:
     * `osu_bucket_prefix` - (Optional) The path to the folder of the access logs in your OOS bucket (by default, the `root` level of your bucket).
     * `publication_interval` - (Optional) The time interval for the publication of access logs in the OOS bucket, in minutes. This value can be either `5` or `60` (by default, `60`).
 * `health_check` - Information about the health check configuration.
-    * `check_interval` - (Optional) The number of seconds between two pings (between `5` and `600` both included).
-    * `healthy_threshold` - (Optional) The number of consecutive successful pings before considering the VM as healthy (between `2` and `10` both included).
-    * `path` - (Optional) If you use the HTTP or HTTPS protocols, the ping path.
+    * `check_interval` - (Optional) The number of seconds between two requests (between `5` and `600` both included).
+    * `healthy_threshold` - (Optional) The number of consecutive successful requests before considering the VM as healthy (between `2` and `10` both included).
+    * `path` - (Optional) If you use the HTTP or HTTPS protocols, the request URL path.
     * `port` - (Optional) The port number (between `1` and `65535`, both included).
     * `protocol` - (Optional) The protocol for the URL of the VM (`HTTP` \| `HTTPS` \| `TCP` \| `SSL`).
     * `timeout` - (Optional) The maximum waiting time for a response before considering the VM as unhealthy, in seconds (between `2` and `60` both included).
-    * `unhealthy_threshold` - (Optional) The number of consecutive failed pings before considering the VM as unhealthy (between `2` and `10` both included).
+    * `unhealthy_threshold` - (Optional) The number of consecutive failed requests before considering the VM as unhealthy (between `2` and `10` both included).
 * `load_balancer_name` - (Required) The name of the load balancer.
 * `load_balancer_port` - (Optional) The port on which the load balancer is listening (between `1` and `65535`, both included). This parameter is required if you want to update the server certificate.
 * `policy_names` - (Optional) The name of the policy you want to enable for the listener.
@@ -139,13 +139,13 @@ The following attributes are exported:
 * `backend_vm_ids` - One or more IDs of back-end VMs for the load balancer.
 * `dns_name` - The DNS name of the load balancer.
 * `health_check` - Information about the health check configuration.
-    * `check_interval` - The number of seconds between two pings (between `5` and `600` both included).
-    * `healthy_threshold` - The number of consecutive successful pings before considering the VM as healthy (between `2` and `10` both included).
-    * `path` - If you use the HTTP or HTTPS protocols, the ping path.
+    * `check_interval` - The number of seconds between two requests (between `5` and `600` both included).
+    * `healthy_threshold` - The number of consecutive successful requests before considering the VM as healthy (between `2` and `10` both included).
+    * `path` - If you use the HTTP or HTTPS protocols, the request URL path.
     * `port` - The port number (between `1` and `65535`, both included).
     * `protocol` - The protocol for the URL of the VM (`HTTP` \| `HTTPS` \| `TCP` \| `SSL`).
     * `timeout` - The maximum waiting time for a response before considering the VM as unhealthy, in seconds (between `2` and `60` both included).
-    * `unhealthy_threshold` - The number of consecutive failed pings before considering the VM as unhealthy (between `2` and `10` both included).
+    * `unhealthy_threshold` - The number of consecutive failed requests before considering the VM as unhealthy (between `2` and `10` both included).
 * `listeners` - The listeners for the load balancer.
     * `backend_port` - The port on which the back-end VM is listening (between `1` and `65535`, both included).
     * `backend_protocol` - The protocol for routing traffic to back-end VMs (`HTTP` \| `HTTPS` \| `TCP` \| `SSL`).
