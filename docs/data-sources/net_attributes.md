@@ -34,7 +34,7 @@ The following attributes are exported:
 * `dhcp_options_set_id` - The ID of the DHCP options set (or `default` if you want to associate the default one).
 * `ip_range` - The IP range for the Net, in CIDR notation (for example, `10.0.0.0/16`).
 * `net_id` - The ID of the Net.
-* `state` - The state of the Net (`pending` \| `available` \| `deleted`).
+* `state` - The state of the Net (`pending` \| `available` \| `deleting`).
 * `tags` - One or more tags associated with the Net.
     * `key` - The key of the tag, with a minimum of 1 character.
     * `value` - The value of the tag, between 0 and 255 characters.

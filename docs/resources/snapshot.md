@@ -47,14 +47,14 @@ resource "outscale_snapshot" "snapshot02" {
 The following arguments are supported:
 
 * `description` - (Optional) A description for the snapshot.
-* `file_location` - (Optional) (When importing) The pre-signed URL of the snapshot you want to import, or the normal URL of the snapshot if you have permission on the OOS bucket. For more information, see [Configuring a Pre-signed URL](https://docs.outscale.com/en/userguide/Configuring-a-Pre-signed-URL.html) or [Managing Access to Your Buckets and Objects](https://docs.outscale.com/en/userguide/Managing-Access-to-Your-Buckets-and-Objects.html).
-* `snapshot_size` - (Optional) (When importing) The size of the snapshot you want to create in your account, in bytes. This size must be greater than or equal to the size of the original, uncompressed snapshot.
-* `source_region_name` - (Optional) (When copying) The name of the source Region, which must be the same as the Region of your account.
-* `source_snapshot_id` - (Optional) (When copying) The ID of the snapshot you want to copy.
+* `file_location` - (Optional) **(when importing from a bucket)** The pre-signed URL of the snapshot you want to import, or the normal URL of the snapshot if you have permission on the OOS bucket. For more information, see [Configuring a Pre-signed URL](https://docs.outscale.com/en/userguide/Configuring-a-Pre-signed-URL.html) or [Managing Access to Your Buckets and Objects](https://docs.outscale.com/en/userguide/Managing-Access-to-Your-Buckets-and-Objects.html).
+* `snapshot_size` - (Optional) **(when importing from a bucket)** The size of the snapshot you want to create in your account, in bytes. This size must be greater than or equal to the size of the original, uncompressed snapshot.
+* `source_region_name` - (Optional) **(when copying a snapshot)** The name of the source Region, which must be the same as the Region of your account.
+* `source_snapshot_id` - (Optional) **(when copying a snapshot)** The ID of the snapshot you want to copy.
 * `tags` - (Optional) A tag to add to this resource. You can specify this argument several times.
     * `key` - (Required) The key of the tag, with a minimum of 1 character.
     * `value` - (Required) The value of the tag, between 0 and 255 characters.
-* `volume_id` - (Optional) (When creating) The ID of the volume you want to create a snapshot of.
+* `volume_id` - (Optional) **(when creating from a volume)** The ID of the volume you want to create a snapshot of.
 
 ## Attribute Reference
 

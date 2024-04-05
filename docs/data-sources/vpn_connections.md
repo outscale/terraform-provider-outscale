@@ -44,11 +44,14 @@ The following arguments are supported:
     * `tags` - (Optional) The key/value combinations of the tags associated with the VPN connections, in the following format: `TAGKEY=TAGVALUE`.
     * `virtual_gateway_ids` - (Optional) The IDs of the virtual gateways.
     * `vpn_connection_ids` - (Optional) The IDs of the VPN connections.
+* `next_page_token` - (Optional) The token to request the next page of results. Each token refers to a specific page.
+* `results_per_page` - (Optional) The maximum number of logs returned in a single response (between `1`and `1000`, both included). By default, `100`.
 
 ## Attribute Reference
 
 The following attributes are exported:
 
+* `next_page_token` - The token to request the next page of results. Each token refers to a specific page.
 * `vpn_connections` - Information about one or more VPN connections.
     * `client_gateway_configuration` - Example configuration for the client gateway.
     * `client_gateway_id` - The ID of the client gateway used on the client end of the connection.

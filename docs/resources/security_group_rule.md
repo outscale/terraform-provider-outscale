@@ -87,7 +87,7 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `account_id` - The account ID of a user that has been granted permission.
+* `account_id` - The account ID that has been granted permission.
 * `description` - The description of the security group.
 * `inbound_rules` - The inbound rules associated with the security group.
     * `from_port_range` - The beginning of the port range for the TCP and UDP protocols, or an ICMP type number.

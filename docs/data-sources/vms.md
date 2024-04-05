@@ -33,15 +33,78 @@ data "outscale_vms" "vms01" {
 The following arguments are supported:
 
 * `filter` - (Optional) A combination of a filter name and one or more filter values. You can specify this argument for as many filter names as you need. The filter name can be any of the following:
+    * `architectures` - (Optional) The architectures of the VMs (`i386` \| `x86_64`).
+    * `block_device_mapping_delete_on_vm_deletion` - (Optional) Whether the BSU volumes are deleted when terminating the VMs.
+    * `block_device_mapping_device_names` - (Optional) The device names for the BSU volumes (in the format `/dev/sdX`, `/dev/sdXX`, `/dev/xvdX`, or `/dev/xvdXX`).
+    * `block_device_mapping_link_dates` - (Optional) The link dates for the BSU volumes mapped to the VMs (for example, `2016-01-23T18:45:30.000Z`).
+    * `block_device_mapping_states` - (Optional) The states for the BSU volumes (`attaching` \| `attached` \| `detaching` \| `detached`).
+    * `block_device_mapping_volume_ids` - (Optional) The volume IDs of the BSU volumes.
+    * `client_tokens` - (Optional) The idempotency tokens provided when launching the VMs.
+    * `creation_dates` - (Optional) The dates when the VMs were launched.
+    * `image_ids` - (Optional) The IDs of the OMIs used to launch the VMs.
+    * `is_source_dest_checked` - (Optional) Whether the source/destination checking is enabled (true) or disabled (false).
+    * `keypair_names` - (Optional) The names of the keypairs used when launching the VMs.
+    * `launch_numbers` - (Optional) The numbers for the VMs when launching a group of several VMs (for example, `0`, `1`, `2`, and so on).
+    * `lifecycles` - (Optional) Whether the VMs are Spot Instances (spot).
+    * `net_ids` - (Optional) The IDs of the Nets in which the VMs are running.
+    * `nic_account_ids` - (Optional) The IDs of the NICs.
+    * `nic_descriptions` - (Optional) The descriptions of the NICs.
+    * `nic_is_source_dest_checked` - (Optional) Whether the source/destination checking is enabled (true) or disabled (false).
+    * `nic_link_nic_delete_on_vm_deletion` - (Optional) Whether the NICs are deleted when the VMs they are attached to are deleted.
+    * `nic_link_nic_device_numbers` - (Optional) The device numbers the NICs are attached to.
+    * `nic_link_nic_link_nic_dates` - (Optional) The dates and time when the NICs were attached to the VMs.
+    * `nic_link_nic_link_nic_ids` - (Optional) The IDs of the NIC attachments.
+    * `nic_link_nic_states` - (Optional) The states of the attachments.
+    * `nic_link_nic_vm_account_ids` - (Optional) The account IDs of the owners of the VMs the NICs are attached to.
+    * `nic_link_nic_vm_ids` - (Optional) The IDs of the VMs the NICs are attached to.
+    * `nic_link_public_ip_account_ids` - (Optional) The account IDs of the owners of the public IPs associated with the NICs.
+    * `nic_link_public_ip_link_public_ip_ids` - (Optional) The association IDs returned when the public IPs were associated with the NICs.
+    * `nic_link_public_ip_public_ip_ids` - (Optional) The allocation IDs returned when the public IPs were allocated to their accounts.
+    * `nic_link_public_ip_public_ips` - (Optional) The public IPs associated with the NICs.
+    * `nic_mac_addresses` - (Optional) The Media Access Control (MAC) addresses of the NICs.
+    * `nic_net_ids` - (Optional) The IDs of the Nets where the NICs are located.
+    * `nic_nic_ids` - (Optional) The IDs of the NICs.
+    * `nic_private_ips_link_public_ip_account_ids` - (Optional) The account IDs of the owner of the public IPs associated with the private IPs.
+    * `nic_private_ips_link_public_ip_ids` - (Optional) The public IPs associated with the private IPs.
+    * `nic_private_ips_primary_ip` - (Optional) Whether the private IPs are the primary IPs associated with the NICs.
+    * `nic_private_ips_private_ips` - (Optional) The private IPs of the NICs.
+    * `nic_security_group_ids` - (Optional) The IDs of the security groups associated with the NICs.
+    * `nic_security_group_names` - (Optional) The names of the security groups associated with the NICs.
+    * `nic_states` - (Optional) The states of the NICs (`available` \| `in-use`).
+    * `nic_subnet_ids` - (Optional) The IDs of the Subnets for the NICs.
+    * `nic_subregion_names` - (Optional) The Subregions where the NICs are located.
+    * `platforms` - (Optional) The platforms. Use windows if you have Windows VMs. Otherwise, leave this filter blank.
+    * `private_ips` - (Optional) The private IPs of the VMs.
+    * `product_codes` - (Optional) The product codes associated with the OMI used to create the VMs.
+    * `public_ips` - (Optional) The public IPs of the VMs.
+    * `reservation_ids` - (Optional) The IDs of the reservation of the VMs, created every time you launch VMs. These reservation IDs can be associated with several VMs when you lauch a group of VMs using the same launch request.
+    * `root_device_names` - (Optional) The names of the root devices for the VMs (for example, `/dev/sda1`)
+    * `root_device_types` - (Optional) The root devices types used by the VMs (always `ebs`)
+    * `security_group_ids` - (Optional) The IDs of the security groups for the VMs (only in the public Cloud).
+    * `security_group_names` - (Optional) The names of the security groups for the VMs (only in the public Cloud).
+    * `state_reason_codes` - (Optional) The reason codes for the state changes.
+    * `state_reason_messages` - (Optional) The messages describing the state changes.
+    * `state_reasons` - (Optional) The reasons explaining the current states of the VMs. This filter is like the `state_reason_codes` one.
+    * `subnet_ids` - (Optional) The IDs of the Subnets for the VMs.
+    * `subregion_names` - (Optional) The names of the Subregions of the VMs.
     * `tag_keys` - (Optional) The keys of the tags associated with the VMs.
     * `tag_values` - (Optional) The values of the tags associated with the VMs.
     * `tags` - (Optional) The key/value combinations of the tags associated with the VMs, in the following format: `TAGKEY=TAGVALUE`.
+    * `tenancies` - (Optional) The tenancies of the VMs (`dedicated` \| `default` \| `host`).
     * `vm_ids` - (Optional) One or more IDs of VMs.
+    * `vm_security_group_ids` - (Optional) The IDs of the security groups for the VMs.
+    * `vm_security_group_names` - (Optional) The names of the security group for the VMs.
+    * `vm_state_codes` - (Optional) The state codes of the VMs: `-1` (quarantine), `0` (pending), `16` (running), `32` (shutting-down), `48` (terminated), `64` (stopping), and `80` (stopped).
+    * `vm_state_names` - (Optional) The state names of the VMs (`pending` \| `running` \| `stopping` \| `stopped` \| `shutting-down` \| `terminated` \| `quarantine`).
+    * `vm_types` - (Optional) The VM types (for example, t2.micro). For more information, see [VM Types](https://docs.outscale.com/en/userguide/VM-Types.html).
+* `next_page_token` - (Optional) The token to request the next page of results. Each token refers to a specific page.
+* `results_per_page` - (Optional) The maximum number of logs returned in a single response (between `1`and `1000`, both included). By default, `100`.
 
 ## Attribute Reference
 
 The following attributes are exported:
 
+* `next_page_token` - The token to request the next page of results. Each token refers to a specific page.
 * `vms` - Information about one or more VMs.
     * `architecture` - The architecture of the VM (`i386` \| `x86_64`).
     * `block_device_mappings_created` - The block device mapping of the VM.
@@ -95,14 +158,14 @@ The following attributes are exported:
     * `performance` - The performance of the VM (`medium` \| `high` \|  `highest`).
     * `placement` - Information about the placement of the VM.
         * `subregion_name` - The name of the Subregion. If you specify this parameter, you must not specify the `nics` parameter.
-        * `tenancy` - The tenancy of the VM (`default` \| `dedicated`).
+        * `tenancy` - The tenancy of the VM (`default`, `dedicated`, or a dedicated group ID).
     * `private_dns_name` - The name of the private DNS.
     * `private_ip` - The primary private IP of the VM.
     * `product_codes` - The product codes associated with the OMI used to create the VM.
     * `public_dns_name` - The name of the public DNS.
     * `public_ip` - The public IP of the VM.
     * `reservation_id` - The reservation ID of the VM.
-    * `root_device_name` - The name of the root device for the VM (for example, `/dev/vda1`).
+    * `root_device_name` - The name of the root device for the VM (for example, `/dev/sda1`).
     * `root_device_type` - The type of root device used by the VM (always `bsu`).
     * `security_groups` - One or more security groups associated with the VM.
         * `security_group_id` - The ID of the security group.
@@ -116,4 +179,4 @@ The following attributes are exported:
     * `user_data` - The Base64-encoded MIME user data.
     * `vm_id` - The ID of the VM.
     * `vm_initiated_shutdown_behavior` - The VM behavior when you stop it. If set to `stop`, the VM stops. If set to `restart`, the VM stops then automatically restarts. If set to `terminate`, the VM stops and is deleted.
-    * `vm_type` - The type of VM. For more information, see [Instance Types](https://docs.outscale.com/en/userguide/Instance-Types.html).
+    * `vm_type` - The type of VM. For more information, see [VM Types](https://docs.outscale.com/en/userguide/VM-Types.html).

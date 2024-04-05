@@ -10,6 +10,8 @@ description: |-
 
 Manages a virtual machine (VM).
 
+~> **Important** Consider using the `primary_nic` argument if you plan to use the `outscale_nic_link`resource.
+
 For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Instances.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-vm).
 
@@ -134,7 +136,9 @@ resource "outscale_vm" "vm03" {
 }
 ```
 
-### Create a VM with a NIC
+### Create a VM with a primary NIC
+
+~> **Note:** If you plan to use the `outscale_nic_link`resource, it is recommended to specify the `primary_nic` argument to define the primary network interface of a VM.
 
 ```hcl
 resource "outscale_net" "net02" {
@@ -166,6 +170,45 @@ resource "outscale_vm" "vm04" {
 		nic_id        = outscale_nic.nic01.nic_id
 		device_number = "0"
 	}
+}
+```
+
+### Create a VM with secondary NICs
+
+```hcl
+resource "outscale_net" "net02" {
+    ip_range = "10.0.0.0/16"
+    tags {
+        key   = "name"
+        value = "terraform-net-for-vm-with-nic"
+    }
+}
+
+resource "outscale_subnet" "subnet02" {
+    net_id         = outscale_net.net02.net_id
+    ip_range       = "10.0.0.0/24"
+    subregion_name = "eu-west-2a"
+    tags {
+        key   = "name"
+        value = "terraform-subnet-for-vm-with-nic"
+    }
+}
+resource "outscale_nic" "nic01" {
+    subnet_id = outscale_subnet.subnet02.subnet_id
+}
+
+resource "outscale_vm" "vm04" {
+    image_id     = var.image_id
+    vm_type      = "c4.large"
+    keypair_name = var.keypair_name
+    nics {
+        nic_id        = outscale_nic.nic01.nic_id
+        device_number = "0"
+	}
+	nics {	
+		nic_id        = outscale_nic.nic02.nic_id
+        device_number = "1"
+    }
 }
 ```
 
@@ -294,7 +337,7 @@ The following attributes are exported:
 * `public_dns_name` - The name of the public DNS.
 * `public_ip` - The public IP of the VM.
 * `reservation_id` - The reservation ID of the VM.
-* `root_device_name` - The name of the root device for the VM (for example, `/dev/vda1`).
+* `root_device_name` - The name of the root device for the VM (for example, `/dev/sda1`).
 * `root_device_type` - The type of root device used by the VM (always `bsu`).
 * `security_groups` - One or more security groups associated with the VM.
     * `security_group_id` - The ID of the security group.
@@ -308,7 +351,7 @@ The following attributes are exported:
 * `user_data` - The Base64-encoded MIME user data.
 * `vm_id` - The ID of the VM.
 * `vm_initiated_shutdown_behavior` - The VM behavior when you stop it. If set to `stop`, the VM stops. If set to `restart`, the VM stops then automatically restarts. If set to `terminate`, the VM stops and is deleted.
-* `vm_type` - The type of VM. For more information, see [Instance Types](https://docs.outscale.com/en/userguide/Instance-Types.html).
+* `vm_type` - The type of VM. For more information, see [VM Types](https://docs.outscale.com/en/userguide/VM-Types.html).
 
 ## Import
 

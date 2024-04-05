@@ -29,7 +29,6 @@ data "outscale_security_group" "security_group01" {
 The following arguments are supported:
 
 * `filter` - (Optional) A combination of a filter name and one or more filter values. You can specify this argument for as many filter names as you need. The filter name can be any of the following:
-    * `account_ids` - (Optional) The account IDs of the owners of the security groups.
     * `descriptions` - (Optional) The descriptions of the security groups.
     * `inbound_rule_account_ids` - (Optional) The account IDs that have been granted permissions.
     * `inbound_rule_from_port_ranges` - (Optional) The beginnings of the port ranges for the TCP and UDP protocols, or the ICMP type numbers.
@@ -56,7 +55,7 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `account_id` - The account ID of a user that has been granted permission.
+* `account_id` - The account ID that has been granted permission.
 * `description` - The description of the security group.
 * `inbound_rules` - The inbound rules associated with the security group.
     * `from_port_range` - The beginning of the port range for the TCP and UDP protocols, or an ICMP type number.

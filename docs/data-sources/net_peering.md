@@ -32,6 +32,7 @@ The following arguments are supported:
     * `accepter_net_account_ids` - (Optional) The account IDs of the owners of the peer Nets.
     * `accepter_net_ip_ranges` - (Optional) The IP ranges of the peer Nets, in CIDR notation (for example, `10.0.0.0/24`).
     * `accepter_net_net_ids` - (Optional) The IDs of the peer Nets.
+    * `expiration_dates` - (Optional) The dates and times at which the Net peerings expire, in ISO 8601 date-time format (for example, `2020-06-14T00:00:00.000Z`).
     * `net_peering_ids` - (Optional) The IDs of the Net peerings.
     * `source_net_account_ids` - (Optional) The account IDs of the owners of the peer Nets.
     * `source_net_ip_ranges` - (Optional) The IP ranges of the peer Nets.
@@ -41,6 +42,8 @@ The following arguments are supported:
     * `tag_keys` - (Optional) The keys of the tags associated with the Net peerings.
     * `tag_values` - (Optional) The values of the tags associated with the Net peerings.
     * `tags` - (Optional) The key/value combinations of the tags associated with the Net peerings, in the following format: `TAGKEY=TAGVALUE`.
+* `next_page_token` - (Optional) The token to request the next page of results. Each token refers to a specific page.
+* `results_per_page` - (Optional) The maximum number of logs returned in a single response (between `1`and `1000`, both included). By default, `100`.
 
 ## Attribute Reference
 
@@ -50,7 +53,9 @@ The following attributes are exported:
     * `account_id` - The account ID of the owner of the accepter Net.
     * `ip_range` - The IP range for the accepter Net, in CIDR notation (for example, `10.0.0.0/16`).
     * `net_id` - The ID of the accepter Net.
+* `expiration_date` - The date and time at which the Net peerings expire.
 * `net_peering_id` - The ID of the Net peering.
+* `next_page_token` - The token to request the next page of results. Each token refers to a specific page.
 * `source_net` - Information about the source Net.
     * `account_id` - The account ID of the owner of the source Net.
     * `ip_range` - The IP range for the source Net, in CIDR notation (for example, `10.0.0.0/16`).

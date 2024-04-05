@@ -71,8 +71,8 @@ resource "outscale_image" "image04" {
 
 The following arguments are supported:
 
-* `architecture` - (Optional) The architecture of the OMI (by default, `i386` if you specified the `file_location` or `root_device_name` parameter).
-* `block_device_mappings` - (Optional) One or more block device mappings.
+* `architecture` - (Optional) **(when registering from a snapshot, or from a bucket without using a manifest file)** The architecture of the OMI (`i386` or `x86_64`).
+* `block_device_mappings` - (Optional) **(when registering from a snapshot, or from a bucket without using a manifest file)** One or more block device mappings.
     * `bsu` - Information about the BSU volume to create.
         * `delete_on_vm_deletion` - (Optional) By default or if set to true, the volume is deleted when terminating the VM. If false, the volume is not deleted when terminating the VM.
         * `iops` - (Optional) The number of I/O operations per second (IOPS). This parameter must be specified only if you create an `io1` volume. The maximum number of IOPS allowed for `io1` volumes is `13000` with a maximum performance ratio of 300 IOPS per gibibyte.
@@ -85,18 +85,19 @@ For more information about volume types, see [About Volumes > Volume Types and I
     * `device_name` - (Optional) The device name for the volume. For a root device, you must use `/dev/sda1`. For other volumes, you must use `/dev/sdX`, `/dev/sdXX`, `/dev/xvdX`, or `/dev/xvdXX` (where the first `X` is a letter between `b` and `z`, and the second `X` is a letter between `a` and `z`).
     * `virtual_device_name` - (Optional) The name of the virtual device (`ephemeralN`).
 * `description` - (Optional) A description for the new OMI.
-* `file_location` - (Optional) The pre-signed URL of the OMI manifest file, or the full path to the OMI stored in a bucket. If you specify this parameter, a copy of the OMI is created in your account. You must specify only one of the following parameters: `file_location`, `root_device_name`, `source_image_id` or `vm_id`.
+* `file_location` - (Optional) **(when registering from a bucket by using a manifest file)** The pre-signed URL of the manifest file for the OMI you want to register. For more information, see [Configuring a Pre-signed URL](https://docs.outscale.com/en/userguide/Configuring-a-Pre-signed-URL.html) or [Managing Access to Your Buckets and Objects](https://docs.outscale.com/en/userguide/Managing-Access-to-Your-Buckets-and-Objects.html).<br />
+You can also specify the normal URL of the OMI if you have permission on the OOS bucket, without using the manifest file, but in that case, you need to manually specify through the other parameters all the information that would otherwise be read from the manifest file.
 * `image_name` - (Optional) A unique name for the new OMI.<br />
-Constraints: 3-128 alphanumeric characters, underscores (_), spaces ( ), parentheses (()), slashes (/), periods (.), or dashes (-).
-* `no_reboot` - (Optional) If false, the VM shuts down before creating the OMI and then reboots. If true, the VM does not.
+Constraints: 3-128 alphanumeric characters, underscores (`_`), spaces (` `), parentheses (`()`), slashes (`/`), periods (`.`), or dashes (`-`).
+* `no_reboot` - (Optional) **(when creating from a VM)** If false, the VM shuts down before creating the OMI and then reboots. If true, the VM does not.
 * `product_codes` - (Optional) The product codes associated with the OMI.
-* `root_device_name` - (Optional) The name of the root device. You must specify only one of the following parameters: `file_location`, `root_device_name`, `source_image_id` or `vm_id`.
-* `source_image_id` - (Optional) The ID of the OMI you want to copy. You must specify only one of the following parameters: `file_location`, `root_device_name`, `source_image_id` or `vm_id`.
-* `source_region_name` - (Optional) The name of the source Region, which must be the same as the Region of your account.
+* `root_device_name` - (Optional) **(when registering from a snapshot, or from a bucket without using a manifest file)** The name of the root device for the new OMI.
+* `source_image_id` - (Optional) **(when copying an OMI)** The ID of the OMI you want to copy.
+* `source_region_name` - (Optional) **(when copying an OMI)** The name of the source Region (always the same as the Region of your account).
 * `tags` - (Optional) A tag to add to this resource. You can specify this argument several times.
     * `key` - (Required) The key of the tag, with a minimum of 1 character.
     * `value` - (Required) The value of the tag, between 0 and 255 characters.
-* `vm_id` - (Optional) The ID of the VM from which you want to create the OMI. You must specify only one of the following parameters: `file_location`, `root_device_name`, `source_image_id` or `vm_id`.
+* `vm_id` - (Optional) **(when creating from a VM)** The ID of the VM from which you want to create the OMI.
 
 ## Attribute Reference
 
@@ -104,7 +105,7 @@ The following attributes are exported:
 
 * `account_alias` - The account alias of the owner of the OMI.
 * `account_id` - The account ID of the owner of the OMI.
-* `architecture` - The architecture of the OMI (by default, `i386`).
+* `architecture` - The architecture of the OMI.
 * `block_device_mappings` - One or more block device mappings.
     * `bsu` - Information about the BSU volume to create.
         * `delete_on_vm_deletion` - By default or if set to true, the volume is deleted when terminating the VM. If false, the volume is not deleted when terminating the VM.
@@ -119,7 +120,7 @@ For more information about volume types, see [About Volumes > Volume Types and I
     * `virtual_device_name` - The name of the virtual device (`ephemeralN`).
 * `creation_date` - The date and time of creation of the OMI, in ISO 8601 date-time format.
 * `description` - The description of the OMI.
-* `file_location` - The location of the bucket where the OMI files are stored.
+* `file_location` - The location from which the OMI files were created.
 * `image_id` - The ID of the OMI.
 * `image_name` - The name of the OMI.
 * `image_type` - The type of the OMI.

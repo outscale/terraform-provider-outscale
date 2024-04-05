@@ -45,12 +45,12 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `quotas` - One or more quotas associated with the user.
+* `quotas` - One or more quotas associated with the account.
     * `account_id` - The account ID of the owner of the quotas.
     * `description` - The description of the quota.
-    * `max_value` - The maximum value of the quota for the OUTSCALE user account (if there is no limit, `0`).
+    * `max_value` - The maximum value of the quota for the account (if there is no limit, `0`).
     * `name` - The unique name of the quota.
     * `quota_collection` - The group name of the quota.
     * `quota_type` - The ressource ID if it is a resource-specific quota, `global` if it is not.
     * `short_description` - The description of the quota.
-    * `used_value` - The limit value currently used by the OUTSCALE user account.
+    * `used_value` - The limit value currently used by the account.
