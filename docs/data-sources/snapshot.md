@@ -33,7 +33,7 @@ The following arguments are supported:
     * `account_ids` - (Optional) The account IDs of the owners of the snapshots.
     * `descriptions` - (Optional) The descriptions of the snapshots.
     * `from_creation_date` - (Optional) The beginning of the time period, in ISO 8601 date-time format (for example, `2020-06-14T00:00:00.000Z`).
-    * `permissions_to_create_volume_account_ids` - (Optional) The account IDs of one or more users who have permissions to create volumes.
+    * `permissions_to_create_volume_account_ids` - (Optional) The account IDs which have permissions to create volumes.
     * `permissions_to_create_volume_global_permission` - (Optional) If true, lists all public volumes. If false, lists all private volumes.
     * `progresses` - (Optional) The progresses of the snapshots, as a percentage.
     * `snapshot_ids` - (Optional) The IDs of the snapshots.

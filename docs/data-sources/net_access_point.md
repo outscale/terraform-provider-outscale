@@ -53,6 +53,8 @@ The following arguments are supported:
     * `tag_keys` - (Optional) The keys of the tags associated with the Net access points.
     * `tag_values` - (Optional) The values of the tags associated with the Net access points.
     * `tags` - (Optional) The key/value combinations of the tags associated with the Net access points, in the following format: `TAGKEY=TAGVALUE`.
+* `next_page_token` - (Optional) The token to request the next page of results. Each token refers to a specific page.
+* `results_per_page` - (Optional) The maximum number of logs returned in a single response (between `1`and `1000`, both included). By default, `100`.
 
 ## Attribute Reference
 
@@ -60,6 +62,7 @@ The following attributes are exported:
 
 * `net_access_point_id` - The ID of the Net access point.
 * `net_id` - The ID of the Net with which the Net access point is associated.
+* `next_page_token` - The token to request the next page of results. Each token refers to a specific page.
 * `route_table_ids` - The ID of the route tables associated with the Net access point.
 * `service_name` - The name of the service with which the Net access point is associated.
 * `state` - The state of the Net access point (`pending` \| `available` \| `deleting` \| `deleted`).

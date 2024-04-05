@@ -47,9 +47,12 @@ The following arguments are supported:
 
 * `filter` - (Optional) A combination of a filter name and one or more filter values. You can specify this argument for as many filter names as you need. The filter name can be any of the following:
     * `bsu_optimized` - (Optional) This parameter is not available. It is present in our API for the sake of historical compatibility with AWS.
+    * `ephemerals_types` - (Optional) The types of ephemeral storage disk.
+    * `eths` - (Optional) The number of Ethernet interfaces available.
+    * `gpus` - (Optional) The number of GPUs available.
     * `memory_sizes` - (Optional) The amounts of memory, in gibibytes (GiB).
     * `vcore_counts` - (Optional) The numbers of vCores.
-    * `vm_type_names` - (Optional) The names of the VM types. For more information, see [Instance Types](https://docs.outscale.com/en/userguide/Instance-Types.html).
+    * `vm_type_names` - (Optional) The names of the VM types. For more information, see [VM Types](https://docs.outscale.com/en/userguide/VM-Types.html).
     * `volume_counts` - (Optional) The maximum number of ephemeral storage disks.
     * `volume_sizes` - (Optional) The size of one ephemeral storage disk, in gibibytes (GiB).
 
@@ -59,6 +62,9 @@ The following attributes are exported:
 
 * `vm_types` - Information about one or more VM types.
     * `bsu_optimized` - This parameter is not available. It is present in our API for the sake of historical compatibility with AWS.
+    * `ephemerals_type` - The type of ephemeral storage disk.
+    * `eth` - The number of Ethernet interface available.
+    * `gpu` - The number of GPU available.
     * `max_private_ips` - The maximum number of private IPs per network interface card (NIC).
     * `memory_size` - The amount of memory, in gibibytes.
     * `vcore_count` - The number of vCores.

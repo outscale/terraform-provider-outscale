@@ -48,6 +48,8 @@ data "outscale_subregions" "all-subregions" {
 The following arguments are supported:
 
 * `filter` - (Optional) A combination of a filter name and one or more filter values. You can specify this argument for as many filter names as you need. The filter name can be any of the following:
+    * `region_names` - (Optional) The names of the Regions containing the Subregions.
+    * `states` - (Optional) The states of the Subregions.
     * `subregion_names` - (Optional) The names of the Subregions.
 
 ## Attribute Reference
@@ -57,5 +59,5 @@ The following attributes are exported:
 * `subregions` - Information about one or more Subregions.
     * `location_code` - The location code of the Subregion.
     * `region_name` - The name of the Region containing the Subregion.
-    * `state` - The state of the Subregion (`available` \| `information` \| `impaired` \| `unavailable`).
+    * `state` - The state of the Subregion.
     * `subregion_name` - The name of the Subregion.

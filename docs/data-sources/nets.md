@@ -36,7 +36,7 @@ The following arguments are supported:
     * `dhcp_options_set_ids` - (Optional) The IDs of the DHCP options sets.
     * `ip_ranges` - (Optional) The IP ranges for the Nets, in CIDR notation (for example, `10.0.0.0/16`).
     * `net_ids` - (Optional) The IDs of the Nets.
-    * `states` - (Optional) The states of the Nets (`pending` \| `available` \| `deleted`).
+    * `states` - (Optional) The states of the Nets (`pending` \| `available` \| `deleting`).
     * `tag_keys` - (Optional) The keys of the tags associated with the Nets.
     * `tag_values` - (Optional) The values of the tags associated with the Nets.
     * `tags` - (Optional) The key/value combinations of the tags associated with the Nets, in the following format: `TAGKEY=TAGVALUE`.
@@ -49,7 +49,7 @@ The following attributes are exported:
     * `dhcp_options_set_id` - The ID of the DHCP options set (or `default` if you want to associate the default one).
     * `ip_range` - The IP range for the Net, in CIDR notation (for example, `10.0.0.0/16`).
     * `net_id` - The ID of the Net.
-    * `state` - The state of the Net (`pending` \| `available` \| `deleted`).
+    * `state` - The state of the Net (`pending` \| `available` \| `deleting`).
     * `tags` - One or more tags associated with the Net.
         * `key` - The key of the tag, with a minimum of 1 character.
         * `value` - The value of the tag, between 0 and 255 characters.

@@ -46,16 +46,19 @@ The following arguments are supported:
     * `hypervisors` - (Optional) The hypervisor type of the OMI (always `xen`).
     * `image_ids` - (Optional) The IDs of the OMIs.
     * `image_names` - (Optional) The names of the OMIs, provided when they were created.
-    * `permissions_to_launch_account_ids` - (Optional) The account IDs of the users who have launch permissions for the OMIs.
+    * `permissions_to_launch_account_ids` - (Optional) The account IDs which have launch permissions for the OMIs.
     * `permissions_to_launch_global_permission` - (Optional) If true, lists all public OMIs. If false, lists all private OMIs.
+    * `product_code_names` - (Optional) The names of the product codes associated with the OMI.
     * `product_codes` - (Optional) The product codes associated with the OMI.
     * `root_device_names` - (Optional) The name of the root device. This value must be /dev/sda1.
-    * `root_device_types` - (Optional) The types of root device used by the OMIs (always `bsu`).
+    * `root_device_types` - (Optional) The types of root device used by the OMIs (`bsu` or `ebs`).
     * `states` - (Optional) The states of the OMIs (`pending` \| `available` \| `failed`).
     * `tag_keys` - (Optional) The keys of the tags associated with the OMIs.
     * `tag_values` - (Optional) The values of the tags associated with the OMIs.
     * `tags` - (Optional) The key/value combinations of the tags associated with the OMIs, in the following format: `TAGKEY=TAGVALUE`.
     * `virtualization_types` - (Optional) The virtualization types (always `hvm`).
+* `next_page_token` - (Optional) The token to request the next page of results. Each token refers to a specific page.
+* `results_per_page` - (Optional) The maximum number of logs returned in a single response (between `1`and `1000`, both included). By default, `100`.
 
 ## Attribute Reference
 
@@ -64,7 +67,7 @@ The following attributes are exported:
 * `images` - Information about one or more OMIs.
     * `account_alias` - The account alias of the owner of the OMI.
     * `account_id` - The account ID of the owner of the OMI.
-    * `architecture` - The architecture of the OMI (by default, `i386`).
+    * `architecture` - The architecture of the OMI.
     * `block_device_mappings` - One or more block device mappings.
         * `bsu` - Information about the BSU volume to create.
             * `delete_on_vm_deletion` - By default or if set to true, the volume is deleted when terminating the VM. If false, the volume is not deleted when terminating the VM.
@@ -79,7 +82,7 @@ For more information about volume types, see [About Volumes > Volume Types and I
         * `virtual_device_name` - The name of the virtual device (`ephemeralN`).
     * `creation_date` - The date and time of creation of the OMI, in ISO 8601 date-time format.
     * `description` - The description of the OMI.
-    * `file_location` - The location of the bucket where the OMI files are stored.
+    * `file_location` - The location from which the OMI files were created.
     * `image_id` - The ID of the OMI.
     * `image_name` - The name of the OMI.
     * `image_type` - The type of the OMI.
@@ -98,3 +101,4 @@ For more information about volume types, see [About Volumes > Volume Types and I
     * `tags` - One or more tags associated with the OMI.
         * `key` - The key of the tag, with a minimum of 1 character.
         * `value` - The value of the tag, between 0 and 255 characters.
+* `next_page_token` - The token to request the next page of results. Each token refers to a specific page.
