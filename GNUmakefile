@@ -69,6 +69,7 @@ test-compile:
 test-locally:
 	"$(CURDIR)/scripts/local-test.sh" TestAccOthers_Volume_io1Type
 	"$(CURDIR)/scripts/local-test.sh" TestAccVM_withFlexibleGpuLink_basic
+	"$(CURDIR)/scripts/local-test.sh" TestAccOthers_LBU_basic
 
 .PHONY: terraform-examples
 terraform-examples:
