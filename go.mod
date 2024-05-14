@@ -3,7 +3,7 @@ module github.com/outscale/terraform-provider-outscale
 go 1.22.0
 
 require (
-	github.com/aws/aws-sdk-go v1.50.18
+	github.com/aws/aws-sdk-go v1.53.1
 	github.com/davecgh/go-spew v1.1.1
 	github.com/go-test/deep v1.0.6
 	github.com/hashicorp/errwrap v1.1.0
@@ -23,7 +23,7 @@ require (
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/cloudflare/circl v1.3.7 // indirect
 	github.com/fatih/color v1.15.0 // indirect
-	github.com/golang/protobuf v1.5.3 // indirect
+	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/hashicorp/go-checkpoint v0.5.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
@@ -55,14 +55,14 @@ require (
 	github.com/vmihailenco/msgpack/v5 v5.3.5 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/zclconf/go-cty v1.14.0 // indirect
-	golang.org/x/crypto v0.19.0 // indirect
+	golang.org/x/crypto v0.23.0 // indirect
 	golang.org/x/mod v0.12.0 // indirect
-	golang.org/x/net v0.21.0 // indirect
+	golang.org/x/net v0.25.0 // indirect
 	golang.org/x/oauth2 v0.17.0 // indirect
-	golang.org/x/sys v0.17.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/sys v0.20.0 // indirect
+	golang.org/x/text v0.15.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240221002015-b0ce06bbee7c // indirect
 	google.golang.org/grpc v1.62.0 // indirect
-	google.golang.org/protobuf v1.32.0 // indirect
+	google.golang.org/protobuf v1.33.0 // indirect
 )
