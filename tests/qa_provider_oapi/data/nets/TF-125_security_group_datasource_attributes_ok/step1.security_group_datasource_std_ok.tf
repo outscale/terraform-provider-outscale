@@ -47,10 +47,6 @@ depends_on=[outscale_security_group_rule.outscale_security_group_rule]
 
 data "outscale_security_group" "outscale_security_group" {
     filter {
-        name    = "account_ids"
-        values  = [outscale_security_group.outscale_security_group.account_id]
-    }
-    filter {
         name    = "descriptions"
         values  = [outscale_security_group.outscale_security_group.description]
     }

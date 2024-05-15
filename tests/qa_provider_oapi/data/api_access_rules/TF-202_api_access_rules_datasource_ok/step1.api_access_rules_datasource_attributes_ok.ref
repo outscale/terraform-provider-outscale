@@ -232,8 +232,8 @@
                     "attributes": {
                         "api_access_rule_id": "##id-3##",
                         "ca_ids": [
-                            "##id-2##",
-                            "##id-1##"
+                            "##id-1##",
+                            "##id-2##"
                         ],
                         "cns": [
                             "outscale-1",
@@ -265,8 +265,8 @@
                     "attributes": {
                         "api_access_rule_id": "##id-0##",
                         "ca_ids": [
-                            "##id-2##",
-                            "##id-1##"
+                            "##id-1##",
+                            "##id-2##"
                         ],
                         "cns": [
                             "outscale-1",
@@ -296,10 +296,10 @@
                     "schema_version": 0,
                     "attributes": {
                         "ca_fingerprint": "########",
-                        "ca_id": "##id-2##",
+                        "ca_id": "##id-1##",
                         "ca_pem": "########",
                         "description": "",
-                        "id": "##id-2##",
+                        "id": "##id-1##",
                         "request_id": "########"
                     },
                     "sensitive_attributes": [],
@@ -317,10 +317,10 @@
                     "schema_version": 0,
                     "attributes": {
                         "ca_fingerprint": "########",
-                        "ca_id": "##id-1##",
+                        "ca_id": "##id-2##",
                         "ca_pem": "########",
                         "description": "",
-                        "id": "##id-1##",
+                        "id": "##id-2##",
                         "request_id": "########"
                     },
                     "sensitive_attributes": [],

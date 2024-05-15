@@ -14,7 +14,7 @@ import (
 
 func TestAccOthers_AccessKey_basic(t *testing.T) {
 	t.Parallel()
-	resourceName := "outscale_access_key.outscale_access_key"
+	resourceName := "outscale_access_key.basic_access_key"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -40,7 +40,7 @@ func TestAccOthers_AccessKey_basic(t *testing.T) {
 
 func TestAccOthers_AccessKey_updatedToInactivedKey(t *testing.T) {
 	t.Parallel()
-	resourceName := "outscale_access_key.outscale_access_key"
+	resourceName := "outscale_access_key.update_access_key"
 
 	state := "ACTIVE"
 	stateUpdated := "INACTIVE"
@@ -122,7 +122,7 @@ func TestAccOthers_AccessKey_updatedToActivedKey(t *testing.T) {
 }
 
 func TestAccOthers_AccessKey_updatedExpirationDate(t *testing.T) {
-	resourceName := "outscale_access_key.outscale_access_key"
+	resourceName := "outscale_access_key.date_access_key"
 	expirDate := time.Now().AddDate(1, 1, 0).Format("2006-01-02")
 	expirDateUpdated := time.Now().AddDate(1, 4, 0).Format("2006-01-02")
 
@@ -214,11 +214,11 @@ func testAccCheckOutscaleAccessKeyDestroy(s *terraform.State) error {
 }
 
 const testAccOutscaleAccessKeyBasicConfig = `
-	resource "outscale_access_key" "outscale_access_key" {}`
+	resource "outscale_access_key" "basic_access_key" {}`
 
 func testAccOutscaleAccessKeyUpdatedConfig(state string) string {
 	return fmt.Sprintf(`
-		resource "outscale_access_key" "outscale_access_key" {
+		resource "outscale_access_key" "update_access_key" {
 			state = "%s"
 		}
 	`, state)
@@ -226,7 +226,7 @@ func testAccOutscaleAccessKeyUpdatedConfig(state string) string {
 
 func testAccOutscaleAccessKeyExpirationDateConfig(expirDate string) string {
 	return fmt.Sprintf(`
-		resource "outscale_access_key" "outscale_access_key" {
+		resource "outscale_access_key" "date_access_key" {
 			expiration_date = "%s"
 		}
 	`, expirDate)

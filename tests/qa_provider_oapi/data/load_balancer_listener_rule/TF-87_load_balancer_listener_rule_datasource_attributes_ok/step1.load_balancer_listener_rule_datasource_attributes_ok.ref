@@ -300,7 +300,7 @@
                         "hypervisor": "xen",
                         "id": "##id-3##",
                         "image_id": "##id-14##",
-                        "is_source_dest_checked": true,
+                        "is_source_dest_checked": false,
                         "keypair_name": "KP-TF87",
                         "launch_number": 0,
                         "nested_virtualization": false,

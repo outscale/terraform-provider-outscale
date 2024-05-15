@@ -37,10 +37,6 @@
                                 "state": "completed",
                                 "tags": [
                                     {
-                                        "key": "Key",
-                                        "value": "value-tags"
-                                    },
-                                    {
                                         "key": "name",
                                         "value": "test snapshot 1"
                                     }
@@ -63,6 +59,10 @@
                                 "snapshot_id": "##id-4##",
                                 "state": "completed",
                                 "tags": [
+                                    {
+                                        "key": "Key",
+                                        "value": "value-tags"
+                                    },
                                     {
                                         "key": "name",
                                         "value": "test snapshot 1"
@@ -91,11 +91,11 @@
                         "creation_date": "########",
                         "description": "",
                         "file_location": "########",
-                        "id": "##id-2##",
+                        "id": "##id-4##",
                         "permissions_to_create_volume": [],
                         "progress": 100,
                         "request_id": "########",
-                        "snapshot_id": "##id-2##",
+                        "snapshot_id": "##id-4##",
                         "snapshot_size": null,
                         "source_region_name": null,
                         "source_snapshot_id": null,
@@ -135,11 +135,11 @@
                         "creation_date": "########",
                         "description": "",
                         "file_location": "########",
-                        "id": "##id-4##",
+                        "id": "##id-2##",
                         "permissions_to_create_volume": [],
                         "progress": 100,
                         "request_id": "########",
-                        "snapshot_id": "##id-4##",
+                        "snapshot_id": "##id-2##",
                         "snapshot_size": null,
                         "source_region_name": null,
                         "source_snapshot_id": null,

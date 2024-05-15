@@ -61,7 +61,7 @@
                         "source_security_group": [
                             {
                                 "security_group_account_id": "##id-4##",
-                                "security_group_name": "terraform-sg-lbu-TF181-1"
+                                "security_group_name": "terraform-sg-lbu-TF181-2"
                             }
                         ],
                         "subnets": [

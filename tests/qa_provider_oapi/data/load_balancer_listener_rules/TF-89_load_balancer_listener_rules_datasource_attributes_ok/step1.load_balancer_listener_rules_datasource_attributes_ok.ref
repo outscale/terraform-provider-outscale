@@ -302,7 +302,7 @@
                                         "link_date": "########",
                                         "state": "attached",
                                         "tags": [],
-                                        "volume_id": "##id-14##"
+                                        "volume_id": "##id-13##"
                                     }
                                 ],
                                 "device_name": "/dev/sda1"
@@ -316,7 +316,7 @@
                         "hypervisor": "xen",
                         "id": "##id-3##",
                         "image_id": "##id-14##",
-                        "is_source_dest_checked": true,
+                        "is_source_dest_checked": false,
                         "keypair_name": "LKP-TF89",
                         "launch_number": 0,
                         "nested_virtualization": false,

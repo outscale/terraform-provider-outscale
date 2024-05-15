@@ -81,7 +81,7 @@
                                 "creation_method": "CreateRouteTable",
                                 "destination_ip_range": "10.0.0.0/16",
                                 "destination_service_id": "",
-                                "gateway_id": "",
+                                "gateway_id": "##id-6##",
                                 "nat_service_id": "",
                                 "net_access_point_id": "",
                                 "net_peering_id": "",
@@ -93,7 +93,7 @@
                             {
                                 "creation_method": "CreateRoute",
                                 "destination_ip_range": "",
-                                "destination_service_id": "##id-6##",
+                                "destination_service_id": "##id-7##",
                                 "gateway_id": "",
                                 "nat_service_id": "",
                                 "net_access_point_id": "##id-2##",
@@ -116,18 +116,18 @@
                     "index_key": 1,
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-5##",
+                        "id": "##id-3##",
                         "link_route_tables": [],
                         "net_id": "##id-1##",
                         "request_id": "########",
                         "route_propagating_virtual_gateways": [],
-                        "route_table_id": "##id-5##",
+                        "route_table_id": "##id-3##",
                         "routes": [
                             {
                                 "creation_method": "CreateRouteTable",
                                 "destination_ip_range": "10.0.0.0/16",
                                 "destination_service_id": "",
-                                "gateway_id": "",
+                                "gateway_id": "##id-6##",
                                 "nat_service_id": "",
                                 "net_access_point_id": "",
                                 "net_peering_id": "",
@@ -139,7 +139,7 @@
                             {
                                 "creation_method": "CreateRoute",
                                 "destination_ip_range": "",
-                                "destination_service_id": "##id-6##",
+                                "destination_service_id": "##id-7##",
                                 "gateway_id": "",
                                 "nat_service_id": "",
                                 "net_access_point_id": "##id-2##",
@@ -169,18 +169,18 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-3##",
+                        "id": "##id-5##",
                         "link_route_tables": [],
                         "net_id": "##id-1##",
                         "request_id": "########",
                         "route_propagating_virtual_gateways": [],
-                        "route_table_id": "##id-3##",
+                        "route_table_id": "##id-5##",
                         "routes": [
                             {
                                 "creation_method": "CreateRouteTable",
                                 "destination_ip_range": "10.0.0.0/16",
                                 "destination_service_id": "",
-                                "gateway_id": "",
+                                "gateway_id": "##id-6##",
                                 "nat_service_id": "",
                                 "net_access_point_id": "",
                                 "net_peering_id": "",

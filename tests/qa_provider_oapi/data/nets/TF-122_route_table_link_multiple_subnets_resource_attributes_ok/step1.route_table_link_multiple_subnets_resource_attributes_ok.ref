@@ -48,7 +48,7 @@
                                 "creation_method": "CreateRouteTable",
                                 "destination_ip_range": "10.0.0.0/16",
                                 "destination_service_id": "",
-                                "gateway_id": "",
+                                "gateway_id": "##id-3##",
                                 "nat_service_id": "",
                                 "net_access_point_id": "",
                                 "net_peering_id": "",
@@ -82,12 +82,12 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-3##",
-                        "link_route_table_id": "##id-3##",
+                        "id": "##id-4##",
+                        "link_route_table_id": "##id-4##",
                         "main": false,
                         "request_id": "########",
                         "route_table_id": "##id-2##",
-                        "subnet_id": "##id-4##"
+                        "subnet_id": "##id-5##"
                     },
                     "sensitive_attributes": [],
                     "private": "bnVsbA==",
@@ -108,12 +108,12 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-5##",
-                        "link_route_table_id": "##id-5##",
+                        "id": "##id-6##",
+                        "link_route_table_id": "##id-6##",
                         "main": false,
                         "request_id": "########",
                         "route_table_id": "##id-2##",
-                        "subnet_id": "##id-6##"
+                        "subnet_id": "##id-7##"
                     },
                     "sensitive_attributes": [],
                     "private": "bnVsbA==",
@@ -135,13 +135,13 @@
                     "schema_version": 0,
                     "attributes": {
                         "available_ips_count": "########",
-                        "id": "##id-4##",
+                        "id": "##id-5##",
                         "ip_range": "10.0.0.0/24",
                         "map_public_ip_on_launch": false,
                         "net_id": "##id-1##",
                         "request_id": "########",
                         "state": "available",
-                        "subnet_id": "##id-4##",
+                        "subnet_id": "##id-5##",
                         "subregion_name": "us-east-2a",
                         "tags": [],
                         "timeouts": null
@@ -164,13 +164,13 @@
                     "schema_version": 0,
                     "attributes": {
                         "available_ips_count": "########",
-                        "id": "##id-6##",
+                        "id": "##id-7##",
                         "ip_range": "10.0.1.0/24",
                         "map_public_ip_on_launch": false,
                         "net_id": "##id-1##",
                         "request_id": "########",
                         "state": "available",
-                        "subnet_id": "##id-6##",
+                        "subnet_id": "##id-7##",
                         "subregion_name": "us-east-2a",
                         "tags": [],
                         "timeouts": null

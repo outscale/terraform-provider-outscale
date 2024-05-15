@@ -169,7 +169,7 @@ func ResourceOutscaleSnapshotCreate(d *schema.ResourceData, meta interface{}) er
 	log.Printf("Waiting for Snapshot %s to become available...", resp.Snapshot.GetSnapshotId())
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"pending", "pending/queued", "queued", "importing"},
+		Pending:    []string{"pending", "in-queue", "queued", "importing"},
 		Target:     []string{"completed"},
 		Refresh:    SnapshotOAPIStateRefreshFunc(conn, resp.Snapshot.GetSnapshotId()),
 		Timeout:    OutscaleImageRetryTimeout,

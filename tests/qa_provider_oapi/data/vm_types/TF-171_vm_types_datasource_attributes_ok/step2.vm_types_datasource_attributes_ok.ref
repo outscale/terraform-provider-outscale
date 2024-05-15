@@ -23,7 +23,7 @@
                                 "max_private_ips": 15,
                                 "memory_size": 15,
                                 "vcore_count": 4,
-                                "vm_type_name": "mv3.xlarge",
+                                "vm_type_name": "m3.xlarge",
                                 "volume_count": 2,
                                 "volume_size": 40
                             },
@@ -32,7 +32,7 @@
                                 "max_private_ips": 15,
                                 "memory_size": 15,
                                 "vcore_count": 4,
-                                "vm_type_name": "m3.xlarge",
+                                "vm_type_name": "mv3.xlarge",
                                 "volume_count": 2,
                                 "volume_size": 40
                             }
