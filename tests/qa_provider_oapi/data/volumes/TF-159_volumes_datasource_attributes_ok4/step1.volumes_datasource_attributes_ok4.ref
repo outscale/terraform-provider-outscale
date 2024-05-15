@@ -23,14 +23,14 @@
                                 "creation_date": "########",
                                 "iops": 150,
                                 "linked_volumes": [],
-                                "size": 15,
+                                "size": 13,
                                 "snapshot_id": "",
                                 "state": "available",
                                 "subregion_name": "eu-west-2a",
                                 "tags": [
                                     {
                                         "key": "Name",
-                                        "value": "volume-standard-1"
+                                        "value": "volume-standard-2"
                                     }
                                 ],
                                 "volume_id": "##id-1##",
@@ -65,14 +65,14 @@
                                 "creation_date": "########",
                                 "iops": 150,
                                 "linked_volumes": [],
-                                "size": 13,
+                                "size": 15,
                                 "snapshot_id": "",
                                 "state": "available",
                                 "subregion_name": "eu-west-2a",
                                 "tags": [
                                     {
                                         "key": "Name",
-                                        "value": "volume-standard-2"
+                                        "value": "volume-standard-1"
                                     }
                                 ],
                                 "volume_id": "##id-4##",
@@ -167,7 +167,7 @@
                         "hypervisor": "xen",
                         "id": "##id-2##",
                         "image_id": "##id-9##",
-                        "is_source_dest_checked": true,
+                        "is_source_dest_checked": false,
                         "keypair_name": "KP-TF159",
                         "launch_number": 0,
                         "nested_virtualization": false,
@@ -229,7 +229,7 @@
                     "schema_version": 0,
                     "attributes": {
                         "creation_date": "########",
-                        "id": "##id-1##",
+                        "id": "##id-4##",
                         "iops": 150,
                         "linked_volumes": [],
                         "request_id": "########",
@@ -244,7 +244,7 @@
                             }
                         ],
                         "termination_snapshot_name": null,
-                        "volume_id": "##id-1##",
+                        "volume_id": "##id-4##",
                         "volume_type": "standard"
                     },
                     "sensitive_attributes": [],
@@ -262,7 +262,7 @@
                     "schema_version": 0,
                     "attributes": {
                         "creation_date": "########",
-                        "id": "##id-4##",
+                        "id": "##id-1##",
                         "iops": 150,
                         "linked_volumes": [],
                         "request_id": "########",
@@ -277,7 +277,7 @@
                             }
                         ],
                         "termination_snapshot_name": null,
-                        "volume_id": "##id-4##",
+                        "volume_id": "##id-1##",
                         "volume_type": "standard"
                     },
                     "sensitive_attributes": [],

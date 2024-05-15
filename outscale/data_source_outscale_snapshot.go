@@ -114,12 +114,10 @@ func DataSourceOutscaleSnapshotRead(d *schema.ResourceData, meta interface{}) er
 		}
 	}
 	if ownersOk {
-		filter.SetAccountIds([]string{owners.(string)})
-		params.SetFilters(filter)
+		params.Filters.SetAccountIds([]string{owners.(string)})
 	}
 	if snapshotIdsOk {
-		filter.SetSnapshotIds([]string{snapshotIds.(string)})
-		params.SetFilters(filter)
+		params.Filters.SetSnapshotIds([]string{snapshotIds.(string)})
 	}
 
 	var resp oscgo.ReadSnapshotsResponse

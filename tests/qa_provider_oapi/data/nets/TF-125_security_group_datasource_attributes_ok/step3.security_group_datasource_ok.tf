@@ -45,23 +45,28 @@ resource "outscale_security_group_rule" "outscale_security_group_rule-3" {
 data "outscale_security_group" "filters-inbound" {
    filter {
         name    = "inbound_rule_from_port_ranges"
-        values  = [22]
+        values  = ["22"]
    }
    filter {
+        name    = "descriptions"
+        values  = ["test group-1"]
+   }
+
+  filter {
         name    = "inbound_rule_protocols"
         values  = ["tcp"]
    }
    filter {
         name    = "inbound_rule_security_group_ids"
-        values  = [outscale_security_group.outscale_security_group2.security_group_id]
+        values  = [outscale_security_group.outscale_security_group.security_group_id]
    }
    filter {
         name    = "inbound_rule_security_group_names"
-        values  = [outscale_security_group.outscale_security_group2.security_group_name]
+        values  = [outscale_security_group.outscale_security_group.security_group_name]
    }
    filter {
         name    = "inbound_rule_to_port_ranges"
-        values  = [22]
+        values  = ["22"]
    }
 depends_on=[outscale_security_group_rule.outscale_security_group_rule-3]
 }

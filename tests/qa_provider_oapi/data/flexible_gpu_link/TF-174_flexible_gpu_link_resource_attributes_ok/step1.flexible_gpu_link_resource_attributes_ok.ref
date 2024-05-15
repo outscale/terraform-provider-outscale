@@ -140,7 +140,7 @@
                         "hypervisor": "xen",
                         "id": "##id-2##",
                         "image_id": "##id-7##",
-                        "is_source_dest_checked": true,
+                        "is_source_dest_checked": false,
                         "keypair_name": "KP-TF174",
                         "launch_number": 0,
                         "nested_virtualization": false,

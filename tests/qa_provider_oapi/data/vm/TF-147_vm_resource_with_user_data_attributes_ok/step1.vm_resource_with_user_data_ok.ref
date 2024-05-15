@@ -88,7 +88,7 @@
                         "hypervisor": "xen",
                         "id": "##id-4##",
                         "image_id": "##id-5##",
-                        "is_source_dest_checked": true,
+                        "is_source_dest_checked": false,
                         "keypair_name": "KP-TF147",
                         "launch_number": 0,
                         "nested_virtualization": false,
@@ -99,7 +99,7 @@
                                 "delete_on_vm_deletion": true,
                                 "description": "Primary network interface",
                                 "device_number": 0,
-                                "is_source_dest_checked": true,
+                                "is_source_dest_checked": false,
                                 "link_nic": [
                                     {
                                         "delete_on_vm_deletion": true,
@@ -145,7 +145,7 @@
                                 "delete_on_vm_deletion": true,
                                 "description": "Primary network interface",
                                 "device_number": 0,
-                                "is_source_dest_checked": true,
+                                "is_source_dest_checked": false,
                                 "link_nic": [
                                     {
                                         "delete_on_vm_deletion": true,

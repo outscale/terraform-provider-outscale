@@ -48,7 +48,7 @@
                                 "creation_method": "CreateRouteTable",
                                 "destination_ip_range": "10.0.0.0/16",
                                 "destination_service_id": "",
-                                "gateway_id": "",
+                                "gateway_id": "##id-3##",
                                 "nat_service_id": "",
                                 "net_access_point_id": "",
                                 "net_peering_id": "",
@@ -83,7 +83,7 @@
                     "schema_version": 0,
                     "attributes": {
                         "connection_type": "ipsec.1",
-                        "id": "##id-3##",
+                        "id": "##id-4##",
                         "net_to_virtual_gateway_links": [],
                         "request_id": "########",
                         "state": "available",
@@ -93,7 +93,7 @@
                                 "value": "VGW-2"
                             }
                         ],
-                        "virtual_gateway_id": "##id-3##"
+                        "virtual_gateway_id": "##id-4##"
                     },
                     "sensitive_attributes": [],
                     "private": "bnVsbA=="
@@ -110,7 +110,7 @@
                     "schema_version": 0,
                     "attributes": {
                         "dry_run": null,
-                        "id": "##id-3##",
+                        "id": "##id-4##",
                         "net_id": "##id-1##",
                         "net_to_virtual_gateway_links": [
                             {
@@ -119,7 +119,7 @@
                             }
                         ],
                         "request_id": "########",
-                        "virtual_gateway_id": "##id-3##"
+                        "virtual_gateway_id": "##id-4##"
                     },
                     "sensitive_attributes": [],
                     "private": "bnVsbA==",
@@ -140,10 +140,10 @@
                     "schema_version": 0,
                     "attributes": {
                         "enable": true,
-                        "id": "##id-4##",
+                        "id": "##id-5##",
                         "request_id": "########",
                         "route_table_id": "##id-2##",
-                        "virtual_gateway_id": "##id-3##"
+                        "virtual_gateway_id": "##id-4##"
                     },
                     "sensitive_attributes": [],
                     "private": "bnVsbA==",

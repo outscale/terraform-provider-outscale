@@ -11,8 +11,9 @@ func TestAccOthers_DatasourceAccessKey_basic(t *testing.T) {
 	dataSourceName := "outscale_access_key.access_key_basic"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckAccessKeyDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccClientAccessKeyDataSourceBasic(),
@@ -33,8 +34,9 @@ func TestAccOthers_AccessKey_withFilters(t *testing.T) {
 	dataSourceName := "outscale_access_key.keyFilters"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckAccessKeyDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccClientAccessKeyDataSourceWithFilters(),

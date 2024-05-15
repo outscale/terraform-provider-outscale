@@ -62,7 +62,7 @@
                         "account_id": "##id-3##",
                         "description": "",
                         "id": "##id-4##",
-                        "is_source_dest_checked": true,
+                        "is_source_dest_checked": false,
                         "link_nic": [],
                         "link_public_ip": [],
                         "mac_address": "########",

@@ -30,7 +30,7 @@ resource "outscale_security_group" "outscale_security_group2" {
 
 resource "outscale_security_group_rule" "outscale_security_group_rule-3_2" {
     flow              = "Outbound"
-    security_group_id = outscale_security_group.outscale_security_group.security_group_id
+    security_group_id = outscale_security_group.outscale_security_group2.security_group_id
     rules {
      from_port_range   = "22"
      to_port_range     = "22"
