@@ -21,7 +21,7 @@ func TestAccOthers_SnapshotDataSource_basic(t *testing.T) {
 				Config: testAccCheckOutscaleSnapshotDataSourceConfig(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleSnapshotDataSourceID("data.outscale_snapshot.snapshot_test"),
-					resource.TestCheckResourceAttr("data.outscale_snapshot.snapshot", "volume_size", "1"),
+					resource.TestCheckResourceAttr("data.outscale_snapshot.snapshot_test", "volume_size", "1"),
 				),
 			},
 		},

@@ -81,7 +81,7 @@ func TestAccOthers_AccessKey_updatedToInactivedKey(t *testing.T) {
 }
 
 func TestAccOthers_AccessKey_updatedToActivedKey(t *testing.T) {
-	resourceName := "outscale_access_key.outscale_access_key"
+	resourceName := "outscale_access_key.update_access_key"
 
 	state := "INACTIVE"
 	stateUpdated := "ACTIVE"
