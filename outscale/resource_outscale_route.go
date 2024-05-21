@@ -141,7 +141,6 @@ func ResourceOutscaleRouteCreate(d *schema.ResourceData, meta interface{}) error
 		_, httpResp, err := conn.RouteApi.CreateRoute(context.Background()).CreateRouteRequest(createOpts).Execute()
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), utils.InvalidState) {
-				log.Printf("[OKHT] === ERROR: %v ====\n", err)
 				log.Printf("[DEBUG] Trying to create route again: %q", err)
 				return resource.RetryableError(err)
 			}
