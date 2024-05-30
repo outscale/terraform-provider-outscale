@@ -1,3 +1,22 @@
+1.0.0-rc.1 (June 19, 2024)
+========================
+BUG FIXES:
+----------
+
+* Error in attributes value for healthy_threshold ([GH-450](https://github.com/outscale/terraform-provider-outscale/issues/450))
+
+FEATURES:
+---------
+
+* Enable adding Tag on boot disk ([GH-110](https://github.com/outscale/terraform-provider-outscale/issues/110))
+* Enable linked multiple flexible GPUs to VM ([GH-220](https://github.com/outscale/terraform-provider-outscale/issues/220))
+
+IMPROVEMENTS:
+-----------
+* Rename ``` outscale_volumes_link ``` to ``` outscale_volume_link ```
+* Upgrade to Terraform-plugin-sdkv2 and terraform-plugin-framework ([GH-150](https://github.com/outscale/terraform-provider-outscale/issues/150))
+* Some refactoring
+
 0.12.0 (April 13, 2024)
 ========================
 BUG FIXES:
@@ -14,11 +33,11 @@ FEATURES:
 * Update vm data_source(s) ([filters](https://docs.outscale.com/en/userguide/Home.html#_january_2024)) ([GH-431](https://github.com/outscale/terraform-provider-outscale/issues/431))
 * Enable to set a route table as Main ([GH-362](https://github.com/outscale/terraform-provider-outscale/issues/362))
 
-IMPROVEMENT:
+IMPROVEMENTS:
 -----------
 
 * Update tests and osc-sdk-go
-* Somes refactoring
+* Some refactoring
 
 0.11.0 (February 13, 2024)
 ========================
@@ -28,11 +47,11 @@ FEATURES:
 
 * Support for Creating Security Group Rules Using Security Group Names ([GH-399](https://github.com/outscale/terraform-provider-outscale/issues/399))
 
-IMPROVEMENT:
+IMPROVEMENTS:
 -----------
 
 * Update tests and osc-sdk-go
-* Somes refactoring
+* Some refactoring
 
 0.10.0 (November 10, 2023)
 ========================
@@ -52,7 +71,7 @@ FEATURES:
 * Implement snapshot creation before volume deletion by terraform destroy ([GH-367](https://github.com/outscale/terraform-provider-outscale/issues/367))
 * Support differential updates for outscale_load_balancer_vms ([GH-54](https://github.com/outscale/terraform-provider-outscale/issues/54))
 
-IMPROVEMENT:
+IMPROVEMENTS:
 -----------
 
 * Remove other inbound_rules and outbound_rules from outscale_security_group_rule ([GH-286](https://github.com/outscale/terraform-provider-outscale/issues/286))
@@ -78,7 +97,7 @@ FEATURES:
 
 * Implement all_vms parametter in vm_state datasource(s) ([GH-291](https://github.com/outscale/terraform-provider-outscale/issues/291))
 
-IMPROVEMENT:
+IMPROVEMENTS:
 -----------
 
 * Using environment secret and remove pull_request_target
@@ -113,7 +132,7 @@ FEATURES:
 * Check the behaviour of the provider when the resource is removed manually by the user ([GH-19](https://github.com/outscale/terraform-provider-outscale/issues/19))
 * "bsu_optimized" parameter in VM is deprecated in our API ([GH-217](https://github.com/outscale/terraform-provider-outscale/issues/217))
 
-IMPROVEMENT:
+IMPROVEMENTS:
 -----------
 
 * Move ```terraform-provider-outscale``` repository form ```outscale-dev``` to ```outscale``` organization
@@ -141,7 +160,7 @@ FEATURES:
 * Implement "CreationDate" parameter in Vm resources and datasource(s) ([GH-125](https://github.com/outscale-dev/terraform-provider-outscale/issues/125))
 * Implement "LocationCode" parameter in Subregions datasource ([GH-140](https://github.com/outscale-dev/terraform-provider-outscale/issues/140))
 
-IMPROVEMENT:
+IMPROVEMENTS:
 -----------
 
 * Add more parameters for throttling checking ([GH-207](https://github.com/outscale-dev/terraform-provider-outscale/issues/207))
@@ -164,7 +183,7 @@ FEATURES:
 * Implement Api Access Policy ([GH-147](https://github.com/outscale-dev/terraform-provider-outscale/issues/147))
 * Implement "Ca" resource and datasource(s) ([GH-151](https://github.com/outscale-dev/terraform-provider-outscale/issues/151))
 
-IMPROVEMENT:
+IMPROVEMENTS:
 -----------
 
 * Change the description when parameters are quoted ([GH-101](https://github.com/outscale-dev/terraform-provider-outscale/issues/101))
@@ -183,7 +202,7 @@ BUG FIXES:
 * Fix StartVM action when updating VM tags ([GH-86](https://github.com/outscale-dev/terraform-provider-outscale/issues/86))
 * Fix ```secondary_private_ip_count``` parameter in outscale_nic_private_ip resource ([GH-100](https://github.com/outscale-dev/terraform-provider-outscale/issues/100))
 
-IMPROVEMENT:
+IMPROVEMENTS:
 -----------
 
 * Update retrying when api call throttled ([GH-106](https://github.com/outscale-dev/terraform-provider-outscale/issues/106))
@@ -206,7 +225,7 @@ BUG FIXES:
 * Fix tags on outscale_resources #68
 * iops value is set to 0 for standard volumes (TPD-2053)
 
-IMPROVEMENT:
+IMPROVEMENTS:
 -----------
 
 * Update sdk
