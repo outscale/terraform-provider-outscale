@@ -74,8 +74,8 @@ func ResourceOutscaleLoadBalancerAttributes() *schema.Resource {
 							ForceNew: true,
 							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 								htVal := val.(int)
-								if htVal < 5 || htVal > 600 {
-									errs = append(errs, fmt.Errorf("%q must be between 5 and 600 inclusive, got: %d", key, htVal))
+								if htVal < 2 || htVal > 10 {
+									errs = append(errs, fmt.Errorf("%q must be between 2 and 10 included, got: %d", key, htVal))
 								}
 								return
 							},
@@ -88,7 +88,7 @@ func ResourceOutscaleLoadBalancerAttributes() *schema.Resource {
 							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 								uhtVal := val.(int)
 								if uhtVal < 2 || uhtVal > 10 {
-									errs = append(errs, fmt.Errorf("%q must be between 2 and 10 inclusive, got: %d", key, uhtVal))
+									errs = append(errs, fmt.Errorf("%q must be between 2 and 10 included, got: %d", key, uhtVal))
 								}
 								return
 							},
@@ -111,7 +111,7 @@ func ResourceOutscaleLoadBalancerAttributes() *schema.Resource {
 							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 								portVal := val.(int)
 								if portVal < utils.MinPort || portVal > utils.MaxPort {
-									errs = append(errs, fmt.Errorf("%q must be between %d and %d inclusive, got: %d", key, utils.MinPort, utils.MaxPort, portVal))
+									errs = append(errs, fmt.Errorf("%q must be between %d and %d included, got: %d", key, utils.MinPort, utils.MaxPort, portVal))
 								}
 								return
 							},
@@ -129,7 +129,7 @@ func ResourceOutscaleLoadBalancerAttributes() *schema.Resource {
 							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 								ciVal := val.(int)
 								if ciVal < 5 || ciVal > 600 {
-									errs = append(errs, fmt.Errorf("%q must be between 5 and 600 inclusive, got: %d", key, ciVal))
+									errs = append(errs, fmt.Errorf("%q must be between 5 and 600 included, got: %d", key, ciVal))
 								}
 								return
 							},
@@ -141,8 +141,8 @@ func ResourceOutscaleLoadBalancerAttributes() *schema.Resource {
 							ForceNew: true,
 							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 								tVal := val.(int)
-								if tVal < 5 || tVal > 60 {
-									errs = append(errs, fmt.Errorf("%q must be between 5 and 60 inclusive, got: %d", key, tVal))
+								if tVal < 2 || tVal > 60 {
+									errs = append(errs, fmt.Errorf("%q must be between 2 and 60 included, got: %d", key, tVal))
 								}
 								return
 							},
