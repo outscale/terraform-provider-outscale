@@ -67,8 +67,16 @@ test-compile:
 
 .PHONY: test-locally
 test-locally:
-	"$(CURDIR)/scripts/local-test.sh" TestAccOthers_Volume_io1Type
+	"$(CURDIR)/scripts/local-test.sh" TestAccVM_Basic
+	"$(CURDIR)/scripts/local-test.sh" TestAccVM_Behavior_Basic
+	"$(CURDIR)/scripts/local-test.sh" TestAccVM_withTags
+	"$(CURDIR)/scripts/local-test.sh" TestAccVM_importBasic
 	"$(CURDIR)/scripts/local-test.sh" TestAccVM_withFlexibleGpuLink_basic
+	"$(CURDIR)/scripts/local-test.sh" TestAccVM_UpdateKeypair
+	"$(CURDIR)/scripts/local-test.sh" TestAccVM_UpdateDeletionProtection
+	"$(CURDIR)/scripts/local-test.sh" TestAccVM_multiBlockDeviceMapping
+	"$(CURDIR)/scripts/local-test.sh" TestAccOthers_DataSourceFlexibleGpu_basic
+	"$(CURDIR)/scripts/local-test.sh" TestAccOthers_Volume_io1Type
 	"$(CURDIR)/scripts/local-test.sh" TestAccOthers_LBU_basic
 
 .PHONY: terraform-examples
