@@ -19,8 +19,8 @@ func TestAccOthers_SnapshotDataSource_basic(t *testing.T) {
 			{
 				Config: testAccCheckOutscaleOAPISnapshotDataSourceConfig(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPISnapshotDataSourceID("data.outscale_snapshot.snapshot"),
-					resource.TestCheckResourceAttr("data.outscale_snapshot.snapshot", "volume_size", "1"),
+					testAccCheckOutscaleOAPISnapshotDataSourceID("data.outscale_snapshot.snpshot"),
+					resource.TestCheckResourceAttr("data.outscale_snapshot.snpshot", "volume_size", "1"),
 				),
 			},
 		},
@@ -66,12 +66,12 @@ func testAccCheckOutscaleOAPISnapshotDataSourceConfig(region string) string {
 			size           = 1
 		}
 
-		resource "outscale_snapshot" "snapshot" {
+		resource "outscale_snapshot" "snapshot-basic" {
 			volume_id = outscale_volume.example.id
 		}
 
-		data "outscale_snapshot" "snapshot" {
-			snapshot_id = outscale_snapshot.snapshot.id
+		data "outscale_snapshot" "snpshot" {
+			snapshot_id = outscale_snapshot.snapshot-basic.id
 		}
 	`, region)
 }

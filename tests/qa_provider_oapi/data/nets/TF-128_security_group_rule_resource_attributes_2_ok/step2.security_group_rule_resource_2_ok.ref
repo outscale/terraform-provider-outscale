@@ -53,8 +53,7 @@
                                 "security_groups_members": [
                                     {
                                         "account_id": "##id-2##",
-                                        "security_group_id": "##id-4##",
-                                        "security_group_name": "sg2-terraform-test"
+                                        "security_group_id": "##id-4##"
                                     }
                                 ],
                                 "to_port_range": 22
@@ -76,8 +75,7 @@
                                 "security_groups_members": [
                                     {
                                         "account_id": "##id-2##",
-                                        "security_group_id": "##id-4##",
-                                        "security_group_name": "sg2-terraform-test"
+                                        "security_group_id": "##id-4##"
                                     }
                                 ],
                                 "to_port_range": 22

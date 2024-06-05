@@ -26,7 +26,7 @@
                                 "creation_method": "CreateRouteTable",
                                 "destination_ip_range": "10.0.0.0/16",
                                 "destination_service_id": "",
-                                "gateway_id": "",
+                                "gateway_id": "##id-2##",
                                 "nat_service_id": "",
                                 "net_access_point_id": "",
                                 "net_peering_id": "",
@@ -60,7 +60,7 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "dhcp_options_set_id": "##id-2##",
+                        "dhcp_options_set_id": "##id-3##",
                         "id": "##id-1##",
                         "ip_range": "10.0.0.0/16",
                         "net_id": "##id-1##",
@@ -94,7 +94,7 @@
                                 "creation_method": "CreateRouteTable",
                                 "destination_ip_range": "10.0.0.0/16",
                                 "destination_service_id": "",
-                                "gateway_id": "",
+                                "gateway_id": "##id-2##",
                                 "nat_service_id": "",
                                 "net_access_point_id": "",
                                 "net_peering_id": "",

@@ -53,11 +53,11 @@ data "outscale_security_group" "filters-inbound" {
    }
    filter {
         name    = "inbound_rule_security_group_ids"
-        values  = [outscale_security_group.outscale_security_group2.security_group_id]
+        values  = [outscale_security_group.outscale_security_group.security_group_id]
    }
    filter {
         name    = "inbound_rule_security_group_names"
-        values  = [outscale_security_group.outscale_security_group2.security_group_name]
+        values  = [outscale_security_group.outscale_security_group.security_group_name]
    }
    filter {
         name    = "inbound_rule_to_port_ranges"

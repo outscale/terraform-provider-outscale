@@ -28,7 +28,7 @@
                                     {
                                         "account_id": "##id-0##",
                                         "security_group_id": "##id-2##",
-                                        "security_group_name": "terraform-TF125-2"
+                                        "security_group_name": ""
                                     }
                                 ],
                                 "to_port_range": 22
@@ -50,12 +50,12 @@
                         "security_group_name": "terraform-TF125",
                         "tags": [
                             {
-                                "key": "Key:",
-                                "value": "value-tags"
-                            },
-                            {
                                 "key": "Name",
                                 "value": ":outscale_net_resource2"
+                            },
+                            {
+                                "key": "Key:",
+                                "value": "value-tags"
                             }
                         ]
                     },

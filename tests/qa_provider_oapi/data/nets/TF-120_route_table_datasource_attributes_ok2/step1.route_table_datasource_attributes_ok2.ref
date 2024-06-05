@@ -34,7 +34,7 @@
                                 "creation_method": "CreateRouteTable",
                                 "destination_ip_range": "172.16.0.0/16",
                                 "destination_service_id": "",
-                                "gateway_id": "",
+                                "gateway_id": "##id-4##",
                                 "nat_service_id": "",
                                 "net_access_point_id": "",
                                 "net_peering_id": "",
@@ -84,7 +84,7 @@
                                 "creation_method": "CreateRouteTable",
                                 "destination_ip_range": "172.16.0.0/16",
                                 "destination_service_id": "",
-                                "gateway_id": "",
+                                "gateway_id": "##id-4##",
                                 "nat_service_id": "",
                                 "net_access_point_id": "",
                                 "net_peering_id": "",
@@ -114,7 +114,7 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "dhcp_options_set_id": "##id-4##",
+                        "dhcp_options_set_id": "##id-5##",
                         "id": "##id-3##",
                         "ip_range": "172.16.0.0/16",
                         "net_id": "##id-3##",
@@ -153,7 +153,7 @@
                                 "creation_method": "CreateRouteTable",
                                 "destination_ip_range": "172.16.0.0/16",
                                 "destination_service_id": "",
-                                "gateway_id": "",
+                                "gateway_id": "##id-4##",
                                 "nat_service_id": "",
                                 "net_access_point_id": "",
                                 "net_peering_id": "",
@@ -187,18 +187,18 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-5##",
+                        "id": "##id-6##",
                         "link_route_tables": [],
                         "net_id": "##id-3##",
                         "request_id": "########",
                         "route_propagating_virtual_gateways": [],
-                        "route_table_id": "##id-5##",
+                        "route_table_id": "##id-6##",
                         "routes": [
                             {
                                 "creation_method": "CreateRouteTable",
                                 "destination_ip_range": "172.16.0.0/16",
                                 "destination_service_id": "",
-                                "gateway_id": "",
+                                "gateway_id": "##id-4##",
                                 "nat_service_id": "",
                                 "net_access_point_id": "",
                                 "net_peering_id": "",

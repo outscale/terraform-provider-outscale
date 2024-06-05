@@ -443,7 +443,7 @@
                                 "creation_method": "CreateRouteTable",
                                 "destination_ip_range": "10.0.0.0/16",
                                 "destination_service_id": "",
-                                "gateway_id": "",
+                                "gateway_id": "##id-8##",
                                 "nat_service_id": "",
                                 "net_access_point_id": "",
                                 "net_peering_id": "",
@@ -477,8 +477,8 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-8##",
-                        "link_route_table_id": "##id-8##",
+                        "id": "##id-9##",
+                        "link_route_table_id": "##id-9##",
                         "main": false,
                         "request_id": "########",
                         "route_table_id": "##id-7##",

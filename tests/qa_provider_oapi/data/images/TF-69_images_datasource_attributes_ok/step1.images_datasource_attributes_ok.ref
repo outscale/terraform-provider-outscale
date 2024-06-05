@@ -114,7 +114,7 @@
                         "hypervisor": "xen",
                         "id": "##id-3##",
                         "image_id": "##id-5##",
-                        "is_source_dest_checked": true,
+                        "is_source_dest_checked": false,
                         "keypair_name": "",
                         "launch_number": 0,
                         "nested_virtualization": false,
