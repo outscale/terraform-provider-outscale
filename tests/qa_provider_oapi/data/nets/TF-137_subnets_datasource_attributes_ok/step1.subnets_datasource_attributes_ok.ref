@@ -87,12 +87,12 @@
                                 "subregion_name": "us-east-2b",
                                 "tags": [
                                     {
-                                        "key": "Key",
-                                        "value": "value-tags"
-                                    },
-                                    {
                                         "key": "name-tf137",
                                         "value": "subnet-tags-2"
+                                    },
+                                    {
+                                        "key": "Key",
+                                        "value": "value-tags"
                                     }
                                 ]
                             }

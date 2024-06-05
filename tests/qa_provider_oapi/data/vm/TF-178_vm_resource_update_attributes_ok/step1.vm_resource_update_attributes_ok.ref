@@ -146,7 +146,7 @@
                         "hypervisor": "xen",
                         "id": "##id-7##",
                         "image_id": "##id-8##",
-                        "is_source_dest_checked": true,
+                        "is_source_dest_checked": false,
                         "keypair_name": "keyname_TF66-0",
                         "launch_number": 0,
                         "nested_virtualization": false,

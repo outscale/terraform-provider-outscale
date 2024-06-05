@@ -60,11 +60,11 @@
                                 "tags": [
                                     {
                                         "key": "Key-2",
-                                        "value": "value-tags-2"
+                                        "value": "value:TF69"
                                     },
                                     {
                                         "key": "Key:TF69",
-                                        "value": "value:TF69"
+                                        "value": "value-tags"
                                     }
                                 ]
                             },
@@ -109,11 +109,11 @@
                                 "tags": [
                                     {
                                         "key": "Key-2",
-                                        "value": "value:TF69"
+                                        "value": "value-tags-2"
                                     },
                                     {
                                         "key": "Key:TF69",
-                                        "value": "value-tags"
+                                        "value": "value:TF69"
                                     }
                                 ]
                             }
@@ -149,7 +149,7 @@
                                             {
                                                 "delete_on_vm_deletion": true,
                                                 "iops": 0,
-                                                "snapshot_id": "##id-4##",
+                                                "snapshot_id": "##id-2##",
                                                 "volume_size": 10,
                                                 "volume_type": "standard"
                                             }
@@ -161,7 +161,7 @@
                                 "creation_date": "########",
                                 "description": "",
                                 "file_location": "########",
-                                "image_id": "##id-5##",
+                                "image_id": "##id-3##",
                                 "image_name": "########",
                                 "image_type": "machine",
                                 "permissions_to_launch": [],
@@ -198,7 +198,7 @@
                                             {
                                                 "delete_on_vm_deletion": true,
                                                 "iops": 0,
-                                                "snapshot_id": "##id-2##",
+                                                "snapshot_id": "##id-4##",
                                                 "volume_size": 10,
                                                 "volume_type": "standard"
                                             }
@@ -210,7 +210,7 @@
                                 "creation_date": "########",
                                 "description": "",
                                 "file_location": "########",
-                                "image_id": "##id-3##",
+                                "image_id": "##id-5##",
                                 "image_name": "########",
                                 "image_type": "machine",
                                 "permissions_to_launch": [],
@@ -300,11 +300,11 @@
                                 "tags": [
                                     {
                                         "key": "Key-2",
-                                        "value": "value-tags-2"
+                                        "value": "value:TF69"
                                     },
                                     {
                                         "key": "Key:TF69",
-                                        "value": "value:TF69"
+                                        "value": "value-tags"
                                     }
                                 ]
                             },
@@ -349,11 +349,11 @@
                                 "tags": [
                                     {
                                         "key": "Key-2",
-                                        "value": "value:TF69"
+                                        "value": "value-tags-2"
                                     },
                                     {
                                         "key": "Key:TF69",
-                                        "value": "value-tags"
+                                        "value": "value:TF69"
                                     }
                                 ]
                             }
@@ -389,7 +389,7 @@
                                             {
                                                 "delete_on_vm_deletion": true,
                                                 "iops": 0,
-                                                "snapshot_id": "##id-4##",
+                                                "snapshot_id": "##id-2##",
                                                 "volume_size": 10,
                                                 "volume_type": "standard"
                                             }
@@ -401,7 +401,7 @@
                                 "creation_date": "########",
                                 "description": "",
                                 "file_location": "########",
-                                "image_id": "##id-5##",
+                                "image_id": "##id-3##",
                                 "image_name": "########",
                                 "image_type": "machine",
                                 "permissions_to_launch": [],
@@ -438,7 +438,7 @@
                                             {
                                                 "delete_on_vm_deletion": true,
                                                 "iops": 0,
-                                                "snapshot_id": "##id-2##",
+                                                "snapshot_id": "##id-4##",
                                                 "volume_size": 10,
                                                 "volume_type": "standard"
                                             }
@@ -450,7 +450,7 @@
                                 "creation_date": "########",
                                 "description": "",
                                 "file_location": "########",
-                                "image_id": "##id-3##",
+                                "image_id": "##id-5##",
                                 "image_name": "########",
                                 "image_type": "machine",
                                 "permissions_to_launch": [],
@@ -509,7 +509,7 @@
                                             {
                                                 "delete_on_vm_deletion": true,
                                                 "iops": 0,
-                                                "snapshot_id": "##id-2##",
+                                                "snapshot_id": "##id-4##",
                                                 "volume_size": 10,
                                                 "volume_type": "standard"
                                             }
@@ -521,7 +521,7 @@
                                 "creation_date": "########",
                                 "description": "",
                                 "file_location": "########",
-                                "image_id": "##id-3##",
+                                "image_id": "##id-5##",
                                 "image_name": "########",
                                 "image_type": "machine",
                                 "permissions_to_launch": [],
@@ -574,7 +574,7 @@
                                     {
                                         "delete_on_vm_deletion": true,
                                         "iops": 0,
-                                        "snapshot_id": "##id-4##",
+                                        "snapshot_id": "##id-2##",
                                         "volume_size": 10,
                                         "volume_type": "standard"
                                     }
@@ -586,8 +586,8 @@
                         "creation_date": "########",
                         "description": "",
                         "file_location": "########",
-                        "id": "##id-5##",
-                        "image_id": "##id-5##",
+                        "id": "##id-3##",
+                        "image_id": "##id-3##",
                         "image_name": "########",
                         "image_type": "machine",
                         "is_public": null,
@@ -652,7 +652,7 @@
                                     {
                                         "delete_on_vm_deletion": true,
                                         "iops": 0,
-                                        "snapshot_id": "##id-2##",
+                                        "snapshot_id": "##id-4##",
                                         "volume_size": 10,
                                         "volume_type": "standard"
                                     }
@@ -664,8 +664,8 @@
                         "creation_date": "########",
                         "description": "",
                         "file_location": "########",
-                        "id": "##id-3##",
-                        "image_id": "##id-3##",
+                        "id": "##id-5##",
+                        "image_id": "##id-5##",
                         "image_name": "########",
                         "image_type": "machine",
                         "is_public": null,
@@ -743,7 +743,7 @@
                         "hypervisor": "xen",
                         "id": "##id-10##",
                         "image_id": "##id-12##",
-                        "is_source_dest_checked": true,
+                        "is_source_dest_checked": false,
                         "keypair_name": "",
                         "launch_number": 0,
                         "nested_virtualization": false,

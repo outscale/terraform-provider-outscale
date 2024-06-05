@@ -240,7 +240,7 @@
                                 "creation_method": "CreateRouteTable",
                                 "destination_ip_range": "10.0.0.0/16",
                                 "destination_service_id": "",
-                                "gateway_id": "",
+                                "gateway_id": "##id-11##",
                                 "nat_service_id": "",
                                 "net_access_point_id": "",
                                 "net_peering_id": "",
@@ -274,12 +274,12 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-11##",
-                        "link_route_table_id": "##id-11##",
+                        "id": "##id-12##",
+                        "link_route_table_id": "##id-12##",
                         "main": false,
                         "request_id": "########",
                         "route_table_id": "##id-10##",
-                        "subnet_id": "##id-12##"
+                        "subnet_id": "##id-13##"
                     },
                     "sensitive_attributes": [],
                     "private": "bnVsbA==",
@@ -302,7 +302,7 @@
                     "attributes": {
                         "account_id": "##id-6##",
                         "description": "sg for terraform tests",
-                        "id": "##id-13##",
+                        "id": "##id-14##",
                         "inbound_rules": [],
                         "net_id": "##id-1##",
                         "outbound_rules": [
@@ -316,7 +316,7 @@
                         ],
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
-                        "security_group_id": "##id-13##",
+                        "security_group_id": "##id-14##",
                         "security_group_name": "terraform-sg",
                         "tag": null,
                         "tags": [
@@ -345,13 +345,13 @@
                     "attributes": {
                         "account_id": "##id-6##",
                         "description": "test vms_2",
-                        "id": "##id-14##",
+                        "id": "##id-15##",
                         "inbound_rules": [],
                         "net_id": "",
                         "outbound_rules": [],
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
-                        "security_group_id": "##id-14##",
+                        "security_group_id": "##id-15##",
                         "security_group_name": "terraform-public-sg_for_vms",
                         "tag": null,
                         "tags": []
@@ -371,13 +371,13 @@
                     "schema_version": 0,
                     "attributes": {
                         "available_ips_count": "########",
-                        "id": "##id-12##",
+                        "id": "##id-13##",
                         "ip_range": "10.0.0.0/24",
                         "map_public_ip_on_launch": false,
                         "net_id": "##id-1##",
                         "request_id": "########",
                         "state": "available",
-                        "subnet_id": "##id-12##",
+                        "subnet_id": "##id-13##",
                         "subregion_name": "us-east-2a",
                         "tags": [
                             {
@@ -413,7 +413,7 @@
                                     "delete_on_vm_deletion": "true",
                                     "link_date": "########",
                                     "state": "attached",
-                                    "volume_id": "##id-15##"
+                                    "volume_id": "##id-16##"
                                 },
                                 "device_name": "/dev/sda1"
                             }
@@ -424,9 +424,9 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-16##",
-                        "image_id": "##id-17##",
-                        "is_source_dest_checked": true,
+                        "id": "##id-17##",
+                        "image_id": "##id-18##",
+                        "is_source_dest_checked": false,
                         "keypair_name": "KP-TF144",
                         "launch_number": 0,
                         "nested_virtualization": false,
@@ -446,16 +446,16 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-18##",
+                        "reservation_id": "##id-19##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
                         "security_group_ids": [
-                            "##id-14##"
+                            "##id-15##"
                         ],
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-14##",
+                                "security_group_id": "##id-15##",
                                 "security_group_name": "terraform-public-sg_for_vms"
                             }
                         ],
@@ -470,7 +470,7 @@
                         ],
                         "timeouts": null,
                         "user_data": "",
-                        "vm_id": "##id-16##",
+                        "vm_id": "##id-17##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
@@ -501,7 +501,7 @@
                                     "delete_on_vm_deletion": "true",
                                     "link_date": "########",
                                     "state": "attached",
-                                    "volume_id": "##id-19##"
+                                    "volume_id": "##id-20##"
                                 },
                                 "device_name": "/dev/sda1"
                             }
@@ -512,9 +512,9 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-20##",
-                        "image_id": "##id-17##",
-                        "is_source_dest_checked": true,
+                        "id": "##id-21##",
+                        "image_id": "##id-18##",
+                        "is_source_dest_checked": false,
                         "keypair_name": "KP-TF144",
                         "launch_number": 0,
                         "nested_virtualization": false,
@@ -534,7 +534,7 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-21##",
+                        "reservation_id": "##id-22##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
                         "security_group_ids": null,
@@ -543,7 +543,7 @@
                         ],
                         "security_groups": [
                             {
-                                "security_group_id": "##id-14##",
+                                "security_group_id": "##id-15##",
                                 "security_group_name": "terraform-public-sg_for_vms"
                             }
                         ],
@@ -558,7 +558,7 @@
                         ],
                         "timeouts": null,
                         "user_data": "",
-                        "vm_id": "##id-20##",
+                        "vm_id": "##id-21##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
@@ -589,7 +589,7 @@
                                     "delete_on_vm_deletion": "true",
                                     "link_date": "########",
                                     "state": "attached",
-                                    "volume_id": "##id-22##"
+                                    "volume_id": "##id-23##"
                                 },
                                 "device_name": "/dev/sda1"
                             }
@@ -601,7 +601,7 @@
                         "get_admin_password": null,
                         "hypervisor": "xen",
                         "id": "##id-8##",
-                        "image_id": "##id-17##",
+                        "image_id": "##id-18##",
                         "is_source_dest_checked": true,
                         "keypair_name": "KP-TF144",
                         "launch_number": 0,
@@ -618,7 +618,7 @@
                                     {
                                         "delete_on_vm_deletion": true,
                                         "device_number": "0",
-                                        "link_nic_id": "##id-23##",
+                                        "link_nic_id": "##id-24##",
                                         "state": "attached"
                                     }
                                 ],
@@ -637,16 +637,16 @@
                                 ],
                                 "secondary_private_ip_count": 0,
                                 "security_group_ids": [
-                                    "##id-13##"
+                                    "##id-14##"
                                 ],
                                 "security_groups": [
                                     {
-                                        "security_group_id": "##id-13##",
+                                        "security_group_id": "##id-14##",
                                         "security_group_name": "terraform-sg"
                                     }
                                 ],
                                 "state": "in-use",
-                                "subnet_id": "##id-12##"
+                                "subnet_id": "##id-13##"
                             }
                         ],
                         "os_family": "",
@@ -664,7 +664,7 @@
                                     {
                                         "delete_on_vm_deletion": true,
                                         "device_number": "0",
-                                        "link_nic_id": "##id-23##",
+                                        "link_nic_id": "##id-24##",
                                         "state": "attached"
                                     }
                                 ],
@@ -683,16 +683,16 @@
                                 ],
                                 "secondary_private_ip_count": 0,
                                 "security_group_ids": [
-                                    "##id-13##"
+                                    "##id-14##"
                                 ],
                                 "security_groups": [
                                     {
-                                        "security_group_id": "##id-13##",
+                                        "security_group_id": "##id-14##",
                                         "security_group_name": "terraform-sg"
                                     }
                                 ],
                                 "state": "in-use",
-                                "subnet_id": "##id-12##"
+                                "subnet_id": "##id-13##"
                             }
                         ],
                         "private_dns_name": "########",
@@ -704,22 +704,22 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-24##",
+                        "reservation_id": "##id-25##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
                         "security_group_ids": [
-                            "##id-13##"
+                            "##id-14##"
                         ],
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-13##",
+                                "security_group_id": "##id-14##",
                                 "security_group_name": "terraform-sg"
                             }
                         ],
                         "state": "running",
                         "state_reason": "",
-                        "subnet_id": "##id-12##",
+                        "subnet_id": "##id-13##",
                         "tags": [],
                         "timeouts": null,
                         "user_data": "",

@@ -104,6 +104,19 @@
                         "client_gateway_ids": null,
                         "client_gateways": [
                             {
+                                "bgp_asn": 575,
+                                "client_gateway_id": "##id-0##",
+                                "connection_type": "ipsec.1",
+                                "public_ip": "########",
+                                "state": "available",
+                                "tags": [
+                                    {
+                                        "key": "name-terraform",
+                                        "value": "CGW_2_terraform"
+                                    }
+                                ]
+                            },
+                            {
                                 "bgp_asn": 571,
                                 "client_gateway_id": "##id-1##",
                                 "connection_type": "ipsec.1",
@@ -117,19 +130,6 @@
                                     {
                                         "key": "project",
                                         "value": "terraform"
-                                    }
-                                ]
-                            },
-                            {
-                                "bgp_asn": 575,
-                                "client_gateway_id": "##id-0##",
-                                "connection_type": "ipsec.1",
-                                "public_ip": "########",
-                                "state": "available",
-                                "tags": [
-                                    {
-                                        "key": "name-terraform",
-                                        "value": "CGW_2_terraform"
                                     }
                                 ]
                             }
@@ -154,6 +154,19 @@
                         "client_gateway_ids": null,
                         "client_gateways": [
                             {
+                                "bgp_asn": 575,
+                                "client_gateway_id": "##id-0##",
+                                "connection_type": "ipsec.1",
+                                "public_ip": "########",
+                                "state": "available",
+                                "tags": [
+                                    {
+                                        "key": "name-terraform",
+                                        "value": "CGW_2_terraform"
+                                    }
+                                ]
+                            },
+                            {
                                 "bgp_asn": 571,
                                 "client_gateway_id": "##id-1##",
                                 "connection_type": "ipsec.1",
@@ -167,19 +180,6 @@
                                     {
                                         "key": "project",
                                         "value": "terraform"
-                                    }
-                                ]
-                            },
-                            {
-                                "bgp_asn": 575,
-                                "client_gateway_id": "##id-0##",
-                                "connection_type": "ipsec.1",
-                                "public_ip": "########",
-                                "state": "available",
-                                "tags": [
-                                    {
-                                        "key": "name-terraform",
-                                        "value": "CGW_2_terraform"
                                     }
                                 ]
                             }
