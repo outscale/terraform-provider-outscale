@@ -2,7 +2,7 @@ name: Credential Scanner
 
 on:
   pull_request:
-    branches: [ master ]
+    branches: [ v0 ]
 
 jobs:
   cred-scan:
@@ -10,6 +10,6 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Scan credentials
-      uses: outscale-dev/cred-scan@main
+      uses: outscale/cred-scan@main
       with:
         scan_path: "./"
