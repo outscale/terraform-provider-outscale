@@ -29,7 +29,7 @@ resource "outscale_vm" "outscale_vm" {
     security_group_ids = [outscale_security_group.security_group_TF160.security_group_id]
 }
 
-resource "outscale_volumes_link" "outscale_volumes_link" {
+resource "outscale_volume_link" "outscale_volume_link" {
     device_name = "/dev/xvdc"
     volume_id   = outscale_volume.outscale_volume.id
     vm_id       = outscale_vm.outscale_vm.id
