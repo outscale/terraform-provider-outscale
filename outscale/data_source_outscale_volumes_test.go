@@ -164,19 +164,19 @@ func testAccCheckOutscaleVolumesDataSourceConfigWithVM(region, imageID, keypair 
 			vm_type            = "tinav4.c2r2p2"
 		}
 
-		resource "outscale_volumes_link" "outscale_volumes_link" {
+		resource "outscale_volume_link" "outscale_volume_link" {
 			device_name = "/dev/xvdc"
 			volume_id   = outscale_volume.outscale_volume.id
 			vm_id       = outscale_vm.outscale_vm.id
 		}
 
-		resource "outscale_volumes_link" "outscale_volumes_link_2" {
+		resource "outscale_volume_link" "outscale_volume_link_2" {
 			device_name = "/dev/xvdd"
 			volume_id   = outscale_volume.outscale_volume2.id
 			vm_id       = outscale_vm.outscale_vm.id
 		}
 
-		resource "outscale_volumes_link" "outscale_volumes_link_3" {
+		resource "outscale_volume_link" "outscale_volume_link_3" {
 			device_name = "/dev/xvde"
 			volume_id   = outscale_volume.outscale_volume3.id
 			vm_id       = outscale_vm.outscale_vm.id

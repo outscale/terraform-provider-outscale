@@ -26,7 +26,7 @@ resource "outscale_vm" "outscale_vm" {
     security_group_ids = [outscale_security_group.security_group_TF159.security_group_id]
 }
 
-resource "outscale_volumes_link" "outscale_volumes_link" {
+resource "outscale_volume_link" "outscale_volume_link" {
     device_name = "/dev/xvdc"
     volume_id   = outscale_volume.outscale_volume3.id
     vm_id       = outscale_vm.outscale_vm.id
@@ -56,5 +56,5 @@ data "outscale_volumes" "outscale_volumes" {
         name = "volume_ids"
         values = [outscale_volume.outscale_volume.volume_id, outscale_volume.outscale_volume2.volume_id, outscale_volume.outscale_volume3.volume_id]
     }
-depends_on = [outscale_volumes_link.outscale_volumes_link]
+depends_on = [outscale_volume_link.outscale_volume_link]
 }

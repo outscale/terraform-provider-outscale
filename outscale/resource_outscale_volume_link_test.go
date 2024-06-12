@@ -32,10 +32,10 @@ func TestAccVM_WithVolumeAttachment_basic(t *testing.T) {
 				Config: testAccOAPIVolumeAttachmentConfig(omi, "tinav4.c2r2p2", utils.GetRegion(), keypair),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"outscale_volumes_link.ebs_att", "device_name", "/dev/sdh"),
+						"outscale_volume_link.ebs_att", "device_name", "/dev/sdh"),
 					testAccCheckOutscaleVMExists("outscale_vm.web", &i),
 					testAccCheckOAPIVolumeAttachmentExists(
-						"outscale_volumes_link.ebs_att", &i, &v),
+						"outscale_volume_link.ebs_att", &i, &v),
 				),
 			},
 		},
@@ -46,7 +46,7 @@ func TestAccVM_ImportVolumeAttachment_Basic(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
 
-	resourceName := "outscale_volumes_link.ebs_att"
+	resourceName := "outscale_volume_link.ebs_att"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckValues(t) },
@@ -130,7 +130,7 @@ func testAccOAPIVolumeAttachmentConfig(omi, vmType, region, keypair string) stri
 			size           = 100
 		}
 
-		resource "outscale_volumes_link" "ebs_att" {
+		resource "outscale_volume_link" "ebs_att" {
 			device_name = "/dev/sdh"
 			volume_id   = outscale_volume.volume.id
 			vm_id       = outscale_vm.web.id

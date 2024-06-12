@@ -320,8 +320,8 @@
         },
         {
             "mode": "managed",
-            "type": "outscale_volumes_link",
-            "name": "outscale_volumes_link",
+            "type": "outscale_volume_link",
+            "name": "outscale_volume_link",
             "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
