@@ -455,6 +455,7 @@ def main():
     extention = '.md' if ARGS.new_format else '.html.markdown'
     index_dirpath = ARGS.output_directory + ('/docs'
                                                if ARGS.new_format else '/website/docs')
+    shutil.rmtree(index_dirpath)
     print('Parsing API from {}...'.format(ARGS.api))
     oapi = openapi_parser.parse(ARGS.api)
 
