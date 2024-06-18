@@ -40,6 +40,7 @@ resource "outscale_security_group" "security_group01" {
 ```hcl
 resource "outscale_nic" "nic01" {
     subnet_id = outscale_subnet.subnet01.subnet_id
+    security_group_ids = [outscale_security_group.security_group01.security_group_id]
 }
 
 ```

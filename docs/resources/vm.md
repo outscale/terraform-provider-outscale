@@ -28,11 +28,16 @@ resource "outscale_keypair" "keypair01" {
 ### Create a VM in the public Cloud
 
 ```hcl
+resource "outscale_security_group" "security_group01" {
+  description         = "vm security group"
+  security_group_name = "vm_security_group1"
+}
+
 resource "outscale_vm" "vm01" {
 	image_id                 = var.image_id
 	vm_type                  = var.vm_type
 	keypair_name             = var.keypair_name
-	security_group_ids       = [var.security_group_id]
+	security_group_ids       = [outscale_security_group.security_group01.security_group_id]
 	placement_subregion_name = "eu-west-2a"
 	placement_tenancy        = "default"
 	tags {
@@ -49,10 +54,16 @@ resource "outscale_vm" "vm01" {
 ### Create a VM with block device mappings
 
 ```hcl
+resource "outscale_security_group" "security_group01" {
+  description         = "vm security group"
+  security_group_name = "vm_security_group1"
+}
+
 resource "outscale_vm" "vm02" {
 	image_id                = var.image_id
 	vm_type                 = var.vm_type
 	keypair_name            = var.keypair_name
+	security_group_ids  	= [outscale_security_group.security_group01.security_group_id]
 	block_device_mappings {
 		device_name = "/dev/sda1" # /dev/sda1 corresponds to the root device of the VM
 		bsu {
@@ -68,6 +79,32 @@ resource "outscale_vm" "vm02" {
 			volume_type           = "io1"
 			iops                  = 150
 			delete_on_vm_deletion = true
+		}
+	}
+}
+
+
+resource "outscale_security_group" "security_group01" {
+  description         = "vm security group"
+  security_group_name = "vm_security_group1"
+}
+
+resource "outscale_vm" "vm02" {
+	image_id 				= var.image_id
+ 	vm_type 				= var.vm_type
+ 	keypair_name 			= var.keypair_name
+	security_group_ids 		= [outscale_security_group.security_group01.security_group_id]
+ 	block_device_mappings {
+		device_name = "/dev/sdb"
+		bsu {
+			volume_size           = 30
+			volume_type           = "gp2"
+			snapshot_id           = outscale_snapshot.snapshot.id
+			delete_on_vm_deletion = false
+			tags {
+				key                   = "Name"
+				value                 = "bsu-tags-gp2"
+			}
 		}
 	}
 }
@@ -141,6 +178,11 @@ resource "outscale_vm" "vm03" {
 ~> **Note:** If you plan to use the `outscale_nic_link`resource, it is recommended to specify the `primary_nic` argument to define the primary network interface of a VM.
 
 ```hcl
+resource "outscale_security_group" "security_group01" {
+  description         = "vm security group"
+  security_group_name = "vm_security_group1"
+}
+
 resource "outscale_net" "net02" {
 	ip_range = "10.0.0.0/16"
 	tags {
@@ -163,9 +205,10 @@ resource "outscale_nic" "nic01" {
 }
 
 resource "outscale_vm" "vm04" {
-	image_id     = var.image_id
-	vm_type      = "c4.large"
-	keypair_name = var.keypair_name
+	image_id     		= var.image_id
+	vm_type      		= "c4.large"
+	keypair_name 		= var.keypair_name
+	security_group_ids  = [outscale_security_group.security_group01.security_group_id]
 	primary_nic {
 		nic_id        = outscale_nic.nic01.nic_id
 		device_number = "0"
@@ -176,6 +219,11 @@ resource "outscale_vm" "vm04" {
 ### Create a VM with secondary NICs
 
 ```hcl
+resource "outscale_security_group" "security_group01" {
+  description         = "vm security group"
+  security_group_name = "vm_security_group1"
+}
+
 resource "outscale_net" "net02" {
     ip_range = "10.0.0.0/16"
     tags {
@@ -198,9 +246,10 @@ resource "outscale_nic" "nic01" {
 }
 
 resource "outscale_vm" "vm04" {
-    image_id     = var.image_id
-    vm_type      = "c4.large"
-    keypair_name = var.keypair_name
+    image_id     		= var.image_id
+    vm_type      		= "c4.large"
+    keypair_name 		= var.keypair_name
+	security_group_ids  = [outscale_security_group.security_group01.security_group_id]
     nics {
         nic_id        = outscale_nic.nic01.nic_id
         device_number = "0"
@@ -218,17 +267,14 @@ The following arguments are supported:
 
 * `block_device_mappings` - (Optional) One or more block device mappings.
     * `bsu` - Information about the BSU volume to create.
-        * `delete_on_vm_deletion` - (Optional) By default or if set to true, the volume is deleted when terminating the VM. If false, the volume is not deleted when terminating the VM.
-        * `iops` - (Optional) The number of I/O operations per second (IOPS). This parameter must be specified only if you create an `io1` volume. The maximum number of IOPS allowed for `io1` volumes is `13000` with a maximum performance ratio of 300 IOPS per gibibyte.
-        * `snapshot_id` - (Optional) The ID of the snapshot used to create the volume.
-        * `volume_size` - (Optional) The size of the volume, in gibibytes (GiB).<br />
-If you specify a snapshot ID, the volume size must be at least equal to the snapshot size.<br />
-If you specify a snapshot ID but no volume size, the volume is created with a size similar to the snapshot one.
-        * `volume_type` - (Optional) The type of the volume (`standard` \| `io1` \| `gp2`). If not specified in the request, a `standard` volume is created.<br />
-For more information about volume types, see [About Volumes > Volume Types and IOPS](https://docs.outscale.com/en/userguide/About-Volumes.html#_volume_types_and_iops).
-    * `device_name` - (Optional) The device name for the volume. For a root device, you must use `/dev/sda1`. For other volumes, you must use `/dev/sdX`, `/dev/sdXX`, `/dev/xvdX`, or `/dev/xvdXX` (where the first `X` is a letter between `b` and `z`, and the second `X` is a letter between `a` and `z`).
-    * `no_device` - (Optional) Removes the device which is included in the block device mapping of the OMI.
-    * `virtual_device_name` - (Optional) The name of the virtual device (`ephemeralN`).
+      * `delete_on_vm_deletion` - (Optional) By default or if set to true, the volume is deleted when terminating the VM. If false, the volume is not deleted when terminating the VM.
+      * `iops` - (Optional) The number of I/O operations per second (IOPS). This parameter must be specified only if you create an `io1` volume. The maximum number of IOPS allowed for `io1` volumes is `13000` with a maximum performance ratio of 300 IOPS per gibibyte.
+      * `snapshot_id` - (Optional) The ID of the snapshot used to create the volume.
+      * `volume_size` - (Optional) The size of the volume, in gibibytes (GiB).
+      * `tags`- One or more tags associated with the VM.
+          * `key`- The key of the tag with a minimum of 1 character.
+          * `value` - The value of the tag, between 0 and 255 characters.
+
 * `client_token` - (Optional) A unique identifier which enables you to manage the idempotency.
 * `deletion_protection` - (Optional) If true, you cannot delete the VM unless you change this parameter back to false.
 * `get_admin_password` - (Optional) (Windows VM only) If true, waits for the administrator password of the VM to become available in order to retrieve the VM. The password is exported to the `admin_password` attribute.
@@ -263,8 +309,8 @@ For more information about volume types, see [About Volumes > Volume Types and I
     * `subnet_id` - (Optional) The ID of the Subnet for the NIC, if you create a NIC when creating a VM. This parameter is required if you create a NIC when creating the VM.
 
 * `private_ips` - (Optional) One or more private IPs of the VM.
-* `security_group_ids` - (Optional) One or more IDs of security group for the VMs.
-* `security_group_names` - (Optional) One or more names of security groups for the VMs.
+* `security_group_ids` - (Optional) One or more IDs of security group for the VMs. You must specify at least one of the following parameters: `security_group_ids` or `security_group_names`.
+* `security_group_names` - (Optional) One or more names of security groups for the VMs. You must specify at least one of the following parameters: `security_group_ids` or `security_group_names`.
 * `state` - The state of the VM (`running` | `stopped`). If set to `stopped`, the VM is stopped regardless of the value of the `vm_initiated_shutdown_behavior` argument.
 * `subnet_id` - (Optional) The ID of the Subnet in which you want to create the VM. If you specify this parameter, you must not specify the `nics` parameter.
 * `tags` - (Optional) A tag to add to this resource. You can specify this argument several times.
