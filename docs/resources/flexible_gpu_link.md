@@ -38,7 +38,7 @@ resource "outscale_flexible_gpu" "flexible_gpu01" {
 
 ```hcl
 resource "outscale_flexible_gpu_link" "link_fgpu01" {
-    flexible_gpu_id = outscale_flexible_gpu.flexible_gpu01.flexible_gpu_id
+    flexible_gpu_ids = [outscale_flexible_gpu.flexible_gpu01.flexible_gpu_id]
     vm_id           = outscale_vm.vm01.vm_id
 }
 ```
@@ -47,7 +47,7 @@ resource "outscale_flexible_gpu_link" "link_fgpu01" {
 
 The following arguments are supported:
 
-* `flexible_gpu_id` - (Required) The ID of the fGPU you want to attach.
+* `flexible_gpu_ids` - (Required) (Required) The ID of one or more fGPUs you want to attach.
 * `vm_id` - (Required) The ID of the VM you want to attach the fGPU to.
 
 ## Attribute Reference
