@@ -709,6 +709,11 @@ func ResourceOutscaleVM() *schema.Resource {
 				Type:     schema.TypeBool,
 				Optional: true,
 			},
+			"wait_tag_before_start": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
 			"tags": tagsListOAPISchema(),
 		},
 	}
@@ -728,6 +733,10 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 	vmStateTarget := []string{"running"}
 	if vState == "stopped" {
 		vmStateTarget[0] = "stopped"
+		vmOpts.BootOnCreation = oscgo.PtrBool(false)
+	}
+	vmWaitTag := d.Get("wait_tag_before_start").(bool)
+	if vmWaitTag {
 		vmOpts.BootOnCreation = oscgo.PtrBool(false)
 	}
 
@@ -784,6 +793,25 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 	if tags, ok := d.GetOk("tags"); ok {
 		err := assignTags(tags.(*schema.Set), vm.GetVmId(), conn)
 		if err != nil {
+			return err
+		}
+	}
+	if vmWaitTag {
+		stateConf := &resource.StateChangeConf{
+			Pending:    []string{"pending"},
+			Target:     []string{"stopped"},
+			Refresh:    vmStateRefreshFunc(conn, vm.GetVmId(), "terminated"),
+			Timeout:    d.Timeout(schema.TimeoutCreate),
+			Delay:      15 * time.Second,
+			MinTimeout: 3 * time.Second,
+		}
+
+		_, err = stateConf.WaitForState()
+		if err != nil {
+			return fmt.Errorf(
+				"Error waiting for instance (%s) to become created: %s", d.Id(), err)
+		}
+		if err := startVM(vm.GetVmId(), conn, d.Timeout(schema.TimeoutCreate)); err != nil {
 			return err
 		}
 	}
