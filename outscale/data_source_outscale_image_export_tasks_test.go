@@ -38,11 +38,22 @@ func TestAccVM_withImageExportTasksDataSource_basic(t *testing.T) {
 
 func testAccOutscaleImageExportTasksDataSourceConfig(omi, vmType, region, imageName string) string {
 	return fmt.Sprintf(`
+	resource "outscale_security_group" "sg_task" {
+		security_group_name = "sg_export_task"
+		description         = "Used in the terraform acceptance tests"
+
+		tags {
+			key   = "Name"
+			value = "tf-acc-test"
+		}
+	}
+
 	resource "outscale_vm" "basic" {
 		image_id			      = "%s"
 		vm_type             = "%s"
 		keypair_name		    = "terraform-basic"
 		placement_subregion_name = "%sa"
+		security_group_ids = [outscale_security_group.sg_task.security_group_id]
 	}
 
 	resource "outscale_image" "foo" {
