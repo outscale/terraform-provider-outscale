@@ -73,11 +73,18 @@ test-locally:
 	"$(CURDIR)/scripts/local-test.sh" TestAccVM_importBasic
 	"$(CURDIR)/scripts/local-test.sh" TestAccVM_withFlexibleGpuLink_basic
 	"$(CURDIR)/scripts/local-test.sh" TestAccVM_UpdateKeypair
+	"$(CURDIR)/scripts/local-test.sh" TestAccVM_UpdateTags
 	"$(CURDIR)/scripts/local-test.sh" TestAccVM_UpdateDeletionProtection
 	"$(CURDIR)/scripts/local-test.sh" TestAccVM_multiBlockDeviceMapping
+	"$(CURDIR)/scripts/local-test.sh" TestAccVM_WithTagDataSource
+	"$(CURDIR)/scripts/local-test.sh" TestAccVM_withImageExportTask_basic
+	"$(CURDIR)/scripts/local-test.sh" TestAccVM_WithImageDataSource_basic
+	"$(CURDIR)/scripts/local-test.sh" TestAccVM_withImageExportTasksDataSource_basic
 	"$(CURDIR)/scripts/local-test.sh" TestAccOthers_DataSourceFlexibleGpu_basic
 	"$(CURDIR)/scripts/local-test.sh" TestAccOthers_Volume_io1Type
 	"$(CURDIR)/scripts/local-test.sh" TestAccOthers_LBU_basic
+	"$(CURDIR)/scripts/local-test.sh" TestAccOthers_DataSourceAccount_basic
+	"$(CURDIR)/scripts/local-test.sh" TestAccOthers_ClientGatewaysDatasource_withFilters
 
 .PHONY: terraform-examples
 terraform-examples:
