@@ -92,6 +92,10 @@ func ResourceOutscaleAccessKeyCreate(d *schema.ResourceData, meta interface{}) e
 
 	d.SetId(*resp.GetAccessKey().AccessKeyId)
 
+	if err := d.Set("secret_key", *resp.GetAccessKey().SecretKey); err != nil {
+		return err
+	}
+
 	if d.Get("state").(string) != "ACTIVE" {
 		if err := updateAccessKey(conn, d.Id(), "INACTIVE"); err != nil {
 			return err
@@ -104,12 +108,17 @@ func ResourceOutscaleAccessKeyCreate(d *schema.ResourceData, meta interface{}) e
 func ResourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	filter := oscgo.ReadSecretAccessKeyRequest{
-		AccessKeyId: d.Id(),
+	filter := oscgo.FiltersAccessKeys{
+		AccessKeyIds: &[]string{d.Id()},
 	}
-	var resp oscgo.ReadSecretAccessKeyResponse
+
+	req := oscgo.ReadAccessKeysRequest{
+		Filters: &filter,
+	}
+
+	var resp oscgo.ReadAccessKeysResponse
 	err := resource.Retry(2*time.Minute, func() *resource.RetryError {
-		rp, httpResp, err := conn.AccessKeyApi.ReadSecretAccessKey(context.Background()).ReadSecretAccessKeyRequest(filter).Execute()
+		rp, httpResp, err := conn.AccessKeyApi.ReadAccessKeys(context.Background()).ReadAccessKeysRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -121,28 +130,26 @@ func ResourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) err
 		return err
 	}
 
-	accessKey, ok := resp.GetAccessKeyOk()
-	if !ok {
+	accessKey := resp.GetAccessKeys()
+	if len(accessKey) == 0 {
 		d.SetId("")
 		return nil
 	}
 
-	if err := d.Set("access_key_id", accessKey.GetAccessKeyId()); err != nil {
+	if err := d.Set("access_key_id", accessKey[0].GetAccessKeyId()); err != nil {
 		return err
 	}
-	if err := d.Set("creation_date", accessKey.GetCreationDate()); err != nil {
+	if err := d.Set("creation_date", accessKey[0].GetCreationDate()); err != nil {
 		return err
 	}
-	if err := d.Set("expiration_date", accessKey.GetExpirationDate()); err != nil {
+	if err := d.Set("expiration_date", accessKey[0].GetExpirationDate()); err != nil {
 		return err
 	}
-	if err := d.Set("last_modification_date", accessKey.GetLastModificationDate()); err != nil {
+	if err := d.Set("last_modification_date", accessKey[0].GetLastModificationDate()); err != nil {
 		return err
 	}
-	if err := d.Set("secret_key", accessKey.GetSecretKey()); err != nil {
-		return err
-	}
-	if err := d.Set("state", accessKey.GetState()); err != nil {
+
+	if err := d.Set("state", accessKey[0].GetState()); err != nil {
 		return err
 	}
 
