@@ -60,6 +60,9 @@ sed -i 's/outscale_volumes_link/outscale_volume_link/g' terraform.tfstate
 sed -i '/"link_public_ip": {/, /},/d' terraform.tfstate
 sed -i '/"link_nic": {/, /},/d' terraform.tfstate
 sed -i '/"flexible_gpu_id": "/, /",/d' terraform.tfstate
+sed -i '/"accepter_net": {/, /},/d' terraform.tfstate
+sed -i '/"source_net": {/, /},/d' terraform.tfstate
+sed -i '/"state": {/, /},/d' terraform.tfstate 
 sed -i 's/outscale_volumes_link/outscale_volume_link/g' *.tf
 sed -i 's/flexible_gpu_id /flexible_gpu_ids /g' *.tf
 sed -i '/flexible_gpu_ids /s/= /= \[/' *.tf
@@ -75,6 +78,9 @@ sed -i='' 's/outscale_volumes_link/outscale_volume_link/g' terraform.tfstate
 sed -i='' '/"link_public_ip": {/, /},/d' terraform.tfstate
 sed -i='' '/"link_nic": {/, /},/d' terraform.tfstate
 sed -i='' '/"flexible_gpu_id": "/, /",/d' terraform.tfstate
+sed -i='' '/"accepter_net": {/, /},/d' terraform.tfstate
+sed -i='' '/"source_net": {/, /},/d' terraform.tfstate
+sed -i='' '/"state": {/, /},/d' terraform.tfstate 
 sed -i='' 's/outscale_volumes_link/outscale_volume_link/g' *.tf
 sed -i='' 's/flexible_gpu_id /flexible_gpu_ids /g' *.tf
 sed -i='' '/flexible_gpu_ids /s/= /= \[/' *.tf
