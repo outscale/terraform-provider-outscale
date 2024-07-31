@@ -363,28 +363,29 @@ func ResourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	y := make([]map[string]interface{}, len(eni.GetPrivateIps()))
+	privateIps := make([]map[string]interface{}, len(eni.GetPrivateIps()))
 	if eni.PrivateIps != nil {
 		for k, v := range eni.GetPrivateIps() {
-			b := make(map[string]interface{})
+			privIp := make(map[string]interface{})
 
-			d := make(map[string]interface{})
 			if assoc, ok := v.GetLinkPublicIpOk(); ok {
-				d["public_ip_id"] = assoc.GetPublicIpId()
-				d["link_public_ip_id"] = assoc.GetLinkPublicIpId()
-				d["public_ip_account_id"] = assoc.GetPublicIpAccountId()
-				d["public_dns_name"] = assoc.GetPublicDnsName()
-				d["public_ip"] = assoc.GetPublicIp()
-				b["link_public_ip"] = d
+				linkPubIp := []map[string]interface{}{{
+					"public_ip_id":         assoc.GetPublicIpId(),
+					"link_public_ip_id":    assoc.GetLinkPublicIpId(),
+					"public_ip_account_id": assoc.GetPublicIpAccountId(),
+					"public_dns_name":      assoc.GetPublicDnsName(),
+					"public_ip":            assoc.GetPublicIp(),
+				}}
+				privIp["link_public_ip"] = linkPubIp
 			}
-			b["private_dns_name"] = v.GetPrivateDnsName()
-			b["private_ip"] = v.GetPrivateIp()
-			b["is_primary"] = v.GetIsPrimary()
+			privIp["private_dns_name"] = v.GetPrivateDnsName()
+			privIp["private_ip"] = v.GetPrivateIp()
+			privIp["is_primary"] = v.GetIsPrimary()
 
-			y[k] = b
+			privateIps[k] = privIp
 		}
 	}
-	if err := d.Set("private_ips", y); err != nil {
+	if err := d.Set("private_ips", privateIps); err != nil {
 		return err
 	}
 
