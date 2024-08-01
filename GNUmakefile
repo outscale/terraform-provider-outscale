@@ -79,7 +79,7 @@ tofu-examples:
 	@sh -c "'$(CURDIR)/scripts/tofu-examples.sh'"
 
 .PHONY: test-integration
-test-integration:
+test-integration: test-gen-cert
 	@sh -c "'$(CURDIR)/scripts/integration.sh'"
 
 .PHONY: test-gen-cert
