@@ -3,6 +3,7 @@ package outscale
 import (
 	"context"
 	"fmt"
+	"os"
 	"testing"
 	"time"
 
@@ -15,13 +16,14 @@ import (
 func TestAccDataOutscaleApiAccessRules_basic(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_api_access_rule.rule_data"
+	ca_path := os.Getenv("CA_PATH")
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccDataCheckOutscaleApiAccessRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataOutscaleApiAccessRulesConfig(),
+				Config: testAccDataOutscaleApiAccessRulesConfig(ca_path),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleApiAccessRuleExists(resourceName),
 				),
@@ -68,10 +70,10 @@ func testAccDataCheckOutscaleApiAccessRulesDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccDataOutscaleApiAccessRulesConfig() string {
+func testAccDataOutscaleApiAccessRulesConfig(cert_path string) string {
 	return fmt.Sprintf(`
 resource "outscale_ca" "ca_rule" { 
-   ca_pem       = file("./test-cert.pem")
+   ca_pem       = file("%q")
    description  = "Ca testacc create"
 }
 
@@ -99,5 +101,5 @@ data "outscale_api_access_rules" "filters_rules" {
 }
 
 data "outscale_api_access_rules" "all_rules" {}
-	`)
+	`, cert_path)
 }
