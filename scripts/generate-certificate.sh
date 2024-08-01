@@ -4,6 +4,10 @@ set -e
 
 project_dir=$(cd "$(dirname $0)" && pwd)
 project_root=$(cd $project_dir/.. && pwd)
+if [ ! -d "$project_root/tests/qa_provider_oapi/data/cert_example" ]; then
+    mkdir $project_root/tests/qa_provider_oapi/data/cert_example
+fi
+build_dir=$(cd $project_root/tests/qa_provider_oapi/data/cert_example && pwd)
 tf_file="gen-cert-test.tf"
 
 cd $project_root
@@ -20,23 +24,29 @@ terraform {
 resource "shell_script" "ca_gen" {
   lifecycle_commands {
     create = <<-EOF
-           openssl req -x509 -sha256 -nodes -newkey rsa:4096 -keyout test-cert.key -days 2 -out test-cert.pem -subj /CN=domain.com
+           openssl req -x509 -sha256 -nodes -newkey rsa:4096 -keyout certificate.key -days 2 -out certificate.pem -subj /CN=domain.com
 EOF
     read   = <<-EOF
-           echo "{\"filename\":  \"test-cert.pem\"}"
+           echo "{\"filename\":  \"certificate.pem\"}"
 EOF
     delete = ""
   }
   working_directory = path.module
 }
-' > "outscale/$tf_file"
+' | tee "$project_root/outscale/$tf_file"  "$build_dir/$tf_file"
 
-if [ ! -e "outscale/$tf_file" ]; then
+if [ ! -e "$build_dir/$tf_file" ] && [ ! -e "$project_root/outscale/$tf_file" ]; then
     echo " $tf_file doesn't existe"
     exit 1
 fi
 
-cd $project_root/outscale && terraform init || exit 1
-cd $project_root/outscale && terraform apply -auto-approve || exit 1
+cd outscale/
+terraform init || exit 1
+terraform apply -auto-approve || exit 1
+
+cd $build_dir
+terraform init || exit 1
+terraform apply -auto-approve || exit 1
+cd $project_root
 
 exit 0
