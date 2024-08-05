@@ -140,17 +140,17 @@ func ResourceOutscaleImageLaunchPermissionCreate(d *schema.ResourceData, meta in
 	}
 	log.Printf("Creating Outscale Image Launch Permission, image_id (%+v)", imageID.(string))
 
-	permissionLunch := oscgo.PermissionsOnResourceCreation{}
+	permissionLaunch := oscgo.PermissionsOnResourceCreation{}
 	if permissionAdditions, ok := d.GetOk("permission_additions"); ok {
-		permissionLunch.SetAdditions(expandOAPIImagePermission(permissionAdditions))
+		permissionLaunch.SetAdditions(expandOAPIImagePermission(permissionAdditions))
 	}
 	if permissionRemovals, ok := d.GetOk("permission_removals"); ok {
-		permissionLunch.SetRemovals(expandOAPIImagePermission(permissionRemovals))
+		permissionLaunch.SetRemovals(expandOAPIImagePermission(permissionRemovals))
 	}
 
 	request := oscgo.UpdateImageRequest{
 		ImageId:             imageID.(string),
-		PermissionsToLaunch: permissionLunch,
+		PermissionsToLaunch: &permissionLaunch,
 	}
 
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
