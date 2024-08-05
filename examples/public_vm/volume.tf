@@ -5,7 +5,7 @@ resource "outscale_volume" "my_data" {
   size           = var.volume_size_gib
 }
 
-resource "outscale_volumes_link" "my_volume_link" {
+resource "outscale_volume_link" "my_volume_link" {
   device_name = "/dev/xvdb"
   volume_id   = outscale_volume.my_data.volume_id
   vm_id       = outscale_vm.my_vm.vm_id
