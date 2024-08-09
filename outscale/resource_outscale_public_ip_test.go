@@ -38,7 +38,6 @@ func TestAccOthers_PublicIP_basic(t *testing.T) {
 }
 
 func TestAccVM_PublicIP_instance(t *testing.T) {
-	t.Parallel()
 	var conf oscgo.PublicIp
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := utils.GetRegion()

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"strings"
 	"time"
 
@@ -267,11 +268,18 @@ func ResourceOutscaleSecurityGroupDelete(d *schema.ResourceData, meta interface{
 
 	log.Printf("[DEBUG] Security Group destroy: %v", d.Id())
 	securityGroupID := d.Id()
+	sg, _, err := readSecurityGroups(conn, securityGroupID)
+	if err != nil {
+		return err
+	}
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, httpResp, err := conn.SecurityGroupApi.DeleteSecurityGroup(context.Background()).DeleteSecurityGroupRequest(oscgo.DeleteSecurityGroupRequest{
 			SecurityGroupId: &securityGroupID,
 		}).Execute()
 		if err != nil {
+			if sg.GetNetId() != "" && httpResp.StatusCode == http.StatusConflict {
+				return utils.CheckThrottling(httpResp, err)
+			}
 			if strings.Contains(err.Error(), "DependencyProblem") {
 				return resource.RetryableError(err)
 			}
