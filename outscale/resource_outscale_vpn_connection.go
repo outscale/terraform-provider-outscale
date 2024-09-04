@@ -272,12 +272,16 @@ func vpnConnectionRefreshFunc(conn *oscgo.APIClient, vpnConnectionID *string) re
 		}
 		resp, httpResp, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(filter).Execute()
 		if err != nil {
-			switch {
-			case httpResp.StatusCode == http.StatusServiceUnavailable:
-				return nil, "pending", nil
-			case httpResp.StatusCode == http.StatusNotFound:
-				return nil, "deleted", nil
-			default:
+			if httpResp != nil {
+				switch {
+				case httpResp.StatusCode == http.StatusServiceUnavailable:
+					return nil, "pending", nil
+				case httpResp.StatusCode == http.StatusNotFound:
+					return nil, "deleted", nil
+				default:
+					return nil, "failed", fmt.Errorf("Error on vpnConnectionRefresh: %s", err)
+				}
+			} else {
 				return nil, "failed", fmt.Errorf("Error on vpnConnectionRefresh: %s", err)
 			}
 		}
