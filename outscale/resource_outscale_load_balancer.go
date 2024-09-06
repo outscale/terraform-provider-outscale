@@ -617,7 +617,7 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 			s := tag["key"].(string)
 			remove = append(remove,
 				oscgo.ResourceLoadBalancerTag{
-					Key: &s,
+					Key: s,
 				})
 		}
 		if len(remove) < 1 {

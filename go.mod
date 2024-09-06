@@ -13,7 +13,7 @@ require (
 	github.com/hashicorp/terraform-plugin-mux v0.12.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.29.0
 	github.com/nav-inc/datetime v0.1.3
-	github.com/outscale/osc-sdk-go/v2 v2.21.0
+	github.com/outscale/osc-sdk-go/v2 v2.23.0
 	github.com/spf13/cast v1.6.0
 )
 

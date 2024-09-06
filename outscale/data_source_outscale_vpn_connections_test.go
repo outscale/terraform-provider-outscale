@@ -51,19 +51,19 @@ func testAccOutscaleVPNConnectionsDataSourceConfigBasic(publicIP string) string 
 		}
 
 		resource "outscale_vpn_connection" "foo" {
-			client_gateway_id   = "${outscale_client_gateway.customer_gateway.id}"
-			virtual_gateway_id  = "${outscale_virtual_gateway.virtual_gateway.id}"
+			client_gateway_id   = outscale_client_gateway.customer_gateway.id
+			virtual_gateway_id  = outscale_virtual_gateway.virtual_gateway.id
 			connection_type     = "ipsec.1"
 			static_routes_only  = true
 
 			tags {
-        key   = "Name"
-        value = "test-VPN"
+				key   = "Name"
+				value = "test-VPN"
 			}
 		}
 
 		data "outscale_vpn_connections" "test" {
-			vpn_connection_ids = ["${outscale_vpn_connection.foo.id}"]
+			vpn_connection_ids = [outscale_vpn_connection.foo.id]
 		}
 	`, publicIP)
 }
@@ -81,15 +81,15 @@ func testAccOutscaleVPNConnectionsDataSourceConfigWithFilters(publicIP string) s
 		}
 
 		resource "outscale_vpn_connection" "foo" {
-			client_gateway_id   = "${outscale_client_gateway.customer_gateway.id}"
-			virtual_gateway_id  = "${outscale_virtual_gateway.virtual_gateway.id}"
+			client_gateway_id   = outscale_client_gateway.customer_gateway.id
+			virtual_gateway_id  = outscale_virtual_gateway.virtual_gateway.id
 			connection_type     = "ipsec.1"
 		}
 
 		data "outscale_vpn_connections" "test" {
 			filter {
 				name = "vpn_connection_ids"
-				values = ["${outscale_vpn_connection.foo.id}"]
+				values = [outscale_vpn_connection.foo.id]
 			}
 		}
 	`, publicIP)

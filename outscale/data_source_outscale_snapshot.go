@@ -213,14 +213,14 @@ func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set, filter *oscgo.
 			if err != nil {
 				return err
 			}
-			filter.SetToCreationDate(valDate)
+			filter.SetToCreationDate(valDate.UTC().Format("2006-01-02T15:04:05.999Z"))
 
 		case "from_creation_date":
 			valDate, err := utils.ParsingfilterToDateFormat("from_creation_date", values[0])
 			if err != nil {
 				return err
 			}
-			filter.SetFromCreationDate(valDate)
+			filter.SetFromCreationDate(valDate.UTC().Format("2006-01-02T15:04:05.999Z"))
 
 		case "permissions_to_create_volume_account_ids":
 			filter.SetPermissionsToCreateVolumeAccountIds(values)
