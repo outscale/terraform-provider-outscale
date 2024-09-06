@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -12,17 +11,40 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func DataSourceUserGroups() *schema.Resource {
+func DataSourceUserGroup() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceUserGroupsRead,
+		Read: DataSourceUserGroupRead,
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
-			"user_groups": {
-				Type:     schema.TypeList,
+			"user_group_name": {
+				Type:     schema.TypeString,
 				Computed: true,
+			},
+			"path": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"user_group_id": {
+				Type:     schema.TypeString,
+				Required: true,
+			},
+			"orn": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"creation_date": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"last_modification_date": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"user": {
+				Type:     schema.TypeSet,
+				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"user_group_name": {
+						"user_name": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -30,11 +52,7 @@ func DataSourceUserGroups() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"user_group_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"orn": {
+						"user_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -53,7 +71,7 @@ func DataSourceUserGroups() *schema.Resource {
 	}
 }
 
-func DataSourceUserGroupsRead(d *schema.ResourceData, meta interface{}) error {
+func DataSourceUserGroupRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
@@ -96,25 +114,4 @@ func DataSourceUserGroupsRead(d *schema.ResourceData, meta interface{}) error {
 		userGroups[i] = userGroup
 	}
 	return d.Set("user_groups", userGroups)
-}
-
-func buildUserGroupsFilters(set *schema.Set) *oscgo.FiltersUserGroup {
-	var filters oscgo.FiltersUserGroup
-	for _, v := range set.List() {
-		m := v.(map[string]interface{})
-		var filterValues []string
-		for _, e := range m["values"].([]interface{}) {
-			filterValues = append(filterValues, e.(string))
-		}
-
-		switch name := m["name"].(string); name {
-		case "path_prefix":
-			filters.SetPathPrefix(filterValues[0])
-		case "user_group_ids":
-			filters.SetUserGroupIds(filterValues)
-		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
-		}
-	}
-	return &filters
 }

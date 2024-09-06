@@ -11,12 +11,12 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func ResourceOutscaleUserGroup() *schema.Resource {
+func ResourceUserGroup() *schema.Resource {
 	return &schema.Resource{
-		Create: ResourceOutscaleUserGroupCreate,
-		Read:   ResourceOutscaleUserGroupRead,
-		Update: ResourceOutscaleUserGroupUpdate,
-		Delete: ResourceOutscaleUserGroupDelete,
+		Create: ResourceUserGroupCreate,
+		Read:   ResourceUserGroupRead,
+		Update: ResourceUserGroupUpdate,
+		Delete: ResourceUserGroupDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -46,7 +46,35 @@ func ResourceOutscaleUserGroup() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"users": {
+			"policy": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"policy_orn": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"policy_name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"policy_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"creation_date": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"last_modification_date": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
+			"user": {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Elem: &schema.Resource{
@@ -79,7 +107,7 @@ func ResourceOutscaleUserGroup() *schema.Resource {
 	}
 }
 
-func ResourceOutscaleUserGroupCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceUserGroupCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	req := oscgo.NewCreateUserGroupRequest(d.Get("user_group_name").(string))
@@ -101,11 +129,10 @@ func ResourceOutscaleUserGroupCreate(d *schema.ResourceData, meta interface{}) e
 	}
 
 	d.SetId(resource.UniqueId())
-	// Remove d.Set when read user_group return user_group_id
 	if err := d.Set("user_group_id", resp.GetUserGroup().UserGroupId); err != nil {
 		return err
 	}
-	if usersToAdd, ok := d.GetOk("users"); ok {
+	if usersToAdd, ok := d.GetOk("user"); ok {
 		reqUserAdd := oscgo.AddUserToUserGroupRequest{}
 		reqUserAdd.SetUserGroupName(d.Get("user_group_name").(string))
 		if path := d.Get("path").(string); path != "" {
@@ -137,16 +164,36 @@ func ResourceOutscaleUserGroupCreate(d *schema.ResourceData, meta interface{}) e
 		}
 
 	}
-	return ResourceOutscaleUserGroupRead(d, meta)
+	if policiesToAdd, ok := d.GetOk("policy"); ok {
+		reqAddPolicy := oscgo.LinkManagedPolicyToUserGroupRequest{}
+
+		for _, v := range policiesToAdd.(*schema.Set).List() {
+			policy := v.(map[string]interface{})
+
+			reqAddPolicy.SetUserGroupName(d.Get("user_group_name").(string))
+			reqAddPolicy.SetPolicyOrn(policy["policy_orn"].(string))
+
+			err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+				_, httpResp, err := conn.PolicyApi.LinkManagedPolicyToUserGroup(context.Background()).LinkManagedPolicyToUserGroupRequest(reqAddPolicy).Execute()
+				if err != nil {
+					return utils.CheckThrottling(httpResp, err)
+				}
+				return nil
+			})
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return ResourceUserGroupRead(d, meta)
 }
 
-func ResourceOutscaleUserGroupRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceUserGroupRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	req := oscgo.NewReadUserGroupRequest(d.Get("user_group_name").(string))
 	if path := d.Get("path").(string); path != "" {
-		req.Path = &path
+		req.SetPath(path)
 	}
-
 	var resp oscgo.ReadUserGroupResponse
 	err := resource.Retry(2*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.UserGroupApi.ReadUserGroup(context.Background()).ReadUserGroupRequest(*req).Execute()
@@ -156,7 +203,6 @@ func ResourceOutscaleUserGroupRead(d *schema.ResourceData, meta interface{}) err
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}
@@ -165,15 +211,24 @@ func ResourceOutscaleUserGroupRead(d *schema.ResourceData, meta interface{}) err
 		d.SetId("")
 		return nil
 	}
+
+	linkReq := oscgo.NewReadManagedPoliciesLinkedToUserGroupRequest(d.Get("user_group_name").(string))
+	var linkResp oscgo.ReadManagedPoliciesLinkedToUserGroupResponse
+	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
+		rp, httpResp, err := conn.PolicyApi.ReadManagedPoliciesLinkedToUserGroup(context.Background()).ReadManagedPoliciesLinkedToUserGroupRequest(*linkReq).Execute()
+		if err != nil {
+			return utils.CheckThrottling(httpResp, err)
+		}
+		linkResp = rp
+		return nil
+	})
+	if err != nil {
+		return err
+	}
 	userGroup := resp.GetUserGroup()
 	if err := d.Set("user_group_name", userGroup.GetName()); err != nil {
 		return err
 	}
-	/* Remove comment when read user_group return user_group_id
-	if err := d.Set("user_group_id", userGroup.GetUserGroupId()); err != nil {
-		return err
-	}
-	*/
 	if err := d.Set("path", userGroup.GetPath()); err != nil {
 		return err
 	}
@@ -200,13 +255,31 @@ func ResourceOutscaleUserGroupRead(d *schema.ResourceData, meta interface{}) err
 			users[i] = user
 		}
 	}
-	if err := d.Set("users", users); err != nil {
+	if err := d.Set("user", users); err != nil {
+		return err
+	}
+
+	gPolicies := linkResp.GetPolicies()
+	policies := make([]map[string]interface{}, len(gPolicies))
+	if len(gPolicies) > 0 {
+		for i, v := range gPolicies {
+			policy := make(map[string]interface{})
+			policy["policy_id"] = v.GetPolicyId()
+			policy["policy_name"] = v.GetPolicyName()
+			policy["policy_orn"] = v.GetOrn()
+			policy["creation_date"] = v.GetCreationDate()
+			policy["last_modification_date"] = v.GetLastModificationDate()
+
+			policies[i] = policy
+		}
+	}
+	if err := d.Set("policy", policies); err != nil {
 		return err
 	}
 	return nil
 }
 
-func ResourceOutscaleUserGroupUpdate(d *schema.ResourceData, meta interface{}) error {
+func ResourceUserGroupUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	req := oscgo.UpdateUserGroupRequest{}
 	isUpdateGroup := false
@@ -228,8 +301,8 @@ func ResourceOutscaleUserGroupUpdate(d *schema.ResourceData, meta interface{}) e
 		req.SetNewPath(newPath)
 		isUpdateGroup = true
 	}
-	if d.HasChange("users") {
-		oldUsers, newUsers := d.GetChange("users")
+	if d.HasChange("user") {
+		oldUsers, newUsers := d.GetChange("user")
 		inter := oldUsers.(*schema.Set).Intersection(newUsers.(*schema.Set))
 		toCreate := newUsers.(*schema.Set).Difference(inter)
 		toRemove := oldUsers.(*schema.Set).Difference(inter)
@@ -247,7 +320,7 @@ func ResourceOutscaleUserGroupUpdate(d *schema.ResourceData, meta interface{}) e
 					rmUserReq.SetUserName(userName)
 				}
 				if path := user["path"].(string); path != "" {
-					rmUserReq.SetUserGroupPath(path)
+					rmUserReq.SetUserPath(path)
 				}
 				err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 					_, httpResp, err := conn.UserGroupApi.RemoveUserFromUserGroup(context.Background()).RemoveUserFromUserGroupRequest(rmUserReq).Execute()
@@ -290,6 +363,55 @@ func ResourceOutscaleUserGroupUpdate(d *schema.ResourceData, meta interface{}) e
 			}
 		}
 	}
+
+	if d.HasChange("policy") {
+		oldPolicies, newPolicies := d.GetChange("policy")
+		inter := oldPolicies.(*schema.Set).Intersection(newPolicies.(*schema.Set))
+		toCreate := newPolicies.(*schema.Set).Difference(inter)
+		toRemove := oldPolicies.(*schema.Set).Difference(inter)
+
+		if len(toRemove.List()) > 0 {
+			unlinkReq := oscgo.UnlinkManagedPolicyFromUserGroupRequest{}
+			oldN, _ := d.GetChange("user_group_name")
+			unlinkReq.SetUserGroupName(oldN.(string))
+
+			for _, v := range toRemove.List() {
+				policy := v.(map[string]interface{})
+				unlinkReq.SetPolicyOrn(policy["policy_orn"].(string))
+				err := resource.Retry(2*time.Minute, func() *resource.RetryError {
+					_, httpResp, err := conn.PolicyApi.UnlinkManagedPolicyFromUserGroup(context.Background()).UnlinkManagedPolicyFromUserGroupRequest(unlinkReq).Execute()
+					if err != nil {
+						return utils.CheckThrottling(httpResp, err)
+					}
+					return nil
+				})
+				if err != nil {
+					return err
+				}
+			}
+		}
+		if len(toCreate.List()) > 0 {
+			linkReq := oscgo.LinkManagedPolicyToUserGroupRequest{}
+			oldN, _ := d.GetChange("user_group_name")
+			linkReq.SetUserGroupName(oldN.(string))
+
+			for _, v := range toCreate.List() {
+				policy := v.(map[string]interface{})
+				linkReq.SetPolicyOrn(policy["policy_orn"].(string))
+				err := resource.Retry(2*time.Minute, func() *resource.RetryError {
+					_, httpResp, err := conn.PolicyApi.LinkManagedPolicyToUserGroup(context.Background()).LinkManagedPolicyToUserGroupRequest(linkReq).Execute()
+					if err != nil {
+						return utils.CheckThrottling(httpResp, err)
+					}
+					return nil
+				})
+				if err != nil {
+					return err
+				}
+
+			}
+		}
+	}
 	if isUpdateGroup {
 		err := resource.Retry(2*time.Minute, func() *resource.RetryError {
 			_, httpResp, err := conn.UserGroupApi.UpdateUserGroup(context.Background()).UpdateUserGroupRequest(req).Execute()
@@ -302,10 +424,10 @@ func ResourceOutscaleUserGroupUpdate(d *schema.ResourceData, meta interface{}) e
 			return err
 		}
 	}
-	return ResourceOutscaleUserGroupRead(d, meta)
+	return ResourceUserGroupRead(d, meta)
 }
 
-func ResourceOutscaleUserGroupDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceUserGroupDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	forceDeletion := true
 	req := oscgo.DeleteUserGroupRequest{

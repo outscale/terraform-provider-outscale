@@ -16,6 +16,7 @@ func DataSourceUsers() *schema.Resource {
 	return &schema.Resource{
 		Read: DataSourceUsersRead,
 		Schema: map[string]*schema.Schema{
+			"filter": dataSourceFiltersSchema(),
 			"users": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -33,6 +34,14 @@ func DataSourceUsers() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						"creation_date": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"last_modification_date": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 					},
 				},
 			},
@@ -42,7 +51,12 @@ func DataSourceUsers() *schema.Resource {
 
 func DataSourceUsersRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
+	filters, filtersOk := d.GetOk("filter")
 	req := oscgo.NewReadUsersRequest()
+	if filtersOk {
+		filterReq := buildUsersFilters(filters.(*schema.Set))
+		req.SetFilters(*filterReq)
+	}
 	var resp oscgo.ReadUsersResponse
 
 	err := resource.Retry(2*time.Minute, func() *resource.RetryError {
@@ -70,6 +84,8 @@ func DataSourceUsersRead(d *schema.ResourceData, meta interface{}) error {
 		user["user_id"] = v.GetUserId()
 		user["user_name"] = v.GetUserName()
 		user["path"] = v.GetPath()
+		user["creation_date"] = v.GetCreationDate()
+		user["last_modification_date"] = v.GetLastModificationDate()
 		usersToSet[i] = user
 	}
 	return d.Set("users", usersToSet)
