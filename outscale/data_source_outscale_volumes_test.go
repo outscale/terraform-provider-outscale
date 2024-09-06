@@ -47,7 +47,6 @@ func TestAccOthers_VolumeDataSource_multipleVIdsFilters(t *testing.T) {
 }
 
 func TestAccVM_withVolumesDataSource(t *testing.T) {
-	t.Parallel()
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
 
@@ -59,8 +58,7 @@ func TestAccVM_withVolumesDataSource(t *testing.T) {
 				Config: testAccCheckOutscaleVolumesDataSourceConfigWithVM(utils.GetRegion(), omi, keypair),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleVolumeDataSourceID("data.outscale_volumes.outscale_volumes"),
-					// resource.TestCheckResourceAttr("data.outscale_volumes.outscale_volumes", "volumes.0.size", "1"),
-					// resource.TestCheckResourceAttr("data.outscale_volumes.outscale_volumes", "volumes.0.volume_type", "standard"),
+					resource.TestCheckResourceAttrSet("data.outscale_volumes.outscale_volumes", "volumes.#"),
 				),
 			},
 		},
