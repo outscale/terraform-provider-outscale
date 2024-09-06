@@ -115,6 +115,8 @@ func Provider() *schema.Provider {
 			"outscale_api_access_rule":                   ResourceOutscaleApiAccessRule(),
 			"outscale_api_access_policy":                 ResourceOutscaleApiAccessPolicy(),
 			"outscale_main_route_table_link":             resourceLinkMainRouteTable(),
+			"outscale_user":                              ResourceOutscaleUser(),
+			"outscale_user_group":                        ResourceOutscaleUserGroup(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"outscale_vm":                           DataSourceOutscaleVM(),
@@ -192,6 +194,8 @@ func Provider() *schema.Provider {
 			"outscale_public_catalog":               DataSourceOutscalePublicCatalog(),
 			"outscale_account":                      DataSourceAccount(),
 			"outscale_accounts":                     DataSourceAccounts(),
+			"outscale_users":                        DataSourceUsers(),
+			"outscale_user_groups":                  DataSourceUserGroups(),
 		},
 
 		ConfigureFunc: providerConfigureClient,
