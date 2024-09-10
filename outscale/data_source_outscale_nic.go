@@ -54,6 +54,10 @@ func DataSourceOutscaleNic() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"public_ip": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 						"public_ip_id": {
 							Type:     schema.TypeString,
 							Computed: true,
@@ -309,31 +313,11 @@ func DataSourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 	if err := d.Set("private_dns_name", eni.GetPrivateDnsName()); err != nil {
 		return err
 	}
-
-	y := make([]map[string]interface{}, len(eni.GetPrivateIps()))
-	if eni.PrivateIps != nil {
-		for k, v := range eni.GetPrivateIps() {
-			b := make(map[string]interface{})
-			if assoc, ok := v.GetLinkPublicIpOk(); ok {
-				d := make(map[string]interface{})
-				d["public_ip_id"] = assoc.GetPublicIpId()
-				d["link_public_ip_id"] = assoc.GetLinkPublicIpId()
-				d["public_ip_account_id"] = assoc.GetPublicIpAccountId()
-				d["public_dns_name"] = assoc.GetPublicDnsName()
-				d["public_ip"] = assoc.GetPublicIp()
-				b["link_public_ip"] = d
-			}
-			b["private_dns_name"] = v.GetPrivateDnsName()
-			b["private_ip"] = v.GetPrivateIp()
-			b["is_primary"] = v.GetIsPrimary()
-			y[k] = b
+	if privIps, ok := eni.GetPrivateIpsOk(); ok {
+		if err := d.Set("private_ips", getOAPIPrivateIPsForNic(*privIps)); err != nil {
+			return err
 		}
 	}
-
-	if err := d.Set("private_ips", y); err != nil {
-		return err
-	}
-
 	if err := d.Set("is_source_dest_checked", eni.GetIsSourceDestChecked()); err != nil {
 		return err
 	}

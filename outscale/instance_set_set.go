@@ -40,12 +40,30 @@ func getOAPILinkNic(l oscgo.LinkNic) []map[string]interface{} {
 	}}
 }
 
+func getOAPILinkPublicIPsForNic(l oscgo.LinkPublicIp) []map[string]interface{} {
+	return []map[string]interface{}{{
+		"link_public_ip_id":    l.GetLinkPublicIpId(),
+		"public_dns_name":      l.GetPublicDnsName(),
+		"public_ip":            l.GetPublicIp(),
+		"public_ip_account_id": l.GetPublicIpAccountId(),
+		"public_ip_id":         l.GetPublicIpId(),
+	}}
+}
+
 func getOAPIBsuSet(bsu oscgo.BsuCreated) []map[string]interface{} {
 	return []map[string]interface{}{{
 		"delete_on_vm_deletion": bsu.GetDeleteOnVmDeletion(),
 		"link_date":             bsu.GetLinkDate(),
 		"state":                 bsu.GetState(),
 		"volume_id":             bsu.GetVolumeId(),
+	}}
+}
+
+func getOAPILinkPublicIpsForVm(l oscgo.LinkPublicIpLightForVm) []map[string]interface{} {
+	return []map[string]interface{}{{
+		"public_dns_name":      l.GetPublicDnsName(),
+		"public_ip":            l.GetPublicIp(),
+		"public_ip_account_id": l.GetPublicIpAccountId(),
 	}}
 }
 
@@ -105,7 +123,7 @@ func getOAPIPrivateIPsLight(privateIPs []oscgo.PrivateIpLightForVm) *schema.Set 
 	return res
 }
 
-func getOAPIPrivateIPs(privateIPs []oscgo.PrivateIp) (res []map[string]interface{}) {
+func getOAPIPrivateIPsForNic(privateIPs []oscgo.PrivateIp) (res []map[string]interface{}) {
 	for _, p := range privateIPs {
 		r := map[string]interface{}{
 			"is_primary":       p.GetIsPrimary(),
@@ -113,7 +131,7 @@ func getOAPIPrivateIPs(privateIPs []oscgo.PrivateIp) (res []map[string]interface
 			"private_ip":       p.GetPrivateIp(),
 		}
 		if _, ok := p.GetLinkPublicIpOk(); ok {
-			r["link_public_ip"] = getOAPILinkPublicIP(p.GetLinkPublicIp())
+			r["link_public_ip"] = getOAPILinkPublicIPsForNic(p.GetLinkPublicIp())
 		}
 		res = append(res, r)
 	}
@@ -144,7 +162,7 @@ func getOAPIVMNetworkInterfaceLightSet(nics []oscgo.NicLight) (primaryNic []map[
 		}
 
 		if nic.HasLinkPublicIp() {
-			nicMap["link_public_ip"] = getOAPILinkPublicIPLight(nic.GetLinkPublicIp())
+			nicMap["link_public_ip"] = getOAPILinkPublicIpsForVm(nic.GetLinkPublicIp())
 		}
 
 		if nic.HasPrivateIps() {
@@ -174,7 +192,7 @@ func getOAPIVMNetworkInterfaceSet(nics []oscgo.Nic) (res []map[string]interface{
 			"net_id":                 nic.GetNetId(),
 			"nic_id":                 nic.GetNicId(),
 			"private_dns_name":       nic.GetPrivateDnsName(),
-			"private_ips":            getOAPIPrivateIPs(nic.GetPrivateIps()),
+			"private_ips":            getOAPIPrivateIPsForNic(nic.GetPrivateIps()),
 			"security_groups":        securityGroups,
 			"state":                  nic.GetState(),
 			"subnet_id":              nic.GetSubnetId(),
@@ -185,7 +203,7 @@ func getOAPIVMNetworkInterfaceSet(nics []oscgo.Nic) (res []map[string]interface{
 			r["link_nic"] = getOAPILinkNic(nic.GetLinkNic())
 		}
 		if _, ok := nic.GetLinkPublicIpOk(); ok {
-			r["link_public_ip"] = getOAPILinkPublicIP(nic.GetLinkPublicIp())
+			r["link_public_ip"] = getOAPILinkPublicIPsForNic(nic.GetLinkPublicIp())
 		}
 		res = append(res, r)
 	}

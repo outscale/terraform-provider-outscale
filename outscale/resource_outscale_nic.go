@@ -362,33 +362,11 @@ func ResourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 	if err := d.Set("private_dns_name", eni.GetPrivateDnsName()); err != nil {
 		return err
 	}
-
-	privateIps := make([]map[string]interface{}, len(eni.GetPrivateIps()))
-	if eni.PrivateIps != nil {
-		for k, v := range eni.GetPrivateIps() {
-			privIp := make(map[string]interface{})
-
-			if assoc, ok := v.GetLinkPublicIpOk(); ok {
-				linkPubIp := []map[string]interface{}{{
-					"public_ip_id":         assoc.GetPublicIpId(),
-					"link_public_ip_id":    assoc.GetLinkPublicIpId(),
-					"public_ip_account_id": assoc.GetPublicIpAccountId(),
-					"public_dns_name":      assoc.GetPublicDnsName(),
-					"public_ip":            assoc.GetPublicIp(),
-				}}
-				privIp["link_public_ip"] = linkPubIp
-			}
-			privIp["private_dns_name"] = v.GetPrivateDnsName()
-			privIp["private_ip"] = v.GetPrivateIp()
-			privIp["is_primary"] = v.GetIsPrimary()
-
-			privateIps[k] = privIp
+	if privIps, ok := eni.GetPrivateIpsOk(); ok {
+		if err := d.Set("private_ips", getOAPIPrivateIPsForNic(*privIps)); err != nil {
+			return err
 		}
 	}
-	if err := d.Set("private_ips", privateIps); err != nil {
-		return err
-	}
-
 	if err := d.Set("is_source_dest_checked", eni.GetIsSourceDestChecked()); err != nil {
 		return err
 	}
