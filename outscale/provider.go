@@ -32,7 +32,19 @@ func Provider() *schema.Provider {
 				Optional:    true,
 				Description: "The Region for API operations.",
 			},
-			"endpoints": endpointsSchema(),
+			"endpoints": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"api": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The Endpoints for API operations.",
+						},
+					},
+				},
+			},
 			"x509_cert_path": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -207,27 +219,6 @@ func providerConfigureClient(d *schema.ResourceData) (interface{}, error) {
 		}
 	}
 	return config.Client()
-}
-
-func endpointsSchema() *schema.Schema {
-	endpointsAttributes := make(map[string]*schema.Schema)
-
-	for _, endpointServiceName := range endpointServiceNames {
-		endpointsAttributes[endpointServiceName] = &schema.Schema{
-			Type:        schema.TypeString,
-			Optional:    true,
-			Default:     "",
-			Description: "Use this to override the default service endpoint URL",
-		}
-	}
-
-	return &schema.Schema{
-		Type:     schema.TypeSet,
-		Optional: true,
-		Elem: &schema.Resource{
-			Schema: endpointsAttributes,
-		},
-	}
 }
 
 func setProviderDefaultEnv(conf *Config) {

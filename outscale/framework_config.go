@@ -46,8 +46,8 @@ func (c *frameworkProvider) Client_fw(ctx context.Context, data *ProviderModel, 
 	oscConfig := oscgo.NewConfiguration()
 	basePath := fmt.Sprintf("api.%s.outscale.com", data.Region.ValueString())
 
-	if endpoint, ok := data.Endpoints["api"]; ok {
-		basePath = endpoint.(string)
+	if len(data.Endpoints) > 0 {
+		basePath = data.Endpoints[0].API.ValueString()
 		if strings.Contains(basePath, "://") {
 			if scheme, host, found := strings.Cut(basePath, "://"); found {
 				oscConfig.Scheme = scheme
@@ -97,9 +97,9 @@ func setDefaultEnv(data *ProviderModel) {
 	}
 	if len(data.Endpoints) == 0 {
 		if endpoints := utils.GetEnvVariableValue([]string{"OSC_ENDPOINT_API", "OUTSCALE_OAPI_URL"}); endpoints != "" {
-			endpointsAttributes := make(map[string]interface{})
-			endpointsAttributes["api"] = endpoints
-			data.Endpoints = endpointsAttributes
+			endp := make([]Endpoints, 1)
+			endp[0].API = types.StringValue(endpoints)
+			data.Endpoints = endp
 		}
 	}
 }

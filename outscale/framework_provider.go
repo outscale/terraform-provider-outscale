@@ -12,15 +12,8 @@ import (
 )
 
 var (
-	_                      provider.Provider = &frameworkProvider{}
-	endpointFwServiceNames []string
+	_ provider.Provider = &frameworkProvider{}
 )
-
-func init() {
-	endpointFwServiceNames = []string{
-		"api",
-	}
-}
 
 func New(version string) provider.Provider {
 	return &frameworkProvider{
@@ -32,7 +25,7 @@ type frameworkProvider struct {
 	accessKeyId  types.String
 	secretKeyId  types.String
 	region       types.String
-	endpoints    map[string]interface{}
+	endpoints    []Endpoints
 	x509CertPath string
 	x509KeyPath  string
 	insecure     bool
@@ -40,13 +33,17 @@ type frameworkProvider struct {
 }
 
 type ProviderModel struct {
-	AccessKeyId  types.String           `tfsdk:"access_key_id"`
-	SecretKeyId  types.String           `tfsdk:"secret_key_id"`
-	Region       types.String           `tfsdk:"region"`
-	Endpoints    map[string]interface{} `tfsdk:"endpoints"`
-	X509CertPath types.String           `tfsdk:"x509_cert_path"`
-	X509KeyPath  types.String           `tfsdk:"x509_key_path"`
-	Insecure     types.Bool             `tfsdk:"insecure"`
+	AccessKeyId  types.String `tfsdk:"access_key_id"`
+	SecretKeyId  types.String `tfsdk:"secret_key_id"`
+	Region       types.String `tfsdk:"region"`
+	Endpoints    []Endpoints  `tfsdk:"endpoints"`
+	X509CertPath types.String `tfsdk:"x509_cert_path"`
+	X509KeyPath  types.String `tfsdk:"x509_key_path"`
+	Insecure     types.Bool   `tfsdk:"insecure"`
+}
+
+type Endpoints struct {
+	API types.String `tfsdk:"api"`
 }
 
 func (p *frameworkProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -56,6 +53,19 @@ func (p *frameworkProvider) Metadata(ctx context.Context, req provider.MetadataR
 
 func (p *frameworkProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Blocks: map[string]schema.Block{
+			"endpoints": schema.SetNestedBlock{
+				NestedObject: schema.NestedBlockObject{
+					Attributes: map[string]schema.Attribute{
+						"api": schema.StringAttribute{
+							Optional:    true,
+							Description: "The Endpoints for API operations.",
+						},
+					},
+				},
+			},
+		},
+
 		Attributes: map[string]schema.Attribute{
 			"access_key_id": schema.StringAttribute{
 				Optional:    true,
@@ -82,23 +92,9 @@ func (p *frameworkProvider) Schema(ctx context.Context, req provider.SchemaReque
 				Description: "tls insecure connection",
 			},
 		},
-		Blocks: map[string]schema.Block{
-			"endpoints": endpointsFwSchema(),
-		},
 	}
 }
 
-/*
-	func (p *frameworkProvider) MetaSchema(_ context.Context, _ provider.MetaSchemaRequest, resp *provider.MetaSchemaResponse) {
-		resp.Schema = metaschema.Schema{
-			Attributes: map[string]metaschema.Attribute{
-				"module_name": metaschema.StringAttribute{
-					Optional: true,
-				},
-			},
-		}
-	}
-*/
 func (p *frameworkProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
 
 	var config ProviderModel
@@ -182,20 +178,4 @@ func (p *frameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		NewResource,
 	}*/
 	return nil
-}
-
-func endpointsFwSchema() schema.SetNestedBlock {
-	endpointsAttributes := make(map[string]schema.Attribute)
-
-	for _, serviceKey := range endpointFwServiceNames {
-		endpointsAttributes[serviceKey] = schema.StringAttribute{
-			Optional:    true,
-			Description: "Use this to override the default service endpoint URL",
-		}
-	}
-	return schema.SetNestedBlock{
-		NestedObject: schema.NestedBlockObject{
-			Attributes: endpointsAttributes,
-		},
-	}
 }
