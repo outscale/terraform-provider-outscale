@@ -33,7 +33,7 @@ data "outscale_virtual_gateways" "virtual_gateways01" {
 The following arguments are supported:
 
 * `filter` - (Optional) A combination of a filter name and one or more filter values. You can specify this argument for as many filter names as you need. The filter name can be any of the following:
-    * `connection_types` - (Optional) The types of the virtual gateways (only `ipsec.1` is supported).
+    * `connection_types` - (Optional) The types of the virtual gateways (always `ipsec.1`).
     * `link_net_ids` - (Optional) The IDs of the Nets the virtual gateways are attached to.
     * `link_states` - (Optional) The current states of the attachments between the virtual gateways and the Nets (`attaching` \| `attached` \| `detaching` \| `detached`).
     * `states` - (Optional) The states of the virtual gateways (`pending` \| `available` \| `deleting` \| `deleted`).
@@ -50,7 +50,7 @@ The following attributes are exported:
 
 * `next_page_token` - The token to request the next page of results. Each token refers to a specific page.
 * `virtual_gateways` - Information about one or more virtual gateways.
-    * `connection_type` - The type of VPN connection supported by the virtual gateway (only `ipsec.1` is supported).
+    * `connection_type` - The type of VPN connection supported by the virtual gateway (always `ipsec.1`).
     * `net_to_virtual_gateway_links` - The Net to which the virtual gateway is attached.
         * `net_id` - The ID of the Net to which the virtual gateway is attached.
         * `state` - The state of the attachment (`attaching` \| `attached` \| `detaching` \| `detached`).

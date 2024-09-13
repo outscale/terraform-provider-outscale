@@ -37,10 +37,10 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `access_key_id` - The ID of the access key.
-* `creation_date` - The date and time (UTC) of creation of the access key.
+* `creation_date` - The date and time (UTC) at which the access key was created.
 * `expiration_date` - The date and time (UTC) at which the access key expires.
-* `last_modification_date` - The date and time (UTC) of the last modification of the access key.
-* `secret_key` - The access key that enables you to send requests.
+* `last_modification_date` - The date and time (UTC) at which the access key was last modified.
+* `secret_key` - The secret key that enables you to send requests.
 * `state` - The state of the access key (`ACTIVE` if the key is valid for API calls, or `INACTIVE` if not).
 
 ## Import

@@ -62,7 +62,7 @@ The following attributes are exported:
 
 * `account_alias` - The account alias of the owner of the snapshot.
 * `account_id` - The account ID of the owner of the snapshot.
-* `creation_date` - The date and time of creation of the snapshot.
+* `creation_date` - The date and time (UTC) at which the snapshot was created.
 * `description` - The description of the snapshot.
 * `permissions_to_create_volume` - Permissions for the resource.
     * `account_ids` - One or more account IDs that the permission is associated with.
@@ -71,7 +71,7 @@ The following attributes are exported:
 (Response) If true, the resource is public. If false, the resource is private.
 * `progress` - The progress of the snapshot, as a percentage.
 * `snapshot_id` - The ID of the snapshot.
-* `state` - The state of the snapshot (`in-queue` \| `completed` \| `error`).
+* `state` - The state of the snapshot (`in-queue` \| `pending` \| `completed` \| `error` \| `deleting`)).
 * `tags` - One or more tags associated with the snapshot.
     * `key` - The key of the tag, with a minimum of 1 character.
     * `value` - The value of the tag, between 0 and 255 characters.

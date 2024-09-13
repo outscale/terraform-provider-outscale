@@ -29,7 +29,7 @@ No argument is supported.
 The following attributes are exported:
 
 * `flexible_gpu_catalog` - Information about one or more fGPUs available in the public catalog.
-    * `generations` - The generations of VMs that the fGPU is compatible with.
+    * `generations` - The processor generations that the fGPUs are compatible with.
     * `max_cpu` - The maximum number of VM vCores that the fGPU is compatible with.
     * `max_ram` - The maximum amount of VM memory that the fGPU is compatible with.
     * `model_name` - The model of fGPU.

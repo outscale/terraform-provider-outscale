@@ -45,9 +45,9 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `server_certificates` - Information about one or more server certificates.
-    * `expiration_date` - The date at which the server certificate expires.
+    * `expiration_date` - The date on which the server certificate expires.
     * `id` - The ID of the server certificate.
     * `name` - The name of the server certificate.
-    * `orn` - The Outscale Resource Name (ORN) of the server certificate. For more information, see [Resource Identifiers > Outscale Resource Names (ORNs)](https://docs.outscale.com/en/userguide/Resource-Identifiers.html#_outscale_resource_names_orns).
+    * `orn` - The OUTSCALE Resource Name (ORN) of the server certificate. For more information, see [Resource Identifiers > OUTSCALE Resource Names (ORNs)](https://docs.outscale.com/en/userguide/Resource-Identifiers.html#_outscale_resource_names_orns).
     * `path` - The path to the server certificate.
-    * `upload_date` - The date at which the server certificate has been uploaded.
+    * `upload_date` - The date on which the server certificate has been uploaded.
