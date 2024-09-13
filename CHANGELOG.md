@@ -1,3 +1,19 @@
+1.0.0-rc.2 (Septembre 13, 2024)
+========================
+BUG FIXES:
+----------
+
+* Error when setting endpoints in Provider configuration ([GH-475](https://github.com/outscale/terraform-provider-outscale/issues/475))
+* Error on plan after migration v1.0.0 on link public IP ([GH-469](https://github.com/outscale/terraform-provider-outscale/issues/469))
+* Bug with the vpn connection ([GH-468](https://github.com/outscale/terraform-provider-outscale/issues/468))
+* Migration to1.0.0-rc.1: outscale_net_peering and outscale_net_peering_acceptation errors([GH-464](https://github.com/outscale/terraform-provider-outscale/issues/464))
+* Fail to import ouscale_nic if the NIC is attached to a public IP ([GH-461](https://github.com/outscale/terraform-provider-outscale/issues/461))
+
+IMPROVEMENTS:
+-----------
+* Update tests and osc-sdk-go
+* Some refactoring
+
 1.0.0-rc.1 (June 19, 2024)
 ========================
 BUG FIXES:
