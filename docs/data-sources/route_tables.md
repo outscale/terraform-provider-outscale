@@ -60,11 +60,11 @@ The following attributes are exported:
 * `next_page_token` - The token to request the next page of results. Each token refers to a specific page.
 * `route_tables` - Information about one or more route tables.
     * `link_route_tables` - One or more associations between the route table and Subnets.
-        * `link_route_table_id` - The ID of the association between the route table and the Subnet.
+        * `link_route_table_id` - The ID of the association between the route table and the Net or Subnet.
         * `main` - If true, the route table is the main one.
-        * `net_id` - The ID of the Net.
+        * `net_id` - The ID of the Net, if the route table is not explicitly linked to a Subnet.
         * `route_table_id` - The ID of the route table.
-        * `subnet_id` - The ID of the Subnet.
+        * `subnet_id` - The ID of the Subnet, if the route table is explicitly linked to a Subnet.
     * `net_id` - The ID of the Net for the route table.
     * `route_propagating_virtual_gateways` - Information about virtual gateways propagating routes.
         * `virtual_gateway_id` - The ID of the virtual gateway.
@@ -78,7 +78,7 @@ The following attributes are exported:
         * `net_access_point_id` - The ID of the Net access point.
         * `net_peering_id` - The ID of the Net peering.
         * `nic_id` - The ID of the NIC.
-        * `state` - The state of a route in the route table (always `active`). 
+        * `state` - The state of a route in the route table (always `active`).
         * `vm_account_id` - The account ID of the owner of the VM.
         * `vm_id` - The ID of a VM specified in a route in the table.
     * `tags` - One or more tags associated with the route table.

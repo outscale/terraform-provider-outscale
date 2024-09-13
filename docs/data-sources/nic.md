@@ -39,6 +39,7 @@ The following arguments are supported:
     * `link_nic_vm_ids` - (Optional) The IDs of the VMs the NICs are attached to.
     * `link_public_ip_account_ids` - (Optional) The account IDs of the owners of the public IPs associated with the NICs.
     * `link_public_ip_link_public_ip_ids` - (Optional) The association IDs returned when the public IPs were associated with the NICs.
+    * `link_public_ip_public_dns_names` - (Optional) The public DNS names associated with the public IPs.
     * `link_public_ip_public_ip_ids` - (Optional) The allocation IDs returned when the public IPs were allocated to their accounts.
     * `link_public_ip_public_ips` - (Optional) The public IPs associated with the NICs.
     * `mac_addresses` - (Optional) The Media Access Control (MAC) addresses of the NICs.
@@ -64,7 +65,7 @@ The following attributes are exported:
 
 * `account_id` - The account ID of the owner of the NIC.
 * `description` - The description of the NIC.
-* `is_source_dest_checked` - (Net only) If true, the source/destination check is enabled. If false, it is disabled. This value must be false for a NAT VM to perform network address translation (NAT) in a Net.
+* `is_source_dest_checked` - (Net only) If true, the source/destination check is enabled. If false, it is disabled.
 * `link_nic` - Information about the NIC attachment.
     * `delete_on_vm_deletion` - If true, the NIC is deleted when the VM is terminated.
     * `device_number` - The device index for the NIC attachment (between `1` and `7`, both included).

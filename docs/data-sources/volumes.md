@@ -33,10 +33,10 @@ data "outscale_volumes" "outscale_volumes01" {
 The following arguments are supported:
 
 * `filter` - (Optional) A combination of a filter name and one or more filter values. You can specify this argument for as many filter names as you need. The filter name can be any of the following:
-    * `creation_dates` - (Optional) The dates and times of creation of the volumes, in ISO 8601 date-time format (for example, `2020-06-30T00:00:00.000Z`).
+    * `creation_dates` - (Optional) The dates and times at which the volumes were created, in ISO 8601 date-time format (for example, `2020-06-30T00:00:00.000Z`).
     * `link_volume_delete_on_vm_deletion` - (Optional) Whether the volumes are deleted or not when terminating the VMs.
     * `link_volume_device_names` - (Optional) The VM device names.
-    * `link_volume_link_dates` - (Optional) The dates and times of creation of the volumes, in ISO 8601 date-time format (for example, `2020-06-30T00:00:00.000Z`).
+    * `link_volume_link_dates` - (Optional) The dates and times at which the volumes were attached, in ISO 8601 date-time format (for example, `2020-06-30T00:00:00.000Z`).
     * `link_volume_link_states` - (Optional) The attachment states of the volumes (`attaching` \| `detaching` \| `attached` \| `detached`).
     * `link_volume_vm_ids` - (Optional) One or more IDs of VMs.
     * `snapshot_ids` - (Optional) The snapshots from which the volumes were created.
@@ -57,7 +57,7 @@ The following attributes are exported:
 
 * `next_page_token` - The token to request the next page of results. Each token refers to a specific page.
 * `volumes` - Information about one or more volumes.
-    * `creation_date` - The date and time of creation of the volume.
+    * `creation_date` - The date and time (UTC) at which the volume was created.
     * `iops` - The number of I/O operations per second (IOPS):<br />- For `io1` volumes, the number of provisioned IOPS.<br />- For `gp2` volumes, the baseline performance of the volume.
     * `linked_volumes` - Information about your volume attachment.
         * `delete_on_vm_deletion` - If true, the volume is deleted when terminating the VM. If false, the volume is not deleted when terminating the VM.

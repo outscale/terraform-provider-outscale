@@ -75,7 +75,7 @@ If you specify a snapshot ID but no volume size, the volume is created with a si
 For more information about volume types, see [About Volumes > Volume Types and IOPS](https://docs.outscale.com/en/userguide/About-Volumes.html#_volume_types_and_iops).
     * `device_name` - The device name for the volume. For a root device, you must use `/dev/sda1`. For other volumes, you must use `/dev/sdX`, `/dev/sdXX`, `/dev/xvdX`, or `/dev/xvdXX` (where the first `X` is a letter between `b` and `z`, and the second `X` is a letter between `a` and `z`).
     * `virtual_device_name` - The name of the virtual device (`ephemeralN`).
-* `creation_date` - The date and time of creation of the OMI, in ISO 8601 date-time format.
+* `creation_date` - The date and time (UTC) at which the OMI was created.
 * `description` - The description of the OMI.
 * `file_location` - The location from which the OMI files were created.
 * `image_id` - The ID of the OMI.

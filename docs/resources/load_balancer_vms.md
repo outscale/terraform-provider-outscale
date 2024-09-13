@@ -59,8 +59,8 @@ resource "outscale_load_balancer_vms" "outscale_load_balancer_vms01" {
 
 The following arguments are supported:
 
-* `backend_vm_ids` - (Required) One or more IDs of back-end VMs.<br />
-Specifying the same ID several times has no effect as each back-end VM has equal weight.
+* `backend_vm_ids` - (Required) One or more IDs of backend VMs.<br />
+Specifying the same ID several times has no effect as each backend VM has equal weight.
 * `load_balancer_name` - (Required) The name of the load balancer.
 
 ## Attribute Reference

@@ -85,7 +85,7 @@ The following attributes are exported:
 
 * `account_id` - The account ID of the owner of the NIC.
 * `description` - The description of the NIC.
-* `is_source_dest_checked` - (Net only) If true, the source/destination check is enabled. If false, it is disabled. This value must be false for a NAT VM to perform network address translation (NAT) in a Net.
+* `is_source_dest_checked` - (Net only) If true, the source/destination check is enabled. If false, it is disabled.
 * `link_nic` - Information about the NIC attachment.
     * `delete_on_vm_deletion` - If true, the NIC is deleted when the VM is terminated.
     * `device_number` - The device index for the NIC attachment (between `1` and `7`, both included).

@@ -65,7 +65,7 @@ The following arguments are supported:
 
 * `cookie_name` - (Optional) The name of the application cookie used for stickiness. This parameter is required if you create a stickiness policy based on an application-generated cookie.
 * `load_balancer_name` - (Required) The name of the load balancer for which you want to create a policy.
-* `policy_name` - (Required) The name of the policy. This name must be unique and consist of alphanumeric characters and dashes (-).
+* `policy_name` - (Required) The unique name of the policy, with a maximum length of 32 alphanumeric characters and dashes (-).
 * `policy_type` - (Required) The type of stickiness policy you want to create: `app` or `load_balancer`.
 
 ## Attribute Reference
@@ -80,7 +80,7 @@ The following attributes are exported:
 * `application_sticky_cookie_policies` - The stickiness policies defined for the load balancer.
     * `cookie_name` - The name of the application cookie used for stickiness.
     * `policy_name` - The mnemonic name for the policy being created. The name must be unique within a set of policies for this load balancer.
-* `backend_vm_ids` - One or more IDs of back-end VMs for the load balancer.
+* `backend_vm_ids` - One or more IDs of backend VMs for the load balancer.
 * `dns_name` - The DNS name of the load balancer.
 * `health_check` - Information about the health check configuration.
     * `check_interval` - The number of seconds between two requests (between `5` and `600` both included).
@@ -91,8 +91,8 @@ The following attributes are exported:
     * `timeout` - The maximum waiting time for a response before considering the VM as unhealthy, in seconds (between `2` and `60` both included).
     * `unhealthy_threshold` - The number of consecutive failed requests before considering the VM as unhealthy (between `2` and `10` both included).
 * `listeners` - The listeners for the load balancer.
-    * `backend_port` - The port on which the back-end VM is listening (between `1` and `65535`, both included).
-    * `backend_protocol` - The protocol for routing traffic to back-end VMs (`HTTP` \| `HTTPS` \| `TCP` \| `SSL`).
+    * `backend_port` - The port on which the backend VM is listening (between `1` and `65535`, both included).
+    * `backend_protocol` - The protocol for routing traffic to backend VMs (`HTTP` \| `HTTPS` \| `TCP` \| `SSL`).
     * `load_balancer_port` - The port on which the load balancer is listening (between `1` and `65535`, both included).
     * `load_balancer_protocol` - The routing protocol (`HTTP` \| `HTTPS` \| `TCP` \| `SSL`).
     * `policy_names` - The names of the policies. If there are no policies enabled, the list is empty.

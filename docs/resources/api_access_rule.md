@@ -43,16 +43,16 @@ resource "outscale_api_access_rule" "api_access_rule02" {
 
 The following arguments are supported:
 
-* `ca_ids` - (Optional)  One or more IDs of Client Certificate Authorities (CAs).
+* `ca_ids` - (Optional) One or more IDs of Client Certificate Authorities (CAs).
 * `cns` - (Optional) One or more Client Certificate Common Names (CNs). If this parameter is specified, you must also specify the `ca_ids` parameter.
 * `description` - (Optional) A description for the API access rule.
-* `ip_ranges` - (Optional) One or more IP addresses or CIDR blocks (for example, `192.0.2.0/16`).
+* `ip_ranges` - (Optional) One or more IPs or CIDR blocks (for example, `192.0.2.0/16`).
 
 ## Attribute Reference
 
 The following attributes are exported:
 
-* `api_access_rule_id` -  The ID of the API access rule.
+* `api_access_rule_id` - The ID of the API access rule.
 * `ca_ids` - One or more IDs of Client Certificate Authorities (CAs) used for the API access rule.
 * `cns` - One or more Client Certificate Common Names (CNs).
 * `description` - The description of the API access rule.

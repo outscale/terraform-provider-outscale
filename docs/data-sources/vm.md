@@ -48,7 +48,7 @@ The following arguments are supported:
     * `nic_is_source_dest_checked` - (Optional) Whether the source/destination checking is enabled (true) or disabled (false).
     * `nic_link_nic_delete_on_vm_deletion` - (Optional) Whether the NICs are deleted when the VMs they are attached to are deleted.
     * `nic_link_nic_device_numbers` - (Optional) The device numbers the NICs are attached to.
-    * `nic_link_nic_link_nic_dates` - (Optional) The dates and time when the NICs were attached to the VMs.
+    * `nic_link_nic_link_nic_dates` - (Optional) The dates and times (UTC) when the NICs were attached to the VMs.
     * `nic_link_nic_link_nic_ids` - (Optional) The IDs of the NIC attachments.
     * `nic_link_nic_states` - (Optional) The states of the attachments.
     * `nic_link_nic_vm_account_ids` - (Optional) The account IDs of the owners of the VMs the NICs are attached to.
@@ -104,16 +104,16 @@ The following attributes are exported:
 * `block_device_mappings_created` - The block device mapping of the VM.
     * `bsu` - Information about the created BSU volume.
         * `delete_on_vm_deletion` - If true, the volume is deleted when terminating the VM. If false, the volume is not deleted when terminating the VM.
-        * `link_date` - The date and time of attachment of the volume to the VM, in ISO 8601 date-time format.
+        * `link_date` - The date and time (UTC) at which the volume was attached to the VM, in ISO 8601 date-time format.
         * `state` - The state of the volume.
         * `volume_id` - The ID of the volume.
     * `device_name` - The name of the device.
 * `client_token` - The idempotency token provided when launching the VM.
-* `creation_date` - The date and time of creation of the VM.
+* `creation_date` - The date and time (UTC) at which the VM was created.
 * `deletion_protection` - If true, you cannot delete the VM unless you change this parameter back to false.
 * `hypervisor` - The hypervisor type of the VMs (`ovm` \| `xen`).
 * `image_id` - The ID of the OMI used to create the VM.
-* `is_source_dest_checked` - (Net only) If true, the source/destination check is enabled. If false, it is disabled. This value must be false for a NAT VM to perform network address translation (NAT) in a Net.
+* `is_source_dest_checked` - (Net only) If true, the source/destination check is enabled. If false, it is disabled.
 * `keypair_name` - The name of the keypair used when launching the VM.
 * `launch_number` - The number for the VM when launching a group of several VMs (for example, `0`, `1`, `2`, and so on).
 * `nested_virtualization` - If true, nested virtualization is enabled. If false, it is disabled.
@@ -122,7 +122,7 @@ The following attributes are exported:
 * `nics` - (Net only) The network interface cards (NICs) the VMs are attached to.
     * `account_id` - The account ID of the owner of the NIC.
     * `description` - The description of the NIC.
-    * `is_source_dest_checked` - (Net only) If true, the source/destination check is enabled. If false, it is disabled. This value must be false for a NAT VM to perform network address translation (NAT) in a Net.
+    * `is_source_dest_checked` - (Net only) If true, the source/destination check is enabled. If false, it is disabled.
     * `link_nic` - Information about the network interface card (NIC).
         * `delete_on_vm_deletion` - If true, the NIC is deleted when the VM is terminated.
         * `device_number` - The device index for the NIC attachment (between `1` and `7`, both included).

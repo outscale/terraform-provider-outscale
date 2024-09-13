@@ -34,7 +34,7 @@ resource "outscale_vm" "vm01" {
 ### Link a volume to a VM
 
 ```hcl
-resource "outscale_volume_link" "volumes_link01" {
+resource "outscale_volume_link" "volume_link01" {
 	device_name = "/dev/xvdc"
 	volume_id   = outscale_volume.volume01.id
 	vm_id       = outscale_vm.vm01.id

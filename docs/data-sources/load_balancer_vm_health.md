@@ -26,16 +26,16 @@ data "outscale_load_balancer_vm_health" "load_balancer_vm_health01" {
 
 The following arguments are supported:
 
-* `backend_vm_ids` - (Optional) One or more IDs of back-end VMs.
+* `backend_vm_ids` - (Optional) One or more IDs of backend VMs.
 * `load_balancer_name` - (Required) The name of the load balancer.
 
 ## Attribute Reference
 
 The following attributes are exported:
 
-* `backend_vm_health` - Information about the health of one or more back-end VMs.
-    * `description` - The description of the state of the back-end VM.
-    * `state` - The state of the back-end VM (`InService` \| `OutOfService` \| `Unknown`).
+* `backend_vm_health` - Information about the health of one or more backend VMs.
+    * `description` - The description of the state of the backend VM.
+    * `state` - The state of the backend VM (`InService` \| `OutOfService` \| `Unknown`).
     * `state_reason` - Information about the cause of `OutOfService` VMs.<br />
 Specifically, whether the cause is Elastic Load Balancing or the VM (`ELB` \| `Instance` \| `N/A`).
-    * `vm_id` - The ID of the back-end VM.
+    * `vm_id` - The ID of the backend VM.

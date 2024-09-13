@@ -29,7 +29,7 @@ resource "outscale_virtual_gateway" "virtual_gateway01" {
 
 The following arguments are supported:
 
-* `connection_type` - (Required) The type of VPN connection supported by the virtual gateway (only `ipsec.1` is supported).
+* `connection_type` - (Required) The type of VPN connection supported by the virtual gateway (always `ipsec.1`).
 * `tags` - (Optional) A tag to add to this resource. You can specify this argument several times.
     * `key` - (Required) The key of the tag, with a minimum of 1 character.
     * `value` - (Required) The value of the tag, between 0 and 255 characters.
@@ -38,7 +38,7 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `connection_type` - The type of VPN connection supported by the virtual gateway (only `ipsec.1` is supported).
+* `connection_type` - The type of VPN connection supported by the virtual gateway (always `ipsec.1`).
 * `net_to_virtual_gateway_links` - The Net to which the virtual gateway is attached.
     * `net_id` - The ID of the Net to which the virtual gateway is attached.
     * `state` - The state of the attachment (`attaching` \| `attached` \| `detaching` \| `detached`).

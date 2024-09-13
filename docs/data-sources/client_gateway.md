@@ -31,7 +31,7 @@ The following arguments are supported:
 * `filter` - (Optional) A combination of a filter name and one or more filter values. You can specify this argument for as many filter names as you need. The filter name can be any of the following:
     * `bgp_asns` - (Optional) The Border Gateway Protocol (BGP) Autonomous System Numbers (ASNs) of the connections.
     * `client_gateway_ids` - (Optional) The IDs of the client gateways.
-    * `connection_types` - (Optional) The types of communication tunnels used by the client gateways (only `ipsec.1` is supported).
+    * `connection_types` - (Optional) The types of communication tunnels used by the client gateways (always `ipsec.1`).
     * `public_ips` - (Optional) The public IPv4 addresses of the client gateways.
     * `states` - (Optional) The states of the client gateways (`pending` \| `available` \| `deleting` \| `deleted`).
     * `tag_keys` - (Optional) The keys of the tags associated with the client gateways.
@@ -44,7 +44,7 @@ The following attributes are exported:
 
 * `bgp_asn` - The Autonomous System Number (ASN) used by the Border Gateway Protocol (BGP) to find the path to your client gateway through the Internet.
 * `client_gateway_id` - The ID of the client gateway.
-* `connection_type` - The type of communication tunnel used by the client gateway (only `ipsec.1` is supported).
+* `connection_type` - The type of communication tunnel used by the client gateway (always `ipsec.1`).
 * `public_ip` - The public IPv4 address of the client gateway (must be a fixed address into a NATed network).
 * `state` - The state of the client gateway (`pending` \| `available` \| `deleting` \| `deleted`).
 * `tags` - One or more tags associated with the client gateway.
