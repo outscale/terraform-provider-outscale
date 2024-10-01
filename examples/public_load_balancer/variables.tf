@@ -5,3 +5,7 @@ variable "region" {}
 variable "image_id" {}
 variable "vm_type" {}
 variable "vm_count" {}
+
+variable "suffixe_lbu_name" {
+    type    = string
+}
