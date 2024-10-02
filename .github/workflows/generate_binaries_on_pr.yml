@@ -4,6 +4,13 @@ on:
   pull_request:
     branches:
       - master
+    paths:
+      - '**.go'
+      - '**.sum'
+      - '**.mod'
+      - 'GNUmakefile'
+    workflow_dispatch:
+
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
