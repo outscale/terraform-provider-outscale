@@ -185,7 +185,7 @@ func ResourceOutscaleNetDelete(d *schema.ResourceData, meta interface{}) error {
 				state = nats[0].GetState()
 				return resp, state, nil
 			}
-			return nil, state, nil
+			return resp, state, nil
 		},
 		Timeout:    8 * time.Minute,
 		MinTimeout: 30 * time.Second,
