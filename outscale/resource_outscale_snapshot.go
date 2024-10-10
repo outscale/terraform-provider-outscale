@@ -157,6 +157,10 @@ func ResourceOutscaleSnapshotCreate(d *schema.ResourceData, meta interface{}) er
 		var err error
 		rp, httpResp, err := conn.SnapshotApi.CreateSnapshot(context.Background()).CreateSnapshotRequest(request).Execute()
 		if err != nil {
+			fmt.Printf("\nhttpResp1== %#v===\n", httpResp)
+			fmt.Printf("\nErr== %#v===\n", err.Error())
+			fmt.Printf("\nErr== %#v===\n", rp)
+			fmt.Printf("\nhttpResp== %#v===\n", httpResp.Request)
 			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp

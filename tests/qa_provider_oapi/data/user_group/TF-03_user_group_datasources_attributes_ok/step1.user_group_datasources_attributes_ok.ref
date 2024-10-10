@@ -1,0 +1,59 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "data",
+            "type": "outscale_user_groups",
+            "name": "testgrpData",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "filter": "########",
+                        "id": "##id-0##",
+                        "user_groups": [
+                            {
+                                "creation_date": "########",
+                                "last_modification_date": "########",
+                                "orn": "########",
+                                "path": "/TestdataUG/",
+                                "user_group_id": "##id-1##",
+                                "user_group_name": "testDataugInteg"
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_user_group",
+            "name": "dataUserGroupInteg",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "creation_date": "########",
+                        "id": "##id-2##",
+                        "last_modification_date": "########",
+                        "orn": "########",
+                        "path": "/TestdataUG/",
+                        "user_group_id": "##id-1##",
+                        "user_group_name": "testDataugInteg",
+                        "users": []
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA=="
+                }
+            ]
+        }
+    ],
+    "check_results": "########"
+}
