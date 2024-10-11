@@ -199,6 +199,7 @@ func Provider() *schema.Provider {
 			"outscale_users":                        DataSourceUsers(),
 			"outscale_user":                         DataSourceUser(),
 			"outscale_user_groups":                  DataSourceUserGroups(),
+			"outscale_user_groups_per_user":         DataSourceUserGroupsPerUser(),
 			"outscale_user_group":                   DataSourceUserGroup(),
 			"outscale_policy":                       DataSourcePolicy(),
 			"outscale_policies":                     DataSourcePolicies(),
