@@ -15,7 +15,7 @@ resource "outscale_vm" "public_vm_1" {
 }
 
 resource "outscale_load_balancer" "public_lbu2" {
-   load_balancer_name ="lbu-TF-89"
+   load_balancer_name ="lbu-TF-89-${var.suffixe_lbu_name}"
    subregion_names= ["${var.region}a"]
    listeners {
       backend_port = 80
@@ -43,7 +43,7 @@ resource "outscale_load_balancer_listener_rule" "rule-1" {
 
     listener_rule {
       action                  = "forward"
-      listener_rule_name      = "listener-rule-1"
+      listener_rule_name      = "listener-rule-1-${var.suffixe_lbu_name}"
       path_pattern             = "*.abc.*.abc.*.com"
       priority                 = 10
     }
@@ -58,7 +58,7 @@ resource "outscale_load_balancer_listener_rule" "rule-2" {
 
     listener_rule {
       action                  = "forward"
-      listener_rule_name      = "listener-rule-2"
+      listener_rule_name      = "listener-rule-2-${var.suffixe_lbu_name}"
       host_name_pattern       = "*.abc.-.abc.*.com"
       priority                 = 1
     }
@@ -68,7 +68,7 @@ resource "outscale_load_balancer_listener_rule" "rule-2" {
 data "outscale_load_balancer_listener_rules" "outscale_load_balancer_listener_rules" {
  filter {
         name = "listener_rule_names"
-        values = ["listener-rule-2","listener-rule-1"]
+        values = ["listener-rule-2-${var.suffixe_lbu_name}","listener-rule-1-${var.suffixe_lbu_name}"]
       }
  depends_on =[outscale_load_balancer_listener_rule.rule-2,outscale_load_balancer_listener_rule.rule-1]
 }

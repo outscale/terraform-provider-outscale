@@ -27,7 +27,7 @@
                         ],
                         "filter": "########",
                         "id": "##id-1##",
-                        "load_balancer_name": "lbu-TF-92",
+                        "load_balancer_name": "########",
                         "request_id": "########"
                     },
                     "sensitive_attributes": []
@@ -98,7 +98,7 @@
                                 "server_certificate_id": ""
                             }
                         ],
-                        "load_balancer_name": "lbu-TF-92",
+                        "load_balancer_name": "########",
                         "load_balancer_sticky_cookie_policies": [],
                         "load_balancer_type": "internet-facing",
                         "net_id": "",
@@ -170,7 +170,7 @@
                                 "server_certificate_id": ""
                             }
                         ],
-                        "load_balancer_name": "lbu-TF-92",
+                        "load_balancer_name": "########",
                         "load_balancer_port": null,
                         "load_balancer_sticky_cookie_policies": [],
                         "load_balancer_type": null,
@@ -216,7 +216,7 @@
                             "##id-0##"
                         ],
                         "id": "##id-5##",
-                        "load_balancer_name": "lbu-TF-92",
+                        "load_balancer_name": "########",
                         "request_id": "########"
                     },
                     "sensitive_attributes": [],
@@ -329,7 +329,7 @@
                         "net_id": "",
                         "nics": [],
                         "os_family": "",
-                        "performance": "high",
+                        "performance": "medium",
                         "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "primary_nic": [],

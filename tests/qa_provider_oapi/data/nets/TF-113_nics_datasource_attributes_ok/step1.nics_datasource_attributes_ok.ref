@@ -19,7 +19,7 @@
                         "nics": [
                             {
                                 "account_id": "##id-1##",
-                                "description": "TF-109",
+                                "description": "TF-113",
                                 "is_source_dest_checked": true,
                                 "link_nic": [
                                     {
@@ -53,12 +53,12 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-6##",
-                                        "security_group_name": "Terraform-SG"
+                                        "security_group_name": "Terraform-SG-TF113"
                                     }
                                 ],
                                 "state": "in-use",
                                 "subnet_id": "##id-7##",
-                                "subregion_name": "us-east-2a",
+                                "subregion_name": "eu-west-2a",
                                 "tags": [
                                     {
                                         "key": "Key:",
@@ -119,12 +119,12 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-6##",
-                                        "security_group_name": "Terraform-SG"
+                                        "security_group_name": "Terraform-SG-TF113"
                                     }
                                 ],
                                 "state": "in-use",
                                 "subnet_id": "##id-7##",
-                                "subregion_name": "us-east-2a",
+                                "subregion_name": "eu-west-2a",
                                 "tags": []
                             }
                         ],
@@ -150,11 +150,49 @@
                                 "account_id": "##id-1##",
                                 "description": "",
                                 "is_source_dest_checked": true,
+                                "link_nic": [],
+                                "link_public_ip": [],
+                                "mac_address": "########",
+                                "net_id": "##id-4##",
+                                "nic_id": "##id-12##",
+                                "private_dns_name": "########",
+                                "private_ips": [
+                                    {
+                                        "is_primary": true,
+                                        "link_public_ip": [],
+                                        "private_dns_name": "########",
+                                        "private_ip": "########"
+                                    }
+                                ],
+                                "security_groups": [
+                                    {
+                                        "security_group_id": "##id-6##",
+                                        "security_group_name": "Terraform-SG-TF113"
+                                    }
+                                ],
+                                "state": "available",
+                                "subnet_id": "##id-13##",
+                                "subregion_name": "eu-west-2b",
+                                "tags": [
+                                    {
+                                        "key": "Key:",
+                                        "value": ":value-tags"
+                                    },
+                                    {
+                                        "key": "Key-2",
+                                        "value": "value-tags-2"
+                                    }
+                                ]
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "",
+                                "is_source_dest_checked": true,
                                 "link_nic": [
                                     {
                                         "delete_on_vm_deletion": false,
                                         "device_number": 2,
-                                        "link_nic_id": "##id-12##",
+                                        "link_nic_id": "##id-14##",
                                         "state": "attached",
                                         "vm_account_id": "##id-1##",
                                         "vm_id": "##id-3##"
@@ -163,7 +201,7 @@
                                 "link_public_ip": [],
                                 "mac_address": "########",
                                 "net_id": "##id-4##",
-                                "nic_id": "##id-13##",
+                                "nic_id": "##id-15##",
                                 "private_dns_name": "########",
                                 "private_ips": [
                                     {
@@ -182,54 +220,16 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-6##",
-                                        "security_group_name": "Terraform-SG"
+                                        "security_group_name": "Terraform-SG-TF113"
                                     }
                                 ],
                                 "state": "in-use",
                                 "subnet_id": "##id-7##",
-                                "subregion_name": "us-east-2a",
+                                "subregion_name": "eu-west-2a",
                                 "tags": [
                                     {
                                         "key": "Name",
                                         "value": "Nic-2"
-                                    }
-                                ]
-                            },
-                            {
-                                "account_id": "##id-1##",
-                                "description": "",
-                                "is_source_dest_checked": true,
-                                "link_nic": [],
-                                "link_public_ip": [],
-                                "mac_address": "########",
-                                "net_id": "##id-4##",
-                                "nic_id": "##id-14##",
-                                "private_dns_name": "########",
-                                "private_ips": [
-                                    {
-                                        "is_primary": true,
-                                        "link_public_ip": [],
-                                        "private_dns_name": "########",
-                                        "private_ip": "########"
-                                    }
-                                ],
-                                "security_groups": [
-                                    {
-                                        "security_group_id": "##id-6##",
-                                        "security_group_name": "Terraform-SG"
-                                    }
-                                ],
-                                "state": "available",
-                                "subnet_id": "##id-15##",
-                                "subregion_name": "us-east-2b",
-                                "tags": [
-                                    {
-                                        "key": "Key:",
-                                        "value": ":value-tags"
-                                    },
-                                    {
-                                        "key": "Key-2",
-                                        "value": "value-tags-2"
                                     }
                                 ]
                             }
@@ -254,7 +254,7 @@
                         "nics": [
                             {
                                 "account_id": "##id-1##",
-                                "description": "TF-109",
+                                "description": "TF-113",
                                 "is_source_dest_checked": true,
                                 "link_nic": [
                                     {
@@ -288,69 +288,20 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-6##",
-                                        "security_group_name": "Terraform-SG"
+                                        "security_group_name": "Terraform-SG-TF113"
                                     }
                                 ],
                                 "state": "in-use",
                                 "subnet_id": "##id-7##",
-                                "subregion_name": "us-east-2a",
+                                "subregion_name": "eu-west-2a",
                                 "tags": [
-                                    {
-                                        "key": "Key-2",
-                                        "value": "value-tags-2"
-                                    },
                                     {
                                         "key": "Key:",
                                         "value": ":value-tags"
-                                    }
-                                ]
-                            },
-                            {
-                                "account_id": "##id-1##",
-                                "description": "",
-                                "is_source_dest_checked": true,
-                                "link_nic": [
-                                    {
-                                        "delete_on_vm_deletion": false,
-                                        "device_number": 2,
-                                        "link_nic_id": "##id-12##",
-                                        "state": "attached",
-                                        "vm_account_id": "##id-1##",
-                                        "vm_id": "##id-3##"
-                                    }
-                                ],
-                                "link_public_ip": [],
-                                "mac_address": "########",
-                                "net_id": "##id-4##",
-                                "nic_id": "##id-13##",
-                                "private_dns_name": "########",
-                                "private_ips": [
-                                    {
-                                        "is_primary": true,
-                                        "link_public_ip": [],
-                                        "private_dns_name": "########",
-                                        "private_ip": "########"
                                     },
                                     {
-                                        "is_primary": false,
-                                        "link_public_ip": [],
-                                        "private_dns_name": "########",
-                                        "private_ip": "########"
-                                    }
-                                ],
-                                "security_groups": [
-                                    {
-                                        "security_group_id": "##id-6##",
-                                        "security_group_name": "Terraform-SG"
-                                    }
-                                ],
-                                "state": "in-use",
-                                "subnet_id": "##id-7##",
-                                "subregion_name": "us-east-2a",
-                                "tags": [
-                                    {
-                                        "key": "Name",
-                                        "value": "Nic-2"
+                                        "key": "Key-2",
+                                        "value": "value-tags-2"
                                     }
                                 ]
                             },
@@ -362,7 +313,7 @@
                                 "link_public_ip": [],
                                 "mac_address": "########",
                                 "net_id": "##id-4##",
-                                "nic_id": "##id-14##",
+                                "nic_id": "##id-12##",
                                 "private_dns_name": "########",
                                 "private_ips": [
                                     {
@@ -375,12 +326,12 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-6##",
-                                        "security_group_name": "Terraform-SG"
+                                        "security_group_name": "Terraform-SG-TF113"
                                     }
                                 ],
                                 "state": "available",
-                                "subnet_id": "##id-15##",
-                                "subregion_name": "us-east-2b",
+                                "subnet_id": "##id-13##",
+                                "subregion_name": "eu-west-2b",
                                 "tags": [
                                     {
                                         "key": "Key:",
@@ -422,13 +373,62 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-6##",
-                                        "security_group_name": "Terraform-SG"
+                                        "security_group_name": "Terraform-SG-TF113"
                                     }
                                 ],
                                 "state": "in-use",
                                 "subnet_id": "##id-7##",
-                                "subregion_name": "us-east-2a",
+                                "subregion_name": "eu-west-2a",
                                 "tags": []
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "",
+                                "is_source_dest_checked": true,
+                                "link_nic": [
+                                    {
+                                        "delete_on_vm_deletion": false,
+                                        "device_number": 2,
+                                        "link_nic_id": "##id-14##",
+                                        "state": "attached",
+                                        "vm_account_id": "##id-1##",
+                                        "vm_id": "##id-3##"
+                                    }
+                                ],
+                                "link_public_ip": [],
+                                "mac_address": "########",
+                                "net_id": "##id-4##",
+                                "nic_id": "##id-15##",
+                                "private_dns_name": "########",
+                                "private_ips": [
+                                    {
+                                        "is_primary": true,
+                                        "link_public_ip": [],
+                                        "private_dns_name": "########",
+                                        "private_ip": "########"
+                                    },
+                                    {
+                                        "is_primary": false,
+                                        "link_public_ip": [],
+                                        "private_dns_name": "########",
+                                        "private_ip": "########"
+                                    }
+                                ],
+                                "security_groups": [
+                                    {
+                                        "security_group_id": "##id-6##",
+                                        "security_group_name": "Terraform-SG-TF113"
+                                    }
+                                ],
+                                "state": "in-use",
+                                "subnet_id": "##id-7##",
+                                "subregion_name": "eu-west-2a",
+                                "tags": [
+                                    {
+                                        "key": "Name",
+                                        "value": "Nic-2"
+                                    }
+                                ]
                             }
                         ],
                         "request_id": "########"
@@ -451,7 +451,7 @@
                         "nics": [
                             {
                                 "account_id": "##id-1##",
-                                "description": "TF-109",
+                                "description": "TF-113",
                                 "is_source_dest_checked": true,
                                 "link_nic": [
                                     {
@@ -485,12 +485,12 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-6##",
-                                        "security_group_name": "Terraform-SG"
+                                        "security_group_name": "Terraform-SG-TF113"
                                     }
                                 ],
                                 "state": "in-use",
                                 "subnet_id": "##id-7##",
-                                "subregion_name": "us-east-2a",
+                                "subregion_name": "eu-west-2a",
                                 "tags": [
                                     {
                                         "key": "Key:",
@@ -506,60 +506,11 @@
                                 "account_id": "##id-1##",
                                 "description": "",
                                 "is_source_dest_checked": true,
-                                "link_nic": [
-                                    {
-                                        "delete_on_vm_deletion": false,
-                                        "device_number": 2,
-                                        "link_nic_id": "##id-12##",
-                                        "state": "attached",
-                                        "vm_account_id": "##id-1##",
-                                        "vm_id": "##id-3##"
-                                    }
-                                ],
-                                "link_public_ip": [],
-                                "mac_address": "########",
-                                "net_id": "##id-4##",
-                                "nic_id": "##id-13##",
-                                "private_dns_name": "########",
-                                "private_ips": [
-                                    {
-                                        "is_primary": true,
-                                        "link_public_ip": [],
-                                        "private_dns_name": "########",
-                                        "private_ip": "########"
-                                    },
-                                    {
-                                        "is_primary": false,
-                                        "link_public_ip": [],
-                                        "private_dns_name": "########",
-                                        "private_ip": "########"
-                                    }
-                                ],
-                                "security_groups": [
-                                    {
-                                        "security_group_id": "##id-6##",
-                                        "security_group_name": "Terraform-SG"
-                                    }
-                                ],
-                                "state": "in-use",
-                                "subnet_id": "##id-7##",
-                                "subregion_name": "us-east-2a",
-                                "tags": [
-                                    {
-                                        "key": "Name",
-                                        "value": "Nic-2"
-                                    }
-                                ]
-                            },
-                            {
-                                "account_id": "##id-1##",
-                                "description": "",
-                                "is_source_dest_checked": true,
                                 "link_nic": [],
                                 "link_public_ip": [],
                                 "mac_address": "########",
                                 "net_id": "##id-4##",
-                                "nic_id": "##id-14##",
+                                "nic_id": "##id-12##",
                                 "private_dns_name": "########",
                                 "private_ips": [
                                     {
@@ -572,12 +523,12 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-6##",
-                                        "security_group_name": "Terraform-SG"
+                                        "security_group_name": "Terraform-SG-TF113"
                                     }
                                 ],
                                 "state": "available",
-                                "subnet_id": "##id-15##",
-                                "subregion_name": "us-east-2b",
+                                "subnet_id": "##id-13##",
+                                "subregion_name": "eu-west-2b",
                                 "tags": [
                                     {
                                         "key": "Key:",
@@ -619,13 +570,62 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-6##",
-                                        "security_group_name": "Terraform-SG"
+                                        "security_group_name": "Terraform-SG-TF113"
                                     }
                                 ],
                                 "state": "in-use",
                                 "subnet_id": "##id-7##",
-                                "subregion_name": "us-east-2a",
+                                "subregion_name": "eu-west-2a",
                                 "tags": []
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "",
+                                "is_source_dest_checked": true,
+                                "link_nic": [
+                                    {
+                                        "delete_on_vm_deletion": false,
+                                        "device_number": 2,
+                                        "link_nic_id": "##id-14##",
+                                        "state": "attached",
+                                        "vm_account_id": "##id-1##",
+                                        "vm_id": "##id-3##"
+                                    }
+                                ],
+                                "link_public_ip": [],
+                                "mac_address": "########",
+                                "net_id": "##id-4##",
+                                "nic_id": "##id-15##",
+                                "private_dns_name": "########",
+                                "private_ips": [
+                                    {
+                                        "is_primary": true,
+                                        "link_public_ip": [],
+                                        "private_dns_name": "########",
+                                        "private_ip": "########"
+                                    },
+                                    {
+                                        "is_primary": false,
+                                        "link_public_ip": [],
+                                        "private_dns_name": "########",
+                                        "private_ip": "########"
+                                    }
+                                ],
+                                "security_groups": [
+                                    {
+                                        "security_group_id": "##id-6##",
+                                        "security_group_name": "Terraform-SG-TF113"
+                                    }
+                                ],
+                                "state": "in-use",
+                                "subnet_id": "##id-7##",
+                                "subregion_name": "eu-west-2a",
+                                "tags": [
+                                    {
+                                        "key": "Name",
+                                        "value": "Nic-2"
+                                    }
+                                ]
                             }
                         ],
                         "request_id": "########"
@@ -654,7 +654,7 @@
                                 "link_public_ip": [],
                                 "mac_address": "########",
                                 "net_id": "##id-4##",
-                                "nic_id": "##id-14##",
+                                "nic_id": "##id-12##",
                                 "private_dns_name": "########",
                                 "private_ips": [
                                     {
@@ -667,12 +667,12 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-6##",
-                                        "security_group_name": "Terraform-SG"
+                                        "security_group_name": "Terraform-SG-TF113"
                                     }
                                 ],
                                 "state": "available",
-                                "subnet_id": "##id-15##",
-                                "subregion_name": "us-east-2b",
+                                "subnet_id": "##id-13##",
+                                "subregion_name": "eu-west-2b",
                                 "tags": [
                                     {
                                         "key": "Key:",
@@ -724,7 +724,7 @@
                     "schema_version": 0,
                     "attributes": {
                         "account_id": "##id-1##",
-                        "description": "TF-109",
+                        "description": "TF-113",
                         "id": "##id-5##",
                         "is_source_dest_checked": true,
                         "link_nic": [],
@@ -756,12 +756,12 @@
                         "security_groups": [
                             {
                                 "security_group_id": "##id-6##",
-                                "security_group_name": "Terraform-SG"
+                                "security_group_name": "Terraform-SG-TF113"
                             }
                         ],
                         "state": "available",
                         "subnet_id": "##id-7##",
-                        "subregion_name": "us-east-2a",
+                        "subregion_name": "eu-west-2a",
                         "tags": [
                             {
                                 "key": "Key-2",
@@ -795,13 +795,13 @@
                     "attributes": {
                         "account_id": "##id-1##",
                         "description": "",
-                        "id": "##id-13##",
+                        "id": "##id-15##",
                         "is_source_dest_checked": true,
                         "link_nic": [],
                         "link_public_ip": [],
                         "mac_address": "########",
                         "net_id": "##id-4##",
-                        "nic_id": "##id-13##",
+                        "nic_id": "##id-15##",
                         "private_dns_name": "########",
                         "private_ip": "########",
                         "private_ips": [
@@ -826,12 +826,12 @@
                         "security_groups": [
                             {
                                 "security_group_id": "##id-6##",
-                                "security_group_name": "Terraform-SG"
+                                "security_group_name": "Terraform-SG-TF113"
                             }
                         ],
                         "state": "available",
                         "subnet_id": "##id-7##",
-                        "subregion_name": "us-east-2a",
+                        "subregion_name": "eu-west-2a",
                         "tags": [
                             {
                                 "key": "Name",
@@ -861,13 +861,13 @@
                     "attributes": {
                         "account_id": "##id-1##",
                         "description": "",
-                        "id": "##id-14##",
+                        "id": "##id-12##",
                         "is_source_dest_checked": true,
                         "link_nic": [],
                         "link_public_ip": [],
                         "mac_address": "########",
                         "net_id": "##id-4##",
-                        "nic_id": "##id-14##",
+                        "nic_id": "##id-12##",
                         "private_dns_name": "########",
                         "private_ip": "########",
                         "private_ips": [
@@ -886,12 +886,12 @@
                         "security_groups": [
                             {
                                 "security_group_id": "##id-6##",
-                                "security_group_name": "Terraform-SG"
+                                "security_group_name": "Terraform-SG-TF113"
                             }
                         ],
                         "state": "available",
-                        "subnet_id": "##id-15##",
-                        "subregion_name": "us-east-2b",
+                        "subnet_id": "##id-13##",
+                        "subregion_name": "eu-west-2b",
                         "tags": [
                             {
                                 "key": "Key-2",
@@ -956,9 +956,9 @@
                     "attributes": {
                         "delete_on_vm_deletion": false,
                         "device_number": 2,
-                        "id": "##id-12##",
-                        "link_nic_id": "##id-12##",
-                        "nic_id": "##id-13##",
+                        "id": "##id-14##",
+                        "link_nic_id": "##id-14##",
+                        "nic_id": "##id-15##",
                         "request_id": "########",
                         "state": null,
                         "vm_account_id": null,
@@ -1002,7 +1002,7 @@
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-6##",
-                        "security_group_name": "Terraform-SG",
+                        "security_group_name": "Terraform-SG-TF113",
                         "tag": null,
                         "tags": []
                     },
@@ -1031,7 +1031,7 @@
                         "request_id": "########",
                         "state": "available",
                         "subnet_id": "##id-7##",
-                        "subregion_name": "us-east-2a",
+                        "subregion_name": "eu-west-2a",
                         "tags": [],
                         "timeouts": null
                     },
@@ -1053,14 +1053,14 @@
                     "schema_version": 0,
                     "attributes": {
                         "available_ips_count": "########",
-                        "id": "##id-15##",
+                        "id": "##id-13##",
                         "ip_range": "10.5.2.0/24",
                         "map_public_ip_on_launch": false,
                         "net_id": "##id-4##",
                         "request_id": "########",
                         "state": "available",
-                        "subnet_id": "##id-15##",
-                        "subregion_name": "us-east-2b",
+                        "subnet_id": "##id-13##",
+                        "subregion_name": "eu-west-2b",
                         "tags": [],
                         "timeouts": null
                     },
@@ -1146,7 +1146,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-6##",
-                                        "security_group_name": "Terraform-SG"
+                                        "security_group_name": "Terraform-SG-TF113"
                                     }
                                 ],
                                 "state": "in-use",
@@ -1154,8 +1154,8 @@
                             }
                         ],
                         "os_family": "",
-                        "performance": "high",
-                        "placement_subregion_name": "us-east-2a",
+                        "performance": "medium",
+                        "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "primary_nic": [
                             {
@@ -1192,7 +1192,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-6##",
-                                        "security_group_name": "Terraform-SG"
+                                        "security_group_name": "Terraform-SG-TF113"
                                     }
                                 ],
                                 "state": "in-use",
@@ -1218,7 +1218,7 @@
                         "security_groups": [
                             {
                                 "security_group_id": "##id-6##",
-                                "security_group_name": "Terraform-SG"
+                                "security_group_name": "Terraform-SG-TF113"
                             }
                         ],
                         "state": "running",

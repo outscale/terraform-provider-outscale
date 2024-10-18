@@ -31,7 +31,7 @@ resource "outscale_vm" "outscale_vm-1" {
 }
 
 resource "outscale_load_balancer" "public_lbu2" {
-    load_balancer_name = "lbu-TF-92"
+    load_balancer_name = "lbu-TF-92-${var.suffixe_lbu_name}"
     subregion_names    = ["${var.region}a"]
     listeners {
        backend_port          = 8080

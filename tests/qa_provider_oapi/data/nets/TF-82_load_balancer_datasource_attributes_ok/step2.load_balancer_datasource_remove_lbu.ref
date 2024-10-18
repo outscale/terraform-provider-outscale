@@ -88,7 +88,7 @@
                         "request_id": "########",
                         "state": "available",
                         "subnet_id": "##id-4##",
-                        "subregion_name": "us-east-2a",
+                        "subregion_name": "eu-west-2a",
                         "tags": [
                             {
                                 "key": "Name",

@@ -1,5 +1,5 @@
 resource "outscale_load_balancer" "public_lbu1" {
-   load_balancer_name ="lbu-TF-85"
+   load_balancer_name ="lbu-TF-85-1"
    subregion_names= ["${var.region}a"]
    listeners {
       backend_port = 80
@@ -25,7 +25,7 @@ resource "outscale_load_balancer" "public_lbu1" {
 
 resource "outscale_load_balancer_policy" "policy-1" {
     load_balancer_name = outscale_load_balancer.public_lbu1.load_balancer_name
-    policy_name        = "policy-lbu-terraform-2"
+    policy_name        = "policy-lbu-terraform-TF85"
     policy_type        = "load_balancer"
 }
 

@@ -19,7 +19,7 @@ resource "outscale_subnet" "subnet-1" {
   ip_range = "10.0.0.0/24"
 }
 resource "outscale_load_balancer" "private_lbu" {
-  load_balancer_name ="lbu-TF-181"
+  load_balancer_name ="lbu-TF-181-${var.suffixe_lbu_name}"
   listeners {
      backend_port = 80
      backend_protocol= "HTTP"

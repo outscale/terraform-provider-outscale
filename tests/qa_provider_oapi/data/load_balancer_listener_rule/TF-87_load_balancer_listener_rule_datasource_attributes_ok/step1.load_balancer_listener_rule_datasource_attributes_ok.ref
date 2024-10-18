@@ -20,7 +20,7 @@
                         "id": "##id-0##",
                         "listener_id": "##id-1##",
                         "listener_rule_id": "##id-2##",
-                        "listener_rule_name": "listener-rule-2",
+                        "listener_rule_name": "########",
                         "path_pattern": "",
                         "priority": 1,
                         "request_id": "########",
@@ -96,7 +96,7 @@
                                 "server_certificate_id": ""
                             }
                         ],
-                        "load_balancer_name": "lbu-TF-87",
+                        "load_balancer_name": "########",
                         "load_balancer_sticky_cookie_policies": [],
                         "load_balancer_type": "internet-facing",
                         "net_id": "",
@@ -138,7 +138,7 @@
                         "id": "##id-7##",
                         "listener": [
                             {
-                                "load_balancer_name": "lbu-TF-87",
+                                "load_balancer_name": "########",
                                 "load_balancer_port": 80
                             }
                         ],
@@ -148,7 +148,7 @@
                                 "host_name_pattern": "",
                                 "listener_id": "##id-1##",
                                 "listener_rule_id": "##id-8##",
-                                "listener_rule_name": "listener-rule-1",
+                                "listener_rule_name": "########",
                                 "path_pattern": "*.abc.*.abc.*.com",
                                 "priority": 10
                             }
@@ -181,7 +181,7 @@
                         "id": "##id-9##",
                         "listener": [
                             {
-                                "load_balancer_name": "lbu-TF-87",
+                                "load_balancer_name": "########",
                                 "load_balancer_port": 80
                             }
                         ],
@@ -191,7 +191,7 @@
                                 "host_name_pattern": "*.abc.-.abc.*.com",
                                 "listener_id": "##id-1##",
                                 "listener_rule_id": "##id-2##",
-                                "listener_rule_name": "listener-rule-2",
+                                "listener_rule_name": "########",
                                 "path_pattern": "",
                                 "priority": 1
                             }
@@ -225,7 +225,7 @@
                             "##id-3##"
                         ],
                         "id": "##id-10##",
-                        "load_balancer_name": "lbu-TF-87",
+                        "load_balancer_name": "########",
                         "request_id": "########"
                     },
                     "sensitive_attributes": [],
@@ -307,7 +307,7 @@
                         "net_id": "",
                         "nics": [],
                         "os_family": "",
-                        "performance": "high",
+                        "performance": "medium",
                         "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "primary_nic": [],
