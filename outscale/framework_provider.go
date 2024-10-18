@@ -22,24 +22,28 @@ func New(version string) provider.Provider {
 }
 
 type frameworkProvider struct {
-	accessKeyId  types.String
-	secretKeyId  types.String
-	region       types.String
-	endpoints    []Endpoints
-	x509CertPath string
-	x509KeyPath  string
-	insecure     bool
-	version      string
+	accessKeyId    types.String
+	secretKeyId    types.String
+	region         types.String
+	endpoints      []Endpoints
+	x509CertPath   string
+	x509KeyPath    string
+	configFilePath string
+	insecure       bool
+	profile        string
+	version        string
 }
 
 type ProviderModel struct {
-	AccessKeyId  types.String `tfsdk:"access_key_id"`
-	SecretKeyId  types.String `tfsdk:"secret_key_id"`
-	Region       types.String `tfsdk:"region"`
-	Endpoints    []Endpoints  `tfsdk:"endpoints"`
-	X509CertPath types.String `tfsdk:"x509_cert_path"`
-	X509KeyPath  types.String `tfsdk:"x509_key_path"`
-	Insecure     types.Bool   `tfsdk:"insecure"`
+	AccessKeyId    types.String `tfsdk:"access_key_id"`
+	SecretKeyId    types.String `tfsdk:"secret_key_id"`
+	Region         types.String `tfsdk:"region"`
+	Endpoints      []Endpoints  `tfsdk:"endpoints"`
+	X509CertPath   types.String `tfsdk:"x509_cert_path"`
+	X509KeyPath    types.String `tfsdk:"x509_key_path"`
+	ConfigFilePath types.String `tfsdk:"config_file_path"`
+	Profile        types.String `tfsdk:"profile"`
+	Insecure       types.Bool   `tfsdk:"insecure"`
 }
 
 type Endpoints struct {
@@ -86,6 +90,14 @@ func (p *frameworkProvider) Schema(ctx context.Context, req provider.SchemaReque
 			"x509_key_path": schema.StringAttribute{
 				Optional:    true,
 				Description: "The path to your x509 key",
+			},
+			"config_file_path": schema.StringAttribute{
+				Optional:    true,
+				Description: "The path to your configuration file in which you have defined your credentials.",
+			},
+			"profile": schema.StringAttribute{
+				Optional:    true,
+				Description: "The name of your profile in which you define your credencial",
 			},
 			"insecure": schema.BoolAttribute{
 				Optional:    true,
@@ -147,6 +159,22 @@ func (p *frameworkProvider) Configure(ctx context.Context, req provider.Configur
 			"Unknown Outscale API X509KeyPath",
 			"The provider cannot create the Outscale API client as there is an unknown configuration value for the Outscale API x509_key_path. "+
 				"Either target apply the source of the value first, set the value statically in the configuration, or use the 'OSC_X509_CLIENT_KEY or OUTSCALE_X509KEY' environment variable.",
+		)
+	}
+	if config.ConfigFilePath.IsUnknown() {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("config_file_path"),
+			"Unknown Outscale API ConfigFilePath",
+			"The provider cannot create the Outscale API client as there is an unknown configuration value for the Outscale API profile. "+
+				"Either target apply the source of the value first, set the value statically in the configuration, or use the 'OSC_CONFIG_FILE' environment variable.",
+		)
+	}
+	if config.Profile.IsUnknown() {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("profile"),
+			"Unknown Outscale API profile",
+			"The provider cannot create the Outscale API client as there is an unknown configuration value for the Outscale API profile. "+
+				"Either target apply the source of the value first, set the value statically in the configuration, or use the 'OSC_PROFILE' environment variable.",
 		)
 	}
 

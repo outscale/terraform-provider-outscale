@@ -13,14 +13,16 @@ import (
 
 // Config ...
 type Config struct {
-	AccessKeyID string
-	SecretKeyID string
-	Region      string
-	TokenID     string
-	Endpoints   map[string]interface{}
-	X509cert    string
-	X509key     string
-	Insecure    bool
+	AccessKeyID    string
+	SecretKeyID    string
+	Region         string
+	TokenID        string
+	Endpoints      map[string]interface{}
+	X509CertPath   string
+	X509KeyPath    string
+	Insecure       bool
+	ConfigFilePath string
+	Profile        string
 }
 
 // OutscaleClient client
@@ -31,7 +33,7 @@ type OutscaleClient struct {
 // Client ...
 func (c *Config) Client() (*OutscaleClient, error) {
 	tlsconfig := &tls.Config{InsecureSkipVerify: c.Insecure}
-	cert, err := tls.LoadX509KeyPair(c.X509cert, c.X509key)
+	cert, err := tls.LoadX509KeyPair(c.X509CertPath, c.X509KeyPath)
 	if err == nil {
 		tlsconfig = &tls.Config{
 			InsecureSkipVerify: false,
