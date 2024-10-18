@@ -18,12 +18,12 @@
                             {
                                 "ca_fingerprint": "########",
                                 "ca_id": "##id-0##",
-                                "description": "test-TF199-2"
+                                "description": "test-TF199"
                             },
                             {
                                 "ca_fingerprint": "########",
                                 "ca_id": "##id-1##",
-                                "description": "test-TF199"
+                                "description": "test-TF199-2"
                             }
                         ],
                         "filter": "########",
@@ -47,12 +47,12 @@
                             {
                                 "ca_fingerprint": "########",
                                 "ca_id": "##id-0##",
-                                "description": "test-TF199-2"
+                                "description": "test-TF199"
                             },
                             {
                                 "ca_fingerprint": "########",
                                 "ca_id": "##id-1##",
-                                "description": "test-TF199"
+                                "description": "test-TF199-2"
                             }
                         ],
                         "filter": "########",
@@ -73,10 +73,10 @@
                     "schema_version": 0,
                     "attributes": {
                         "ca_fingerprint": "########",
-                        "ca_id": "##id-1##",
+                        "ca_id": "##id-0##",
                         "ca_pem": "########",
                         "description": "test-TF199",
-                        "id": "##id-1##",
+                        "id": "##id-0##",
                         "request_id": "########"
                     },
                     "sensitive_attributes": [],
@@ -94,10 +94,10 @@
                     "schema_version": 0,
                     "attributes": {
                         "ca_fingerprint": "########",
-                        "ca_id": "##id-0##",
+                        "ca_id": "##id-1##",
                         "ca_pem": "########",
                         "description": "test-TF199-2",
-                        "id": "##id-0##",
+                        "id": "##id-1##",
                         "request_id": "########"
                     },
                     "sensitive_attributes": [],

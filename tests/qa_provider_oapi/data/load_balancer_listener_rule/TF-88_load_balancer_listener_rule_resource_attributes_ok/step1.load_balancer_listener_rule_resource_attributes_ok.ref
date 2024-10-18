@@ -69,7 +69,7 @@
                                 "server_certificate_id": ""
                             }
                         ],
-                        "load_balancer_name": "lbu-TF-88",
+                        "load_balancer_name": "########",
                         "load_balancer_sticky_cookie_policies": [],
                         "load_balancer_type": "internet-facing",
                         "net_id": "",
@@ -89,8 +89,8 @@
                         ],
                         "tags": [
                             {
-                                "key": "name",
-                                "value": "listener-rule"
+                                "key": "tag",
+                                "value": "test-listener-rule"
                             }
                         ]
                     },
@@ -111,7 +111,7 @@
                         "id": "##id-3##",
                         "listener": [
                             {
-                                "load_balancer_name": "lbu-TF-88",
+                                "load_balancer_name": "########",
                                 "load_balancer_port": 80
                             }
                         ],
@@ -121,7 +121,7 @@
                                 "host_name_pattern": "",
                                 "listener_id": "##id-4##",
                                 "listener_rule_id": "##id-5##",
-                                "listener_rule_name": "listener-rule-1",
+                                "listener_rule_name": "listener-rule-11",
                                 "path_pattern": "*.abc.*.abc.*.com",
                                 "priority": 10
                             }
@@ -154,7 +154,7 @@
                         "id": "##id-7##",
                         "listener": [
                             {
-                                "load_balancer_name": "lbu-TF-88",
+                                "load_balancer_name": "########",
                                 "load_balancer_port": 80
                             }
                         ],
@@ -164,7 +164,7 @@
                                 "host_name_pattern": "*.abc.-.abc.*.com",
                                 "listener_id": "##id-4##",
                                 "listener_rule_id": "##id-8##",
-                                "listener_rule_name": "listener-rule-2",
+                                "listener_rule_name": "listener-rule-12",
                                 "path_pattern": "",
                                 "priority": 1
                             }
@@ -197,7 +197,7 @@
                         "id": "##id-9##",
                         "listener": [
                             {
-                                "load_balancer_name": "lbu-TF-88",
+                                "load_balancer_name": "########",
                                 "load_balancer_port": 80
                             }
                         ],
@@ -207,7 +207,7 @@
                                 "host_name_pattern": "",
                                 "listener_id": "##id-4##",
                                 "listener_rule_id": "##id-10##",
-                                "listener_rule_name": "listener-rule-3",
+                                "listener_rule_name": "listener-rule-13",
                                 "path_pattern": "*.abc.*.abc.*.com",
                                 "priority": 12
                             }
@@ -241,7 +241,7 @@
                             "##id-6##"
                         ],
                         "id": "##id-11##",
-                        "load_balancer_name": "lbu-TF-88",
+                        "load_balancer_name": "########",
                         "request_id": "########"
                     },
                     "sensitive_attributes": [],
@@ -323,7 +323,7 @@
                         "net_id": "",
                         "nics": [],
                         "os_family": "",
-                        "performance": "high",
+                        "performance": "medium",
                         "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "primary_nic": [],

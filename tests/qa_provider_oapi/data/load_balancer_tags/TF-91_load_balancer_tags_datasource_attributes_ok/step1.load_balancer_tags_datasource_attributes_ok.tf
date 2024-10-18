@@ -1,5 +1,5 @@
 resource "outscale_load_balancer" "public_lbu1" {
-   load_balancer_name = "lbu-TF-91"
+   load_balancer_name = "lbu-TF-91-${var.suffixe_lbu_name}"
    subregion_names    = ["${var.region}a"]
    listeners {
      backend_port           = 80
@@ -22,7 +22,7 @@ resource "outscale_load_balancer" "public_lbu1" {
 }
 
 resource "outscale_load_balancer" "public_lbu2" {
-   load_balancer_name ="lbu-TF-91-2"
+   load_balancer_name ="lbu-TF-91-2-${var.suffixe_lbu_name}"
    subregion_names= ["${var.region}a"]
    listeners {
       backend_port = 80

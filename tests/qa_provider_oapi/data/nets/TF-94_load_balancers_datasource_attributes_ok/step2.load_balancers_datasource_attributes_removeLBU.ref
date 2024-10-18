@@ -47,7 +47,7 @@
                                 "server_certificate_id": ""
                             }
                         ],
-                        "load_balancer_name": "lbu-TF-94",
+                        "load_balancer_name": "########",
                         "load_balancer_sticky_cookie_policies": [],
                         "load_balancer_type": "internet-facing",
                         "net_id": "",
@@ -63,7 +63,7 @@
                         ],
                         "subnets": [],
                         "subregion_names": [
-                            "us-east-2a"
+                            "eu-west-2a"
                         ],
                         "tags": [
                             {
@@ -164,7 +164,7 @@
                         "request_id": "########",
                         "state": "available",
                         "subnet_id": "##id-6##",
-                        "subregion_name": "us-east-2a",
+                        "subregion_name": "eu-west-2a",
                         "tags": [
                             {
                                 "key": "Name",

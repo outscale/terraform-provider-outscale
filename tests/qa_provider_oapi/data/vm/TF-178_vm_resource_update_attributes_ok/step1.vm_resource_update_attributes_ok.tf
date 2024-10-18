@@ -1,15 +1,15 @@
-resource "outscale_keypair" "keypair-TF66" {
+resource "outscale_keypair" "keypair-TF178" {
   count        = 2
-  keypair_name = "keyname_TF66-${count.index}"
+  keypair_name = "keyname_TF178-${count.index}"
 }
 
-resource "outscale_security_group" "security_group_TF66" {
+resource "outscale_security_group" "security_group_TF178" {
   count               = 2
-  description         = "test-terraform-TF66"
-  security_group_name = "terraform-sg-TF66-${count.index}"
+  description         = "test-terraform-TF178"
+  security_group_name = "terraform-sg-TF178-${count.index}"
 }
 
-resource "outscale_vm" "outscale_vm-TF66" {
+resource "outscale_vm" "outscale_vm-TF178" {
   block_device_mappings {
     device_name                  = "/dev/sdb"
       bsu {
@@ -18,10 +18,10 @@ resource "outscale_vm" "outscale_vm-TF66" {
       }
     }
   image_id                       = var.image_id
-  vm_type                        = "tinav4.c2r2p3"
+  vm_type                        = "tinav5.c2r2"
   performance                    = "medium"
   deletion_protection            = true
-  vm_initiated_shutdown_behavior = "restart"
-  security_group_ids             = [outscale_security_group.security_group_TF66[0].security_group_id]
-  keypair_name                   = outscale_keypair.keypair-TF66[0].keypair_name
+  vm_initiated_shutdown_behavior = "stop"
+  security_group_ids             = [outscale_security_group.security_group_TF178[0].security_group_id]
+  keypair_name                   = outscale_keypair.keypair-TF178[0].keypair_name
 }

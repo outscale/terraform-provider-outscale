@@ -10,7 +10,7 @@ resource "outscale_public_ip" "outscale_public_ip" {
 
 resource "outscale_security_group" "sgPub" {
    description         = "sg for terraform tests"
-   security_group_name = "terraform-sg_PubIp"
+   security_group_name = "terraform-sg_TF116"
 }
 
 

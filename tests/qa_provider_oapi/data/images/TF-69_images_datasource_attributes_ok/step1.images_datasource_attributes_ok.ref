@@ -102,7 +102,7 @@
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-4##",
-                        "security_group_name": "SG-inteImgs",
+                        "security_group_name": "SG-TF69",
                         "tag": null,
                         "tags": []
                     },
@@ -175,7 +175,7 @@
                         "security_groups": [
                             {
                                 "security_group_id": "##id-4##",
-                                "security_group_name": "SG-inteImgs"
+                                "security_group_name": "SG-TF69"
                             }
                         ],
                         "state": "running",
@@ -186,7 +186,7 @@
                         "user_data": "",
                         "vm_id": "##id-3##",
                         "vm_initiated_shutdown_behavior": "stop",
-                        "vm_type": "t2.small"
+                        "vm_type": "###vm_type###"
                     },
                     "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",

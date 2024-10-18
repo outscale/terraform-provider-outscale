@@ -16,35 +16,32 @@
                     "attributes": {
                         "filter": "########",
                         "id": "##id-0##",
-                        "load_balancer_names": [
-                            "lbu-TF-91",
-                            "lbu-TF-91-2"
-                        ],
+                        "load_balancer_names": "########",
                         "request_id": "########",
                         "tags": [
                             {
                                 "key": "name",
-                                "load_balancer_name": "lbu-TF-91",
+                                "load_balancer_name": "########",
                                 "value": "public_lbu1"
                             },
                             {
                                 "key": "User",
-                                "load_balancer_name": "lbu-TF-91",
+                                "load_balancer_name": "########",
                                 "value": "mzi"
                             },
                             {
                                 "key": "Platfotm",
-                                "load_balancer_name": "lbu-TF-91",
+                                "load_balancer_name": "########",
                                 "value": "terraform"
                             },
                             {
                                 "key": "name",
-                                "load_balancer_name": "lbu-TF-91-2",
+                                "load_balancer_name": "########",
                                 "value": "public_lbu2"
                             },
                             {
                                 "key": "Platfotm",
-                                "load_balancer_name": "lbu-TF-91-2",
+                                "load_balancer_name": "########",
                                 "value": "terraform"
                             }
                         ]
@@ -95,7 +92,7 @@
                                 "server_certificate_id": ""
                             }
                         ],
-                        "load_balancer_name": "lbu-TF-91",
+                        "load_balancer_name": "########",
                         "load_balancer_sticky_cookie_policies": [],
                         "load_balancer_type": "internet-facing",
                         "net_id": "",
@@ -175,7 +172,7 @@
                                 "server_certificate_id": ""
                             }
                         ],
-                        "load_balancer_name": "lbu-TF-91-2",
+                        "load_balancer_name": "########",
                         "load_balancer_sticky_cookie_policies": [],
                         "load_balancer_type": "internet-facing",
                         "net_id": "",

@@ -107,7 +107,7 @@
                         "tags": [
                             {
                                 "key": "name",
-                                "value": "nomad-network"
+                                "value": "TF65-network"
                             }
                         ],
                         "tenancy": "default"
@@ -137,7 +137,7 @@
                         "tags": [
                             {
                                 "key": "name",
-                                "value": "EIP"
+                                "value": "EIP-TF65"
                             }
                         ],
                         "timeouts": null,
@@ -168,7 +168,7 @@
                         "tags": [
                             {
                                 "key": "name",
-                                "value": "EIP2"
+                                "value": "EIP-TF65-2"
                             }
                         ],
                         "timeouts": null,
@@ -231,7 +231,7 @@
                         "tags": [
                             {
                                 "key": "name",
-                                "value": "EIP"
+                                "value": "EIP-TF65"
                             }
                         ],
                         "timeouts": null,
@@ -270,7 +270,7 @@
                         "tags": [
                             {
                                 "key": "name",
-                                "value": "EIP2"
+                                "value": "EIP-TF65-2"
                             }
                         ],
                         "timeouts": null,
@@ -521,7 +521,7 @@
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-23##",
-                        "security_group_name": "terraform-sg-12",
+                        "security_group_name": "TF65-sg-1",
                         "tag": null,
                         "tags": []
                     },
@@ -559,7 +559,7 @@
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-24##",
-                        "security_group_name": "terraform-sg-22",
+                        "security_group_name": "TF65-sg-2",
                         "tag": null,
                         "tags": []
                     },
@@ -590,7 +590,7 @@
                         "rules": [],
                         "security_group_account_id_to_link": null,
                         "security_group_id": "##id-23##",
-                        "security_group_name": "terraform-sg-12",
+                        "security_group_name": "TF65-sg-1",
                         "security_group_name_to_link": null,
                         "to_port_range": 0
                     },
@@ -622,7 +622,7 @@
                         "rules": [],
                         "security_group_account_id_to_link": null,
                         "security_group_id": "##id-24##",
-                        "security_group_name": "terraform-sg-22",
+                        "security_group_name": "TF65-sg-2",
                         "security_group_name_to_link": null,
                         "to_port_range": 0
                     },
@@ -654,7 +654,7 @@
                         "rules": [],
                         "security_group_account_id_to_link": null,
                         "security_group_id": "##id-23##",
-                        "security_group_name": "terraform-sg-12",
+                        "security_group_name": "TF65-sg-1",
                         "security_group_name_to_link": null,
                         "to_port_range": 22
                     },
@@ -687,7 +687,7 @@
                         "rules": [],
                         "security_group_account_id_to_link": null,
                         "security_group_id": "##id-24##",
-                        "security_group_name": "terraform-sg-22",
+                        "security_group_name": "TF65-sg-2",
                         "security_group_name_to_link": null,
                         "to_port_range": 80
                     },
@@ -720,7 +720,7 @@
                         "rules": [],
                         "security_group_account_id_to_link": null,
                         "security_group_id": "##id-23##",
-                        "security_group_name": "terraform-sg-12",
+                        "security_group_name": "TF65-sg-1",
                         "security_group_name_to_link": null,
                         "to_port_range": 1024
                     },
@@ -754,7 +754,7 @@
                         "rules": [],
                         "security_group_account_id_to_link": null,
                         "security_group_id": "##id-24##",
-                        "security_group_name": "terraform-sg-22",
+                        "security_group_name": "TF65-sg-2",
                         "security_group_name_to_link": null,
                         "to_port_range": 1024
                     },
@@ -786,11 +786,11 @@
                         "request_id": "########",
                         "state": "available",
                         "subnet_id": "##id-22##",
-                        "subregion_name": "us-east-2a",
+                        "subregion_name": "eu-west-2a",
                         "tags": [
                             {
                                 "key": "name",
-                                "value": "nomad-adm"
+                                "value": "TF65-adm"
                             }
                         ],
                         "timeouts": null
@@ -820,11 +820,11 @@
                         "request_id": "########",
                         "state": "available",
                         "subnet_id": "##id-4##",
-                        "subregion_name": "us-east-2a",
+                        "subregion_name": "eu-west-2a",
                         "tags": [
                             {
                                 "key": "name",
-                                "value": "nomad-bastion"
+                                "value": "TF65-bastion"
                             }
                         ],
                         "timeouts": null
@@ -912,7 +912,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-24##",
-                                        "security_group_name": "terraform-sg-22"
+                                        "security_group_name": "TF65-sg-2"
                                     }
                                 ],
                                 "state": "in-use",
@@ -920,8 +920,8 @@
                             }
                         ],
                         "os_family": "",
-                        "performance": "high",
-                        "placement_subregion_name": "us-east-2a",
+                        "performance": "medium",
+                        "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "primary_nic": [
                             {
@@ -958,7 +958,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-24##",
-                                        "security_group_name": "terraform-sg-22"
+                                        "security_group_name": "TF65-sg-2"
                                     }
                                 ],
                                 "state": "in-use",
@@ -984,7 +984,7 @@
                         "security_groups": [
                             {
                                 "security_group_id": "##id-24##",
-                                "security_group_name": "terraform-sg-22"
+                                "security_group_name": "TF65-sg-2"
                             }
                         ],
                         "state": "running",
@@ -1079,7 +1079,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-24##",
-                                        "security_group_name": "terraform-sg-22"
+                                        "security_group_name": "TF65-sg-2"
                                     }
                                 ],
                                 "state": "in-use",
@@ -1087,8 +1087,8 @@
                             }
                         ],
                         "os_family": "",
-                        "performance": "high",
-                        "placement_subregion_name": "us-east-2a",
+                        "performance": "medium",
+                        "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "primary_nic": [
                             {
@@ -1125,7 +1125,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-24##",
-                                        "security_group_name": "terraform-sg-22"
+                                        "security_group_name": "TF65-sg-2"
                                     }
                                 ],
                                 "state": "in-use",
@@ -1151,7 +1151,7 @@
                         "security_groups": [
                             {
                                 "security_group_id": "##id-24##",
-                                "security_group_name": "terraform-sg-22"
+                                "security_group_name": "TF65-sg-2"
                             }
                         ],
                         "state": "running",
@@ -1246,7 +1246,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-24##",
-                                        "security_group_name": "terraform-sg-22"
+                                        "security_group_name": "TF65-sg-2"
                                     }
                                 ],
                                 "state": "in-use",
@@ -1254,8 +1254,8 @@
                             }
                         ],
                         "os_family": "",
-                        "performance": "high",
-                        "placement_subregion_name": "us-east-2a",
+                        "performance": "medium",
+                        "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "primary_nic": [
                             {
@@ -1292,7 +1292,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-24##",
-                                        "security_group_name": "terraform-sg-22"
+                                        "security_group_name": "TF65-sg-2"
                                     }
                                 ],
                                 "state": "in-use",
@@ -1318,7 +1318,7 @@
                         "security_groups": [
                             {
                                 "security_group_id": "##id-24##",
-                                "security_group_name": "terraform-sg-22"
+                                "security_group_name": "TF65-sg-2"
                             }
                         ],
                         "state": "running",
@@ -1421,7 +1421,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-23##",
-                                        "security_group_name": "terraform-sg-12"
+                                        "security_group_name": "TF65-sg-1"
                                     }
                                 ],
                                 "state": "in-use",
@@ -1429,8 +1429,8 @@
                             }
                         ],
                         "os_family": "",
-                        "performance": "high",
-                        "placement_subregion_name": "us-east-2a",
+                        "performance": "medium",
+                        "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "primary_nic": [
                             {
@@ -1467,7 +1467,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-23##",
-                                        "security_group_name": "terraform-sg-12"
+                                        "security_group_name": "TF65-sg-1"
                                     }
                                 ],
                                 "state": "in-use",
@@ -1493,7 +1493,7 @@
                         "security_groups": [
                             {
                                 "security_group_id": "##id-23##",
-                                "security_group_name": "terraform-sg-12"
+                                "security_group_name": "TF65-sg-1"
                             }
                         ],
                         "state": "running",
@@ -1588,7 +1588,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-23##",
-                                        "security_group_name": "terraform-sg-12"
+                                        "security_group_name": "TF65-sg-1"
                                     }
                                 ],
                                 "state": "in-use",
@@ -1596,8 +1596,8 @@
                             }
                         ],
                         "os_family": "",
-                        "performance": "high",
-                        "placement_subregion_name": "us-east-2a",
+                        "performance": "medium",
+                        "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "primary_nic": [
                             {
@@ -1634,7 +1634,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-23##",
-                                        "security_group_name": "terraform-sg-12"
+                                        "security_group_name": "TF65-sg-1"
                                     }
                                 ],
                                 "state": "in-use",
@@ -1660,7 +1660,7 @@
                         "security_groups": [
                             {
                                 "security_group_id": "##id-23##",
-                                "security_group_name": "terraform-sg-12"
+                                "security_group_name": "TF65-sg-1"
                             }
                         ],
                         "state": "running",
@@ -1755,7 +1755,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-23##",
-                                        "security_group_name": "terraform-sg-12"
+                                        "security_group_name": "TF65-sg-1"
                                     }
                                 ],
                                 "state": "in-use",
@@ -1763,8 +1763,8 @@
                             }
                         ],
                         "os_family": "",
-                        "performance": "high",
-                        "placement_subregion_name": "us-east-2a",
+                        "performance": "medium",
+                        "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "primary_nic": [
                             {
@@ -1801,7 +1801,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-23##",
-                                        "security_group_name": "terraform-sg-12"
+                                        "security_group_name": "TF65-sg-1"
                                     }
                                 ],
                                 "state": "in-use",
@@ -1827,7 +1827,7 @@
                         "security_groups": [
                             {
                                 "security_group_id": "##id-23##",
-                                "security_group_name": "terraform-sg-12"
+                                "security_group_name": "TF65-sg-1"
                             }
                         ],
                         "state": "running",

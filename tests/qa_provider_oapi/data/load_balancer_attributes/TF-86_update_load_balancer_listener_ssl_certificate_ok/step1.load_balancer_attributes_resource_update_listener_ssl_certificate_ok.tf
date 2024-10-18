@@ -12,7 +12,7 @@ resource "outscale_server_certificate" "my_server_certificate_TF-86_2" {
 
 
 resource "outscale_load_balancer" "public_lbu1" {
-   load_balancer_name ="lbu-TF-86"
+   load_balancer_name ="lbu-TF-86-${var.suffixe_lbu_name}"
    subregion_names= ["${var.region}a"]
 listeners {
      backend_port = 8080
