@@ -1,8 +1,13 @@
 package outscale
 
 import (
+	"fmt"
+	"io/ioutil"
+	"os"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/outscale/terraform-provider-outscale/utils"
+	"github.com/tidwall/gjson"
 )
 
 var endpointServiceNames []string
@@ -54,6 +59,16 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The path to your x509 key",
+			},
+			"config_file_path": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The path to your configuration file in which you have defined your credentials.",
+			},
+			"profile": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The name of your profile in which you define your credencial",
 			},
 			"insecure": {
 				Type:        schema.TypeBool,
@@ -200,25 +215,114 @@ func Provider() *schema.Provider {
 
 func providerConfigureClient(d *schema.ResourceData) (interface{}, error) {
 	config := Config{
-		AccessKeyID: d.Get("access_key_id").(string),
-		SecretKeyID: d.Get("secret_key_id").(string),
-		Region:      d.Get("region").(string),
-		Endpoints:   make(map[string]interface{}),
-		X509cert:    d.Get("x509_cert_path").(string),
-		X509key:     d.Get("x509_key_path").(string),
-		Insecure:    d.Get("insecure").(bool),
+		AccessKeyID:    d.Get("access_key_id").(string),
+		SecretKeyID:    d.Get("secret_key_id").(string),
+		Region:         d.Get("region").(string),
+		Endpoints:      make(map[string]interface{}),
+		X509CertPath:   d.Get("x509_cert_path").(string),
+		X509KeyPath:    d.Get("x509_key_path").(string),
+		ConfigFilePath: d.Get("config_file_path").(string),
+		Profile:        d.Get("profile").(string),
+		Insecure:       d.Get("insecure").(bool),
 	}
-
-	setProviderDefaultEnv(&config)
 	endpointsSet := d.Get("endpoints").(*schema.Set)
-
 	for _, endpointsSetI := range endpointsSet.List() {
 		endpoints := endpointsSetI.(map[string]interface{})
 		for _, endpointServiceName := range endpointServiceNames {
 			config.Endpoints[endpointServiceName] = endpoints[endpointServiceName].(string)
 		}
 	}
+
+	ok, err := IsOldProfileSet(&config)
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		setProviderDefaultEnv(&config)
+	}
 	return config.Client()
+}
+func IsOldProfileSet(conf *Config) (bool, error) {
+	isProfSet := false
+	if profileName, ok := os.LookupEnv("OSC_PROFILE"); ok || conf.Profile != "" {
+		if conf.Profile != "" {
+			profileName = conf.Profile
+		}
+
+		var profilePath string
+		if envPath, ok := os.LookupEnv("OSC_CONFIG_FILE"); ok || conf.ConfigFilePath != "" {
+			if conf.ConfigFilePath != "" {
+				profilePath = conf.ConfigFilePath
+			} else {
+				profilePath = envPath
+			}
+			if profilePath == "" {
+				homePath, err := os.UserHomeDir()
+				if err != nil {
+					return isProfSet, err
+				}
+				profilePath = homePath + "/.osc/config.json"
+			}
+		}
+		jsonFile, err := ioutil.ReadFile(profilePath)
+		if err != nil {
+			return isProfSet, err
+		}
+		profile := gjson.GetBytes(jsonFile, profileName)
+		if !gjson.Valid(profile.String()) {
+			return isProfSet, fmt.Errorf("Invalid json profile file")
+		}
+		if !profile.Get("access_key").Exists() ||
+			!profile.Get("secret_key").Exists() {
+			return isProfSet, fmt.Errorf("Profile 'access_key' or 'secret_key' are not defined!")
+		}
+		setOldProfile(conf, profile)
+		isProfSet = true
+	}
+	return isProfSet, nil
+}
+
+func setOldProfile(conf *Config, profile gjson.Result) {
+
+	if conf.AccessKeyID == "" {
+		if accessKeyId := profile.Get("access_key").String(); accessKeyId != "" {
+			conf.AccessKeyID = accessKeyId
+		}
+	}
+	if conf.SecretKeyID == "" {
+		if secretKeyId := profile.Get("secret_key").String(); secretKeyId != "" {
+			conf.SecretKeyID = secretKeyId
+		}
+	}
+	if conf.Region == "" {
+		if profile.Get("region").Exists() {
+			if region := profile.Get("region").String(); region != "" {
+				conf.Region = region
+			}
+		}
+	}
+	if conf.X509CertPath == "" {
+		if profile.Get("x509_cert_path").Exists() {
+			if x509Cert := profile.Get("x509_cert_path").String(); x509Cert != "" {
+				conf.X509CertPath = x509Cert
+			}
+		}
+	}
+	if conf.X509KeyPath == "" {
+		if profile.Get("x509_key_path").Exists() {
+			if x509Key := profile.Get("x509_key_path").String(); x509Key != "" {
+				conf.X509KeyPath = x509Key
+			}
+		}
+	}
+	if len(conf.Endpoints) == 0 {
+		if profile.Get("endpoints").Exists() {
+			endpoints := profile.Get("endpoints").Value().(map[string]interface{})
+			if endpoint := endpoints["api"].(string); endpoint != "" {
+				conf.Endpoints["api"] = endpoint
+			}
+		}
+	}
 }
 
 func setProviderDefaultEnv(conf *Config) {
@@ -239,18 +343,17 @@ func setProviderDefaultEnv(conf *Config) {
 		}
 	}
 
-	if conf.X509cert == "" {
+	if conf.X509CertPath == "" {
 		if x509Cert := utils.GetEnvVariableValue([]string{"OSC_X509_CLIENT_CERT", "OUTSCALE_X509CERT"}); x509Cert != "" {
-			conf.X509cert = x509Cert
+			conf.X509CertPath = x509Cert
 		}
 	}
 
-	if conf.X509key == "" {
+	if conf.X509KeyPath == "" {
 		if x509Key := utils.GetEnvVariableValue([]string{"OSC_X509_CLIENT_KEY", "OUTSCALE_X509KEY"}); x509Key != "" {
-			conf.X509key = x509Key
+			conf.X509KeyPath = x509Key
 		}
 	}
-
 	if len(conf.Endpoints) == 0 {
 		if endpoints := utils.GetEnvVariableValue([]string{"OSC_ENDPOINT_API", "OUTSCALE_OAPI_URL"}); endpoints != "" {
 			endpointsAttributes := make(map[string]interface{})
