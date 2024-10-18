@@ -55,7 +55,7 @@
                                 "server_certificate_id": ""
                             }
                         ],
-                        "load_balancer_name": "lbu-TF-84",
+                        "load_balancer_name": "########",
                         "load_balancer_sticky_cookie_policies": [],
                         "load_balancer_type": "internet-facing",
                         "net_id": "",
@@ -139,7 +139,7 @@
                                 "server_certificate_id": ""
                             }
                         ],
-                        "load_balancer_name": "lbu-TF-84",
+                        "load_balancer_name": "########",
                         "load_balancer_port": null,
                         "load_balancer_sticky_cookie_policies": [],
                         "load_balancer_type": null,

@@ -47,7 +47,7 @@
                                 "server_certificate_id": ""
                             }
                         ],
-                        "load_balancer_name": "lbu-TF-90",
+                        "load_balancer_name": "########",
                         "load_balancer_sticky_cookie_policies": [],
                         "load_balancer_type": "internet-facing",
                         "net_id": "",
@@ -121,7 +121,7 @@
                                 "server_certificate_id": ""
                             }
                         ],
-                        "load_balancer_name": "lbu-TF-90",
+                        "load_balancer_name": "########",
                         "load_balancer_sticky_cookie_policies": [
                             {
                                 "policy_name": "policy-lbu-terraform-1"
@@ -209,7 +209,7 @@
                                 "server_certificate_id": ""
                             }
                         ],
-                        "load_balancer_name": "lbu-TF-90",
+                        "load_balancer_name": "########",
                         "load_balancer_sticky_cookie_policies": [
                             {
                                 "policy_name": "policy-lbu-terraform-1"
@@ -298,7 +298,7 @@
                                 "server_certificate_id": ""
                             }
                         ],
-                        "load_balancer_name": "lbu-TF-90",
+                        "load_balancer_name": "########",
                         "load_balancer_sticky_cookie_policies": [
                             {
                                 "policy_name": "policy-lbu-terraform-1"
@@ -395,7 +395,7 @@
                                 "server_certificate_id": ""
                             }
                         ],
-                        "load_balancer_name": "lbu-TF-90",
+                        "load_balancer_name": "########",
                         "load_balancer_sticky_cookie_policies": [
                             {
                                 "policy_name": "policy-lbu-terraform-1"

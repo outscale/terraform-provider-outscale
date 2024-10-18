@@ -23,7 +23,7 @@
                         "request_id": "########",
                         "state": "available",
                         "subnet_id": "##id-0##",
-                        "subregion_name": "us-east-2a",
+                        "subregion_name": "eu-west-2a",
                         "tags": [
                             {
                                 "key": "name",
@@ -57,7 +57,7 @@
                         "request_id": "########",
                         "state": "available",
                         "subnet_id": "##id-2##",
-                        "subregion_name": "us-east-2a",
+                        "subregion_name": "eu-west-2a",
                         "tags": []
                     },
                     "sensitive_attributes": []
@@ -82,7 +82,7 @@
                         "request_id": "########",
                         "state": "available",
                         "subnet_id": "##id-0##",
-                        "subregion_name": "us-east-2a",
+                        "subregion_name": "eu-west-2a",
                         "tags": [
                             {
                                 "key": "name",
@@ -116,7 +116,7 @@
                         "request_id": "########",
                         "state": "available",
                         "subnet_id": "##id-0##",
-                        "subregion_name": "us-east-2a",
+                        "subregion_name": "eu-west-2a",
                         "tags": [
                             {
                                 "key": "name",
@@ -150,7 +150,7 @@
                         "request_id": "########",
                         "state": "available",
                         "subnet_id": "##id-0##",
-                        "subregion_name": "us-east-2a",
+                        "subregion_name": "eu-west-2a",
                         "tags": [
                             {
                                 "key": "name",
@@ -184,7 +184,7 @@
                         "request_id": "########",
                         "state": "available",
                         "subnet_id": "##id-0##",
-                        "subregion_name": "us-east-2a",
+                        "subregion_name": "eu-west-2a",
                         "tags": [
                             {
                                 "key": "name",
@@ -218,7 +218,7 @@
                         "request_id": "########",
                         "state": "available",
                         "subnet_id": "##id-0##",
-                        "subregion_name": "us-east-2a",
+                        "subregion_name": "eu-west-2a",
                         "tags": [
                             {
                                 "key": "name",
@@ -274,7 +274,7 @@
                         "request_id": "########",
                         "state": "available",
                         "subnet_id": "##id-0##",
-                        "subregion_name": "us-east-2a",
+                        "subregion_name": "eu-west-2a",
                         "tags": [
                             {
                                 "key": "name",
@@ -312,7 +312,7 @@
                         "request_id": "########",
                         "state": "available",
                         "subnet_id": "##id-2##",
-                        "subregion_name": "us-east-2a",
+                        "subregion_name": "eu-west-2a",
                         "tags": [],
                         "timeouts": null
                     },

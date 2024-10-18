@@ -16,7 +16,7 @@ resource "outscale_subnet" "subnet02" {
 
 resource "outscale_security_group" "security_group01" {
   description         = "Terraform security group test"
-  security_group_name = "Terraform-SG"
+  security_group_name = "Terraform-SG-TF113"
   net_id              = outscale_net.outscale_net.net_id
 }
 
@@ -30,7 +30,7 @@ resource "outscale_vm" "vm01" {
 
 resource "outscale_nic" "outscale_nic" {
     subnet_id          = outscale_subnet.subnet01.subnet_id
-    description        = "TF-109"
+    description        = "TF-113"
     security_group_ids = [outscale_security_group.security_group01.security_group_id]
     private_ips {
       is_primary       = true

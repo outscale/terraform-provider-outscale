@@ -47,7 +47,7 @@
                                 "server_certificate_id": ""
                             }
                         ],
-                        "load_balancer_name": "lbu-TF-181",
+                        "load_balancer_name": "########",
                         "load_balancer_sticky_cookie_policies": [],
                         "load_balancer_type": "internal",
                         "net_id": "##id-1##",
@@ -67,7 +67,7 @@
                             "##id-4##"
                         ],
                         "subregion_names": [
-                            "us-east-2a"
+                            "eu-west-2a"
                         ],
                         "tags": [
                             {
@@ -201,7 +201,7 @@
                         "request_id": "########",
                         "state": "available",
                         "subnet_id": "##id-4##",
-                        "subregion_name": "us-east-2a",
+                        "subregion_name": "eu-west-2a",
                         "tags": [],
                         "timeouts": null
                     },

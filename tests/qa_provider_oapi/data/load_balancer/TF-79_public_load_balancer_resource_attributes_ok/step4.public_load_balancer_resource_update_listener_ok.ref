@@ -47,7 +47,7 @@
                                 "server_certificate_id": "##id-1##"
                             }
                         ],
-                        "load_balancer_name": "lbu-TF-79",
+                        "load_balancer_name": "########",
                         "load_balancer_sticky_cookie_policies": [],
                         "load_balancer_type": "internet-facing",
                         "net_id": "",
@@ -89,7 +89,7 @@
                         "dry_run": null,
                         "expiration_date": "",
                         "id": "##id-3##",
-                        "name": "Certificate-TF-79",
+                        "name": "Certificate-TF-79-1",
                         "orn": "########",
                         "path": "/",
                         "private_key": "########",

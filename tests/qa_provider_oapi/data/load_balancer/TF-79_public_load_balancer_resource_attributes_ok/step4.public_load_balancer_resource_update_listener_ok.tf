@@ -1,11 +1,11 @@
 resource "outscale_server_certificate" "my_server_certificate" {
-   name                   =  "Certificate-TF-79"
+   name                   =  "Certificate-TF-79-1"
    body                   =  file("data/cert_example/certificate.pem")
    private_key            =  file("data/cert_example/certificate.key")
 }
 
 resource "outscale_load_balancer" "public_lbu1" {
-  load_balancer_name ="lbu-TF-79"
+  load_balancer_name ="lbu-TF-79-1"
   subregion_names= ["${var.region}a"]
   listeners {
      backend_port = 8080

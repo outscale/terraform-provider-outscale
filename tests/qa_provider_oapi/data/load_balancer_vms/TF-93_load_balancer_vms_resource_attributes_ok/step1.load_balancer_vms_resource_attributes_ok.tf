@@ -2,7 +2,7 @@ resource "outscale_keypair" "my_keypair" {
  keypair_name = "KP-TF93"
 }
 resource "outscale_load_balancer" "public_lbu1" {
-  load_balancer_name        = "lbu-TF-93"
+  load_balancer_name        = "lbu-TF-93-11"
   subregion_names           = ["${var.region}a"]
   listeners {
      backend_port           = 80

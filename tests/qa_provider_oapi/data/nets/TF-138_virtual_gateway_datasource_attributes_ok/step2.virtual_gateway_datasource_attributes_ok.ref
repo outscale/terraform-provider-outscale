@@ -63,12 +63,12 @@
                         "state": "available",
                         "tags": [
                             {
-                                "key": "Project-Datasource",
-                                "value": "Terraform-Datasource"
-                            },
-                            {
                                 "key": "Key",
                                 "value": "value-tags"
+                            },
+                            {
+                                "key": "Project-Datasource",
+                                "value": "Terraform-Datasource"
                             }
                         ],
                         "virtual_gateway_id": null
@@ -99,12 +99,12 @@
                         "state": "available",
                         "tags": [
                             {
-                                "key": "Project-Datasource",
-                                "value": "Terraform-Datasource"
-                            },
-                            {
                                 "key": "Key",
                                 "value": "value-tags"
+                            },
+                            {
+                                "key": "Project-Datasource",
+                                "value": "Terraform-Datasource"
                             }
                         ],
                         "virtual_gateway_id": null
@@ -135,12 +135,12 @@
                         "state": "available",
                         "tags": [
                             {
-                                "key": "Project-Datasource",
-                                "value": "Terraform-Datasource"
-                            },
-                            {
                                 "key": "Key",
                                 "value": "value-tags"
+                            },
+                            {
+                                "key": "Project-Datasource",
+                                "value": "Terraform-Datasource"
                             }
                         ],
                         "virtual_gateway_id": null
@@ -171,12 +171,12 @@
                         "state": "available",
                         "tags": [
                             {
-                                "key": "Project-Datasource",
-                                "value": "Terraform-Datasource"
-                            },
-                            {
                                 "key": "Key",
                                 "value": "value-tags"
+                            },
+                            {
+                                "key": "Project-Datasource",
+                                "value": "Terraform-Datasource"
                             }
                         ],
                         "virtual_gateway_id": null

@@ -49,7 +49,10 @@ IGNORE_END_ELEMENTS = ['request_id',
                        'orn',
                        'last_state_change_date',
                        'outside_ip_address',
-                       'available_ips_count']
+                       'available_ips_count',
+                       'load_balancer_name',
+                       'load_balancer_names',
+                       'listener_rule_name']
 IGNORE_END_PATHS = []
 TINA_ID_PREFIXES = ['i', 'subnet', 'snap', 'img', 'vol', 'eni', 'vpc', 'igw', 'nat', 'vgw', 'pcx', 'sg', 'rtb', 'rtbassoc', 'vpn', 'vpcconn', 'ami', 'dxvif','vpce','fgpu','aar','ca']
 VARIABLES_FILE_NAME = ['resources.auto.tfvars']
@@ -426,8 +429,8 @@ Log: {}
     def exec_test_step(self, tf_file_path, out_file_path):
         self.logger.debug("Exec step : {}".format(tf_file_path))
         self.log += "\nTerraform validate:\n{}".format(self.run_cmd("terraform validate -no-color")[0])
-        self.log += "\nTerraform plan:\n{}".format(self.run_cmd("terraform plan -lock=false -no-color")[0])
-        self.log += "\nTerraform apply:\n{}".format(self.run_cmd("terraform apply -auto-approve -lock=false -no-color")[0])
+        self.log += "\nTerraform plan:\n{}".format(self.run_cmd("export TF_VAR_suffixe_lbu_name=$((RANDOM%10000)) && terraform plan -lock=false -no-color")[0])
+        self.log += "\nTerraform apply:\n{}".format(self.run_cmd("export TF_VAR_suffixe_lbu_name=$((RANDOM%10000)) && terraform apply -auto-approve -lock=false -no-color")[0])
         self.log += "\nTerraform show:\n{}".format(self.run_cmd("terraform show -no-color")[0])
         self.run_cmd("terraform state pull > {}".format(out_file_path))
 
@@ -483,7 +486,7 @@ Log: {}
             raise error
         finally:
             try:
-                self.run_cmd("terraform destroy -auto-approve -no-color")
+                self.run_cmd("export TF_VAR_suffixe_lbu_name=$((RANDOM%10000)) && terraform destroy -auto-approve -no-color")
             finally:
                 self.run_cmd("rm -f test.tf")
                 self.run_cmd("rm -f terraform.tfstate")

@@ -20,11 +20,11 @@
                         "keypairs": [
                             {
                                 "keypair_fingerprint": "########",
-                                "keypair_name": "keyname_test_2"
+                                "keypair_name": "keyname_test_"
                             },
                             {
                                 "keypair_fingerprint": "########",
-                                "keypair_name": "keyname_test_"
+                                "keypair_name": "keyname_test_2"
                             }
                         ],
                         "request_id": "########"

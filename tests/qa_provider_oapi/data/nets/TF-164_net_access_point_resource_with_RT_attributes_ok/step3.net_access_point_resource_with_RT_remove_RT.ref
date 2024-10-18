@@ -44,7 +44,7 @@
                         "route_table_ids": [
                             "##id-3##"
                         ],
-                        "service_name": "com.outscale.us-east-2.api",
+                        "service_name": "com.outscale.eu-west-2.api",
                         "state": "available",
                         "tags": []
                     },

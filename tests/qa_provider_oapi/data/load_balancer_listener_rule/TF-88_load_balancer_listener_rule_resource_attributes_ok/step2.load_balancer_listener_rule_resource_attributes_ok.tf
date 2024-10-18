@@ -15,7 +15,7 @@ resource "outscale_vm" "public_vm_1" {
 }
 
 resource "outscale_load_balancer" "public_lbu2" {
-   load_balancer_name ="lbu-TF-88"
+   load_balancer_name ="lbu-TF-88-11"
    subregion_names= ["${var.region}a"]
    listeners {
       backend_port = 80
@@ -43,7 +43,7 @@ resource "outscale_load_balancer_listener_rule" "rule-1" {
 
     listener_rule {
       action                   = "forward"
-      listener_rule_name       = "listener-rule-1"
+      listener_rule_name       = "listener-rule-11"
       host_name_pattern        = "*.abc.*.abc.*.com"
       priority                 = 10
     }
@@ -58,7 +58,7 @@ resource "outscale_load_balancer_listener_rule" "rule-2" {
 
     listener_rule {
       action                  = "forward"
-      listener_rule_name      = "listener-rule-2"
+      listener_rule_name      = "listener-rule-12"
       path_pattern            = "*.abc.-.abc.*.com"
       priority                = 1
     }
@@ -73,7 +73,7 @@ resource "outscale_load_balancer_listener_rule" "rule-3" {
 
     listener_rule {
       action                   = "forward"
-      listener_rule_name       = "listener-rule-3"
+      listener_rule_name       = "listener-rule-13"
       path_pattern             = "*.abc.*.abc.*.com"
       host_name_pattern        = "*.abc.-.abc.*.com"
       priority                 = 12

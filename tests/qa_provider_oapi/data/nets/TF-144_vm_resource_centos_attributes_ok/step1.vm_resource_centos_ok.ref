@@ -22,7 +22,7 @@
                         "tags": [
                             {
                                 "key": "name",
-                                "value": "outscale_internet_service"
+                                "value": "outscale_internet_service_TF144"
                             }
                         ]
                     },
@@ -51,7 +51,7 @@
                         "tags": [
                             {
                                 "key": "name",
-                                "value": "outscale_internet_service"
+                                "value": "outscale_internet_service_TF144"
                             }
                         ]
                     },
@@ -104,7 +104,7 @@
                         "tags": [
                             {
                                 "key": "name",
-                                "value": "Terraform_net"
+                                "value": "Terraform_net_TF144"
                             }
                         ],
                         "tenancy": "default"
@@ -134,7 +134,7 @@
                         "tags": [
                             {
                                 "key": "name",
-                                "value": "outscale_public_ip"
+                                "value": "outscale_public_ip_TF144"
                             }
                         ],
                         "timeouts": null,
@@ -166,7 +166,7 @@
                         "tags": [
                             {
                                 "key": "name",
-                                "value": "outscale_public_ip"
+                                "value": "outscale_public_ip_TF144"
                             }
                         ],
                         "timeouts": null,
@@ -253,7 +253,7 @@
                         "tags": [
                             {
                                 "key": "name",
-                                "value": "Terraform_RT"
+                                "value": "Terraform_RT_TF144"
                             }
                         ]
                     },
@@ -317,7 +317,7 @@
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-14##",
-                        "security_group_name": "terraform-sg",
+                        "security_group_name": "terraform-sg-TF144",
                         "tag": null,
                         "tags": [
                             {
@@ -378,11 +378,11 @@
                         "request_id": "########",
                         "state": "available",
                         "subnet_id": "##id-13##",
-                        "subregion_name": "us-east-2a",
+                        "subregion_name": "eu-west-2a",
                         "tags": [
                             {
                                 "key": "name",
-                                "value": "Terraform_subnet"
+                                "value": "Terraform_subnet_TF144"
                             }
                         ],
                         "timeouts": null
@@ -436,8 +436,8 @@
                         "net_id": "",
                         "nics": [],
                         "os_family": "",
-                        "performance": "high",
-                        "placement_subregion_name": "us-east-2a",
+                        "performance": "medium",
+                        "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "primary_nic": [],
                         "private_dns_name": "########",
@@ -468,7 +468,7 @@
                         "tags": [
                             {
                                 "key": "name",
-                                "value": "outscale_vm"
+                                "value": "outscale_vm_TF144"
                             }
                         ],
                         "timeouts": null,
@@ -527,8 +527,8 @@
                         "net_id": "",
                         "nics": [],
                         "os_family": "",
-                        "performance": "high",
-                        "placement_subregion_name": "us-east-2a",
+                        "performance": "medium",
+                        "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "primary_nic": [],
                         "private_dns_name": "########",
@@ -561,7 +561,7 @@
                         "tags": [
                             {
                                 "key": "name",
-                                "value": "outscale_vm2"
+                                "value": "outscale_vm_TF144_2"
                             }
                         ],
                         "timeouts": null,
@@ -653,7 +653,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-14##",
-                                        "security_group_name": "terraform-sg"
+                                        "security_group_name": "terraform-sg-TF144"
                                     }
                                 ],
                                 "state": "in-use",
@@ -662,7 +662,7 @@
                         ],
                         "os_family": "",
                         "performance": "medium",
-                        "placement_subregion_name": "us-east-2a",
+                        "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "primary_nic": [
                             {
@@ -699,7 +699,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-14##",
-                                        "security_group_name": "terraform-sg"
+                                        "security_group_name": "terraform-sg-TF144"
                                     }
                                 ],
                                 "state": "in-use",
@@ -725,18 +725,23 @@
                         "security_groups": [
                             {
                                 "security_group_id": "##id-14##",
-                                "security_group_name": "terraform-sg"
+                                "security_group_name": "terraform-sg-TF144"
                             }
                         ],
                         "state": "running",
                         "state_reason": "",
                         "subnet_id": "##id-13##",
-                        "tags": [],
+                        "tags": [
+                            {
+                                "key": "name",
+                                "value": "outscale_vm_net_TF144"
+                            }
+                        ],
                         "timeouts": null,
                         "user_data": "",
                         "vm_id": "##id-8##",
                         "vm_initiated_shutdown_behavior": "stop",
-                        "vm_type": "t2.nano"
+                        "vm_type": "###vm_type###"
                     },
                     "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",

@@ -16,7 +16,7 @@ resource "outscale_net" "outscale_net" {
 
 resource "outscale_security_group" "outscale_security_group" {
     description         = "test group"
-    security_group_name = "sg1-test-group_test"
+    security_group_name = "sg1-test-group_TF111"
     net_id              = outscale_net.outscale_net.net_id
 }
 

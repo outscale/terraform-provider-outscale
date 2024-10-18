@@ -22,7 +22,7 @@ resource "outscale_subnet" "subnet-1" {
 }
 
 resource "outscale_load_balancer" "private_lbu_1" {
-   load_balancer_name ="lbu-TF-82"
+   load_balancer_name ="lbu-TF-82-${var.suffixe_lbu_name}"
    listeners {
       backend_port = 80
       backend_protocol= "TCP"

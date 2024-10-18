@@ -1,11 +1,12 @@
-resource "outscale_security_group" "my_sgImg" {
+resource "outscale_security_group" "My-SGTF66" {
     description         = "test security group"
-    security_group_name = "SG-inteImg"
+    security_group_name = "SG-TF66"
 }
 
 resource "outscale_vm" "my-vm" {
+    vm_type            = var.vm_type
     image_id           = var.image_id
-    security_group_ids = [outscale_security_group.my_sgImg.security_group_id]
+    security_group_ids = [outscale_security_group.My-SGTF66.security_group_id]
 }
 
 resource "outscale_image" "outscale_image" {
