@@ -23,7 +23,7 @@
                                 "max_value": "########",
                                 "name": "lb_listeners_limit",
                                 "quota_collection": "LBU",
-                                "quota_type": "terraform-lb-TF186",
+                                "quota_type": "terraform-lb-TF186-11",
                                 "short_description": "Load Balancer Listeners Limit",
                                 "used_value": 1
                             }
@@ -76,7 +76,7 @@
                                 "server_certificate_id": ""
                             }
                         ],
-                        "load_balancer_name": "terraform-lb-TF186",
+                        "load_balancer_name": "########",
                         "load_balancer_sticky_cookie_policies": [],
                         "load_balancer_type": "internet-facing",
                         "net_id": "",

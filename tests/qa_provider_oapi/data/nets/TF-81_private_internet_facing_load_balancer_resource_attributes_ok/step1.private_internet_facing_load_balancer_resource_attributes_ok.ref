@@ -101,7 +101,7 @@
                                 "server_certificate_id": ""
                             }
                         ],
-                        "load_balancer_name": "lbu-TF-81",
+                        "load_balancer_name": "########",
                         "load_balancer_sticky_cookie_policies": [],
                         "load_balancer_type": "internet-facing",
                         "net_id": "##id-1##",
@@ -115,14 +115,14 @@
                         "source_security_group": [
                             {
                                 "security_group_account_id": "##id-5##",
-                                "security_group_name": "terraform-sg-lbu-1"
+                                "security_group_name": "TF81-lbu-2"
                             }
                         ],
                         "subnets": [
                             "##id-6##"
                         ],
                         "subregion_names": [
-                            "us-east-2a"
+                            "eu-west-2a"
                         ],
                         "tags": [
                             {
@@ -286,7 +286,7 @@
                     "attributes": {
                         "account_id": "##id-5##",
                         "description": "test lbu-2",
-                        "id": "##id-3##",
+                        "id": "##id-4##",
                         "inbound_rules": [],
                         "net_id": "##id-1##",
                         "outbound_rules": [
@@ -300,8 +300,8 @@
                         ],
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
-                        "security_group_id": "##id-3##",
-                        "security_group_name": "terraform-sg-lbu-1",
+                        "security_group_id": "##id-4##",
+                        "security_group_name": "TF81-lbu-1",
                         "tag": null,
                         "tags": [
                             {
@@ -329,7 +329,7 @@
                     "attributes": {
                         "account_id": "##id-5##",
                         "description": "test lbu-2",
-                        "id": "##id-4##",
+                        "id": "##id-3##",
                         "inbound_rules": [],
                         "net_id": "##id-1##",
                         "outbound_rules": [
@@ -343,8 +343,8 @@
                         ],
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
-                        "security_group_id": "##id-4##",
-                        "security_group_name": "terraform-sg-lbu-2",
+                        "security_group_id": "##id-3##",
+                        "security_group_name": "TF81-lbu-2",
                         "tag": null,
                         "tags": [
                             {
@@ -378,7 +378,7 @@
                         "request_id": "########",
                         "state": "available",
                         "subnet_id": "##id-6##",
-                        "subregion_name": "us-east-2a",
+                        "subregion_name": "eu-west-2a",
                         "tags": [
                             {
                                 "key": "Name",

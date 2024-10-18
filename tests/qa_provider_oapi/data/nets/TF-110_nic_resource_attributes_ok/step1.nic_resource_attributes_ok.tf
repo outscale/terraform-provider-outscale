@@ -19,7 +19,7 @@ resource "outscale_nic" "outscale_nic" {
 
 resource "outscale_security_group" "outscale_sg" {
     description         = "sg for terraform tests"
-    security_group_name = "terraform-sg"
+    security_group_name = "terraform-sg-TF110"
     net_id              = outscale_net.outscale_net.net_id
 }
 

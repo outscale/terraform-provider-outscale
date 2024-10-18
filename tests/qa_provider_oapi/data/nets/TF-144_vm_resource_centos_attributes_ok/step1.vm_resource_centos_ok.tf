@@ -15,7 +15,7 @@ resource "outscale_vm" "outscale_vm" {
     placement_tenancy        = "default"
     tags {
          key = "name"
-         value = "outscale_vm"
+         value = "outscale_vm_TF144"
          }
 }
 
@@ -28,7 +28,7 @@ resource "outscale_vm" "outscale_vm2" {
     placement_tenancy        = "default"
      tags {
          key = "name"
-         value = "outscale_vm2"
+         value = "outscale_vm_TF144_2"
          }
 }
 
@@ -39,7 +39,7 @@ resource "outscale_net" "outscale_net" {
 
     tags  {                               
         key   = "name"
-        value = "Terraform_net"
+        value = "Terraform_net_TF144"
       }
 }
 
@@ -50,13 +50,13 @@ resource "outscale_subnet" "outscale_subnet" {
 
     tags {                               
         key   = "name"
-        value = "Terraform_subnet"
+        value = "Terraform_subnet_TF144"
       }
 }
 
 resource "outscale_security_group" "outscale_sg" {
     description         = "sg for terraform tests"
-    security_group_name = "terraform-sg"
+    security_group_name = "terraform-sg-TF144"
     net_id              = outscale_net.outscale_net.net_id
      tags {                               
         key   = "name"
@@ -67,7 +67,7 @@ resource "outscale_security_group" "outscale_sg" {
 resource "outscale_internet_service" "outscale_internet_service" {
 tags {                               
         key   = "name"
-        value = "outscale_internet_service"
+        value = "outscale_internet_service_TF144"
       }
 depends_on = [outscale_net.outscale_net]
 }
@@ -77,7 +77,7 @@ resource "outscale_route_table" "outscale_route_table" {
 
     tags {                               
         key   = "name"
-        value = "Terraform_RT"
+        value = "Terraform_RT_TF144"
       }
 }
 
@@ -99,16 +99,20 @@ resource "outscale_route" "outscale_route" {
 
 resource "outscale_vm" "outscale_vmnet" {
     image_id           = var.image_id
-    vm_type            = "t2.nano"
+    vm_type            = var.vm_type
     keypair_name       = outscale_keypair.my_keypair.keypair_name
     security_group_ids = [outscale_security_group.outscale_sg.security_group_id]
     subnet_id          = outscale_subnet.outscale_subnet.subnet_id
+    tags {
+         key = "name"
+         value = "outscale_vm_net_TF144"
+         }
 }
 
 resource "outscale_public_ip" "outscale_public_ip" {
 tags {                               
         key   = "name"
-        value = "outscale_public_ip"
+        value = "outscale_public_ip_TF144"
       }
 }
 

@@ -208,7 +208,7 @@
                         "net_id": "",
                         "nics": [],
                         "os_family": "",
-                        "performance": "high",
+                        "performance": "medium",
                         "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "primary_nic": [],

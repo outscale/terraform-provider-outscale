@@ -1,5 +1,5 @@
 resource "outscale_load_balancer" "public_lbu1" {
-  load_balancer_name ="lbu-TF-94"
+  load_balancer_name ="lbu-TF-94-${var.suffixe_lbu_name}"
   subregion_names= ["${var.region}a"]
   listeners {
      backend_port = 80

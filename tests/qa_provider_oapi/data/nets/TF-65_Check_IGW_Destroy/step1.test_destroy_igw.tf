@@ -5,7 +5,7 @@ resource "outscale_net" "nomad" {
   ip_range = "10.0.0.0/16"
   tags {
     key   = "name"
-    value = "nomad-network"
+    value = "TF65-network"
   }
 }
 resource "outscale_internet_service_link" "nomad" {
@@ -18,7 +18,7 @@ resource "outscale_subnet" "bastion" {
   net_id         = outscale_net.nomad.net_id
   tags {
     key   = "name"
-    value = "nomad-bastion"
+    value = "TF65-bastion"
   }
 }
 resource "outscale_subnet" "adm" {
@@ -27,7 +27,7 @@ resource "outscale_subnet" "adm" {
   net_id         = outscale_net.nomad.net_id
   tags {
     key   = "name"
-    value = "nomad-adm"
+    value = "TF65-adm"
   }
 }
 resource "outscale_public_ip" "nat" {
@@ -91,12 +91,12 @@ resource "outscale_vm" "vm2" {
 }
 resource "outscale_security_group" "nomad-sg1" {
                 description         = "sg for terraform tests"
-                security_group_name = "terraform-sg-12"
+                security_group_name = "TF65-sg-1"
                 net_id              = outscale_net.nomad.net_id
         }
 resource "outscale_security_group" "nomad-sg2" {
                 description         = "sg for terraform tests"
-                security_group_name = "terraform-sg-22"
+                security_group_name = "TF65-sg-2"
                 net_id              = outscale_net.nomad.net_id
         }
 
@@ -162,7 +162,7 @@ depends_on =[outscale_security_group_rule.rule2-sg2]
 resource "outscale_public_ip" "EIP" {
      tags {
         key = "name"
-        value = "EIP"
+        value = "EIP-TF65"
       }
 }
 resource "outscale_public_ip_link" "eip_link" {
@@ -173,7 +173,7 @@ resource "outscale_public_ip_link" "eip_link" {
 resource "outscale_public_ip" "EIP2" {
      tags {
         key = "name"
-        value = "EIP2"
+        value = "EIP-TF65-2"
       }
 }
 resource "outscale_public_ip_link" "eip_link2" {

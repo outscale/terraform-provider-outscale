@@ -9,7 +9,7 @@ variable "osu_bucket_name" {}
 
 variable "vm_type" {
   type    = string
-  default = "tinav4.c2r2p2"
+  default = "tinav5.c2r2p2"
 }
 
 variable "fgpu_gen" {
@@ -20,4 +20,8 @@ variable "fgpu_gen" {
 variable "fgpu_vm_type" {
   type    = string
   default = "tinav5.c2r2p1"
+}
+
+variable "suffixe_lbu_name" {
+type    = string
 }

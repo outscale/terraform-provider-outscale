@@ -69,7 +69,7 @@
                         ],
                         "state": "available",
                         "subnet_id": "##id-5##",
-                        "subregion_name": "us-east-2a",
+                        "subregion_name": "eu-west-2a",
                         "tags": [],
                         "timeouts": null
                     },
@@ -124,12 +124,12 @@
                         "security_groups": [
                             {
                                 "security_group_id": "##id-7##",
-                                "security_group_name": "terraform-sg"
+                                "security_group_name": "terraform-sg-TF110"
                             }
                         ],
                         "state": "available",
                         "subnet_id": "##id-5##",
-                        "subregion_name": "us-east-2a",
+                        "subregion_name": "eu-west-2a",
                         "tags": [],
                         "timeouts": null
                     },
@@ -169,7 +169,7 @@
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-7##",
-                        "security_group_name": "terraform-sg",
+                        "security_group_name": "terraform-sg-TF110",
                         "tag": null,
                         "tags": []
                     },
@@ -198,7 +198,7 @@
                         "request_id": "########",
                         "state": "available",
                         "subnet_id": "##id-5##",
-                        "subregion_name": "us-east-2a",
+                        "subregion_name": "eu-west-2a",
                         "tags": [],
                         "timeouts": null
                     },
