@@ -4,14 +4,12 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccOthers_DataSourceVirtualGateway_unattached(t *testing.T) {
 	//t.Skip()
 	t.Parallel()
-	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -20,7 +18,7 @@ func TestAccOthers_DataSourceVirtualGateway_unattached(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleVirtualGatewayUnattachedConfig(rInt),
+				Config: testAccDataSourceOutscaleVirtualGatewayUnattachedConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
 						"data.outscale_virtual_gateway.test_by_id", "id",
@@ -33,7 +31,7 @@ func TestAccOthers_DataSourceVirtualGateway_unattached(t *testing.T) {
 	})
 }
 
-func testAccDataSourceOutscaleVirtualGatewayUnattachedConfig(rInt int) string {
+func testAccDataSourceOutscaleVirtualGatewayUnattachedConfig() string {
 	return fmt.Sprintf(`
 		resource "outscale_virtual_gateway" "unattached" {
 			connection_type = "ipsec.1"	

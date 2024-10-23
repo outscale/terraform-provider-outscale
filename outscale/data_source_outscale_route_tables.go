@@ -184,10 +184,6 @@ func DataSourceOutscaleRouteTablesRead(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("[DEBUG] Error reading Internet Services (%s)", errString)
 	}
 
-	if err != nil {
-		return err
-	}
-
 	rt := resp.GetRouteTables()
 	if len(rt) == 0 {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")

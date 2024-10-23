@@ -18,7 +18,6 @@ func TestAccVM_WithVolumeAttachment_basic(t *testing.T) {
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
 
 	var i oscgo.Vm
-	var v oscgo.Volume
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -35,7 +34,7 @@ func TestAccVM_WithVolumeAttachment_basic(t *testing.T) {
 						"outscale_volume_link.ebs_att", "device_name", "/dev/sdh"),
 					testAccCheckOutscaleVMExists("outscale_vm.web", &i),
 					testAccCheckOAPIVolumeAttachmentExists(
-						"outscale_volume_link.ebs_att", &i, &v),
+						"outscale_volume_link.ebs_att", &i),
 				),
 			},
 		},
@@ -86,7 +85,7 @@ func testAccCheckOAPIVolumeAttachmentDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOAPIVolumeAttachmentExists(n string, i *oscgo.Vm, v *oscgo.Volume) resource.TestCheckFunc {
+func testAccCheckOAPIVolumeAttachmentExists(n string, i *oscgo.Vm) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {

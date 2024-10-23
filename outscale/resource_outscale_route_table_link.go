@@ -71,10 +71,6 @@ func ResourceOutscaleLinkRouteTableCreate(d *schema.ResourceData, meta interface
 		resp = rp
 		return nil
 	})
-	if err != nil {
-		return err
-	}
-
 	// Set the ID and return
 	var errString string
 	if err != nil {

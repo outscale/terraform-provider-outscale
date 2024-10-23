@@ -717,7 +717,7 @@ func ResourceOutscaleVM() *schema.Resource {
 func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	vmOpts, bsuMapsTags, err := buildCreateVmsRequest(d, meta)
+	vmOpts, bsuMapsTags, err := buildCreateVmsRequest(d)
 	if err != nil {
 		return err
 	}
@@ -1164,7 +1164,7 @@ func resourceOAPIVMDelete(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func buildCreateVmsRequest(d *schema.ResourceData, meta interface{}) (oscgo.CreateVmsRequest, []map[string]interface{}, error) {
+func buildCreateVmsRequest(d *schema.ResourceData) (oscgo.CreateVmsRequest, []map[string]interface{}, error) {
 	request := oscgo.CreateVmsRequest{
 		DeletionProtection: oscgo.PtrBool(d.Get("deletion_protection").(bool)),
 		BootOnCreation:     oscgo.PtrBool(true),

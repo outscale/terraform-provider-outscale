@@ -4,15 +4,12 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccOthers_DataSourceVpnGateways_unattached(t *testing.T) {
 	//t.Skip()
 	t.Parallel()
-	rInt := acctest.RandInt()
-
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
@@ -20,13 +17,13 @@ func TestAccOthers_DataSourceVpnGateways_unattached(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleVpnGatewaysUnattachedConfig(rInt),
+				Config: testAccDataSourceOutscaleVpnGatewaysUnattachedConfig(),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleVpnGatewaysUnattachedConfig(rInt int) string {
+func testAccDataSourceOutscaleVpnGatewaysUnattachedConfig() string {
 	return fmt.Sprintf(`
 		resource "outscale_virtual_gateway" "unattached" {
 			connection_type = "ipsec.1"	

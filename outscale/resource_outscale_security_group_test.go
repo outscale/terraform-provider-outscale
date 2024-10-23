@@ -4,15 +4,12 @@ import (
 	"fmt"
 	"testing"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccNet_WithSecurityGroup(t *testing.T) {
-	var group oscgo.SecurityGroup
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
@@ -23,7 +20,7 @@ func TestAccNet_WithSecurityGroup(t *testing.T) {
 			{
 				Config: testAccOutscaleSecurityGroupConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleSecurityGroupRuleExists("outscale_security_group.web", &group),
+					testAccCheckOutscaleSecurityGroupRuleExists("outscale_security_group.web"),
 					resource.TestCheckResourceAttr(
 						"outscale_security_group.web", "security_group_name", fmt.Sprintf("terraform_test_%d", rInt)),
 				),
@@ -48,7 +45,7 @@ func testAccCheckOutscaleSGRuleDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOutscaleSecurityGroupRuleExists(n string, group *oscgo.SecurityGroup) resource.TestCheckFunc {
+func testAccCheckOutscaleSecurityGroupRuleExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 
