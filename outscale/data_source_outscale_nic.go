@@ -245,16 +245,12 @@ func DataSourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 	})
 
 	if err != nil {
-		return fmt.Errorf("Error describing Network Interfaces : %s", err)
-	}
-
-	if err != nil {
 		if statusCode == http.StatusNotFound {
 			// The ENI is gone now, so just remove it from the state
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error retrieving ENI: %s", err)
+		return fmt.Errorf("Error describing Network Interfaces: %s", err)
 	}
 	if err := utils.IsResponseEmptyOrMutiple(len(resp.GetNics()), "Nic"); err != nil {
 		return err

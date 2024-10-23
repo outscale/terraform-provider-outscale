@@ -23,14 +23,14 @@ func TestAccNet_DataSource_basic(t *testing.T) {
 			{
 				Config: testAccDataSourceOutscaleVpcConfig(ipRange, tag),
 				Check: resource.ComposeTestCheckFunc(
-					testAccDataSourceOutscaleVpcCheck("data.outscale_net.by_id", ipRange, tag),
+					testAccDataSourceOutscaleVpcCheck("data.outscale_net.by_id", ipRange),
 				),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleVpcCheck(name, ipRange, tag string) resource.TestCheckFunc {
+func testAccDataSourceOutscaleVpcCheck(name, ipRange string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {

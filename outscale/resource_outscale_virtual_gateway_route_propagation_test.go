@@ -15,7 +15,6 @@ import (
 
 func TestAccNet_WithVirtualRoutePropagation_basic(t *testing.T) {
 	t.Parallel()
-	rBgpAsn := utils.RandIntRange(64512, 65534)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -25,7 +24,7 @@ func TestAccNet_WithVirtualRoutePropagation_basic(t *testing.T) {
 		CheckDestroy: testAccCheckOAPIVirtualRoutePropagationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleVpnRoutePropagationConfig(rBgpAsn),
+				Config: testAccOutscaleVpnRoutePropagationConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccOutscaleVpnRoutePropagation(
 						"outscale_virtual_gateway_route_propagation.outscale_virtual_gateway_route_propagation",
@@ -97,7 +96,7 @@ func testAccOutscaleVpnRoutePropagation(routeProp string) resource.TestCheckFunc
 	}
 }
 
-func testAccOutscaleVpnRoutePropagationConfig(rBgpAsn int) string {
+func testAccOutscaleVpnRoutePropagationConfig() string {
 	return fmt.Sprintf(`
 		resource "outscale_virtual_gateway" "outscale_virtual_gateway" {
  connection_type = "ipsec.1"
