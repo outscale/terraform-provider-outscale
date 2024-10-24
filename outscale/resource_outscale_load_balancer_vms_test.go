@@ -18,6 +18,7 @@ func TestAccVM_WithLBUAttachment_basic(t *testing.T) {
 	var conf oscgo.LoadBalancer
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	rand := acctest.RandIntRange(0, 50)
+	region := utils.GetRegion()
 	testCheckInstanceAttached := func(count int) resource.TestCheckFunc {
 		return func(*terraform.State) error {
 			if conf.BackendVmIds != nil {
@@ -37,7 +38,21 @@ func TestAccVM_WithLBUAttachment_basic(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscaleLBUDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleLBUAttachmentConfig1(rand, omi, utils.GetRegion()),
+				Config: testAccOutscaleLBUAttachmentConfig1(rand, omi, region),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleLBUExists("outscale_load_balancer.bar", &conf),
+					testCheckInstanceAttached(1),
+				),
+			},
+			{
+				Config: testAcc_ConfigLBUAttachmentAddUpdate(omi, region),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleLBUExists("outscale_load_balancer.bar", &conf),
+					testCheckInstanceAttached(2),
+				),
+			},
+			{
+				Config: testAcc_ConfigLBUAttachmentRemoveUpdate(omi, region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleLBUExists("outscale_load_balancer.barTach", &conf),
 					testCheckInstanceAttached(1),
