@@ -154,7 +154,7 @@ func StringSliceToFloat32Slice(src []string) (res []float32) {
 }
 
 func LogManuallyDeleted(name, id string) {
-	log.Printf("[WARN] %s %s not found, probably deleted manually, removing from state", name, id)
+	log.Printf("\n[WARN] %s %s not found, probably deleted manually, removing from state\n", name, id)
 }
 
 func IsResponseEmpty(len int, name, id string) bool {
@@ -167,10 +167,10 @@ func IsResponseEmpty(len int, name, id string) bool {
 
 func IsResponseEmptyOrMutiple(rLen int, resName string) error {
 	if rLen == 0 {
-		return fmt.Errorf("Unable to find %v", resName)
+		return fmt.Errorf("unable to find %v", resName)
 	}
 	if rLen > 1 {
-		return fmt.Errorf("Multiple %vs matched; use additional constraints to reduce matches to a single %v", resName, resName)
+		return fmt.Errorf("multiple %vs matched; use additional constraints to reduce matches to a single %v", resName, resName)
 	}
 	return nil
 }

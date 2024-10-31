@@ -50,7 +50,7 @@ func ResourceLBUAttachmentCreate(d *schema.ResourceData, meta interface{}) error
 	vmIds := utils.SetToStringSlice(d.Get("backend_vm_ids").(*schema.Set))
 	vmIps := d.Get("backend_ips").(*schema.Set)
 	if len(vmIds) == 0 && vmIps.Len() == 0 {
-		return fmt.Errorf("Error: the 'backend_vm_ids' and 'backend_ips' parameters cannot both be empty")
+		return fmt.Errorf("error: the 'backend_vm_ids' and 'backend_ips' parameters cannot both be empty")
 	}
 	if vmIps.Len() > 0 {
 		vm_ips, err := getVmIdsThroughVmIps(conn, vmIps)

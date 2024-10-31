@@ -19,7 +19,7 @@ func TestAccVM_TypesDataSource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleVMTypesConfig(omi, "tinav4.c1r1p1"),
+				Config: testAccDataSourceOutscaleVMTypesConfig(omi, "tinav5.c2r2p2"),
 			},
 		},
 	})
