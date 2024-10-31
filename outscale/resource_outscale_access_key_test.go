@@ -170,12 +170,15 @@ func testAccCheckOutscaleAccessKeyExists(resourceName string) resource.TestCheck
 			return fmt.Errorf("No Access ID is set")
 		}
 		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
-
-		filter := oscgo.ReadSecretAccessKeyRequest{
-			AccessKeyId: rs.Primary.ID,
+		filter := oscgo.FiltersAccessKeys{
+			AccessKeyIds: &[]string{rs.Primary.ID},
 		}
+		req := oscgo.ReadAccessKeysRequest{
+			Filters: &filter,
+		}
+
 		err := resource.Retry(2*time.Minute, func() *resource.RetryError {
-			_, httpResp, err := conn.AccessKeyApi.ReadSecretAccessKey(context.Background()).ReadSecretAccessKeyRequest(filter).Execute()
+			_, httpResp, err := conn.AccessKeyApi.ReadAccessKeys(context.Background()).ReadAccessKeysRequest(req).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
 			}
@@ -195,12 +198,15 @@ func testAccCheckOutscaleAccessKeyDestroy(s *terraform.State) error {
 		if rs.Type != "outscale_access_key" {
 			continue
 		}
-
-		filter := oscgo.ReadSecretAccessKeyRequest{
-			AccessKeyId: rs.Primary.ID,
+		filter := oscgo.FiltersAccessKeys{
+			AccessKeyIds: &[]string{rs.Primary.ID},
 		}
+		req := oscgo.ReadAccessKeysRequest{
+			Filters: &filter,
+		}
+
 		err := resource.Retry(2*time.Minute, func() *resource.RetryError {
-			_, httpResp, err := conn.AccessKeyApi.ReadSecretAccessKey(context.Background()).ReadSecretAccessKeyRequest(filter).Execute()
+			_, httpResp, err := conn.AccessKeyApi.ReadAccessKeys(context.Background()).ReadAccessKeysRequest(req).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
 			}
