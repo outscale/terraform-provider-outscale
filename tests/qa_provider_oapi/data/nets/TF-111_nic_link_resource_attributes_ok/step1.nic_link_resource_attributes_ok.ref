@@ -91,7 +91,7 @@
                         ],
                         "state": "available",
                         "subnet_id": "##id-6##",
-                        "subregion_name": "eu-west-2a",
+                        "subregion_name": "us-east-2a",
                         "tags": [],
                         "timeouts": null
                     },
@@ -192,7 +192,7 @@
                         "request_id": "########",
                         "state": "available",
                         "subnet_id": "##id-6##",
-                        "subregion_name": "eu-west-2a",
+                        "subregion_name": "us-east-2a",
                         "tags": [],
                         "timeouts": null
                     },
@@ -287,7 +287,7 @@
                         ],
                         "os_family": "",
                         "performance": "medium",
-                        "placement_subregion_name": "eu-west-2a",
+                        "placement_subregion_name": "us-east-2a",
                         "placement_tenancy": "default",
                         "primary_nic": [
                             {

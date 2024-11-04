@@ -70,7 +70,7 @@
                                 "generation": "v5",
                                 "model_name": "nvidia-p6",
                                 "state": "allocated",
-                                "subregion_name": "###region###a",
+                                "subregion_name": "eu-west-2a",
                                 "vm_id": ""
                             },
                             {
@@ -79,7 +79,7 @@
                                 "generation": "v5",
                                 "model_name": "nvidia-p6",
                                 "state": "attached",
-                                "subregion_name": "###region###a",
+                                "subregion_name": "eu-west-2a",
                                 "vm_id": "##id-1##"
                             }
                         ],
@@ -197,15 +197,15 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "account_id": "##id-5##",
+                        "account_id": "##id-6##",
                         "description": "test security group_fg",
-                        "id": "##id-6##",
+                        "id": "##id-7##",
                         "inbound_rules": [],
                         "net_id": "",
                         "outbound_rules": [],
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
-                        "security_group_id": "##id-6##",
+                        "security_group_id": "##id-7##",
                         "security_group_name": "SG-inteFlg",
                         "tag": null,
                         "tags": []
@@ -235,7 +235,7 @@
                                         "link_date": "########",
                                         "state": "attached",
                                         "tags": [],
-                                        "volume_id": "##id-6##"
+                                        "volume_id": "##id-8##"
                                     }
                                 ],
                                 "device_name": "/dev/sda1"
@@ -248,7 +248,8 @@
                         "get_admin_password": null,
                         "hypervisor": "xen",
                         "id": "##id-1##",
-                        "is_source_dest_checked": true,
+                        "image_id": "##id-9##",
+                        "is_source_dest_checked": false,
                         "keypair_name": "KP-TF1775",
                         "launch_number": 0,
                         "nested_virtualization": false,
@@ -268,16 +269,16 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-9##",
+                        "reservation_id": "##id-10##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
                         "security_group_ids": [
-                            "##id-6##"
+                            "##id-7##"
                         ],
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-6##",
+                                "security_group_id": "##id-7##",
                                 "security_group_name": "SG-inteFlg"
                             }
                         ],

@@ -78,6 +78,7 @@
                     "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoyNDAwMDAwMDAwMDAwLCJkZWxldGUiOjI0MDAwMDAwMDAwMDAsInVwZGF0ZSI6MjQwMDAwMDAwMDAwMH19",
                     "dependencies": [
+                        "outscale_security_group.my_sgImg1",
                         "outscale_vm.my-vm"
                     ]
                 }
@@ -122,7 +123,7 @@
                         "permissions_to_launch": [
                             {
                                 "account_ids": [],
-                                "global_permission": true
+                                "global_permission": false
                             }
                         ],
                         "product_codes": [
@@ -131,7 +132,7 @@
                         "request_id": "########",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "bsu",
-                        "source_image_id": "##id-6##",
+                        "source_image_id": "##id-2##",
                         "source_region_name": "eu-west-2",
                         "state": "available",
                         "state_comment": [
@@ -145,7 +146,39 @@
                         "vm_id": null
                     },
                     "sensitive_attributes": [],
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoyNDAwMDAwMDAwMDAwLCJkZWxldGUiOjI0MDAwMDAwMDAwMDAsInVwZGF0ZSI6MjQwMDAwMDAwMDAwMH19"
+                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoyNDAwMDAwMDAwMDAwLCJkZWxldGUiOjI0MDAwMDAwMDAwMDAsInVwZGF0ZSI6MjQwMDAwMDAwMDAwMH19",
+                    "dependencies": [
+                        "outscale_image.outscale_image",
+                        "outscale_security_group.my_sgImg1",
+                        "outscale_vm.my-vm"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_security_group",
+            "name": "my_sgImg1",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-0##",
+                        "description": "test sg group",
+                        "id": "##id-6##",
+                        "inbound_rules": [],
+                        "net_id": "",
+                        "outbound_rules": [],
+                        "remove_default_outbound_rule": false,
+                        "request_id": "########",
+                        "security_group_id": "##id-6##",
+                        "security_group_name": "security_group_TF67",
+                        "tag": null,
+                        "tags": []
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA=="
                 }
             ]
         },
@@ -182,8 +215,8 @@
                         "get_admin_password": null,
                         "hypervisor": "xen",
                         "id": "##id-3##",
-                        "image_id": "##id-6##",
-                        "is_source_dest_checked": true,
+                        "image_id": "##id-8##",
+                        "is_source_dest_checked": false,
                         "keypair_name": "",
                         "launch_number": 0,
                         "nested_virtualization": false,
@@ -203,15 +236,17 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-8##",
+                        "reservation_id": "##id-9##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
-                        "security_group_ids": null,
+                        "security_group_ids": [
+                            "##id-6##"
+                        ],
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-9##",
-                                "security_group_name": "default"
+                                "security_group_id": "##id-6##",
+                                "security_group_name": "security_group_TF67"
                             }
                         ],
                         "state": "running",
@@ -222,10 +257,13 @@
                         "user_data": "",
                         "vm_id": "##id-3##",
                         "vm_initiated_shutdown_behavior": "stop",
-                        "vm_type": "t2.small"
+                        "vm_type": "###vm_type###"
                     },
                     "sensitive_attributes": [],
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19"
+                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
+                    "dependencies": [
+                        "outscale_security_group.my_sgImg1"
+                    ]
                 }
             ]
         }

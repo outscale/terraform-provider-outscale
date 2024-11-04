@@ -160,15 +160,15 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "account_id": "##id-3##",
+                        "account_id": "##id-4##",
                         "description": "test security group",
-                        "id": "##id-4##",
+                        "id": "##id-5##",
                         "inbound_rules": [],
                         "net_id": "",
                         "outbound_rules": [],
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
-                        "security_group_id": "##id-4##",
+                        "security_group_id": "##id-5##",
                         "security_group_name": "SG-inteFg",
                         "tag": null,
                         "tags": []
@@ -197,7 +197,8 @@
                                         "delete_on_vm_deletion": true,
                                         "link_date": "########",
                                         "state": "attached",
-                                        "volume_id": "##id-4##"
+                                        "tags": [],
+                                        "volume_id": "##id-6##"
                                     }
                                 ],
                                 "device_name": "/dev/sda1"
@@ -210,8 +211,8 @@
                         "get_admin_password": null,
                         "hypervisor": "xen",
                         "id": "##id-1##",
-                        "image_id": "##id-5##",
-                        "is_source_dest_checked": true,
+                        "image_id": "##id-7##",
+                        "is_source_dest_checked": false,
                         "keypair_name": "KP-TF177",
                         "launch_number": 0,
                         "nested_virtualization": false,
@@ -231,16 +232,16 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-6##",
+                        "reservation_id": "##id-8##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
                         "security_group_ids": [
-                            "##id-4##"
+                            "##id-5##"
                         ],
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-4##",
+                                "security_group_id": "##id-5##",
                                 "security_group_name": "SG-inteFg"
                             }
                         ],

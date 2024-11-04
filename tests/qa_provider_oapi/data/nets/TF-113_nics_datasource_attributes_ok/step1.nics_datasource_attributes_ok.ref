@@ -58,7 +58,7 @@
                                 ],
                                 "state": "in-use",
                                 "subnet_id": "##id-7##",
-                                "subregion_name": "eu-west-2a",
+                                "subregion_name": "us-east-2a",
                                 "tags": [
                                     {
                                         "key": "Key:",
@@ -124,7 +124,7 @@
                                 ],
                                 "state": "in-use",
                                 "subnet_id": "##id-7##",
-                                "subregion_name": "eu-west-2a",
+                                "subregion_name": "us-east-2a",
                                 "tags": []
                             }
                         ],
@@ -172,7 +172,7 @@
                                 ],
                                 "state": "available",
                                 "subnet_id": "##id-13##",
-                                "subregion_name": "eu-west-2b",
+                                "subregion_name": "us-east-2b",
                                 "tags": [
                                     {
                                         "key": "Key:",
@@ -225,7 +225,7 @@
                                 ],
                                 "state": "in-use",
                                 "subnet_id": "##id-7##",
-                                "subregion_name": "eu-west-2a",
+                                "subregion_name": "us-east-2a",
                                 "tags": [
                                     {
                                         "key": "Name",
@@ -254,59 +254,6 @@
                         "nics": [
                             {
                                 "account_id": "##id-1##",
-                                "description": "TF-113",
-                                "is_source_dest_checked": true,
-                                "link_nic": [
-                                    {
-                                        "delete_on_vm_deletion": false,
-                                        "device_number": 1,
-                                        "link_nic_id": "##id-2##",
-                                        "state": "attached",
-                                        "vm_account_id": "##id-1##",
-                                        "vm_id": "##id-3##"
-                                    }
-                                ],
-                                "link_public_ip": [],
-                                "mac_address": "########",
-                                "net_id": "##id-4##",
-                                "nic_id": "##id-5##",
-                                "private_dns_name": "########",
-                                "private_ips": [
-                                    {
-                                        "is_primary": true,
-                                        "link_public_ip": [],
-                                        "private_dns_name": "########",
-                                        "private_ip": "########"
-                                    },
-                                    {
-                                        "is_primary": false,
-                                        "link_public_ip": [],
-                                        "private_dns_name": "########",
-                                        "private_ip": "########"
-                                    }
-                                ],
-                                "security_groups": [
-                                    {
-                                        "security_group_id": "##id-6##",
-                                        "security_group_name": "Terraform-SG-TF113"
-                                    }
-                                ],
-                                "state": "in-use",
-                                "subnet_id": "##id-7##",
-                                "subregion_name": "eu-west-2a",
-                                "tags": [
-                                    {
-                                        "key": "Key:",
-                                        "value": ":value-tags"
-                                    },
-                                    {
-                                        "key": "Key-2",
-                                        "value": "value-tags-2"
-                                    }
-                                ]
-                            },
-                            {
-                                "account_id": "##id-1##",
                                 "description": "",
                                 "is_source_dest_checked": true,
                                 "link_nic": [],
@@ -331,7 +278,7 @@
                                 ],
                                 "state": "available",
                                 "subnet_id": "##id-13##",
-                                "subregion_name": "eu-west-2b",
+                                "subregion_name": "us-east-2b",
                                 "tags": [
                                     {
                                         "key": "Key:",
@@ -378,7 +325,7 @@
                                 ],
                                 "state": "in-use",
                                 "subnet_id": "##id-7##",
-                                "subregion_name": "eu-west-2a",
+                                "subregion_name": "us-east-2a",
                                 "tags": []
                             },
                             {
@@ -422,11 +369,64 @@
                                 ],
                                 "state": "in-use",
                                 "subnet_id": "##id-7##",
-                                "subregion_name": "eu-west-2a",
+                                "subregion_name": "us-east-2a",
                                 "tags": [
                                     {
                                         "key": "Name",
                                         "value": "Nic-2"
+                                    }
+                                ]
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "TF-113",
+                                "is_source_dest_checked": true,
+                                "link_nic": [
+                                    {
+                                        "delete_on_vm_deletion": false,
+                                        "device_number": 1,
+                                        "link_nic_id": "##id-2##",
+                                        "state": "attached",
+                                        "vm_account_id": "##id-1##",
+                                        "vm_id": "##id-3##"
+                                    }
+                                ],
+                                "link_public_ip": [],
+                                "mac_address": "########",
+                                "net_id": "##id-4##",
+                                "nic_id": "##id-5##",
+                                "private_dns_name": "########",
+                                "private_ips": [
+                                    {
+                                        "is_primary": true,
+                                        "link_public_ip": [],
+                                        "private_dns_name": "########",
+                                        "private_ip": "########"
+                                    },
+                                    {
+                                        "is_primary": false,
+                                        "link_public_ip": [],
+                                        "private_dns_name": "########",
+                                        "private_ip": "########"
+                                    }
+                                ],
+                                "security_groups": [
+                                    {
+                                        "security_group_id": "##id-6##",
+                                        "security_group_name": "Terraform-SG-TF113"
+                                    }
+                                ],
+                                "state": "in-use",
+                                "subnet_id": "##id-7##",
+                                "subregion_name": "us-east-2a",
+                                "tags": [
+                                    {
+                                        "key": "Key:",
+                                        "value": ":value-tags"
+                                    },
+                                    {
+                                        "key": "Key-2",
+                                        "value": "value-tags-2"
                                     }
                                 ]
                             }
@@ -451,59 +451,6 @@
                         "nics": [
                             {
                                 "account_id": "##id-1##",
-                                "description": "TF-113",
-                                "is_source_dest_checked": true,
-                                "link_nic": [
-                                    {
-                                        "delete_on_vm_deletion": false,
-                                        "device_number": 1,
-                                        "link_nic_id": "##id-2##",
-                                        "state": "attached",
-                                        "vm_account_id": "##id-1##",
-                                        "vm_id": "##id-3##"
-                                    }
-                                ],
-                                "link_public_ip": [],
-                                "mac_address": "########",
-                                "net_id": "##id-4##",
-                                "nic_id": "##id-5##",
-                                "private_dns_name": "########",
-                                "private_ips": [
-                                    {
-                                        "is_primary": true,
-                                        "link_public_ip": [],
-                                        "private_dns_name": "########",
-                                        "private_ip": "########"
-                                    },
-                                    {
-                                        "is_primary": false,
-                                        "link_public_ip": [],
-                                        "private_dns_name": "########",
-                                        "private_ip": "########"
-                                    }
-                                ],
-                                "security_groups": [
-                                    {
-                                        "security_group_id": "##id-6##",
-                                        "security_group_name": "Terraform-SG-TF113"
-                                    }
-                                ],
-                                "state": "in-use",
-                                "subnet_id": "##id-7##",
-                                "subregion_name": "eu-west-2a",
-                                "tags": [
-                                    {
-                                        "key": "Key:",
-                                        "value": ":value-tags"
-                                    },
-                                    {
-                                        "key": "Key-2",
-                                        "value": "value-tags-2"
-                                    }
-                                ]
-                            },
-                            {
-                                "account_id": "##id-1##",
                                 "description": "",
                                 "is_source_dest_checked": true,
                                 "link_nic": [],
@@ -528,15 +475,15 @@
                                 ],
                                 "state": "available",
                                 "subnet_id": "##id-13##",
-                                "subregion_name": "eu-west-2b",
+                                "subregion_name": "us-east-2b",
                                 "tags": [
-                                    {
-                                        "key": "Key:",
-                                        "value": ":value-tags"
-                                    },
                                     {
                                         "key": "Key-2",
                                         "value": "value-tags-2"
+                                    },
+                                    {
+                                        "key": "Key:",
+                                        "value": ":value-tags"
                                     }
                                 ]
                             },
@@ -575,7 +522,7 @@
                                 ],
                                 "state": "in-use",
                                 "subnet_id": "##id-7##",
-                                "subregion_name": "eu-west-2a",
+                                "subregion_name": "us-east-2a",
                                 "tags": []
                             },
                             {
@@ -619,11 +566,64 @@
                                 ],
                                 "state": "in-use",
                                 "subnet_id": "##id-7##",
-                                "subregion_name": "eu-west-2a",
+                                "subregion_name": "us-east-2a",
                                 "tags": [
                                     {
                                         "key": "Name",
                                         "value": "Nic-2"
+                                    }
+                                ]
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "TF-113",
+                                "is_source_dest_checked": true,
+                                "link_nic": [
+                                    {
+                                        "delete_on_vm_deletion": false,
+                                        "device_number": 1,
+                                        "link_nic_id": "##id-2##",
+                                        "state": "attached",
+                                        "vm_account_id": "##id-1##",
+                                        "vm_id": "##id-3##"
+                                    }
+                                ],
+                                "link_public_ip": [],
+                                "mac_address": "########",
+                                "net_id": "##id-4##",
+                                "nic_id": "##id-5##",
+                                "private_dns_name": "########",
+                                "private_ips": [
+                                    {
+                                        "is_primary": true,
+                                        "link_public_ip": [],
+                                        "private_dns_name": "########",
+                                        "private_ip": "########"
+                                    },
+                                    {
+                                        "is_primary": false,
+                                        "link_public_ip": [],
+                                        "private_dns_name": "########",
+                                        "private_ip": "########"
+                                    }
+                                ],
+                                "security_groups": [
+                                    {
+                                        "security_group_id": "##id-6##",
+                                        "security_group_name": "Terraform-SG-TF113"
+                                    }
+                                ],
+                                "state": "in-use",
+                                "subnet_id": "##id-7##",
+                                "subregion_name": "us-east-2a",
+                                "tags": [
+                                    {
+                                        "key": "Key-2",
+                                        "value": "value-tags-2"
+                                    },
+                                    {
+                                        "key": "Key:",
+                                        "value": ":value-tags"
                                     }
                                 ]
                             }
@@ -672,7 +672,7 @@
                                 ],
                                 "state": "available",
                                 "subnet_id": "##id-13##",
-                                "subregion_name": "eu-west-2b",
+                                "subregion_name": "us-east-2b",
                                 "tags": [
                                     {
                                         "key": "Key:",
@@ -761,7 +761,7 @@
                         ],
                         "state": "available",
                         "subnet_id": "##id-7##",
-                        "subregion_name": "eu-west-2a",
+                        "subregion_name": "us-east-2a",
                         "tags": [
                             {
                                 "key": "Key-2",
@@ -831,7 +831,7 @@
                         ],
                         "state": "available",
                         "subnet_id": "##id-7##",
-                        "subregion_name": "eu-west-2a",
+                        "subregion_name": "us-east-2a",
                         "tags": [
                             {
                                 "key": "Name",
@@ -891,7 +891,7 @@
                         ],
                         "state": "available",
                         "subnet_id": "##id-13##",
-                        "subregion_name": "eu-west-2b",
+                        "subregion_name": "us-east-2b",
                         "tags": [
                             {
                                 "key": "Key-2",
@@ -1031,7 +1031,7 @@
                         "request_id": "########",
                         "state": "available",
                         "subnet_id": "##id-7##",
-                        "subregion_name": "eu-west-2a",
+                        "subregion_name": "us-east-2a",
                         "tags": [],
                         "timeouts": null
                     },
@@ -1060,7 +1060,7 @@
                         "request_id": "########",
                         "state": "available",
                         "subnet_id": "##id-13##",
-                        "subregion_name": "eu-west-2b",
+                        "subregion_name": "us-east-2b",
                         "tags": [],
                         "timeouts": null
                     },
@@ -1155,7 +1155,7 @@
                         ],
                         "os_family": "",
                         "performance": "medium",
-                        "placement_subregion_name": "eu-west-2a",
+                        "placement_subregion_name": "us-east-2a",
                         "placement_tenancy": "default",
                         "primary_nic": [
                             {

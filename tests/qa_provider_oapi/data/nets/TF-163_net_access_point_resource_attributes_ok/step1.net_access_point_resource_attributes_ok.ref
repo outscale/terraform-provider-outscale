@@ -42,7 +42,7 @@
                         "net_id": "##id-1##",
                         "request_id": "########",
                         "route_table_ids": null,
-                        "service_name": "com.outscale.eu-west-2.api",
+                        "service_name": "com.outscale.us-east-2.api",
                         "state": "available",
                         "tags": [
                             {

@@ -29,12 +29,12 @@
                         "subnet_id": "##id-3##",
                         "tags": [
                             {
-                                "key": "Key",
-                                "value": "value-tags"
-                            },
-                            {
                                 "key": "name",
                                 "value": "nat"
+                            },
+                            {
+                                "key": "Key",
+                                "value": "value-tags"
                             }
                         ]
                     },
@@ -66,12 +66,12 @@
                         "subnet_id": "##id-3##",
                         "tags": [
                             {
-                                "key": "Key",
-                                "value": "value-tags"
-                            },
-                            {
                                 "key": "name",
                                 "value": "nat"
+                            },
+                            {
+                                "key": "Key",
+                                "value": "value-tags"
                             }
                         ]
                     },
@@ -103,12 +103,12 @@
                         "subnet_id": "##id-3##",
                         "tags": [
                             {
-                                "key": "Key",
-                                "value": "value-tags"
-                            },
-                            {
                                 "key": "name",
                                 "value": "nat"
+                            },
+                            {
+                                "key": "Key",
+                                "value": "value-tags"
                             }
                         ]
                     },
@@ -140,12 +140,12 @@
                         "subnet_id": "##id-3##",
                         "tags": [
                             {
-                                "key": "Key",
-                                "value": "value-tags"
-                            },
-                            {
                                 "key": "name",
                                 "value": "nat"
+                            },
+                            {
+                                "key": "Key",
+                                "value": "value-tags"
                             }
                         ]
                     },
@@ -177,12 +177,12 @@
                         "subnet_id": "##id-3##",
                         "tags": [
                             {
-                                "key": "Key",
-                                "value": "value-tags"
-                            },
-                            {
                                 "key": "name",
                                 "value": "nat"
+                            },
+                            {
+                                "key": "Key",
+                                "value": "value-tags"
                             }
                         ]
                     },
@@ -214,12 +214,12 @@
                         "subnet_id": "##id-3##",
                         "tags": [
                             {
-                                "key": "Key",
-                                "value": "value-tags"
-                            },
-                            {
                                 "key": "name",
                                 "value": "nat"
+                            },
+                            {
+                                "key": "Key",
+                                "value": "value-tags"
                             }
                         ]
                     },
@@ -511,7 +511,7 @@
                         "request_id": "########",
                         "state": "available",
                         "subnet_id": "##id-3##",
-                        "subregion_name": "eu-west-2a",
+                        "subregion_name": "us-east-2a",
                         "tags": [
                             {
                                 "key": "name",

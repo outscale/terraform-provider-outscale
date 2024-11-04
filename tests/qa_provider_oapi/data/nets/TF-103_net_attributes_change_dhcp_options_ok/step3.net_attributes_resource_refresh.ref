@@ -16,7 +16,7 @@
                     "attributes": {
                         "default": false,
                         "dhcp_options_set_id": "##id-0##",
-                        "domain_name": "eu-west-2.compute.internal",
+                        "domain_name": "us-east-2.compute.internal",
                         "domain_name_servers": [
                             "192.168.12.12",
                             "192.168.12.132"

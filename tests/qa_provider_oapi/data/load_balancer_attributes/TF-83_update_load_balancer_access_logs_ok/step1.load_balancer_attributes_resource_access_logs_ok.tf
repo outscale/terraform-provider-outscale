@@ -29,7 +29,7 @@ resource "outscale_load_balancer_attributes" "attributes-access-logs" {
   access_log {
      publication_interval = 5
       is_enabled           = true
-      osu_bucket_name      = var.osu_bucket_name 
+      osu_bucket_name      = "bucket-name"
       osu_bucket_prefix    = "access-logs-test"
    }
 }

@@ -1,5 +1,7 @@
 # provider configuration
-variable "account_id" {}
+#variable "account_id" {}
+#variable "access_key_id" {}
+#variable "secret_key_id" {}
 
 # resources configuration
 variable "image_id" {}

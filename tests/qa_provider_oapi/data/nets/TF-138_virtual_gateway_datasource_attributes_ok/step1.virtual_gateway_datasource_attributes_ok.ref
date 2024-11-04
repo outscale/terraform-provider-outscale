@@ -27,12 +27,12 @@
                         "state": "available",
                         "tags": [
                             {
-                                "key": "Key",
-                                "value": "value-tags"
-                            },
-                            {
                                 "key": "Project-Datasource",
                                 "value": "Terraform-Datasource"
+                            },
+                            {
+                                "key": "Key",
+                                "value": "value-tags"
                             }
                         ],
                         "virtual_gateway_id": null

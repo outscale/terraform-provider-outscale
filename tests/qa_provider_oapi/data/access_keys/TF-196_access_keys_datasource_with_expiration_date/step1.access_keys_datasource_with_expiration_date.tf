@@ -1,6 +1,6 @@
 resource "outscale_access_key" "my_access_key" {
   count = 3
-  expiration_date = "2024-02-20T10:04:05.000Z"
+  expiration_date = "2028-02-20T10:04:05.000Z"
 }
 
 resource "outscale_access_key" "my_access_key_2" {
