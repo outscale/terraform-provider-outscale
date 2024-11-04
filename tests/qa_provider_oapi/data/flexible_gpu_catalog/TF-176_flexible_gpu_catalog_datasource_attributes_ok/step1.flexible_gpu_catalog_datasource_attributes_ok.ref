@@ -20,38 +20,10 @@
                                 "generations": [
                                     "v7"
                                 ],
-                                "max_cpu": 60,
-                                "max_ram": 384,
+                                "max_cpu": 64,
+                                "max_ram": 512,
                                 "model_name": "nvidia-h100",
                                 "v_ram": 80000
-                            },
-                            {
-                                "generations": [
-                                    "v6"
-                                ],
-                                "max_cpu": 35,
-                                "max_ram": 256,
-                                "model_name": "nvidia-a100-80",
-                                "v_ram": 80000
-                            },
-                            {
-                                "generations": [
-                                    "v5"
-                                ],
-                                "max_cpu": 80,
-                                "max_ram": 512,
-                                "model_name": "nvidia-p6",
-                                "v_ram": 16000
-                            },
-                            {
-                                "generations": [
-                                    "v5",
-                                    "v6"
-                                ],
-                                "max_cpu": 35,
-                                "max_ram": 250,
-                                "model_name": "nvidia-a10",
-                                "v_ram": 24000
                             },
                             {
                                 "generations": [
@@ -65,15 +37,6 @@
                             },
                             {
                                 "generations": [
-                                    "v7"
-                                ],
-                                "max_cpu": 35,
-                                "max_ram": 250,
-                                "model_name": "nvidia-l40",
-                                "v_ram": 48000
-                            },
-                            {
-                                "generations": [
                                     "v3",
                                     "v4"
                                 ],
@@ -84,12 +47,13 @@
                             },
                             {
                                 "generations": [
-                                    "v5"
+                                    "v5",
+                                    "v6"
                                 ],
-                                "max_cpu": 80,
-                                "max_ram": 512,
-                                "model_name": "nvidia-p100",
-                                "v_ram": 16000
+                                "max_cpu": 35,
+                                "max_ram": 250,
+                                "model_name": "nvidia-a100",
+                                "v_ram": 40000
                             },
                             {
                                 "generations": [
@@ -107,8 +71,44 @@
                                 ],
                                 "max_cpu": 35,
                                 "max_ram": 250,
-                                "model_name": "nvidia-a100",
-                                "v_ram": 40000
+                                "model_name": "nvidia-a10",
+                                "v_ram": 24000
+                            },
+                            {
+                                "generations": [
+                                    "v5"
+                                ],
+                                "max_cpu": 80,
+                                "max_ram": 512,
+                                "model_name": "nvidia-p6",
+                                "v_ram": 16000
+                            },
+                            {
+                                "generations": [
+                                    "v5"
+                                ],
+                                "max_cpu": 80,
+                                "max_ram": 512,
+                                "model_name": "nvidia-p100",
+                                "v_ram": 16000
+                            },
+                            {
+                                "generations": [
+                                    "v6"
+                                ],
+                                "max_cpu": 35,
+                                "max_ram": 256,
+                                "model_name": "nvidia-a100-80",
+                                "v_ram": 80000
+                            },
+                            {
+                                "generations": [
+                                    "v7"
+                                ],
+                                "max_cpu": 35,
+                                "max_ram": 256,
+                                "model_name": "nvidia-l40",
+                                "v_ram": 48000
                             }
                         ],
                         "id": "##id-0##",

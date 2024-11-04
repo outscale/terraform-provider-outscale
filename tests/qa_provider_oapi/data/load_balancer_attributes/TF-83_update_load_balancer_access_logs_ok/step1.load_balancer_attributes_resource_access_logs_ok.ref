@@ -101,7 +101,7 @@
                         "access_log": [
                             {
                                 "is_enabled": true,
-                                "osu_bucket_name": "###osu_bucket_name###",
+                                "osu_bucket_name": "bucket-name",
                                 "osu_bucket_prefix": "access-logs-test",
                                 "publication_interval": 5
                             }

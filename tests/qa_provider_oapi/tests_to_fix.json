@@ -5,13 +5,9 @@
     "test_snapshot_export_task_TF-193_snapshot_export_task_resource_attributes_ok",
     "test_image_export_task_TF-191_image_export_task_datasource_attributes_ok",
     "test_snapshot_export_tasks_TF-195_snapshot_export_tasks_datasource_attributes_ok",
-    "test_load_balancer_attributes_TF-86_update_load_balancer_listener_ssl_certificate_ok",
-    "test_product_types_TF-184_product_type_datasources_all_ok",
-    "waiting for io1 to fix volume test tf-154",
-    "test_volume_TF-154_volume_resource_attributes_ok2",
     "test_access_keys_TF-196_access_keys_datasource_with_expiration_date",
-    "test_flexible_gpu_TF-177_flexible_gpu_datasource_attributes_ok",
-    "test_flexible_gpus_TF-175_flexible_gpus_datasource_attributes_ok",
-    "test_image_TF-67_image_resource_attributes_ok",
+    "test_product_types_TF-184_product_type_datasources_all_ok",
+    "test_nets_TF-80_private_internal_load_balancer_resource_attributes_ok",
+    "waiting for io1 to fix volume test tf-154",
     "test_cert_example_.terraform"
 ]

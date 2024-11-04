@@ -68,7 +68,7 @@
                             "##id-4##"
                         ],
                         "subregion_names": [
-                            "eu-west-2a"
+                            "us-east-2a"
                         ],
                         "tags": [
                             {
@@ -147,7 +147,7 @@
                             "##id-4##"
                         ],
                         "subregion_names": [
-                            "eu-west-2a"
+                            "us-east-2a"
                         ],
                         "tags": [
                             {
@@ -253,7 +253,7 @@
                         "request_id": "########",
                         "state": "available",
                         "subnet_id": "##id-4##",
-                        "subregion_name": "eu-west-2a",
+                        "subregion_name": "us-east-2a",
                         "tags": [
                             {
                                 "key": "Name",

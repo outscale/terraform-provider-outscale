@@ -142,7 +142,7 @@
                         "request_id": "########",
                         "state": "available",
                         "subnet_id": "##id-5##",
-                        "subregion_name": "eu-west-2a",
+                        "subregion_name": "us-east-2a",
                         "tags": [],
                         "timeouts": null
                     },
@@ -171,7 +171,7 @@
                         "request_id": "########",
                         "state": "available",
                         "subnet_id": "##id-7##",
-                        "subregion_name": "eu-west-2a",
+                        "subregion_name": "us-east-2a",
                         "tags": [],
                         "timeouts": null
                     },

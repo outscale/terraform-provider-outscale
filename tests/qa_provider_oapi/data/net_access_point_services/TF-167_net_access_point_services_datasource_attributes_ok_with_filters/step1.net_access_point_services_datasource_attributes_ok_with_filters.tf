@@ -1,7 +1,7 @@
 data "outscale_net_access_point_services" "data-1" {
    filter {
         name     = "service_names"
-        values   = [var.service_name]
+        values   = ["com.outscale.eu-west-2.api"]
    }
 }
 

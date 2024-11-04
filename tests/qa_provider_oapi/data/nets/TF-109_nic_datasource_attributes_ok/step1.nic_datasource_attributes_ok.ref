@@ -51,7 +51,7 @@
                         ],
                         "state": "available",
                         "subnet_id": "##id-4##",
-                        "subregion_name": "eu-west-2a",
+                        "subregion_name": "us-east-2a",
                         "tags": [
                             {
                                 "key": "Key:",
@@ -113,7 +113,7 @@
                         ],
                         "state": "available",
                         "subnet_id": "##id-4##",
-                        "subregion_name": "eu-west-2a",
+                        "subregion_name": "us-east-2a",
                         "tags": [
                             {
                                 "key": "Key:",
@@ -178,7 +178,7 @@
                         ],
                         "state": "in-use",
                         "subnet_id": "##id-4##",
-                        "subregion_name": "eu-west-2a",
+                        "subregion_name": "us-east-2a",
                         "tags": []
                     },
                     "sensitive_attributes": []
@@ -231,7 +231,7 @@
                         ],
                         "state": "available",
                         "subnet_id": "##id-4##",
-                        "subregion_name": "eu-west-2a",
+                        "subregion_name": "us-east-2a",
                         "tags": [
                             {
                                 "key": "Name",
@@ -289,7 +289,7 @@
                         ],
                         "state": "available",
                         "subnet_id": "##id-4##",
-                        "subregion_name": "eu-west-2a",
+                        "subregion_name": "us-east-2a",
                         "tags": [
                             {
                                 "key": "Key:",
@@ -345,7 +345,7 @@
                         ],
                         "state": "available",
                         "subnet_id": "##id-11##",
-                        "subregion_name": "eu-west-2b",
+                        "subregion_name": "us-east-2b",
                         "tags": [
                             {
                                 "key": "Key:",
@@ -431,7 +431,7 @@
                         ],
                         "state": "available",
                         "subnet_id": "##id-4##",
-                        "subregion_name": "eu-west-2a",
+                        "subregion_name": "us-east-2a",
                         "tags": [
                             {
                                 "key": "Key-2",
@@ -501,7 +501,7 @@
                         ],
                         "state": "available",
                         "subnet_id": "##id-4##",
-                        "subregion_name": "eu-west-2a",
+                        "subregion_name": "us-east-2a",
                         "tags": [
                             {
                                 "key": "Name",
@@ -561,7 +561,7 @@
                         ],
                         "state": "available",
                         "subnet_id": "##id-11##",
-                        "subregion_name": "eu-west-2b",
+                        "subregion_name": "us-east-2b",
                         "tags": [
                             {
                                 "key": "Key-2",
@@ -701,7 +701,7 @@
                         "request_id": "########",
                         "state": "available",
                         "subnet_id": "##id-4##",
-                        "subregion_name": "eu-west-2a",
+                        "subregion_name": "us-east-2a",
                         "tags": [],
                         "timeouts": null
                     },
@@ -730,7 +730,7 @@
                         "request_id": "########",
                         "state": "available",
                         "subnet_id": "##id-11##",
-                        "subregion_name": "eu-west-2b",
+                        "subregion_name": "us-east-2b",
                         "tags": [],
                         "timeouts": null
                     },
@@ -825,7 +825,7 @@
                         ],
                         "os_family": "",
                         "performance": "medium",
-                        "placement_subregion_name": "eu-west-2a",
+                        "placement_subregion_name": "us-east-2a",
                         "placement_tenancy": "default",
                         "primary_nic": [
                             {

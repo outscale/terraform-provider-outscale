@@ -19,13 +19,13 @@
                         "request_id": "########",
                         "subregions": [
                             {
-                                "location_code": "PAR4",
+                                "location_code": "PAR1",
                                 "region_name": "eu-west-2",
                                 "state": "available",
                                 "subregion_name": "eu-west-2a"
                             },
                             {
-                                "location_code": "PAR1",
+                                "location_code": "PAR4",
                                 "region_name": "eu-west-2",
                                 "state": "available",
                                 "subregion_name": "eu-west-2b"

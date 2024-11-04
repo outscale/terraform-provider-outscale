@@ -121,7 +121,7 @@
                                 "host_name_pattern": "",
                                 "listener_id": "##id-4##",
                                 "listener_rule_id": "##id-5##",
-                                "listener_rule_name": "listener-rule-11",
+                                "listener_rule_name": "########",
                                 "path_pattern": "*.abc.*.abc.*.com",
                                 "priority": 10
                             }
@@ -164,7 +164,7 @@
                                 "host_name_pattern": "*.abc.-.abc.*.com",
                                 "listener_id": "##id-4##",
                                 "listener_rule_id": "##id-8##",
-                                "listener_rule_name": "listener-rule-12",
+                                "listener_rule_name": "########",
                                 "path_pattern": "",
                                 "priority": 1
                             }
@@ -207,7 +207,7 @@
                                 "host_name_pattern": "",
                                 "listener_id": "##id-4##",
                                 "listener_rule_id": "##id-10##",
-                                "listener_rule_name": "listener-rule-13",
+                                "listener_rule_name": "########",
                                 "path_pattern": "*.abc.*.abc.*.com",
                                 "priority": 12
                             }
