@@ -28,7 +28,7 @@ func DataSourceOutscaleVMRead(d *schema.ResourceData, meta interface{}) error {
 	instanceID, instanceIDOk := d.GetOk("vm_id")
 	var err error
 	if !filtersOk && !instanceIDOk {
-		return fmt.Errorf("One of filters, or instance_id must be assigned")
+		return fmt.Errorf("one of filters, or instance_id must be assigned")
 	}
 	// Build up search parameters
 	params := oscgo.ReadVmsRequest{}
