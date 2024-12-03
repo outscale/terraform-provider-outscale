@@ -167,7 +167,7 @@ func ResourceOutscaleUserRead(d *schema.ResourceData, meta interface{}) error {
 		d.SetId("")
 		return nil
 	}
-	linkReq := oscgo.NewReadLinkedPoliciesRequest(d.Get("user_name").(string))
+	linkReq := oscgo.NewReadLinkedPoliciesRequest(users[0].GetUserName())
 	var linkResp oscgo.ReadLinkedPoliciesResponse
 	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.PolicyApi.ReadLinkedPolicies(context.Background()).ReadLinkedPoliciesRequest(*linkReq).Execute()

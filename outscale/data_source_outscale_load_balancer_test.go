@@ -13,14 +13,14 @@ import (
 func TestAccOthers_LBU_basic(t *testing.T) {
 	t.Parallel()
 	const (
-		MIN_LB_NAME_SUFFIX int = 20
-		MAX_LB_NAME_SUFFIX int = 35
+		MIN_LB_NAME_SUFFIX int = 1000
+		MAX_LB_NAME_SUFFIX int = 5000
 	)
 
 	var conf oscgo.LoadBalancer
 
 	zone := fmt.Sprintf("%sa", utils.GetRegion())
-	number := utils.RandIntRange(MIN_LB_NAME_SUFFIX, MAX_LB_NAME_SUFFIX)
+	suffix := utils.RandIntRange(MIN_LB_NAME_SUFFIX, MAX_LB_NAME_SUFFIX)
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
@@ -30,7 +30,7 @@ func TestAccOthers_LBU_basic(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscaleLBUDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDSOutscaleLBUConfig(zone, number),
+				Config: testAccDSOutscaleLBUConfig(zone, suffix),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleLBUExists("outscale_load_balancer.dataLb", &conf),
 					resource.TestCheckResourceAttr(
@@ -42,11 +42,11 @@ func TestAccOthers_LBU_basic(t *testing.T) {
 	})
 }
 
-func testAccDSOutscaleLBUConfig(zone string, number int) string {
+func testAccDSOutscaleLBUConfig(zone string, suffix int) string {
 	return fmt.Sprintf(`
 	resource "outscale_load_balancer" "dataLb" {
 		subregion_names    = ["%s"]
-		load_balancer_name = "data-terraform-elb-%v"
+		load_balancer_name = "data-terraform-elb-%d"
 
 		listeners {
 			backend_port           = 8000
@@ -64,5 +64,5 @@ func testAccDSOutscaleLBUConfig(zone string, number int) string {
 	data "outscale_load_balancer" "dataTest" {
 		load_balancer_name = outscale_load_balancer.dataLb.id
 	}
-`, zone, number)
+`, zone, suffix)
 }

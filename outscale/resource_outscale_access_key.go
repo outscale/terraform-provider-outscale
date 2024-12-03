@@ -24,6 +24,11 @@ func ResourceOutscaleAccessKey() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
+			"user_name": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+			},
 			"access_key_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -76,6 +81,9 @@ func ResourceOutscaleAccessKeyCreate(d *schema.ResourceData, meta interface{}) e
 		}
 		req.ExpirationDate = &expirDate
 	}
+	if userName := d.Get("user_name").(string); userName != "" {
+		req.SetUserName(userName)
+	}
 
 	var resp oscgo.CreateAccessKeyResponse
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -91,17 +99,14 @@ func ResourceOutscaleAccessKeyCreate(d *schema.ResourceData, meta interface{}) e
 	}
 
 	d.SetId(*resp.GetAccessKey().AccessKeyId)
-
 	if err := d.Set("secret_key", *resp.GetAccessKey().SecretKey); err != nil {
 		return err
 	}
-
 	if d.Get("state").(string) != "ACTIVE" {
-		if err := updateAccessKey(conn, d.Id(), "INACTIVE"); err != nil {
+		if err := inactiveAccessKey(d, conn, "INACTIVE"); err != nil {
 			return err
 		}
 	}
-
 	return ResourceOutscaleAccessKeyRead(d, meta)
 }
 
@@ -115,7 +120,9 @@ func ResourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) err
 	req := oscgo.ReadAccessKeysRequest{
 		Filters: &filter,
 	}
-
+	if userName := d.Get("user_name").(string); userName != "" {
+		req.SetUserName(userName)
+	}
 	var resp oscgo.ReadAccessKeysResponse
 	err := resource.Retry(2*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.AccessKeyApi.ReadAccessKeys(context.Background()).ReadAccessKeysRequest(req).Execute()
@@ -135,7 +142,11 @@ func ResourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) err
 		d.SetId("")
 		return nil
 	}
-
+	if userName := d.Get("user_name").(string); userName != "" {
+		if err := d.Set("user_name", userName); err != nil {
+			return err
+		}
+	}
 	if err := d.Set("access_key_id", accessKey[0].GetAccessKeyId()); err != nil {
 		return err
 	}
@@ -148,7 +159,6 @@ func ResourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) err
 	if err := d.Set("last_modification_date", accessKey[0].GetLastModificationDate()); err != nil {
 		return err
 	}
-
 	if err := d.Set("state", accessKey[0].GetState()); err != nil {
 		return err
 	}
@@ -160,9 +170,16 @@ func ResourceOutscaleAccessKeyUpdate(d *schema.ResourceData, meta interface{}) e
 	conn := meta.(*OutscaleClient).OSCAPI
 	req := oscgo.UpdateAccessKeyRequest{AccessKeyId: d.Id()}
 
+	if expirDate, newdate := d.GetChange("expiration_date"); newdate.(string) != "" {
+		req.SetExpirationDate(expirDate.(string))
+	}
+	if userName := d.Get("user_name").(string); userName != "" {
+		req.SetUserName(userName)
+	}
 	if d.HasChange("state") {
 		req.State = d.Get("state").(string)
 	}
+
 	if d.HasChange("expiration_date") {
 		newExpirDate := d.Get("expiration_date").(string)
 		state := d.Get("state").(string)
@@ -170,11 +187,18 @@ func ResourceOutscaleAccessKeyUpdate(d *schema.ResourceData, meta interface{}) e
 			if err := checkDateFormat(newExpirDate); err != nil {
 				return err
 			}
-			req.ExpirationDate = &newExpirDate
+			req.SetExpirationDate(newExpirDate)
+		} else {
+			if !req.HasUserName() {
+				if userName := d.Get("user_name").(string); userName != "" {
+					req.SetUserName(userName)
+				}
+			}
 		}
-		req.State = state
+		if req.State == "" {
+			req.SetState(state)
+		}
 	}
-
 	err := resource.Retry(2*time.Minute, func() *resource.RetryError {
 		_, httpResp, err := conn.AccessKeyApi.UpdateAccessKey(context.Background()).UpdateAccessKeyRequest(req).Execute()
 		if err != nil {
@@ -194,9 +218,13 @@ func ResourceOutscaleAccessKeyDelete(d *schema.ResourceData, meta interface{}) e
 	req := oscgo.DeleteAccessKeyRequest{
 		AccessKeyId: d.Id(),
 	}
-
-	var err error
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	if userName := d.Get("user_name").(string); userName != "" {
+		req.SetUserName(userName)
+		if err := inactiveAccessKey(d, conn, "INACTIVE"); err != nil {
+			return err
+		}
+	}
+	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, httpResp, err := conn.AccessKeyApi.DeleteAccessKey(context.Background()).DeleteAccessKeyRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -204,16 +232,19 @@ func ResourceOutscaleAccessKeyDelete(d *schema.ResourceData, meta interface{}) e
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("Error deleting Outscale Access Key %s: %s", d.Id(), err)
+		return fmt.Errorf(" Error deleting Outscale Access Key %s: %s", d.Id(), err)
 	}
 
 	return nil
 }
 
-func updateAccessKey(conn *oscgo.APIClient, id, state string) error {
+func inactiveAccessKey(d *schema.ResourceData, conn *oscgo.APIClient, state string) error {
 	req := oscgo.UpdateAccessKeyRequest{
-		AccessKeyId: id,
+		AccessKeyId: d.Id(),
 		State:       state,
+	}
+	if userName := d.Get("user_name").(string); userName != "" {
+		req.SetUserName(userName)
 	}
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, httpResp, err := conn.AccessKeyApi.UpdateAccessKey(context.Background()).UpdateAccessKeyRequest(req).Execute()
@@ -222,7 +253,6 @@ func updateAccessKey(conn *oscgo.APIClient, id, state string) error {
 		}
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}
@@ -235,7 +265,7 @@ func checkDateFormat(dateFormat string) error {
 	currentDate := time.Now()
 
 	if settingDate, err = datetime.Parse(dateFormat, time.UTC); err != nil {
-		return fmt.Errorf("Expiration Date should be 'ISO 8601' format ('2017-06-14' or '2017-06-14T00:00:00Z, ...) %s", err)
+		return fmt.Errorf(" Expiration Date should be 'ISO 8601' format ('2017-06-14' or '2017-06-14T00:00:00Z, ...) %s", err)
 	}
 	if currentDate.After(settingDate) {
 		return fmt.Errorf(" Expiration date: '%s' should be after current date '%s'", settingDate, currentDate)

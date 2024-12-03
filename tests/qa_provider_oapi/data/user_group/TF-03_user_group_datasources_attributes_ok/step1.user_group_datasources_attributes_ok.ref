@@ -1,0 +1,161 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "data",
+            "type": "outscale_user_groups",
+            "name": "testgrpData",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "filter": "########",
+                        "id": "##id-0##",
+                        "user_groups": [
+                            {
+                                "creation_date": "########",
+                                "last_modification_date": "########",
+                                "orn": "########",
+                                "path": "/TestdataUG/",
+                                "user_group_id": "##id-1##",
+                                "user_group_name": "testDataugInteg"
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_policy",
+            "name": "policy_userGroup01",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "creation_date": "########",
+                        "description": "Example of description",
+                        "document": "{\"Statement\": [ {\"Effect\": \"Allow\", \"Action\": [\"*\"], \"Resource\": [\"*\"]} ]}",
+                        "id": "##id-2##",
+                        "is_linkable": true,
+                        "last_modification_date": "########",
+                        "orn": "########",
+                        "path": "/okht/",
+                        "policy_default_version_id": "##id-3##",
+                        "policy_id": "##id-4##",
+                        "policy_name": "group-policy",
+                        "resources_count": 0
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_policy",
+            "name": "policy_userTest",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "creation_date": "########",
+                        "description": "Example of description",
+                        "document": "{\"Statement\": [ {\"Effect\": \"Allow\", \"Action\": [\"*\"], \"Resource\": [\"*\"]} ]}",
+                        "id": "##id-5##",
+                        "is_linkable": true,
+                        "last_modification_date": "########",
+                        "orn": "########",
+                        "path": "/",
+                        "policy_default_version_id": "##id-3##",
+                        "policy_id": "##id-6##",
+                        "policy_name": "user-policy",
+                        "resources_count": 0
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_user",
+            "name": "userTest",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "creation_date": "########",
+                        "id": "##id-7##",
+                        "last_modification_date": "########",
+                        "path": "/IntegGroup/",
+                        "policy": [
+                            {
+                                "creation_date": "########",
+                                "default_version_id": "##id-3##",
+                                "last_modification_date": "########",
+                                "policy_id": "##id-6##",
+                                "policy_name": "user-policy",
+                                "policy_orn": "orn:ows:idauth::339215505907:policy/user-policy"
+                            }
+                        ],
+                        "user_email": "customer-tooling@outscale.com",
+                        "user_id": "##id-7##",
+                        "user_name": "group_user"
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA==",
+                    "dependencies": [
+                        "outscale_policy.policy_userTest"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_user_group",
+            "name": "dataUserGroupInteg",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "creation_date": "########",
+                        "id": "##id-1##",
+                        "last_modification_date": "########",
+                        "orn": "########",
+                        "path": "/TestdataUG/",
+                        "policy": [
+                            {
+                                "creation_date": "########",
+                                "default_version_id": "##id-3##",
+                                "last_modification_date": "########",
+                                "policy_id": "##id-4##",
+                                "policy_name": "group-policy",
+                                "policy_orn": "orn:ows:idauth::339215505907:policy/okht/group-policy"
+                            }
+                        ],
+                        "user": [],
+                        "user_group_id": "##id-1##",
+                        "user_group_name": "testDataugInteg"
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA==",
+                    "dependencies": [
+                        "outscale_policy.policy_userGroup01"
+                    ]
+                }
+            ]
+        }
+    ],
+    "check_results": "########"
+}

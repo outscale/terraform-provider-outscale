@@ -31,6 +31,10 @@ func DataSourceOutscaleAccessKeys() *schema.Resource {
 					ValidateFunc: validation.StringInSlice([]string{"ACTIVE", "INACTIVE"}, false),
 				},
 			},
+			"user_name": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 			"access_keys": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -73,12 +77,8 @@ func DataSourceOutscaleAccessKeysRead(d *schema.ResourceData, meta interface{}) 
 	filters, filtersOk := d.GetOk("filter")
 	accessKeyID, accessKeyOk := d.GetOk("access_key_ids")
 	state, stateOk := d.GetOk("states")
-
-	if !filtersOk && !accessKeyOk && !stateOk {
-		return fmt.Errorf("One of filters, access_key_ids or states must be assigned")
-	}
-
 	filterReq := &oscgo.FiltersAccessKeys{}
+
 	if filtersOk {
 		filterReq = buildOutscaleDataSourceAccessKeyFilters(filters.(*schema.Set))
 	}
@@ -88,13 +88,16 @@ func DataSourceOutscaleAccessKeysRead(d *schema.ResourceData, meta interface{}) 
 	if stateOk {
 		filterReq.SetStates(utils.InterfaceSliceToStringSlice(state.([]interface{})))
 	}
+	req := oscgo.ReadAccessKeysRequest{
+		Filters: filterReq,
+	}
 
+	if userName := d.Get("user_name").(string); userName != "" {
+		req.SetUserName(userName)
+	}
 	var resp oscgo.ReadAccessKeysResponse
-	var err error
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		rp, httpResp, err := conn.AccessKeyApi.ReadAccessKeys(context.Background()).ReadAccessKeysRequest(oscgo.ReadAccessKeysRequest{
-			Filters: filterReq,
-		}).Execute()
+	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+		rp, httpResp, err := conn.AccessKeyApi.ReadAccessKeys(context.Background()).ReadAccessKeysRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -106,7 +109,7 @@ func DataSourceOutscaleAccessKeysRead(d *schema.ResourceData, meta interface{}) 
 	}
 
 	if len(resp.GetAccessKeys()) == 0 {
-		return fmt.Errorf("Unable to find Access Keys")
+		return fmt.Errorf("unable to find Access Keys")
 	}
 
 	if err := d.Set("access_keys", flattenAccessKeys(resp.GetAccessKeys())); err != nil {
