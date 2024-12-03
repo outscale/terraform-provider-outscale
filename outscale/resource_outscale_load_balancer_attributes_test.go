@@ -14,8 +14,11 @@ import (
 func TestAccOthers_LBUAttr_basic(t *testing.T) {
 	t.Parallel()
 	var conf oscgo.AccessLog
-
-	r := utils.RandIntRange(20, 30)
+	const (
+		MIN_LB_NAME_SUFFIX int = 1
+		MAX_LB_NAME_SUFFIX int = 1000
+	)
+	suffix := utils.RandIntRange(MIN_LB_NAME_SUFFIX, MAX_LB_NAME_SUFFIX)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -25,7 +28,7 @@ func TestAccOthers_LBUAttr_basic(t *testing.T) {
 		Providers:     testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleLBUAttrConfig(utils.GetRegion(), r),
+				Config: testAccOutscaleLBUAttrConfig(utils.GetRegion(), suffix),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleLBUAttrExists("outscale_load_balancer_attributes.bar2", &conf),
 				)},
@@ -48,7 +51,7 @@ func testAccCheckOutscaleLBUAttrExists(n string, res *oscgo.AccessLog) resource.
 	}
 }
 
-func testAccOutscaleLBUAttrConfig(region string, r int) string {
+func testAccOutscaleLBUAttrConfig(region string, suffix int) string {
 	return fmt.Sprintf(`
 resource "outscale_load_balancer" "barAtt" {
   subregion_names = ["%sa"]
@@ -72,5 +75,5 @@ resource "outscale_load_balancer_attributes" "bar2" {
 	}
 	load_balancer_name = outscale_load_balancer.barAtt.id
 }
-`, region, r)
+`, region, suffix)
 }
