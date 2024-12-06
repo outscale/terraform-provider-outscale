@@ -21,7 +21,7 @@ jobs:
         with:
             repository: ${{ github.event.pull_request.head.repo.full_name }}
             ref: ${{ github.event.pull_request.head.ref }}
-      - uses: outscale-dev/frieza-github-actions/frieza-clean@master
+      - uses: outscale/frieza-github-actions/frieza-clean@master
         with:
           access_key: ${{ secrets.OSC_ACCESS_KEY }}
           secret_key: ${{ secrets.OSC_SECRET_KEY }}
@@ -29,7 +29,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: 'stable'
+          go-version-file: './go.mod'
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -40,7 +40,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.6.5
+          terraform_version: 1.9.8
           terraform_wrapper: false
       - name: Build go test
         run: make test
