@@ -1,0 +1,508 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "data",
+            "type": "outscale_load_balancer",
+            "name": "load_balancer_TF011",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "access_log": [
+                            {
+                                "is_enabled": false,
+                                "osu_bucket_name": "",
+                                "osu_bucket_prefix": "",
+                                "publication_interval": 60
+                            }
+                        ],
+                        "application_sticky_cookie_policies": [],
+                        "backend_vm_ids": [
+                            "##id-0##",
+                            "##id-1##"
+                        ],
+                        "dns_name": "########",
+                        "filter": "########",
+                        "health_check": [
+                            {
+                                "check_interval": 30,
+                                "healthy_threshold": 10,
+                                "path": "",
+                                "port": 8080,
+                                "protocol": "TCP",
+                                "timeout": 5,
+                                "unhealthy_threshold": 2
+                            }
+                        ],
+                        "id": "##id-2##",
+                        "listeners": [
+                            {
+                                "backend_port": 80,
+                                "backend_protocol": "TCP",
+                                "load_balancer_port": 80,
+                                "load_balancer_protocol": "TCP",
+                                "policy_names": [],
+                                "server_certificate_id": ""
+                            },
+                            {
+                                "backend_port": 8080,
+                                "backend_protocol": "HTTP",
+                                "load_balancer_port": 8080,
+                                "load_balancer_protocol": "HTTP",
+                                "policy_names": [],
+                                "server_certificate_id": ""
+                            }
+                        ],
+                        "load_balancer_name": "########",
+                        "load_balancer_sticky_cookie_policies": [],
+                        "load_balancer_type": "internet-facing",
+                        "net_id": "",
+                        "public_ip": "########",
+                        "request_id": "########",
+                        "secured_cookies": false,
+                        "security_groups": [],
+                        "source_security_group": [
+                            {
+                                "security_group_account_id": "##id-3##",
+                                "security_group_name": "outscale-elb-sg"
+                            }
+                        ],
+                        "subnets": [],
+                        "subregion_names": [
+                            "eu-west-2a"
+                        ],
+                        "tags": [
+                            {
+                                "key": "name",
+                                "value": "public_lbu1"
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": []
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_keypair",
+            "name": "my_keypair",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "id": "##id-4##",
+                        "keypair_fingerprint": "########",
+                        "keypair_name": "KP-TF011",
+                        "private_key": "########",
+                        "public_key": null,
+                        "request_id": "########",
+                        "timeouts": null
+                    },
+                    "sensitive_attributes": [],
+                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJyZWFkIjo2MDAwMDAwMDAwMDB9fQ=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_load_balancer",
+            "name": "public_lbu11",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "access_log": [
+                            {
+                                "is_enabled": false,
+                                "osu_bucket_name": "",
+                                "osu_bucket_prefix": "",
+                                "publication_interval": 60
+                            }
+                        ],
+                        "application_sticky_cookie_policies": [],
+                        "backend_vm_ids": [],
+                        "dns_name": "########",
+                        "health_check": [
+                            {
+                                "check_interval": 30,
+                                "healthy_threshold": 10,
+                                "path": "",
+                                "port": 8080,
+                                "protocol": "TCP",
+                                "timeout": 5,
+                                "unhealthy_threshold": 2
+                            }
+                        ],
+                        "id": "##id-2##",
+                        "listeners": [
+                            {
+                                "backend_port": 8080,
+                                "backend_protocol": "HTTP",
+                                "load_balancer_port": 8080,
+                                "load_balancer_protocol": "HTTP",
+                                "policy_names": [],
+                                "server_certificate_id": ""
+                            },
+                            {
+                                "backend_port": 80,
+                                "backend_protocol": "TCP",
+                                "load_balancer_port": 80,
+                                "load_balancer_protocol": "TCP",
+                                "policy_names": [],
+                                "server_certificate_id": ""
+                            }
+                        ],
+                        "load_balancer_name": "########",
+                        "load_balancer_sticky_cookie_policies": [],
+                        "load_balancer_type": "internet-facing",
+                        "net_id": "",
+                        "public_ip": "########",
+                        "request_id": "########",
+                        "secured_cookies": false,
+                        "security_groups": [],
+                        "source_security_group": [
+                            {
+                                "security_group_account_id": "##id-3##",
+                                "security_group_name": "outscale-elb-sg"
+                            }
+                        ],
+                        "subnets": [],
+                        "subregion_names": [
+                            "eu-west-2a"
+                        ],
+                        "tags": [
+                            {
+                                "key": "name",
+                                "value": "public_lbu1"
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_load_balancer_vms",
+            "name": "outscale_load_balancer_vms011",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "backend_ips": "########",
+                        "backend_vm_ids": null,
+                        "id": "##id-5##",
+                        "load_balancer_name": "########",
+                        "request_id": "########"
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA==",
+                    "dependencies": [
+                        "outscale_keypair.my_keypair",
+                        "outscale_load_balancer.public_lbu11",
+                        "outscale_security_group.security_groupTF011",
+                        "outscale_vm.vm011"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_security_group",
+            "name": "security_groupTF011",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-6##",
+                        "description": "Terraform",
+                        "id": "##id-7##",
+                        "inbound_rules": [],
+                        "net_id": "",
+                        "outbound_rules": [],
+                        "remove_default_outbound_rule": false,
+                        "request_id": "########",
+                        "security_group_id": "##id-7##",
+                        "security_group_name": "terraform-TF011",
+                        "tag": null,
+                        "tags": []
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_vm",
+            "name": "vm011",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "index_key": 0,
+                    "schema_version": 0,
+                    "attributes": {
+                        "admin_password": "",
+                        "architecture": "x86_64",
+                        "block_device_mappings": [],
+                        "block_device_mappings_created": [
+                            {
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "link_date": "########",
+                                        "state": "attached",
+                                        "tags": [],
+                                        "volume_id": "##id-8##"
+                                    }
+                                ],
+                                "device_name": "/dev/sda1"
+                            }
+                        ],
+                        "bsu_optimized": false,
+                        "client_token": "",
+                        "creation_date": "########",
+                        "deletion_protection": false,
+                        "get_admin_password": null,
+                        "hypervisor": "xen",
+                        "id": "##id-1##",
+                        "image_id": "##id-9##",
+                        "is_source_dest_checked": false,
+                        "keypair_name": "KP-TF011",
+                        "launch_number": 0,
+                        "nested_virtualization": false,
+                        "net_id": "",
+                        "nics": [],
+                        "os_family": "",
+                        "performance": "medium",
+                        "placement_subregion_name": "eu-west-2a",
+                        "placement_tenancy": "default",
+                        "primary_nic": [],
+                        "private_dns_name": "########",
+                        "private_ip": "########",
+                        "private_ips": null,
+                        "product_codes": [
+                            "0001"
+                        ],
+                        "public_dns_name": "########",
+                        "public_ip": "########",
+                        "request_id": "########",
+                        "reservation_id": "##id-10##",
+                        "root_device_name": "/dev/sda1",
+                        "root_device_type": "ebs",
+                        "security_group_ids": [
+                            "##id-7##"
+                        ],
+                        "security_group_names": null,
+                        "security_groups": [
+                            {
+                                "security_group_id": "##id-7##",
+                                "security_group_name": "terraform-TF011"
+                            }
+                        ],
+                        "state": "running",
+                        "state_reason": "",
+                        "subnet_id": "",
+                        "tags": [
+                            {
+                                "key": "name",
+                                "value": "vm-TF011"
+                            }
+                        ],
+                        "timeouts": null,
+                        "user_data": "",
+                        "vm_id": "##id-1##",
+                        "vm_initiated_shutdown_behavior": "stop",
+                        "vm_type": "###vm_type###"
+                    },
+                    "sensitive_attributes": [],
+                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
+                    "dependencies": [
+                        "outscale_keypair.my_keypair",
+                        "outscale_security_group.security_groupTF011"
+                    ]
+                },
+                {
+                    "index_key": 1,
+                    "schema_version": 0,
+                    "attributes": {
+                        "admin_password": "",
+                        "architecture": "x86_64",
+                        "block_device_mappings": [],
+                        "block_device_mappings_created": [
+                            {
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "link_date": "########",
+                                        "state": "attached",
+                                        "tags": [],
+                                        "volume_id": "##id-11##"
+                                    }
+                                ],
+                                "device_name": "/dev/sda1"
+                            }
+                        ],
+                        "bsu_optimized": false,
+                        "client_token": "",
+                        "creation_date": "########",
+                        "deletion_protection": false,
+                        "get_admin_password": null,
+                        "hypervisor": "xen",
+                        "id": "##id-0##",
+                        "image_id": "##id-9##",
+                        "is_source_dest_checked": false,
+                        "keypair_name": "KP-TF011",
+                        "launch_number": 0,
+                        "nested_virtualization": false,
+                        "net_id": "",
+                        "nics": [],
+                        "os_family": "",
+                        "performance": "medium",
+                        "placement_subregion_name": "eu-west-2a",
+                        "placement_tenancy": "default",
+                        "primary_nic": [],
+                        "private_dns_name": "########",
+                        "private_ip": "########",
+                        "private_ips": null,
+                        "product_codes": [
+                            "0001"
+                        ],
+                        "public_dns_name": "########",
+                        "public_ip": "########",
+                        "request_id": "########",
+                        "reservation_id": "##id-12##",
+                        "root_device_name": "/dev/sda1",
+                        "root_device_type": "ebs",
+                        "security_group_ids": [
+                            "##id-7##"
+                        ],
+                        "security_group_names": null,
+                        "security_groups": [
+                            {
+                                "security_group_id": "##id-7##",
+                                "security_group_name": "terraform-TF011"
+                            }
+                        ],
+                        "state": "running",
+                        "state_reason": "",
+                        "subnet_id": "",
+                        "tags": [
+                            {
+                                "key": "name",
+                                "value": "vm-TF011"
+                            }
+                        ],
+                        "timeouts": null,
+                        "user_data": "",
+                        "vm_id": "##id-0##",
+                        "vm_initiated_shutdown_behavior": "stop",
+                        "vm_type": "###vm_type###"
+                    },
+                    "sensitive_attributes": [],
+                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
+                    "dependencies": [
+                        "outscale_keypair.my_keypair",
+                        "outscale_security_group.security_groupTF011"
+                    ]
+                },
+                {
+                    "index_key": 2,
+                    "schema_version": 0,
+                    "attributes": {
+                        "admin_password": "",
+                        "architecture": "x86_64",
+                        "block_device_mappings": [],
+                        "block_device_mappings_created": [
+                            {
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "link_date": "########",
+                                        "state": "attached",
+                                        "tags": [],
+                                        "volume_id": "##id-13##"
+                                    }
+                                ],
+                                "device_name": "/dev/sda1"
+                            }
+                        ],
+                        "bsu_optimized": false,
+                        "client_token": "",
+                        "creation_date": "########",
+                        "deletion_protection": false,
+                        "get_admin_password": null,
+                        "hypervisor": "xen",
+                        "id": "##id-14##",
+                        "image_id": "##id-9##",
+                        "is_source_dest_checked": false,
+                        "keypair_name": "KP-TF011",
+                        "launch_number": 0,
+                        "nested_virtualization": false,
+                        "net_id": "",
+                        "nics": [],
+                        "os_family": "",
+                        "performance": "medium",
+                        "placement_subregion_name": "eu-west-2a",
+                        "placement_tenancy": "default",
+                        "primary_nic": [],
+                        "private_dns_name": "########",
+                        "private_ip": "########",
+                        "private_ips": null,
+                        "product_codes": [
+                            "0001"
+                        ],
+                        "public_dns_name": "########",
+                        "public_ip": "########",
+                        "request_id": "########",
+                        "reservation_id": "##id-15##",
+                        "root_device_name": "/dev/sda1",
+                        "root_device_type": "ebs",
+                        "security_group_ids": [
+                            "##id-7##"
+                        ],
+                        "security_group_names": null,
+                        "security_groups": [
+                            {
+                                "security_group_id": "##id-7##",
+                                "security_group_name": "terraform-TF011"
+                            }
+                        ],
+                        "state": "running",
+                        "state_reason": "",
+                        "subnet_id": "",
+                        "tags": [
+                            {
+                                "key": "name",
+                                "value": "vm-TF011"
+                            }
+                        ],
+                        "timeouts": null,
+                        "user_data": "",
+                        "vm_id": "##id-14##",
+                        "vm_initiated_shutdown_behavior": "stop",
+                        "vm_type": "###vm_type###"
+                    },
+                    "sensitive_attributes": [],
+                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
+                    "dependencies": [
+                        "outscale_keypair.my_keypair",
+                        "outscale_security_group.security_groupTF011"
+                    ]
+                }
+            ]
+        }
+    ],
+    "check_results": "########"
+}
