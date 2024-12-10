@@ -34,7 +34,8 @@
                         "filter": "########",
                         "id": "##id-2##",
                         "request_id": "########",
-                        "states": null
+                        "states": null,
+                        "user_name": null
                     },
                     "sensitive_attributes": []
                 }
@@ -56,7 +57,8 @@
                         "last_modification_date": "########",
                         "request_id": "########",
                         "secret_key": "########",
-                        "state": "ACTIVE"
+                        "state": "ACTIVE",
+                        "user_name": null
                     },
                     "sensitive_attributes": [],
                     "private": "bnVsbA=="
@@ -79,7 +81,8 @@
                         "last_modification_date": "########",
                         "request_id": "########",
                         "secret_key": "########",
-                        "state": "ACTIVE"
+                        "state": "ACTIVE",
+                        "user_name": null
                     },
                     "sensitive_attributes": [],
                     "private": "bnVsbA=="

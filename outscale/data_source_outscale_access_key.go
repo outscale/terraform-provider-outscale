@@ -19,6 +19,10 @@ func DataSourceOutscaleAccessKey() *schema.Resource {
 		Read: DataSourceOutscaleAccessKeyRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
+			"user_name": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 			"access_key_id": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -54,12 +58,14 @@ func DataSourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) e
 	filters, filtersOk := d.GetOk("filter")
 	accessKeyID, accessKeyOk := d.GetOk("access_key_id")
 	state, stateOk := d.GetOk("state")
+	userName, userNameOk := d.GetOk("user_name")
 
-	if !filtersOk && !accessKeyOk && !stateOk {
-		return fmt.Errorf("One of filters, access_key_id or state must be assigned")
+	if !filtersOk && !accessKeyOk && !stateOk && !userNameOk {
+		return fmt.Errorf("one of filters: access_key_id, state or user_name must be assigned")
 	}
 
 	filterReq := &oscgo.FiltersAccessKeys{}
+
 	if filtersOk {
 		filterReq = buildOutscaleDataSourceAccessKeyFilters(filters.(*schema.Set))
 	}
@@ -69,11 +75,15 @@ func DataSourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) e
 	if stateOk {
 		filterReq.SetStates([]string{state.(string)})
 	}
-
+	req := oscgo.ReadAccessKeysRequest{}
+	req.SetFilters(*filterReq)
+	if userNameOk {
+		req.SetUserName(userName.(string))
+	}
 	var resp oscgo.ReadAccessKeysResponse
-	var err error
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		rp, httpResp, err := conn.AccessKeyApi.ReadAccessKeys(context.Background()).ReadAccessKeysRequest(oscgo.ReadAccessKeysRequest{Filters: filterReq}).Execute()
+
+	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+		rp, httpResp, err := conn.AccessKeyApi.ReadAccessKeys(context.Background()).ReadAccessKeysRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -85,7 +95,7 @@ func DataSourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) e
 	}
 
 	if len(resp.GetAccessKeys()) == 0 {
-		return fmt.Errorf("Unable to find Access Key")
+		return fmt.Errorf("unable to find Access Key")
 	}
 
 	if len(resp.GetAccessKeys()) > 1 {

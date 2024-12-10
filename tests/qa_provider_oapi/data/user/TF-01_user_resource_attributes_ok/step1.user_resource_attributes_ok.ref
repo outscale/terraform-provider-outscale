@@ -7,22 +7,21 @@
     "resources": [
         {
             "mode": "managed",
-            "type": "outscale_access_key",
-            "name": "my_access_key_1",
+            "type": "outscale_user",
+            "name": "userInteg",
             "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "access_key_id": "##id-0##",
                         "creation_date": "########",
-                        "expiration_date": "",
                         "id": "##id-0##",
                         "last_modification_date": "########",
-                        "request_id": "########",
-                        "secret_key": "########",
-                        "state": "ACTIVE",
-                        "user_name": null
+                        "path": "/",
+                        "policy": [],
+                        "user_email": "customer-tooling@outscale.com",
+                        "user_id": "##id-0##",
+                        "user_name": "test_integ"
                     },
                     "sensitive_attributes": [],
                     "private": "bnVsbA=="
