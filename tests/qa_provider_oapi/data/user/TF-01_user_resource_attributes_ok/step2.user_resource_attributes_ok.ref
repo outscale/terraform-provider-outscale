@@ -1,0 +1,72 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "managed",
+            "type": "outscale_policy",
+            "name": "policy_user01",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "creation_date": "########",
+                        "description": "Example of description",
+                        "document": "{\"Statement\": [ {\"Effect\": \"Allow\", \"Action\": [\"*\"], \"Resource\": [\"*\"]} ]}",
+                        "id": "##id-0##",
+                        "is_linkable": true,
+                        "last_modification_date": "########",
+                        "orn": "########",
+                        "path": "/okht/",
+                        "policy_default_version_id": "##id-1##",
+                        "policy_id": "##id-2##",
+                        "policy_name": "okht-user-policy",
+                        "resources_count": 0
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_user",
+            "name": "userInteg",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "creation_date": "########",
+                        "id": "##id-3##",
+                        "last_modification_date": "########",
+                        "path": "/Integ/",
+                        "policy": [
+                            {
+                                "creation_date": "########",
+                                "default_version_id": "##id-1##",
+                                "last_modification_date": "########",
+                                "policy_id": "##id-2##",
+                                "policy_name": "okht-user-policy",
+                                "policy_orn": "orn:ows:idauth::339215505907:policy/okht/okht-user-policy"
+                            }
+                        ],
+                        "user_email": "customer-tooling@outscale.com",
+                        "user_id": "##id-3##",
+                        "user_name": "test_integ_update"
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA==",
+                    "dependencies": [
+                        "outscale_policy.policy_user01"
+                    ]
+                }
+            ]
+        }
+    ],
+    "check_results": "########"
+}
