@@ -10,6 +10,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"regexp"
 	"strconv"
 	"time"
 
@@ -23,16 +24,19 @@ import (
 
 // PrintToJSON method helper to debug responses
 const (
-	randMin         float32 = 1.0
-	randMax         float32 = 20.0
-	MinPort         int     = 1
-	MaxPort         int     = 65535
-	MinIops         int     = 100
-	MaxIops         int     = 13000
-	DefaultIops     int32   = 150
-	MaxSize         int     = 14901
-	InvalidState    string  = "InvalidState"
-	VolumeIOPSError string  = `
+	randMin              float32 = 1.0
+	randMax              float32 = 20.0
+	MinPort              int     = 1
+	MaxPort              int     = 65535
+	MinIops              int     = 100
+	MaxIops              int     = 13000
+	DefaultIops          int32   = 150
+	MaxSize              int     = 14901
+	LinkedPolicyNotFound string  = "5102"
+	InvalidState         string  = "InvalidState"
+	pathRegex            string  = "^(/[a-zA-Z0-9/_]+/)"
+	pathError            string  = "path must begin and end with '/' and contain only alphanumeric characters and/or '/', '_' characters"
+	VolumeIOPSError      string  = `
 - The "iops" parameter can only be set if "io1" volume type is created.
 - "Standard" volume types have a default value of 150 iops.
 - For "gp2" volume types, iops value depend on your volume size.
@@ -288,9 +292,9 @@ func I32toa(i int32) string {
 }
 
 func GetRegion() string {
-	region := fmt.Sprintf("%s", os.Getenv("OUTSCALE_REGION"))
+	region := os.Getenv("OUTSCALE_REGION")
 	if region == "" {
-		region = fmt.Sprintf("%s", os.Getenv("OSC_REGION"))
+		region = os.Getenv("OSC_REGION")
 	}
 	return region
 }
@@ -331,4 +335,12 @@ func GetEnvVariableValue(envVariables []string) string {
 		}
 	}
 	return ""
+}
+func CheckPath(path string) error {
+	reg := regexp.MustCompile(pathRegex)
+
+	if reg.MatchString(path) || path == "/" {
+		return nil
+	}
+	return fmt.Errorf("invalid path:\n %v", pathError)
 }
