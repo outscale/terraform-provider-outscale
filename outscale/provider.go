@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -60,7 +59,7 @@ func Provider() *schema.Provider {
 				Optional:    true,
 				Description: "The path to your x509 key",
 			},
-			"config_file_path": {
+			"config_file": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The path to your configuration file in which you have defined your credentials.",
@@ -229,15 +228,15 @@ func Provider() *schema.Provider {
 
 func providerConfigureClient(d *schema.ResourceData) (interface{}, error) {
 	config := Config{
-		AccessKeyID:    d.Get("access_key_id").(string),
-		SecretKeyID:    d.Get("secret_key_id").(string),
-		Region:         d.Get("region").(string),
-		Endpoints:      make(map[string]interface{}),
-		X509CertPath:   d.Get("x509_cert_path").(string),
-		X509KeyPath:    d.Get("x509_key_path").(string),
-		ConfigFilePath: d.Get("config_file_path").(string),
-		Profile:        d.Get("profile").(string),
-		Insecure:       d.Get("insecure").(bool),
+		AccessKeyID:  d.Get("access_key_id").(string),
+		SecretKeyID:  d.Get("secret_key_id").(string),
+		Region:       d.Get("region").(string),
+		Endpoints:    make(map[string]interface{}),
+		X509CertPath: d.Get("x509_cert_path").(string),
+		X509KeyPath:  d.Get("x509_key_path").(string),
+		ConfigFile:   d.Get("config_file").(string),
+		Profile:      d.Get("profile").(string),
+		Insecure:     d.Get("insecure").(bool),
 	}
 	endpointsSet := d.Get("endpoints").(*schema.Set)
 	for _, endpointsSetI := range endpointsSet.List() {
@@ -263,32 +262,31 @@ func IsOldProfileSet(conf *Config) (bool, error) {
 			profileName = conf.Profile
 		}
 
-		var profilePath string
-		if envPath, ok := os.LookupEnv("OSC_CONFIG_FILE"); ok || conf.ConfigFilePath != "" {
-			if conf.ConfigFilePath != "" {
-				profilePath = conf.ConfigFilePath
+		var configFilePath string
+		if envPath, ok := os.LookupEnv("OSC_CONFIG_FILE"); ok || conf.ConfigFile != "" {
+			if conf.ConfigFile != "" {
+				configFilePath = conf.ConfigFile
 			} else {
-				profilePath = envPath
+				configFilePath = envPath
 			}
-			if profilePath == "" {
-				homePath, err := os.UserHomeDir()
-				if err != nil {
-					return isProfSet, err
-				}
-				profilePath = homePath + "/.osc/config.json"
+		} else {
+			homePath, err := os.UserHomeDir()
+			if err != nil {
+				return isProfSet, err
 			}
+			configFilePath = homePath + utils.SuffixConfigFilePath
 		}
-		jsonFile, err := ioutil.ReadFile(profilePath)
+		jsonFile, err := os.ReadFile(configFilePath)
 		if err != nil {
-			return isProfSet, err
+			return isProfSet, fmt.Errorf("%v \nConnot found configue file: %v", err, configFilePath)
 		}
 		profile := gjson.GetBytes(jsonFile, profileName)
 		if !gjson.Valid(profile.String()) {
-			return isProfSet, fmt.Errorf("Invalid json profile file")
+			return isProfSet, fmt.Errorf("invalid json profile file")
 		}
 		if !profile.Get("access_key").Exists() ||
 			!profile.Get("secret_key").Exists() {
-			return isProfSet, fmt.Errorf("Profile 'access_key' or 'secret_key' are not defined!")
+			return isProfSet, fmt.Errorf("profile 'access_key' or 'secret_key' are not defined! ")
 		}
 		setOldProfile(conf, profile)
 		isProfSet = true

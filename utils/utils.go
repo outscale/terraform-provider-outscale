@@ -34,6 +34,7 @@ const (
 	MaxSize              int     = 14901
 	LinkedPolicyNotFound string  = "5102"
 	InvalidState         string  = "InvalidState"
+	SuffixConfigFilePath string  = "/.osc/config.json"
 	pathRegex            string  = "^(/[a-zA-Z0-9/_]+/)"
 	pathError            string  = "path must begin and end with '/' and contain only alphanumeric characters and/or '/', '_' characters"
 	VolumeIOPSError      string  = `

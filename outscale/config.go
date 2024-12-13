@@ -13,16 +13,16 @@ import (
 
 // Config ...
 type Config struct {
-	AccessKeyID    string
-	SecretKeyID    string
-	Region         string
-	TokenID        string
-	Endpoints      map[string]interface{}
-	X509CertPath   string
-	X509KeyPath    string
-	Insecure       bool
-	ConfigFilePath string
-	Profile        string
+	AccessKeyID  string
+	SecretKeyID  string
+	Region       string
+	TokenID      string
+	Endpoints    map[string]interface{}
+	X509CertPath string
+	X509KeyPath  string
+	Insecure     bool
+	ConfigFile   string
+	Profile      string
 }
 
 // OutscaleClient client

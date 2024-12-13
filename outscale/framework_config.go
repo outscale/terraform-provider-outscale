@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -25,7 +24,7 @@ type OutscaleClient_fw struct {
 
 // Client ...
 func (c *frameworkProvider) Client_fw(ctx context.Context, data *ProviderModel, diags *diag.Diagnostics) (*OutscaleClient_fw, error) {
-	ok, err := IsProfileSet(data)
+	ok, err := isProfileSet(data)
 	if err != nil {
 		return nil, err
 	}
@@ -75,39 +74,38 @@ func (c *frameworkProvider) Client_fw(ctx context.Context, data *ProviderModel, 
 	return client, nil
 }
 
-func IsProfileSet(data *ProviderModel) (bool, error) {
+func isProfileSet(data *ProviderModel) (bool, error) {
 	isProfSet := false
 	if profileName, ok := os.LookupEnv("OSC_PROFILE"); ok || !data.Profile.IsNull() {
 		if data.Profile.ValueString() != "" {
 			profileName = data.Profile.ValueString()
 		}
 
-		var profilePath string
-		if envPath, ok := os.LookupEnv("OSC_CONFIG_FILE"); ok || !data.ConfigFilePath.IsNull() {
-			if data.ConfigFilePath.ValueString() != "" {
-				profilePath = data.ConfigFilePath.ValueString()
+		var configFilePath string
+		if envPath, ok := os.LookupEnv("OSC_CONFIG_FILE"); ok || !data.ConfigFile.IsNull() {
+			if data.ConfigFile.ValueString() != "" {
+				configFilePath = data.ConfigFile.ValueString()
 			} else {
-				profilePath = envPath
+				configFilePath = envPath
 			}
-			if profilePath == "" {
-				homePath, err := os.UserHomeDir()
-				if err != nil {
-					return isProfSet, err
-				}
-				profilePath = homePath + "/.osc/config.json"
+		} else {
+			homePath, err := os.UserHomeDir()
+			if err != nil {
+				return isProfSet, err
 			}
+			configFilePath = homePath + utils.SuffixConfigFilePath
 		}
-		jsonFile, err := ioutil.ReadFile(profilePath)
+		jsonFile, err := os.ReadFile(configFilePath)
 		if err != nil {
-			return isProfSet, err
+			return isProfSet, fmt.Errorf("%v \n Connot found configue file: %v", err, configFilePath)
 		}
 		profile := gjson.GetBytes(jsonFile, profileName)
 		if !gjson.Valid(profile.String()) {
-			return isProfSet, fmt.Errorf("Invalid json profile file")
+			return isProfSet, fmt.Errorf("invalid json profile file")
 		}
 		if !profile.Get("access_key").Exists() ||
 			!profile.Get("secret_key").Exists() {
-			return isProfSet, fmt.Errorf("Profile 'access_key' or 'secret_key' are not defined!")
+			return isProfSet, fmt.Errorf("profile 'access_key' or 'secret_key' are not defined! ")
 		}
 		setProfile(data, profile)
 		isProfSet = true
