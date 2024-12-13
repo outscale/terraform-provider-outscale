@@ -91,10 +91,10 @@ func TestDataSource_UpgradeFromVersion(t *testing.T) {
 }
 
 const fwtestAccDataSourceOutscaleQuotaConfig = `
-	data "outscale_quota" "lbuquota1" { 
-  filter {
-        name     = "quota_names"
-        values   = ["lb_listeners_limit"]
+	data "outscale_quota" "lbuquota1" {
+        filter {
+            name     = "quota_names"
+            values   = ["lb_listeners_limit"]
     }
 }
 `
