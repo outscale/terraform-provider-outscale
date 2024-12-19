@@ -1,0 +1,64 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "managed",
+            "type": "outscale_policy",
+            "name": "policy-1",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "creation_date": "########",
+                        "description": "test-policy",
+                        "document": "{\n    \"Statement\": [\n        {\n            \"Action\": [\n                \"api:Read*\"\n            ],\n            \"Effect\": \"Allow\",\n            \"Resource\": [\n                \"*\"\n            ]\n        }\n    ]\n} \n",
+                        "id": "##id-0##",
+                        "is_linkable": true,
+                        "last_modification_date": "########",
+                        "orn": "########",
+                        "path": "/terraform/",
+                        "policy_default_version_id": "##id-1##",
+                        "policy_id": "##id-2##",
+                        "policy_name": "terraform-RO-policy",
+                        "resources_count": 0
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_policy",
+            "name": "policy-2",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "creation_date": "########",
+                        "description": "",
+                        "document": "{\n    \"Statement\": [\n        {\n            \"Effect\": \"Allow\",\n            \"Action\": [\n                \"api:ReadConsumptionAccount\"\n            ],\n            \"Resource\": [\n                \"*\"\n            ]\n        }\n    ]\n} \n",
+                        "id": "##id-3##",
+                        "is_linkable": true,
+                        "last_modification_date": "########",
+                        "orn": "########",
+                        "path": "/",
+                        "policy_default_version_id": "##id-1##",
+                        "policy_id": "##id-4##",
+                        "policy_name": "terraform-Read-Account_consumption_only",
+                        "resources_count": 0
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA=="
+                }
+            ]
+        }
+    ],
+    "check_results": "########"
+}

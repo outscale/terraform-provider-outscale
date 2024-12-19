@@ -1,0 +1,83 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "managed",
+            "type": "outscale_access_key",
+            "name": "access_key_eim01",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "access_key_id": "##id-0##",
+                        "creation_date": "########",
+                        "expiration_date": "2028-01-01T00:00:00.000+0000",
+                        "id": "##id-0##",
+                        "last_modification_date": "########",
+                        "request_id": "########",
+                        "secret_key": "########",
+                        "state": "INACTIVE",
+                        "user_name": "User-terraform-2"
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA==",
+                    "dependencies": [
+                        "outscale_user.user-2"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_user",
+            "name": "user-1",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "creation_date": "########",
+                        "id": "##id-1##",
+                        "last_modification_date": "########",
+                        "path": "/terraform_update/",
+                        "policy": [],
+                        "user_email": "test-TF11@test2.fr",
+                        "user_id": "##id-1##",
+                        "user_name": "User-terraform-11"
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_user",
+            "name": "user-2",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "creation_date": "########",
+                        "id": "##id-2##",
+                        "last_modification_date": "########",
+                        "path": "/",
+                        "policy": [],
+                        "user_email": "customer-tooling@outscale.com",
+                        "user_id": "##id-2##",
+                        "user_name": "User-terraform-2"
+                    },
+                    "sensitive_attributes": [],
+                    "private": "bnVsbA=="
+                }
+            ]
+        }
+    ],
+    "check_results": "########"
+}
