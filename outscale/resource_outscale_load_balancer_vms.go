@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"slices"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -53,11 +54,11 @@ func ResourceLBUAttachmentCreate(d *schema.ResourceData, meta interface{}) error
 		return fmt.Errorf("error: the 'backend_vm_ids' and 'backend_ips' parameters cannot both be empty")
 	}
 	if vmIps.Len() > 0 {
-		vm_ips, err := getVmIdsThroughVmIps(conn, vmIps)
+		vm_ids, err := getVmIdsThroughVmIps(conn, vmIps)
 		if err != nil {
-			return err
+			log.Fatalf("\nError creating lbu backends: %v\n", err)
 		}
-		vmIds = append(vmIds, vm_ips...)
+		vmIds = append(vmIds, vm_ids...)
 	}
 
 	req := oscgo.RegisterVmsInLoadBalancerRequest{
@@ -98,8 +99,8 @@ func ResourceLBUAttachmentRead(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	}
 	expectedVmIds := d.Get("backend_vm_ids").(*schema.Set)
-	all_backendVms := d.Get("backend_vm_ids").(*schema.Set)
 	expectedIps := d.Get("backend_ips").(*schema.Set)
+	all_backendVms := d.Get("backend_vm_ids").(*schema.Set)
 	all_backendIps := d.Get("backend_ips").(*schema.Set)
 
 	for _, vmId := range lbu.GetBackendVmIds() {
@@ -107,7 +108,7 @@ func ResourceLBUAttachmentRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	publicIps, err := getVmIpsThroughVmIds(conn, all_backendVms)
 	if err != nil {
-		return err
+		log.Fatalf("\nError reading vms with backend_vm_ids  : %v", err)
 	}
 	for _, vmIp := range publicIps {
 		all_backendIps.Add(vmIp)
@@ -120,16 +121,22 @@ func ResourceLBUAttachmentRead(d *schema.ResourceData, meta interface{}) error {
 		d.SetId("")
 		return nil
 	}
-	if err := d.Set("load_balancer_name", lbu.GetLoadBalancerName()); err != nil {
-		return err
+
+	if managedVmIds.Len() != 0 {
+		if err := d.Set("backend_vm_ids", managedVmIds); err != nil {
+			return err
+		}
 	}
-	if err := d.Set("backend_vm_ids", managedVmIds); err != nil {
-		return err
+	if managedIps.Len() != 0 {
+		if _, err = getVmIdsThroughVmIps(conn, expectedIps); err != nil {
+			log.Fatalf("READ VMIPS: %v", err)
+		}
+		if err := d.Set("backend_ips", managedIps); err != nil {
+			return err
+		}
 	}
-	if err := d.Set("backend_ips", managedIps); err != nil {
-		return err
-	}
-	return nil
+
+	return d.Set("load_balancer_name", lbu.GetLoadBalancerName())
 }
 
 func ResourceLBUAttachmentUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -184,9 +191,17 @@ func buildUpdateBackendsRequest(d *schema.ResourceData, conn *oscgo.APIClient, l
 		removed := oldBackends.(*schema.Set).Difference(inter)
 
 		if created.Len() > 0 {
+			_, err := getVmIpsThroughVmIds(conn, created)
+			if err != nil {
+				log.Fatalf("\nError updating lbu backend_vm_ids: %v\n", err)
+			}
 			linkVmIds = append(linkVmIds, utils.SetToStringSlice(created)...)
 		}
 		if removed.Len() > 0 {
+			_, err := getVmIpsThroughVmIds(conn, created)
+			if err != nil {
+				log.Fatalf("\nError updating lbu backend_vm_ids: %v\n", err)
+			}
 			unlinkVmIds = append(linkVmIds, utils.SetToStringSlice(removed)...)
 		}
 	}
@@ -199,14 +214,14 @@ func buildUpdateBackendsRequest(d *schema.ResourceData, conn *oscgo.APIClient, l
 		if created.Len() > 0 {
 			vmIds, err := getVmIdsThroughVmIps(conn, created)
 			if err != nil {
-				return nil, nil, err
+				log.Fatalf("\nError updating lbu backend_ips: %v\n", err)
 			}
 			linkVmIds = append(linkVmIds, vmIds...)
 		}
 		if removed.Len() > 0 {
 			vmIds, err := getVmIdsThroughVmIps(conn, removed)
 			if err != nil {
-				return nil, nil, err
+				log.Fatalf("\nError updating lbu backend_vm_ids: %v\n", err)
 			}
 			unlinkVmIds = append(linkVmIds, vmIds...)
 		}
@@ -252,7 +267,8 @@ func ResourceLBUAttachmentDelete(d *schema.ResourceData, meta interface{}) error
 
 func getVmIdsThroughVmIps(conn *oscgo.APIClient, vmIps *schema.Set) ([]string, error) {
 	filterIps := oscgo.NewFiltersVm()
-	filterIps.SetPublicIps(utils.SetToStringSlice(vmIps))
+	ipsList := utils.SetToStringSlice(vmIps)
+	filterIps.SetPublicIps(ipsList)
 	var resp oscgo.ReadVmsResponse
 	err := retry.Retry(30*time.Second, func() *retry.RetryError {
 		rp, httpResp, err := conn.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
@@ -268,18 +284,26 @@ func getVmIdsThroughVmIps(conn *oscgo.APIClient, vmIps *schema.Set) ([]string, e
 	}
 	vms := resp.GetVms()
 	if len(vms) == 0 {
-		return nil, fmt.Errorf("not found Vms with public_ip [%v]", utils.SetToStringSlice(vmIps))
+		return nil, fmt.Errorf("connot found Vms with public_ips: %v", ipsList)
 	}
 	vmsIds := make([]string, 0, len(vms))
+	vmsIpsList := make([]string, 0, len(vms))
 	for _, vm := range vms {
 		vmsIds = append(vmsIds, vm.GetVmId())
+		vmsIpsList = append(vmsIpsList, vm.GetPublicIp())
+	}
+	slices.Sort(vmsIpsList)
+	slices.Sort(ipsList)
+	if slices.Compare(ipsList, vmsIpsList) != 0 {
+		return nil, fmt.Errorf("\nsome public_ips are not linked to any Vm in this list: %v\n", ipsList)
 	}
 	return vmsIds, nil
 }
 
 func getVmIpsThroughVmIds(conn *oscgo.APIClient, vmIds *schema.Set) ([]string, error) {
 	filters := oscgo.NewFiltersVm()
-	filters.SetVmIds(utils.SetToStringSlice(vmIds))
+	vmIdsList := utils.SetToStringSlice(vmIds)
+	filters.SetVmIds(vmIdsList)
 	var resp oscgo.ReadVmsResponse
 	err := retry.Retry(30*time.Second, func() *retry.RetryError {
 		rp, httpResp, err := conn.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
@@ -295,11 +319,18 @@ func getVmIpsThroughVmIds(conn *oscgo.APIClient, vmIds *schema.Set) ([]string, e
 	}
 	vms := resp.GetVms()
 	if len(vms) == 0 {
-		return nil, fmt.Errorf("not found Vms with vm_ids [%v]", utils.SetToStringSlice(vmIds))
+		return nil, fmt.Errorf("\nConnot found Vms with vm_ids %v\n", vmIdsList)
 	}
 	publicIps := make([]string, 0, len(vms))
+	readVmIds := make([]string, 0, len(vms))
 	for _, vm := range vms {
 		publicIps = append(publicIps, vm.GetPublicIp())
+		readVmIds = append(readVmIds, vm.GetVmId())
+	}
+	slices.Sort(readVmIds)
+	slices.Sort(vmIdsList)
+	if slices.Compare(vmIdsList, readVmIds) != 0 {
+		return nil, fmt.Errorf("\nsome vm_ids are not existed in this list: %v\n", vmIdsList)
 	}
 	return publicIps, nil
 }
