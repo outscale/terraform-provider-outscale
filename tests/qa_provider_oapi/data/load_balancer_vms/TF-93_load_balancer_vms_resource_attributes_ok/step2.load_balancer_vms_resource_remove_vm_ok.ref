@@ -119,7 +119,7 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "backend_ips": [],
+                        "backend_ips": null,
                         "backend_vm_ids": [
                             "##id-1##"
                         ],
