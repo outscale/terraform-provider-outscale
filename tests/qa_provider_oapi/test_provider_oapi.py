@@ -52,7 +52,8 @@ IGNORE_END_ELEMENTS = ['request_id',
                        'available_ips_count',
                        'load_balancer_name',
                        'load_balancer_names',
-                       'listener_rule_name']
+                       'listener_rule_name',
+                       'backend_ips']
 IGNORE_END_PATHS = []
 TINA_ID_PREFIXES = ['i', 'subnet', 'snap', 'img', 'vol', 'eni', 'vpc', 'igw', 'nat', 'vgw', 'pcx', 'sg', 'rtb', 'rtbassoc', 'vpn', 'vpcconn', 'ami', 'dxvif','vpce','fgpu','aar','ca']
 VARIABLES_FILE_NAME = ['resources.auto.tfvars']
