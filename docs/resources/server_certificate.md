@@ -32,8 +32,8 @@ The following arguments are supported:
 
 * `body` - (Required) The PEM-encoded X509 certificate.
 * `chain` - (Optional) The PEM-encoded intermediate certification authorities.
-* `name` - (Required) A unique name for the certificate. Constraints: 1-128 alphanumeric characters, pluses (+), equals (=), commas (,), periods (.), at signs (@), minuses (-), or underscores (_).
-* `path` - (Optional) The path to the server certificate, set to a slash (/) if not specified.
+* `name` - (Required) A unique name for the certificate. Constraints: 1-128 alphanumeric characters, pluses (`+`), equals (`=`), commas (`,`), periods (`.`), at signs (`@`), minuses (`-`), or underscores (`_`).
+* `path` - (Optional) The path to the server certificate, set to a slash (`/`) if not specified.
 * `private_key` - (Required) The PEM-encoded private key matching the certificate.
 
 ## Attribute Reference

@@ -41,7 +41,7 @@ The following arguments are supported:
     * `tags` - (Optional) The key/value combinations of the tags associated with the public IPs, in the following format: `TAGKEY=TAGVALUE`.
     * `vm_ids` - (Optional) The IDs of the VMs.
 * `next_page_token` - (Optional) The token to request the next page of results. Each token refers to a specific page.
-* `results_per_page` - (Optional) The maximum number of logs returned in a single response (between `1`and `1000`, both included). By default, `100`.
+* `results_per_page` - (Optional) The maximum number of logs returned in a single response (between `1` and `1000`, both included). By default, `100`.
 
 ## Attribute Reference
 

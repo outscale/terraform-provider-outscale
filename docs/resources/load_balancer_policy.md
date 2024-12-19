@@ -65,7 +65,7 @@ The following arguments are supported:
 
 * `cookie_name` - (Optional) The name of the application cookie used for stickiness. This parameter is required if you create a stickiness policy based on an application-generated cookie.
 * `load_balancer_name` - (Required) The name of the load balancer for which you want to create a policy.
-* `policy_name` - (Required) The unique name of the policy, with a maximum length of 32 alphanumeric characters and dashes (-).
+* `policy_name` - (Required) The unique name of the policy, with a maximum length of 32 alphanumeric characters and dashes (`-`).
 * `policy_type` - (Required) The type of stickiness policy you want to create: `app` or `load_balancer`.
 
 ## Attribute Reference

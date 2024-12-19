@@ -18,10 +18,23 @@ For more information on this resource actions, see the [API documentation](https
 
 ## Example Usage
 
+### Creating an access key for yourself
+
 ```hcl
 resource "outscale_access_key" "access_key01" {
     state           = "ACTIVE"
-    expiration_date = "2023-01-01"
+    expiration_date = "2028-01-01"
+}
+```
+
+### Creating an access key for another user
+
+```hcl
+resource "outscale_access_key" "access_key_eim01" {
+    user_name       = outscale_user.user-1.user_name
+    state           = "ACTIVE"
+    expiration_date = "2028-01-01"
+    depends_on      = [outscale_user.user-1]
 }
 ```
 
@@ -31,6 +44,7 @@ The following arguments are supported:
 
 * `expiration_date` - (Optional) The date and time, or the date, at which you want the access key to expire, in ISO 8601 format (for example, `2020-06-14T00:00:00.000Z`, or `2020-06-14`). To remove an existing expiration date, use the method without specifying this parameter.
 * `state` - (Optional) The state for the access key (`ACTIVE` | `INACTIVE`).
+* `user_name` - (Optional) The name of the EIM user that owns the key to be created. If you do not specify a user name, this action creates an access key for the user who sends the request (which can be the root account).
 
 ## Attribute Reference
 
