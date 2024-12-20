@@ -45,7 +45,7 @@ The following arguments are supported:
     * `volume_states` - (Optional) The states of the volumes (`creating` \| `available` \| `in-use` \| `updating` \| `deleting` \| `error`).
     * `volume_types` - (Optional) The types of the volumes (`standard` \| `gp2` \| `io1`).
 * `next_page_token` - (Optional) The token to request the next page of results. Each token refers to a specific page.
-* `results_per_page` - (Optional) The maximum number of logs returned in a single response (between `1`and `1000`, both included). By default, `100`.
+* `results_per_page` - (Optional) The maximum number of logs returned in a single response (between `1` and `1000`, both included). By default, `100`.
 
 ## Attribute Reference
 

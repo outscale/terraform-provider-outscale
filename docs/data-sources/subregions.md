@@ -57,7 +57,7 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `subregions` - Information about one or more Subregions.
-    * `location_code` - The location code of the Subregion.
+    * `location_code` - The location code (physical zone) of the Subregion. For more information, see [About Regions > Mapping Between Subregions and Physical Zones](https://docs.outscale.com/en/userguide/About-Regions-and-Subregions.html#_mapping_between_subregions_and_physical_zones).
     * `region_name` - The name of the Region containing the Subregion.
     * `state` - The state of the Subregion.
     * `subregion_name` - The name of the Subregion.
