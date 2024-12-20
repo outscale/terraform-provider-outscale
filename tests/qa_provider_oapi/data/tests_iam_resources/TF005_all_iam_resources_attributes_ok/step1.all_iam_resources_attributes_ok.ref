@@ -312,13 +312,6 @@
                                 "creation_date": "########",
                                 "last_modification_date": "########",
                                 "path": "/",
-                                "user_id": "##id-10##",
-                                "user_name": "TF-User-1"
-                            },
-                            {
-                                "creation_date": "########",
-                                "last_modification_date": "########",
-                                "path": "/",
                                 "user_id": "##id-9##",
                                 "user_name": "TF-User-0"
                             },
@@ -328,6 +321,13 @@
                                 "path": "/",
                                 "user_id": "##id-11##",
                                 "user_name": "TF-User-2"
+                            },
+                            {
+                                "creation_date": "########",
+                                "last_modification_date": "########",
+                                "path": "/",
+                                "user_id": "##id-10##",
+                                "user_name": "TF-User-1"
                             }
                         ],
                         "user_group_id": "##id-15##",

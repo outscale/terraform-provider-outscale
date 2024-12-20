@@ -49,10 +49,10 @@
                         "last_modification_date": "########",
                         "orn": "########",
                         "path": "/",
-                        "policy_default_version_id": "##id-4##",
-                        "policy_id": "##id-5##",
+                        "policy_default_version_id": "##id-1##",
+                        "policy_id": "##id-4##",
                         "policy_name": "terraform-policy-2",
-                        "resources_count": 1
+                        "resources_count": 0
                     },
                     "sensitive_attributes": [],
                     "private": "bnVsbA=="
@@ -71,13 +71,13 @@
                         "creation_date": "########",
                         "description": "test-terraform-ro",
                         "document": "{\n    \"Statement\": [\n        {\n            \"Action\": [\n                \"api:Read*\"\n            ],\n            \"Effect\": \"Allow\",\n            \"Resource\": [\n                \"*\"\n            ]\n        }\n    ]\n} \n",
-                        "id": "##id-6##",
+                        "id": "##id-5##",
                         "is_linkable": true,
                         "last_modification_date": "########",
                         "orn": "########",
                         "path": "/",
                         "policy_default_version_id": "##id-1##",
-                        "policy_id": "##id-7##",
+                        "policy_id": "##id-6##",
                         "policy_name": "terraform-policy-RO",
                         "resources_count": 1
                     },
@@ -97,12 +97,12 @@
                     "attributes": {
                         "body": "########",
                         "creation_date": "########",
-                        "default_version": true,
+                        "default_version": false,
                         "document": "{\n    \"Statement\": [\n        {\n            \"Action\": [\n                \"api:*VM*\"\n            ],\n            \"Effect\": \"Allow\",\n            \"Resource\": [\n                \"*\"\n            ]\n        }\n    ]\n}\n",
-                        "id": "##id-8##",
+                        "id": "##id-7##",
                         "policy_orn": "orn:ows:idauth::339215505907:policy/terraform-policy-2",
                         "set_as_default": null,
-                        "version_id": "##id-4##"
+                        "version_id": "##id-8##"
                     },
                     "sensitive_attributes": [],
                     "private": "bnVsbA==",
@@ -219,9 +219,9 @@
                         "policy": [
                             {
                                 "creation_date": "########",
-                                "default_version_id": "##id-4##",
+                                "default_version_id": "##id-8##",
                                 "last_modification_date": "########",
-                                "policy_id": "##id-5##",
+                                "policy_id": "##id-4##",
                                 "policy_name": "terraform-policy-2",
                                 "policy_orn": "orn:ows:idauth::339215505907:policy/terraform-policy-2"
                             }
@@ -302,7 +302,7 @@
                                 "creation_date": "########",
                                 "default_version_id": "##id-1##",
                                 "last_modification_date": "########",
-                                "policy_id": "##id-7##",
+                                "policy_id": "##id-6##",
                                 "policy_name": "terraform-policy-RO",
                                 "policy_orn": "orn:ows:idauth::339215505907:policy/terraform-policy-RO"
                             }
@@ -312,8 +312,8 @@
                                 "creation_date": "########",
                                 "last_modification_date": "########",
                                 "path": "/",
-                                "user_id": "##id-10##",
-                                "user_name": "TF-User-1-3"
+                                "user_id": "##id-9##",
+                                "user_name": "TF-User-0-3"
                             },
                             {
                                 "creation_date": "########",
@@ -326,8 +326,8 @@
                                 "creation_date": "########",
                                 "last_modification_date": "########",
                                 "path": "/",
-                                "user_id": "##id-9##",
-                                "user_name": "TF-User-0-3"
+                                "user_id": "##id-10##",
+                                "user_name": "TF-User-1-3"
                             }
                         ],
                         "user_group_id": "##id-15##",

@@ -2,7 +2,7 @@ resource "outscale_keypair" "my_keypair" {
  keypair_name = "KP-TF93"
 }
 resource "outscale_load_balancer" "public_lbu1" {
-  load_balancer_name        = "lbu-TF-93-11"
+  load_balancer_name        = "lbu-TF-93-new"
   subregion_names           = ["${var.region}a"]
   listeners {
      backend_port           = 80
@@ -41,7 +41,7 @@ resource "outscale_vm" "outscale_vms_lbu" {
     )
   tags {
      key                    = "Name"
-     value                  = "Backend-Vms-mzi"
+     value                  = "Backend-Vms-terraform"
   }
 }
 

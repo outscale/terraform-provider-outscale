@@ -116,7 +116,7 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "backend_ips": null,
+                        "backend_ips": "########",
                         "backend_vm_ids": [
                             "##id-3##",
                             "##id-4##"
@@ -196,7 +196,7 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-4##",
+                        "id": "##id-3##",
                         "image_id": "##id-9##",
                         "is_source_dest_checked": false,
                         "keypair_name": "KP-TF93",
@@ -237,12 +237,12 @@
                         "tags": [
                             {
                                 "key": "Name",
-                                "value": "Backend-Vms-mzi"
+                                "value": "Backend-Vms-terraform"
                             }
                         ],
                         "timeouts": null,
                         "user_data": "ICAgICAjIS9iaW4vYmFzaAogICAgcHVzaGQgL2hvbWUKICAgIG5vaHVwIHB5dGhvbiAtbSBTaW1wbGVIVFRQU2VydmVyIDgwODAK",
-                        "vm_id": "##id-4##",
+                        "vm_id": "##id-3##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
@@ -280,7 +280,7 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-3##",
+                        "id": "##id-4##",
                         "image_id": "##id-9##",
                         "is_source_dest_checked": false,
                         "keypair_name": "KP-TF93",
@@ -321,12 +321,12 @@
                         "tags": [
                             {
                                 "key": "Name",
-                                "value": "Backend-Vms-mzi"
+                                "value": "Backend-Vms-terraform"
                             }
                         ],
                         "timeouts": null,
                         "user_data": "ICAgICAjIS9iaW4vYmFzaAogICAgcHVzaGQgL2hvbWUKICAgIG5vaHVwIHB5dGhvbiAtbSBTaW1wbGVIVFRQU2VydmVyIDgwODAK",
-                        "vm_id": "##id-3##",
+                        "vm_id": "##id-4##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
