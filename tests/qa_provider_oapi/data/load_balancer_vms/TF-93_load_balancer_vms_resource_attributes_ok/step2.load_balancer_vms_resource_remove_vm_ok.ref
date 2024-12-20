@@ -45,10 +45,7 @@
                             }
                         ],
                         "application_sticky_cookie_policies": [],
-                        "backend_vm_ids": [
-                            "##id-1##",
-                            "##id-2##"
-                        ],
+                        "backend_vm_ids": [],
                         "dns_name": "########",
                         "health_check": [
                             {
@@ -61,7 +58,7 @@
                                 "unhealthy_threshold": 2
                             }
                         ],
-                        "id": "##id-3##",
+                        "id": "##id-1##",
                         "listeners": [
                             {
                                 "backend_port": 8080,
@@ -90,7 +87,7 @@
                         "security_groups": [],
                         "source_security_group": [
                             {
-                                "security_group_account_id": "##id-4##",
+                                "security_group_account_id": "##id-2##",
                                 "security_group_name": "outscale-elb-sg"
                             }
                         ],
@@ -119,11 +116,11 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "backend_ips": null,
+                        "backend_ips": "########",
                         "backend_vm_ids": [
-                            "##id-1##"
+                            "##id-3##"
                         ],
-                        "id": "##id-5##",
+                        "id": "##id-4##",
                         "load_balancer_name": "########",
                         "request_id": "########"
                     },
@@ -147,15 +144,15 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "account_id": "##id-6##",
+                        "account_id": "##id-5##",
                         "description": "test lbu vm health",
-                        "id": "##id-7##",
+                        "id": "##id-6##",
                         "inbound_rules": [],
                         "net_id": "",
                         "outbound_rules": [],
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
-                        "security_group_id": "##id-7##",
+                        "security_group_id": "##id-6##",
                         "security_group_name": "sgTF-93",
                         "tag": null,
                         "tags": []
@@ -186,7 +183,7 @@
                                         "link_date": "########",
                                         "state": "attached",
                                         "tags": [],
-                                        "volume_id": "##id-8##"
+                                        "volume_id": "##id-7##"
                                     }
                                 ],
                                 "device_name": "/dev/sda1"
@@ -198,8 +195,8 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-1##",
-                        "image_id": "##id-9##",
+                        "id": "##id-3##",
+                        "image_id": "##id-8##",
                         "is_source_dest_checked": false,
                         "keypair_name": "KP-TF93",
                         "launch_number": 0,
@@ -220,16 +217,16 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-10##",
+                        "reservation_id": "##id-9##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
                         "security_group_ids": [
-                            "##id-7##"
+                            "##id-6##"
                         ],
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-7##",
+                                "security_group_id": "##id-6##",
                                 "security_group_name": "sgTF-93"
                             }
                         ],
@@ -244,7 +241,7 @@
                         ],
                         "timeouts": null,
                         "user_data": "ICAgICAjIS9iaW4vYmFzaAogICAgcHVzaGQgL2hvbWUKICAgIG5vaHVwIHB5dGhvbiAtbSBTaW1wbGVIVFRQU2VydmVyIDgwODAK",
-                        "vm_id": "##id-1##",
+                        "vm_id": "##id-3##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
@@ -270,7 +267,7 @@
                                         "link_date": "########",
                                         "state": "attached",
                                         "tags": [],
-                                        "volume_id": "##id-11##"
+                                        "volume_id": "##id-10##"
                                     }
                                 ],
                                 "device_name": "/dev/sda1"
@@ -282,8 +279,8 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-2##",
-                        "image_id": "##id-9##",
+                        "id": "##id-11##",
+                        "image_id": "##id-8##",
                         "is_source_dest_checked": false,
                         "keypair_name": "KP-TF93",
                         "launch_number": 0,
@@ -308,12 +305,12 @@
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
                         "security_group_ids": [
-                            "##id-7##"
+                            "##id-6##"
                         ],
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-7##",
+                                "security_group_id": "##id-6##",
                                 "security_group_name": "sgTF-93"
                             }
                         ],
@@ -328,7 +325,7 @@
                         ],
                         "timeouts": null,
                         "user_data": "ICAgICAjIS9iaW4vYmFzaAogICAgcHVzaGQgL2hvbWUKICAgIG5vaHVwIHB5dGhvbiAtbSBTaW1wbGVIVFRQU2VydmVyIDgwODAK",
-                        "vm_id": "##id-2##",
+                        "vm_id": "##id-11##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },

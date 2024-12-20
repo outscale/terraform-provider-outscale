@@ -148,17 +148,17 @@
                                 "creation_date": "########",
                                 "default_version_id": "##id-1##",
                                 "last_modification_date": "########",
-                                "policy_id": "##id-4##",
-                                "policy_name": "terraform-policy-2",
-                                "policy_orn": "orn:ows:idauth::339215505907:policy/terraform2/terraform-policy-2"
+                                "policy_id": "##id-2##",
+                                "policy_name": "terraform-policy-1",
+                                "policy_orn": "orn:ows:idauth::339215505907:policy/terraform-policy-1"
                             },
                             {
                                 "creation_date": "########",
                                 "default_version_id": "##id-1##",
                                 "last_modification_date": "########",
-                                "policy_id": "##id-2##",
-                                "policy_name": "terraform-policy-1",
-                                "policy_orn": "orn:ows:idauth::339215505907:policy/terraform-policy-1"
+                                "policy_id": "##id-4##",
+                                "policy_name": "terraform-policy-2",
+                                "policy_orn": "orn:ows:idauth::339215505907:policy/terraform2/terraform-policy-2"
                             }
                         ],
                         "user": [
