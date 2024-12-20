@@ -158,7 +158,7 @@ The following arguments are supported:
     * `load_balancer_port` - (Optional) The port on which the load balancer is listening (between `1` and `65535`, both included).
     * `load_balancer_protocol` - (Optional) The routing protocol (`HTTP` \| `HTTPS` \| `TCP` \| `SSL`).
     * `server_certificate_id` - (Optional) The OUTSCALE Resource Name (ORN) of the server certificate. For more information, see [Resource Identifiers > OUTSCALE Resource Names (ORNs)](https://docs.outscale.com/en/userguide/Resource-Identifiers.html#_outscale_resource_names_orns).
-* `load_balancer_name` - (Required) The unique name of the load balancer, with a maximum length of 32 alphanumeric characters and dashes (-). This name must not start or end with a dash.
+* `load_balancer_name` - (Required) The unique name of the load balancer, with a maximum length of 32 alphanumeric characters and dashes (`-`). This name must not start or end with a dash.
 * `load_balancer_type` - (Optional) The type of load balancer: `internet-facing` or `internal`. Use this parameter only for load balancers in a Net.
 * `public_ip` - (Optional) (internet-facing only) The public IP you want to associate with the load balancer. If not specified, a public IP owned by 3DS OUTSCALE is associated.
 * `security_groups` - (Optional) (Net only) One or more IDs of security groups you want to assign to the load balancer. If not specified, the default security group of the Net is assigned to the load balancer.
@@ -180,6 +180,7 @@ The following attributes are exported:
 * `application_sticky_cookie_policies` - The stickiness policies defined for the load balancer.
     * `cookie_name` - The name of the application cookie used for stickiness.
     * `policy_name` - The mnemonic name for the policy being created. The name must be unique within a set of policies for this load balancer.
+* `backend_ips` - One or more public IPs of backend VMs.
 * `backend_vm_ids` - One or more IDs of backend VMs for the load balancer.
 * `dns_name` - The DNS name of the load balancer.
 * `health_check` - Information about the health check configuration.

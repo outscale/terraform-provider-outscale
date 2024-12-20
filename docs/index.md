@@ -79,6 +79,35 @@ $ export OUTSCALE_X509KEY="~/certificate/certificate.key"
 $ terraform plan
 ```
 
+## Configuration
+
+### Set a profile using a configuration file
+
+Use the `profile` or the `OSC_PROFILE` parameter to specify a named profile.
+
+The locations of the shared configuration and credentials files can be configured using either the parameters `config_file` and `OSC_PROFILE`.
+
+Example with the provider:
+
+```hcl
+provider "outscale" {
+  config_file      =  "./.osc/config.json"
+  profile               =  "default"
+}
+```
+
+Examples with the environment variable export:
+
+ ```hcl
+# For Linux and macOS
+export OSC_PROFILE="default"
+export OSC_CONFIG_FILE="$HOME/.osc/config.json"
+ 
+# For Windows
+export OSC_CONFIG_FILE="%USERPROFILE%.osc\config.json"
+ ```
+
+
 ## Arguments Reference
 
 In addition to [generic provider arguments](https://www.terraform.io/docs/configuration/providers.html), the following arguments are supported in the OUTSCALE provider block:
@@ -94,3 +123,11 @@ In addition to [generic provider arguments](https://www.terraform.io/docs/config
 * `x509_cert_path` - (Optional) The path to the x509 Client Certificate. It can also be sourced from the `OUTSCALE_X509CERT` [environment variable](#environment-variables). For more information on the use of those certificates, see [About API Access Rules](https://docs.outscale.com/en/userguide/About-API-Access-Rules.html).
 
 * `x509_key_path` - (Optional) The path to the private key of the x509 Client Certificate. It can also be sourced from the `OUTSCALE_X509KEY` [environment variable](#environment-variables). For more information on the use of those certificates, see [About API Access Rules](https://docs.outscale.com/en/userguide/About-API-Access-Rules.html).
+
+* `config_file` - (Optional) The path to the OSC config file.
+
+* `profile` - (Optional) The named profile you want to use.
+
+* `OSC_PROFILE` - (Optional) The OSC profile name as set in the shared configuration and credentials files.
+
+* `OSC_CONFIG_FILE` - (Optional) The path to the OSC config file.

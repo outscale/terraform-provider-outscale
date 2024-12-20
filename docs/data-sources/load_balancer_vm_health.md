@@ -3,12 +3,12 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_load_balancer_vm_health"
 sidebar_current: "outscale-load-balancer-vm-health"
 description: |-
-  [Provides information about the health of one or more back-end VMs registered with a specific load balancer.]
+  [Provides information about the health of one or more backend VMs registered with a specific load balancer.]
 ---
 
 # outscale_load_balancer_vm_health Data Source
 
-Provides information about the health of one or more back-end VMs registered with a specific load balancer.
+Provides information about the health of one or more backend VMs registered with a specific load balancer.
 
 For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Load-Balancers.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#readvmshealth).

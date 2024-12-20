@@ -94,7 +94,7 @@ The following arguments are supported:
     * `vm_state_names` - (Optional) The state names of the VMs (`pending` \| `running` \| `stopping` \| `stopped` \| `shutting-down` \| `terminated` \| `quarantine`).
     * `vm_types` - (Optional) The VM types (for example, t2.micro). For more information, see [VM Types](https://docs.outscale.com/en/userguide/VM-Types.html).
 * `next_page_token` - (Optional) The token to request the next page of results. Each token refers to a specific page.
-* `results_per_page` - (Optional) The maximum number of logs returned in a single response (between `1`and `1000`, both included). By default, `100`.
+* `results_per_page` - (Optional) The maximum number of logs returned in a single response (between `1` and `1000`, both included). By default, `100`.
 
 ## Attribute Reference
 

@@ -206,7 +206,7 @@ resource "outscale_nic" "nic01" {
 
 resource "outscale_vm" "vm04" {
 	image_id     		= var.image_id
-	vm_type      		= "c4.large"
+	vm_type      		= "tinav5.c1r1p2"
 	keypair_name 		= var.keypair_name
 	security_group_ids  = [outscale_security_group.security_group01.security_group_id]
 	primary_nic {
@@ -247,7 +247,7 @@ resource "outscale_nic" "nic01" {
 
 resource "outscale_vm" "vm04" {
     image_id     		= var.image_id
-    vm_type      		= "c4.large"
+    vm_type      		= "tinav5.c1r1p2"
     keypair_name 		= var.keypair_name
 	security_group_ids  = [outscale_security_group.security_group01.security_group_id]
     nics {
