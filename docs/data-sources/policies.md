@@ -3,15 +3,15 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_policies"
 sidebar_current: "outscale-policies"
 description: |-
-  [Provides information about NOT_FOUND.]
+  [Provides information about policies.]
 ---
 
 # outscale_policies Data Source
 
-Provides information about NOT_FOUND.
+Provides information about policies.
 
-For more information on this resource, see the [User Guide](NOT_FOUND).  
-For more information on this resource actions, see the [API documentation](NOT_FOUND).
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/Getting-Information-About-a-Managed-Policy.html).  
+For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api.html#readpolicies).
 
 ## Example Usage
 
