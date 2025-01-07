@@ -1,3 +1,17 @@
+1.0.0 (January 9, 2025)
+========================
+FEATURES:
+---------
+
+* Implement EIM (user, user group, policy, policy version) resources and datasources ([GH-364](https://github.com/outscale/terraform-provider-outscale/issues/364)) ([GH-413](https://github.com/outscale/terraform-provider-outscale/issues/413))
+* Enable setting credentials using profile ([GH-129](https://github.com/outscale/terraform-provider-outscale/issues/129))
+* Enable attaching vms to LBU with 'backendIps' ([GH-238](https://github.com/outscale/terraform-provider-outscale/issues/238))
+
+IMPROVEMENTS:
+-----------
+* Update tests and osc-sdk-go
+* Some refactoring
+
 1.0.0-rc.2 (September 13, 2024)
 ========================
 BUG FIXES:
@@ -924,5 +938,5 @@ FEATURES:
 NOTES:
 ------
 
-One resource/datasource delivery for initial Hashicorp review. 
+One resource/datasource delivery for initial Hashicorp review.
 
