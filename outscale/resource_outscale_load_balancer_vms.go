@@ -9,7 +9,6 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -75,7 +74,7 @@ func ResourceLBUAttachmentCreate(d *schema.ResourceData, meta interface{}) error
 	if err != nil {
 		return fmt.Errorf("Failure Linking LoadBalancer backend_vm_ids/backend_ips with LBU: %w", err)
 	}
-	d.SetId(resource.PrefixedUniqueId(fmt.Sprintf("%s-", lbuName)))
+	d.SetId(lbuName)
 	return ResourceLBUAttachmentRead(d, meta)
 }
 
@@ -116,6 +115,23 @@ func ResourceLBUAttachmentRead(d *schema.ResourceData, meta interface{}) error {
 
 	managedVmIds := all_backendVms.Intersection(expectedVmIds)
 	managedIps := all_backendIps.Intersection(expectedIps)
+
+	if managedIps.Len() > 0 {
+		vmIdsLinkedByIps, err := getVmIdsThroughVmIps(conn, managedIps)
+		if err != nil {
+			return err
+		}
+		for _, vmId := range vmIdsLinkedByIps {
+			all_backendVms.Remove(vmId)
+		}
+	}
+
+	if manVmIdsLink := all_backendVms.Difference(expectedVmIds); manVmIdsLink.Len() > 0 {
+		for _, vmId := range manVmIdsLink.List() {
+			managedVmIds.Add(vmId)
+		}
+	}
+
 	if managedVmIds.Len() == 0 && managedIps.Len() == 0 {
 		d.SetId("")
 		return nil
@@ -126,8 +142,11 @@ func ResourceLBUAttachmentRead(d *schema.ResourceData, meta interface{}) error {
 	if err := d.Set("backend_ips", managedIps); err != nil {
 		return err
 	}
-
-	return d.Set("load_balancer_name", lbu.GetLoadBalancerName())
+	if err := d.Set("load_balancer_name", lbu.GetLoadBalancerName()); err != nil {
+		return err
+	}
+	d.SetId(lbu.GetLoadBalancerName())
+	return nil
 }
 
 func ResourceLBUAttachmentUpdate(d *schema.ResourceData, meta interface{}) error {
