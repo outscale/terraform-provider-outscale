@@ -55,36 +55,42 @@ Then ``` terraform refresh``` or ``` terraform apply ``` will set the right bloc
 #### On Linux
 ```sh
 terraform fmt
-sed -i '/"block_device_mappings_created": \[/, /\],/d' terraform.tfstate
 sed -i 's/outscale_volumes_link/outscale_volume_link/g' terraform.tfstate
-sed -i '/"link_public_ip": {/, /},/d' terraform.tfstate
-sed -i '/"link_nic": {/, /},/d' terraform.tfstate
+sed -i '/"block_device_mappings_created": \[/, /\],/d' terraform.tfstate
+sed -i '/"source_security_group": {/, /},/d' terraform.tfstate
 sed -i '/"flexible_gpu_id": "/, /",/d' terraform.tfstate
+sed -i '/"link_public_ip": {/, /},/d' terraform.tfstate
 sed -i '/"accepter_net": {/, /},/d' terraform.tfstate
+sed -i '/"health_check": {/, /},/d' terraform.tfstate
+sed -i '/"access_log": {/, /},/d' terraform.tfstate
 sed -i '/"source_net": {/, /},/d' terraform.tfstate
+sed -i '/"link_nic": {/, /},/d' terraform.tfstate
 sed -i '/"state": {/, /},/d' terraform.tfstate
 sed -i 's/outscale_volumes_link/outscale_volume_link/g' *.tf
 sed -i 's/flexible_gpu_id /flexible_gpu_ids /g' *.tf
-sed -i '/flexible_gpu_ids /s/= /= \[/' *.tf
 sed -i '/outscale_flexible_gpu\./s/$/ \]/' *.tf
+sed -i '/flexible_gpu_ids /s/= /= \[/' *.tf
 terraform fmt
 ```
 
 #### On MacOS
 ```sh
 terraform fmt
-sed -i='' '/"block_device_mappings_created": \[/, /\],/d' terraform.tfstate
 sed -i='' 's/outscale_volumes_link/outscale_volume_link/g' terraform.tfstate
-sed -i='' '/"link_public_ip": {/, /},/d' terraform.tfstate
-sed -i='' '/"link_nic": {/, /},/d' terraform.tfstate
+sed -i='' '/"block_device_mappings_created": \[/, /\],/d' terraform.tfstate
+sed -i='' '/"source_security_group": {/, /},/d' terraform.tfstate
 sed -i='' '/"flexible_gpu_id": "/, /",/d' terraform.tfstate
+sed -i='' '/"link_public_ip": {/, /},/d' terraform.tfstate
 sed -i='' '/"accepter_net": {/, /},/d' terraform.tfstate
+sed -i='' '/"health_check": {/, /},/d' terraform.tfstate
+sed -i='' '/"access_log": {/, /},/d' terraform.tfstate
 sed -i='' '/"source_net": {/, /},/d' terraform.tfstate
+sed -i='' '/"link_nic": {/, /},/d' terraform.tfstate
 sed -i='' '/"state": {/, /},/d' terraform.tfstate
 sed -i='' 's/outscale_volumes_link/outscale_volume_link/g' *.tf
 sed -i='' 's/flexible_gpu_id /flexible_gpu_ids /g' *.tf
-sed -i='' '/flexible_gpu_ids /s/= /= \[/' *.tf
 sed -i='' '/outscale_flexible_gpu\./s/$/\]/' *.tf
+sed -i='' '/flexible_gpu_ids /s/= /= \[/' *.tf
 terraform fmt
 ```
 ### Step 3: Refresh configuration to update terraform state
