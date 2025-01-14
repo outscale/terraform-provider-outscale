@@ -14,9 +14,8 @@ output "load_balancer_url" {
 }
 
 resource "outscale_load_balancer_vms" "backend_vms" {
-  count              = length(outscale_vm.my_vms)
   load_balancer_name = outscale_load_balancer.my_public_lb.load_balancer_name
-  backend_vm_ids     = [outscale_vm.my_vms[count.index].vm_id]
+  backend_vm_ids     = [for _, vm in outscale_vm.my_vms : vm.vm_id]
 }
 
 resource "outscale_load_balancer_attributes" "my_health_check" {
