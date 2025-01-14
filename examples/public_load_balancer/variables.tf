@@ -7,5 +7,5 @@ variable "vm_type" {}
 variable "vm_count" {}
 
 variable "suffixe_lbu_name" {
-    type    = string
+  type = string
 }
