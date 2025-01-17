@@ -34,6 +34,11 @@ func ResourceOutscaleLinPeeringConnection() *schema.Resource {
 				ForceNew: true,
 				Computed: true,
 			},
+			"accepter_owner_id": {
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
+			},
 			"accepter_net_id": {
 				Type:     schema.TypeString,
 				Required: true,
@@ -81,12 +86,12 @@ func ResourceOutscaleLinPeeringCreate(d *schema.ResourceData, meta interface{}) 
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	// Create the vpc peering connection
+	accepterOwnerId := d.Get("accepter_owner_id").(string)
 	createOpts := oscgo.CreateNetPeeringRequest{
-		AccepterNetId: d.Get("accepter_net_id").(string),
-		SourceNetId:   d.Get("source_net_id").(string),
+		AccepterNetId:   d.Get("accepter_net_id").(string),
+		SourceNetId:     d.Get("source_net_id").(string),
+		AccepterOwnerId: &accepterOwnerId,
 	}
-
-	log.Printf("[DEBUG] VPC Peering Create options: %#v", createOpts)
 
 	var resp oscgo.CreateNetPeeringResponse
 	var err error
@@ -99,10 +104,9 @@ func ResourceOutscaleLinPeeringCreate(d *schema.ResourceData, meta interface{}) 
 		return nil
 	})
 
-	var errString string
 	if err != nil {
-		errString = err.Error()
-		return fmt.Errorf("Error creating Net Peering. Details: %s", errString)
+		netErr := "Error creating Net Peering. Details:" + err.Error()
+		return errors.New(netErr)
 	}
 
 	// Get the ID and store it
@@ -115,9 +119,6 @@ func ResourceOutscaleLinPeeringCreate(d *schema.ResourceData, meta interface{}) 
 			return err
 		}
 	}
-
-	log.Printf("[INFO] Net Peering ID: %s", d.Id())
-
 	// Wait for the vpc peering connection to become available
 	log.Printf("[DEBUG] Waiting for Net Peering (%s) to become available.", d.Id())
 	stateConf := &resource.StateChangeConf{
@@ -139,10 +140,15 @@ func ResourceOutscaleLinPeeringRead(d *schema.ResourceData, meta interface{}) er
 	conn := meta.(*OutscaleClient).OSCAPI
 	var resp oscgo.ReadNetPeeringsResponse
 	var err error
+	pFilters := oscgo.FiltersNetPeering{
+		NetPeeringIds: &[]string{d.Id()},
+	}
+	peeringReq := oscgo.ReadNetPeeringsRequest{
+		Filters: &pFilters,
+	}
+
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		rp, httpResp, err := conn.NetPeeringApi.ReadNetPeerings(context.Background()).ReadNetPeeringsRequest(oscgo.ReadNetPeeringsRequest{
-			Filters: &oscgo.FiltersNetPeering{NetPeeringIds: &[]string{d.Id()}},
-		}).Execute()
+		rp, httpResp, err := conn.NetPeeringApi.ReadNetPeerings(context.Background()).ReadNetPeeringsRequest(peeringReq).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -183,19 +189,14 @@ func ResourceOutscaleLinPeeringRead(d *schema.ResourceData, meta interface{}) er
 			return nil
 		}
 	}
-	log.Printf("[DEBUG] Net Peering response: %#v", pc)
 
-	log.Printf("[DEBUG] VPC PeerConn Source %s, Accepter %s", pc.SourceNet.GetAccountId(), pc.AccepterNet.GetAccountId())
+	accNet := pc.GetAccepterNet()
 
-	if !reflect.DeepEqual(pc.GetAccepterNet(), oscgo.AccepterNet{}) {
-		if err := d.Set("accepter_net", getOAPINetPeeringAccepterNet(pc.GetAccepterNet())); err != nil {
-			return err
-		}
+	if err := d.Set("accepter_net", getOAPINetPeeringAccepterNet(accNet)); err != nil {
+		return err
 	}
-	if !reflect.DeepEqual(pc.SourceNet, oscgo.SourceNet{}) {
-		if err := d.Set("source_net", getOAPINetPeeringSourceNet(pc.GetSourceNet())); err != nil {
-			return err
-		}
+	if err := d.Set("source_net", getOAPINetPeeringSourceNet(pc.GetSourceNet())); err != nil {
+		return err
 	}
 
 	if pc.State.GetName() != "" {
@@ -203,7 +204,9 @@ func ResourceOutscaleLinPeeringRead(d *schema.ResourceData, meta interface{}) er
 			return err
 		}
 	}
-
+	if err := d.Set("accepter_owner_id", accNet.GetAccountId()); err != nil {
+		return err
+	}
 	if err := d.Set("accepter_net_id", pc.GetAccepterNet().NetId); err != nil {
 		return err
 	}
@@ -214,7 +217,7 @@ func ResourceOutscaleLinPeeringRead(d *schema.ResourceData, meta interface{}) er
 		return err
 	}
 	if err := d.Set("tags", tagsOSCAPIToMap(pc.GetTags())); err != nil {
-		return errwrap.Wrapf("Error setting Net Peering tags: {{err}}", err)
+		return err
 	}
 
 	return nil

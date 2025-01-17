@@ -68,6 +68,7 @@
                             }
                         ],
                         "accepter_net_id": "##id-1##",
+                        "accepter_owner_id": "##id-3##",
                         "id": "##id-4##",
                         "net_peering_id": "##id-4##",
                         "request_id": "########",
@@ -119,6 +120,7 @@
                             }
                         ],
                         "accepter_net_id": "##id-1##",
+                        "accepter_owner_id": "##id-3##",
                         "id": "##id-4##",
                         "net_peering_id": "##id-4##",
                         "request_id": "########",

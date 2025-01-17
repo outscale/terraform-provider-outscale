@@ -300,6 +300,13 @@ func GetRegion() string {
 	}
 	return region
 }
+func GetAccepterOwnerId() string {
+	accountId := os.Getenv("OUTSCALE_ACCOUNT")
+	if accountId == "" {
+		accountId = os.Getenv("OSC_ACCOUNT")
+	}
+	return accountId
+}
 
 // String hashes a string to a unique hashcode.
 //

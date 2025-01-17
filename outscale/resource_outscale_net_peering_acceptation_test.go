@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
 func TestAccNet_PeeringConnectionAccepter_sameAccount(t *testing.T) {
@@ -15,7 +16,7 @@ func TestAccNet_PeeringConnectionAccepter_sameAccount(t *testing.T) {
 		CheckDestroy: testAccOutscaleLinPeeringConnectionAccepterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleLinPeeringConnectionAccepterSameAccountConfig,
+				Config: testAccOutscaleLinPeeringConnectionAccepterSameAccountConfig(utils.GetAccepterOwnerId()),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleLinPeeringConnectionAccepterExists("outscale_net_peering_acceptation.peer"),
 				),
@@ -43,7 +44,8 @@ func testAccOutscaleLinPeeringConnectionAccepterDestroy(s *terraform.State) erro
 	return nil
 }
 
-const testAccOutscaleLinPeeringConnectionAccepterSameAccountConfig = `
+func testAccOutscaleLinPeeringConnectionAccepterSameAccountConfig(accountId string) string {
+	return fmt.Sprintf(`
 	resource "outscale_net" "foo" {
 		ip_range = "10.0.0.0/16"
 
@@ -65,6 +67,7 @@ const testAccOutscaleLinPeeringConnectionAccepterSameAccountConfig = `
 	resource "outscale_net_peering" "foo" {
 		source_net_id   = outscale_net.foo.id
 		accepter_net_id = outscale_net.bar.id
+		accepter_owner_id = "%s"
 
 		tags {
 			key   = "Side"
@@ -76,4 +79,5 @@ const testAccOutscaleLinPeeringConnectionAccepterSameAccountConfig = `
 	resource "outscale_net_peering_acceptation" "peer" {
 		net_peering_id = outscale_net_peering.foo.id
 	}
-`
+`, accountId)
+}
