@@ -28,6 +28,10 @@ func ResourceOutscaleLinPeeringConnectionAccepter() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
+			"accepter_owner_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"state": {
 				Type:     schema.TypeList,
 				Computed: true,

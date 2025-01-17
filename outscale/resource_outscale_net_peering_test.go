@@ -24,7 +24,7 @@ func TestAccNet_PeeringConnection_basic(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscaleLinPeeringConnectionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIVpcPeeringConfig,
+				Config: testAccOAPIVpcPeeringConfig(utils.GetAccepterOwnerId()),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleLinPeeringConnectionExists(
 						"outscale_net_peering.foo",
@@ -44,7 +44,7 @@ func TestAccNet_PeeringConnection_importBasic(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleLinPeeringConnectionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIVpcPeeringConfig,
+				Config: testAccOAPIVpcPeeringConfig(utils.GetAccepterOwnerId()),
 			},
 			{
 				ResourceName:            resourceName,
@@ -96,7 +96,7 @@ func TestAccNet_PeeringConnection_plan(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleLinPeeringConnectionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIVpcPeeringConfig,
+				Config: testAccOAPIVpcPeeringConfig(utils.GetAccepterOwnerId()),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleLinPeeringConnectionExists(
 						"outscale_net_peering.foo",
@@ -146,7 +146,6 @@ func testAccCheckOutscaleLinPeeringConnectionDestroy(s *terraform.State) error {
 		}
 
 		if pc == nil {
-			// not found
 			return nil
 		}
 
@@ -208,7 +207,8 @@ func testAccCheckOutscaleLinPeeringConnectionExists(n string, connection *oscgo.
 	}
 }
 
-const testAccOAPIVpcPeeringConfig = `
+func testAccOAPIVpcPeeringConfig(accountid string) string {
+	return fmt.Sprintf(`
 	resource "outscale_net" "foo" {
 		ip_range = "10.0.0.0/16"
 
@@ -230,5 +230,7 @@ const testAccOAPIVpcPeeringConfig = `
 	resource "outscale_net_peering" "foo" {
 		source_net_id   = outscale_net.foo.id
 		accepter_net_id = outscale_net.bar.id
+		accepter_owner_id = "%s"
 	}
-`
+`, accountid)
+}

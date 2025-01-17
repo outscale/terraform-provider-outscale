@@ -27,6 +27,7 @@ resource "outscale_net" "outscale_net3" {
 resource "outscale_net_peering" "outscale_net_peering" {
     accepter_net_id   = outscale_net.outscale_net[0].net_id
     source_net_id     = outscale_net.outscale_net2.net_id
+    accepter_owner_id = "${var.account_id}"
 tags {
       key = "Key"
       value = "value-tags"
@@ -40,6 +41,7 @@ tags {
 resource "outscale_net_peering" "outscale_net_peering2" {
     accepter_net_id   = outscale_net.outscale_net[0].net_id
     source_net_id     = outscale_net.outscale_net3.net_id
+    accepter_owner_id = "${var.account_id}"
 }
 
 

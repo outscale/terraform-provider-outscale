@@ -8,6 +8,7 @@ variable "image_id" {}
 variable "region" {}
 variable "service_name" {}
 variable "osu_bucket_name" {}
+variable "account_id" {}
 
 variable "vm_type" {
   type    = string

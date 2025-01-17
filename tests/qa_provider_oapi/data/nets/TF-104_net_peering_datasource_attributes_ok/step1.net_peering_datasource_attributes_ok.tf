@@ -12,7 +12,8 @@ resource "outscale_net" "outscale_net2" {
 
 resource "outscale_net_peering" "outscale_net_peering" {
     accepter_net_id   = outscale_net.outscale_net.net_id
-    source_net_id            = outscale_net.outscale_net2.net_id
+    source_net_id     = outscale_net.outscale_net2.net_id
+    accepter_owner_id = "${var.account_id}"
     tags {
      key = "name"
      value = "test-net-peering"
@@ -27,5 +28,5 @@ data "outscale_net_peering" "outscale_net_peering" {
     filter {
         name = "net_peering_ids"
         values = [outscale_net_peering.outscale_net_peering.net_peering_id]
-    }    
+    }
 }
