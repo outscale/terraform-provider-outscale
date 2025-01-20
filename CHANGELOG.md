@@ -1,3 +1,10 @@
+1.0.1 (January 20, 2025)
+========================
+BUG FIXES:
+----------
+
+* Fix net_peering mandatory "accepter_owner_id" parameter ([GH-497](https://github.com/outscale/terraform-provider-outscale/issues/497))
+
 1.0.0 (January 9, 2025)
 ========================
 FEATURES:
@@ -677,7 +684,7 @@ BUG FIXES:
 
 
 0.1.0RC6.1 (December 23, 2019)
-============================== 
+==============================
 
 BUG FIXES:
 ----------
@@ -716,7 +723,7 @@ BUG FIXES:
 
 
 0.1.0RC5 (October 16, 2019)
-=========================== 
+===========================
 
 BUG FIXES:
 ----------
@@ -766,7 +773,7 @@ BUG FIXES:
 
 
 0.1.0RC4 (June 28, 2019)
-======================== 
+========================
 
 BUG FIXES:
 ----------
@@ -783,7 +790,7 @@ BUG FIXES:
 
 
 0.1.0RC3 (March 29, 2019)
-========================= 
+=========================
 
 BUG FIXES:
 ----------
@@ -838,7 +845,7 @@ EXPERIMENTS:
 
 
 0.1.0RC2 (March 29, 2019)
-========================= 
+=========================
 
 FEATURES:
 ---------
@@ -923,7 +930,7 @@ It is recommended to set tags inside the resources rather than using outscale_ta
 
 
 0.1.0RC1 (Februry 23, 2018)
-=========================== 
+===========================
 
 FEATURES:
 ---------
