@@ -1,63 +1,109 @@
-# Opening an issue
+# Contributing Guidelines
 
-Feel free to open a [Github issue](https://github.com/outscale-dev/terraform-provider-outscale/issues) and explain your problem.
+## Opening an Issue
 
-Please provide at least those informations:
-- terraform version
-- how to reproduce the issue
-- output of your command with `TF_LOG=TRACE` set (e.g. `TF_LOG=TRACE terraform apply`)
-- please store large output (like traces) as as an attached file
-- make sure your don't leak any sensible informations (credentials, ...)
+Feel free to open a [GitHub issue](https://github.com/outscale/terraform-provider-outscale/issues) to report a problem or suggest an improvement.
 
-# Developing the Provider
+Please include the following information when opening an issue:
 
-If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine (version 1.8+ is *required*). You'll also need to correctly setup a [GOPATH](http://golang.org/doc/code.html#GOPATH), as well as adding `$GOPATH/bin` to your `$PATH`.
+- **Terraform version**: Specify the version you are using.
+- **Steps to reproduce the issue**: Provide detailed steps.
+- **Command output**: Include the output of your command with `TF_LOG=TRACE` enabled (e.g., `TF_LOG=TRACE terraform apply`).
+- **Large outputs**: Attach large outputs (e.g., logs or traces) as a file instead of pasting them into the issue.
+- **Sensitive information**: Ensure no sensitive information (e.g., credentials) is included in your report.
 
-To compile the provider, run `make build`. This will build the provider and put the provider binary in the `$GOPATH/bin` directory.
+---
+
+## Developing the Provider
+
+### Prerequisites
+
+To work on the provider, you need:
+
+1. **Go**: Install [Go](https://golang.org) (version 1.23+ required).
+2. **GOPATH setup**: Configure your [GOPATH](https://golang.org/doc/code.html#GOPATH) and add `$GOPATH/bin` to your `$PATH`.
+
+### Build the Provider
+
+To compile the provider, use the following command:
+
+```sh
+make build
+```
+
+This will build the provider and put the binary in the `$GOPATH/bin` directory.
+
+Example:
 
 ```sh
 $ make build
-...
 $ $GOPATH/bin/terraform-provider-outscale
-...
 ```
 
-In order to test the provider, you can simply run `make test`.
+### Test the Provider
+
+#### Unit Tests
+
+Run the unit tests with:
 
 ```sh
-$ make test
+make test
 ```
 
-In order to run the full suite of Acceptance tests, run `make testacc`.
+#### Acceptance Tests
 
-*Note:* Acceptance tests create real resources, and often cost money to run.
-
-*Note:* The following environment variables must be set prior to run Acceptance Tests
+To run the full suite of acceptance tests, use:
 
 ```sh
-$ export OUTSCALE_IMAGEID="ami-xxxxxxxx"    # i.e. "ami-4a7bf2b3"
-$ export OUTSCALE_ACCESSKEYID="<ACCESSKEY>" # i.e. "XXXXXXXXXXXXXXXXXXXX"
-$ export OUTSCALE_SECRETKEYID="<SECRETKEY>" # i.e. "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY"
-$ export OUTSCALE_REGION="<REGION>"         # i.e. "eu-west-2"
-$ export OUTSCALE_ACCOUNT="<ACCOUNTPID>"    # i.e. "XXXXXXXXXXXX"
+make testacc
 ```
+
+**Notes:**
+
+- **Cost**: Acceptance tests create real resources and may incur costs.
+- **Environment variables**: Set the following variables before running the tests:
 
 ```sh
-$ make testacc
+export OUTSCALE_IMAGEID="ami-xxxxxxxx"    # Example: "ami-e58ac287"
+export OUTSCALE_ACCESSKEYID="<ACCESSKEY>" # Example: "XXXXXXXXXXXXXXXXXXXX"
+export OUTSCALE_SECRETKEYID="<SECRETKEY>" # Example: "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY"
+export OUTSCALE_REGION="<REGION>"         # Example: "eu-west-2"
+export OUTSCALE_ACCOUNT="<ACCOUNTPID>"    # Example: "XXXXXXXXXXXX"
 ```
 
-If you want, you can tests terraform locally using [ricochet-2](https://github.com/outscale/osc-ricochet-2/)
-to do so, you need to get ricochet-2 [release](https://github.com/outscale/osc-ricochet-2/tags)
-extract and start it:
+Run the tests:
+
+```sh
+make testacc
 ```
+
+---
+
+### Local Testing with Ricochet-2
+
+You can test Terraform locally using [Ricochet-2](https://github.com/outscale/osc-ricochet-2). To do this:
+
+1. Download the [latest Ricochet-2 release](https://github.com/outscale/osc-ricochet-2/tags).
+2. Extract and start it:
+
+```sh
 tar -xvf osc-ricochet-2_v0.2.0_x86_64-unknown-linux-musl.tar.gz
 ./ricochet-2 ./ricochet.json
 ```
-and in another terminal, either call `make test-locally`, or call the script manually
+
+3. In another terminal, run:
+
+```sh
+make test-locally
 ```
-# if you want TestAccVM_withFlexibleGpuLink_basic
+
+Alternatively, run specific tests manually:
+
+```sh
 scripts/local-test.sh TestAccVM_withFlexibleGpuLink_basic
 ```
 
-Note that ricochet-2 been fearly new, doesn't support all Outscale Calls, and some tests will fails.
-Also ricochet-2 work only on Linux for now.
+**Limitations:**
+
+- Ricochet-2 is still experimental and does not support all Outscale API calls. Some tests may fail.
+- Ricochet-2 currently works only on Linux.
