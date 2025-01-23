@@ -1,117 +1,95 @@
-1.0.1 (January 20, 2025)
-========================
-BUG FIXES:
-----------
 
-* Fix net_peering mandatory "accepter_owner_id" parameter ([GH-497](https://github.com/outscale/terraform-provider-outscale/issues/497))
 
-1.0.0 (January 9, 2025)
-========================
-FEATURES:
----------
 
-* Implement EIM (user, user group, policy, policy version) resources and datasources ([GH-364](https://github.com/outscale/terraform-provider-outscale/issues/364)) ([GH-413](https://github.com/outscale/terraform-provider-outscale/issues/413))
-* Enable setting credentials using profile ([GH-129](https://github.com/outscale/terraform-provider-outscale/issues/129))
-* Enable attaching vms to LBU with 'backendIps' ([GH-238](https://github.com/outscale/terraform-provider-outscale/issues/238))
+## [1.0.1] - 2025-01-20
+### 🐛 Bug Fixes
+- 🐛 Fix `net_peering` requiring a mandatory `accepter_owner_id` parameter. ([#497](https://github.com/outscale/terraform-provider-outscale/issues/497))
 
-IMPROVEMENTS:
------------
-* Update tests and osc-sdk-go
-* Some refactoring
+---
 
-1.0.0-rc.2 (September 13, 2024)
-========================
-BUG FIXES:
-----------
+## [1.0.0] - 2025-01-09
+### ✨ Features
+- 🚀 Add support for EIM (user, user group, policy, policy version) resources and data sources. ([#364](https://github.com/outscale/terraform-provider-outscale/issues/364), [#413](https://github.com/outscale/terraform-provider-outscale/issues/413))
+- 🔑 Enable setting credentials using a profile. ([#129](https://github.com/outscale/terraform-provider-outscale/issues/129))
+- 🔗 Enable attaching VMs to LBU with `backendIps`. ([#238](https://github.com/outscale/terraform-provider-outscale/issues/238))
 
-* Error when setting endpoints in Provider configuration ([GH-475](https://github.com/outscale/terraform-provider-outscale/issues/475))
-* Error on plan after migration v1.0.0 on link public IP ([GH-469](https://github.com/outscale/terraform-provider-outscale/issues/469))
-* Bug with the vpn connection ([GH-468](https://github.com/outscale/terraform-provider-outscale/issues/468))
-* Migration to1.0.0-rc.1: outscale_net_peering and outscale_net_peering_acceptation errors([GH-464](https://github.com/outscale/terraform-provider-outscale/issues/464))
-* Fail to import ouscale_nic if the NIC is attached to a public IP ([GH-461](https://github.com/outscale/terraform-provider-outscale/issues/461))
+### 🔧 Improvements
+- 🧪 Update tests and `osc-sdk-go`.
+- 🛠 Refactor internal logic.
 
-IMPROVEMENTS:
------------
-* Update tests and osc-sdk-go
-* Some refactoring
+---
 
-1.0.0-rc.1 (June 19, 2024)
-========================
-BUG FIXES:
-----------
+## [1.0.0-rc.2] - 2024-09-13
+### 🐛 Bug Fixes
+- 🐛 Fix error when setting endpoints in provider configuration. ([#475](https://github.com/outscale/terraform-provider-outscale/issues/475))
+- ⚡️ Fix error during plan after migration to `v1.0.0` on linking public IPs. ([#469](https://github.com/outscale/terraform-provider-outscale/issues/469))
+- 🛠 Resolve bug with VPN connection issues. ([#468](https://github.com/outscale/terraform-provider-outscale/issues/468))
+- 🚧 Fix migration errors in `outscale_net_peering` and `outscale_net_peering_acceptation`. ([#464](https://github.com/outscale/terraform-provider-outscale/issues/464))
+- 🛠 Fix import failure for `outscale_nic` when NIC is attached to a public IP. ([#461](https://github.com/outscale/terraform-provider-outscale/issues/461))
 
-* Error in attributes value for healthy_threshold ([GH-450](https://github.com/outscale/terraform-provider-outscale/issues/450))
+### 🔧 Improvements
+- 🧪 Update tests and `osc-sdk-go`.
+- 🛠 Minor refactoring.
 
-FEATURES:
----------
+---
 
-* Enable adding Tag on boot disk ([GH-110](https://github.com/outscale/terraform-provider-outscale/issues/110))
-* Enable linked multiple flexible GPUs to VM ([GH-220](https://github.com/outscale/terraform-provider-outscale/issues/220))
+## [1.0.0-rc.1] - 2024-06-19
+### 🐛 Bug Fixes
+- 🐛 Fix incorrect `healthy_threshold` attribute value. ([#450](https://github.com/outscale/terraform-provider-outscale/issues/450))
 
-IMPROVEMENTS:
------------
-* Rename ``` outscale_volumes_link ``` to ``` outscale_volume_link ```
-* Upgrade to Terraform-plugin-sdkv2 and terraform-plugin-framework ([GH-150](https://github.com/outscale/terraform-provider-outscale/issues/150))
-* Some refactoring
+### ✨ Features
+- 🔖 Add support for adding tags to boot disks. ([#110](https://github.com/outscale/terraform-provider-outscale/issues/110))
+- 🎮 Enable linking multiple flexible GPUs to a VM. ([#220](https://github.com/outscale/terraform-provider-outscale/issues/220))
 
-0.12.0 (April 13, 2024)
-========================
-BUG FIXES:
-----------
+### 🔧 Improvements
+- 🔄 Rename `outscale_volumes_link` to `outscale_volume_link`.
+- ⚙️ Upgrade to `terraform-plugin-sdkv2` and `terraform-plugin-framework`. ([#150](https://github.com/outscale/terraform-provider-outscale/issues/150))
+- 🛠 General refactoring.
 
-* Update documentation about creating two NICs on a single VM ([GH-424](https://github.com/outscale/terraform-provider-outscale/issues/424))
+---
 
-FEATURES:
----------
+## [0.12.0] - 2024-04-13
+### 🐛 Bug Fixes
+- 🐛 Update documentation for creating two NICs on a single VM. ([#424](https://github.com/outscale/terraform-provider-outscale/issues/424))
 
-* Update subregion data_source(s) ([filters](https://docs.outscale.com/en/userguide/Home.html#_january_2024)) ([GH-434](https://github.com/outscale/terraform-provider-outscale/issues/434))
-* Update net_peerings data_source(s) ([filters](https://docs.outscale.com/en/userguide/Home.html#_january_2024)) ([GH-433](https://github.com/outscale/terraform-provider-outscale/issues/433))
-* Update vm_types data_source(s) ([filters](https://docs.outscale.com/en/userguide/Home.html#_january_2024)) ([GH-432](https://github.com/outscale/terraform-provider-outscale/issues/432))
-* Update vm data_source(s) ([filters](https://docs.outscale.com/en/userguide/Home.html#_january_2024)) ([GH-431](https://github.com/outscale/terraform-provider-outscale/issues/431))
-* Enable to set a route table as Main ([GH-362](https://github.com/outscale/terraform-provider-outscale/issues/362))
+### ✨ Features
+- 🌐 Add filters for subregion data sources. ([#434](https://github.com/outscale/terraform-provider-outscale/issues/434))
+- 🔗 Update filters for net peerings. ([#433](https://github.com/outscale/terraform-provider-outscale/issues/433))
+- 🖥 Enhance filters for VM types. ([#432](https://github.com/outscale/terraform-provider-outscale/issues/432))
+- 🛠 Update VM data source filters. ([#431](https://github.com/outscale/terraform-provider-outscale/issues/431))
+- 🛤 Enable setting a route table as "Main". ([#362](https://github.com/outscale/terraform-provider-outscale/issues/362))
 
-IMPROVEMENTS:
------------
+### 🔧 Improvements
+- 🧪 Update tests and `osc-sdk-go`.
+- 🛠 General refactoring.
 
-* Update tests and osc-sdk-go
-* Some refactoring
+---
 
-0.11.0 (February 13, 2024)
-========================
+## [0.11.0] - 2024-02-13
+### ✨ Features
+- 🛡 Add support for creating security group rules using security group names. ([#399](https://github.com/outscale/terraform-provider-outscale/issues/399))
 
-FEATURES:
----------
+### 🔧 Improvements
+- 🧪 Update tests and `osc-sdk-go`.
+- 🛠 Refactor codebase.
 
-* Support for Creating Security Group Rules Using Security Group Names ([GH-399](https://github.com/outscale/terraform-provider-outscale/issues/399))
+---
 
-IMPROVEMENTS:
------------
+## [0.10.0] - 2023-11-10
+### 🐛 Bug Fixes
+- 🐛 Fix delay during IGW deletion taking over 1 minute. ([#366](https://github.com/outscale/terraform-provider-outscale/issues/366))
+- ⚡️ Resolve VM security group restoration issue when modified outside Terraform. ([#369](https://github.com/outscale/terraform-provider-outscale/issues/369))
+- 🛠 Fix plugin crash when NAT not found. ([#373](https://github.com/outscale/terraform-provider-outscale/issues/373))
 
-* Update tests and osc-sdk-go
-* Some refactoring
+### ✨ Features
+- 🌟 Add `ToCreationDate` and `FromCreationDate` filters for snapshots data sources. ([#344](https://github.com/outscale/terraform-provider-outscale/issues/344))
+- 📦 Enable snapshot creation before volume deletion. ([#367](https://github.com/outscale/terraform-provider-outscale/issues/367))
+- 🔄 Support differential updates for `outscale_load_balancer_vms`. ([#54](https://github.com/outscale/terraform-provider-outscale/issues/54))
 
-0.10.0 (November 10, 2023)
-========================
+### 🔧 Improvements
+- 🛠 Simplify rules for `outscale_security_group_rule`. ([#286](https://github.com/outscale/terraform-provider-outscale/issues/286))
 
-BUG FIXES:
-----------
-
-* Delete igw with TF take always more than 1m ([GH-366](https://github.com/outscale/terraform-provider-outscale/issues/366)
-* Security Group not restored on VMs when removed outside of terraform ([GH-369](https://github.com/outscale/terraform-provider-outscale/issues/369)
-* Plugin crashed when NAT not found ([GH-373](https://github.com/outscale/terraform-provider-outscale/issues/373)
-
-FEATURES:
----------
-
-* Add "ToCreationDate" and "FromCreationDate" to snapshots data_source(s) filters ([GH-344](https://github.com/outscale/terraform-provider-outscale/issues/344))
-* Add block for primary_nic in VM to avoid conflict with nic block inside VM and link_nic resouces ([GH-376](https://github.com/outscale/terraform-provider-outscale/issues/376))
-* Implement snapshot creation before volume deletion by terraform destroy ([GH-367](https://github.com/outscale/terraform-provider-outscale/issues/367))
-* Support differential updates for outscale_load_balancer_vms ([GH-54](https://github.com/outscale/terraform-provider-outscale/issues/54))
-
-IMPROVEMENTS:
------------
-
-* Remove other inbound_rules and outbound_rules from outscale_security_group_rule ([GH-286](https://github.com/outscale/terraform-provider-outscale/issues/286))
+---
 
 0.9.1 (April 27, 2023)
 ========================
