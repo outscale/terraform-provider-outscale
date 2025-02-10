@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
@@ -51,6 +52,56 @@ func setOSCAPITags(conn *oscgo.APIClient, d *schema.ResourceData) error {
 		if err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+func setFrameworkTags(ctx context.Context, conn *oscgo.APIClient, create, remove []oscgo.ResourceTag, resourceId string) error {
+	if len(remove) > 0 {
+		err := retry.RetryContext(ctx, 60*time.Second, func() *retry.RetryError {
+			_, httpResp, err := conn.TagApi.DeleteTags(context.Background()).DeleteTagsRequest(oscgo.DeleteTagsRequest{
+				ResourceIds: []string{resourceId},
+				Tags:        remove,
+			}).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp, err)
+			}
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+	}
+	if len(create) > 0 {
+		err := retry.RetryContext(ctx, 60*time.Second, func() *resource.RetryError {
+			_, httpResp, err := conn.TagApi.CreateTags(context.Background()).CreateTagsRequest(oscgo.CreateTagsRequest{
+				ResourceIds: []string{resourceId},
+				Tags:        create,
+			}).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp, err)
+			}
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func createFrameworkTags(ctx context.Context, conn *oscgo.APIClient, tagsToCreate []oscgo.ResourceTag, resourceId string) error {
+	resId := []string{resourceId}
+	tagReq := oscgo.NewCreateTagsRequest(resId, tagsToCreate)
+	err := retry.RetryContext(ctx, 60*time.Second, func() *retry.RetryError {
+		_, httpResp, err := conn.TagApi.CreateTags(context.Background()).CreateTagsRequest(*tagReq).Execute()
+		if err != nil {
+			return utils.CheckThrottling(httpResp, err)
+		}
+		return nil
+	})
+	if err != nil {
+		return err
 	}
 	return nil
 }

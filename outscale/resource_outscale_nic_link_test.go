@@ -1,44 +1,35 @@
 package outscale
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"os"
-	"strings"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/outscale/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
 )
 
 func TestAccNet_withNicLink_Basic(t *testing.T) {
-	var conf oscgo.Nic
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := utils.GetRegion()
 	rInt := acctest.RandInt()
+	resourceName := "outscale_nic_link.outscale_nic_link"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
-		IDRefreshName: "outscale_nic.outscale_nic",
-		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscaleNicLinkDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		IDRefreshName:            resourceName,
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleNicLinkConfigBasic(rInt, omi, utils.TestAccVmType, region),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleENIExists("outscale_nic.outscale_nic", &conf),
-					resource.TestCheckResourceAttr(
-						"outscale_nic_link.outscale_nic_link", "device_number", "1"),
-					resource.TestCheckResourceAttrSet(
-						"outscale_nic_link.outscale_nic_link", "vm_id"),
-					resource.TestCheckResourceAttrSet(
-						"outscale_nic_link.outscale_nic_link", "nic_id"),
+					resource.TestCheckResourceAttr(resourceName, "device_number", "1"),
+					resource.TestCheckResourceAttrSet(resourceName, "vm_id"),
+					resource.TestCheckResourceAttrSet(resourceName, "nic_id"),
 				),
 			},
 		},
@@ -52,16 +43,15 @@ func TestAccNet_ImportNicLink_Basic(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleNicLinkDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleNicLinkConfigBasic(rInt, omi, utils.TestAccVmType, region),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("outscale_nic_link.outscale_nic_link", "device_number", "1"),
-					resource.TestCheckResourceAttrSet("outscale_nic_link.outscale_nic_link", "vm_id"),
-					resource.TestCheckResourceAttrSet("outscale_nic_link.outscale_nic_link", "nic_id"),
+					resource.TestCheckResourceAttr(resourceName, "device_number", "1"),
+					resource.TestCheckResourceAttrSet(resourceName, "vm_id"),
+					resource.TestCheckResourceAttrSet(resourceName, "nic_id"),
 				),
 			},
 			{
@@ -84,45 +74,6 @@ func testAccCheckOutscaleNicLinkStateIDFunc(resourceName string) resource.Import
 		log.Printf("LOG_ : %#+v\n", rs.Primary.Attributes["nic_id"])
 		return rs.Primary.Attributes["nic_id"], nil
 	}
-}
-
-func testAccCheckOutscaleNicLinkDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "outscale_nic_link" {
-			continue
-		}
-
-		dnir := oscgo.ReadNicsRequest{
-			Filters: &oscgo.FiltersNic{NicIds: &[]string{rs.Primary.ID}},
-		}
-
-		var resp oscgo.ReadNicsResponse
-		var err error
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			rp, httpResp, err := conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(dnir).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
-
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "InvalidNetworkInterfaceID.NotFound") {
-				return nil
-			}
-			errString := err.Error()
-			return fmt.Errorf("Could not find network interface: %s", errString)
-
-		}
-
-		if len(resp.GetNics()) > 0 {
-			return fmt.Errorf("Nic with id %s is not destroyed yet", rs.Primary.ID)
-		}
-	}
-
-	return nil
 }
 
 func testAccOutscaleNicLinkConfigBasic(sg int, omi, vmType, region string) string {

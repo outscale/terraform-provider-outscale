@@ -21,23 +21,15 @@ func TestAccOthers_DHCPOption_basic(t *testing.T) {
 			{
 				Config: testAccClientDHCPOptionBasic(value),
 				Check: resource.ComposeTestCheckFunc(
-					// resource validations
-					testAccCheckOutscaleDHCPOptionExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "domain_name"),
 					resource.TestCheckResourceAttrSet(resourceName, "domain_name_servers.#"),
 					resource.TestCheckResourceAttrSet(resourceName, "ntp_servers.#"),
 					resource.TestCheckResourceAttrSet(resourceName, "log_servers.#"),
-					//resource.TestCheckResourceAttrSet(resourceName, "tags.#"),
-
 					resource.TestCheckResourceAttr(resourceName, "domain_name", "test.fr"),
 					resource.TestCheckResourceAttr(resourceName, "domain_name_servers.0", "192.168.12.1"),
 					resource.TestCheckResourceAttr(resourceName, "ntp_servers.0", "192.0.0.2"),
 					resource.TestCheckResourceAttr(resourceName, "log_servers.0", "192.0.0.12"),
-					//resource.TestCheckResourceAttr(resourceName, "tags.#", "1"),
-					//resource.TestCheckResourceAttr(resourceName, "tags.0.key", "name"),
-					//resource.TestCheckResourceAttr(resourceName, "tags.0.value", value),
-
-					// data source validations
+					resource.TestCheckResourceAttr(resourceName, "tags.#", "1"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "dhcp_options_set_id"),
 				),
 			},
@@ -58,23 +50,16 @@ func TestAccOthers_DHCPOption_withFilters(t *testing.T) {
 			{
 				Config: testAccClientDHCPOptionWithFilters(value),
 				Check: resource.ComposeTestCheckFunc(
-					// resource validations
-					testAccCheckOutscaleDHCPOptionExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "domain_name"),
 					resource.TestCheckResourceAttrSet(resourceName, "domain_name_servers.#"),
 					resource.TestCheckResourceAttrSet(resourceName, "ntp_servers.#"),
 					resource.TestCheckResourceAttrSet(resourceName, "log_servers.#"),
-					//resource.TestCheckResourceAttrSet(resourceName, "tags.#"),
+					resource.TestCheckResourceAttrSet(resourceName, "tags.#"),
 
 					resource.TestCheckResourceAttr(resourceName, "domain_name", "test.fr"),
 					resource.TestCheckResourceAttr(resourceName, "domain_name_servers.0", "192.168.12.1"),
 					resource.TestCheckResourceAttr(resourceName, "ntp_servers.0", "192.0.0.2"),
 					resource.TestCheckResourceAttr(resourceName, "log_servers.0", "192.0.0.12"),
-					//resource.TestCheckResourceAttr(resourceName, "tags.#", "1"),
-					//resource.TestCheckResourceAttr(resourceName, "tags.0.key", "name"),
-					//resource.TestCheckResourceAttr(resourceName, "tags.0.value", value),
-
-					// data source validations
 					resource.TestCheckResourceAttrSet(dataSourceName, "filter.#"),
 					resource.TestCheckResourceAttr(dataSourceName, "filter.#", "2"),
 				),
@@ -100,7 +85,7 @@ func testAccClientDHCPOptionBasic(value string) string {
 		data "outscale_dhcp_option" "test" {
 			filter {
 				name = "dhcp_options_set_ids"
-				values = ["${outscale_dhcp_option.foo.id}"]
+				values = [outscale_dhcp_option.foo.id]
 			}
 		}
 
@@ -124,7 +109,7 @@ func testAccClientDHCPOptionWithFilters(value string) string {
 		data "outscale_dhcp_option" "test" {
 			filter {
 				name = "dhcp_options_set_ids"
-				values = ["${outscale_dhcp_option.foo.id}"]
+				values = [outscale_dhcp_option.foo.id]
 			}
 			filter {
 				name = "tag_keys"

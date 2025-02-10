@@ -103,10 +103,10 @@
                                 "value": "net-1"
                             }
                         ],
-                        "tenancy": "default"
+                        "tenancy": "default",
+                        "timeouts": null
                     },
-                    "sensitive_attributes": [],
-                    "private": "bnVsbA=="
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -131,10 +131,10 @@
                                 "value": "net-2"
                             }
                         ],
-                        "tenancy": "default"
+                        "tenancy": "default",
+                        "timeouts": null
                     },
-                    "sensitive_attributes": [],
-                    "private": "bnVsbA=="
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -159,10 +159,10 @@
                                 "value": "net-3"
                             }
                         ],
-                        "tenancy": "default"
+                        "tenancy": "default",
+                        "timeouts": null
                     },
-                    "sensitive_attributes": [],
-                    "private": "bnVsbA=="
+                    "sensitive_attributes": []
                 }
             ]
         },

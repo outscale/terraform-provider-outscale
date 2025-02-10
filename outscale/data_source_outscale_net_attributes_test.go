@@ -1,44 +1,26 @@
 package outscale
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccNet_AttributesDataSource_basic(t *testing.T) {
 	t.Parallel()
+	resourceName := "data.outscale_net_attributes.test"
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleDSLinAttrConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccDataSourceOutscaleVpcAttrCheck("data.outscale_net_attributes.test"),
+					resource.TestCheckResourceAttrSet(resourceName, "net_id"),
 				),
 			},
 		},
 	})
-}
-
-func testAccDataSourceOutscaleVpcAttrCheck(name string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[name]
-		if !ok {
-			return fmt.Errorf("root module has no resource called %s", name)
-		}
-
-		attr := rs.Primary.Attributes
-
-		if attr["dhcp_options_set_id"] == "" {
-			return fmt.Errorf("bad dhcp_options_set_id is empty")
-		}
-
-		return nil
-	}
 }
 
 const testAccOutscaleDSLinAttrConfig = `

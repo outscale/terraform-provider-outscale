@@ -16,6 +16,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/nav-inc/datetime"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -24,21 +25,25 @@ import (
 
 // PrintToJSON method helper to debug responses
 const (
-	randMin              float32 = 1.0
-	randMax              float32 = 20.0
-	MinPort              int     = 1
-	MaxPort              int     = 65535
-	MinIops              int     = 100
-	MaxIops              int     = 13000
-	DefaultIops          int32   = 150
-	MaxSize              int     = 14901
-	TestAccVmType        string  = "tinav6.c2r2p2"
-	LinkedPolicyNotFound string  = "5102"
-	InvalidState         string  = "InvalidState"
-	SuffixConfigFilePath string  = "/.osc/config.json"
-	pathRegex            string  = "^(/[a-zA-Z0-9/_]+/)"
-	pathError            string  = "path must begin and end with '/' and contain only alphanumeric characters and/or '/', '_' characters"
-	VolumeIOPSError      string  = `
+	randMin              float32       = 1.0
+	randMax              float32       = 20.0
+	MinPort              int           = 1
+	MaxPort              int           = 65535
+	MinIops              int           = 100
+	MaxIops              int           = 13000
+	DefaultIops          int32         = 150
+	MaxSize              int           = 14901
+	CreateDefaultTimeout time.Duration = 10 * time.Minute
+	ReadDefaultTimeout   time.Duration = 5 * time.Minute
+	UpdateDefaultTimeout time.Duration = 10 * time.Minute
+	DeleteDefaultTimeout time.Duration = 5 * time.Minute
+	TestAccVmType        string        = "tinav7.c2r2p2"
+	LinkedPolicyNotFound string        = "5102"
+	InvalidState         string        = "InvalidState"
+	SuffixConfigFilePath string        = "/.osc/config.json"
+	pathRegex            string        = "^(/[a-zA-Z0-9/_]+/)"
+	pathError            string        = "path must begin and end with '/' and contain only alphanumeric characters and/or '/', '_' characters"
+	VolumeIOPSError      string        = `
 - The "iops" parameter can only be set if "io1" volume type is created.
 - "Standard" volume types have a default value of 150 iops.
 - For "gp2" volume types, iops value depend on your volume size.
@@ -181,7 +186,7 @@ func IsResponseEmptyOrMutiple(rLen int, resName string) error {
 	return nil
 }
 
-func CheckThrottling(httpResp *http.Response, err error) *resource.RetryError {
+func CheckThrottling(httpResp *http.Response, err error) *retry.RetryError {
 	rand.Seed(time.Now().UnixNano())
 	if httpResp != nil {
 		errCode := httpResp.StatusCode
@@ -189,10 +194,10 @@ func CheckThrottling(httpResp *http.Response, err error) *resource.RetryError {
 			errCode == http.StatusConflict || errCode == http.StatusFailedDependency {
 			randTime := (rand.Float32()*(randMax-randMin) + randMin) * 1000
 			time.Sleep(time.Duration(randTime) * time.Millisecond)
-			return resource.RetryableError(err)
+			return retry.RetryableError(err)
 		}
 	}
-	return resource.NonRetryableError(err)
+	return retry.NonRetryableError(err)
 }
 
 func RandIntRange(min, max int) int {
@@ -345,6 +350,15 @@ func GetEnvVariableValue(envVariables []string) string {
 	}
 	return ""
 }
+func IsEnvVariableSet(envVariables []string) bool {
+	for _, envVariable := range envVariables {
+		if value := os.Getenv(envVariable); value == "" {
+			return false
+		}
+	}
+	return true
+}
+
 func CheckPath(path string) error {
 	reg := regexp.MustCompile(pathRegex)
 

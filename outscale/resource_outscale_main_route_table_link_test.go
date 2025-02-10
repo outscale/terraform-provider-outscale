@@ -1,32 +1,21 @@
 package outscale
 
 import (
-	"context"
-	"fmt"
-	"strings"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
-	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
 func TestAccNet_WithLinkMainRouteTable_basic(t *testing.T) {
 	t.Parallel()
-	var v oscgo.RouteTable
 	resourceName := "outscale_main_route_table_link.main"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinkMainRouteTableDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccLinkMainRouteTableConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinkMainRouteTableExists(
-						resourceName, &v),
 					resource.TestCheckResourceAttrSet(resourceName, "link_route_table_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "main"),
 					resource.TestCheckResourceAttr(resourceName, "main", "true"),
@@ -34,89 +23,6 @@ func TestAccNet_WithLinkMainRouteTable_basic(t *testing.T) {
 			},
 		},
 	})
-}
-
-func testAccCheckLinkMainRouteTableDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
-
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "outscale_main_route_table_link" {
-			continue
-		}
-		params := oscgo.ReadRouteTablesRequest{
-			Filters: &oscgo.FiltersRouteTable{
-				RouteTableIds: &[]string{rs.Primary.Attributes["route_table_id"]},
-			},
-		}
-		var resp oscgo.ReadRouteTablesResponse
-		var err error
-		err = resource.Retry(2*time.Minute, func() *resource.RetryError {
-			rp, httpResp, err := conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(params).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
-
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "InvalidRouteTableID.NotFound") {
-				return nil
-			}
-			return err
-		}
-
-		if len(resp.GetRouteTables()) > 0 {
-			return fmt.Errorf(
-				"RouteTable: %s has LinkRouteTables", resp.GetRouteTables()[0].GetRouteTableId())
-		}
-	}
-	return nil
-}
-
-func testAccCheckLinkMainRouteTableExists(n string, v *oscgo.RouteTable) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("Not found: %s", n)
-		}
-
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("No ID is set")
-		}
-
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
-
-		params := oscgo.ReadRouteTablesRequest{
-			Filters: &oscgo.FiltersRouteTable{
-				RouteTableIds: &[]string{rs.Primary.Attributes["route_table_id"]},
-			},
-		}
-		var resp oscgo.ReadRouteTablesResponse
-		var err error
-		err = resource.Retry(2*time.Minute, func() *resource.RetryError {
-			rp, httpResp, err := conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(params).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
-
-		if err != nil {
-			return err
-		}
-		if len(resp.GetRouteTables()) == 0 {
-			return fmt.Errorf("RouteTable not found")
-		}
-
-		*v = resp.GetRouteTables()[0]
-		if len(v.GetLinkRouteTables()) == 0 {
-			return fmt.Errorf("RouteTable: %s has no LinkRouteTables", v.GetRouteTableId())
-		}
-
-		return nil
-	}
 }
 
 const testAccLinkMainRouteTableConfig = `

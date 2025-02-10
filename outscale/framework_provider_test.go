@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"context"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -10,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
 	"github.com/hashicorp/terraform-plugin-mux/tf5muxserver"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/outscale/terraform-provider-outscale/utils"
 	vers "github.com/outscale/terraform-provider-outscale/version"
 )
 
@@ -18,34 +18,14 @@ func TestFwProvider_impl(t *testing.T) {
 }
 
 func TestAccFwPreCheck(t *testing.T) {
-	if os.Getenv("OUTSCALE_ACCESSKEYID") == "" ||
-		os.Getenv("OUTSCALE_REGION") == "" ||
-		os.Getenv("OUTSCALE_SECRETKEYID") == "" ||
-		os.Getenv("OUTSCALE_IMAGEID") == "" ||
-		os.Getenv("OUTSCALE_ACCOUNT") == "" {
+	if !utils.IsEnvVariableSet([]string{"OUTSCALE_ACCESSKEYID", "OUTSCALE_SECRETKEYID", "OUTSCALE_REGION", "OUTSCALE_ACCOUNT", "OUTSCALE_IMAGEID"}) {
 		t.Fatal("`OUTSCALE_ACCESSKEYID`, `OUTSCALE_SECRETKEYID`, `OUTSCALE_REGION`, `OUTSCALE_ACCOUNT` and `OUTSCALE_IMAGEID` must be set for acceptance testing")
 	}
 }
 
 func TestMuxServer(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		ProtoV5ProviderFactories: map[string]func() (tfprotov5.ProviderServer, error){
-			"outscale": func() (tfprotov5.ProviderServer, error) {
-				ctx := context.Background()
-				providers := []func() tfprotov5.ProviderServer{
-					providerserver.NewProtocol5(New(vers.GetVersion())), // Example terraform-plugin-framework provider
-					Provider().GRPCProvider,                             // Example terraform-plugin-sdk provider
-				}
-
-				muxServer, err := tf5muxserver.NewMuxServer(ctx, providers...)
-
-				if err != nil {
-					return nil, err
-				}
-
-				return muxServer.ProviderServer(), nil
-			},
-		},
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: fwtestAccDataSourceOutscaleQuotaConfig,
@@ -56,6 +36,7 @@ func TestMuxServer(t *testing.T) {
 
 func TestDataSource_UpgradeFromVersion(t *testing.T) {
 	resource.Test(t, resource.TestCase{
+
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
@@ -98,3 +79,20 @@ const fwtestAccDataSourceOutscaleQuotaConfig = `
     }
 }
 `
+
+func defineTestProviderFactories() map[string]func() (tfprotov5.ProviderServer, error) {
+	return map[string]func() (tfprotov5.ProviderServer, error){
+		"outscale": func() (tfprotov5.ProviderServer, error) {
+			ctx := context.Background()
+			providers := []func() tfprotov5.ProviderServer{
+				providerserver.NewProtocol5(New(vers.GetVersion())), // Example terraform-plugin-framework provider
+				Provider().GRPCProvider,                             // Example terraform-plugin-sdk provider
+			}
+			muxServer, err := tf5muxserver.NewMuxServer(ctx, providers...)
+			if err != nil {
+				return nil, err
+			}
+			return muxServer.ProviderServer(), nil
+		},
+	}
+}

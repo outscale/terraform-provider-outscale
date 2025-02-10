@@ -16,10 +16,13 @@ func TestAccNet_AccessPointDataSource_basic(t *testing.T) {
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
-		Providers: testAccProviders,
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceOutscaleNetAccessPointConfig(serviceName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.outscale_net_access_point.data_net_access_point", "service_name"),
+				),
 			},
 		},
 	})
@@ -37,11 +40,11 @@ func testAccDataSourceOutscaleNetAccessPointConfig(sName string) string {
 
                 resource "outscale_net_access_point" "net_access_point_1" {
                         net_id          = outscale_net.outscale_net.net_id
-                        route_table_ids = [outscale_route_table.route_table-1.route_table_id] 
+                        route_table_ids = [outscale_route_table.route_table-1.route_table_id]
                         service_name    = "%[1]s"
-                        tags { 
-                              key       = "name" 
-                              value     = "terraform-Net-Access-Point" 
+                        tags {
+                              key       = "name"
+                              value     = "terraform-Net-Access-Point"
                         }
 
                 }

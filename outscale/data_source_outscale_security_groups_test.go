@@ -10,17 +10,17 @@ import (
 
 func TestAccNet_WIthSecurityGroups_DataSource(t *testing.T) {
 	rInt := acctest.RandInt()
+	resouceName1 := "data.outscale_security_groups.by_id"
+	resouceName2 := "data.outscale_security_groups.by_filter"
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceOutscaleSecurityGroupConfigVPC(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(
-						"data.outscale_security_groups.by_id", "security_groups.#", "3"),
-					resource.TestCheckResourceAttr(
-						"data.outscale_security_groups.by_filter", "security_groups.#", "1"),
+					resource.TestCheckResourceAttr(resouceName1, "security_groups.#", "3"),
+					resource.TestCheckResourceAttr(resouceName2, "security_groups.#", "1"),
 				),
 			},
 		},
@@ -62,15 +62,15 @@ func testAccDataSourceOutscaleSecurityGroupConfigVPC(rInt int) string {
 				Seed = "%[1]d"
 			}
 		}
-		
+
 		data "outscale_security_groups" "by_id" {
-			security_group_ids = ["${outscale_security_group.test.id}", "${outscale_security_group.test2.id}", "${outscale_security_group.test3.id}"]
+			security_group_ids = [outscale_security_group.test.id, outscale_security_group.test2.id, outscale_security_group.test3.id]
 		}
 
 		data "outscale_security_groups" "by_filter" {
 			filter {
 				name = "security_group_names"
-				values = ["${outscale_security_group.test.security_group_name}"]
+				values = [outscale_security_group.test.security_group_name]
 			}
 		}
 	`, rInt)

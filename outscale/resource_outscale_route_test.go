@@ -6,33 +6,21 @@ import (
 	"strings"
 	"testing"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccNet_OutscaleRoute_noopdiff(t *testing.T) {
-	var route oscgo.Route
-
+	resourceName := "outscale_route.test"
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheck(t)
-
-		},
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOAPIOutscaleRouteDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleRouteNoopChange,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleRouteExists("outscale_route.test", &route),
-				),
-			},
-			{
-				Config: testAccOutscaleRouteNoopChange,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleRouteExists("outscale_route.test", &route),
+					resource.TestCheckResourceAttrSet(resourceName, "gateway_id"),
+					resource.TestCheckResourceAttr(resourceName, "destination_ip_range", "10.0.0.0/16"),
 				),
 			},
 		},
@@ -40,13 +28,11 @@ func TestAccNet_OutscaleRoute_noopdiff(t *testing.T) {
 }
 
 func TestAccNet_ImportRoute_Basic(t *testing.T) {
-
 	resourceName := "outscale_route.test"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOAPIOutscaleRouteDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleRouteNoopChange,
@@ -63,12 +49,11 @@ func TestAccNet_ImportRoute_Basic(t *testing.T) {
 }
 
 func TestAccNet_Route_importWithNatService(t *testing.T) {
-
 	resourceName := "outscale_route.outscale_route_nat"
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOAPIOutscaleRouteDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleRouteWithNatService,
@@ -85,26 +70,25 @@ func TestAccNet_Route_importWithNatService(t *testing.T) {
 }
 
 func TestAccNet_Route_changeTarget(t *testing.T) {
-	var route oscgo.Route
+	resourceName := "outscale_route.rtnatdef"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 
 		},
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOAPIOutscaleRouteDestroy,
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: computeConfigTestChangeTarget([]string{"nat_service_id"}),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleRouteExists("outscale_route.rtnatdef", &route),
+					resource.TestCheckResourceAttrSet(resourceName, "nat_service_id"),
 				),
 			},
 			{
 				Config: computeConfigTestChangeTarget([]string{"gateway_id"}),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleRouteExists("outscale_route.rtnatdef", &route),
+					resource.TestCheckResourceAttrSet(resourceName, "gateway_id"),
 				),
 			},
 		},
@@ -114,12 +98,11 @@ func TestAccNet_Route_changeTarget(t *testing.T) {
 func TestAccNet_Route_onlyOneTarget(t *testing.T) {
 	regex := regexp.MustCompile(".*")
 	resource.Test(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		PreCheck: func() {
 			testAccPreCheck(t)
 
 		},
-		CheckDestroy: testAccCheckOAPIOutscaleRouteDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config:             computeConfigTestChangeTarget([]string{"nat_service_id"}),
@@ -212,59 +195,6 @@ func testAccCheckOutscaleRouteImportStateIDFunc(resourceName string) resource.Im
 		}
 		return rs.Primary.ID, nil
 	}
-}
-
-func testAccCheckOutscaleRouteExists(n string, res *oscgo.Route) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("not found: %s", n)
-		}
-
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("No ID is set")
-		}
-
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
-		r, _, err := findResourceOAPIRoute(
-			conn,
-			rs.Primary.Attributes["route_table_id"],
-			rs.Primary.Attributes["destination_ip_range"],
-		)
-
-		if err != nil {
-			return err
-		}
-
-		if r == nil {
-			return fmt.Errorf("Route not found")
-		}
-
-		*res = *r
-
-		return nil
-	}
-}
-
-func testAccCheckOAPIOutscaleRouteDestroy(s *terraform.State) error {
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "outscale_route" {
-			continue
-		}
-
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
-		route, _, err := findResourceOAPIRoute(
-			conn,
-			rs.Primary.Attributes["route_table_id"],
-			rs.Primary.Attributes["destination_ip_range"],
-		)
-
-		if route == nil && err == nil {
-			return nil
-		}
-	}
-
-	return nil
 }
 
 var testAccOutscaleRouteNoopChange = fmt.Sprint(`

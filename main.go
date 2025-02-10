@@ -25,8 +25,8 @@ func main() {
 	flag.Parse()
 
 	providers := []func() tfprotov5.ProviderServer{
-		providerserver.NewProtocol5(outscale.New(version)), // Example terraform-plugin-framework provider
-		outscale.Provider().GRPCProvider,                   // Example terraform-plugin-sdk provider
+		providerserver.NewProtocol5(outscale.New(version)),
+		outscale.Provider().GRPCProvider,
 	}
 
 	//using muxer
@@ -52,8 +52,3 @@ func main() {
 		log.Fatal(err)
 	}
 }
-
-//	plugin.Serve(&plugin.ServeOpts{
-//		ProviderFunc: outscale.Provider,
-//	})
-//}

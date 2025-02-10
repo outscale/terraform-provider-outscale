@@ -83,7 +83,6 @@ func Provider() *schema.Provider {
 			"outscale_image":                             ResourceOutscaleImage(),
 			"outscale_internet_service_link":             ResourceOutscaleInternetServiceLink(),
 			"outscale_internet_service":                  ResourceOutscaleInternetService(),
-			"outscale_net":                               ResourceOutscaleNet(),
 			"outscale_security_group":                    ResourceOutscaleSecurityGroup(),
 			"outscale_outbound_rule":                     ResourceOutscaleOutboundRule(),
 			"outscale_security_group_rule":               ResourceOutscaleOutboundRule(),

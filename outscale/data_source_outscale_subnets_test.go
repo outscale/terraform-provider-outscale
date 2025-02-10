@@ -11,15 +11,15 @@ import (
 func TestAccNet_WithSubnetsDataSource(t *testing.T) {
 	t.Parallel()
 	rInt := utils.RandIntRange(16, 31)
-
+	resouceName := "data.outscale_subnets.by_filter"
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceOutscaleSubnetsConfig(rInt, utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.outscale_subnets.by_filter", "subnets.#", "1"),
+					resource.TestCheckResourceAttr(resouceName, "subnets.#", "1"),
 				),
 			},
 		},
@@ -28,12 +28,16 @@ func TestAccNet_WithSubnetsDataSource(t *testing.T) {
 
 func TestAccNet_Subnets_withAvailableIpsCountsFilter(t *testing.T) {
 	t.Parallel()
+	resouceName := "data.outscale_subnets.by_filters"
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceOutscaleSubnetsWithAvailableIpsCountsFilter(utils.GetRegion()),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resouceName, "subnets.#", "2"),
+				),
 			},
 		},
 	})
@@ -53,7 +57,7 @@ func testAccDataSourceOutscaleSubnetsConfig(rInt int, region string) string {
 		resource "outscale_subnet" "subnet" {
 			ip_range       = "10.%[1]d.123.0/24"
 			subregion_name = "%[2]sa"
-			net_id         = "${outscale_net.net.id}"
+			net_id         = outscale_net.net.id
 
 			tags {
 				key   = "name"
@@ -64,7 +68,7 @@ func testAccDataSourceOutscaleSubnetsConfig(rInt int, region string) string {
 		data "outscale_subnets" "by_filter" {
 			filter {
 				name   = "subnet_ids"
-				values = ["${outscale_subnet.subnet.id}"]
+				values = [outscale_subnet.subnet.id]
 			}
 		}
 	`, rInt, region)
@@ -101,7 +105,7 @@ func testAccDataSourceOutscaleSubnetsWithAvailableIpsCountsFilter(region string)
 		}
 
 
-		data "outscale_subnets" "by_filter" {
+		data "outscale_subnets" "by_filters" {
 			filter {
 				name   = "available_ips_counts"
 				values = [outscale_subnet.sub1.available_ips_count, outscale_subnet.sub2.available_ips_count]

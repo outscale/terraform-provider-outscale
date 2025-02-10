@@ -67,10 +67,10 @@
                         "request_id": "########",
                         "state": "available",
                         "tags": [],
-                        "tenancy": "default"
+                        "tenancy": "default",
+                        "timeouts": null
                     },
-                    "sensitive_attributes": [],
-                    "private": "bnVsbA=="
+                    "sensitive_attributes": []
                 }
             ]
         },

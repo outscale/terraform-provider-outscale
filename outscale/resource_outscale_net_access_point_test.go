@@ -9,16 +9,21 @@ import (
 )
 
 func TestAccNet_AccessPoint_basic(t *testing.T) {
-	ServiceName := fmt.Sprintf("com.outscale.%s.api", utils.GetRegion())
+	serviceName := fmt.Sprintf("com.outscale.%s.api", utils.GetRegion())
+	resourceName := "outscale_net_access_point.net_access_point_1"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
-		Providers: testAccProviders,
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleNetAccessPointConfig(ServiceName),
+				Config: testAccOutscaleNetAccessPointConfig(serviceName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resourceName, "net_id"),
+					resource.TestCheckResourceAttr(resourceName, "state", "available"),
+				),
 			},
 		},
 	})
@@ -36,11 +41,11 @@ func testAccOutscaleNetAccessPointConfig(sName string) string {
 
                 resource "outscale_net_access_point" "net_access_point_1" {
                         net_id          = outscale_net.outscale_net.net_id
-                        route_table_ids = [outscale_route_table.route_table-1.route_table_id] 
+                        route_table_ids = [outscale_route_table.route_table-1.route_table_id]
                         service_name    = "%s"
-                        tags { 
-                              key       = "name" 
-                              value     = "terraform-Net-Access-Point" 
+                        tags {
+                              key       = "name"
+                              value     = "terraform-Net-Access-Point"
                         }
 
                 }
