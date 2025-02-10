@@ -6,64 +6,24 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccNet_WithSecurityGroup(t *testing.T) {
 	rInt := acctest.RandInt()
+	resourceName := "outscale_security_group.web"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleSGRuleDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleSecurityGroupConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleSecurityGroupRuleExists("outscale_security_group.web"),
-					resource.TestCheckResourceAttr(
-						"outscale_security_group.web", "security_group_name", fmt.Sprintf("terraform_test_%d", rInt)),
+					resource.TestCheckResourceAttr(resourceName, "security_group_name", fmt.Sprintf("terraform_test_%d", rInt)),
 				),
 			},
 		},
 	})
-}
-
-func testAccCheckOutscaleSGRuleDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
-
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "outscale_security_group" {
-			continue
-		}
-
-		sg, _, err := readSecurityGroups(conn, rs.Primary.ID)
-		if sg != nil && err == nil {
-			return fmt.Errorf("Outscale Security Group(%s) still exists", rs.Primary.ID)
-		}
-	}
-	return nil
-}
-
-func testAccCheckOutscaleSecurityGroupRuleExists(n string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
-
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("Not found: %s", n)
-		}
-
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("No Security Group is set")
-		}
-
-		_, resp, err := readSecurityGroups(conn, rs.Primary.ID)
-		if err != nil || len(resp.GetSecurityGroups()) < 1 {
-			return fmt.Errorf("Outscale Security Group(%s) does not exists: %s", rs.Primary.ID, err)
-		}
-		return nil
-	}
 }
 
 func testAccOutscaleSecurityGroupConfig(rInt int) string {

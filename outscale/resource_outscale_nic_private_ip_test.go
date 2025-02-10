@@ -4,28 +4,24 @@ import (
 	"fmt"
 	"testing"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccNet_NICPrivateIPBasic(t *testing.T) {
-	var conf oscgo.Nic
-
+	resourceName := "outscale_nic_private_ip.outscale_nic_private_ip"
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
-		IDRefreshName: "outscale_nic.outscale_nic",
-		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscaleENIDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		IDRefreshName:            "outscale_nic.outscale_nic",
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleNetworkInterfacePrivateIPConfigBasic(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleENIExists("outscale_nic.outscale_nic", &conf),
-					resource.TestCheckResourceAttr("outscale_nic_private_ip.outscale_nic_private_ip", "private_ips.#", "1"),
-					resource.TestCheckResourceAttr("outscale_nic_private_ip.outscale_nic_private_ip", "private_ips.0", "10.0.45.67"),
-					resource.TestCheckResourceAttrSet("outscale_nic_private_ip.outscale_nic_private_ip", "primary_private_ip")),
+					resource.TestCheckResourceAttr(resourceName, "private_ips.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "private_ips.0", "10.0.45.67"),
+					resource.TestCheckResourceAttrSet(resourceName, "primary_private_ip")),
 			},
 		},
 	})
@@ -35,10 +31,9 @@ func TestAccNet_Import_NIC_PrivateIP_Basic(t *testing.T) {
 	resourceName := "outscale_nic_private_ip.outscale_nic_private_ip"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
-		IDRefreshName: "outscale_nic.outscale_nic",
-		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscaleENIDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		IDRefreshName:            "outscale_nic.outscale_nic",
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleNetworkInterfacePrivateIPConfigBasic(utils.GetRegion()),
@@ -59,11 +54,11 @@ func testAccOutscaleNetworkInterfacePrivateIPConfigBasic(region string) string {
 			ip_range = "10.0.0.0/16"
 
 			tags {
-				key = "Name" 
+				key = "Name"
 				value = "testacc-nic-private-ip-rs"
-			}	
+			}
 		}
-		
+
 		resource "outscale_subnet" "outscale_subnet" {
 			subregion_name = "%sa"
 			ip_range       = "10.0.0.0/16"

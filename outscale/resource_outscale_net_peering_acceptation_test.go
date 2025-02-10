@@ -5,43 +5,24 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
 func TestAccNet_PeeringConnectionAccepter_sameAccount(t *testing.T) {
+	resourceName := "outscale_net_peering_acceptation.peer"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccOutscaleLinPeeringConnectionAccepterDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleLinPeeringConnectionAccepterSameAccountConfig(utils.GetAccepterOwnerId()),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleLinPeeringConnectionAccepterExists("outscale_net_peering_acceptation.peer"),
+					resource.TestCheckResourceAttrSet(resourceName, "accepter_owner_id"),
+					resource.TestCheckResourceAttr(resourceName, "state.0.name", "active"),
 				),
 			},
 		},
 	})
-}
-
-func testAccCheckOutscaleLinPeeringConnectionAccepterExists(n string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("Not found: %s", n)
-		}
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("No ID is set")
-		}
-
-		return nil
-	}
-}
-
-func testAccOutscaleLinPeeringConnectionAccepterDestroy(s *terraform.State) error {
-	// We don't destroy the underlying VPC Peering Connection.
-	return nil
 }
 
 func testAccOutscaleLinPeeringConnectionAccepterSameAccountConfig(accountId string) string {

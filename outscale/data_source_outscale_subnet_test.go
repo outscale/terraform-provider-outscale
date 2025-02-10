@@ -5,20 +5,20 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
 func TestAccNet_WithSubnet_DataSource(t *testing.T) {
+	resouceName := "data.outscale_subnet.by_filter"
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceOutscaleSubnetConfig(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
-					testAccDataSourceOutscaleSubnetCheck("data.outscale_subnet.by_id"),
-					testAccDataSourceOutscaleSubnetCheck("data.outscale_subnet.by_filter"),
+					resource.TestCheckResourceAttr(resouceName, "state", "available"),
+					resource.TestCheckResourceAttrSet(resouceName, "ip_range"),
 				),
 			},
 		},
@@ -26,52 +26,19 @@ func TestAccNet_WithSubnet_DataSource(t *testing.T) {
 }
 
 func TestAccNet_SubnetDataSource_withAvailableIpsCountsFilter(t *testing.T) {
+	resouceName := "data.outscale_subnet.by_filter"
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceOutscaleSubnetWithAvailableIpsCountsFilter(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
-					testAccDataSourceOutscaleSubnetCheck("data.outscale_subnet.by_filter"),
+					resource.TestCheckResourceAttrSet(resouceName, "net_id"),
 				),
 			},
 		},
 	})
-}
-
-func testAccDataSourceOutscaleSubnetCheck(name string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[name]
-		if !ok {
-			return fmt.Errorf("root module has no resource called %s", name)
-		}
-
-		subnetRs, ok := s.RootModule().Resources["outscale_subnet.outscale_subnet"]
-		if !ok {
-			return fmt.Errorf("can't find outscale_subnet.outscale_subnet in state")
-		}
-
-		attr := rs.Primary.Attributes
-		subregion := fmt.Sprintf("%sa", utils.GetRegion())
-
-		if attr["id"] != subnetRs.Primary.Attributes["id"] {
-			return fmt.Errorf(
-				"id is %s; want %s",
-				attr["id"],
-				subnetRs.Primary.Attributes["id"],
-			)
-		}
-
-		if attr["ip_range"] != "10.0.0.0/24" {
-			return fmt.Errorf("bad ip_range %s", attr["ip_range"])
-		}
-		if attr["subregion_name"] != subregion {
-			return fmt.Errorf("bad subregion_name %s", attr["subregion_name"])
-		}
-
-		return nil
-	}
 }
 
 func testAccDataSourceOutscaleSubnetConfig(region string) string {

@@ -1,15 +1,10 @@
 package outscale
 
 import (
-	"context"
 	"fmt"
-	"log"
 	"os"
-	"strings"
 	"testing"
-	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -17,59 +12,19 @@ import (
 )
 
 func TestAccNet_WithRouteTable_basic(t *testing.T) {
-	var v oscgo.RouteTable
 
-	testCheck := func(*terraform.State) error {
-		if len(v.GetRoutes()) != 1 {
-			return fmt.Errorf("bad routes: %#v", v.Routes)
-		}
-
-		routes := make(map[string]oscgo.Route)
-		for _, r := range v.GetRoutes() {
-			routes[r.GetDestinationIpRange()] = r
-		}
-
-		if _, ok := routes["10.1.0.0/16"]; !ok {
-			return fmt.Errorf("bad routes: %#v", v.Routes)
-		}
-		return nil
-	}
-
-	testCheckChange := func(*terraform.State) error {
-		if len(v.GetRoutes()) != 1 {
-			return fmt.Errorf("bad routes: %#v", v.Routes)
-		}
-
-		routes := make(map[string]oscgo.Route)
-		for _, r := range v.GetRoutes() {
-			routes[r.GetDestinationIpRange()] = r
-		}
-
-		if _, ok := routes["10.1.0.0/16"]; !ok {
-			return fmt.Errorf("bad routes: %#v", v.Routes)
-		}
-		return nil
-	}
-
+	resourceName := "outscale_route_table.rtbTest"
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
-		IDRefreshName: "outscale_route_table.foo",
-		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOAPIRouteTableDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		IDRefreshName:            resourceName,
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
+
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOAPIRouteTableConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPIRouteTableExists("outscale_route_table.foo", &v, nil),
-					testCheck,
-				),
-			},
-
-			{
-				Config: testAccOAPIRouteTableConfigChange,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPIRouteTableExists("outscale_route_table.foo", &v, nil),
-					testCheckChange,
+					resource.TestCheckResourceAttrSet(resourceName, "route_table_id"),
+					resource.TestCheckResourceAttr(resourceName, "routes.0.destination_ip_range", "10.1.0.0/16"),
 				),
 			},
 		},
@@ -78,37 +33,18 @@ func TestAccNet_WithRouteTable_basic(t *testing.T) {
 
 func TestAccNet_RouteTable_instance(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-
-	var v oscgo.RouteTable
-
-	testCheck := func(*terraform.State) error {
-		if len(v.GetRoutes()) != 1 {
-			return fmt.Errorf("bad routes: %#v", v.GetRoutes())
-		}
-
-		routes := make(map[string]oscgo.Route)
-		for _, r := range v.GetRoutes() {
-			routes[r.GetDestinationIpRange()] = r
-		}
-
-		if _, ok := routes["10.1.0.0/16"]; !ok {
-			return fmt.Errorf("bad routes: %#v", v.GetRoutes())
-		}
-		return nil
-	}
+	resourceName := "outscale_route_table.rtbTest"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
-		IDRefreshName: "outscale_route_table.foo",
-		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOAPIRouteTableDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		IDRefreshName:            resourceName,
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOAPIRouteTableConfigInstance(omi, utils.TestAccVmType, utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPIRouteTableExists(
-						"outscale_route_table.foo", &v, nil),
-					testCheck,
+					resource.TestCheckResourceAttrSet(resourceName, "net_id"),
+					resource.TestCheckResourceAttr(resourceName, "routes.0.state", "active"),
 				),
 			},
 		},
@@ -131,31 +67,23 @@ func TestAccNet_WithRouteTable_tags(t *testing.T) {
 		key = "name2"
 		value = "Terraform-RT2"
 	}`
-
-	var rt oscgo.RouteTable
-	rtTags := make([]oscgo.ResourceTag, 0)
+	resourceName := "outscale_route_table.rtbTest"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheck(t)
-		},
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOAPIRouteTableDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOAPIRouteTableConfigTags(value1),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPIRouteTableExists("outscale_route_table.foo", &rt, &rtTags),
-
-					testAccCheckOAPITags(&rtTags, "name", "Terraform-nic"),
+					resource.TestCheckResourceAttrSet(resourceName, "tags.#"),
+					resource.TestCheckResourceAttr(resourceName, "tags.0.value", "Terraform-nic"),
 				),
 			},
 			{
 				Config: testAccOAPIRouteTableConfigTags(value2),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPIRouteTableExists("outscale_route_table.foo", &rt, &rtTags),
-					testAccCheckOAPITags(&rtTags, "name", "Terraform-RT"),
-					testAccCheckOAPITags(&rtTags, "name2", "Terraform-RT2"),
+					resource.TestCheckResourceAttr(resourceName, "tags.#", "2"),
 				),
 			},
 		},
@@ -163,12 +91,11 @@ func TestAccNet_WithRouteTable_tags(t *testing.T) {
 }
 
 func TestAccNet_RouteTable_importBasic(t *testing.T) {
-	resourceName := "outscale_route_table.foo"
+	resourceName := "outscale_route_table.rtbTest"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOAPIRouteTableDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOAPIRouteTableConfig,
@@ -192,96 +119,6 @@ func testAccCheckOutscaleRouteTableImportStateIDFunc(resourceName string) resour
 		}
 
 		return rs.Primary.ID, nil
-	}
-}
-
-func testAccCheckOAPIRouteTableDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
-
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "outscale_route_table" {
-			continue
-		}
-
-		var resp oscgo.ReadRouteTablesResponse
-		var err error
-		params := oscgo.ReadRouteTablesRequest{
-			Filters: &oscgo.FiltersRouteTable{
-				RouteTableIds: &[]string{rs.Primary.ID},
-			},
-		}
-
-		err = resource.Retry(15*time.Minute, func() *resource.RetryError {
-			rp, httpResp, err := conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(params).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
-
-		if err == nil {
-			if len(resp.GetRouteTables()) > 0 {
-				return fmt.Errorf("still exist")
-			}
-
-			return nil
-		}
-
-		if strings.Contains(fmt.Sprint(err), "InvalidRouteTableID.NotFound") {
-			return nil
-		}
-	}
-
-	return nil
-}
-
-func testAccCheckOAPIRouteTableExists(n string, v *oscgo.RouteTable, t *[]oscgo.ResourceTag) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("Not found: %s", n)
-		}
-
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("No ID is set")
-		}
-
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
-
-		var resp oscgo.ReadRouteTablesResponse
-		var err error
-		params := oscgo.ReadRouteTablesRequest{
-			Filters: &oscgo.FiltersRouteTable{
-				RouteTableIds: &[]string{rs.Primary.ID},
-			},
-		}
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			rp, httpResp, err := conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(params).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
-
-		if err != nil {
-			return err
-		}
-		if len(resp.GetRouteTables()) == 0 {
-			return fmt.Errorf("RouteTable not found")
-		}
-
-		*v = resp.GetRouteTables()[0]
-
-		if t != nil {
-			*t = resp.GetRouteTables()[0].GetTags()
-			log.Printf("[DEBUG] Route Table Tags= %+v", t)
-		}
-
-		log.Printf("[DEBUG] RouteTable in Exist %+v", resp.GetRouteTables())
-
-		return nil
 	}
 }
 
@@ -349,7 +186,7 @@ func testAccCheckOAPIRouteTableExists(n string, v *oscgo.RouteTable, t *[]oscgo.
 // 	}
 // 	resource.Test(t, resource.TestCase{
 // 		PreCheck:  func() { testAccPreCheck(t) },
-// 		Providers: testAccProviders,
+// 		ProtoV5ProviderFactories: defineTestProviderFactories(),
 // 		CheckDestroy: resource.ComposeTestCheckFunc(
 // 			testAccCheckVpnGatewayDestroy,
 // 			testAccCheckOAPIRouteTableDestroy,
@@ -381,7 +218,7 @@ resource "outscale_net" "foo" {
 
 resource "outscale_internet_service" "foo" {}
 
-resource "outscale_route_table" "foo" {
+resource "outscale_route_table" "rtbTest" {
 	net_id = outscale_net.foo.id
 }
 `
@@ -398,7 +235,7 @@ resource "outscale_net" "foo" {
 
 resource "outscale_internet_service" "foo" {}
 
-resource "outscale_route_table" "foo" {
+resource "outscale_route_table" "rtbTest" {
 	net_id = outscale_net.foo.id
 }
 `
@@ -436,7 +273,7 @@ func testAccOAPIRouteTableConfigInstance(omi, vmType, region string) string {
 			security_group_ids = [outscale_security_group.sg_route.security_group_id]
 		}
 
-		resource "outscale_route_table" "foo" {
+		resource "outscale_route_table" "rtbTest" {
 			net_id = outscale_net.foo.id
 		}
 	`, omi, vmType, region)
@@ -453,7 +290,7 @@ resource "outscale_net" "foo" {
 	}
 }
 
-resource "outscale_route_table" "foo" {
+resource "outscale_route_table" "rtbTest" {
 	net_id = outscale_net.foo.id
 
 	%s

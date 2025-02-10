@@ -110,10 +110,10 @@
                                 "value": "TF65-network"
                             }
                         ],
-                        "tenancy": "default"
+                        "tenancy": "default",
+                        "timeouts": null
                     },
-                    "sensitive_attributes": [],
-                    "private": "bnVsbA=="
+                    "sensitive_attributes": []
                 }
             ]
         },

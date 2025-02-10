@@ -11,8 +11,8 @@ func TestAccNet_Attr_import(t *testing.T) {
 	resourceName := "outscale_net_attributes.outscale_net_attributes"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleLinAttrConfig,

@@ -190,10 +190,10 @@
                                 "value": "1Q84"
                             }
                         ],
-                        "tenancy": "default"
+                        "tenancy": "default",
+                        "timeouts": null
                     },
-                    "sensitive_attributes": [],
-                    "private": "bnVsbA=="
+                    "sensitive_attributes": []
                 }
             ]
         }

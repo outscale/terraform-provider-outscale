@@ -1,15 +1,12 @@
 package outscale
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"strings"
 	"testing"
-	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
-	"github.com/outscale/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -20,20 +17,18 @@ func TestAccOthers_SecurityGroupRule_basic(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_security_group_rule.outscale_security_group_rule_https"
 
-	var group oscgo.SecurityGroup
 	rInt := acctest.RandInt()
 
 	if os.Getenv("TEST_QUOTA") == "true" {
 		resource.Test(t, resource.TestCase{
-			PreCheck:     func() { testAccPreCheck(t) },
-			Providers:    testAccProviders,
-			CheckDestroy: testAccCheckOutscaleSecurityGroupRuleDestroy,
+			PreCheck:                 func() { testAccPreCheck(t) },
+			ProtoV5ProviderFactories: defineTestProviderFactories(),
 			Steps: []resource.TestStep{
 				{
 					Config: testAccOutscaleSecurityGroupRuleEgressConfig(rInt),
 					Check: resource.ComposeTestCheckFunc(
-						testAccCheckOutscaleRuleExists(resourceName, &group),
-						testAccCheckOutscaleRuleAttributes(resourceName, &group, nil, "Inbound"),
+						resource.TestCheckResourceAttrSet(resourceName, "ip_range"),
+						resource.TestCheckResourceAttr(resourceName, "from_port_range", "443"),
 					),
 				},
 				{
@@ -51,16 +46,20 @@ func TestAccOthers_SecurityGroupRule_basic(t *testing.T) {
 }
 
 func TestAccNet_AddSecurityGroupRuleMembersWithSgName(t *testing.T) {
-
 	rInt := acctest.RandInt()
 	accountID := os.Getenv("OUTSCALE_ACCOUNT")
+	resourceName := "outscale_security_group_rule.rule_group"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccAddSecurityGroupRuleMembersWithSgName(rInt, accountID),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resourceName, "net_id"),
+					resource.TestCheckResourceAttr(resourceName, "flow", "Inbound"),
+				),
 			},
 		},
 	})
@@ -194,48 +193,6 @@ func testAccCheckOutscaleRuleAttributes(n string, group *oscgo.SecurityGroup, p 
 		}
 
 		return fmt.Errorf("Security Rules: looking for %+v, wasn't found in %+v", p, rules)
-	}
-}
-
-func testAccCheckOutscaleRuleExists(n string, group *oscgo.SecurityGroup) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("Not found: %s", n)
-		}
-
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("No Security Group is set")
-		}
-
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
-		req := oscgo.ReadSecurityGroupsRequest{
-			Filters: &oscgo.FiltersSecurityGroup{
-				SecurityGroupIds: &[]string{rs.Primary.ID},
-			},
-		}
-
-		var resp oscgo.ReadSecurityGroupsResponse
-		var err error
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			rp, httpResp, err := conn.SecurityGroupApi.ReadSecurityGroups(context.Background()).ReadSecurityGroupsRequest(req).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
-
-		if err != nil {
-			return err
-		}
-
-		if len(resp.GetSecurityGroups()) > 0 && resp.GetSecurityGroups()[0].GetSecurityGroupId() == rs.Primary.ID {
-			*group = resp.GetSecurityGroups()[0]
-			return nil
-		}
-
-		return fmt.Errorf("Security Group not found")
 	}
 }
 

@@ -9,8 +9,8 @@ import (
 func TestAccNet_WithNatServicesDataSource_Instance(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckOutscaleNatServicesDataSourceConfig,
@@ -27,7 +27,7 @@ func TestAccNet_WithNatServicesDataSource_Instance(t *testing.T) {
 const testAccCheckOutscaleNatServicesDataSourceConfig = `
 	resource "outscale_net" "outscale_net" {
 		ip_range = "10.0.0.0/16"
-		
+
 		tags {
 			key = "Name"
 			value = "testacc-nat-services-ds"

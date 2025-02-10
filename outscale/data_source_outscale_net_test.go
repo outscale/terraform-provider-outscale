@@ -2,9 +2,7 @@ package outscale
 
 import (
 	"fmt"
-	"math/rand"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -13,12 +11,12 @@ import (
 
 func TestAccNet_DataSource_basic(t *testing.T) {
 	t.Parallel()
-	rand.Seed(time.Now().UTC().UnixNano())
 	ipRange := utils.RandVpcCidr()
 	tag := fmt.Sprintf("terraform-testacc-vpc-data-source-%s", ipRange)
+
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceOutscaleVpcConfig(ipRange, tag),
@@ -64,13 +62,13 @@ func testAccDataSourceOutscaleVpcConfig(ipRange, tag string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "test" {
 			ip_range = "%s"
-		
+
 			tags {
 				key   = "Name"
 				value = "%s"
 			}
 		}
-		
+
 		data "outscale_net" "by_id" {
 			filter {
 				name   = "net_ids"

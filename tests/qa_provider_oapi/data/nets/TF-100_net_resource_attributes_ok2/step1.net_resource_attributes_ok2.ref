@@ -27,10 +27,10 @@
                                 "value": "outscale_net_resource"
                             }
                         ],
-                        "tenancy": "default"
+                        "tenancy": "default",
+                        "timeouts": null
                     },
-                    "sensitive_attributes": [],
-                    "private": "bnVsbA=="
+                    "sensitive_attributes": []
                 },
                 {
                     "index_key": 1,
@@ -48,10 +48,10 @@
                                 "value": "outscale_net_resource"
                             }
                         ],
-                        "tenancy": "default"
+                        "tenancy": "default",
+                        "timeouts": null
                     },
-                    "sensitive_attributes": [],
-                    "private": "bnVsbA=="
+                    "sensitive_attributes": []
                 }
             ]
         }

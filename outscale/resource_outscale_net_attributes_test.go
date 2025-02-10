@@ -11,8 +11,8 @@ func TestAccNet_Attributes_basic(t *testing.T) {
 	resourceName := "outscale_net_attributes.outscale_net_attributes"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleLinAttrConfig,
@@ -29,8 +29,8 @@ func TestAccNet_Attributes_withoutDHCPID(t *testing.T) {
 	resourceName := "outscale_net_attributes.outscale_net_attributes"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleLinAttrConfigwithoutDHCPID("outscale_net.vpc.id"),

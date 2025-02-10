@@ -26,10 +26,10 @@
                                 "value": "outscale_net_resource"
                             }
                         ],
-                        "tenancy": "default"
+                        "tenancy": "default",
+                        "timeouts": null
                     },
-                    "sensitive_attributes": [],
-                    "private": "bnVsbA=="
+                    "sensitive_attributes": []
                 }
             ]
         }

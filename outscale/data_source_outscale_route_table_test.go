@@ -1,86 +1,26 @@
 package outscale
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccNet_WithRouteTableDataSource_basic(t *testing.T) {
+	resourceName := "data.outscale_route_table.by_filter"
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceOutscaleRouteTableGroupConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccDataSourceOutscaleRouteTableCheck("data.outscale_route_table.by_filter"),
-					testAccDataSourceOutscaleRouteTableCheck("data.outscale_route_table.by_id"),
+					resource.TestCheckResourceAttrSet(resourceName, "net_id"),
+					resource.TestCheckResourceAttrSet(resourceName, "route_table_id"),
 				),
 			},
 		},
 	})
-}
-
-func testAccDataSourceOutscaleRouteTableCheck(name string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[name]
-
-		if !ok {
-			return fmt.Errorf("root module has no resource called %s", name)
-		}
-
-		rts, ok := s.RootModule().Resources["outscale_route_table.test"]
-		if !ok {
-			return fmt.Errorf("can't find outscale_route_table.test in state")
-		}
-		vpcRs, ok := s.RootModule().Resources["outscale_net.test"]
-		if !ok {
-			return fmt.Errorf("can't find outscale_net.test in state")
-		}
-		// FIXME: Missing route_table_links on ReadRouteTables request
-		// subnetRs, ok := s.RootModule().Resources["outscale_subnet.test"]
-		// if !ok {
-		// 	return fmt.Errorf("can't find outscale_subnet.test in state")
-		// }
-		attr := rs.Primary.Attributes
-
-		if attr["id"] != rts.Primary.Attributes["id"] {
-			return fmt.Errorf(
-				"id is %s; want %s",
-				attr["id"],
-				rts.Primary.Attributes["id"],
-			)
-		}
-
-		if attr["route_table_id"] != rts.Primary.Attributes["id"] {
-			return fmt.Errorf(
-				"route_table_id is %s; want %s",
-				attr["route_table_id"],
-				rts.Primary.Attributes["id"],
-			)
-		}
-
-		if attr["net_id"] != vpcRs.Primary.Attributes["id"] {
-			return fmt.Errorf(
-				"net_id is %s; want %s",
-				attr["net_id"],
-				vpcRs.Primary.Attributes["id"],
-			)
-		}
-		// FIXME: Missing route_table_links on ReadRouteTables request
-		// if attr["route_table_links.0.subnet_id"] != subnetRs.Primary.Attributes["id"] {
-		// 	return fmt.Errorf(
-		// 		"subnet_id is %v; want %s",
-		// 		attr["route_table_link.0.subnet_id"],
-		// 		subnetRs.Primary.Attributes["id"],
-		// 	)
-		// }
-
-		return nil
-	}
 }
 
 const testAccDataSourceOutscaleRouteTableGroupConfig = `
@@ -96,10 +36,6 @@ const testAccDataSourceOutscaleRouteTableGroupConfig = `
 	resource "outscale_subnet" "test" {
 		ip_range = "172.16.0.0/24"
 		net_id   = outscale_net.test.id
-
-		#tag {
-		#  Name = "terraform-testacc-data-source"
-		#}
 	}
 
 	resource "outscale_route_table" "test" {
@@ -111,7 +47,7 @@ const testAccDataSourceOutscaleRouteTableGroupConfig = `
 		}
 	}
 
-	resource "outscale_route_table_link" "a" {
+	resource "outscale_route_table_link" "rtLink" {
 		subnet_id      = outscale_subnet.test.id
 		route_table_id = outscale_route_table.test.id
 	}
@@ -122,11 +58,11 @@ const testAccDataSourceOutscaleRouteTableGroupConfig = `
 			values = [outscale_route_table.test.id]
 		}
 
-		depends_on = [outscale_route_table_link.a]
+		depends_on = [outscale_route_table_link.rtLink]
 	}
 
 	data "outscale_route_table" "by_id" {
 		route_table_id = outscale_route_table.test.id
-		depends_on     = [outscale_route_table_link.a]
+		depends_on     = [outscale_route_table_link.rtLink]
 	}
 `

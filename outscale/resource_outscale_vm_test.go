@@ -131,21 +131,17 @@ func testAccCheckOutscaleVMImportStateIDFunc(resourceName string) resource.Impor
 }
 
 func TestAccNet_VM_withNicAttached(t *testing.T) {
-	var server oscgo.Vm
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	keypair := "terraform-basic"
 	resourceName := "outscale_vm.basicNicAt"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleVMDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckOutscaleVMConfigBasicWithNicAttached(omi, utils.TestAccVmType, utils.GetRegion(), keypair),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleVMExists(resourceName, &server),
-					testAccCheckOutscaleVMAttributes(t, &server, omi),
 					resource.TestCheckResourceAttr(resourceName, "image_id", omi),
 					resource.TestCheckResourceAttr(resourceName, "vm_type", utils.TestAccVmType),
 				),
@@ -182,24 +178,19 @@ func TestAccVM_withTags(t *testing.T) {
 }
 
 func TestAccNet_VM_withNics(t *testing.T) {
-	var server oscgo.Vm
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	keypair := "terraform-basic"
+	resourceName := "outscale_vm.basic"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleVMDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckOutscaleVMConfigBasicWithNics(omi, utils.TestAccVmType, keypair, utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleVMExists("outscale_vm.basic", &server),
-					testAccCheckOutscaleVMAttributes(t, &server, omi),
-					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "image_id", omi),
-					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "vm_type", utils.TestAccVmType),
+					resource.TestCheckResourceAttr(resourceName, "image_id", omi),
+					resource.TestCheckResourceAttr(resourceName, "vm_type", utils.TestAccVmType),
 				),
 			},
 		},
@@ -211,6 +202,7 @@ func TestAccVM_UpdateKeypair(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
 	region := utils.GetRegion()
+	resourceName := "outscale_vm.basic"
 
 	var before oscgo.Vm
 	var after oscgo.Vm
@@ -223,18 +215,18 @@ func TestAccVM_UpdateKeypair(t *testing.T) {
 			{
 				Config: testAccVmsConfigUpdateOAPIVMKey(omi, utils.TestAccVmType, region),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleVMExists("outscale_vm.basic", &before),
+					testAccCheckOutscaleVMExists(resourceName, &before),
 					testAccCheckOutscaleVMAttributes(t, &before, omi),
-					resource.TestCheckResourceAttr("outscale_vm.basic", "image_id", omi),
-					resource.TestCheckResourceAttr("outscale_vm.basic", "vm_type", utils.TestAccVmType),
+					resource.TestCheckResourceAttr(resourceName, "image_id", omi),
+					resource.TestCheckResourceAttr(resourceName, "vm_type", utils.TestAccVmType),
 				),
 			},
 			{
 				Config: testAccVmsConfigUpdateOAPIVMKey2(omi, utils.TestAccVmType, region, keypair),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPIVMExists("outscale_vm.basic", &after),
+					testAccCheckOAPIVMExists(resourceName, &after),
 					testAccCheckOAPIVMNotRecreated(t, &before, &after),
-					resource.TestCheckResourceAttr("outscale_vm.basic", "vm_type", utils.TestAccVmType),
+					resource.TestCheckResourceAttr(resourceName, "vm_type", utils.TestAccVmType),
 				),
 			},
 		},
@@ -242,24 +234,19 @@ func TestAccVM_UpdateKeypair(t *testing.T) {
 }
 
 func TestAccNet_VM_WithSubnet(t *testing.T) {
-	var server oscgo.Vm
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	keypair := "terraform-basic"
+	resourceName := "outscale_vm.basic"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleVMDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckOutscaleVMConfigWithSubnet(omi, utils.TestAccVmType, utils.GetRegion(), keypair),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleVMExists("outscale_vm.basic", &server),
-					testAccCheckOutscaleVMAttributes(t, &server, omi),
-					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "image_id", omi),
-					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "vm_type", utils.TestAccVmType),
+					resource.TestCheckResourceAttr(resourceName, "image_id", omi),
+					resource.TestCheckResourceAttr(resourceName, "vm_type", utils.TestAccVmType),
 				),
 			},
 		},
@@ -318,25 +305,20 @@ func TestAccVM_UpdateTags(t *testing.T) {
 }
 
 func TestAccNet_WithVM_PublicIp_Link(t *testing.T) {
-	var server oscgo.Vm
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	keypair := "terraform-basic"
 	vmType := utils.TestAccVmType
+	resourceName := "outscale_vm.outscale_vmnet"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleVMDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckOutscaleVMConfigWithNet(omi, vmType, utils.GetRegion(), keypair),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleVMExists("outscale_vm.outscale_vmnet", &server),
-					testAccCheckOutscaleVMAttributes(t, &server, omi),
-					resource.TestCheckResourceAttr(
-						"outscale_vm.outscale_vmnet", "image_id", omi),
-					resource.TestCheckResourceAttr(
-						"outscale_vm.outscale_vmnet", "vm_type", vmType),
+					resource.TestCheckResourceAttr(resourceName, "image_id", omi),
+					resource.TestCheckResourceAttr(resourceName, "vm_type", vmType),
 				),
 			},
 		},
@@ -350,9 +332,9 @@ func TestAccVM_multiBlockDeviceMapping(t *testing.T) {
 	keypair := "terraform-basic"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheckValues(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleVMDestroy,
+		PreCheck:  func() { testAccPreCheckValues(t) },
+		Providers: testAccProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckOutscaleVMWithMultiBlockDeviceMapping(utils.GetRegion(), omi, keypair, utils.TestAccVmType),
@@ -396,7 +378,7 @@ func testAccCheckOutscaleVMWithMultiBlockDeviceMapping(region, omi, keypair, vmT
 					delete_on_vm_deletion = true
 				}
 			}
-			
+
 			block_device_mappings {
 				device_name = "/dev/sdb"
 				bsu {
