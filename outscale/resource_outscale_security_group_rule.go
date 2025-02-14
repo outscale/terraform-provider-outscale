@@ -34,9 +34,10 @@ func ResourceOutscaleOutboundRule() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{"Inbound", "Outbound"}, false),
 			},
 			"from_port_range": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				ForceNew: true,
+				Type:          schema.TypeInt,
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"rules"},
 			},
 			"ip_protocol": {
 				Type:          schema.TypeString,
@@ -45,9 +46,10 @@ func ResourceOutscaleOutboundRule() *schema.Resource {
 				ConflictsWith: []string{"rules", "security_group_name_to_link"},
 			},
 			"ip_range": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"rules", "security_group_name_to_link"},
 			},
 			"rules": getRulesSchema(false),
 			"security_group_account_id_to_link": {
@@ -64,12 +66,13 @@ func ResourceOutscaleOutboundRule() *schema.Resource {
 				Type:          schema.TypeString,
 				Optional:      true,
 				ForceNew:      true,
-				ConflictsWith: []string{"ip_protocol", "rules"},
+				ConflictsWith: []string{"ip_protocol", "rules", "ip_range"},
 			},
 			"to_port_range": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				ForceNew: true,
+				Type:          schema.TypeInt,
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"rules"},
 			},
 			"security_group_name": {
 				Type:     schema.TypeString,
@@ -95,11 +98,10 @@ func ResourceOutscaleOutboundRuleCreate(d *schema.ResourceData, meta interface{}
 		SecurityGroupId: d.Get("security_group_id").(string),
 		Rules:           expandRules(d, conn),
 	}
-
-	if v, ok := d.GetOkExists("from_port_range"); ok {
+	if v := cast.ToString(d.Get("from_port_range")); v != "" {
 		req.SetFromPortRange(cast.ToInt32(v))
 	}
-	if v, ok := d.GetOkExists("to_port_range"); ok {
+	if v := cast.ToString(d.Get("to_port_range")); v != "" {
 		req.SetToPortRange(cast.ToInt32(v))
 	}
 	if v, ok := d.GetOk("ip_protocol"); ok {
@@ -113,6 +115,9 @@ func ResourceOutscaleOutboundRuleCreate(d *schema.ResourceData, meta interface{}
 	}
 	if v, ok := d.GetOk("security_group_name_to_link"); ok {
 		req.SetSecurityGroupNameToLink(v.(string))
+	}
+	if !req.HasIpRange() && !req.HasRules() && !req.HasSecurityGroupNameToLink() {
+		return errors.New("You must provide at least '1' of the following parameters: ‘rules’, ‘ip_range’ and ‘security_group_name_to_link’.")
 	}
 
 	var err error
@@ -167,11 +172,10 @@ func ResourceOutscaleOutboundRuleDelete(d *schema.ResourceData, meta interface{}
 		SecurityGroupId: d.Get("security_group_id").(string),
 		Rules:           expandRules(d, conn),
 	}
-
-	if v, ok := d.GetOkExists("from_port_range"); ok {
+	if v := cast.ToString(d.Get("from_port_range")); v != "" {
 		req.SetFromPortRange(cast.ToInt32(v))
 	}
-	if v, ok := d.GetOkExists("to_port_range"); ok {
+	if v := cast.ToString(d.Get("to_port_range")); v != "" {
 		req.SetToPortRange(cast.ToInt32(v))
 	}
 	if v, ok := d.GetOk("ip_protocol"); ok {
@@ -180,7 +184,12 @@ func ResourceOutscaleOutboundRuleDelete(d *schema.ResourceData, meta interface{}
 	if v, ok := d.GetOk("ip_range"); ok {
 		req.SetIpRange(v.(string))
 	}
-
+	if v, ok := d.GetOk("security_group_name_to_link"); ok {
+		req.SetSecurityGroupNameToUnlink(v.(string))
+	}
+	if !req.HasIpProtocol() && !req.HasRules() && !req.HasSecurityGroupNameToUnlink() {
+		return errors.New("You must provide at least '1' of the following parameters: 'IpProtocol, Rules and SecurityGroupNameToUnlink'.")
+	}
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, httpResp, err := conn.SecurityGroupRuleApi.DeleteSecurityGroupRule(context.Background()).DeleteSecurityGroupRuleRequest(req).Execute()
 		if err != nil {
