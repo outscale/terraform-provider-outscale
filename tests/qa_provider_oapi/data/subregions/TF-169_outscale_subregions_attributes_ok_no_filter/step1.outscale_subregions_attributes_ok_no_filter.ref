@@ -29,6 +29,12 @@
                                 "region_name": "eu-west-2",
                                 "state": "available",
                                 "subregion_name": "eu-west-2b"
+                            },
+                            {
+                                "location_code": "PAR7",
+                                "region_name": "eu-west-2",
+                                "state": "available",
+                                "subregion_name": "eu-west-2c"
                             }
                         ]
                     },
