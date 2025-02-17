@@ -24,7 +24,7 @@ func TestAccNet_PeeringConnection_basic(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscaleLinPeeringConnectionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIVpcPeeringConfig(utils.GetAccepterOwnerId()),
+				Config: testAccOAPIVpcPeeringConfig2(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleLinPeeringConnectionExists(
 						"outscale_net_peering.foo",
@@ -233,4 +233,31 @@ func testAccOAPIVpcPeeringConfig(accountid string) string {
 		accepter_owner_id = "%s"
 	}
 `, accountid)
+}
+
+func testAccOAPIVpcPeeringConfig2() string {
+	return fmt.Sprintf(`
+	resource "outscale_net" "foo" {
+		ip_range = "10.0.0.0/16"
+
+		tags {
+			key   = "Name"
+			value = "testacc-net-peering-rs-foo"
+		}
+	}
+
+	resource "outscale_net" "bar" {
+		ip_range = "10.1.0.0/16"
+
+		tags {
+			key   = "Name"
+			value = "testacc-net-peering-acceptation-rs-bar"
+		}
+	}
+
+	resource "outscale_net_peering" "foo" {
+		source_net_id   = outscale_net.foo.id
+		accepter_net_id = outscale_net.bar.id
+	}
+`)
 }

@@ -14,6 +14,7 @@ import (
 
 	"github.com/hashicorp/errwrap"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -36,7 +37,8 @@ func ResourceOutscaleLinPeeringConnection() *schema.Resource {
 			},
 			"accepter_owner_id": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
+				Computed: true,
 				ForceNew: true,
 			},
 			"accepter_net_id": {
@@ -86,15 +88,38 @@ func ResourceOutscaleLinPeeringCreate(d *schema.ResourceData, meta interface{}) 
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	// Create the vpc peering connection
-	accepterOwnerId := d.Get("accepter_owner_id").(string)
 	createOpts := oscgo.CreateNetPeeringRequest{
-		AccepterNetId:   d.Get("accepter_net_id").(string),
-		SourceNetId:     d.Get("source_net_id").(string),
-		AccepterOwnerId: &accepterOwnerId,
+		AccepterNetId: d.Get("accepter_net_id").(string),
+		SourceNetId:   d.Get("source_net_id").(string),
 	}
-
-	var resp oscgo.CreateNetPeeringResponse
 	var err error
+	accepterOwnerId := d.Get("accepter_owner_id").(string)
+	if accepterOwnerId == "" {
+		ids := []string{createOpts.GetAccepterNetId(), createOpts.GetSourceNetId()}
+		req := oscgo.ReadNetsRequest{}
+		var filters oscgo.FiltersNet
+		filters.SetNetIds(ids)
+		req.SetFilters(filters)
+
+		var readResp oscgo.ReadNetsResponse
+		err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+			rp, httpResp, err := conn.NetApi.ReadNets(context.Background()).ReadNetsRequest(req).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp, err)
+			}
+			readResp = rp
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+		if len(readResp.GetNets()) != 2 {
+			return errors.New("Your 'accept_net_id' and 'source_net_id' are on different accounts, so the 'accept_owner_id' parameter is mandatory")
+		}
+	} else {
+		createOpts.SetAccepterOwnerId(accepterOwnerId)
+	}
+	var resp oscgo.CreateNetPeeringResponse
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.NetPeeringApi.CreateNetPeering(context.Background()).CreateNetPeeringRequest(createOpts).Execute()
 		if err != nil {
