@@ -193,9 +193,9 @@ func tagsListOAPISchema2(computed bool) *schema.Schema {
 		Type: stype,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
-				"key": mk_elem(computed, false, !computed,
+				"key": mk_elem(computed, false,
 					schema.TypeString),
-				"value": mk_elem(computed, false, !computed,
+				"value": mk_elem(computed, false,
 					schema.TypeString),
 			},
 		},
