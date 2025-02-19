@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -12,6 +13,7 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
@@ -253,30 +255,15 @@ func expandListeners(configured []interface{}) ([]*oscgo.Listener, error) {
 		}
 
 		if v, ok := data["server_certificate_id"]; ok && v != "" {
-			vs := v.(string)
-			l.ServerCertificateId = &vs
-		}
-
-		var valid bool
-		if l.ServerCertificateId != nil && *l.ServerCertificateId != "" {
-			// validate the protocol is correct
-			for _, p := range []string{"https", "ssl"} {
-				if (strings.ToLower(*l.BackendProtocol) == p) ||
-					(strings.ToLower(*l.LoadBalancerProtocol) == p) {
-					valid = true
-				}
+			protocolNeedCerticate := []string{"https", "ssl"}
+			if !slices.Contains(protocolNeedCerticate, strings.ToLower(l.GetBackendProtocol())) &&
+				!slices.Contains(protocolNeedCerticate, strings.ToLower(l.GetLoadBalancerProtocol())) {
+				return nil, fmt.Errorf("[ERR] ELB Listener: server_certificate_id may be set only when protocol is 'https' or 'ssl'")
 			}
-		} else {
-			valid = true
+			l.SetServerCertificateId(v.(string))
 		}
-
-		if valid {
-			listeners = append(listeners, l)
-		} else {
-			return nil, fmt.Errorf("[ERR] ELB Listener: server_certificate_id may be set only when protocol is 'https' or 'ssl'")
-		}
+		listeners = append(listeners, l)
 	}
-
 	return listeners, nil
 }
 
@@ -298,28 +285,14 @@ func expandListenerForCreation(configured []interface{}) ([]oscgo.ListenerForCre
 		}
 
 		if v, ok := data["server_certificate_id"]; ok && v != "" {
-			vs := v.(string)
-			l.ServerCertificateId = &vs
-		}
-
-		var valid bool
-		if l.ServerCertificateId != nil && *l.ServerCertificateId != "" {
-			// validate the protocol is correct
-			for _, p := range []string{"https", "ssl"} {
-				if (strings.ToLower(*l.BackendProtocol) == p) ||
-					(strings.ToLower(l.LoadBalancerProtocol) == p) {
-					valid = true
-				}
+			protocolNeedCerticate := []string{"https", "ssl"}
+			if !slices.Contains(protocolNeedCerticate, strings.ToLower(l.GetBackendProtocol())) &&
+				!slices.Contains(protocolNeedCerticate, strings.ToLower(l.GetLoadBalancerProtocol())) {
+				return nil, fmt.Errorf("[ERR] ELB Listener: server_certificate_id may be set only when protocol is 'https' or 'ssl'")
 			}
-		} else {
-			valid = true
+			l.SetServerCertificateId(v.(string))
 		}
-
-		if valid {
-			listeners = append(listeners, l)
-		} else {
-			return nil, fmt.Errorf("[ERR] ELB Listener: server_certificate_id may be set only when protocol is 'https' or 'ssl'")
-		}
+		listeners = append(listeners, l)
 	}
 
 	return listeners, nil
@@ -670,17 +643,29 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 	}
 
 	if d.HasChange("listeners") {
-		o, n := d.GetChange("listeners")
-		os := o.(*schema.Set).List()
-		ns := n.(*schema.Set).List()
+		oldListeners, newListeners := d.GetChange("listeners")
+		inter := oldListeners.(*schema.Set).Intersection(newListeners.(*schema.Set))
+		lCreate := newListeners.(*schema.Set).Difference(inter)
+		lRemoved := oldListeners.(*schema.Set).Difference(inter)
+		var toRemove []*oscgo.Listener
+		var toCreate []oscgo.ListenerForCreation
+		var err error
 
-		log.Printf("[DEBUG] it change !: %v %v", os, ns)
-		remove, _ := expandListeners(os)
-		add, _ := expandListenerForCreation(ns)
-
-		if len(remove) > 0 {
-			ports := make([]int32, 0, len(remove))
-			for _, listener := range remove {
+		if lRemoved.Len() > 0 {
+			toRemove, err = expandListeners(lRemoved.List())
+			if err != nil {
+				return err
+			}
+		}
+		if lCreate.Len() > 0 {
+			toCreate, err = expandListenerForCreation(lCreate.List())
+			if err != nil {
+				return err
+			}
+		}
+		if len(toRemove) > 0 {
+			ports := make([]int32, 0, len(toRemove))
+			for _, listener := range toRemove {
 				ports = append(ports, *listener.LoadBalancerPort)
 			}
 
@@ -690,9 +675,7 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 			}
 
 			log.Printf("[DEBUG] Load Balancer Delete Listeners")
-
-			var err error
-			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 				_, httpResp, err := conn.ListenerApi.DeleteLoadBalancerListeners(
 					context.Background()).
 					DeleteLoadBalancerListenersRequest(req).
@@ -709,27 +692,24 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 			}
 		}
 
-		if len(add) > 0 {
+		if len(toCreate) > 0 {
 			req := oscgo.CreateLoadBalancerListenersRequest{
 				LoadBalancerName: d.Id(),
-				Listeners:        add,
+				Listeners:        toCreate,
 			}
 
 			// Occasionally AWS will error with a 'duplicate listener', without any
 			// other listeners on the Load Balancer. Retry here to eliminate that.
 			var err error
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-				log.Printf("[DEBUG] Load Balancer Create Listeners")
 				_, httpResp, err := conn.ListenerApi.CreateLoadBalancerListeners(
 					context.Background()).CreateLoadBalancerListenersRequest(req).Execute()
 				if err != nil {
 					if strings.Contains(fmt.Sprint(err), "DuplicateListener") {
-						log.Printf("[DEBUG] Duplicate listener found for ELB (%s), retrying", d.Id())
-						return resource.RetryableError(err)
+						return retry.RetryableError(err)
 					}
 					if strings.Contains(fmt.Sprint(err), "CertificateNotFound") && strings.Contains(fmt.Sprint(err), "Server Certificate not found for the key: arn") {
-						log.Printf("[DEBUG] SSL Cert not found for given ARN, retrying")
-						return resource.RetryableError(err)
+						return retry.RetryableError(err)
 					}
 					return utils.CheckThrottling(httpResp, err)
 				}
@@ -743,11 +723,10 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 	}
 
 	if d.HasChange("backend_vm_ids") {
-		o, n := d.GetChange("backend_vm_ids")
-		os := o.(*schema.Set)
-		ns := n.(*schema.Set)
-		remove := utils.SetToStringSlice(os.Difference(ns))
-		add := utils.SetToStringSlice(ns.Difference(os))
+		oldVmIds, newVmIds := d.GetChange("backend_vm_ids")
+		inter := oldVmIds.(*schema.Set).Intersection(newVmIds.(*schema.Set))
+		remove := utils.SetToStringSlice(oldVmIds.(*schema.Set).Difference(inter))
+		add := utils.SetToStringSlice(newVmIds.(*schema.Set).Difference(inter))
 
 		if len(add) > 0 {
 
