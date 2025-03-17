@@ -23,6 +23,12 @@ func TestAccFwPreCheck(t *testing.T) {
 	}
 }
 
+func protoV5ProviderFactories() map[string]func() (tfprotov5.ProviderServer, error) {
+	return map[string]func() (tfprotov5.ProviderServer, error){
+		"outscale": providerserver.NewProtocol5WithError(New(vers.GetVersion())),
+	}
+}
+
 func TestMuxServer(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV5ProviderFactories: defineTestProviderFactories(),
@@ -48,24 +54,9 @@ func TestDataSource_UpgradeFromVersion(t *testing.T) {
 				Config: fwtestAccDataSourceOutscaleQuotaConfig,
 			},
 			{
-				ProtoV5ProviderFactories: map[string]func() (tfprotov5.ProviderServer, error){
-					"outscale": func() (tfprotov5.ProviderServer, error) {
-						ctx := context.Background()
-						providers := []func() tfprotov5.ProviderServer{
-							providerserver.NewProtocol5(New(vers.GetVersion())), // Example terraform-plugin-framework provider
-							Provider().GRPCProvider,                             // Example terraform-plugin-sdk provider
-						}
-
-						muxServer, err := tf5muxserver.NewMuxServer(ctx, providers...)
-						if err != nil {
-							return nil, err
-						}
-
-						return muxServer.ProviderServer(), nil
-					},
-				},
-				Config:   fwtestAccDataSourceOutscaleQuotaConfig,
-				PlanOnly: true,
+				ProtoV5ProviderFactories: protoV5ProviderFactories(),
+				Config:                   fwtestAccDataSourceOutscaleQuotaConfig,
+				PlanOnly:                 true,
 			},
 		},
 	})

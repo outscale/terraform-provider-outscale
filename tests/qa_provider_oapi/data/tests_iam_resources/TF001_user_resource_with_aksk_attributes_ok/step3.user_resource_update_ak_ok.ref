@@ -16,16 +16,15 @@
                     "attributes": {
                         "access_key_id": "##id-0##",
                         "creation_date": "########",
-                        "expiration_date": "2028-01-01T00:00:00.000+0000",
+                        "expiration_date": "2028-01-01",
                         "id": "##id-0##",
                         "last_modification_date": "########",
-                        "request_id": "########",
                         "secret_key": "########",
                         "state": "INACTIVE",
+                        "timeouts": null,
                         "user_name": "User-terraform-2"
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_user.user-2"
                     ]

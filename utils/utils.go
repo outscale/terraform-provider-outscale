@@ -119,6 +119,15 @@ func GetErrorResponse(err error) error {
 	return err
 }
 
+func GetErrorResponseToString(err error) string {
+	if e, ok := err.(oscgo.GenericOpenAPIError); ok {
+		if errorResponse, oker := e.Model().(oscgo.ErrorResponse); oker {
+			return ToJSONString(errorResponse)
+		}
+	}
+	return err.Error()
+}
+
 func ParseStringToInt32(str string) int32 {
 	parsed, err := strconv.ParseInt(str, 10, 32)
 	if err != nil {
@@ -366,4 +375,18 @@ func CheckPath(path string) error {
 		return nil
 	}
 	return fmt.Errorf("invalid path:\n %v", pathError)
+}
+
+func CheckDateFormat(dateFormat string) error {
+	var err error
+	var settingDate time.Time
+	currentDate := time.Now()
+
+	if settingDate, err = datetime.Parse(dateFormat, time.UTC); err != nil {
+		return fmt.Errorf(" Expiration Date should be 'ISO 8601' format ('2017-06-14' or '2017-06-14T00:00:00Z, ...) %s", err)
+	}
+	if currentDate.After(settingDate) {
+		return fmt.Errorf(" Expiration date: '%s' should be after current date '%s'", settingDate, currentDate)
+	}
+	return nil
 }

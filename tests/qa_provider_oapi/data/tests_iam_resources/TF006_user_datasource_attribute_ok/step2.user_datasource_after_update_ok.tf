@@ -1,7 +1,7 @@
 resource "outscale_user" "user1"  {
- user_name = "User-TF-65"
+ user_name  = "User-TF-65"
  user_email = "test@test65.fr"
- path            = "/test/terraform/"
+ path       = "/test/terraform/"
 }
 
 resource "outscale_access_key" "access_key_01" {

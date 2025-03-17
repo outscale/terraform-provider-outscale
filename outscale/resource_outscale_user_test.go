@@ -12,8 +12,8 @@ func TestAccOthers_User_basic(t *testing.T) {
 	resourceName := "outscale_user.basic_user"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:                 func() { TestAccFwPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleUserBasicConfig,
@@ -33,8 +33,8 @@ func TestAccOthers_User_update(t *testing.T) {
 	newName := "TestACC_user2"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:                 func() { TestAccFwPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleUserUpdatedConfig(name),

@@ -16,7 +16,7 @@
                     "attributes": {
                         "access_key_id": "##id-0##",
                         "creation_date": "########",
-                        "expiration_date": "",
+                        "expiration_date": "2038-01-01T00:00:00.000+0000",
                         "filter": "########",
                         "id": "##id-0##",
                         "last_modification_date": "########",
@@ -42,7 +42,7 @@
                             {
                                 "access_key_id": "##id-0##",
                                 "creation_date": "########",
-                                "expiration_date": "",
+                                "expiration_date": "2038-01-01T00:00:00.000+0000",
                                 "last_modification_date": "########",
                                 "state": "INACTIVE"
                             }
@@ -90,16 +90,15 @@
                     "attributes": {
                         "access_key_id": "##id-0##",
                         "creation_date": "########",
-                        "expiration_date": "",
+                        "expiration_date": "2038-01-01",
                         "id": "##id-0##",
                         "last_modification_date": "########",
-                        "request_id": "########",
                         "secret_key": "########",
                         "state": "INACTIVE",
+                        "timeouts": null,
                         "user_name": "User-TF-65"
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_user.user1"
                     ]

@@ -1,15 +1,11 @@
 package outscale
 
 import (
-	"context"
 	"fmt"
 	"testing"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
-	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
 func TestAccOthers_DataSourceAccessKeys_basic(t *testing.T) {
@@ -17,15 +13,14 @@ func TestAccOthers_DataSourceAccessKeys_basic(t *testing.T) {
 	dataSourceName := "data.outscale_access_keys.read_access_key"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckAccessKeyDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccClientAccessKeysDataSourceBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(dataSourceName, "access_keys.#"),
-					resource.TestCheckResourceAttrSet(dataSourceName, "access_key_ids.#"),
+					resource.TestCheckResourceAttrSet(dataSourceName, "access_keys.0.access_key_id"),
+					resource.TestCheckResourceAttrSet(dataSourceName, "access_keys.0.expiration_date"),
 				),
 			},
 		},
@@ -37,9 +32,8 @@ func TestAccOthers_DataSourceAccessKeys_withFilters(t *testing.T) {
 	dataSourceName := "data.outscale_access_keys.filters_access_key"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckAccessKeyDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccClientAccessKeysDataSourceWithFilters(),
@@ -50,46 +44,6 @@ func TestAccOthers_DataSourceAccessKeys_withFilters(t *testing.T) {
 			},
 		},
 	})
-}
-
-func testAccCheckAccessKeyDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
-
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "outscale_access_key" {
-			continue
-		}
-		req := oscgo.ReadAccessKeysRequest{}
-		req.Filters = &oscgo.FiltersAccessKeys{
-			AccessKeyIds: &[]string{rs.Primary.ID},
-		}
-
-		var resp oscgo.ReadAccessKeysResponse
-		var err error
-		exists := false
-		err = resource.Retry(120*time.Second, func() *resource.RetryError {
-			rp, httpResp, err := conn.AccessKeyApi.ReadAccessKeys(context.Background()).ReadAccessKeysRequest(req).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
-		if err != nil {
-			return fmt.Errorf("AccessKeys reading (%s)", rs.Primary.ID)
-		}
-
-		for _, ca := range resp.GetAccessKeys() {
-			if ca.GetAccessKeyId() == rs.Primary.ID {
-				exists = true
-			}
-		}
-
-		if exists {
-			return fmt.Errorf("Access_Key still exists (%s)", rs.Primary.ID)
-		}
-	}
-	return nil
 }
 
 func testAccClientAccessKeysDataSourceBasic() string {
