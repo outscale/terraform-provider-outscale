@@ -8,12 +8,11 @@ import (
 
 func TestAccOthers_DatasourceAccessKey_basic(t *testing.T) {
 	t.Parallel()
-	dataSourceName := "outscale_access_key.access_key_basic"
+	dataSourceName := "data.outscale_access_key.dataKeyBasic"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckAccessKeyDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccClientAccessKeyDataSourceBasic(),
@@ -21,7 +20,6 @@ func TestAccOthers_DatasourceAccessKey_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(dataSourceName, "access_key_id"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "creation_date"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "last_modification_date"),
-					resource.TestCheckResourceAttrSet(dataSourceName, "secret_key"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "state"),
 				),
 			},
@@ -31,12 +29,11 @@ func TestAccOthers_DatasourceAccessKey_basic(t *testing.T) {
 
 func TestAccOthers_AccessKey_withFilters(t *testing.T) {
 	t.Parallel()
-	dataSourceName := "outscale_access_key.keyFilters"
+	dataSourceName := "data.outscale_access_key.access_key_filters"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckAccessKeyDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccClientAccessKeyDataSourceWithFilters(),
@@ -44,7 +41,6 @@ func TestAccOthers_AccessKey_withFilters(t *testing.T) {
 					resource.TestCheckResourceAttrSet(dataSourceName, "access_key_id"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "creation_date"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "last_modification_date"),
-					resource.TestCheckResourceAttrSet(dataSourceName, "secret_key"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "state"),
 				),
 			},
@@ -54,10 +50,10 @@ func TestAccOthers_AccessKey_withFilters(t *testing.T) {
 
 func testAccClientAccessKeyDataSourceBasic() string {
 	return `
-		resource "outscale_access_key" "access_key_basic" {}
+		resource "outscale_access_key" "accessKeyBasic" {}
 
-		data "outscale_access_key" "access_keyBasic" {
-			access_key_id = outscale_access_key.access_key_basic.id
+		data "outscale_access_key" "dataKeyBasic" {
+			access_key_id = outscale_access_key.accessKeyBasic.id
 		}
 	`
 }

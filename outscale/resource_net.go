@@ -46,7 +46,7 @@ type netResource struct {
 	Client *oscgo.APIClient
 }
 
-func NewNetResource() resource.Resource {
+func NewResourceNet() resource.Resource {
 	return &netResource{}
 }
 
@@ -66,6 +66,7 @@ func (r *netResource) Configure(_ context.Context, req resource.ConfigureRequest
 	}
 	r.Client = client.OSCAPI
 }
+
 func (r *netResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 	net_id := req.ID
@@ -167,11 +168,13 @@ func (r *netResource) Create(ctx context.Context, req resource.CreateRequest, re
 	}
 	ctx, cancel := context.WithTimeout(ctx, createTimeout)
 	defer cancel()
+
 	createReq := oscgo.CreateNetRequest{
 		IpRange: data.IpRange.ValueString(),
 	}
 	createReq.SetTenancy(data.Tenancy.ValueString())
 	var createResp oscgo.CreateNetResponse
+
 	err = retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
 		rp, httpResp, err := r.Client.NetApi.CreateNet(context.Background()).CreateNetRequest(createReq).Execute()
 		if err != nil {
@@ -187,6 +190,7 @@ func (r *netResource) Create(ctx context.Context, req resource.CreateRequest, re
 		)
 		return
 	}
+
 	data.RequestId = types.StringValue(createResp.ResponseContext.GetRequestId())
 	net := createResp.GetNet()
 	if len(data.Tags) > 0 {
@@ -302,6 +306,7 @@ func (r *netResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
 	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
 	defer cancel()
 	delReq := oscgo.DeleteNetRequest{
@@ -376,6 +381,7 @@ func setNetState(ctx context.Context, r *netResource, data NetModel) (NetModel, 
 	if err != nil {
 		return data, err
 	}
+
 	data.RequestId = types.StringValue(readResp.ResponseContext.GetRequestId())
 	if len(readResp.GetNets()) == 0 {
 		return data, errors.New("Empty")

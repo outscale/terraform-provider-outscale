@@ -39,16 +39,15 @@
                     "attributes": {
                         "access_key_id": "##id-0##",
                         "creation_date": "########",
-                        "expiration_date": "",
+                        "expiration_date": null,
                         "id": "##id-0##",
                         "last_modification_date": "########",
-                        "request_id": "########",
                         "secret_key": "########",
                         "state": "ACTIVE",
+                        "timeouts": null,
                         "user_name": null
                     },
-                    "sensitive_attributes": [],
-                    "private": "bnVsbA=="
+                    "sensitive_attributes": []
                 }
             ]
         }

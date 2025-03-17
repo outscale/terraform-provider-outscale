@@ -4,20 +4,15 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-framework/providerserver"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/outscale/terraform-provider-outscale/version"
 )
 
 func TestAccNet_Bacic(t *testing.T) {
 
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
-		ProtoV5ProviderFactories: map[string]func() (tfprotov5.ProviderServer, error){
-			"outscale": providerserver.NewProtocol5WithError(New(version.GetVersion())),
-		},
-		PreCheck: func() { TestAccFwPreCheck(t) },
+		ProtoV5ProviderFactories: protoV5ProviderFactories(),
+		PreCheck:                 func() { TestAccFwPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: configNetBasic,
@@ -32,10 +27,8 @@ func TestAccNet_UpdateTags(t *testing.T) {
 	t.Parallel()
 	netName := "outscale_net.basic_net"
 	resource.Test(t, resource.TestCase{
-		ProtoV5ProviderFactories: map[string]func() (tfprotov5.ProviderServer, error){
-			"outscale": providerserver.NewProtocol5WithError(New(version.GetVersion())),
-		},
-		PreCheck: func() { TestAccFwPreCheck(t) },
+		ProtoV5ProviderFactories: protoV5ProviderFactories(),
+		PreCheck:                 func() { TestAccFwPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: configNetUpdateTags("NetTags"),
