@@ -118,7 +118,6 @@ func Provider() *schema.Provider {
 			"outscale_load_balancer_vms":                 ResourceLBUAttachment(),
 			"outscale_load_balancer_attributes":          ResourceOutscaleLoadBalancerAttributes(),
 			"outscale_load_balancer_listener_rule":       ResourceOutscaleLoadBalancerListenerRule(),
-			"outscale_flexible_gpu":                      ResourceOutscaleFlexibleGpu(),
 			"outscale_flexible_gpu_link":                 ResourceOutscaleFlexibleGpuLink(),
 			"outscale_image_export_task":                 ResourceOutscaleIMageExportTask(),
 			"outscale_server_certificate":                ResourceOutscaleServerCertificate(),

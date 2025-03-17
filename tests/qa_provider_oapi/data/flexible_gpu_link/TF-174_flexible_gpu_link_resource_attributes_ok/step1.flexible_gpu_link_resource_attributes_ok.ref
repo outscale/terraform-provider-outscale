@@ -19,13 +19,12 @@
                         "generation": "v5",
                         "id": "##id-0##",
                         "model_name": "nvidia-p6",
-                        "request_id": "########",
                         "state": "allocated",
                         "subregion_name": "eu-west-2a",
+                        "timeouts": null,
                         "vm_id": ""
                     },
-                    "sensitive_attributes": [],
-                    "private": "bnVsbA=="
+                    "sensitive_attributes": []
                 }
             ]
         },
