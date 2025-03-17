@@ -21,7 +21,7 @@ resource "outscale_flexible_gpu" "fGPU-1" {
   model_name            = "nvidia-p6"
   generation            = var.fgpu_gen
   subregion_name        = "${var.region}a"
-  delete_on_vm_deletion = false
+  delete_on_vm_deletion = true
 }
 
 
@@ -42,7 +42,7 @@ data "outscale_flexible_gpu" "data-fGPU-2" {
 
   filter {
     name   = "delete_on_vm_deletion"
-    values = [false]
+    values = [true]
   }
   filter {
     name   = "generations"

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"hash/crc32"
+	"io"
 	"log"
 	"math/rand"
 	"net/http"
@@ -196,17 +197,29 @@ func IsResponseEmptyOrMutiple(rLen int, resName string) error {
 }
 
 func CheckThrottling(httpResp *http.Response, err error) *retry.RetryError {
-	rand.Seed(time.Now().UnixNano())
+
 	if httpResp != nil {
 		errCode := httpResp.StatusCode
+		errBody := getHttpErrorResponse(httpResp.Body, err)
+
 		if errCode == http.StatusServiceUnavailable || errCode == http.StatusTooManyRequests ||
 			errCode == http.StatusConflict || errCode == http.StatusFailedDependency {
 			randTime := (rand.Float32()*(randMax-randMin) + randMin) * 1000
 			time.Sleep(time.Duration(randTime) * time.Millisecond)
-			return retry.RetryableError(err)
+			return retry.RetryableError(errBody)
 		}
+		return retry.NonRetryableError(errBody)
 	}
 	return retry.NonRetryableError(err)
+}
+
+func getHttpErrorResponse(httpBody io.ReadCloser, err error) error {
+	errBody, readErr := io.ReadAll(httpBody)
+	defer httpBody.Close()
+	if readErr != nil {
+		return fmt.Errorf("Unable to read http response error: %w", err)
+	}
+	return fmt.Errorf("%w: %v", err, string(errBody))
 }
 
 func RandIntRange(min, max int) int {

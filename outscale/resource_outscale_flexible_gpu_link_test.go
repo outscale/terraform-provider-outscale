@@ -13,10 +13,8 @@ func TestAccVM_withFlexibleGpuLink_basic(t *testing.T) {
 	if os.Getenv("TEST_QUOTA") == "true" {
 		omi := os.Getenv("OUTSCALE_IMAGEID")
 		resource.Test(t, resource.TestCase{
-			PreCheck: func() {
-				testAccPreCheck(t)
-			},
-			Providers: testAccProviders,
+			PreCheck:                 func() { testAccPreCheck(t) },
+			ProtoV5ProviderFactories: defineTestProviderFactories(),
 			Steps: []resource.TestStep{
 				{
 					Config: testAccOutscaleFlexibleGpuLinkConfig(omi, "tinav5.c2r2p2", utils.GetRegion()),

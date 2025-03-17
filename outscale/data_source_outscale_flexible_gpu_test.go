@@ -10,14 +10,19 @@ import (
 
 func TestAccOthers_DataSourceFlexibleGpu_basic(t *testing.T) {
 
+	datasourceName := "data.outscale_flexible_gpu.data_fGPU"
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheck(t)
-		},
-		Providers: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceOutscaleFlexibleGpuConfig(utils.GetRegion()),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(datasourceName, "model_name"),
+					resource.TestCheckResourceAttrSet(datasourceName, "generation"),
+					resource.TestCheckResourceAttrSet(datasourceName, "subregion_name"),
+					resource.TestCheckResourceAttr(datasourceName, "delete_on_vm_deletion", "true"),
+				),
 			},
 		},
 	})
@@ -54,7 +59,7 @@ func testAccDataSourceOutscaleFlexibleGpuConfig(region string) string {
                                 values = ["nvidia-p6"]
                         }
 	                filter {
-                                name = "subregion_names" 
+                                name = "subregion_names"
                                 values = ["%[1]sa"]
                         }
 		}
