@@ -2,14 +2,11 @@ package outscale
 
 import (
 	"fmt"
-	"reflect"
 	"testing"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccNet_WithNic_basic(t *testing.T) {
@@ -37,21 +34,6 @@ func TestAccNet_WithNic_basic(t *testing.T) {
 			},
 		},
 	})
-}
-
-func testAccCheckOutscaleENIAttributes(conf *oscgo.Nic, subregion string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-
-		if !reflect.DeepEqual(conf.GetLinkNic(), oscgo.LinkNic{}) {
-			return fmt.Errorf("expected attachment to be nil")
-		}
-
-		if conf.GetSubregionName() != fmt.Sprintf("%sa", subregion) {
-			return fmt.Errorf("expected subregion_name to be %sa, but was %s", subregion, conf.GetSubregionName())
-		}
-
-		return nil
-	}
 }
 
 func testAccOutscaleENIConfig(subregion string) string {
@@ -105,7 +87,7 @@ func testAccOutscaleENIConfigUpdate(subregion string) string {
 
 		resource "outscale_subnet" "outscale_subnet" {
 			subregion_name = "%sa"
-			ip_range       = "10.0.0.0/24"
+			ip_range       = "10.0.0.0/16"
 			net_id         = outscale_net.outscale_net.net_id
 		}
 

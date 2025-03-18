@@ -165,12 +165,12 @@ func TestAccVM_withTags(t *testing.T) {
 			{
 				Config: testAccVmsConfigUpdateOAPIVMTags(omi, utils.TestAccVmType, utils.GetRegion(), tagsValue, keypair),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleVMExists("outscale_vm.basic", &server),
+					testAccCheckOutscaleVMExists("outscale_vm.basic_tags", &server),
 					testAccCheckOutscaleVMAttributes(t, &server, omi),
 					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "image_id", omi),
+						"outscale_vm.basic_tags", "image_id", omi),
 					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "vm_type", utils.TestAccVmType),
+						"outscale_vm.basic_tags", "vm_type", utils.TestAccVmType),
 				),
 			},
 		},
@@ -180,7 +180,7 @@ func TestAccVM_withTags(t *testing.T) {
 func TestAccNet_VM_withNics(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	keypair := "terraform-basic"
-	resourceName := "outscale_vm.basic"
+	resourceName := "outscale_vm.basic_with_nic"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
@@ -727,7 +727,8 @@ func testAccCheckOutscaleVMConfigBasicWithNicAttached(omi, vmType, region, keypa
 }
 
 func testAccCheckOutscaleVMConfigBasicWithNics(omi, vmType, keypair, region string) string {
-	return fmt.Sprintf(`resource "outscale_net" "outscale_net" {
+	return fmt.Sprintf(`
+	  resource "outscale_net" "outscale_net" {
 		ip_range = "10.0.0.0/16"
 	  }
 
@@ -743,7 +744,7 @@ func testAccCheckOutscaleVMConfigBasicWithNics(omi, vmType, keypair, region stri
 		net_id              = outscale_net.outscale_net.net_id
 	  }
 
-	  resource "outscale_vm" "basic" {
+	  resource "outscale_vm" "basic_with_nic" {
 		image_id     = "%[1]s"
 		vm_type      = "%[2]s"
 		keypair_name = "%[3]s"
@@ -824,7 +825,7 @@ func testAccVmsConfigUpdateOAPIVMTags(omi, vmType, region, value, keypair string
 			description                  = "testAcc Terraform security group"
 			security_group_name          = "sgTagsVm"
 		}
-		resource "outscale_vm" "basic" {
+		resource "outscale_vm" "basic_tags" {
 			image_id                 = "%[1]s"
 			vm_type                  = "%[2]s"
 			keypair_name             = "%[5]s"
