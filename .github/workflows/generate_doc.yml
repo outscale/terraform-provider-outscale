@@ -9,12 +9,12 @@ on:
 jobs:
   doc-release:
     environment: auto-build
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with: 
+        with:
          submodules: 'recursive'
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v5
       - name: auto-generate release
         run: .github/scripts/doc-build.sh
         env:
