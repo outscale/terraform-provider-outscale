@@ -9,7 +9,7 @@ on:
       - '**.sum'
       - '**.mod'
       - 'GNUmakefile'
-    workflow_dispatch:
+  workflow_dispatch:
 
 jobs:
   Others_acceptances_tests:
