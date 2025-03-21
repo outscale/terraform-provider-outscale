@@ -14,7 +14,7 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "delete_on_vm_deletion": false,
+                        "delete_on_vm_deletion": true,
                         "filter": "########",
                         "flexible_gpu_id": "##id-0##",
                         "generation": "v5",
@@ -38,7 +38,7 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "delete_on_vm_deletion": false,
+                        "delete_on_vm_deletion": true,
                         "filter": "########",
                         "flexible_gpu_id": "##id-0##",
                         "generation": "v5",
@@ -62,7 +62,7 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "delete_on_vm_deletion": false,
+                        "delete_on_vm_deletion": true,
                         "filter": "########",
                         "flexible_gpu_id": "##id-0##",
                         "generation": "v5",
@@ -86,15 +86,15 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "delete_on_vm_deletion": false,
+                        "delete_on_vm_deletion": true,
                         "flexible_gpu_id": "##id-0##",
                         "generation": "v5",
                         "id": "##id-0##",
                         "model_name": "nvidia-p6",
-                        "state": "allocated",
+                        "state": "attached",
                         "subregion_name": "eu-west-2a",
                         "timeouts": null,
-                        "vm_id": ""
+                        "vm_id": "##id-1##"
                     },
                     "sensitive_attributes": []
                 }
