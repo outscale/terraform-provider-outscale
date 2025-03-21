@@ -216,7 +216,7 @@
                         "backend_vm_ids": [
                             "##id-0##"
                         ],
-                        "id": "##id-5##",
+                        "id": "##id-3##",
                         "load_balancer_name": "########",
                         "request_id": "########"
                     },
@@ -240,15 +240,15 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "account_id": "##id-6##",
+                        "account_id": "##id-5##",
                         "description": "test lbu vm health",
-                        "id": "##id-7##",
+                        "id": "##id-6##",
                         "inbound_rules": [],
                         "net_id": "",
                         "outbound_rules": [],
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
-                        "security_group_id": "##id-7##",
+                        "security_group_id": "##id-6##",
                         "security_group_name": "sgTF-92",
                         "tag": null,
                         "tags": []
@@ -269,14 +269,14 @@
                     "attributes": {
                         "flow": "Inbound",
                         "from_port_range": 8080,
-                        "id": "##id-7##",
+                        "id": "##id-6##",
                         "ip_protocol": "tcp",
                         "ip_range": "0.0.0.0/0",
                         "net_id": "",
                         "request_id": "########",
                         "rules": [],
                         "security_group_account_id_to_link": null,
-                        "security_group_id": "##id-7##",
+                        "security_group_id": "##id-6##",
                         "security_group_name": "sgTF-92",
                         "security_group_name_to_link": null,
                         "to_port_range": 8080
@@ -309,7 +309,7 @@
                                         "link_date": "########",
                                         "state": "attached",
                                         "tags": [],
-                                        "volume_id": "##id-8##"
+                                        "volume_id": "##id-7##"
                                     }
                                 ],
                                 "device_name": "/dev/sda1"
@@ -322,7 +322,7 @@
                         "get_admin_password": null,
                         "hypervisor": "xen",
                         "id": "##id-0##",
-                        "image_id": "##id-9##",
+                        "image_id": "##id-8##",
                         "is_source_dest_checked": false,
                         "keypair_name": "KP-TF92",
                         "launch_number": 0,
@@ -343,16 +343,16 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-10##",
+                        "reservation_id": "##id-9##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
                         "security_group_ids": [
-                            "##id-7##"
+                            "##id-6##"
                         ],
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-7##",
+                                "security_group_id": "##id-6##",
                                 "security_group_name": "sgTF-92"
                             }
                         ],

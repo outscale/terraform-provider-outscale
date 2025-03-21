@@ -4,16 +4,14 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"math"
 	"net/http"
 	"reflect"
 	"strconv"
-	"strings"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
@@ -30,6 +28,8 @@ func ResourceOutscaleNic() *schema.Resource {
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
+			Read:   schema.DefaultTimeout(5 * time.Minute),
+			Update: schema.DefaultTimeout(5 * time.Minute),
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 		Schema: getOAPINicSchema(),
@@ -158,14 +158,13 @@ func getOAPINicSchema() map[string]*schema.Schema {
 		},
 
 		"private_ips": {
-			Type:     schema.TypeList,
+			Type:     schema.TypeSet,
 			Computed: true,
 			Optional: true,
-			ForceNew: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"link_public_ip": {
-						Type:     schema.TypeList,
+						Type:     schema.TypeSet,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
@@ -249,13 +248,11 @@ func ResourceOutscaleNicCreate(d *schema.ResourceData, meta interface{}) error {
 		request.SetSecurityGroupIds(sgIDs)
 	}
 	if v, ok := d.GetOk("private_ips"); ok {
-		request.SetPrivateIps(expandPrivateIPLight(v.([]interface{})))
+		request.SetPrivateIps(expandPrivateIPLight(v.(*schema.Set).List()))
 	}
 
-	log.Printf("[DEBUG] Creating network interface")
-
 	var resp oscgo.CreateNicResponse
-	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err := retry.RetryContext(context.Background(), d.Timeout(schema.TimeoutCreate), func() *retry.RetryError {
 		var err error
 		rp, httpResp, err := conn.NicApi.CreateNic(context.Background()).CreateNicRequest(request).Execute()
 		if err != nil {
@@ -298,7 +295,7 @@ func ResourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 
 	var resp oscgo.ReadNicsResponse
 	var err error
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err = retry.RetryContext(context.Background(), d.Timeout(schema.TimeoutRead), func() *retry.RetryError {
 		rp, httpResp, err := conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(dnir).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -311,13 +308,6 @@ func ResourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error describing Network Interfaces : %s", err)
 	}
 
-	if err != nil {
-		if strings.Contains(err.Error(), "Unable to find Nic") {
-			d.SetId("")
-			return nil
-		}
-		return fmt.Errorf("Error retrieving ENI: %s", err)
-	}
 	if utils.IsResponseEmpty(len(resp.GetNics()), "Nic", d.Id()) {
 		d.SetId("")
 		return nil
@@ -387,10 +377,7 @@ func ResourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 func ResourceOutscaleNicDelete(d *schema.ResourceData, meta interface{}) error {
 
 	conn := meta.(*OutscaleClient).OSCAPI
-
-	log.Printf("[INFO] Deleting ENI: %s", d.Id())
-
-	err := ResourceOutscaleNicDetach(meta, d.Id())
+	err := ResourceOutscaleNicDetach(meta, d.Id(), d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return err
 	}
@@ -399,7 +386,7 @@ func ResourceOutscaleNicDelete(d *schema.ResourceData, meta interface{}) error {
 		NicId: d.Id(),
 	}
 
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err = retry.RetryContext(context.Background(), d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
 		_, httpResp, err := conn.NicApi.DeleteNic(context.Background()).DeleteNicRequest(deleteEniOpts).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -408,24 +395,24 @@ func ResourceOutscaleNicDelete(d *schema.ResourceData, meta interface{}) error {
 	})
 
 	if err != nil {
-
 		return fmt.Errorf("Error Deleting ENI: %s", err)
 	}
 
 	return nil
 }
 
-func ResourceOutscaleNicDetach(meta interface{}, nicID string) error {
+func ResourceOutscaleNicDetach(meta interface{}, nicID string, timeout time.Duration) error {
 	// if there was an old nic_link, remove it
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"attaching", "detaching"},
 		Target:  []string{"attached", "detached", "failed"},
 		Refresh: nicLinkRefreshFunc(conn, nicID),
-		Timeout: 10 * time.Minute,
+		Timeout: timeout,
+		Delay:   1 * time.Second,
 	}
-	resp, err := stateConf.WaitForState()
+	resp, err := stateConf.WaitForStateContext(context.Background())
 	if err != nil {
 		return fmt.Errorf(
 			"Error waiting for ENI (%s) to become dettached: %s", nicID, err)
@@ -441,7 +428,7 @@ func ResourceOutscaleNicDetach(meta interface{}, nicID string) error {
 			LinkNicId: linkNic.GetLinkNicId(),
 		}
 		var statusCode int
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		err := retry.RetryContext(context.Background(), timeout, func() *retry.RetryError {
 			_, httpResp, err := conn.NicApi.UnlinkNic(context.Background()).UnlinkNicRequest(req).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
@@ -464,48 +451,18 @@ func ResourceOutscaleNicUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	var err error
 
-	if d.HasChange("link_nic") {
-		_, na := d.GetChange("link_nic")
-
-		err := ResourceOutscaleNicDetach(meta, d.Id())
-		if err != nil {
-			return err
-		}
-
-		// if there is a new nic_link, attach it
-		if na != nil && len(na.([]interface{})) > 0 {
-			na := na.([]interface{})[0].(map[string]interface{})
-			di := na["device_number"].(int)
-			ar := oscgo.LinkNicRequest{
-				DeviceNumber: int32(di),
-				VmId:         na["instance"].(string),
-				NicId:        d.Id(),
-			}
-
-			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-				_, httpResp, err := conn.NicApi.LinkNic(context.Background()).LinkNicRequest(ar).Execute()
-				if err != nil {
-					return utils.CheckThrottling(httpResp, err)
-				}
-				return nil
-			})
-			if err != nil {
-				return fmt.Errorf("Error Attaching Network Interface: %s", err)
-			}
-		}
-	}
-
 	if d.HasChange("private_ips") {
-		o, n := d.GetChange("private_ips")
+		oldIps, newIps := d.GetChange("private_ips")
+		removed, created := utils.GetTypeSetDifferencesForUpdating(oldIps.(*schema.Set), newIps.(*schema.Set))
 
 		// Unassign old IP addresses
-		if len(o.(*schema.Set).List()) != 0 {
+		if listOldIps := removed.List(); len(listOldIps) != 0 {
 			input := oscgo.UnlinkPrivateIpsRequest{
 				NicId:      d.Id(),
-				PrivateIps: flattenPrivateIPLightToStringSlice(o.(*schema.Set).List()),
+				PrivateIps: flattenPrivateIPLightToStringSlice(listOldIps),
 			}
 
-			err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+			err := retry.RetryContext(context.Background(), d.Timeout(schema.TimeoutUpdate), func() *retry.RetryError {
 				_, httpResp, err := conn.NicApi.UnlinkPrivateIps(context.Background()).UnlinkPrivateIpsRequest(input).Execute()
 				if err != nil {
 					return utils.CheckThrottling(httpResp, err)
@@ -518,14 +475,14 @@ func ResourceOutscaleNicUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 
 		// Assign new IP addresses
-		if len(n.(*schema.Set).List()) != 0 {
-			stringSlice := flattenPrivateIPLightToStringSlice(n.(*schema.Set).List())
+		if listNewIps := created.List(); len(listNewIps) != 0 {
+			stringSlice := flattenPrivateIPLightToStringSlice(listNewIps)
 			input := oscgo.LinkPrivateIpsRequest{
 				NicId:      d.Id(),
 				PrivateIps: &stringSlice,
 			}
 
-			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			err = retry.RetryContext(context.Background(), d.Timeout(schema.TimeoutUpdate), func() *retry.RetryError {
 				_, httpResp, err := conn.NicApi.LinkPrivateIps(context.Background()).LinkPrivateIpsRequest(input).Execute()
 				if err != nil {
 					return utils.CheckThrottling(httpResp, err)
@@ -538,68 +495,13 @@ func ResourceOutscaleNicUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	if d.HasChange("private_ips_count") {
-		o, n := d.GetChange("private_ips_count")
-		pips := d.Get("pips").(*schema.Set).List()
-		prips := pips[:0]
-		pip := d.Get("private_ip")
-
-		for _, ip := range pips {
-			if ip != pip {
-				prips = append(prips, ip)
-			}
-		}
-
-		if o != nil && o != 0 && n != nil && n != len(prips) {
-			diff := n.(int) - o.(int)
-
-			// Surplus of IPs, add the diff
-			if diff > 0 {
-				input := oscgo.LinkPrivateIpsRequest{
-					NicId: d.Id(),
-				}
-				input.SetSecondaryPrivateIpCount(int32(diff))
-
-				err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-					var err error
-					_, httpResp, err := conn.NicApi.LinkPrivateIps(context.Background()).LinkPrivateIpsRequest(input).Execute()
-					if err != nil {
-						return utils.CheckThrottling(httpResp, err)
-					}
-					return nil
-				})
-				if err != nil {
-					return fmt.Errorf("Failure to assign Private IPs: %s", err)
-				}
-			}
-
-			if diff < 0 {
-				input := oscgo.UnlinkPrivateIpsRequest{
-					NicId:      d.Id(),
-					PrivateIps: utils.InterfaceSliceToStringSlice(prips[0:int(math.Abs(float64(diff)))]),
-				}
-
-				err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-					_, httpResp, err := conn.NicApi.UnlinkPrivateIps(context.Background()).UnlinkPrivateIpsRequest(input).Execute()
-					if err != nil {
-						return utils.CheckThrottling(httpResp, err)
-					}
-					return nil
-				})
-				if err != nil {
-					return fmt.Errorf("Failure to unassign Private IPs: %s", err)
-				}
-			}
-		}
-	}
-
 	if d.HasChange("security_group_ids") {
 		request := oscgo.UpdateNicRequest{
 			NicId: d.Id(),
 		}
 		request.SetSecurityGroupIds(utils.SetToStringSlice(d.Get("security_group_ids").(*schema.Set)))
 
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		err = retry.RetryContext(context.Background(), d.Timeout(schema.TimeoutUpdate), func() *retry.RetryError {
 			_, httpResp, err := conn.NicApi.UpdateNic(context.Background()).UpdateNicRequest(request).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
@@ -618,7 +520,7 @@ func ResourceOutscaleNicUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 		request.SetDescription(d.Get("description").(string))
 		var err error
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		err = retry.RetryContext(context.Background(), d.Timeout(schema.TimeoutUpdate), func() *retry.RetryError {
 			_, httpResp, err := conn.NicApi.UpdateNic(context.Background()).UpdateNicRequest(request).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)

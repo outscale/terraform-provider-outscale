@@ -37,7 +37,7 @@ const (
 	ReadDefaultTimeout   time.Duration = 5 * time.Minute
 	UpdateDefaultTimeout time.Duration = 10 * time.Minute
 	DeleteDefaultTimeout time.Duration = 5 * time.Minute
-	TestAccVmType        string        = "tinav7.c2r2p2"
+	TestAccVmType        string        = "tinav6.c2r2p2"
 	LinkedPolicyNotFound string        = "5102"
 	InvalidState         string        = "InvalidState"
 	SuffixConfigFilePath string        = "/.osc/config.json"
@@ -389,4 +389,11 @@ func CheckDateFormat(dateFormat string) error {
 		return fmt.Errorf(" Expiration date: '%s' should be after current date '%s'", settingDate, currentDate)
 	}
 	return nil
+}
+
+func GetTypeSetDifferencesForUpdating(oldTypeSet, newTypeSet *schema.Set) (*schema.Set, *schema.Set) {
+	inter := oldTypeSet.Intersection(newTypeSet)
+	toAdd := newTypeSet.Difference(inter)
+	toRemove := oldTypeSet.Difference(inter)
+	return toRemove, toAdd
 }
