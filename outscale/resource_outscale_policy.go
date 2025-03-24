@@ -260,7 +260,7 @@ func getPolicyDocument(conn *oscgo.APIClient, policyOrn, policyVersionId string)
 		return "", err
 	}
 	if _, ok := resp.GetPolicyVersionOk(); !ok {
-		return "", fmt.Errorf("connot found Policy version: %v", policyVersionId)
+		return "", fmt.Errorf("cannot find Policy version: %v", policyVersionId)
 	}
 
 	return *resp.GetPolicyVersion().Body, err

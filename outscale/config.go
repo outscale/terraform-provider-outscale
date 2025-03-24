@@ -2,6 +2,7 @@ package outscale
 
 import (
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -17,7 +18,7 @@ type Config struct {
 	SecretKeyID  string
 	Region       string
 	TokenID      string
-	Endpoints    map[string]interface{}
+	Endpoints    map[string]string
 	X509CertPath string
 	X509KeyPath  string
 	Insecure     bool
@@ -47,29 +48,35 @@ func (c *Config) Client() (*OutscaleClient, error) {
 			Proxy:           http.ProxyFromEnvironment,
 		},
 	}
-	skipClient.Transport = logging.NewTransport("Outscale", skipClient.Transport)
-	skipClient.Transport = NewTransport(c.AccessKeyID, c.SecretKeyID, c.Region, skipClient.Transport)
+
+	skipClient.Transport = logging.NewSubsystemLoggingHTTPTransport("Outscale", skipClient.Transport)
+	endpoint := c.Endpoints["api"]
+	if c.Region == "" && endpoint == "" {
+		return nil, errors.New("'region' or 'endpoints' must be set for provider configuration")
+	}
 
 	basePath := fmt.Sprintf("api.%s.outscale.com", c.Region)
 	oscConfig := oscgo.NewConfiguration()
 
-	if endpoint, ok := c.Endpoints["api"]; ok {
-		basePath = endpoint.(string)
+	if endpoint != "" {
+		basePath = endpoint
 		if strings.Contains(basePath, "://") {
 			if scheme, host, found := strings.Cut(basePath, "://"); found {
 				oscConfig.Scheme = scheme
 				basePath = host
 			}
 		}
+		endpointSplit := strings.Split(basePath, ".")
+		c.Region = endpointSplit[1]
 	}
 
+	skipClient.Transport = NewTransport(c.AccessKeyID, c.SecretKeyID, c.Region, skipClient.Transport)
 	oscConfig.Debug = true
 	oscConfig.HTTPClient = skipClient
 	oscConfig.Host = basePath
 	oscConfig.UserAgent = fmt.Sprintf("terraform-provider-outscale/%s", version.GetVersion())
 
 	oscClient := oscgo.NewAPIClient(oscConfig)
-
 	client := &OutscaleClient{
 		OSCAPI: oscClient,
 	}

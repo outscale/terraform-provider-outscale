@@ -3,6 +3,7 @@ package outscale
 import (
 	"context"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -48,9 +49,12 @@ func (c *frameworkProvider) Client_fw(ctx context.Context, data *ProviderModel, 
 		},
 	}
 
-	skipClient.Transport = logging.NewTransport("Outscale", skipClient.Transport)
+	skipClient.Transport = logging.NewSubsystemLoggingHTTPTransport("Outscale", skipClient.Transport)
 
-	skipClient.Transport = NewTransport(data.AccessKeyId.ValueString(), data.SecretKeyId.ValueString(), data.Region.ValueString(), skipClient.Transport)
+	if data.Region.IsNull() && len(data.Endpoints) == 0 {
+		return nil, errors.New("'region' or 'endpoints' must be set for provider configuration")
+	}
+
 	oscConfig := oscgo.NewConfiguration()
 	basePath := fmt.Sprintf("api.%s.outscale.com", data.Region.ValueString())
 
@@ -62,8 +66,11 @@ func (c *frameworkProvider) Client_fw(ctx context.Context, data *ProviderModel, 
 				basePath = host
 			}
 		}
+		endpointSplit := strings.Split(basePath, ".")
+		data.Region = types.StringValue(endpointSplit[1])
 	}
 
+	skipClient.Transport = NewTransport(data.AccessKeyId.ValueString(), data.SecretKeyId.ValueString(), data.Region.ValueString(), skipClient.Transport)
 	oscConfig.Debug = true
 	oscConfig.HTTPClient = skipClient
 	oscConfig.Host = basePath
@@ -98,7 +105,7 @@ func isProfileSet(data *ProviderModel) (bool, error) {
 		}
 		jsonFile, err := os.ReadFile(configFilePath)
 		if err != nil {
-			return isProfSet, fmt.Errorf("%v \n Connot found configue file: %v", err, configFilePath)
+			return isProfSet, fmt.Errorf("Unable to read config file '%v', Error: %w", configFilePath, err)
 		}
 		profile := gjson.GetBytes(jsonFile, profileName)
 		if !gjson.Valid(profile.String()) {
@@ -106,7 +113,7 @@ func isProfileSet(data *ProviderModel) (bool, error) {
 		}
 		if !profile.Get("access_key").Exists() ||
 			!profile.Get("secret_key").Exists() {
-			return isProfSet, fmt.Errorf("profile 'access_key' or 'secret_key' are not defined! ")
+			return isProfSet, errors.New("profile 'access_key' or 'secret_key' are not defined! ")
 		}
 		setProfile(data, profile)
 		isProfSet = true
@@ -148,8 +155,8 @@ func setProfile(data *ProviderModel, profile gjson.Result) {
 	}
 	if len(data.Endpoints) == 0 {
 		if profile.Get("endpoints").Exists() {
-			endpoints := profile.Get("endpoints").Value().(map[string]interface{})
-			if endpoint := endpoints["api"].(string); endpoint != "" {
+			endpoints := profile.Get("endpoints").Value().(map[string]string)
+			if endpoint := endpoints["api"]; endpoint != "" {
 				endp := make([]Endpoints, 1)
 				endp[0].API = types.StringValue(endpoint)
 				data.Endpoints = endp
