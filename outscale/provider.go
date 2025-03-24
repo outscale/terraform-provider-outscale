@@ -1,6 +1,7 @@
 package outscale
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -228,7 +229,7 @@ func providerConfigureClient(d *schema.ResourceData) (interface{}, error) {
 		AccessKeyID:  d.Get("access_key_id").(string),
 		SecretKeyID:  d.Get("secret_key_id").(string),
 		Region:       d.Get("region").(string),
-		Endpoints:    make(map[string]interface{}),
+		Endpoints:    make(map[string]string),
 		X509CertPath: d.Get("x509_cert_path").(string),
 		X509KeyPath:  d.Get("x509_key_path").(string),
 		ConfigFile:   d.Get("config_file").(string),
@@ -237,9 +238,9 @@ func providerConfigureClient(d *schema.ResourceData) (interface{}, error) {
 	}
 	endpointsSet := d.Get("endpoints").(*schema.Set)
 	for _, endpointsSetI := range endpointsSet.List() {
-		endpoints := endpointsSetI.(map[string]interface{})
+		endpoints := endpointsSetI.(map[string]string)
 		for _, endpointServiceName := range endpointServiceNames {
-			config.Endpoints[endpointServiceName] = endpoints[endpointServiceName].(string)
+			config.Endpoints[endpointServiceName] = endpoints[endpointServiceName]
 		}
 	}
 
@@ -275,7 +276,7 @@ func IsOldProfileSet(conf *Config) (bool, error) {
 		}
 		jsonFile, err := os.ReadFile(configFilePath)
 		if err != nil {
-			return isProfSet, fmt.Errorf("%v \nConnot found configue file: %v", err, configFilePath)
+			return isProfSet, fmt.Errorf("Unable to read config file '%v', Error: %w", configFilePath, err)
 		}
 		profile := gjson.GetBytes(jsonFile, profileName)
 		if !gjson.Valid(profile.String()) {
@@ -283,7 +284,7 @@ func IsOldProfileSet(conf *Config) (bool, error) {
 		}
 		if !profile.Get("access_key").Exists() ||
 			!profile.Get("secret_key").Exists() {
-			return isProfSet, fmt.Errorf("profile 'access_key' or 'secret_key' are not defined! ")
+			return isProfSet, errors.New("profile 'access_key' or 'secret_key' are not defined! ")
 		}
 		setOldProfile(conf, profile)
 		isProfSet = true
@@ -326,8 +327,8 @@ func setOldProfile(conf *Config, profile gjson.Result) {
 	}
 	if len(conf.Endpoints) == 0 {
 		if profile.Get("endpoints").Exists() {
-			endpoints := profile.Get("endpoints").Value().(map[string]interface{})
-			if endpoint := endpoints["api"].(string); endpoint != "" {
+			endpoints := profile.Get("endpoints").Value().(map[string]string)
+			if endpoint := endpoints["api"]; endpoint != "" {
 				conf.Endpoints["api"] = endpoint
 			}
 		}
@@ -365,7 +366,7 @@ func setProviderDefaultEnv(conf *Config) {
 	}
 	if len(conf.Endpoints) == 0 {
 		if endpoints := utils.GetEnvVariableValue([]string{"OSC_ENDPOINT_API", "OUTSCALE_OAPI_URL"}); endpoints != "" {
-			endpointsAttributes := make(map[string]interface{})
+			endpointsAttributes := make(map[string]string)
 			endpointsAttributes["api"] = endpoints
 			conf.Endpoints = endpointsAttributes
 		}
