@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -56,7 +57,7 @@ func setOSCAPITags(conn *oscgo.APIClient, d *schema.ResourceData) error {
 	return nil
 }
 
-func setFrameworkTags(ctx context.Context, conn *oscgo.APIClient, create, remove []oscgo.ResourceTag, resourceId string) error {
+func updateFrameworkTags(ctx context.Context, conn *oscgo.APIClient, create, remove []oscgo.ResourceTag, resourceId string) error {
 	if len(remove) > 0 {
 		err := retry.RetryContext(ctx, 60*time.Second, func() *retry.RetryError {
 			_, httpResp, err := conn.TagApi.DeleteTags(context.Background()).DeleteTagsRequest(oscgo.DeleteTagsRequest{
@@ -106,6 +107,17 @@ func createFrameworkTags(ctx context.Context, conn *oscgo.APIClient, tagsToCreat
 	return nil
 }
 
+func getTagsFromApiResponse(respTags []oscgo.ResourceTag) []ResourceTag {
+	tags := make([]ResourceTag, 0, len(respTags))
+	for _, tag := range respTags {
+		rTag := ResourceTag{
+			Key:   types.StringValue(tag.GetKey()),
+			Value: types.StringValue(tag.GetValue()),
+		}
+		tags = append(tags, rTag)
+	}
+	return tags
+}
 func updateBsuTags(conn *oscgo.APIClient, d *schema.ResourceData, addTags map[string]interface{}, delTags map[string]interface{}) error {
 
 	var resp oscgo.ReadVmsResponse
@@ -288,19 +300,6 @@ func diffOSCAPITags(oldTags, newTags []oscgo.ResourceTag) ([]oscgo.ResourceTag, 
 	}
 
 	return tagsOSCAPIFromMap(tagsToCreate), remove
-}
-
-func tagsFromMapLBU(m map[string]interface{}) *[]oscgo.ResourceTag {
-	result := make([]oscgo.ResourceTag, 0, len(m))
-	for k, v := range m {
-		t := oscgo.ResourceTag{
-			Key:   k,
-			Value: v.(string),
-		}
-		result = append(result, t)
-	}
-
-	return &result
 }
 
 func tagsFromSliceMap(m *schema.Set) []oscgo.ResourceTag {

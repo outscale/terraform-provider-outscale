@@ -263,7 +263,7 @@ func (r *netResource) Update(ctx context.Context, req resource.UpdateRequest, re
 
 	if !reflect.DeepEqual(tagsPlan, tagsState) {
 		toRemove, toCreate := diffOSCAPITags(tagsToOSCResourceTag(tagsPlan), tagsToOSCResourceTag(tagsState))
-		err := setFrameworkTags(ctx, r.Client, toCreate, toRemove, resourceId.ValueString())
+		err := updateFrameworkTags(ctx, r.Client, toCreate, toRemove, resourceId.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Unable to update Tags on net resource",
@@ -386,20 +386,12 @@ func setNetState(ctx context.Context, r *netResource, data NetModel) (NetModel, 
 	if len(readResp.GetNets()) == 0 {
 		return data, errors.New("Empty")
 	}
+
 	net := readResp.GetNets()[0]
 	data.Id = types.StringValue(net.GetNetId())
 	if len(*net.Tags) > 0 {
-		tags := make([]ResourceTag, 0, len(*net.Tags))
-		for _, tag := range *net.Tags {
-			rTag := ResourceTag{
-				Key:   types.StringValue(tag.GetKey()),
-				Value: types.StringValue(tag.GetValue()),
-			}
-			tags = append(tags, rTag)
-		}
-		data.Tags = tags
+		data.Tags = getTagsFromApiResponse(net.GetTags())
 	}
-
 	data.NetId = types.StringValue(net.GetNetId())
 	data.DhcpOptionsSetId = types.StringValue(net.GetDhcpOptionsSetId())
 	data.IpRange = types.StringValue(net.GetIpRange())

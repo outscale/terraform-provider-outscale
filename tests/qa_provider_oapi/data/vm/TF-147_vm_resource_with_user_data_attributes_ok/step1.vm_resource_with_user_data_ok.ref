@@ -16,14 +16,16 @@
                     "attributes": {
                         "id": "##id-0##",
                         "keypair_fingerprint": "########",
+                        "keypair_id": "##id-0##",
                         "keypair_name": "KP-TF147",
+                        "keypair_type": "ssh-rsa",
                         "private_key": "########",
                         "public_key": null,
                         "request_id": "########",
+                        "tags": [],
                         "timeouts": null
                     },
-                    "sensitive_attributes": [],
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJyZWFkIjo2MDAwMDAwMDAwMDB9fQ=="
+                    "sensitive_attributes": []
                 }
             ]
         },

@@ -20,11 +20,11 @@
                         "keypairs": [
                             {
                                 "keypair_fingerprint": "########",
-                                "keypair_name": "keyname_test_"
+                                "keypair_name": "keyname_test_2"
                             },
                             {
                                 "keypair_fingerprint": "########",
-                                "keypair_name": "keyname_test_2"
+                                "keypair_name": "keyname_test_"
                             }
                         ],
                         "request_id": "########"
@@ -44,14 +44,16 @@
                     "attributes": {
                         "id": "##id-1##",
                         "keypair_fingerprint": "########",
+                        "keypair_id": "##id-1##",
                         "keypair_name": "keyname_test_",
+                        "keypair_type": "ssh-rsa",
                         "private_key": "########",
                         "public_key": null,
                         "request_id": "########",
+                        "tags": [],
                         "timeouts": null
                     },
-                    "sensitive_attributes": [],
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJyZWFkIjo2MDAwMDAwMDAwMDB9fQ=="
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -66,14 +68,16 @@
                     "attributes": {
                         "id": "##id-2##",
                         "keypair_fingerprint": "########",
+                        "keypair_id": "##id-2##",
                         "keypair_name": "keyname_test_2",
+                        "keypair_type": "ssh-rsa",
                         "private_key": "########",
                         "public_key": null,
                         "request_id": "########",
+                        "tags": [],
                         "timeouts": null
                     },
-                    "sensitive_attributes": [],
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJyZWFkIjo2MDAwMDAwMDAwMDB9fQ=="
+                    "sensitive_attributes": []
                 }
             ]
         }

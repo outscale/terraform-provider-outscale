@@ -80,7 +80,6 @@ func Provider() *schema.Provider {
 
 		ResourcesMap: map[string]*schema.Resource{
 			"outscale_vm":                                ResourceOutscaleVM(),
-			"outscale_keypair":                           ResourceOutscaleKeyPair(),
 			"outscale_image":                             ResourceOutscaleImage(),
 			"outscale_internet_service_link":             ResourceOutscaleInternetServiceLink(),
 			"outscale_internet_service":                  ResourceOutscaleInternetService(),
