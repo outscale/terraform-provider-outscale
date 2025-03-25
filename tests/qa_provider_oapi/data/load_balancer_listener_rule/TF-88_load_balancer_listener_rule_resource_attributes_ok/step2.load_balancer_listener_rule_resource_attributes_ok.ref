@@ -16,14 +16,16 @@
                     "attributes": {
                         "id": "##id-0##",
                         "keypair_fingerprint": "########",
+                        "keypair_id": "##id-0##",
                         "keypair_name": "KP-TF88",
+                        "keypair_type": "ssh-rsa",
                         "private_key": "########",
                         "public_key": null,
                         "request_id": "########",
+                        "tags": [],
                         "timeouts": null
                     },
-                    "sensitive_attributes": [],
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJyZWFkIjo2MDAwMDAwMDAwMDB9fQ=="
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -243,7 +245,7 @@
                         "backend_vm_ids": [
                             "##id-1##"
                         ],
-                        "id": "##id-11##",
+                        "id": "##id-2##",
                         "load_balancer_name": "########",
                         "request_id": "########"
                     },
@@ -267,15 +269,15 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "account_id": "##id-12##",
+                        "account_id": "##id-11##",
                         "description": "test sg-group-lbur",
-                        "id": "##id-13##",
+                        "id": "##id-12##",
                         "inbound_rules": [],
                         "net_id": "",
                         "outbound_rules": [],
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
-                        "security_group_id": "##id-13##",
+                        "security_group_id": "##id-12##",
                         "security_group_name": "SG-inteLbulist",
                         "tag": null,
                         "tags": []
@@ -305,7 +307,7 @@
                                         "link_date": "########",
                                         "state": "attached",
                                         "tags": [],
-                                        "volume_id": "##id-14##"
+                                        "volume_id": "##id-13##"
                                     }
                                 ],
                                 "device_name": "/dev/sda1"
@@ -318,7 +320,7 @@
                         "get_admin_password": null,
                         "hypervisor": "xen",
                         "id": "##id-1##",
-                        "image_id": "##id-15##",
+                        "image_id": "##id-14##",
                         "is_source_dest_checked": false,
                         "keypair_name": "KP-TF88",
                         "launch_number": 0,
@@ -339,16 +341,16 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-16##",
+                        "reservation_id": "##id-15##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
                         "security_group_ids": [
-                            "##id-13##"
+                            "##id-12##"
                         ],
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-13##",
+                                "security_group_id": "##id-12##",
                                 "security_group_name": "SG-inteLbulist"
                             }
                         ],
