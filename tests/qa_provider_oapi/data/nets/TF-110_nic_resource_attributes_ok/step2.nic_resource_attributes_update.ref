@@ -24,7 +24,8 @@
                         "tenancy": "default",
                         "timeouts": null
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -74,6 +75,7 @@
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
                         "outscale_net.outscale_net",
@@ -135,6 +137,7 @@
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
                         "outscale_net.outscale_net",
@@ -175,6 +178,7 @@
                         "tags": []
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net"
@@ -204,6 +208,7 @@
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "dependencies": [
                         "outscale_net.outscale_net"
                     ]

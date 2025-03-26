@@ -23,7 +23,8 @@
                         "vm_id": "##id-0##",
                         "vm_state": "running"
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -47,7 +48,8 @@
                         "tags": [],
                         "timeouts": null
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -74,6 +76,7 @@
                         "tags": []
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA=="
                 }
             ]
@@ -114,6 +117,7 @@
                         "image_id": "##id-5##",
                         "is_source_dest_checked": false,
                         "keypair_name": "KP-TF149",
+                        "keypair_name_wo": null,
                         "launch_number": 0,
                         "nested_virtualization": false,
                         "net_id": "",
@@ -156,6 +160,7 @@
                         "vm_type": "###vm_type###"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
                         "outscale_keypair.my_keypair",

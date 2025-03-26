@@ -24,6 +24,7 @@
                         "user_name": "test_integ"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA=="
                 }
             ]

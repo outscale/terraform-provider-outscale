@@ -61,7 +61,7 @@
                         "source_security_group": [
                             {
                                 "security_group_account_id": "##id-4##",
-                                "security_group_name": "terraform-sg-lbu-TF181-2"
+                                "security_group_name": "terraform-sg-lbu-TF181-1"
                             }
                         ],
                         "subnets": [
@@ -78,6 +78,7 @@
                         ]
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net",
@@ -107,7 +108,8 @@
                         "tenancy": "default",
                         "timeouts": null
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -142,6 +144,7 @@
                         "tags": []
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net"
@@ -180,6 +183,7 @@
                         "tags": []
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net"
@@ -209,6 +213,7 @@
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "dependencies": [
                         "outscale_net.outscale_net"
                     ]

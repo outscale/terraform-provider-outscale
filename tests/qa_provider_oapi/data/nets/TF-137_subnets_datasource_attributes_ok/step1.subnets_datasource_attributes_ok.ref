@@ -21,30 +21,11 @@
                         "subnets": [
                             {
                                 "available_ips_count": "########",
-                                "ip_range": "10.0.10.0/24",
-                                "map_public_ip_on_launch": false,
-                                "net_id": "##id-1##",
-                                "state": "available",
-                                "subnet_id": "##id-2##",
-                                "subregion_name": "us-east-2a",
-                                "tags": [
-                                    {
-                                        "key": "Key",
-                                        "value": "value-tags"
-                                    },
-                                    {
-                                        "key": "name-tf137",
-                                        "value": "subnet-tags-1"
-                                    }
-                                ]
-                            },
-                            {
-                                "available_ips_count": "########",
                                 "ip_range": "10.0.20.0/28",
                                 "map_public_ip_on_launch": false,
                                 "net_id": "##id-1##",
                                 "state": "available",
-                                "subnet_id": "##id-3##",
+                                "subnet_id": "##id-2##",
                                 "subregion_name": "us-east-2b",
                                 "tags": [
                                     {
@@ -56,10 +37,30 @@
                                         "value": "subnet-tags-2"
                                     }
                                 ]
+                            },
+                            {
+                                "available_ips_count": "########",
+                                "ip_range": "10.0.10.0/24",
+                                "map_public_ip_on_launch": false,
+                                "net_id": "##id-1##",
+                                "state": "available",
+                                "subnet_id": "##id-3##",
+                                "subregion_name": "us-east-2a",
+                                "tags": [
+                                    {
+                                        "key": "Key",
+                                        "value": "value-tags"
+                                    },
+                                    {
+                                        "key": "name-tf137",
+                                        "value": "subnet-tags-1"
+                                    }
+                                ]
                             }
                         ]
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -83,7 +84,7 @@
                                 "map_public_ip_on_launch": false,
                                 "net_id": "##id-1##",
                                 "state": "available",
-                                "subnet_id": "##id-3##",
+                                "subnet_id": "##id-2##",
                                 "subregion_name": "us-east-2b",
                                 "tags": [
                                     {
@@ -98,7 +99,8 @@
                             }
                         ]
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -122,7 +124,7 @@
                                 "map_public_ip_on_launch": false,
                                 "net_id": "##id-1##",
                                 "state": "available",
-                                "subnet_id": "##id-2##",
+                                "subnet_id": "##id-3##",
                                 "subregion_name": "us-east-2a",
                                 "tags": [
                                     {
@@ -137,7 +139,8 @@
                             }
                         ]
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -161,7 +164,7 @@
                                 "map_public_ip_on_launch": false,
                                 "net_id": "##id-1##",
                                 "state": "available",
-                                "subnet_id": "##id-2##",
+                                "subnet_id": "##id-3##",
                                 "subregion_name": "us-east-2a",
                                 "tags": [
                                     {
@@ -176,7 +179,8 @@
                             }
                         ]
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -196,30 +200,11 @@
                         "subnets": [
                             {
                                 "available_ips_count": "########",
-                                "ip_range": "10.0.10.0/24",
-                                "map_public_ip_on_launch": false,
-                                "net_id": "##id-1##",
-                                "state": "available",
-                                "subnet_id": "##id-2##",
-                                "subregion_name": "us-east-2a",
-                                "tags": [
-                                    {
-                                        "key": "Key",
-                                        "value": "value-tags"
-                                    },
-                                    {
-                                        "key": "name-tf137",
-                                        "value": "subnet-tags-1"
-                                    }
-                                ]
-                            },
-                            {
-                                "available_ips_count": "########",
                                 "ip_range": "10.0.20.0/28",
                                 "map_public_ip_on_launch": false,
                                 "net_id": "##id-1##",
                                 "state": "available",
-                                "subnet_id": "##id-3##",
+                                "subnet_id": "##id-2##",
                                 "subregion_name": "us-east-2b",
                                 "tags": [
                                     {
@@ -231,10 +216,30 @@
                                         "value": "subnet-tags-2"
                                     }
                                 ]
+                            },
+                            {
+                                "available_ips_count": "########",
+                                "ip_range": "10.0.10.0/24",
+                                "map_public_ip_on_launch": false,
+                                "net_id": "##id-1##",
+                                "state": "available",
+                                "subnet_id": "##id-3##",
+                                "subregion_name": "us-east-2a",
+                                "tags": [
+                                    {
+                                        "key": "Key",
+                                        "value": "value-tags"
+                                    },
+                                    {
+                                        "key": "name-tf137",
+                                        "value": "subnet-tags-1"
+                                    }
+                                ]
                             }
                         ]
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -258,7 +263,7 @@
                                 "map_public_ip_on_launch": false,
                                 "net_id": "##id-1##",
                                 "state": "available",
-                                "subnet_id": "##id-3##",
+                                "subnet_id": "##id-2##",
                                 "subregion_name": "us-east-2b",
                                 "tags": [
                                     {
@@ -273,7 +278,8 @@
                             }
                         ]
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -297,7 +303,7 @@
                                 "map_public_ip_on_launch": false,
                                 "net_id": "##id-1##",
                                 "state": "available",
-                                "subnet_id": "##id-2##",
+                                "subnet_id": "##id-3##",
                                 "subregion_name": "us-east-2a",
                                 "tags": [
                                     {
@@ -312,7 +318,8 @@
                             }
                         ]
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -335,7 +342,8 @@
                         "tenancy": "default",
                         "timeouts": null
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -349,13 +357,13 @@
                     "schema_version": 0,
                     "attributes": {
                         "available_ips_count": "########",
-                        "id": "##id-2##",
+                        "id": "##id-3##",
                         "ip_range": "10.0.10.0/24",
                         "map_public_ip_on_launch": false,
                         "net_id": "##id-1##",
                         "request_id": "########",
                         "state": "available",
-                        "subnet_id": "##id-2##",
+                        "subnet_id": "##id-3##",
                         "subregion_name": "us-east-2a",
                         "tags": [
                             {
@@ -370,6 +378,7 @@
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "dependencies": [
                         "outscale_net.outscale_net"
                     ]
@@ -386,13 +395,13 @@
                     "schema_version": 0,
                     "attributes": {
                         "available_ips_count": "########",
-                        "id": "##id-3##",
+                        "id": "##id-2##",
                         "ip_range": "10.0.20.0/28",
                         "map_public_ip_on_launch": false,
                         "net_id": "##id-1##",
                         "request_id": "########",
                         "state": "available",
-                        "subnet_id": "##id-3##",
+                        "subnet_id": "##id-2##",
                         "subregion_name": "us-east-2b",
                         "tags": [
                             {
@@ -407,6 +416,7 @@
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "dependencies": [
                         "outscale_net.outscale_net"
                     ]

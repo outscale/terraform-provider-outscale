@@ -23,6 +23,7 @@
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "dependencies": [
                         "outscale_net.nomad"
                     ]
@@ -47,6 +48,7 @@
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "dependencies": [
                         "outscale_internet_service.nomad",
                         "outscale_net.nomad"
@@ -79,6 +81,7 @@
                         "tags": []
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_internet_service.nomad",
@@ -113,7 +116,8 @@
                         "tenancy": "default",
                         "timeouts": null
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -144,6 +148,7 @@
                         "vm_id": ""
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxODAwMDAwMDAwMDAwLCJkZWxldGUiOjE4MDAwMDAwMDAwMDB9fQ=="
                 }
             ]
@@ -175,6 +180,7 @@
                         "vm_id": ""
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxODAwMDAwMDAwMDAwLCJkZWxldGUiOjE4MDAwMDAwMDAwMDB9fQ=="
                 }
             ]
@@ -206,6 +212,7 @@
                         "vm_id": ""
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxODAwMDAwMDAwMDAwLCJkZWxldGUiOjE4MDAwMDAwMDAwMDB9fQ=="
                 }
             ]
@@ -238,6 +245,7 @@
                         "vm_id": "##id-11##"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
                         "outscale_net.nomad",
@@ -277,6 +285,7 @@
                         "vm_id": "##id-14##"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
                         "outscale_net.nomad",
@@ -315,6 +324,7 @@
                         "vm_id": ""
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "dependencies": [
                         "outscale_internet_service.nomad",
                         "outscale_net.nomad",
@@ -350,6 +360,7 @@
                         "vm_id": ""
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "dependencies": [
                         "outscale_internet_service.nomad",
                         "outscale_nat_service.adm",
@@ -397,6 +408,7 @@
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "dependencies": [
                         "outscale_net.nomad"
                     ]
@@ -437,6 +449,7 @@
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "dependencies": [
                         "outscale_net.nomad"
                     ]
@@ -462,6 +475,7 @@
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "dependencies": [
                         "outscale_net.nomad",
                         "outscale_route_table.public",
@@ -489,6 +503,7 @@
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "dependencies": [
                         "outscale_net.nomad",
                         "outscale_route_table.nat",
@@ -528,6 +543,7 @@
                         "tags": []
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.nomad"
@@ -566,6 +582,7 @@
                         "tags": []
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.nomad"
@@ -597,6 +614,7 @@
                         "to_port_range": 0
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.nomad",
@@ -629,6 +647,7 @@
                         "to_port_range": 0
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.nomad",
@@ -661,6 +680,7 @@
                         "to_port_range": 22
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.nomad",
@@ -694,6 +714,7 @@
                         "to_port_range": 80
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.nomad",
@@ -727,6 +748,7 @@
                         "to_port_range": 1024
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.nomad",
@@ -761,6 +783,7 @@
                         "to_port_range": 1024
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.nomad",
@@ -798,6 +821,7 @@
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "dependencies": [
                         "outscale_net.nomad"
                     ]
@@ -831,6 +855,7 @@
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "dependencies": [
                         "outscale_net.nomad"
                     ]
@@ -874,6 +899,7 @@
                         "image_id": "##id-26##",
                         "is_source_dest_checked": true,
                         "keypair_name": "",
+                        "keypair_name_wo": null,
                         "launch_number": 0,
                         "nested_virtualization": false,
                         "net_id": "##id-1##",
@@ -1003,6 +1029,7 @@
                         "vm_type": "###vm_type###"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
                         "outscale_net.nomad",
@@ -1041,6 +1068,7 @@
                         "image_id": "##id-26##",
                         "is_source_dest_checked": true,
                         "keypair_name": "",
+                        "keypair_name_wo": null,
                         "launch_number": 0,
                         "nested_virtualization": false,
                         "net_id": "##id-1##",
@@ -1170,6 +1198,7 @@
                         "vm_type": "###vm_type###"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
                         "outscale_net.nomad",
@@ -1208,6 +1237,7 @@
                         "image_id": "##id-26##",
                         "is_source_dest_checked": true,
                         "keypair_name": "",
+                        "keypair_name_wo": null,
                         "launch_number": 0,
                         "nested_virtualization": false,
                         "net_id": "##id-1##",
@@ -1337,6 +1367,7 @@
                         "vm_type": "###vm_type###"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
                         "outscale_net.nomad",
@@ -1383,6 +1414,7 @@
                         "image_id": "##id-26##",
                         "is_source_dest_checked": true,
                         "keypair_name": "",
+                        "keypair_name_wo": null,
                         "launch_number": 0,
                         "nested_virtualization": false,
                         "net_id": "##id-1##",
@@ -1512,6 +1544,7 @@
                         "vm_type": "###vm_type###"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
                         "outscale_net.nomad",
@@ -1550,6 +1583,7 @@
                         "image_id": "##id-26##",
                         "is_source_dest_checked": true,
                         "keypair_name": "",
+                        "keypair_name_wo": null,
                         "launch_number": 0,
                         "nested_virtualization": false,
                         "net_id": "##id-1##",
@@ -1679,6 +1713,7 @@
                         "vm_type": "###vm_type###"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
                         "outscale_net.nomad",
@@ -1717,6 +1752,7 @@
                         "image_id": "##id-26##",
                         "is_source_dest_checked": true,
                         "keypair_name": "",
+                        "keypair_name_wo": null,
                         "launch_number": 0,
                         "nested_virtualization": false,
                         "net_id": "##id-1##",
@@ -1846,6 +1882,7 @@
                         "vm_type": "###vm_type###"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
                         "outscale_net.nomad",

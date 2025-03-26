@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
@@ -12,7 +13,8 @@ import (
 )
 
 var (
-	_ provider.Provider = &frameworkProvider{}
+	_ provider.Provider                       = &frameworkProvider{}
+	_ provider.ProviderWithEphemeralResources = &frameworkProvider{}
 )
 
 func New(version string) provider.Provider {
@@ -193,6 +195,7 @@ func (p *frameworkProvider) Configure(ctx context.Context, req provider.Configur
 	}
 	resp.DataSourceData = *client
 	resp.ResourceData = *client
+	resp.EphemeralResourceData = *client
 }
 
 func (p *frameworkProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
@@ -218,5 +221,11 @@ func (p *frameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		NewResourceRouteTable,
 		NewResourceRouteTableLink,
 		NewResourceMainRouteTableLink,
+	}
+}
+
+func (p *frameworkProvider) EphemeralResources(_ context.Context) []func() ephemeral.EphemeralResource {
+	return []func() ephemeral.EphemeralResource{
+		NewKeypairEphemeralResource,
 	}
 }

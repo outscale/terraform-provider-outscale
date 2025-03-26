@@ -28,6 +28,7 @@
                         "resources_count": 1
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA=="
                 }
             ]
@@ -55,6 +56,7 @@
                         "resources_count": 0
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA=="
                 }
             ]
@@ -82,6 +84,7 @@
                         "resources_count": 1
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA=="
                 }
             ]
@@ -105,6 +108,7 @@
                         "version_id": "##id-8##"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_policy.policy-2"
@@ -132,6 +136,7 @@
                         "user_name": "TF-User-0-3"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA=="
                 },
                 {
@@ -148,6 +153,7 @@
                         "user_name": "TF-User-1-3"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA=="
                 },
                 {
@@ -164,6 +170,7 @@
                         "user_name": "TF-User-2-3"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA=="
                 }
             ]
@@ -196,6 +203,7 @@
                         "user_name": "User-TF-RW-11"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_policy.policy-1"
@@ -231,6 +239,7 @@
                         "user_name": "User-TF-RW-22"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_policy.policy-2"
@@ -273,6 +282,7 @@
                         "user_group_name": "Group-TF-test-1"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_policy.policy-1",
@@ -312,13 +322,6 @@
                                 "creation_date": "########",
                                 "last_modification_date": "########",
                                 "path": "/",
-                                "user_id": "##id-9##",
-                                "user_name": "TF-User-0-3"
-                            },
-                            {
-                                "creation_date": "########",
-                                "last_modification_date": "########",
-                                "path": "/",
                                 "user_id": "##id-11##",
                                 "user_name": "TF-User-2-3"
                             },
@@ -328,12 +331,20 @@
                                 "path": "/",
                                 "user_id": "##id-10##",
                                 "user_name": "TF-User-1-3"
+                            },
+                            {
+                                "creation_date": "########",
+                                "last_modification_date": "########",
+                                "path": "/",
+                                "user_id": "##id-9##",
+                                "user_name": "TF-User-0-3"
                             }
                         ],
                         "user_group_id": "##id-15##",
                         "user_group_name": "Group-TF-RO"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_policy.policy-RO",

@@ -23,7 +23,8 @@
                         "request_id": "########",
                         "upload_date": "########"
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -49,6 +50,7 @@
                         "upload_date": "########"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA=="
                 }
             ]

@@ -37,7 +37,8 @@
                         "volume_id": "##id-0##",
                         "volume_type": "io1"
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -74,6 +75,7 @@
                         "volume_type": "io1"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA=="
                 }
             ]
