@@ -37,7 +37,8 @@
                             }
                         ]
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -73,7 +74,8 @@
                             }
                         ]
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -105,7 +107,8 @@
                             }
                         ]
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -136,6 +139,7 @@
                         "virtual_gateway_id": "##id-1##"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA=="
                 }
             ]
@@ -163,6 +167,7 @@
                         "virtual_gateway_id": "##id-4##"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA=="
                 }
             ]

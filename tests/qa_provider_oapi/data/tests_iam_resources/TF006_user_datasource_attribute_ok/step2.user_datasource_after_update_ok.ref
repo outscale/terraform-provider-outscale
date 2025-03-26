@@ -24,7 +24,8 @@
                         "state": "INACTIVE",
                         "user_name": "User-TF-65"
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -53,7 +54,8 @@
                         "states": null,
                         "user_name": "User-TF-65"
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -75,7 +77,8 @@
                         "user_id": "##id-3##",
                         "user_name": "User-TF-65"
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -99,6 +102,7 @@
                         "user_name": "User-TF-65"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "dependencies": [
                         "outscale_user.user1"
                     ]
@@ -124,6 +128,7 @@
                         "user_name": "User-TF-65"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA=="
                 }
             ]

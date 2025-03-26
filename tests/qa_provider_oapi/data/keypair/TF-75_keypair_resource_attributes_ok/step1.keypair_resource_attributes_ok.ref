@@ -25,7 +25,8 @@
                         "tags": [],
                         "timeouts": null
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         }

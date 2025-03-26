@@ -24,7 +24,8 @@
                         "state": "INACTIVE",
                         "user_name": null
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -47,7 +48,8 @@
                         "timeouts": null,
                         "user_name": null
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         }

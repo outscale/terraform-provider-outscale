@@ -15,4 +15,3 @@ resource "outscale_policy_version" "version-03" {
   document = file("data/policies_files/policyV3.json")
   set_as_default = true
 }
-

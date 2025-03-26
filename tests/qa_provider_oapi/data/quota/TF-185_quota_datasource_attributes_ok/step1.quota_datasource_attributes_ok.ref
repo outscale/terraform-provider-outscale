@@ -30,7 +30,8 @@
                         ],
                         "request_id": "########"
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -97,6 +98,7 @@
                         "tags": []
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA=="
                 }
             ]

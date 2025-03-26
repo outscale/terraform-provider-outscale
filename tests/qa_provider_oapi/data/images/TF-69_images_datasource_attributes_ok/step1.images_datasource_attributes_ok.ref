@@ -24,8 +24,8 @@
                                         "delete_on_vm_deletion": true,
                                         "iops": 0,
                                         "snapshot_id": "##id-1##",
-                                        "volume_size": 10,
-                                        "volume_type": "standard"
+                                        "volume_size": 50,
+                                        "volume_type": "gp2"
                                     }
                                 ],
                                 "device_name": "/dev/sda1",
@@ -76,6 +76,7 @@
                         "vm_id": "##id-3##"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoyNDAwMDAwMDAwMDAwLCJkZWxldGUiOjI0MDAwMDAwMDAwMDAsInVwZGF0ZSI6MjQwMDAwMDAwMDAwMH19",
                     "dependencies": [
                         "outscale_security_group.my_sgImgs",
@@ -107,6 +108,7 @@
                         "tags": []
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA=="
                 }
             ]
@@ -147,6 +149,7 @@
                         "image_id": "##id-6##",
                         "is_source_dest_checked": false,
                         "keypair_name": "",
+                        "keypair_name_wo": null,
                         "launch_number": 0,
                         "nested_virtualization": false,
                         "net_id": "",
@@ -189,6 +192,7 @@
                         "vm_type": "###vm_type###"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
                         "outscale_security_group.my_sgImgs"

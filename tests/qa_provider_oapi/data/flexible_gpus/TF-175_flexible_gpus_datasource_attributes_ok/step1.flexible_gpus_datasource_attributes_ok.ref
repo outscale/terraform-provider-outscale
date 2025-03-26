@@ -25,7 +25,8 @@
                         "subregion_name": "eu-west-2a",
                         "vm_id": "##id-1##"
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -49,7 +50,8 @@
                         "subregion_name": "eu-west-2a",
                         "vm_id": "##id-1##"
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -66,27 +68,28 @@
                         "flexible_gpus": [
                             {
                                 "delete_on_vm_deletion": true,
-                                "flexible_gpu_id": "##id-0##",
-                                "generation": "v5",
-                                "model_name": "nvidia-p6",
-                                "state": "attached",
-                                "subregion_name": "eu-west-2a",
-                                "vm_id": "##id-1##"
-                            },
-                            {
-                                "delete_on_vm_deletion": true,
                                 "flexible_gpu_id": "##id-2##",
                                 "generation": "v5",
                                 "model_name": "nvidia-p6",
                                 "state": "allocated",
                                 "subregion_name": "eu-west-2a",
                                 "vm_id": ""
+                            },
+                            {
+                                "delete_on_vm_deletion": true,
+                                "flexible_gpu_id": "##id-0##",
+                                "generation": "v5",
+                                "model_name": "nvidia-p6",
+                                "state": "attached",
+                                "subregion_name": "eu-west-2a",
+                                "vm_id": "##id-1##"
                             }
                         ],
                         "id": "##id-3##",
                         "request_id": "########"
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -109,7 +112,8 @@
                         "timeouts": null,
                         "vm_id": ""
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -132,7 +136,8 @@
                         "timeouts": null,
                         "vm_id": ""
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -154,6 +159,7 @@
                         "vm_id": "##id-1##"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjozMDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6NjAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
                         "outscale_flexible_gpu.fGPU-1",
@@ -184,7 +190,8 @@
                         "tags": [],
                         "timeouts": null
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -211,6 +218,7 @@
                         "tags": []
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA=="
                 }
             ]
@@ -251,6 +259,7 @@
                         "image_id": "##id-9##",
                         "is_source_dest_checked": false,
                         "keypair_name": "KP-TF1775",
+                        "keypair_name_wo": null,
                         "launch_number": 0,
                         "nested_virtualization": false,
                         "net_id": "",
@@ -293,6 +302,7 @@
                         "vm_type": "tinav5.c2r2p1"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
                         "outscale_keypair.my_keypair",

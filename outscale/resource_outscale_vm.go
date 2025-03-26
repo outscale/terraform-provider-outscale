@@ -9,8 +9,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
@@ -32,7 +34,10 @@ func ResourceOutscaleVM() *schema.Resource {
 			Update: schema.DefaultTimeout(5 * time.Minute),
 			Delete: schema.DefaultTimeout(5 * time.Minute),
 		},
-
+		//Schema: //omitted for brevity
+		ValidateRawResourceConfigFuncs: []schema.ValidateRawResourceConfigFunc{
+			validation.PreferWriteOnlyAttribute(cty.GetAttrPath("keypair_name"), cty.GetAttrPath("keypair_name_wo")),
+		},
 		Schema: map[string]*schema.Schema{
 			"block_device_mappings": {
 				Type:     schema.TypeList,
@@ -134,6 +139,11 @@ func ResourceOutscaleVM() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
+			},
+			"keypair_name_wo": {
+				Type:      schema.TypeString,
+				Optional:  true,
+				WriteOnly: true,
 			},
 			"primary_nic": {
 				Type:     schema.TypeSet,
@@ -723,7 +733,7 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 	vState := d.Get("state").(string)
 	if vState != "stopped" && vState != "running" {
-		return fmt.Errorf("Error: state should be `stopped or running`")
+		return errors.New("error: state must be `stopped or running`")
 	}
 	vmStateTarget := []string{"running"}
 	if vState == "stopped" {
@@ -743,11 +753,11 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 	})
 
 	if err != nil {
-		return fmt.Errorf("Error launching source VM: %s", utils.GetErrorResponse(err))
+		return fmt.Errorf("error launching source VM: %v", utils.GetErrorResponse(err))
 	}
 
 	if !resp.HasVms() || len(resp.GetVms()) == 0 {
-		return errors.New("Error launching source VM: no VMs returned in response")
+		return errors.New("error launching source VM: no VMs returned in response")
 	}
 
 	vm := resp.GetVms()[0]
@@ -1194,7 +1204,7 @@ func buildCreateVmsRequest(d *schema.ResourceData) (oscgo.CreateVmsRequest, []ma
 
 	if nics := buildNetworkOApiInterfaceOpts(d); len(nics) > 0 {
 		if subNet != "" || placement != nil {
-			return request, nil, errors.New("If you specify nics parameter, you must not specify subnet_id and placement parameters.")
+			return request, nil, errors.New("if you specify nics parameter, you must not specify subnet_id and placement parameters")
 		}
 		request.SetNics(nics)
 	}
@@ -1213,7 +1223,7 @@ func buildCreateVmsRequest(d *schema.ResourceData) (oscgo.CreateVmsRequest, []ma
 
 	nestedVirtualization := d.Get("nested_virtualization").(bool)
 	if tenacy := d.Get("placement_tenancy").(string); nestedVirtualization && tenacy != "dedicated" {
-		return request, nil, errors.New("The field nested_virtualization can be true, only if placement_tenancy is \"dedicated\".")
+		return request, nil, errors.New("the field nested_virtualization can be true only if placement_tenancy is \"dedicated\"")
 	}
 	request.SetNestedVirtualization(nestedVirtualization)
 
@@ -1232,7 +1242,6 @@ func buildCreateVmsRequest(d *schema.ResourceData) (oscgo.CreateVmsRequest, []ma
 	if v := d.Get("keypair_name").(string); v != "" {
 		request.SetKeypairName(v)
 	}
-
 	if v, ok := d.GetOk("vm_initiated_shutdown_behavior"); ok && v != "" {
 		request.SetVmInitiatedShutdownBehavior(v.(string))
 	}
@@ -1241,6 +1250,16 @@ func buildCreateVmsRequest(d *schema.ResourceData) (oscgo.CreateVmsRequest, []ma
 		request.SetPerformance(v)
 	}
 
+	kpName, diags := d.GetRawConfigAt(cty.GetAttrPath("keypair_name_wo"))
+	if diags.HasError() {
+		return request, bsuMapsTags, fmt.Errorf("error retrieving write-only argument: keypair_name_wo: %v", diags)
+	}
+	if !kpName.Type().Equals(cty.String) {
+		return request, bsuMapsTags, errors.New("error retrieving write-only argument: password_wo - retrieved config value is not a string")
+	}
+	if !kpName.IsNull() {
+		request.SetKeypairName(kpName.AsString())
+	}
 	return request, bsuMapsTags, nil
 }
 
@@ -1281,11 +1300,11 @@ func expandBlockDeviceBSU(bsu map[string]interface{}, deviceName string) (oscgo.
 	volumeSize := int32(bsu["volume_size"].(int))
 
 	if snapshotID == "" && volumeSize == 0 {
-		return bsuToCreate, nil, fmt.Errorf("Error: 'volume_size' parameter is required if the volume is not created from a snapshot (SnapshotId unspecified)")
+		return bsuToCreate, nil, fmt.Errorf("error: 'volume_size' parameter is required if the volume is not created from a snapshot (SnapshotId unspecified)")
 	}
-	if iops, _ := bsu["iops"]; iops.(int) > 0 {
+	if iops := bsu["iops"]; iops.(int) > 0 {
 		if volumeType != "io1" {
-			return bsuToCreate, nil, fmt.Errorf("Error: %s", utils.VolumeIOPSError)
+			return bsuToCreate, nil, fmt.Errorf("error: %s", utils.VolumeIOPSError)
 		}
 		bsuToCreate.SetIops(int32(iops.(int)))
 	} else {
@@ -1303,7 +1322,7 @@ func expandBlockDeviceBSU(bsu map[string]interface{}, deviceName string) (oscgo.
 	if deleteOnVMDeletion, ok := bsu["delete_on_vm_deletion"]; ok && deleteOnVMDeletion != "" {
 		bsuToCreate.SetDeleteOnVmDeletion(cast.ToBool(deleteOnVMDeletion))
 	}
-	if bsu_tags, _ := bsu["tags"]; len(bsu_tags.(*schema.Set).List()) != 0 {
+	if bsu_tags := bsu["tags"]; len(bsu_tags.(*schema.Set).List()) != 0 {
 		bsuMapsTags[deviceName] = bsu_tags
 	}
 
@@ -1375,7 +1394,7 @@ func expandPlacement(d *schema.ResourceData) (*oscgo.Placement, error) {
 		if v := tenancy.(string); v == "default" || v == "dedicated" {
 			placement.SetTenancy(v)
 		} else {
-			return nil, errors.New("The value of field placement_tenancy can be only \"default\" or \"dedicated\"")
+			return nil, errors.New("the value of field placement_tenancy can be only \"default\" or \"dedicated\"")
 		}
 	}
 	if sOK || tOK {
@@ -1413,7 +1432,7 @@ func vmStateRefreshFunc(conn *oscgo.APIClient, instanceID, failState string) res
 		state := vm.GetState()
 
 		if state == failState {
-			return vm, state, fmt.Errorf("Failed to reach target state. Reason: %v", *vm.State)
+			return vm, state, fmt.Errorf("failed to reach target state. Reason: %v", *vm.State)
 
 		}
 

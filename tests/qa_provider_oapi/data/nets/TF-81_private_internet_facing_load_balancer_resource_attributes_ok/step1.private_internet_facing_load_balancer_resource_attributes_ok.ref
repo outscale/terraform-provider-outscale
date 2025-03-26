@@ -22,7 +22,8 @@
                         "tags": [],
                         "timeouts": null
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -44,6 +45,7 @@
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "dependencies": [
                         "outscale_internet_service.outscale_internet_service",
                         "outscale_net.outscale_net"
@@ -132,6 +134,7 @@
                         ]
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_internet_service.outscale_internet_service",
@@ -165,7 +168,8 @@
                         "tenancy": "default",
                         "timeouts": null
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -196,6 +200,7 @@
                         "vm_id": ""
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "dependencies": [
                         "outscale_internet_service.outscale_internet_service",
                         "outscale_net.outscale_net",
@@ -243,6 +248,7 @@
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "dependencies": [
                         "outscale_net.outscale_net"
                     ]
@@ -268,6 +274,7 @@
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "dependencies": [
                         "outscale_net.outscale_net",
                         "outscale_route_table.outscale_route_table",
@@ -312,6 +319,7 @@
                         ]
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net"
@@ -355,6 +363,7 @@
                         ]
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net"
@@ -389,6 +398,7 @@
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "dependencies": [
                         "outscale_net.outscale_net"
                     ]

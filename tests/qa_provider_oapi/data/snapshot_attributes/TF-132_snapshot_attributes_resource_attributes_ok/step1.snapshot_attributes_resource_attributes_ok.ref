@@ -36,7 +36,8 @@
                         "volume_id": "##id-2##",
                         "volume_size": 40
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -69,6 +70,7 @@
                         "volume_size": 40
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoyNDAwMDAwMDAwMDAwLCJkZWxldGUiOjI0MDAwMDAwMDAwMDAsInVwZGF0ZSI6MjQwMDAwMDAwMDAwMH19",
                     "dependencies": [
                         "outscale_volume.outscale_volume"
@@ -100,6 +102,7 @@
                         "snapshot_id": "##id-1##"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_snapshot.outscale_snapshot",
@@ -132,6 +135,7 @@
                         "volume_type": "standard"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA=="
                 }
             ]

@@ -27,6 +27,7 @@
                         "request_id": "########"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_ca.ca_for_aar_2"
@@ -51,6 +52,7 @@
                         "request_id": "########"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA=="
                 }
             ]
@@ -72,6 +74,7 @@
                         "request_id": "########"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA=="
                 }
             ]

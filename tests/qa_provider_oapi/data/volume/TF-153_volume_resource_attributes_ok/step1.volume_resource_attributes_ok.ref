@@ -34,6 +34,7 @@
                         "volume_type": "standard"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA=="
                 }
             ]

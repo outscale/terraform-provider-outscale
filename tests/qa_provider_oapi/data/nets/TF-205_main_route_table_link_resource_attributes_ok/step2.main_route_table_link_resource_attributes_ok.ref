@@ -25,6 +25,7 @@
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "dependencies": [
                         "outscale_net.outscale_net",
                         "outscale_route_table.outscale_route_table"
@@ -56,7 +57,8 @@
                         "tenancy": "default",
                         "timeouts": null
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -114,6 +116,7 @@
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "dependencies": [
                         "outscale_net.outscale_net"
                     ]
@@ -139,6 +142,7 @@
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "dependencies": [
                         "outscale_net.outscale_net",
                         "outscale_route_table.outscale_route_table",
@@ -166,6 +170,7 @@
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "dependencies": [
                         "outscale_net.outscale_net",
                         "outscale_route_table.outscale_route_table",
@@ -201,6 +206,7 @@
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "dependencies": [
                         "outscale_net.outscale_net"
                     ]
@@ -234,6 +240,7 @@
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "dependencies": [
                         "outscale_net.outscale_net"
                     ]

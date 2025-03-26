@@ -27,7 +27,8 @@
                         ],
                         "timeouts": null
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -54,6 +55,7 @@
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "dependencies": [
                         "outscale_internet_service.outscale_internet_service",
                         "outscale_net.outscale_net"
@@ -85,7 +87,8 @@
                         "tenancy": "default",
                         "timeouts": null
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -116,6 +119,7 @@
                         "vm_id": ""
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "dependencies": [
                         "outscale_internet_service.outscale_internet_service",
                         "outscale_internet_service_link.outscale_internet_service_link",
@@ -164,6 +168,7 @@
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "dependencies": [
                         "outscale_net.outscale_net"
                     ]

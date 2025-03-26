@@ -22,6 +22,16 @@
                             {
                                 "key": "name",
                                 "load_balancer_name": "########",
+                                "value": "public_lbu2"
+                            },
+                            {
+                                "key": "Platfotm",
+                                "load_balancer_name": "########",
+                                "value": "terraform"
+                            },
+                            {
+                                "key": "name",
+                                "load_balancer_name": "########",
                                 "value": "public_lbu1"
                             },
                             {
@@ -33,20 +43,11 @@
                                 "key": "Platfotm",
                                 "load_balancer_name": "########",
                                 "value": "terraform"
-                            },
-                            {
-                                "key": "name",
-                                "load_balancer_name": "########",
-                                "value": "public_lbu2"
-                            },
-                            {
-                                "key": "Platfotm",
-                                "load_balancer_name": "########",
-                                "value": "terraform"
                             }
                         ]
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -126,6 +127,7 @@
                         ]
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA=="
                 }
             ]
@@ -202,6 +204,7 @@
                         ]
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA=="
                 }
             ]

@@ -1,8 +1,12 @@
 {
     "Statement": [
         {
-            "Action": "*",
-            "Resource": "*",
+            "Action": [
+                "*"
+            ],
+            "Resource": [
+                "*"
+            ],
             "Effect": "Allow"
         }
     ]

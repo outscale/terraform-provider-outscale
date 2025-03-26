@@ -84,7 +84,8 @@
                             }
                         ]
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -108,7 +109,8 @@
                         "tags": [],
                         "timeouts": null
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -190,6 +192,7 @@
                         ]
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA=="
                 }
             ]
@@ -205,13 +208,14 @@
                     "attributes": {
                         "backend_ips": "########",
                         "backend_vm_ids": [
-                            "##id-1##"
+                            "##id-0##"
                         ],
                         "id": "##id-2##",
                         "load_balancer_name": "########",
                         "request_id": "########"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_keypair.my_keypair",
@@ -249,6 +253,7 @@
                         "vm_id": "##id-5##"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxODAwMDAwMDAwMDAwLCJkZWxldGUiOjE4MDAwMDAwMDAwMDB9fQ=="
                 }
             ]
@@ -281,6 +286,7 @@
                         "vm_id": "##id-5##"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
                         "outscale_keypair.my_keypair",
@@ -314,6 +320,7 @@
                         "tags": []
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "bnVsbA=="
                 }
             ]
@@ -354,6 +361,7 @@
                         "image_id": "##id-12##",
                         "is_source_dest_checked": false,
                         "keypair_name": "KP-TF01",
+                        "keypair_name_wo": null,
                         "launch_number": 0,
                         "nested_virtualization": false,
                         "net_id": "",
@@ -401,6 +409,7 @@
                         "vm_type": "###vm_type###"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
                         "outscale_keypair.my_keypair",
@@ -442,10 +451,11 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-1##",
+                        "id": "##id-0##",
                         "image_id": "##id-12##",
                         "is_source_dest_checked": false,
                         "keypair_name": "KP-TF01",
+                        "keypair_name_wo": null,
                         "launch_number": 0,
                         "nested_virtualization": false,
                         "net_id": "",
@@ -488,11 +498,12 @@
                         ],
                         "timeouts": null,
                         "user_data": "",
-                        "vm_id": "##id-1##",
+                        "vm_id": "##id-0##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
                         "outscale_keypair.my_keypair",
@@ -526,10 +537,11 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-0##",
+                        "id": "##id-1##",
                         "image_id": "##id-12##",
                         "is_source_dest_checked": false,
                         "keypair_name": "KP-TF01",
+                        "keypair_name_wo": null,
                         "launch_number": 0,
                         "nested_virtualization": false,
                         "net_id": "",
@@ -572,11 +584,12 @@
                         ],
                         "timeouts": null,
                         "user_data": "",
-                        "vm_id": "##id-0##",
+                        "vm_id": "##id-1##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
                         "outscale_keypair.my_keypair",
@@ -614,6 +627,7 @@
                         "image_id": "##id-12##",
                         "is_source_dest_checked": false,
                         "keypair_name": "KP-TF01",
+                        "keypair_name_wo": null,
                         "launch_number": 0,
                         "nested_virtualization": false,
                         "net_id": "",
@@ -661,6 +675,7 @@
                         "vm_type": "###vm_type###"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
                         "outscale_keypair.my_keypair",
@@ -698,6 +713,7 @@
                         "image_id": "##id-12##",
                         "is_source_dest_checked": false,
                         "keypair_name": "KP-TF01",
+                        "keypair_name_wo": null,
                         "launch_number": 0,
                         "nested_virtualization": false,
                         "net_id": "",
@@ -745,6 +761,7 @@
                         "vm_type": "###vm_type###"
                     },
                     "sensitive_attributes": [],
+                    "identity_schema_version": 0,
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
                         "outscale_keypair.my_keypair",
