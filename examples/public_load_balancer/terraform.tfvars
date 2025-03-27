@@ -3,5 +3,5 @@
 #region              = "eu-west-2"
 #image_id            = "OUTSCALE_IMAGEID" #using environment variable
 
-vm_type  = "tinav5.c1r1p2"
+vm_type  = "tinav6.c4r8p2"
 vm_count = 2
