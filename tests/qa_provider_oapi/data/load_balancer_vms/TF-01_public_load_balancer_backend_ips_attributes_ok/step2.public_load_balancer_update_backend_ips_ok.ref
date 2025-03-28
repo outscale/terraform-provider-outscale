@@ -99,14 +99,16 @@
                     "attributes": {
                         "id": "##id-4##",
                         "keypair_fingerprint": "########",
+                        "keypair_id": "##id-4##",
                         "keypair_name": "KP-TF01",
+                        "keypair_type": "ssh-rsa",
                         "private_key": "########",
                         "public_key": null,
                         "request_id": "########",
+                        "tags": [],
                         "timeouts": null
                     },
-                    "sensitive_attributes": [],
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJyZWFkIjo2MDAwMDAwMDAwMDB9fQ=="
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -205,7 +207,7 @@
                         "backend_vm_ids": [
                             "##id-0##"
                         ],
-                        "id": "##id-6##",
+                        "id": "##id-2##",
                         "load_balancer_name": "########",
                         "request_id": "########"
                     },
@@ -229,13 +231,13 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-7##",
-                        "link_public_ip_id": "##id-8##",
-                        "nic_account_id": "##id-9##",
-                        "nic_id": "##id-10##",
+                        "id": "##id-6##",
+                        "link_public_ip_id": "##id-7##",
+                        "nic_account_id": "##id-8##",
+                        "nic_id": "##id-9##",
                         "private_ip": "########",
                         "public_ip": "########",
-                        "public_ip_id": "##id-7##",
+                        "public_ip_id": "##id-6##",
                         "request_id": "########",
                         "tags": [
                             {
@@ -261,13 +263,13 @@
                     "schema_version": 0,
                     "attributes": {
                         "allow_relink": null,
-                        "id": "##id-8##",
-                        "link_public_ip_id": "##id-8##",
-                        "nic_account_id": "##id-9##",
-                        "nic_id": "##id-10##",
+                        "id": "##id-7##",
+                        "link_public_ip_id": "##id-7##",
+                        "nic_account_id": "##id-8##",
+                        "nic_id": "##id-9##",
                         "private_ip": "########",
                         "public_ip": "########",
-                        "public_ip_id": "##id-7##",
+                        "public_ip_id": "##id-6##",
                         "request_id": "########",
                         "tags": [
                             {
@@ -298,15 +300,15 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "account_id": "##id-9##",
+                        "account_id": "##id-8##",
                         "description": "Terraform",
-                        "id": "##id-11##",
+                        "id": "##id-10##",
                         "inbound_rules": [],
                         "net_id": "",
                         "outbound_rules": [],
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
-                        "security_group_id": "##id-11##",
+                        "security_group_id": "##id-10##",
                         "security_group_name": "terraform-TF01",
                         "tag": null,
                         "tags": []
@@ -336,7 +338,7 @@
                                         "link_date": "########",
                                         "state": "attached",
                                         "tags": [],
-                                        "volume_id": "##id-12##"
+                                        "volume_id": "##id-11##"
                                     }
                                 ],
                                 "device_name": "/dev/sda1"
@@ -349,7 +351,7 @@
                         "get_admin_password": null,
                         "hypervisor": "xen",
                         "id": "##id-5##",
-                        "image_id": "##id-13##",
+                        "image_id": "##id-12##",
                         "is_source_dest_checked": false,
                         "keypair_name": "KP-TF01",
                         "launch_number": 0,
@@ -370,16 +372,16 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-14##",
+                        "reservation_id": "##id-13##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
                         "security_group_ids": [
-                            "##id-11##"
+                            "##id-10##"
                         ],
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-11##",
+                                "security_group_id": "##id-10##",
                                 "security_group_name": "terraform-TF01"
                             }
                         ],
@@ -428,7 +430,7 @@
                                         "link_date": "########",
                                         "state": "attached",
                                         "tags": [],
-                                        "volume_id": "##id-15##"
+                                        "volume_id": "##id-14##"
                                     }
                                 ],
                                 "device_name": "/dev/sda1"
@@ -441,7 +443,7 @@
                         "get_admin_password": null,
                         "hypervisor": "xen",
                         "id": "##id-0##",
-                        "image_id": "##id-13##",
+                        "image_id": "##id-12##",
                         "is_source_dest_checked": false,
                         "keypair_name": "KP-TF01",
                         "launch_number": 0,
@@ -462,16 +464,16 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-16##",
+                        "reservation_id": "##id-15##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
                         "security_group_ids": [
-                            "##id-11##"
+                            "##id-10##"
                         ],
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-11##",
+                                "security_group_id": "##id-10##",
                                 "security_group_name": "terraform-TF01"
                             }
                         ],
@@ -512,7 +514,7 @@
                                         "link_date": "########",
                                         "state": "attached",
                                         "tags": [],
-                                        "volume_id": "##id-17##"
+                                        "volume_id": "##id-16##"
                                     }
                                 ],
                                 "device_name": "/dev/sda1"
@@ -525,7 +527,7 @@
                         "get_admin_password": null,
                         "hypervisor": "xen",
                         "id": "##id-1##",
-                        "image_id": "##id-13##",
+                        "image_id": "##id-12##",
                         "is_source_dest_checked": false,
                         "keypair_name": "KP-TF01",
                         "launch_number": 0,
@@ -546,16 +548,16 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-18##",
+                        "reservation_id": "##id-17##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
                         "security_group_ids": [
-                            "##id-11##"
+                            "##id-10##"
                         ],
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-11##",
+                                "security_group_id": "##id-10##",
                                 "security_group_name": "terraform-TF01"
                             }
                         ],
@@ -596,7 +598,7 @@
                                         "link_date": "########",
                                         "state": "attached",
                                         "tags": [],
-                                        "volume_id": "##id-19##"
+                                        "volume_id": "##id-18##"
                                     }
                                 ],
                                 "device_name": "/dev/sda1"
@@ -608,8 +610,8 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-20##",
-                        "image_id": "##id-13##",
+                        "id": "##id-19##",
+                        "image_id": "##id-12##",
                         "is_source_dest_checked": false,
                         "keypair_name": "KP-TF01",
                         "launch_number": 0,
@@ -630,16 +632,16 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-21##",
+                        "reservation_id": "##id-20##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
                         "security_group_ids": [
-                            "##id-11##"
+                            "##id-10##"
                         ],
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-11##",
+                                "security_group_id": "##id-10##",
                                 "security_group_name": "terraform-TF01"
                             }
                         ],
@@ -654,7 +656,7 @@
                         ],
                         "timeouts": null,
                         "user_data": "",
-                        "vm_id": "##id-20##",
+                        "vm_id": "##id-19##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
@@ -680,7 +682,7 @@
                                         "link_date": "########",
                                         "state": "attached",
                                         "tags": [],
-                                        "volume_id": "##id-22##"
+                                        "volume_id": "##id-21##"
                                     }
                                 ],
                                 "device_name": "/dev/sda1"
@@ -692,8 +694,8 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-23##",
-                        "image_id": "##id-13##",
+                        "id": "##id-22##",
+                        "image_id": "##id-12##",
                         "is_source_dest_checked": false,
                         "keypair_name": "KP-TF01",
                         "launch_number": 0,
@@ -714,16 +716,16 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-24##",
+                        "reservation_id": "##id-23##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
                         "security_group_ids": [
-                            "##id-11##"
+                            "##id-10##"
                         ],
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-11##",
+                                "security_group_id": "##id-10##",
                                 "security_group_name": "terraform-TF01"
                             }
                         ],
@@ -738,7 +740,7 @@
                         ],
                         "timeouts": null,
                         "user_data": "",
-                        "vm_id": "##id-23##",
+                        "vm_id": "##id-22##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },

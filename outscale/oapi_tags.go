@@ -56,7 +56,7 @@ func setOSCAPITags(conn *oscgo.APIClient, d *schema.ResourceData) error {
 	return nil
 }
 
-func setFrameworkTags(ctx context.Context, conn *oscgo.APIClient, create, remove []oscgo.ResourceTag, resourceId string) error {
+func updateFrameworkTags(ctx context.Context, conn *oscgo.APIClient, create, remove []oscgo.ResourceTag, resourceId string) error {
 	if len(remove) > 0 {
 		err := retry.RetryContext(ctx, 60*time.Second, func() *retry.RetryError {
 			_, httpResp, err := conn.TagApi.DeleteTags(context.Background()).DeleteTagsRequest(oscgo.DeleteTagsRequest{

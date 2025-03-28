@@ -13,8 +13,8 @@ func TestAccOthers_KeypairsDataSource_Instance(t *testing.T) {
 	t.Parallel()
 	keyPairName := fmt.Sprintf("testacc-keypair-%d", utils.RandIntRange(0, 400))
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckOutscaleKeypairsDataSourceConfig(keyPairName),
@@ -47,13 +47,11 @@ func testAccCheckOutscaleKeypairsDataSourceConfig(keyPairName string) string {
 		resource "outscale_keypair" "a_key_pair" {
 			keypair_name = "%s"
 		}
-		
+
 		data "outscale_keypairs" "nat_ami" {
-			#keypair_name = ["${outscale_keypair.a_key_pair.id}"]
-		
 			filter {
 				name   = "keypair_names"
-				values = ["${outscale_keypair.a_key_pair.keypair_name}"]
+				values = [outscale_keypair.a_key_pair.keypair_name]
 			}
 		}
 	`, keyPairName)

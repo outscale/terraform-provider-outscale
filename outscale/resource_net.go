@@ -263,7 +263,7 @@ func (r *netResource) Update(ctx context.Context, req resource.UpdateRequest, re
 
 	if !reflect.DeepEqual(tagsPlan, tagsState) {
 		toRemove, toCreate := diffOSCAPITags(tagsToOSCResourceTag(tagsPlan), tagsToOSCResourceTag(tagsState))
-		err := setFrameworkTags(ctx, r.Client, toCreate, toRemove, resourceId.ValueString())
+		err := updateFrameworkTags(ctx, r.Client, toCreate, toRemove, resourceId.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Unable to update Tags on net resource",
