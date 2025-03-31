@@ -10,7 +10,7 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -22,6 +22,11 @@ func ResourceOutscaleSnapshot() *schema.Resource {
 		Delete: ResourceOutscaleSnapshotDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(40 * time.Minute),
+			Update: schema.DefaultTimeout(40 * time.Minute),
+			Delete: schema.DefaultTimeout(40 * time.Minute),
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -153,7 +158,7 @@ func ResourceOutscaleSnapshotCreate(d *schema.ResourceData, meta interface{}) er
 	}
 
 	var resp oscgo.CreateSnapshotResponse
-	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err := retry.RetryContext(context.Background(), d.Timeout(schema.TimeoutCreate), func() *retry.RetryError {
 		var err error
 		rp, httpResp, err := conn.SnapshotApi.CreateSnapshot(context.Background()).CreateSnapshotRequest(request).Execute()
 		if err != nil {
@@ -168,18 +173,17 @@ func ResourceOutscaleSnapshotCreate(d *schema.ResourceData, meta interface{}) er
 
 	log.Printf("Waiting for Snapshot %s to become available...", resp.Snapshot.GetSnapshotId())
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"pending", "in-queue", "queued", "importing"},
 		Target:     []string{"completed"},
-		Refresh:    SnapshotOAPIStateRefreshFunc(conn, resp.Snapshot.GetSnapshotId()),
-		Timeout:    OutscaleImageRetryTimeout,
+		Refresh:    SnapshotOAPIStateRefreshFunc(conn, resp.Snapshot.GetSnapshotId(), d.Timeout(schema.TimeoutCreate)),
+		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      OutscaleImageRetryDelay,
 		MinTimeout: OutscaleImageRetryMinTimeout,
 	}
 
-	_, err = stateConf.WaitForState()
-	if err != nil {
-		return fmt.Errorf("Error waiting for Snapshot (%s) to be ready: %s", resp.Snapshot.GetSnapshotId(), err)
+	if _, err = stateConf.WaitForStateContext(context.Background()); err != nil {
+		return fmt.Errorf("Error waiting for Snapshot (%s) to be ready: %w", resp.Snapshot.GetSnapshotId(), err)
 	}
 
 	if tags, ok := d.GetOk("tags"); ok {
@@ -202,7 +206,7 @@ func ResourceOutscaleSnapshotRead(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	var resp oscgo.ReadSnapshotsResponse
-	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err := retry.RetryContext(context.Background(), d.Timeout(schema.TimeoutRead), func() *retry.RetryError {
 		var err error
 		rp, httpResp, err := conn.SnapshotApi.ReadSnapshots(context.Background()).ReadSnapshotsRequest(req).Execute()
 		if err != nil {
@@ -212,7 +216,7 @@ func ResourceOutscaleSnapshotRead(d *schema.ResourceData, meta interface{}) erro
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("Error reading the snapshot %snapshot", err)
+		return fmt.Errorf("Error reading the snapshot: %w", err)
 	}
 	if utils.IsResponseEmpty(len(resp.GetSnapshots()), "Snapshot", d.Id()) {
 		d.SetId("")
@@ -271,7 +275,7 @@ func ResourceOutscaleSnapshotUpdate(d *schema.ResourceData, meta interface{}) er
 func ResourceOutscaleSnapshotDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	return resource.Retry(5*time.Minute, func() *resource.RetryError {
+	return retry.RetryContext(context.Background(), d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
 		request := oscgo.DeleteSnapshotRequest{SnapshotId: d.Id()}
 		_, httpResp, err := conn.SnapshotApi.DeleteSnapshot(context.Background()).DeleteSnapshotRequest(request).Execute()
 		if err != nil {
@@ -282,13 +286,13 @@ func ResourceOutscaleSnapshotDelete(d *schema.ResourceData, meta interface{}) er
 }
 
 // SnapshotOAPIStateRefreshFunc ...
-func SnapshotOAPIStateRefreshFunc(client *oscgo.APIClient, id string) resource.StateRefreshFunc {
+func SnapshotOAPIStateRefreshFunc(client *oscgo.APIClient, id string, timeOut time.Duration) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		emptyResp := oscgo.ReadSnapshotsResponse{}
 
 		var resp oscgo.ReadSnapshotsResponse
 		var statusCode int
-		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+		err := retry.RetryContext(context.Background(), timeOut, func() *retry.RetryError {
 			var err error
 			rp, httpResp, err := client.SnapshotApi.ReadSnapshots(context.Background()).ReadSnapshotsRequest(oscgo.ReadSnapshotsRequest{
 				Filters: &oscgo.FiltersSnapshot{SnapshotIds: &[]string{id}},
@@ -310,7 +314,7 @@ func SnapshotOAPIStateRefreshFunc(client *oscgo.APIClient, id string) resource.S
 				log.Printf("[INFO] OMI %s state %s", id, "destroyed")
 				return emptyResp, "destroyed", nil
 			} else {
-				return emptyResp, "", fmt.Errorf("Error on refresh: %+v", err)
+				return emptyResp, "", fmt.Errorf("Error on refresh: %w", err)
 			}
 		}
 

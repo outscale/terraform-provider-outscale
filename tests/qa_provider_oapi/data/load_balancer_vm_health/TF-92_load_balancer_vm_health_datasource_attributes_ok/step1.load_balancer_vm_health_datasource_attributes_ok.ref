@@ -16,8 +16,8 @@
                     "attributes": {
                         "backend_vm_health": [
                             {
-                                "description": "Instance registration is pending",
-                                "state": "DOWN",
+                                "description": "Error getting health report",
+                                "state": "UNKNOWN",
                                 "state_reason": "ELB",
                                 "vm_id": "##id-0##"
                             }
