@@ -158,7 +158,7 @@ func testAccOutscaleImageDisappears(imageID *string) r.TestCheckFunc {
 			return err
 		}
 
-		return ResourceOutscaleImageWaitForDestroy(*imageID, conn)
+		return ResourceOutscaleImageWaitForDestroy(*imageID, conn, 5*utils.DeleteDefaultTimeout)
 	}
 }
 
@@ -199,7 +199,7 @@ func testAccOutscaleImageLaunchPermissionConfig(omi, vmType, region, accountID, 
 			security_group_ids = [outscale_security_group.sg_perm.security_group_id]
 			placement_subregion_name = "%[3]sa"
 		}
-		
+
 		resource "outscale_image" "outscale_image" {
 			image_name        = "terraform test-123-%[4]d"
 			vm_id = outscale_vm.outscale_instance.vm_id
@@ -239,7 +239,7 @@ func testAccOutscaleImageLaunchPermissionCreateConfig(omi, vmType, region, keypa
 			security_group_ids = [outscale_security_group.sg_perm.security_group_id]
 			placement_subregion_name = "%[3]sa"
 		}
-		
+
 		resource "outscale_image" "outscale_image" {
 			image_name = "terraform test-123-%[4]d"
 			vm_id      = outscale_vm.outscale_instance.vm_id

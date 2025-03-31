@@ -110,11 +110,12 @@
                                 "value": "test snapshot 1"
                             }
                         ],
+                        "timeouts": null,
                         "volume_id": "##id-3##",
                         "volume_size": 10
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
+                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoyNDAwMDAwMDAwMDAwLCJkZWxldGUiOjI0MDAwMDAwMDAwMDAsInVwZGF0ZSI6MjQwMDAwMDAwMDAwMH19",
                     "dependencies": [
                         "outscale_volume.outscale_volume"
                     ]
@@ -150,11 +151,12 @@
                                 "value": "test snapshot 1"
                             }
                         ],
+                        "timeouts": null,
                         "volume_id": "##id-3##",
                         "volume_size": 10
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
+                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoyNDAwMDAwMDAwMDAwLCJkZWxldGUiOjI0MDAwMDAwMDAwMDAsInVwZGF0ZSI6MjQwMDAwMDAwMDAwMH19",
                     "dependencies": [
                         "outscale_volume.outscale_volume"
                     ]
