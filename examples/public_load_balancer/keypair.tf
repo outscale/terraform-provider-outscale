@@ -10,5 +10,6 @@ resource "local_file" "my_key" {
 }
 
 resource "outscale_keypair" "my_keypair" {
-  public_key = tls_private_key.my_key.public_key_openssh
+  keypair_name = "public-lbu-keypair"
+  public_key   = tls_private_key.my_key.public_key_openssh
 }
