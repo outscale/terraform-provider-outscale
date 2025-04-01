@@ -146,11 +146,11 @@ def validate_ref(path, parent, value, ids):
     path_end = path.split('.')[-1]
     if path in IGNORE_PATHS or path_end in IGNORE_END_ELEMENTS:
         parent[path_end] = NO_TEST_VALUE
-        return
+        return None
     for p in IGNORE_END_PATHS:
         if path.endswith(p):
             parent[path_end] = NO_TEST_VALUE
-            return
+            return None
     if path_end == "type" and value in IGNORE_TYPE_ELEMENTS:
         ignored_key = IGNORE_TYPE_ELEMENTS[value]
 
@@ -214,10 +214,8 @@ def compare_json_lists(path, list_out, list_ref, ids):
             except Exception as error:
                 tmp_ids = current_ids
                 errors.append(error)
-                pass
         if errors:
             assert False, 'Could not match list values for path {}, {}'.format(path, errors)
-    ids = current_ids 
 
 def compare_json_sets(path, set_out, set_ref, ids):
     assert len(set_out) == len(set_ref)
@@ -238,10 +236,9 @@ def compare_json_sets(path, set_out, set_ref, ids):
             except Exception as error:
                 tmp_ids = current_ids
                 errors.append(error)
-                pass
         if errors:
                 assert False, 'Could not match set values for path {}, {}'.format(path, errors)
-     
+
     ids = current_ids
 
 
@@ -381,8 +378,8 @@ Log: {}
         """.format(method.__name__)
         self.error = False
         try:
-            self.run_cmd("terraform init -no-color")
-            stdout, _ = self.run_cmd("terraform version -no-color")
+            self.run_cmd(['terraform init -no-color'])
+            stdout, _ = self.run_cmd(['terraform version -no-color'])
             self.log += "\nVERSION:{}\n".format("\n".join(stdout.splitlines()[:2]))
         except Exception:
             try:
@@ -443,11 +440,11 @@ Log: {}
 
     def exec_test_step(self, tf_file_path, out_file_path):
         self.logger.debug("Exec step : {}".format(tf_file_path))
-        self.log += "\nTerraform validate:\n{}".format(self.run_cmd("terraform validate -no-color")[0])
-        self.log += "\nTerraform plan:\n{}".format(self.run_cmd("terraform plan -lock=false -no-color", env_append={"TF_VAR_suffixe_lbu_name": str(random.randint(0, 9999))})[0])
-        self.log += "\nTerraform apply:\n{}".format(self.run_cmd("terraform apply -auto-approve -lock=false -no-color", env_append={"TF_VAR_suffixe_lbu_name": str(random.randint(0, 9999))})[0])
-        self.log += "\nTerraform show:\n{}".format(self.run_cmd("terraform show -no-color")[0])
-        self.run_cmd("terraform state pull > {}".format(out_file_path))
+        self.log += "\nTerraform validate:\n{}".format(self.run_cmd(['terraform validate -no-color'])[0])
+        self.log += "\nTerraform plan:\n{}".format(self.run_cmd('terraform plan -lock=false -no-color', env_append={"TF_VAR_suffixe_lbu_name": str(random.randint(0, 9999))})[0])
+        self.log += "\nTerraform apply:\n{}".format(self.run_cmd('terraform apply -auto-approve -lock=false -no-color', env_append={"TF_VAR_suffixe_lbu_name": str(random.randint(0, 9999))})[0])
+        self.log += "\nTerraform show:\n{}".format(self.run_cmd(['terraform show -no-color'])[0])
+        self.run_cmd(['terraform state pull > {}'.format(out_file_path)])
 
     def exec_test(self, test_name, test_path):
         try:
@@ -468,8 +465,8 @@ Log: {}
                     self.logger.debug("Process step: %s", tf_file_name)
                     self.log += "\n*** step {} ***\n".format(tf_file_path)
 
-                    self.run_cmd("rm -f test.tf")
-                    self.run_cmd("ln -s {} test.tf".format(tf_file_path))
+                    self.run_cmd(['rm -f test.tf'])
+                    self.run_cmd(['ln -s {} test.tf'.format(tf_file_path)])
 
                     with open("test.tf") as tmp_file:
                         self.log += "\nTest file:\n{}".format(tmp_file.read())
@@ -495,14 +492,13 @@ Log: {}
                         assert not ret
                 finally:
                     check_file_index += 1
-                    pass
         except Exception as error :
             self.error = True
             raise error
         finally:
             try:
-                self.run_cmd("terraform destroy -auto-approve -no-color", env_append={"TF_VAR_suffixe_lbu_name": str(random.randint(0, 9999))})
+                self.run_cmd('terraform destroy -auto-approve -no-color', env_append={"TF_VAR_suffixe_lbu_name": str(random.randint(0, 9999))})
             finally:
-                self.run_cmd("rm -f test.tf")
-                self.run_cmd("rm -f terraform.tfstate")
-                self.run_cmd("rm -f .terraform.lock.hcl")
+                self.run_cmd(['rm -f test.tf'])
+                self.run_cmd(['rm -f terraform.tfstate'])
+                self.run_cmd(['rm -f .terraform.lock.hcl'])
