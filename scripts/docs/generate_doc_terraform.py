@@ -9,6 +9,7 @@ import shutil
 import os
 import sys
 import yaml
+import logging
 # Local
 import utils
 
@@ -28,7 +29,7 @@ ARGS = parser.parse_args()
 
 
 # Data Sources that need to be considered as singular
-FORCE_SINGULAR_LIST = ["net_attributes", "quotas"] 
+FORCE_SINGULAR_LIST = ["net_attributes", "quotas"]
 # Data Sources that need to be considered as plural
 FORCE_PLURAL_LIST = ["flexible_gpu_catalog", "load_balancer_vm_health"]
 
@@ -277,7 +278,7 @@ def removeField(field_object, key):
 
 
 def treatAddPropData(field_to_update, part_to_update, addprop_content):
-    arg = addprop_content.get(part_to_update, None)    
+    arg = addprop_content.get(part_to_update, None)
     if arg and field_to_update:
         for k, v in arg.get('add', {}).items():
             new_k = utils.snake_case_to_camel_case(k)
@@ -441,7 +442,7 @@ def main():
     with io.open('{}/variables.csv'.format(CONTENT_PATH), 'r',
                  newline='', encoding='utf-8') as csv_file:
         values = csv.reader(csv_file, delimiter=',')
-    
+
         if not values:
             print('No data found.')
         else:
@@ -487,25 +488,25 @@ def main():
                              'r') as f:
                     example_content = f.read()
             except FileNotFoundError as e:
-                pass
+                logging.DEBUG("'%s' not found: %s", resource_name, e)
             try:
                 with io.open('{}/Content/data-sources/{}-import.md'.format(ARGS.template_directory, resource_name),
                              'r') as f:
                     import_content = f.read()
             except FileNotFoundError as e:
-                pass
+                logging.DEBUG("'%s' not found: %s", resource_name, e)
             try:
                 with io.open('{}/Content/data-sources/{}-addprop.yaml'.format(ARGS.template_directory, resource_name),
                              'r') as f:
                     addprop_content = yaml.load(f, yaml.FullLoader)
             except FileNotFoundError as e:
-                pass
+                logging.DEBUG("'%s' not found: %s", resource_name, e)
             try:
                 with io.open('{}/Content/data-sources/{}-intro.md'.format(ARGS.template_directory, resource_name),
                              'r') as f:
                     extra_intro_content  = f.read()
             except FileNotFoundError as e:
-                pass
+                logging.DEBUG("'%s' not found: %s", resource_name, e)
 
             if resource_name == 'vms_state':
                 template = template_datasources
@@ -533,25 +534,25 @@ def main():
                              'r') as f:
                     example_content = f.read()
             except FileNotFoundError as e:
-                pass
+                logging.DEBUG("'%s' not found: %s", resource_name, e)
             try:
                 with io.open('{}/Content/resources/{}-import.md'.format(ARGS.template_directory, resource_name),
                              'r') as f:
                     import_content = f.read()
             except FileNotFoundError as e:
-                pass
+                logging.DEBUG("'%s' not found: %s", resource_name, e)
             try:
                 with io.open('{}/Content/resources/{}-addprop.yaml'.format(ARGS.template_directory, resource_name),
                              'r') as f:
                     addprop_content = yaml.load(f, yaml.FullLoader)
             except FileNotFoundError as e:
-                pass
+                logging.DEBUG("'%s' not found: %s", resource_name, e)
             try:
                 with io.open('{}/Content/resources/{}-intro.md'.format(ARGS.template_directory, resource_name),
                              'r') as f:
                     extra_intro_content  = f.read()
             except FileNotFoundError as e:
-                pass
+                logging.DEBUG("'%s' not found: %s", resource_name, e)
         else:
             print('This filename, {} is not in a known format - we do not treat it.'.format(name))
             continue
@@ -584,7 +585,7 @@ def main():
                 else:
                     print('del {}'.format(k[:-1]))
                     del call_complete.output_fields[k[:-1]]
-        
+
         print(' - Change output fields format for singular data source and resources')
         # For singular data source and resources, we need to remove the root node
         if data_type in [DataType.SINGULAR, DataType.FORCE_SINGULAR, DataType.RESOURCE]:
@@ -627,7 +628,7 @@ def main():
         for key, value in output_field_to_parse.items():
             if key != 'ResponseContext':
                 arg_attr_list_map[key] = True
-                extract_all_arguments(key, value, arg_attr_list_map, attr_description_to_change)       
+                extract_all_arguments(key, value, arg_attr_list_map, attr_description_to_change)
 
         ## Change the description
         for path, matches in arg_description_to_change.items():
@@ -635,7 +636,7 @@ def main():
                 if match in arg_attr_list_map:
                     print("Changing description of {} to replace {}".format(path, match))
                     replace_parameters_in_description(call_complete.input_fields, path, match)
-                
+
         for path, matches in attr_description_to_change.items():
             for match in matches:
                 if match in arg_attr_list_map:
@@ -649,7 +650,7 @@ def main():
         output_field_to_update = call_complete.output_fields if call_complete else {}
         if not ARGS.no_addapt:
             treatAddPropData(output_field_to_update, 'attribute', addprop_content)
-        
+
         print(' - Treating input parameters ...')
         input_field_to_parse = call_complete.input_fields if call_complete else {}
         for a, b in input_field_to_parse.items():
