@@ -349,7 +349,7 @@ func ImageTaskStateRefreshFunc(client *oscgo.APIClient, id string) resource.Stat
 		}
 
 		if resp.GetImageExportTasks()[0].GetState() == "failed" || resp.GetImageExportTasks()[0].GetState() == "cancelled" {
-			return resp.GetImageExportTasks()[0], resp.GetImageExportTasks()[0].GetState(), fmt.Errorf(resp.GetImageExportTasks()[0].GetComment())
+			return resp.GetImageExportTasks()[0], resp.GetImageExportTasks()[0].GetState(), fmt.Errorf("%s", resp.GetImageExportTasks()[0].GetComment())
 		}
 
 		// Image export task is valid, so return it's state
