@@ -10,7 +10,7 @@ description: |-
 
 Manages a client gateway.
 
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Customer-Gateways.html).  
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Client-Gateways.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-clientgateway).
 
 ## Example Usage
@@ -32,7 +32,8 @@ resource "outscale_client_gateway" "client_gateway01" {
 The following arguments are supported:
 
 * `bgp_asn` - (Required) The Autonomous System Number (ASN) used by the Border Gateway Protocol (BGP) to find the path to your client gateway through the Internet. <br/>
-This number must be between `1` and `4294967295`. If you do not have an ASN, you can choose one between 64512 and 65534, or between 4200000000 and 4294967294.
+This number must be between `1` and `4294967295`, except `50624`, `53306`, and `132418`. <br/>
+If you do not have an ASN, you can choose one between `64512` and `65534` (both included), or between `4200000000` and `4294967295` (both included).
 * `connection_type` - (Required) The communication protocol used to establish tunnel with your client gateway (always `ipsec.1`).
 * `public_ip` - (Required) The public fixed IPv4 address of your client gateway.
 * `tags` - (Optional) A tag to add to this resource. You can specify this argument several times.

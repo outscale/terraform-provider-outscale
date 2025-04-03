@@ -58,7 +58,7 @@ The following attributes are exported:
     * `creation_method` - The method used to create the route.
     * `destination_ip_range` - The IP range used for the destination match, in CIDR notation (for example, `10.0.0.0/24`).
     * `destination_service_id` - The ID of the OUTSCALE service.
-    * `gateway_id` - The ID of the Internet service or virtual gateway attached to the Net.
+    * `gateway_id` - The ID of the internet service or virtual gateway attached to the Net.
     * `nat_service_id` - The ID of a NAT service attached to the Net.
     * `net_access_point_id` - The ID of the Net access point.
     * `net_peering_id` - The ID of the Net peering.

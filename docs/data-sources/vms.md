@@ -10,7 +10,7 @@ description: |-
 
 Provides information about virtual machines (VMs).
 
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Instances.html).  
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-VMs.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-vm).
 
 ## Example Usage
@@ -77,7 +77,7 @@ The following arguments are supported:
     * `private_ips` - (Optional) The private IPs of the VMs.
     * `product_codes` - (Optional) The product codes associated with the OMI used to create the VMs.
     * `public_ips` - (Optional) The public IPs of the VMs.
-    * `reservation_ids` - (Optional) The IDs of the reservation of the VMs, created every time you launch VMs. These reservation IDs can be associated with several VMs when you lauch a group of VMs using the same launch request.
+    * `reservation_ids` - (Optional) The IDs of the reservation of the VMs, created every time you launch VMs. These reservation IDs can be associated with several VMs when you launch a group of VMs using the same launch request.
     * `root_device_names` - (Optional) The names of the root devices for the VMs (for example, `/dev/sda1`)
     * `root_device_types` - (Optional) The root devices types used by the VMs (always `ebs`)
     * `security_group_ids` - (Optional) The IDs of the security groups for the VMs (only in the public Cloud).

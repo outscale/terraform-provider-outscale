@@ -10,7 +10,7 @@ description: |-
 
 Manages an Internet service.
 
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Internet-Gateways.html).  
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Internet-Services.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-internetservice).
 
 ## Example Usage
@@ -32,10 +32,10 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `internet_service_id` - The ID of the Internet service.
-* `net_id` - The ID of the Net attached to the Internet service.
-* `state` - The state of the attachment of the Internet service to the Net (always `available`).
-* `tags` - One or more tags associated with the Internet service.
+* `internet_service_id` - The ID of the internet service.
+* `net_id` - The ID of the Net attached to the internet service.
+* `state` - The state of the attachment of the internet service to the Net (always `available`).
+* `tags` - One or more tags associated with the internet service.
     * `key` - The key of the tag, with a minimum of 1 character.
     * `value` - The value of the tag, between 0 and 255 characters.
 

@@ -10,6 +10,9 @@ description: |-
 
 Manages load balancer VMs.
 
+
+~> **Note:** Use only one `outscale_load_balancer_vms` resource per load balancer, to avoid a conflict between the different lists of backend VMs.
+
 For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Load-Balancers.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-loadbalancer).
 

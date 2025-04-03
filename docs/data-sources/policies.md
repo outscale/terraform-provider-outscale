@@ -10,8 +10,8 @@ description: |-
 
 Provides information about policies.
 
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/Getting-Information-About-a-Managed-Policy.html).  
-For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api.html#readpolicies).
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Policies.html).  
+For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api.html#3ds-outscale-api-policy).
 
 ## Example Usage
 
@@ -39,7 +39,7 @@ The following arguments are supported:
 * `filters` - One or more filters.
     * `only_linked` - (Optional) If set to true, lists only the policies attached to a user.
     * `path_prefix` - (Optional) The path prefix you can use to filter the results. If not specified, it is set to a slash (`/`).
-    * `scope` - (Optional) The scope to filter policies (`OWS` \| `LOCAL`).
+    * `scope` - (Optional) The scope of the policies. A policy can either be created by Outscale (`OWS`), and therefore applies to all accounts, or be created by its users (`LOCAL`).
 * `first_item` - (Optional) The item starting the list of policies requested.
 * `results_per_page` - (Optional) The maximum number of items that can be returned in a single response (by default, `100`).
 
