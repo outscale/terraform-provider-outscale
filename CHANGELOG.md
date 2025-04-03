@@ -1,10 +1,10 @@
-## [1.1.0] - 2025-04-4
+## [1.1.0] - 2025-04-03
 ### 🐛 Bug Fixes
 - 🐛 Better handle `server_certificate_id` in load_balancer listener. ([#509](https://github.com/outscale/terraform-provider-outscale/issues/509))
-- ⚡️ Return more details when error during terraform apply. ([#500](https://github.com/outscale/terraform-provider-outscale/issues/500))
+- ⚡️  Return more details when error during terraform apply. ([#500](https://github.com/outscale/terraform-provider-outscale/issues/500))
 - 🛠 Better handle `ip_range` parameter in security_group_rules. ([#504](https://github.com/outscale/terraform-provider-outscale/issues/504))
 - 🚧 Return errors when a `region` or `endpoints` is not provided. ([#501](https://github.com/outscale/terraform-provider-outscale/issues/501))
-- 🛠 Unable customers to set `timeout` on `outscale_snapshot, outscale_image` resources. ([#514](https://github.com/outscale/terraform-provider-outscale/issues/514))
+- 🛠 Enable customers to set `timeout` on `outscale_snapshot, outscale_image` resources. ([#514](https://github.com/outscale/terraform-provider-outscale/issues/514))
 
 ### 🔧 Improvements
 - 🧪 Update tests and `osc-sdk-go`.
@@ -15,7 +15,7 @@
 - 🛠 Migrate `flexible_gpu` resource from SDKv2 to the plugin Framework.
 
 ### ✨ Features
-- 🚀 new parameters (`keypair_id`,`keypair_type`, `tags`) in keypair resource and datasources.
+- 🚀 Add new parameters (`keypair_id`,`keypair_type`, `tags`) in keypair resource and datasources.
 
 ---
 
