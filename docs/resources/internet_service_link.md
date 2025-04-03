@@ -10,7 +10,7 @@ description: |-
 
 Manages an Internet service link.
 
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Internet-Gateways.html).  
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Internet-Services.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-internetservice).
 
 ## Example Usage
@@ -40,8 +40,8 @@ resource "outscale_internet_service_link" "internet_service_link01" {
 
 The following arguments are supported:
 
-* `internet_service_id` - (Required) The ID of the Internet service you want to attach.
-* `net_id` - (Required) The ID of the Net to which you want to attach the Internet service.
+* `internet_service_id` - (Required) The ID of the internet service you want to attach.
+* `net_id` - (Required) The ID of the Net to which you want to attach the internet service.
 
 ## Attribute Reference
 

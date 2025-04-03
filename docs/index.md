@@ -83,22 +83,26 @@ $ terraform plan
 
 ### Set a profile using a configuration file
 
-Use the `profile` or the `OSC_PROFILE` parameter to specify a named profile.
+You can set a named profile by specifying the `profile` attribute in the provider block.
 
-The locations of the shared configuration and credentials files can be configured using either the parameters `config_file` and `OSC_PROFILE`.
+The location of the shared configuration and credential file can be specified using the `config_file` attribute:
 
-Example with the provider:
+Example:
 
 ```hcl
 provider "outscale" {
-  config_file      =  "./.osc/config.json"
-  profile               =  "default"
+  profile     = "default"
+  config_file = "./.osc/config.json"
 }
 ```
 
-Examples with the environment variable export:
+### Set a profile using environment variables
 
- ```hcl
+You can also set a named profile by specifying the `OSC_PROFILE` environment variable.
+
+The locations of the shared configuration and credential file can be specified using the `OSC_CONFIG_FILE` environment variable:
+
+```hcl
 # For Linux and macOS
 export OSC_PROFILE="default"
 export OSC_CONFIG_FILE="$HOME/.osc/config.json"

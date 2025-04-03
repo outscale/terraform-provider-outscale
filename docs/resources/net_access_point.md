@@ -10,7 +10,7 @@ description: |-
 
 Manages a Net access point.
 
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-VPC-Endpoints.html).  
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Net-Access-Points.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-netaccesspoint).
 
 ## Example Usage

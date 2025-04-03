@@ -12,7 +12,7 @@ Manages a virtual machine (VM).
 
 ~> **Important** Consider using the `primary_nic` argument if you plan to use the `outscale_nic_link`resource.
 
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Instances.html).  
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-VMs.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-vm).
 
 ## Example Usage
@@ -318,13 +318,13 @@ The following arguments are supported:
     * `value` - (Required) The value of the tag, between 0 and 255 characters.
 * `user_data` - (Optional) Data or script used to add a specific configuration to the VM. It must be Base64-encoded, either directly or using the [base64encode](https://www.terraform.io/docs/configuration/functions/base64encode.html) Terraform function. For multiline strings, use a [heredoc syntax](https://www.terraform.io/docs/configuration/expressions.html#string-literals). Updating this parameter will trigger a stop/start of the VM.
 * `vm_initiated_shutdown_behavior` - (Optional) The VM behavior when you stop it. By default or if set to `stop`, the VM stops. If set to `restart`, the VM stops then automatically restarts. If set to `terminate`, the VM stops and is terminated.
-* `vm_type` - (Optional) The type of VM (`t2.small` by default). Updating this parameter will trigger a stop/start of the VM.<br /> For more information, see [Instance Types](https://docs.outscale.com/en/userguide/Instance-Types.html).
+* `vm_type` - (Optional) The type of VM (`t2.small` by default). Updating this parameter will trigger a stop/start of the VM.<br /> For more information, see [VM Types](https://docs.outscale.com/en/userguide/VM-Types.html).
 
 ## Attribute Reference
 
 The following attributes are exported:
 
-* `admin_password` - (Windows VM only) The administrator password of the VM. This password is encrypted with the keypair you specified when launching the VM and encoded in Base64. You need to wait about 10 minutes after launching the VM to be able to retrieve this password.<br />If `get_admin_password` is false or not specified, the VM resource is created without the `admin_password` attribute. Once `admin_password` is available, it will appear in the Terraform state after the next **refresh** or **apply** command.<br />If `get_admin_password` is true, the VM resource itself is not considered created until the `admin_password` attribute is available.<br />Note also that after the first reboot of the VM, this attribute can no longer be retrieved. For more information on how to use this password to connect to the VM, see [Accessing a Windows Instance](https://docs.outscale.com/en/userguide/Accessing-a-Windows-Instance.html).
+* `admin_password` - (Windows VM only) The administrator password of the VM. This password is encrypted with the keypair you specified when launching the VM and encoded in Base64. You need to wait about 10 minutes after launching the VM to be able to retrieve this password.<br />If `get_admin_password` is false or not specified, the VM resource is created without the `admin_password` attribute. Once `admin_password` is available, it will appear in the Terraform state after the next **refresh** or **apply** command.<br />If `get_admin_password` is true, the VM resource itself is not considered created until the `admin_password` attribute is available.<br />Note also that after the first reboot of the VM, this attribute can no longer be retrieved. For more information on how to use this password to connect to the VM, see [Accessing a Windows VM](https://docs.outscale.com/en/userguide/Accessing-a-Windows-VM.html).
 * `architecture` - The architecture of the VM (`i386` \| `x86_64`).
 * `block_device_mappings_created` - The block device mapping of the VM.
     * `bsu` - Information about the created BSU volume.

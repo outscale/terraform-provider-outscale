@@ -11,7 +11,7 @@ description: |-
 Manages a policy.
 
 For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Policies.html).  
-For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api.html#createpolicy).
+For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api.html#3ds-outscale-api-policy).
 
 ## Example Usage
 
@@ -29,7 +29,7 @@ resource "outscale_policy" "policy-1"  {
 The following arguments are supported:
 
 * `description` - (Optional) A description for the policy.
-* `document` - (Required) The policy document, corresponding to a JSON string that contains the policy. For more information, see [EIM Reference Information](https://docs.outscale.com/en/userguide/EIM-Reference-Information.html) and [EIM Policy Generator](https://docs.outscale.com/en/userguide/EIM-Policy-Generator.html).
+* `document` - (Required) The policy document, corresponding to a JSON string that contains the policy. This policy document can contain a maximum of 5120 non-whitespace characters. For more information, see [EIM Reference Information](https://docs.outscale.com/en/userguide/EIM-Reference-Information.html) and [EIM Policy Generator](https://docs.outscale.com/en/userguide/EIM-Policy-Generator.html).
 * `path` - (Optional) The path of the policy.
 * `policy_name` - (Required) The name of the policy.
 
