@@ -479,7 +479,7 @@ def main():
         if 'data_source' in name:
             dirpath = ARGS.output_directory + (
                 '/docs/data-sources' if ARGS.new_format else '/website/docs/d')
-            resource_name = re.search('outscale/data_source_outscale_(.*).go', filename).group(1)
+            resource_name = re.search('outscale/data_source_(?:outscale_)?(.*).go', filename).group(1)
             template = template_datasource
             # Load example, import and addprop
             try:
@@ -525,7 +525,7 @@ def main():
         elif 'resource' in name:
             dirpath = ARGS.output_directory + (
                 '/docs/resources' if ARGS.new_format else '/website/docs/r')
-            resource_name = re.search('outscale/resource_outscale_(.*).go', filename).group(1)
+            resource_name = re.search('outscale/resource_(?:outscale_)?(.*).go', filename).group(1)
             template = template_resource
             # Load example, import and addprop
             try:
