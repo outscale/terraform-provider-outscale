@@ -2,14 +2,15 @@ package outscale
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
-	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -40,7 +41,7 @@ func DataSourceOutscaleOAPiKeyPairsRead(d *schema.ResourceData, meta interface{}
 
 	var resp oscgo.ReadKeypairsResponse
 	var statusCode int
-	err := resource.Retry(120*time.Second, func() *resource.RetryError {
+	err := retry.RetryContext(context.Background(), utils.ReadDefaultTimeout, func() *retry.RetryError {
 		var err error
 		rp, httpResp, err := conn.KeypairApi.ReadKeypairs(context.Background()).ReadKeypairsRequest(req).Execute()
 
@@ -52,32 +53,37 @@ func DataSourceOutscaleOAPiKeyPairsRead(d *schema.ResourceData, meta interface{}
 		return nil
 	})
 
-	var errString string
-
 	if err != nil {
 		if statusCode == http.StatusNotFound {
 			d.SetId("")
 			return nil
 		}
-		errString = err.Error()
-
-		return fmt.Errorf("Error retrieving OAPIKeyPair: %s", errString)
+		return fmt.Errorf("Error retrieving Keypair: %w", err)
 	}
 
 	if len(resp.GetKeypairs()) < 1 {
-		return fmt.Errorf("Unable to find key pair, please provide a better query criteria ")
+		return errors.New("Unable to find keypair, please provide a better query criteria")
 	}
 
-	d.SetId(resource.UniqueId())
+	d.SetId(id.UniqueId())
 
 	keypairs := make([]map[string]interface{}, len(resp.GetKeypairs()))
 	for k, v := range resp.GetKeypairs() {
 		keypair := make(map[string]interface{})
-		if v.GetKeypairName() != "" {
+		if v.HasKeypairName() {
 			keypair["keypair_name"] = v.GetKeypairName()
 		}
-		if v.GetKeypairFingerprint() != "" {
+		if v.HasKeypairFingerprint() {
 			keypair["keypair_fingerprint"] = v.GetKeypairFingerprint()
+		}
+		if v.HasKeypairId() {
+			keypair["keypair_id"] = v.GetKeypairId()
+		}
+		if v.HasKeypairType() {
+			keypair["keypair_type"] = v.GetKeypairType()
+		}
+		if v.HasTags() {
+			keypair["tags"] = tagsOSCAPIToMap(v.GetTags())
 		}
 		keypairs[k] = keypair
 	}
@@ -112,6 +118,15 @@ func DataSourceOutscaleKeyPairs() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						"keypair_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"keypair_type": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"tags": dataSourceTagsSchema(),
 					},
 				},
 			},
