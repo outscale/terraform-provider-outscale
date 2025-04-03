@@ -293,6 +293,8 @@ def treatAddPropData(field_to_update, part_to_update, addprop_content):
 def file_template(template, links, resource_name, data_type, input_field, output_field, example_content, import_content, extra_intro_content):
     if data_type  in [DataType.SINGULAR, DataType.FORCE_PLURAL, DataType.RESOURCE]:
         resource_name_singular = resource_name
+    elif resource_name[-3:] == 'ies':
+        resource_name_singular = resource_name[:-3] + 'y'
     else:
         resource_name_singular = resource_name[:-1]
     placeholders = links.get(resource_name_singular, 'NOT_FOUND {}'.format(resource_name_singular))
