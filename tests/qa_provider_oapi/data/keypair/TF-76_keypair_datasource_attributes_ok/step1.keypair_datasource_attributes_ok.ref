@@ -17,8 +17,11 @@
                         "filter": "########",
                         "id": "##id-0##",
                         "keypair_fingerprint": "########",
+                        "keypair_id": "##id-0##",
                         "keypair_name": "keyname_test_ford",
-                        "request_id": "########"
+                        "keypair_type": "ssh-rsa",
+                        "request_id": "########",
+                        "tags": []
                     },
                     "sensitive_attributes": []
                 }
@@ -33,9 +36,9 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-1##",
+                        "id": "##id-0##",
                         "keypair_fingerprint": "########",
-                        "keypair_id": "##id-1##",
+                        "keypair_id": "##id-0##",
                         "keypair_name": "keyname_test_ford",
                         "keypair_type": "ssh-rsa",
                         "private_key": "########",

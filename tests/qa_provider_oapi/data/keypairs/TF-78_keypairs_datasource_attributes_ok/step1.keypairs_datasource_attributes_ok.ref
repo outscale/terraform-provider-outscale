@@ -20,11 +20,17 @@
                         "keypairs": [
                             {
                                 "keypair_fingerprint": "########",
-                                "keypair_name": "keyname_test_2"
+                                "keypair_id": "##id-1##",
+                                "keypair_name": "keyname_test_",
+                                "keypair_type": "ssh-rsa",
+                                "tags": []
                             },
                             {
                                 "keypair_fingerprint": "########",
-                                "keypair_name": "keyname_test_"
+                                "keypair_id": "##id-2##",
+                                "keypair_name": "keyname_test_2",
+                                "keypair_type": "ssh-rsa",
+                                "tags": []
                             }
                         ],
                         "request_id": "########"
