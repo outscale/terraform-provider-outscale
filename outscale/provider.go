@@ -93,7 +93,6 @@ func Provider() *schema.Provider {
 			"outscale_volume_link":                       ResourceOutscaleVolumeLink(),
 			"outscale_net_attributes":                    ResourceOutscaleLinAttributes(),
 			"outscale_nat_service":                       ResourceOutscaleNatService(),
-			"outscale_subnet":                            ResourceOutscaleSubNet(),
 			"outscale_route":                             ResourceOutscaleRoute(),
 			"outscale_route_table":                       ResourceOutscaleRouteTable(),
 			"outscale_route_table_link":                  ResourceOutscaleLinkRouteTable(),
