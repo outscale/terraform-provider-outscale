@@ -69,6 +69,7 @@
                         ],
                         "accepter_net_id": "##id-1##",
                         "accepter_owner_id": "##id-3##",
+                        "expiration_date": "########",
                         "id": "##id-4##",
                         "net_peering_id": "##id-4##",
                         "request_id": "########",
@@ -79,7 +80,7 @@
                                 "net_id": "##id-2##"
                             }
                         ],
-                        "source_net_account_id": null,
+                        "source_net_account_id": "##id-3##",
                         "source_net_id": "##id-2##",
                         "state": [
                             {
@@ -87,10 +88,10 @@
                                 "name": "pending-acceptance"
                             }
                         ],
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net",
                         "outscale_net.outscale_net2"

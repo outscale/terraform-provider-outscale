@@ -52,6 +52,29 @@ func DataSourceOutscaleLinPeeringConnection() *schema.Resource {
 	}
 }
 
+func vpcOAPIPeeringConnectionOptionsSchema() *schema.Schema {
+	return &schema.Schema{
+		Type:     schema.TypeList,
+		Computed: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"ip_range": {
+					Type:     schema.TypeString,
+					Computed: true,
+				},
+				"account_id": {
+					Type:     schema.TypeString,
+					Computed: true,
+				},
+				"net_id": {
+					Type:     schema.TypeString,
+					Computed: true,
+				},
+			},
+		},
+	}
+}
+
 func DataSourceOutscaleLinPeeringConnectionRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 

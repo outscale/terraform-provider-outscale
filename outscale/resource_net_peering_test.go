@@ -14,7 +14,6 @@ func TestAccNet_PeeringConnection_basic(t *testing.T) {
 	resourceName := "outscale_net_peering.foo"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		IDRefreshName:            resourceName,
 		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{

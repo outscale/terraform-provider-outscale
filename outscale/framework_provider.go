@@ -208,5 +208,7 @@ func (p *frameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		NewResourcefGPU,
 		NewResourceKeypair,
 		NewResourceSubnet,
+		NewResourceNetPeering,
+		NewResourceNetPeeringAcceptation,
 	}
 }
