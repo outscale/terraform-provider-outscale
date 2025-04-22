@@ -54,6 +54,7 @@ IGNORE_END_ELEMENTS = ['request_id',
                        'load_balancer_names',
                        'listener_rule_name',
                        'backend_ips']
+IGNORE_TYPE_ELEMENTS = {'outscale_net_peering': 'expiration_date', 'outscale_net_peering_acceptation': 'expiration_date'}
 IGNORE_END_PATHS = []
 TINA_ID_PREFIXES = ['i', 'subnet', 'snap', 'img', 'vol', 'eni', 'vpc', 'igw', 'nat', 'vgw', 'pcx', 'sg', 'rtb', 'rtbassoc', 'vpn', 'vpcconn', 'ami', 'dxvif','vpce','fgpu','aar','ca']
 VARIABLES_FILE_NAME = ['resources.auto.tfvars']
@@ -149,6 +150,13 @@ def validate_ref(path, parent, value, ids):
         if path.endswith(p):
             parent[path_end] = NO_TEST_VALUE
             return
+    if path_end == "type" and value in IGNORE_TYPE_ELEMENTS:
+        ignored_key = IGNORE_TYPE_ELEMENTS[value]
+
+        if 'instances' in parent:
+            for instance in parent['instances']:
+                if 'attributes' in instance and ignored_key in instance['attributes']:
+                    instance['attributes'][ignored_key] = NO_TEST_VALUE
 
     if type(value) == dict:
         validate_dict_ref(path, value, ids)

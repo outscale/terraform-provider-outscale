@@ -99,8 +99,6 @@ func Provider() *schema.Provider {
 			"outscale_nic":                               ResourceOutscaleNic(),
 			"outscale_snapshot":                          ResourceOutscaleSnapshot(),
 			"outscale_image_launch_permission":           ResourceOutscaleImageLaunchPermission(),
-			"outscale_net_peering":                       ResourceOutscaleLinPeeringConnection(),
-			"outscale_net_peering_acceptation":           ResourceOutscaleLinPeeringConnectionAccepter(),
 			"outscale_net_access_point":                  ResourceOutscaleNetAccessPoint(),
 			"outscale_nic_link":                          ResourceOutscaleNetworkInterfaceAttachment(),
 			"outscale_nic_private_ip":                    ResourceOutscaleNetworkInterfacePrivateIP(),

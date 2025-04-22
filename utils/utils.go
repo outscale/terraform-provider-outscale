@@ -11,11 +11,14 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"reflect"
 	"regexp"
 	"strconv"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -409,4 +412,31 @@ func GetTypeSetDifferencesForUpdating(oldTypeSet, newTypeSet *schema.Set) (*sche
 	toAdd := newTypeSet.Difference(inter)
 	toRemove := oldTypeSet.Difference(inter)
 	return toRemove, toAdd
+}
+
+func GetAttrTypes(model any) map[string]attr.Type {
+	attrTypes := make(map[string]attr.Type)
+
+	v := reflect.ValueOf(model)
+	t := v.Type()
+
+	for i := range v.NumField() {
+		field := t.Field(i)
+		tfsdkTag := field.Tag.Get("tfsdk")
+		if tfsdkTag == "" {
+			continue
+		}
+
+		switch field.Type {
+		case reflect.TypeOf(types.String{}):
+			attrTypes[tfsdkTag] = types.StringType
+		case reflect.TypeOf(types.Bool{}):
+			attrTypes[tfsdkTag] = types.BoolType
+		case reflect.TypeOf(types.Int64{}):
+			attrTypes[tfsdkTag] = types.Int64Type
+		case reflect.TypeOf(types.Float64{}):
+			attrTypes[tfsdkTag] = types.Float64Type
+		}
+	}
+	return attrTypes
 }

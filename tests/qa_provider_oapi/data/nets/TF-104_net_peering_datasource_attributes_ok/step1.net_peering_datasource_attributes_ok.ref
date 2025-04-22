@@ -117,6 +117,7 @@
                         ],
                         "accepter_net_id": "##id-1##",
                         "accepter_owner_id": "##id-0##",
+                        "expiration_date": "########",
                         "id": "##id-2##",
                         "net_peering_id": "##id-2##",
                         "request_id": "########",
@@ -127,7 +128,7 @@
                                 "net_id": "##id-3##"
                             }
                         ],
-                        "source_net_account_id": null,
+                        "source_net_account_id": "##id-0##",
                         "source_net_id": "##id-3##",
                         "state": [
                             {
@@ -144,10 +145,10 @@
                                 "key": "name",
                                 "value": "test-net-peering"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net",
                         "outscale_net.outscale_net2"
