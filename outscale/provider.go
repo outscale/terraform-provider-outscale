@@ -236,7 +236,10 @@ func providerConfigureClient(d *schema.ResourceData) (interface{}, error) {
 	}
 	endpointsSet := d.Get("endpoints").(*schema.Set)
 	for _, endpointsSetI := range endpointsSet.List() {
-		endpoints := endpointsSetI.(map[string]string)
+		endpoints := make(map[string]string)
+		for key, value := range endpointsSetI.(map[string]interface{}) {
+			endpoints[key] = value.(string)
+		}
 		for _, endpointServiceName := range endpointServiceNames {
 			config.Endpoints[endpointServiceName] = endpoints[endpointServiceName]
 		}

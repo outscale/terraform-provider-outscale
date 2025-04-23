@@ -44,7 +44,7 @@ func TestAccOthers_LBUBasic(t *testing.T) {
 }
 
 func TestAccOthers_LBUPublicIp(t *testing.T) {
-	t.Skip("will be done soon")
+	t.Skip("Conflict UnlinkPublicIp: will be done soon")
 	t.Parallel()
 	var conf oscgo.LoadBalancer
 
@@ -181,7 +181,7 @@ func testAccOutscaleLBUConfig(r int) string {
 resource "outscale_load_balancer" "barRes" {
 	subregion_names = ["%sa"]
 	load_balancer_name               = "foobar-terraform-elb-%d"
-	
+
 	secured_cookies                  = true
 
 	listeners {
@@ -209,16 +209,16 @@ func testAccOutscaleLBUPublicIpConfig(r int) string {
 	resource "outscale_load_balancer" "barIp" {
 		subregion_names = ["%[1]sa"]
 		load_balancer_name = "foobar-terraform-elb-%[2]d"
-	  
+
 		listeners {
 		  backend_port           = 80
 		  backend_protocol       = "HTTP"
 		  load_balancer_protocol = "HTTP"
 		  load_balancer_port     = 80
 		}
-	  
+
 		public_ip = outscale_public_ip.my_public_ip.public_ip
-	  
+
 		tags {
 		  key = "name"
 		  value = "terraform-internet-facing-lb-with-eip"
