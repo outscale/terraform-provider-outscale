@@ -70,10 +70,10 @@
                         "request_id": "########",
                         "state": "available",
                         "tags": [],
-                        "tenancy": "default"
+                        "tenancy": "default",
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_dhcp_option.dhcp_option_1",
                         "outscale_net.outscale_net"
