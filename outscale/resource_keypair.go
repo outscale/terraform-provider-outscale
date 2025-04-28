@@ -339,7 +339,7 @@ func (r *resourceKeypair) Delete(ctx context.Context, req resource.DeleteRequest
 func setKeypairState(ctx context.Context, r *resourceKeypair, data *KeypairModel) error {
 
 	keypairFilters := oscgo.FiltersKeypair{
-		KeypairIds: &[]string{data.Id.ValueString()},
+		KeypairNames: &[]string{data.KeypairName.ValueString()},
 	}
 
 	readTimeout, diags := data.Timeouts.Read(ctx, utils.ReadDefaultTimeout)
