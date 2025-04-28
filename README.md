@@ -194,8 +194,8 @@ After building the provider manually, install it locally depending on your platf
 
 2. Move the plugin to the repository:
 ```sh
-mkdir -p .terraform.d/plugins/registry.terraform.io/outscale/outscale/1.1.0/linux_amd64
-mv terraform-provider-outscale_v1.1.0 .terraform.d/plugins/registry.terraform.io/outscale/outscale/1.1.0/linux_amd64/
+mkdir -p terraform.d/plugins/registry.terraform.io/outscale/outscale/1.1.0/linux_amd64
+mv terraform-provider-outscale_v1.1.0 terraform.d/plugins/registry.terraform.io/outscale/outscale/1.1.0/linux_amd64/
 ```
 
 3. Initialize Terraform:
@@ -215,8 +215,8 @@ terraform plan
 
 2. Move the plugin to the repository:
 ```sh
-mkdir -p .terraform.d/plugins/registry.terraform.io/outscale/outscale/1.1.0/darwin_arm64
-mv terraform-provider-outscale_v1.1.0 .terraform.d/plugins/registry.terraform.io/outscale/outscale/1.1.0/darwin_arm64/
+mkdir -p terraform.d/plugins/registry.terraform.io/outscale/outscale/1.1.0/darwin_arm64
+mv terraform-provider-outscale_v1.1.0 terraform.d/plugins/registry.terraform.io/outscale/outscale/1.1.0/darwin_arm64/
 ```
 
 3. Initialize Terraform:
