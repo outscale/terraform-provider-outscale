@@ -169,6 +169,7 @@ func (r *resourceNetPeeringAcceptation) Schema(ctx context.Context, _ resource.S
 func TagsSchemaComputedAttr() *schema.ListAttribute {
 	return &schema.ListAttribute{
 		Computed: true,
+		Optional: true,
 		ElementType: types.ObjectType{
 			AttrTypes: map[string]attr.Type{
 				"key":   types.StringType,

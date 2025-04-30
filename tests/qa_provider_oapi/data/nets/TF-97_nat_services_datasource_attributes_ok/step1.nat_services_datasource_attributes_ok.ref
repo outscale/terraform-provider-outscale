@@ -381,10 +381,10 @@
                         "net_id": "",
                         "request_id": "########",
                         "state": "",
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
-                    "sensitive_attributes": [],
-                    "private": "bnVsbA=="
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -402,10 +402,10 @@
                         "net_id": "##id-2##",
                         "request_id": "########",
                         "state": "available",
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_internet_service.outscale_internet_service",
                         "outscale_net.outscale_net"

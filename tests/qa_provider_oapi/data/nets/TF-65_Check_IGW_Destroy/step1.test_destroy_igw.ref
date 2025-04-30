@@ -19,10 +19,10 @@
                         "net_id": "",
                         "request_id": "########",
                         "state": "",
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.nomad"
                     ]
@@ -43,10 +43,10 @@
                         "net_id": "##id-1##",
                         "request_id": "########",
                         "state": "available",
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_internet_service.nomad",
                         "outscale_net.nomad"
@@ -786,7 +786,7 @@
                         "request_id": "########",
                         "state": "available",
                         "subnet_id": "##id-22##",
-                        "subregion_name": "us-east-2a",
+                        "subregion_name": "eu-west-2a",
                         "tags": [
                             {
                                 "key": "name",
@@ -819,7 +819,7 @@
                         "request_id": "########",
                         "state": "available",
                         "subnet_id": "##id-4##",
-                        "subregion_name": "us-east-2a",
+                        "subregion_name": "eu-west-2a",
                         "tags": [
                             {
                                 "key": "name",
@@ -919,7 +919,7 @@
                         ],
                         "os_family": "",
                         "performance": "medium",
-                        "placement_subregion_name": "us-east-2a",
+                        "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "primary_nic": [
                             {
@@ -1086,7 +1086,7 @@
                         ],
                         "os_family": "",
                         "performance": "medium",
-                        "placement_subregion_name": "us-east-2a",
+                        "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "primary_nic": [
                             {
@@ -1253,7 +1253,7 @@
                         ],
                         "os_family": "",
                         "performance": "medium",
-                        "placement_subregion_name": "us-east-2a",
+                        "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "primary_nic": [
                             {
@@ -1428,7 +1428,7 @@
                         ],
                         "os_family": "",
                         "performance": "medium",
-                        "placement_subregion_name": "us-east-2a",
+                        "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "primary_nic": [
                             {
@@ -1595,7 +1595,7 @@
                         ],
                         "os_family": "",
                         "performance": "medium",
-                        "placement_subregion_name": "us-east-2a",
+                        "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "primary_nic": [
                             {
@@ -1762,7 +1762,7 @@
                         ],
                         "os_family": "",
                         "performance": "medium",
-                        "placement_subregion_name": "us-east-2a",
+                        "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "primary_nic": [
                             {

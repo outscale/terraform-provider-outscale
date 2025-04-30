@@ -24,10 +24,10 @@
                                 "key": "name",
                                 "value": "InternetService"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
-                    "sensitive_attributes": [],
-                    "private": "bnVsbA=="
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -50,10 +50,10 @@
                                 "key": "name",
                                 "value": "InternetService"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_internet_service.outscale_internet_service",
                         "outscale_net.outscale_net"

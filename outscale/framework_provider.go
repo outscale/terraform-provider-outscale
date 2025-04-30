@@ -210,5 +210,7 @@ func (p *frameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		NewResourceSubnet,
 		NewResourceNetPeering,
 		NewResourceNetPeeringAcceptation,
+		NewResourceInternetService,
+		NewResourceInternetServiceLink,
 	}
 }
