@@ -20,8 +20,8 @@ Before starting, **always back up your Terraform state and configuration files.*
 
 ## 💥 Breaking Changes
 
-- **Access Key Resource Behavior:**  
-  In versions **< v0.9.0**, creating an `access_key` **without an expiration date** is no longer supported.  
+- **Access Key Resource Behavior:**
+  In versions **< v0.9.0**, creating an `access_key` **without an expiration date** is no longer supported.
   See [Issue #342](https://github.com/outscale/terraform-provider-outscale/issues/342) for more details.
 
 ---
@@ -57,7 +57,7 @@ terraform init -upgrade
 
 ### Step 2: Clean Up Terraform State & Configuration
 
-Some resource attributes and block names have changed in v1.x.  
+Some resource attributes and block names have changed in v1.x.
 You must clean and adapt your state file and Terraform configuration.
 
 #### On Linux
