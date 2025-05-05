@@ -1,3 +1,13 @@
+## [1.1.1] - 2025-05-06
+### 🐛 Bug Fixes
+- 🐛 Better handle `endpoints` when using multiple Outscale provider aliases. ([#535](https://github.com/outscale/terraform-provider-outscale/issues/535))
+- 🐛 Fix `keypair` resource when import and refresh terrafom state after migration to v1.1.0. ([#536](https://github.com/outscale/terraform-provider-outscale/issues/536))
+
+### 🔧 Improvements
+- 🛠 Migrate `subnet` resource from SDKv2 to the plugin Framework.
+
+---
+
 ## [1.1.0] - 2025-04-03
 ### 🐛 Bug Fixes
 - 🐛 Better handle `server_certificate_id` in load_balancer listener. ([#509](https://github.com/outscale/terraform-provider-outscale/issues/509))
