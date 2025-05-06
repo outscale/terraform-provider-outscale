@@ -130,9 +130,7 @@
                             }
                         ],
                         "application_sticky_cookie_policies": [],
-                        "backend_vm_ids": [
-                            "##id-5##"
-                        ],
+                        "backend_vm_ids": [],
                         "dns_name": "########",
                         "health_check": [
                             {
@@ -231,13 +229,13 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-6##",
-                        "link_public_ip_id": "##id-7##",
-                        "nic_account_id": "##id-8##",
-                        "nic_id": "##id-9##",
+                        "id": "##id-5##",
+                        "link_public_ip_id": "##id-6##",
+                        "nic_account_id": "##id-7##",
+                        "nic_id": "##id-8##",
                         "private_ip": "########",
                         "public_ip": "########",
-                        "public_ip_id": "##id-6##",
+                        "public_ip_id": "##id-5##",
                         "request_id": "########",
                         "tags": [
                             {
@@ -246,7 +244,7 @@
                             }
                         ],
                         "timeouts": null,
-                        "vm_id": "##id-5##"
+                        "vm_id": "##id-9##"
                     },
                     "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxODAwMDAwMDAwMDAwLCJkZWxldGUiOjE4MDAwMDAwMDAwMDB9fQ=="
@@ -263,13 +261,13 @@
                     "schema_version": 0,
                     "attributes": {
                         "allow_relink": null,
-                        "id": "##id-7##",
-                        "link_public_ip_id": "##id-7##",
-                        "nic_account_id": "##id-8##",
-                        "nic_id": "##id-9##",
+                        "id": "##id-6##",
+                        "link_public_ip_id": "##id-6##",
+                        "nic_account_id": "##id-7##",
+                        "nic_id": "##id-8##",
                         "private_ip": "########",
                         "public_ip": "########",
-                        "public_ip_id": "##id-6##",
+                        "public_ip_id": "##id-5##",
                         "request_id": "########",
                         "tags": [
                             {
@@ -278,7 +276,7 @@
                             }
                         ],
                         "timeouts": null,
-                        "vm_id": "##id-5##"
+                        "vm_id": "##id-9##"
                     },
                     "sensitive_attributes": [],
                     "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwfX0=",
@@ -300,7 +298,7 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "account_id": "##id-8##",
+                        "account_id": "##id-7##",
                         "description": "Terraform",
                         "id": "##id-10##",
                         "inbound_rules": [],
@@ -350,7 +348,7 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-5##",
+                        "id": "##id-9##",
                         "image_id": "##id-12##",
                         "is_source_dest_checked": false,
                         "keypair_name": "KP-TF01",
@@ -396,7 +394,7 @@
                         ],
                         "timeouts": null,
                         "user_data": "",
-                        "vm_id": "##id-5##",
+                        "vm_id": "##id-9##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },

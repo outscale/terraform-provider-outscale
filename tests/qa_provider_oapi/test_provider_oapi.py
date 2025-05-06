@@ -6,6 +6,7 @@ import os
 import subprocess
 import pytest
 import json
+import random
 
 from qa_provider_oapi.check import main
 
@@ -398,9 +399,14 @@ Log: {}
             if self.error:
                 self.logger.error(self.log)
 
-    def run_cmd(self, cmd, exp_ret_code=0):
+    def run_cmd(self, cmd, exp_ret_code=0, env_append=None):
         self.logger.debug("Exec: %s", cmd)
-        proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        env=os.environ.copy()
+        if env_append:
+            env.update(env_append)
+
+        proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
         stdout, stderr = proc.communicate()
         stdout = stdout.decode("utf-8")
         stderr = stderr.decode("utf-8")
@@ -412,34 +418,34 @@ Log: {}
             self.log += "\nERROR:\nCMD '{}' failed\nStdout: {}\nStderr: {}".format(cmd, stdout, stderr)
             print(self.log)
 
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             assert False, 'Incorrect return code {}, expected {}'.format(proc.returncode, exp_ret_code)
         return stdout, stderr
 
     def exec_test_step(self, tf_file_path, out_file_path):
         self.logger.debug("Exec step : {}".format(tf_file_path))
         self.log += "\nTerraform validate:\n{}".format(self.run_cmd("terraform validate -no-color")[0])
-        self.log += "\nTerraform plan:\n{}".format(self.run_cmd("export TF_VAR_suffixe_lbu_name=$((RANDOM%10000)) && terraform plan -lock=false -no-color")[0])
-        self.log += "\nTerraform apply:\n{}".format(self.run_cmd("export TF_VAR_suffixe_lbu_name=$((RANDOM%10000)) && terraform apply -auto-approve -lock=false -no-color")[0])
+        self.log += "\nTerraform plan:\n{}".format(self.run_cmd("terraform plan -lock=false -no-color", env_append={"TF_VAR_suffixe_lbu_name": str(random.randint(0, 9999))})[0])
+        self.log += "\nTerraform apply:\n{}".format(self.run_cmd("terraform apply -auto-approve -lock=false -no-color", env_append={"TF_VAR_suffixe_lbu_name": str(random.randint(0, 9999))})[0])
         self.log += "\nTerraform show:\n{}".format(self.run_cmd("terraform show -no-color")[0])
         self.run_cmd("terraform state pull > {}".format(out_file_path))
 
@@ -495,7 +501,7 @@ Log: {}
             raise error
         finally:
             try:
-                self.run_cmd("export TF_VAR_suffixe_lbu_name=$((RANDOM%10000)) && terraform destroy -auto-approve -no-color")
+                self.run_cmd("terraform destroy -auto-approve -no-color", env_append={"TF_VAR_suffixe_lbu_name": str(random.randint(0, 9999))})
             finally:
                 self.run_cmd("rm -f test.tf")
                 self.run_cmd("rm -f terraform.tfstate")
