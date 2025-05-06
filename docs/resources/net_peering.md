@@ -41,7 +41,7 @@ resource "outscale_net_peering" "net_peering01" {
 The following arguments are supported:
 
 * `accepter_net_id` - (Required) The ID of the Net you want to connect with.
-* `accepter_owner_id` - (Optional) The account ID of the owner of the Net you want to connect with. By default, the account ID of the owner of the Net from which the peering request is sent. <br /><br/ > 
+* `accepter_owner_id` - (Optional) The account ID of the owner of the Net you want to connect with. By default, the account ID of the owner of the Net from which the peering request is sent. <br /><br/ >
 This parameter is required if the Net you want to connect with does not belong to you.
 * `source_net_id` - (Required) The ID of the Net you send the peering request from.
 * `tags` - (Optional) A tag to add to this resource. You can specify this argument several times.
