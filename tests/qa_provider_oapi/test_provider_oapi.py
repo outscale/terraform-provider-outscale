@@ -208,7 +208,7 @@ def compare_json_lists(path, list_out, list_ref, ids):
                 pass
         if errors:
             assert False, 'Could not match list values for path {}, {}'.format(path, errors)
-    ids = current_ids 
+    ids = current_ids
 
 def compare_json_sets(path, set_out, set_ref, ids):
     assert len(set_out) == len(set_ref)
@@ -232,7 +232,7 @@ def compare_json_sets(path, set_out, set_ref, ids):
                 pass
         if errors:
                 assert False, 'Could not match set values for path {}, {}'.format(path, errors)
-     
+
     ids = current_ids
 
 
@@ -329,30 +329,46 @@ class ProviderOapiMeta(type):
             func.__name__ = "test_{}_{}".format(resource, test_name)
             return func
 
-        for resource in os.listdir(ROOT_DIR):
-            if os.getenv('SKIP_NETS', False):
-                if resource == "nets":
+
+        def is_test_dir(dirs):
+            return all(dir.startswith("TF") for dir in dirs)
+
+        def get_subdirs(root_dir):
+            items = os.listdir(root_dir)
+            return [item for item in items if os.path.isdir(os.path.join(root_dir, item))]
+
+        def find_resources(root_dir):
+            subdirs = get_subdirs(root_dir)
+            resource = os.path.basename(root_dir)
+            print("resource: "+resource)
+            print(str(subdirs))
+
+            if subdirs:
+                if is_test_dir(subdirs):
+                    for test in subdirs:
+                        test_path = os.path.join(root_dir, test)
+                        logger.debug("Build test: '%s'", test_path)
+                        func = create_test_func(resource, test, test_path)
+                        if skip_tests(func.__name__):
+                            logger.debug(" %s is skipped at moment, But it must be fixed\n", func.__name__)
+                            continue
+                        attrs[func.__name__] = func
+                else:
+                    for subdir in subdirs:
+                        find_resources(os.path.join(root_dir, subdir))
+
+        if (test_folder := os.getenv('TEST_FOLDER')) is not None:
+            test_folder_path = os.path.join(os.path.dirname(__file__), 'data', test_folder)
+            find_resources(test_folder_path)
+        else:
+            for subdir in get_subdirs(ROOT_DIR):
+                if os.getenv('SKIP_NETS', False) and subdir == "nets":
                     continue
-            if os.getenv('RUN_NETS_ONLY', False):
-                if resource != "nets":
+                if os.getenv('RUN_NETS_ONLY', False) and subdir != "nets":
                     continue
-            path = "{}/{}".format(ROOT_DIR, resource)
-            if not os.path.isdir(path):
-                logger.warning("Unexpected file: '%s'", path)
-                continue
-            if resource.startswith('.'):
-                continue
-            for test in os.listdir(path):
-                path = "{}/{}/{}".format(ROOT_DIR, resource, test)
-                if not os.path.isdir(path):
-                    logger.warning("Unexpected file: '%s'", path)
-                    continue
-                logger.debug("Build test: '%s'", path)
-                func = create_test_func(resource, test, path)
-                if skip_tests(func.__name__):
-                    logger.debug(" %s is skipped at moment, But it must be fixed\n", func.__name__)
-                    continue
-                attrs[func.__name__] = func
+                subdir_path = os.path.join(os.path.dirname(__file__), 'data', subdir)
+                find_resources(subdir_path)
+
         return type.__new__(cls, name, bases, attrs)
 
 
@@ -404,26 +420,26 @@ Log: {}
             self.log += "\nERROR:\nCMD '{}' failed\nStdout: {}\nStderr: {}".format(cmd, stdout, stderr)
             print(self.log)
 
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             assert False, 'Incorrect return code {}, expected {}'.format(proc.returncode, exp_ret_code)
         return stdout, stderr
 
