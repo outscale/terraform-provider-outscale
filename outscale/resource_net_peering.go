@@ -497,9 +497,7 @@ func setNetPeeringState(ctx context.Context, r *resourceNetPeering, data NetPeer
 	}
 
 	netPeering := readResp.GetNetPeerings()[0]
-	if len(*netPeering.Tags) > 0 {
-		data.Tags = getTagsFromApiResponse(netPeering.GetTags())
-	}
+	data.Tags = getTagsFromApiResponse(netPeering.GetTags())
 
 	sourceNet, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: netAttrTypes}, SourceNetToList(netPeering.GetSourceNet()))
 	if diags.HasError() {
