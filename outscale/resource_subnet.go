@@ -465,9 +465,7 @@ func setSubnetState(ctx context.Context, r *resourceSubnet, data SubnetModel) (S
 	}
 
 	subnet := readResp.GetSubnets()[0]
-	if len(*subnet.Tags) > 0 {
-		data.Tags = getTagsFromApiResponse(subnet.GetTags())
-	}
+	data.Tags = getTagsFromApiResponse(subnet.GetTags())
 
 	data.RequestId = types.StringValue(readResp.ResponseContext.GetRequestId())
 	data.AvailableIpsCount = types.Int32Value(subnet.GetAvailableIpsCount())

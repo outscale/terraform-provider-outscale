@@ -389,9 +389,7 @@ func setNetState(ctx context.Context, r *netResource, data NetModel) (NetModel, 
 
 	net := readResp.GetNets()[0]
 	data.Id = types.StringValue(net.GetNetId())
-	if len(*net.Tags) > 0 {
-		data.Tags = getTagsFromApiResponse(net.GetTags())
-	}
+	data.Tags = getTagsFromApiResponse(net.GetTags())
 	data.NetId = types.StringValue(net.GetNetId())
 	data.DhcpOptionsSetId = types.StringValue(net.GetDhcpOptionsSetId())
 	data.IpRange = types.StringValue(net.GetIpRange())

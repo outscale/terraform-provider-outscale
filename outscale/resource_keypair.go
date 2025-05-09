@@ -369,9 +369,7 @@ func setKeypairState(ctx context.Context, r *resourceKeypair, data *KeypairModel
 	}
 
 	keypair := readResp.GetKeypairs()[0]
-	if len(*keypair.Tags) > 0 {
-		data.Tags = getTagsFromApiResponse(keypair.GetTags())
-	}
+	data.Tags = getTagsFromApiResponse(keypair.GetTags())
 	data.KeypairFingerprint = types.StringValue(keypair.GetKeypairFingerprint())
 	data.KeypairName = types.StringValue(keypair.GetKeypairName())
 	data.KeypairType = types.StringValue(keypair.GetKeypairType())
