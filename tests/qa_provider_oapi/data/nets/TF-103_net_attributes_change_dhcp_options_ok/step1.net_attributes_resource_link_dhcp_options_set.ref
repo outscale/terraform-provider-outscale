@@ -85,10 +85,10 @@
                                 "value": "test-net-attributes"
                             }
                         ],
-                        "tenancy": "default"
+                        "tenancy": "default",
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_dhcp_option.outscale_dhcp_option2",
                         "outscale_net.outscale_net"
