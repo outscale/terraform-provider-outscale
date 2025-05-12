@@ -50,10 +50,10 @@
                                 "key": "test",
                                 "value": "internet_service"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
-                    "sensitive_attributes": [],
-                    "private": "bnVsbA=="
+                    "sensitive_attributes": []
                 }
             ]
         }
