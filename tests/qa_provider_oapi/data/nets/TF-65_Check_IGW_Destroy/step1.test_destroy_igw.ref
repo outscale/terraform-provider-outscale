@@ -19,10 +19,10 @@
                         "net_id": "",
                         "request_id": "########",
                         "state": "",
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.nomad"
                     ]
@@ -43,10 +43,10 @@
                         "net_id": "##id-1##",
                         "request_id": "########",
                         "state": "available",
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_internet_service.nomad",
                         "outscale_net.nomad"

@@ -58,10 +58,10 @@
                                 "key": "newTag",
                                 "value": "IGW"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
-                    "sensitive_attributes": [],
-                    "private": "bnVsbA=="
+                    "sensitive_attributes": []
                 }
             ]
         }
