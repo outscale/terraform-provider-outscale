@@ -9,7 +9,6 @@ import shutil
 import os
 import sys
 import yaml
-import logging
 # Local
 import utils
 
@@ -488,25 +487,25 @@ def main():
                              'r') as f:
                     example_content = f.read()
             except FileNotFoundError as e:
-                logging.DEBUG("'%s' not found: %s", resource_name, e)
+                pass
             try:
                 with io.open('{}/Content/data-sources/{}-import.md'.format(ARGS.template_directory, resource_name),
                              'r') as f:
                     import_content = f.read()
             except FileNotFoundError as e:
-                logging.DEBUG("'%s' not found: %s", resource_name, e)
+                pass
             try:
                 with io.open('{}/Content/data-sources/{}-addprop.yaml'.format(ARGS.template_directory, resource_name),
                              'r') as f:
                     addprop_content = yaml.load(f, yaml.FullLoader)
             except FileNotFoundError as e:
-                logging.DEBUG("'%s' not found: %s", resource_name, e)
+                pass
             try:
                 with io.open('{}/Content/data-sources/{}-intro.md'.format(ARGS.template_directory, resource_name),
                              'r') as f:
                     extra_intro_content  = f.read()
             except FileNotFoundError as e:
-                logging.DEBUG("'%s' not found: %s", resource_name, e)
+                pass
 
             if resource_name == 'vms_state':
                 template = template_datasources
@@ -534,25 +533,25 @@ def main():
                              'r') as f:
                     example_content = f.read()
             except FileNotFoundError as e:
-                logging.DEBUG("'%s' not found: %s", resource_name, e)
+                pass
             try:
                 with io.open('{}/Content/resources/{}-import.md'.format(ARGS.template_directory, resource_name),
                              'r') as f:
                     import_content = f.read()
             except FileNotFoundError as e:
-                logging.DEBUG("'%s' not found: %s", resource_name, e)
+                pass
             try:
                 with io.open('{}/Content/resources/{}-addprop.yaml'.format(ARGS.template_directory, resource_name),
                              'r') as f:
                     addprop_content = yaml.load(f, yaml.FullLoader)
             except FileNotFoundError as e:
-                logging.DEBUG("'%s' not found: %s", resource_name, e)
+                pass
             try:
                 with io.open('{}/Content/resources/{}-intro.md'.format(ARGS.template_directory, resource_name),
                              'r') as f:
                     extra_intro_content  = f.read()
             except FileNotFoundError as e:
-                logging.DEBUG("'%s' not found: %s", resource_name, e)
+                pass
         else:
             print('This filename, {} is not in a known format - we do not treat it.'.format(name))
             continue
