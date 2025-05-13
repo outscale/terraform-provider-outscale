@@ -1,3 +1,14 @@
+## [1.1.2] - 2025-05-13
+### 🐛 Bug Fixes
+- 🐛 Fix `tags` when removed from resources using the plugin Framework.
+- 🐛 Fix `net_id` dependencies force replacement.
+
+### 🔧 Improvements
+- 🛠 Migrate `net_peering` resource from SDKv2 to the plugin Framework.
+- 🛠 Migrate `net_peering_acceptation` resource from SDKv2 to the plugin Framework.
+
+---
+
 ## [1.1.1] - 2025-05-06
 ### 🐛 Bug Fixes
 - 🐛 Better handle `endpoints` when using multiple Outscale provider aliases. ([#535](https://github.com/outscale/terraform-provider-outscale/issues/535))
