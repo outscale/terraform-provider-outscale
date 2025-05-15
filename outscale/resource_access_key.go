@@ -189,7 +189,7 @@ func (r *resourceAccessKey) Create(ctx context.Context, req resource.CreateReque
 
 	var createResp oscgo.CreateAccessKeyResponse
 	err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.AccessKeyApi.CreateAccessKey(context.Background()).CreateAccessKeyRequest(createReq).Execute()
+		rp, httpResp, err := r.Client.AccessKeyApi.CreateAccessKey(ctx).CreateAccessKeyRequest(createReq).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -294,7 +294,7 @@ func (r *resourceAccessKey) Update(ctx context.Context, req resource.UpdateReque
 	}
 	var updateResp oscgo.UpdateAccessKeyResponse
 	err := retry.RetryContext(ctx, updateTimeout, func() *retry.RetryError {
-		resp, httpResp, err := r.Client.AccessKeyApi.UpdateAccessKey(context.Background()).UpdateAccessKeyRequest(updateReq).Execute()
+		resp, httpResp, err := r.Client.AccessKeyApi.UpdateAccessKey(ctx).UpdateAccessKeyRequest(updateReq).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -363,7 +363,7 @@ func (r *resourceAccessKey) Delete(ctx context.Context, req resource.DeleteReque
 	}
 
 	err := retry.RetryContext(ctx, deleteTimeout, func() *retry.RetryError {
-		_, httpResp, err := r.Client.AccessKeyApi.DeleteAccessKey(context.Background()).DeleteAccessKeyRequest(delReq).Execute()
+		_, httpResp, err := r.Client.AccessKeyApi.DeleteAccessKey(ctx).DeleteAccessKeyRequest(delReq).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -399,7 +399,7 @@ func setAccessKeyState(ctx context.Context, r *resourceAccessKey, data *AccessKe
 
 	var readResp oscgo.ReadAccessKeysResponse
 	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.AccessKeyApi.ReadAccessKeys(context.Background()).ReadAccessKeysRequest(readReq).Execute()
+		rp, httpResp, err := r.Client.AccessKeyApi.ReadAccessKeys(ctx).ReadAccessKeysRequest(readReq).Execute()
 
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -449,7 +449,7 @@ func inactiveAccessKey(ctx context.Context, r *resourceAccessKey, data AccessKey
 	defer cancel()
 
 	err := retry.RetryContext(ctx, updateTimeout, func() *retry.RetryError {
-		_, httpResp, err := r.Client.AccessKeyApi.UpdateAccessKey(context.Background()).UpdateAccessKeyRequest(req).Execute()
+		_, httpResp, err := r.Client.AccessKeyApi.UpdateAccessKey(ctx).UpdateAccessKeyRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}

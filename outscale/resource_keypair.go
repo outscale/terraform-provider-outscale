@@ -176,7 +176,7 @@ func (r *resourceKeypair) Create(ctx context.Context, req resource.CreateRequest
 
 	var createResp oscgo.CreateKeypairResponse
 	err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.KeypairApi.CreateKeypair(context.Background()).CreateKeypairRequest(createReq).Execute()
+		rp, httpResp, err := r.Client.KeypairApi.CreateKeypair(ctx).CreateKeypairRequest(createReq).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -321,7 +321,7 @@ func (r *resourceKeypair) Delete(ctx context.Context, req resource.DeleteRequest
 	}
 
 	err := retry.RetryContext(ctx, deleteTimeout, func() *retry.RetryError {
-		_, httpResp, err := r.Client.KeypairApi.DeleteKeypair(context.Background()).DeleteKeypairRequest(delReq).Execute()
+		_, httpResp, err := r.Client.KeypairApi.DeleteKeypair(ctx).DeleteKeypairRequest(delReq).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -354,7 +354,7 @@ func setKeypairState(ctx context.Context, r *resourceKeypair, data *KeypairModel
 	}
 	var readResp oscgo.ReadKeypairsResponse
 	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.KeypairApi.ReadKeypairs(context.Background()).ReadKeypairsRequest(readReq).Execute()
+		rp, httpResp, err := r.Client.KeypairApi.ReadKeypairs(ctx).ReadKeypairsRequest(readReq).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
