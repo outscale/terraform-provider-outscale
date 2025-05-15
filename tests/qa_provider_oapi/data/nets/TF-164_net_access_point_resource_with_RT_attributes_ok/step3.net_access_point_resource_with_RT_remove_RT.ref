@@ -46,10 +46,10 @@
                         ],
                         "service_name": "com.outscale.us-east-2.api",
                         "state": "available",
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net",
                         "outscale_route_table.route_table-2"

@@ -1,36 +1,35 @@
 ## Create a Load Balancer###
 
 resource "outscale_load_balancer" "load_balancer01" {
-   load_balancer_name = "terraform-lb-TF186-11"
-    subregion_names    = ["${var.region}a"]
-    listeners {
-        backend_port           = 8080
-        backend_protocol       = "HTTP"
-        load_balancer_protocol = "HTTP"
-        load_balancer_port     = 8080
-     }
+  load_balancer_name = "terraform-lb-TF186-${var.suffixe_lbu_name}"
+  subregion_names    = ["${var.region}a"]
+  listeners {
+    backend_port           = 8080
+    backend_protocol       = "HTTP"
+    load_balancer_protocol = "HTTP"
+    load_balancer_port     = 8080
+  }
 }
 
 
 ## Create the datasource###
 
-data "outscale_quotas" "lbu-quota" { 
-   filter {
-        name     = "collections"
-        values   = ["LBU"]
-    }
+data "outscale_quotas" "lbu-quota" {
   filter {
-        name     = "quota_names"
-        values   = ["lb_listeners_limit"]
-    }
+    name   = "collections"
+    values = ["LBU"]
+  }
   filter {
-        name     = "quota_types"
-        values   = ["terraform-lb-TF186-11"]
-    }
+    name   = "quota_names"
+    values = ["lb_listeners_limit"]
+  }
   filter {
-        name     = "short_descriptions"
-        values   = ["Load Balancer Listeners Limit"]
-    }
-depends_on = [outscale_load_balancer.load_balancer01]
+    name   = "quota_types"
+    values = [outscale_load_balancer.load_balancer01.load_balancer_name]
+  }
+  filter {
+    name   = "short_descriptions"
+    values = ["Load Balancer Listeners Limit"]
+  }
+  depends_on = [outscale_load_balancer.load_balancer01]
 }
-

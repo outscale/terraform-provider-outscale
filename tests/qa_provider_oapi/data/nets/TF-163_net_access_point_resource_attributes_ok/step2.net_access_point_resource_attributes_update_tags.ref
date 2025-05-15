@@ -49,10 +49,10 @@
                                 "key": "Name",
                                 "value": "terraform-Net-Access-Point"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net"
                     ]

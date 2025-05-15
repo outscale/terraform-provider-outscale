@@ -21,7 +21,7 @@
                         "listener_id": "##id-1##",
                         "listener_rule_id": "##id-2##",
                         "listener_rule_name": "########",
-                        "path_pattern": "",
+                        "path_pattern": null,
                         "priority": 1,
                         "request_id": "########",
                         "vm_ids": [

@@ -19,13 +19,473 @@
                         "quotas": [
                             {
                                 "account_id": "##id-1##",
-                                "description": "Maximum number of listeners for load balancers",
+                                "description": "Maximum number of VM this user can own",
                                 "max_value": "########",
-                                "name": "lb_listeners_limit",
+                                "name": "vm_limit",
+                                "quota_collection": "Compute",
+                                "quota_type": "########",
+                                "short_description": "VM Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number of total cores (virtual core)",
+                                "max_value": "########",
+                                "name": "core_limit",
+                                "quota_collection": "Compute",
+                                "quota_type": "########",
+                                "short_description": "Core Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number of total memory (GiB)",
+                                "max_value": "########",
+                                "name": "memory_limit",
+                                "quota_collection": "Compute",
+                                "quota_type": "########",
+                                "short_description": "Memory Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum IP addresses the user can allocate",
+                                "max_value": "########",
+                                "name": "ip_limit",
+                                "quota_collection": "Compute",
+                                "quota_type": "########",
+                                "short_description": "IP Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number of GPU the user can allocate",
+                                "max_value": "########",
+                                "name": "gpu_limit",
+                                "quota_collection": "Compute",
+                                "quota_type": "########",
+                                "short_description": "GPU Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number of dedicated servers",
+                                "max_value": "########",
+                                "name": "dedicated_server_limit",
+                                "quota_collection": "Compute",
+                                "quota_type": "########",
+                                "short_description": "Dedicated Server Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number of BSU volumes",
+                                "max_value": "########",
+                                "name": "volume_limit",
+                                "quota_collection": "Storage",
+                                "quota_type": "########",
+                                "short_description": "Volume Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum cumulated size of BSU volumes (GiB)",
+                                "max_value": "########",
+                                "name": "volume_size_limit",
+                                "quota_collection": "Storage",
+                                "quota_type": "########",
+                                "short_description": "Volume Size Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum cumulated size of IO1 volumes (GiB)",
+                                "max_value": "########",
+                                "name": "io1_volume_size_limit",
+                                "quota_collection": "Storage",
+                                "quota_type": "########",
+                                "short_description": "IO1 Volume Size Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum cumulated size of OS1 volumes (GiB)",
+                                "max_value": "########",
+                                "name": "os1_volume_size_limit",
+                                "quota_collection": "Storage",
+                                "quota_type": "########",
+                                "short_description": "OS1 Volume Size Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum cumulated size of GP2 volumes (GiB)",
+                                "max_value": "########",
+                                "name": "gp2_volume_size_limit",
+                                "quota_collection": "Storage",
+                                "quota_type": "########",
+                                "short_description": "GP2 Volume Size Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum cumulated size of ST1 volumes (GiB)",
+                                "max_value": "########",
+                                "name": "st1_volume_size_limit",
+                                "quota_collection": "Storage",
+                                "quota_type": "########",
+                                "short_description": "ST1 Volume Size Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum cumulated size of SC1 volumes (GiB)",
+                                "max_value": "########",
+                                "name": "sc1_volume_size_limit",
+                                "quota_collection": "Storage",
+                                "quota_type": "########",
+                                "short_description": "SC1 Volume Size Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum cumulated size of standard volumes (GiB)",
+                                "max_value": "########",
+                                "name": "standard_volume_size_limit",
+                                "quota_collection": "Storage",
+                                "quota_type": "########",
+                                "short_description": "Standard Volume Size Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number of snapshots",
+                                "max_value": "########",
+                                "name": "snapshot_limit",
+                                "quota_collection": "Storage",
+                                "quota_type": "########",
+                                "short_description": "Snapshot Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number of active snapshots",
+                                "max_value": "########",
+                                "name": "concurrent_snapshot_limit",
+                                "quota_collection": "Storage",
+                                "quota_type": "########",
+                                "short_description": "Concurrent Snapshot Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number of running snapshot export tasks",
+                                "max_value": "########",
+                                "name": "snapshot_export_limit",
+                                "quota_collection": "Storage",
+                                "quota_type": "########",
+                                "short_description": "Snapshot Exports Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number of running image export tasks",
+                                "max_value": "########",
+                                "name": "image_export_limit",
+                                "quota_collection": "Storage",
+                                "quota_type": "########",
+                                "short_description": "Image Exports Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number of IOPS delivered by provisioned IOPS volumes",
+                                "max_value": "########",
+                                "name": "iops_limit",
+                                "quota_collection": "Storage",
+                                "quota_type": "########",
+                                "short_description": "Provisioned IOPS Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number of prefix lists is reached.",
+                                "max_value": "########",
+                                "name": "prefix_list_limit",
+                                "quota_collection": "Prefix Lists",
+                                "quota_type": "########",
+                                "short_description": "Prefix Lists Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number of prefix list entries is reached.",
+                                "max_value": "########",
+                                "name": "prefix_list_entry_limit",
+                                "quota_collection": "Prefix Lists",
+                                "quota_type": "########",
+                                "short_description": "Prefix Lists Entry Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number of security groups",
+                                "max_value": "########",
+                                "name": "sg_limit",
+                                "quota_collection": "Security Groups",
+                                "quota_type": "########",
+                                "short_description": "Security Groups Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number of rules per security groups",
+                                "max_value": "########",
+                                "name": "sg_rule_limit",
+                                "quota_collection": "Security Groups",
+                                "quota_type": "########",
+                                "short_description": "Security Groups Rules Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number of groups assigned to a VM",
+                                "max_value": "########",
+                                "name": "vm_sg_limit",
+                                "quota_collection": "Security Groups",
+                                "quota_type": "########",
+                                "short_description": "VM Security Groups Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number of security groups per VPC",
+                                "max_value": "########",
+                                "name": "vpc_sg_limit",
+                                "quota_collection": "Security Groups",
+                                "quota_type": "########",
+                                "short_description": "VPC Security Groups Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number of rules per VPC security group",
+                                "max_value": "########",
+                                "name": "vpc_sg_rule_limit",
+                                "quota_collection": "Security Groups",
+                                "quota_type": "########",
+                                "short_description": "VPC Security Groups Rules Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number of VPC",
+                                "max_value": "########",
+                                "name": "vpc_limit",
+                                "quota_collection": "VPC",
+                                "quota_type": "########",
+                                "short_description": "VPC Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number of subnets per VPC",
+                                "max_value": "########",
+                                "name": "subnet_limit",
+                                "quota_collection": "VPC",
+                                "quota_type": "########",
+                                "short_description": "Subnet Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number of internet gateways",
+                                "max_value": "########",
+                                "name": "igw_limit",
+                                "quota_collection": "VPC",
+                                "quota_type": "########",
+                                "short_description": "Internet Gateway Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number of route tables per VPC",
+                                "max_value": "########",
+                                "name": "rtb_limit",
+                                "quota_collection": "VPC",
+                                "quota_type": "########",
+                                "short_description": "Route Table Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number of route rules per route table",
+                                "max_value": "########",
+                                "name": "rtb_rule_limit",
+                                "quota_collection": "VPC",
+                                "quota_type": "########",
+                                "short_description": "Route Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number of firewall bypassing VPCs",
+                                "max_value": "########",
+                                "name": "bypass_vpc_limit",
+                                "quota_collection": "VPC",
+                                "quota_type": "########",
+                                "short_description": "Bypass VPC limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number of peering connection in pending acceptance",
+                                "max_value": "########",
+                                "name": "networklink_request_limit",
+                                "quota_collection": "VPC",
+                                "quota_type": "########",
+                                "short_description": "Peering requests limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number of available peering connections per VPC",
+                                "max_value": "########",
+                                "name": "networklink_limit",
+                                "quota_collection": "VPC",
+                                "quota_type": "########",
+                                "short_description": "Peering connection limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number of VPC endpoints",
+                                "max_value": "########",
+                                "name": "network_endpoint_limit",
+                                "quota_collection": "VPC",
+                                "quota_type": "########",
+                                "short_description": "VPC Endpoint Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number of NAT gateways",
+                                "max_value": "########",
+                                "name": "nat_gateway_limit",
+                                "quota_collection": "VPC",
+                                "quota_type": "########",
+                                "short_description": "Nat Gateway Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number of VPN gateways",
+                                "max_value": "########",
+                                "name": "vpg_limit",
+                                "quota_collection": "VPN",
+                                "quota_type": "########",
+                                "short_description": "VPN Gateway Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number of CGW gateways",
+                                "max_value": "########",
+                                "name": "cgw_limit",
+                                "quota_collection": "VPN",
+                                "quota_type": "########",
+                                "short_description": "Customer Gateway Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number of VPN connections per VPN gateway",
+                                "max_value": "########",
+                                "name": "vpnc_limit",
+                                "quota_collection": "VPN",
+                                "quota_type": "########",
+                                "short_description": "VPN Connection Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number BGP advertised routes per VPN connection",
+                                "max_value": "########",
+                                "name": "bgp_route_limit",
+                                "quota_collection": "VPN",
+                                "quota_type": "########",
+                                "short_description": "BGP Route Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number of static routes per VPN connection",
+                                "max_value": "########",
+                                "name": "static_route_limit",
+                                "quota_collection": "VPN",
+                                "quota_type": "########",
+                                "short_description": "Static Route Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number of load balancers per region",
+                                "max_value": "########",
+                                "name": "lb_limit",
                                 "quota_collection": "LBU",
-                                "quota_type": "global",
-                                "short_description": "Load Balancer Listeners Limit",
-                                "used_value": 0
+                                "quota_type": "########",
+                                "short_description": "Load Balancer Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number of listener rules for an account",
+                                "max_value": "########",
+                                "name": "lb_rules_limit",
+                                "quota_collection": "LBU",
+                                "quota_type": "########",
+                                "short_description": "Load Balancer Listener Rules Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number of Direct Link connections",
+                                "max_value": "########",
+                                "name": "dl_connection_limit",
+                                "quota_collection": "Direct Link",
+                                "quota_type": "########",
+                                "short_description": "Direct Link Connection Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number Direct Link interfaces per connections",
+                                "max_value": "########",
+                                "name": "dl_interface_limit",
+                                "quota_collection": "Direct Link",
+                                "quota_type": "########",
+                                "short_description": "Direct Link Interface Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number of bypass group the user can own",
+                                "max_value": "########",
+                                "name": "bypass_group_limit",
+                                "quota_collection": "Other",
+                                "quota_type": "########",
+                                "short_description": "Bypass Group Limit",
+                                "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum size of a bypass group",
+                                "max_value": "########",
+                                "name": "bypass_group_size_limit",
+                                "quota_collection": "Other",
+                                "quota_type": "########",
+                                "short_description": "Bypass Group Size Limit",
+                                "used_value": "########"
                             }
                         ],
                         "request_id": "########"

@@ -23,9 +23,9 @@
                                 "max_value": "########",
                                 "name": "lb_listeners_limit",
                                 "quota_collection": "LBU",
-                                "quota_type": "terraform-lb-TF185-11",
+                                "quota_type": "########",
                                 "short_description": "Load Balancer Listeners Limit",
-                                "used_value": 1
+                                "used_value": "########"
                             }
                         ],
                         "request_id": "########"
