@@ -1,3 +1,9 @@
+## [1.1.3] - 2025-05-15
+### 🐛 Bug Fixes
+- 🐛 Fix `outscale_net_peering_acceptation` resource documentation.
+
+---
+
 ## [1.1.2] - 2025-05-13
 ### 🐛 Bug Fixes
 - 🐛 Fix `tags` when removed from resources using the plugin Framework.
