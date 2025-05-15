@@ -202,7 +202,7 @@ func (r *resourceNetPeeringAcceptation) Create(ctx context.Context, req resource
 
 	var createResp oscgo.AcceptNetPeeringResponse
 	err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.NetPeeringApi.AcceptNetPeering(context.Background()).AcceptNetPeeringRequest(createReq).Execute()
+		rp, httpResp, err := r.Client.NetPeeringApi.AcceptNetPeering(ctx).AcceptNetPeeringRequest(createReq).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -286,7 +286,7 @@ func (r *resourceNetPeeringAcceptation) setNetPeeringAcceptationState(ctx contex
 
 	var readResp oscgo.ReadNetPeeringsResponse
 	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.NetPeeringApi.ReadNetPeerings(context.Background()).ReadNetPeeringsRequest(readReq).Execute()
+		rp, httpResp, err := r.Client.NetPeeringApi.ReadNetPeerings(ctx).ReadNetPeeringsRequest(readReq).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
