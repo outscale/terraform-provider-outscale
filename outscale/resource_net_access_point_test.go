@@ -29,6 +29,28 @@ func TestAccNet_AccessPoint_basic(t *testing.T) {
 	})
 }
 
+func TestAccNet_AccessPoint_import(t *testing.T) {
+	t.Parallel()
+	resourceName := "outscale_net_access_point.net_access_point_1"
+	serviceName := fmt.Sprintf("com.outscale.%s.api", utils.GetRegion())
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccOutscaleNetAccessPointConfig(serviceName),
+			},
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"request_id"},
+			},
+		},
+	})
+}
+
 func testAccOutscaleNetAccessPointConfig(sName string) string {
 	return fmt.Sprintf(`
                 resource "outscale_net" "outscale_net" {
