@@ -1,7 +1,7 @@
 ## Create a Load Balancer###
 
 resource "outscale_load_balancer" "load_balancer01" {
-   load_balancer_name = "terraform-lb-TF186-11"
+   load_balancer_name = "terraform-lb-TF186-${var.suffixe_lbu_name}"
     subregion_names    = ["${var.region}a"]
     listeners {
         backend_port           = 8080
@@ -14,18 +14,9 @@ resource "outscale_load_balancer" "load_balancer01" {
 
 ## Create the datasource###
 
-data "outscale_quotas" "lbu-global" { 
-   filter {
-        name     = "collections"
-        values   = ["LBU"]
-    }
-  filter {
-        name     = "quota_names"
-        values   = ["lb_listeners_limit"]
-    }
-  filter {
-        name     = "quota_types"
-        values   = ["global"]
-    }
-
-}
+data "outscale_quotas" "lbu-global" {
+    filter {
+        name   = "quota_types"
+        values = ["global"]
+      }
+  }

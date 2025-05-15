@@ -54,7 +54,10 @@ IGNORE_END_ELEMENTS = ['request_id',
                        'load_balancer_name',
                        'load_balancer_names',
                        'listener_rule_name',
-                       'backend_ips']
+                       'backend_ips',
+                       'quota_type',
+                       'used_value'
+                       ]
 IGNORE_TYPE_ELEMENTS = {'outscale_net_peering': 'expiration_date', 'outscale_net_peering_acceptation': 'expiration_date'}
 IGNORE_END_PATHS = []
 TINA_ID_PREFIXES = ['i', 'subnet', 'snap', 'img', 'vol', 'eni', 'vpc', 'igw', 'nat', 'vgw', 'pcx', 'sg', 'rtb', 'rtbassoc', 'vpn', 'vpcconn', 'ami', 'dxvif','vpce','fgpu','aar','ca']
@@ -396,14 +399,10 @@ Log: {}
             if self.error:
                 self.logger.error(self.log)
 
-    def run_cmd(self, cmd, exp_ret_code=0, env_append=None):
+    def run_cmd(self, cmd, exp_ret_code=0):
         self.logger.debug("Exec: %s", cmd)
 
-        env=os.environ.copy()
-        if env_append:
-            env.update(env_append)
-
-        proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
+        proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = proc.communicate()
         stdout = stdout.decode("utf-8")
         stderr = stderr.decode("utf-8")
@@ -441,8 +440,8 @@ Log: {}
     def exec_test_step(self, tf_file_path, out_file_path):
         self.logger.debug("Exec step : {}".format(tf_file_path))
         self.log += "\nTerraform validate:\n{}".format(self.run_cmd(['terraform validate -no-color'])[0])
-        self.log += "\nTerraform plan:\n{}".format(self.run_cmd('terraform plan -lock=false -no-color', env_append={"TF_VAR_suffixe_lbu_name": str(random.randint(0, 9999))})[0])
-        self.log += "\nTerraform apply:\n{}".format(self.run_cmd('terraform apply -auto-approve -lock=false -no-color', env_append={"TF_VAR_suffixe_lbu_name": str(random.randint(0, 9999))})[0])
+        self.log += "\nTerraform plan:\n{}".format(self.run_cmd('terraform plan -lock=false -no-color')[0])
+        self.log += "\nTerraform apply:\n{}".format(self.run_cmd('terraform apply -auto-approve -lock=false -no-color')[0])
         self.log += "\nTerraform show:\n{}".format(self.run_cmd(['terraform show -no-color'])[0])
         self.run_cmd(['terraform state pull > {}'.format(out_file_path)])
 
@@ -497,7 +496,7 @@ Log: {}
             raise error
         finally:
             try:
-                self.run_cmd('terraform destroy -auto-approve -no-color', env_append={"TF_VAR_suffixe_lbu_name": str(random.randint(0, 9999))})
+                self.run_cmd('terraform destroy -auto-approve -no-color')
             finally:
                 self.run_cmd(['rm -f test.tf'])
                 self.run_cmd(['rm -f terraform.tfstate'])

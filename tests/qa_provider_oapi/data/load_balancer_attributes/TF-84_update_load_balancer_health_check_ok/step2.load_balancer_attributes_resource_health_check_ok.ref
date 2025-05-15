@@ -113,7 +113,7 @@
                             {
                                 "check_interval": 30,
                                 "healthy_threshold": 10,
-                                "path": "",
+                                "path": "/index.html",
                                 "port": 1024,
                                 "protocol": "TCP",
                                 "timeout": 5,
