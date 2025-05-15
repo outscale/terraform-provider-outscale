@@ -191,7 +191,7 @@ func (r *resourceSubnet) Create(ctx context.Context, req resource.CreateRequest,
 
 	var createResp oscgo.CreateSubnetResponse
 	err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.SubnetApi.CreateSubnet(context.Background()).CreateSubnetRequest(createReq).Execute()
+		rp, httpResp, err := r.Client.SubnetApi.CreateSubnet(ctx).CreateSubnetRequest(createReq).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -227,7 +227,7 @@ func (r *resourceSubnet) Create(ctx context.Context, req resource.CreateRequest,
 			var resp oscgo.ReadSubnetsResponse
 
 			err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
-				rp, httpResp, err := r.Client.SubnetApi.ReadSubnets(context.Background()).ReadSubnetsRequest(readReq).Execute()
+				rp, httpResp, err := r.Client.SubnetApi.ReadSubnets(ctx).ReadSubnetsRequest(readReq).Execute()
 				if err != nil {
 					return utils.CheckThrottling(httpResp, err)
 				}
@@ -246,7 +246,7 @@ func (r *resourceSubnet) Create(ctx context.Context, req resource.CreateRequest,
 		Delay:      5 * time.Second,
 	}
 
-	if _, err = stateConf.WaitForStateContext(context.Background()); err != nil {
+	if _, err = stateConf.WaitForStateContext(ctx); err != nil {
 		resp.Diagnostics.AddError(
 			"Error waiting for Subnet to be ready.",
 			err.Error(),
@@ -262,7 +262,7 @@ func (r *resourceSubnet) Create(ctx context.Context, req resource.CreateRequest,
 			MapPublicIpOnLaunch: data.MapPublicIpOnLaunch.ValueBool(),
 		}
 		err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
-			_, httpResp, err := r.Client.SubnetApi.UpdateSubnet(context.Background()).UpdateSubnetRequest(updateReq).Execute()
+			_, httpResp, err := r.Client.SubnetApi.UpdateSubnet(ctx).UpdateSubnetRequest(updateReq).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
 			}
@@ -368,7 +368,7 @@ func (r *resourceSubnet) Update(ctx context.Context, req resource.UpdateRequest,
 		MapPublicIpOnLaunch: planData.MapPublicIpOnLaunch.ValueBool(),
 	}
 	err = retry.RetryContext(ctx, updateTimeout, func() *retry.RetryError {
-		_, httpResp, err := r.Client.SubnetApi.UpdateSubnet(context.Background()).UpdateSubnetRequest(updateReq).Execute()
+		_, httpResp, err := r.Client.SubnetApi.UpdateSubnet(ctx).UpdateSubnetRequest(updateReq).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -418,7 +418,7 @@ func (r *resourceSubnet) Delete(ctx context.Context, req resource.DeleteRequest,
 	}
 
 	err := retry.RetryContext(ctx, deleteTimeout, func() *retry.RetryError {
-		_, httpResp, err := r.Client.SubnetApi.DeleteSubnet(context.Background()).DeleteSubnetRequest(delReq).Execute()
+		_, httpResp, err := r.Client.SubnetApi.DeleteSubnet(ctx).DeleteSubnetRequest(delReq).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -450,7 +450,7 @@ func setSubnetState(ctx context.Context, r *resourceSubnet, data SubnetModel) (S
 
 	var readResp oscgo.ReadSubnetsResponse
 	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.SubnetApi.ReadSubnets(context.Background()).ReadSubnetsRequest(readReq).Execute()
+		rp, httpResp, err := r.Client.SubnetApi.ReadSubnets(ctx).ReadSubnetsRequest(readReq).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}

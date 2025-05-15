@@ -160,7 +160,7 @@ func (r *resourceNetAttributes) Create(ctx context.Context, req resource.CreateR
 
 	var createResp oscgo.UpdateNetResponse
 	err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.NetApi.UpdateNet(context.Background()).UpdateNetRequest(createReq).Execute()
+		rp, httpResp, err := r.Client.NetApi.UpdateNet(ctx).UpdateNetRequest(createReq).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -243,7 +243,7 @@ func (r *resourceNetAttributes) Update(ctx context.Context, req resource.UpdateR
 
 	var createResp oscgo.UpdateNetResponse
 	err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.NetApi.UpdateNet(context.Background()).UpdateNetRequest(createReq).Execute()
+		rp, httpResp, err := r.Client.NetApi.UpdateNet(ctx).UpdateNetRequest(createReq).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -297,7 +297,7 @@ func (r *resourceNetAttributes) setNetAttributesState(ctx context.Context, data 
 	defer cancel()
 	var readResp oscgo.ReadNetsResponse
 	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.NetApi.ReadNets(context.Background()).ReadNetsRequest(readReq).Execute()
+		rp, httpResp, err := r.Client.NetApi.ReadNets(ctx).ReadNetsRequest(readReq).Execute()
 
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)

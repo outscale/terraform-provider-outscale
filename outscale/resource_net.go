@@ -179,7 +179,7 @@ func (r *netResource) Create(ctx context.Context, req resource.CreateRequest, re
 	var createResp oscgo.CreateNetResponse
 
 	err = retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.NetApi.CreateNet(context.Background()).CreateNetRequest(createReq).Execute()
+		rp, httpResp, err := r.Client.NetApi.CreateNet(ctx).CreateNetRequest(createReq).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -316,7 +316,7 @@ func (r *netResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 		NetId: data.NetId.ValueString(),
 	}
 	err := retry.RetryContext(ctx, deleteTimeout, func() *retry.RetryError {
-		_, httpResp, err := r.Client.NetApi.DeleteNet(context.Background()).DeleteNetRequest(delReq).Execute()
+		_, httpResp, err := r.Client.NetApi.DeleteNet(ctx).DeleteNetRequest(delReq).Execute()
 
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -373,7 +373,7 @@ func setNetState(ctx context.Context, r *netResource, data NetModel) (NetModel, 
 	defer cancel()
 	var readResp oscgo.ReadNetsResponse
 	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.NetApi.ReadNets(context.Background()).ReadNetsRequest(readReq).Execute()
+		rp, httpResp, err := r.Client.NetApi.ReadNets(ctx).ReadNetsRequest(readReq).Execute()
 
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
