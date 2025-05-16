@@ -266,7 +266,7 @@ func (r *resourceNetPeering) Create(ctx context.Context, req resource.CreateRequ
 
 		var readResp oscgo.ReadNetsResponse
 		err := retry.RetryContext(ctx, utils.ReadDefaultTimeout, func() *retry.RetryError {
-			rp, httpResp, err := r.Client.NetApi.ReadNets(context.Background()).ReadNetsRequest(req).Execute()
+			rp, httpResp, err := r.Client.NetApi.ReadNets(ctx).ReadNetsRequest(req).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
 			}
@@ -291,7 +291,7 @@ func (r *resourceNetPeering) Create(ctx context.Context, req resource.CreateRequ
 
 	var createResp oscgo.CreateNetPeeringResponse
 	err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.NetPeeringApi.CreateNetPeering(context.Background()).CreateNetPeeringRequest(createReq).Execute()
+		rp, httpResp, err := r.Client.NetPeeringApi.CreateNetPeering(ctx).CreateNetPeeringRequest(createReq).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -328,7 +328,7 @@ func (r *resourceNetPeering) Create(ctx context.Context, req resource.CreateRequ
 		Delay:      5 * time.Second,
 	}
 
-	if _, err = stateConf.WaitForStateContext(context.Background()); err != nil {
+	if _, err = stateConf.WaitForStateContext(ctx); err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf(
 				"Error waiting for Net Peering (%s) to become available.",
@@ -449,7 +449,7 @@ func (r *resourceNetPeering) Delete(ctx context.Context, req resource.DeleteRequ
 	}
 
 	err := retry.RetryContext(ctx, deleteTimeout, func() *retry.RetryError {
-		_, httpResp, err := r.Client.NetPeeringApi.DeleteNetPeering(context.Background()).DeleteNetPeeringRequest(delReq).Execute()
+		_, httpResp, err := r.Client.NetPeeringApi.DeleteNetPeering(ctx).DeleteNetPeeringRequest(delReq).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -481,7 +481,7 @@ func setNetPeeringState(ctx context.Context, r *resourceNetPeering, data NetPeer
 
 	var readResp oscgo.ReadNetPeeringsResponse
 	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.NetPeeringApi.ReadNetPeerings(context.Background()).ReadNetPeeringsRequest(readReq).Execute()
+		rp, httpResp, err := r.Client.NetPeeringApi.ReadNetPeerings(ctx).ReadNetPeeringsRequest(readReq).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -532,7 +532,7 @@ func ResourceNetPeeringConnectionStateRefreshFunc(ctx context.Context, r *resour
 		var resp oscgo.ReadNetPeeringsResponse
 
 		err := retry.RetryContext(ctx, utils.ReadDefaultTimeout, func() *retry.RetryError {
-			rp, httpResp, err := r.Client.NetPeeringApi.ReadNetPeerings(context.Background()).ReadNetPeeringsRequest(readReq).Execute()
+			rp, httpResp, err := r.Client.NetPeeringApi.ReadNetPeerings(ctx).ReadNetPeeringsRequest(readReq).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
 			}

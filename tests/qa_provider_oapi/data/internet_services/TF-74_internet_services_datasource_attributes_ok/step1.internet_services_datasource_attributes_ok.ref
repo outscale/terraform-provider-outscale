@@ -74,10 +74,10 @@
                                 "key": "name",
                                 "value": "Internet-service-1"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
-                    "sensitive_attributes": [],
-                    "private": "bnVsbA=="
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -100,10 +100,10 @@
                                 "key": "name",
                                 "value": "Internet-service-2"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
-                    "sensitive_attributes": [],
-                    "private": "bnVsbA=="
+                    "sensitive_attributes": []
                 }
             ]
         }

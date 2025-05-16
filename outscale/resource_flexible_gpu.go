@@ -249,7 +249,7 @@ func (r *fgpuResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		DeleteOnVmDeletion: planData.DeleteOnVmDeletion.ValueBoolPointer(),
 	}
 	err = retry.RetryContext(ctx, updateTimeout, func() *retry.RetryError {
-		_, httpResp, err := r.Client.FlexibleGpuApi.UpdateFlexibleGpu(context.Background()).UpdateFlexibleGpuRequest(updateReq).Execute()
+		_, httpResp, err := r.Client.FlexibleGpuApi.UpdateFlexibleGpu(ctx).UpdateFlexibleGpuRequest(updateReq).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -299,7 +299,7 @@ func (r *fgpuResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 		FlexibleGpuId: data.FlexibleGpuId.ValueString(),
 	}
 	err := retry.RetryContext(ctx, deleteTimeout, func() *retry.RetryError {
-		_, httpResp, err := r.Client.FlexibleGpuApi.DeleteFlexibleGpu(context.Background()).DeleteFlexibleGpuRequest(delReq).Execute()
+		_, httpResp, err := r.Client.FlexibleGpuApi.DeleteFlexibleGpu(ctx).DeleteFlexibleGpuRequest(delReq).Execute()
 
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -331,7 +331,7 @@ func setFlexibleGpuState(ctx context.Context, r *fgpuResource, data GpuModel) (G
 	defer cancel()
 	var readResp oscgo.ReadFlexibleGpusResponse
 	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.FlexibleGpuApi.ReadFlexibleGpus(context.Background()).ReadFlexibleGpusRequest(readReq).Execute()
+		rp, httpResp, err := r.Client.FlexibleGpuApi.ReadFlexibleGpus(ctx).ReadFlexibleGpusRequest(readReq).Execute()
 
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
