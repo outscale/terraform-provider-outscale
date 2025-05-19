@@ -1,0 +1,559 @@
+package outscale
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"strings"
+	"time"
+
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/terraform-provider-outscale/utils"
+)
+
+var (
+	_ resource.Resource                = &resourceRoute{}
+	_ resource.ResourceWithConfigure   = &resourceRoute{}
+	_ resource.ResourceWithImportState = &resourceRoute{}
+	_ resource.ResourceWithModifyPlan  = &resourceRoute{}
+)
+
+type RouteModel struct {
+	CreationMethod       types.String `tfsdk:"creation_method"`
+	DestinationIpRange   types.String `tfsdk:"destination_ip_range"`
+	DestinationServiceId types.String `tfsdk:"destination_service_id"`
+	GatewayId            types.String `tfsdk:"gateway_id"`
+	NatServiceId         types.String `tfsdk:"nat_service_id"`
+	NetAccessPointId     types.String `tfsdk:"net_access_point_id"`
+	NetPeeringId         types.String `tfsdk:"net_peering_id"`
+	NicId                types.String `tfsdk:"nic_id"`
+	State                types.String `tfsdk:"state"`
+	VmAccountId          types.String `tfsdk:"vm_account_id"`
+	VmId                 types.String `tfsdk:"vm_id"`
+	RouteTableId         types.String `tfsdk:"route_table_id"`
+	AwaitActiveState     types.Bool   `tfsdk:"await_active_state"`
+
+	Timeouts  timeouts.Value `tfsdk:"timeouts"`
+	RequestId types.String   `tfsdk:"request_id"`
+	Id        types.String   `tfsdk:"id"`
+}
+
+type resourceRoute struct {
+	Client *oscgo.APIClient
+}
+
+func NewResourceRoute() resource.Resource {
+	return &resourceRoute{}
+}
+
+func (r *resourceRoute) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
+	}
+	client, ok := req.ProviderData.(OutscaleClient_fw)
+	if !ok {
+		resp.Diagnostics.AddError(
+			"Unexpected Resource Configure Type",
+			fmt.Sprintf("Expected *osc.APIClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+		)
+
+		return
+	}
+	r.Client = client.OSCAPI
+}
+
+func (r *resourceRoute) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+
+	parts := strings.SplitN(req.ID, "_", 2)
+	if len(parts) != 2 || req.ID == "" {
+		resp.Diagnostics.AddError(
+			"Unexpected Import Identifier",
+			fmt.Sprintf("Expected import Route identifier in the format {route_table_id}_{destination_ip_range}, got: %v", req.ID),
+		)
+		return
+	}
+	routeTableId := parts[0]
+	destinationIpRange := parts[1]
+
+	var data RouteModel
+	var timeouts timeouts.Value
+	data.RouteTableId = types.StringValue(routeTableId)
+	data.DestinationIpRange = types.StringValue(destinationIpRange)
+	data.Id = types.StringValue(routeTableId + "_" + destinationIpRange)
+	resp.Diagnostics.Append(resp.State.GetAttribute(ctx, path.Root("timeouts"), &timeouts)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	data.Timeouts = timeouts
+
+	diags := resp.State.Set(ctx, &data)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+}
+
+func (r *resourceRoute) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_route"
+}
+
+var exclusiveTargets = []string{
+	"gateway_id",
+	"nat_service_id",
+	"net_peering_id",
+	"nic_id",
+	"vm_id",
+}
+
+func (r *resourceRoute) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() && req.Plan.Raw.IsFullyKnown() {
+		resp.Diagnostics.AddWarning(
+			"Resource Destruction Considerations",
+			"Applying this resource destruction will fully destroy this resource.",
+		)
+	} else {
+		configSetCount := 0
+		for _, target := range exclusiveTargets {
+			var valConfig types.String
+			resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root(target), &valConfig)...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+			if !valConfig.IsNull() {
+				configSetCount++
+			}
+		}
+		if configSetCount != 1 {
+			resp.Diagnostics.AddError(
+				"Mutually Exclusive Attributes.",
+				fmt.Sprintf("Exactly only one of %v can be set.", exclusiveTargets),
+			)
+		}
+	}
+}
+
+var awaitActiveStateDefaultValue = true
+
+func (r *resourceRoute) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		Blocks: map[string]schema.Block{
+			"timeouts": timeouts.Block(ctx, timeouts.Opts{
+				Create: true,
+				Read:   true,
+				Update: true,
+				Delete: true,
+			}),
+		},
+		Attributes: map[string]schema.Attribute{
+			"creation_method": schema.StringAttribute{
+				Computed: true,
+			},
+			"destination_ip_range": schema.StringAttribute{
+				Required: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
+			"destination_service_id": schema.StringAttribute{
+				Computed: true,
+			},
+			"gateway_id": schema.StringAttribute{
+				Computed: true,
+				Optional: true,
+			},
+			"nat_service_id": schema.StringAttribute{
+				Computed: true,
+				Optional: true,
+			},
+			"net_access_point_id": schema.StringAttribute{
+				Computed: true,
+			},
+			"net_peering_id": schema.StringAttribute{
+				Computed: true,
+				Optional: true,
+			},
+			"nic_id": schema.StringAttribute{
+				Computed: true,
+				Optional: true,
+			},
+			"state": schema.StringAttribute{
+				Computed: true,
+			},
+			"vm_account_id": schema.StringAttribute{
+				Computed: true,
+			},
+			"vm_id": schema.StringAttribute{
+				Computed: true,
+				Optional: true,
+			},
+			"route_table_id": schema.StringAttribute{
+				Required: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
+			"await_active_state": schema.BoolAttribute{
+				Optional:           true,
+				DeprecationMessage: "Route's state is always active, this attribute will be removed in the next major version.",
+			},
+			"request_id": schema.StringAttribute{
+				Computed: true,
+			},
+			"id": schema.StringAttribute{
+				Computed: true,
+			},
+		},
+	}
+}
+
+func (r *resourceRoute) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data RouteModel
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	createTimeout, diags := data.Timeouts.Create(ctx, utils.CreateDefaultTimeout)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	ctx, cancel := context.WithTimeout(ctx, createTimeout)
+	defer cancel()
+
+	createReq := oscgo.CreateRouteRequest{
+		DestinationIpRange: data.DestinationIpRange.ValueString(),
+		RouteTableId:       data.RouteTableId.ValueString(),
+	}
+
+	if !data.GatewayId.IsUnknown() && !data.GatewayId.IsNull() {
+		createReq.SetGatewayId(data.GatewayId.ValueString())
+	}
+	if !data.NatServiceId.IsUnknown() && !data.NatServiceId.IsNull() {
+		createReq.SetNatServiceId(data.NatServiceId.ValueString())
+	}
+	if !data.VmId.IsUnknown() && !data.VmId.IsNull() {
+		createReq.SetVmId(data.VmId.ValueString())
+	}
+	if !data.NicId.IsUnknown() && !data.NicId.IsNull() {
+		createReq.SetNicId(data.NicId.ValueString())
+	}
+	if !data.NetPeeringId.IsUnknown() && !data.NetPeeringId.IsNull() {
+		createReq.SetNetPeeringId(data.NetPeeringId.ValueString())
+	}
+
+	var createResp oscgo.CreateRouteResponse
+	err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
+		rp, httpResp, err := r.Client.RouteApi.CreateRoute(context.Background()).CreateRouteRequest(createReq).Execute()
+		if err != nil {
+			return utils.CheckThrottling(httpResp, err)
+		}
+		createResp = rp
+		return nil
+	})
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to create Route.",
+			err.Error(),
+		)
+		return
+	}
+	rt := createResp.GetRouteTable()
+	data.RequestId = types.StringValue(createResp.ResponseContext.GetRequestId())
+	data.Id = types.StringValue(rt.GetRouteTableId() + "_" + data.DestinationIpRange.ValueString())
+
+	if (!data.AwaitActiveState.IsUnknown() && !data.AwaitActiveState.IsNull() && data.AwaitActiveState.ValueBool()) ||
+		data.AwaitActiveState.IsNull() {
+		stateConf := &retry.StateChangeConf{
+			Target:     []string{"active"},
+			Refresh:    ResourceRouteStateRefreshFunc(ctx, r, "blackhole", rt.GetRouteTableId(), data.DestinationIpRange.ValueString()),
+			Timeout:    utils.ReadDefaultTimeout,
+			MinTimeout: 3 * time.Second,
+			Delay:      2 * time.Second,
+		}
+
+		if _, err = stateConf.WaitForStateContext(context.Background()); err != nil {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Error waiting for Route (%s) to become active.",
+					data.Id.ValueString(),
+				),
+				err.Error(),
+			)
+			return
+		}
+	}
+
+	stateData, err := r.setRouteState(ctx, data)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to set Route state.",
+			err.Error(),
+		)
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &stateData)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+}
+
+func GetRouteFromRouteTable(routeTable oscgo.RouteTable, destinationIpRange string) (oscgo.Route, error) {
+	for _, route := range routeTable.GetRoutes() {
+		if route.GetDestinationIpRange() == destinationIpRange {
+			return route, nil
+		}
+	}
+	return oscgo.Route{}, fmt.Errorf("Unable to find matching route for Route Table (%s) "+
+		"and destination CIDR block (%s).", routeTable.GetRouteTableId(), destinationIpRange)
+}
+
+func ResourceRouteStateRefreshFunc(ctx context.Context, r *resourceRoute, failState string, routeTableId string, destinationIpRange string) retry.StateRefreshFunc {
+	return func() (any, string, error) {
+		readReq := oscgo.ReadRouteTablesRequest{Filters: &oscgo.FiltersRouteTable{
+			RouteDestinationIpRanges: &[]string{destinationIpRange},
+			RouteTableIds:            &[]string{routeTableId},
+		}}
+		var resp oscgo.ReadRouteTablesResponse
+
+		err := retry.RetryContext(ctx, utils.ReadDefaultTimeout, func() *retry.RetryError {
+			rp, httpResp, err := r.Client.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(readReq).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp, err)
+			}
+			resp = rp
+			return nil
+		})
+		if err != nil {
+			return resp, "error", err
+		}
+		route, err := GetRouteFromRouteTable(resp.GetRouteTables()[0], destinationIpRange)
+		if err != nil {
+			return resp, "error", err
+		}
+		if route.GetState() == failState {
+			return resp, failState, fmt.Errorf("Failed to reach target state. Route is in '%v' failing state.", failState)
+		}
+
+		return resp, route.GetState(), nil
+	}
+}
+
+func (r *resourceRoute) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var data RouteModel
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	data, err := r.setRouteState(ctx, data)
+	if err != nil {
+		if err.Error() == "Empty" {
+			resp.State.RemoveResource(ctx)
+			return
+		}
+		resp.Diagnostics.AddError(
+			"Unable to set Route API response values.",
+			err.Error(),
+		)
+		return
+	}
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+}
+
+func (r *resourceRoute) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var planData, stateData RouteModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &planData)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	resp.Diagnostics.Append(req.State.Get(ctx, &stateData)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if !planData.AwaitActiveState.IsUnknown() && !planData.AwaitActiveState.IsNull() {
+		stateData.AwaitActiveState = planData.AwaitActiveState
+	}
+
+	updateReq := oscgo.UpdateRouteRequest{
+		RouteTableId:       stateData.RouteTableId.ValueString(),
+		DestinationIpRange: stateData.DestinationIpRange.ValueString(),
+	}
+	if !planData.GatewayId.IsUnknown() && !planData.GatewayId.IsNull() {
+		updateReq.SetGatewayId(planData.GatewayId.ValueString())
+	}
+	if !planData.NatServiceId.IsUnknown() && !planData.NatServiceId.IsNull() {
+		updateReq.SetNatServiceId(planData.NatServiceId.ValueString())
+	}
+	if !planData.VmId.IsUnknown() && !planData.VmId.IsNull() {
+		updateReq.SetVmId(planData.VmId.ValueString())
+	}
+	if !planData.NicId.IsUnknown() && !planData.NicId.IsNull() {
+		updateReq.SetNicId(planData.NicId.ValueString())
+	}
+	if !planData.NetPeeringId.IsUnknown() && !planData.NetPeeringId.IsNull() {
+		updateReq.SetNetPeeringId(planData.NetPeeringId.ValueString())
+	}
+
+	updateTimeout, diags := planData.Timeouts.Create(ctx, utils.UpdateDefaultTimeout)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	ctx, cancel := context.WithTimeout(ctx, updateTimeout)
+	defer cancel()
+
+	var createResp oscgo.UpdateRouteResponse
+	err := retry.RetryContext(ctx, updateTimeout, func() *retry.RetryError {
+		rp, httpResp, err := r.Client.RouteApi.UpdateRoute(ctx).UpdateRouteRequest(updateReq).Execute()
+		if err != nil {
+			return utils.CheckThrottling(httpResp, err)
+		}
+		createResp = rp
+		return nil
+	})
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to update Route resource.",
+			err.Error(),
+		)
+		return
+	}
+	stateData.RequestId = types.StringValue(createResp.ResponseContext.GetRequestId())
+
+	if (!stateData.AwaitActiveState.IsUnknown() && !stateData.AwaitActiveState.IsNull() && stateData.AwaitActiveState.ValueBool()) ||
+		stateData.AwaitActiveState.IsNull() {
+		stateConf := &retry.StateChangeConf{
+			Target:     []string{"active"},
+			Refresh:    ResourceRouteStateRefreshFunc(ctx, r, "blackhole", stateData.RouteTableId.ValueString(), stateData.DestinationIpRange.ValueString()),
+			Timeout:    utils.ReadDefaultTimeout,
+			MinTimeout: 3 * time.Second,
+			Delay:      2 * time.Second,
+		}
+
+		if _, err = stateConf.WaitForStateContext(context.Background()); err != nil {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Error waiting for Route (%s) to become active.",
+					stateData.Id.ValueString(),
+				),
+				err.Error(),
+			)
+			return
+		}
+	}
+
+	data, err := r.setRouteState(ctx, stateData)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to set Route state.",
+			err.Error(),
+		)
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+}
+
+func (r *resourceRoute) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var data RouteModel
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	deleteTimeout, diags := data.Timeouts.Delete(ctx, utils.DeleteDefaultTimeout)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
+	defer cancel()
+
+	delReq := oscgo.DeleteRouteRequest{
+		DestinationIpRange: data.DestinationIpRange.ValueString(),
+		RouteTableId:       data.RouteTableId.ValueString(),
+	}
+
+	err := retry.RetryContext(ctx, deleteTimeout, func() *retry.RetryError {
+		_, httpResp, err := r.Client.RouteApi.DeleteRoute(context.Background()).DeleteRouteRequest(delReq).Execute()
+		if err != nil {
+			return utils.CheckThrottling(httpResp, err)
+		}
+		return nil
+	})
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to Delete Route.",
+			err.Error(),
+		)
+		return
+	}
+}
+
+func (r *resourceRoute) setRouteState(ctx context.Context, data RouteModel) (RouteModel, error) {
+	readReq := oscgo.ReadRouteTablesRequest{Filters: &oscgo.FiltersRouteTable{
+		RouteDestinationIpRanges: &[]string{data.DestinationIpRange.ValueString()},
+		RouteTableIds:            &[]string{data.RouteTableId.ValueString()},
+	}}
+
+	readTimeout, diags := data.Timeouts.Read(ctx, utils.ReadDefaultTimeout)
+	if diags.HasError() {
+		return data, fmt.Errorf("unable to parse 'route' read timeout value. Error: %v: ", diags.Errors())
+	}
+	ctx, cancel := context.WithTimeout(ctx, readTimeout)
+	defer cancel()
+
+	var readResp oscgo.ReadRouteTablesResponse
+	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
+		rp, httpResp, err := r.Client.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(readReq).Execute()
+		if err != nil {
+			return utils.CheckThrottling(httpResp, err)
+		}
+		readResp = rp
+		return nil
+	})
+	if err != nil {
+		return data, err
+	}
+	data.RequestId = types.StringValue(readResp.ResponseContext.GetRequestId())
+
+	routeTable := readResp.GetRouteTables()[0]
+	route, err := GetRouteFromRouteTable(routeTable, data.DestinationIpRange.ValueString())
+	if err != nil {
+		return data, errors.New("Empty")
+	}
+
+	data.GatewayId = types.StringValue(route.GetGatewayId())
+	data.NatServiceId = types.StringValue(route.GetNatServiceId())
+	data.NetPeeringId = types.StringValue(route.GetNetPeeringId())
+	data.VmId = types.StringValue(route.GetVmId())
+	data.NicId = types.StringValue(route.GetNicId())
+	data.CreationMethod = types.StringValue(route.GetCreationMethod())
+	data.DestinationIpRange = types.StringValue(route.GetDestinationIpRange())
+	data.DestinationServiceId = types.StringValue(route.GetDestinationServiceId())
+	data.NetAccessPointId = types.StringValue(route.GetNetAccessPointId())
+	data.State = types.StringValue(route.GetState())
+	data.VmAccountId = types.StringValue(route.GetVmAccountId())
+	data.RouteTableId = types.StringValue(routeTable.GetRouteTableId())
+
+	return data, nil
+}
