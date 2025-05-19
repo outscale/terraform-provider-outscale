@@ -115,7 +115,7 @@
                         "source_security_group": [
                             {
                                 "security_group_account_id": "##id-5##",
-                                "security_group_name": "TF81-lbu-2"
+                                "security_group_name": "TF81-lbu-1"
                             }
                         ],
                         "subnets": [
@@ -184,18 +184,18 @@
                         "destination_service_id": "",
                         "gateway_id": "##id-0##",
                         "id": "##id-8##",
-                        "nat_access_point": "",
                         "nat_service_id": "",
+                        "net_access_point_id": "",
                         "net_peering_id": "",
                         "nic_id": "",
                         "request_id": "########",
                         "route_table_id": "##id-9##",
                         "state": "active",
+                        "timeouts": null,
                         "vm_account_id": "",
                         "vm_id": ""
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_internet_service.outscale_internet_service",
                         "outscale_net.outscale_net",
