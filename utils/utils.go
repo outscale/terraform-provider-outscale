@@ -52,6 +52,7 @@ const (
 - "Standard" volume types have a default value of 150 iops.
 - For "gp2" volume types, iops value depend on your volume size.
 `
+	AwaitActiveStateDefaultValue bool = true
 )
 
 func PrintToJSON(v interface{}, msg string) {

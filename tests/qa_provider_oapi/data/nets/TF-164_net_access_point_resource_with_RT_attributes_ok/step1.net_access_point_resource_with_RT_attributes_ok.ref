@@ -68,12 +68,12 @@
                     "index_key": 0,
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-3##",
+                        "id": "##id-4##",
                         "link_route_tables": [],
                         "net_id": "##id-1##",
                         "request_id": "########",
                         "route_propagating_virtual_gateways": [],
-                        "route_table_id": "##id-3##",
+                        "route_table_id": "##id-4##",
                         "routes": [
                             {
                                 "creation_method": "CreateRouteTable",
@@ -101,12 +101,12 @@
                     "index_key": 1,
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-4##",
+                        "id": "##id-3##",
                         "link_route_tables": [],
                         "net_id": "##id-1##",
                         "request_id": "########",
                         "route_propagating_virtual_gateways": [],
-                        "route_table_id": "##id-4##",
+                        "route_table_id": "##id-3##",
                         "routes": [
                             {
                                 "creation_method": "CreateRouteTable",
