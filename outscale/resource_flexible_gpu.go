@@ -125,6 +125,9 @@ func (r *fgpuResource) Schema(ctx context.Context, _ resource.SchemaRequest, res
 			},
 			"flexible_gpu_id": schema.StringAttribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"vm_id": schema.StringAttribute{
 				Computed: true,
@@ -134,6 +137,9 @@ func (r *fgpuResource) Schema(ctx context.Context, _ resource.SchemaRequest, res
 			},
 			"id": schema.StringAttribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 		},
 	}

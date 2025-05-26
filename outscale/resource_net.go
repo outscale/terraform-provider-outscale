@@ -136,6 +136,9 @@ func (r *netResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp
 			},
 			"id": schema.StringAttribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 		},
 	}
