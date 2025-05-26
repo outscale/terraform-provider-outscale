@@ -128,6 +128,9 @@ func (r *resourceInternetService) Schema(ctx context.Context, _ resource.SchemaR
 			},
 			"id": schema.StringAttribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"request_id": schema.StringAttribute{
 				Computed: true,

@@ -186,12 +186,18 @@ func (r *resourceRouteTable) Schema(ctx context.Context, _ resource.SchemaReques
 			},
 			"route_table_id": schema.StringAttribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"request_id": schema.StringAttribute{
 				Computed: true,
 			},
 			"id": schema.StringAttribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"route_propagating_virtual_gateways": schema.ListAttribute{
 				Computed: true,
