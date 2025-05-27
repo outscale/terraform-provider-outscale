@@ -411,9 +411,9 @@ def replace_parameters_in_description(field_object, key,  match):
 
 def main():
 
-    provider_filename = '{}/provider.go'.format(ARGS.provider_directory)
-    with io.open(provider_filename, 'r') as f:
-        provider_file = f.read()
+    # provider_filename = '{}/provider.go'.format(ARGS.provider_directory)
+    # with io.open(provider_filename, 'r') as f:
+    #     provider_file = f.read()
 
     with io.open('{}/template_ressource.md'.format(TEMPLATE_PATH),
                  'r') as f:
@@ -556,9 +556,9 @@ def main():
             print('This filename, {} is not in a known format - we do not treat it.'.format(name))
             continue
 
-        if 'outscale_{}'.format(resource_name) not in provider_file:
-            print('{} not found'.format('outscale_{}'.format(resource_name)))
-            continue
+        # if 'outscale_{}'.format(resource_name) not in provider_file:
+        #     print('{} not found'.format('outscale_{}'.format(resource_name)))
+        #     continue
 
         with io.open(code_filename, 'r') as f:
             code_file = f.read()
