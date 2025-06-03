@@ -28,7 +28,7 @@ var (
 	_ resource.ResourceWithValidateConfig = &resourceRoute{}
 )
 
-type RouteModel struct {
+type RouteCoreModel struct {
 	CreationMethod       types.String `tfsdk:"creation_method"`
 	DestinationIpRange   types.String `tfsdk:"destination_ip_range"`
 	DestinationServiceId types.String `tfsdk:"destination_service_id"`
@@ -40,8 +40,13 @@ type RouteModel struct {
 	State                types.String `tfsdk:"state"`
 	VmAccountId          types.String `tfsdk:"vm_account_id"`
 	VmId                 types.String `tfsdk:"vm_id"`
-	RouteTableId         types.String `tfsdk:"route_table_id"`
-	AwaitActiveState     types.Bool   `tfsdk:"await_active_state"`
+}
+
+type RouteModel struct {
+	RouteCoreModel
+
+	RouteTableId     types.String `tfsdk:"route_table_id"`
+	AwaitActiveState types.Bool   `tfsdk:"await_active_state"`
 
 	Timeouts  timeouts.Value `tfsdk:"timeouts"`
 	RequestId types.String   `tfsdk:"request_id"`

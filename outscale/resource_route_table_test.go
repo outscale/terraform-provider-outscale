@@ -16,7 +16,6 @@ func TestAccNet_WithRouteTable_basic(t *testing.T) {
 	resourceName := "outscale_route_table.rtbTest"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		IDRefreshName:            resourceName,
 		ProtoV5ProviderFactories: defineTestProviderFactories(),
 
 		Steps: []resource.TestStep{
@@ -37,7 +36,6 @@ func TestAccNet_RouteTable_instance(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		IDRefreshName:            resourceName,
 		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{

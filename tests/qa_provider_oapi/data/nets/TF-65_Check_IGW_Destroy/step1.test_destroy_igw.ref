@@ -393,10 +393,10 @@
                                 "vm_id": ""
                             }
                         ],
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.nomad"
                     ]
@@ -433,10 +433,10 @@
                                 "vm_id": ""
                             }
                         ],
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.nomad"
                     ]
@@ -455,12 +455,13 @@
                         "id": "##id-20##",
                         "link_route_table_id": "##id-20##",
                         "main": false,
+                        "net_id": "",
                         "request_id": "########",
                         "route_table_id": "##id-16##",
-                        "subnet_id": "##id-4##"
+                        "subnet_id": "##id-4##",
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.nomad",
                         "outscale_route_table.public",
@@ -481,12 +482,13 @@
                         "id": "##id-21##",
                         "link_route_table_id": "##id-21##",
                         "main": false,
+                        "net_id": "",
                         "request_id": "########",
                         "route_table_id": "##id-18##",
-                        "subnet_id": "##id-22##"
+                        "subnet_id": "##id-22##",
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.nomad",
                         "outscale_route_table.nat",

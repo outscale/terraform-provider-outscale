@@ -215,5 +215,8 @@ func (p *frameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		NewResourceInternetServiceLink,
 		NewResourceNetAccessPoint,
 		NewResourceRoute,
+		NewResourceRouteTable,
+		NewResourceRouteTableLink,
+		NewResourceMainRouteTableLink,
 	}
 }

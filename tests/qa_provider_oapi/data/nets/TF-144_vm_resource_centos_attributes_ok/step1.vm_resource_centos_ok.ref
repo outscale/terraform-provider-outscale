@@ -257,10 +257,10 @@
                                 "key": "name",
                                 "value": "Terraform_RT_TF144"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net"
                     ]
@@ -279,12 +279,13 @@
                         "id": "##id-12##",
                         "link_route_table_id": "##id-12##",
                         "main": false,
+                        "net_id": "",
                         "request_id": "########",
                         "route_table_id": "##id-10##",
-                        "subnet_id": "##id-13##"
+                        "subnet_id": "##id-13##",
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net",
                         "outscale_route_table.outscale_route_table",
