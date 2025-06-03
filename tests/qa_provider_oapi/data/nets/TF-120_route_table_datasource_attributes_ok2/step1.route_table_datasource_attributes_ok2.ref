@@ -168,10 +168,10 @@
                                 "key": "Name",
                                 "value": "terraform-testacc-routetable-data-source"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.test"
                     ]
@@ -208,10 +208,10 @@
                                 "vm_id": ""
                             }
                         ],
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.test"
                     ]
@@ -230,12 +230,13 @@
                         "id": "##id-1##",
                         "link_route_table_id": "##id-1##",
                         "main": false,
+                        "net_id": "",
                         "request_id": "########",
                         "route_table_id": "##id-0##",
-                        "subnet_id": "##id-2##"
+                        "subnet_id": "##id-2##",
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.test",
                         "outscale_route_table.test",

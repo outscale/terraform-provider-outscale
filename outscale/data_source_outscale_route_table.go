@@ -131,6 +131,93 @@ func DataSourceOutscaleRouteTable() *schema.Resource {
 	}
 }
 
+func setOSCAPIRoutes(rt []oscgo.Route) []map[string]interface{} {
+	route := make([]map[string]interface{}, len(rt))
+	if len(rt) > 0 {
+		for k, r := range rt {
+			m := make(map[string]interface{})
+
+			if r.GetNatServiceId() != "" {
+				m["nat_service_id"] = r.GetNatServiceId()
+			}
+
+			if r.GetCreationMethod() != "" {
+				m["creation_method"] = r.GetCreationMethod()
+			}
+			if r.GetDestinationIpRange() != "" {
+				m["destination_ip_range"] = r.GetDestinationIpRange()
+			}
+			if r.GetDestinationServiceId() != "" {
+				m["destination_service_id"] = r.GetDestinationServiceId()
+			}
+			if r.GetGatewayId() != "" {
+				m["gateway_id"] = r.GetGatewayId()
+			}
+			if r.GetNetAccessPointId() != "" {
+				m["net_access_point_id"] = r.GetNetAccessPointId()
+			}
+			if r.GetNetPeeringId() != "" {
+				m["net_peering_id"] = r.GetNetPeeringId()
+			}
+			if r.GetVmId() != "" {
+				m["vm_id"] = r.GetVmId()
+			}
+			if r.GetNicId() != "" {
+				m["nic_id"] = r.GetNicId()
+			}
+			if r.GetState() != "" {
+				m["state"] = r.GetState()
+			}
+			if r.GetVmAccountId() != "" {
+				m["vm_account_id"] = r.GetVmAccountId()
+			}
+			route[k] = m
+		}
+	}
+
+	return route
+}
+
+func setOSCAPILinkRouteTables(rt []oscgo.LinkRouteTable) []map[string]interface{} {
+	linkRouteTables := make([]map[string]interface{}, len(rt))
+	log.Printf("[DEBUG] LinkRouteTable: %#v", rt)
+	if len(rt) > 0 {
+		for k, r := range rt {
+			m := make(map[string]interface{})
+			if r.GetMain() {
+				m["main"] = r.GetMain()
+			}
+			if r.GetRouteTableId() != "" {
+				m["route_table_id"] = r.GetRouteTableId()
+			}
+			if r.GetLinkRouteTableId() != "" {
+				m["link_route_table_id"] = r.GetLinkRouteTableId()
+			}
+			if r.GetSubnetId() != "" {
+				m["subnet_id"] = r.GetSubnetId()
+			}
+			linkRouteTables[k] = m
+		}
+	}
+
+	return linkRouteTables
+}
+
+func setOSCAPIPropagatingVirtualGateways(vg []oscgo.RoutePropagatingVirtualGateway) (propagatingVGWs []map[string]interface{}) {
+	propagatingVGWs = make([]map[string]interface{}, len(vg))
+
+	if len(vg) > 0 {
+		for k, vgw := range vg {
+			m := make(map[string]interface{})
+			if vgw.GetVirtualGatewayId() != "" {
+				m["virtual_gateway_id"] = vgw.GetVirtualGatewayId()
+			}
+			propagatingVGWs[k] = m
+		}
+	}
+	return propagatingVGWs
+}
+
 func DataSourceOutscaleRouteTableRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	routeTableID, routeTableIDOk := d.GetOk("route_table_id")
