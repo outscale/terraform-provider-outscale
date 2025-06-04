@@ -87,8 +87,6 @@ func Provider() *schema.Provider {
 			"outscale_tag":                               ResourceOutscaleTags(),
 			"outscale_public_ip":                         ResourceOutscalePublicIP(),
 			"outscale_public_ip_link":                    ResourceOutscalePublicIPLink(),
-			"outscale_volume":                            ResourceOutscaleVolume(),
-			"outscale_volume_link":                       ResourceOutscaleVolumeLink(),
 			"outscale_nat_service":                       ResourceOutscaleNatService(),
 			"outscale_nic":                               ResourceOutscaleNic(),
 			"outscale_snapshot":                          ResourceOutscaleSnapshot(),
@@ -267,7 +265,7 @@ func IsOldProfileSet(conf *Config) (bool, error) {
 		}
 		jsonFile, err := os.ReadFile(configFilePath)
 		if err != nil {
-			return isProfSet, fmt.Errorf("Unable to read config file '%v', Error: %w", configFilePath, err)
+			return isProfSet, fmt.Errorf("unable to read config file '%v', Error: %w", configFilePath, err)
 		}
 		profile := gjson.GetBytes(jsonFile, profileName)
 		if !gjson.Valid(profile.String()) {

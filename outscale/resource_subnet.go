@@ -177,8 +177,6 @@ func (r *resourceSubnet) Create(ctx context.Context, req resource.CreateRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	ctx, cancel := context.WithTimeout(ctx, createTimeout)
-	defer cancel()
 
 	createReq := oscgo.CreateSubnetRequest{
 		IpRange: data.IpRange.ValueString(),
@@ -360,8 +358,6 @@ func (r *resourceSubnet) Update(ctx context.Context, req resource.UpdateRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	ctx, cancel := context.WithTimeout(ctx, updateTimeout)
-	defer cancel()
 
 	updateReq := oscgo.UpdateSubnetRequest{
 		SubnetId:            stateData.SubnetId.ValueString(),
@@ -410,8 +406,6 @@ func (r *resourceSubnet) Delete(ctx context.Context, req resource.DeleteRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
-	defer cancel()
 
 	delReq := oscgo.DeleteSubnetRequest{
 		SubnetId: data.SubnetId.ValueString(),
@@ -445,8 +439,6 @@ func setSubnetState(ctx context.Context, r *resourceSubnet, data SubnetModel) (S
 	if diags.HasError() {
 		return data, fmt.Errorf("unable to parse 'subnet' read timeout value. Error: %v: ", diags.Errors())
 	}
-	ctx, cancel := context.WithTimeout(ctx, readTimeout)
-	defer cancel()
 
 	var readResp oscgo.ReadSubnetsResponse
 	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {

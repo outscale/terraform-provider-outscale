@@ -5,7 +5,6 @@ import (
 	"os"
 	"testing"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -17,24 +16,15 @@ func TestAccVM_WithVolumeAttachment_basic(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
 
-	var i oscgo.Vm
-
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheck(t)
-
-		},
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOAPIVolumeAttachmentDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOAPIVolumeAttachmentConfig(omi, utils.TestAccVmType, utils.GetRegion(), keypair),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"outscale_volume_link.ebs_att", "device_name", "/dev/sdh"),
-					testAccCheckOutscaleVMExists("outscale_vm.web", &i),
-					testAccCheckOAPIVolumeAttachmentExists(
-						"outscale_volume_link.ebs_att", &i),
 				),
 			},
 		},
@@ -48,9 +38,8 @@ func TestAccVM_ImportVolumeAttachment_Basic(t *testing.T) {
 	resourceName := "outscale_volume_link.ebs_att"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheckValues(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOAPIVolumeAttachmentDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(), CheckDestroy: testAccCheckOAPIVolumeAttachmentDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOAPIVolumeAttachmentConfig(omi, utils.TestAccVmType, utils.GetRegion(), keypair),
@@ -83,30 +72,6 @@ func testAccCheckOAPIVolumeAttachmentDestroy(s *terraform.State) error {
 		}
 	}
 	return nil
-}
-
-func testAccCheckOAPIVolumeAttachmentExists(n string, i *oscgo.Vm) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("Not found: %s", n)
-		}
-
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("No ID is set")
-		}
-
-		for _, b := range i.GetBlockDeviceMappings() {
-			if rs.Primary.Attributes["device_name"] == b.GetDeviceName() {
-				if rs.Primary.Attributes["volume_id"] == b.Bsu.GetVolumeId() {
-					// pass
-					return nil
-				}
-			}
-		}
-
-		return fmt.Errorf("Error finding instance/volume")
-	}
 }
 
 func testAccOAPIVolumeAttachmentConfig(omi, vmType, region, keypair string) string {

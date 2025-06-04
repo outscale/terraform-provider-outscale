@@ -193,8 +193,6 @@ func (r *resourceNetPeeringAcceptation) Create(ctx context.Context, req resource
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	ctx, cancel := context.WithTimeout(ctx, createTimeout)
-	defer cancel()
 
 	createReq := oscgo.AcceptNetPeeringRequest{
 		NetPeeringId: data.NetPeeringId.ValueString(),
@@ -281,8 +279,6 @@ func (r *resourceNetPeeringAcceptation) setNetPeeringAcceptationState(ctx contex
 	if diags.HasError() {
 		return data, fmt.Errorf("unable to parse 'net peering' read timeout value. Error: %v: ", diags.Errors())
 	}
-	ctx, cancel := context.WithTimeout(ctx, readTimeout)
-	defer cancel()
 
 	var readResp oscgo.ReadNetPeeringsResponse
 	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {

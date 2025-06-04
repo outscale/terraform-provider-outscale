@@ -206,7 +206,7 @@ func resourceOAPIImageExportTaskRead(d *schema.ResourceData, meta interface{}) e
 	})
 
 	if err != nil {
-		return fmt.Errorf("Error reading task image %s", err)
+		return fmt.Errorf("error reading task image %w", err)
 	}
 	if utils.IsResponseEmpty(len(resp.GetImageExportTasks()), "ImageExportTask", d.Id()) {
 		d.SetId("")
@@ -340,7 +340,7 @@ func ImageTaskStateRefreshFunc(client *oscgo.APIClient, id string) resource.Stat
 				log.Printf("[INFO] Image export task %s state %s", id, "destroyed")
 				return resp, "destroyed", nil
 			} else {
-				return resp, "", fmt.Errorf("Error on refresh: %s", err.Error())
+				return resp, "", fmt.Errorf("error on refresh: %w", err)
 			}
 		}
 
@@ -349,7 +349,7 @@ func ImageTaskStateRefreshFunc(client *oscgo.APIClient, id string) resource.Stat
 		}
 
 		if resp.GetImageExportTasks()[0].GetState() == "failed" || resp.GetImageExportTasks()[0].GetState() == "cancelled" {
-			return resp.GetImageExportTasks()[0], resp.GetImageExportTasks()[0].GetState(), fmt.Errorf("%s", resp.GetImageExportTasks()[0].GetComment())
+			return resp.GetImageExportTasks()[0], resp.GetImageExportTasks()[0].GetState(), fmt.Errorf("error: %v", resp.GetImageExportTasks()[0].GetComment())
 		}
 
 		// Image export task is valid, so return it's state

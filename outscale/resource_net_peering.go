@@ -16,7 +16,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	"github.com/outscale/osc-sdk-go/v2"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/fwmodifyplan"
 	"github.com/outscale/terraform-provider-outscale/utils"
@@ -61,7 +60,7 @@ var netAttrTypes = utils.GetAttrTypes(NetPeerModel{})
 
 var stateAttrTypes = utils.GetAttrTypes(NetPeeringState{})
 
-func AccepterNetToList(n osc.AccepterNet) []NetPeerModel {
+func AccepterNetToList(n oscgo.AccepterNet) []NetPeerModel {
 	return []NetPeerModel{
 		{
 			NetId:     types.StringValue(n.GetNetId()),
@@ -71,7 +70,7 @@ func AccepterNetToList(n osc.AccepterNet) []NetPeerModel {
 	}
 }
 
-func SourceNetToList(n osc.SourceNet) []NetPeerModel {
+func SourceNetToList(n oscgo.SourceNet) []NetPeerModel {
 	return []NetPeerModel{
 		{
 			NetId:     types.StringValue(n.GetNetId()),
@@ -81,7 +80,7 @@ func SourceNetToList(n osc.SourceNet) []NetPeerModel {
 	}
 }
 
-func NetPeerStateToList(s osc.NetPeeringState) []NetPeeringState {
+func NetPeerStateToList(s oscgo.NetPeeringState) []NetPeeringState {
 	return []NetPeeringState{
 		{
 			Message: types.StringValue(s.GetMessage()),
@@ -106,7 +105,7 @@ func (r *resourceNetPeering) Configure(_ context.Context, req resource.Configure
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Data Source Configure Type",
-			fmt.Sprintf("Expected *osc.APIClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *oscgo.APIClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -158,6 +157,7 @@ func (r *resourceNetPeering) ModifyPlan(ctx context.Context, req resource.Modify
 			"Resource Destruction Considerations",
 			"Applying this resource destruction will fully destroy this resource.",
 		)
+		return
 	}
 }
 
@@ -245,8 +245,6 @@ func (r *resourceNetPeering) Create(ctx context.Context, req resource.CreateRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	ctx, cancel := context.WithTimeout(ctx, createTimeout)
-	defer cancel()
 
 	createReq := oscgo.CreateNetPeeringRequest{
 		AccepterNetId: data.AccepterNetId.ValueString(),
@@ -441,8 +439,6 @@ func (r *resourceNetPeering) Delete(ctx context.Context, req resource.DeleteRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
-	defer cancel()
 
 	delReq := oscgo.DeleteNetPeeringRequest{
 		NetPeeringId: data.NetPeeringId.ValueString(),
@@ -476,8 +472,6 @@ func setNetPeeringState(ctx context.Context, r *resourceNetPeering, data NetPeer
 	if diags.HasError() {
 		return data, fmt.Errorf("unable to parse 'net peering' read timeout value. Error: %v: ", diags.Errors())
 	}
-	ctx, cancel := context.WithTimeout(ctx, readTimeout)
-	defer cancel()
 
 	var readResp oscgo.ReadNetPeeringsResponse
 	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
@@ -501,15 +495,15 @@ func setNetPeeringState(ctx context.Context, r *resourceNetPeering, data NetPeer
 
 	sourceNet, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: netAttrTypes}, SourceNetToList(netPeering.GetSourceNet()))
 	if diags.HasError() {
-		return data, fmt.Errorf("Unable to convert Source Net to the schema List. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("unable to convert Source Net to the schema List: %v", diags.Errors())
 	}
 	accepterNet, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: netAttrTypes}, AccepterNetToList(netPeering.GetAccepterNet()))
 	if diags.HasError() {
-		return data, fmt.Errorf("Unable to convert Accepter Net to the schema List. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("unable to convert Accepter Net to the schema List: %v", diags.Errors())
 	}
 	state, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: stateAttrTypes}, NetPeerStateToList(netPeering.GetState()))
 	if diags.HasError() {
-		return data, fmt.Errorf("Unable to convert State to the schema List. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("unable to convert State to the schema List: %v", diags.Errors())
 	}
 
 	data.ExpirationDate = types.StringValue(netPeering.GetExpirationDate())

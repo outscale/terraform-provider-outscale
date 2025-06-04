@@ -197,7 +197,7 @@ func testAccCheckOutscaleRouteImportStateIDFunc(resourceName string) resource.Im
 	}
 }
 
-var testAccOutscaleRouteNoopChange = fmt.Sprint(`
+var testAccOutscaleRouteNoopChange = `
 	resource "outscale_net" "test" {
 		ip_range = "10.0.0.0/24"
 	}
@@ -218,9 +218,9 @@ var testAccOutscaleRouteNoopChange = fmt.Sprint(`
 		destination_ip_range = "10.0.0.0/16"
 		route_table_id       = outscale_route_table.test.route_table_id
 	}
-`)
+`
 
-var testAccOutscaleRouteWithNatService = fmt.Sprint(`
+var testAccOutscaleRouteWithNatService = `
 	resource "outscale_net" "outscale_net" {
 		ip_range = "10.0.0.0/16"
 		tags {
@@ -291,7 +291,7 @@ var testAccOutscaleRouteWithNatService = fmt.Sprint(`
 		nat_service_id       = outscale_nat_service.outscale_nat_service.nat_service_id
 		route_table_id       = outscale_route_table.outscale_route_table.route_table_id
 	}
-`)
+`
 
 func computeConfigTestChangeTarget(targets []string) string {
 	var extra_configs []string

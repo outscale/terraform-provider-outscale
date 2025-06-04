@@ -333,7 +333,7 @@ func SnapshotTaskStateRefreshFunc(client *oscgo.APIClient, id string) resource.S
 
 		if resp.GetSnapshotExportTasks()[0].GetState() == "failed" {
 			return resp.GetSnapshotExportTasks()[0], resp.GetSnapshotExportTasks()[0].GetState(),
-				fmt.Errorf("%s", resp.GetSnapshotExportTasks()[0].GetComment())
+				fmt.Errorf("error: %v", resp.GetSnapshotExportTasks()[0].GetComment())
 		}
 
 		// Snapshot export task is valid, so return it's state

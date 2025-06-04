@@ -167,8 +167,6 @@ func (r *resourceNetAccessPoint) Create(ctx context.Context, req resource.Create
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	ctx, cancel := context.WithTimeout(ctx, createTimeout)
-	defer cancel()
 
 	createReq := oscgo.CreateNetAccessPointRequest{
 		NetId:       data.NetId.ValueString(),
@@ -293,8 +291,6 @@ func (r *resourceNetAccessPoint) Update(ctx context.Context, req resource.Update
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	ctx, cancel := context.WithTimeout(ctx, updateTimeout)
-	defer cancel()
 
 	if !reflect.DeepEqual(planData.Tags, stateData.Tags) {
 		toRemove, toCreate := diffOSCAPITags(tagsToOSCResourceTag(planData.Tags), tagsToOSCResourceTag(stateData.Tags))
@@ -384,8 +380,6 @@ func (r *resourceNetAccessPoint) Delete(ctx context.Context, req resource.Delete
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
-	defer cancel()
 
 	delReq := oscgo.DeleteNetAccessPointRequest{
 		NetAccessPointId: data.NetAccessPointId.ValueString(),
@@ -418,8 +412,6 @@ func setNetAccessPointState(ctx context.Context, r *resourceNetAccessPoint, data
 	if diags.HasError() {
 		return data, fmt.Errorf("unable to parse 'net access point' read timeout value. Error: %v: ", diags.Errors())
 	}
-	ctx, cancel := context.WithTimeout(ctx, readTimeout)
-	defer cancel()
 
 	var readResp oscgo.ReadNetAccessPointsResponse
 	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {

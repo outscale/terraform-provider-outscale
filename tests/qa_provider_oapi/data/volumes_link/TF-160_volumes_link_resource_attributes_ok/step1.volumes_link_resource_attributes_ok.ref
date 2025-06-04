@@ -171,12 +171,12 @@
                             }
                         ],
                         "termination_snapshot_name": null,
+                        "timeouts": null,
                         "volume_id": "##id-7##",
                         "volume_type": "standard"
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -189,9 +189,9 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "delete_on_vm_termination": false,
+                        "delete_on_vm_deletion": false,
                         "device_name": "/dev/xvdc",
-                        "force_unlink": null,
+                        "force_unlink": false,
                         "id": "##id-7##",
                         "request_id": "########",
                         "state": "attached",
@@ -201,7 +201,6 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwfX0=",
                     "dependencies": [
                         "outscale_keypair.my_keypair",
                         "outscale_security_group.security_group_TF160",

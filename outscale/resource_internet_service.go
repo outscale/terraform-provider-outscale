@@ -149,8 +149,6 @@ func (r *resourceInternetService) Create(ctx context.Context, req resource.Creat
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	ctx, cancel := context.WithTimeout(ctx, createTimeout)
-	defer cancel()
 
 	createReq := oscgo.CreateInternetServiceRequest{}
 
@@ -279,8 +277,6 @@ func (r *resourceInternetService) Delete(ctx context.Context, req resource.Delet
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
-	defer cancel()
 
 	delReq := oscgo.DeleteInternetServiceRequest{
 		InternetServiceId: data.InternetServiceId.ValueString(),
@@ -314,8 +310,6 @@ func setInternetServiceState(ctx context.Context, r *resourceInternetService, da
 	if diags.HasError() {
 		return data, fmt.Errorf("unable to parse 'internet service' read timeout value. Error: %v: ", diags.Errors())
 	}
-	ctx, cancel := context.WithTimeout(ctx, readTimeout)
-	defer cancel()
 
 	var readResp oscgo.ReadInternetServicesResponse
 	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
