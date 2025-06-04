@@ -169,8 +169,6 @@ func (r *netResource) Create(ctx context.Context, req resource.CreateRequest, re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	ctx, cancel := context.WithTimeout(ctx, createTimeout)
-	defer cancel()
 
 	createReq := oscgo.CreateNetRequest{
 		IpRange: data.IpRange.ValueString(),
@@ -310,8 +308,6 @@ func (r *netResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
-	defer cancel()
 	delReq := oscgo.DeleteNetRequest{
 		NetId: data.NetId.ValueString(),
 	}
@@ -369,8 +365,6 @@ func setNetState(ctx context.Context, r *netResource, data NetModel) (NetModel, 
 	if diags.HasError() {
 		return data, fmt.Errorf("unable to parse 'net' read timeout value. Error: %v: ", diags.Errors())
 	}
-	ctx, cancel := context.WithTimeout(ctx, readTimeout)
-	defer cancel()
 	var readResp oscgo.ReadNetsResponse
 	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
 		rp, httpResp, err := r.Client.NetApi.ReadNets(ctx).ReadNetsRequest(readReq).Execute()

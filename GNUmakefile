@@ -67,7 +67,7 @@ test-compile:
 
 .PHONY: test-locally
 test-locally:
-	"$(CURDIR)/scripts/local-test.sh" TestAccOthers_Volume_io1Type
+	## "$(CURDIR)/scripts/local-test.sh" TestAccOthers_Volume_io1Type  ##add request_id parameter in ricochet
 	"$(CURDIR)/scripts/local-test.sh" TestAccVM_withFlexibleGpuLink_basic
 
 .PHONY: terraform-examples

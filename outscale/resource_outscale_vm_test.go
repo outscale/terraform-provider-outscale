@@ -331,8 +331,8 @@ func TestAccVM_multiBlockDeviceMapping(t *testing.T) {
 	keypair := "terraform-basic"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheckValues(t) },
-		Providers: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 
 		Steps: []resource.TestStep{
 			{
@@ -552,11 +552,9 @@ func testAccCheckOutscaleVMDestroyWithProvider(s *terraform.State, provider *sch
 		if err != nil {
 			return err
 		}
-		if err == nil {
-			for _, i := range resp.GetVms() {
-				if i.GetState() != "" && i.GetState() != "terminated" {
-					return fmt.Errorf("Found unterminated instance: %s", i.GetVmId())
-				}
+		for _, i := range resp.GetVms() {
+			if i.GetState() != "" && i.GetState() != "terminated" {
+				return fmt.Errorf("Found running instance: %s", i.GetVmId())
 			}
 		}
 
@@ -870,46 +868,6 @@ func testAccCheckOutscaleVMConfigWithSubnet(omi, vmType, region, keypair string)
 			subnet_id                = outscale_subnet.outscale_subnet.subnet_id
 			placement_subregion_name = "%[3]sa"
 			placement_tenancy        = "default"
-	  }
-	`, omi, vmType, region, keypair)
-}
-
-func testAccCheckOutscaleVMConfigWithBlockDeviceMappings(omi, vmType, region, keypair string) string {
-	return fmt.Sprintf(`
-	resource "outscale_volume" "external1" {
-		subregion_name = "%[3]sa"
-		size           = 1
-	  }
-
-	  resource "outscale_snapshot" "snapshot" {
-		volume_id = outscale_volume.external1.id
-	  }
-
-	  resource "outscale_vm" "basic" {
-		image_id     = "%[1]s"
-		vm_type      = "%[2]s"
-		keypair_name = "%[4]s"
-
-		block_device_mappings {
-		  device_name = "/dev/sdb"
-		  no_device   = "/dev/xvdb"
-		  bsu {
-			volume_size           = 15
-			volume_type           = "standard"
-			snapshot_id           = outscale_snapshot.snapshot.id
-			delete_on_vm_deletion = true
-		  }
-		}
-
-		block_device_mappings {
-		  device_name = "/dev/sdc"
-		  bsu {
-			volume_size           = 22
-			#volume_type           = "io1"
-			#iops                  = 150
-			delete_on_vm_deletion = true
-		  }
-		}
 	  }
 	`, omi, vmType, region, keypair)
 }

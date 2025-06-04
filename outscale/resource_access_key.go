@@ -176,8 +176,6 @@ func (r *resourceAccessKey) Create(ctx context.Context, req resource.CreateReque
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	ctx, cancel := context.WithTimeout(ctx, createTimeout)
-	defer cancel()
 
 	createReq := oscgo.CreateAccessKeyRequest{}
 	if expirDate := data.ExpirationDate.ValueString(); expirDate != "" {
@@ -199,7 +197,7 @@ func (r *resourceAccessKey) Create(ctx context.Context, req resource.CreateReque
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to create access_key resource",
-			"Error: "+utils.GetErrorResponse(err).Error(),
+			err.Error(),
 		)
 		return
 	}
@@ -215,7 +213,7 @@ func (r *resourceAccessKey) Create(ctx context.Context, req resource.CreateReque
 		if err := inactiveAccessKey(ctx, r, data); err != nil {
 			resp.Diagnostics.AddError(
 				"Unable to update access_key state",
-				"Error: "+err.Error(),
+				err.Error(),
 			)
 			return
 		}
@@ -225,7 +223,7 @@ func (r *resourceAccessKey) Create(ctx context.Context, req resource.CreateReque
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to set access_key state",
-			"Error: "+err.Error(),
+			err.Error(),
 		)
 		return
 	}
@@ -251,7 +249,7 @@ func (r *resourceAccessKey) Read(ctx context.Context, req resource.ReadRequest, 
 		}
 		resp.Diagnostics.AddError(
 			"Unable to set access_key API response values.",
-			"Error: "+err.Error(),
+			err.Error(),
 		)
 		return
 	}
@@ -278,8 +276,6 @@ func (r *resourceAccessKey) Update(ctx context.Context, req resource.UpdateReque
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	ctx, cancel := context.WithTimeout(ctx, updateTimeout)
-	defer cancel()
 
 	updateReq := oscgo.UpdateAccessKeyRequest{
 		AccessKeyId: stateData.AccessKeyId.ValueString(),
@@ -304,7 +300,7 @@ func (r *resourceAccessKey) Update(ctx context.Context, req resource.UpdateReque
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to update access_key resource",
-			"Error: "+utils.GetErrorResponseToString(err),
+			err.Error(),
 		)
 		return
 	}
@@ -317,7 +313,7 @@ func (r *resourceAccessKey) Update(ctx context.Context, req resource.UpdateReque
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to update access_key API response values.",
-			"Error: "+err.Error(),
+			err.Error(),
 		)
 		return
 	}
@@ -342,8 +338,6 @@ func (r *resourceAccessKey) Delete(ctx context.Context, req resource.DeleteReque
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
-	defer cancel()
 
 	delReq := oscgo.DeleteAccessKeyRequest{
 		AccessKeyId: data.AccessKeyId.ValueString(),
@@ -355,7 +349,7 @@ func (r *resourceAccessKey) Delete(ctx context.Context, req resource.DeleteReque
 			if err != nil {
 				resp.Diagnostics.AddError(
 					"Unable to INACTIVE access_key state",
-					"Error: "+err.Error(),
+					err.Error(),
 				)
 				return
 			}
@@ -372,7 +366,7 @@ func (r *resourceAccessKey) Delete(ctx context.Context, req resource.DeleteReque
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Delete access_key",
-			"Error: "+utils.GetErrorResponse(err).Error(),
+			err.Error(),
 		)
 		return
 	}
@@ -387,8 +381,6 @@ func setAccessKeyState(ctx context.Context, r *resourceAccessKey, data *AccessKe
 	if diags.HasError() {
 		return fmt.Errorf("unable to parse 'access_key' read timeout value. Error: %v: ", diags.Errors())
 	}
-	ctx, cancel := context.WithTimeout(ctx, readTimeout)
-	defer cancel()
 
 	readReq := oscgo.ReadAccessKeysRequest{
 		Filters: &accessKeyFilters,
@@ -445,8 +437,6 @@ func inactiveAccessKey(ctx context.Context, r *resourceAccessKey, data AccessKey
 	if diags.HasError() {
 		return fmt.Errorf("unable to parse 'access_key' update timeout value. Error: %v: ", diags.Errors())
 	}
-	ctx, cancel := context.WithTimeout(ctx, updateTimeout)
-	defer cancel()
 
 	err := retry.RetryContext(ctx, updateTimeout, func() *retry.RetryError {
 		_, httpResp, err := r.Client.AccessKeyApi.UpdateAccessKey(ctx).UpdateAccessKeyRequest(req).Execute()

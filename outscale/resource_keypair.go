@@ -164,8 +164,6 @@ func (r *resourceKeypair) Create(ctx context.Context, req resource.CreateRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	ctx, cancel := context.WithTimeout(ctx, createTimeout)
-	defer cancel()
 
 	createReq := oscgo.CreateKeypairRequest{}
 	createReq.SetKeypairName(data.KeypairName.ValueString())
@@ -308,13 +306,11 @@ func (r *resourceKeypair) Delete(ctx context.Context, req resource.DeleteRequest
 		return
 	}
 
-	deleteTimeout, diags := data.Timeouts.Delete(ctx, utils.CreateDefaultTimeout)
+	deleteTimeout, diags := data.Timeouts.Delete(ctx, utils.DeleteDefaultTimeout)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
-	defer cancel()
 
 	delReq := oscgo.DeleteKeypairRequest{
 		KeypairId: data.KeypairId.ValueStringPointer(),
@@ -346,8 +342,6 @@ func setKeypairState(ctx context.Context, r *resourceKeypair, data *KeypairModel
 	if diags.HasError() {
 		return fmt.Errorf("unable to parse 'keypair' read timeout value. Error: %v: ", diags.Errors())
 	}
-	ctx, cancel := context.WithTimeout(ctx, readTimeout)
-	defer cancel()
 
 	readReq := oscgo.ReadKeypairsRequest{
 		Filters: &keypairFilters,

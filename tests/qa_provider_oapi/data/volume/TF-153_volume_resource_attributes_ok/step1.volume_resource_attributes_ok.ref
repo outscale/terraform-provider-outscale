@@ -30,12 +30,12 @@
                             }
                         ],
                         "termination_snapshot_name": null,
+                        "timeouts": null,
                         "volume_id": "##id-0##",
                         "volume_type": "standard"
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "identity_schema_version": 0
                 }
             ]
         }

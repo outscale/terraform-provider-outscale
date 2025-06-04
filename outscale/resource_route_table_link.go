@@ -166,8 +166,6 @@ func (r *resourceRouteTableLink) Create(ctx context.Context, req resource.Create
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	ctx, cancel := context.WithTimeout(ctx, createTimeout)
-	defer cancel()
 
 	createReq := oscgo.LinkRouteTableRequest{
 		RouteTableId: data.RouteTableId.ValueString(),
@@ -251,8 +249,6 @@ func (r *resourceRouteTableLink) Delete(ctx context.Context, req resource.Delete
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
-	defer cancel()
 
 	delReq := oscgo.UnlinkRouteTableRequest{
 		LinkRouteTableId: data.LinkRouteTableId.ValueString(),
@@ -286,8 +282,6 @@ func setRouteTableLinkState(ctx context.Context, r *resourceRouteTableLink, data
 	if diags.HasError() {
 		return data, fmt.Errorf("unable to parse 'Route Table Link' read timeout value. Error: %v: ", diags.Errors())
 	}
-	ctx, cancel := context.WithTimeout(ctx, readTimeout)
-	defer cancel()
 
 	var readResp oscgo.ReadRouteTablesResponse
 	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {

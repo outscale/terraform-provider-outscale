@@ -159,8 +159,6 @@ func (r *fgpuResource) Create(ctx context.Context, req resource.CreateRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	ctx, cancel := context.WithTimeout(ctx, createTimeout)
-	defer cancel()
 
 	var createResp oscgo.CreateFlexibleGpuResponse
 	err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
@@ -236,13 +234,11 @@ func (r *fgpuResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	updateTimeout, diags := planData.Timeouts.Update(ctx, utils.CreateDefaultTimeout)
+	updateTimeout, diags := planData.Timeouts.Update(ctx, utils.UpdateDefaultTimeout)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	ctx, cancel := context.WithTimeout(ctx, updateTimeout)
-	defer cancel()
 
 	updateReq := oscgo.UpdateFlexibleGpuRequest{
 		FlexibleGpuId:      resourceId.ValueString(),
@@ -292,8 +288,6 @@ func (r *fgpuResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
-	defer cancel()
 
 	delReq := oscgo.DeleteFlexibleGpuRequest{
 		FlexibleGpuId: data.FlexibleGpuId.ValueString(),
@@ -327,8 +321,6 @@ func setFlexibleGpuState(ctx context.Context, r *fgpuResource, data GpuModel) (G
 	if diags.HasError() {
 		return data, fmt.Errorf("unable to parse 'flexible_gpu' read timeout value. Error: %v: ", diags.Errors())
 	}
-	ctx, cancel := context.WithTimeout(ctx, readTimeout)
-	defer cancel()
 	var readResp oscgo.ReadFlexibleGpusResponse
 	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
 		rp, httpResp, err := r.Client.FlexibleGpuApi.ReadFlexibleGpus(ctx).ReadFlexibleGpusRequest(readReq).Execute()

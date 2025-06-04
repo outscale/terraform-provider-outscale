@@ -237,8 +237,6 @@ func (r *resourceRoute) Create(ctx context.Context, req resource.CreateRequest, 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	ctx, cancel := context.WithTimeout(ctx, createTimeout)
-	defer cancel()
 
 	createReq := oscgo.CreateRouteRequest{
 		DestinationIpRange: data.DestinationIpRange.ValueString(),
@@ -323,7 +321,7 @@ func GetRouteFromRouteTable(routeTable oscgo.RouteTable, destinationIpRange stri
 		}
 	}
 	return oscgo.Route{}, fmt.Errorf("unable to find matching route for Route Table (%s) "+
-		"and destination CIDR block (%s).", routeTable.GetRouteTableId(), destinationIpRange)
+		"and destination CIDR block (%s)", routeTable.GetRouteTableId(), destinationIpRange)
 }
 
 func ResourceRouteStateRefreshFunc(ctx context.Context, r *resourceRoute, failState string, routeTableId string, destinationIpRange string) retry.StateRefreshFunc {
@@ -350,7 +348,7 @@ func ResourceRouteStateRefreshFunc(ctx context.Context, r *resourceRoute, failSt
 			return resp, "error", err
 		}
 		if route.GetState() == failState {
-			return resp, failState, fmt.Errorf("failed to reach target state. Route is in '%v' failing state.", failState)
+			return resp, failState, fmt.Errorf("failed to reach target state. Route is in '%v' failing state", failState)
 		}
 
 		return resp, route.GetState(), nil
@@ -425,13 +423,11 @@ func (r *resourceRoute) Update(ctx context.Context, req resource.UpdateRequest, 
 	}
 
 	if updateCall {
-		updateTimeout, diags := planData.Timeouts.Create(ctx, utils.UpdateDefaultTimeout)
+		updateTimeout, diags := planData.Timeouts.Update(ctx, utils.UpdateDefaultTimeout)
 		resp.Diagnostics.Append(diags...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		ctx, cancel := context.WithTimeout(ctx, updateTimeout)
-		defer cancel()
 
 		var createResp oscgo.UpdateRouteResponse
 		err := retry.RetryContext(ctx, updateTimeout, func() *retry.RetryError {
@@ -500,8 +496,6 @@ func (r *resourceRoute) Delete(ctx context.Context, req resource.DeleteRequest, 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
-	defer cancel()
 
 	delReq := oscgo.DeleteRouteRequest{
 		DestinationIpRange: data.DestinationIpRange.ValueString(),
@@ -534,8 +528,6 @@ func (r *resourceRoute) setRouteState(ctx context.Context, data RouteModel) (Rou
 	if diags.HasError() {
 		return data, fmt.Errorf("unable to parse 'route' read timeout value. Error: %v: ", diags.Errors())
 	}
-	ctx, cancel := context.WithTimeout(ctx, readTimeout)
-	defer cancel()
 
 	var readResp oscgo.ReadRouteTablesResponse
 	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {

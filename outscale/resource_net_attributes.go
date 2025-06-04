@@ -150,8 +150,6 @@ func (r *resourceNetAttributes) Create(ctx context.Context, req resource.CreateR
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	ctx, cancel := context.WithTimeout(ctx, createTimeout)
-	defer cancel()
 
 	createReq := oscgo.UpdateNetRequest{
 		NetId:            data.NetId.ValueString(),
@@ -233,8 +231,6 @@ func (r *resourceNetAttributes) Update(ctx context.Context, req resource.UpdateR
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	ctx, cancel := context.WithTimeout(ctx, createTimeout)
-	defer cancel()
 
 	createReq := oscgo.UpdateNetRequest{
 		NetId:            data.NetId.ValueString(),
@@ -293,8 +289,6 @@ func (r *resourceNetAttributes) setNetAttributesState(ctx context.Context, data 
 	if diags.HasError() {
 		return data, fmt.Errorf("unable to parse 'net' read timeout value. Error: %v: ", diags.Errors())
 	}
-	ctx, cancel := context.WithTimeout(ctx, readTimeout)
-	defer cancel()
 	var readResp oscgo.ReadNetsResponse
 	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
 		rp, httpResp, err := r.Client.NetApi.ReadNets(ctx).ReadNetsRequest(readReq).Execute()

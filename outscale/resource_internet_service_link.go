@@ -154,8 +154,6 @@ func (r *resourceInternetServiceLink) Create(ctx context.Context, req resource.C
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	ctx, cancel := context.WithTimeout(ctx, createTimeout)
-	defer cancel()
 
 	createReq := oscgo.LinkInternetServiceRequest{
 		InternetServiceId: data.InternetServiceId.ValueString(),
@@ -239,8 +237,6 @@ func (r *resourceInternetServiceLink) Delete(ctx context.Context, req resource.D
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
-	defer cancel()
 
 	unlinkReq := oscgo.UnlinkInternetServiceRequest{
 		InternetServiceId: data.InternetServiceId.ValueString(),
@@ -275,8 +271,6 @@ func setInternetServiceLinkState(ctx context.Context, r *resourceInternetService
 	if diags.HasError() {
 		return data, fmt.Errorf("unable to parse 'internet service' read timeout value. Error: %v: ", diags.Errors())
 	}
-	ctx, cancel := context.WithTimeout(ctx, readTimeout)
-	defer cancel()
 
 	var readResp oscgo.ReadInternetServicesResponse
 	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
@@ -298,7 +292,7 @@ func setInternetServiceLinkState(ctx context.Context, r *resourceInternetService
 
 	tags, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: tagAttrTypes}, getTagsFromApiResponse(internetService.GetTags()))
 	if diags.HasError() {
-		return data, fmt.Errorf("Unable to convert Tags to the schema List. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("unable to convert Tags to the schema List. Error: %v: ", diags.Errors())
 	}
 	data.Tags = tags
 
