@@ -13,8 +13,8 @@ func TestAccOthers_VolumesDataSource_multipleFilters(t *testing.T) {
 	t.Parallel()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckOutscaleVolumeDataSourceConfigWithMultipleFilters(utils.GetRegion()),
@@ -32,8 +32,8 @@ func TestAccOthers_VolumeDataSource_multipleVIdsFilters(t *testing.T) {
 	t.Parallel()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckOutscaleVolumesDataSourceConfigWithMultipleVolumeIDsFilter(utils.GetRegion()),
@@ -51,8 +51,8 @@ func TestAccVM_withVolumesDataSource(t *testing.T) {
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckOutscaleVolumesDataSourceConfigWithVM(utils.GetRegion(), omi, keypair, utils.TestAccVmType),

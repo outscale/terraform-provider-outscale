@@ -24,9 +24,9 @@ func TestAccOthers_Image_basic(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOAPIImageDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
+		CheckDestroy:             testAccCheckOAPIImageDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOAPIImageConfigBasic(omi, utils.TestAccVmType, region, rInt),

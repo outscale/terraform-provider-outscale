@@ -87,8 +87,6 @@ func Provider() *schema.Provider {
 			"outscale_tag":                               ResourceOutscaleTags(),
 			"outscale_public_ip":                         ResourceOutscalePublicIP(),
 			"outscale_public_ip_link":                    ResourceOutscalePublicIPLink(),
-			"outscale_volume":                            ResourceOutscaleVolume(),
-			"outscale_volume_link":                       ResourceOutscaleVolumeLink(),
 			"outscale_nat_service":                       ResourceOutscaleNatService(),
 			"outscale_nic":                               ResourceOutscaleNic(),
 			"outscale_snapshot":                          ResourceOutscaleSnapshot(),

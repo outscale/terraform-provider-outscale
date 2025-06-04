@@ -105,7 +105,7 @@ func isProfileSet(data *ProviderModel) (bool, error) {
 		}
 		jsonFile, err := os.ReadFile(configFilePath)
 		if err != nil {
-			return isProfSet, fmt.Errorf("Unable to read config file '%v', Error: %w", configFilePath, err)
+			return isProfSet, fmt.Errorf("unable to read config file '%v', Error: %w", configFilePath, err)
 		}
 		profile := gjson.GetBytes(jsonFile, profileName)
 		if !gjson.Valid(profile.String()) {

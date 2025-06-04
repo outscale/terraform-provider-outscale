@@ -22,16 +22,8 @@ func New(version string) provider.Provider {
 }
 
 type frameworkProvider struct {
-	accessKeyId  types.String
-	secretKeyId  types.String
-	region       types.String
-	endpoints    []Endpoints
-	x509CertPath string
-	x509KeyPath  string
-	configFile   string
-	insecure     bool
-	profile      string
-	version      string
+	insecure bool
+	version  string
 }
 
 type ProviderModel struct {
@@ -218,5 +210,7 @@ func (p *frameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		NewResourceRouteTable,
 		NewResourceRouteTableLink,
 		NewResourceMainRouteTableLink,
+		NewResourceVolume,
+		NewResourceVolumeLink,
 	}
 }

@@ -72,7 +72,7 @@ func ResourceLBUAttachmentCreate(d *schema.ResourceData, meta interface{}) error
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("Failure Linking LoadBalancer backend_vm_ids/backend_ips with LBU: %w", err)
+		return fmt.Errorf(" Failure Linking LoadBalancer backend_vm_ids/backend_ips with LBU: %w", err)
 	}
 	d.SetId(lbuName)
 	return ResourceLBUAttachmentRead(d, meta)

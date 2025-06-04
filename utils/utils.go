@@ -17,8 +17,11 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	set "github.com/deckarep/golang-set/v2"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -33,10 +36,10 @@ const (
 	randMax              float32       = 20.0
 	MinPort              int           = 1
 	MaxPort              int           = 65535
-	MinIops              int           = 100
-	MaxIops              int           = 13000
+	MinIops              int32         = 100
+	MaxIops              int32         = 13000
 	DefaultIops          int32         = 150
-	MaxSize              int           = 14901
+	MaxSize              int32         = 14901
 	CreateDefaultTimeout time.Duration = 10 * time.Minute
 	ReadDefaultTimeout   time.Duration = 5 * time.Minute
 	UpdateDefaultTimeout time.Duration = 10 * time.Minute
@@ -48,9 +51,9 @@ const (
 	pathRegex            string        = "^(/[a-zA-Z0-9/_]+/)"
 	pathError            string        = "path must begin and end with '/' and contain only alphanumeric characters and/or '/', '_' characters"
 	VolumeIOPSError      string        = `
-- The "iops" parameter can only be set if "io1" volume type is created.
-- "Standard" volume types have a default value of 150 iops.
-- For "gp2" volume types, iops value depend on your volume size.
+The "iops" parameter can only be set when creating an "io1" volume.
+Check Outscale API documentation for more details:
+https://docs.outscale.com/en/userguide/About-Volumes.html#_volume_types_and_iops
 `
 	AwaitActiveStateDefaultValue bool = true
 )
@@ -162,6 +165,19 @@ func StringSliceToInt64Slice(src []string) (res []int64) {
 	return
 }
 
+func SliceToTftypesValueSlice(src []string) (basetypes.SetValue, diag.Diagnostics) {
+
+	nSet := []attr.Value{}
+	for _, str := range src {
+		nSet = append(nSet, types.StringValue(str))
+	}
+	setValue, diags := types.SetValue(basetypes.StringType{}, nSet)
+	if diags != nil {
+		return setValue, diags
+	}
+	return setValue, diags
+}
+
 // StringSliceToInt32Slice converts []string to []int32 ...
 func StringSliceToInt32Slice(src []string) (res []int32) {
 	for _, str := range src {
@@ -221,7 +237,7 @@ func getHttpErrorResponse(httpBody io.ReadCloser, err error) error {
 	errBody, readErr := io.ReadAll(httpBody)
 	defer httpBody.Close()
 	if readErr != nil {
-		return fmt.Errorf("Unable to read http response error: %w", err)
+		return fmt.Errorf("unable to read http response error: %w", err)
 	}
 	return fmt.Errorf("%w: %v", err, string(errBody))
 }
@@ -440,4 +456,23 @@ func GetAttrTypes(model any) map[string]attr.Type {
 		}
 	}
 	return attrTypes
+}
+func GetSlicesFromTypesSetForUpdating(ctx context.Context, stateTypeSet, planTypeSet types.Set) ([]string, []string, diag.Diagnostics) {
+	var toAdd, toRemove []string
+	diags := planTypeSet.ElementsAs(ctx, &toAdd, false)
+	if diags.HasError() {
+		return toAdd, toRemove, diags
+	}
+	diags = stateTypeSet.ElementsAs(ctx, &toRemove, false)
+	if diags.HasError() {
+		return toAdd, toRemove, diags
+	}
+
+	setIdsToAdd := set.NewSet[string]()
+	setIdsToRemove := set.NewSet[string]()
+	setIdsToAdd.Append(toAdd...)
+	setIdsToRemove.Append(toRemove...)
+	toAdd = setIdsToAdd.Difference(setIdsToRemove).ToSlice()
+	toRemove = setIdsToRemove.Difference(setIdsToAdd).ToSlice()
+	return toAdd, toRemove, diags
 }
