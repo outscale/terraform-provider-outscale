@@ -103,7 +103,7 @@ func testAccOAPIVpcPeeringConfig(accountid string) string {
 }
 
 func testAccOAPIVpcPeeringConfig2() string {
-	return fmt.Sprintf(`
+	return `
 	resource "outscale_net" "foo" {
 		ip_range = "10.0.0.0/16"
 
@@ -126,5 +126,5 @@ func testAccOAPIVpcPeeringConfig2() string {
 		source_net_id   = outscale_net.foo.id
 		accepter_net_id = outscale_net.bar.id
 	}
-`)
+`
 }

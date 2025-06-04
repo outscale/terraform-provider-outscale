@@ -1,10 +1,11 @@
 module github.com/outscale/terraform-provider-outscale
 
-go 1.24.1
+go 1.24.2
 
 require (
 	github.com/aws/aws-sdk-go v1.55.6
 	github.com/davecgh/go-spew v1.1.1
+	github.com/deckarep/golang-set/v2 v2.8.0
 	github.com/go-test/deep v1.0.6
 	github.com/hashicorp/errwrap v1.1.0
 	github.com/hashicorp/terraform-plugin-framework v1.14.1

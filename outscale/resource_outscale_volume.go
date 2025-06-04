@@ -41,7 +41,7 @@ func ResourceOutscaleVolume() *schema.Resource {
 				ForceNew: true,
 				Computed: true,
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
-					iopsVal := val.(int)
+					iopsVal := val.(int32)
 					if iopsVal < utils.MinIops || iopsVal > utils.MaxIops {
 						errs = append(errs, fmt.Errorf("%q must be between %d and %d inclusive, got: %d", key, utils.MinIops, utils.MaxIops, iopsVal))
 					}
@@ -54,7 +54,7 @@ func ResourceOutscaleVolume() *schema.Resource {
 				ForceNew: true,
 				Computed: true,
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
-					vSize := val.(int)
+					vSize := val.(int32)
 					if vSize < 1 || vSize > utils.MaxSize {
 						errs = append(errs, fmt.Errorf("%q must be between 1 and %d gibibytes inclusive, got: %d", key, utils.MaxSize, vSize))
 					}
