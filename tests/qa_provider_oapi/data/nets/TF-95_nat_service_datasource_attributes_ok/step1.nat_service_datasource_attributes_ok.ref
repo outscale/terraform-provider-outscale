@@ -458,10 +458,10 @@
                                 "key": "name",
                                 "value": "route_table"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net"
                     ]
@@ -480,12 +480,13 @@
                         "id": "##id-9##",
                         "link_route_table_id": "##id-9##",
                         "main": false,
+                        "net_id": "",
                         "request_id": "########",
                         "route_table_id": "##id-7##",
-                        "subnet_id": "##id-3##"
+                        "subnet_id": "##id-3##",
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net",
                         "outscale_route_table.outscale_route_table",

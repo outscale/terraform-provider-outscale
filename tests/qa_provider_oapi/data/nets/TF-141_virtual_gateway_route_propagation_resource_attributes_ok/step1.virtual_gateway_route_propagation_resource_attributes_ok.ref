@@ -63,10 +63,10 @@
                                 "key": "tag_values",
                                 "value": "test-VGW-1"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net"
                     ]

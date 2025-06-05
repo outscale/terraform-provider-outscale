@@ -7,6 +7,33 @@
     "resources": [
         {
             "mode": "managed",
+            "type": "outscale_main_route_table_link",
+            "name": "main",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "default_route_table_id": "##id-0##",
+                        "id": "##id-1##",
+                        "link_route_table_id": "##id-1##",
+                        "main": true,
+                        "net_id": "##id-2##",
+                        "request_id": "########",
+                        "route_table_id": "##id-3##",
+                        "subnet_id": "",
+                        "timeouts": null
+                    },
+                    "sensitive_attributes": [],
+                    "dependencies": [
+                        "outscale_net.outscale_net",
+                        "outscale_route_table.outscale_route_table"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
             "type": "outscale_net",
             "name": "outscale_net",
             "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
@@ -14,13 +41,18 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "dhcp_options_set_id": "##id-0##",
-                        "id": "##id-1##",
+                        "dhcp_options_set_id": "##id-4##",
+                        "id": "##id-2##",
                         "ip_range": "10.0.0.0/16",
-                        "net_id": "##id-1##",
+                        "net_id": "##id-2##",
                         "request_id": "########",
                         "state": "available",
-                        "tags": [],
+                        "tags": [
+                            {
+                                "key": "name",
+                                "value": "terraform-TF-117"
+                            }
+                        ],
                         "tenancy": "default",
                         "timeouts": null
                     },
@@ -37,18 +69,33 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-2##",
-                        "link_route_tables": [],
-                        "net_id": "##id-1##",
+                        "id": "##id-3##",
+                        "link_route_tables": [
+                            {
+                                "link_route_table_id": "##id-5##",
+                                "main": false,
+                                "net_id": "",
+                                "route_table_id": "##id-3##",
+                                "subnet_id": "##id-6##"
+                            },
+                            {
+                                "link_route_table_id": "##id-7##",
+                                "main": false,
+                                "net_id": "",
+                                "route_table_id": "##id-3##",
+                                "subnet_id": "##id-8##"
+                            }
+                        ],
+                        "net_id": "##id-2##",
                         "request_id": "########",
                         "route_propagating_virtual_gateways": [],
-                        "route_table_id": "##id-2##",
+                        "route_table_id": "##id-3##",
                         "routes": [
                             {
                                 "creation_method": "CreateRouteTable",
                                 "destination_ip_range": "10.0.0.0/16",
                                 "destination_service_id": "",
-                                "gateway_id": "##id-3##",
+                                "gateway_id": "##id-9##",
                                 "nat_service_id": "",
                                 "net_access_point_id": "",
                                 "net_peering_id": "",
@@ -61,7 +108,7 @@
                         "tags": [
                             {
                                 "key": "name",
-                                "value": "terraform-RT"
+                                "value": "terraform-TF-117"
                             }
                         ],
                         "timeouts": null
@@ -82,13 +129,13 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-4##",
-                        "link_route_table_id": "##id-4##",
+                        "id": "##id-7##",
+                        "link_route_table_id": "##id-7##",
                         "main": false,
                         "net_id": "",
                         "request_id": "########",
-                        "route_table_id": "##id-2##",
-                        "subnet_id": "##id-5##",
+                        "route_table_id": "##id-3##",
+                        "subnet_id": "##id-8##",
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
@@ -109,13 +156,13 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-6##",
-                        "link_route_table_id": "##id-6##",
+                        "id": "##id-5##",
+                        "link_route_table_id": "##id-5##",
                         "main": false,
                         "net_id": "",
                         "request_id": "########",
-                        "route_table_id": "##id-2##",
-                        "subnet_id": "##id-7##",
+                        "route_table_id": "##id-3##",
+                        "subnet_id": "##id-6##",
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
@@ -137,15 +184,20 @@
                     "schema_version": 0,
                     "attributes": {
                         "available_ips_count": "########",
-                        "id": "##id-5##",
+                        "id": "##id-8##",
                         "ip_range": "10.0.0.0/24",
                         "map_public_ip_on_launch": false,
-                        "net_id": "##id-1##",
+                        "net_id": "##id-2##",
                         "request_id": "########",
                         "state": "available",
-                        "subnet_id": "##id-5##",
+                        "subnet_id": "##id-8##",
                         "subregion_name": "us-east-2a",
-                        "tags": [],
+                        "tags": [
+                            {
+                                "key": "name",
+                                "value": "terraform-TF-117"
+                            }
+                        ],
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
@@ -165,15 +217,20 @@
                     "schema_version": 0,
                     "attributes": {
                         "available_ips_count": "########",
-                        "id": "##id-7##",
+                        "id": "##id-6##",
                         "ip_range": "10.0.1.0/24",
                         "map_public_ip_on_launch": false,
-                        "net_id": "##id-1##",
+                        "net_id": "##id-2##",
                         "request_id": "########",
                         "state": "available",
-                        "subnet_id": "##id-7##",
+                        "subnet_id": "##id-6##",
                         "subregion_name": "us-east-2a",
-                        "tags": [],
+                        "tags": [
+                            {
+                                "key": "name",
+                                "value": "terraform-TF-117"
+                            }
+                        ],
                         "timeouts": null
                     },
                     "sensitive_attributes": [],

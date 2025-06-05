@@ -239,10 +239,10 @@
                                 "key": "name",
                                 "value": "terraform-RT-lbu"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net"
                     ]
@@ -261,12 +261,13 @@
                         "id": "##id-11##",
                         "link_route_table_id": "##id-11##",
                         "main": false,
+                        "net_id": "",
                         "request_id": "########",
                         "route_table_id": "##id-9##",
-                        "subnet_id": "##id-6##"
+                        "subnet_id": "##id-6##",
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net",
                         "outscale_route_table.outscale_route_table",
@@ -286,7 +287,7 @@
                     "attributes": {
                         "account_id": "##id-5##",
                         "description": "test lbu-2",
-                        "id": "##id-4##",
+                        "id": "##id-3##",
                         "inbound_rules": [],
                         "net_id": "##id-1##",
                         "outbound_rules": [
@@ -300,7 +301,7 @@
                         ],
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
-                        "security_group_id": "##id-4##",
+                        "security_group_id": "##id-3##",
                         "security_group_name": "TF81-lbu-1",
                         "tag": null,
                         "tags": [
@@ -329,7 +330,7 @@
                     "attributes": {
                         "account_id": "##id-5##",
                         "description": "test lbu-2",
-                        "id": "##id-3##",
+                        "id": "##id-4##",
                         "inbound_rules": [],
                         "net_id": "##id-1##",
                         "outbound_rules": [
@@ -343,7 +344,7 @@
                         ],
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
-                        "security_group_id": "##id-3##",
+                        "security_group_id": "##id-4##",
                         "security_group_name": "TF81-lbu-2",
                         "tag": null,
                         "tags": [
