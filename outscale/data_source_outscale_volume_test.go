@@ -13,8 +13,8 @@ func TestAccOthers_VolumeDataSource_basic(t *testing.T) {
 	t.Parallel()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckOutscaleVolumeDataSourceConfig(utils.GetRegion()),
@@ -32,8 +32,8 @@ func TestAccOthers_VolumeDataSource_filterByTags(t *testing.T) {
 	t.Parallel()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckOutscaleVolumeDataSourceConfigFilterByTags(utils.GetRegion()),

@@ -18,8 +18,8 @@ func TestAccOthers_Snapshot_basic(t *testing.T) {
 
 	var v oscgo.Snapshot
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleSnapshotConfig(utils.GetRegion()),
@@ -36,8 +36,8 @@ func TestAccOthers_Snapshot_withDescription(t *testing.T) {
 
 	var v oscgo.Snapshot
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleSnapshotConfigWithDescription(utils.GetRegion()),
@@ -55,8 +55,8 @@ func TestAccOthers_Snapshot_CopySnapshot(t *testing.T) {
 
 	var v oscgo.Snapshot
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleSnapshotConfigCopySnapshot(utils.GetRegion()),
@@ -75,8 +75,8 @@ func TestAccOthers_Snapshot_UpdateTags(t *testing.T) {
 	region := utils.GetRegion()
 	//var v oscgo.Snapshot
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleSnapshotConfigUpdateTags(region, "Terraform-Snapshot"),
@@ -95,8 +95,8 @@ func TestAccOthers_Snapshot_importBasic(t *testing.T) {
 
 	var v oscgo.Snapshot
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleSnapshotConfig(utils.GetRegion()),
@@ -132,9 +132,8 @@ func testAccCheckOAPISnapshotExists(n string, v *oscgo.Snapshot) resource.TestCh
 		}
 
 		var resp oscgo.ReadSnapshotsResponse
-		var err error
 
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 			rp, httpResp, err := conn.SnapshotApi.ReadSnapshots(context.Background()).ReadSnapshotsRequest(request).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
@@ -217,6 +216,6 @@ func testAccOutscaleSnapshotConfigUpdateTags(region, value string) string {
 		  key   = "Name"
 		  value = "%s"
 		}
-	  }	  
+	  }
 	`, region, value)
 }

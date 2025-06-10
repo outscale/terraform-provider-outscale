@@ -15,8 +15,8 @@ func TestAccOutscaleSnapshotAttributes_Basic(t *testing.T) {
 	accountID := os.Getenv("OUTSCALE_ACCOUNT")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleSnapshotAttributesConfig(true, false, accountID, utils.GetRegion()),
@@ -40,15 +40,15 @@ func testAccOutscaleSnapshotAttributesConfig(includeAddition, includeRemoval boo
 			subregion_name = "%[2]sa"
 			size           = 1
 		}
-		
+
 		resource "outscale_snapshot" "test" {
 			volume_id   = "${outscale_volume.description_test.id}"
 			description = "Snapshot Acceptance Test"
 		}
-		
+
 		resource "outscale_snapshot_attributes" "self-test" {
 			snapshot_id = "${outscale_snapshot.test.id}"
-		
+
 			permissions_to_create_volume_removals {
 				account_ids = ["%[1]s"]
 			}
@@ -59,7 +59,7 @@ func testAccOutscaleSnapshotAttributesConfig(includeAddition, includeRemoval boo
 		return base + fmt.Sprintf(`
 			resource "outscale_snapshot_attributes" "additions" {
 				snapshot_id = "${outscale_snapshot.test.id}"
-			
+
 				permissions_to_create_volume_additions {
 					account_ids = ["%s"]
 				}
@@ -71,7 +71,7 @@ func testAccOutscaleSnapshotAttributesConfig(includeAddition, includeRemoval boo
 		return base + fmt.Sprintf(`
 		resource "outscale_snapshot_attributes" "removals" {
 			snapshot_id = "${outscale_snapshot.test.id}"
-		
+
 			permissions_to_create_volume_removals {
 				account_ids = ["%s"]
 			}
