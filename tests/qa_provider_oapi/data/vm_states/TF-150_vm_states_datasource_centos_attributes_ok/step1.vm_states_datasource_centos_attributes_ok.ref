@@ -83,11 +83,10 @@
                         "request_id": "########",
                         "security_group_id": "##id-5##",
                         "security_group_name": "terraform-sg-150",
-                        "tag": null,
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
-                    "sensitive_attributes": [],
-                    "private": "bnVsbA=="
+                    "sensitive_attributes": []
                 }
             ]
         },

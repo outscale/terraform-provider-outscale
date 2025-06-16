@@ -213,7 +213,7 @@ func expandRules(d *schema.ResourceData, conn *oscgo.APIClient) *[]oscgo.Securit
 			r := rule.(map[string]interface{})
 
 			rules[i] = oscgo.SecurityGroupRule{
-				SecurityGroupsMembers: expandSecurityGroupsMembers(r["security_groups_members"].([]interface{}), conn),
+				SecurityGroupsMembers: tmpexpandSecurityGroupsMembers(r["security_groups_members"].([]interface{}), conn),
 			}
 
 			if ipRanges := utils.InterfaceSliceToStringSlicePtr(r["ip_ranges"].([]interface{})); len(*ipRanges) > 0 {
@@ -253,7 +253,7 @@ func flattenRules(securityGroupsRules []oscgo.SecurityGroupRule) []map[string]in
 	return sgrs
 }
 
-func flattenSecurityGroupsMembers(securityGroupMembers []oscgo.SecurityGroupsMember) []map[string]interface{} {
+func tmpflattenSecurityGroupsMembers(securityGroupMembers []oscgo.SecurityGroupsMember) []map[string]interface{} {
 	sgms := make([]map[string]interface{}, len(securityGroupMembers))
 
 	for i, s := range securityGroupMembers {
@@ -266,7 +266,7 @@ func flattenSecurityGroupsMembers(securityGroupMembers []oscgo.SecurityGroupsMem
 	return sgms
 }
 
-func expandSecurityGroupsMembers(gps []interface{}, conn *oscgo.APIClient) *[]oscgo.SecurityGroupsMember {
+func tmpexpandSecurityGroupsMembers(gps []interface{}, conn *oscgo.APIClient) *[]oscgo.SecurityGroupsMember {
 	groups := make([]oscgo.SecurityGroupsMember, len(gps))
 
 	for i, group := range gps {

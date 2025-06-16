@@ -53,9 +53,11 @@
                                 "security_groups_members": [
                                     {
                                         "account_id": "##id-2##",
-                                        "security_group_id": "##id-4##"
+                                        "security_group_id": "##id-4##",
+                                        "security_group_name": ""
                                     }
                                 ],
+                                "service_ids": null,
                                 "to_port_range": 22
                             }
                         ],
@@ -66,6 +68,7 @@
                                 "ip_protocol": "-1",
                                 "ip_ranges": "########",
                                 "security_groups_members": [],
+                                "service_ids": null,
                                 "to_port_range": -1
                             },
                             {
@@ -75,9 +78,11 @@
                                 "security_groups_members": [
                                     {
                                         "account_id": "##id-2##",
-                                        "security_group_id": "##id-4##"
+                                        "security_group_id": "##id-4##",
+                                        "security_group_name": ""
                                     }
                                 ],
+                                "service_ids": null,
                                 "to_port_range": 22
                             }
                         ],
@@ -85,16 +90,15 @@
                         "request_id": "########",
                         "security_group_id": "##id-3##",
                         "security_group_name": "sg1-terraform-test",
-                        "tag": null,
                         "tags": [
                             {
                                 "key": "Name",
                                 "value": "outscale_sg"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net"
                     ]
@@ -121,6 +125,7 @@
                                 "ip_protocol": "-1",
                                 "ip_ranges": "########",
                                 "security_groups_members": [],
+                                "service_ids": null,
                                 "to_port_range": -1
                             }
                         ],
@@ -128,16 +133,15 @@
                         "request_id": "########",
                         "security_group_id": "##id-4##",
                         "security_group_name": "sg2-terraform-test",
-                        "tag": null,
                         "tags": [
                             {
                                 "key": "Name",
                                 "value": "outscale_sg2"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net"
                     ]

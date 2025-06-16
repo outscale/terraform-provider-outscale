@@ -161,11 +161,10 @@
                         "request_id": "########",
                         "security_group_id": "##id-5##",
                         "security_group_name": "SG-inteImgl",
-                        "tag": null,
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
-                    "sensitive_attributes": [],
-                    "private": "bnVsbA=="
+                    "sensitive_attributes": []
                 }
             ]
         },

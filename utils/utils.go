@@ -52,7 +52,8 @@ const (
 - "Standard" volume types have a default value of 150 iops.
 - For "gp2" volume types, iops value depend on your volume size.
 `
-	AwaitActiveStateDefaultValue bool = true
+	AwaitActiveStateDefaultValue          bool = true
+	RemoveDefaultOutboundRuleDefaultValue bool = false
 )
 
 func PrintToJSON(v interface{}, msg string) {
@@ -437,6 +438,8 @@ func GetAttrTypes(model any) map[string]attr.Type {
 			attrTypes[tfsdkTag] = types.Int64Type
 		case reflect.TypeOf(types.Float64{}):
 			attrTypes[tfsdkTag] = types.Float64Type
+		case reflect.TypeOf(types.Int32{}):
+			attrTypes[tfsdkTag] = types.Int32Type
 		}
 	}
 	return attrTypes

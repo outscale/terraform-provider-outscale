@@ -71,9 +71,8 @@ func TestAccOthers_SecurityGroupRule_withSecurityGroupMember(t *testing.T) {
 	accountID := os.Getenv("OUTSCALE_ACCOUNT")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleSecurityGroupRuleDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: defineTestProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleSecurityGroupRuleWithGroupMembers(rInt, accountID),

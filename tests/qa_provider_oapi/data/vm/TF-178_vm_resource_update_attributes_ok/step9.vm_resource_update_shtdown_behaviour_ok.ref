@@ -67,11 +67,10 @@
                         "request_id": "########",
                         "security_group_id": "##id-3##",
                         "security_group_name": "terraform-sg-TF178-0",
-                        "tag": null,
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
-                    "sensitive_attributes": [],
-                    "private": "bnVsbA=="
+                    "sensitive_attributes": []
                 },
                 {
                     "index_key": 1,
@@ -87,11 +86,10 @@
                         "request_id": "########",
                         "security_group_id": "##id-4##",
                         "security_group_name": "terraform-sg-TF178-1",
-                        "tag": null,
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
-                    "sensitive_attributes": [],
-                    "private": "bnVsbA=="
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -192,17 +190,17 @@
                                 ],
                                 "secondary_private_ip_count": 0,
                                 "security_group_ids": [
-                                    "##id-3##",
-                                    "##id-4##"
+                                    "##id-4##",
+                                    "##id-3##"
                                 ],
                                 "security_groups": [
                                     {
-                                        "security_group_id": "##id-3##",
-                                        "security_group_name": "terraform-sg-TF178-0"
-                                    },
-                                    {
                                         "security_group_id": "##id-4##",
                                         "security_group_name": "terraform-sg-TF178-1"
+                                    },
+                                    {
+                                        "security_group_id": "##id-3##",
+                                        "security_group_name": "terraform-sg-TF178-0"
                                     }
                                 ],
                                 "state": "in-use",
@@ -243,17 +241,17 @@
                                 ],
                                 "secondary_private_ip_count": 0,
                                 "security_group_ids": [
-                                    "##id-3##",
-                                    "##id-4##"
+                                    "##id-4##",
+                                    "##id-3##"
                                 ],
                                 "security_groups": [
                                     {
-                                        "security_group_id": "##id-3##",
-                                        "security_group_name": "terraform-sg-TF178-0"
-                                    },
-                                    {
                                         "security_group_id": "##id-4##",
                                         "security_group_name": "terraform-sg-TF178-1"
+                                    },
+                                    {
+                                        "security_group_id": "##id-3##",
+                                        "security_group_name": "terraform-sg-TF178-0"
                                     }
                                 ],
                                 "state": "in-use",
@@ -273,18 +271,18 @@
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
                         "security_group_ids": [
-                            "##id-3##",
-                            "##id-4##"
+                            "##id-4##",
+                            "##id-3##"
                         ],
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-3##",
-                                "security_group_name": "terraform-sg-TF178-0"
-                            },
-                            {
                                 "security_group_id": "##id-4##",
                                 "security_group_name": "terraform-sg-TF178-1"
+                            },
+                            {
+                                "security_group_id": "##id-3##",
+                                "security_group_name": "terraform-sg-TF178-0"
                             }
                         ],
                         "state": "running",
