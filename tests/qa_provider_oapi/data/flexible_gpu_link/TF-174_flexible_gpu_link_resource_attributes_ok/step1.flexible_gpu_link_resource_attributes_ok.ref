@@ -99,11 +99,10 @@
                         "request_id": "########",
                         "security_group_id": "##id-5##",
                         "security_group_name": "SG-inteFg_link",
-                        "tag": null,
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
-                    "sensitive_attributes": [],
-                    "private": "bnVsbA=="
+                    "sensitive_attributes": []
                 }
             ]
         },

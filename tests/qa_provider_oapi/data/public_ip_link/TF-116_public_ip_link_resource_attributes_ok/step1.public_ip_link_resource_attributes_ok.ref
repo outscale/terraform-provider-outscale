@@ -117,11 +117,10 @@
                         "request_id": "########",
                         "security_group_id": "##id-6##",
                         "security_group_name": "terraform-sg_TF116",
-                        "tag": null,
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
-                    "sensitive_attributes": [],
-                    "private": "bnVsbA=="
+                    "sensitive_attributes": []
                 }
             ]
         },

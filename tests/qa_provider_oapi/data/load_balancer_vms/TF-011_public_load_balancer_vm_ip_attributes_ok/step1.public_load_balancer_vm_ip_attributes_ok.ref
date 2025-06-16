@@ -237,11 +237,10 @@
                         "request_id": "########",
                         "security_group_id": "##id-6##",
                         "security_group_name": "terraform-TF011",
-                        "tag": null,
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
-                    "sensitive_attributes": [],
-                    "private": "bnVsbA=="
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -278,7 +277,7 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-0##",
+                        "id": "##id-1##",
                         "image_id": "##id-8##",
                         "is_source_dest_checked": false,
                         "keypair_name": "KP-TF011",
@@ -324,7 +323,7 @@
                         ],
                         "timeouts": null,
                         "user_data": "",
-                        "vm_id": "##id-0##",
+                        "vm_id": "##id-1##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
@@ -362,7 +361,7 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-1##",
+                        "id": "##id-0##",
                         "image_id": "##id-8##",
                         "is_source_dest_checked": false,
                         "keypair_name": "KP-TF011",
@@ -408,7 +407,7 @@
                         ],
                         "timeouts": null,
                         "user_data": "",
-                        "vm_id": "##id-1##",
+                        "vm_id": "##id-0##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },

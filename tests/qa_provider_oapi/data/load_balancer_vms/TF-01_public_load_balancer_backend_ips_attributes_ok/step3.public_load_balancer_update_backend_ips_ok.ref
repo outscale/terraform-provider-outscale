@@ -132,8 +132,8 @@
                         ],
                         "application_sticky_cookie_policies": [],
                         "backend_vm_ids": [
-                            "##id-6##",
-                            "##id-0##"
+                            "##id-0##",
+                            "##id-6##"
                         ],
                         "dns_name": "########",
                         "health_check": [
@@ -313,11 +313,10 @@
                         "request_id": "########",
                         "security_group_id": "##id-12##",
                         "security_group_name": "terraform-TF01",
-                        "tag": null,
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
-                    "sensitive_attributes": [],
-                    "private": "bnVsbA=="
+                    "sensitive_attributes": []
                 }
             ]
         },
@@ -613,7 +612,7 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-1##",
+                        "id": "##id-2##",
                         "image_id": "##id-14##",
                         "is_source_dest_checked": false,
                         "keypair_name": "KP-TF01",
@@ -659,7 +658,7 @@
                         ],
                         "timeouts": null,
                         "user_data": "",
-                        "vm_id": "##id-1##",
+                        "vm_id": "##id-2##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
@@ -697,7 +696,7 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-2##",
+                        "id": "##id-1##",
                         "image_id": "##id-14##",
                         "is_source_dest_checked": false,
                         "keypair_name": "KP-TF01",
@@ -743,7 +742,7 @@
                         ],
                         "timeouts": null,
                         "user_data": "",
-                        "vm_id": "##id-2##",
+                        "vm_id": "##id-1##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },

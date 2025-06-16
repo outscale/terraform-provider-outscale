@@ -218,5 +218,7 @@ func (p *frameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		NewResourceRouteTable,
 		NewResourceRouteTableLink,
 		NewResourceMainRouteTableLink,
+		NewResourceSecurityGroup,
+		NewResourceSecurityGroupRule,
 	}
 }

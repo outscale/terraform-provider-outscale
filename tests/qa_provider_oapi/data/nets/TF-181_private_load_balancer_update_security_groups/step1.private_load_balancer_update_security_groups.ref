@@ -128,6 +128,7 @@
                                 "ip_protocol": "-1",
                                 "ip_ranges": "########",
                                 "security_groups_members": [],
+                                "service_ids": null,
                                 "to_port_range": -1
                             }
                         ],
@@ -135,11 +136,10 @@
                         "request_id": "########",
                         "security_group_id": "##id-6##",
                         "security_group_name": "terraform-sg-lbu-TF181-1",
-                        "tag": null,
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net"
                     ]
@@ -166,6 +166,7 @@
                                 "ip_protocol": "-1",
                                 "ip_ranges": "########",
                                 "security_groups_members": [],
+                                "service_ids": null,
                                 "to_port_range": -1
                             }
                         ],
@@ -173,11 +174,10 @@
                         "request_id": "########",
                         "security_group_id": "##id-7##",
                         "security_group_name": "terraform-sg-lbu-TF181-2",
-                        "tag": null,
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net"
                     ]
