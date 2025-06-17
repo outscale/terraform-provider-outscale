@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net/http"
 	"reflect"
 	"time"
 
@@ -93,7 +92,6 @@ func DataSourceOutscaleLinPeeringConnectionRead(d *schema.ResourceData, meta int
 	req.SetFilters(filtersValues)
 
 	var resp oscgo.ReadNetPeeringsResponse
-	var statusCode int
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.NetPeeringApi.ReadNetPeerings(context.Background()).ReadNetPeeringsRequest(req).Execute()
 
@@ -101,17 +99,15 @@ func DataSourceOutscaleLinPeeringConnectionRead(d *schema.ResourceData, meta int
 			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
-		statusCode = httpResp.StatusCode
 		return nil
 	})
-
 	if err != nil {
-		if statusCode == http.StatusNotFound {
-			return fmt.Errorf("no matching Net Peering Connection found")
-		}
 		return fmt.Errorf("Error reading Net Peering Connection details: %s", err)
 	}
 
+	if len(resp.GetNetPeerings()) == 0 {
+		return fmt.Errorf("No matching Net Peering Connection found")
+	}
 	if len(resp.GetNetPeerings()) > 1 {
 		return fmt.Errorf("multiple Net Peering connections matched; use additional constraints to reduce matches to a single Net Peering Connection")
 	}
