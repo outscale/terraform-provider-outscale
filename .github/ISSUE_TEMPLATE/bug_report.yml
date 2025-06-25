@@ -1,0 +1,104 @@
+name: Bug Report
+description: Report an unexpected error, crash, or incorrect behavior
+title: "[Bug]: "
+labels: ["bug"]
+assignees: []
+
+body:
+  - type: textarea
+    id: terraform-version
+    attributes:
+      label: Terraform Version
+      description: Paste the output of `terraform version`.
+      placeholder: |
+        Example:
+        Terraform v1.6.2
+        on linux_amd64
+    validations:
+      required: true
+
+  - type: textarea
+    id: configuration
+    attributes:
+      label: Terraform Configuration
+      description: Paste the relevant parts of your Terraform code, or link to a minimal repro repo.
+      placeholder: |
+        ```hcl
+        resource "example_resource" "foo" {
+          name = "example"
+        }
+        ```
+    validations:
+      required: true
+
+  - type: textarea
+    id: debug-output
+    attributes:
+      label: Debug Output (optional)
+      description: Please provide a link to a Gist or paste logs collected with `TF_LOG=trace`. Review for sensitive info before sharing.
+      placeholder: |
+        Example: https://gist.github.com/yourname/abcdef1234567890
+    validations:
+      required: false
+
+  - type: textarea
+    id: crash-output
+    attributes:
+      label: Crash Output (if applicable)
+      description: If Terraform crashed, paste or link to the contents of `crash.log`.
+    validations:
+      required: false
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect Terraform to do?
+      placeholder: |
+        Example: I expected Terraform to create the resource without error.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+      placeholder: |
+        Example: Terraform returned a 403 error with no additional context.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Provide step-by-step commands to reproduce the issue.
+      placeholder: |
+        1. Run `terraform init`
+        2. Run `terraform apply`
+        3. Observe error in output
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Add any extra information (e.g. shell script used, workarounds tried, cloud provider context).
+      placeholder: |
+        Example: The bug occurs only when using the `--target` flag or a remote backend.
+    validations:
+      required: false
+
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description: Link to any related issues or pull requests.
+      placeholder: |
+        Example:
+        - Related to #42
+        - Possibly caused by terraform-provider-xyz#17
+    validations:
+      required: false
