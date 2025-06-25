@@ -1,0 +1,73 @@
+name: Feature Request
+description: Suggest a new feature or enhancement for this project
+title: "[Feature]: "
+labels: ["enhancement"]
+assignees: []
+
+body:
+  - type: textarea
+    id: terraform-version
+    attributes:
+      label: Terraform Version
+      description: Paste the output of `terraform version`. This helps identify compatibility and context for your request.
+      placeholder: |
+        Example:
+        Terraform v1.6.2
+        on linux_amd64
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-cases
+    attributes:
+      label: Use Cases / Problem to Solve
+      description: What goal are you trying to achieve, and what problem is this request meant to solve?
+      placeholder: |
+        Example:
+        I need to validate configuration without making changes. There is no way to do a dry run with my current setup, and `terraform plan` doesn't simulate external resource validation.
+    validations:
+      required: true
+
+  - type: textarea
+    id: attempted-solutions
+    attributes:
+      label: Attempted Solutions
+      description: Describe what you've tried using current features and why it doesn't work.
+      placeholder: |
+        Example:
+        I tried using `terraform plan` with various backends but it doesn't simulate all resource lifecycle hooks.
+    validations:
+      required: false
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed Solution (optional)
+      description: If you have an idea of how the feature could work, describe it here.
+      placeholder: |
+        Example:
+        Add a `--dry-run` flag that simulates all provisioning steps and outputs warnings for unexecuted changes.
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context, links, or configuration examples that could help clarify your request.
+      placeholder: |
+        You can include logs, scripts, related files, or explain constraints of your deployment environment.
+    validations:
+      required: false
+
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description: Link to related issues or pull requests that provide background or show similar needs.
+      placeholder: |
+        Example:
+        - Possibly related to #52
+        - Similar request in terraform-provider-aws#12345
+    validations:
+      required: false
