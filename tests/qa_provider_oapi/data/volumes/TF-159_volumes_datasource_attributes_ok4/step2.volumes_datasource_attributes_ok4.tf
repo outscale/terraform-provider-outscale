@@ -29,7 +29,7 @@ resource "outscale_volume_link" "outscale_volume_link" {
     device_name = "/dev/xvdc"
     volume_id   = outscale_volume.outscale_volume3.id
     vm_id       = outscale_vm.outscale_vm.id
-} 
+}
 
 
 

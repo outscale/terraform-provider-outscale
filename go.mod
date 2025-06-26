@@ -1,10 +1,11 @@
 module github.com/outscale/terraform-provider-outscale
 
-go 1.24.1
+go 1.24.2
 
 require (
 	github.com/aws/aws-sdk-go v1.55.6
 	github.com/davecgh/go-spew v1.1.1
+	github.com/deckarep/golang-set/v2 v2.8.0
 	github.com/go-test/deep v1.0.6
 	github.com/hashicorp/errwrap v1.1.0
 	github.com/hashicorp/terraform-plugin-framework v1.14.1
@@ -24,7 +25,6 @@ require (
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/cloudflare/circl v1.3.7 // indirect
-	github.com/deckarep/golang-set/v2 v2.8.0 // indirect
 	github.com/fatih/color v1.16.0 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
