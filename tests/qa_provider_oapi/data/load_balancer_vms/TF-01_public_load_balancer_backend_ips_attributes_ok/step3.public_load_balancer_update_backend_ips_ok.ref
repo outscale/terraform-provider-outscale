@@ -337,6 +337,11 @@
                 {
                     "schema_version": 0,
                     "attributes": {
+                        "actions_on_next_boot": [
+                            {
+                                "secure_boot": ""
+                            }
+                        ],
                         "admin_password": "",
                         "architecture": "x86_64",
                         "block_device_mappings": [],
@@ -354,6 +359,7 @@
                                 "device_name": "/dev/sda1"
                             }
                         ],
+                        "boot_mode": "legacy",
                         "bsu_optimized": false,
                         "client_token": "",
                         "creation_date": "########",
@@ -386,6 +392,7 @@
                         "reservation_id": "##id-15##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
+                        "secure_boot_action": null,
                         "security_group_ids": [
                             "##id-12##"
                         ],
@@ -431,6 +438,11 @@
                     "index_key": 0,
                     "schema_version": 0,
                     "attributes": {
+                        "actions_on_next_boot": [
+                            {
+                                "secure_boot": ""
+                            }
+                        ],
                         "admin_password": "",
                         "architecture": "x86_64",
                         "block_device_mappings": [],
@@ -448,6 +460,7 @@
                                 "device_name": "/dev/sda1"
                             }
                         ],
+                        "boot_mode": "legacy",
                         "bsu_optimized": false,
                         "client_token": "",
                         "creation_date": "########",
@@ -480,6 +493,7 @@
                         "reservation_id": "##id-17##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
+                        "secure_boot_action": null,
                         "security_group_ids": [
                             "##id-12##"
                         ],
@@ -517,6 +531,11 @@
                     "index_key": 1,
                     "schema_version": 0,
                     "attributes": {
+                        "actions_on_next_boot": [
+                            {
+                                "secure_boot": ""
+                            }
+                        ],
                         "admin_password": "",
                         "architecture": "x86_64",
                         "block_device_mappings": [],
@@ -534,6 +553,7 @@
                                 "device_name": "/dev/sda1"
                             }
                         ],
+                        "boot_mode": "legacy",
                         "bsu_optimized": false,
                         "client_token": "",
                         "creation_date": "########",
@@ -566,6 +586,7 @@
                         "reservation_id": "##id-19##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
+                        "secure_boot_action": null,
                         "security_group_ids": [
                             "##id-12##"
                         ],
@@ -603,6 +624,11 @@
                     "index_key": 2,
                     "schema_version": 0,
                     "attributes": {
+                        "actions_on_next_boot": [
+                            {
+                                "secure_boot": ""
+                            }
+                        ],
                         "admin_password": "",
                         "architecture": "x86_64",
                         "block_device_mappings": [],
@@ -620,92 +646,7 @@
                                 "device_name": "/dev/sda1"
                             }
                         ],
-                        "bsu_optimized": false,
-                        "client_token": "",
-                        "creation_date": "########",
-                        "deletion_protection": false,
-                        "get_admin_password": null,
-                        "hypervisor": "xen",
-                        "id": "##id-1##",
-                        "image_id": "##id-14##",
-                        "is_source_dest_checked": false,
-                        "keypair_name": "KP-TF01",
-                        "keypair_name_wo": null,
-                        "launch_number": 0,
-                        "nested_virtualization": false,
-                        "net_id": "",
-                        "nics": [],
-                        "os_family": "",
-                        "performance": "medium",
-                        "placement_subregion_name": "eu-west-2a",
-                        "placement_tenancy": "default",
-                        "primary_nic": [],
-                        "private_dns_name": "########",
-                        "private_ip": "########",
-                        "private_ips": null,
-                        "product_codes": [
-                            "0001"
-                        ],
-                        "public_dns_name": "########",
-                        "public_ip": "########",
-                        "request_id": "########",
-                        "reservation_id": "##id-21##",
-                        "root_device_name": "/dev/sda1",
-                        "root_device_type": "ebs",
-                        "security_group_ids": [
-                            "##id-12##"
-                        ],
-                        "security_group_names": null,
-                        "security_groups": [
-                            {
-                                "security_group_id": "##id-12##",
-                                "security_group_name": "terraform-TF01"
-                            }
-                        ],
-                        "state": "running",
-                        "state_reason": "",
-                        "subnet_id": "",
-                        "tags": [
-                            {
-                                "key": "name",
-                                "value": "vm-TF01-2"
-                            }
-                        ],
-                        "timeouts": null,
-                        "user_data": "",
-                        "vm_id": "##id-1##",
-                        "vm_initiated_shutdown_behavior": "stop",
-                        "vm_type": "###vm_type###"
-                    },
-                    "sensitive_attributes": [],
-                    "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
-                    "dependencies": [
-                        "outscale_keypair.my_keypair",
-                        "outscale_security_group.security_groupTF01"
-                    ]
-                },
-                {
-                    "index_key": 3,
-                    "schema_version": 0,
-                    "attributes": {
-                        "admin_password": "",
-                        "architecture": "x86_64",
-                        "block_device_mappings": [],
-                        "block_device_mappings_created": [
-                            {
-                                "bsu": [
-                                    {
-                                        "delete_on_vm_deletion": true,
-                                        "link_date": "########",
-                                        "state": "attached",
-                                        "tags": [],
-                                        "volume_id": "##id-22##"
-                                    }
-                                ],
-                                "device_name": "/dev/sda1"
-                            }
-                        ],
+                        "boot_mode": "legacy",
                         "bsu_optimized": false,
                         "client_token": "",
                         "creation_date": "########",
@@ -735,9 +676,103 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
+                        "reservation_id": "##id-21##",
+                        "root_device_name": "/dev/sda1",
+                        "root_device_type": "ebs",
+                        "secure_boot_action": null,
+                        "security_group_ids": [
+                            "##id-12##"
+                        ],
+                        "security_group_names": null,
+                        "security_groups": [
+                            {
+                                "security_group_id": "##id-12##",
+                                "security_group_name": "terraform-TF01"
+                            }
+                        ],
+                        "state": "running",
+                        "state_reason": "",
+                        "subnet_id": "",
+                        "tags": [
+                            {
+                                "key": "name",
+                                "value": "vm-TF01-2"
+                            }
+                        ],
+                        "timeouts": null,
+                        "user_data": "",
+                        "vm_id": "##id-2##",
+                        "vm_initiated_shutdown_behavior": "stop",
+                        "vm_type": "###vm_type###"
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0,
+                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
+                    "dependencies": [
+                        "outscale_keypair.my_keypair",
+                        "outscale_security_group.security_groupTF01"
+                    ]
+                },
+                {
+                    "index_key": 3,
+                    "schema_version": 0,
+                    "attributes": {
+                        "actions_on_next_boot": [
+                            {
+                                "secure_boot": ""
+                            }
+                        ],
+                        "admin_password": "",
+                        "architecture": "x86_64",
+                        "block_device_mappings": [],
+                        "block_device_mappings_created": [
+                            {
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "link_date": "########",
+                                        "state": "attached",
+                                        "tags": [],
+                                        "volume_id": "##id-22##"
+                                    }
+                                ],
+                                "device_name": "/dev/sda1"
+                            }
+                        ],
+                        "boot_mode": "legacy",
+                        "bsu_optimized": false,
+                        "client_token": "",
+                        "creation_date": "########",
+                        "deletion_protection": false,
+                        "get_admin_password": null,
+                        "hypervisor": "xen",
+                        "id": "##id-1##",
+                        "image_id": "##id-14##",
+                        "is_source_dest_checked": false,
+                        "keypair_name": "KP-TF01",
+                        "keypair_name_wo": null,
+                        "launch_number": 0,
+                        "nested_virtualization": false,
+                        "net_id": "",
+                        "nics": [],
+                        "os_family": "",
+                        "performance": "medium",
+                        "placement_subregion_name": "eu-west-2a",
+                        "placement_tenancy": "default",
+                        "primary_nic": [],
+                        "private_dns_name": "########",
+                        "private_ip": "########",
+                        "private_ips": null,
+                        "product_codes": [
+                            "0001"
+                        ],
+                        "public_dns_name": "########",
+                        "public_ip": "########",
+                        "request_id": "########",
                         "reservation_id": "##id-23##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
+                        "secure_boot_action": null,
                         "security_group_ids": [
                             "##id-12##"
                         ],
@@ -759,7 +794,7 @@
                         ],
                         "timeouts": null,
                         "user_data": "",
-                        "vm_id": "##id-2##",
+                        "vm_id": "##id-1##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
