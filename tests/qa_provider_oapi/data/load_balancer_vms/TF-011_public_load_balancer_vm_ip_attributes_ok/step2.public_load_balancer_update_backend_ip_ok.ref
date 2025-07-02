@@ -133,8 +133,8 @@
                         ],
                         "application_sticky_cookie_policies": [],
                         "backend_vm_ids": [
-                            "##id-5##",
-                            "##id-0##"
+                            "##id-0##",
+                            "##id-5##"
                         ],
                         "dns_name": "########",
                         "health_check": [
@@ -263,6 +263,11 @@
                     "index_key": 0,
                     "schema_version": 0,
                     "attributes": {
+                        "actions_on_next_boot": [
+                            {
+                                "secure_boot": ""
+                            }
+                        ],
                         "admin_password": "",
                         "architecture": "x86_64",
                         "block_device_mappings": [],
@@ -280,6 +285,7 @@
                                 "device_name": "/dev/sda1"
                             }
                         ],
+                        "boot_mode": "legacy",
                         "bsu_optimized": false,
                         "client_token": "",
                         "creation_date": "########",
@@ -312,6 +318,7 @@
                         "reservation_id": "##id-10##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
+                        "secure_boot_action": null,
                         "security_group_ids": [
                             "##id-7##"
                         ],
@@ -349,6 +356,11 @@
                     "index_key": 1,
                     "schema_version": 0,
                     "attributes": {
+                        "actions_on_next_boot": [
+                            {
+                                "secure_boot": ""
+                            }
+                        ],
                         "admin_password": "",
                         "architecture": "x86_64",
                         "block_device_mappings": [],
@@ -366,6 +378,7 @@
                                 "device_name": "/dev/sda1"
                             }
                         ],
+                        "boot_mode": "legacy",
                         "bsu_optimized": false,
                         "client_token": "",
                         "creation_date": "########",
@@ -398,6 +411,7 @@
                         "reservation_id": "##id-12##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
+                        "secure_boot_action": null,
                         "security_group_ids": [
                             "##id-7##"
                         ],
@@ -435,6 +449,11 @@
                     "index_key": 2,
                     "schema_version": 0,
                     "attributes": {
+                        "actions_on_next_boot": [
+                            {
+                                "secure_boot": ""
+                            }
+                        ],
                         "admin_password": "",
                         "architecture": "x86_64",
                         "block_device_mappings": [],
@@ -452,6 +471,7 @@
                                 "device_name": "/dev/sda1"
                             }
                         ],
+                        "boot_mode": "legacy",
                         "bsu_optimized": false,
                         "client_token": "",
                         "creation_date": "########",
@@ -484,6 +504,7 @@
                         "reservation_id": "##id-14##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
+                        "secure_boot_action": null,
                         "security_group_ids": [
                             "##id-7##"
                         ],

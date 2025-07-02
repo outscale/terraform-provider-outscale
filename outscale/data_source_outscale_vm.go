@@ -102,6 +102,12 @@ func DataSourceOutscaleVMRead(d *schema.ResourceData, meta interface{}) error {
 
 // Populate instance attribute fields with the returned instance
 func oapiVMDescriptionAttributes(set AttributeSetter, vm *oscgo.Vm) error {
+	if err := set("actions_on_next_boot", getActionsOnNextBoot(vm.GetActionsOnNextBoot())); err != nil {
+		return err
+	}
+	if err := set("boot_mode", vm.GetBootMode()); err != nil {
+		return err
+	}
 	if err := set("architecture", vm.GetArchitecture()); err != nil {
 		return err
 	}
@@ -243,6 +249,14 @@ func getSecurityGroups(groupSet []oscgo.SecurityGroupLight) []map[string]interfa
 	return res
 }
 
+func getActionsOnNextBoot(actionsOnNextBoot oscgo.ActionsOnNextBoot) []map[string]interface{} {
+	return []map[string]interface{}{
+		{
+			"secure_boot": string(actionsOnNextBoot.GetSecureBoot()),
+		},
+	}
+}
+
 func getSecurityGroupIds(sgIds []oscgo.SecurityGroupLight) []string {
 	res := make([]string, len(sgIds))
 	for k, ids := range sgIds {
@@ -298,6 +312,8 @@ func buildOutscaleDataSourceVMFilters(set *schema.Set) (*oscgo.FiltersVm, error)
 			filters.SetBlockDeviceMappingLinkDates(linkDates)
 		case "block_device_mapping_volume_ids":
 			filters.SetBlockDeviceMappingVolumeIds(filterValues)
+		case "boot_modes":
+			filters.SetBootModes(utils.Map(filterValues, func(s string) oscgo.BootMode { return (oscgo.BootMode)(s) }))
 		case "ClientTokens":
 			filters.SetClientTokens(filterValues)
 		case "creation_dates":
@@ -435,6 +451,18 @@ func buildOutscaleDataSourceVMFilters(set *schema.Set) (*oscgo.FiltersVm, error)
 func getOApiVMAttributesSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		// Attributes
+		"actions_on_next_boot": {
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"secure_boot": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+				},
+			},
+		},
 		"architecture": {
 			Type:     schema.TypeString,
 			Computed: true,
@@ -476,6 +504,10 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 					},
 				},
 			},
+		},
+		"boot_mode": {
+			Type:     schema.TypeString,
+			Computed: true,
 		},
 		"bsu_optimized": {
 			Type:     schema.TypeBool,

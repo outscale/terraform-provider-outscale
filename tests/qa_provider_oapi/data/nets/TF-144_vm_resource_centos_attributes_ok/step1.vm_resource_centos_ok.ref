@@ -418,6 +418,11 @@
                 {
                     "schema_version": 0,
                     "attributes": {
+                        "actions_on_next_boot": [
+                            {
+                                "secure_boot": ""
+                            }
+                        ],
                         "admin_password": "",
                         "architecture": "x86_64",
                         "block_device_mappings": [],
@@ -435,6 +440,7 @@
                                 "device_name": "/dev/sda1"
                             }
                         ],
+                        "boot_mode": "legacy",
                         "bsu_optimized": false,
                         "client_token": "",
                         "creation_date": "########",
@@ -467,6 +473,7 @@
                         "reservation_id": "##id-19##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
+                        "secure_boot_action": null,
                         "security_group_ids": [
                             "##id-15##"
                         ],
@@ -511,6 +518,11 @@
                 {
                     "schema_version": 0,
                     "attributes": {
+                        "actions_on_next_boot": [
+                            {
+                                "secure_boot": ""
+                            }
+                        ],
                         "admin_password": "",
                         "architecture": "x86_64",
                         "block_device_mappings": [],
@@ -528,6 +540,7 @@
                                 "device_name": "/dev/sda1"
                             }
                         ],
+                        "boot_mode": "legacy",
                         "bsu_optimized": false,
                         "client_token": "",
                         "creation_date": "########",
@@ -560,6 +573,7 @@
                         "reservation_id": "##id-22##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
+                        "secure_boot_action": null,
                         "security_group_ids": [
                             "##id-15##"
                         ],
@@ -606,6 +620,11 @@
                 {
                     "schema_version": 0,
                     "attributes": {
+                        "actions_on_next_boot": [
+                            {
+                                "secure_boot": ""
+                            }
+                        ],
                         "admin_password": "",
                         "architecture": "x86_64",
                         "block_device_mappings": [],
@@ -623,6 +642,7 @@
                                 "device_name": "/dev/sda1"
                             }
                         ],
+                        "boot_mode": "legacy",
                         "bsu_optimized": false,
                         "client_token": "",
                         "creation_date": "########",
@@ -737,6 +757,7 @@
                         "reservation_id": "##id-25##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
+                        "secure_boot_action": null,
                         "security_group_ids": [
                             "##id-14##"
                         ],
