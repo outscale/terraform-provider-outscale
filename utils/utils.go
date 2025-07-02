@@ -457,6 +457,7 @@ func GetAttrTypes(model any) map[string]attr.Type {
 	}
 	return attrTypes
 }
+
 func GetSlicesFromTypesSetForUpdating(ctx context.Context, stateTypeSet, planTypeSet types.Set) ([]string, []string, diag.Diagnostics) {
 	var toAdd, toRemove []string
 	diags := planTypeSet.ElementsAs(ctx, &toAdd, false)
@@ -475,4 +476,14 @@ func GetSlicesFromTypesSetForUpdating(ctx context.Context, stateTypeSet, planTyp
 	toAdd = setIdsToAdd.Difference(setIdsToRemove).ToSlice()
 	toRemove = setIdsToRemove.Difference(setIdsToAdd).ToSlice()
 	return toAdd, toRemove, diags
+}
+
+func Map[T any, R any](col []T, fn func(item T) R) []R {
+	result := make([]R, len(col))
+
+	for i := range col {
+		result[i] = fn(col[i])
+	}
+
+	return result
 }
