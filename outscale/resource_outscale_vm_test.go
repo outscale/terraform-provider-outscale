@@ -46,6 +46,37 @@ func TestAccVM_Basic(t *testing.T) {
 	})
 }
 
+func TestAccVM_uefi(t *testing.T) {
+	t.Parallel()
+	var server oscgo.Vm
+
+	resourceName := "outscale_vm.uefi"
+
+	omi := os.Getenv("OUTSCALE_IMAGEID")
+	keypair := os.Getenv("OUTSCALE_KEYPAIR")
+	region := fmt.Sprintf("%sa", utils.GetRegion())
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckOutscaleVMDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckOutscaleVMUefi(omi, utils.TestAccVmType, region, keypair),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleVMExists(resourceName, &server),
+					testAccCheckOutscaleVMAttributes(t, &server, omi),
+
+					resource.TestCheckResourceAttr(resourceName, "image_id", omi),
+					resource.TestCheckResourceAttr(resourceName, "boot_mode", "uefi"),
+					resource.TestCheckResourceAttr(resourceName, "vm_type", utils.TestAccVmType),
+					resource.TestCheckResourceAttr(resourceName, "nested_virtualization", "false"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccVM_Behavior_Basic(t *testing.T) {
 	t.Parallel()
 	var server oscgo.Vm
@@ -625,6 +656,27 @@ func testAccCheckOutscaleVMAttributes(t *testing.T, server *oscgo.Vm, omi string
 		assertEqual(t, omi, server.GetImageId(), "Bad image_id.")
 		return nil
 	}
+}
+
+func testAccCheckOutscaleVMUefi(omi, vmType, region, keypair string) string {
+	return fmt.Sprintf(`
+		resource "outscale_security_group" "sg_vm_uefi" {
+			description                  = "testAcc Terraform security group"
+			security_group_name          = "sg_vm_uefi"
+		}
+
+		resource "outscale_vm" "uefi" {
+			image_id                 = "%[1]s"
+			vm_type                  = "%[2]s"
+			keypair_name             = "%[4]s"
+			placement_subregion_name = "%[3]s"
+			security_group_ids = [outscale_security_group.sg_vm_uefi.security_group_id]
+			boot_mode = "uefi"
+			tags {
+				key   = "name"
+				value = "terraform_vm_uefi"
+			}
+		}`, omi, vmType, region, keypair)
 }
 
 func testAccCheckOutscaleVMConfigBasic(omi, vmType, region, keypair string) string {

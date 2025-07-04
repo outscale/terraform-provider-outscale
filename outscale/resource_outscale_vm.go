@@ -39,6 +39,23 @@ func ResourceOutscaleVM() *schema.Resource {
 			validation.PreferWriteOnlyAttribute(cty.GetAttrPath("keypair_name"), cty.GetAttrPath("keypair_name_wo")),
 		},
 		Schema: map[string]*schema.Schema{
+			"actions_on_next_boot": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"secure_boot": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
+			"secure_boot_action": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringInSlice([]string{"enable", "disable", "setup-mode", "none"}, false),
+			},
 			"block_device_mappings": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -111,6 +128,13 @@ func ResourceOutscaleVM() *schema.Resource {
 						},
 					},
 				},
+			},
+			"boot_mode": {
+				Type:         schema.TypeString,
+				Computed:     true,
+				Optional:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.StringInSlice([]string{"legacy", "uefi"}, false),
 			},
 			"bsu_optimized": {
 				Type:     schema.TypeBool,
@@ -1048,6 +1072,15 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 		updateRequest.SetBlockDeviceMappings(mappings)
 	}
 
+	if d.HasChange("secure_boot_action") && !d.IsNewResource() {
+		if action := d.Get("secure_boot_action").(string); action != "" {
+			bootAction := oscgo.SecureBootAction(action)
+			updateRequest.ActionsOnNextBoot = &oscgo.ActionsOnNextBoot{
+				SecureBoot: &bootAction,
+			}
+		}
+	}
+
 	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
@@ -1250,6 +1283,15 @@ func buildCreateVmsRequest(d *schema.ResourceData) (oscgo.CreateVmsRequest, []ma
 		request.SetPerformance(v)
 	}
 
+	if v := d.Get("boot_mode").(string); v != "" {
+		action := (oscgo.BootMode)(d.Get("boot_mode").(string))
+		request.SetBootMode(action)
+	}
+	if v := d.Get("secure_boot_action").(string); v != "" {
+		action := (oscgo.SecureBootAction)(d.Get("secure_boot_action").(string))
+		request.SetActionsOnNextBoot(oscgo.ActionsOnNextBoot{SecureBoot: &action})
+	}
+
 	kpName, diags := d.GetRawConfigAt(cty.GetAttrPath("keypair_name_wo"))
 	if diags.HasError() {
 		return request, bsuMapsTags, fmt.Errorf("error retrieving write-only argument: keypair_name_wo: %v", diags)
@@ -1260,6 +1302,7 @@ func buildCreateVmsRequest(d *schema.ResourceData) (oscgo.CreateVmsRequest, []ma
 	if !kpName.IsNull() {
 		request.SetKeypairName(kpName.AsString())
 	}
+
 	return request, bsuMapsTags, nil
 }
 
