@@ -23,9 +23,8 @@
                             }
                         ],
                         "application_sticky_cookie_policies": [],
-                        "backend_vm_ids": [
-                            "##id-0##"
-                        ],
+                        "backend_ips": "########",
+                        "backend_vm_ids": [],
                         "dns_name": "########",
                         "filter": "########",
                         "health_check": [
@@ -39,7 +38,7 @@
                                 "unhealthy_threshold": 2
                             }
                         ],
-                        "id": "##id-1##",
+                        "id": "##id-0##",
                         "listeners": [
                             {
                                 "backend_port": 80,
@@ -68,7 +67,7 @@
                         "security_groups": [],
                         "source_security_group": [
                             {
-                                "security_group_account_id": "##id-2##",
+                                "security_group_account_id": "##id-1##",
                                 "security_group_name": "outscale-elb-sg"
                             }
                         ],
@@ -97,9 +96,9 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-3##",
+                        "id": "##id-2##",
                         "keypair_fingerprint": "########",
-                        "keypair_id": "##id-3##",
+                        "keypair_id": "##id-2##",
                         "keypair_name": "KP-TF01",
                         "keypair_type": "ssh-rsa",
                         "private_key": "########",
@@ -131,6 +130,7 @@
                             }
                         ],
                         "application_sticky_cookie_policies": [],
+                        "backend_ips": "########",
                         "backend_vm_ids": [],
                         "dns_name": "########",
                         "health_check": [
@@ -144,7 +144,7 @@
                                 "unhealthy_threshold": 2
                             }
                         ],
-                        "id": "##id-1##",
+                        "id": "##id-0##",
                         "listeners": [
                             {
                                 "backend_port": 8080,
@@ -173,7 +173,7 @@
                         "security_groups": [],
                         "source_security_group": [
                             {
-                                "security_group_account_id": "##id-2##",
+                                "security_group_account_id": "##id-1##",
                                 "security_group_name": "outscale-elb-sg"
                             }
                         ],
@@ -205,13 +205,13 @@
                     "attributes": {
                         "backend_ips": "########",
                         "backend_vm_ids": null,
-                        "id": "##id-1##",
+                        "id": "##id-0##",
                         "load_balancer_name": "########",
-                        "request_id": "########"
+                        "request_id": "########",
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_keypair.my_keypair",
                         "outscale_load_balancer.public_lbu1",
@@ -232,13 +232,13 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-4##",
+                        "id": "##id-3##",
                         "link_public_ip_id": "",
                         "nic_account_id": "",
                         "nic_id": "",
                         "private_ip": "########",
                         "public_ip": "########",
-                        "public_ip_id": "##id-4##",
+                        "public_ip_id": "##id-3##",
                         "request_id": "########",
                         "tags": [
                             {
@@ -265,13 +265,13 @@
                     "schema_version": 0,
                     "attributes": {
                         "allow_relink": null,
-                        "id": "##id-5##",
-                        "link_public_ip_id": "##id-5##",
-                        "nic_account_id": "##id-6##",
-                        "nic_id": "##id-7##",
+                        "id": "##id-4##",
+                        "link_public_ip_id": "##id-4##",
+                        "nic_account_id": "##id-5##",
+                        "nic_id": "##id-6##",
                         "private_ip": "########",
                         "public_ip": "########",
-                        "public_ip_id": "##id-4##",
+                        "public_ip_id": "##id-3##",
                         "request_id": "########",
                         "tags": [
                             {
@@ -280,7 +280,7 @@
                             }
                         ],
                         "timeouts": null,
-                        "vm_id": "##id-0##"
+                        "vm_id": "##id-7##"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
@@ -303,7 +303,7 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "account_id": "##id-6##",
+                        "account_id": "##id-5##",
                         "description": "Terraform",
                         "id": "##id-8##",
                         "inbound_rules": [],
@@ -360,7 +360,7 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-0##",
+                        "id": "##id-7##",
                         "image_id": "##id-10##",
                         "is_source_dest_checked": false,
                         "keypair_name": "KP-TF01",
@@ -408,7 +408,7 @@
                         ],
                         "timeouts": null,
                         "user_data": "",
-                        "vm_id": "##id-0##",
+                        "vm_id": "##id-7##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
