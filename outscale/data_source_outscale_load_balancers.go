@@ -103,6 +103,11 @@ func attrLBSchema() map[string]*schema.Schema {
 							},
 						},
 					},
+					"backend_ips": {
+						Type:     schema.TypeList,
+						Computed: true,
+						Elem:     &schema.Schema{Type: schema.TypeString},
+					},
 					"listeners": {
 						Type:     schema.TypeList,
 						Required: true,
@@ -220,6 +225,7 @@ func DataSourceOutscaleLoadBalancersRead(d *schema.ResourceData, meta interface{
 		l["access_log"] = flattenOAPIAccessLog(v.AccessLog)
 		l["health_check"] = flattenOAPIHealthCheck(v.HealthCheck)
 		l["backend_vm_ids"] = utils.StringSlicePtrToInterfaceSlice(v.BackendVmIds)
+		l["backend_ips"] = utils.StringSlicePtrToInterfaceSlice(v.BackendIps)
 		if v.Listeners != nil {
 			l["listeners"] = flattenOAPIListeners(v.Listeners)
 		} else {

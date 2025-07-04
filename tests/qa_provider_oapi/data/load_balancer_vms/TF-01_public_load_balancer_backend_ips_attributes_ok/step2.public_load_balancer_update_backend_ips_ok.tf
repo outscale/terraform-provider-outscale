@@ -66,8 +66,7 @@ tags {
 
 resource "outscale_load_balancer_vms" "outscale_load_balancer_vms02" {
     load_balancer_name = outscale_load_balancer.public_lbu1.load_balancer_name
-    backend_vm_ids     = [outscale_vm.vm02[0].vm_id]
-    backend_ips     = [outscale_vm.vm02[1].public_ip]
+    backend_ips     = [for _, vm in outscale_vm.vm02 : vm.public_ip]
 }
 
 
