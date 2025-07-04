@@ -365,7 +365,7 @@ func setLbuBackendState(ctx context.Context, r *resourceLbuVms, data *LbuBackend
 	}
 	var readResp oscgo.ReadLoadBalancersResponse
 	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.LoadBalancerApi.ReadLoadBalancers(context.Background()).ReadLoadBalancersRequest(readReq).Execute()
+		rp, httpResp, err := r.Client.LoadBalancerApi.ReadLoadBalancers(ctx).ReadLoadBalancersRequest(readReq).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}

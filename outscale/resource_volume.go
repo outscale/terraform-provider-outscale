@@ -548,7 +548,7 @@ func setVolumeState(ctx context.Context, r *resourceVolume, data *VolumeModel) e
 
 	volume := readResp.GetVolumes()[0]
 	data.Tags = getTagsFromApiResponse(volume.GetTags())
-	data.LinkedVolumes, diags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: utils.GetAttrTypes(BlockLinkedVolumes{})}, getLinkedVolumesFromApiResponse(volume.GetLinkedVolumes())) //volume.GetLinkedVolumes()) //utils.GetAttrTypes(BlockLinkedVolumes{})}, volume.GetLinkedVolumes())
+	data.LinkedVolumes, diags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: utils.GetAttrTypes(BlockLinkedVolumes{})}, getLinkedVolumesFromApiResponse(volume.GetLinkedVolumes()))
 	if diags.HasError() {
 		return fmt.Errorf("unable to set LinkedVolumes block: %v: ", diags.Errors())
 	}

@@ -449,10 +449,10 @@ func GetAttrTypes(model any) map[string]attr.Type {
 			attrTypes[tfsdkTag] = types.StringType
 		case reflect.TypeOf(types.Bool{}):
 			attrTypes[tfsdkTag] = types.BoolType
+		case reflect.TypeOf(types.Int32{}):
+			attrTypes[tfsdkTag] = types.Int32Type
 		case reflect.TypeOf(types.Int64{}):
 			attrTypes[tfsdkTag] = types.Int64Type
-		case reflect.TypeOf(types.Float64{}):
-			attrTypes[tfsdkTag] = types.Float64Type
 		}
 	}
 	return attrTypes
@@ -487,6 +487,26 @@ func GetSlicesFromTypesSetForUpdating(ctx context.Context, stateTypeSet, planTyp
 	return toAdd, toRemove, diags
 }
 
+// OKHT
+func GetFromTypesSetForUpdating(ctx context.Context, stateTypeSet, planTypeSet types.Set) ([]string, []string, diag.Diagnostics) {
+	var toAdd, toRemove []string
+	diags := planTypeSet.ElementsAs(ctx, &toAdd, false)
+	if diags.HasError() {
+		return toAdd, toRemove, diags
+	}
+	diags = stateTypeSet.ElementsAs(ctx, &toRemove, false)
+	if diags.HasError() {
+		return toAdd, toRemove, diags
+	}
+
+	setIdsToAdd := set.NewSet[string]()
+	setIdsToRemove := set.NewSet[string]()
+	setIdsToAdd.Append(toAdd...)
+	setIdsToRemove.Append(toRemove...)
+	toAdd = setIdsToAdd.Difference(setIdsToRemove).ToSlice()
+	toRemove = setIdsToRemove.Difference(setIdsToAdd).ToSlice()
+	return toAdd, toRemove, diags
+}
 func Map[T any, R any](col []T, fn func(item T) R) []R {
 	result := make([]R, len(col))
 
