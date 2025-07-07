@@ -33,7 +33,7 @@ func (c *frameworkProvider) Client_fw(ctx context.Context, data *ProviderModel, 
 		setDefaultEnv(data)
 	}
 
-	tlsconfig := &tls.Config{InsecureSkipVerify: c.insecure}
+	tlsconfig := &tls.Config{InsecureSkipVerify: data.Insecure.ValueBool()}
 	cert, err := tls.LoadX509KeyPair(data.X509CertPath.ValueString(), data.X509KeyPath.ValueString())
 	if err == nil {
 		tlsconfig = &tls.Config{
