@@ -24,8 +24,7 @@ func New(version string) provider.Provider {
 }
 
 type frameworkProvider struct {
-	insecure bool
-	version  string
+	version string
 }
 
 type ProviderModel struct {
