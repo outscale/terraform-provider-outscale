@@ -458,6 +458,15 @@ func GetAttrTypes(model any) map[string]attr.Type {
 	return attrTypes
 }
 
+func GetSliceFromFwtypeSet(ctx context.Context, dataTypeSet types.Set) ([]string, diag.Diagnostics) {
+	sliceAttribute := []string{}
+	diags := dataTypeSet.ElementsAs(ctx, &sliceAttribute, false)
+	if diags.HasError() {
+		return sliceAttribute, diags
+	}
+	return sliceAttribute, diags
+}
+
 func GetSlicesFromTypesSetForUpdating(ctx context.Context, stateTypeSet, planTypeSet types.Set) ([]string, []string, diag.Diagnostics) {
 	var toAdd, toRemove []string
 	diags := planTypeSet.ElementsAs(ctx, &toAdd, false)

@@ -103,7 +103,6 @@ func Provider() *schema.Provider {
 			"outscale_vpn_connection_route":              ResourceOutscaleVPNConnectionRoute(),
 			"outscale_load_balancer":                     ResourceOutscaleLoadBalancer(),
 			"outscale_load_balancer_policy":              ResourceOutscaleAppCookieStickinessPolicy(),
-			"outscale_load_balancer_vms":                 ResourceLBUAttachment(),
 			"outscale_load_balancer_attributes":          ResourceOutscaleLoadBalancerAttributes(),
 			"outscale_load_balancer_listener_rule":       ResourceOutscaleLoadBalancerListenerRule(),
 			"outscale_flexible_gpu_link":                 ResourceOutscaleFlexibleGpuLink(),
@@ -316,8 +315,8 @@ func setOldProfile(conf *Config, profile gjson.Result) {
 	}
 	if len(conf.Endpoints) == 0 {
 		if profile.Get("endpoints").Exists() {
-			endpoints := profile.Get("endpoints").Value().(map[string]string)
-			if endpoint := endpoints["api"]; endpoint != "" {
+			endpoints := profile.Get("endpoints").Value().(map[string]interface{})
+			if endpoint := endpoints["api"].(string); endpoint != "" {
 				conf.Endpoints["api"] = endpoint
 			}
 		}

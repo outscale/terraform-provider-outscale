@@ -23,10 +23,8 @@
                             }
                         ],
                         "application_sticky_cookie_policies": [],
-                        "backend_vm_ids": [
-                            "##id-0##",
-                            "##id-1##"
-                        ],
+                        "backend_ips": "########",
+                        "backend_vm_ids": [],
                         "dns_name": "########",
                         "filter": "########",
                         "health_check": [
@@ -40,7 +38,7 @@
                                 "unhealthy_threshold": 2
                             }
                         ],
-                        "id": "##id-2##",
+                        "id": "##id-0##",
                         "listeners": [
                             {
                                 "backend_port": 80,
@@ -69,7 +67,7 @@
                         "security_groups": [],
                         "source_security_group": [
                             {
-                                "security_group_account_id": "##id-3##",
+                                "security_group_account_id": "##id-1##",
                                 "security_group_name": "outscale-elb-sg"
                             }
                         ],
@@ -98,9 +96,9 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-4##",
+                        "id": "##id-2##",
                         "keypair_fingerprint": "########",
-                        "keypair_id": "##id-4##",
+                        "keypair_id": "##id-2##",
                         "keypair_name": "KP-TF011",
                         "keypair_type": "ssh-rsa",
                         "private_key": "########",
@@ -132,6 +130,7 @@
                             }
                         ],
                         "application_sticky_cookie_policies": [],
+                        "backend_ips": "########",
                         "backend_vm_ids": [],
                         "dns_name": "########",
                         "health_check": [
@@ -145,7 +144,7 @@
                                 "unhealthy_threshold": 2
                             }
                         ],
-                        "id": "##id-2##",
+                        "id": "##id-0##",
                         "listeners": [
                             {
                                 "backend_port": 8080,
@@ -174,7 +173,7 @@
                         "security_groups": [],
                         "source_security_group": [
                             {
-                                "security_group_account_id": "##id-3##",
+                                "security_group_account_id": "##id-1##",
                                 "security_group_name": "outscale-elb-sg"
                             }
                         ],
@@ -206,13 +205,13 @@
                     "attributes": {
                         "backend_ips": "########",
                         "backend_vm_ids": null,
-                        "id": "##id-2##",
+                        "id": "##id-0##",
                         "load_balancer_name": "########",
-                        "request_id": "########"
+                        "request_id": "########",
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_keypair.my_keypair",
                         "outscale_load_balancer.public_lbu11",
@@ -231,15 +230,15 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "account_id": "##id-5##",
+                        "account_id": "##id-3##",
                         "description": "Terraform",
-                        "id": "##id-6##",
+                        "id": "##id-4##",
                         "inbound_rules": [],
                         "net_id": "",
                         "outbound_rules": [],
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
-                        "security_group_id": "##id-6##",
+                        "security_group_id": "##id-4##",
                         "security_group_name": "terraform-TF011",
                         "tag": null,
                         "tags": []
@@ -276,7 +275,7 @@
                                         "link_date": "########",
                                         "state": "attached",
                                         "tags": [],
-                                        "volume_id": "##id-7##"
+                                        "volume_id": "##id-5##"
                                     }
                                 ],
                                 "device_name": "/dev/sda1"
@@ -289,8 +288,8 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-0##",
-                        "image_id": "##id-8##",
+                        "id": "##id-6##",
+                        "image_id": "##id-7##",
                         "is_source_dest_checked": false,
                         "keypair_name": "KP-TF011",
                         "keypair_name_wo": null,
@@ -312,17 +311,17 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-9##",
+                        "reservation_id": "##id-8##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
                         "secure_boot_action": null,
                         "security_group_ids": [
-                            "##id-6##"
+                            "##id-4##"
                         ],
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-6##",
+                                "security_group_id": "##id-4##",
                                 "security_group_name": "terraform-TF011"
                             }
                         ],
@@ -337,7 +336,7 @@
                         ],
                         "timeouts": null,
                         "user_data": "",
-                        "vm_id": "##id-0##",
+                        "vm_id": "##id-6##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
@@ -369,7 +368,7 @@
                                         "link_date": "########",
                                         "state": "attached",
                                         "tags": [],
-                                        "volume_id": "##id-10##"
+                                        "volume_id": "##id-9##"
                                     }
                                 ],
                                 "device_name": "/dev/sda1"
@@ -382,8 +381,8 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-1##",
-                        "image_id": "##id-8##",
+                        "id": "##id-10##",
+                        "image_id": "##id-7##",
                         "is_source_dest_checked": false,
                         "keypair_name": "KP-TF011",
                         "keypair_name_wo": null,
@@ -410,12 +409,12 @@
                         "root_device_type": "ebs",
                         "secure_boot_action": null,
                         "security_group_ids": [
-                            "##id-6##"
+                            "##id-4##"
                         ],
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-6##",
+                                "security_group_id": "##id-4##",
                                 "security_group_name": "terraform-TF011"
                             }
                         ],
@@ -430,7 +429,7 @@
                         ],
                         "timeouts": null,
                         "user_data": "",
-                        "vm_id": "##id-1##",
+                        "vm_id": "##id-10##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
@@ -476,7 +475,7 @@
                         "get_admin_password": null,
                         "hypervisor": "xen",
                         "id": "##id-13##",
-                        "image_id": "##id-8##",
+                        "image_id": "##id-7##",
                         "is_source_dest_checked": false,
                         "keypair_name": "KP-TF011",
                         "keypair_name_wo": null,
@@ -503,12 +502,12 @@
                         "root_device_type": "ebs",
                         "secure_boot_action": null,
                         "security_group_ids": [
-                            "##id-6##"
+                            "##id-4##"
                         ],
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-6##",
+                                "security_group_id": "##id-4##",
                                 "security_group_name": "terraform-TF011"
                             }
                         ],

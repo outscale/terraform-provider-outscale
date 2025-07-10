@@ -148,7 +148,13 @@ func ResourceOutscaleLoadBalancer() *schema.Resource {
 			},
 			"backend_vm_ids": {
 				Type:     schema.TypeList,
-				Optional: true,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"backend_ips": {
+				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
@@ -387,7 +393,7 @@ func ResourceOutscaleLoadBalancerCreate_(d *schema.ResourceData, meta interface{
 		return errors.New("can't use both 'subregion_names' and 'subnets'")
 	}
 
-	if srn_ok && sb_ok == false {
+	if srn_ok && !sb_ok {
 		req.SubregionNames = utils.InterfaceSliceToStringList(v_srn.([]interface{}))
 	}
 
@@ -397,9 +403,9 @@ func ResourceOutscaleLoadBalancerCreate_(d *schema.ResourceData, meta interface{
 			context.Background()).
 			CreateLoadBalancerRequest(*req).Execute()
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "CertificateNotFound") {
+			if strings.Contains(fmt.Sprint(err), "NoSuchCertificate") {
 				return resource.RetryableError(
-					fmt.Errorf("[WARN] Error creating Load Balancer Listener with SSL Cert, retrying: %s", err))
+					fmt.Errorf("[WARN] Error creating Load Balancer Listener with SSL Cert, retrying: %w", err))
 			}
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -419,8 +425,6 @@ func ResourceOutscaleLoadBalancerCreate_(d *schema.ResourceData, meta interface{
 			LoadBalancerName: d.Id(),
 		}
 		req.SetSecuredCookies(scVal.(bool))
-
-		var err error
 		err = resource.Retry(1*time.Minute, func() *resource.RetryError {
 			_, httpResp, err := conn.LoadBalancerApi.UpdateLoadBalancer(
 				context.Background()).UpdateLoadBalancerRequest(req).Execute()
@@ -431,7 +435,7 @@ func ResourceOutscaleLoadBalancerCreate_(d *schema.ResourceData, meta interface{
 		})
 
 		if err != nil {
-			return fmt.Errorf("Failure updating SecruedCookies: %s", err)
+			return fmt.Errorf("failure updating SecruedCookies: %w", err)
 		}
 	}
 
@@ -448,8 +452,7 @@ func readResourceLb(conn *oscgo.APIClient, elbName string) (*oscgo.LoadBalancer,
 	}
 
 	var resp oscgo.ReadLoadBalancersResponse
-	var err error
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.LoadBalancerApi.ReadLoadBalancers(
 			context.Background()).
 			ReadLoadBalancersRequest(req).Execute()
@@ -461,7 +464,7 @@ func readResourceLb(conn *oscgo.APIClient, elbName string) (*oscgo.LoadBalancer,
 	})
 
 	if err != nil {
-		return nil, nil, fmt.Errorf("Error retrieving Load Balancer: %s", err)
+		return nil, nil, fmt.Errorf("error retrieving Load Balancer: %w", err)
 	}
 	if len(resp.GetLoadBalancers()) == 0 {
 		return nil, nil, nil
@@ -491,6 +494,7 @@ func ResourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}) 
 	d.Set("access_log", flattenOAPIAccessLog(lb.AccessLog))
 
 	d.Set("backend_vm_ids", utils.StringSlicePtrToInterfaceSlice(lb.BackendVmIds))
+	d.Set("backend_ips", utils.StringSlicePtrToInterfaceSlice(lb.BackendIps))
 	if err := d.Set("listeners", flattenOAPIListeners(lb.Listeners)); err != nil {
 		return err
 	}
@@ -563,7 +567,6 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 		nSg, _ := d.GetOk("security_groups")
 		req.SecurityGroups = utils.SetToStringSlicePtr(nSg.(*schema.Set))
 
-		var err error
 		err = resource.Retry(4*time.Minute, func() *resource.RetryError {
 			_, httpResp, err := conn.LoadBalancerApi.UpdateLoadBalancer(
 				context.Background()).UpdateLoadBalancerRequest(req).Execute()
@@ -574,7 +577,7 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 		})
 
 		if err != nil {
-			return fmt.Errorf("Failure updating SecurityGroups: %s", err)
+			return fmt.Errorf("failure updating SecurityGroups: %w", err)
 		}
 	}
 
@@ -687,7 +690,7 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 			})
 
 			if err != nil {
-				return fmt.Errorf("Failure removing outdated Load Balancer listeners: %s", err)
+				return fmt.Errorf("failure removing outdated Load Balancer listeners: %w", err)
 			}
 		}
 
@@ -699,15 +702,14 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 
 			// Occasionally AWS will error with a 'duplicate listener', without any
 			// other listeners on the Load Balancer. Retry here to eliminate that.
-			var err error
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 				_, httpResp, err := conn.ListenerApi.CreateLoadBalancerListeners(
 					context.Background()).CreateLoadBalancerListenersRequest(req).Execute()
 				if err != nil {
-					if strings.Contains(fmt.Sprint(err), "DuplicateListener") {
+					if strings.Contains(err.Error(), "DuplicateListener") {
 						return retry.RetryableError(err)
 					}
-					if strings.Contains(fmt.Sprint(err), "CertificateNotFound") && strings.Contains(fmt.Sprint(err), "Server Certificate not found for the key: arn") {
+					if strings.Contains(err.Error(), "NoSuchCertificate") {
 						return retry.RetryableError(err)
 					}
 					return utils.CheckThrottling(httpResp, err)
@@ -716,62 +718,7 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 				return nil
 			})
 			if err != nil {
-				return fmt.Errorf("Failure adding new or updated Load Balancer listeners: %s", err)
-			}
-		}
-	}
-
-	if d.HasChange("backend_vm_ids") {
-		oldVmIds, newVmIds := d.GetChange("backend_vm_ids")
-		inter := oldVmIds.(*schema.Set).Intersection(newVmIds.(*schema.Set))
-		remove := utils.SetToStringSlice(oldVmIds.(*schema.Set).Difference(inter))
-		add := utils.SetToStringSlice(newVmIds.(*schema.Set).Difference(inter))
-
-		if len(add) > 0 {
-
-			req := oscgo.RegisterVmsInLoadBalancerRequest{
-				LoadBalancerName: d.Id(),
-				BackendVmIds:     add,
-			}
-
-			var err error
-			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-				_, httpResp, err := conn.LoadBalancerApi.
-					RegisterVmsInLoadBalancer(context.Background()).
-					RegisterVmsInLoadBalancerRequest(req).
-					Execute()
-
-				if err != nil {
-					return utils.CheckThrottling(httpResp, err)
-				}
-				return nil
-			})
-			if err != nil {
-				return fmt.Errorf("Failure registering instances with Load Balancer: %s", err)
-			}
-		}
-		if len(remove) > 0 {
-			req := oscgo.DeregisterVmsInLoadBalancerRequest{
-				LoadBalancerName: d.Id(),
-				BackendVmIds:     remove,
-			}
-
-			var err error
-			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-				_, httpResp, err := conn.LoadBalancerApi.
-					DeregisterVmsInLoadBalancer(
-						context.Background()).
-					DeregisterVmsInLoadBalancerRequest(req).
-					Execute()
-
-				if err != nil {
-					return utils.CheckThrottling(httpResp, err)
-				}
-				return nil
-			})
-
-			if err != nil {
-				return fmt.Errorf("Failure deregistering instances from Load Balancer: %s", err)
+				return fmt.Errorf("failure adding new or updated Load Balancer listeners: %w", err)
 			}
 		}
 	}
@@ -796,8 +743,6 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 				req.HealthCheck.Path = &p
 			}
 
-			var err error
-
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 				_, httpResp, err := conn.LoadBalancerApi.UpdateLoadBalancer(
 					context.Background()).UpdateLoadBalancerRequest(req).
@@ -809,7 +754,7 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 			})
 
 			if err != nil {
-				return fmt.Errorf("Failure configuring health check for Load Balancer: %s", err)
+				return fmt.Errorf("failure configuring health check for Load Balancer: %w", err)
 			}
 		}
 	}
@@ -833,8 +778,6 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 				},
 			}
 
-			var err error
-
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 				_, httpResp, err := conn.LoadBalancerApi.UpdateLoadBalancer(
 					context.Background()).UpdateLoadBalancerRequest(req).Execute()
@@ -845,7 +788,7 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 			})
 
 			if err != nil {
-				return fmt.Errorf("Failure configuring access log for Load Balancer: %s", err)
+				return fmt.Errorf("failure configuring access log for Load Balancer: %w", err)
 			}
 		}
 	}
@@ -856,7 +799,6 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 		}
 		req.SetSecuredCookies(d.Get("secured_cookies").(bool))
 
-		var err error
 		err = resource.Retry(1*time.Minute, func() *resource.RetryError {
 			_, httpResp, err := conn.LoadBalancerApi.UpdateLoadBalancer(
 				context.Background()).UpdateLoadBalancerRequest(req).Execute()
@@ -867,7 +809,7 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 		})
 
 		if err != nil {
-			return fmt.Errorf("Failure updating SecruedCookies: %s", err)
+			return fmt.Errorf("failure updating SecruedCookies: %w", err)
 		}
 	}
 
@@ -884,9 +826,7 @@ func ResourceOutscaleLoadBalancerDelete(d *schema.ResourceData, meta interface{}
 		LoadBalancerName: d.Id(),
 	}
 
-	var err error
-
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, httpResp, err := conn.LoadBalancerApi.DeleteLoadBalancer(
 			context.Background()).DeleteLoadBalancerRequest(req).Execute()
 		if err != nil {
@@ -896,7 +836,7 @@ func ResourceOutscaleLoadBalancerDelete(d *schema.ResourceData, meta interface{}
 	})
 
 	if err != nil {
-		return fmt.Errorf("Error deleting Load Balancer: %s", err)
+		return fmt.Errorf("error deleting Load Balancer: %w", err)
 	}
 
 	stateConf := &resource.StateChangeConf{
@@ -913,7 +853,7 @@ func ResourceOutscaleLoadBalancerDelete(d *schema.ResourceData, meta interface{}
 		MinTimeout: 10 * time.Second,
 	}
 	if _, err := stateConf.WaitForState(); err != nil {
-		return fmt.Errorf("Error waiting for load balancer (%s) to become null: %s", d.Id(), err)
+		return fmt.Errorf("error waiting for load balancer (%s) to become null: %w", d.Id(), err)
 	}
 
 	//Remove this when bug will be fix

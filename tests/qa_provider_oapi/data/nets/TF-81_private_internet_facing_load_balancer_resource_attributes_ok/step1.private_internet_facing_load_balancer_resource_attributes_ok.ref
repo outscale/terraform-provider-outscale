@@ -71,6 +71,7 @@
                             }
                         ],
                         "application_sticky_cookie_policies": [],
+                        "backend_ips": "########",
                         "backend_vm_ids": [],
                         "dns_name": "########",
                         "health_check": [
@@ -117,7 +118,7 @@
                         "source_security_group": [
                             {
                                 "security_group_account_id": "##id-5##",
-                                "security_group_name": "TF81-lbu-1"
+                                "security_group_name": "TF81-lbu-2"
                             }
                         ],
                         "subnets": [

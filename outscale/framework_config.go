@@ -155,8 +155,8 @@ func setProfile(data *ProviderModel, profile gjson.Result) {
 	}
 	if len(data.Endpoints) == 0 {
 		if profile.Get("endpoints").Exists() {
-			endpoints := profile.Get("endpoints").Value().(map[string]string)
-			if endpoint := endpoints["api"]; endpoint != "" {
+			endpoints := profile.Get("endpoints").Value().(map[string]interface{})
+			if endpoint := endpoints["api"].(string); endpoint != "" {
 				endp := make([]Endpoints, 1)
 				endp[0].API = types.StringValue(endpoint)
 				data.Endpoints = endp

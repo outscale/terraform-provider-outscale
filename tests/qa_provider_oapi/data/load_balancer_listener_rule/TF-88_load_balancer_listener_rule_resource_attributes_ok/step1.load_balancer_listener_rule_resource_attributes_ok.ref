@@ -48,6 +48,7 @@
                             }
                         ],
                         "application_sticky_cookie_policies": [],
+                        "backend_ips": "########",
                         "backend_vm_ids": [],
                         "dns_name": "########",
                         "health_check": [
@@ -250,11 +251,11 @@
                         ],
                         "id": "##id-1##",
                         "load_balancer_name": "########",
-                        "request_id": "########"
+                        "request_id": "########",
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_keypair.my_keypair",
                         "outscale_load_balancer.public_lbu2",

@@ -23,6 +23,7 @@
                             }
                         ],
                         "application_sticky_cookie_policies": [],
+                        "backend_ips": "########",
                         "backend_vm_ids": [],
                         "dns_name": "########",
                         "health_check": [
@@ -61,7 +62,7 @@
                         "source_security_group": [
                             {
                                 "security_group_account_id": "##id-4##",
-                                "security_group_name": "terraform-sg-lbu-TF181-1"
+                                "security_group_name": "terraform-sg-lbu-TF181-2"
                             }
                         ],
                         "subnets": [

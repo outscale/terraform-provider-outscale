@@ -23,9 +23,8 @@
                             }
                         ],
                         "application_sticky_cookie_policies": [],
-                        "backend_vm_ids": [
-                            "##id-0##"
-                        ],
+                        "backend_ips": "########",
+                        "backend_vm_ids": [],
                         "dns_name": "########",
                         "filter": "########",
                         "health_check": [
@@ -39,7 +38,7 @@
                                 "unhealthy_threshold": 2
                             }
                         ],
-                        "id": "##id-1##",
+                        "id": "##id-0##",
                         "listeners": [
                             {
                                 "backend_port": 80,
@@ -61,21 +60,21 @@
                         "load_balancer_name": "########",
                         "load_balancer_sticky_cookie_policies": [],
                         "load_balancer_type": "internet-facing",
-                        "net_id": "##id-2##",
+                        "net_id": "##id-1##",
                         "public_ip": "########",
                         "request_id": "########",
                         "secured_cookies": false,
                         "security_groups": [
-                            "##id-3##"
+                            "##id-2##"
                         ],
                         "source_security_group": [
                             {
-                                "security_group_account_id": "##id-4##",
+                                "security_group_account_id": "##id-3##",
                                 "security_group_name": "TF02-lbu-1"
                             }
                         ],
                         "subnets": [
-                            "##id-5##"
+                            "##id-4##"
                         ],
                         "subregion_names": [
                             "us-east-2a"
@@ -101,8 +100,8 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-6##",
-                        "internet_service_id": "##id-6##",
+                        "id": "##id-5##",
+                        "internet_service_id": "##id-5##",
                         "net_id": "",
                         "request_id": "########",
                         "state": "",
@@ -123,9 +122,9 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-6##",
-                        "internet_service_id": "##id-6##",
-                        "net_id": "##id-2##",
+                        "id": "##id-5##",
+                        "internet_service_id": "##id-5##",
+                        "net_id": "##id-1##",
                         "request_id": "########",
                         "state": "available",
                         "tags": [],
@@ -158,6 +157,7 @@
                             }
                         ],
                         "application_sticky_cookie_policies": [],
+                        "backend_ips": "########",
                         "backend_vm_ids": [],
                         "dns_name": "########",
                         "health_check": [
@@ -171,7 +171,7 @@
                                 "unhealthy_threshold": 2
                             }
                         ],
-                        "id": "##id-1##",
+                        "id": "##id-0##",
                         "listeners": [
                             {
                                 "backend_port": 8080,
@@ -193,21 +193,21 @@
                         "load_balancer_name": "########",
                         "load_balancer_sticky_cookie_policies": [],
                         "load_balancer_type": "internet-facing",
-                        "net_id": "##id-2##",
+                        "net_id": "##id-1##",
                         "public_ip": "########",
                         "request_id": "########",
                         "secured_cookies": false,
                         "security_groups": [
-                            "##id-3##"
+                            "##id-2##"
                         ],
                         "source_security_group": [
                             {
-                                "security_group_account_id": "##id-4##",
+                                "security_group_account_id": "##id-3##",
                                 "security_group_name": "TF02-lbu-1"
                             }
                         ],
                         "subnets": [
-                            "##id-5##"
+                            "##id-4##"
                         ],
                         "subregion_names": [
                             "us-east-2a"
@@ -245,13 +245,13 @@
                     "attributes": {
                         "backend_ips": "########",
                         "backend_vm_ids": null,
-                        "id": "##id-1##",
+                        "id": "##id-0##",
                         "load_balancer_name": "########",
-                        "request_id": "########"
+                        "request_id": "########",
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_internet_service.outscale_internet_service",
                         "outscale_load_balancer.internet_facing_lbu_1",
@@ -277,10 +277,10 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "dhcp_options_set_id": "##id-7##",
-                        "id": "##id-2##",
+                        "dhcp_options_set_id": "##id-6##",
+                        "id": "##id-1##",
                         "ip_range": "10.0.0.0/16",
-                        "net_id": "##id-2##",
+                        "net_id": "##id-1##",
                         "request_id": "########",
                         "state": "available",
                         "tags": [
@@ -306,13 +306,13 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-8##",
+                        "id": "##id-7##",
                         "link_public_ip_id": "",
                         "nic_account_id": "",
                         "nic_id": "",
                         "private_ip": "########",
                         "public_ip": "########",
-                        "public_ip_id": "##id-8##",
+                        "public_ip_id": "##id-7##",
                         "request_id": "########",
                         "tags": [
                             {
@@ -339,13 +339,13 @@
                     "schema_version": 0,
                     "attributes": {
                         "allow_relink": null,
-                        "id": "##id-9##",
-                        "link_public_ip_id": "##id-9##",
-                        "nic_account_id": "##id-4##",
-                        "nic_id": "##id-10##",
+                        "id": "##id-8##",
+                        "link_public_ip_id": "##id-8##",
+                        "nic_account_id": "##id-3##",
+                        "nic_id": "##id-9##",
                         "private_ip": "########",
                         "public_ip": "########",
-                        "public_ip_id": "##id-8##",
+                        "public_ip_id": "##id-7##",
                         "request_id": "########",
                         "tags": [
                             {
@@ -354,7 +354,7 @@
                             }
                         ],
                         "timeouts": null,
-                        "vm_id": "##id-0##"
+                        "vm_id": "##id-10##"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
@@ -382,7 +382,7 @@
                         "creation_method": "CreateRoute",
                         "destination_ip_range": "0.0.0.0/0",
                         "destination_service_id": "",
-                        "gateway_id": "##id-6##",
+                        "gateway_id": "##id-5##",
                         "id": "##id-11##",
                         "nat_service_id": "",
                         "net_access_point_id": "",
@@ -416,7 +416,7 @@
                     "attributes": {
                         "id": "##id-12##",
                         "link_route_tables": [],
-                        "net_id": "##id-2##",
+                        "net_id": "##id-1##",
                         "request_id": "########",
                         "route_propagating_virtual_gateways": [],
                         "route_table_id": "##id-12##",
@@ -466,7 +466,7 @@
                         "net_id": "",
                         "request_id": "########",
                         "route_table_id": "##id-12##",
-                        "subnet_id": "##id-5##",
+                        "subnet_id": "##id-4##",
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
@@ -488,11 +488,11 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "account_id": "##id-4##",
+                        "account_id": "##id-3##",
                         "description": "test lbu-2",
-                        "id": "##id-3##",
+                        "id": "##id-2##",
                         "inbound_rules": [],
-                        "net_id": "##id-2##",
+                        "net_id": "##id-1##",
                         "outbound_rules": [
                             {
                                 "from_port_range": -1,
@@ -504,7 +504,7 @@
                         ],
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
-                        "security_group_id": "##id-3##",
+                        "security_group_id": "##id-2##",
                         "security_group_name": "TF02-lbu-1",
                         "tag": null,
                         "tags": [
@@ -533,13 +533,13 @@
                     "schema_version": 0,
                     "attributes": {
                         "available_ips_count": "########",
-                        "id": "##id-5##",
+                        "id": "##id-4##",
                         "ip_range": "10.0.0.0/24",
                         "map_public_ip_on_launch": false,
-                        "net_id": "##id-2##",
+                        "net_id": "##id-1##",
                         "request_id": "########",
                         "state": "available",
-                        "subnet_id": "##id-5##",
+                        "subnet_id": "##id-4##",
                         "subregion_name": "us-east-2a",
                         "tags": [
                             {
@@ -595,17 +595,17 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-0##",
+                        "id": "##id-10##",
                         "image_id": "##id-16##",
                         "is_source_dest_checked": true,
                         "keypair_name": "",
                         "keypair_name_wo": null,
                         "launch_number": 0,
                         "nested_virtualization": false,
-                        "net_id": "##id-2##",
+                        "net_id": "##id-1##",
                         "nics": [
                             {
-                                "account_id": "##id-4##",
+                                "account_id": "##id-3##",
                                 "delete_on_vm_deletion": true,
                                 "description": "Primary network interface",
                                 "device_number": 0,
@@ -620,8 +620,8 @@
                                 ],
                                 "link_public_ip": [],
                                 "mac_address": "########",
-                                "net_id": "##id-2##",
-                                "nic_id": "##id-10##",
+                                "net_id": "##id-1##",
+                                "nic_id": "##id-9##",
                                 "private_dns_name": "########",
                                 "private_ips": [
                                     {
@@ -633,16 +633,16 @@
                                 ],
                                 "secondary_private_ip_count": 0,
                                 "security_group_ids": [
-                                    "##id-3##"
+                                    "##id-2##"
                                 ],
                                 "security_groups": [
                                     {
-                                        "security_group_id": "##id-3##",
+                                        "security_group_id": "##id-2##",
                                         "security_group_name": "TF02-lbu-1"
                                     }
                                 ],
                                 "state": "in-use",
-                                "subnet_id": "##id-5##"
+                                "subnet_id": "##id-4##"
                             }
                         ],
                         "os_family": "",
@@ -651,7 +651,7 @@
                         "placement_tenancy": "default",
                         "primary_nic": [
                             {
-                                "account_id": "##id-4##",
+                                "account_id": "##id-3##",
                                 "delete_on_vm_deletion": true,
                                 "description": "Primary network interface",
                                 "device_number": 0,
@@ -666,8 +666,8 @@
                                 ],
                                 "link_public_ip": [],
                                 "mac_address": "########",
-                                "net_id": "##id-2##",
-                                "nic_id": "##id-10##",
+                                "net_id": "##id-1##",
+                                "nic_id": "##id-9##",
                                 "private_dns_name": "########",
                                 "private_ips": [
                                     {
@@ -679,16 +679,16 @@
                                 ],
                                 "secondary_private_ip_count": 0,
                                 "security_group_ids": [
-                                    "##id-3##"
+                                    "##id-2##"
                                 ],
                                 "security_groups": [
                                     {
-                                        "security_group_id": "##id-3##",
+                                        "security_group_id": "##id-2##",
                                         "security_group_name": "TF02-lbu-1"
                                     }
                                 ],
                                 "state": "in-use",
-                                "subnet_id": "##id-5##"
+                                "subnet_id": "##id-4##"
                             }
                         ],
                         "private_dns_name": "########",
@@ -705,22 +705,22 @@
                         "root_device_type": "ebs",
                         "secure_boot_action": null,
                         "security_group_ids": [
-                            "##id-3##"
+                            "##id-2##"
                         ],
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-3##",
+                                "security_group_id": "##id-2##",
                                 "security_group_name": "TF02-lbu-1"
                             }
                         ],
                         "state": "running",
                         "state_reason": "",
-                        "subnet_id": "##id-5##",
+                        "subnet_id": "##id-4##",
                         "tags": [],
                         "timeouts": null,
                         "user_data": "",
-                        "vm_id": "##id-0##",
+                        "vm_id": "##id-10##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },

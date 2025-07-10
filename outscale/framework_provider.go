@@ -214,6 +214,7 @@ func (p *frameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		NewResourceMainRouteTableLink,
 		NewResourceVolume,
 		NewResourceVolumeLink,
+		NewResourceLBUVms,
 	}
 }
 
