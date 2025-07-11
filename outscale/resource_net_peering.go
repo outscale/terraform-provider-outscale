@@ -175,6 +175,9 @@ func (r *resourceNetPeering) Schema(ctx context.Context, _ resource.SchemaReques
 		Attributes: map[string]schema.Attribute{
 			"net_peering_id": schema.StringAttribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"source_net_account_id": schema.StringAttribute{
 				Optional: true,
@@ -210,6 +213,9 @@ func (r *resourceNetPeering) Schema(ctx context.Context, _ resource.SchemaReques
 			},
 			"id": schema.StringAttribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"accepter_net": PeeringConnectionOptionsSchema(),
 			"source_net":   PeeringConnectionOptionsSchema(),

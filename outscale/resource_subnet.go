@@ -148,6 +148,9 @@ func (r *resourceSubnet) Schema(ctx context.Context, _ resource.SchemaRequest, r
 			},
 			"subnet_id": schema.StringAttribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"request_id": schema.StringAttribute{
 				Computed: true,
@@ -159,6 +162,9 @@ func (r *resourceSubnet) Schema(ctx context.Context, _ resource.SchemaRequest, r
 			},
 			"id": schema.StringAttribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 		},
 	}
