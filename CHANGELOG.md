@@ -1,3 +1,27 @@
+## [1.2.0] - 2025-06-16
+### 🐛 Bug Fixes
+- 🐛 Fix handling of empty datasource for net_peering filter. ([#561](https://github.com/outscale/terraform-provider-outscale/issues/561))
+- 🐛 Fix `insecure` parameter not used in framework config.
+
+### 🔧 Improvements
+- 🧪 Update tests and `osc-sdk-go`.
+- 🛠 Update github issue templates.
+- 🛠 Update documentation script to not rely on provider.go file and avoid missing some resources on generation.
+- 🛠 Migrate `net_access_point` resource from SDKv2 to the plugin Framework.
+- 🛠 Migrate `net_attributes` resource from SDKv2 to the plugin Framework.
+- 🛠 Migrate `lbu_backend_vm` resource from SDKv2 to the plugin Framework.
+- 🛠 Migrate `volume_link` resource from SDKv2 to the plugin Framework.
+- 🛠 Migrate `volume` resource from SDKv2 to the plugin Framework.
+- 🛠 Migrate `route_table` resource from SDKv2 to the plugin Framework.
+- 🛠 Migrate `route` resource from SDKv2 to the plugin Framework.
+- 🛠 Migrate `internet_service` resource from SDKv2 to the plugin Framework.
+
+### ✨ Features
+- 🚀 Add ephemeral resources support for `keypair` ([#507](https://github.com/outscale/terraform-provider-outscale/issues/507))
+- 🚀 Add new parameters (`secure_boot_action`, `boot_mode`) in `vm` resource and datasources
+
+---
+
 ## [1.1.3] - 2025-05-15
 ### 🐛 Bug Fixes
 - 🐛 Fix `outscale_net_peering_acceptation` resource documentation.
