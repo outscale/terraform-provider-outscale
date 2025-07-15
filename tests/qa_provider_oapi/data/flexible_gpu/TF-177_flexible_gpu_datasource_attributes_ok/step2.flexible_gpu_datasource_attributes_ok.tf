@@ -35,7 +35,7 @@ data "outscale_flexible_gpu" "data-fGPU-1" {
     name   = "flexible_gpu_ids"
     values = [outscale_flexible_gpu.fGPU-1.flexible_gpu_id]
   }
-  depends_on = [outscale_flexible_gpu_link.link_fGPU]
+  depends_on = [outscale_flexible_gpu_link.link_fGPU, outscale_flexible_gpu.fGPU-1]
 }
 
 data "outscale_flexible_gpu" "data-fGPU-2" {
@@ -61,7 +61,7 @@ data "outscale_flexible_gpu" "data-fGPU-2" {
     values = ["${var.region}a"]
   }
 
-  depends_on = [outscale_flexible_gpu_link.link_fGPU]
+  depends_on = [outscale_flexible_gpu_link.link_fGPU, outscale_flexible_gpu.fGPU-1]
 }
 
 data "outscale_flexible_gpu" "data-fGPU-3" {
@@ -69,5 +69,5 @@ data "outscale_flexible_gpu" "data-fGPU-3" {
     name   = "vm_ids"
     values = [outscale_vm.MaVM.vm_id]
   }
-  depends_on = [outscale_flexible_gpu_link.link_fGPU]
+  depends_on = [outscale_flexible_gpu_link.link_fGPU, outscale_flexible_gpu.fGPU-1]
 }
