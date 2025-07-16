@@ -9,7 +9,8 @@ from qa_provider_oapi import version  # isort:skip
 
 def parse_requirements(filename):
     """ load requirements from a pip requirements file """
-    lineiter = (line.strip() for line in open(filename))
+    with open(filename, 'r') as file:
+        lineiter = (line.strip() for line in file)
     return [line for line in lineiter if line and not line.startswith("#")]
 
 
