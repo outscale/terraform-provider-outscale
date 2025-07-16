@@ -261,6 +261,50 @@ resource "outscale_vm" "vm04" {
 }
 ```
 
+### Create a VM with Secure Boot
+
+~> **Important** Secure Boot is only available with VMs booting in Unified Extensible Firmware Interface (UEFI).
+
+```hcl
+resource "outscale_security_group" "security_group01" {
+  description         = "vm security group"
+  security_group_name = "vm_security_group1"
+}
+
+resource "outscale_vm" "outscale_vm_TF206" {
+  image_id            = var.image_id
+  vm_type             = "tinav5.c3r3"
+  keypair_name 		= var.keypair_name
+  security_group_ids       = [outscale_security_group.security_group01.security_group_id]
+  deletion_protection = false
+  state               = "stopped"
+  boot_mode           = "uefi"
+  secure_boot_action  = "enable"
+}
+```
+
+### Create a VM with an ephemeral keypair
+
+~> **Important** Ephemeral keypairs are only available in Terraform versions 1.10 and up.
+
+```hcl
+ephemeral "outscale_keypair" "ephemeral_keypair" {
+  keypair_name = "ephemeral-keypair"
+  }
+
+resource "outscale_security_group" "security_group01" {
+  description         = "vm security group"
+  security_group_name = "vm_security_group12"
+}
+
+resource "outscale_vm" "outscale_vm_TF206" {
+  image_id            = var.image_id
+  vm_type             = var.vm_type
+  keypair_name_wo     = ephemeral.outscale_keypair.keypair_ephemeral.keypair_name
+  security_group_ids  = [outscale_security_group.security_group01.security_group_id] 
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -275,10 +319,12 @@ The following arguments are supported:
           * `key`- The key of the tag with a minimum of 1 character.
           * `value` - The value of the tag, between 0 and 255 characters.
 
+* `boot_mode` - (Optional) Information about the boot mode of the VM (`legacy` | `uefi`).
 * `client_token` - (Optional) A unique identifier which enables you to manage the idempotency.
 * `deletion_protection` - (Optional) If true, you cannot delete the VM unless you change this parameter back to false.
 * `get_admin_password` - (Optional) (Windows VM only) If true, waits for the administrator password of the VM to become available in order to retrieve the VM. The password is exported to the `admin_password` attribute.
 * `image_id` - (Required) The ID of the OMI used to create the VM. You can find the list of OMIs by calling the [ReadImages](https://docs.outscale.com/api#readimages) method.
+* `keypair_name_wo` - The name of the keypair. This write-only parameter is required to use the ephemeral keypair resource.
 * `keypair_name` - (Optional) The name of the keypair.
 * `nested_virtualization` - (Optional) (dedicated tenancy only) If true, nested virtualization is enabled. If false, it is disabled.
 * `nics` - (Optional) One or more NICs. If you specify this parameter, you must not specify the `subnet_id` and `subregion_name` parameters. To define a NIC as the primary network interface of the VM, use the `primary_nic` argument.
@@ -309,6 +355,7 @@ The following arguments are supported:
     * `subnet_id` - (Optional) The ID of the Subnet for the NIC, if you create a NIC when creating a VM. This parameter is required if you create a NIC when creating the VM.
 
 * `private_ips` - (Optional) One or more private IPs of the VM.
+* `secure_boot_action` - (Optional) One action to perform on the next boot of the VM (`enable` | `disable` | `setup-mode` |`none`).<br /> For more information, see [About Secure Boot](https://docs.outscale.com/en/userguide/About-Secure-Boot.html#_secure_boot_actions).
 * `security_group_ids` - (Optional) One or more IDs of security group for the VMs. You must specify at least one of the following parameters: `security_group_ids` or `security_group_names`.
 * `security_group_names` - (Optional) One or more names of security groups for the VMs. You must specify at least one of the following parameters: `security_group_ids` or `security_group_names`.
 * `state` - The state of the VM (`running` | `stopped`). If set to `stopped`, the VM is stopped regardless of the value of the `vm_initiated_shutdown_behavior` argument.
@@ -324,6 +371,9 @@ The following arguments are supported:
 
 The following attributes are exported:
 
+* `actions_on_next_boot` - The action to perform on the next boot of the VM.
+    * `secure_boot` - One action to perform on the next boot of the VM (`enable` | `disable` | `setup-mode` |`none`). For more information, see [About Secure Boot](https://docs.outscale.com/en/userguide/About-Secure-Boot.html#_secure_boot_actions).
+
 * `admin_password` - (Windows VM only) The administrator password of the VM. This password is encrypted with the keypair you specified when launching the VM and encoded in Base64. You need to wait about 10 minutes after launching the VM to be able to retrieve this password.<br />If `get_admin_password` is false or not specified, the VM resource is created without the `admin_password` attribute. Once `admin_password` is available, it will appear in the Terraform state after the next **refresh** or **apply** command.<br />If `get_admin_password` is true, the VM resource itself is not considered created until the `admin_password` attribute is available.<br />Note also that after the first reboot of the VM, this attribute can no longer be retrieved. For more information on how to use this password to connect to the VM, see [Accessing a Windows VM](https://docs.outscale.com/en/userguide/Accessing-a-Windows-VM.html).
 * `architecture` - The architecture of the VM (`i386` \| `x86_64`).
 * `block_device_mappings_created` - The block device mapping of the VM.
@@ -333,6 +383,7 @@ The following attributes are exported:
         * `state` - The state of the volume.
         * `volume_id` - The ID of the volume.
     * `device_name` - The name of the device.
+* `boot_mode` - The boot mode of the VM (`legacy` | `uefi`).
 * `client_token` - The idempotency token provided when launching the VM.
 * `creation_date` - The date and time (UTC) at which the VM was created.
 * `deletion_protection` - If true, you cannot delete the VM unless you change this parameter back to false.
@@ -385,6 +436,7 @@ The following attributes are exported:
 * `reservation_id` - The reservation ID of the VM.
 * `root_device_name` - The name of the root device for the VM (for example, `/dev/sda1`).
 * `root_device_type` - The type of root device used by the VM (always `bsu`).
+* `secure_boot_action` - The action to perform on the next boot of the VM (`enable` | `disable` | `setup-mode` |`none`).
 * `security_groups` - One or more security groups associated with the VM.
     * `security_group_id` - The ID of the security group.
     * `security_group_name` - The name of the security group.
