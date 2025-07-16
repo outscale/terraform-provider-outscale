@@ -6,7 +6,6 @@ import os
 import subprocess
 import pytest
 import json
-import random
 
 from qa_provider_oapi.check import main
 
@@ -193,11 +192,6 @@ def compare_json_dicts(path, dict_out, dict_ref, ids):
             compare_json('{}.{}'.format(path, key), dict_out[key], dict_ref[key], ids)
 
 
-#def compare_json_lists(path, list_out, list_ref, ids):
-#    assert len(list_out) == len(list_ref)
-#    for i in range(len(list_out)):
-#        compare_json('{}.{}'.format(path, i), list_out[i], list_ref[i], ids)
-
 def compare_json_lists(path, list_out, list_ref, ids):
     assert len(list_out) == len(list_ref)
     current_ids = ids.copy()
@@ -215,7 +209,6 @@ def compare_json_lists(path, list_out, list_ref, ids):
                 errors = []
                 break
             except Exception as error:
-                tmp_ids = current_ids
                 errors.append(error)
         if errors:
             assert False, 'Could not match list values for path {}, {}'.format(path, errors)
@@ -237,12 +230,9 @@ def compare_json_sets(path, set_out, set_ref, ids):
                 errors = []
                 break
             except Exception as error:
-                tmp_ids = current_ids
                 errors.append(error)
         if errors:
                 assert False, 'Could not match set values for path {}, {}'.format(path, errors)
-
-    ids = current_ids
 
 
 def compare_json_values(path, val_out, val_ref, ids):
@@ -385,19 +375,7 @@ Log: {}
             stdout, _ = self.run_cmd(['terraform version -no-color'])
             self.log += "\nVERSION:{}\n".format("\n".join(stdout.splitlines()[:2]))
         except Exception:
-            try:
-                self.teardown_method(method)
-            except Exception:
-                pass
             raise
-
-    def teardown_method(self, method):
-        try:
-            pass
-            # self.run_cmd("terraform destroy -force -no-color")
-        finally:
-            if self.error:
-                self.logger.error(self.log)
 
     def run_cmd(self, cmd, exp_ret_code=0):
         self.logger.debug("Exec: %s", cmd)
@@ -449,9 +427,10 @@ Log: {}
         try:
             self.logger.debug("Start test: '%s'", test_name)
             if os.path.exists('{}/origin.txt'.format(test_path)):
-                ret = open('{}/origin.txt'.format(test_path), 'r').read().find('WARNING')
-                if ret > 0:
-                    pytest.skip('WARNING during test migration')
+                with open('{}/origin.txt'.format(test_path), 'r') as test_file:
+                    ret = test_file.read().find('WARNING')
+                    if ret > 0:
+                        pytest.skip('WARNING during test migration')
             tf_file_names = get_test_file_names(test_path, prefix='step', suffix='.tf')
             # TDOD erase once not needed anymore
             check_file_names = get_test_file_names(test_path, prefix='step', suffix='.check')
