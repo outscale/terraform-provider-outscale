@@ -8,6 +8,7 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -255,7 +256,7 @@ func DataSourceOutscaleNicsRead(d *schema.ResourceData, meta interface{}) error 
 	nics := resp.GetNics()
 
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
-		d.SetId(resource.UniqueId())
+		d.SetId(id.UniqueId())
 
 		if err := set("nics", getOAPIVMNetworkInterfaceSet(nics)); err != nil {
 			return err

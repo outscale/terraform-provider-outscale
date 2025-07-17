@@ -8,6 +8,7 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -76,11 +77,11 @@ func DataSourceUsersRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	users := resp.GetUsers()
-	d.SetId(resource.UniqueId())
+	d.SetId(id.UniqueId())
 	if len(users) == 0 {
 		return fmt.Errorf("Unable to find users")
 	}
-	d.SetId(resource.UniqueId())
+	d.SetId(id.UniqueId())
 	usersToSet := make([]map[string]interface{}, len(users))
 	for i, v := range users {
 		user := make(map[string]interface{})

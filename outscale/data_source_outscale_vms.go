@@ -7,6 +7,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -116,7 +117,7 @@ func DataSourceOutscaleVMSRead(d *schema.ResourceData, meta interface{}) error {
 		return errors.New("Your query returned no results. Please change your search criteria and try again")
 	}
 
-	d.SetId(resource.UniqueId())
+	d.SetId(id.UniqueId())
 	return d.Set("vms", dataSourceOAPIVMS(filteredVms, client))
 }
 

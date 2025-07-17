@@ -7,6 +7,7 @@ import (
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/outscale/terraform-provider-outscale/utils"
@@ -116,7 +117,7 @@ func DataSourceAccountRead(d *schema.ResourceData, meta interface{}) error {
 
 	account := resp.GetAccounts()[0]
 
-	d.SetId(resource.UniqueId())
+	d.SetId(id.UniqueId())
 
 	if err := d.Set("account_id", account.GetAccountId()); err != nil {
 		return err

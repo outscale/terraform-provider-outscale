@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -97,7 +98,7 @@ func DataSourcePoliciesRead(d *schema.ResourceData, meta interface{}) error {
 	if len(policyResp) == 0 {
 		return fmt.Errorf("Unable to find Policies with fileters: %v", filters.(*schema.Set))
 	}
-	d.SetId(resource.UniqueId())
+	d.SetId(id.UniqueId())
 
 	policies := make([]map[string]interface{}, len(policyResp))
 

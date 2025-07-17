@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -89,7 +90,7 @@ func DataSourcePolicyRead(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	}
 	policy := resp.GetPolicy()
-	d.SetId(resource.UniqueId())
+	d.SetId(id.UniqueId())
 	if err := d.Set("policy_name", policy.GetPolicyName()); err != nil {
 		return err
 	}

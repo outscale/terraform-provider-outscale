@@ -10,6 +10,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 	"github.com/spf13/cast"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -350,7 +351,7 @@ func ResourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, met
 		d.Set("net_id", lb.NetId)
 	}
 
-	d.SetId(resource.UniqueId())
+	d.SetId(id.UniqueId())
 	d.Set("load_balancer_name", l.(string))
 	d.Set("policy_name", pn.(string))
 	d.Set("policy_type", pt.(string))

@@ -6,11 +6,11 @@ import (
 	"log"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
-	"github.com/outscale/terraform-provider-outscale/utils"
-
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
 func attrLBListenerRules() map[string]*schema.Schema {
@@ -170,7 +170,7 @@ func DataSourceOutscaleLoadBalancerLDRulesRead(d *schema.ResourceData, meta inte
 	}
 
 	d.Set("listener_rules", lrs_ret)
-	d.SetId(resource.UniqueId())
+	d.SetId(id.UniqueId())
 
 	return nil
 }

@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
@@ -199,7 +200,7 @@ func (d *dataSourceQuota) Read(ctx context.Context, req datasource.ReadRequest, 
 	dataState.ShortDescription = types.StringValue(quota.GetShortDescription())
 	dataState.AccountId = types.StringValue(quota.GetAccountId())
 	dataState.Filter = flatenFilters
-	dataState.Id = types.StringValue(resource.UniqueId())
+	dataState.Id = types.StringValue(id.UniqueId())
 	dataState.RequestId = types.StringValue(respApi.ResponseContext.GetRequestId())
 	diags = resp.State.Set(ctx, &dataState)
 	resp.Diagnostics.Append(diags...)

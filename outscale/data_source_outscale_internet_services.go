@@ -9,6 +9,7 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -102,7 +103,7 @@ func DataSourceOutscaleInternetServicesRead(d *schema.ResourceData, meta interfa
 
 	log.Printf("[DEBUG] Setting OAPI LIN Internet Gateways id (%s)", err)
 
-	d.SetId(resource.UniqueId())
+	d.SetId(id.UniqueId())
 
 	result := resp.GetInternetServices()
 	return internetServicesOAPIDescriptionAttributes(d, result)

@@ -9,6 +9,7 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -95,7 +96,7 @@ func DataSourceOutscaleVMStatesRead(d *schema.ResourceData, meta interface{}) er
 }
 
 func statusDescriptionOAPIVMStatesAttributes(d *schema.ResourceData, status []oscgo.VmStates) error {
-	d.SetId(resource.UniqueId())
+	d.SetId(id.UniqueId())
 
 	states := make([]map[string]interface{}, len(status))
 

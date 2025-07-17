@@ -30,6 +30,15 @@ func DataSourceOutscaleImage() *schema.Resource {
 				ForceNew: true,
 			},
 			// Computed values.
+			"boot_modes": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
+			"secure_boot": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
 			"architecture": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -253,6 +262,12 @@ func DataSourceOutscaleImageRead(d *schema.ResourceData, meta interface{}) error
 			return err
 		}
 
+		if err := set("boot_modes", utils.Map(image.GetBootModes(), func(b oscgo.BootMode) string { return string(b) })); err != nil {
+			return err
+		}
+		if err := set("secure_boot", image.GetSecureBoot()); err != nil {
+			return err
+		}
 		if err := set("creation_date", image.CreationDate); err != nil {
 			return err
 		}

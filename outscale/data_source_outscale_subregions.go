@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -81,7 +82,7 @@ func DataSourceOutscaleSubregionsRead(d *schema.ResourceData, meta interface{}) 
 	subregions := resp.GetSubregions()
 
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
-		d.SetId(resource.UniqueId())
+		d.SetId(id.UniqueId())
 
 		subs := make([]map[string]interface{}, len(subregions))
 		for i, subregion := range subregions {

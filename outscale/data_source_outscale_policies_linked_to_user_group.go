@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -78,7 +79,7 @@ func DataSourcePoliciesLinkedToUserGroupRead(d *schema.ResourceData, meta interf
 		return fmt.Errorf("unable to find policies linked to user group")
 	}
 	policiesResp := resp.GetPolicies()
-	d.SetId(resource.UniqueId())
+	d.SetId(id.UniqueId())
 	policies := make([]map[string]interface{}, len(policiesResp))
 	for i, v := range policiesResp {
 		policy := make(map[string]interface{})

@@ -9,6 +9,7 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/spf13/cast"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/outscale/terraform-provider-outscale/utils"
@@ -58,6 +59,15 @@ func DataSourceOutscaleImages() *schema.Resource {
 						},
 						"architecture": {
 							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"boot_modes": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
+						},
+						"secure_boot": {
+							Type:     schema.TypeBool,
 							Computed: true,
 						},
 						"block_device_mappings": {
@@ -250,14 +260,19 @@ func DataSourceOutscaleImagesRead(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	images := resp.GetImages()
+	if len(images) == 0 {
+		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
+	}
 
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
-		d.SetId(resource.UniqueId())
+		d.SetId(id.UniqueId())
 
 		imgs := make([]map[string]interface{}, len(images))
 		for i, image := range images {
 			imgs[i] = map[string]interface{}{
 				"architecture":          image.GetArchitecture(),
+				"boot_modes":            utils.Map(image.GetBootModes(), func(b oscgo.BootMode) string { return string(b) }),
+				"secure_boot":           image.GetSecureBoot(),
 				"creation_date":         image.GetCreationDate(),
 				"description":           image.GetDescription(),
 				"image_id":              image.GetImageId(),
@@ -298,6 +313,10 @@ func buildOutscaleDataSourceImagesFilters(set *schema.Set) *oscgo.FiltersImage {
 			filters.SetAccountIds(filterValues)
 		case "architectures":
 			filters.SetArchitectures(filterValues)
+		case "boot_modes":
+			filters.SetBootModes(utils.Map(filterValues, func(s string) oscgo.BootMode { return (oscgo.BootMode)(s) }))
+		case "secure_boot":
+			filters.SetSecureBoot(cast.ToBool(filterValues[0]))
 		case "block_device_mapping_delete_on_vm_deletion":
 			filters.SetBlockDeviceMappingDeleteOnVmDeletion(cast.ToBool(filterValues[0]))
 		case "block_device_mapping_device_names":

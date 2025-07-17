@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -79,7 +80,7 @@ func ResourcePolicyVersionCreate(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 
-	d.SetId(resource.UniqueId())
+	d.SetId(id.UniqueId())
 	pVersion := resp.GetPolicyVersion()
 	if err := d.Set("version_id", pVersion.GetVersionId()); err != nil {
 		return err

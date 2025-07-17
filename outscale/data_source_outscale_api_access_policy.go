@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -63,6 +64,6 @@ func DataSourceOutscaleApiAccessPolicyRead(d *schema.ResourceData, meta interfac
 	if err := d.Set("require_trusted_env", policy.GetRequireTrustedEnv()); err != nil {
 		return err
 	}
-	d.SetId(resource.UniqueId())
+	d.SetId(id.UniqueId())
 	return nil
 }

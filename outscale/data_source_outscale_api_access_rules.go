@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -102,6 +103,6 @@ func DataSourceOutscaleApiAccessRulesRead(d *schema.ResourceData, meta interface
 		}
 		blockRules[key] = rule
 	}
-	d.SetId(resource.UniqueId())
+	d.SetId(id.UniqueId())
 	return d.Set("api_access_rules", blockRules)
 }
