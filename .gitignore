@@ -43,3 +43,4 @@ tests/qa_provider_oapi/data/cert_example/
 # docs
 docs/generation_log.txt
 docs/.venv
+scripts/docs/generation_log.txt
