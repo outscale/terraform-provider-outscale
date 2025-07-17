@@ -8,6 +8,7 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -148,7 +149,7 @@ func DataSourceOutscaleSubnetsRead(d *schema.ResourceData, meta interface{}) err
 	if err := d.Set("subnets", subnets); err != nil {
 		return err
 	}
-	d.SetId(resource.UniqueId())
+	d.SetId(id.UniqueId())
 
 	return nil
 }

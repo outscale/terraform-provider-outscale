@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -123,7 +124,7 @@ func DataSourceEntitiesLinkedToPoliciesRead(d *schema.ResourceData, meta interfa
 	if !ok {
 		return fmt.Errorf("unable to find Entities linked to policy")
 	}
-	d.SetId(resource.UniqueId())
+	d.SetId(id.UniqueId())
 
 	users := make([]map[string]interface{}, len(entities.GetUsers()))
 	groups := make([]map[string]interface{}, len(entities.GetGroups()))

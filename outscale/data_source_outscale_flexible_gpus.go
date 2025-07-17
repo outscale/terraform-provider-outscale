@@ -8,6 +8,7 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -99,7 +100,7 @@ func DataSourceOutscaleFlexibleGpusRead(d *schema.ResourceData, meta interface{}
 		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
 	}
 
-	d.SetId(resource.UniqueId())
+	d.SetId(id.UniqueId())
 
 	return setOAPIFlexibleGpuAttributes(d, flexgps)
 }

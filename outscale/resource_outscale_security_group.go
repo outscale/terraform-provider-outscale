@@ -11,6 +11,7 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -135,7 +136,7 @@ func ResourceOutscaleSecurityGroupCreate(d *schema.ResourceData, meta interface{
 	if v, ok := d.GetOk("security_group_name"); ok {
 		groupName = v.(string)
 	} else {
-		groupName = resource.UniqueId()
+		groupName = id.UniqueId()
 	}
 	securityGroupOpts.SetSecurityGroupName(groupName)
 

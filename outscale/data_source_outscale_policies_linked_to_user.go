@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -73,7 +74,7 @@ func DataSourcePoliciesLinkedToUserRead(d *schema.ResourceData, meta interface{}
 	if len(policiesList) == 0 {
 		return fmt.Errorf("unable to find Policies linked to user: %v", d.Get("user_name").(string))
 	}
-	d.SetId(resource.UniqueId())
+	d.SetId(id.UniqueId())
 
 	policies := make([]map[string]interface{}, len(policiesList))
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -60,7 +61,7 @@ func DataSourceOutscaleRegionsRead(d *schema.ResourceData, meta interface{}) err
 	regions := resp.GetRegions()
 
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
-		d.SetId(resource.UniqueId())
+		d.SetId(id.UniqueId())
 
 		regs := make([]map[string]interface{}, len(regions))
 		for i, region := range regions {

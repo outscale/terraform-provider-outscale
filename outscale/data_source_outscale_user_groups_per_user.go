@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -84,7 +85,7 @@ func DataSourceUserGroupsPerUserRead(d *schema.ResourceData, meta interface{}) e
 	if _, ok := resp.GetUserGroupsOk(); !ok {
 		return fmt.Errorf("unable to find user groups")
 	}
-	d.SetId(resource.UniqueId())
+	d.SetId(id.UniqueId())
 	userGps := resp.GetUserGroups()
 	userGroups := make([]map[string]interface{}, len(userGps))
 

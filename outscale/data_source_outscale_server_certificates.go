@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -88,7 +89,7 @@ func DataSourceOutscaleServerCertificatesRead(d *schema.ResourceData, meta inter
 
 	log.Printf("[DEBUG] Setting Server Certificates id (%s)", err)
 	d.Set("server_certificates", flattenServerCertificates(resp.GetServerCertificates()))
-	d.SetId(resource.UniqueId())
+	d.SetId(id.UniqueId())
 	return nil
 }
 

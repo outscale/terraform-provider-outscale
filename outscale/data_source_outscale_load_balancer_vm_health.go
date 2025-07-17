@@ -122,7 +122,7 @@ func DataSourceOutscaleLoadBalancerVmsHealRead(d *schema.ResourceData,
 		lbvh[k] = a
 	}
 	d.Set("backend_vm_health", lbvh)
-	//  ename.(string) "-heal-" resource.UniqueId()
+	//  ename.(string) "-heal-" id.UniqueId()
 	id := ename.(string) + "-heal-"
 	d.SetId(resource.PrefixedUniqueId(id))
 	return nil

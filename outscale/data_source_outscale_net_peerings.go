@@ -10,6 +10,7 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -95,7 +96,7 @@ func DataSourceOutscaleLinPeeringsConnectionRead(d *schema.ResourceData, meta in
 		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
 	}
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
-		d.SetId(resource.UniqueId())
+		d.SetId(id.UniqueId())
 
 		if err := set("net_peerings", setNetPeeringsAttributtes(peerings)); err != nil {
 			return err

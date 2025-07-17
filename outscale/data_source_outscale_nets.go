@@ -8,6 +8,7 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -110,7 +111,7 @@ func DataSourceOutscaleVpcsRead(d *schema.ResourceData, meta interface{}) error 
 		return fmt.Errorf("no matching VPC found")
 	}
 
-	d.SetId(resource.UniqueId())
+	d.SetId(id.UniqueId())
 
 	nets := make([]map[string]interface{}, len(resp.GetNets()))
 

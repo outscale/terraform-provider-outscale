@@ -8,6 +8,7 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -127,7 +128,7 @@ func DataSourceOutscaleNatServicesRead(d *schema.ResourceData, meta interface{})
 
 // populate the numerous fields that the image description returns.
 func ngsOAPIDescriptionAttributes(d *schema.ResourceData, ngs []oscgo.NatService) error {
-	d.SetId(resource.UniqueId())
+	d.SetId(id.UniqueId())
 
 	addngs := make([]map[string]interface{}, len(ngs))
 
