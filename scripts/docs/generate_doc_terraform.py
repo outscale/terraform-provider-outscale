@@ -469,11 +469,13 @@ def main():
         filename = name
         input_fields = set()
         output_fields = set()
+        dirpath = None
+        template = None
+        resource_name = None
         example_content = str()
         extra_intro_content = str()
         import_content = str()
         addprop_content = {}
-        resource_name = str()
         # code_filename = '{}/{}'.format(
         #     ARGS.provider_directory, filename[len('outscale/')+1:])
         data_type = DataType.RESOURCE
@@ -490,28 +492,24 @@ def main():
                     example_content = f.read()
             except FileNotFoundError as e:
                 print("'{}' data_source example not found: {}".format(resource_name, e))
-                pass
             try:
                 with io.open('{}/Content/data-sources/{}-import.md'.format(ARGS.template_directory, resource_name),
                              'r') as f:
                     import_content = f.read()
             except FileNotFoundError as e:
                 print("'{}' data_source import not found: {}".format(resource_name, e))
-                pass
             try:
                 with io.open('{}/Content/data-sources/{}-addprop.yaml'.format(ARGS.template_directory, resource_name),
                              'r') as f:
                     addprop_content = yaml.load(f, yaml.FullLoader)
             except FileNotFoundError as e:
                 print("'{}' data_source addprop not found: {}".format(resource_name, e))
-                pass
             try:
                 with io.open('{}/Content/data-sources/{}-intro.md'.format(ARGS.template_directory, resource_name),
                              'r') as f:
                     extra_intro_content  = f.read()
             except FileNotFoundError as e:
                 print("'{}' data_source intro not found: {}".format(resource_name, e))
-                pass
 
             if resource_name == 'vms_state':
                 template = template_datasources
@@ -540,28 +538,24 @@ def main():
                     example_content = f.read()
             except FileNotFoundError as e:
                 print("'{}' resource example not found: {}".format(resource_name, e))
-                pass
             try:
                 with io.open('{}/Content/resources/{}-import.md'.format(ARGS.template_directory, resource_name),
                              'r') as f:
                     import_content = f.read()
             except FileNotFoundError as e:
                 print("'{}' resource import not found: {}".format(resource_name, e))
-                pass
             try:
                 with io.open('{}/Content/resources/{}-addprop.yaml'.format(ARGS.template_directory, resource_name),
                              'r') as f:
                     addprop_content = yaml.load(f, yaml.FullLoader)
             except FileNotFoundError as e:
                 print("'{}' resource addprop not found: {}".format(resource_name, e))
-                pass
             try:
                 with io.open('{}/Content/resources/{}-intro.md'.format(ARGS.template_directory, resource_name),
                              'r') as f:
                     extra_intro_content  = f.read()
             except FileNotFoundError as e:
                 print("'{}' resource intro not found: {}".format(resource_name, e))
-                pass
         else:
             print('This filename, {} is not in a known format - we do not treat it.'.format(name))
             continue
