@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"slices"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -98,6 +99,15 @@ func ResourceOutscaleImage() *schema.Resource {
 							Computed: true,
 						},
 					},
+				},
+			},
+			"boot_modes": {
+				Type:     schema.TypeSet,
+				Computed: true,
+				Optional: true,
+				ForceNew: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
 				},
 			},
 			"description": {
@@ -261,6 +271,15 @@ func resourceOAPIImageCreate(d *schema.ResourceData, meta interface{}) error {
 	if v, ok := d.GetOk("root_device_name"); ok {
 		imageRequest.SetRootDeviceName(v.(string))
 	}
+
+	if v, ok := d.GetOk("boot_modes"); ok {
+		modes := utils.SetToStringSlice(v.(*schema.Set))
+		if utils.ForAll(modes, func(s string) bool { return slices.Contains([]string{"uefi", "legacy"}, s) }) {
+			imageRequest.SetBootModes(utils.Map(modes, func(s string) oscgo.BootMode { return (oscgo.BootMode)(s) }))
+		} else {
+			return fmt.Errorf("The boot modes compatible with the OMI are: uefi, legacy. Provided: %v", modes)
+		}
+	}
 	var resp oscgo.CreateImageResponse
 	var err error
 	err = retry.RetryContext(context.Background(), d.Timeout(schema.TimeoutCreate), func() *retry.RetryError {
@@ -343,6 +362,9 @@ func resourceOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
 		d.SetId(*image.ImageId)
 
 		if err := set("architecture", image.Architecture); err != nil {
+			return err
+		}
+		if err := set("boot_modes", utils.Map(image.GetBootModes(), func(b oscgo.BootMode) string { return string(b) })); err != nil {
 			return err
 		}
 		if err := set("creation_date", image.CreationDate); err != nil {
