@@ -32,6 +32,9 @@
                                 "virtual_device_name": ""
                             }
                         ],
+                        "boot_modes": [
+                            "legacy"
+                        ],
                         "creation_date": "########",
                         "description": "",
                         "file_location": "########",

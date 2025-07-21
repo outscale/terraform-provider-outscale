@@ -529,6 +529,9 @@
                                 "virtual_device_name": ""
                             }
                         ],
+                        "boot_modes": [
+                            "legacy"
+                        ],
                         "creation_date": "########",
                         "description": "TF-66",
                         "file_location": "########",

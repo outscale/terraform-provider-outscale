@@ -32,6 +32,9 @@
                                 "virtual_device_name": ""
                             }
                         ],
+                        "boot_modes": [
+                            "legacy"
+                        ],
                         "creation_date": "########",
                         "description": "",
                         "file_location": "########",
@@ -111,6 +114,10 @@
                                 "device_name": "/dev/sda1",
                                 "virtual_device_name": ""
                             }
+                        ],
+                        "boot_modes": [
+                            "legacy",
+                            "uefi"
                         ],
                         "creation_date": "########",
                         "description": "Test-copy-image",

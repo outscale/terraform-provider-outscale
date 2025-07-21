@@ -598,6 +598,82 @@
             ]
         },
         {
+            "mode": "data",
+            "type": "outscale_images",
+            "name": "outscale_images_7",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_ids": null,
+                        "filter": "########",
+                        "id": "##id-10##",
+                        "image_ids": null,
+                        "images": [
+                            {
+                                "account_alias": "",
+                                "account_id": "##id-1##",
+                                "architecture": "x86_64",
+                                "block_device_mappings": [
+                                    {
+                                        "bsu": [
+                                            {
+                                                "delete_on_vm_deletion": true,
+                                                "iops": 0,
+                                                "snapshot_id": "##id-4##",
+                                                "volume_size": 50,
+                                                "volume_type": "gp2"
+                                            }
+                                        ],
+                                        "device_name": "/dev/sda1",
+                                        "virtual_device_name": ""
+                                    }
+                                ],
+                                "boot_modes": [
+                                    "legacy"
+                                ],
+                                "creation_date": "########",
+                                "description": "",
+                                "file_location": "########",
+                                "image_id": "##id-5##",
+                                "image_name": "########",
+                                "image_type": "machine",
+                                "permissions_to_launch": [],
+                                "product_codes": [
+                                    "0001"
+                                ],
+                                "root_device_name": "/dev/sda1",
+                                "root_device_type": "bsu",
+                                "secure_boot": false,
+                                "state": "available",
+                                "state_comment": [
+                                    {
+                                        "state_code": "",
+                                        "state_message": ""
+                                    }
+                                ],
+                                "tags": [
+                                    {
+                                        "key": "Key-2",
+                                        "value": "value-tags-2"
+                                    },
+                                    {
+                                        "key": "Key:TF69",
+                                        "value": "value:TF69"
+                                    }
+                                ]
+                            }
+                        ],
+                        "permissions": null,
+                        "request_id": "########"
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
+                }
+            ]
+        },
+        {
             "mode": "managed",
             "type": "outscale_image",
             "name": "outscale_image1",
@@ -623,6 +699,9 @@
                                 "device_name": "/dev/sda1",
                                 "virtual_device_name": ""
                             }
+                        ],
+                        "boot_modes": [
+                            "legacy"
                         ],
                         "creation_date": "########",
                         "description": "",
@@ -665,7 +744,7 @@
                             }
                         ],
                         "timeouts": null,
-                        "vm_id": "##id-10##"
+                        "vm_id": "##id-11##"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
@@ -703,6 +782,9 @@
                                 "device_name": "/dev/sda1",
                                 "virtual_device_name": ""
                             }
+                        ],
+                        "boot_modes": [
+                            "legacy"
                         ],
                         "creation_date": "########",
                         "description": "",
@@ -745,7 +827,7 @@
                             }
                         ],
                         "timeouts": null,
-                        "vm_id": "##id-10##"
+                        "vm_id": "##id-11##"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
@@ -768,13 +850,13 @@
                     "attributes": {
                         "account_id": "##id-1##",
                         "description": "test sg-group",
-                        "id": "##id-11##",
+                        "id": "##id-12##",
                         "inbound_rules": [],
                         "net_id": "",
                         "outbound_rules": [],
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
-                        "security_group_id": "##id-11##",
+                        "security_group_id": "##id-12##",
                         "security_group_name": "SG-TF69",
                         "tag": null,
                         "tags": []
@@ -810,7 +892,7 @@
                                         "link_date": "########",
                                         "state": "attached",
                                         "tags": [],
-                                        "volume_id": "##id-12##"
+                                        "volume_id": "##id-13##"
                                     }
                                 ],
                                 "device_name": "/dev/sda1"
@@ -823,8 +905,8 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-10##",
-                        "image_id": "##id-13##",
+                        "id": "##id-11##",
+                        "image_id": "##id-14##",
                         "is_source_dest_checked": false,
                         "keypair_name": "",
                         "keypair_name_wo": null,
@@ -846,17 +928,17 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-14##",
+                        "reservation_id": "##id-15##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
                         "secure_boot_action": null,
                         "security_group_ids": [
-                            "##id-11##"
+                            "##id-12##"
                         ],
                         "security_group_names": null,
                         "security_groups": [
                             {
-                                "security_group_id": "##id-11##",
+                                "security_group_id": "##id-12##",
                                 "security_group_name": "SG-TF69"
                             }
                         ],
@@ -866,7 +948,7 @@
                         "tags": [],
                         "timeouts": null,
                         "user_data": "",
-                        "vm_id": "##id-10##",
+                        "vm_id": "##id-11##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },

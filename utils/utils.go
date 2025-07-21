@@ -496,3 +496,13 @@ func Map[T any, R any](col []T, fn func(item T) R) []R {
 
 	return result
 }
+
+func ForAll[T any](collection []T, predicate func(item T) bool) bool {
+	for i := range collection {
+		if !predicate(collection[i]) {
+			return false
+		}
+	}
+
+	return true
+}
