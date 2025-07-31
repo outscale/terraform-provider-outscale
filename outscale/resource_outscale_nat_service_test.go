@@ -10,7 +10,7 @@ func TestAccNet_WithNatService_basic(t *testing.T) {
 	resourceName := "outscale_nat_service.nat_service"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV5ProviderFactories: defineTestProviderFactories(),
+		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOAPINatGatewayConfig,

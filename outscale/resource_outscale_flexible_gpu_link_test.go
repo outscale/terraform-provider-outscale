@@ -14,7 +14,7 @@ func TestAccVM_withFlexibleGpuLink_basic(t *testing.T) {
 		omi := os.Getenv("OUTSCALE_IMAGEID")
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { testAccPreCheck(t) },
-			ProtoV5ProviderFactories: defineTestProviderFactories(),
+			ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
 			Steps: []resource.TestStep{
 				{
 					Config: testAccOutscaleFlexibleGpuLinkConfig(omi, "tinav5.c2r2p2", utils.GetRegion()),
