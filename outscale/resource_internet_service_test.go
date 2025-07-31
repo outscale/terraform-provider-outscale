@@ -11,7 +11,7 @@ func TestAccOthers_InternetService_basic(t *testing.T) {
 	resourceName := "outscale_internet_service.internet_service"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV5ProviderFactories: defineTestProviderFactories(),
+		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleInternetServiceConfig(),

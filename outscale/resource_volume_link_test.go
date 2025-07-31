@@ -18,7 +18,7 @@ func TestAccVM_WithVolumeAttachment_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV5ProviderFactories: defineTestProviderFactories(),
+		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOAPIVolumeAttachmentConfig(omi, utils.TestAccVmType, utils.GetRegion(), keypair),
@@ -39,7 +39,7 @@ func TestAccVM_ImportVolumeAttachment_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV5ProviderFactories: defineTestProviderFactories(), CheckDestroy: testAccCheckOAPIVolumeAttachmentDestroy,
+		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(), CheckDestroy: testAccCheckOAPIVolumeAttachmentDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOAPIVolumeAttachmentConfig(omi, utils.TestAccVmType, utils.GetRegion(), keypair),

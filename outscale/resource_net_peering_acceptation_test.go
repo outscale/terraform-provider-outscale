@@ -12,7 +12,7 @@ func TestAccNet_PeeringConnectionAccepter_sameAccount(t *testing.T) {
 	resourceName := "outscale_net_peering_acceptation.peer"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV5ProviderFactories: defineTestProviderFactories(),
+		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleLinPeeringConnectionAccepterSameAccountConfig(utils.GetAccepterOwnerId()),
@@ -30,7 +30,7 @@ func TestAccNet_PeeringConnectionAccepter_importBasic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV5ProviderFactories: defineTestProviderFactories(),
+		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
 
 		Steps: []resource.TestStep{
 			{

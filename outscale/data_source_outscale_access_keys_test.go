@@ -14,7 +14,7 @@ func TestAccOthers_DataSourceAccessKeys_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV5ProviderFactories: defineTestProviderFactories(),
+		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccClientAccessKeysDataSourceBasic(),
@@ -33,7 +33,7 @@ func TestAccOthers_DataSourceAccessKeys_withFilters(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV5ProviderFactories: defineTestProviderFactories(),
+		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccClientAccessKeysDataSourceWithFilters(),

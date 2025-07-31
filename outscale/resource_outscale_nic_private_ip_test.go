@@ -14,7 +14,7 @@ func TestAccNet_NICPrivateIPBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		IDRefreshName:            "outscale_nic.outscale_nic",
-		ProtoV5ProviderFactories: defineTestProviderFactories(),
+		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleNetworkInterfacePrivateIPConfigBasic(utils.GetRegion()),
@@ -33,7 +33,7 @@ func TestAccNet_Import_NIC_PrivateIP_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		IDRefreshName:            "outscale_nic.outscale_nic",
-		ProtoV5ProviderFactories: defineTestProviderFactories(),
+		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleNetworkInterfacePrivateIPConfigBasic(utils.GetRegion()),

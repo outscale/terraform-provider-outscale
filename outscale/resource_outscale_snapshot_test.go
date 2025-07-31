@@ -19,7 +19,7 @@ func TestAccOthers_Snapshot_basic(t *testing.T) {
 	var v oscgo.Snapshot
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV5ProviderFactories: defineTestProviderFactories(),
+		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleSnapshotConfig(utils.GetRegion()),
@@ -37,7 +37,7 @@ func TestAccOthers_Snapshot_withDescription(t *testing.T) {
 	var v oscgo.Snapshot
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV5ProviderFactories: defineTestProviderFactories(),
+		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleSnapshotConfigWithDescription(utils.GetRegion()),
@@ -56,7 +56,7 @@ func TestAccOthers_Snapshot_CopySnapshot(t *testing.T) {
 	var v oscgo.Snapshot
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV5ProviderFactories: defineTestProviderFactories(),
+		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleSnapshotConfigCopySnapshot(utils.GetRegion()),
@@ -76,7 +76,7 @@ func TestAccOthers_Snapshot_UpdateTags(t *testing.T) {
 	//var v oscgo.Snapshot
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV5ProviderFactories: defineTestProviderFactories(),
+		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleSnapshotConfigUpdateTags(region, "Terraform-Snapshot"),
@@ -96,7 +96,7 @@ func TestAccOthers_Snapshot_importBasic(t *testing.T) {
 	var v oscgo.Snapshot
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV5ProviderFactories: defineTestProviderFactories(),
+		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleSnapshotConfig(utils.GetRegion()),

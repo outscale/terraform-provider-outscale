@@ -11,7 +11,7 @@ func TestAccNet_Bacic(t *testing.T) {
 
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
-		ProtoV5ProviderFactories: protoV5ProviderFactories(),
+		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
 		PreCheck:                 func() { TestAccFwPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
@@ -27,7 +27,7 @@ func TestAccNet_UpdateTags(t *testing.T) {
 	t.Parallel()
 	netName := "outscale_net.basic_net"
 	resource.Test(t, resource.TestCase{
-		ProtoV5ProviderFactories: protoV5ProviderFactories(),
+		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
 		PreCheck:                 func() { TestAccFwPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
