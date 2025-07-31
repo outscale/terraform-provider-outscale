@@ -6,9 +6,11 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov5/tf5server"
-	"github.com/hashicorp/terraform-plugin-mux/tf5muxserver"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6/tf6server"
+	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
+	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
+
 	"github.com/outscale/terraform-provider-outscale/outscale"
 	vers "github.com/outscale/terraform-provider-outscale/version"
 )
@@ -18,31 +20,40 @@ var (
 )
 
 func main() {
-
+	ctx := context.Background()
 	var debug bool
 
 	flag.BoolVar(&debug, "debug", false, "set to true to run the provider with support for debuggers like delve")
 	flag.Parse()
 
-	providers := []func() tfprotov5.ProviderServer{
-		providerserver.NewProtocol5(outscale.New(version)),
+	upgradedSdkServer, err := tf5to6server.UpgradeServer(
+		ctx,
 		outscale.Provider().GRPCProvider,
-	}
-
-	//using muxer
-	muxServer, err := tf5muxserver.NewMuxServer(context.Background(), providers...)
-
+	)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	var serveOpts []tf5server.ServeOpt
-
-	if debug {
-		serveOpts = append(serveOpts, tf5server.WithManagedDebug())
+	providers := []func() tfprotov6.ProviderServer{
+		providerserver.NewProtocol6(outscale.New(version)),
+		func() tfprotov6.ProviderServer {
+			return upgradedSdkServer
+		},
 	}
 
-	err = tf5server.Serve(
+	//using muxer
+	muxServer, err := tf6muxserver.NewMuxServer(ctx, providers...)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var serveOpts []tf6server.ServeOpt
+
+	if debug {
+		serveOpts = append(serveOpts, tf6server.WithManagedDebug())
+	}
+
+	err = tf6server.Serve(
 		"registry.terraform.io/providers/outscale/outscale/",
 		muxServer.ProviderServer,
 		serveOpts...,
