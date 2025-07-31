@@ -73,9 +73,9 @@ func testAccDataSourceOutscaleSecurityGroupPublicConfig(rInt int) string {
 		resource "outscale_security_group" "test" {
 			description = "Used in the terraform acceptance tests"
 			security_group_name = "test-%d"
-			tag = {
-				Name = "tf-acctest"
-				Seed = "%d"
+			tags {
+				key = "tf-acctest"
+				value = "%d"
 			}
 		}
 

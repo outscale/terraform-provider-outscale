@@ -83,9 +83,6 @@ func Provider() *schema.Provider {
 		ResourcesMap: map[string]*schema.Resource{
 			"outscale_vm":                                ResourceOutscaleVM(),
 			"outscale_image":                             ResourceOutscaleImage(),
-			"outscale_security_group":                    ResourceOutscaleSecurityGroup(),
-			"outscale_outbound_rule":                     ResourceOutscaleOutboundRule(),
-			"outscale_security_group_rule":               ResourceOutscaleOutboundRule(),
 			"outscale_tag":                               ResourceOutscaleTags(),
 			"outscale_public_ip":                         ResourceOutscalePublicIP(),
 			"outscale_public_ip_link":                    ResourceOutscalePublicIPLink(),
