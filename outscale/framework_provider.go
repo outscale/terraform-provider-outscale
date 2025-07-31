@@ -224,6 +224,8 @@ func (p *frameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		NewResourceLBUVms,
 		NewResourceProject,
 		NewResourceCluster,
+		NewResourceSecurityGroup,
+		NewResourceSecurityGroupRule,
 	}
 }
 
