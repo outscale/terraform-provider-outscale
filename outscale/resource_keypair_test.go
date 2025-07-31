@@ -12,7 +12,7 @@ func TestAccOthers_keypair_basic(t *testing.T) {
 	resourceName := "outscale_keypair.basic_keypair"
 
 	resource.Test(t, resource.TestCase{
-		ProtoV5ProviderFactories: protoV5ProviderFactories(),
+		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
 		PreCheck:                 func() { TestAccFwPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
@@ -37,7 +37,7 @@ func TestAccOthers_keypairUpdateTags(t *testing.T) {
 	tagValue2 := "testACC-02"
 
 	resource.Test(t, resource.TestCase{
-		ProtoV5ProviderFactories: protoV5ProviderFactories(),
+		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
 		PreCheck:                 func() { TestAccFwPreCheck(t) },
 		Steps: []resource.TestStep{
 			{

@@ -16,7 +16,7 @@ func TestAccOthers_SnapshotExportTaskDataSource_basic(t *testing.T) {
 	imageName := acctest.RandomWithPrefix("terraform-export-")
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV5ProviderFactories: defineTestProviderFactories(),
+		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleSnapshotExportTaskDataSourceConfig(imageName, utils.GetRegion()),

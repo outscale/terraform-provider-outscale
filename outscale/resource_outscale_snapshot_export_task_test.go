@@ -26,7 +26,7 @@ func TestAccOthers_SnapshotExportTask_basic(t *testing.T) {
 	}`
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV5ProviderFactories: defineTestProviderFactories(),
+		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleSnapshotExportTaskConfig("", osuBucketNames[0], utils.GetRegion()),
