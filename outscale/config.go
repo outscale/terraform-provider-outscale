@@ -12,6 +12,10 @@ import (
 	"github.com/outscale/terraform-provider-outscale/version"
 )
 
+var (
+	UserAgent = "terraform-provider-outscale/" + version.GetVersion()
+)
+
 // Config ...
 type Config struct {
 	AccessKeyID  string
@@ -86,7 +90,7 @@ func (c *Config) Client() (*OutscaleClient, error) {
 	oscConfig.Host = endpoint
 	oscConfig.HTTPClient = httpClient
 	oscConfig.Debug = true
-	oscConfig.UserAgent = fmt.Sprintf("terraform-provider-outscale/%s", version.GetVersion())
+	oscConfig.UserAgent = UserAgent
 
 	oscClient := oscgo.NewAPIClient(oscConfig)
 	client := &OutscaleClient{
