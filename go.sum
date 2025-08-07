@@ -162,6 +162,8 @@ github.com/outscale/osc-sdk-go/v2 v2.27.0 h1:pk9XJRZJBOshKrVwSY/nLyAyxAIaAyojgcz
 github.com/outscale/osc-sdk-go/v2 v2.27.0/go.mod h1:nyvn+Vss8+N14fSrEJz14DZMr1QTUdtfGkWX0YbVxhs=
 github.com/outscale/osc-sdk-go/v3 v3.0.0-alpha.3 h1:RJQjxcxJdeu9FOFFjhVFOzowdIOzVz7Arhe5yyDQg9A=
 github.com/outscale/osc-sdk-go/v3 v3.0.0-alpha.3/go.mod h1:xmJZQV2q4ccizbV8tIKn/k9f9AL/l9TJT35qpvOZdQg=
+github.com/outscale/osc-sdk-go/v3 v3.0.0-alpha.4 h1:SPBZFwrAEb+SGSTJwM8zB7/iGh59EZUoGV7Dlf47qbI=
+github.com/outscale/osc-sdk-go/v3 v3.0.0-alpha.4/go.mod h1:xmJZQV2q4ccizbV8tIKn/k9f9AL/l9TJT35qpvOZdQg=
 github.com/pjbgf/sha1cd v0.3.0 h1:4D5XXmUUBUl/xQ6IjCkEAbqXskkq/4O7LmGn0AqMDs4=
 github.com/pjbgf/sha1cd v0.3.0/go.mod h1:nZ1rrWOcGJ5uZgEEVL1VUM9iRQiZvWdbZjkKyFzPPsI=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=

@@ -44,13 +44,20 @@ const (
 	ReadDefaultTimeout   time.Duration = 5 * time.Minute
 	UpdateDefaultTimeout time.Duration = 10 * time.Minute
 	DeleteDefaultTimeout time.Duration = 5 * time.Minute
-	TestAccVmType        string        = "tinav6.c2r2p2"
-	LinkedPolicyNotFound string        = "5102"
-	InvalidState         string        = "InvalidState"
-	SuffixConfigFilePath string        = "/.osc/config.json"
-	pathRegex            string        = "^(/[a-zA-Z0-9/_]+/)"
-	pathError            string        = "path must begin and end with '/' and contain only alphanumeric characters and/or '/', '_' characters"
-	VolumeIOPSError      string        = `
+
+	// TODO: move into const.go of package
+	CreateOKSDefaultTimeout time.Duration = 10 * time.Minute
+	ReadOKSDefaultTimeout   time.Duration = 2 * time.Minute
+	UpdateOKSDefaultTimeout time.Duration = 10 * time.Minute
+	DeleteOKSDefaultTimeout time.Duration = 10 * time.Minute
+
+	TestAccVmType        string = "tinav6.c2r2p2"
+	LinkedPolicyNotFound string = "5102"
+	InvalidState         string = "InvalidState"
+	SuffixConfigFilePath string = "/.osc/config.json"
+	pathRegex            string = "^(/[a-zA-Z0-9/_]+/)"
+	pathError            string = "path must begin and end with '/' and contain only alphanumeric characters and/or '/', '_' characters"
+	VolumeIOPSError      string = `
 The "iops" parameter can only be set when creating an "io1" volume.
 Check Outscale API documentation for more details:
 https://docs.outscale.com/en/userguide/About-Volumes.html#_volume_types_and_iops
@@ -505,4 +512,18 @@ func ForAll[T any](collection []T, predicate func(item T) bool) bool {
 	}
 
 	return true
+}
+
+func WaitForResource[T any](ctx context.Context, conf *retry.StateChangeConf) (*T, error) {
+	respRaw, err := conf.WaitForStateContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, ok := respRaw.(*T)
+	if !ok {
+		return nil, fmt.Errorf("unexpected response type: %T", respRaw)
+	}
+
+	return resp, nil
 }
