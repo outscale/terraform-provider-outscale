@@ -31,49 +31,61 @@ type OutscaleClient struct {
 	OSCAPI *oscgo.APIClient
 }
 
-// Client ...
-func (c *Config) Client() (*OutscaleClient, error) {
-	tlsconfig := &tls.Config{InsecureSkipVerify: c.Insecure}
-	cert, err := tls.LoadX509KeyPair(c.X509CertPath, c.X509KeyPath)
+func ClientTLSConfig(insecure bool, certFile string, keyFile string) (tlsconfig *tls.Config) {
+	tlsconfig = &tls.Config{InsecureSkipVerify: insecure}
+	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
 	if err == nil {
 		tlsconfig = &tls.Config{
 			InsecureSkipVerify: false,
 			Certificates:       []tls.Certificate{cert},
 		}
 	}
+	return
+}
 
-	skipClient := &http.Client{
+func ClientHTTPConfig(tlsConfig *tls.Config) (httpClient *http.Client) {
+	httpClient = &http.Client{
 		Transport: &http.Transport{
-			TLSClientConfig: tlsconfig,
+			TLSClientConfig: tlsConfig,
 			Proxy:           http.ProxyFromEnvironment,
 		},
 	}
+	httpClient.Transport = logging.NewSubsystemLoggingHTTPTransport("Outscale", httpClient.Transport)
 
-	skipClient.Transport = logging.NewSubsystemLoggingHTTPTransport("Outscale", skipClient.Transport)
+	return
+}
+
+func ClientEndpointConfig(oscConfig *oscgo.Configuration, endpoint string, region string) string {
+	if endpoint != "" {
+		if strings.Contains(endpoint, "://") {
+			if scheme, host, found := strings.Cut(endpoint, "://"); found {
+				oscConfig.Scheme = scheme
+				endpoint = host
+			}
+		}
+		return endpoint
+	} else {
+		return fmt.Sprintf("api.%s.outscale.com", region)
+	}
+}
+
+// Client ...
+func (c *Config) Client() (*OutscaleClient, error) {
 	endpoint := c.Endpoints["api"]
 	if c.Region == "" && endpoint == "" {
 		return nil, errors.New("'region' or 'endpoints' must be set for provider configuration")
 	}
-
-	basePath := fmt.Sprintf("api.%s.outscale.com", c.Region)
 	oscConfig := oscgo.NewConfiguration()
 
-	if endpoint != "" {
-		basePath = endpoint
-		if strings.Contains(basePath, "://") {
-			if scheme, host, found := strings.Cut(basePath, "://"); found {
-				oscConfig.Scheme = scheme
-				basePath = host
-			}
-		}
-		endpointSplit := strings.Split(basePath, ".")
-		c.Region = endpointSplit[1]
-	}
+	endpoint = ClientEndpointConfig(oscConfig, endpoint, c.Region)
+	c.Endpoints["api"] = endpoint
+	tlsConfig := ClientTLSConfig(c.Insecure, c.X509CertPath, c.X509KeyPath)
+	httpClient := ClientHTTPConfig(tlsConfig)
+	httpClient.Transport = NewTransport(c.AccessKeyID, c.SecretKeyID, c.Region, httpClient.Transport)
 
-	skipClient.Transport = NewTransport(c.AccessKeyID, c.SecretKeyID, c.Region, skipClient.Transport)
+	oscConfig.Host = endpoint
+	oscConfig.HTTPClient = httpClient
 	oscConfig.Debug = true
-	oscConfig.HTTPClient = skipClient
-	oscConfig.Host = basePath
 	oscConfig.UserAgent = fmt.Sprintf("terraform-provider-outscale/%s", version.GetVersion())
 
 	oscClient := oscgo.NewAPIClient(oscConfig)

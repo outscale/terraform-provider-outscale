@@ -15,6 +15,7 @@ var endpointServiceNames []string
 func init() {
 	endpointServiceNames = []string{
 		"api",
+		"oks",
 	}
 }
 
@@ -45,7 +46,12 @@ func Provider() *schema.Provider {
 						"api": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "The Endpoints for API operations.",
+							Description: "The Endpoint for Outscale API operations.",
+						},
+						"oks": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The Endpoint for OKS API operations.",
 						},
 					},
 				},

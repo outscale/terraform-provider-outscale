@@ -48,7 +48,7 @@ func (r *fgpuResource) Configure(_ context.Context, req resource.ConfigureReques
 	if req.ProviderData == nil {
 		return
 	}
-	client, ok := req.ProviderData.(OutscaleClient_fw)
+	client, ok := req.ProviderData.(OutscaleClientFW)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Data Source Configure Type",
