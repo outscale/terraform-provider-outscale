@@ -53,7 +53,7 @@ func (r *resourceRouteTableLink) Configure(_ context.Context, req resource.Confi
 	if req.ProviderData == nil {
 		return
 	}
-	client, ok := req.ProviderData.(OutscaleClient_fw)
+	client, ok := req.ProviderData.(OutscaleClientFW)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Resource Configure Type",
