@@ -41,6 +41,7 @@ type ProviderModel struct {
 
 type Endpoints struct {
 	API types.String `tfsdk:"api"`
+	OKS types.String `tfsdk:"oks"`
 }
 
 func (p *frameworkProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -56,7 +57,11 @@ func (p *frameworkProvider) Schema(ctx context.Context, req provider.SchemaReque
 					Attributes: map[string]schema.Attribute{
 						"api": schema.StringAttribute{
 							Optional:    true,
-							Description: "The Endpoints for API operations.",
+							Description: "The Endpoint for Outscale API operations.",
+						},
+						"oks": schema.StringAttribute{
+							Optional:    true,
+							Description: "The Endpoint for OKS API operations.",
 						},
 					},
 				},
@@ -174,7 +179,7 @@ func (p *frameworkProvider) Configure(ctx context.Context, req provider.Configur
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	client, err := p.Client_fw(ctx, &config, &diags)
+	client, err := p.ClientFW(ctx, &config, &diags)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Create Outscale API Client",

@@ -35,7 +35,7 @@ func (d *dataSourceQuota) Configure(_ context.Context, req datasource.ConfigureR
 	if req.ProviderData == nil {
 		return
 	}
-	client := req.ProviderData.(OutscaleClient_fw)
+	client := req.ProviderData.(OutscaleClientFW)
 	d.Client = client.OSCAPI
 }
 
