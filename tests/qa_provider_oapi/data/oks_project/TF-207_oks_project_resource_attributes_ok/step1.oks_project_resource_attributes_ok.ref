@@ -1,0 +1,40 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "managed",
+            "type": "outscale_oks_project",
+            "name": "project",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "cidr": "10.50.0.0/18",
+                        "created_at": "########",
+                        "description": "",
+                        "disable_api_termination": true,
+                        "id": "##id-0##",
+                        "name": "oks-project-tf-207",
+                        "quirks": null,
+                        "region": "eu-west-2",
+                        "request_id": "########",
+                        "status": "ready",
+                        "tags": {
+                            "name": "TF-207"
+                        },
+                        "timeouts": null,
+                        "updated_at": "########"
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
+                }
+            ]
+        }
+    ],
+    "check_results": "########"
+}

@@ -18,7 +18,7 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.36.1
 	github.com/nav-inc/datetime v0.1.3
 	github.com/outscale/osc-sdk-go/v2 v2.27.0
-	github.com/outscale/osc-sdk-go/v3 v3.0.0-alpha.3
+	github.com/outscale/osc-sdk-go/v3 v3.0.0-alpha.4
 	github.com/spf13/cast v1.6.0
 	github.com/tidwall/gjson v1.18.0
 )

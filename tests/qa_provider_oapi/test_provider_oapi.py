@@ -55,7 +55,9 @@ IGNORE_END_ELEMENTS = ['request_id',
                        'listener_rule_name',
                        'backend_ips',
                        'quota_type',
-                       'used_value'
+                       'used_value',
+                       'created_at',
+                       'updated_at'
                        ]
 IGNORE_TYPE_ELEMENTS = {'outscale_net_peering': 'expiration_date', 'outscale_net_peering_acceptation': 'expiration_date'}
 IGNORE_END_PATHS = []

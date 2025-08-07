@@ -9,10 +9,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
-	sdkv3_client "github.com/outscale/osc-sdk-go/v3/pkg/client"
 	sdkv3_oks "github.com/outscale/osc-sdk-go/v3/pkg/oks"
+	sdkv3_profile "github.com/outscale/osc-sdk-go/v3/pkg/profile"
+	sdkv3_utils "github.com/outscale/osc-sdk-go/v3/pkg/utils"
 	"github.com/outscale/terraform-provider-outscale/utils"
-	"github.com/outscale/terraform-provider-outscale/version"
 	"github.com/tidwall/gjson"
 )
 
@@ -23,7 +23,7 @@ type OutscaleClientFW struct {
 }
 
 func newOKSClientFW(data *ProviderModel) (oksClient *sdkv3_oks.Client, err error) {
-	profile := sdkv3_client.Profile{
+	profile := sdkv3_profile.Profile{
 		AccessKey:      data.AccessKeyId.ValueString(),
 		SecretKey:      data.SecretKeyId.ValueString(),
 		Region:         data.Region.ValueString(),
@@ -31,14 +31,13 @@ func newOKSClientFW(data *ProviderModel) (oksClient *sdkv3_oks.Client, err error
 		X509ClientKey:  data.X509CertPath.ValueString(),
 		TlsSkipVerify:  data.Insecure.ValueBool(),
 		Protocol:       "https",
-		Endpoints: sdkv3_client.Endpoint{
+		Endpoints: sdkv3_profile.Endpoint{
 			OKS: data.Endpoints[0].OKS.ValueString(),
 			API: data.Endpoints[0].API.ValueString(),
 		},
 	}
-	fmt.Println("TOTO" + profile.AccessKey + "," + profile.SecretKey + "," + profile.Region)
 
-	return sdkv3_client.NewOKSClient(sdkv3_client.WithProfile(&profile), sdkv3_client.WithRetry(), sdkv3_client.WithRateLimit())
+	return sdkv3_oks.NewClient(&profile, sdkv3_utils.WithUseragent(UserAgent))
 }
 
 func newAPIClientFW(data *ProviderModel) (apiClient *oscgo.APIClient, err error) {
@@ -56,7 +55,7 @@ func newAPIClientFW(data *ProviderModel) (apiClient *oscgo.APIClient, err error)
 	oscConfig.Debug = true
 	oscConfig.HTTPClient = httpClient
 	oscConfig.Host = endpoint
-	oscConfig.UserAgent = fmt.Sprintf("terraform-provider-outscale/%s", version.GetVersion())
+	oscConfig.UserAgent = UserAgent
 
 	return oscgo.NewAPIClient(oscConfig), nil
 }
