@@ -35,11 +35,11 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `accounts` - TODO_ARRAY
+* `accounts` - The accounts linked to the specified policy.
     * `id` - The ID of the entity.
     * `name` - The name of the entity.
     * `orn` - The OUTSCALE Resource Name (ORN) of the entity. For more information, see [Resource Identifiers](https://docs.outscale.com/en/userguide/Resource-Identifiers.html).
-* `groups` - TODO_ARRAY
+* `groups` - The groups linked to the specified policy.
     * `id` - The ID of the entity.
     * `name` - The name of the entity.
     * `orn` - The OUTSCALE Resource Name (ORN) of the entity. For more information, see [Resource Identifiers](https://docs.outscale.com/en/userguide/Resource-Identifiers.html).
@@ -47,7 +47,7 @@ The following attributes are exported:
 * `items_count` - The number of entities the specified policy is linked to.
 * `max_results_limit` - Indicates maximum results defined for the operation.
 * `max_results_truncated` - If true, indicates whether requested page size is more than allowed.
-* `users` - TODO_ARRAY
+* `users` - The users linked to the specified policy.
     * `id` - The ID of the entity.
     * `name` - The name of the entity.
     * `orn` - The OUTSCALE Resource Name (ORN) of the entity. For more information, see [Resource Identifiers](https://docs.outscale.com/en/userguide/Resource-Identifiers.html).

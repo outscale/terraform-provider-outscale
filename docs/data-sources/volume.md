@@ -42,10 +42,8 @@ The following arguments are supported:
     * `tags` - (Optional) The key/value combinations of the tags associated with the volumes, in the following format: `TAGKEY=TAGVALUE`.
     * `volume_ids` - (Optional) The IDs of the volumes.
     * `volume_sizes` - (Optional) The sizes of the volumes, in gibibytes (GiB).
-    * `volume_states` - (Optional) The states of the volumes (`creating` \| `available` \| `in-use` \| `updating` \| `deleting` \| `error`).
+    * `volume_states` - (Optional) The states of the volumes (`creating` \| `available` \| `in-use` \| `deleting` \| `error`).
     * `volume_types` - (Optional) The types of the volumes (`standard` \| `gp2` \| `io1`).
-* `next_page_token` - (Optional) The token to request the next page of results. Each token refers to a specific page.
-* `results_per_page` - (Optional) The maximum number of logs returned in a single response (between `1` and `1000`, both included). By default, `100`.
 
 ## Attribute Reference
 
@@ -59,10 +57,9 @@ The following attributes are exported:
     * `state` - The state of the attachment of the volume (`attaching` \| `detaching` \| `attached` \| `detached`).
     * `vm_id` - The ID of the VM.
     * `volume_id` - The ID of the volume.
-* `next_page_token` - The token to request the next page of results. Each token refers to a specific page.
 * `size` - The size of the volume, in gibibytes (GiB).
 * `snapshot_id` - The snapshot from which the volume was created.
-* `state` - The state of the volume (`creating` \| `available` \| `in-use` \| `updating` \| `deleting` \| `error`).
+* `state` - The state of the volume (`creating` \| `available` \| `in-use` \| `deleting` \| `error`).
 * `subregion_name` - The Subregion in which the volume was created.
 * `tags` - One or more tags associated with the volume.
     * `key` - The key of the tag, with a minimum of 1 character.

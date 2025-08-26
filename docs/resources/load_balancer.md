@@ -113,7 +113,7 @@ resource "outscale_route_table" "route_table01" {
 
 resource "outscale_route" "route01" {
     gateway_id           = outscale_internet_service.internet_service01.id
-    destination_ip_range = "10.0.0.0/0"
+    destination_ip_range = "0.0.0.0/0"
     route_table_id       = outscale_route_table.route_table01.route_table_id
 }
 
@@ -157,7 +157,8 @@ The following arguments are supported:
     * `backend_protocol` - (Optional) The protocol for routing traffic to backend VMs (`HTTP` \| `HTTPS` \| `TCP` \| `SSL`).
     * `load_balancer_port` - (Optional) The port on which the load balancer is listening (between `1` and `65535`, both included).
     * `load_balancer_protocol` - (Optional) The routing protocol (`HTTP` \| `HTTPS` \| `TCP` \| `SSL`).
-    * `server_certificate_id` - (Optional) The OUTSCALE Resource Name (ORN) of the server certificate. For more information, see [Resource Identifiers > OUTSCALE Resource Names (ORNs)](https://docs.outscale.com/en/userguide/Resource-Identifiers.html#_outscale_resource_names_orns).
+    * `server_certificate_id` - (Optional) The OUTSCALE Resource Name (ORN) of the server certificate. For more information, see [Resource Identifiers > OUTSCALE Resource Names (ORNs)](https://docs.outscale.com/en/userguide/Resource-Identifiers.html#_outscale_resource_names_orns).<br/>
+This parameter is required for `HTTPS` and `SSL` protocols.
 * `load_balancer_name` - (Required) The unique name of the load balancer, with a maximum length of 32 alphanumeric characters and dashes (`-`). This name must not start or end with a dash.
 * `load_balancer_type` - (Optional) The type of load balancer: `internet-facing` or `internal`. Use this parameter only for load balancers in a Net.
 * `public_ip` - (Optional) (internet-facing only) The public IP you want to associate with the load balancer. If not specified, a public IP owned by 3DS OUTSCALE is associated.
@@ -186,7 +187,7 @@ The following attributes are exported:
 * `health_check` - Information about the health check configuration.
     * `check_interval` - The number of seconds between two requests (between `5` and `600` both included).
     * `healthy_threshold` - The number of consecutive successful requests before considering the VM as healthy (between `2` and `10` both included).
-    * `path` - If you use the HTTP or HTTPS protocols, the request URL path.
+    * `path` - If you use the HTTP or HTTPS protocols, the request URL path. Always starts with a slash (`/`).
     * `port` - The port number (between `1` and `65535`, both included).
     * `protocol` - The protocol for the URL of the VM (`HTTP` \| `HTTPS` \| `TCP` \| `SSL`).
     * `timeout` - The maximum waiting time for a response before considering the VM as unhealthy, in seconds (between `2` and `60` both included).

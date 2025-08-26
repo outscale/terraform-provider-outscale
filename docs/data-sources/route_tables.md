@@ -50,14 +50,11 @@ The following arguments are supported:
     * `tag_keys` - (Optional) The keys of the tags associated with the route tables.
     * `tag_values` - (Optional) The values of the tags associated with the route tables.
     * `tags` - (Optional) The key/value combinations of the tags associated with the route tables, in the following format: `TAGKEY=TAGVALUE`.
-* `next_page_token` - (Optional) The token to request the next page of results. Each token refers to a specific page.
-* `results_per_page` - (Optional) The maximum number of logs returned in a single response (between `1` and `1000`, both included). By default, `100`.
 
 ## Attribute Reference
 
 The following attributes are exported:
 
-* `next_page_token` - The token to request the next page of results. Each token refers to a specific page.
 * `route_tables` - Information about one or more route tables.
     * `link_route_tables` - One or more associations between the route table and Subnets.
         * `link_route_table_id` - The ID of the association between the route table and the Net or Subnet.

@@ -42,7 +42,7 @@ The following attributes are exported:
     * `osu_prefix` - The prefix for the key of the OOS object corresponding to the snapshot.
 * `progress` - The progress of the snapshot export task, as a percentage.
 * `snapshot_id` - The ID of the snapshot to be exported.
-* `state` - The state of the snapshot export task (`pending` \| `active` \| `completed` \| `failed`).
+* `state` - The state of the snapshot export task (`pending` \| `active` \| `completed` \| `cancelled` \| `failed`).
 * `tags` - One or more tags associated with the snapshot export task.
     * `key` - The key of the tag, with a minimum of 1 character.
     * `value` - The value of the tag, between 0 and 255 characters.
