@@ -39,6 +39,7 @@ The following arguments are supported:
     * `block_device_mapping_link_dates` - (Optional) The link dates for the BSU volumes mapped to the VMs (for example, `2016-01-23T18:45:30.000Z`).
     * `block_device_mapping_states` - (Optional) The states for the BSU volumes (`attaching` \| `attached` \| `detaching` \| `detached`).
     * `block_device_mapping_volume_ids` - (Optional) The volume IDs of the BSU volumes.
+    * `boot_modes` - (Optional) The boot modes of the VMs. Possible values: `uefi` | `legacy`.
     * `client_tokens` - (Optional) The idempotency tokens provided when launching the VMs.
     * `creation_dates` - (Optional) The dates when the VMs were launched.
     * `image_ids` - (Optional) The IDs of the OMIs used to launch the VMs.
@@ -97,15 +98,14 @@ The following arguments are supported:
     * `vm_state_codes` - (Optional) The state codes of the VMs: `-1` (quarantine), `0` (pending), `16` (running), `32` (shutting-down), `48` (terminated), `64` (stopping), and `80` (stopped).
     * `vm_state_names` - (Optional) The state names of the VMs (`pending` \| `running` \| `stopping` \| `stopped` \| `shutting-down` \| `terminated` \| `quarantine`).
     * `vm_types` - (Optional) The VM types (for example, t2.micro). For more information, see [VM Types](https://docs.outscale.com/en/userguide/VM-Types.html).
-* `next_page_token` - (Optional) The token to request the next page of results. Each token refers to a specific page.
-* `results_per_page` - (Optional) The maximum number of logs returned in a single response (between `1` and `1000`, both included). By default, `100`.
 
 ## Attribute Reference
 
 The following attributes are exported:
 
-* `next_page_token` - The token to request the next page of results. Each token refers to a specific page.
 * `vms` - Information about one or more VMs.
+    * `actions_on_next_boot` - The action to perform on the next boot of the VM.
+        * `secure_boot` - One action to perform on the next boot of the VM. For more information, see [About Secure Boot](https://docs.outscale.com/en/userguide/About-Secure-Boot.html#_secure_boot_actions).
     * `architecture` - The architecture of the VM (`i386` \| `x86_64`).
     * `block_device_mappings_created` - The block device mapping of the VM.
         * `bsu` - Information about the created BSU volume.
@@ -114,6 +114,7 @@ The following attributes are exported:
             * `state` - The state of the volume.
             * `volume_id` - The ID of the volume.
         * `device_name` - The name of the device.
+    * `boot_mode` - The boot mode of the VM. Possible values: `uefi` | `legacy`.
     * `client_token` - The idempotency token provided when launching the VM.
     * `creation_date` - The date and time (UTC) at which the VM was created.
     * `deletion_protection` - If true, you cannot delete the VM unless you change this parameter back to false.

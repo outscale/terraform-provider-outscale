@@ -65,7 +65,7 @@ The following attributes are exported:
     * `volume_id` - The ID of the volume.
 * `size` - The size of the volume, in gibibytes (GiB).
 * `snapshot_id` - The snapshot from which the volume was created.
-* `state` - The state of the volume (`creating` \| `available` \| `in-use` \| `updating` \| `deleting` \| `error`).
+* `state` - The state of the volume (`creating` \| `available` \| `in-use` \| `deleting` \| `error`).
 * `subregion_name` - The Subregion in which the volume was created.
 * `tags` - One or more tags associated with the volume.
     * `key` - The key of the tag, with a minimum of 1 character.

@@ -41,6 +41,7 @@ The following arguments are supported:
     * `block_device_mapping_snapshot_ids` - (Optional) The IDs of the snapshots used to create the volumes.
     * `block_device_mapping_volume_sizes` - (Optional) The sizes of the volumes, in gibibytes (GiB).
     * `block_device_mapping_volume_types` - (Optional) The types of volumes (`standard` \| `gp2` \| `io1`).
+    * `boot_modes` - (Optional) The boot modes compatible with the OMIs. Possible values: `uefi` | `legacy`.
     * `descriptions` - (Optional) The descriptions of the OMIs, provided when they were created.
     * `file_locations` - (Optional) The locations of the buckets where the OMI files are stored.
     * `hypervisors` - (Optional) The hypervisor type of the OMI (always `xen`).
@@ -52,13 +53,12 @@ The following arguments are supported:
     * `product_codes` - (Optional) The product codes associated with the OMI.
     * `root_device_names` - (Optional) The name of the root device. This value must be /dev/sda1.
     * `root_device_types` - (Optional) The types of root device used by the OMIs (`bsu` or `ebs`).
+    * `secure_boot` - (Optional) Whether secure boot is activated or not.
     * `states` - (Optional) The states of the OMIs (`pending` \| `available` \| `failed`).
     * `tag_keys` - (Optional) The keys of the tags associated with the OMIs.
     * `tag_values` - (Optional) The values of the tags associated with the OMIs.
     * `tags` - (Optional) The key/value combinations of the tags associated with the OMIs, in the following format: `TAGKEY=TAGVALUE`.
     * `virtualization_types` - (Optional) The virtualization types (always `hvm`).
-* `next_page_token` - (Optional) The token to request the next page of results. Each token refers to a specific page.
-* `results_per_page` - (Optional) The maximum number of logs returned in a single response (between `1` and `1000`, both included). By default, `100`.
 
 ## Attribute Reference
 
@@ -80,6 +80,7 @@ If you specify a snapshot ID but no volume size, the volume is created with a si
 For more information about volume types, see [About Volumes > Volume Types and IOPS](https://docs.outscale.com/en/userguide/About-Volumes.html#_volume_types_and_iops).
         * `device_name` - The device name for the volume. For a root device, you must use `/dev/sda1`. For other volumes, you must use `/dev/sdX`, `/dev/sdXX`, `/dev/xvdX`, or `/dev/xvdXX` (where the first `X` is a letter between `b` and `z`, and the second `X` is a letter between `a` and `z`).
         * `virtual_device_name` - The name of the virtual device (`ephemeralN`).
+    * `boot_modes` - The boot modes compatible with the OMI. Possible values: `uefi` | `legacy`.
     * `creation_date` - The date and time (UTC) at which the OMI was created.
     * `description` - The description of the OMI.
     * `file_location` - The location from which the OMI files were created.
@@ -94,6 +95,7 @@ For more information about volume types, see [About Volumes > Volume Types and I
     * `product_codes` - The product codes associated with the OMI.
     * `root_device_name` - The name of the root device.
     * `root_device_type` - The type of root device used by the OMI (always `bsu`).
+    * `secure_boot` - Whether secure boot is activated or not.
     * `state` - The state of the OMI (`pending` \| `available` \| `failed`).
     * `state_comment` - Information about the change of state.
         * `state_code` - The code of the change of state.
@@ -101,4 +103,3 @@ For more information about volume types, see [About Volumes > Volume Types and I
     * `tags` - One or more tags associated with the OMI.
         * `key` - The key of the tag, with a minimum of 1 character.
         * `value` - The value of the tag, between 0 and 255 characters.
-* `next_page_token` - The token to request the next page of results. Each token refers to a specific page.

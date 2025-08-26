@@ -42,8 +42,6 @@ The following arguments are supported:
     * `tag_keys` - (Optional) The keys of the tags associated with the Net peerings.
     * `tag_values` - (Optional) The values of the tags associated with the Net peerings.
     * `tags` - (Optional) The key/value combinations of the tags associated with the Net peerings, in the following format: `TAGKEY=TAGVALUE`.
-* `next_page_token` - (Optional) The token to request the next page of results. Each token refers to a specific page.
-* `results_per_page` - (Optional) The maximum number of logs returned in a single response (between `1` and `1000`, both included). By default, `100`.
 
 ## Attribute Reference
 
@@ -55,7 +53,6 @@ The following attributes are exported:
     * `net_id` - The ID of the accepter Net.
 * `expiration_date` - The date and time (UTC) at which the Net peerings expire.
 * `net_peering_id` - The ID of the Net peering.
-* `next_page_token` - The token to request the next page of results. Each token refers to a specific page.
 * `source_net` - Information about the source Net.
     * `account_id` - The account ID of the owner of the source Net.
     * `ip_range` - The IP range for the source Net, in CIDR notation (for example, `10.0.0.0/16`).

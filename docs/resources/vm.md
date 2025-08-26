@@ -300,7 +300,7 @@ resource "outscale_security_group" "security_group01" {
 resource "outscale_vm" "outscale_vm_TF206" {
   image_id            = var.image_id
   vm_type             = var.vm_type
-  keypair_name_wo     = ephemeral.outscale_keypair.keypair_ephemeral.keypair_name
+  keypair_name_wo     = ephemeral.outscale_keypair.ephemeral_keypair.keypair_name
   security_group_ids  = [outscale_security_group.security_group01.security_group_id] 
 }
 ```
@@ -319,7 +319,7 @@ The following arguments are supported:
           * `key`- The key of the tag with a minimum of 1 character.
           * `value` - The value of the tag, between 0 and 255 characters.
 
-* `boot_mode` - (Optional) Information about the boot mode of the VM (`legacy` | `uefi`).
+* `boot_mode` - (Optional) The boot mode of the VM. Possible values: `uefi` | `legacy`.
 * `client_token` - (Optional) A unique identifier which enables you to manage the idempotency.
 * `deletion_protection` - (Optional) If true, you cannot delete the VM unless you change this parameter back to false.
 * `get_admin_password` - (Optional) (Windows VM only) If true, waits for the administrator password of the VM to become available in order to retrieve the VM. The password is exported to the `admin_password` attribute.
@@ -372,8 +372,7 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `actions_on_next_boot` - The action to perform on the next boot of the VM.
-    * `secure_boot` - One action to perform on the next boot of the VM (`enable` | `disable` | `setup-mode` |`none`). For more information, see [About Secure Boot](https://docs.outscale.com/en/userguide/About-Secure-Boot.html#_secure_boot_actions).
-
+    * `secure_boot` - One action to perform on the next boot of the VM. For more information, see [About Secure Boot](https://docs.outscale.com/en/userguide/About-Secure-Boot.html#_secure_boot_actions).
 * `admin_password` - (Windows VM only) The administrator password of the VM. This password is encrypted with the keypair you specified when launching the VM and encoded in Base64. You need to wait about 10 minutes after launching the VM to be able to retrieve this password.<br />If `get_admin_password` is false or not specified, the VM resource is created without the `admin_password` attribute. Once `admin_password` is available, it will appear in the Terraform state after the next **refresh** or **apply** command.<br />If `get_admin_password` is true, the VM resource itself is not considered created until the `admin_password` attribute is available.<br />Note also that after the first reboot of the VM, this attribute can no longer be retrieved. For more information on how to use this password to connect to the VM, see [Accessing a Windows VM](https://docs.outscale.com/en/userguide/Accessing-a-Windows-VM.html).
 * `architecture` - The architecture of the VM (`i386` \| `x86_64`).
 * `block_device_mappings_created` - The block device mapping of the VM.

@@ -38,8 +38,6 @@ The following arguments are supported:
     * `tag_keys` - (Optional) The keys of the tags associated with the DHCP options sets.
     * `tag_values` - (Optional) The values of the tags associated with the DHCP options sets.
     * `tags` - (Optional) The key/value combinations of the tags associated with the DHCP options sets, in the following format: `TAGKEY=TAGVALUE`.
-* `next_page_token` - (Optional) The token to request the next page of results. Each token refers to a specific page.
-* `results_per_page` - (Optional) The maximum number of logs returned in a single response (between `1` and `1000`, both included). By default, `100`.
 
 ## Attribute Reference
 
@@ -50,7 +48,6 @@ The following attributes are exported:
 * `domain_name_servers` - One or more IPs for the domain name servers.
 * `domain_name` - The domain name.
 * `log_servers` - One or more IPs for the log servers.
-* `next_page_token` - The token to request the next page of results. Each token refers to a specific page.
 * `ntp_servers` - One or more IPs for the NTP servers.
 * `tags` - One or more tags associated with the DHCP options set.
     * `key` - The key of the tag, with a minimum of 1 character.

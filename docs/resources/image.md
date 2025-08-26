@@ -84,6 +84,7 @@ If you specify a snapshot ID but no volume size, the volume is created with a si
 For more information about volume types, see [About Volumes > Volume Types and IOPS](https://docs.outscale.com/en/userguide/About-Volumes.html#_volume_types_and_iops).
     * `device_name` - (Optional) The device name for the volume. For a root device, you must use `/dev/sda1`. For other volumes, you must use `/dev/sdX`, `/dev/sdXX`, `/dev/xvdX`, or `/dev/xvdXX` (where the first `X` is a letter between `b` and `z`, and the second `X` is a letter between `a` and `z`).
     * `virtual_device_name` - (Optional) The name of the virtual device (`ephemeralN`).
+* `boot_modes` - (Optional) The boot modes compatible with the OMI. Possible values: `uefi` | `legacy`.
 * `description` - (Optional) A description for the new OMI.
 * `file_location` - (Optional) **(required) When registering from a bucket by using a manifest file:** The pre-signed URL of the manifest file for the OMI you want to register. For more information, see [Creating a Pre-signed URL](https://docs.outscale.com/en/userguide/Creating-a-Pre-Signed-URL.html).
 * `image_name` - (Optional) A unique name for the new OMI.<br />
@@ -117,6 +118,7 @@ If you specify a snapshot ID but no volume size, the volume is created with a si
 For more information about volume types, see [About Volumes > Volume Types and IOPS](https://docs.outscale.com/en/userguide/About-Volumes.html#_volume_types_and_iops).
     * `device_name` - The device name for the volume. For a root device, you must use `/dev/sda1`. For other volumes, you must use `/dev/sdX`, `/dev/sdXX`, `/dev/xvdX`, or `/dev/xvdXX` (where the first `X` is a letter between `b` and `z`, and the second `X` is a letter between `a` and `z`).
     * `virtual_device_name` - The name of the virtual device (`ephemeralN`).
+* `boot_modes` - The boot modes compatible with the OMI. Possible values: `uefi` | `legacy`.
 * `creation_date` - The date and time (UTC) at which the OMI was created.
 * `description` - The description of the OMI.
 * `file_location` - The location from which the OMI files were created.
@@ -131,6 +133,7 @@ For more information about volume types, see [About Volumes > Volume Types and I
 * `product_codes` - The product codes associated with the OMI.
 * `root_device_name` - The name of the root device.
 * `root_device_type` - The type of root device used by the OMI (always `bsu`).
+* `secure_boot` - Whether secure boot is activated or not.
 * `state_comment` - Information about the change of state.
     * `state_code` - The code of the change of state.
     * `state_message` - A message explaining the change of state.

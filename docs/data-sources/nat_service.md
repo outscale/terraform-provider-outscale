@@ -36,8 +36,6 @@ The following arguments are supported:
     * `tag_keys` - (Optional) The keys of the tags associated with the NAT services.
     * `tag_values` - (Optional) The values of the tags associated with the NAT services.
     * `tags` - (Optional) The key/value combinations of the tags associated with the NAT services, in the following format: `TAGKEY=TAGVALUE`.
-* `next_page_token` - (Optional) The token to request the next page of results. Each token refers to a specific page.
-* `results_per_page` - (Optional) The maximum number of logs returned in a single response (between `1` and `1000`, both included). By default, `100`.
 
 ## Attribute Reference
 
@@ -45,7 +43,6 @@ The following attributes are exported:
 
 * `nat_service_id` - The ID of the NAT service.
 * `net_id` - The ID of the Net in which the NAT service is.
-* `next_page_token` - The token to request the next page of results. Each token refers to a specific page.
 * `public_ips` - Information about the public IP or IPs associated with the NAT service.
     * `public_ip` - The public IP associated with the NAT service.
     * `public_ip_id` - The allocation ID of the public IP associated with the NAT service.

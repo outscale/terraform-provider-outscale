@@ -114,7 +114,7 @@ The following arguments are supported:
 * `health_check` - Information about the health check configuration.
     * `check_interval` - (Optional) The number of seconds between two requests (between `5` and `600` both included).
     * `healthy_threshold` - (Optional) The number of consecutive successful requests before considering the VM as healthy (between `2` and `10` both included).
-    * `path` - (Optional) If you use the HTTP or HTTPS protocols, the request URL path.
+    * `path` - (Optional) If you use the HTTP or HTTPS protocols, the request URL path. Always starts with a slash (`/`).
     * `port` - (Optional) The port number (between `1` and `65535`, both included).
     * `protocol` - (Optional) The protocol for the URL of the VM (`HTTP` \| `HTTPS` \| `TCP` \| `SSL`).
     * `timeout` - (Optional) The maximum waiting time for a response before considering the VM as unhealthy, in seconds (between `2` and `60` both included).
@@ -141,7 +141,7 @@ The following attributes are exported:
 * `health_check` - Information about the health check configuration.
     * `check_interval` - The number of seconds between two requests (between `5` and `600` both included).
     * `healthy_threshold` - The number of consecutive successful requests before considering the VM as healthy (between `2` and `10` both included).
-    * `path` - If you use the HTTP or HTTPS protocols, the request URL path.
+    * `path` - If you use the HTTP or HTTPS protocols, the request URL path. Always starts with a slash (`/`).
     * `port` - The port number (between `1` and `65535`, both included).
     * `protocol` - The protocol for the URL of the VM (`HTTP` \| `HTTPS` \| `TCP` \| `SSL`).
     * `timeout` - The maximum waiting time for a response before considering the VM as unhealthy, in seconds (between `2` and `60` both included).
