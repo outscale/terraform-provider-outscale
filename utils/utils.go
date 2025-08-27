@@ -20,6 +20,7 @@ import (
 	set "github.com/deckarep/golang-set/v2"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	fw_resource "github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -46,7 +47,7 @@ const (
 	DeleteDefaultTimeout time.Duration = 5 * time.Minute
 
 	// TODO: move into const.go of package
-	CreateOKSDefaultTimeout time.Duration = 10 * time.Minute
+	CreateOKSDefaultTimeout time.Duration = 15 * time.Minute
 	ReadOKSDefaultTimeout   time.Duration = 2 * time.Minute
 	UpdateOKSDefaultTimeout time.Duration = 10 * time.Minute
 	DeleteOKSDefaultTimeout time.Duration = 10 * time.Minute
@@ -526,4 +527,28 @@ func WaitForResource[T any](ctx context.Context, conf *retry.StateChangeConf) (*
 	}
 
 	return resp, nil
+}
+
+func CheckDiags[T *fw_resource.CreateResponse | *fw_resource.UpdateResponse | *fw_resource.DeleteResponse | *fw_resource.ReadResponse](resp T, diags diag.
+	Diagnostics) bool {
+	switch r := any(resp).(type) {
+	case *fw_resource.DeleteResponse:
+		r.Diagnostics.Append(diags...)
+		return r.Diagnostics.HasError()
+	case *fw_resource.ReadResponse:
+		r.Diagnostics.Append(diags...)
+		return r.Diagnostics.HasError()
+	case *fw_resource.UpdateResponse:
+		r.Diagnostics.Append(diags...)
+		return r.Diagnostics.HasError()
+	case *fw_resource.CreateResponse:
+		r.Diagnostics.Append(diags...)
+		return r.Diagnostics.HasError()
+	default:
+		return true
+	}
+}
+
+func IsSet(v attr.Value) bool {
+	return !v.IsNull() && !v.IsUnknown()
 }
