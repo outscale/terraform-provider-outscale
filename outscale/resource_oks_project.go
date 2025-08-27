@@ -175,7 +175,7 @@ func (r *oksProjectResource) Create(ctx context.Context, req resource.CreateRequ
 	if !data.DisableApiTermination.IsUnknown() {
 		input.DisableApiTermination = data.DisableApiTermination.ValueBoolPointer()
 	}
-	if !data.Quirks.IsUnknown() && !data.Quirks.IsNull() {
+	if utils.IsSet(data.Quirks) {
 		var quirks []string
 		resp.Diagnostics.Append(data.Quirks.ElementsAs(ctx, quirks, false)...)
 		if resp.Diagnostics.HasError() {

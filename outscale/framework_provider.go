@@ -222,6 +222,7 @@ func (p *frameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		NewResourceVolumeLink,
 		NewResourceLBUVms,
 		NewResourceProject,
+		NewResourceCluster,
 	}
 }
 
