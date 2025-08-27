@@ -1,3 +1,13 @@
+## [1.2.1] - 2025-08-27
+### 🐛 Bug Fixes
+- 🐛 Add missing boot modes attributes for the `image` resource
+- 🐛 Add missing secure boot and boot modes filters for the `image` datasource
+
+### 🔧 Improvements
+- 🔒 Remove CodeQL warnings
+
+---
+
 ## [1.2.0] - 2025-06-16
 ### 🐛 Bug Fixes
 - 🐛 Fix handling of empty datasource for net_peering filter. ([#561](https://github.com/outscale/terraform-provider-outscale/issues/561))
@@ -993,4 +1003,3 @@ NOTES:
 ------
 
 One resource/datasource delivery for initial Hashicorp review.
-
