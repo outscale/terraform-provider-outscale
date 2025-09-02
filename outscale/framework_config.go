@@ -36,8 +36,9 @@ func newOKSClientFW(data *ProviderModel) (oksClient *sdkv3_oks.Client, err error
 			API: data.Endpoints[0].API.ValueString(),
 		},
 	}
+	logger := sdkv3_utils.WithLogging(utils.NewTflogWrapper())
 
-	return sdkv3_oks.NewClient(&profile, sdkv3_utils.WithUseragent(UserAgent))
+	return sdkv3_oks.NewClient(&profile, sdkv3_utils.WithUseragent(UserAgent), logger)
 }
 
 func newAPIClientFW(data *ProviderModel) (apiClient *oscgo.APIClient, err error) {

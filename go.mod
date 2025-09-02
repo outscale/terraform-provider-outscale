@@ -18,7 +18,7 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.36.1
 	github.com/nav-inc/datetime v0.1.3
 	github.com/outscale/osc-sdk-go/v2 v2.27.0
-	github.com/outscale/osc-sdk-go/v3 v3.0.0-alpha.4
+	github.com/outscale/osc-sdk-go/v3 v3.0.0-alpha.5
 	github.com/spf13/cast v1.6.0
 	github.com/tidwall/gjson v1.18.0
 )
@@ -29,6 +29,7 @@ require (
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
+	github.com/aws/smithy-go/aws-http-auth v1.0.0 // indirect
 	github.com/benbjohnson/clock v1.3.0 // indirect
 	github.com/cloudflare/circl v1.6.1 // indirect
 	github.com/fatih/color v1.16.0 // indirect
@@ -62,7 +63,6 @@ require (
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/oapi-codegen/runtime v1.1.2 // indirect
 	github.com/oklog/run v1.1.0 // indirect
-	github.com/relvacode/iso8601 v1.6.0 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
