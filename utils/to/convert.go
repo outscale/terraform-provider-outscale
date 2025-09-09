@@ -1,4 +1,4 @@
-package conv
+package to
 
 import (
 	"context"
@@ -7,9 +7,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
-func ToString[T ~string | *string](v T) types.String {
+func String[T ~string | *string](v T) types.String {
 	switch v := any(v).(type) {
 	case string:
 		return types.StringValue(v)
@@ -23,7 +24,7 @@ func ToString[T ~string | *string](v T) types.String {
 	}
 }
 
-func ToInt64[T ~int | ~int64 | *int | *int64](v T) types.Int64 {
+func Int64[T ~int | ~int64 | *int | *int64](v T) types.Int64 {
 	switch v := any(v).(type) {
 	case int:
 		return types.Int64Value(int64(v))
@@ -44,7 +45,7 @@ func ToInt64[T ~int | ~int64 | *int | *int64](v T) types.Int64 {
 	}
 }
 
-func ToBool[T ~bool | *bool](v T) types.Bool {
+func Bool[T ~bool | *bool](v T) types.Bool {
 	switch v := any(v).(type) {
 	case bool:
 		return types.BoolValue(v)
@@ -58,7 +59,7 @@ func ToBool[T ~bool | *bool](v T) types.Bool {
 	}
 }
 
-func ToFloat64[T ~float64 | *float64](v T) types.Float64 {
+func Float64[T ~float64 | *float64](v T) types.Float64 {
 	switch v := any(v).(type) {
 	case float64:
 		return types.Float64Value(v)
@@ -72,7 +73,7 @@ func ToFloat64[T ~float64 | *float64](v T) types.Float64 {
 	}
 }
 
-func ToRFC3339[T time.Time | *time.Time](v T) timetypes.RFC3339 {
+func RFC3339[T time.Time | *time.Time](v T) timetypes.RFC3339 {
 	switch v := any(v).(type) {
 	case time.Time:
 		return timetypes.NewRFC3339TimeValue(v)
@@ -86,7 +87,13 @@ func ToRFC3339[T time.Time | *time.Time](v T) timetypes.RFC3339 {
 	}
 }
 
-func ToSlice[T any, C types.List | types.Set](ctx context.Context, v C) ([]T, diag.Diagnostics) {
+func Obj[T any](ctx context.Context, obj basetypes.ObjectValue) (T, diag.Diagnostics) {
+	var res T
+	diags := obj.As(ctx, &res, basetypes.ObjectAsOptions{})
+	return res, diags
+}
+
+func Slice[T any, C types.List | types.Set](ctx context.Context, v C) ([]T, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	switch collection := any(v).(type) {
