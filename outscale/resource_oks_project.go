@@ -169,7 +169,7 @@ func (r *oksProjectResource) Create(ctx context.Context, req resource.CreateRequ
 		Region: data.Region.ValueString(),
 	}
 
-	if !data.Description.IsUnknown() {
+	if utils.IsSet(data.Description) {
 		input.Description = data.Description.ValueStringPointer()
 	}
 	if !data.DisableApiTermination.IsUnknown() {

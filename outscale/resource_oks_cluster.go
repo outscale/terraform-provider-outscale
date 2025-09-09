@@ -17,12 +17,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	sdkv3_oks "github.com/outscale/osc-sdk-go/v3/pkg/oks"
 	"github.com/outscale/terraform-provider-outscale/fwvalidators"
 	"github.com/outscale/terraform-provider-outscale/utils"
-	"github.com/outscale/terraform-provider-outscale/utils/conv"
+	"github.com/outscale/terraform-provider-outscale/utils/to"
 )
 
 var (
@@ -317,14 +316,14 @@ func (r *oksClusterResource) expandOKSAutoMaintenances(data *MaintenanceWindowMo
 			hours := int(data.DurationHours.ValueInt64())
 			auto.DurationHours = &hours
 		}
-		if !data.Enabled.IsUnknown() {
+		if utils.IsSet(data.Enabled) {
 			auto.Enabled = data.Enabled.ValueBoolPointer()
 		}
 		if utils.IsSet(data.StartHour) {
 			hour := int(data.StartHour.ValueInt64())
 			auto.StartHour = &hour
 		}
-		if !data.Tz.IsUnknown() {
+		if utils.IsSet(data.Tz) {
 			auto.Tz = data.Tz.ValueStringPointer()
 		}
 		if utils.IsSet(data.WeekDay) {
@@ -336,14 +335,14 @@ func (r *oksClusterResource) expandOKSAutoMaintenances(data *MaintenanceWindowMo
 
 func (r *oksClusterResource) expandOKSAdmissionFlags(ctx context.Context, data AdmissionFlagsModel) (admissionFlags sdkv3_oks.AdmissionFlagsInput, diags diag.Diagnostics) {
 	if utils.IsSet(data.DisableAdmissionPlugins) {
-		disablePlugins, diags := conv.ToSlice[string](ctx, data.DisableAdmissionPlugins)
+		disablePlugins, diags := to.Slice[string](ctx, data.DisableAdmissionPlugins)
 		if diags.HasError() {
 			return admissionFlags, diags
 		}
 		admissionFlags.DisableAdmissionPlugins = &disablePlugins
 	}
 	if utils.IsSet(data.EnableAdmissionPlugins) {
-		enablePlugins, diags := conv.ToSlice[string](ctx, data.EnableAdmissionPlugins)
+		enablePlugins, diags := to.Slice[string](ctx, data.EnableAdmissionPlugins)
 		if diags.HasError() {
 			return admissionFlags, diags
 		}
@@ -377,20 +376,23 @@ func (r *oksClusterResource) Create(ctx context.Context, req resource.CreateRequ
 	input.AdminWhitelist = whitelist
 
 	if utils.IsSet(data.AutoMaintenances) {
-		var auto AutoMaintenancesModel
-		resp.Diagnostics.Append(data.AutoMaintenances.As(ctx, &auto, basetypes.ObjectAsOptions{})...)
-		if resp.Diagnostics.HasError() {
+		auto, diags := to.Obj[AutoMaintenancesModel](ctx, data.AutoMaintenances)
+		if utils.CheckDiags(resp, diags) {
 			return
 		}
+		// resp.Diagnostics.Append(data.AutoMaintenances.As(ctx, &auto, basetypes.ObjectAsOptions{})...)
+		// if resp.Diagnostics.HasError() {
+		// 	return
+		// }
 
 		input.AutoMaintenances.MinorUpgradeMaintenance = r.expandOKSAutoMaintenances(auto.MinorUpgradeMaintenance)
 		input.AutoMaintenances.PatchUpgradeMaintenance = r.expandOKSAutoMaintenances(auto.PatchUpgradeMaintenance)
 	}
 
-	if !data.Description.IsUnknown() {
+	if utils.IsSet(data.Description) {
 		input.Description = data.Description.ValueStringPointer()
 	}
-	if !data.CpMultiAz.IsUnknown() {
+	if utils.IsSet(data.CpMultiAz) {
 		input.CpMultiAz = data.CpMultiAz.ValueBoolPointer()
 	}
 	if utils.IsSet(data.CpSubregions) {
@@ -401,19 +403,21 @@ func (r *oksClusterResource) Create(ctx context.Context, req resource.CreateRequ
 		}
 		input.CpSubregions = &sub
 	}
-	if !data.AdminLbu.IsUnknown() {
+	if utils.IsSet(data.AdminLbu) {
 		input.AdminLbu = data.AdminLbu.ValueBoolPointer()
 	}
 	if utils.IsSet(data.AdmissionFlags) {
-		var admissionModel AdmissionFlagsModel
-		resp.Diagnostics.Append(data.AdmissionFlags.As(ctx, &admissionModel, basetypes.ObjectAsOptions{})...)
-		if resp.Diagnostics.HasError() {
+		admissionModel, diags := to.Obj[AdmissionFlagsModel](ctx, data.AdmissionFlags)
+		if utils.CheckDiags(resp, diags) {
 			return
 		}
+		// resp.Diagnostics.Append(data.AdmissionFlags.As(ctx, &admissionModel, basetypes.ObjectAsOptions{})...)
+		// if resp.Diagnostics.HasError() {
+		// 	return
+		// }
 
 		admissionFlags, diags := r.expandOKSAdmissionFlags(ctx, admissionModel)
-		resp.Diagnostics.Append(diags...)
-		if resp.Diagnostics.HasError() {
+		if utils.CheckDiags(resp, diags) {
 			return
 		}
 		input.AdmissionFlags = &admissionFlags
@@ -457,8 +461,8 @@ func (r *oksClusterResource) Create(ctx context.Context, req resource.CreateRequ
 		)
 		return
 	}
-	data.RequestId = conv.ToString(createResp.ResponseContext.RequestId)
-	data.Id = conv.ToString(createResp.Cluster.Id)
+	data.RequestId = to.String(createResp.ResponseContext.RequestId)
+	data.Id = to.String(createResp.Cluster.Id)
 
 	to, diags := data.Timeouts.Create(ctx, utils.CreateDefaultTimeout)
 	resp.Diagnostics.Append(diags...)
@@ -522,15 +526,15 @@ func (r *oksClusterResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 
 	if utils.IsSet(plan.AdminWhitelist) && !plan.AdminWhitelist.Equal(state.AdminWhitelist) {
-		admins, diags := conv.ToSlice[string](ctx, plan.AdminWhitelist)
+		admins, diags := to.Slice[string](ctx, plan.AdminWhitelist)
 		if utils.CheckDiags(resp, diags) {
 			return
 		}
 		update.AdminWhitelist = &admins
 	}
 	if utils.IsSet(plan.AdmissionFlags) && !plan.AdmissionFlags.Equal(state.AdmissionFlags) {
-		var admissionModel AdmissionFlagsModel
-		diags := plan.AdmissionFlags.As(ctx, &admissionModel, basetypes.ObjectAsOptions{})
+		admissionModel, diags := to.Obj[AdmissionFlagsModel](ctx, plan.AdmissionFlags)
+		// diags := plan.AdmissionFlags.As(ctx, &admissionModel, basetypes.ObjectAsOptions{})
 		if utils.CheckDiags(resp, diags) {
 			return
 		}
@@ -542,9 +546,12 @@ func (r *oksClusterResource) Update(ctx context.Context, req resource.UpdateRequ
 		update.AdmissionFlags = &admissionFlags
 	}
 	if utils.IsSet(plan.AutoMaintenances) && !plan.AutoMaintenances.Equal(state.AutoMaintenances) {
-		var auto AutoMaintenancesModel
-		resp.Diagnostics.Append(plan.AutoMaintenances.As(ctx, &auto, basetypes.ObjectAsOptions{})...)
-		if resp.Diagnostics.HasError() {
+		// resp.Diagnostics.Append(plan.AutoMaintenances.As(ctx, &auto, basetypes.ObjectAsOptions{})...)
+		// if resp.Diagnostics.HasError() {
+		// 	return
+		// }
+		auto, diags := to.Obj[AutoMaintenancesModel](ctx, plan.AutoMaintenances)
+		if utils.CheckDiags(resp, diags) {
 			return
 		}
 
@@ -563,7 +570,7 @@ func (r *oksClusterResource) Update(ctx context.Context, req resource.UpdateRequ
 		update.DisableApiTermination = plan.DisableApiTermination.ValueBoolPointer()
 	}
 	if utils.IsSet(plan.Quirks) && !plan.Quirks.Equal(state.Quirks) {
-		quirks, diags := conv.ToSlice[string](ctx, plan.Quirks)
+		quirks, diags := to.Slice[string](ctx, plan.Quirks)
 		if utils.CheckDiags(resp, diags) {
 			return
 		}
@@ -588,7 +595,7 @@ func (r *oksClusterResource) Update(ctx context.Context, req resource.UpdateRequ
 		)
 		return
 	}
-	state.RequestId = conv.ToString(updateResp.ResponseContext.RequestId)
+	state.RequestId = to.String(updateResp.ResponseContext.RequestId)
 
 	to, diags := state.Timeouts.Update(ctx, utils.UpdateDefaultTimeout)
 	if utils.CheckDiags(resp, diags) {
@@ -690,11 +697,11 @@ func (r *oksClusterResource) setOKSAutoMaintenances(ctx context.Context, data *C
 	var model AutoMaintenancesModel
 	setAuto := func(window sdkv3_oks.MaintenanceWindow) *MaintenanceWindowModel {
 		var model MaintenanceWindowModel
-		model.DurationHours = conv.ToInt64(window.DurationHours)
-		model.Enabled = conv.ToBool(window.Enabled)
-		model.StartHour = conv.ToInt64(window.StartHour)
-		model.Tz = conv.ToString(window.Tz)
-		model.WeekDay = conv.ToString((*string)(window.WeekDay))
+		model.DurationHours = to.Int64(window.DurationHours)
+		model.Enabled = to.Bool(window.Enabled)
+		model.StartHour = to.Int64(window.StartHour)
+		model.Tz = to.String(window.Tz)
+		model.WeekDay = to.String((*string)(window.WeekDay))
 
 		return &model
 	}
@@ -712,11 +719,11 @@ func (r *oksClusterResource) setOKSAutoMaintenances(ctx context.Context, data *C
 
 func (r *oksClusterResource) setOKSStatuses(ctx context.Context, data *ClusterModel, auto sdkv3_oks.Statuses) diag.Diagnostics {
 	var model StatusesModel
-	model.AvailableUpgrade = conv.ToString(auto.AvailableUpgrade)
-	model.CreatedAt = conv.ToRFC3339(auto.CreatedAt)
-	model.DeletedAt = conv.ToRFC3339(auto.DeletedAt)
-	model.Status = conv.ToString(auto.Status)
-	model.UpdatedAt = conv.ToRFC3339(auto.UpdatedAt)
+	model.AvailableUpgrade = to.String(auto.AvailableUpgrade)
+	model.CreatedAt = to.RFC3339(auto.CreatedAt)
+	model.DeletedAt = to.RFC3339(auto.DeletedAt)
+	model.Status = to.String(auto.Status)
+	model.UpdatedAt = to.RFC3339(auto.UpdatedAt)
 
 	obj, diags := types.ObjectValueFrom(ctx, data.Statuses.AttributeTypes(ctx), model)
 	if diags.HasError() {
@@ -755,24 +762,24 @@ func (r *oksClusterResource) setOKSClusterState(ctx context.Context, data Cluste
 		return data, fmt.Errorf("unable to convert Statuses into the Schema Model. Error: %v: ", diags.Errors())
 	}
 
-	data.AdminLbu = conv.ToBool(cluster.AdminLbu)
+	data.AdminLbu = to.Bool(cluster.AdminLbu)
 	data.AdminWhitelist = adminWhiteList
-	data.CidrPods = conv.ToString(cluster.CidrPods)
-	data.CidrService = conv.ToString(cluster.CidrService)
-	data.ClusterDns = conv.ToString(cluster.ClusterDns)
-	data.Cni = conv.ToString(cluster.Cni)
-	data.ControlPlanes = conv.ToString(cluster.ControlPlanes)
-	data.CpMultiAz = conv.ToBool(cluster.CpMultiAz)
+	data.CidrPods = to.String(cluster.CidrPods)
+	data.CidrService = to.String(cluster.CidrService)
+	data.ClusterDns = to.String(cluster.ClusterDns)
+	data.Cni = to.String(cluster.Cni)
+	data.ControlPlanes = to.String(cluster.ControlPlanes)
+	data.CpMultiAz = to.Bool(cluster.CpMultiAz)
 	data.CpSubregions = cpSubregions
-	data.Description = conv.ToString(cluster.Description)
-	data.DisableApiTermination = conv.ToBool(cluster.DisableApiTermination)
-	data.ExpectedControlPlanes = conv.ToString(cluster.ExpectedControlPlanes)
-	data.ExpectedVersion = conv.ToString(cluster.ExpectedVersion)
-	data.Id = conv.ToString(cluster.Id)
-	data.Name = conv.ToString(cluster.Name)
-	data.ProjectId = conv.ToString(cluster.ProjectId)
-	data.RequestId = conv.ToString(resp.ResponseContext.RequestId)
-	data.Version = conv.ToString(cluster.Version)
+	data.Description = to.String(cluster.Description)
+	data.DisableApiTermination = to.Bool(cluster.DisableApiTermination)
+	data.ExpectedControlPlanes = to.String(cluster.ExpectedControlPlanes)
+	data.ExpectedVersion = to.String(cluster.ExpectedVersion)
+	data.Id = to.String(cluster.Id)
+	data.Name = to.String(cluster.Name)
+	data.ProjectId = to.String(cluster.ProjectId)
+	data.RequestId = to.String(resp.ResponseContext.RequestId)
+	data.Version = to.String(cluster.Version)
 
 	tags, diags := flattenOKSTags(ctx, data.OKSTagsModel)
 	if diags.HasError() {
