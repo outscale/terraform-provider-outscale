@@ -18,6 +18,27 @@ func NewTflogWrapper() *tflogWrapper {
 	return &tflogWrapper{}
 }
 
+func removeNulls(f any) any {
+	switch fields := f.(type) {
+	case map[string]any:
+		cleaned := make(map[string]any)
+		for k, v := range fields {
+			if v == nil {
+				continue
+			}
+			cleaned[k] = removeNulls(v)
+		}
+		return cleaned
+	case []any:
+		for i, v := range fields {
+			fields[i] = removeNulls(v)
+		}
+		return fields
+	default:
+		return fields
+	}
+}
+
 func (t *tflogWrapper) RequestHttp(ctx context.Context, req *http.Request) {
 	fields := map[string]any{
 		"method": req.Method,
@@ -32,7 +53,8 @@ func (t *tflogWrapper) RequestHttp(ctx context.Context, req *http.Request) {
 				fields["body"] = string(bodyBytes)
 				var jsonData any
 				if json.Unmarshal(bodyBytes, &jsonData) == nil {
-					if indentJSON, err := json.MarshalIndent(jsonData, "", "  "); err == nil {
+					cleaned := removeNulls(jsonData)
+					if indentJSON, err := json.MarshalIndent(cleaned, "", "  "); err == nil {
 						fields["body"] = string(indentJSON)
 					}
 				}
