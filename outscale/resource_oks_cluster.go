@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -18,7 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	sdkv3_oks "github.com/outscale/osc-sdk-go/v3/pkg/oks"
+	"github.com/outscale/osc-sdk-go/v3/pkg/oks"
 	"github.com/outscale/terraform-provider-outscale/fwvalidators"
 	"github.com/outscale/terraform-provider-outscale/utils"
 	"github.com/outscale/terraform-provider-outscale/utils/to"
@@ -84,7 +83,7 @@ type StatusesModel struct {
 }
 
 type oksClusterResource struct {
-	Client *sdkv3_oks.Client
+	Client *oks.Client
 }
 
 func NewResourceCluster() resource.Resource {
@@ -310,7 +309,7 @@ var autoMaintenancesSchema = map[string]schema.Attribute{
 	},
 }
 
-func (r *oksClusterResource) expandOKSAutoMaintenances(data *MaintenanceWindowModel) (auto sdkv3_oks.MaintenanceWindow) {
+func (r *oksClusterResource) expandOKSAutoMaintenances(data *MaintenanceWindowModel) (auto oks.MaintenanceWindow) {
 	if data != nil {
 		if utils.IsSet(data.DurationHours) {
 			hours := int(data.DurationHours.ValueInt64())
@@ -327,13 +326,13 @@ func (r *oksClusterResource) expandOKSAutoMaintenances(data *MaintenanceWindowMo
 			auto.Tz = data.Tz.ValueStringPointer()
 		}
 		if utils.IsSet(data.WeekDay) {
-			auto.WeekDay = (*sdkv3_oks.MaintenanceWindowWeekDay)(data.WeekDay.ValueStringPointer())
+			auto.WeekDay = (*oks.MaintenanceWindowWeekDay)(data.WeekDay.ValueStringPointer())
 		}
 	}
 	return
 }
 
-func (r *oksClusterResource) expandOKSAdmissionFlags(ctx context.Context, data AdmissionFlagsModel) (admissionFlags sdkv3_oks.AdmissionFlagsInput, diags diag.Diagnostics) {
+func (r *oksClusterResource) expandOKSAdmissionFlags(ctx context.Context, data AdmissionFlagsModel) (admissionFlags oks.AdmissionFlagsInput, diags diag.Diagnostics) {
 	if utils.IsSet(data.DisableAdmissionPlugins) {
 		disablePlugins, diags := to.Slice[string](ctx, data.DisableAdmissionPlugins)
 		if diags.HasError() {
@@ -353,24 +352,23 @@ func (r *oksClusterResource) expandOKSAdmissionFlags(ctx context.Context, data A
 
 func (r *oksClusterResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data ClusterModel
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
+	diags := req.Plan.Get(ctx, &data)
+	if utils.CheckDiags(resp, diags) {
 		return
 	}
 
-	input := sdkv3_oks.ClusterInput{
+	input := oks.ClusterInput{
 		Name:      data.Name.ValueString(),
 		ProjectId: data.ProjectId.ValueString(),
 		Version:   data.Version.ValueString(),
-		AutoMaintenances: sdkv3_oks.AutoMaintenances{
-			MinorUpgradeMaintenance: sdkv3_oks.MaintenanceWindow{},
-			PatchUpgradeMaintenance: sdkv3_oks.MaintenanceWindow{},
+		AutoMaintenances: oks.AutoMaintenances{
+			MinorUpgradeMaintenance: oks.MaintenanceWindow{},
+			PatchUpgradeMaintenance: oks.MaintenanceWindow{},
 		},
 	}
 
-	var whitelist []string
-	resp.Diagnostics.Append(data.AdminWhitelist.ElementsAs(ctx, &whitelist, false)...)
-	if resp.Diagnostics.HasError() {
+	whitelist, diags := to.Slice[string](ctx, data.AdminWhitelist)
+	if utils.CheckDiags(resp, diags) {
 		return
 	}
 	input.AdminWhitelist = whitelist
@@ -380,10 +378,6 @@ func (r *oksClusterResource) Create(ctx context.Context, req resource.CreateRequ
 		if utils.CheckDiags(resp, diags) {
 			return
 		}
-		// resp.Diagnostics.Append(data.AutoMaintenances.As(ctx, &auto, basetypes.ObjectAsOptions{})...)
-		// if resp.Diagnostics.HasError() {
-		// 	return
-		// }
 
 		input.AutoMaintenances.MinorUpgradeMaintenance = r.expandOKSAutoMaintenances(auto.MinorUpgradeMaintenance)
 		input.AutoMaintenances.PatchUpgradeMaintenance = r.expandOKSAutoMaintenances(auto.PatchUpgradeMaintenance)
@@ -396,9 +390,8 @@ func (r *oksClusterResource) Create(ctx context.Context, req resource.CreateRequ
 		input.CpMultiAz = data.CpMultiAz.ValueBoolPointer()
 	}
 	if utils.IsSet(data.CpSubregions) {
-		var sub []string
-		resp.Diagnostics.Append(data.CpSubregions.ElementsAs(ctx, sub, false)...)
-		if resp.Diagnostics.HasError() {
+		sub, diags := to.Slice[string](ctx, data.CpSubregions)
+		if utils.CheckDiags(resp, diags) {
 			return
 		}
 		input.CpSubregions = &sub
@@ -411,10 +404,6 @@ func (r *oksClusterResource) Create(ctx context.Context, req resource.CreateRequ
 		if utils.CheckDiags(resp, diags) {
 			return
 		}
-		// resp.Diagnostics.Append(data.AdmissionFlags.As(ctx, &admissionModel, basetypes.ObjectAsOptions{})...)
-		// if resp.Diagnostics.HasError() {
-		// 	return
-		// }
 
 		admissionFlags, diags := r.expandOKSAdmissionFlags(ctx, admissionModel)
 		if utils.CheckDiags(resp, diags) {
@@ -435,20 +424,18 @@ func (r *oksClusterResource) Create(ctx context.Context, req resource.CreateRequ
 		input.ControlPlanes = data.ControlPlanes.ValueStringPointer()
 	}
 	if utils.IsSet(data.Quirks) {
-		var quirks []string
-		resp.Diagnostics.Append(data.Quirks.ElementsAs(ctx, quirks, false)...)
-		if resp.Diagnostics.HasError() {
+		quirks, diags := to.Slice[string](ctx, data.Quirks)
+		if utils.CheckDiags(resp, diags) {
 			return
 		}
 		input.Quirks = &quirks
 	}
-	if !data.DisableApiTermination.IsUnknown() {
+	if utils.IsSet(data.DisableApiTermination) {
 		input.DisableApiTermination = data.DisableApiTermination.ValueBoolPointer()
 	}
 
 	tags, diags := expandOKSTags(ctx, data.OKSTagsModel)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if utils.CheckDiags(resp, diags) {
 		return
 	}
 	input.Tags = &tags
@@ -456,7 +443,7 @@ func (r *oksClusterResource) Create(ctx context.Context, req resource.CreateRequ
 	createResp, err := r.Client.CreateCluster(ctx, input)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to Create Resource Cluster",
+			"Unable to Create Cluster",
 			"Error: "+err.Error(),
 		)
 		return
@@ -464,9 +451,8 @@ func (r *oksClusterResource) Create(ctx context.Context, req resource.CreateRequ
 	data.RequestId = to.String(createResp.ResponseContext.RequestId)
 	data.Id = to.String(createResp.Cluster.Id)
 
-	to, diags := data.Timeouts.Create(ctx, utils.CreateDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	to, diags := data.Timeouts.Create(ctx, utils.CreateOKSDefaultTimeout)
+	if utils.CheckDiags(resp, diags) {
 		return
 	}
 	data, err = r.setOKSClusterState(ctx, data, to)
@@ -478,8 +464,8 @@ func (r *oksClusterResource) Create(ctx context.Context, req resource.CreateRequ
 		)
 		return
 	}
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
+	diags = resp.State.Set(ctx, &data)
+	if utils.CheckDiags(resp, diags) {
 		return
 	}
 }
@@ -487,26 +473,29 @@ func (r *oksClusterResource) Create(ctx context.Context, req resource.CreateRequ
 func (r *oksClusterResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data ClusterModel
 
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
+	diags := req.State.Get(ctx, &data)
+	if utils.CheckDiags(resp, diags) {
 		return
 	}
 
 	to, diags := data.Timeouts.Read(ctx, utils.ReadDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if utils.CheckDiags(resp, diags) {
 		return
 	}
 	data, err := r.setOKSClusterState(ctx, data, to)
 	if err != nil {
+		if code := oks.StatusCodeHelper(err); code != nil && *code == 404 {
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to set Cluster state",
 			"Error: "+err.Error(),
 		)
 		return
 	}
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
+	diags = resp.State.Set(ctx, &data)
+	if utils.CheckDiags(resp, diags) {
 		return
 	}
 }
@@ -514,14 +503,26 @@ func (r *oksClusterResource) Read(ctx context.Context, req resource.ReadRequest,
 func (r *oksClusterResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var (
 		plan, state ClusterModel
-		update      sdkv3_oks.ClusterUpdate
+		update      oks.ClusterUpdate
 	)
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
-	if resp.Diagnostics.HasError() {
+	diags := req.Plan.Get(ctx, &plan)
+	if utils.CheckDiags(resp, diags) {
 		return
 	}
-	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
-	if resp.Diagnostics.HasError() {
+	diags = req.State.Get(ctx, &state)
+	if utils.CheckDiags(resp, diags) {
+		return
+	}
+
+	statuses, diags := to.Obj[StatusesModel](ctx, state.Statuses)
+	if utils.CheckDiags(resp, diags) {
+		return
+	}
+	if statuses.Status.ValueString() == "deleting" {
+		resp.Diagnostics.AddError(
+			"Unable to Update Cluster",
+			"Cluster is currently being deleted and cannot be updated. The resource will be removed from the state once deleted.",
+		)
 		return
 	}
 
@@ -534,7 +535,6 @@ func (r *oksClusterResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 	if utils.IsSet(plan.AdmissionFlags) && !plan.AdmissionFlags.Equal(state.AdmissionFlags) {
 		admissionModel, diags := to.Obj[AdmissionFlagsModel](ctx, plan.AdmissionFlags)
-		// diags := plan.AdmissionFlags.As(ctx, &admissionModel, basetypes.ObjectAsOptions{})
 		if utils.CheckDiags(resp, diags) {
 			return
 		}
@@ -546,16 +546,12 @@ func (r *oksClusterResource) Update(ctx context.Context, req resource.UpdateRequ
 		update.AdmissionFlags = &admissionFlags
 	}
 	if utils.IsSet(plan.AutoMaintenances) && !plan.AutoMaintenances.Equal(state.AutoMaintenances) {
-		// resp.Diagnostics.Append(plan.AutoMaintenances.As(ctx, &auto, basetypes.ObjectAsOptions{})...)
-		// if resp.Diagnostics.HasError() {
-		// 	return
-		// }
 		auto, diags := to.Obj[AutoMaintenancesModel](ctx, plan.AutoMaintenances)
 		if utils.CheckDiags(resp, diags) {
 			return
 		}
 
-		update.AutoMaintenances = &sdkv3_oks.AutoMaintenances{
+		update.AutoMaintenances = &oks.AutoMaintenances{
 			MinorUpgradeMaintenance: r.expandOKSAutoMaintenances(auto.MinorUpgradeMaintenance),
 			PatchUpgradeMaintenance: r.expandOKSAutoMaintenances(auto.PatchUpgradeMaintenance),
 		}
@@ -590,14 +586,14 @@ func (r *oksClusterResource) Update(ctx context.Context, req resource.UpdateRequ
 	updateResp, err := r.Client.UpdateCluster(ctx, state.Id.ValueString(), update)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to Update Resource Cluster",
+			"Unable to Update Cluster",
 			"Error: "+err.Error(),
 		)
 		return
 	}
 	state.RequestId = to.String(updateResp.ResponseContext.RequestId)
 
-	to, diags := state.Timeouts.Update(ctx, utils.UpdateDefaultTimeout)
+	to, diags := state.Timeouts.Update(ctx, utils.UpdateOKSDefaultTimeout)
 	if utils.CheckDiags(resp, diags) {
 		return
 	}
@@ -609,8 +605,8 @@ func (r *oksClusterResource) Update(ctx context.Context, req resource.UpdateRequ
 		)
 		return
 	}
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
+	diags = resp.State.Set(ctx, &data)
+	if utils.CheckDiags(resp, diags) {
 		return
 	}
 }
@@ -618,39 +614,39 @@ func (r *oksClusterResource) Update(ctx context.Context, req resource.UpdateRequ
 func (r *oksClusterResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var data ClusterModel
 
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
+	diags := req.State.Get(ctx, &data)
+	if utils.CheckDiags(resp, diags) {
 		return
 	}
 	_, err := r.Client.DeleteCluster(ctx, data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to Delete Resource Cluster",
+			"Unable to Delete Cluster",
 			"Error: "+err.Error(),
 		)
 		return
 	}
 
-	to, diags := data.Timeouts.Update(ctx, utils.DeleteDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	to, diags := data.Timeouts.Update(ctx, utils.DeleteOKSDefaultTimeout)
+	if utils.CheckDiags(resp, diags) {
 		return
 	}
 	_, err = r.waitForClusterState(ctx, data.Id.ValueString(), []string{"pending", "deleting"}, []string{}, to)
 	if err != nil {
-		return
+		if code := oks.StatusCodeHelper(err); code != nil && *code != 404 {
+			resp.Diagnostics.AddError("Unable to wait for Cluster complete deletion.", "Error: "+err.Error())
+		}
 	}
 }
 
-func (r *oksClusterResource) waitForClusterState(ctx context.Context, id string, pending []string, target []string, timeout time.Duration) (*sdkv3_oks.ClusterResponse, error) {
-	resp, err := utils.WaitForResource[sdkv3_oks.ClusterResponse](ctx, &retry.StateChangeConf{
+func (r *oksClusterResource) waitForClusterState(ctx context.Context, id string, pending []string, target []string, timeout time.Duration) (*oks.ClusterResponse, error) {
+	resp, err := utils.WaitForResource[oks.ClusterResponse](ctx, &retry.StateChangeConf{
 		Pending: pending,
 		Target:  target,
 		Refresh: func() (any, string, error) {
 			resp, err := r.Client.GetCluster(ctx, id)
 			if err != nil {
-				return resp, "", errors.Join(fmt.Errorf("Error waiting for Cluster (%s) to become ready.",
-					id), err)
+				return resp, "", err
 			}
 			return resp, *resp.Cluster.Statuses.Status, nil
 		},
@@ -663,7 +659,7 @@ func (r *oksClusterResource) waitForClusterState(ctx context.Context, id string,
 	return resp, nil
 }
 
-func (r *oksClusterResource) setOKSAdmissionFlags(ctx context.Context, data *ClusterModel, auto *sdkv3_oks.AdmissionFlags) diag.Diagnostics {
+func (r *oksClusterResource) setOKSAdmissionFlags(ctx context.Context, data *ClusterModel, auto *oks.AdmissionFlags) diag.Diagnostics {
 	if auto != nil {
 		var model AdmissionFlagsModel
 		applied, diags := types.SetValueFrom(ctx, types.StringType, auto.AppliedAdmissionPlugins)
@@ -693,9 +689,9 @@ func (r *oksClusterResource) setOKSAdmissionFlags(ctx context.Context, data *Clu
 	return nil
 }
 
-func (r *oksClusterResource) setOKSAutoMaintenances(ctx context.Context, data *ClusterModel, auto sdkv3_oks.AutoMaintenances) diag.Diagnostics {
+func (r *oksClusterResource) setOKSAutoMaintenances(ctx context.Context, data *ClusterModel, auto oks.AutoMaintenances) diag.Diagnostics {
 	var model AutoMaintenancesModel
-	setAuto := func(window sdkv3_oks.MaintenanceWindow) *MaintenanceWindowModel {
+	setAuto := func(window oks.MaintenanceWindow) *MaintenanceWindowModel {
 		var model MaintenanceWindowModel
 		model.DurationHours = to.Int64(window.DurationHours)
 		model.Enabled = to.Bool(window.Enabled)
@@ -717,7 +713,7 @@ func (r *oksClusterResource) setOKSAutoMaintenances(ctx context.Context, data *C
 	return nil
 }
 
-func (r *oksClusterResource) setOKSStatuses(ctx context.Context, data *ClusterModel, auto sdkv3_oks.Statuses) diag.Diagnostics {
+func (r *oksClusterResource) setOKSStatuses(ctx context.Context, data *ClusterModel, auto oks.Statuses) diag.Diagnostics {
 	var model StatusesModel
 	model.AvailableUpgrade = to.String(auto.AvailableUpgrade)
 	model.CreatedAt = to.RFC3339(auto.CreatedAt)
@@ -735,7 +731,7 @@ func (r *oksClusterResource) setOKSStatuses(ctx context.Context, data *ClusterMo
 }
 
 func (r *oksClusterResource) setOKSClusterState(ctx context.Context, data ClusterModel, timeout time.Duration) (ClusterModel, error) {
-	resp, err := r.waitForClusterState(ctx, data.Id.ValueString(), []string{"pending", "deploying", "updating"}, []string{"ready"}, timeout)
+	resp, err := r.waitForClusterState(ctx, data.Id.ValueString(), []string{"pending", "deploying", "updating"}, []string{"ready", "deleting"}, timeout)
 	if err != nil {
 		return data, err
 	}
@@ -743,23 +739,23 @@ func (r *oksClusterResource) setOKSClusterState(ctx context.Context, data Cluste
 
 	adminWhiteList, diags := types.SetValueFrom(ctx, types.StringType, cluster.AdminWhitelist)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to convert AdminWhitelist into a Set. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("unable to convert AdminWhitelist into a Set. Error: %v", diags.Errors())
 	}
 	cpSubregions, diags := types.SetValueFrom(ctx, types.StringType, cluster.CpSubregions)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to convert CPSubregions into a Set. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("unable to convert CPSubregions into a Set. Error: %v", diags.Errors())
 	}
 	diags = r.setOKSAdmissionFlags(ctx, &data, cluster.AdmissionFlags)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to convert AdmissionFlags into the Schema Model. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("unable to convert AdmissionFlags into the Schema Model. Error: %v", diags.Errors())
 	}
 	diags = r.setOKSAutoMaintenances(ctx, &data, cluster.AutoMaintenances)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to convert AutoMaintenances into the Schema Model. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("unable to convert AutoMaintenances into the Schema Model. Error: %v", diags.Errors())
 	}
 	diags = r.setOKSStatuses(ctx, &data, cluster.Statuses)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to convert Statuses into the Schema Model. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("unable to convert Statuses into the Schema Model. Error: %v", diags.Errors())
 	}
 
 	data.AdminLbu = to.Bool(cluster.AdminLbu)
@@ -781,9 +777,9 @@ func (r *oksClusterResource) setOKSClusterState(ctx context.Context, data Cluste
 	data.RequestId = to.String(resp.ResponseContext.RequestId)
 	data.Version = to.String(cluster.Version)
 
-	tags, diags := flattenOKSTags(ctx, data.OKSTagsModel)
+	tags, diags := flattenOKSTags(ctx, cluster.Tags)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to convert Tags into the Schema Model. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("%v", diags.Errors())
 	}
 	data.Tags = tags
 

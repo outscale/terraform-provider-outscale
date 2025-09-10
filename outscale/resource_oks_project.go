@@ -2,26 +2,24 @@ package outscale
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/mapdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	sdkv3_oks "github.com/outscale/osc-sdk-go/v3/pkg/oks"
+	"github.com/outscale/osc-sdk-go/v3/pkg/oks"
 	"github.com/outscale/terraform-provider-outscale/fwvalidators"
 	"github.com/outscale/terraform-provider-outscale/utils"
+	"github.com/outscale/terraform-provider-outscale/utils/to"
 )
 
 var (
@@ -40,13 +38,13 @@ type ProjectModel struct {
 	UpdatedAt             timetypes.RFC3339 `tfsdk:"updated_at"`
 	Quirks                types.Set         `tfsdk:"quirks"`
 	Id                    types.String      `tfsdk:"id"`
-	Tags                  types.Map         `tfsdk:"tags"`
 	RequestId             types.String      `tfsdk:"request_id"`
 	Timeouts              timeouts.Value    `tfsdk:"timeouts"`
+	OKSTagsModel
 }
 
 type oksProjectResource struct {
-	Client *sdkv3_oks.Client
+	Client *oks.Client
 }
 
 func NewResourceProject() resource.Resource {
@@ -146,24 +144,19 @@ func (r *oksProjectResource) Schema(ctx context.Context, _ resource.SchemaReques
 			"request_id": schema.StringAttribute{
 				Computed: true,
 			},
-			"tags": schema.MapAttribute{
-				Computed:    true,
-				Optional:    true,
-				Default:     mapdefault.StaticValue(types.MapValueMust(types.StringType, map[string]attr.Value{})),
-				ElementType: types.StringType,
-			},
+			"tags": OKSTagsSchema(),
 		},
 	}
 }
 
 func (r *oksProjectResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data ProjectModel
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
+	diags := req.Plan.Get(ctx, &data)
+	if utils.CheckDiags(resp, diags) {
 		return
 	}
 
-	input := sdkv3_oks.ProjectInput{
+	input := oks.ProjectInput{
 		Cidr:   data.Cidr.ValueString(),
 		Name:   data.Name.ValueString(),
 		Region: data.Region.ValueString(),
@@ -172,22 +165,19 @@ func (r *oksProjectResource) Create(ctx context.Context, req resource.CreateRequ
 	if utils.IsSet(data.Description) {
 		input.Description = data.Description.ValueStringPointer()
 	}
-	if !data.DisableApiTermination.IsUnknown() {
+	if utils.IsSet(data.DisableApiTermination) {
 		input.DisableApiTermination = data.DisableApiTermination.ValueBoolPointer()
 	}
 	if utils.IsSet(data.Quirks) {
-		var quirks []string
-		resp.Diagnostics.Append(data.Quirks.ElementsAs(ctx, quirks, false)...)
-		if resp.Diagnostics.HasError() {
+		quirks, diags := to.Slice[string](ctx, data.Quirks)
+		if utils.CheckDiags(resp, diags) {
 			return
 		}
 		input.Quirks = &quirks
 	}
 
-	// TODO: make a generic function for oks tags
-	var tags map[string]string
-	resp.Diagnostics.Append(data.Tags.ElementsAs(ctx, &tags, false)...)
-	if resp.Diagnostics.HasError() {
+	tags, diags := expandOKSTags(ctx, data.OKSTagsModel)
+	if utils.CheckDiags(resp, diags) {
 		return
 	}
 	input.Tags = &tags
@@ -200,16 +190,15 @@ func (r *oksProjectResource) Create(ctx context.Context, req resource.CreateRequ
 		)
 		return
 	}
-	data.RequestId = types.StringValue(createResp.ResponseContext.RequestId)
-	data.Id = types.StringValue(createResp.Project.Id)
+	data.RequestId = to.String(createResp.ResponseContext.RequestId)
+	data.Id = to.String(createResp.Project.Id)
 
-	to, diags := data.Timeouts.Create(ctx, utils.CreateDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	to, diags := data.Timeouts.Create(ctx, utils.CreateOKSDefaultTimeout)
+	if utils.CheckDiags(resp, diags) {
 		return
 	}
-	data, err = r.setOKSProjectState(ctx, data, to)
 
+	data, err = r.setOKSProjectState(ctx, data, to)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to set Project state",
@@ -217,8 +206,8 @@ func (r *oksProjectResource) Create(ctx context.Context, req resource.CreateRequ
 		)
 		return
 	}
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
+	diags = resp.State.Set(ctx, &data)
+	if utils.CheckDiags(resp, diags) {
 		return
 	}
 }
@@ -226,26 +215,29 @@ func (r *oksProjectResource) Create(ctx context.Context, req resource.CreateRequ
 func (r *oksProjectResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data ProjectModel
 
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
+	diags := req.State.Get(ctx, &data)
+	if utils.CheckDiags(resp, diags) {
 		return
 	}
 
-	to, diags := data.Timeouts.Read(ctx, utils.ReadDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	to, diags := data.Timeouts.Read(ctx, utils.ReadOKSDefaultTimeout)
+	if utils.CheckDiags(resp, diags) {
 		return
 	}
 	data, err := r.setOKSProjectState(ctx, data, to)
 	if err != nil {
+		if code := oks.StatusCodeHelper(err); code != nil && *code == 404 {
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to set Project state",
 			"Error: "+err.Error(),
 		)
 		return
 	}
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
+	diags = resp.State.Set(ctx, &data)
+	if utils.CheckDiags(resp, diags) {
 		return
 	}
 }
@@ -253,48 +245,54 @@ func (r *oksProjectResource) Read(ctx context.Context, req resource.ReadRequest,
 func (r *oksProjectResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var (
 		plan, state ProjectModel
-		update      sdkv3_oks.ProjectUpdate
+		update      oks.ProjectUpdate
 	)
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
-	if resp.Diagnostics.HasError() {
+	diags := req.Plan.Get(ctx, &plan)
+	if utils.CheckDiags(resp, diags) {
 		return
 	}
-	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
-	if resp.Diagnostics.HasError() {
+	diags = req.State.Get(ctx, &state)
+	if utils.CheckDiags(resp, diags) {
 		return
 	}
 
-	if !plan.Description.Equal(state.Description) {
+	if state.Status.ValueString() == "deleting" {
+		resp.Diagnostics.AddError(
+			"Unable to Update Project",
+			"Project is currently being deleted and cannot be updated. The resource will be removed from the state once deleted.",
+		)
+		return
+	}
+
+	if utils.IsSet(plan.Description) && !plan.Description.Equal(state.Description) {
 		update.Description = plan.Description.ValueStringPointer()
 	}
-	if !plan.DisableApiTermination.Equal(state.DisableApiTermination) {
+	if utils.IsSet(plan.DisableApiTermination) && !plan.DisableApiTermination.Equal(state.DisableApiTermination) {
 		update.DisableApiTermination = plan.DisableApiTermination.ValueBoolPointer()
 	}
-	if !plan.Quirks.Equal(state.Quirks) {
-		var quirks []string
-		resp.Diagnostics.Append(plan.Quirks.ElementsAs(ctx, quirks, false)...)
-		if resp.Diagnostics.HasError() {
+	if utils.IsSet(plan.Quirks) && !plan.Quirks.Equal(state.Quirks) {
+		quirks, diags := to.Slice[string](ctx, plan.Quirks)
+		if utils.CheckDiags(resp, diags) {
 			return
 		}
 		update.Quirks = &quirks
 	}
-	if !plan.Tags.Equal(state.Tags) {
-		var tags map[string]string
-		resp.Diagnostics.Append(plan.Tags.ElementsAs(ctx, &tags, false)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
+	tags, diags := cmpOKSTags(ctx, plan.OKSTagsModel, state.OKSTagsModel)
+	if utils.CheckDiags(resp, diags) {
+		return
+	}
+	if tags != nil {
 		update.Tags = &tags
 	}
+
 	updateResp, err := r.Client.UpdateProject(ctx, state.Id.ValueString(), update)
 	if err != nil {
 		return
 	}
-	state.RequestId = types.StringValue(updateResp.ResponseContext.RequestId)
+	state.RequestId = to.String(updateResp.ResponseContext.RequestId)
 
-	to, diags := state.Timeouts.Update(ctx, utils.UpdateDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	to, diags := state.Timeouts.Update(ctx, utils.UpdateOKSDefaultTimeout)
+	if utils.CheckDiags(resp, diags) {
 		return
 	}
 	data, err := r.setOKSProjectState(ctx, state, to)
@@ -305,8 +303,8 @@ func (r *oksProjectResource) Update(ctx context.Context, req resource.UpdateRequ
 		)
 		return
 	}
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
+	diags = resp.State.Set(ctx, &data)
+	if utils.CheckDiags(resp, diags) {
 		return
 	}
 }
@@ -314,8 +312,8 @@ func (r *oksProjectResource) Update(ctx context.Context, req resource.UpdateRequ
 func (r *oksProjectResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var data ProjectModel
 
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
+	diags := req.State.Get(ctx, &data)
+	if utils.CheckDiags(resp, diags) {
 		return
 	}
 	_, err := r.Client.DeleteProject(ctx, data.Id.ValueString())
@@ -327,26 +325,26 @@ func (r *oksProjectResource) Delete(ctx context.Context, req resource.DeleteRequ
 		return
 	}
 
-	to, diags := data.Timeouts.Update(ctx, utils.DeleteDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	to, diags := data.Timeouts.Update(ctx, utils.DeleteOKSDefaultTimeout)
+	if utils.CheckDiags(resp, diags) {
 		return
 	}
 	_, err = r.waitForProjectState(ctx, data.Id.ValueString(), []string{"deleting"}, []string{}, to)
 	if err != nil {
-		return
+		if code := oks.StatusCodeHelper(err); code != nil && *code != 404 {
+			resp.Diagnostics.AddError("Unable to wait for Project complete deletion.", "Error: "+err.Error())
+		}
 	}
 }
 
-func (r *oksProjectResource) waitForProjectState(ctx context.Context, id string, pending []string, target []string, timeout time.Duration) (*sdkv3_oks.ProjectResponse, error) {
-	resp, err := utils.WaitForResource[sdkv3_oks.ProjectResponse](ctx, &retry.StateChangeConf{
+func (r *oksProjectResource) waitForProjectState(ctx context.Context, id string, pending []string, target []string, timeout time.Duration) (*oks.ProjectResponse, error) {
+	resp, err := utils.WaitForResource[oks.ProjectResponse](ctx, &retry.StateChangeConf{
 		Pending: pending,
 		Target:  target,
 		Refresh: func() (any, string, error) {
 			resp, err := r.Client.GetProject(ctx, id)
 			if err != nil {
-				return resp, "", errors.Join(fmt.Errorf("Error waiting for Project (%s) to become ready.",
-					id), err)
+				return resp, "", err
 			}
 			return resp, resp.Project.Status, nil
 		},
@@ -360,26 +358,26 @@ func (r *oksProjectResource) waitForProjectState(ctx context.Context, id string,
 }
 
 func (r *oksProjectResource) setOKSProjectState(ctx context.Context, data ProjectModel, timeout time.Duration) (ProjectModel, error) {
-	resp, err := r.waitForProjectState(ctx, data.Id.ValueString(), []string{"pending", "updating"}, []string{"ready"}, timeout)
+	resp, err := r.waitForProjectState(ctx, data.Id.ValueString(), []string{"pending", "updating"}, []string{"ready", "deleting"}, timeout)
 	if err != nil {
 		return data, err
 	}
 	project := resp.Project
 
-	data.Cidr = types.StringValue(project.Cidr)
-	data.CreatedAt = timetypes.NewRFC3339TimeValue(project.CreatedAt)
-	data.Description = types.StringPointerValue(project.Description)
-	data.DisableApiTermination = types.BoolPointerValue(project.DisableApiTermination)
-	data.Name = types.StringValue(project.Name)
-	data.Region = types.StringValue(project.Region)
-	data.Status = types.StringValue(project.Status)
-	data.UpdatedAt = timetypes.NewRFC3339TimeValue(project.UpdatedAt)
-	data.Id = types.StringValue(project.Id)
-	data.RequestId = types.StringValue(resp.ResponseContext.RequestId)
+	data.Cidr = to.String(project.Cidr)
+	data.CreatedAt = to.RFC3339(project.CreatedAt)
+	data.Description = to.String(project.Description)
+	data.DisableApiTermination = to.Bool(project.DisableApiTermination)
+	data.Name = to.String(project.Name)
+	data.Region = to.String(project.Region)
+	data.Status = to.String(project.Status)
+	data.UpdatedAt = to.RFC3339(project.UpdatedAt)
+	data.Id = to.String(project.Id)
+	data.RequestId = to.String(resp.ResponseContext.RequestId)
 
-	tags, diags := types.MapValueFrom(ctx, types.StringType, project.Tags)
+	tags, diags := flattenOKSTags(ctx, project.Tags)
 	if diags.HasError() {
-		return data, fmt.Errorf("Unable to convert Tags to the schema Set. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("%v", diags.Errors())
 	}
 	data.Tags = tags
 

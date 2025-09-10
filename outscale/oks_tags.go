@@ -27,14 +27,16 @@ func OKSTagsSchema() schema.MapAttribute {
 func expandOKSTags(ctx context.Context, data OKSTagsModel) (tags map[string]string, diags diag.Diagnostics) {
 	diags = data.Tags.ElementsAs(ctx, &tags, false)
 	if diags.HasError() {
+		diags.AddError("Tags conversion error", "Unable to convert Tags into the SDK Model.")
 		return tags, diags
 	}
 	return tags, nil
 }
 
-func flattenOKSTags(ctx context.Context, data OKSTagsModel) (tags basetypes.MapValue, diags diag.Diagnostics) {
-	tags, diags = types.MapValueFrom(ctx, types.StringType, data.Tags)
+func flattenOKSTags(ctx context.Context, oksTags any) (tags basetypes.MapValue, diags diag.Diagnostics) {
+	tags, diags = types.MapValueFrom(ctx, types.StringType, oksTags)
 	if diags.HasError() {
+		diags.AddError("Tags conversion error", "Unable to convert Tags into the Schema Model.")
 		return tags, diags
 	}
 	return tags, nil
