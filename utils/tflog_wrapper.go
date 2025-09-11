@@ -92,13 +92,13 @@ func (t *tflogWrapper) ResponseHttp(ctx context.Context, resp *http.Response, d 
 }
 
 func (t *tflogWrapper) Request(ctx context.Context, req any) {
-	tflog.Debug(ctx, "SDK request", map[string]any{
+	tflog.Trace(ctx, "SDK request", map[string]any{
 		"body": req,
 	})
 }
 
 func (t *tflogWrapper) Response(ctx context.Context, resp any) {
-	tflog.Debug(ctx, "SDK response", map[string]any{
+	tflog.Trace(ctx, "SDK response", map[string]any{
 		"body": resp,
 	})
 }
