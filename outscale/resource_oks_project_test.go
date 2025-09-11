@@ -10,7 +10,7 @@ import (
 
 func TestAccOKSProject_basic(t *testing.T) {
 	name := acctest.RandomWithPrefix("project-basic")
-	resourceName := "outscale_oks_project.project_basic"
+	resourceName := "outscale_oks_project.project"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
@@ -18,8 +18,8 @@ func TestAccOKSProject_basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: oksProjectConfig(name),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "project_id"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
 					resource.TestCheckResourceAttr(resourceName, "cidr", "10.50.0.0/18"),
 				),
 			},
@@ -35,14 +35,14 @@ func TestAccOKSProject_basic(t *testing.T) {
 
 func oksProjectConfig(name string) string {
 	return fmt.Sprintf(`
-		resource "outscale_oks_project" "project_basic" {
+		resource "outscale_oks_project" "project" {
 			name = "%s"
 			cidr = "10.50.0.0/18"
 			region = "eu-west-2"
 			disable_api_termination = false
 
 			tags = {
-				name = "TestAccProjectBasic"
+				test = "TestAccProjectBasic"
 			}
 		}
 `, name)
