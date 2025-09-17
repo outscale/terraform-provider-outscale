@@ -53,7 +53,8 @@ func (t *tflogWrapper) RequestHttp(ctx context.Context, req *http.Request) {
 				fields["body"] = string(bodyBytes)
 				var jsonData any
 				if json.Unmarshal(bodyBytes, &jsonData) == nil {
-					cleaned := removeNulls(jsonData)
+					// cleaned := removeNulls(jsonData)
+					cleaned := jsonData
 					if indentJSON, err := json.MarshalIndent(cleaned, "", "  "); err == nil {
 						fields["body"] = string(indentJSON)
 					}

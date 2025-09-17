@@ -87,7 +87,7 @@ func RFC3339[T time.Time | *time.Time](v T) timetypes.RFC3339 {
 	}
 }
 
-func Obj[T any](ctx context.Context, obj basetypes.ObjectValue) (T, diag.Diagnostics) {
+func Model[T any](ctx context.Context, obj basetypes.ObjectValue) (T, diag.Diagnostics) {
 	var res T
 	diags := obj.As(ctx, &res, basetypes.ObjectAsOptions{})
 	return res, diags
