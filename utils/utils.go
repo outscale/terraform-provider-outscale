@@ -51,6 +51,8 @@ const (
 	ReadOKSDefaultTimeout   time.Duration = 2 * time.Minute
 	UpdateOKSDefaultTimeout time.Duration = 10 * time.Minute
 	DeleteOKSDefaultTimeout time.Duration = 10 * time.Minute
+	// TODO: adjust default value
+	UpgradeOKSDefaultTimeout time.Duration = 30 * time.Minute
 
 	TestAccVmType        string = "tinav6.c2r2p2"
 	LinkedPolicyNotFound string = "5102"
@@ -529,7 +531,7 @@ func WaitForResource[T any](ctx context.Context, conf *retry.StateChangeConf) (*
 	return resp, nil
 }
 
-func CheckDiags[T *fw_resource.CreateResponse | *fw_resource.UpdateResponse | *fw_resource.DeleteResponse | *fw_resource.ReadResponse | *fw_resource.ModifyPlanResponse](resp T, diags diag.
+func CheckDiags[T *fw_resource.CreateResponse | *fw_resource.UpdateResponse | *fw_resource.DeleteResponse | *fw_resource.ReadResponse | *fw_resource.ModifyPlanResponse | *fw_resource.ImportStateResponse](resp T, diags diag.
 	Diagnostics) bool {
 	switch r := any(resp).(type) {
 	case *fw_resource.DeleteResponse:
@@ -545,6 +547,9 @@ func CheckDiags[T *fw_resource.CreateResponse | *fw_resource.UpdateResponse | *f
 		r.Diagnostics.Append(diags...)
 		return r.Diagnostics.HasError()
 	case *fw_resource.ModifyPlanResponse:
+		r.Diagnostics.Append(diags...)
+		return r.Diagnostics.HasError()
+	case *fw_resource.ImportStateResponse:
 		r.Diagnostics.Append(diags...)
 		return r.Diagnostics.HasError()
 	default:

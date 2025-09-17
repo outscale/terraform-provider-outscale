@@ -3,6 +3,7 @@ package outscale
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
@@ -114,6 +115,13 @@ func (r *oksProjectResource) Schema(ctx context.Context, _ resource.SchemaReques
 			},
 			"name": schema.StringAttribute{
 				Required: true,
+				Validators: []validator.String{
+					stringvalidator.LengthBetween(1, 40),
+					stringvalidator.RegexMatches(
+						regexp.MustCompile("^[a-z][a-z0-9-]*[a-z0-9]$"),
+						"Unique name for the project, must start with a letter and contain only lowercase letters, numbers, or hyphens.",
+					),
+				},
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
