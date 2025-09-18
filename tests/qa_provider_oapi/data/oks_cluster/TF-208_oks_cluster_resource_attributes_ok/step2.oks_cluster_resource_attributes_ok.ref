@@ -1,0 +1,147 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "managed",
+            "type": "outscale_oks_cluster",
+            "name": "cluster",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "admin_lbu": false,
+                        "admin_whitelist": [
+                            "0.0.0.0/0",
+                            "100.0.0.0"
+                        ],
+                        "admission_flags": {
+                            "applied_admission_plugins": [
+                                "CertificateApproval",
+                                "CertificateSigning",
+                                "CertificateSubjectRestriction",
+                                "ClusterTrustBundleAttest",
+                                "DefaultIngressClass",
+                                "DefaultStorageClass",
+                                "DefaultTolerationSeconds",
+                                "EventRateLimit",
+                                "LimitRanger",
+                                "MutatingAdmissionWebhook",
+                                "NamespaceLifecycle",
+                                "PersistentVolumeClaimResize",
+                                "PodSecurity",
+                                "Priority",
+                                "ResourceQuota",
+                                "RuntimeClass",
+                                "ServiceAccount",
+                                "StorageObjectInUseProtection",
+                                "TaintNodesByCondition",
+                                "ValidatingAdmissionPolicy",
+                                "ValidatingAdmissionWebhook"
+                            ],
+                            "disable_admission_plugins": [],
+                            "disable_admission_plugins_actual": [],
+                            "enable_admission_plugins": [
+                                "EventRateLimit"
+                            ],
+                            "enable_admission_plugins_actual": [
+                                "EventRateLimit"
+                            ]
+                        },
+                        "auto_maintenances": {
+                            "minor_upgrade_maintenance": {
+                                "duration_hours": 1,
+                                "enabled": false,
+                                "start_hour": 10,
+                                "tz": null,
+                                "week_day": null
+                            },
+                            "minor_upgrade_maintenance_actual": {
+                                "duration_hours": 1,
+                                "enabled": false,
+                                "start_hour": 10,
+                                "tz": "UTC",
+                                "week_day": "Tue"
+                            },
+                            "patch_upgrade_maintenance": null,
+                            "patch_upgrade_maintenance_actual": {
+                                "duration_hours": 0,
+                                "enabled": true,
+                                "start_hour": 12,
+                                "tz": "UTC",
+                                "week_day": "Tue"
+                            }
+                        },
+                        "cidr_pods": "10.91.0.0/16",
+                        "cidr_service": "10.92.0.0/16",
+                        "cluster_dns": "10.92.0.10",
+                        "cni": "cilium",
+                        "control_planes": "cp.mono.master",
+                        "cp_multi_az": false,
+                        "cp_subregions": [
+                            "2a"
+                        ],
+                        "description": "TF208 OKS cluster",
+                        "disable_api_termination": true,
+                        "id": "##id-0##",
+                        "name": "oks-cluster-tf-208",
+                        "project_id": "##id-1##",
+                        "quirks": null,
+                        "request_id": "########",
+                        "statuses": {
+                            "available_upgrade": "",
+                            "created_at": "########",
+                            "deleted_at": null,
+                            "status": "ready",
+                            "updated_at": "########"
+                        },
+                        "tags": {
+                            "key": "value",
+                            "test": "TF-208"
+                        },
+                        "timeouts": null,
+                        "version": "1.31"
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "outscale_oks_project.project"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_oks_project",
+            "name": "project",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "cidr": "10.50.0.0/18",
+                        "created_at": "########",
+                        "description": "TF208 OKS project",
+                        "disable_api_termination": false,
+                        "id": "##id-1##",
+                        "name": "oks-project-tf-208",
+                        "quirks": null,
+                        "region": "eu-west-2",
+                        "request_id": "########",
+                        "status": "ready",
+                        "tags": {},
+                        "timeouts": null,
+                        "updated_at": "########"
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
+                }
+            ]
+        }
+    ],
+    "check_results": "########"
+}
