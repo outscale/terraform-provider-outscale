@@ -82,6 +82,7 @@
                         "description": "TF208 OKS cluster",
                         "disable_api_termination": false,
                         "id": "##id-0##",
+                        "kubeconfig": "########",
                         "name": "oks-cluster-tf-208",
                         "project_id": "##id-1##",
                         "quirks": null,
@@ -100,7 +101,14 @@
                         "timeouts": null,
                         "version": "1.31"
                     },
-                    "sensitive_attributes": [],
+                    "sensitive_attributes": [
+                        [
+                            {
+                                "type": "get_attr",
+                                "value": "kubeconfig"
+                            }
+                        ]
+                    ],
                     "identity_schema_version": 0,
                     "dependencies": [
                         "outscale_oks_project.project"

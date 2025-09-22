@@ -57,7 +57,8 @@ IGNORE_END_ELEMENTS = ['request_id',
                        'quota_type',
                        'used_value',
                        'created_at',
-                       'updated_at'
+                       'updated_at',
+                       'kubeconfig'
                        ]
 IGNORE_TYPE_ELEMENTS = {'outscale_net_peering': 'expiration_date', 'outscale_net_peering_acceptation': 'expiration_date'}
 IGNORE_END_PATHS = []
