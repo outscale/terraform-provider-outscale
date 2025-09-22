@@ -54,6 +54,7 @@ type ClusterModel struct {
 	Quirks                types.Set      `tfsdk:"quirks"`
 	Statuses              types.Object   `tfsdk:"statuses"`
 	Version               types.String   `tfsdk:"version"`
+	Kubeconfig            types.String   `tfsdk:"kubeconfig"`
 	Timeouts              timeouts.Value `tfsdk:"timeouts"`
 	RequestId             types.String   `tfsdk:"request_id"`
 	OKSTagsModel
@@ -318,6 +319,10 @@ func (r *oksClusterResource) Schema(ctx context.Context, _ resource.SchemaReques
 			},
 			"version": schema.StringAttribute{
 				Required: true,
+			},
+			"kubeconfig": schema.StringAttribute{
+				Computed:  true,
+				Sensitive: true,
 			},
 			"tags": OKSTagsSchema(),
 			"request_id": schema.StringAttribute{
@@ -943,6 +948,12 @@ func (r *oksClusterResource) setOKSClusterState(ctx context.Context, data Cluste
 	data.ProjectId = to.String(cluster.ProjectId)
 	data.RequestId = to.String(resp.ResponseContext.RequestId)
 	data.Version = to.String(cluster.Version)
+
+	kubeconfigResp, err := r.Client.GetKubeconfig(ctx, cluster.Id, nil)
+	if err != nil {
+		return data, err
+	}
+	data.Kubeconfig = to.String(kubeconfigResp.Cluster.Data.Kubeconfig)
 
 	tags, diags := flattenOKSTags(ctx, cluster.Tags)
 	if diags.HasError() {

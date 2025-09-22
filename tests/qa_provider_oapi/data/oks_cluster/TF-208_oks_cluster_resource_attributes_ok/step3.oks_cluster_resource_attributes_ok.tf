@@ -11,7 +11,6 @@ resource "outscale_oks_cluster" "cluster" {
   admin_whitelist         = ["0.0.0.0/0", "100.0.0.0"]
   cidr_pods               = "10.91.0.0/16"
   cidr_service            = "10.92.0.0/16"
-  # version                 = "1.32"
   version                 = "1.31"
   name                    = "oks-cluster-tf-208"
   control_planes          = "cp.mono.master"

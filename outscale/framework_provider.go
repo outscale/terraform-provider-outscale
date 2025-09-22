@@ -198,6 +198,7 @@ func (p *frameworkProvider) DataSources(ctx context.Context) []func() datasource
 	return []func() datasource.DataSource{
 		NewDataSourceQuota,
 		NewDataSourceOKSQuotas,
+		NewDataSourceOKSKubeconfig,
 	}
 }
 

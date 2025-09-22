@@ -19,6 +19,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	set "github.com/deckarep/golang-set/v2"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	fw_data "github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	fw_resource "github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -531,7 +532,7 @@ func WaitForResource[T any](ctx context.Context, conf *retry.StateChangeConf) (*
 	return resp, nil
 }
 
-func CheckDiags[T *fw_resource.CreateResponse | *fw_resource.UpdateResponse | *fw_resource.DeleteResponse | *fw_resource.ReadResponse | *fw_resource.ModifyPlanResponse | *fw_resource.ImportStateResponse](resp T, diags diag.
+func CheckDiags[T *fw_resource.CreateResponse | *fw_resource.UpdateResponse | *fw_resource.DeleteResponse | *fw_resource.ReadResponse | *fw_resource.ModifyPlanResponse | *fw_resource.ImportStateResponse | *fw_data.ReadResponse](resp T, diags diag.
 	Diagnostics) bool {
 	switch r := any(resp).(type) {
 	case *fw_resource.DeleteResponse:
@@ -550,6 +551,9 @@ func CheckDiags[T *fw_resource.CreateResponse | *fw_resource.UpdateResponse | *f
 		r.Diagnostics.Append(diags...)
 		return r.Diagnostics.HasError()
 	case *fw_resource.ImportStateResponse:
+		r.Diagnostics.Append(diags...)
+		return r.Diagnostics.HasError()
+	case *fw_data.ReadResponse:
 		r.Diagnostics.Append(diags...)
 		return r.Diagnostics.HasError()
 	default:
