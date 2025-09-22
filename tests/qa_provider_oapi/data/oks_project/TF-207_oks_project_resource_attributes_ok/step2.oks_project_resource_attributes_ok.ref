@@ -26,7 +26,7 @@
                         "status": "ready",
                         "tags": {
                             "key": "value",
-                            "name": "TF-207"
+                            "test": "TF-207"
                         },
                         "timeouts": null,
                         "updated_at": "########"
