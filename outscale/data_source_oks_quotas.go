@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	sdkv3_oks "github.com/outscale/osc-sdk-go/v3/pkg/oks"
 )
 
@@ -44,6 +45,7 @@ type oksQuotasModel struct {
 	KubeVersions       types.Set    `tfsdk:"kube_versions"`
 	Projects           types.Int32  `tfsdk:"projects"`
 	RequestId          types.String `tfsdk:"request_id"`
+	Id                 types.String `tfsdk:"id"`
 }
 
 func (d *oksQuotasDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -68,6 +70,9 @@ func (d *oksQuotasDataSource) Schema(ctx context.Context, req datasource.SchemaR
 				Computed: true,
 			},
 			"request_id": schema.StringAttribute{
+				Computed: true,
+			},
+			"id": schema.StringAttribute{
 				Computed: true,
 			},
 		},
@@ -101,6 +106,7 @@ func (d *oksQuotasDataSource) Read(ctx context.Context, req datasource.ReadReque
 	data.KubeVersions = kubeVer
 	data.Projects = types.Int32Value(int32(quotas.Quotas.Projects))
 	data.RequestId = types.StringValue(quotas.ResponseContext.RequestId)
+	data.Id = types.StringValue(id.UniqueId())
 	diags = resp.State.Set(ctx, &data)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
