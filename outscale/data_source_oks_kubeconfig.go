@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/outscale/osc-sdk-go/v3/pkg/oks"
 	"github.com/outscale/terraform-provider-outscale/utils"
 	"github.com/outscale/terraform-provider-outscale/utils/to"
@@ -48,6 +49,7 @@ type oksKubeconfigModel struct {
 	XEncryptNacl types.String `tfsdk:"x_encrypt_nacl"`
 	Kubeconfig   types.String `tfsdk:"kubeconfig"`
 	RequestId    types.String `tfsdk:"request_id"`
+	Id           types.String `tfsdk:"id"`
 }
 
 func (d *oksKubeconfigDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -79,6 +81,9 @@ func (d *oksKubeconfigDataSource) Schema(ctx context.Context, req datasource.Sch
 				Sensitive: true,
 			},
 			"request_id": schema.StringAttribute{
+				Computed: true,
+			},
+			"id": schema.StringAttribute{
 				Computed: true,
 			},
 		},
@@ -135,6 +140,7 @@ func (d *oksKubeconfigDataSource) Read(ctx context.Context, req datasource.ReadR
 
 	data.Kubeconfig = to.String(kubeconfigResp.Cluster.Data.Kubeconfig)
 	data.RequestId = to.String(kubeconfigResp.Cluster.RequestId)
+	data.Id = types.StringValue(id.UniqueId())
 
 	diags = resp.State.Set(ctx, &data)
 	resp.Diagnostics.Append(diags...)
