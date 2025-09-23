@@ -6,6 +6,9 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"regexp"
+	"slices"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -53,9 +56,7 @@ func (t *tflogWrapper) RequestHttp(ctx context.Context, req *http.Request) {
 				fields["body"] = string(bodyBytes)
 				var jsonData any
 				if json.Unmarshal(bodyBytes, &jsonData) == nil {
-					// cleaned := removeNulls(jsonData)
-					cleaned := jsonData
-					if indentJSON, err := json.MarshalIndent(cleaned, "", "  "); err == nil {
+					if indentJSON, err := json.MarshalIndent(jsonData, "", "  "); err == nil {
 						fields["body"] = string(indentJSON)
 					}
 				}
@@ -79,6 +80,7 @@ func (t *tflogWrapper) ResponseHttp(ctx context.Context, resp *http.Response, d 
 		fields["body"] = string(bodyBytes)
 		var jsonData any
 		if json.Unmarshal(bodyBytes, &jsonData) == nil {
+			jsonData = maskSensitiveValues(jsonData)
 			if prettyJSON, err := json.MarshalIndent(jsonData, "", "  "); err == nil {
 				fields["body"] = string(prettyJSON)
 			}
@@ -99,6 +101,16 @@ func (t *tflogWrapper) Request(ctx context.Context, req any) {
 }
 
 func (t *tflogWrapper) Response(ctx context.Context, resp any) {
+	if jsonBytes, err := json.Marshal(resp); err == nil {
+		var jsonData any
+		if json.Unmarshal(jsonBytes, &jsonData) == nil {
+			tflog.Trace(ctx, "SDK response", map[string]any{
+				"body": maskSensitiveValues(jsonData),
+			})
+			return
+		}
+	}
+
 	tflog.Trace(ctx, "SDK response", map[string]any{
 		"body": resp,
 	})
@@ -108,4 +120,55 @@ func (t *tflogWrapper) Error(ctx context.Context, err error) {
 	tflog.Error(ctx, "SDK error", map[string]any{
 		"error": err.Error(),
 	})
+}
+
+// Masks values of sensitive keys of JSON data.
+// It supports masking the values based on the key name,
+// and subvalues stored in a string (kubeconfig case).
+func maskSensitiveValues(data any) any {
+	mask := "(sensitive)"
+	sensitiveKeys := []string{
+		"client-certificate-data",
+		"client-key-data",
+		"certificate-authority-data",
+		"token",
+	}
+
+	sensitiveValueRegexes := make([]*regexp.Regexp, len(sensitiveKeys))
+	for i, key := range sensitiveKeys {
+		pattern := regexp.QuoteMeta(key) + `:\s*\S+`
+		sensitiveValueRegexes[i] = regexp.MustCompile(pattern)
+	}
+
+	switch v := data.(type) {
+	case map[string]any:
+		result := make(map[string]any)
+		for key, value := range v {
+			if slices.Contains(sensitiveKeys, key) {
+				result[key] = mask
+			} else if str, ok := value.(string); ok {
+				maskedStr := str
+				for _, regex := range sensitiveValueRegexes {
+					maskedStr = regex.ReplaceAllStringFunc(maskedStr, func(match string) string {
+						parts := strings.SplitN(match, ":", 2)
+						if len(parts) == 2 {
+							return parts[0] + ": " + mask
+						}
+						return mask
+					})
+				}
+				result[key] = maskedStr
+			} else {
+				result[key] = maskSensitiveValues(value)
+			}
+		}
+		return result
+	case []any:
+		for i, item := range v {
+			v[i] = maskSensitiveValues(item)
+		}
+		return v
+	default:
+		return v
+	}
 }
