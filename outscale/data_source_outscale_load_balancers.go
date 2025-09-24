@@ -94,14 +94,7 @@ func attrLBSchema() map[string]*schema.Schema {
 					"backend_vm_ids": {
 						Type:     schema.TypeList,
 						Computed: true,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"vm_id": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-							},
-						},
+						Elem:     &schema.Schema{Type: schema.TypeString},
 					},
 					"backend_ips": {
 						Type:     schema.TypeList,
