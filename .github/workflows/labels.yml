@@ -1,0 +1,16 @@
+name: Sync labels
+on:
+  workflow_dispatch:
+
+permissions:
+  issues: write  # needed to edit labels
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: EndBug/label-sync@v2
+        with:
+          config-file: 'https://raw.githubusercontent.com/outscale/.github/main/labels.yml'
+          # delete-other-labels: false   # set to true for strict sync
+          # dry-run: false               # set to true to preview changes
