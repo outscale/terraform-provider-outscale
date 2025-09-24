@@ -1,0 +1,13 @@
+# Use Gitmoji + Conventional Commit style:
+# Example: :sparkles: feat: add support for --dry-run flag
+#
+# Gitmoji reference: https://gitmoji.dev/
+#
+# Common types:
+# - :sparkles: feat      – A new feature
+# - :bug: fix            – A bug fix
+# - :memo: docs          – Documentation only changes
+# - :recycle: refactor   – Code refactoring
+# - :lipstick: style     – Styling only, no logic change
+# - :white_check_mark: test – Adding or fixing tests
+# - :rocket: chore       – Tooling or infra tasks

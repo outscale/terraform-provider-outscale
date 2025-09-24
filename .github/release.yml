@@ -1,0 +1,56 @@
+changelog:
+  exclude:
+    labels:
+      - skip-changelog
+    authors:
+      - github-actions[bot]
+
+  categories:
+    - title: 💥 Breaking
+      labels:
+        - breaking-change
+    - title: ✨ Added
+      labels:
+        - kind/feature
+    - title: 🛠️ Changed / Refactoring
+      labels:
+        - kind/refactoring
+        - kind/other
+    - title: 📝 Documentation
+      labels:
+        - kind/documentation
+    - title: ⚰️ Deprecated
+      labels:
+        - kind/deprecation
+    - title: 🗑️ Removed
+      labels:
+        - kind/cleanup
+    - title: 🐛 Fixed
+      labels:
+        - kind/bug
+    - title: 🔒 Security
+      labels:
+        - security
+    - title: 📦 Dependency updates
+      labels:
+        - dependencies
+    - title: 🌱 Others
+      labels:
+        - "*"
+
+templates:
+  title: "Release v$RESOLVED_VERSION"
+  body: |
+    ## 📦 Overview
+    This release brings new features, bug fixes, and improvements.
+
+    ## 📝 Changelog
+    $CHANGES
+
+    ## 🔧 Upgrade notes
+    - Review **Breaking Changes** carefully.
+    - Follow migration steps if applicable.
+
+    ## 👥 Contributors
+    Thanks to everyone who contributed:
+    $CONTRIBUTORS
