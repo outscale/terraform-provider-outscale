@@ -1,0 +1,7 @@
+# This file assigns code owners automatically to pull requests
+
+# Assign @alice to all files in the repository
+* @outscale/Terraform
+
+# Assign @bob to all files in the backend/ directory
+/docs/ @outscale/Documentation
