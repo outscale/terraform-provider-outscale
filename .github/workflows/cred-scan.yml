@@ -4,11 +4,14 @@ on:
   pull_request:
     branches: [ master ]
 
+permissions:
+  contents: read
+
 jobs:
   cred-scan:
-    runs-on: [self-hosted, linux]
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Scan credentials
       uses: outscale/cred-scan@main
       with:
