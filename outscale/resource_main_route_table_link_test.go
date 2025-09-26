@@ -11,7 +11,7 @@ func TestAccNet_WithLinkMainRouteTable_basic(t *testing.T) {
 	resourceName := "outscale_main_route_table_link.main"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV5ProviderFactories: defineTestProviderFactories(),
+		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccLinkMainRouteTableConfig,

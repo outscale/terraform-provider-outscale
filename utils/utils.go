@@ -19,7 +19,9 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	set "github.com/deckarep/golang-set/v2"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	fw_data "github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	fw_resource "github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -44,13 +46,22 @@ const (
 	ReadDefaultTimeout   time.Duration = 5 * time.Minute
 	UpdateDefaultTimeout time.Duration = 10 * time.Minute
 	DeleteDefaultTimeout time.Duration = 5 * time.Minute
-	TestAccVmType        string        = "tinav6.c2r2p2"
-	LinkedPolicyNotFound string        = "5102"
-	InvalidState         string        = "InvalidState"
-	SuffixConfigFilePath string        = "/.osc/config.json"
-	pathRegex            string        = "^(/[a-zA-Z0-9/_]+/)"
-	pathError            string        = "path must begin and end with '/' and contain only alphanumeric characters and/or '/', '_' characters"
-	VolumeIOPSError      string        = `
+
+	// TODO: move into const.go of package
+	CreateOKSDefaultTimeout time.Duration = 15 * time.Minute
+	ReadOKSDefaultTimeout   time.Duration = 2 * time.Minute
+	UpdateOKSDefaultTimeout time.Duration = 10 * time.Minute
+	DeleteOKSDefaultTimeout time.Duration = 10 * time.Minute
+	// TODO: adjust default value
+	UpgradeOKSDefaultTimeout time.Duration = 30 * time.Minute
+
+	TestAccVmType        string = "tinav6.c2r2p2"
+	LinkedPolicyNotFound string = "5102"
+	InvalidState         string = "InvalidState"
+	SuffixConfigFilePath string = "/.osc/config.json"
+	pathRegex            string = "^(/[a-zA-Z0-9/_]+/)"
+	pathError            string = "path must begin and end with '/' and contain only alphanumeric characters and/or '/', '_' characters"
+	VolumeIOPSError      string = `
 The "iops" parameter can only be set when creating an "io1" volume.
 Check Outscale API documentation for more details:
 https://docs.outscale.com/en/userguide/About-Volumes.html#_volume_types_and_iops
@@ -505,4 +516,51 @@ func ForAll[T any](collection []T, predicate func(item T) bool) bool {
 	}
 
 	return true
+}
+
+func WaitForResource[T any](ctx context.Context, conf *retry.StateChangeConf) (*T, error) {
+	respRaw, err := conf.WaitForStateContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, ok := respRaw.(*T)
+	if !ok {
+		return nil, fmt.Errorf("unexpected response type: %T", respRaw)
+	}
+
+	return resp, nil
+}
+
+func CheckDiags[T *fw_resource.CreateResponse | *fw_resource.UpdateResponse | *fw_resource.DeleteResponse | *fw_resource.ReadResponse | *fw_resource.ModifyPlanResponse | *fw_resource.ImportStateResponse | *fw_data.ReadResponse](resp T, diags diag.
+	Diagnostics) bool {
+	switch r := any(resp).(type) {
+	case *fw_resource.DeleteResponse:
+		r.Diagnostics.Append(diags...)
+		return r.Diagnostics.HasError()
+	case *fw_resource.ReadResponse:
+		r.Diagnostics.Append(diags...)
+		return r.Diagnostics.HasError()
+	case *fw_resource.UpdateResponse:
+		r.Diagnostics.Append(diags...)
+		return r.Diagnostics.HasError()
+	case *fw_resource.CreateResponse:
+		r.Diagnostics.Append(diags...)
+		return r.Diagnostics.HasError()
+	case *fw_resource.ModifyPlanResponse:
+		r.Diagnostics.Append(diags...)
+		return r.Diagnostics.HasError()
+	case *fw_resource.ImportStateResponse:
+		r.Diagnostics.Append(diags...)
+		return r.Diagnostics.HasError()
+	case *fw_data.ReadResponse:
+		r.Diagnostics.Append(diags...)
+		return r.Diagnostics.HasError()
+	default:
+		return true
+	}
+}
+
+func IsSet(v attr.Value) bool {
+	return !v.IsNull() && !v.IsUnknown()
 }

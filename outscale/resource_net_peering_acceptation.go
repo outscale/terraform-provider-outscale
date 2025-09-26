@@ -54,7 +54,7 @@ func (r *resourceNetPeeringAcceptation) Configure(_ context.Context, req resourc
 	if req.ProviderData == nil {
 		return
 	}
-	client, ok := req.ProviderData.(OutscaleClient_fw)
+	client, ok := req.ProviderData.(OutscaleClientFW)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Data Source Configure Type",

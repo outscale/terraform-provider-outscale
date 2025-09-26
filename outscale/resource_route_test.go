@@ -14,7 +14,7 @@ func TestAccNet_OutscaleRoute_noopdiff(t *testing.T) {
 	resourceName := "outscale_route.test"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV5ProviderFactories: defineTestProviderFactories(),
+		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleRouteNoopChange,
@@ -32,7 +32,7 @@ func TestAccNet_ImportRoute_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV5ProviderFactories: defineTestProviderFactories(),
+		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleRouteNoopChange,
@@ -53,7 +53,7 @@ func TestAccNet_Route_importWithNatService(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV5ProviderFactories: defineTestProviderFactories(),
+		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleRouteWithNatService,
@@ -77,7 +77,7 @@ func TestAccNet_Route_changeTarget(t *testing.T) {
 			testAccPreCheck(t)
 
 		},
-		ProtoV5ProviderFactories: defineTestProviderFactories(),
+		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: computeConfigTestChangeTarget([]string{"nat_service_id"}),
@@ -98,7 +98,7 @@ func TestAccNet_Route_changeTarget(t *testing.T) {
 func TestAccNet_Route_onlyOneTarget(t *testing.T) {
 	regex := regexp.MustCompile(".*")
 	resource.Test(t, resource.TestCase{
-		ProtoV5ProviderFactories: defineTestProviderFactories(),
+		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
 		PreCheck: func() {
 			testAccPreCheck(t)
 

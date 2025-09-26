@@ -22,7 +22,7 @@ func TestAccOthers_SecurityGroupRule_basic(t *testing.T) {
 	if os.Getenv("TEST_QUOTA") == "true" {
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { testAccPreCheck(t) },
-			ProtoV5ProviderFactories: defineTestProviderFactories(),
+			ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
 			Steps: []resource.TestStep{
 				{
 					Config: testAccOutscaleSecurityGroupRuleEgressConfig(rInt),
@@ -52,7 +52,7 @@ func TestAccNet_AddSecurityGroupRuleMembersWithSgName(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV5ProviderFactories: defineTestProviderFactories(),
+		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccAddSecurityGroupRuleMembersWithSgName(rInt, accountID),
