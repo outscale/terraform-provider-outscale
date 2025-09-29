@@ -18,10 +18,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/outscale/osc-sdk-go/v3/pkg/oks"
 	"github.com/outscale/terraform-provider-outscale/fwvalidators"
@@ -30,8 +32,10 @@ import (
 )
 
 var (
-	_ resource.Resource              = &oksClusterResource{}
-	_ resource.ResourceWithConfigure = &oksClusterResource{}
+	_ resource.Resource                = &oksClusterResource{}
+	_ resource.ResourceWithConfigure   = &oksClusterResource{}
+	_ resource.ResourceWithImportState = &oksClusterResource{}
+	_ resource.ResourceWithModifyPlan  = &oksClusterResource{}
 )
 
 type ClusterModel struct {
@@ -124,6 +128,34 @@ func (r *oksClusterResource) ImportState(ctx context.Context, req resource.Impor
 
 func (r *oksClusterResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_oks_cluster"
+}
+
+func (r *oksClusterResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || req.State.Raw.IsNull() {
+		return
+	}
+
+	var plan, state, config ClusterModel
+	diags := req.Plan.Get(ctx, &plan)
+	if utils.CheckDiags(resp, diags) {
+		return
+	}
+	diags = req.State.Get(ctx, &state)
+	if utils.CheckDiags(resp, diags) {
+		return
+	}
+	diags = req.Config.Get(ctx, &config)
+	if utils.CheckDiags(resp, diags) {
+		return
+	}
+
+	if utils.IsSet(plan.Version) && !plan.Version.Equal(state.Version) {
+		resp.Diagnostics.AddWarning("Cluster Upgrade.",
+			"Changing the Cluster version will call an Upgrade on the Cluster.")
+	}
+	if utils.IsSet(plan.ControlPlanes) && !plan.ControlPlanes.Equal(state.ControlPlanes) {
+		resp.Diagnostics.AddWarning("Cluster upgrade.", "Changing the Cluster control planes will call an Upgrade on the Cluster.")
+	}
 }
 
 func (r *oksClusterResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -260,6 +292,7 @@ func (r *oksClusterResource) Schema(ctx context.Context, _ resource.SchemaReques
 			"description": schema.StringAttribute{
 				Computed: true,
 				Optional: true,
+				Default:  stringdefault.StaticString(""),
 			},
 			"disable_api_termination": schema.BoolAttribute{
 				Computed: true,
@@ -574,8 +607,8 @@ func (r *oksClusterResource) Read(ctx context.Context, req resource.ReadRequest,
 func (r *oksClusterResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var (
 		plan, state ClusterModel
-		update      oks.ClusterUpdate
-		// doUpgrade   bool
+		updateReq   oks.ClusterUpdate
+		doUpgrade   bool
 	)
 	diags := req.Plan.Get(ctx, &plan)
 	if utils.CheckDiags(resp, diags) {
@@ -603,10 +636,10 @@ func (r *oksClusterResource) Update(ctx context.Context, req resource.UpdateRequ
 		if utils.CheckDiags(resp, diags) {
 			return
 		}
-		update.AdminWhitelist = &admins
+		updateReq.AdminWhitelist = &admins
 	}
 	if !plan.AdmissionFlags.Equal(state.AdmissionFlags) {
-		update.AdmissionFlags = &oks.AdmissionFlagsInput{}
+		updateReq.AdmissionFlags = &oks.AdmissionFlagsInput{}
 
 		if utils.IsSet(plan.AdmissionFlags) {
 			planAdmission, diags := to.Model[AdmissionFlagsModel](ctx, plan.AdmissionFlags)
@@ -619,33 +652,33 @@ func (r *oksClusterResource) Update(ctx context.Context, req resource.UpdateRequ
 			}
 
 			if planAdmission.DisableAdmissionPlugins.IsNull() && !planAdmission.DisableAdmissionPlugins.Equal(stateAdmission.DisableAdmissionPlugins) {
-				update.AdmissionFlags.DisableAdmissionPlugins = &[]string{}
+				updateReq.AdmissionFlags.DisableAdmissionPlugins = &[]string{}
 			} else {
 				disablePlugins, diags := to.Slice[string](ctx, planAdmission.DisableAdmissionPlugins)
 				if utils.CheckDiags(resp, diags) {
 					return
 				}
-				update.AdmissionFlags.DisableAdmissionPlugins = &disablePlugins
+				updateReq.AdmissionFlags.DisableAdmissionPlugins = &disablePlugins
 			}
 			if planAdmission.EnableAdmissionPlugins.IsNull() && !planAdmission.EnableAdmissionPlugins.Equal(stateAdmission.EnableAdmissionPlugins) {
-				update.AdmissionFlags.EnableAdmissionPlugins = &[]string{}
+				updateReq.AdmissionFlags.EnableAdmissionPlugins = &[]string{}
 			} else {
 				enablePlugins, diags := to.Slice[string](ctx, planAdmission.EnableAdmissionPlugins)
 				if utils.CheckDiags(resp, diags) {
 					return
 				}
-				update.AdmissionFlags.EnableAdmissionPlugins = &enablePlugins
+				updateReq.AdmissionFlags.EnableAdmissionPlugins = &enablePlugins
 			}
 		} else {
 			// Send empty slice to reset to default
-			update.AdmissionFlags.DisableAdmissionPlugins = &[]string{}
-			update.AdmissionFlags.EnableAdmissionPlugins = &[]string{}
+			updateReq.AdmissionFlags.DisableAdmissionPlugins = &[]string{}
+			updateReq.AdmissionFlags.EnableAdmissionPlugins = &[]string{}
 		}
 		// Set new optional value to state, since Read does not write it
 		state.AdmissionFlags = plan.AdmissionFlags
 	}
 	if !plan.AutoMaintenances.Equal(state.AutoMaintenances) {
-		update.AutoMaintenances = &oks.AutoMaintenances{}
+		updateReq.AutoMaintenances = &oks.AutoMaintenances{}
 
 		if utils.IsSet(plan.AutoMaintenances) {
 			stateAuto, diags := to.Model[AutoMaintenancesModel](ctx, state.AutoMaintenances)
@@ -658,61 +691,61 @@ func (r *oksClusterResource) Update(ctx context.Context, req resource.UpdateRequ
 			}
 
 			if planAuto.MinorUpgradeMaintenance.IsNull() && !planAuto.MinorUpgradeMaintenance.Equal(stateAuto.MinorUpgradeMaintenance) {
-				update.AutoMaintenances.MinorUpgradeMaintenance = oks.MaintenanceWindow{}
+				updateReq.AutoMaintenances.MinorUpgradeMaintenance = oks.MaintenanceWindow{}
 			} else {
 				minor, diags := r.expandOKSAutoMaintenances(ctx, planAuto.MinorUpgradeMaintenance)
 				if utils.CheckDiags(resp, diags) {
 					return
 				}
-				update.AutoMaintenances.MinorUpgradeMaintenance = minor
+				updateReq.AutoMaintenances.MinorUpgradeMaintenance = minor
 			}
 			if planAuto.PatchUpgradeMaintenance.IsNull() && !planAuto.PatchUpgradeMaintenance.Equal(stateAuto.PatchUpgradeMaintenance) {
-				update.AutoMaintenances.PatchUpgradeMaintenance = oks.MaintenanceWindow{}
+				updateReq.AutoMaintenances.PatchUpgradeMaintenance = oks.MaintenanceWindow{}
 			} else {
 				patch, diags := r.expandOKSAutoMaintenances(ctx, planAuto.PatchUpgradeMaintenance)
 				if utils.CheckDiags(resp, diags) {
 					return
 				}
-				update.AutoMaintenances.PatchUpgradeMaintenance = patch
+				updateReq.AutoMaintenances.PatchUpgradeMaintenance = patch
 			}
 		} else {
 			// Send empty struct to reset to default value
-			update.AutoMaintenances.MinorUpgradeMaintenance = oks.MaintenanceWindow{}
-			update.AutoMaintenances.PatchUpgradeMaintenance = oks.MaintenanceWindow{}
+			updateReq.AutoMaintenances.MinorUpgradeMaintenance = oks.MaintenanceWindow{}
+			updateReq.AutoMaintenances.PatchUpgradeMaintenance = oks.MaintenanceWindow{}
 		}
 		// Set new optional value to state, since Read does not write it
 		state.AutoMaintenances = plan.AutoMaintenances
 	}
 	if utils.IsSet(plan.ControlPlanes) && !plan.ControlPlanes.Equal(state.ControlPlanes) {
-		update.ControlPlanes = plan.ControlPlanes.ValueStringPointer()
-		// doUpgrade = true
+		updateReq.ControlPlanes = plan.ControlPlanes.ValueStringPointer()
+		doUpgrade = true
 	}
 	if utils.IsSet(plan.Description) && !plan.Description.Equal(state.Description) {
-		update.Description = plan.Description.ValueStringPointer()
+		updateReq.Description = plan.Description.ValueStringPointer()
 	}
 	if utils.IsSet(plan.DisableApiTermination) && !plan.DisableApiTermination.Equal(state.DisableApiTermination) {
-		update.DisableApiTermination = plan.DisableApiTermination.ValueBoolPointer()
+		updateReq.DisableApiTermination = plan.DisableApiTermination.ValueBoolPointer()
 	}
 	if utils.IsSet(plan.Quirks) && !plan.Quirks.Equal(state.Quirks) {
 		quirks, diags := to.Slice[string](ctx, plan.Quirks)
 		if utils.CheckDiags(resp, diags) {
 			return
 		}
-		update.Quirks = &quirks
+		updateReq.Quirks = &quirks
 	}
 	if utils.IsSet(plan.Version) && !plan.Version.Equal(state.Version) {
-		update.Version = plan.Version.ValueStringPointer()
-		// doUpgrade = true
+		updateReq.Version = plan.Version.ValueStringPointer()
+		doUpgrade = true
 	}
 	tags, diags := cmpOKSTags(ctx, plan.OKSTagsModel, state.OKSTagsModel)
 	if utils.CheckDiags(resp, diags) {
 		return
 	}
 	if tags != nil {
-		update.Tags = &tags
+		updateReq.Tags = &tags
 	}
 
-	updateResp, err := r.Client.UpdateCluster(ctx, state.Id.ValueString(), update)
+	updateResp, err := r.Client.UpdateCluster(ctx, state.Id.ValueString(), updateReq)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Update Cluster",
@@ -722,11 +755,36 @@ func (r *oksClusterResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 	state.RequestId = to.String(updateResp.ResponseContext.RequestId)
 
-	to, diags := state.Timeouts.Update(ctx, utils.UpdateOKSDefaultTimeout)
+	timeout, diags := state.Timeouts.Update(ctx, utils.UpdateOKSDefaultTimeout)
 	if utils.CheckDiags(resp, diags) {
 		return
 	}
-	data, err := r.setOKSClusterState(ctx, state, to)
+	if doUpgrade {
+		_, err := r.waitForClusterState(ctx, state.Id.ValueString(), []string{"pending", "updating"}, []string{"ready"}, timeout)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable to wait for Cluster to complete updating.", "Error: "+err.Error(),
+			)
+			return
+		}
+		upgradeResp, err := r.Client.UpgradeCluster(ctx, state.Id.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable to Upgrade Cluster",
+				"Error: "+err.Error(),
+			)
+			return
+		}
+		state.RequestId = to.String(upgradeResp.ResponseContext.RequestId)
+
+		timeout, diags = state.Timeouts.Update(ctx, utils.UpgradeOKSDefaultTimeout)
+		if utils.CheckDiags(resp, diags) {
+			return
+		}
+		tflog.Info(ctx, fmt.Sprintf("Cluster upgrading. Timeout is set at %s.", timeout.String()))
+	}
+
+	data, err := r.setOKSClusterState(ctx, state, timeout)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to set Cluster state",
