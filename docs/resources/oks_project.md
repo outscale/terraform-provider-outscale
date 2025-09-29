@@ -60,7 +60,7 @@ An OKS project can be imported using its ID. For example:
 
 ```console
 
-$ terraform import outscale_oks_cluster.cluster id
+$ terraform import outscale_oks_project.project id
 
 ```
 
