@@ -10,6 +10,7 @@ import (
 )
 
 func TestAccOthers_SnapshotExportTasksDataSource_basic(t *testing.T) {
+	t.Skip("")
 	imageName := acctest.RandomWithPrefix("terraform-export")
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },

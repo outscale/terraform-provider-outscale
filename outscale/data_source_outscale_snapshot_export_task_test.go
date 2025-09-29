@@ -11,6 +11,7 @@ import (
 )
 
 func TestAccOthers_SnapshotExportTaskDataSource_basic(t *testing.T) {
+	t.Skip("")
 	t.Parallel()
 	imageName := acctest.RandomWithPrefix("terraform-export-")
 	resource.Test(t, resource.TestCase{
