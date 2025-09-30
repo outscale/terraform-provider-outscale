@@ -57,7 +57,7 @@ The following arguments are supported:
         * `start_hour` - The starting time of the maintenance window, in hours. By default, `12`.
         * `tz` - The timezone for the maintenance window. By default, `UTC`.
         * `week_day` - The weekday on which the maintenance window begins (`Mon` \| `Tue` \| `Wed` \| `Thu` \| `Fri` \| `Sat` \| `Sun`). By default, `Tue`.
-    * `patch_upgrade_maintenance`- The maintenance window configuration for patch Kubernetes upgrades.
+    * `patch_upgrade_maintenance` - The maintenance window configuration for patch Kubernetes upgrades.
         * `duration_hours` - The duration of the maintenance window, in hours. By default, `0`.
         * `enabled` - If true, a maintenance window is enabled. By default, true.
         * `start_hour` - The starting time of the maintenance window, in hours. By default, `12`.
