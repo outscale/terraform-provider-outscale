@@ -67,10 +67,10 @@ The following arguments are supported:
 * `control_planes` - (Optional) The size of control plane deployment for the cluster. For more information, see [About OKS > Control Planes](https://docs.outscale.com/en/userguide/About-OKS.html#_control_planes). By default, `cp.3.masters.small`.
 * `cp_multi_az` - (Optional) If true, multi-Subregion deployment is enabled for the control plane. If false, it is disabled. By default, false.
 * `cp_subregions` - (Optional) The list of Subregions where control plane components are deployed.
-* `description` - (Optional) A description for the project.
+* `description` - (Optional) A description of the cluster.
 * `disable_api_termination` - (Optional) If true, cluster deletion through the API is disabled. If false, it is enabled. By default, false.
 * `quirks` - (Optional) The list of special configurations or behaviors for the cluster.
-* `tags` - (Optional) 	The key/value combinations of the tags associated with the cluster's metadata.
+* `tags` - (Optional) The key/value combinations of the tags associated with the cluster's metadata.
 
 ## Attribute Reference
 
@@ -86,10 +86,10 @@ The following attributes are exported:
 * `request_id` - The ID of the API request.
 * `statuses` - The status information of the cluster.
     * `available_upgrade` - Any available version of Kubernetes for upgrade (if applicable). For more information, see [GetKubernetesVersions](https://docs.outscale.com/oks.html#getkubenetesversions).
-    * `created_at` - The timestamp when the project was created (date-time).
-    * `deleted_at` - The timestamp when the project was deleted (if applicable) (date-time).
-    * `status` - The status of the project.
-    * `updated_at` - The timestamp when the project was last updated (date-time).
+    * `created_at` - The timestamp when the cluster was created (date-time).
+    * `deleted_at` - The timestamp when the cluster was deleted (if applicable) (date-time).
+    * `status` - The status of the cluster.
+    * `updated_at` - The timestamp when the cluster was last updated (date-time).
 * `auto_maintenances` - The configurations for automated maintenance windows.
     * `minor_upgrade_maintenance_actual` - The maintenance window configuration for minor Kubernetes upgrades.
     * `patch_upgrade_maintenance_actual` - The maintenance window configuration for minor Kubernetes upgrades.
@@ -98,7 +98,7 @@ The following attributes are exported:
 
 ## Import
 
-An OKS project can be imported using its ID. For example:
+An OKS cluster can be imported using its ID. For example:
 
 ```console
 
