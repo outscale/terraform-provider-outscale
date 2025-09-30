@@ -1,14 +1,14 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_oks_kubeconfig"
-sidebar_current: "outscale-oks_kubeconfig"
+sidebar_current: "outscale-oks-kubeconfig"
 description: |-
-  [Manages a kubeconfig file.]
+  [Provides information about a kubeconfig file.]
 ---
 
 # outscale_oks_kubeconfig Data Source
 
-Manages a kubeconfig file.
+Provides information about a kubeconfig file.
 
 For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/Accessing-a-Cluster.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/oks.html#getkubeconfigwithpubkeynacl).
@@ -25,7 +25,7 @@ data "outscale_oks_kubeconfig" "config" {
 
 The following arguments are supported:
 
-* `cluster_id` - The ID of the cluster.
+* `cluster_id` - (Required) The ID of the cluster.
 * `user` - (Optional) The user of the kubeconfig file.
 * `group` - (Optional) The group of the kubeconfig file.
 * `ttl` - (Optional) The time to live (TTL) of the kubeconfig file.
