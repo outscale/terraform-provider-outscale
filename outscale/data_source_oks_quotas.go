@@ -93,23 +93,20 @@ func (d *oksQuotasDataSource) Read(ctx context.Context, req datasource.ReadReque
 
 	cpSubregions, diags := types.SetValueFrom(ctx, types.StringType, quotas.Quotas.CPSubregions)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+
 	data.CPSubregions = cpSubregions
 	data.ClustersPerProject = types.Int32Value(int32(quotas.Quotas.ClustersPerProject))
 	kubeVer, diags := types.SetValueFrom(ctx, types.StringType, quotas.Quotas.KubeVersions)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+
 	data.KubeVersions = kubeVer
 	data.Projects = types.Int32Value(int32(quotas.Quotas.Projects))
 	data.RequestId = types.StringValue(quotas.ResponseContext.RequestId)
 	data.Id = types.StringValue(id.UniqueId())
-	diags = resp.State.Set(ctx, &data)
-	resp.Diagnostics.Append(diags...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	diags = resp.State.Set(ctx, &data)
+	resp.Diagnostics.Append(diags...)
 }

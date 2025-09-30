@@ -24,8 +24,9 @@ func OKSTagsSchema() schema.MapAttribute {
 	}
 }
 
-func expandOKSTags(ctx context.Context, data OKSTagsModel) (tags map[string]string, diags diag.Diagnostics) {
-	diags = data.Tags.ElementsAs(ctx, &tags, false)
+func expandOKSTags(ctx context.Context, data OKSTagsModel) (map[string]string, diag.Diagnostics) {
+	var tags map[string]string
+	diags := data.Tags.ElementsAs(ctx, &tags, false)
 	if diags.HasError() {
 		diags.AddError("Tags conversion error", "Unable to convert Tags into the SDK Model.")
 		return tags, diags
@@ -33,8 +34,8 @@ func expandOKSTags(ctx context.Context, data OKSTagsModel) (tags map[string]stri
 	return tags, nil
 }
 
-func flattenOKSTags(ctx context.Context, oksTags any) (tags basetypes.MapValue, diags diag.Diagnostics) {
-	tags, diags = types.MapValueFrom(ctx, types.StringType, oksTags)
+func flattenOKSTags(ctx context.Context, oksTags any) (basetypes.MapValue, diag.Diagnostics) {
+	tags, diags := types.MapValueFrom(ctx, types.StringType, oksTags)
 	if diags.HasError() {
 		diags.AddError("Tags conversion error", "Unable to convert Tags into the Schema Model.")
 		return tags, diags
@@ -42,13 +43,13 @@ func flattenOKSTags(ctx context.Context, oksTags any) (tags basetypes.MapValue, 
 	return tags, nil
 }
 
-func cmpOKSTags(ctx context.Context, plan, state OKSTagsModel) (_ map[string]string, diags diag.Diagnostics) {
+func cmpOKSTags(ctx context.Context, plan, state OKSTagsModel) (map[string]string, diag.Diagnostics) {
 	if plan.Tags.Equal(state.Tags) {
-		return nil, diags
+		return nil, nil
 	}
 
 	var tags map[string]string
-	diags.Append(plan.Tags.ElementsAs(ctx, &tags, false)...)
+	diags := plan.Tags.ElementsAs(ctx, &tags, false)
 
 	return tags, diags
 }
