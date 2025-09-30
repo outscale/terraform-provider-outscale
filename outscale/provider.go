@@ -10,13 +10,9 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-var endpointServiceNames []string
-
-func init() {
-	endpointServiceNames = []string{
-		"api",
-		"oks",
-	}
+var endpointServiceNames = []string{
+	"api",
+	"oks",
 }
 
 // Provider ...

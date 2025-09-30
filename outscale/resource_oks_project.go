@@ -178,9 +178,7 @@ func (r *oksProjectResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 	if utils.IsSet(data.Quirks) {
 		quirks, diags := to.Slice[string](ctx, data.Quirks)
-		if utils.CheckDiags(resp, diags) {
-			return
-		}
+		resp.Diagnostics.Append(diags...)
 		input.Quirks = &quirks
 	}
 
@@ -215,9 +213,7 @@ func (r *oksProjectResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 	diags = resp.State.Set(ctx, &data)
-	if utils.CheckDiags(resp, diags) {
-		return
-	}
+	resp.Diagnostics.Append(diags...)
 }
 
 func (r *oksProjectResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -245,9 +241,7 @@ func (r *oksProjectResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 	diags = resp.State.Set(ctx, &data)
-	if utils.CheckDiags(resp, diags) {
-		return
-	}
+	resp.Diagnostics.Append(diags...)
 }
 
 func (r *oksProjectResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -256,9 +250,7 @@ func (r *oksProjectResource) Update(ctx context.Context, req resource.UpdateRequ
 		update      oks.ProjectUpdate
 	)
 	diags := req.Plan.Get(ctx, &plan)
-	if utils.CheckDiags(resp, diags) {
-		return
-	}
+	resp.Diagnostics.Append(diags...)
 	diags = req.State.Get(ctx, &state)
 	if utils.CheckDiags(resp, diags) {
 		return
@@ -280,9 +272,7 @@ func (r *oksProjectResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 	if utils.IsSet(plan.Quirks) && !plan.Quirks.Equal(state.Quirks) {
 		quirks, diags := to.Slice[string](ctx, plan.Quirks)
-		if utils.CheckDiags(resp, diags) {
-			return
-		}
+		resp.Diagnostics.Append(diags...)
 		update.Quirks = &quirks
 	}
 	tags, diags := cmpOKSTags(ctx, plan.OKSTagsModel, state.OKSTagsModel)
@@ -312,9 +302,7 @@ func (r *oksProjectResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 	diags = resp.State.Set(ctx, &data)
-	if utils.CheckDiags(resp, diags) {
-		return
-	}
+	resp.Diagnostics.Append(diags...)
 }
 
 func (r *oksProjectResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
