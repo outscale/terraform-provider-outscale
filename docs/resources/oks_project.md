@@ -24,6 +24,7 @@ resource "outscale_oks_project" "project01" {
     tagkey = "tagvalue"
   }
 }
+```
 
 ## Argument Reference
 
