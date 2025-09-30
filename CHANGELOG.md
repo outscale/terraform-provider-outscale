@@ -1,3 +1,57 @@
+# 📜 Changelog
+
+All notable changes to this project will be documented in this file.
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
+and this project adheres to [Semantic Versioning](https://semver.org/).
+
+---
+
+## [Unreleased]
+
+## [1.3.0-alpha.1] - 2025-09-30
+
+v1.3.0-alpha.1 implements Outscale Kubernetes Service (OKS) support in the Terraform provider with:
+
+**Resources:**
+- `outscale_oks_project` - Manage OKS projects
+- `outscale_oks_cluster` - Manage Kubernetes clusters within OKS projects
+
+**Data Sources:**
+- `outscale_oks_quotas` - Retrieve OKS account quotas
+- `outscale_oks_kubeconfig` - Fetch OKS cluster kubeconfig
+
+It also adds support for the Protocol Version 6, using the Protocol Version 5 to 6 [Muxer](https://developer.hashicorp.com/terraform/plugin/mux/translating-protocol-version-5-to-6).
+
+### ✨ Added
+- ✨ feat: Protocol Version 6 support
+- ✨ feat: osc-sdk-go@v3 support for OKS
+- ✨ feat: OKS Cluster resource
+- ✨ feat: OKS Project resource
+- ✨ feat: OKS Quotas datasource
+- ✨ feat: OKS Kubeconfig datasource
+
+### 🛠️ Changed / Refactoring
+- 🔊 chore: wrap SDKv3 logger to tflog
+
+### 📝 Documentation
+- 📝 docs: Adding missing templates
+- 📝 docs: Adding OKS project resource
+- 📝 docs: Adding OKS kubeconfig datasource
+- 📝 docs: Adding OKS cluster resource
+- 📝 docs: Adding OKS cluster resource - typo fix
+
+### 🐛 Fixed
+- 🐛 fix: backend_vm_ids element type #580
+
+### 🌱 Others
+- 👷 ci: Update sanity scan file
+- 🔧 config: Add codeowners file to help selecting reviewers
+- 🔨 chore: Add label sync script
+- 👷 ci: Update cred-scan workflow
+- 👷 ci: use github changelog for goreleaser
+
+---
+
 ## [1.2.1] - 2025-08-27
 ### 🐛 Bug Fixes
 - 🐛 Add missing boot modes attributes for the `image` resource
