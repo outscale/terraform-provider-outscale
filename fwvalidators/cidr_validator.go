@@ -13,7 +13,7 @@ var _ validator.String = cidrValidator{}
 type cidrValidator struct{}
 
 func (v cidrValidator) Description(_ context.Context) string {
-	return "Value must be a CIDR"
+	return "Value must be a valid CIDR"
 }
 
 func (v cidrValidator) MarkdownDescription(ctx context.Context) string {
@@ -28,7 +28,7 @@ func (v cidrValidator) ValidateString(ctx context.Context, req validator.StringR
 	if _, _, err := net.ParseCIDR(req.ConfigValue.ValueString()); err != nil {
 		response.Diagnostics.Append(validatordiag.InvalidAttributeValueDiagnostic(
 			req.Path,
-			v.Description(ctx)+err.Error(),
+			v.Description(ctx),
 			req.ConfigValue.ValueString(),
 		))
 		return
