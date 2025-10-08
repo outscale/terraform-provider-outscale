@@ -1,6 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_quotas"
+subcategory: "Quota"
 sidebar_current: "outscale-quotas"
 description: |-
   [Provides information about quotas.]

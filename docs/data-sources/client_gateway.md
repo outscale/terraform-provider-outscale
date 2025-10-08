@@ -1,6 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_client_gateway"
+subcategory: "Client Gateway"
 sidebar_current: "outscale-client-gateway"
 description: |-
   [Provides information about a client gateway.]

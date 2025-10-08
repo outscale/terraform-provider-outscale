@@ -1,6 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_image_launch_permission"
+subcategory: "Image"
 sidebar_current: "outscale-image-launch-permission"
 description: |-
   [Manages an image launch permission.]

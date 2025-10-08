@@ -1,6 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_vm_types"
+subcategory: "VM"
 sidebar_current: "outscale-vm-types"
 description: |-
   [Provides information about VM types.]

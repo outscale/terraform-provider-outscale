@@ -1,6 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_nic_link"
+subcategory: "NIC (Network Interface Card)"
 sidebar_current: "outscale-nic-link"
 description: |-
   [Manages a NIC link.]

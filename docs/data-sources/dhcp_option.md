@@ -1,6 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_dhcp_option"
+subcategory: "DHCP Options"
 sidebar_current: "outscale-dhcp-option"
 description: |-
   [Provides information about a DHCP option.]

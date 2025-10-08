@@ -1,6 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_net_peering_acceptation"
+subcategory: "Net Peering"
 sidebar_current: "outscale-net-peering-acceptation"
 description: |-
   [Manages a Net peering acceptation.]

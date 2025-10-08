@@ -1,6 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_keypairs"
+subcategory: "Keypair"
 sidebar_current: "outscale-keypairs"
 description: |-
   [Provides information about keypairs.]

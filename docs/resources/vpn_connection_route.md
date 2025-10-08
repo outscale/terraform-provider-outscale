@@ -1,6 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_vpn_connection_route"
+subcategory: "VPN Connection"
 sidebar_current: "outscale-vpn-connection-route"
 description: |-
   [Manages a VPN connection route.]
