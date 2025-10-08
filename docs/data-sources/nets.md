@@ -1,6 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_nets"
+subcategory: "Net"
 sidebar_current: "outscale-nets"
 description: |-
   [Provides information about Nets.]

@@ -1,6 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_server_certificate"
+subcategory: "Server Certificate"
 sidebar_current: "outscale-server-certificate"
 description: |-
   [Provides information about a server certificate.]

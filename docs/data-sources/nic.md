@@ -1,6 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_nic"
+subcategory: "NIC (Network Interface Card)"
 sidebar_current: "outscale-nic"
 description: |-
   [Provides information about a network interface card (NIC).]

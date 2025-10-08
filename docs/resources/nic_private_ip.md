@@ -1,6 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_nic_private_ip"
+subcategory: "NIC (Network Interface Card)"
 sidebar_current: "outscale-nic-private-ip"
 description: |-
   [Manages a NIC's private IPs.]

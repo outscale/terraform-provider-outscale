@@ -1,6 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_regions"
+subcategory: "Region"
 sidebar_current: "outscale-regions"
 description: |-
   [Provides information about Regions.]

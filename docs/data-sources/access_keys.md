@@ -1,6 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_access_keys"
+subcategory: "Access Key"
 sidebar_current: "outscale-access-keys"
 description: |-
   [Provides information about access keys.]

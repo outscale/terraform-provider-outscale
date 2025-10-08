@@ -1,6 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_user_groups_per_user"
+subcategory: "User Group"
 sidebar_current: "outscale-user-groups-per-user"
 description: |-
   [Provides information about  groups that a specified user belongs to.]

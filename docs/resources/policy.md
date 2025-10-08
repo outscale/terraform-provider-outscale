@@ -1,6 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_policy"
+subcategory: "Policy"
 sidebar_current: "outscale-policy"
 description: |-
   [Manages a policy.]

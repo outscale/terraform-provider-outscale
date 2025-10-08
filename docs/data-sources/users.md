@@ -1,6 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_users"
+subcategory: "User"
 sidebar_current: "outscale-users"
 description: |-
   [Provides information about users.]

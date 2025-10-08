@@ -1,6 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_route_tables"
+subcategory: "Route Table"
 sidebar_current: "outscale-route-tables"
 description: |-
   [Provides information about route tables.]

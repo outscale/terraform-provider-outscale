@@ -1,6 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_snapshot_export_tasks"
+subcategory: "Snapshot"
 sidebar_current: "outscale-snapshot-export-tasks"
 description: |-
   [Provides information about snapshot export tasks.]

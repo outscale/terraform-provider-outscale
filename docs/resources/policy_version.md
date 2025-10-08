@@ -1,6 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_policy_version"
+subcategory: "Policy"
 sidebar_current: "outscale-policy-version"
 description: |-
   [Manages a policy version.]

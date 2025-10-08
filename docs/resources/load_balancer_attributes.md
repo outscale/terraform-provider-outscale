@@ -1,6 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_load_balancer_attributes"
+subcategory: "Load Balancer"
 sidebar_current: "outscale-load-balancer-attributes"
 description: |-
   [Manages load balancer attributes.]

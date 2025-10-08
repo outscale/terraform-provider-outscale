@@ -1,6 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_snapshots"
+subcategory: "Snapshot"
 sidebar_current: "outscale-snapshots"
 description: |-
   [Provides information about snapshots.]

@@ -1,6 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_oks_project"
+subcategory: "OKS"
 sidebar_current: "outscale-oks-project"
 description: |-
   [Manages a project.]
