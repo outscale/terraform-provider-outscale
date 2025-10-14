@@ -13,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
@@ -223,9 +222,6 @@ func (r *resourceVolume) Schema(ctx context.Context, _ resource.SchemaRequest, r
 			"size": schema.Int32Attribute{
 				Optional: true,
 				Computed: true,
-				PlanModifiers: []planmodifier.Int32{
-					int32planmodifier.RequiresReplace(),
-				},
 			},
 			"state": schema.StringAttribute{
 				Computed: true,
@@ -381,6 +377,27 @@ func (r *resourceVolume) Update(ctx context.Context, req resource.UpdateRequest,
 
 	volumeId := dataState.VolumeId.ValueString()
 	dataState.TerminationSnapshotName = dataPlan.TerminationSnapshotName
+
+	if !dataPlan.Size.Equal(dataState.Size) {
+		updateReq := oscgo.NewUpdateVolumeRequest(volumeId)
+		updateReq.Size = dataPlan.Size.ValueInt32Pointer()
+		err := retry.RetryContext(ctx, updateTimeout, func() *retry.RetryError {
+			rp, httpResp, err := r.Client.VolumeApi.UpdateVolume(ctx).UpdateVolumeRequest(*updateReq).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp, err)
+			}
+			dataState.RequestId = types.StringValue(*rp.ResponseContext.RequestId)
+			return nil
+		})
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable to update volume size",
+				err.Error(),
+			)
+			return
+		}
+	}
+
 	if dataPlan.VolumeType.ValueString() == "io1" && !dataPlan.Iops.Equal(dataState.Iops) {
 		updateReq := oscgo.NewUpdateVolumeRequest(volumeId)
 		updateReq.Iops = dataPlan.Iops.ValueInt32Pointer()
@@ -394,7 +411,7 @@ func (r *resourceVolume) Update(ctx context.Context, req resource.UpdateRequest,
 		})
 		if err != nil {
 			resp.Diagnostics.AddError(
-				"Unable to create volume resource",
+				"Unable to update volume resource",
 				err.Error(),
 			)
 			return
@@ -414,7 +431,7 @@ func (r *resourceVolume) Update(ctx context.Context, req resource.UpdateRequest,
 	}
 
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{"updating"},
+		Pending:    []string{"creating", "updating", "optimizing"},
 		Target:     []string{"available", "in-use"},
 		Refresh:    getVolumeStateRefreshFunc(ctx, r.Client, updateTimeout, volumeId),
 		Timeout:    updateTimeout,
