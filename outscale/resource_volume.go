@@ -431,7 +431,7 @@ func (r *resourceVolume) Update(ctx context.Context, req resource.UpdateRequest,
 	}
 
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{"creating", "updating", "optimizing"},
+		Pending:    []string{"updating"},
 		Target:     []string{"available", "in-use"},
 		Refresh:    getVolumeStateRefreshFunc(ctx, r.Client, updateTimeout, volumeId),
 		Timeout:    updateTimeout,
