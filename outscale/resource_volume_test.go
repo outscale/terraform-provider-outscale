@@ -39,6 +39,7 @@ func TestAccOthers_Volume_updateSize(t *testing.T) {
 	region := utils.GetRegion()
 
 	resourceName := "outscale_volume.accvolume"
+	var volumeID string
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
@@ -48,6 +49,10 @@ func TestAccOthers_Volume_updateSize(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "size", "1"),
 					resource.TestCheckResourceAttrSet(resourceName, "tags.#"),
+					resource.TestCheckResourceAttrWith(resourceName, "volume_id", func(value string) error {
+						volumeID = value
+						return nil
+					}),
 				),
 			},
 			{
@@ -55,6 +60,12 @@ func TestAccOthers_Volume_updateSize(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "size", "10"),
 					resource.TestCheckResourceAttrSet(resourceName, "tags.#"),
+					resource.TestCheckResourceAttrWith(resourceName, "volume_id", func(value string) error {
+						if value != volumeID {
+							return fmt.Errorf("volume_id changed from %s to %s, resource was replaced instead of updated", volumeID, value)
+						}
+						return nil
+					}),
 				),
 			},
 		},
