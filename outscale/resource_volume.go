@@ -378,29 +378,20 @@ func (r *resourceVolume) Update(ctx context.Context, req resource.UpdateRequest,
 	volumeId := dataState.VolumeId.ValueString()
 	dataState.TerminationSnapshotName = dataPlan.TerminationSnapshotName
 
+	updateReq := oscgo.NewUpdateVolumeRequest(volumeId)
+	shouldUpdate := false
+
 	if !dataPlan.Size.Equal(dataState.Size) {
-		updateReq := oscgo.NewUpdateVolumeRequest(volumeId)
 		updateReq.Size = dataPlan.Size.ValueInt32Pointer()
-		err := retry.RetryContext(ctx, updateTimeout, func() *retry.RetryError {
-			rp, httpResp, err := r.Client.VolumeApi.UpdateVolume(ctx).UpdateVolumeRequest(*updateReq).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			dataState.RequestId = types.StringValue(*rp.ResponseContext.RequestId)
-			return nil
-		})
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable to update volume size",
-				err.Error(),
-			)
-			return
-		}
+		shouldUpdate = true
 	}
 
 	if dataPlan.VolumeType.ValueString() == "io1" && !dataPlan.Iops.Equal(dataState.Iops) {
-		updateReq := oscgo.NewUpdateVolumeRequest(volumeId)
 		updateReq.Iops = dataPlan.Iops.ValueInt32Pointer()
+		shouldUpdate = true
+	}
+
+	if shouldUpdate {
 		err := retry.RetryContext(ctx, updateTimeout, func() *retry.RetryError {
 			rp, httpResp, err := r.Client.VolumeApi.UpdateVolume(ctx).UpdateVolumeRequest(*updateReq).Execute()
 			if err != nil {
