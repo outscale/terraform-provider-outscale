@@ -63,12 +63,10 @@ func newAPIClientFW(data *ProviderModel) (apiClient *oscgo.APIClient, err error)
 
 // Client ...
 func (c *frameworkProvider) ClientFW(ctx context.Context, data *ProviderModel, diags *diag.Diagnostics) (*OutscaleClientFW, error) {
-	ok, err := isProfileSet(data)
+	loadConfigFromEnv(data)
+	err := mergeProfileConfig(data)
 	if err != nil {
 		return nil, err
-	}
-	if !ok {
-		setDefaultEnv(data)
 	}
 
 	oscClient, err := newAPIClientFW(data)
@@ -86,8 +84,7 @@ func (c *frameworkProvider) ClientFW(ctx context.Context, data *ProviderModel, d
 	return client, nil
 }
 
-func isProfileSet(data *ProviderModel) (bool, error) {
-	isProfSet := false
+func mergeProfileConfig(data *ProviderModel) error {
 	if profileName, ok := os.LookupEnv("OSC_PROFILE"); ok || !data.Profile.IsNull() {
 		if data.Profile.ValueString() != "" {
 			profileName = data.Profile.ValueString()
@@ -103,26 +100,25 @@ func isProfileSet(data *ProviderModel) (bool, error) {
 		} else {
 			homePath, err := os.UserHomeDir()
 			if err != nil {
-				return isProfSet, err
+				return err
 			}
 			configFilePath = homePath + utils.SuffixConfigFilePath
 		}
 		jsonFile, err := os.ReadFile(configFilePath)
 		if err != nil {
-			return isProfSet, fmt.Errorf("unable to read config file '%v', Error: %w", configFilePath, err)
+			return fmt.Errorf("unable to read config file '%v', Error: %w", configFilePath, err)
 		}
 		profile := gjson.GetBytes(jsonFile, profileName)
 		if !gjson.Valid(profile.String()) {
-			return isProfSet, errors.New("invalid json profile file")
+			return errors.New("invalid json profile file")
 		}
 		if !profile.Get("access_key").Exists() ||
 			!profile.Get("secret_key").Exists() {
-			return isProfSet, errors.New("profile 'access_key' or 'secret_key' are not defined! ")
+			return errors.New("profile 'access_key' or 'secret_key' are not defined! ")
 		}
 		setProfile(data, profile)
-		isProfSet = true
 	}
-	return isProfSet, nil
+	return nil
 }
 
 func setProfile(data *ProviderModel, profile gjson.Result) {
@@ -172,7 +168,7 @@ func setProfile(data *ProviderModel, profile gjson.Result) {
 	}
 }
 
-func setDefaultEnv(data *ProviderModel) {
+func loadConfigFromEnv(data *ProviderModel) {
 	if data.AccessKeyId.IsNull() {
 		if accessKeyId := utils.GetEnvVariableValue([]string{"OSC_ACCESS_KEY", "OUTSCALE_ACCESSKEYID"}); accessKeyId != "" {
 			data.AccessKeyId = types.StringValue(accessKeyId)
