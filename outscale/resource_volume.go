@@ -378,6 +378,18 @@ func (r *resourceVolume) Update(ctx context.Context, req resource.UpdateRequest,
 	volumeId := dataState.VolumeId.ValueString()
 	dataState.TerminationSnapshotName = dataPlan.TerminationSnapshotName
 
+	if !reflect.DeepEqual(dataPlan.Tags, dataState.Tags) {
+		toRemove, toCreate := diffOSCAPITags(tagsToOSCResourceTag(dataPlan.Tags), tagsToOSCResourceTag(dataState.Tags))
+		err := updateFrameworkTags(ctx, r.Client, toCreate, toRemove, volumeId)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable to update Tags on volume resource.",
+				err.Error(),
+			)
+			return
+		}
+	}
+
 	updateReq := oscgo.NewUpdateVolumeRequest(volumeId)
 	shouldUpdate := false
 
@@ -386,17 +398,19 @@ func (r *resourceVolume) Update(ctx context.Context, req resource.UpdateRequest,
 		shouldUpdate = true
 	}
 
-	if dataPlan.VolumeType.ValueString() == "io1" && !dataPlan.Iops.Equal(dataState.Iops) {
+	if !dataPlan.Iops.Equal(dataState.Iops) {
 		updateReq.Iops = dataPlan.Iops.ValueInt32Pointer()
 		shouldUpdate = true
 	}
 
 	if shouldUpdate {
+		var volume oscgo.UpdateVolumeResponse
 		err := retry.RetryContext(ctx, updateTimeout, func() *retry.RetryError {
 			rp, httpResp, err := r.Client.VolumeApi.UpdateVolume(ctx).UpdateVolumeRequest(*updateReq).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
 			}
+			volume = rp
 			dataState.RequestId = types.StringValue(*rp.ResponseContext.RequestId)
 			return nil
 		})
@@ -407,39 +421,50 @@ func (r *resourceVolume) Update(ctx context.Context, req resource.UpdateRequest,
 			)
 			return
 		}
-	}
 
-	if !reflect.DeepEqual(dataPlan.Tags, dataState.Tags) {
-		toRemove, toCreate := diffOSCAPITags(tagsToOSCResourceTag(dataPlan.Tags), tagsToOSCResourceTag(dataState.Tags))
-		err := updateFrameworkTags(ctx, r.Client, toCreate, toRemove, volumeId)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable to update Tags on volume resource",
-				err.Error(),
-			)
-			return
+		if volume.GetVolume().TaskId.IsSet() {
+			id := volume.GetVolume().TaskId.Get()
+
+			_, err := utils.WaitForResource[oscgo.ReadVolumeUpdateTasksResponse](ctx, &retry.StateChangeConf{
+				Pending: []string{"pending", "active"},
+				Target:  []string{"completed"},
+				Refresh: func() (any, string, error) {
+					var readResp oscgo.ReadVolumeUpdateTasksResponse
+
+					err := retry.RetryContext(ctx, updateTimeout, func() *retry.RetryError {
+						rp, httpResp, err := r.Client.VolumeApi.ReadVolumeUpdateTasks(ctx).ReadVolumeUpdateTasksRequest(oscgo.ReadVolumeUpdateTasksRequest{
+							Filters: &oscgo.FiltersUpdateVolumeTask{
+								TaskIds: &[]string{*id},
+							},
+						}).Execute()
+						if err != nil {
+							return utils.CheckThrottling(httpResp, err)
+						}
+						readResp = rp
+						return nil
+					})
+					if err != nil {
+						return nil, "", err
+					}
+
+					return (*readResp.VolumeUpdateTasks)[0].State, "", err
+				},
+				Timeout: updateTimeout,
+			})
+			if err != nil {
+				resp.Diagnostics.AddError(
+					"Unable to set volume state.",
+					err.Error(),
+				)
+				return
+			}
 		}
 	}
 
-	stateConf := &retry.StateChangeConf{
-		Pending:    []string{"updating"},
-		Target:     []string{"available", "in-use"},
-		Refresh:    getVolumeStateRefreshFunc(ctx, r.Client, updateTimeout, volumeId),
-		Timeout:    updateTimeout,
-		Delay:      2 * time.Second,
-		MinTimeout: 3 * time.Second,
-	}
-	if _, err := stateConf.WaitForStateContext(ctx); err != nil {
-		resp.Diagnostics.AddError(
-			"Waiting for volume state to become available",
-			fmt.Sprintf("Unexpected volume (%s) state: '%s' ", volumeId, err.Error()),
-		)
-		return
-	}
 	err := setVolumeState(ctx, r, &dataState)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to set volume state after tags updating.",
+			"Unable to set volume state.",
 			err.Error(),
 		)
 		return
