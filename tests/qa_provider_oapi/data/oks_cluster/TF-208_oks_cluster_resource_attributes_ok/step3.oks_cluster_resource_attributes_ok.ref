@@ -28,7 +28,6 @@
                                 "DefaultIngressClass",
                                 "DefaultStorageClass",
                                 "DefaultTolerationSeconds",
-                                "EventRateLimit",
                                 "LimitRanger",
                                 "MutatingAdmissionWebhook",
                                 "NamespaceLifecycle",

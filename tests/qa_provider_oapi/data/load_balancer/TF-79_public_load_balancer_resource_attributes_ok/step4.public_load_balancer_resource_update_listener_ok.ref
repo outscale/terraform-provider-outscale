@@ -89,7 +89,7 @@
                         "body": "########",
                         "chain": "########",
                         "dry_run": null,
-                        "expiration_date": "",
+                        "expiration_date": "########",
                         "id": "##id-3##",
                         "name": "Certificate-TF-79-1",
                         "orn": "########",

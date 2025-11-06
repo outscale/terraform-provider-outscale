@@ -19,7 +19,7 @@
                         "request_id": "########",
                         "server_certificates": [
                             {
-                                "expiration_date": "",
+                                "expiration_date": "########",
                                 "id": "##id-1##",
                                 "name": "Certificate-TF189-2",
                                 "orn": "########",
@@ -27,7 +27,7 @@
                                 "upload_date": "########"
                             },
                             {
-                                "expiration_date": "",
+                                "expiration_date": "########",
                                 "id": "##id-2##",
                                 "name": "Certificate-TF189-1",
                                 "orn": "########",
@@ -53,7 +53,7 @@
                         "body": "########",
                         "chain": "########",
                         "dry_run": null,
-                        "expiration_date": "",
+                        "expiration_date": "########",
                         "id": "##id-2##",
                         "name": "Certificate-TF189-1",
                         "orn": "########",
@@ -80,7 +80,7 @@
                         "body": "########",
                         "chain": "########",
                         "dry_run": null,
-                        "expiration_date": "",
+                        "expiration_date": "########",
                         "id": "##id-1##",
                         "name": "Certificate-TF189-2",
                         "orn": "########",

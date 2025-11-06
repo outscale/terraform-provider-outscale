@@ -17,7 +17,7 @@
                         "body": "########",
                         "chain": "########",
                         "dry_run": null,
-                        "expiration_date": "",
+                        "expiration_date": "########",
                         "id": "##id-0##",
                         "name": "Certificate-TF187",
                         "orn": "########",
