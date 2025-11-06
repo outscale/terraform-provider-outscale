@@ -14,7 +14,7 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "expiration_date": "",
+                        "expiration_date": "########",
                         "filter": "########",
                         "id": "##id-0##",
                         "name": "Certificate-TF188",
@@ -40,7 +40,7 @@
                         "body": "########",
                         "chain": "########",
                         "dry_run": null,
-                        "expiration_date": "",
+                        "expiration_date": "########",
                         "id": "##id-0##",
                         "name": "Certificate-TF188",
                         "orn": "########",
