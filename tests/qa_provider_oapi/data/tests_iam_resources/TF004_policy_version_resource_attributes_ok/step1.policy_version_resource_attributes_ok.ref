@@ -82,7 +82,8 @@
                     "identity_schema_version": 0,
                     "private": "bnVsbA==",
                     "dependencies": [
-                        "outscale_policy.policy-1"
+                        "outscale_policy.policy-1",
+                        "outscale_policy_version.policy-1_version-02"
                     ]
                 }
             ]
