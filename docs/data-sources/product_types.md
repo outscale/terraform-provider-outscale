@@ -1,6 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_product_types"
+subcategory: "Product Type"
 sidebar_current: "outscale-product-types"
 description: |-
   [Provides information about product types.]

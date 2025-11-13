@@ -1,6 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_load_balancer_policy"
+subcategory: "Load Balancer Policy"
 sidebar_current: "outscale-load-balancer-policy"
 description: |-
   [Manages a load balancer policy.]

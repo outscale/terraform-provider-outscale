@@ -1,6 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_user_group"
+subcategory: "User Group"
 sidebar_current: "outscale-user-group"
 description: |-
   [Manages a user group.]

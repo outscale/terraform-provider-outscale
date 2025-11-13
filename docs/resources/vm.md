@@ -1,6 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_vm"
+subcategory: "VM"
 sidebar_current: "outscale-vm"
 description: |-
   [Manages a virtual machine (VM).]

@@ -1,6 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_accounts"
+subcategory: "Account"
 sidebar_current: "outscale-accounts"
 description: |-
   [Provides information about accounts.]

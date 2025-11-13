@@ -1,6 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_security_groups"
+subcategory: "Security Group"
 sidebar_current: "outscale-security-groups"
 description: |-
   [Provides information about security groups.]

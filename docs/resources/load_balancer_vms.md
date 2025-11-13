@@ -1,6 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_load_balancer_vms"
+subcategory: "Load Balancer"
 sidebar_current: "outscale-load-balancer-vms"
 description: |-
   [Manages load balancer VMs.]

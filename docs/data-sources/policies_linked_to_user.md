@@ -1,9 +1,10 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_policies_linked_to_user"
+subcategory: "Policy"
 sidebar_current: "outscale-policies-linked-to-user"
 description: |-
-  [Provides information about a link policy to user.]
+  [Provides information about a policy linked to an user.]
 ---
 
 # outscale_policies_linked_to_user Data Source

@@ -1,6 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_virtual_gateway_route_propagation"
+subcategory: "Virtual Gateway"
 sidebar_current: "outscale-virtual-gateway-route-propagation"
 description: |-
   [Manages a virtual gateway route propagation.]

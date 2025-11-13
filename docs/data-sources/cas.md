@@ -1,6 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_cas"
+subcategory: "CA (Client Certificate Authority)"
 sidebar_current: "outscale-cas"
 description: |-
   [Provides information about Certificate Authorities (CAs).]

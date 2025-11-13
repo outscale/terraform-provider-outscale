@@ -1,6 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_images"
+subcategory: "Image"
 sidebar_current: "outscale-images"
 description: |-
   [Provides information about images.]

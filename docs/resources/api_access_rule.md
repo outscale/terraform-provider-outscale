@@ -1,6 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_api_access_rule"
+subcategory: "API Access Rule"
 sidebar_current: "outscale-api-access-rule"
 description: |-
   [Manages an API access rule.]

@@ -1,6 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_snapshot_attributes"
+subcategory: "Snapshot"
 sidebar_current: "outscale-snapshot-attributes"
 description: |-
   [Manages snapshot attributes.]
