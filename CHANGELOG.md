@@ -8,6 +8,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### 💥 Breaking
+- (nothing yet)
+
+### ✨ Added
+- (nothing yet)
+
+### 🛠️ Changed / Refactoring
+- (nothing yet)
+
+### 📝 Documentation
+- (nothing yet)
+
+### ⚰️ Deprecated
+- (nothing yet)
+
+### 🗑️ Removed
+- (nothing yet)
+
+### 🐛 Fixed
+- (nothing yet)
+
+### 🔒 Security
+- (nothing yet)
+
+### 📦 Dependency updates
+- (nothing yet)
+
+### 🌱 Others
+- (nothing yet)
+
+## [1.3.0-alpha.2] - 2025-11-13
+
+### 🛠️ Changed / Refactoring
+- ♻️ refactor: #579 review by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/596
+
+### 🐛 Fixed
+- 🐛 fix: profile config handling by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/595
+
+### 🌱 Others
+- ✅ test: add policy version dependency by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/598
+
 ## [1.3.0-alpha.1] - 2025-09-30
 
 v1.3.0-alpha.1 implements Outscale Kubernetes Service (OKS) support in the Terraform provider with:
