@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_quotas"
-subcategory: "Quota"
+subcategory: "Identity Access Management (IAM)"
 sidebar_current: "outscale-quotas"
 description: |-
   [Provides information about quotas.]

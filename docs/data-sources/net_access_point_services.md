@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_net_access_point_services"
-subcategory: "Net Access Point"
+subcategory: "Network and Security"
 sidebar_current: "outscale-net-access-point-services"
 description: |-
   [Provides information about Net access point services.]

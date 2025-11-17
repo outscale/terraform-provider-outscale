@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_internet_service"
-subcategory: "Internet Service"
+subcategory: "Network and Security"
 sidebar_current: "outscale-internet-service"
 description: |-
   [Provides information about an Internet service.]

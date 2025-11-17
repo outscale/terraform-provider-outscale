@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_oks_project"
-subcategory: "OKS"
+subcategory: "OUTSCALE Kubernetes as a Service (OKS)"
 sidebar_current: "outscale-oks-project"
 description: |-
   [Manages a project.]

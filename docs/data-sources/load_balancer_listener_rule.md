@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_load_balancer_listener_rule"
-subcategory: "Load Balancer"
+subcategory: "Network and Security"
 sidebar_current: "outscale-load-balancer-listener-rule"
 description: |-
   [Provides information about a load balancer listener rule.]

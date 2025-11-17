@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_policy_version"
-subcategory: "Policy"
+subcategory: "Identity Access Management (IAM)"
 sidebar_current: "outscale-policy-version"
 description: |-
   [Manages a policy version.]

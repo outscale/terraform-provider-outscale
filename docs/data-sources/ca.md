@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_ca"
-subcategory: "CA (Client Certificate Authority)"
+subcategory: "Identity Access Management (IAM)"
 sidebar_current: "outscale-ca"
 description: |-
   [Provides information about a Certificate Authority (CA).]

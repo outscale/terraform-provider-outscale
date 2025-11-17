@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_client_gateways"
-subcategory: "Client Gateway"
+subcategory: "Network and Security"
 sidebar_current: "outscale-client-gateways"
 description: |-
   [Provides information about client gateways.]

@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_net_peering"
-subcategory: "Net Peering"
+subcategory: "Network and Security"
 sidebar_current: "outscale-net-peering"
 description: |-
   [Manages a Net peering.]
