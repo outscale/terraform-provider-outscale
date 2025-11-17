@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_user"
-subcategory: "User"
+subcategory: "OUTSCALE API"
 sidebar_current: "outscale-user"
 description: |-
   [Manages a user.]

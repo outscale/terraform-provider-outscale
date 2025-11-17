@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_public_ip"
-subcategory: "Public IP"
+subcategory: "OUTSCALE API"
 sidebar_current: "outscale-public-ip"
 description: |-
   [Manages a public IP.]

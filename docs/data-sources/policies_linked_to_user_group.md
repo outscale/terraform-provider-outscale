@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_policies_linked_to_user_group"
-subcategory: "Identity Access Management (IAM)"
+subcategory: "OUTSCALE API"
 sidebar_current: "outscale-policies-linked-to-user-group"
 description: |-
   [Provides information about a policy linked to a user group.]

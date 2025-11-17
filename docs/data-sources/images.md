@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_images"
-subcategory: "Compute"
+subcategory: "OUTSCALE API"
 sidebar_current: "outscale-images"
 description: |-
   [Provides information about images.]

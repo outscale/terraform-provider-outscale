@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_virtual_gateway"
-subcategory: "Virtual Gateway"
+subcategory: "OUTSCALE API"
 sidebar_current: "outscale-virtual-gateway"
 description: |-
   [Provides information about a virtual gateway.]

@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_user_group"
-subcategory: "User Group"
+subcategory: "OUTSCALE API"
 sidebar_current: "outscale-user-group"
 description: |-
   [Provides information about a user group.]

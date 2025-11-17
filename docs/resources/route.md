@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_route"
-subcategory: "Route"
+subcategory: "OUTSCALE API"
 sidebar_current: "outscale-route"
 description: |-
   [Manages a route.]

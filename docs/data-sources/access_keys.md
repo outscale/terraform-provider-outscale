@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_access_keys"
-subcategory: "Identity Access Management (IAM)"
+subcategory: "OUTSCALE API"
 sidebar_current: "outscale-access-keys"
 description: |-
   [Provides information about access keys.]

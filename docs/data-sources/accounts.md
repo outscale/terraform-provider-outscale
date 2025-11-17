@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_accounts"
-subcategory: "Identity Access Management (IAM)"
+subcategory: "OUTSCALE API"
 sidebar_current: "outscale-accounts"
 description: |-
   [Provides information about accounts.]

@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_vm_states"
-subcategory: "VM"
+subcategory: "OUTSCALE API"
 sidebar_current: "outscale-vm-states"
 description: |-
   [Provides information about VM states.]

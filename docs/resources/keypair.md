@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_keypair"
-subcategory: "Keypair"
+subcategory: "OUTSCALE API"
 sidebar_current: "outscale-keypair"
 description: |-
   [Manages a keypair.]

@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_subnet"
-subcategory: "Subnet"
+subcategory: "OUTSCALE API"
 sidebar_current: "outscale-subnet"
 description: |-
   [Manages a Subnet.]

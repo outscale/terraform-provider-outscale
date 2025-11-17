@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_product_type"
-subcategory: "Billing and Consumption"
+subcategory: "OUTSCALE API"
 sidebar_current: "outscale-product-type"
 description: |-
   [Provides information about a product type.]

@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_vms"
-subcategory: "VM"
+subcategory: "OUTSCALE API"
 sidebar_current: "outscale-vms"
 description: |-
   [Provides information about virtual machines (VMs).]

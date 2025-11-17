@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_load_balancer_vm_health"
-subcategory: "Load Balancer"
+subcategory: "OUTSCALE API"
 sidebar_current: "outscale-load-balancer-vm-health"
 description: |-
   [Provides information about the health of one or more backend VMs registered with a specific load balancer.]

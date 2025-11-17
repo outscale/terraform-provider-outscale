@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_public_ips"
-subcategory: "Network and Security"
+subcategory: "OUTSCALE API"
 sidebar_current: "outscale-public-ips"
 description: |-
   [Provides information about public IPs.]
