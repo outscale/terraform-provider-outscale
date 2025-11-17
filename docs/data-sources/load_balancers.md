@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_load_balancers"
-subcategory: "Load Balancer"
+subcategory: "OUTSCALE API"
 sidebar_current: "outscale-load-balancers"
 description: |-
   [Provides information about load balancers.]

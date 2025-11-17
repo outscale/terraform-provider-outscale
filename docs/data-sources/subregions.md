@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_subregions"
-subcategory: "Subregion"
+subcategory: "OUTSCALE API"
 sidebar_current: "outscale-subregions"
 description: |-
   [Provides information about subregions.]

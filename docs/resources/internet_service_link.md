@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_internet_service_link"
-subcategory: "Internet Service"
+subcategory: "OUTSCALE API"
 sidebar_current: "outscale-internet-service-link"
 description: |-
   [Manages an Internet service link.]

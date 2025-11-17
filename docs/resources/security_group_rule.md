@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_security_group_rule"
-subcategory: "Security Group"
+subcategory: "OUTSCALE API"
 sidebar_current: "outscale-security-group-rule"
 description: |-
   [Manages a security group rule.]

@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_vpn_connections"
-subcategory: "VPN Connection"
+subcategory: "OUTSCALE API"
 sidebar_current: "outscale-vpn-connections"
 description: |-
   [Provides information about VPN connections.]

@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_ca"
-subcategory: "CA (Client Certificate Authority)"
+subcategory: "OUTSCALE API"
 sidebar_current: "outscale-ca"
 description: |-
   [Manages a Certificate Authority (CA).]

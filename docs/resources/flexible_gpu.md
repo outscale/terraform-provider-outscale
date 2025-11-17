@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_flexible_gpu"
-subcategory: "Flexible GPUs (fGPUs)"
+subcategory: "OUTSCALE API"
 sidebar_current: "outscale-flexible-gpu"
 description: |-
   [Manages a flexible GPU.]

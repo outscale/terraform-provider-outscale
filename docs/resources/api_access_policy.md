@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_api_access_policy"
-subcategory: "API Access Policy"
+subcategory: "OUTSCALE API"
 sidebar_current: "outscale-api-access-policy"
 description: |-
   [Manages the API access policy.]

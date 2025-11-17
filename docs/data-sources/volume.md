@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_volume"
-subcategory: "Volume"
+subcategory: "OUTSCALE API"
 sidebar_current: "outscale-volume"
 description: |-
   [Provides information about a volume.]
