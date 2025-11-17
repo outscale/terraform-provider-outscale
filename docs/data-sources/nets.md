@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_nets"
-subcategory: "Net"
+subcategory: "Network and Security"
 sidebar_current: "outscale-nets"
 description: |-
   [Provides information about Nets.]

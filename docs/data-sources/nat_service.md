@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_nat_service"
-subcategory: "NAT Service"
+subcategory: "Network and Security"
 sidebar_current: "outscale-nat-service"
 description: |-
   [Provides information about a NAT service.]

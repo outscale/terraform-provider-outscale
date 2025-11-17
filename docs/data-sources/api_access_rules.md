@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_api_access_rules"
-subcategory: "API Access Rule"
+subcategory: "Identity Access Management (IAM)"
 sidebar_current: "outscale-api-access-rules"
 description: |-
   [Provides information about API access rules.]

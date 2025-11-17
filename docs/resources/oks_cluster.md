@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_oks_cluster"
-subcategory: "OKS"
+subcategory: "OUTSCALE Kubernetes as a Service (OKS)"
 sidebar_current: "outscale-oks-cluster"
 description: |-
   [Manages a cluster.]

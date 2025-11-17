@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_image_export_task"
-subcategory: "Image"
+subcategory: "Compute"
 sidebar_current: "outscale-image-export-task"
 description: |-
   [Provides information about an image export task.]

@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_entities_linked_to_policy"
-subcategory: "Policy"
+subcategory: "Identity Access Management (IAM)"
 sidebar_current: "outscale-entities-linked-to-policy"
 description: |-
   [Provides information about  entities (account, users, or user groups) linked to a specific managed policy.]

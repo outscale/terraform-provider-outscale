@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_net_attributes"
-subcategory: "Net"
+subcategory: "Network and Security"
 sidebar_current: "outscale-net-attributes"
 description: |-
   [Manages the attributes of a Net.]

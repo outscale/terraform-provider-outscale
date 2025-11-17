@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_policies"
-subcategory: "Policy"
+subcategory: "Identity Access Management (IAM)"
 sidebar_current: "outscale-policies"
 description: |-
   [Provides information about policies.]

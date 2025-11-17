@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_oks_kubeconfig"
-subcategory: "OKS"
+subcategory: "OUTSCALE Kubernetes as a Service (OKS)"
 sidebar_current: "outscale-oks-kubeconfig"
 description: |-
   [Provides information about a kubeconfig file.]
