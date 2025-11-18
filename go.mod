@@ -1,12 +1,12 @@
 module github.com/outscale/terraform-provider-outscale
 
-go 1.24.2
+go 1.25.4
 
 require (
-	github.com/aws/aws-sdk-go v1.55.7
+	github.com/aws/aws-sdk-go v1.55.8
 	github.com/davecgh/go-spew v1.1.1
 	github.com/deckarep/golang-set/v2 v2.8.0
-	github.com/go-test/deep v1.0.6
+	github.com/go-test/deep v1.0.8
 	github.com/hashicorp/errwrap v1.1.0
 	github.com/hashicorp/go-cty v1.5.0
 	github.com/hashicorp/terraform-plugin-framework v1.14.1
@@ -18,8 +18,9 @@ require (
 	github.com/hashicorp/terraform-plugin-mux v0.18.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.36.1
 	github.com/nav-inc/datetime v0.1.3
-	github.com/outscale/osc-sdk-go/v2 v2.27.0
+	github.com/outscale/osc-sdk-go/v2 v2.31.0
 	github.com/outscale/osc-sdk-go/v3 v3.0.0-alpha.5.0.20251112125254-1fb3f9ca574c
+	github.com/samber/lo v1.52.0
 	github.com/spf13/cast v1.6.0
 	github.com/tidwall/gjson v1.18.0
 )
@@ -75,7 +76,7 @@ require (
 	golang.org/x/crypto v0.37.0 // indirect
 	golang.org/x/mod v0.22.0 // indirect
 	golang.org/x/net v0.39.0 // indirect
-	golang.org/x/oauth2 v0.30.0 // indirect
+	golang.org/x/oauth2 v0.33.0 // indirect
 	golang.org/x/sync v0.13.0 // indirect
 	golang.org/x/sys v0.32.0 // indirect
 	golang.org/x/text v0.24.0 // indirect

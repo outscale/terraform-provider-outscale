@@ -190,7 +190,7 @@ func ResourceOutscalePolicyDelete(d *schema.ResourceData, meta interface{}) erro
 
 func unlinkEntitiesToPolicy(conn *oscgo.APIClient, policyOrn string) error {
 
-	req := oscgo.ReadEntitiesLinkedToPolicyRequest{PolicyOrn: &policyOrn}
+	req := oscgo.ReadEntitiesLinkedToPolicyRequest{PolicyOrn: policyOrn}
 	var users, groups []oscgo.MinimalPolicy
 	err := resource.Retry(2*time.Minute, func() *resource.RetryError {
 		resp, httpResp, err := conn.PolicyApi.ReadEntitiesLinkedToPolicy(context.Background()).ReadEntitiesLinkedToPolicyRequest(req).Execute()
