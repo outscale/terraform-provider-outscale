@@ -20,9 +20,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/fwmodifyplan"
 	"github.com/outscale/terraform-provider-outscale/utils"
+	"github.com/samber/lo"
 )
 
 var (
@@ -58,7 +59,7 @@ type BlockLinkedVolumes struct {
 }
 
 type resourceVolume struct {
-	Client *oscgo.APIClient
+	Client *osc.APIClient
 }
 
 func NewResourceVolume() resource.Resource {
@@ -203,9 +204,6 @@ func (r *resourceVolume) Schema(ctx context.Context, _ resource.SchemaRequest, r
 				Validators: []validator.String{
 					stringvalidator.OneOf([]string{"gp2", "io1", "standard"}...),
 				},
-				PlanModifiers: []planmodifier.String{
-					fwmodifyplan.ForceNewFramework(),
-				},
 			},
 			"snapshot_id": schema.StringAttribute{
 				Optional: true,
@@ -262,7 +260,7 @@ func (r *resourceVolume) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	createReq := oscgo.NewCreateVolumeRequest(data.SubregionName.ValueString())
+	createReq := osc.NewCreateVolumeRequest(data.SubregionName.ValueString())
 	createReq.SetVolumeType(data.VolumeType.ValueString())
 	if !data.Size.IsUnknown() && !data.Size.IsNull() {
 		createReq.SetSize(data.Size.ValueInt32())
@@ -274,7 +272,7 @@ func (r *resourceVolume) Create(ctx context.Context, req resource.CreateRequest,
 		createReq.SetSnapshotId(data.SnapshotId.ValueString())
 	}
 
-	var createResp oscgo.CreateVolumeResponse
+	var createResp osc.CreateVolumeResponse
 	err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
 		rp, httpResp, err := r.Client.VolumeApi.CreateVolume(ctx).CreateVolumeRequest(*createReq).Execute()
 		if err != nil {
@@ -378,37 +376,6 @@ func (r *resourceVolume) Update(ctx context.Context, req resource.UpdateRequest,
 	volumeId := dataState.VolumeId.ValueString()
 	dataState.TerminationSnapshotName = dataPlan.TerminationSnapshotName
 
-	updateReq := oscgo.NewUpdateVolumeRequest(volumeId)
-	shouldUpdate := false
-
-	if !dataPlan.Size.Equal(dataState.Size) {
-		updateReq.Size = dataPlan.Size.ValueInt32Pointer()
-		shouldUpdate = true
-	}
-
-	if dataPlan.VolumeType.ValueString() == "io1" && !dataPlan.Iops.Equal(dataState.Iops) {
-		updateReq.Iops = dataPlan.Iops.ValueInt32Pointer()
-		shouldUpdate = true
-	}
-
-	if shouldUpdate {
-		err := retry.RetryContext(ctx, updateTimeout, func() *retry.RetryError {
-			rp, httpResp, err := r.Client.VolumeApi.UpdateVolume(ctx).UpdateVolumeRequest(*updateReq).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			dataState.RequestId = types.StringValue(*rp.ResponseContext.RequestId)
-			return nil
-		})
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable to update volume resource",
-				err.Error(),
-			)
-			return
-		}
-	}
-
 	if !reflect.DeepEqual(dataPlan.Tags, dataState.Tags) {
 		toRemove, toCreate := diffOSCAPITags(tagsToOSCResourceTag(dataPlan.Tags), tagsToOSCResourceTag(dataState.Tags))
 		err := updateFrameworkTags(ctx, r.Client, toCreate, toRemove, volumeId)
@@ -421,25 +388,61 @@ func (r *resourceVolume) Update(ctx context.Context, req resource.UpdateRequest,
 		}
 	}
 
-	stateConf := &retry.StateChangeConf{
-		Pending:    []string{"updating"},
-		Target:     []string{"available", "in-use"},
-		Refresh:    getVolumeStateRefreshFunc(ctx, r.Client, updateTimeout, volumeId),
-		Timeout:    updateTimeout,
-		Delay:      2 * time.Second,
-		MinTimeout: 3 * time.Second,
+	updateReq := osc.NewUpdateVolumeRequest(volumeId)
+	shouldUpdate := false
+
+	if utils.IsSet(dataPlan.Size) && !dataPlan.Size.Equal(dataState.Size) {
+		updateReq.Size = dataPlan.Size.ValueInt32Pointer()
+		shouldUpdate = true
 	}
-	if _, err := stateConf.WaitForStateContext(ctx); err != nil {
-		resp.Diagnostics.AddError(
-			"Waiting for volume state to become available",
-			fmt.Sprintf("Unexpected volume (%s) state: '%s' ", volumeId, err.Error()),
-		)
-		return
+
+	// When updating a gp2 volume to io1 while keeping the iops value at 100 (default gp2 iops value),
+	// Terraform will not detect the change between config and state
+	if utils.IsSet(dataPlan.Iops) && (!dataPlan.Iops.Equal(dataState.Iops) || (dataPlan.VolumeType.ValueString() == "io1" && dataState.VolumeType.ValueString() != "io1")) {
+		updateReq.Iops = dataPlan.Iops.ValueInt32Pointer()
+		shouldUpdate = true
 	}
+
+	if utils.IsSet(dataPlan.VolumeType) && !dataPlan.VolumeType.Equal(dataState.VolumeType) {
+		updateReq.VolumeType = dataPlan.VolumeType.ValueStringPointer()
+		shouldUpdate = true
+	}
+
+	if shouldUpdate {
+		var volume osc.UpdateVolumeResponse
+		err := retry.RetryContext(ctx, updateTimeout, func() *retry.RetryError {
+			rp, httpResp, err := r.Client.VolumeApi.UpdateVolume(ctx).UpdateVolumeRequest(*updateReq).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp, err)
+			}
+			volume = rp
+			dataState.RequestId = types.StringValue(*rp.ResponseContext.RequestId)
+			return nil
+		})
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable to update volume resource",
+				err.Error(),
+			)
+			return
+		}
+
+		if volume.GetVolume().TaskId.IsSet() {
+			err := WaitForVolumeTasks(ctx, updateTimeout, []string{*volume.GetVolume().TaskId.Get()}, r.Client)
+			if err != nil {
+				resp.Diagnostics.AddError(
+					"Error waiting for volume update task to complete",
+					err.Error(),
+				)
+				return
+			}
+		}
+	}
+
 	err := setVolumeState(ctx, r, &dataState)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to set volume state after tags updating.",
+			"Unable to set volume state",
 			err.Error(),
 		)
 		return
@@ -449,6 +452,54 @@ func (r *resourceVolume) Update(ctx context.Context, req resource.UpdateRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
+}
+
+func WaitForVolumeTasks(ctx context.Context, timeout time.Duration, tasksIds []string, client *osc.APIClient) error {
+	failed := []string{"failed", "canceled"}
+	running := []string{"pending", "active"}
+	stateConf := &retry.StateChangeConf{
+		Pending: []string{"running"},
+		Target:  []string{"finished"},
+		Refresh: func() (any, string, error) {
+			var resp osc.ReadVolumeUpdateTasksResponse
+
+			err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
+				rp, httpResp, err := client.VolumeApi.ReadVolumeUpdateTasks(ctx).ReadVolumeUpdateTasksRequest(osc.ReadVolumeUpdateTasksRequest{
+					Filters: &osc.FiltersUpdateVolumeTask{
+						TaskIds: &tasksIds,
+					},
+				}).Execute()
+				if err != nil {
+					return utils.CheckThrottling(httpResp, err)
+				}
+				resp = rp
+				return nil
+			})
+			if err != nil {
+				return nil, "", err
+			}
+			if len(resp.GetVolumeUpdateTasks()) == 0 {
+				return nil, "", fmt.Errorf("tasks %v not found", tasksIds)
+			}
+
+			if lo.ContainsBy(resp.GetVolumeUpdateTasks(), func(task osc.VolumeUpdateTask) bool {
+				return lo.Contains(running, task.GetState())
+			}) {
+				return resp, "running", nil
+			}
+
+			failedTasks := lo.FilterMap(resp.GetVolumeUpdateTasks(), func(task osc.VolumeUpdateTask, _ int) (error, bool) {
+				return fmt.Errorf("task (%s) did not complete and ended with state: %s. Comment: %s", task.GetTaskId(), task.GetState(), task.GetComment()), lo.Contains(failed, task.GetState())
+			})
+			if len(failedTasks) > 0 {
+				return resp, "failed", fmt.Errorf("volume update tasks failed: %w", errors.Join(failedTasks...))
+			}
+			return resp, "finished", nil
+		},
+		Timeout: timeout,
+	}
+	_, err := stateConf.WaitForStateContext(ctx)
+	return err
 }
 
 func (r *resourceVolume) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -468,7 +519,7 @@ func (r *resourceVolume) Delete(ctx context.Context, req resource.DeleteRequest,
 	if !data.TerminationSnapshotName.IsNull() {
 		description := "created before volume deletion"
 		var snapshotId string
-		request := oscgo.CreateSnapshotRequest{
+		request := osc.CreateSnapshotRequest{
 			Description: &description,
 			VolumeId:    &volumeId,
 		}
@@ -505,7 +556,7 @@ func (r *resourceVolume) Delete(ctx context.Context, req resource.DeleteRequest,
 		}
 	}
 
-	delReq := oscgo.DeleteVolumeRequest{
+	delReq := osc.DeleteVolumeRequest{
 		VolumeId: data.VolumeId.ValueString(),
 	}
 	err := retry.RetryContext(ctx, deleteTimeout, func() *retry.RetryError {
@@ -526,7 +577,7 @@ func (r *resourceVolume) Delete(ctx context.Context, req resource.DeleteRequest,
 
 func setVolumeState(ctx context.Context, r *resourceVolume, data *VolumeModel) error {
 
-	volumeFilters := oscgo.FiltersVolume{
+	volumeFilters := osc.FiltersVolume{
 		VolumeIds: &[]string{data.VolumeId.ValueString()},
 	}
 
@@ -535,10 +586,10 @@ func setVolumeState(ctx context.Context, r *resourceVolume, data *VolumeModel) e
 		return fmt.Errorf("unable to parse 'volume' read timeout value. Error: %v: ", diags.Errors())
 	}
 
-	readReq := oscgo.ReadVolumesRequest{
+	readReq := osc.ReadVolumesRequest{
 		Filters: &volumeFilters,
 	}
-	var readResp oscgo.ReadVolumesResponse
+	var readResp osc.ReadVolumesResponse
 	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
 		rp, httpResp, err := r.Client.VolumeApi.ReadVolumes(ctx).ReadVolumesRequest(readReq).Execute()
 		if err != nil {
@@ -575,20 +626,20 @@ func setVolumeState(ctx context.Context, r *resourceVolume, data *VolumeModel) e
 	if data.VolumeType.ValueString() != "standard" {
 		data.Iops = types.Int32Value(volume.GetIops())
 	} else {
-		data.Iops = types.Int32Value(utils.DefaultIops)
+		data.Iops = types.Int32Null()
 	}
 	data.Size = types.Int32Value(volume.GetSize())
 	data.Id = types.StringValue(volume.GetVolumeId())
 	return nil
 }
 
-func getVolumeStateRefreshFunc(ctx context.Context, conn *oscgo.APIClient, timeout time.Duration, volumeID string) retry.StateRefreshFunc {
+func getVolumeStateRefreshFunc(ctx context.Context, conn *osc.APIClient, timeout time.Duration, volumeID string) retry.StateRefreshFunc {
 	return func() (any, string, error) {
-		var resp oscgo.ReadVolumesResponse
+		var resp osc.ReadVolumesResponse
 
 		err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-			rp, httpResp, err := conn.VolumeApi.ReadVolumes(ctx).ReadVolumesRequest(oscgo.ReadVolumesRequest{
-				Filters: &oscgo.FiltersVolume{
+			rp, httpResp, err := conn.VolumeApi.ReadVolumes(ctx).ReadVolumesRequest(osc.ReadVolumesRequest{
+				Filters: &osc.FiltersVolume{
 					VolumeIds: &[]string{volumeID},
 				}}).Execute()
 			if err != nil {
@@ -605,7 +656,7 @@ func getVolumeStateRefreshFunc(ctx context.Context, conn *oscgo.APIClient, timeo
 	}
 }
 
-func getLinkedVolumesFromApiResponse(linkedVols []oscgo.LinkedVolume) []BlockLinkedVolumes {
+func getLinkedVolumesFromApiResponse(linkedVols []osc.LinkedVolume) []BlockLinkedVolumes {
 	linkedVolumes := make([]BlockLinkedVolumes, 0, len(linkedVols))
 
 	for _, linkedVol := range linkedVols {
