@@ -302,10 +302,10 @@
                     "attributes": {
                         "backend_ips": "########",
                         "backend_vm_ids": [
+                            "##id-3##",
                             "##id-0##",
                             "##id-2##",
-                            "##id-1##",
-                            "##id-3##"
+                            "##id-1##"
                         ],
                         "id": "##id-4##",
                         "load_balancer_name": "########",
@@ -654,7 +654,7 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-2##",
+                        "id": "##id-3##",
                         "image_id": "##id-15##",
                         "is_source_dest_checked": false,
                         "keypair_name": "KP-TF01",
@@ -702,7 +702,7 @@
                         ],
                         "timeouts": null,
                         "user_data": "",
-                        "vm_id": "##id-2##",
+                        "vm_id": "##id-3##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
@@ -747,7 +747,7 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-3##",
+                        "id": "##id-2##",
                         "image_id": "##id-15##",
                         "is_source_dest_checked": false,
                         "keypair_name": "KP-TF01",
@@ -795,7 +795,7 @@
                         ],
                         "timeouts": null,
                         "user_data": "",
-                        "vm_id": "##id-3##",
+                        "vm_id": "##id-2##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },

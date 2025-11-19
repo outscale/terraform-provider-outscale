@@ -116,7 +116,7 @@
                                 "bsu": [
                                     {
                                         "delete_on_vm_deletion": true,
-                                        "iops": null,
+                                        "iops": 0,
                                         "snapshot_id": "",
                                         "tags": [],
                                         "volume_size": 100,
@@ -131,7 +131,7 @@
                                 "bsu": [
                                     {
                                         "delete_on_vm_deletion": false,
-                                        "iops": null,
+                                        "iops": 0,
                                         "snapshot_id": "",
                                         "tags": [],
                                         "volume_size": 15,
@@ -162,7 +162,7 @@
                             {
                                 "bsu": [
                                     {
-                                        "delete_on_vm_deletion": true,
+                                        "delete_on_vm_deletion": false,
                                         "link_date": "########",
                                         "state": "attached",
                                         "tags": [],
@@ -233,9 +233,7 @@
                         "security_group_ids": [
                             "##id-2##"
                         ],
-                        "security_group_names": [
-                            "test-sgSnap"
-                        ],
+                        "security_group_names": null,
                         "security_groups": [
                             {
                                 "security_group_id": "##id-2##",
@@ -275,7 +273,7 @@
                     "attributes": {
                         "creation_date": "########",
                         "id": "##id-4##",
-                        "iops": 150,
+                        "iops": null,
                         "linked_volumes": [],
                         "request_id": "########",
                         "size": 20,

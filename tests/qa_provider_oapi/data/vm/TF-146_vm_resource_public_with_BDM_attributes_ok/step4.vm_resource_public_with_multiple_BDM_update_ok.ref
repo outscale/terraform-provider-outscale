@@ -115,11 +115,11 @@
                             {
                                 "bsu": [
                                     {
-                                        "delete_on_vm_deletion": false,
-                                        "iops": null,
+                                        "delete_on_vm_deletion": true,
+                                        "iops": 0,
                                         "snapshot_id": "",
                                         "tags": [],
-                                        "volume_size": 100,
+                                        "volume_size": 101,
                                         "volume_type": "standard"
                                     }
                                 ],
@@ -130,12 +130,12 @@
                             {
                                 "bsu": [
                                     {
-                                        "delete_on_vm_deletion": false,
-                                        "iops": null,
+                                        "delete_on_vm_deletion": true,
+                                        "iops": 200,
                                         "snapshot_id": "",
                                         "tags": [],
-                                        "volume_size": 15,
-                                        "volume_type": "standard"
+                                        "volume_size": 16,
+                                        "volume_type": "io1"
                                     }
                                 ],
                                 "device_name": "/dev/sdb",
@@ -146,11 +146,11 @@
                                 "bsu": [
                                     {
                                         "delete_on_vm_deletion": true,
-                                        "iops": 150,
+                                        "iops": 0,
                                         "snapshot_id": "##id-3##",
                                         "tags": [],
-                                        "volume_size": 22,
-                                        "volume_type": "io1"
+                                        "volume_size": 23,
+                                        "volume_type": "gp2"
                                     }
                                 ],
                                 "device_name": "/dev/sdc",
@@ -162,7 +162,7 @@
                             {
                                 "bsu": [
                                     {
-                                        "delete_on_vm_deletion": false,
+                                        "delete_on_vm_deletion": true,
                                         "link_date": "########",
                                         "state": "attached",
                                         "tags": [],
@@ -174,7 +174,7 @@
                             {
                                 "bsu": [
                                     {
-                                        "delete_on_vm_deletion": false,
+                                        "delete_on_vm_deletion": true,
                                         "link_date": "########",
                                         "state": "attached",
                                         "tags": [],
@@ -194,6 +194,18 @@
                                     }
                                 ],
                                 "device_name": "/dev/sdc"
+                            },
+                            {
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": false,
+                                        "link_date": "########",
+                                        "state": "attached",
+                                        "tags": [],
+                                        "volume_id": "##id-8##"
+                                    }
+                                ],
+                                "device_name": "/dev/sdd"
                             }
                         ],
                         "boot_mode": "legacy",
@@ -203,8 +215,8 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-8##",
-                        "image_id": "##id-9##",
+                        "id": "##id-9##",
+                        "image_id": "##id-10##",
                         "is_source_dest_checked": false,
                         "keypair_name": "KP-TF146",
                         "keypair_name_wo": null,
@@ -226,7 +238,7 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-10##",
+                        "reservation_id": "##id-11##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
                         "secure_boot_action": null,
@@ -246,7 +258,7 @@
                         "tags": [],
                         "timeouts": null,
                         "user_data": "",
-                        "vm_id": "##id-8##",
+                        "vm_id": "##id-9##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
@@ -288,6 +300,75 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_volume",
+            "name": "volume01",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "creation_date": "########",
+                        "id": "##id-8##",
+                        "iops": 1000,
+                        "linked_volumes": [
+                            {
+                                "delete_on_vm_deletion": false,
+                                "device_name": "/dev/sdd",
+                                "state": "attached",
+                                "vm_id": "##id-9##",
+                                "volume_id": "##id-8##"
+                            }
+                        ],
+                        "request_id": "########",
+                        "size": 41,
+                        "snapshot_id": "",
+                        "state": "in-use",
+                        "subregion_name": "eu-west-2a",
+                        "tags": [],
+                        "termination_snapshot_name": null,
+                        "timeouts": null,
+                        "volume_id": "##id-8##",
+                        "volume_type": "io1"
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_volume_link",
+            "name": "volume_link01",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "delete_on_vm_deletion": false,
+                        "device_name": "/dev/sdd",
+                        "force_unlink": false,
+                        "id": "##id-8##",
+                        "request_id": "########",
+                        "state": "attached",
+                        "timeouts": null,
+                        "vm_id": "##id-9##",
+                        "volume_id": "##id-8##"
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "outscale_keypair.my_keypair",
+                        "outscale_security_group.sg_snap",
+                        "outscale_snapshot.my_snapshot",
+                        "outscale_vm.outscale_vm2",
+                        "outscale_volume.my_volume",
+                        "outscale_volume.volume01"
+                    ]
                 }
             ]
         }
