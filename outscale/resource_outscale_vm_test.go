@@ -357,9 +357,10 @@ func TestAccNet_WithVM_PublicIp_Link(t *testing.T) {
 
 func TestAccVM_multiBlockDeviceMapping(t *testing.T) {
 	t.Parallel()
-	var server oscgo.Vm
+	var vmID string
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	keypair := "terraform-basic"
+	resourceName := "outscale_vm.outscale_vm"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
@@ -369,9 +370,23 @@ func TestAccVM_multiBlockDeviceMapping(t *testing.T) {
 			{
 				Config: testAccCheckOutscaleVMWithMultiBlockDeviceMapping(utils.GetRegion(), omi, keypair, utils.TestAccVmType),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleVMExists("outscale_vm.outscale_vm", &server),
-					resource.TestCheckResourceAttr("outscale_vm.outscale_vm", "image_id", omi),
-					resource.TestCheckResourceAttr("outscale_vm.outscale_vm", "vm_type", utils.TestAccVmType),
+					resource.TestCheckResourceAttr(resourceName, "image_id", omi),
+					resource.TestCheckResourceAttr(resourceName, "vm_type", utils.TestAccVmType),
+					resource.TestCheckResourceAttrWith(resourceName, "vm_id", func(value string) error {
+						vmID = value
+						return nil
+					}),
+				),
+			},
+			{
+				Config: testAccCheckOutscaleVMWithMultiBlockDeviceMappingUpdate(utils.GetRegion(), omi, keypair, utils.TestAccVmType),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrWith(resourceName, "vm_id", func(value string) error {
+						if value != vmID {
+							return fmt.Errorf("vm_id changed from %s to %s, resource was replaced instead of updated", vmID, value)
+						}
+						return nil
+					}),
 				),
 			},
 		},
@@ -430,6 +445,70 @@ func testAccCheckOutscaleVMWithMultiBlockDeviceMapping(region, omi, keypair, vmT
 					volume_type = "gp2"
 					snapshot_id = outscale_snapshot.snapshot.id
 					delete_on_vm_deletion = true
+				}
+			}
+
+			tags {
+				key   = "name"
+				value = "VM with multiple Block Device Mappings"
+			}
+		}
+	`, region, omi, keypair, vmType)
+}
+
+func testAccCheckOutscaleVMWithMultiBlockDeviceMappingUpdate(region, omi, keypair, vmType string) string {
+	return fmt.Sprintf(`
+		resource "outscale_volume" "example" {
+			subregion_name = "%[1]sa"
+			size           = 1
+		}
+
+		resource "outscale_snapshot" "snapshot" {
+			volume_id = outscale_volume.example.id
+		}
+
+		resource "outscale_security_group" "sg_device" {
+			description                  = "testAcc Terraform security group"
+			security_group_name          = "sgProtection"
+		}
+
+		resource "outscale_vm" "outscale_vm" {
+			image_id     = "%[2]s"
+			vm_type      = "%[4]s"
+			keypair_name = "%[3]s"
+			security_group_ids = [outscale_security_group.sg_device.security_group_id]
+
+			block_device_mappings {
+				device_name = "/dev/sda1" # resizing bootdisk volume
+				bsu {
+					volume_size           = 110
+					volume_type           = "gp2"
+					delete_on_vm_deletion = true
+				}
+			}
+
+			block_device_mappings {
+				device_name = "/dev/sdb"
+				bsu {
+					volume_size           = 30
+					volume_type           = "io1"
+					iops                = 1000
+					snapshot_id           = outscale_snapshot.snapshot.id
+					delete_on_vm_deletion = false
+					tags {
+						key           = "name"
+						value         = "bsu-tags-gp2"
+					}
+				}
+			}
+
+			block_device_mappings {
+				device_name = "/dev/sdc"
+				bsu {
+					volume_size = 100
+					volume_type = "gp2"
+					snapshot_id = outscale_snapshot.snapshot.id
+					delete_on_vm_deletion = false
 				}
 			}
 
