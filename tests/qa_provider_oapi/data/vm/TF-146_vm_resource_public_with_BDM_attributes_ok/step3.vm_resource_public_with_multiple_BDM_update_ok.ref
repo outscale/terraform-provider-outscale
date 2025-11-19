@@ -115,12 +115,12 @@
                             {
                                 "bsu": [
                                     {
-                                        "delete_on_vm_deletion": false,
-                                        "iops": null,
+                                        "delete_on_vm_deletion": true,
+                                        "iops": 0,
                                         "snapshot_id": "",
                                         "tags": [],
-                                        "volume_size": 100,
-                                        "volume_type": "standard"
+                                        "volume_size": 101,
+                                        "volume_type": "gp2"
                                     }
                                 ],
                                 "device_name": "/dev/sda1",
@@ -130,12 +130,12 @@
                             {
                                 "bsu": [
                                     {
-                                        "delete_on_vm_deletion": false,
-                                        "iops": null,
+                                        "delete_on_vm_deletion": true,
+                                        "iops": 200,
                                         "snapshot_id": "",
                                         "tags": [],
-                                        "volume_size": 15,
-                                        "volume_type": "standard"
+                                        "volume_size": 16,
+                                        "volume_type": "io1"
                                     }
                                 ],
                                 "device_name": "/dev/sdb",
@@ -146,10 +146,10 @@
                                 "bsu": [
                                     {
                                         "delete_on_vm_deletion": true,
-                                        "iops": 150,
+                                        "iops": 250,
                                         "snapshot_id": "##id-3##",
                                         "tags": [],
-                                        "volume_size": 22,
+                                        "volume_size": 23,
                                         "volume_type": "io1"
                                     }
                                 ],
@@ -162,7 +162,7 @@
                             {
                                 "bsu": [
                                     {
-                                        "delete_on_vm_deletion": false,
+                                        "delete_on_vm_deletion": true,
                                         "link_date": "########",
                                         "state": "attached",
                                         "tags": [],
@@ -288,6 +288,67 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_volume",
+            "name": "volume01",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "creation_date": "########",
+                        "id": "##id-11##",
+                        "iops": null,
+                        "linked_volumes": [],
+                        "request_id": "########",
+                        "size": 40,
+                        "snapshot_id": "",
+                        "state": "available",
+                        "subregion_name": "eu-west-2a",
+                        "tags": [],
+                        "termination_snapshot_name": null,
+                        "timeouts": null,
+                        "volume_id": "##id-11##",
+                        "volume_type": "standard"
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_volume_link",
+            "name": "volume_link01",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "delete_on_vm_deletion": false,
+                        "device_name": "/dev/sdd",
+                        "force_unlink": false,
+                        "id": "##id-11##",
+                        "request_id": "########",
+                        "state": "attached",
+                        "timeouts": null,
+                        "vm_id": "##id-8##",
+                        "volume_id": "##id-11##"
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "outscale_keypair.my_keypair",
+                        "outscale_security_group.sg_snap",
+                        "outscale_snapshot.my_snapshot",
+                        "outscale_vm.outscale_vm2",
+                        "outscale_volume.my_volume",
+                        "outscale_volume.volume01"
+                    ]
                 }
             ]
         }

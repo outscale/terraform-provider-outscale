@@ -19,24 +19,24 @@
                         "listener_rules": [
                             {
                                 "action": "forward",
-                                "host_name_pattern": "*.abc.-.abc.*.com",
+                                "host_name_pattern": "",
                                 "listener_id": "##id-1##",
                                 "listener_rule_id": "##id-2##",
                                 "listener_rule_name": "########",
-                                "path_pattern": "",
-                                "priority": 1,
+                                "path_pattern": "*.abc.*.abc.*.com",
+                                "priority": 10,
                                 "vm_ids": [
                                     "##id-3##"
                                 ]
                             },
                             {
                                 "action": "forward",
-                                "host_name_pattern": "",
+                                "host_name_pattern": "*.abc.-.abc.*.com",
                                 "listener_id": "##id-1##",
                                 "listener_rule_id": "##id-4##",
                                 "listener_rule_name": "########",
-                                "path_pattern": "*.abc.*.abc.*.com",
-                                "priority": 10,
+                                "path_pattern": "",
+                                "priority": 1,
                                 "vm_ids": [
                                     "##id-3##"
                                 ]
@@ -169,7 +169,7 @@
                                 "action": "forward",
                                 "host_name_pattern": "",
                                 "listener_id": "##id-1##",
-                                "listener_rule_id": "##id-4##",
+                                "listener_rule_id": "##id-2##",
                                 "listener_rule_name": "########",
                                 "path_pattern": "*.abc.*.abc.*.com",
                                 "priority": 10
@@ -213,7 +213,7 @@
                                 "action": "forward",
                                 "host_name_pattern": "*.abc.-.abc.*.com",
                                 "listener_id": "##id-1##",
-                                "listener_rule_id": "##id-2##",
+                                "listener_rule_id": "##id-4##",
                                 "listener_rule_name": "########",
                                 "path_pattern": "",
                                 "priority": 1

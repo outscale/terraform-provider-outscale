@@ -1,7 +1,7 @@
 resource "outscale_volume" "outscale_volume" {
     subregion_name = "${var.region}a"
-    size            = 10
-    iops            = 100
+    size            = 11
+    iops            = 200
     volume_type     = "io1"
     tags {
       key = "name"

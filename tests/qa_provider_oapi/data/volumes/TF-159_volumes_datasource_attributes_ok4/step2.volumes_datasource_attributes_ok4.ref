@@ -21,31 +21,6 @@
                         "volumes": [
                             {
                                 "creation_date": "########",
-                                "iops": 100,
-                                "linked_volumes": [
-                                    {
-                                        "delete_on_vm_deletion": false,
-                                        "device_name": "/dev/xvdc",
-                                        "state": "attached",
-                                        "vm_id": "##id-1##",
-                                        "volume_id": "##id-2##"
-                                    }
-                                ],
-                                "size": 40,
-                                "snapshot_id": "",
-                                "state": "in-use",
-                                "subregion_name": "eu-west-2a",
-                                "tags": [
-                                    {
-                                        "key": "type",
-                                        "value": "io1"
-                                    }
-                                ],
-                                "volume_id": "##id-2##",
-                                "volume_type": "io1"
-                            },
-                            {
-                                "creation_date": "########",
                                 "iops": 150,
                                 "linked_volumes": [],
                                 "size": 13,
@@ -58,7 +33,7 @@
                                         "value": "volume-standard-2"
                                     }
                                 ],
-                                "volume_id": "##id-3##",
+                                "volume_id": "##id-1##",
                                 "volume_type": "standard"
                             },
                             {
@@ -75,8 +50,33 @@
                                         "value": "volume-standard-1"
                                     }
                                 ],
-                                "volume_id": "##id-4##",
+                                "volume_id": "##id-2##",
                                 "volume_type": "standard"
+                            },
+                            {
+                                "creation_date": "########",
+                                "iops": 100,
+                                "linked_volumes": [
+                                    {
+                                        "delete_on_vm_deletion": false,
+                                        "device_name": "/dev/xvdc",
+                                        "state": "attached",
+                                        "vm_id": "##id-3##",
+                                        "volume_id": "##id-4##"
+                                    }
+                                ],
+                                "size": 40,
+                                "snapshot_id": "",
+                                "state": "in-use",
+                                "subregion_name": "eu-west-2a",
+                                "tags": [
+                                    {
+                                        "key": "type",
+                                        "value": "io1"
+                                    }
+                                ],
+                                "volume_id": "##id-4##",
+                                "volume_type": "io1"
                             }
                         ]
                     },
@@ -180,7 +180,7 @@
                                                 "value": "io1"
                                             }
                                         ],
-                                        "volume_id": "##id-2##"
+                                        "volume_id": "##id-4##"
                                     }
                                 ],
                                 "device_name": "/dev/xvdc"
@@ -193,7 +193,7 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-1##",
+                        "id": "##id-3##",
                         "image_id": "##id-9##",
                         "is_source_dest_checked": false,
                         "keypair_name": "KP-TF159",
@@ -236,7 +236,7 @@
                         "tags": [],
                         "timeouts": null,
                         "user_data": "",
-                        "vm_id": "##id-1##",
+                        "vm_id": "##id-3##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
@@ -260,8 +260,8 @@
                     "schema_version": 0,
                     "attributes": {
                         "creation_date": "########",
-                        "id": "##id-4##",
-                        "iops": 150,
+                        "id": "##id-2##",
+                        "iops": null,
                         "linked_volumes": [],
                         "request_id": "########",
                         "size": 15,
@@ -276,7 +276,7 @@
                         ],
                         "termination_snapshot_name": null,
                         "timeouts": null,
-                        "volume_id": "##id-4##",
+                        "volume_id": "##id-2##",
                         "volume_type": "standard"
                     },
                     "sensitive_attributes": [],
@@ -294,8 +294,8 @@
                     "schema_version": 0,
                     "attributes": {
                         "creation_date": "########",
-                        "id": "##id-3##",
-                        "iops": 150,
+                        "id": "##id-1##",
+                        "iops": null,
                         "linked_volumes": [],
                         "request_id": "########",
                         "size": 13,
@@ -310,7 +310,7 @@
                         ],
                         "termination_snapshot_name": null,
                         "timeouts": null,
-                        "volume_id": "##id-3##",
+                        "volume_id": "##id-1##",
                         "volume_type": "standard"
                     },
                     "sensitive_attributes": [],
@@ -328,15 +328,15 @@
                     "schema_version": 0,
                     "attributes": {
                         "creation_date": "########",
-                        "id": "##id-2##",
+                        "id": "##id-4##",
                         "iops": 100,
                         "linked_volumes": [
                             {
                                 "delete_on_vm_deletion": false,
                                 "device_name": "/dev/xvdc",
                                 "state": "attached",
-                                "vm_id": "##id-1##",
-                                "volume_id": "##id-2##"
+                                "vm_id": "##id-3##",
+                                "volume_id": "##id-4##"
                             }
                         ],
                         "request_id": "########",
@@ -352,7 +352,7 @@
                         ],
                         "termination_snapshot_name": null,
                         "timeouts": null,
-                        "volume_id": "##id-2##",
+                        "volume_id": "##id-4##",
                         "volume_type": "io1"
                     },
                     "sensitive_attributes": [],
@@ -372,12 +372,12 @@
                         "delete_on_vm_deletion": false,
                         "device_name": "/dev/xvdc",
                         "force_unlink": false,
-                        "id": "##id-2##",
+                        "id": "##id-4##",
                         "request_id": "########",
                         "state": "attached",
                         "timeouts": null,
-                        "vm_id": "##id-1##",
-                        "volume_id": "##id-2##"
+                        "vm_id": "##id-3##",
+                        "volume_id": "##id-4##"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,

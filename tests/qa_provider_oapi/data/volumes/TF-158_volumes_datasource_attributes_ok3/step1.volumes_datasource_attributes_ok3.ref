@@ -23,14 +23,14 @@
                                 "creation_date": "########",
                                 "iops": 150,
                                 "linked_volumes": [],
-                                "size": 13,
+                                "size": 15,
                                 "snapshot_id": "",
                                 "state": "available",
                                 "subregion_name": "eu-west-2a",
                                 "tags": [
                                     {
                                         "key": "Name",
-                                        "value": "volume-standard-2"
+                                        "value": "volume-standard-1"
                                     }
                                 ],
                                 "volume_id": "##id-1##",
@@ -40,14 +40,14 @@
                                 "creation_date": "########",
                                 "iops": 150,
                                 "linked_volumes": [],
-                                "size": 15,
+                                "size": 13,
                                 "snapshot_id": "",
                                 "state": "available",
                                 "subregion_name": "eu-west-2a",
                                 "tags": [
                                     {
                                         "key": "Name",
-                                        "value": "volume-standard-1"
+                                        "value": "volume-standard-2"
                                     }
                                 ],
                                 "volume_id": "##id-2##",
@@ -70,8 +70,8 @@
                     "schema_version": 0,
                     "attributes": {
                         "creation_date": "########",
-                        "id": "##id-2##",
-                        "iops": 150,
+                        "id": "##id-1##",
+                        "iops": null,
                         "linked_volumes": [],
                         "request_id": "########",
                         "size": 15,
@@ -86,7 +86,7 @@
                         ],
                         "termination_snapshot_name": null,
                         "timeouts": null,
-                        "volume_id": "##id-2##",
+                        "volume_id": "##id-1##",
                         "volume_type": "standard"
                     },
                     "sensitive_attributes": [],
@@ -104,8 +104,8 @@
                     "schema_version": 0,
                     "attributes": {
                         "creation_date": "########",
-                        "id": "##id-1##",
-                        "iops": 150,
+                        "id": "##id-2##",
+                        "iops": null,
                         "linked_volumes": [],
                         "request_id": "########",
                         "size": 13,
@@ -120,7 +120,7 @@
                         ],
                         "termination_snapshot_name": null,
                         "timeouts": null,
-                        "volume_id": "##id-1##",
+                        "volume_id": "##id-2##",
                         "volume_type": "standard"
                     },
                     "sensitive_attributes": [],

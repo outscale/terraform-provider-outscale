@@ -19,16 +19,11 @@
                         "iops": null,
                         "linked_volumes": [],
                         "request_id": "########",
-                        "size": 10,
+                        "size": 12,
                         "snapshot_id": "",
                         "state": "available",
                         "subregion_name": "eu-west-2a",
-                        "tags": [
-                            {
-                                "key": "name",
-                                "value": "volume-standard"
-                            }
-                        ],
+                        "tags": [],
                         "termination_snapshot_name": null,
                         "timeouts": null,
                         "volume_id": "##id-0##",
