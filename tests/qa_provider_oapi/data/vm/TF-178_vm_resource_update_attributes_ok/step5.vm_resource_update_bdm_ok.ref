@@ -120,7 +120,7 @@
                                 "bsu": [
                                     {
                                         "delete_on_vm_deletion": true,
-                                        "iops": null,
+                                        "iops": 0,
                                         "snapshot_id": "",
                                         "tags": [],
                                         "volume_size": 20,
@@ -148,7 +148,7 @@
                             {
                                 "bsu": [
                                     {
-                                        "delete_on_vm_deletion": true,
+                                        "delete_on_vm_deletion": false,
                                         "link_date": "########",
                                         "state": "attached",
                                         "tags": [],
