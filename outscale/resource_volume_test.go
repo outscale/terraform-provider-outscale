@@ -74,6 +74,7 @@ func TestAccOthers_Volume_updateSize(t *testing.T) {
 
 func TestAccOthers_Volume_io1Type(t *testing.T) {
 	t.Parallel()
+
 	region := utils.GetRegion()
 	resourceName := "outscale_volume.test-io1"
 	resource.Test(t, resource.TestCase{
@@ -100,17 +101,32 @@ func TestAccOthers_Volume_io1Type(t *testing.T) {
 	})
 }
 
-func TestAccOthers_GP2_Volume_Type(t *testing.T) {
+func TestAccOthers_Volume_Type_Change(t *testing.T) {
 	t.Parallel()
-	resourceName := "outscale_volume.test-gp2"
+
+	region := utils.GetRegion()
+	resourceName := "outscale_volume.test-type-change"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
-				Config: test_GP2VolumeTypeConfig(utils.GetRegion()),
+				Config: test_VolumeTypeGP2Config(region),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "volume_type", "gp2"),
+				),
+			},
+			{
+				Config: test_VolumeTypeIO1Config(region),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "volume_type", "io1"),
+					resource.TestCheckResourceAttr(resourceName, "iops", "100"),
+				),
+			},
+			{
+				Config: test_VolumeTypeSTDConfig(region),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "volume_type", "standard"),
 				),
 			},
 		},
@@ -151,6 +167,7 @@ func test_IO1VolumeTypeConfig(region string) string {
 		}
 	`, region)
 }
+
 func test_IO1VolumeTypeConfigUpdate(region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_volume" "test-io1" {
@@ -162,12 +179,33 @@ func test_IO1VolumeTypeConfigUpdate(region string) string {
 	`, region)
 }
 
-func test_GP2VolumeTypeConfig(region string) string {
+func test_VolumeTypeGP2Config(region string) string {
 	return fmt.Sprintf(`
-		resource "outscale_volume" "test-gp2" {
+		resource "outscale_volume" "test-type-change" {
 			subregion_name = "%sa"
 			volume_type    = "gp2"
 			size           = 10
+		}
+	`, region)
+}
+
+func test_VolumeTypeIO1Config(region string) string {
+	return fmt.Sprintf(`
+		resource "outscale_volume" "test-type-change" {
+			subregion_name = "%sa"
+			volume_type    = "io1"
+			size           = 11
+			iops           = 100
+		}
+	`, region)
+}
+
+func test_VolumeTypeSTDConfig(region string) string {
+	return fmt.Sprintf(`
+		resource "outscale_volume" "test-type-change" {
+			subregion_name = "%sa"
+			volume_type    = "standard"
+			size           = 11
 		}
 	`, region)
 }
