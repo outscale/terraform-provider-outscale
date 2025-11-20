@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -85,13 +84,16 @@ func dataSourceOAPISnapshotExportTaskRead(d *schema.ResourceData, meta interface
 
 	filters, filtersOk := d.GetOk("filter")
 
+	var err error
 	filtersReq := &oscgo.FiltersExportTask{}
 	if filtersOk {
-		filtersReq = buildOutscaleOSCAPIDataSourceSnapshotExportTaskFilters(filters.(*schema.Set))
+		filtersReq, err = buildOutscaleOSCAPIDataSourceSnapshotExportTaskFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 
 	var resp oscgo.ReadSnapshotExportTasksResponse
-	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.SnapshotApi.ReadSnapshotExportTasks(context.Background()).
 			ReadSnapshotExportTasksRequest(oscgo.ReadSnapshotExportTasksRequest{
@@ -149,7 +151,7 @@ func dataSourceOAPISnapshotExportTaskRead(d *schema.ResourceData, meta interface
 	return nil
 }
 
-func buildOutscaleOSCAPIDataSourceSnapshotExportTaskFilters(set *schema.Set) *oscgo.FiltersExportTask {
+func buildOutscaleOSCAPIDataSourceSnapshotExportTaskFilters(set *schema.Set) (*oscgo.FiltersExportTask, error) {
 	var filters oscgo.FiltersExportTask
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -162,8 +164,8 @@ func buildOutscaleOSCAPIDataSourceSnapshotExportTaskFilters(set *schema.Set) *os
 		case "task_ids":
 			filters.TaskIds = &filterValues
 		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}
 	}
-	return &filters
+	return &filters, nil
 }

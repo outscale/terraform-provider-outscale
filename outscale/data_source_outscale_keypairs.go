@@ -35,13 +35,17 @@ func DataSourceOutscaleOAPiKeyPairsRead(d *schema.ResourceData, meta interface{}
 
 	filters, filtersOk := d.GetOk("filter")
 
+	var err error
 	if filtersOk {
-		req.SetFilters(buildOutscaleKeyPairsDataSourceFilters(filters.(*schema.Set)))
+		req.Filters, err = buildOutscaleKeyPairsDataSourceFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 
 	var resp oscgo.ReadKeypairsResponse
 	var statusCode int
-	err := retry.RetryContext(context.Background(), utils.ReadDefaultTimeout, func() *retry.RetryError {
+	err = retry.RetryContext(context.Background(), utils.ReadDefaultTimeout, func() *retry.RetryError {
 		var err error
 		rp, httpResp, err := conn.KeypairApi.ReadKeypairs(context.Background()).ReadKeypairsRequest(req).Execute()
 

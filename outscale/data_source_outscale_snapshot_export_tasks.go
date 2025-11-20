@@ -94,13 +94,16 @@ func dataSourceOAPISnapshotExportTasksRead(d *schema.ResourceData, meta interfac
 
 	filters, filtersOk := d.GetOk("filter")
 
-	filtersReq := &oscgo.FiltersExportTask{}
+	var err error
+	var filtersReq *oscgo.FiltersExportTask
 	if filtersOk {
-		filtersReq = buildOutscaleOSCAPIDataSourceSnapshotExportTaskFilters(filters.(*schema.Set))
+		filtersReq, err = buildOutscaleOSCAPIDataSourceSnapshotExportTaskFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 
 	var resp oscgo.ReadSnapshotExportTasksResponse
-	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.SnapshotApi.ReadSnapshotExportTasks(context.Background()).
 			ReadSnapshotExportTasksRequest(oscgo.ReadSnapshotExportTasksRequest{

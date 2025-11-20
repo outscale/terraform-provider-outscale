@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
@@ -57,13 +56,18 @@ func DataSourceUserGroups() *schema.Resource {
 func DataSourceUserGroupsRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	req := oscgo.ReadUserGroupsRequest{}
+
+	var err error
 	filters, filtersOk := d.GetOk("filter")
 	if filtersOk {
-		filterReq := buildUserGroupsFilters(filters.(*schema.Set))
-		req.SetFilters(*filterReq)
+		req.Filters, err = buildUserGroupsFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
+
 	var resp oscgo.ReadUserGroupsResponse
-	err := resource.Retry(2*time.Minute, func() *resource.RetryError {
+	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.UserGroupApi.ReadUserGroups(context.Background()).ReadUserGroupsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -96,7 +100,7 @@ func DataSourceUserGroupsRead(d *schema.ResourceData, meta interface{}) error {
 	return d.Set("user_groups", userGroups)
 }
 
-func buildUserGroupsFilters(set *schema.Set) *oscgo.FiltersUserGroup {
+func buildUserGroupsFilters(set *schema.Set) (*oscgo.FiltersUserGroup, error) {
 	var filters oscgo.FiltersUserGroup
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -111,8 +115,8 @@ func buildUserGroupsFilters(set *schema.Set) *oscgo.FiltersUserGroup {
 		case "user_group_ids":
 			filters.SetUserGroupIds(filterValues)
 		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}
 	}
-	return &filters
+	return &filters, nil
 }

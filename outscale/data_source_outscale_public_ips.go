@@ -76,13 +76,17 @@ func DataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{}) e
 
 	filters, filtersOk := d.GetOk("filter")
 
+	var err error
 	if filtersOk {
-		req.Filters = buildOutscaleDataSourcePublicIpsFilters(filters.(*schema.Set))
+		req.Filters, err = buildOutscaleDataSourcePublicIpsFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 
 	var resp oscgo.ReadPublicIpsResponse
 	var statusCode int
-	err := resource.Retry(60*time.Second, func() *resource.RetryError {
+	err = resource.Retry(60*time.Second, func() *resource.RetryError {
 		var err error
 		rp, httpResp, err := conn.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
 		if err != nil {

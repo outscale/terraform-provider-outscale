@@ -205,11 +205,14 @@ func DataSourceOutscaleSecurityGroupsRead(d *schema.ResourceData, meta interface
 		req.SetFilters(filter)
 	}
 
+	var err error
 	if filtersOk {
-		req.SetFilters(buildOutscaleDataSourceSecurityGroupFilters(filters.(*schema.Set)))
+		req.Filters, err = buildOutscaleDataSourceSecurityGroupFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 
-	var err error
 	var resp oscgo.ReadSecurityGroupsResponse
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.SecurityGroupApi.ReadSecurityGroups(context.Background()).ReadSecurityGroupsRequest(req).Execute()

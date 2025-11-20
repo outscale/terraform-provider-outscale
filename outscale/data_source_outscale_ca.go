@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -51,8 +50,13 @@ func DataSourceOutscaleCaRead(d *schema.ResourceData, meta interface{}) error {
 
 	params := oscgo.ReadCasRequest{}
 	if filtersOk {
-		params.Filters = buildOutscaleDataSourceCaFilters(filters.(*schema.Set))
+		filterParams, err := buildOutscaleDataSourceCaFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
+		params.Filters = filterParams
 	}
+
 	var resp oscgo.ReadCasResponse
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
@@ -93,7 +97,7 @@ func DataSourceOutscaleCaRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func buildOutscaleDataSourceCaFilters(set *schema.Set) *oscgo.FiltersCa {
+func buildOutscaleDataSourceCaFilters(set *schema.Set) (*oscgo.FiltersCa, error) {
 	var filters oscgo.FiltersCa
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -110,8 +114,8 @@ func buildOutscaleDataSourceCaFilters(set *schema.Set) *oscgo.FiltersCa {
 		case "descriptions":
 			filters.SetDescriptions(filterValues)
 		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}
 	}
-	return &filters
+	return &filters, nil
 }

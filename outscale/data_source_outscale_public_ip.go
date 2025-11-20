@@ -78,14 +78,18 @@ func DataSourceOutscalePublicIPRead(d *schema.ResourceData, meta interface{}) er
 		req.Filters.SetPublicIps([]string{id.(string)})
 	}
 
+	var err error
 	filters, filtersOk := d.GetOk("filter")
 	if filtersOk {
-		req.Filters = buildOutscaleDataSourcePublicIpsFilters(filters.(*schema.Set))
+		req.Filters, err = buildOutscaleDataSourcePublicIpsFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 
 	var response oscgo.ReadPublicIpsResponse
 	var statusCode int
-	err := resource.Retry(60*time.Second, func() *resource.RetryError {
+	err = resource.Retry(60*time.Second, func() *resource.RetryError {
 		var err error
 		rp, httpResp, err := conn.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
 		if err != nil {
@@ -147,7 +151,7 @@ func DataSourceOutscalePublicIPRead(d *schema.ResourceData, meta interface{}) er
 	return nil
 }
 
-func buildOutscaleDataSourcePublicIpsFilters(set *schema.Set) *oscgo.FiltersPublicIp {
+func buildOutscaleDataSourcePublicIpsFilters(set *schema.Set) (*oscgo.FiltersPublicIp, error) {
 	var filters oscgo.FiltersPublicIp
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -180,8 +184,8 @@ func buildOutscaleDataSourcePublicIpsFilters(set *schema.Set) *oscgo.FiltersPubl
 		case "tags":
 			filters.SetTags(filterValues)
 		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}
 	}
-	return &filters
+	return &filters, nil
 }

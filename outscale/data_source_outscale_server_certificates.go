@@ -67,7 +67,11 @@ func DataSourceOutscaleServerCertificatesRead(d *schema.ResourceData, meta inter
 	params := oscgo.ReadServerCertificatesRequest{}
 
 	if filtersOk {
-		params.Filters = buildOutscaleOSCAPIDataSourceServerCertificateFilters(filters.(*schema.Set))
+		filters, err := buildOutscaleOSCAPIDataSourceServerCertificateFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
+		params.Filters = filters
 	}
 
 	var resp oscgo.ReadServerCertificatesResponse

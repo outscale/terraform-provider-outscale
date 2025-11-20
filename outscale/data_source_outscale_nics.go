@@ -225,14 +225,16 @@ func DataSourceOutscaleNicsRead(d *schema.ResourceData, meta interface{}) error 
 
 	filters, filtersOk := d.GetOk("filter")
 
+	var err error
 	params := oscgo.ReadNicsRequest{}
 	if filtersOk {
-		params.SetFilters(buildOutscaleDataSourceNicFilters(filters.(*schema.Set)))
+		params.Filters, err = buildOutscaleDataSourceNicFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 
 	var resp oscgo.ReadNicsResponse
-	var err error
-
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(params).Execute()
 		if err != nil {

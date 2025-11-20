@@ -80,8 +80,12 @@ func DataSourceOutscaleAccessKeysRead(d *schema.ResourceData, meta interface{}) 
 	state, stateOk := d.GetOk("states")
 	filterReq := &oscgo.FiltersAccessKeys{}
 
+	var err error
 	if filtersOk {
-		filterReq = buildOutscaleDataSourceAccessKeyFilters(filters.(*schema.Set))
+		filterReq, err = buildOutscaleDataSourceAccessKeyFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 	if accessKeyOk {
 		filterReq.SetAccessKeyIds(utils.InterfaceSliceToStringSlice(accessKeyID.([]interface{})))
@@ -97,7 +101,7 @@ func DataSourceOutscaleAccessKeysRead(d *schema.ResourceData, meta interface{}) 
 		req.SetUserName(userName)
 	}
 	var resp oscgo.ReadAccessKeysResponse
-	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.AccessKeyApi.ReadAccessKeys(context.Background()).ReadAccessKeysRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)

@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -75,12 +74,15 @@ func DataSourceOutscaleQuotasRead(d *schema.ResourceData, meta interface{}) erro
 
 	filters, filtersOk := d.GetOk("filter")
 
+	var err error
 	if filtersOk {
-		req.Filters = buildOutscaleQuotaDataSourceFilters(filters.(*schema.Set))
+		req.Filters, err = buildOutscaleQuotaDataSourceFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 
 	var resp oscgo.ReadQuotasResponse
-	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.QuotaApi.ReadQuotas(context.Background()).ReadQuotasRequest(req).Execute()
 		if err != nil {
@@ -144,7 +146,7 @@ func DataSourceOutscaleQuotasRead(d *schema.ResourceData, meta interface{}) erro
 	return nil
 }
 
-func buildOutscaleQuotaDataSourceFilters(set *schema.Set) *oscgo.FiltersQuota {
+func buildOutscaleQuotaDataSourceFilters(set *schema.Set) (*oscgo.FiltersQuota, error) {
 	var filters oscgo.FiltersQuota
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -163,8 +165,8 @@ func buildOutscaleQuotaDataSourceFilters(set *schema.Set) *oscgo.FiltersQuota {
 		case "short_descriptions":
 			filters.ShortDescriptions = &filterValues
 		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}
 	}
-	return &filters
+	return &filters, nil
 }

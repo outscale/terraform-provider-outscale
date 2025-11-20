@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -47,13 +46,15 @@ func DataSourceOutscaleTagRead(d *schema.ResourceData, meta interface{}) error {
 
 	filters, filtersOk := d.GetOk("filter")
 
+	var err error
 	if filtersOk {
-		params.SetFilters(oapiBuildOutscaleDataSourceFilters(filters.(*schema.Set)))
+		params.Filters, err = oapiBuildOutscaleDataSourceFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 
 	var resp oscgo.ReadTagsResponse
-	var err error
-
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.TagApi.ReadTags(context.Background()).ReadTagsRequest(params).Execute()
 		if err != nil {
@@ -97,7 +98,7 @@ func DataSourceOutscaleTagRead(d *schema.ResourceData, meta interface{}) error {
 	return err
 }
 
-func oapiBuildOutscaleDataSourceFilters(set *schema.Set) oscgo.FiltersTag {
+func oapiBuildOutscaleDataSourceFilters(set *schema.Set) (*oscgo.FiltersTag, error) {
 	filters := oscgo.FiltersTag{}
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -117,9 +118,9 @@ func oapiBuildOutscaleDataSourceFilters(set *schema.Set) oscgo.FiltersTag {
 		case "values":
 			filters.SetValues(filterValues)
 		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}
 	}
 
-	return filters
+	return &filters, nil
 }

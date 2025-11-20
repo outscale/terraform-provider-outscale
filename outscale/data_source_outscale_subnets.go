@@ -88,12 +88,15 @@ func DataSourceOutscaleSubnetsRead(d *schema.ResourceData, meta interface{}) err
 
 	filters, filtersOk := d.GetOk("filter")
 
+	var err error
 	if filtersOk {
-		req.Filters = buildOutscaleSubnetDataSourceFilters(filters.(*schema.Set))
+		req.Filters, err = buildOutscaleSubnetDataSourceFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 
 	var resp oscgo.ReadSubnetsResponse
-	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.SubnetApi.ReadSubnets(context.Background()).ReadSubnetsRequest(req).Execute()
 		if err != nil {

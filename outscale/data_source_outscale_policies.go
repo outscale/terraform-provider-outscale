@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
@@ -76,13 +75,17 @@ func DataSourcePoliciesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
+
+	var err error
 	req := oscgo.NewReadPoliciesRequest()
 	if filtersOk {
-		filterReq := buildPoliciesFilters(filters.(*schema.Set))
-		req.SetFilters(*filterReq)
+		req.Filters, err = buildPoliciesFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 	var resp oscgo.ReadPoliciesResponse
-	err := resource.Retry(2*time.Minute, func() *resource.RetryError {
+	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.PolicyApi.ReadPolicies(context.Background()).ReadPoliciesRequest(*req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -119,7 +122,7 @@ func DataSourcePoliciesRead(d *schema.ResourceData, meta interface{}) error {
 	return d.Set("policies", policies)
 }
 
-func buildPoliciesFilters(set *schema.Set) *oscgo.ReadPoliciesFilters {
+func buildPoliciesFilters(set *schema.Set) (*oscgo.ReadPoliciesFilters, error) {
 	var filters oscgo.ReadPoliciesFilters
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -136,8 +139,8 @@ func buildPoliciesFilters(set *schema.Set) *oscgo.ReadPoliciesFilters {
 		case "scope":
 			filters.SetScope(filterValues[0])
 		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}
 	}
-	return &filters
+	return &filters, nil
 }

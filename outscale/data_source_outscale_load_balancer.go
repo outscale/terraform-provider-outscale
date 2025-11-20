@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
@@ -199,7 +198,7 @@ func DataSourceOutscaleLoadBalancer() *schema.Resource {
 	}
 }
 
-func buildOutscaleDataSourceLBFilters(set *schema.Set) oscgo.FiltersLoadBalancer {
+func buildOutscaleDataSourceLBFilters(set *schema.Set) (*oscgo.FiltersLoadBalancer, error) {
 	filters := oscgo.FiltersLoadBalancer{}
 
 	for _, v := range set.List() {
@@ -213,11 +212,10 @@ func buildOutscaleDataSourceLBFilters(set *schema.Set) oscgo.FiltersLoadBalancer
 		case "load_balancer_name":
 			filters.LoadBalancerNames = &filterValues
 		default:
-			filters.LoadBalancerNames = &filterValues
-			log.Printf("[Debug] Unknown Filter Name: %s. default to 'load_balancer_name'", name)
+			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}
 	}
-	return filters
+	return &filters, nil
 }
 
 func readLbs(conn *oscgo.APIClient, d *schema.ResourceData) (*oscgo.ReadLoadBalancersResponse, *string, error) {
@@ -235,8 +233,12 @@ func readLbs_(conn *oscgo.APIClient, d *schema.ResourceData, t schema.ValueType)
 		return nil, nil, fmt.Errorf("One of filters, or load_balancer_name must be assigned")
 	}
 
+	var err error
 	if filtersOk {
-		req.SetFilters(buildOutscaleDataSourceLBFilters(filters.(*schema.Set)))
+		req.Filters, err = buildOutscaleDataSourceLBFilters(filters.(*schema.Set))
+		if err != nil {
+			return nil, nil, err
+		}
 	} else if t == schema.TypeString {
 		req.Filters.SetLoadBalancerNames([]string{ename.(string)})
 	} else { /* assuming typelist */
@@ -245,8 +247,8 @@ func readLbs_(conn *oscgo.APIClient, d *schema.ResourceData, t schema.ValueType)
 		}
 	}
 	elbName := (*req.Filters.LoadBalancerNames)[0]
+
 	var resp oscgo.ReadLoadBalancersResponse
-	var err error
 	var statusCode int
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.LoadBalancerApi.

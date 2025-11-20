@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
@@ -226,13 +225,16 @@ func DataSourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 		return errors.New("filters must be assigned")
 	}
 
+	var err error
 	dnri := oscgo.ReadNicsRequest{}
 	if okFilters {
-		dnri.SetFilters(buildOutscaleDataSourceNicFilters(filters.(*schema.Set)))
+		dnri.Filters, err = buildOutscaleDataSourceNicFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 
 	var resp oscgo.ReadNicsResponse
-	var err error
 	var statusCode int
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(dnri).Execute()
@@ -331,7 +333,7 @@ func DataSourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func buildOutscaleDataSourceNicFilters(set *schema.Set) oscgo.FiltersNic {
+func buildOutscaleDataSourceNicFilters(set *schema.Set) (*oscgo.FiltersNic, error) {
 	var filters oscgo.FiltersNic
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -398,8 +400,8 @@ func buildOutscaleDataSourceNicFilters(set *schema.Set) oscgo.FiltersNic {
 		case "subregion_names":
 			filters.SetSubregionNames(filterValues)
 		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}
 	}
-	return filters
+	return &filters, nil
 }

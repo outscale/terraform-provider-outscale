@@ -94,10 +94,15 @@ func DataSourceOutscaleVMStateRead(d *schema.ResourceData, meta interface{}) err
 		return errors.New("vm_id or filter must be set")
 	}
 
+	var err error
 	params := oscgo.ReadVmsStateRequest{}
 	if filtersOk {
-		params.SetFilters(buildOutscaleDataSourceVMStateFilters(filters.(*schema.Set)))
+		params.Filters, err = buildOutscaleDataSourceVMStateFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
+
 	if instanceIDOk {
 		filter := oscgo.FiltersVmsState{}
 		filter.SetVmIds([]string{instanceID.(string)})
@@ -106,7 +111,6 @@ func DataSourceOutscaleVMStateRead(d *schema.ResourceData, meta interface{}) err
 	params.SetAllVms(d.Get("all_vms").(bool))
 
 	var resp oscgo.ReadVmsStateResponse
-	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.VmApi.ReadVmsState(context.Background()).ReadVmsStateRequest(params).Execute()
 		if err != nil {
@@ -178,7 +182,7 @@ func statusSetOAPIVMState(status []oscgo.MaintenanceEvent) []map[string]interfac
 	return s
 }
 
-func buildOutscaleDataSourceVMStateFilters(set *schema.Set) oscgo.FiltersVmsState {
+func buildOutscaleDataSourceVMStateFilters(set *schema.Set) (*oscgo.FiltersVmsState, error) {
 	var filters oscgo.FiltersVmsState
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -204,8 +208,8 @@ func buildOutscaleDataSourceVMStateFilters(set *schema.Set) oscgo.FiltersVmsStat
 			filters.SetVmStates(filterValues)
 
 		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}
 	}
-	return filters
+	return &filters, nil
 }

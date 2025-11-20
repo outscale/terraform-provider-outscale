@@ -214,9 +214,13 @@ func DataSourceOutscaleImageRead(d *schema.ResourceData, meta interface{}) error
 		return fmt.Errorf("One of executable_users, filters, or account_id must be assigned, or image_id must be provided")
 	}
 
+	var err error
 	filtersReq := &oscgo.FiltersImage{}
 	if filtersOk {
-		filtersReq = buildOutscaleDataSourceImagesFilters(filters.(*schema.Set))
+		filtersReq, err = buildOutscaleDataSourceImagesFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 	if imageIDOk {
 		filtersReq.SetImageIds([]string{imageID.(string)})
@@ -231,7 +235,6 @@ func DataSourceOutscaleImageRead(d *schema.ResourceData, meta interface{}) error
 	req := oscgo.ReadImagesRequest{Filters: filtersReq}
 
 	var resp oscgo.ReadImagesResponse
-	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(req).Execute()
 		if err != nil {

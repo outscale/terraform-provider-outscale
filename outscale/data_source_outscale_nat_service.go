@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -71,10 +70,14 @@ func DataSourceOutscaleNatServiceRead(d *schema.ResourceData, meta interface{}) 
 		return fmt.Errorf("filters, or owner must be assigned, or nat_service_id must be provided")
 	}
 
+	var err error
 	params := oscgo.ReadNatServicesRequest{}
 
 	if filtersOk {
-		params.SetFilters(buildOutscaleNatServiceDataSourceFilters(filters.(*schema.Set)))
+		params.Filters, err = buildOutscaleNatServiceDataSourceFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 	if natGatewayIDOK && natGatewayID.(string) != "" {
 		filter := oscgo.FiltersNatService{}
@@ -83,8 +86,7 @@ func DataSourceOutscaleNatServiceRead(d *schema.ResourceData, meta interface{}) 
 	}
 
 	var resp oscgo.ReadNatServicesResponse
-	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-		var err error
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.NatServiceApi.ReadNatServices(context.Background()).ReadNatServicesRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -93,10 +95,8 @@ func DataSourceOutscaleNatServiceRead(d *schema.ResourceData, meta interface{}) 
 		return nil
 	})
 
-	var errString string
-
 	if err != nil {
-		errString = err.Error()
+		errString := err.Error()
 
 		return fmt.Errorf("[DEBUG] Error reading Nar Service (%s)", errString)
 	}
@@ -163,7 +163,7 @@ func ngOAPIDescriptionAttributes(d *schema.ResourceData, ng oscgo.NatService) er
 	return nil
 }
 
-func buildOutscaleNatServiceDataSourceFilters(set *schema.Set) oscgo.FiltersNatService {
+func buildOutscaleNatServiceDataSourceFilters(set *schema.Set) (*oscgo.FiltersNatService, error) {
 	var filters oscgo.FiltersNatService
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -188,8 +188,8 @@ func buildOutscaleNatServiceDataSourceFilters(set *schema.Set) oscgo.FiltersNatS
 		case "tags":
 			filters.SetTags(filterValues)
 		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}
 	}
-	return filters
+	return &filters, nil
 }

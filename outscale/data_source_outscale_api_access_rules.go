@@ -62,7 +62,11 @@ func DataSourceOutscaleApiAccessRulesRead(d *schema.ResourceData, meta interface
 	filters, filtersOk := d.GetOk("filter")
 	req := oscgo.ReadApiAccessRulesRequest{}
 	if filtersOk {
-		req.Filters = buildOutscaleApiAccessRuleFilters(filters.(*schema.Set))
+		filterParams, err := buildOutscaleApiAccessRuleFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
+		req.Filters = filterParams
 	}
 
 	var resp oscgo.ReadApiAccessRulesResponse

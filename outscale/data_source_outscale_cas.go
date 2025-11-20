@@ -51,11 +51,15 @@ func DataSourceOutscaleCasRead(d *schema.ResourceData, meta interface{}) error {
 	filters, filtersOk := d.GetOk("filter")
 	params := oscgo.ReadCasRequest{}
 
-	if filtersOk {
-		params.Filters = buildOutscaleDataSourceCaFilters(filters.(*schema.Set))
-	}
-	var resp oscgo.ReadCasResponse
 	var err error
+	if filtersOk {
+		params.Filters, err = buildOutscaleDataSourceCaFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
+	}
+
+	var resp oscgo.ReadCasResponse
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.CaApi.ReadCas(context.Background()).ReadCasRequest(params).Execute()
 		if err != nil {

@@ -65,12 +65,16 @@ func DataSourceOutscaleQuotaRead(d *schema.ResourceData, meta interface{}) error
 
 	filters, filtersOk := d.GetOk("filter")
 
+	var err error
 	if filtersOk {
-		req.Filters = buildOutscaleQuotaDataSourceFilters(filters.(*schema.Set))
+		req.Filters, err = buildOutscaleQuotaDataSourceFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 
 	var resp oscgo.ReadQuotasResponse
-	err := resource.Retry(120*time.Second, func() *resource.RetryError {
+	err = resource.Retry(120*time.Second, func() *resource.RetryError {
 		var err error
 		rp, httpResp, err := conn.QuotaApi.ReadQuotas(context.Background()).ReadQuotasRequest(req).Execute()
 		if err != nil {

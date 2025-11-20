@@ -66,7 +66,11 @@ func DataSourceOutscaleClientGatewayRead(d *schema.ResourceData, meta interface{
 	}
 
 	if filtersOk {
-		params.Filters = buildOutscaleDataSourceClientGatewayFilters(filters.(*schema.Set))
+		filterParams, err := buildOutscaleDataSourceClientGatewayFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
+		params.Filters = filterParams
 	}
 
 	var resp oscgo.ReadClientGatewaysResponse
@@ -117,7 +121,7 @@ func DataSourceOutscaleClientGatewayRead(d *schema.ResourceData, meta interface{
 	return nil
 }
 
-func buildOutscaleDataSourceClientGatewayFilters(set *schema.Set) *oscgo.FiltersClientGateway {
+func buildOutscaleDataSourceClientGatewayFilters(set *schema.Set) (*oscgo.FiltersClientGateway, error) {
 	var filters oscgo.FiltersClientGateway
 	for _, v := range set.List() {
 		log.Printf("[DEBUG] gateway filters %+v", v)
@@ -145,8 +149,8 @@ func buildOutscaleDataSourceClientGatewayFilters(set *schema.Set) *oscgo.Filters
 		case "tags":
 			filters.SetTags(filterValues)
 		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}
 	}
-	return &filters
+	return &filters, nil
 }

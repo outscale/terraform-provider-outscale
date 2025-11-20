@@ -73,12 +73,16 @@ func DataSourceOutscaleFlexibleGpusRead(d *schema.ResourceData, meta interface{}
 		return fmt.Errorf("One of filters, or flexible_gpu_id must be assigned")
 	}
 
+	var err error
 	req := oscgo.ReadFlexibleGpusRequest{}
-	req.SetFilters(buildOutscaleDataSourceFlexibleGpuFilters(filters.(*schema.Set)))
+	if filtersOk {
+		req.Filters, err = buildOutscaleDataSourceFlexibleGpuFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
+	}
 
 	var resp oscgo.ReadFlexibleGpusResponse
-	var err error
-
 	err = resource.Retry(30*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.FlexibleGpuApi.ReadFlexibleGpus(
 			context.Background()).ReadFlexibleGpusRequest(req).Execute()
