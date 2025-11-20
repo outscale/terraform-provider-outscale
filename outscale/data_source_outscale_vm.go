@@ -442,7 +442,7 @@ func buildOutscaleDataSourceVMFilters(set *schema.Set) (*oscgo.FiltersVm, error)
 		case "VmTypes":
 			filters.SetVmTypes(filterValues)
 		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}
 	}
 	return filters, nil

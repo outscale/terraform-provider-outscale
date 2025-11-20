@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -46,12 +45,16 @@ func DataSourceOutscaleProductTypeRead(d *schema.ResourceData, meta interface{})
 
 	filters, filtersOk := d.GetOk("filter")
 
+	var err error
 	if filtersOk {
-		req.Filters = buildOutscaleProductTypeDataSourceFilters(filters.(*schema.Set))
+		req.Filters, err = buildOutscaleProductTypeDataSourceFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 
 	var resp oscgo.ReadProductTypesResponse
-	err := resource.Retry(120*time.Second, func() *resource.RetryError {
+	err = resource.Retry(120*time.Second, func() *resource.RetryError {
 		var err error
 		rp, httpResp, err := conn.ProductTypeApi.ReadProductTypes(context.Background()).ReadProductTypesRequest(req).Execute()
 		if err != nil {
@@ -90,7 +93,7 @@ func DataSourceOutscaleProductTypeRead(d *schema.ResourceData, meta interface{})
 	return nil
 }
 
-func buildOutscaleProductTypeDataSourceFilters(set *schema.Set) *oscgo.FiltersProductType {
+func buildOutscaleProductTypeDataSourceFilters(set *schema.Set) (*oscgo.FiltersProductType, error) {
 	var filters oscgo.FiltersProductType
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -103,8 +106,8 @@ func buildOutscaleProductTypeDataSourceFilters(set *schema.Set) *oscgo.FiltersPr
 		case "product_type_ids":
 			filters.ProductTypeIds = &filterValues
 		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}
 	}
-	return &filters
+	return &filters, nil
 }

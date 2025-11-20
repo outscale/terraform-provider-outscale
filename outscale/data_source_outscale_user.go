@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -53,12 +52,17 @@ func DataSourceUserRead(d *schema.ResourceData, meta interface{}) error {
 	if !filtersOk {
 		return fmt.Errorf("filters: user_ids must be assigned")
 	}
-	req := oscgo.NewReadUsersRequest()
-	filterReq := buildUsersFilters(filters.(*schema.Set))
-	req.SetFilters(*filterReq)
-	var resp oscgo.ReadUsersResponse
 
-	err := resource.Retry(2*time.Minute, func() *resource.RetryError {
+	var err error
+	req := oscgo.NewReadUsersRequest()
+
+	req.Filters, err = buildUsersFilters(filters.(*schema.Set))
+	if err != nil {
+		return err
+	}
+
+	var resp oscgo.ReadUsersResponse
+	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.UserApi.ReadUsers(context.Background()).ReadUsersRequest(*req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -100,7 +104,7 @@ func DataSourceUserRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func buildUsersFilters(set *schema.Set) *oscgo.FiltersUsers {
+func buildUsersFilters(set *schema.Set) (*oscgo.FiltersUsers, error) {
 	var filters oscgo.FiltersUsers
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -113,8 +117,8 @@ func buildUsersFilters(set *schema.Set) *oscgo.FiltersUsers {
 		case "user_ids":
 			filters.SetUserIds(filterValues)
 		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}
 	}
-	return &filters
+	return &filters, nil
 }

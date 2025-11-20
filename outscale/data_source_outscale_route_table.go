@@ -234,12 +234,15 @@ func DataSourceOutscaleRouteTableRead(d *schema.ResourceData, meta interface{}) 
 		}
 	}
 
+	var err error
 	if filterOk {
-		params.Filters = buildOutscaleDataSourceRouteTableFilters(filter.(*schema.Set))
+		params.Filters, err = buildOutscaleDataSourceRouteTableFilters(filter.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 
 	var resp oscgo.ReadRouteTablesResponse
-	var err error
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(params).Execute()
 		if err != nil {
@@ -283,7 +286,7 @@ func DataSourceOutscaleRouteTableRead(d *schema.ResourceData, meta interface{}) 
 	return d.Set("link_route_tables", setOSCAPILinkRouteTables(rt.GetLinkRouteTables()))
 }
 
-func buildOutscaleDataSourceRouteTableFilters(set *schema.Set) *oscgo.FiltersRouteTable {
+func buildOutscaleDataSourceRouteTableFilters(set *schema.Set) (*oscgo.FiltersRouteTable, error) {
 	var filters oscgo.FiltersRouteTable
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -327,8 +330,8 @@ func buildOutscaleDataSourceRouteTableFilters(set *schema.Set) *oscgo.FiltersRou
 		case "route_vm_ids":
 			filters.SetRouteVmIds(filterValues)
 		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}
 	}
-	return &filters
+	return &filters, nil
 }

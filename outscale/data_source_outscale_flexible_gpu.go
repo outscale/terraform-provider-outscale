@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -66,16 +65,21 @@ func DataSourceOutscaleFlexibleGpuRead(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("One of filters, or flexible_gpu_id must be assigned")
 	}
 
+	var err error
 	req := oscgo.ReadFlexibleGpusRequest{}
 
 	req.Filters = &oscgo.FiltersFlexibleGpu{
 		FlexibleGpuIds: &[]string{flexID.(string)},
 	}
 
-	req.SetFilters(buildOutscaleDataSourceFlexibleGpuFilters(filters.(*schema.Set)))
+	if filtersOk {
+		req.Filters, err = buildOutscaleDataSourceFlexibleGpuFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
+	}
 
 	var resp oscgo.ReadFlexibleGpusResponse
-	var err error
 
 	err = resource.Retry(30*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.FlexibleGpuApi.ReadFlexibleGpus(
@@ -122,7 +126,7 @@ func DataSourceOutscaleFlexibleGpuRead(d *schema.ResourceData, meta interface{})
 	return nil
 }
 
-func buildOutscaleDataSourceFlexibleGpuFilters(set *schema.Set) oscgo.FiltersFlexibleGpu {
+func buildOutscaleDataSourceFlexibleGpuFilters(set *schema.Set) (*oscgo.FiltersFlexibleGpu, error) {
 	var filters oscgo.FiltersFlexibleGpu
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -147,8 +151,8 @@ func buildOutscaleDataSourceFlexibleGpuFilters(set *schema.Set) oscgo.FiltersFle
 		case "vm_ids":
 			filters.SetVmIds(filterValues)
 		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}
 	}
-	return filters
+	return &filters, nil
 }

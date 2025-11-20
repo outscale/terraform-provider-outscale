@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -176,11 +175,14 @@ func DataSourceOutscaleSecurityGroupRead(d *schema.ResourceData, meta interface{
 		req.SetFilters(filter)
 	}
 
+	var err error
 	if filtersOk {
-		req.SetFilters(buildOutscaleDataSourceSecurityGroupFilters(filters.(*schema.Set)))
+		req.Filters, err = buildOutscaleDataSourceSecurityGroupFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 
-	var err error
 	var resp oscgo.ReadSecurityGroupsResponse
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.SecurityGroupApi.ReadSecurityGroups(context.Background()).ReadSecurityGroupsRequest(req).Execute()
@@ -240,7 +242,7 @@ func DataSourceOutscaleSecurityGroupRead(d *schema.ResourceData, meta interface{
 	return d.Set("outbound_rules", flattenOAPISecurityGroupRule(sg.GetOutboundRules()))
 }
 
-func buildOutscaleDataSourceSecurityGroupFilters(set *schema.Set) oscgo.FiltersSecurityGroup {
+func buildOutscaleDataSourceSecurityGroupFilters(set *schema.Set) (*oscgo.FiltersSecurityGroup, error) {
 	var filters oscgo.FiltersSecurityGroup
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -293,8 +295,8 @@ func buildOutscaleDataSourceSecurityGroupFilters(set *schema.Set) oscgo.FiltersS
 		case "tags":
 			filters.SetTags(filterValues)
 		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}
 	}
-	return filters
+	return &filters, nil
 }

@@ -79,15 +79,16 @@ func DataSourceOutscaleVirtualGatewaysRead(d *schema.ResourceData, meta interfac
 		return fmt.Errorf("One of virtual_gateway_id or filter must be assigned")
 	}
 
+	var err error
 	params := oscgo.ReadVirtualGatewaysRequest{}
-
 	if filtersOk {
-		params.SetFilters(buildOutscaleAPIVirtualGatewayFilters(filter.(*schema.Set)))
+		params.Filters, err = buildOutscaleAPIVirtualGatewayFilters(filter.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 
 	var resp oscgo.ReadVirtualGatewaysResponse
-	var err error
-
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(params).Execute()
 		if err != nil {

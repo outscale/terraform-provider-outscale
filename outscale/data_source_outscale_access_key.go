@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -66,8 +65,12 @@ func DataSourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) e
 
 	filterReq := &oscgo.FiltersAccessKeys{}
 
+	var err error
 	if filtersOk {
-		filterReq = buildOutscaleDataSourceAccessKeyFilters(filters.(*schema.Set))
+		filterReq, err = buildOutscaleDataSourceAccessKeyFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 	if accessKeyOk {
 		filterReq.SetAccessKeyIds([]string{accessKeyID.(string)})
@@ -82,7 +85,7 @@ func DataSourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) e
 	}
 	var resp oscgo.ReadAccessKeysResponse
 
-	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.AccessKeyApi.ReadAccessKeys(context.Background()).ReadAccessKeysRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -125,7 +128,7 @@ func DataSourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) e
 	return nil
 }
 
-func buildOutscaleDataSourceAccessKeyFilters(set *schema.Set) *oscgo.FiltersAccessKeys {
+func buildOutscaleDataSourceAccessKeyFilters(set *schema.Set) (*oscgo.FiltersAccessKeys, error) {
 	var filters oscgo.FiltersAccessKeys
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -140,8 +143,8 @@ func buildOutscaleDataSourceAccessKeyFilters(set *schema.Set) *oscgo.FiltersAcce
 		case "states":
 			filters.SetStates(filterValues)
 		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}
 	}
-	return &filters
+	return &filters, nil
 }

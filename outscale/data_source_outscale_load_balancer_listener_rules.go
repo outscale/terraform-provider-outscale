@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
@@ -99,8 +98,7 @@ func DataSourceOutscaleLoadBalancerLDRulesRead(d *schema.ResourceData, meta inte
 			case "listener_rule_name":
 				filter.ListenerRuleNames = &filterValues
 			default:
-				filter.ListenerRuleNames = &filterValues
-				log.Printf("[Debug] Unknown Filter Name: %s. default to 'load_balancer_name'", name)
+				return utils.UnknownDataSourceFilterError(context.Background(), name)
 			}
 		}
 	} else {

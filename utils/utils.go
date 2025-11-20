@@ -435,6 +435,10 @@ func CheckDateFormat(dateFormat string) error {
 	return nil
 }
 
+func UnknownDataSourceFilterError(ctx context.Context, filterName string) error {
+	return fmt.Errorf("datasource filter '%s' is not implemented in the provider or not supported by the API", filterName)
+}
+
 func GetTypeSetDifferencesForUpdating(oldTypeSet, newTypeSet *schema.Set) (*schema.Set, *schema.Set) {
 	inter := oldTypeSet.Intersection(newTypeSet)
 	toAdd := newTypeSet.Difference(inter)

@@ -126,13 +126,6 @@ func DataSourceOutscaleSnapshotsRead(d *schema.ResourceData, meta interface{}) e
 		filter.SetPermissionsToCreateVolumeAccountIds(utils.InterfaceSliceToStringSlice(restorableUsers.([]interface{})))
 		params.SetFilters(filter)
 	}
-
-	if filtersOk {
-		if err := buildOutscaleOapiSnapshootDataSourceFilters(filters.(*schema.Set), params.Filters); err != nil {
-			return err
-		}
-	}
-
 	if ownersOk {
 		filter.SetAccountIds(utils.InterfaceSliceToStringSlice(owners.([]interface{})))
 		params.SetFilters(filter)
@@ -142,8 +135,15 @@ func DataSourceOutscaleSnapshotsRead(d *schema.ResourceData, meta interface{}) e
 		params.SetFilters(filter)
 	}
 
-	var resp oscgo.ReadSnapshotsResponse
 	var err error
+	if filtersOk {
+		params.Filters, err = buildOutscaleOapiSnapshootDataSourceFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
+	}
+
+	var resp oscgo.ReadSnapshotsResponse
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.SnapshotApi.ReadSnapshots(context.Background()).ReadSnapshotsRequest(params).Execute()
 		if err != nil {
