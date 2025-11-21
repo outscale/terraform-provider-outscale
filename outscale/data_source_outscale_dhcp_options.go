@@ -85,6 +85,7 @@ func DataSourceOutscaleDHCPOptionsRead(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("One of filters, or dhcp_options_set_id must be provided")
 	}
 
+	var err error
 	params := oscgo.ReadDhcpOptionsRequest{}
 	if dhcpIDOk {
 		params.Filters = &oscgo.FiltersDhcpOptions{
@@ -92,11 +93,13 @@ func DataSourceOutscaleDHCPOptionsRead(d *schema.ResourceData, meta interface{})
 		}
 	}
 	if filtersOk {
-		params.Filters = buildOutscaleDataSourceDHCPOptionFilters(filters.(*schema.Set))
+		params.Filters, err = buildOutscaleDataSourceDHCPOptionFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 
 	var resp oscgo.ReadDhcpOptionsResponse
-	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.DhcpOptionApi.ReadDhcpOptions(context.Background()).ReadDhcpOptionsRequest(params).Execute()
 		if err != nil {

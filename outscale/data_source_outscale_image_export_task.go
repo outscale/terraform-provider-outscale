@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -91,13 +90,16 @@ func dataSourceOAPISnapshotImageTaskRead(d *schema.ResourceData, meta interface{
 
 	filters, filtersOk := d.GetOk("filter")
 
+	var err error
 	filtersReq := &oscgo.FiltersExportTask{}
 	if filtersOk {
-		filtersReq = buildOutscaleOSCAPIDataSourceImageExportTaskFilters(filters.(*schema.Set))
+		filtersReq, err = buildOutscaleOSCAPIDataSourceImageExportTaskFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 
 	var resp oscgo.ReadImageExportTasksResponse
-	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.ImageApi.ReadImageExportTasks(context.Background()).
 			ReadImageExportTasksRequest(oscgo.ReadImageExportTasksRequest{
@@ -160,7 +162,7 @@ func dataSourceOAPISnapshotImageTaskRead(d *schema.ResourceData, meta interface{
 	return nil
 }
 
-func buildOutscaleOSCAPIDataSourceImageExportTaskFilters(set *schema.Set) *oscgo.FiltersExportTask {
+func buildOutscaleOSCAPIDataSourceImageExportTaskFilters(set *schema.Set) (*oscgo.FiltersExportTask, error) {
 	var filters oscgo.FiltersExportTask
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -173,8 +175,8 @@ func buildOutscaleOSCAPIDataSourceImageExportTaskFilters(set *schema.Set) *oscgo
 		case "task_ids":
 			filters.TaskIds = &filterValues
 		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}
 	}
-	return &filters
+	return &filters, nil
 }

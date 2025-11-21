@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
@@ -146,7 +145,7 @@ func (d *dataSourceQuota) Read(ctx context.Context, req datasource.ReadRequest, 
 	if err != nil {
 		goto CHECK_ERR
 	}
-	filters, err = buildOutscaleQuotaDataSourceFrameworkFilters(listFilters)
+	filters, err = buildOutscaleQuotaDataSourceFrameworkFilters(ctx, listFilters)
 	if err != nil {
 		goto CHECK_ERR
 	}
@@ -223,7 +222,7 @@ CHECK_ERR:
 	}
 }
 
-func buildOutscaleQuotaDataSourceFrameworkFilters(listFilters []tftypes.Value) (*oscgo.FiltersQuota, error) {
+func buildOutscaleQuotaDataSourceFrameworkFilters(ctx context.Context, listFilters []tftypes.Value) (*oscgo.FiltersQuota, error) {
 	var filters oscgo.FiltersQuota
 
 	for _, val := range listFilters {
@@ -249,7 +248,7 @@ func buildOutscaleQuotaDataSourceFrameworkFilters(listFilters []tftypes.Value) (
 		case "short_descriptions":
 			filters.ShortDescriptions = &filterValues
 		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+			return nil, utils.UnknownDataSourceFilterError(ctx, name)
 		}
 	}
 	return &filters, nil

@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -76,13 +75,15 @@ func DataSourceOutscaleVirtualGatewayRead(d *schema.ResourceData, meta interface
 		params.SetFilters(oscgo.FiltersVirtualGateway{VirtualGatewayIds: &[]string{virtualId.(string)}})
 	}
 
+	var err error
 	if filtersOk {
-		params.SetFilters(buildOutscaleAPIVirtualGatewayFilters(filters.(*schema.Set)))
+		params.Filters, err = buildOutscaleAPIVirtualGatewayFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 
 	var resp oscgo.ReadVirtualGatewaysResponse
-	var err error
-
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(params).Execute()
 		if err != nil {
@@ -124,7 +125,7 @@ func DataSourceOutscaleVirtualGatewayRead(d *schema.ResourceData, meta interface
 	return nil
 }
 
-func buildOutscaleAPIVirtualGatewayFilters(set *schema.Set) oscgo.FiltersVirtualGateway {
+func buildOutscaleAPIVirtualGatewayFilters(set *schema.Set) (*oscgo.FiltersVirtualGateway, error) {
 	var filters oscgo.FiltersVirtualGateway
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -152,8 +153,8 @@ func buildOutscaleAPIVirtualGatewayFilters(set *schema.Set) oscgo.FiltersVirtual
 		case "virtual_gateway_ids":
 			filters.SetVirtualGatewayIds(filterValues)
 		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}
 	}
-	return filters
+	return &filters, nil
 }

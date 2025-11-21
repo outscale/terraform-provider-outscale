@@ -59,7 +59,11 @@ func DataSourceOutscaleServerCertificateRead(d *schema.ResourceData, meta interf
 	params := oscgo.ReadServerCertificatesRequest{}
 
 	if filtersOk {
-		params.Filters = buildOutscaleOSCAPIDataSourceServerCertificateFilters(filters.(*schema.Set))
+		filterParams, err := buildOutscaleOSCAPIDataSourceServerCertificateFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
+		params.Filters = filterParams
 	}
 
 	var resp oscgo.ReadServerCertificatesResponse
@@ -100,7 +104,7 @@ func DataSourceOutscaleServerCertificateRead(d *schema.ResourceData, meta interf
 	return nil
 }
 
-func buildOutscaleOSCAPIDataSourceServerCertificateFilters(set *schema.Set) *oscgo.FiltersServerCertificate {
+func buildOutscaleOSCAPIDataSourceServerCertificateFilters(set *schema.Set) (*oscgo.FiltersServerCertificate, error) {
 	var filters oscgo.FiltersServerCertificate
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -113,8 +117,8 @@ func buildOutscaleOSCAPIDataSourceServerCertificateFilters(set *schema.Set) *osc
 		case "paths":
 			filters.SetPaths(filterValues)
 		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}
 	}
-	return &filters
+	return &filters, nil
 }

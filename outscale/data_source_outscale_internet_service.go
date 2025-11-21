@@ -50,6 +50,7 @@ func DataSourceOutscaleInternetServiceRead(d *schema.ResourceData, meta interfac
 	}
 
 	// Build up search parameters
+	var err error
 	params := oscgo.ReadInternetServicesRequest{}
 
 	if insternetIDOk {
@@ -60,12 +61,15 @@ func DataSourceOutscaleInternetServiceRead(d *schema.ResourceData, meta interfac
 	}
 
 	if filtersOk {
-		params.Filters = buildOutscaleOSCAPIDataSourceInternetServiceFilters(filters.(*schema.Set))
+		params.Filters, err = buildOutscaleOSCAPIDataSourceInternetServiceFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 
 	var resp oscgo.ReadInternetServicesResponse
 
-	err := resource.Retry(120*time.Second, func() *resource.RetryError {
+	err = resource.Retry(120*time.Second, func() *resource.RetryError {
 		var err error
 		rp, httpResp, err := conn.InternetServiceApi.ReadInternetServices(context.Background()).ReadInternetServicesRequest(params).Execute()
 		if err != nil {
@@ -104,7 +108,7 @@ func DataSourceOutscaleInternetServiceRead(d *schema.ResourceData, meta interfac
 	return d.Set("tags", tagsOSCAPIToMap(result.GetTags()))
 }
 
-func buildOutscaleOSCAPIDataSourceInternetServiceFilters(set *schema.Set) *oscgo.FiltersInternetService {
+func buildOutscaleOSCAPIDataSourceInternetServiceFilters(set *schema.Set) (*oscgo.FiltersInternetService, error) {
 	var filters oscgo.FiltersInternetService
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -127,8 +131,8 @@ func buildOutscaleOSCAPIDataSourceInternetServiceFilters(set *schema.Set) *oscgo
 		case "tag_values":
 			filters.SetTagValues(filterValues)
 		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}
 	}
-	return &filters
+	return &filters, nil
 }

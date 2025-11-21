@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -29,13 +28,17 @@ func DataSourceOutscaleKeyPairRead(d *schema.ResourceData, meta interface{}) err
 
 	filters, filtersOk := d.GetOk("filter")
 
+	var err error
 	if filtersOk {
-		req.SetFilters(buildOutscaleKeyPairsDataSourceFilters(filters.(*schema.Set)))
+		req.Filters, err = buildOutscaleKeyPairsDataSourceFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 
 	var resp oscgo.ReadKeypairsResponse
 	var statusCode int
-	err := retry.RetryContext(context.Background(), utils.ReadDefaultTimeout, func() *retry.RetryError {
+	err = retry.RetryContext(context.Background(), utils.ReadDefaultTimeout, func() *retry.RetryError {
 		rp, httpResp, err := conn.KeypairApi.ReadKeypairs(context.Background()).ReadKeypairsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -113,7 +116,7 @@ func DataSourceOutscaleKeyPair() *schema.Resource {
 	}
 }
 
-func buildOutscaleKeyPairsDataSourceFilters(set *schema.Set) oscgo.FiltersKeypair {
+func buildOutscaleKeyPairsDataSourceFilters(set *schema.Set) (*oscgo.FiltersKeypair, error) {
 	var filters oscgo.FiltersKeypair
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -138,8 +141,8 @@ func buildOutscaleKeyPairsDataSourceFilters(set *schema.Set) oscgo.FiltersKeypai
 		case "tags":
 			filters.SetTags(filterValues)
 		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}
 	}
-	return filters
+	return &filters, nil
 }

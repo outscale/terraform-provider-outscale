@@ -64,7 +64,11 @@ func DataSourceOutscaleNetAccessPointRead(d *schema.ResourceData, meta interface
 	var err error
 	req := oscgo.ReadNetAccessPointsRequest{}
 
-	req.SetFilters(buildOutscaleDataSourcesNAPFilters(filters.(*schema.Set)))
+	req.Filters, err = buildOutscaleDataSourcesNAPFilters(filters.(*schema.Set))
+	if err != nil {
+		return err
+	}
+
 	err = resource.Retry(30*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.NetAccessPointApi.ReadNetAccessPoints(
 			context.Background()).

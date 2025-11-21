@@ -79,17 +79,17 @@ func DataSourceOutscaleLinPeeringConnectionRead(d *schema.ResourceData, meta int
 
 	log.Printf("[DEBUG] Reading Net Peering Connections.")
 
+	var err error
 	req := oscgo.ReadNetPeeringsRequest{}
 
 	filters, filtersOk := d.GetOk("filter")
 	if !filtersOk {
 		return fmt.Errorf("filters must be assigned")
 	}
-	filtersValues, err := buildOutscaleLinPeeringConnectionFilters(filters.(*schema.Set))
+	req.Filters, err = buildOutscaleLinPeeringConnectionFilters(filters.(*schema.Set))
 	if err != nil {
 		return err
 	}
-	req.SetFilters(filtersValues)
 
 	var resp oscgo.ReadNetPeeringsResponse
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -162,7 +162,7 @@ func DataSourceOutscaleLinPeeringConnectionRead(d *schema.ResourceData, meta int
 	return nil
 }
 
-func buildOutscaleLinPeeringConnectionFilters(set *schema.Set) (oscgo.FiltersNetPeering, error) {
+func buildOutscaleLinPeeringConnectionFilters(set *schema.Set) (*oscgo.FiltersNetPeering, error) {
 	var filters oscgo.FiltersNetPeering
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -192,7 +192,7 @@ func buildOutscaleLinPeeringConnectionFilters(set *schema.Set) (oscgo.FiltersNet
 			expirationDates, err := utils.StringSliceToTimeSlice(
 				filterValues, "expiration_dates")
 			if err != nil {
-				return filters, err
+				return nil, err
 			}
 			filters.SetExpirationDates(expirationDates)
 		case "state_names":
@@ -204,8 +204,8 @@ func buildOutscaleLinPeeringConnectionFilters(set *schema.Set) (oscgo.FiltersNet
 		case "tags":
 			filters.SetTags(filterValues)
 		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}
 	}
-	return filters, nil
+	return &filters, nil
 }

@@ -81,7 +81,11 @@ func DataSourceOutscaleClientGatewaysRead(d *schema.ResourceData, meta interface
 	}
 
 	if filtersOk {
-		params.Filters = buildOutscaleDataSourceClientGatewayFilters(filters.(*schema.Set))
+		var err error
+		params.Filters, err = buildOutscaleDataSourceClientGatewayFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 
 	var resp oscgo.ReadClientGatewaysResponse

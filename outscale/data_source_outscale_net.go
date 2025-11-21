@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -57,17 +56,20 @@ func DataSourceOutscaleVpc() *schema.Resource {
 func DataSourceOutscaleVpcRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
+	var err error
 	req := oscgo.ReadNetsRequest{}
 
 	if v, ok := d.GetOk("filter"); ok {
-		req.SetFilters(buildOutscaleDataSourceNetFilters(v.(*schema.Set)))
+		req.Filters, err = buildOutscaleDataSourceNetFilters(v.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 
 	if id := d.Get("net_id"); id != "" {
 		req.Filters.SetNetIds([]string{id.(string)})
 	}
 
-	var err error
 	var resp oscgo.ReadNetsResponse
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.NetApi.ReadNets(context.Background()).ReadNetsRequest(req).Execute()
@@ -112,7 +114,7 @@ func DataSourceOutscaleVpcRead(d *schema.ResourceData, meta interface{}) error {
 	return d.Set("tags", tagsOSCAPIToMap(net.GetTags()))
 }
 
-func buildOutscaleDataSourceNetFilters(set *schema.Set) oscgo.FiltersNet {
+func buildOutscaleDataSourceNetFilters(set *schema.Set) (*oscgo.FiltersNet, error) {
 	var filters oscgo.FiltersNet
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -137,8 +139,8 @@ func buildOutscaleDataSourceNetFilters(set *schema.Set) oscgo.FiltersNet {
 		case "tags":
 			filters.SetTags(filterValues)
 		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}
 	}
-	return filters
+	return &filters, nil
 }

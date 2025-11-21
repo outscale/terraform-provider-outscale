@@ -70,12 +70,12 @@ func DataSourceOutscaleLinPeeringsConnectionRead(d *schema.ResourceData, meta in
 		return fmt.Errorf("One of filters must be assigned")
 	}
 
+	var err error
 	params := oscgo.ReadNetPeeringsRequest{}
-	filtersValues, err := buildOutscaleLinPeeringConnectionFilters(filters.(*schema.Set))
+	params.Filters, err = buildOutscaleLinPeeringConnectionFilters(filters.(*schema.Set))
 	if err != nil {
 		return err
 	}
-	params.SetFilters(filtersValues)
 
 	var resp oscgo.ReadNetPeeringsResponse
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {

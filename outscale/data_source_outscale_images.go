@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -231,9 +230,13 @@ func DataSourceOutscaleImagesRead(d *schema.ResourceData, meta interface{}) erro
 		return fmt.Errorf("One of executable_users, filters, or account_ids must be assigned")
 	}
 
+	var err error
 	filtersReq := &oscgo.FiltersImage{}
 	if filtersOk {
-		filtersReq = buildOutscaleDataSourceImagesFilters(filters.(*schema.Set))
+		filtersReq, err = buildOutscaleDataSourceImagesFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 	if ownersOk {
 		filtersReq.SetAccountIds([]string{aids.(string)})
@@ -245,7 +248,6 @@ func DataSourceOutscaleImagesRead(d *schema.ResourceData, meta interface{}) erro
 	req := oscgo.ReadImagesRequest{Filters: filtersReq}
 
 	var resp oscgo.ReadImagesResponse
-	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(req).Execute()
 		if err != nil {
@@ -296,8 +298,8 @@ func DataSourceOutscaleImagesRead(d *schema.ResourceData, meta interface{}) erro
 	})
 }
 
-func buildOutscaleDataSourceImagesFilters(set *schema.Set) *oscgo.FiltersImage {
-	filters := &oscgo.FiltersImage{}
+func buildOutscaleDataSourceImagesFilters(set *schema.Set) (*oscgo.FiltersImage, error) {
+	filters := oscgo.FiltersImage{}
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -360,8 +362,8 @@ func buildOutscaleDataSourceImagesFilters(set *schema.Set) *oscgo.FiltersImage {
 		case "virtualization_types":
 			filters.SetVirtualizationTypes(filterValues)
 		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}
 	}
-	return filters
+	return &filters, nil
 }

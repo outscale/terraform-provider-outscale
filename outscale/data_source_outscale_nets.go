@@ -68,6 +68,7 @@ func DataSourceOutscaleVpcs() *schema.Resource {
 func DataSourceOutscaleVpcsRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
+	var err error
 	req := oscgo.ReadNetsRequest{}
 
 	filters, filtersOk := d.GetOk("filter")
@@ -78,7 +79,10 @@ func DataSourceOutscaleVpcsRead(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	if filtersOk {
-		req.SetFilters(buildOutscaleDataSourceNetFilters(filters.(*schema.Set)))
+		req.Filters, err = buildOutscaleDataSourceNetFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 
 	if netIdsOk {
@@ -93,7 +97,6 @@ func DataSourceOutscaleVpcsRead(d *schema.ResourceData, meta interface{}) error 
 
 	}
 
-	var err error
 	var resp oscgo.ReadNetsResponse
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.NetApi.ReadNets(context.Background()).ReadNetsRequest(req).Execute()

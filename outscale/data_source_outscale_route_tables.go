@@ -164,12 +164,15 @@ func DataSourceOutscaleRouteTablesRead(d *schema.ResourceData, meta interface{})
 		params.SetFilters(filter)
 	}
 
+	var err error
 	if filterOk {
-		params.Filters = buildOutscaleDataSourceRouteTableFilters(filter.(*schema.Set))
+		params.Filters, err = buildOutscaleDataSourceRouteTableFilters(filter.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 
 	var resp oscgo.ReadRouteTablesResponse
-	var err error
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(params).Execute()
 		if err != nil {

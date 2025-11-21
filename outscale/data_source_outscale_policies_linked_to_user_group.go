@@ -58,13 +58,16 @@ func DataSourcePoliciesLinkedToUserGroupRead(d *schema.ResourceData, meta interf
 	req := oscgo.ReadManagedPoliciesLinkedToUserGroupRequest{}
 	req.SetUserGroupName(d.Get("user_group_name").(string))
 
+	var err error
 	if filters, filtersOk := d.GetOk("filter"); filtersOk {
-		filterReq := buildUserGroupsFilters(filters.(*schema.Set))
-		req.SetFilters(*filterReq)
+		req.Filters, err = buildUserGroupsFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 
 	var resp oscgo.ReadManagedPoliciesLinkedToUserGroupResponse
-	err := resource.Retry(2*time.Minute, func() *resource.RetryError {
+	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.PolicyApi.ReadManagedPoliciesLinkedToUserGroup(context.Background()).ReadManagedPoliciesLinkedToUserGroupRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)

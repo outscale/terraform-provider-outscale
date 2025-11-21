@@ -118,15 +118,15 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 		params.SetFilters(filter)
 	}
 
+	var err error
 	if filtersOk {
-		params.SetFilters(buildOutscaleOSCAPIDataSourceVolumesFilters(filters.(*schema.Set)))
+		params.Filters, err = buildOutscaleOSCAPIDataSourceVolumesFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 
-	log.Printf("LOG____ params: %#+v\n", params.GetFilters())
-
 	var resp oscgo.ReadVolumesResponse
-	var err error
-
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(params).Execute()
 		if err != nil {

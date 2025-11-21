@@ -52,14 +52,17 @@ func DataSourceOutscaleProductTypesRead(d *schema.ResourceData, meta interface{}
 
 	req := oscgo.ReadProductTypesRequest{}
 
+	var err error
 	filters, filtersOk := d.GetOk("filter")
 
 	if filtersOk {
-		req.Filters = buildOutscaleProductTypeDataSourceFilters(filters.(*schema.Set))
+		req.Filters, err = buildOutscaleProductTypeDataSourceFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 
 	var resp oscgo.ReadProductTypesResponse
-	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.ProductTypeApi.ReadProductTypes(context.Background()).ReadProductTypesRequest(req).Execute()
 		if err != nil {

@@ -78,12 +78,15 @@ func DataSourceOutscaleInternetServicesRead(d *schema.ResourceData, meta interfa
 		params.SetFilters(filter)
 	}
 
+	var err error
 	if filtersOk {
-		params.Filters = buildOutscaleOSCAPIDataSourceInternetServiceFilters(filters.(*schema.Set))
+		params.Filters, err = buildOutscaleOSCAPIDataSourceInternetServiceFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 
 	var resp oscgo.ReadInternetServicesResponse
-	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.InternetServiceApi.ReadInternetServices(context.Background()).ReadInternetServicesRequest(params).Execute()
 		if err != nil {

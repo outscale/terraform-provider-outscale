@@ -57,14 +57,18 @@ func DataSourceUsers() *schema.Resource {
 func DataSourceUsersRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	filters, filtersOk := d.GetOk("filter")
+
+	var err error
 	req := oscgo.NewReadUsersRequest()
 	if filtersOk {
-		filterReq := buildUsersFilters(filters.(*schema.Set))
-		req.SetFilters(*filterReq)
+		req.Filters, err = buildUsersFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
-	var resp oscgo.ReadUsersResponse
 
-	err := resource.Retry(2*time.Minute, func() *resource.RetryError {
+	var resp oscgo.ReadUsersResponse
+	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.UserApi.ReadUsers(context.Background()).ReadUsersRequest(*req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)

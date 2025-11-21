@@ -85,9 +85,13 @@ func DataSourceOutscaleNatServicesRead(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("filters, or owner must be assigned, or nat_service_id must be provided")
 	}
 
+	var err error
 	params := oscgo.ReadNatServicesRequest{}
 	if filtersOk {
-		params.SetFilters(buildOutscaleNatServiceDataSourceFilters(filters.(*schema.Set)))
+		params.Filters, err = buildOutscaleNatServiceDataSourceFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 	if natGatewayIDOK {
 		ids := make([]string, len(natGatewayID.([]interface{})))
@@ -101,7 +105,7 @@ func DataSourceOutscaleNatServicesRead(d *schema.ResourceData, meta interface{})
 	}
 
 	var resp oscgo.ReadNatServicesResponse
-	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
 		rp, httpResp, err := conn.NatServiceApi.ReadNatServices(context.Background()).ReadNatServicesRequest(params).Execute()
 		if err != nil {

@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -62,7 +61,7 @@ func DataSourceOutscaleNetAccessPoints() *schema.Resource {
 	}
 }
 
-func buildOutscaleDataSourcesNAPFilters(set *schema.Set) oscgo.FiltersNetAccessPoint {
+func buildOutscaleDataSourcesNAPFilters(set *schema.Set) (*oscgo.FiltersNetAccessPoint, error) {
 	filters := oscgo.FiltersNetAccessPoint{}
 
 	for _, v := range set.List() {
@@ -88,11 +87,10 @@ func buildOutscaleDataSourcesNAPFilters(set *schema.Set) oscgo.FiltersNetAccessP
 		case "net_access_point_ids":
 			filters.NetAccessPointIds = &filterValues
 		default:
-			filters.NetAccessPointIds = &filterValues
-			log.Printf("[Debug] Unknown Filter Name: %s. default to 'net_access_point_id'", name)
+			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}
 	}
-	return filters
+	return &filters, nil
 }
 
 func DataSourceOutscaleNetAccessPointsRead(d *schema.ResourceData, meta interface{}) error {
@@ -104,7 +102,10 @@ func DataSourceOutscaleNetAccessPointsRead(d *schema.ResourceData, meta interfac
 	var err error
 
 	if filtersOk {
-		req.SetFilters(buildOutscaleDataSourcesNAPFilters(filters.(*schema.Set)))
+		req.Filters, err = buildOutscaleDataSourcesNAPFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 	err = resource.Retry(30*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.NetAccessPointApi.ReadNetAccessPoints(

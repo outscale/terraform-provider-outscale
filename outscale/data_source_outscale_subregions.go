@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
@@ -57,15 +56,18 @@ func DataSourceOutscaleSubregionsRead(d *schema.ResourceData, meta interface{}) 
 
 	filters, filtersOk := d.GetOk("filter")
 
+	var err error
 	filtersReq := &oscgo.FiltersSubregion{}
 	if filtersOk {
-		filtersReq = buildOutscaleDataSourceSubregionsFilters(filters.(*schema.Set))
+		filtersReq, err = buildOutscaleDataSourceSubregionsFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 
 	req := oscgo.ReadSubregionsRequest{Filters: filtersReq}
 
 	var resp oscgo.ReadSubregionsResponse
-	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.SubregionApi.ReadSubregions(context.Background()).ReadSubregionsRequest(req).Execute()
 		if err != nil {
@@ -98,7 +100,7 @@ func DataSourceOutscaleSubregionsRead(d *schema.ResourceData, meta interface{}) 
 	})
 }
 
-func buildOutscaleDataSourceSubregionsFilters(set *schema.Set) *oscgo.FiltersSubregion {
+func buildOutscaleDataSourceSubregionsFilters(set *schema.Set) (*oscgo.FiltersSubregion, error) {
 	filters := &oscgo.FiltersSubregion{}
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -116,8 +118,8 @@ func buildOutscaleDataSourceSubregionsFilters(set *schema.Set) *oscgo.FiltersSub
 		case "region_names":
 			filters.SetRegionNames(filterValues)
 		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}
 	}
-	return filters
+	return filters, nil
 }

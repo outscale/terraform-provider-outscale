@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -77,7 +76,11 @@ func DataSourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) 
 		}
 	}
 	if filtersOk {
-		params.Filters = buildOutscaleDataSourceDHCPOptionFilters(filters.(*schema.Set))
+		filterParams, err := buildOutscaleDataSourceDHCPOptionFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
+		params.Filters = filterParams
 	}
 
 	var resp oscgo.ReadDhcpOptionsResponse
@@ -131,7 +134,7 @@ func DataSourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) 
 	return nil
 }
 
-func buildOutscaleDataSourceDHCPOptionFilters(set *schema.Set) *oscgo.FiltersDhcpOptions {
+func buildOutscaleDataSourceDHCPOptionFilters(set *schema.Set) (*oscgo.FiltersDhcpOptions, error) {
 	var filters oscgo.FiltersDhcpOptions
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -162,8 +165,8 @@ func buildOutscaleDataSourceDHCPOptionFilters(set *schema.Set) *oscgo.FiltersDhc
 		case "default":
 			filters.SetDefault(cast.ToBool(filterValues[0]))
 		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}
 	}
-	return &filters
+	return &filters, nil
 }

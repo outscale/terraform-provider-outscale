@@ -3,15 +3,14 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
-	"github.com/outscale/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
 func attrLBListenerRule() map[string]*schema.Schema {
@@ -91,9 +90,10 @@ func DataSourceOutscaleLoadBalancerLDRuleRead(d *schema.ResourceData, meta inter
 			switch name := m["name"].(string); name {
 			case "listener_rule_name":
 				filter.ListenerRuleNames = &filterValues
-			default:
+			case "listener_rule_names":
 				filter.ListenerRuleNames = &filterValues
-				log.Printf("[Debug] Unknown Filter Name: %s. default to 'load_balancer_name'", name)
+			default:
+				return utils.UnknownDataSourceFilterError(context.Background(), name)
 			}
 		}
 	} else {

@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/spf13/cast"
@@ -70,13 +69,16 @@ func DataSourceOutscaleSubnetRead(d *schema.ResourceData, meta interface{}) erro
 
 	filters, filtersOk := d.GetOk("filter")
 
+	var err error
 	if filtersOk {
-		req.Filters = buildOutscaleSubnetDataSourceFilters(filters.(*schema.Set))
+		req.Filters, err = buildOutscaleSubnetDataSourceFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 
 	var resp oscgo.ReadSubnetsResponse
-
-	err := resource.Retry(120*time.Second, func() *resource.RetryError {
+	err = resource.Retry(120*time.Second, func() *resource.RetryError {
 		var err error
 		rp, httpResp, err := conn.SubnetApi.ReadSubnets(context.Background()).ReadSubnetsRequest(req).Execute()
 		if err != nil {
@@ -130,7 +132,7 @@ func DataSourceOutscaleSubnetRead(d *schema.ResourceData, meta interface{}) erro
 	return nil
 }
 
-func buildOutscaleSubnetDataSourceFilters(set *schema.Set) *oscgo.FiltersSubnet {
+func buildOutscaleSubnetDataSourceFilters(set *schema.Set) (*oscgo.FiltersSubnet, error) {
 	var filters oscgo.FiltersSubnet
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -162,8 +164,8 @@ func buildOutscaleSubnetDataSourceFilters(set *schema.Set) *oscgo.FiltersSubnet 
 			filters.SetTags(filterValues)
 
 		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}
 	}
-	return &filters
+	return &filters, nil
 }

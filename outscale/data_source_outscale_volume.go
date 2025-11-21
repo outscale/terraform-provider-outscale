@@ -105,13 +105,15 @@ func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 		params.Filters.SetVolumeIds([]string{volumeIds.(string)})
 	}
 
+	var err error
 	if filtersOk {
-		params.SetFilters(buildOutscaleOSCAPIDataSourceVolumesFilters(filters.(*schema.Set)))
+		params.Filters, err = buildOutscaleOSCAPIDataSourceVolumesFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 
 	var resp oscgo.ReadVolumesResponse
-	var err error
-
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(params).Execute()
 		if err != nil {
@@ -212,7 +214,7 @@ func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oscgo.Volum
 	return nil
 }
 
-func buildOutscaleOSCAPIDataSourceVolumesFilters(set *schema.Set) oscgo.FiltersVolume {
+func buildOutscaleOSCAPIDataSourceVolumesFilters(set *schema.Set) (*oscgo.FiltersVolume, error) {
 	var filters oscgo.FiltersVolume
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -253,8 +255,8 @@ func buildOutscaleOSCAPIDataSourceVolumesFilters(set *schema.Set) oscgo.FiltersV
 		case "link_volume_device_names":
 			filters.SetLinkVolumeDeviceNames(filterValues)
 		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}
 	}
-	return filters
+	return &filters, nil
 }

@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
 	"strconv"
 	"time"
 
@@ -103,13 +102,15 @@ func DataSourceOutscaleSnapshotRead(d *schema.ResourceData, meta interface{}) er
 		Filters: &oscgo.FiltersSnapshot{},
 	}
 
+	var err error
 	filter := oscgo.FiltersSnapshot{}
 	if restorableUsersOk {
 		filter.SetPermissionsToCreateVolumeAccountIds(utils.InterfaceSliceToStringSlice(restorableUsers.([]interface{})))
 		params.SetFilters(filter)
 	}
 	if filtersOk {
-		if err := buildOutscaleOapiSnapshootDataSourceFilters(filters.(*schema.Set), params.Filters); err != nil {
+		params.Filters, err = buildOutscaleOapiSnapshootDataSourceFilters(filters.(*schema.Set))
+		if err != nil {
 			return err
 		}
 	}
@@ -121,7 +122,6 @@ func DataSourceOutscaleSnapshotRead(d *schema.ResourceData, meta interface{}) er
 	}
 
 	var resp oscgo.ReadSnapshotsResponse
-	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.SnapshotApi.ReadSnapshots(context.Background()).ReadSnapshotsRequest(params).Execute()
 		if err != nil {
@@ -189,8 +189,8 @@ func snapshotOAPIDescriptionAttributes(d *schema.ResourceData, snapshot *oscgo.S
 	return d.Set("tags", tagsOSCAPIToMap(snapshot.GetTags()))
 }
 
-func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set, filter *oscgo.FiltersSnapshot) error {
-
+func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set) (*oscgo.FiltersSnapshot, error) {
+	var filter oscgo.FiltersSnapshot
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var values []string
@@ -211,14 +211,14 @@ func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set, filter *oscgo.
 		case "to_creation_date":
 			valDate, err := utils.ParsingfilterToDateFormat("to_creation_date", values[0])
 			if err != nil {
-				return err
+				return nil, err
 			}
 			filter.SetToCreationDate(valDate.UTC().Format("2006-01-02T15:04:05.999Z"))
 
 		case "from_creation_date":
 			valDate, err := utils.ParsingfilterToDateFormat("from_creation_date", values[0])
 			if err != nil {
-				return err
+				return nil, err
 			}
 			filter.SetFromCreationDate(valDate.UTC().Format("2006-01-02T15:04:05.999Z"))
 
@@ -228,7 +228,7 @@ func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set, filter *oscgo.
 		case "permissions_to_create_volume_global_permission":
 			boolean, err := strconv.ParseBool(values[0])
 			if err != nil {
-				return err
+				return nil, err
 			}
 			filter.SetPermissionsToCreateVolumeGlobalPermission(boolean)
 
@@ -257,8 +257,8 @@ func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set, filter *oscgo.
 			filter.SetVolumeSizes(utils.StringSliceToInt32Slice(values))
 
 		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}
 	}
-	return nil
+	return &filter, nil
 }

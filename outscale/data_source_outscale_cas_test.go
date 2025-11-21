@@ -79,19 +79,15 @@ resource "outscale_ca" "ca_test" {
    description   = "Ca testacc create"
 }
 
-resource "outscale_ca" "ca_test2" { 
+resource "outscale_ca" "ca_test2" {
    ca_pem        = file(%[1]q)
    description   = "Ca testacc create2"
 }
 
 data "outscale_cas" "cas_data" {
    filter {
-      name   = "ca_ids"
-      values = [outscale_ca.ca_test.id]
-   }
-   filter {
-      name   = "description"
-      values = ["Ca testacc create2"]
+      name   = "descriptions"
+      values = ["Ca testacc create*"]
    }
 }`, path)
 }

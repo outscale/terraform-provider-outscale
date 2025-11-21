@@ -3,13 +3,13 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
+
+	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
-	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
 func DataSourceOutscaleApiAccessRule() *schema.Resource {
@@ -56,12 +56,15 @@ func DataSourceOutscaleApiAccessRuleRead(d *schema.ResourceData, meta interface{
 		return fmt.Errorf("filters must be assigned")
 	}
 
+	filterParams, err := buildOutscaleApiAccessRuleFilters(filters.(*schema.Set))
+	if err != nil {
+		return err
+	}
 	req := oscgo.ReadApiAccessRulesRequest{
-		Filters: buildOutscaleApiAccessRuleFilters(filters.(*schema.Set)),
+		Filters: filterParams,
 	}
 
 	var resp oscgo.ReadApiAccessRulesResponse
-	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.ApiAccessRuleApi.ReadApiAccessRules(context.Background()).ReadApiAccessRulesRequest(req).Execute()
 		if err != nil {
@@ -112,7 +115,7 @@ func DataSourceOutscaleApiAccessRuleRead(d *schema.ResourceData, meta interface{
 	return nil
 }
 
-func buildOutscaleApiAccessRuleFilters(set *schema.Set) *oscgo.FiltersApiAccessRule {
+func buildOutscaleApiAccessRuleFilters(set *schema.Set) (*oscgo.FiltersApiAccessRule, error) {
 	var filters oscgo.FiltersApiAccessRule
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -133,8 +136,8 @@ func buildOutscaleApiAccessRuleFilters(set *schema.Set) *oscgo.FiltersApiAccessR
 		case "ip_ranges":
 			filters.SetIpRanges(filterValues)
 		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}
 	}
-	return &filters
+	return &filters, nil
 }

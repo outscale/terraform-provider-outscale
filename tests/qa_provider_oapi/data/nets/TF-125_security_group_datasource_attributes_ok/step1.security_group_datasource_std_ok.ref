@@ -114,59 +114,6 @@
         {
             "mode": "data",
             "type": "outscale_security_group",
-            "name": "outscale_security_group",
-            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
-            "instances": [
-                {
-                    "schema_version": 0,
-                    "attributes": {
-                        "account_id": "##id-0##",
-                        "description": "test group-1",
-                        "filter": "########",
-                        "id": "##id-1##",
-                        "inbound_rules": [
-                            {
-                                "from_port_range": 80,
-                                "ip_protocol": "tcp",
-                                "ip_ranges": "########",
-                                "prefix_list_ids": [],
-                                "security_groups_members": [],
-                                "to_port_range": 80
-                            }
-                        ],
-                        "net_id": "##id-2##",
-                        "outbound_rules": [
-                            {
-                                "from_port_range": -1,
-                                "ip_protocol": "-1",
-                                "ip_ranges": "########",
-                                "prefix_list_ids": [],
-                                "security_groups_members": [],
-                                "to_port_range": -1
-                            }
-                        ],
-                        "request_id": "########",
-                        "security_group_id": "##id-1##",
-                        "security_group_name": "terraform-TF125",
-                        "tags": [
-                            {
-                                "key": "Key:",
-                                "value": "value-tags"
-                            },
-                            {
-                                "key": "Name",
-                                "value": ":outscale_net_resource2"
-                            }
-                        ]
-                    },
-                    "sensitive_attributes": [],
-                    "identity_schema_version": 0
-                }
-            ]
-        },
-        {
-            "mode": "data",
-            "type": "outscale_security_group",
             "name": "outscale_security_groupd",
             "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [

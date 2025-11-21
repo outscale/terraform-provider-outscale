@@ -136,12 +136,15 @@ func DataSourceOutscaleVPNConnectionsRead(d *schema.ResourceData, meta interface
 		}
 	}
 
+	var err error
 	if filtersOk {
-		params.Filters = buildOutscaleDataSourceVPNConnectionFilters(filters.(*schema.Set))
+		params.Filters, err = buildOutscaleDataSourceVPNConnectionFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 
 	var resp oscgo.ReadVpnConnectionsResponse
-	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(params).Execute()
 		if err != nil {

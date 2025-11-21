@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -122,12 +121,15 @@ func DataSourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{
 		}
 	}
 
+	var err error
 	if filtersOk {
-		params.Filters = buildOutscaleDataSourceVPNConnectionFilters(filters.(*schema.Set))
+		params.Filters, err = buildOutscaleDataSourceVPNConnectionFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 
 	var resp oscgo.ReadVpnConnectionsResponse
-	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(params).Execute()
 		if err != nil {
@@ -185,7 +187,7 @@ func DataSourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{
 	return nil
 }
 
-func buildOutscaleDataSourceVPNConnectionFilters(set *schema.Set) *oscgo.FiltersVpnConnection {
+func buildOutscaleDataSourceVPNConnectionFilters(set *schema.Set) (*oscgo.FiltersVpnConnection, error) {
 	var filters oscgo.FiltersVpnConnection
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -223,8 +225,8 @@ func buildOutscaleDataSourceVPNConnectionFilters(set *schema.Set) *oscgo.Filters
 		case "tags":
 			filters.SetTags(filterValues)
 		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}
 	}
-	return &filters
+	return &filters, nil
 }

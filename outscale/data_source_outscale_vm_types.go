@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
@@ -68,15 +67,17 @@ func DataSourceOutscaleVMTypesRead(d *schema.ResourceData, meta interface{}) err
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filter, filterOk := d.GetOk("filter")
-	filtersReq := oscgo.FiltersVmType{}
 
+	var req oscgo.ReadVmTypesRequest
+	var err error
 	if filterOk {
-		filtersReq = buildOutscaleDataSourceVMTypesFilters(filter.(*schema.Set))
+		req.Filters, err = buildOutscaleDataSourceVMTypesFilters(filter.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
-	req := oscgo.ReadVmTypesRequest{Filters: &filtersReq}
 
 	var resp oscgo.ReadVmTypesResponse
-	var err error
 	err = resource.Retry(30*time.Second, func() *resource.RetryError {
 		var err error
 		rp, httpResp, err := conn.VmApi.ReadVmTypes(context.Background()).ReadVmTypesRequest(req).Execute()
@@ -152,7 +153,7 @@ func statusDescriptionOAPIVMTypesAttributes(d *schema.ResourceData, fTypes []osc
 
 }
 
-func buildOutscaleDataSourceVMTypesFilters(set *schema.Set) oscgo.FiltersVmType {
+func buildOutscaleDataSourceVMTypesFilters(set *schema.Set) (*oscgo.FiltersVmType, error) {
 	var filters oscgo.FiltersVmType
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -181,8 +182,8 @@ func buildOutscaleDataSourceVMTypesFilters(set *schema.Set) oscgo.FiltersVmType 
 		case "volume_sizes":
 			filters.SetVolumeSizes(utils.StringSliceToInt32Slice(filterValues))
 		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}
 	}
-	return filters
+	return &filters, nil
 }

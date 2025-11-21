@@ -52,13 +52,15 @@ func DataSourceOutscaleTagsRead(d *schema.ResourceData, meta interface{}) error 
 	params := oscgo.ReadTagsRequest{}
 	filters, filtersOk := d.GetOk("filter")
 
+	var err error
 	if filtersOk {
-		params.SetFilters(oapiBuildOutscaleDataSourceFilters(filters.(*schema.Set)))
+		params.Filters, err = oapiBuildOutscaleDataSourceFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 
 	var resp oscgo.ReadTagsResponse
-	var err error
-
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.TagApi.ReadTags(context.Background()).ReadTagsRequest(params).Execute()
 		if err != nil {

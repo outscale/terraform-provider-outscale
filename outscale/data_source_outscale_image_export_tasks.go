@@ -99,18 +99,19 @@ func dataSourceOAPIImageExportTasksRead(d *schema.ResourceData, meta interface{}
 
 	filters, filtersOk := d.GetOk("filter")
 
-	filtersReq := &oscgo.FiltersExportTask{}
+	var err error
+	var req oscgo.ReadImageExportTasksRequest
 	if filtersOk {
-		filtersReq = buildOutscaleOSCAPIDataSourceImageExportTaskFilters(filters.(*schema.Set))
+		req.Filters, err = buildOutscaleOSCAPIDataSourceImageExportTaskFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
 
 	var resp oscgo.ReadImageExportTasksResponse
-	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.ImageApi.ReadImageExportTasks(context.Background()).
-			ReadImageExportTasksRequest(oscgo.ReadImageExportTasksRequest{
-				Filters: filtersReq,
-			}).Execute()
+			ReadImageExportTasksRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}

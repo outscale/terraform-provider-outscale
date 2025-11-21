@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"context"
-	"log"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -52,14 +51,16 @@ func DataSourceOutscaleNetAccessPointServicesRead(d *schema.ResourceData, meta i
 
 	filters, filtersOk := d.GetOk("filter")
 
-	filtersReq := oscgo.FiltersService{}
+	var err error
+	req := oscgo.ReadNetAccessPointServicesRequest{}
 	if filtersOk {
-		filtersReq = buildOutscaleDataSourcesNAPSFilters(filters.(*schema.Set))
+		req.Filters, err = buildOutscaleDataSourcesNAPSFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
-	req := oscgo.ReadNetAccessPointServicesRequest{Filters: &filtersReq}
 
 	var resp oscgo.ReadNetAccessPointServicesResponse
-	var err error
 
 	err = resource.Retry(20*time.Second, func() *resource.RetryError {
 		rp, httpResp, err := conn.NetAccessPointApi.ReadNetAccessPointServices(
@@ -96,7 +97,7 @@ func DataSourceOutscaleNetAccessPointServicesRead(d *schema.ResourceData, meta i
 	return nil
 }
 
-func buildOutscaleDataSourcesNAPSFilters(set *schema.Set) oscgo.FiltersService {
+func buildOutscaleDataSourcesNAPSFilters(set *schema.Set) (*oscgo.FiltersService, error) {
 	var filters oscgo.FiltersService
 
 	for _, v := range set.List() {
@@ -112,8 +113,8 @@ func buildOutscaleDataSourcesNAPSFilters(set *schema.Set) oscgo.FiltersService {
 		case "service_names":
 			filters.SetServiceNames(filterValues)
 		default:
-			log.Printf("[Debug] Unknown net access point services Filter Name: %s. default", name)
+			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}
 	}
-	return filters
+	return &filters, nil
 }

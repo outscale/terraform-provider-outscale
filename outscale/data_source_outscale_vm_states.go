@@ -60,10 +60,15 @@ func DataSourceOutscaleVMStatesRead(d *schema.ResourceData, meta interface{}) er
 		return errors.New("vm_id or filter must be set")
 	}
 
+	var err error
 	params := oscgo.ReadVmsStateRequest{}
 	if filtersOk {
-		params.SetFilters(buildOutscaleDataSourceVMStateFilters(filters.(*schema.Set)))
+		params.Filters, err = buildOutscaleDataSourceVMStateFilters(filters.(*schema.Set))
+		if err != nil {
+			return err
+		}
 	}
+
 	if instanceIdsOk {
 		filter := oscgo.FiltersVmsState{}
 		filter.SetVmIds(utils.InterfaceSliceToStringSlice(instanceIds.([]interface{})))
@@ -71,8 +76,6 @@ func DataSourceOutscaleVMStatesRead(d *schema.ResourceData, meta interface{}) er
 	}
 	params.SetAllVms(d.Get("all_vms").(bool))
 	var resp oscgo.ReadVmsStateResponse
-	var err error
-
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		rp, httpResp, err := conn.VmApi.ReadVmsState(context.Background()).ReadVmsStateRequest(params).Execute()
 		if err != nil {
