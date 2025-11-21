@@ -97,6 +97,8 @@ func DataSourceOutscaleLoadBalancerLDRulesRead(d *schema.ResourceData, meta inte
 			switch name := m["name"].(string); name {
 			case "listener_rule_name":
 				filter.ListenerRuleNames = &filterValues
+			case "listener_rule_names":
+				filter.ListenerRuleNames = &filterValues
 			default:
 				return utils.UnknownDataSourceFilterError(context.Background(), name)
 			}

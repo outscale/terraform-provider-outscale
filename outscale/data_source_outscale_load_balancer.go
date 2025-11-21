@@ -211,6 +211,8 @@ func buildOutscaleDataSourceLBFilters(set *schema.Set) (*oscgo.FiltersLoadBalanc
 		switch name := m["name"].(string); name {
 		case "load_balancer_name":
 			filters.LoadBalancerNames = &filterValues
+		case "load_balancer_names":
+			filters.LoadBalancerNames = &filterValues
 		default:
 			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
 		}

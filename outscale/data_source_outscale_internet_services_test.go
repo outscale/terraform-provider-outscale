@@ -24,7 +24,7 @@ const testAccOutscaleInternetServicesDatasourceConfig = `
 
 	data "outscale_internet_services" "outscale_internet_services" {
 		filter {
-			name = "internet_service_id"
+			name = "internet_service_ids"
 			values = [outscale_internet_service.gateway.id]
 		}
 	}
