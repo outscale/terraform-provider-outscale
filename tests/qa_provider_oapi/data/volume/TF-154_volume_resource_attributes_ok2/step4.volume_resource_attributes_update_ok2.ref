@@ -16,23 +16,18 @@
                     "attributes": {
                         "creation_date": "########",
                         "id": "##id-0##",
-                        "iops": null,
+                        "iops": 100,
                         "linked_volumes": [],
                         "request_id": "########",
-                        "size": 10,
+                        "size": 12,
                         "snapshot_id": "",
                         "state": "available",
                         "subregion_name": "eu-west-2a",
-                        "tags": [
-                            {
-                                "key": "name",
-                                "value": "volume-standard"
-                            }
-                        ],
+                        "tags": [],
                         "termination_snapshot_name": null,
                         "timeouts": null,
                         "volume_id": "##id-0##",
-                        "volume_type": "standard"
+                        "volume_type": "io1"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0

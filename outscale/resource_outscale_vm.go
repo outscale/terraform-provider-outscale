@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"reflect"
 	"time"
 
 	"github.com/hashicorp/go-cty/cty"
@@ -62,7 +63,7 @@ func ResourceOutscaleVM() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"bsu": {
-							Type:     schema.TypeSet,
+							Type:     schema.TypeList,
 							Optional: true,
 							Computed: true,
 							MaxItems: 1,
@@ -76,7 +77,6 @@ func ResourceOutscaleVM() *schema.Resource {
 									"iops": {
 										Type:     schema.TypeInt,
 										Optional: true,
-										ForceNew: true,
 										ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 											iopsVal := val.(int)
 											if int32(iopsVal) < utils.MinIops || int32(iopsVal) > utils.MaxIops {
@@ -93,7 +93,6 @@ func ResourceOutscaleVM() *schema.Resource {
 									"volume_size": {
 										Type:     schema.TypeInt,
 										Optional: true,
-										ForceNew: true,
 										ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 											vSize, _ := val.(int)
 											if int32(vSize) < 1 || int32(vSize) > utils.MaxSize {
@@ -105,7 +104,6 @@ func ResourceOutscaleVM() *schema.Resource {
 									"volume_type": {
 										Type:     schema.TypeString,
 										Optional: true,
-										ForceNew: true,
 									},
 									"tags": tagsListOAPISchema(),
 								},
@@ -944,6 +942,25 @@ func getOAPIVMAdminPassword(VMID string, conn *oscgo.APIClient) (string, error) 
 	return resp.GetAdminPassword(), nil
 }
 
+func findVolumeIdByDeviceName(d *schema.ResourceData, deviceName string) (string, error) {
+	mappings := d.Get("block_device_mappings_created").([]any)
+	for _, mapping := range mappings {
+		mapping := mapping.(map[string]any)
+		currentName := mapping["device_name"].(string)
+
+		if deviceName == currentName {
+			if bsuSet, ok := mapping["bsu"].(*schema.Set); ok && bsuSet.Len() > 0 {
+				bsuList := bsuSet.List()
+				if e, ok := bsuList[0].(map[string]any); ok {
+					return e["volume_id"].(string), nil
+				}
+			}
+		}
+	}
+
+	return "", fmt.Errorf("no volume found for device name %s", deviceName)
+}
+
 func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	id := d.Get("vm_id").(string)
@@ -976,7 +993,7 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	}
 
-	updateRequest := oscgo.UpdateVmRequest{VmId: id}
+	updateRequest := oscgo.UpdateVmRequest{}
 	mustStartVM := false
 	if !d.IsNewResource() &&
 		(d.HasChange("vm_type") || d.HasChange("user_data") ||
@@ -1028,48 +1045,83 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 		updateRequest.SetIsSourceDestChecked(d.Get("is_source_dest_checked").(bool))
 	}
 
+	var updateBSUVolumeReqs []oscgo.UpdateVolumeRequest
 	if d.HasChange("block_device_mappings") && !d.IsNewResource() {
-		maps := d.Get("block_device_mappings").([]interface{})
 		oldT, newT := d.GetChange("block_device_mappings")
 		oldMapsTags, newMapsTags := getChangeTags(oldT, newT)
 		if oldMapsTags != nil || newMapsTags != nil {
-
 			if err := updateBsuTags(conn, d, oldMapsTags, newMapsTags); err != nil {
 				return err
 			}
 		}
-		mappings := []oscgo.BlockDeviceMappingVmUpdate{}
-		for _, m := range maps {
-			f := m.(map[string]interface{})
-			mapping := oscgo.BlockDeviceMappingVmUpdate{}
 
-			if v, ok := f["device_name"]; ok && v.(string) != "" {
-				mapping.SetDeviceName(v.(string))
+		oldMappings := oldT.([]any)
+		newMappings := newT.([]any)
+		var mappingsReqs []oscgo.BlockDeviceMappingVmUpdate
+		for i, newMapping := range newMappings {
+			oldMapping := oldMappings[i].(map[string]any)
+			newMappingMap := newMapping.(map[string]any)
+
+			hasMappingChanges := false
+			updateMappingReq := oscgo.BlockDeviceMappingVmUpdate{}
+
+			deviceName, okName := newMappingMap["device_name"]
+			if okName && deviceName.(string) != "" {
+				updateMappingReq.SetDeviceName(deviceName.(string))
 			}
 
-			if v, ok := f["no_device"]; ok && v.(string) != "" {
-				mapping.SetNoDevice(v.(string))
+			if v, ok := newMappingMap["no_device"]; ok && v.(string) != "" {
+				updateMappingReq.SetNoDevice(v.(string))
 			}
 
-			if v, ok := f["virtual_device_name"]; ok && v.(string) != "" {
-				mapping.SetVirtualDeviceName(v.(string))
+			if v, ok := newMappingMap["virtual_device_name"]; ok && v.(string) != "" {
+				updateMappingReq.SetVirtualDeviceName(v.(string))
 			}
 
-			if bsuList, ok := f["bsu"].([]interface{}); ok && len(bsuList) > 0 {
-				bsu := oscgo.BsuToUpdateVm{}
+			if newBsu, ok := newMappingMap["bsu"].([]any); ok && len(newBsu) > 0 {
+				newBsu := newBsu[0].(map[string]any)
+				oldBsu := oldMapping["bsu"].([]any)[0].(map[string]any)
 
-				if e, ok1 := bsuList[0].(map[string]interface{}); ok1 {
-					bsu.SetDeleteOnVmDeletion(cast.ToBool(e["delete_on_vm_deletion"]))
+				updateBsuReq := oscgo.BsuToUpdateVm{}
+				if deletion, ok := newBsu["delete_on_vm_deletion"].(bool); ok && oldBsu["delete_on_vm_deletion"].(bool) != deletion {
+					updateBsuReq.SetDeleteOnVmDeletion(deletion)
+					updateMappingReq.SetBsu(updateBsuReq)
+					hasMappingChanges = true
+				}
 
-					if v, ok := e["volume_id"]; ok {
-						bsu.SetVolumeId(v.(string))
+				hasVolumeChanges := false
+				updateVolumeReq := oscgo.UpdateVolumeRequest{}
+
+				if size, ok := newBsu["volume_size"]; ok && oldBsu["volume_size"].(int) != size.(int) && size.(int) > 0 {
+					updateVolumeReq.SetSize(int32(size.(int)))
+					hasVolumeChanges = true
+				}
+				if iops, ok := newBsu["iops"]; ok && oldBsu["iops"].(int) != iops.(int) && iops.(int) > 0 {
+					updateVolumeReq.SetIops(int32(iops.(int)))
+					hasVolumeChanges = true
+				}
+				if volType, ok := newBsu["volume_type"]; ok && oldBsu["volume_type"].(string) != volType.(string) && volType.(string) != "" {
+					updateVolumeReq.SetVolumeType(volType.(string))
+					hasVolumeChanges = true
+				}
+
+				if hasVolumeChanges && okName {
+					id, err := findVolumeIdByDeviceName(d, deviceName.(string))
+					if err != nil {
+						return err
 					}
-					mapping.SetBsu(bsu)
+					updateVolumeReq.SetVolumeId(id)
+
+					updateBSUVolumeReqs = append(updateBSUVolumeReqs, updateVolumeReq)
 				}
 			}
-			mappings = append(mappings, mapping)
+			if hasMappingChanges {
+				mappingsReqs = append(mappingsReqs, updateMappingReq)
+			}
 		}
-		updateRequest.SetBlockDeviceMappings(mappings)
+		if len(mappingsReqs) > 0 {
+			updateRequest.SetBlockDeviceMappings(mappingsReqs)
+		}
 	}
 
 	if d.HasChange("secure_boot_action") && !d.IsNewResource() {
@@ -1085,37 +1137,63 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	if err := updateVmAttr(conn, updateRequest); err != nil {
-		return utils.GetErrorResponse(err)
-	}
-
-	if onlyTags {
-		goto out
-	}
-
-	if d.HasChange("state") && !d.IsNewResource() {
-		upState := d.Get("state").(string)
-		if upState != "stopped" && upState != "running" {
-			return fmt.Errorf("Error: state should be `stopped or running`")
+	if !reflect.ValueOf(updateRequest).IsZero() {
+		updateRequest.SetVmId(id)
+		if err := updateVmAttr(conn, updateRequest); err != nil {
+			return utils.GetErrorResponse(err)
 		}
-		mustStartVM = false
-		if upState == "stopped" {
-			if err := stopVM(id, conn, d.Timeout(schema.TimeoutUpdate)); err != nil {
-				return err
+	}
+
+	if !onlyTags {
+		if d.HasChange("state") && !d.IsNewResource() {
+			upState := d.Get("state").(string)
+			if upState != "stopped" && upState != "running" {
+				return fmt.Errorf("Error: state should be `stopped or running`")
 			}
-		} else {
+			mustStartVM = false
+			if upState == "stopped" {
+				if err := stopVM(id, conn, d.Timeout(schema.TimeoutUpdate)); err != nil {
+					return err
+				}
+			} else {
+				if err := startVM(id, conn, d.Timeout(schema.TimeoutUpdate)); err != nil {
+					return err
+				}
+			}
+		}
+		if mustStartVM {
 			if err := startVM(id, conn, d.Timeout(schema.TimeoutUpdate)); err != nil {
 				return err
 			}
 		}
-	}
-	if mustStartVM {
-		if err := startVM(id, conn, d.Timeout(schema.TimeoutUpdate)); err != nil {
-			return err
+
+		var tasksIds []string
+		for _, volumeReq := range updateBSUVolumeReqs {
+			err := resource.Retry(d.Timeout(schema.TimeoutUpdate), func() *resource.RetryError {
+				rp, httpResp, err := conn.VolumeApi.UpdateVolume(context.Background()).UpdateVolumeRequest(volumeReq).Execute()
+				if err != nil {
+					return utils.CheckThrottling(httpResp, err)
+				}
+				if vol, ok := rp.GetVolumeOk(); ok {
+					if vol.GetTaskId() != "" {
+						tasksIds = append(tasksIds, vol.GetTaskId())
+					}
+				}
+				return nil
+			})
+
+			if err != nil {
+				return err
+			}
+		}
+		if len(tasksIds) > 0 {
+			err := WaitForVolumeTasks(context.Background(), d.Timeout(schema.TimeoutUpdate), tasksIds, conn)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
-out:
 	return resourceOAPIVMRead(d, meta)
 }
 
@@ -1151,9 +1229,9 @@ func getbsuMapsTags(changeMaps []interface{}) map[string]interface{} {
 	}
 	return mapsTags
 }
+
 func resourceOAPIVMDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
 	id := d.Id()
 	var err error
 
@@ -1308,13 +1386,13 @@ func buildCreateVmsRequest(d *schema.ResourceData) (oscgo.CreateVmsRequest, []ma
 
 func expandBlockDeviceOApiMappings(d *schema.ResourceData) ([]oscgo.BlockDeviceMappingVmCreation, []map[string]interface{}, error) {
 	var blockDevices []oscgo.BlockDeviceMappingVmCreation
-	block := d.Get("block_device_mappings").([]interface{})
-	bsuMapsTags := make([]map[string]interface{}, len(block))
+	block := d.Get("block_device_mappings").([]any)
+	bsuMapsTags := make([]map[string]any, len(block))
 	for k, v := range block {
 		blockDevice := oscgo.BlockDeviceMappingVmCreation{}
-		value := v.(map[string]interface{})
-		if bsu := value["bsu"].(*schema.Set).List(); len(bsu) > 0 {
-			expandBSU, mapsTags, err := expandBlockDeviceBSU(bsu[0].(map[string]interface{}), value["device_name"].(string))
+		value := v.(map[string]any)
+		if bsu := value["bsu"].([]any); len(bsu) > 0 {
+			expandBSU, mapsTags, err := expandBlockDeviceBSU(bsu[0].(map[string]any), value["device_name"].(string))
 			bsuMapsTags[k] = mapsTags
 			if err != nil {
 				return nil, nil, err

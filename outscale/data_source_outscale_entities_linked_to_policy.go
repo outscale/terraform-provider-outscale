@@ -102,7 +102,7 @@ func DataSourceEntitiesLinkedToPolicy() *schema.Resource {
 func DataSourceEntitiesLinkedToPoliciesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	orn := d.Get("policy_orn").(string)
-	req := oscgo.ReadEntitiesLinkedToPolicyRequest{PolicyOrn: &orn}
+	req := oscgo.ReadEntitiesLinkedToPolicyRequest{PolicyOrn: orn}
 	if entities := utils.SetToStringSlice(d.Get("entities_type").(*schema.Set)); len(entities) > 0 {
 		req.SetEntitiesType(entities)
 	}

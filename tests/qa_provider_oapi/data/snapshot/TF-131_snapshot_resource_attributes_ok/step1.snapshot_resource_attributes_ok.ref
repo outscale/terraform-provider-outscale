@@ -101,7 +101,7 @@
                     "attributes": {
                         "creation_date": "########",
                         "id": "##id-2##",
-                        "iops": 150,
+                        "iops": null,
                         "linked_volumes": [],
                         "request_id": "########",
                         "size": 40,
