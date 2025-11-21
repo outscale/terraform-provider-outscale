@@ -52,7 +52,7 @@ const testAccDataSourceOutscalePublicIPSConfig = `
 
 	data "outscale_public_ips" "by_public_ips" {
 		filter {
-			name  = "public_ip"
+			name  = "public_ips"
 			values = [outscale_public_ip.test.public_ip, outscale_public_ip.test1.public_ip, outscale_public_ip.test2.public_ip]
 		}
 	}
