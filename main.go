@@ -54,7 +54,7 @@ func main() {
 	}
 
 	err = tf6server.Serve(
-		"registry.terraform.io/providers/outscale/outscale/",
+		"registry.terraform.io/outscale/outscale",
 		muxServer.ProviderServer,
 		serveOpts...,
 	)
