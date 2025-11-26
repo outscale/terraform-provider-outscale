@@ -8,15 +8,17 @@ import (
 	"reflect"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/terraform-provider-outscale/fwmodifyplan"
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
@@ -129,7 +131,10 @@ func (r *netResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp
 			"tenancy": schema.StringAttribute{
 				Optional: true,
 				Computed: true,
-				Default:  stringdefault.StaticString("default"),
+				PlanModifiers: []planmodifier.String{
+					fwmodifyplan.ForceNewFramework(),
+				},
+				Validators: []validator.String{stringvalidator.NoneOf("")},
 			},
 			"request_id": schema.StringAttribute{
 				Computed: true,
@@ -176,7 +181,10 @@ func (r *netResource) Create(ctx context.Context, req resource.CreateRequest, re
 	createReq := oscgo.CreateNetRequest{
 		IpRange: data.IpRange.ValueString(),
 	}
-	createReq.SetTenancy(data.Tenancy.ValueString())
+
+	if utils.IsSet(data.Tenancy) {
+		createReq.SetTenancy(data.Tenancy.ValueString())
+	}
 	var createResp oscgo.CreateNetResponse
 
 	err = retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
