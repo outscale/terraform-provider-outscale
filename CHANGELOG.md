@@ -38,6 +38,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### 🌱 Others
 - (nothing yet)
 
+## [1.3.0-beta.1] - 2025-11-26
+
+### ✨ Added
+* ✨ feat: volume attributes changes without resource replacement by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/600
+
+### 🛠️ Changed / Refactoring
+* 🥅 chore: throw error on unhandled datasource filters by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/601
+* 🔧 chore: update tf6 server name by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/602
+
+### 📝 Documentation
+* 📝 docs: Adding documentation subcategories by @annakeita in https://github.com/outscale/terraform-provider-outscale/pull/590
+
+### 🐛 Fixed
+* 🐛 fix: replace net on tenancy change by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/604
+
+### 🌱 Others
+* ⬆️ deps: bump golang.org/x/crypto from 0.37.0 to 0.45.0 by @dependabot[bot] in https://github.com/outscale/terraform-provider-outscale/pull/605
+
 ## [1.3.0-alpha.2] - 2025-11-13
 
 ### 🛠️ Changed / Refactoring
