@@ -12,6 +12,10 @@ on:
       - '!**_test.go'
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   Nets_integration_tests:
     environment: test-us-east-2
