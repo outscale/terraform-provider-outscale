@@ -11,6 +11,10 @@ on:
       - 'GNUmakefile'
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   Nets_acceptances_tests:
     environment: test-us-east-2

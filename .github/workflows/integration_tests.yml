@@ -12,6 +12,10 @@ on:
       - '!**_test.go'
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   Integration_tests:
     environment: test-eu-west-2
