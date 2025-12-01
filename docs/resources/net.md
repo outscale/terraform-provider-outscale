@@ -78,9 +78,9 @@ The following arguments are supported:
     * `key` - (Required) The key of the tag, with a minimum of 1 character.
     * `value` - (Required) The value of the tag, between 0 and 255 characters.
 * `tenancy` - (Optional) The tenancy options for the VMs:<br />
-- `default` if a VM created in a Net can be launched with any tenancy.<br />
-- `dedicated` if it can be launched with dedicated tenancy VMs running on single-tenant hardware.<br />
-- `dedicated group ID`: if it can be launched in a dedicated group on single-tenant hardware.
+    * `default` if a VM created in a Net can be launched with any tenancy.<br />
+    * `dedicated` if it can be launched with dedicated tenancy VMs running on single-tenant hardware.<br />
+    * `dedicated group ID`: if it can be launched in a dedicated group on single-tenant hardware.
 
 ## Attribute Reference
 
