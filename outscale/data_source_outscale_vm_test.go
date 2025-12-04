@@ -15,8 +15,8 @@ func TestAccVM_DataSource_basic(t *testing.T) {
 	datasourcceName := "data.outscale_vm.basic_web"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOAPIVMDataSourceConfig(omi, utils.TestAccVmType, utils.GetRegion()),

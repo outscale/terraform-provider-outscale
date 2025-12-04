@@ -23,9 +23,9 @@ func TestAccVM_WithPublicIPLink_basic(t *testing.T) {
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscalePublicIPLinkDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
+		CheckDestroy:             testAccCheckOutscalePublicIPLinkDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscalePublicIPLinkConfig(omi, utils.TestAccVmType, utils.GetRegion(), keypair),

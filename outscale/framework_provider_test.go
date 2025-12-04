@@ -1,14 +1,9 @@
 package outscale
 
 import (
-	"context"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/provider"
-	"github.com/hashicorp/terraform-plugin-framework/providerserver"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
-	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
-	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/outscale/terraform-provider-outscale/utils"
 	vers "github.com/outscale/terraform-provider-outscale/version"
@@ -26,7 +21,7 @@ func TestAccFwPreCheck(t *testing.T) {
 
 func TestMuxServer(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: fwtestAccDataSourceOutscaleQuotaConfig,
@@ -49,7 +44,7 @@ func TestDataSource_UpgradeFromVersion(t *testing.T) {
 				Config: fwtestAccDataSourceOutscaleQuotaConfig,
 			},
 			{
-				ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+				ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 				Config:                   fwtestAccDataSourceOutscaleQuotaConfig,
 				PlanOnly:                 true,
 			},
@@ -65,34 +60,3 @@ const fwtestAccDataSourceOutscaleQuotaConfig = `
     }
 }
 `
-
-func defineTestProviderFactoriesV6() map[string]func() (tfprotov6.ProviderServer, error) {
-	return map[string]func() (tfprotov6.ProviderServer, error){
-		"outscale": func() (tfprotov6.ProviderServer, error) {
-			ctx := context.Background()
-			upgradedSdkServer, err := tf5to6server.UpgradeServer(
-				ctx,
-				Provider().GRPCProvider,
-			)
-
-			if err != nil {
-				return nil, err
-			}
-
-			providers := []func() tfprotov6.ProviderServer{
-				providerserver.NewProtocol6(New(vers.GetVersion())),
-				func() tfprotov6.ProviderServer {
-					return upgradedSdkServer
-				},
-			}
-
-			muxServer, err := tf6muxserver.NewMuxServer(ctx, providers...)
-
-			if err != nil {
-				return nil, err
-			}
-
-			return muxServer.ProviderServer(), nil
-		},
-	}
-}

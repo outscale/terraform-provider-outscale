@@ -13,7 +13,7 @@ func TestAccOthers_AccessKey_basic(t *testing.T) {
 	resourceName := "outscale_access_key.basic_access_key"
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		PreCheck:                 func() { TestAccFwPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
@@ -39,7 +39,7 @@ func TestAccOthers_AccessKeyUpdatedToInactivedKey(t *testing.T) {
 	stateUpdated := "INACTIVE"
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		PreCheck:                 func() { TestAccFwPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
@@ -77,7 +77,7 @@ func TestAccOthers_AccessKeyUpdatedToActivedKey(t *testing.T) {
 	stateUpdated := "ACTIVE"
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		PreCheck:                 func() { TestAccFwPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
@@ -112,7 +112,7 @@ func TestAccOthers_AccessKeyUpdatedExpirationDate(t *testing.T) {
 	expirDateUpdated := time.Now().AddDate(2, 4, 0).Format("2006-01-02")
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		PreCheck:                 func() { TestAccFwPreCheck(t) },
 		Steps: []resource.TestStep{
 			{

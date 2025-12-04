@@ -26,8 +26,8 @@ func TestAccVM_WithImageLaunchPermission_Basic(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	r.Test(t, r.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []r.TestStep{
 			// Scaffold everything
 			{
@@ -73,8 +73,8 @@ func TestAccVM_ImageLaunchPermissionDestruction_Basic(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	r.Test(t, r.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []r.TestStep{
 			// Scaffold everything
 			{

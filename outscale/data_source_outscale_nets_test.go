@@ -14,7 +14,7 @@ func TestAccNets_DataSource_basic(t *testing.T) {
 	tag := fmt.Sprintf("terraform-testacc-vpc-data-source-%s", ipRange)
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceOutscaleVpcsConfig(ipRange, tag),

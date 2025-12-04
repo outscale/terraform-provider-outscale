@@ -15,7 +15,7 @@ func TestAccOthers_Volume_basic(t *testing.T) {
 	resourceName := "outscale_volume.accvolume"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleVolumeConfig(utils.GetRegion()),
@@ -42,7 +42,7 @@ func TestAccOthers_Volume_updateSize(t *testing.T) {
 	var volumeID string
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleVolumeConfig(region),
@@ -79,7 +79,7 @@ func TestAccOthers_Volume_io1Type(t *testing.T) {
 	resourceName := "outscale_volume.test-io1"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: test_IO1VolumeTypeConfig(region),
@@ -108,7 +108,7 @@ func TestAccOthers_Volume_Type_Change(t *testing.T) {
 	resourceName := "outscale_volume.test-type-change"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: test_VolumeTypeGP2Config(region),

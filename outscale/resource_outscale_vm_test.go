@@ -27,9 +27,9 @@ func TestAccVM_Basic(t *testing.T) {
 	region := fmt.Sprintf("%sa", utils.GetRegion())
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleVMDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
+		CheckDestroy:             testAccCheckOutscaleVMDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckOutscaleVMConfigBasic(omi, utils.TestAccVmType, region, keypair),
@@ -57,9 +57,9 @@ func TestAccVM_uefi(t *testing.T) {
 	region := fmt.Sprintf("%sa", utils.GetRegion())
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleVMDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
+		CheckDestroy:             testAccCheckOutscaleVMDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckOutscaleVMUefi(omi, utils.TestAccVmType, region, keypair),
@@ -85,9 +85,9 @@ func TestAccVM_Behavior_Basic(t *testing.T) {
 	region := fmt.Sprintf("%sa", utils.GetRegion())
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleVMDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
+		CheckDestroy:             testAccCheckOutscaleVMDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckOutscaleVMBehaviorConfigBasic(omi, utils.TestAccVmType, region, keypair, "high", "stop"),
@@ -125,9 +125,9 @@ func TestAccVM_importBasic(t *testing.T) {
 	)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleVMDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
+		CheckDestroy:             testAccCheckOutscaleVMDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckOutscaleVMConfigImport(omi, utils.TestAccVmType, region, keypair),
@@ -168,7 +168,7 @@ func TestAccNet_VM_withNicAttached(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckOutscaleVMConfigBasicWithNicAttached(omi, utils.TestAccVmType, utils.GetRegion(), keypair),
@@ -189,9 +189,9 @@ func TestAccVM_withTags(t *testing.T) {
 	tagsValue := "test_tags1"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleVMDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
+		CheckDestroy:             testAccCheckOutscaleVMDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccVmsConfigUpdateOAPIVMTags(omi, utils.TestAccVmType, utils.GetRegion(), tagsValue, keypair),
@@ -215,7 +215,7 @@ func TestAccNet_VM_withNics(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckOutscaleVMConfigBasicWithNics(omi, utils.TestAccVmType, keypair, utils.GetRegion()),
@@ -240,7 +240,7 @@ func TestAccVM_UpdateKeypair(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccVmsConfigUpdateOAPIVMKey(omi, utils.TestAccVmType, region),
@@ -270,7 +270,7 @@ func TestAccNet_VM_WithSubnet(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckOutscaleVMConfigWithSubnet(omi, utils.TestAccVmType, utils.GetRegion(), keypair),
@@ -290,9 +290,9 @@ func TestAccVM_UpdateDeletionProtection(t *testing.T) {
 	vmType := utils.TestAccVmType
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleVMDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
+		CheckDestroy:             testAccCheckOutscaleVMDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckOutscaleDeletionProtectionUpdateBasic(omi, keypair, vmType, true),
@@ -318,9 +318,9 @@ func TestAccVM_UpdateTags(t *testing.T) {
 
 	//TODO: check tags
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleVMDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
+		CheckDestroy:             testAccCheckOutscaleVMDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccVmsConfigUpdateOAPIVMTags(omi, utils.TestAccVmType, utils.GetRegion(), tagsValue, keypair),
@@ -342,7 +342,7 @@ func TestAccNet_WithVM_PublicIp_Link(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckOutscaleVMConfigWithNet(omi, vmType, utils.GetRegion(), keypair),
@@ -364,7 +364,7 @@ func TestAccVM_multiBlockDeviceMapping(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 
 		Steps: []resource.TestStep{
 			{
