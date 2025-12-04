@@ -13,8 +13,8 @@ import (
 func TestAccOthers_DataSourcePublicIP(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceOutscalePublicIPConfig,
@@ -32,8 +32,8 @@ func TestAccVM_WithPublicIP(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceOutscalePublicIPConfigwithVM(omi, utils.GetRegion(), utils.TestAccVmType),
@@ -80,8 +80,8 @@ func testAccDataSourceOutscalePublicIPCheck(name string) resource.TestCheckFunc 
 func TestAccOthers_DataSourcePublicIP_withTags(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceOutscalePublicIPConfigWithTags,

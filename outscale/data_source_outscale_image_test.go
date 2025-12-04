@@ -20,7 +20,7 @@ func TestAccVM_WithImageDataSource_basic(t *testing.T) {
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
-		Providers: testAccProviders,
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckOutscaleImageDataSourceBasicConfig(omi, utils.TestAccVmType, utils.GetRegion(), imageName),

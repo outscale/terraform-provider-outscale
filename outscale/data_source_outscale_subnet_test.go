@@ -12,7 +12,7 @@ func TestAccNet_WithSubnet_DataSource(t *testing.T) {
 	resouceName := "data.outscale_subnet.by_filter"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceOutscaleSubnetConfig(utils.GetRegion()),
@@ -29,7 +29,7 @@ func TestAccNet_SubnetDataSource_withAvailableIpsCountsFilter(t *testing.T) {
 	resouceName := "data.outscale_subnet.by_filter"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceOutscaleSubnetWithAvailableIpsCountsFilter(utils.GetRegion()),

@@ -17,7 +17,7 @@ func TestAccOthers_SecurityGroupRule_Basic(t *testing.T) {
 	rInt := acctest.RandInt()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleSecurityGroupRuleEgressConfig(rInt),
@@ -52,7 +52,7 @@ func TestAccOthers_SecurityGroupRule_Basic_Migration(t *testing.T) {
 				Config: testAccOutscaleSecurityGroupRuleEgressConfig(rInt),
 			},
 			{
-				ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+				ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 				Config:                   testAccOutscaleSecurityGroupRuleEgressConfig(rInt),
 				PlanOnly:                 true,
 			},
@@ -67,7 +67,7 @@ func TestAccOthers_SecurityGroupRule_WithSecurityGroupMember(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleSecurityGroupRuleWithGroupMembers(rInt, accountID),
@@ -97,7 +97,7 @@ func TestAccOthers_SecurityGroupRule_WithSecurityGroupMember_Migration(t *testin
 				Config: testAccOutscaleSecurityGroupRuleWithGroupMembers(rInt, accountID),
 			},
 			{
-				ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+				ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 				Config:                   testAccOutscaleSecurityGroupRuleWithGroupMembers(rInt, accountID),
 				PlanOnly:                 true,
 			},

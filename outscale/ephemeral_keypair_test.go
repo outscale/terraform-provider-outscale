@@ -9,7 +9,7 @@ import (
 func TestAccOthers_Ephemeral_keypair_basic(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		PreCheck:                 func() { TestAccFwPreCheck(t) },
 		Steps: []resource.TestStep{
 			{

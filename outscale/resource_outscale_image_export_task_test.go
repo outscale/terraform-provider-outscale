@@ -28,7 +28,7 @@ func TestAccVM_withImageExportTask_basic(t *testing.T) {
 			PreCheck: func() {
 				testAccPreCheck(t)
 			},
-			Providers: testAccProviders,
+			ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 			Steps: []resource.TestStep{
 				{
 					Config: testAccOAPIImageExportTaskConfigBasic(omi, utils.TestAccVmType, region, imageName, ""),

@@ -21,10 +21,10 @@ func TestAccOthers_PublicIP_basic(t *testing.T) {
 	var conf oscgo.PublicIp
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
-		IDRefreshName: "outscale_public_ip.bar",
-		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscalePublicIPDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		IDRefreshName:            "outscale_public_ip.bar",
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
+		CheckDestroy:             testAccCheckOutscalePublicIPDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscalePublicIPConfig,
@@ -45,10 +45,10 @@ func TestAccVM_PublicIP_instance(t *testing.T) {
 
 	//rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
-		IDRefreshName: "outscale_public_ip.bar1",
-		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscalePublicIPDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		IDRefreshName:            "outscale_public_ip.bar1",
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
+		CheckDestroy:             testAccCheckOutscalePublicIPDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscalePublicIPInstanceConfig(omi, utils.TestAccVmType, region, keypair),
@@ -70,10 +70,10 @@ func TestAccNet_PublicIP_associated_user_private_ip(t *testing.T) {
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
-		IDRefreshName: "outscale_public_ip.bar",
-		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscalePublicIPDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		IDRefreshName:            "outscale_public_ip.bar",
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
+		CheckDestroy:             testAccCheckOutscalePublicIPDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscalePublicIPInstanceConfigAssociated(omi, utils.TestAccVmType, region, keypair),
