@@ -41,7 +41,7 @@ func TestAccVM_PublicIP_instance(t *testing.T) {
 	var conf oscgo.PublicIp
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := utils.GetRegion()
-	keypair := os.Getenv("OUTSCALE_KEYPAIR")
+	keypair := "terraform-basic"
 
 	//rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
@@ -67,7 +67,7 @@ func TestAccNet_PublicIP_associated_user_private_ip(t *testing.T) {
 	var one oscgo.PublicIp
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := utils.GetRegion()
-	keypair := os.Getenv("OUTSCALE_KEYPAIR")
+	keypair := "terraform-basic"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
@@ -289,7 +289,7 @@ func testAccOutscalePublicIPInstanceConfig(omi, vmType, region, keypair string) 
 func testAccOutscalePublicIPInstanceConfigAssociated(omi, vmType, region, keypair string) string {
 	return fmt.Sprintf(`
 		resource "outscale_security_group" "sgIP" {
-			security_group_name = "%[4]s"
+			security_group_name = "tf-acc-test-public-ip"
 			description         = "Used in the terraform acceptance tests"
 
 			tags {
@@ -321,7 +321,7 @@ func testAccOutscalePublicIPInstanceConfigAssociated(omi, vmType, region, keypai
 func testAccOutscalePublicIPInstanceConfigAssociatedSwitch(omi, vmType, region, keypair string) string {
 	return fmt.Sprintf(`
 		resource "outscale_security_group" "sgIP" {
-			security_group_name = "%[4]s"
+			security_group_name = "tf-acc-test-public-ip"
 			description         = "Used in the terraform acceptance tests"
 
 			tags {

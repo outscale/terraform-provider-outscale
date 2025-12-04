@@ -23,7 +23,7 @@ func TestAccVM_Basic(t *testing.T) {
 	resourceName := "outscale_vm.basic"
 
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	keypair := os.Getenv("OUTSCALE_KEYPAIR")
+	keypair := "terraform-basic"
 	region := fmt.Sprintf("%sa", utils.GetRegion())
 
 	resource.Test(t, resource.TestCase{
@@ -53,7 +53,7 @@ func TestAccVM_uefi(t *testing.T) {
 	resourceName := "outscale_vm.uefi"
 
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	keypair := os.Getenv("OUTSCALE_KEYPAIR")
+	keypair := "terraform-basic"
 	region := fmt.Sprintf("%sa", utils.GetRegion())
 
 	resource.Test(t, resource.TestCase{
@@ -81,7 +81,7 @@ func TestAccVM_Behavior_Basic(t *testing.T) {
 	t.Parallel()
 	var server oscgo.Vm
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	keypair := os.Getenv("OUTSCALE_KEYPAIR")
+	keypair := "terraform-basic"
 	region := fmt.Sprintf("%sa", utils.GetRegion())
 
 	resource.Test(t, resource.TestCase{
@@ -120,7 +120,7 @@ func TestAccVM_importBasic(t *testing.T) {
 		server       oscgo.Vm
 		resourceName = "outscale_vm.basic_import"
 		omi          = os.Getenv("OUTSCALE_IMAGEID")
-		keypair      = os.Getenv("OUTSCALE_KEYPAIR")
+		keypair      = "terraform-basic"
 		region       = fmt.Sprintf("%sa", utils.GetRegion())
 	)
 
@@ -231,7 +231,7 @@ func TestAccNet_VM_withNics(t *testing.T) {
 func TestAccVM_UpdateKeypair(t *testing.T) {
 	t.Parallel()
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	keypair := os.Getenv("OUTSCALE_KEYPAIR")
+	keypair := "terraform-basic"
 	region := utils.GetRegion()
 	resourceName := "outscale_vm.basic"
 

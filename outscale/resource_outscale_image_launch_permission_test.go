@@ -19,7 +19,7 @@ func TestAccVM_WithImageLaunchPermission_Basic(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := utils.GetRegion()
 	accountID := os.Getenv("OUTSCALE_ACCOUNT")
-	keypair := os.Getenv("OUTSCALE_KEYPAIR")
+	keypair := "terraform-basic"
 
 	imageID := ""
 
@@ -67,7 +67,7 @@ func TestAccVM_ImageLaunchPermissionDestruction_Basic(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := utils.GetRegion()
 	accountID := os.Getenv("OUTSCALE_ACCOUNT")
-	keypair := os.Getenv("OUTSCALE_KEYPAIR")
+	keypair := "terraform-basic"
 
 	var imageID string
 	rInt := acctest.RandInt()
