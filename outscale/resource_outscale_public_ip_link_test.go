@@ -20,7 +20,7 @@ import (
 func TestAccVM_WithPublicIPLink_basic(t *testing.T) {
 	var a oscgo.PublicIp
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	keypair := os.Getenv("OUTSCALE_KEYPAIR")
+	keypair := "terraform-basic"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },

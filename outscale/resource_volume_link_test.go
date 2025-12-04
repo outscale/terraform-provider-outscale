@@ -14,7 +14,7 @@ import (
 func TestAccVM_WithVolumeAttachment_basic(t *testing.T) {
 	t.Parallel()
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	keypair := os.Getenv("OUTSCALE_KEYPAIR")
+	keypair := "terraform-basic"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
@@ -33,7 +33,7 @@ func TestAccVM_WithVolumeAttachment_basic(t *testing.T) {
 
 func TestAccVM_ImportVolumeAttachment_Basic(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	keypair := os.Getenv("OUTSCALE_KEYPAIR")
+	keypair := "terraform-basic"
 
 	resourceName := "outscale_volume_link.ebs_att"
 

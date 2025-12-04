@@ -48,7 +48,7 @@ func TestAccOthers_VolumeDataSource_multipleVIdsFilters(t *testing.T) {
 
 func TestAccVM_withVolumesDataSource(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	keypair := os.Getenv("OUTSCALE_KEYPAIR")
+	keypair := "terraform-basic"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
