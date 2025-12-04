@@ -15,7 +15,7 @@ func TestAccOKSKubeconfigDataSource_basic(t *testing.T) {
 	resourceName := "data.outscale_oks_kubeconfig.config"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 
 		Steps: []resource.TestStep{
 			{

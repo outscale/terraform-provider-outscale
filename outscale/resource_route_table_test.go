@@ -16,7 +16,7 @@ func TestAccNet_WithRouteTable_basic(t *testing.T) {
 	resourceName := "outscale_route_table.rtbTest"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 
 		Steps: []resource.TestStep{
 			{
@@ -36,7 +36,7 @@ func TestAccNet_RouteTable_instance(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOAPIRouteTableConfigInstance(omi, utils.TestAccVmType, utils.GetRegion()),
@@ -69,7 +69,7 @@ func TestAccNet_WithRouteTable_tags(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOAPIRouteTableConfigTags(value1),
@@ -93,7 +93,7 @@ func TestAccNet_RouteTable_importBasic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOAPIRouteTableConfig,

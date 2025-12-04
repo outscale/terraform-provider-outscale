@@ -14,7 +14,7 @@ func TestAccNet_WithSecurityGroups_DataSource(t *testing.T) {
 	resouceName2 := "data.outscale_security_groups.by_filter"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceOutscaleSecurityGroupConfigVPC(rInt),

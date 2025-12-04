@@ -17,7 +17,7 @@ func TestAccNet_AccessPointsDataSource_basic(t *testing.T) {
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceOutscaleNetAccessPointsConfig(serviceName),

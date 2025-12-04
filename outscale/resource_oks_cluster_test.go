@@ -15,7 +15,7 @@ func TestAccOKSCluster_basic(t *testing.T) {
 	resourceName := "outscale_oks_cluster.cluster"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 
 		Steps: []resource.TestStep{
 			{

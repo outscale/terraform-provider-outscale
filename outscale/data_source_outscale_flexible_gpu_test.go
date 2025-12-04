@@ -13,7 +13,7 @@ func TestAccOthers_DataSourceFlexibleGpu_basic(t *testing.T) {
 	datasourceName := "data.outscale_flexible_gpu.data_fGPU"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceOutscaleFlexibleGpuConfig(utils.GetRegion()),

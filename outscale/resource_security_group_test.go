@@ -14,7 +14,7 @@ func TestAccNet_WithSecurityGroup(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleSecurityGroupConfig(rInt),
@@ -42,7 +42,7 @@ func TestAccNet_WithSecurityGroup_Migration(t *testing.T) {
 				Config: testAccOutscaleSecurityGroupConfig(rInt),
 			},
 			{
-				ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+				ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 				Config:                   testAccOutscaleSecurityGroupConfig(rInt),
 				PlanOnly:                 true,
 			},

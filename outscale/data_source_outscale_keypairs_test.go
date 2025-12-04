@@ -14,7 +14,7 @@ func TestAccOthers_KeypairsDataSource_Instance(t *testing.T) {
 	keyPairName := fmt.Sprintf("testacc-keypair-%d", utils.RandIntRange(0, 400))
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckOutscaleKeypairsDataSourceConfig(keyPairName),

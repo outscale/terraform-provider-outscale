@@ -14,7 +14,7 @@ func TestAccOthers_VolumesDataSource_multipleFilters(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckOutscaleVolumeDataSourceConfigWithMultipleFilters(utils.GetRegion()),
@@ -33,7 +33,7 @@ func TestAccOthers_VolumeDataSource_multipleVIdsFilters(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckOutscaleVolumesDataSourceConfigWithMultipleVolumeIDsFilter(utils.GetRegion()),
@@ -52,7 +52,7 @@ func TestAccVM_withVolumesDataSource(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckOutscaleVolumesDataSourceConfigWithVM(utils.GetRegion(), omi, keypair, utils.TestAccVmType),
