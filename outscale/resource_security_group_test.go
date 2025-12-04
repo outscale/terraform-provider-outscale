@@ -31,22 +31,7 @@ func TestAccNet_WithSecurityGroup_Migration(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { testAccPreCheck(t) },
-		Steps: []resource.TestStep{
-			{
-				ExternalProviders: map[string]resource.ExternalProvider{
-					"outscale": {
-						VersionConstraint: "1.2.1",
-						Source:            "outscale/outscale",
-					},
-				},
-				Config: testAccOutscaleSecurityGroupConfig(rInt),
-			},
-			{
-				ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
-				Config:                   testAccOutscaleSecurityGroupConfig(rInt),
-				PlanOnly:                 true,
-			},
-		},
+		Steps:    FrameworkMigrationTestSteps("1.2.1", testAccOutscaleSecurityGroupConfig(rInt)),
 	})
 }
 

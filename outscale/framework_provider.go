@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
 	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
+	sdkresource "github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/outscale/terraform-provider-outscale/version"
 )
 
@@ -267,6 +268,26 @@ func DefineTestProviderFactoriesV6() map[string]func() (tfprotov6.ProviderServer
 			}
 
 			return muxServer.ProviderServer(), nil
+		},
+	}
+}
+
+func FrameworkMigrationTestSteps(sdkVersion string, config string) []sdkresource.TestStep {
+	return []sdkresource.TestStep{
+		{
+			ExternalProviders: map[string]sdkresource.ExternalProvider{
+				"outscale": {
+					VersionConstraint: sdkVersion,
+					Source:            "outscale/outscale",
+				},
+			},
+			Config: config,
+		},
+		{
+			ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
+			Config:                   config,
+			PlanOnly:                 true,
+			ExpectNonEmptyPlan:       false,
 		},
 	}
 }

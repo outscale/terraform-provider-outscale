@@ -41,22 +41,7 @@ func TestAccOthers_SecurityGroupRule_Basic_Migration(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() { testAccPreCheck(t) },
-		Steps: []resource.TestStep{
-			{
-				ExternalProviders: map[string]resource.ExternalProvider{
-					"outscale": {
-						VersionConstraint: "1.2.1",
-						Source:            "outscale/outscale",
-					},
-				},
-				Config: testAccOutscaleSecurityGroupRuleEgressConfig(rInt),
-			},
-			{
-				ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
-				Config:                   testAccOutscaleSecurityGroupRuleEgressConfig(rInt),
-				PlanOnly:                 true,
-			},
-		},
+		Steps:    FrameworkMigrationTestSteps("1.2.1", testAccOutscaleSecurityGroupRuleEgressConfig(rInt)),
 	})
 }
 
@@ -86,22 +71,7 @@ func TestAccOthers_SecurityGroupRule_WithSecurityGroupMember_Migration(t *testin
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() { testAccPreCheck(t) },
-		Steps: []resource.TestStep{
-			{
-				ExternalProviders: map[string]resource.ExternalProvider{
-					"outscale": {
-						VersionConstraint: "1.2.1",
-						Source:            "outscale/outscale",
-					},
-				},
-				Config: testAccOutscaleSecurityGroupRuleWithGroupMembers(rInt, accountID),
-			},
-			{
-				ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
-				Config:                   testAccOutscaleSecurityGroupRuleWithGroupMembers(rInt, accountID),
-				PlanOnly:                 true,
-			},
-		},
+		Steps:    FrameworkMigrationTestSteps("1.2.1", testAccOutscaleSecurityGroupRuleWithGroupMembers(rInt, accountID)),
 	})
 }
 
