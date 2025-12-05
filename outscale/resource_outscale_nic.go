@@ -51,6 +51,7 @@ func getOAPINicSchema() map[string]*schema.Schema {
 		},
 		"security_group_ids": {
 			Type:     schema.TypeSet,
+			Computed: true,
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
