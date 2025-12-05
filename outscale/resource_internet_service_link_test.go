@@ -12,7 +12,7 @@ func TestAccNet_WithInternetServiceLink_basic(t *testing.T) {
 	resourceName := "outscale_internet_service_link.outscale_internet_service_link"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleInternetServiceLinkConfig(),
@@ -30,7 +30,7 @@ func TestAccNet_WithImportInternetServiceLink_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleInternetServiceLinkConfig(),

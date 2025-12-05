@@ -8,13 +8,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccNet_WIthSecurityGroups_DataSource(t *testing.T) {
+func TestAccNet_WithSecurityGroups_DataSource(t *testing.T) {
 	rInt := acctest.RandInt()
 	resouceName1 := "data.outscale_security_groups.by_id"
 	resouceName2 := "data.outscale_security_groups.by_filter"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceOutscaleSecurityGroupConfigVPC(rInt),
@@ -37,9 +37,9 @@ func testAccDataSourceOutscaleSecurityGroupConfigVPC(rInt int) string {
 			net_id = "${outscale_net.outscale_net.id}"
 			description = "Used in the terraform acceptance tests"
 			security_group_name = "test-1-%[1]d"
-			tag = {
-				Name = "tf-acctest"
-				Seed = "%[1]d"
+			tags {
+				key = "tf-acctest"
+				value = "%[1]d"
 			}
 		}
 
@@ -47,9 +47,9 @@ func testAccDataSourceOutscaleSecurityGroupConfigVPC(rInt int) string {
 			net_id = "${outscale_net.outscale_net.id}"
 			description = "Used in the terraform acceptance tests"
 			security_group_name = "test-2-%[1]d"
-			tag = {
-				Name = "tf-acctest"
-				Seed = "%[1]d"
+			tags {
+				key = "tf-acctest"
+				value = "%[1]d"
 			}
 		}
 
@@ -57,9 +57,9 @@ func testAccDataSourceOutscaleSecurityGroupConfigVPC(rInt int) string {
 			net_id = "${outscale_net.outscale_net.id}"
 			description = "Used in the terraform acceptance tests"
 			security_group_name = "test-3-%[1]d"
-			tag = {
-				Name = "tf-acctest"
-				Seed = "%[1]d"
+			tags {
+				key = "tf-acctest"
+				value = "%[1]d"
 			}
 		}
 

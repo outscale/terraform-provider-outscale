@@ -13,7 +13,7 @@ func TestAccOKSProject_basic(t *testing.T) {
 	resourceName := "outscale_oks_project.project"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 
 		Steps: []resource.TestStep{
 			{

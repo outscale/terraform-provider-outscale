@@ -14,7 +14,7 @@ func TestAccNet_WithSecurityGroupDataSource_basic(t *testing.T) {
 	resourceName := "outscale_security_group.netSGtest"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceOutscaleSecurityGroupConfig(rInt),
@@ -32,7 +32,7 @@ func TestAccOthers_WithSecurityGroupPublic(t *testing.T) {
 	resourceName := "outscale_security_group.test"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceOutscaleSecurityGroupPublicConfig(rInt),
@@ -73,9 +73,9 @@ func testAccDataSourceOutscaleSecurityGroupPublicConfig(rInt int) string {
 		resource "outscale_security_group" "test" {
 			description = "Used in the terraform acceptance tests"
 			security_group_name = "test-%d"
-			tag = {
-				Name = "tf-acctest"
-				Seed = "%d"
+			tags {
+				key = "tf-acctest"
+				value = "%d"
 			}
 		}
 

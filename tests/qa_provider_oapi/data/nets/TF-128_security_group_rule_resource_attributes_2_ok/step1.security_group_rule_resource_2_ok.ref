@@ -54,6 +54,7 @@
                                 "ip_protocol": "-1",
                                 "ip_ranges": "########",
                                 "security_groups_members": [],
+                                "service_ids": null,
                                 "to_port_range": -1
                             }
                         ],
@@ -61,17 +62,16 @@
                         "request_id": "########",
                         "security_group_id": "##id-3##",
                         "security_group_name": "sg1-terraform-test",
-                        "tag": null,
                         "tags": [
                             {
                                 "key": "Name",
                                 "value": "outscale_sg"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net"
                     ]
@@ -98,6 +98,7 @@
                                 "ip_protocol": "-1",
                                 "ip_ranges": "########",
                                 "security_groups_members": [],
+                                "service_ids": null,
                                 "to_port_range": -1
                             }
                         ],
@@ -105,20 +106,83 @@
                         "request_id": "########",
                         "security_group_id": "##id-4##",
                         "security_group_name": "sg2-terraform-test",
-                        "tag": null,
                         "tags": [
                             {
                                 "key": "Name",
                                 "value": "outscale_sg2"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net"
                     ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_security_group",
+            "name": "outscale_security_group3",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-2##",
+                        "description": "test group",
+                        "id": "##id-5##",
+                        "inbound_rules": [],
+                        "net_id": "",
+                        "outbound_rules": [],
+                        "remove_default_outbound_rule": false,
+                        "request_id": "########",
+                        "security_group_id": "##id-5##",
+                        "security_group_name": "sg3-terraform-test",
+                        "tags": [
+                            {
+                                "key": "Name",
+                                "value": "outscale_sg3"
+                            }
+                        ],
+                        "timeouts": null
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_security_group",
+            "name": "outscale_security_group4",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-2##",
+                        "description": "test group",
+                        "id": "##id-6##",
+                        "inbound_rules": [],
+                        "net_id": "",
+                        "outbound_rules": [],
+                        "remove_default_outbound_rule": false,
+                        "request_id": "########",
+                        "security_group_id": "##id-6##",
+                        "security_group_name": "sg4-terraform-test",
+                        "tags": [
+                            {
+                                "key": "Name",
+                                "value": "outscale_sg4"
+                            }
+                        ],
+                        "timeouts": null
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -150,7 +214,7 @@
                                         "security_group_name": ""
                                     }
                                 ],
-                                "service_ids": null,
+                                "service_ids": [],
                                 "to_port_range": 22
                             }
                         ],
@@ -158,11 +222,11 @@
                         "security_group_id": "##id-3##",
                         "security_group_name": "sg1-terraform-test",
                         "security_group_name_to_link": null,
+                        "timeouts": null,
                         "to_port_range": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net",
                         "outscale_security_group.outscale_security_group",
@@ -174,18 +238,18 @@
         {
             "mode": "managed",
             "type": "outscale_security_group_rule",
-            "name": "outscale_security_group_rule-3_2",
+            "name": "outscale_security_group_rule-4",
             "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "flow": "Outbound",
+                        "flow": "Inbound",
                         "from_port_range": null,
-                        "id": "##id-3##",
+                        "id": "##id-5##",
                         "ip_protocol": null,
                         "ip_range": null,
-                        "net_id": "##id-1##",
+                        "net_id": "",
                         "request_id": "########",
                         "rules": [
                             {
@@ -194,29 +258,27 @@
                                 "ip_ranges": "########",
                                 "security_groups_members": [
                                     {
-                                        "account_id": "##id-2##",
+                                        "account_id": "",
                                         "security_group_id": "",
-                                        "security_group_name": "sg2-terraform-test"
+                                        "security_group_name": "sg4-terraform-test"
                                     }
                                 ],
-                                "service_ids": null,
+                                "service_ids": [],
                                 "to_port_range": 22
                             }
                         ],
                         "security_group_account_id_to_link": null,
-                        "security_group_id": "##id-3##",
-                        "security_group_name": "sg1-terraform-test",
+                        "security_group_id": "##id-5##",
+                        "security_group_name": "sg3-terraform-test",
                         "security_group_name_to_link": null,
+                        "timeouts": null,
                         "to_port_range": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
                     "dependencies": [
-                        "outscale_net.outscale_net",
-                        "outscale_security_group.outscale_security_group",
-                        "outscale_security_group.outscale_security_group2",
-                        "outscale_security_group_rule.outscale_security_group_rule-3"
+                        "outscale_security_group.outscale_security_group3",
+                        "outscale_security_group.outscale_security_group4"
                     ]
                 }
             ]

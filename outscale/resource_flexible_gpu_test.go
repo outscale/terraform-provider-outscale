@@ -13,7 +13,7 @@ func TestAccOthers_FlexibleGpu_basic(t *testing.T) {
 	resourceName := "outscale_flexible_gpu.fGPU-1"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccFlexibleGpuConfig(utils.GetRegion(), false),

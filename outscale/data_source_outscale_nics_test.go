@@ -12,7 +12,7 @@ func TestAccNet_WithNicsDataSource(t *testing.T) {
 	resourceName := "data.outscale_nics.data_nics"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckOutscaleNicsDataSourceConfig(utils.GetRegion()),

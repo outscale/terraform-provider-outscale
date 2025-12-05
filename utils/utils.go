@@ -66,7 +66,8 @@ The "iops" parameter can only be set when creating an "io1" volume.
 Check Outscale API documentation for more details:
 https://docs.outscale.com/en/userguide/About-Volumes.html#_volume_types_and_iops
 `
-	AwaitActiveStateDefaultValue bool = true
+	AwaitActiveStateDefaultValue          bool = true
+	RemoveDefaultOutboundRuleDefaultValue bool = false
 )
 
 func PrintToJSON(v interface{}, msg string) {
@@ -468,6 +469,8 @@ func GetAttrTypes(model any) map[string]attr.Type {
 			attrTypes[tfsdkTag] = types.Int64Type
 		case reflect.TypeOf(types.Float64{}):
 			attrTypes[tfsdkTag] = types.Float64Type
+		case reflect.TypeOf(types.Int32{}):
+			attrTypes[tfsdkTag] = types.Int32Type
 		}
 	}
 	return attrTypes
@@ -536,7 +539,7 @@ func WaitForResource[T any](ctx context.Context, conf *retry.StateChangeConf) (*
 	return resp, nil
 }
 
-func CheckDiags[T *fw_resource.CreateResponse | *fw_resource.UpdateResponse | *fw_resource.DeleteResponse | *fw_resource.ReadResponse | *fw_resource.ModifyPlanResponse | *fw_resource.ImportStateResponse | *fw_data.ReadResponse](resp T, diags diag.
+func CheckDiags[T *fw_resource.CreateResponse | *fw_resource.UpdateResponse | *fw_resource.DeleteResponse | *fw_resource.ReadResponse | *fw_resource.ModifyPlanResponse | *fw_resource.ImportStateResponse | *fw_data.ReadResponse | *fw_resource.ValidateConfigResponse](resp T, diags diag.
 	Diagnostics) bool {
 	switch r := any(resp).(type) {
 	case *fw_resource.DeleteResponse:
@@ -558,6 +561,9 @@ func CheckDiags[T *fw_resource.CreateResponse | *fw_resource.UpdateResponse | *f
 		r.Diagnostics.Append(diags...)
 		return r.Diagnostics.HasError()
 	case *fw_data.ReadResponse:
+		r.Diagnostics.Append(diags...)
+		return r.Diagnostics.HasError()
+	case *fw_data.ValidateConfigResponse:
 		r.Diagnostics.Append(diags...)
 		return r.Diagnostics.HasError()
 	default:

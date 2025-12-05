@@ -163,6 +163,7 @@
                                 "ip_protocol": "-1",
                                 "ip_ranges": "########",
                                 "security_groups_members": [],
+                                "service_ids": null,
                                 "to_port_range": -1
                             }
                         ],
@@ -170,12 +171,11 @@
                         "request_id": "########",
                         "security_group_id": "##id-5##",
                         "security_group_name": "sg1-test-group_TF111",
-                        "tag": null,
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net"
                     ]

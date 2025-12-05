@@ -17,7 +17,7 @@ func TestAccNet_WithVirtualGateway_basic(t *testing.T) {
 			testAccPreCheck(t)
 		},
 		IDRefreshName:            resourceName,
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOAPIVirtualGatewayConfigChangeVPC,
@@ -66,7 +66,7 @@ func TestAccOthres_ImportVirtualGateway_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOAPIVirtualGatewayConfig,

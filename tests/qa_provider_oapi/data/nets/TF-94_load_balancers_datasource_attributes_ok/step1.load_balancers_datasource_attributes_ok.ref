@@ -355,6 +355,7 @@
                                 "ip_protocol": "-1",
                                 "ip_ranges": "########",
                                 "security_groups_members": [],
+                                "service_ids": null,
                                 "to_port_range": -1
                             }
                         ],
@@ -362,17 +363,16 @@
                         "request_id": "########",
                         "security_group_id": "##id-3##",
                         "security_group_name": "sg1-terraform-lbu-test",
-                        "tag": null,
                         "tags": [
                             {
                                 "key": "Name",
                                 "value": "outscale_terraform_lbu_sg"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net"
                     ]
