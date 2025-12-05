@@ -214,12 +214,11 @@
                         "request_id": "########",
                         "security_group_id": "##id-7##",
                         "security_group_name": "SG-inteFlg",
-                        "tag": null,
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "identity_schema_version": 0
                 }
             ]
         },

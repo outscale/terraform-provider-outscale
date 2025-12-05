@@ -1,11 +1,10 @@
 resource "outscale_keypair" "my_keypair" {
  keypair_name = "KP-TF174"
-
 }
 
 resource "outscale_security_group" "my_sgfg_link" {
    description = "test security group"
-   security_group_name = "SG-inteFg_link"
+   security_group_name = "SG-TF174"
 }
 
 resource "outscale_vm" "MaVM" {
