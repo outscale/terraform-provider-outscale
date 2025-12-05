@@ -69,12 +69,11 @@
                         "request_id": "########",
                         "security_group_id": "##id-3##",
                         "security_group_name": "terraform-sg-TF178-0",
-                        "tag": null,
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "identity_schema_version": 0
                 },
                 {
                     "index_key": 1,
@@ -90,12 +89,11 @@
                         "request_id": "########",
                         "security_group_id": "##id-4##",
                         "security_group_name": "terraform-sg-TF178-1",
-                        "tag": null,
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "identity_schema_version": 0
                 }
             ]
         },

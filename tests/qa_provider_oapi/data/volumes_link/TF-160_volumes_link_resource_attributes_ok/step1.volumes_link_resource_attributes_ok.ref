@@ -49,12 +49,11 @@
                         "request_id": "########",
                         "security_group_id": "##id-2##",
                         "security_group_name": "terraform-sg-160",
-                        "tag": null,
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "identity_schema_version": 0
                 }
             ]
         },

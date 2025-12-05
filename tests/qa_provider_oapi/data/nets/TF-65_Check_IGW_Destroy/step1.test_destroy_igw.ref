@@ -532,6 +532,7 @@
                                 "ip_protocol": "-1",
                                 "ip_ranges": "########",
                                 "security_groups_members": [],
+                                "service_ids": null,
                                 "to_port_range": -1
                             }
                         ],
@@ -539,12 +540,11 @@
                         "request_id": "########",
                         "security_group_id": "##id-23##",
                         "security_group_name": "TF65-sg-1",
-                        "tag": null,
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.nomad"
                     ]
@@ -571,6 +571,7 @@
                                 "ip_protocol": "-1",
                                 "ip_ranges": "########",
                                 "security_groups_members": [],
+                                "service_ids": null,
                                 "to_port_range": -1
                             }
                         ],
@@ -578,12 +579,11 @@
                         "request_id": "########",
                         "security_group_id": "##id-24##",
                         "security_group_name": "TF65-sg-2",
-                        "tag": null,
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.nomad"
                     ]
@@ -611,11 +611,11 @@
                         "security_group_id": "##id-23##",
                         "security_group_name": "TF65-sg-1",
                         "security_group_name_to_link": null,
+                        "timeouts": null,
                         "to_port_range": 0
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.nomad",
                         "outscale_security_group.nomad-sg1"
@@ -644,11 +644,11 @@
                         "security_group_id": "##id-24##",
                         "security_group_name": "TF65-sg-2",
                         "security_group_name_to_link": null,
+                        "timeouts": null,
                         "to_port_range": 0
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.nomad",
                         "outscale_security_group.nomad-sg2"
@@ -677,11 +677,11 @@
                         "security_group_id": "##id-23##",
                         "security_group_name": "TF65-sg-1",
                         "security_group_name_to_link": null,
+                        "timeouts": null,
                         "to_port_range": 22
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.nomad",
                         "outscale_security_group.nomad-sg1",
@@ -711,11 +711,11 @@
                         "security_group_id": "##id-24##",
                         "security_group_name": "TF65-sg-2",
                         "security_group_name_to_link": null,
+                        "timeouts": null,
                         "to_port_range": 80
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.nomad",
                         "outscale_security_group.nomad-sg2",
@@ -745,11 +745,11 @@
                         "security_group_id": "##id-23##",
                         "security_group_name": "TF65-sg-1",
                         "security_group_name_to_link": null,
+                        "timeouts": null,
                         "to_port_range": 1024
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.nomad",
                         "outscale_security_group.nomad-sg1",
@@ -780,11 +780,11 @@
                         "security_group_id": "##id-24##",
                         "security_group_name": "TF65-sg-2",
                         "security_group_name_to_link": null,
+                        "timeouts": null,
                         "to_port_range": 1024
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.nomad",
                         "outscale_security_group.nomad-sg2",

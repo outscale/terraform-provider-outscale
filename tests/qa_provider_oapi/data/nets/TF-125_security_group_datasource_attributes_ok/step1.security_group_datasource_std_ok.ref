@@ -208,6 +208,7 @@
                                 "ip_protocol": "-1",
                                 "ip_ranges": "########",
                                 "security_groups_members": [],
+                                "service_ids": null,
                                 "to_port_range": -1
                             }
                         ],
@@ -215,7 +216,6 @@
                         "request_id": "########",
                         "security_group_id": "##id-1##",
                         "security_group_name": "terraform-TF125",
-                        "tag": null,
                         "tags": [
                             {
                                 "key": "Key:",
@@ -225,11 +225,11 @@
                                 "key": "Name",
                                 "value": ":outscale_net_resource2"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net"
                     ]
@@ -256,6 +256,7 @@
                                 "ip_protocol": "-1",
                                 "ip_ranges": "########",
                                 "security_groups_members": [],
+                                "service_ids": null,
                                 "to_port_range": -1
                             }
                         ],
@@ -263,17 +264,16 @@
                         "request_id": "########",
                         "security_group_id": "##id-4##",
                         "security_group_name": "terraform-TF125-2",
-                        "tag": null,
                         "tags": [
                             {
                                 "key": "Name",
                                 "value": "outscale_sg2"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net"
                     ]
@@ -301,11 +301,11 @@
                         "security_group_id": "##id-1##",
                         "security_group_name": "terraform-TF125",
                         "security_group_name_to_link": null,
+                        "timeouts": null,
                         "to_port_range": 80
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net",
                         "outscale_security_group.outscale_security_group"
