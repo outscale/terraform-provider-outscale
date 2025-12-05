@@ -302,10 +302,10 @@
                     "attributes": {
                         "backend_ips": "########",
                         "backend_vm_ids": [
-                            "##id-3##",
                             "##id-0##",
                             "##id-2##",
-                            "##id-1##"
+                            "##id-1##",
+                            "##id-3##"
                         ],
                         "id": "##id-4##",
                         "load_balancer_name": "########",
@@ -413,12 +413,11 @@
                         "request_id": "########",
                         "security_group_id": "##id-13##",
                         "security_group_name": "terraform-TF01",
-                        "tag": null,
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "identity_schema_version": 0
                 }
             ]
         },

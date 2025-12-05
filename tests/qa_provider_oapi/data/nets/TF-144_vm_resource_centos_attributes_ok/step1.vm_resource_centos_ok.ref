@@ -323,6 +323,7 @@
                                 "ip_protocol": "-1",
                                 "ip_ranges": "########",
                                 "security_groups_members": [],
+                                "service_ids": null,
                                 "to_port_range": -1
                             }
                         ],
@@ -330,17 +331,16 @@
                         "request_id": "########",
                         "security_group_id": "##id-14##",
                         "security_group_name": "terraform-sg-TF144",
-                        "tag": null,
                         "tags": [
                             {
                                 "key": "name",
                                 "value": "outscale_sg"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
                     "dependencies": [
                         "outscale_net.outscale_net"
                     ]
@@ -366,12 +366,11 @@
                         "request_id": "########",
                         "security_group_id": "##id-15##",
                         "security_group_name": "terraform-public-sg_for_vms",
-                        "tag": null,
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "identity_schema_version": 0
                 }
             ]
         },

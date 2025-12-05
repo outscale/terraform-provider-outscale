@@ -205,12 +205,11 @@
                         "request_id": "########",
                         "security_group_id": "##id-4##",
                         "security_group_name": "terraform-sg-151",
-                        "tag": null,
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "identity_schema_version": 0
                 }
             ]
         },
