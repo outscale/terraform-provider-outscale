@@ -57,7 +57,7 @@ func DataSourceOutscaleVirtualGateways() *schema.Resource {
 								},
 							},
 						},
-						"tags": dataSourceTagsSchema(),
+						"tags": TagsSchemaComputedSDK(),
 					},
 				},
 			},
@@ -122,7 +122,7 @@ func DataSourceOutscaleVirtualGatewaysRead(d *schema.ResourceData, meta interfac
 		vpn["state"] = v.GetState()
 		vpn["connection_type"] = v.GetConnectionType()
 		vpn["virtual_gateway_id"] = v.GetVirtualGatewayId()
-		vpn["tags"] = tagsOSCAPIToMap(v.GetTags())
+		vpn["tags"] = flattenOAPITagsSDK(v.GetTags())
 
 		vpns[k] = vpn
 	}

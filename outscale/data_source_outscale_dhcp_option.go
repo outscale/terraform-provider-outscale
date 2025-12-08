@@ -51,7 +51,7 @@ func DataSourceOutscaleDHCPOption() *schema.Resource {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
-			"tags": dataSourceTagsSchema(),
+			"tags": TagsSchemaComputedSDK(),
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -125,7 +125,7 @@ func DataSourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) 
 	if err := d.Set("dhcp_options_set_id", dhcpOption.GetDhcpOptionsSetId()); err != nil {
 		return err
 	}
-	if err := d.Set("tags", tagsOSCAPIToMap(dhcpOption.GetTags())); err != nil {
+	if err := d.Set("tags", flattenOAPITagsSDK(dhcpOption.GetTags())); err != nil {
 		return err
 	}
 

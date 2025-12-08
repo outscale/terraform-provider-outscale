@@ -50,7 +50,7 @@ func DataSourceOutscaleClientGateways() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"tags": dataSourceTagsSchema(),
+						"tags": TagsSchemaComputedSDK(),
 					},
 				},
 			},
@@ -124,7 +124,7 @@ func flattenClientGateways(clientGateways []oscgo.ClientGateway) []map[string]in
 			"connection_type":   clientGateway.GetConnectionType(),
 			"public_ip":         clientGateway.GetPublicIp(),
 			"state":             clientGateway.GetState(),
-			"tags":              tagsOSCAPIToMap(clientGateway.GetTags()),
+			"tags":              flattenOAPITagsSDK(clientGateway.GetTags()),
 		}
 	}
 	return clientGatewaysMap

@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"reflect"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/boolvalidator"
@@ -42,10 +41,10 @@ type SecurityGroupModel struct {
 	SecurityGroupId           types.String   `tfsdk:"security_group_id"`
 	SecurityGroupName         types.String   `tfsdk:"security_group_name"`
 	RemoveDefaultOutboundRule types.Bool     `tfsdk:"remove_default_outbound_rule"`
-	Tags                      []ResourceTag  `tfsdk:"tags"`
 	Timeouts                  timeouts.Value `tfsdk:"timeouts"`
 	RequestId                 types.String   `tfsdk:"request_id"`
 	Id                        types.String   `tfsdk:"id"`
+	TagsModel
 }
 
 type resourceSecurityGroup struct {
@@ -96,6 +95,7 @@ func (r *resourceSecurityGroup) ImportState(ctx context.Context, req resource.Im
 	data.Id = types.StringValue(securityGroupId)
 	data.InboundRules = types.ListNull(securityGroupRulesModelAttrTypes)
 	data.OutboundRules = types.ListNull(securityGroupRulesModelAttrTypes)
+	data.Tags = TagsNull()
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -116,13 +116,13 @@ func (r *resourceSecurityGroup) ModifyPlan(ctx context.Context, req resource.Mod
 func (r *resourceSecurityGroup) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Blocks: map[string]schema.Block{
-			"tags": TagsSchema(),
 			"timeouts": timeouts.Block(ctx, timeouts.Opts{
 				Create: true,
 				Read:   true,
 				Update: true,
 				Delete: true,
 			}),
+			"tags": TagsSchemaFW(),
 		},
 		Attributes: map[string]schema.Attribute{
 			"account_id": schema.StringAttribute{
@@ -246,14 +246,7 @@ func (r *resourceSecurityGroup) Create(ctx context.Context, req resource.CreateR
 			IpProtocol:      &ipProtocol,
 		}
 
-		deleteTimeout, diag := data.Timeouts.Delete(ctx, utils.DeleteDefaultTimeout)
-		if utils.CheckDiags(resp, diag) {
-			return
-		}
-		ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
-		defer cancel()
-
-		err := retry.RetryContext(ctx, deleteTimeout, func() *retry.RetryError {
+		err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
 			_, httpResp, err := r.Client.SecurityGroupRuleApi.DeleteSecurityGroupRule(ctx).DeleteSecurityGroupRuleRequest(emptySGReq).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
@@ -269,15 +262,9 @@ func (r *resourceSecurityGroup) Create(ctx context.Context, req resource.CreateR
 		}
 	}
 
-	if len(data.Tags) > 0 {
-		err = createFrameworkTags(ctx, r.Client, tagsToOSCResourceTag(data.Tags), sg.GetSecurityGroupId())
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable to add Tags on the Security Group resource.",
-				err.Error(),
-			)
-			return
-		}
+	diag = createOAPITagsFW(ctx, r.Client, data.Tags, sg.GetSecurityGroupId())
+	if utils.CheckDiags(resp, diag) {
+		return
 	}
 
 	stateData, err := setSecurityGroupState(ctx, r, data)
@@ -323,16 +310,9 @@ func (r *resourceSecurityGroup) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
-	if !reflect.DeepEqual(planData.Tags, stateData.Tags) {
-		toRemove, toCreate := diffOSCAPITags(tagsToOSCResourceTag(planData.Tags), tagsToOSCResourceTag(stateData.Tags))
-		err := updateFrameworkTags(ctx, r.Client, toCreate, toRemove, stateData.SecurityGroupId.ValueString())
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable to update Tags on Security Group resource.",
-				err.Error(),
-			)
-			return
-		}
+	diag := updateOAPITagsFW(ctx, r.Client, stateData.Tags, planData.Tags, stateData.SecurityGroupId.ValueString())
+	if utils.CheckDiags(resp, diag) {
+		return
 	}
 
 	data, err := setSecurityGroupState(ctx, r, stateData)
@@ -412,7 +392,11 @@ func setSecurityGroupState(ctx context.Context, r *resourceSecurityGroup, data S
 	}
 
 	securityGroup := readResp.GetSecurityGroups()[0]
-	data.Tags = getTagsFromApiResponse(securityGroup.GetTags())
+	tags, diags := flattenOAPITagsFW(ctx, securityGroup.GetTags())
+	if diags.HasError() {
+		return data, fmt.Errorf("unable to flatten tags: %v", diags.Errors())
+	}
+	data.Tags = tags
 
 	inboundRulesModels, diag := flattenSecurityGroupRules(ctx, securityGroup.GetInboundRules())
 	if diag.HasError() {

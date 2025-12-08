@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"reflect"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -26,16 +25,15 @@ var (
 )
 
 type RouteTableModel struct {
-	LinkRouteTables                 types.List   `tfsdk:"link_route_tables"`
-	NetId                           types.String `tfsdk:"net_id"`
-	RoutePropagatingVirtualGateways types.List   `tfsdk:"route_propagating_virtual_gateways"`
-	RouteTableId                    types.String `tfsdk:"route_table_id"`
-	Routes                          types.List   `tfsdk:"routes"`
-
-	Tags      []ResourceTag  `tfsdk:"tags"`
-	RequestId types.String   `tfsdk:"request_id"`
-	Timeouts  timeouts.Value `tfsdk:"timeouts"`
-	Id        types.String   `tfsdk:"id"`
+	LinkRouteTables                 types.List     `tfsdk:"link_route_tables"`
+	NetId                           types.String   `tfsdk:"net_id"`
+	RoutePropagatingVirtualGateways types.List     `tfsdk:"route_propagating_virtual_gateways"`
+	RouteTableId                    types.String   `tfsdk:"route_table_id"`
+	Routes                          types.List     `tfsdk:"routes"`
+	RequestId                       types.String   `tfsdk:"request_id"`
+	Timeouts                        timeouts.Value `tfsdk:"timeouts"`
+	Id                              types.String   `tfsdk:"id"`
+	TagsModel
 }
 
 type RoutePropagatingVirtualGatewayModel struct {
@@ -144,6 +142,7 @@ func (r *resourceRouteTable) ImportState(ctx context.Context, req resource.Impor
 	data.LinkRouteTables = types.ListNull(types.ObjectType{AttrTypes: linkRouteTableAttrTypes})
 	data.RoutePropagatingVirtualGateways = types.ListNull(types.ObjectType{AttrTypes: routePropagatingVirtualGatewayAttrTypes})
 	data.Routes = types.ListNull(types.ObjectType{AttrTypes: routeAttrTypes})
+	data.Tags = TagsNull()
 
 	diags := resp.State.Set(ctx, &data)
 	resp.Diagnostics.Append(diags...)
@@ -169,7 +168,7 @@ func (r *resourceRouteTable) ModifyPlan(ctx context.Context, req resource.Modify
 func (r *resourceRouteTable) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Blocks: map[string]schema.Block{
-			"tags": TagsSchema(),
+			"tags": TagsSchemaFW(),
 			"timeouts": timeouts.Block(ctx, timeouts.Opts{
 				Create: true,
 				Read:   true,
@@ -258,15 +257,9 @@ func (r *resourceRouteTable) Create(ctx context.Context, req resource.CreateRequ
 	data.RequestId = types.StringValue(createResp.ResponseContext.GetRequestId())
 	routeTable := createResp.GetRouteTable()
 
-	if len(data.Tags) > 0 {
-		err = createFrameworkTags(ctx, r.Client, tagsToOSCResourceTag(data.Tags), routeTable.GetRouteTableId())
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable to add Tags on outscale_route_table resource",
-				err.Error(),
-			)
-			return
-		}
+	diag := createOAPITagsFW(ctx, r.Client, data.Tags, routeTable.GetRouteTableId())
+	if utils.CheckDiags(resp, diag) {
+		return
 	}
 
 	data.RouteTableId = types.StringValue(routeTable.GetRouteTableId())
@@ -315,25 +308,14 @@ func (r *resourceRouteTable) Read(ctx context.Context, req resource.ReadRequest,
 func (r *resourceRouteTable) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var stateData, planData RouteTableModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &stateData)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &planData)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	if !reflect.DeepEqual(planData.Tags, stateData.Tags) {
-		toRemove, toCreate := diffOSCAPITags(tagsToOSCResourceTag(planData.Tags), tagsToOSCResourceTag(stateData.Tags))
-		err := updateFrameworkTags(ctx, r.Client, toCreate, toRemove, stateData.RouteTableId.ValueString())
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable to update Tags on Route Table resource.",
-				err.Error(),
-			)
-			return
-		}
+	diag := updateOAPITagsFW(ctx, r.Client, stateData.Tags, planData.Tags, stateData.RouteTableId.ValueString())
+	if utils.CheckDiags(resp, diag) {
+		return
 	}
 
 	data, err := setRouteTableState(ctx, r, stateData)
@@ -416,7 +398,11 @@ func setRouteTableState(ctx context.Context, r *resourceRouteTable, data RouteTa
 	}
 
 	routeTable := readResp.GetRouteTables()[0]
-	data.Tags = getTagsFromApiResponse(routeTable.GetTags())
+	tags, diag := flattenOAPITagsFW(ctx, routeTable.GetTags())
+	if diag.HasError() {
+		return data, fmt.Errorf("unable to flatten tags: %v", diags.Errors())
+	}
+	data.Tags = tags
 
 	linkRouteTables, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: linkRouteTableAttrTypes}, LinkRouteTablesToModel(routeTable.GetLinkRouteTables()))
 	if diags.HasError() {

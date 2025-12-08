@@ -48,7 +48,7 @@ func DataSourceOutscaleVpc() *schema.Resource {
 				Computed: true,
 			},
 
-			"tags": dataSourceTagsSchema(),
+			"tags": TagsSchemaComputedSDK(),
 		},
 	}
 }
@@ -111,7 +111,7 @@ func DataSourceOutscaleVpcRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	return d.Set("tags", tagsOSCAPIToMap(net.GetTags()))
+	return d.Set("tags", flattenOAPITagsSDK(net.GetTags()))
 }
 
 func buildOutscaleDataSourceNetFilters(set *schema.Set) (*oscgo.FiltersNet, error) {

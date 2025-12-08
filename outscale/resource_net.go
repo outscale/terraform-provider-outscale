@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net"
-	"reflect"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -23,8 +22,8 @@ import (
 )
 
 var (
-	_ resource.Resource              = &netResource{}
-	_ resource.ResourceWithConfigure = &netResource{}
+	_ resource.Resource              = &resourceNet{}
+	_ resource.ResourceWithConfigure = &resourceNet{}
 )
 
 type NetModel struct {
@@ -33,26 +32,21 @@ type NetModel struct {
 	NetId            types.String   `tfsdk:"net_id"`
 	State            types.String   `tfsdk:"state"`
 	Tenancy          types.String   `tfsdk:"tenancy"`
-	Tags             []ResourceTag  `tfsdk:"tags"`
 	Timeouts         timeouts.Value `tfsdk:"timeouts"`
 	RequestId        types.String   `tfsdk:"request_id"`
 	Id               types.String   `tfsdk:"id"`
+	TagsModel
 }
 
-type ResourceTag struct {
-	Key   types.String `tfsdk:"key"`
-	Value types.String `tfsdk:"value"`
-}
-
-type netResource struct {
+type resourceNet struct {
 	Client *oscgo.APIClient
 }
 
 func NewResourceNet() resource.Resource {
-	return &netResource{}
+	return &resourceNet{}
 }
 
-func (r *netResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *resourceNet) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 
 	if req.ProviderData == nil {
 		return
@@ -69,7 +63,7 @@ func (r *netResource) Configure(_ context.Context, req resource.ConfigureRequest
 	r.Client = client.OSCAPI
 }
 
-func (r *netResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *resourceNet) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 	net_id := req.ID
 	if net_id == "" {
@@ -88,6 +82,8 @@ func (r *netResource) ImportState(ctx context.Context, req resource.ImportStateR
 		return
 	}
 	data.Timeouts = timeouts
+	data.Tags = TagsNull()
+
 	diags := resp.State.Set(ctx, &data)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -95,13 +91,14 @@ func (r *netResource) ImportState(ctx context.Context, req resource.ImportStateR
 	}
 }
 
-func (r *netResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *resourceNet) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_net"
 }
-func (r *netResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+
+func (r *resourceNet) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Blocks: map[string]schema.Block{
-			"tags": TagsSchema(),
+			"tags": TagsSchemaFW(),
 			"timeouts": timeouts.Block(ctx, timeouts.Opts{
 				Create: true,
 				Read:   true,
@@ -149,7 +146,7 @@ func (r *netResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp
 	}
 }
 
-func (r *netResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *resourceNet) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data NetModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -205,16 +202,10 @@ func (r *netResource) Create(ctx context.Context, req resource.CreateRequest, re
 
 	data.RequestId = types.StringValue(createResp.ResponseContext.GetRequestId())
 	net := createResp.GetNet()
-	if len(data.Tags) > 0 {
-		err = createFrameworkTags(ctx, r.Client, tagsToOSCResourceTag(data.Tags), net.GetNetId())
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable to add Tags on outscale_net resource",
-				"Error: "+utils.GetErrorResponse(err).Error(),
-			)
-			return
-		}
 
+	diag := createOAPITagsFW(ctx, r.Client, data.Tags, net.GetNetId())
+	if utils.CheckDiags(resp, diag) {
+		return
 	}
 	data.NetId = types.StringValue(net.GetNetId())
 	data, err = setNetState(ctx, r, data)
@@ -232,7 +223,7 @@ func (r *netResource) Create(ctx context.Context, req resource.CreateRequest, re
 	}
 }
 
-func (r *netResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+func (r *resourceNet) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data NetModel
 	var err error
 
@@ -259,39 +250,20 @@ func (r *netResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 	}
 }
 
-func (r *netResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var (
-		tagsPlan, tagsState []ResourceTag
-		resourceId          types.String
-		err                 error
-	)
-
-	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("tags"), &tagsPlan)...)
-	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("tags"), &tagsState)...)
-	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("net_id"), &resourceId)...)
+func (r *resourceNet) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var planData, stateData NetModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &planData)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &stateData)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	if !reflect.DeepEqual(tagsPlan, tagsState) {
-		toRemove, toCreate := diffOSCAPITags(tagsToOSCResourceTag(tagsPlan), tagsToOSCResourceTag(tagsState))
-		err := updateFrameworkTags(ctx, r.Client, toCreate, toRemove, resourceId.ValueString())
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable to update Tags on net resource",
-				"Error: "+utils.GetErrorResponse(err).Error(),
-			)
-			return
-		}
-	}
-	var data NetModel
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-
-	if resp.Diagnostics.HasError() {
+	diag := updateOAPITagsFW(ctx, r.Client, stateData.Tags, planData.Tags, stateData.NetId.ValueString())
+	if utils.CheckDiags(resp, diag) {
 		return
 	}
 
-	data, err = setNetState(ctx, r, data)
+	data, err := setNetState(ctx, r, stateData)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to set net state",
@@ -305,7 +277,7 @@ func (r *netResource) Update(ctx context.Context, req resource.UpdateRequest, re
 	}
 }
 
-func (r *netResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *resourceNet) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var data NetModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -339,32 +311,7 @@ func (r *netResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 	}
 }
 
-func TagsSchema() *schema.SetNestedBlock {
-	return &schema.SetNestedBlock{
-		NestedObject: schema.NestedBlockObject{
-			Attributes: map[string]schema.Attribute{
-				"key": schema.StringAttribute{
-					Required: true,
-				},
-				"value": schema.StringAttribute{
-					Optional: true,
-					Computed: true,
-				},
-			},
-		},
-	}
-}
-
-func tagsToOSCResourceTag(tags []ResourceTag) []oscgo.ResourceTag {
-	result := make([]oscgo.ResourceTag, 0, len(tags))
-	for _, tag := range tags {
-		rTag := oscgo.NewResourceTag(tag.Key.ValueString(), tag.Value.ValueString())
-		result = append(result, *rTag)
-	}
-	return result
-}
-
-func setNetState(ctx context.Context, r *netResource, data NetModel) (NetModel, error) {
+func setNetState(ctx context.Context, r *resourceNet, data NetModel) (NetModel, error) {
 	netFilters := oscgo.FiltersNet{
 		NetIds: &[]string{data.NetId.ValueString()},
 	}
@@ -396,8 +343,13 @@ func setNetState(ctx context.Context, r *netResource, data NetModel) (NetModel, 
 	}
 
 	net := readResp.GetNets()[0]
+	tags, diag := flattenOAPITagsFW(ctx, net.GetTags())
+	if diag.HasError() {
+		return data, fmt.Errorf("unable to flatten tags: %v", diags.Errors())
+	}
+	data.Tags = tags
+
 	data.Id = types.StringValue(net.GetNetId())
-	data.Tags = getTagsFromApiResponse(net.GetTags())
 	data.NetId = types.StringValue(net.GetNetId())
 	data.DhcpOptionsSetId = types.StringValue(net.GetDhcpOptionsSetId())
 	data.IpRange = types.StringValue(net.GetIpRange())

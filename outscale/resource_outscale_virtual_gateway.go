@@ -62,7 +62,7 @@ func ResourceOutscaleVirtualGateway() *schema.Resource {
 				Optional: true,
 				Computed: true,
 			},
-			"tags": tagsListOAPISchema(),
+			"tags": TagsSchemaSDK(),
 		},
 	}
 }
@@ -108,7 +108,7 @@ func ResourceOutscaleVirtualGatewayCreate(d *schema.ResourceData, meta interface
 	d.SetId(virtualGateway.GetVirtualGatewayId())
 
 	if d.IsNewResource() {
-		if err := setOSCAPITags(conn, d); err != nil {
+		if err := updateOAPITagsSDK(conn, d); err != nil {
 			return err
 		}
 	}
@@ -166,14 +166,14 @@ func ResourceOutscaleVirtualGatewayRead(d *schema.ResourceData, meta interface{}
 	d.Set("virtual_gateway_id", virtualGateway.GetVirtualGatewayId())
 
 	d.Set("state", virtualGateway.State)
-	d.Set("tags", tagsOSCAPIToMap(virtualGateway.GetTags()))
+	d.Set("tags", flattenOAPITagsSDK(virtualGateway.GetTags()))
 
 	return nil
 }
 
 func ResourceOutscaleVirtualGatewayUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := updateOAPITagsSDK(conn, d); err != nil {
 		return err
 	}
 	return nil

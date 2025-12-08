@@ -124,7 +124,7 @@ func testAccCheckOAPITags(
 			"key":   key,
 			"value": value,
 		}
-		tags := tagsOSCAPIToMap(*ts)
+		tags := flattenOAPITagsSDK(*ts)
 		for _, tag := range tags {
 			if diff := deep.Equal(tag, expected); diff != nil {
 				continue
@@ -136,7 +136,7 @@ func testAccCheckOAPITags(
 }
 
 func checkOAPITags(ts []oscgo.ResourceTag, key, value string) error {
-	m := tagsOSCAPIToMap(ts)
+	m := flattenOAPITagsSDK(ts)
 	log.Printf("[DEBUG], tagsOAPIToMap=%+v", m)
 	tag := m[0]
 
@@ -160,7 +160,7 @@ func testAccCheckOAPIInstanceConfigTags(omi, vmType, region, key, value string) 
 
 			tag {
 				key   = "%s"
-				value = "%s"			
+				value = "%s"
 			}
 		}
 	`, omi, vmType, region, key, value)

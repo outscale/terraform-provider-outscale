@@ -54,7 +54,7 @@ func DataSourceOutscaleVirtualGateway() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": dataSourceTagsSchema(),
+			"tags": TagsSchemaComputedSDK(),
 		},
 	}
 }
@@ -120,7 +120,7 @@ func DataSourceOutscaleVirtualGatewayRead(d *schema.ResourceData, meta interface
 	d.Set("net_to_virtual_gateway_links", vs)
 	d.Set("state", aws.StringValue(vgw.State))
 	d.Set("connection_type", vgw.ConnectionType)
-	d.Set("tags", tagsOSCAPIToMap(vgw.GetTags()))
+	d.Set("tags", flattenOAPITagsSDK(vgw.GetTags()))
 
 	return nil
 }

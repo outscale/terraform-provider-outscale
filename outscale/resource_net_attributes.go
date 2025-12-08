@@ -31,7 +31,7 @@ type NetAttributesModel struct {
 	Timeouts         timeouts.Value `tfsdk:"timeouts"`
 	RequestId        types.String   `tfsdk:"request_id"`
 	Id               types.String   `tfsdk:"id"`
-	Tags             types.List     `tfsdk:"tags"`
+	TagsComputedModel
 }
 
 type resourceNetAttributes struct {
@@ -78,7 +78,7 @@ func (r *resourceNetAttributes) ImportState(ctx context.Context, req resource.Im
 		return
 	}
 	data.Timeouts = timeouts
-	data.Tags = types.ListNull(types.ObjectType{AttrTypes: tagAttrTypes})
+	data.Tags = ComputedTagsNull()
 
 	diags := resp.State.Set(ctx, &data)
 	resp.Diagnostics.Append(diags...)
@@ -132,7 +132,7 @@ func (r *resourceNetAttributes) Schema(ctx context.Context, _ resource.SchemaReq
 			"state": schema.StringAttribute{
 				Computed: true,
 			},
-			"tags": TagsSchemaComputedAttr(),
+			"tags": TagsSchemaComputedFW(),
 		},
 	}
 }
@@ -310,9 +310,9 @@ func (r *resourceNetAttributes) setNetAttributesState(ctx context.Context, data 
 
 	net := readResp.GetNets()[0]
 
-	tags, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: tagAttrTypes}, getTagsFromApiResponse(net.GetTags()))
-	if diags.HasError() {
-		return data, fmt.Errorf("Unable to convert Tags to the schema List. Error: %v: ", diags.Errors())
+	tags, diag := flattenOAPIComputedTagsFW(ctx, net.GetTags())
+	if diag.HasError() {
+		return data, fmt.Errorf("unable to flatten tags. Error: %v: ", diags.Errors())
 	}
 	data.Tags = tags
 	data.Id = types.StringValue(net.GetNetId())

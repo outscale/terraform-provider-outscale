@@ -208,7 +208,7 @@ func oapiVMDescriptionAttributes(set AttributeSetter, vm *oscgo.Vm) error {
 	if err := set("vm_initiated_shutdown_behavior", vm.GetVmInitiatedShutdownBehavior()); err != nil {
 		return err
 	}
-	if err := set("tags", getOscAPITagSet(vm.GetTags())); err != nil {
+	if err := set("tags", flattenOAPITagsSDK(vm.GetTags())); err != nil {
 		return err
 	}
 	return set("vm_type", vm.GetVmType())
@@ -231,7 +231,7 @@ func getbusToSet(bsu oscgo.BsuCreated, busTagsMaps map[string]interface{}, devic
 		"volume_id":             bsu.GetVolumeId(),
 		"state":                 bsu.GetState(),
 		"link_date":             bsu.GetLinkDate(),
-		"tags":                  getOscAPITagSet(busTagsMaps[deviceName].([]oscgo.ResourceTag)),
+		"tags":                  flattenOAPITagsSDK(busTagsMaps[deviceName].([]oscgo.ResourceTag)),
 	})
 	return
 }
@@ -494,7 +494,7 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
-								"tags": tagsListOAPISchema(),
+								"tags": TagsSchemaSDK(),
 							},
 						},
 					},

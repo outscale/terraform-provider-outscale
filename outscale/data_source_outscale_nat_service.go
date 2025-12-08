@@ -55,7 +55,7 @@ func DataSourceOutscaleNatService() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": dataSourceTagsSchema(),
+			"tags": TagsSchemaComputedSDK(),
 		},
 	}
 }
@@ -156,7 +156,7 @@ func ngOAPIDescriptionAttributes(d *schema.ResourceData, ng oscgo.NatService) er
 	if err := d.Set("public_ips", addresses); err != nil {
 		return err
 	}
-	if err := d.Set("tags", tagsOSCAPIToMap(ng.GetTags())); err != nil {
+	if err := d.Set("tags", flattenOAPITagsSDK(ng.GetTags())); err != nil {
 		return err
 	}
 

@@ -49,7 +49,7 @@ func ResourceOutscaleClientGateway() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": tagsListOAPISchema(),
+			"tags": TagsSchemaSDK(),
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -80,15 +80,12 @@ func ResourceOutscaleClientGatewayCreate(d *schema.ResourceData, meta interface{
 	if err != nil {
 		return err
 	}
-
-	if tags, ok := d.GetOk("tags"); ok {
-		err := assignTags(tags.(*schema.Set), *resp.GetClientGateway().ClientGatewayId, conn)
-		if err != nil {
-			return err
-		}
-	}
-
 	d.SetId(*resp.GetClientGateway().ClientGatewayId)
+
+	err = createOAPITagsSDK(conn, d)
+	if err != nil {
+		return err
+	}
 
 	return ResourceOutscaleClientGatewayRead(d, meta)
 }
@@ -135,7 +132,7 @@ func ResourceOutscaleClientGatewayRead(d *schema.ResourceData, meta interface{})
 	if err := d.Set("state", clientGateway.GetState()); err != nil {
 		return err
 	}
-	if err := d.Set("tags", tagsOSCAPIToMap(clientGateway.GetTags())); err != nil {
+	if err := d.Set("tags", flattenOAPITagsSDK(clientGateway.GetTags())); err != nil {
 		return err
 	}
 
@@ -145,7 +142,7 @@ func ResourceOutscaleClientGatewayRead(d *schema.ResourceData, meta interface{})
 func ResourceOutscaleClientGatewayUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := updateOAPITagsSDK(conn, d); err != nil {
 		return err
 	}
 

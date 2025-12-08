@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"reflect"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -33,8 +32,8 @@ type KeypairModel struct {
 	PublicKey          types.String   `tfsdk:"public_key"`
 	RequestId          types.String   `tfsdk:"request_id"`
 	Timeouts           timeouts.Value `tfsdk:"timeouts"`
-	Tags               []ResourceTag  `tfsdk:"tags"`
 	Id                 types.String   `tfsdk:"id"`
+	TagsModel
 }
 
 type resourceKeypair struct {
@@ -93,6 +92,8 @@ func (r *resourceKeypair) ImportState(ctx context.Context, req resource.ImportSt
 		return
 	}
 	data.Timeouts = timeouts
+	data.Tags = TagsNull()
+
 	diags := resp.State.Set(ctx, &data)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -108,7 +109,7 @@ func (r *resourceKeypair) Schema(ctx context.Context, _ resource.SchemaRequest, 
 	resp.Schema = schema.Schema{
 
 		Blocks: map[string]schema.Block{
-			"tags": TagsSchema(),
+			"tags": TagsSchemaFW(),
 			"timeouts": timeouts.Block(ctx, timeouts.Opts{
 				Create: true,
 				Read:   true,
@@ -196,17 +197,12 @@ func (r *resourceKeypair) Create(ctx context.Context, req resource.CreateRequest
 	if createReq.HasPublicKey() {
 		data.PublicKey = types.StringValue(createReq.GetPublicKey())
 	}
-	if len(data.Tags) > 0 {
-		err = createFrameworkTags(ctx, r.Client, tagsToOSCResourceTag(data.Tags), keypair.GetKeypairId())
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable to add Tags on outscale_keypair resource",
-				"Error: "+err.Error(),
-			)
-			return
-		}
 
+	diag := createOAPITagsFW(ctx, r.Client, data.Tags, keypair.GetKeypairId())
+	if utils.CheckDiags(resp, diag) {
+		return
 	}
+
 	data.PrivateKey = types.StringValue(keypair.GetPrivateKey())
 	if createReq.HasPublicKey() {
 		data.PublicKey = types.StringValue(createReq.GetPublicKey())
@@ -252,38 +248,19 @@ func (r *resourceKeypair) Read(ctx context.Context, req resource.ReadRequest, re
 }
 
 func (r *resourceKeypair) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var (
-		tagsPlan, tagsState []ResourceTag
-		resourceId          types.String
-		err                 error
-	)
-
-	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("tags"), &tagsPlan)...)
-	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("tags"), &tagsState)...)
-	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("keypair_id"), &resourceId)...)
+	var planData, stateData KeypairModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &planData)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &stateData)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	if !reflect.DeepEqual(tagsPlan, tagsState) {
-		toRemove, toCreate := diffOSCAPITags(tagsToOSCResourceTag(tagsPlan), tagsToOSCResourceTag(tagsState))
-		err := updateFrameworkTags(ctx, r.Client, toCreate, toRemove, resourceId.ValueString())
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable to update Tags on keypair resource",
-				"Error: "+err.Error(),
-			)
-			return
-		}
-	}
-
-	var data KeypairModel
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
+	diag := updateOAPITagsFW(ctx, r.Client, stateData.Tags, planData.Tags, stateData.KeypairId.ValueString())
+	if utils.CheckDiags(resp, diag) {
 		return
 	}
 
-	err = setKeypairState(ctx, r, &data)
+	err := setKeypairState(ctx, r, &stateData)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to set keypair state after tags updating.",
@@ -292,7 +269,7 @@ func (r *resourceKeypair) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &stateData)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -363,7 +340,11 @@ func setKeypairState(ctx context.Context, r *resourceKeypair, data *KeypairModel
 	}
 
 	keypair := readResp.GetKeypairs()[0]
-	data.Tags = getTagsFromApiResponse(keypair.GetTags())
+	tags, diag := flattenOAPITagsFW(ctx, keypair.GetTags())
+	if diag.HasError() {
+		return fmt.Errorf("unable to flatten tags: %v", diags.Errors())
+	}
+	data.Tags = tags
 	data.KeypairFingerprint = types.StringValue(keypair.GetKeypairFingerprint())
 	data.KeypairName = types.StringValue(keypair.GetKeypairName())
 	data.KeypairType = types.StringValue(keypair.GetKeypairType())

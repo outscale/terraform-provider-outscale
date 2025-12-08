@@ -105,7 +105,7 @@ func ResourceOutscaleVM() *schema.Resource {
 										Type:     schema.TypeString,
 										Optional: true,
 									},
-									"tags": tagsListOAPISchema(),
+									"tags": TagsSchemaSDK(),
 								},
 							},
 						},
@@ -626,7 +626,7 @@ func ResourceOutscaleVM() *schema.Resource {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"tags": tagsListOAPISchema(),
+									"tags": TagsSchemaSDK(),
 								},
 							},
 						},
@@ -741,7 +741,7 @@ func ResourceOutscaleVM() *schema.Resource {
 				Type:     schema.TypeBool,
 				Optional: true,
 			},
-			"tags": tagsListOAPISchema(),
+			"tags": TagsSchemaSDK(),
 		},
 	}
 }
@@ -803,21 +803,15 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if bsuMapsTags != nil {
-		for _, tMaps := range bsuMapsTags {
-			for dName, tags := range tMaps {
-				err := assignTags(tags.(*schema.Set), utils.GetBsuId(vm, dName), conn)
-				if err != nil {
-					return err
-				}
-			}
-		}
-	}
-
-	if tags, ok := d.GetOk("tags"); ok {
-		err := assignTags(tags.(*schema.Set), vm.GetVmId(), conn)
+		err := createBsuTags(conn, vm, bsuMapsTags)
 		if err != nil {
 			return err
 		}
+	}
+
+	err = createOAPITagsSDK(conn, d)
+	if err != nil {
+		return err
 	}
 
 	stateConf := &resource.StateChangeConf{
@@ -858,6 +852,65 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 	return resourceOAPIVMRead(d, meta)
+}
+
+func createBsuTags(client *oscgo.APIClient, vm oscgo.Vm, bsuMapsTags []map[string]interface{}) error {
+	for _, tMaps := range bsuMapsTags {
+		for dName, tagsSchema := range tMaps {
+			set := tagsSchema.(*schema.Set)
+			tags := expandOAPITagsSDK(set)
+			id := utils.GetBsuId(vm, dName)
+
+			err := createOAPITags(context.Background(), client, tags, id)
+			if err != nil {
+				return fmt.Errorf("unable to create tags: %s", err)
+			}
+		}
+	}
+	return nil
+}
+
+func updateBsuTags(client *oscgo.APIClient, d *schema.ResourceData, addTags map[string]interface{}, delTags map[string]interface{}) error {
+	var resp oscgo.ReadVmsResponse
+	err := resource.Retry(60*time.Second, func() *resource.RetryError {
+		rp, httpResp, err := client.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
+			Filters: &oscgo.FiltersVm{
+				VmIds: &[]string{d.Id()},
+			},
+		}).Execute()
+
+		if err != nil {
+			return utils.CheckThrottling(httpResp, err)
+		}
+		resp = rp
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	var empty []oscgo.ResourceTag
+	if delTags != nil {
+		for dName := range delTags {
+			id := utils.GetBsuId(resp.GetVms()[0], dName)
+			toRemove := expandOAPITagsSDK(delTags[dName].(*schema.Set))
+			err := updateOAPITags(context.Background(), client, empty, toRemove, id)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	if addTags != nil {
+		for dName := range addTags {
+			id := utils.GetBsuId(resp.GetVms()[0], dName)
+			toAdd := expandOAPITagsSDK(addTags[dName].(*schema.Set))
+			err := updateOAPITags(context.Background(), client, toAdd, empty, id)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
@@ -1133,7 +1186,7 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := updateOAPITagsSDK(conn, d); err != nil {
 		return err
 	}
 

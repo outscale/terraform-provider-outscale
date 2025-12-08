@@ -34,7 +34,7 @@ func DataSourceOutscaleRouteTable() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": dataSourceTagsSchema(),
+			"tags": TagsSchemaComputedSDK(),
 			"routes": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -274,7 +274,7 @@ func DataSourceOutscaleRouteTableRead(d *schema.ResourceData, meta interface{}) 
 	if err := d.Set("net_id", rt.GetNetId()); err != nil {
 		return err
 	}
-	if err := d.Set("tags", tagsOSCAPIToMap(rt.GetTags())); err != nil {
+	if err := d.Set("tags", flattenOAPITagsSDK(rt.GetTags())); err != nil {
 		return err
 	}
 	if err := d.Set("routes", setOSCAPIRoutes(rt.GetRoutes())); err != nil {

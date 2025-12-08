@@ -43,7 +43,7 @@ func DataSourceOutscaleVpcAttr() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": dataSourceTagsSchema(),
+			"tags": TagsSchemaComputedSDK(),
 		},
 	}
 }
@@ -86,5 +86,5 @@ func DataSourceOutscaleVpcAttrRead(d *schema.ResourceData, meta interface{}) err
 	d.Set("net_id", resp.GetNets()[0].GetNetId())
 	d.Set("state", resp.GetNets()[0].GetState())
 
-	return d.Set("tags", tagsOSCAPIToMap(resp.GetNets()[0].GetTags()))
+	return d.Set("tags", flattenOAPITagsSDK(resp.GetNets()[0].GetTags()))
 }

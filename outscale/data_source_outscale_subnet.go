@@ -37,7 +37,7 @@ func DataSourceOutscaleSubnet() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": dataSourceTagsSchema(),
+			"tags": TagsSchemaComputedSDK(),
 			"net_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -122,7 +122,7 @@ func DataSourceOutscaleSubnetRead(d *schema.ResourceData, meta interface{}) erro
 	if err := d.Set("map_public_ip_on_launch", subnet.GetMapPublicIpOnLaunch()); err != nil {
 		return err
 	}
-	if err := d.Set("tags", tagsOSCAPIToMap(subnet.GetTags())); err != nil {
+	if err := d.Set("tags", flattenOAPITagsSDK(subnet.GetTags())); err != nil {
 		return err
 	}
 	if err := d.Set("available_ips_count", subnet.GetAvailableIpsCount()); err != nil {

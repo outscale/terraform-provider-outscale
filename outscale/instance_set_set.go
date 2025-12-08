@@ -197,7 +197,7 @@ func getOAPIVMNetworkInterfaceSet(nics []oscgo.Nic) (res []map[string]interface{
 			"state":                  nic.GetState(),
 			"subnet_id":              nic.GetSubnetId(),
 			"subregion_name":         nic.GetSubregionName(),
-			"tags":                   getOapiTagSet(nic.Tags),
+			"tags":                   flattenOAPITagsSDK(nic.GetTags()),
 		}
 		if _, ok := nic.GetLinkNicOk(); ok {
 			r["link_nic"] = getOAPILinkNic(nic.GetLinkNic())

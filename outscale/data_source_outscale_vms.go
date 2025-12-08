@@ -137,7 +137,7 @@ func dataSourceOAPIVMS(i []oscgo.Vm, conn *oscgo.APIClient) []map[string]interfa
 		mapsTags, _ := utils.GetBsuTagsMaps(v, conn)
 		vm["block_device_mappings_created"] = getOscAPIVMBlockDeviceMapping(mapsTags, v.GetBlockDeviceMappings())
 
-		vm["tags"] = getOscAPITagSet(v.GetTags())
+		vm["tags"] = flattenOAPITagsSDK(v.GetTags())
 		vms[index] = vm
 	}
 	return vms

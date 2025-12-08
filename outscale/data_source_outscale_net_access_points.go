@@ -42,7 +42,7 @@ func napSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"tags": dataSourceTagsSchema(),
+					"tags": TagsSchemaComputedSDK(),
 				},
 			},
 		},
@@ -135,7 +135,7 @@ func DataSourceOutscaleNetAccessPointsRead(d *schema.ResourceData, meta interfac
 		n["net_id"] = v.NetId
 		n["service_name"] = v.ServiceName
 		n["state"] = v.State
-		n["tags"] = tagsOSCAPIToMap(v.GetTags())
+		n["tags"] = flattenOAPITagsSDK(v.GetTags())
 		nap_ret[k] = n
 	}
 

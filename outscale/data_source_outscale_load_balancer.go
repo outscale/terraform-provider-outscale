@@ -43,7 +43,7 @@ func attrLBchema() map[string]*schema.Schema {
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 		"source_security_group": lb_sg_schema(),
-		"tags":                  tagsListOAPISchema2(true),
+		"tags":                  TagsSchemaComputedSDK(),
 		"dns_name": {
 			Type:     schema.TypeString,
 			Computed: true,

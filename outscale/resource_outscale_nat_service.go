@@ -66,7 +66,7 @@ func ResourceOutscaleNatService() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": tagsListOAPISchema(),
+			"tags": TagsSchemaSDK(),
 		},
 	}
 }
@@ -119,15 +119,12 @@ func resourceOAPINatServiceCreate(d *schema.ResourceData, meta interface{}) erro
 	if _, err := stateConf.WaitForState(); err != nil {
 		return fmt.Errorf("error waiting for NAT Service (%s) to become available: %s", natService.GetNatServiceId(), err)
 	}
-	//SetTags
-	if tags, ok := d.GetOk("tags"); ok {
-		err := assignTags(tags.(*schema.Set), natService.GetNatServiceId(), conn)
-		if err != nil {
-			return err
-		}
-	}
-
 	d.SetId(natService.GetNatServiceId())
+
+	err = createOAPITagsSDK(conn, d)
+	if err != nil {
+		return err
+	}
 
 	return resourceOAPINatServiceRead(d, meta)
 }
@@ -188,7 +185,7 @@ func resourceOAPINatServiceRead(d *schema.ResourceData, meta interface{}) error 
 			}
 		}
 
-		if err := d.Set("tags", tagsOSCAPIToMap(natService.GetTags())); err != nil {
+		if err := d.Set("tags", flattenOAPITagsSDK(natService.GetTags())); err != nil {
 			fmt.Printf("[WARN] ERROR TAGS PROBLEME (%s)", err)
 		}
 
@@ -199,7 +196,7 @@ func resourceOAPINatServiceRead(d *schema.ResourceData, meta interface{}) error 
 func ResourceOutscaleNatServiceUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := updateOAPITagsSDK(conn, d); err != nil {
 		return err
 	}
 	return resourceOAPINatServiceRead(d, meta)

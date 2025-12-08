@@ -42,7 +42,7 @@ func DataSourceOutscaleLinPeeringConnection() *schema.Resource {
 					},
 				},
 			},
-			"tags": dataSourceTagsSchema(),
+			"tags": TagsSchemaComputedSDK(),
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -153,7 +153,7 @@ func DataSourceOutscaleLinPeeringConnectionRead(d *schema.ResourceData, meta int
 	if err := d.Set("net_peering_id", netPeering.GetNetPeeringId()); err != nil {
 		return err
 	}
-	if err := d.Set("tags", tagsOSCAPIToMap(netPeering.GetTags())); err != nil {
+	if err := d.Set("tags", flattenOAPITagsSDK(netPeering.GetTags())); err != nil {
 		return errwrap.Wrapf("Error setting Net Peering tags: {{err}}", err)
 	}
 

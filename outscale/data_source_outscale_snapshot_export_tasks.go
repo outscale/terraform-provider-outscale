@@ -77,7 +77,7 @@ func DataSourceOutscaleSnapshotExportTasks() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"tags": dataSourceTagsSchema(),
+						"tags": TagsSchemaComputedSDK(),
 					},
 				},
 			},
@@ -144,7 +144,7 @@ func dataSourceOAPISnapshotExportTasksRead(d *schema.ResourceData, meta interfac
 		snapshot["snapshot_id"] = v.GetSnapshotId()
 		snapshot["osu_export"] = exp
 
-		snapshot["tags"] = tagsOSCAPIToMap(v.GetTags())
+		snapshot["tags"] = flattenOAPITagsSDK(v.GetTags())
 
 		snapshots[k] = snapshot
 	}

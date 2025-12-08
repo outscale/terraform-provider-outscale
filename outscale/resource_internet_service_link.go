@@ -25,14 +25,13 @@ var (
 )
 
 type InternetServiceLinkModel struct {
-	InternetServiceId types.String `tfsdk:"internet_service_id"`
-	NetId             types.String `tfsdk:"net_id"`
-	State             types.String `tfsdk:"state"`
-	Tags              types.List   `tfsdk:"tags"`
-
-	RequestId types.String   `tfsdk:"request_id"`
-	Timeouts  timeouts.Value `tfsdk:"timeouts"`
-	Id        types.String   `tfsdk:"id"`
+	InternetServiceId types.String   `tfsdk:"internet_service_id"`
+	NetId             types.String   `tfsdk:"net_id"`
+	State             types.String   `tfsdk:"state"`
+	RequestId         types.String   `tfsdk:"request_id"`
+	Timeouts          timeouts.Value `tfsdk:"timeouts"`
+	Id                types.String   `tfsdk:"id"`
+	TagsComputedModel
 }
 
 type resourceInternetServiceLink struct {
@@ -80,8 +79,7 @@ func (r *resourceInternetServiceLink) ImportState(ctx context.Context, req resou
 		return
 	}
 	data.Timeouts = timeouts
-
-	data.Tags = types.ListNull(types.ObjectType{AttrTypes: tagAttrTypes})
+	data.Tags = ComputedTagsNull()
 
 	diags := resp.State.Set(ctx, &data)
 	resp.Diagnostics.Append(diags...)
@@ -136,7 +134,7 @@ func (r *resourceInternetServiceLink) Schema(ctx context.Context, _ resource.Sch
 			"request_id": schema.StringAttribute{
 				Computed: true,
 			},
-			"tags": TagsSchemaComputedAttr(),
+			"tags": TagsSchemaComputedFW(),
 		},
 	}
 }
@@ -290,9 +288,9 @@ func setInternetServiceLinkState(ctx context.Context, r *resourceInternetService
 
 	internetService := readResp.GetInternetServices()[0]
 
-	tags, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: tagAttrTypes}, getTagsFromApiResponse(internetService.GetTags()))
-	if diags.HasError() {
-		return data, fmt.Errorf("unable to convert Tags to the schema List. Error: %v: ", diags.Errors())
+	tags, diag := flattenOAPIComputedTagsFW(ctx, internetService.GetTags())
+	if diag.HasError() {
+		return data, fmt.Errorf("unable to convert flatten tags: %v", diags.Errors())
 	}
 	data.Tags = tags
 

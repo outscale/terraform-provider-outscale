@@ -94,7 +94,7 @@ func DataSourceOutscaleSnapshots() *schema.Resource {
 								},
 							},
 						},
-						"tags": dataSourceTagsSchema(),
+						"tags": TagsSchemaComputedSDK(),
 					},
 				},
 			},
@@ -173,7 +173,7 @@ func DataSourceOutscaleSnapshotsRead(d *schema.ResourceData, meta interface{}) e
 		snapshot["state"] = v.GetState()
 		snapshot["volume_id"] = v.GetVolumeId()
 		snapshot["volume_size"] = v.GetVolumeSize()
-		snapshot["tags"] = tagsOSCAPIToMap(v.GetTags())
+		snapshot["tags"] = flattenOAPITagsSDK(v.GetTags())
 
 		lp := make([]map[string]interface{}, 1)
 		lp[0] = make(map[string]interface{})

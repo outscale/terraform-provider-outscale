@@ -58,12 +58,9 @@ func ResourceOutscalePublicIPCreate(d *schema.ResourceData, meta interface{}) er
 
 	d.SetId(allocResp.PublicIp.GetPublicIpId())
 
-	//SetTags
-	if tags, ok := d.GetOk("tags"); ok {
-		err := assignTags(tags.(*schema.Set), *allocResp.GetPublicIp().PublicIpId, conn)
-		if err != nil {
-			return err
-		}
+	err = createOAPITagsSDK(conn, d)
+	if err != nil {
+		return err
 	}
 
 	log.Printf("[INFO] EIP ID: %s (placement: %v)", d.Id(), allocResp.GetPublicIp())
@@ -126,7 +123,7 @@ func ResourceOutscalePublicIPRead(d *schema.ResourceData, meta interface{}) erro
 		return err
 	}
 
-	if err := d.Set("tags", tagsOSCAPIToMap(publicIP.GetTags())); err != nil {
+	if err := d.Set("tags", flattenOAPITagsSDK(publicIP.GetTags())); err != nil {
 		log.Printf("[WARN] error setting tags for PublicIp(%s): %s", publicIP.GetPublicIp(), err)
 	}
 
@@ -182,7 +179,7 @@ func ResourceOutscalePublicIPUpdate(d *schema.ResourceData, meta interface{}) er
 
 	}
 
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := updateOAPITagsSDK(conn, d); err != nil {
 		return err
 	}
 	return ResourceOutscalePublicIPRead(d, meta)
@@ -285,7 +282,7 @@ func getOAPIPublicIPSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"tags": tagsListOAPISchema(),
+		"tags": TagsSchemaSDK(),
 	}
 }
 

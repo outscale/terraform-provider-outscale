@@ -225,7 +225,7 @@ func getOAPINicSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"tags": tagsListOAPISchema(),
+		"tags": TagsSchemaSDK(),
 		"net_id": {
 			Type:     schema.TypeString,
 			Computed: true,
@@ -270,7 +270,7 @@ func ResourceOutscaleNicCreate(d *schema.ResourceData, meta interface{}) error {
 	d.SetId(resp.Nic.GetNicId())
 
 	if d.IsNewResource() {
-		if err := setOSCAPITags(conn, d); err != nil {
+		if err := updateOAPITagsSDK(conn, d); err != nil {
 			return err
 		}
 	}
@@ -364,7 +364,7 @@ func ResourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 	if err := d.Set("state", eni.GetState()); err != nil {
 		return err
 	}
-	if err := d.Set("tags", tagsOSCAPIToMap(eni.GetTags())); err != nil {
+	if err := d.Set("tags", flattenOAPITagsSDK(eni.GetTags())); err != nil {
 		return err
 	}
 	if err := d.Set("net_id", eni.GetNetId()); err != nil {
@@ -534,7 +534,7 @@ func ResourceOutscaleNicUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := updateOAPITagsSDK(conn, d); err != nil {
 		return err
 	}
 	return ResourceOutscaleNicRead(d, meta)

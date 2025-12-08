@@ -221,7 +221,7 @@ func ResourceOutscaleImage() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": tagsListOAPISchema(),
+			"tags": TagsSchemaSDK(),
 			"vm_id": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -317,15 +317,12 @@ func resourceOAPIImageCreate(d *schema.ResourceData, meta interface{}) error {
 	if _, err = stateConf.WaitForStateContext(context.Background()); err != nil {
 		return fmt.Errorf("Error waiting for OMI (%s) to be ready: %w", *image.ImageId, err)
 	}
+	d.SetId(image.GetImageId())
 
-	if tags, ok := d.GetOk("tags"); ok {
-		err := assignTags(tags.(*schema.Set), image.GetImageId(), conn)
-		if err != nil {
-			return err
-		}
+	err = createOAPITagsSDK(conn, d)
+	if err != nil {
+		return err
 	}
-
-	d.SetId(*image.ImageId)
 
 	return resourceOAPIImageRead(d, meta)
 }
@@ -412,7 +409,7 @@ func resourceOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
 		if err := set("permissions_to_launch", setResourcePermissions(*image.PermissionsToLaunch)); err != nil {
 			return err
 		}
-		if err := d.Set("tags", tagsOSCAPIToMap(image.GetTags())); err != nil {
+		if err := d.Set("tags", flattenOAPITagsSDK(image.GetTags())); err != nil {
 			return fmt.Errorf("Unable to set image tags: %w", err)
 		}
 
@@ -432,7 +429,7 @@ func setResourcePermissions(por oscgo.PermissionsOnResource) []map[string]interf
 func resourceOAPIImageUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := updateOAPITagsSDK(conn, d); err != nil {
 		return err
 	}
 	return resourceOAPIImageRead(d, meta)

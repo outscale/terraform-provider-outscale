@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"reflect"
 	"strings"
 	"time"
 
@@ -29,20 +28,19 @@ var (
 )
 
 type NetPeeringModel struct {
-	AccepterNet        types.List    `tfsdk:"accepter_net"`
-	ExpirationDate     types.String  `tfsdk:"expiration_date"`
-	NetPeeringId       types.String  `tfsdk:"net_peering_id"`
-	SourceNet          types.List    `tfsdk:"source_net"`
-	State              types.List    `tfsdk:"state"`
-	AccepterOwnerId    types.String  `tfsdk:"accepter_owner_id"`
-	SourceNetAccountId types.String  `tfsdk:"source_net_account_id"`
-	AccepterNetId      types.String  `tfsdk:"accepter_net_id"`
-	SourceNetId        types.String  `tfsdk:"source_net_id"`
-	Tags               []ResourceTag `tfsdk:"tags"`
-
-	RequestId types.String   `tfsdk:"request_id"`
-	Timeouts  timeouts.Value `tfsdk:"timeouts"`
-	Id        types.String   `tfsdk:"id"`
+	AccepterNet        types.List     `tfsdk:"accepter_net"`
+	ExpirationDate     types.String   `tfsdk:"expiration_date"`
+	NetPeeringId       types.String   `tfsdk:"net_peering_id"`
+	SourceNet          types.List     `tfsdk:"source_net"`
+	State              types.List     `tfsdk:"state"`
+	AccepterOwnerId    types.String   `tfsdk:"accepter_owner_id"`
+	SourceNetAccountId types.String   `tfsdk:"source_net_account_id"`
+	AccepterNetId      types.String   `tfsdk:"accepter_net_id"`
+	SourceNetId        types.String   `tfsdk:"source_net_id"`
+	RequestId          types.String   `tfsdk:"request_id"`
+	Timeouts           timeouts.Value `tfsdk:"timeouts"`
+	Id                 types.String   `tfsdk:"id"`
+	TagsModel
 }
 
 type NetPeerModel struct {
@@ -138,6 +136,7 @@ func (r *resourceNetPeering) ImportState(ctx context.Context, req resource.Impor
 	data.State = types.ListNull(types.ObjectType{AttrTypes: stateAttrTypes})
 	data.SourceNet = types.ListNull(types.ObjectType{AttrTypes: netAttrTypes})
 	data.AccepterNet = types.ListNull(types.ObjectType{AttrTypes: netAttrTypes})
+	data.Tags = TagsNull()
 
 	diags := resp.State.Set(ctx, &data)
 	resp.Diagnostics.Append(diags...)
@@ -164,7 +163,7 @@ func (r *resourceNetPeering) ModifyPlan(ctx context.Context, req resource.Modify
 func (r *resourceNetPeering) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Blocks: map[string]schema.Block{
-			"tags": TagsSchema(),
+			"tags": TagsSchemaFW(),
 			"timeouts": timeouts.Block(ctx, timeouts.Opts{
 				Create: true,
 				Read:   true,
@@ -312,15 +311,9 @@ func (r *resourceNetPeering) Create(ctx context.Context, req resource.CreateRequ
 	data.RequestId = types.StringValue(createResp.ResponseContext.GetRequestId())
 	netPeering := createResp.GetNetPeering()
 
-	if len(data.Tags) > 0 {
-		err = createFrameworkTags(ctx, r.Client, tagsToOSCResourceTag(data.Tags), netPeering.GetNetPeeringId())
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable to add Tags on outscale_net_peering resource",
-				err.Error(),
-			)
-			return
-		}
+	diag := createOAPITagsFW(ctx, r.Client, data.Tags, netPeering.GetNetPeeringId())
+	if utils.CheckDiags(resp, diag) {
+		return
 	}
 
 	stateConf := &retry.StateChangeConf{
@@ -386,38 +379,19 @@ func (r *resourceNetPeering) Read(ctx context.Context, req resource.ReadRequest,
 }
 
 func (r *resourceNetPeering) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var (
-		tagsPlan, tagsState []ResourceTag
-		resourceId          types.String
-		err                 error
-	)
-
-	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("tags"), &tagsPlan)...)
-	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("tags"), &tagsState)...)
-	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("net_peering_id"), &resourceId)...)
+	var planData, stateData NetPeeringModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &planData)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &stateData)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	if !reflect.DeepEqual(tagsPlan, tagsState) {
-		toRemove, toCreate := diffOSCAPITags(tagsToOSCResourceTag(tagsPlan), tagsToOSCResourceTag(tagsState))
-		err := updateFrameworkTags(ctx, r.Client, toCreate, toRemove, resourceId.ValueString())
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable to update Tags on Net Peering resource.",
-				err.Error(),
-			)
-			return
-		}
-	}
-
-	var data NetPeeringModel
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
+	diag := updateOAPITagsFW(ctx, r.Client, stateData.Tags, planData.Tags, stateData.NetPeeringId.ValueString())
+	if utils.CheckDiags(resp, diag) {
 		return
 	}
 
-	data, err = setNetPeeringState(ctx, r, data)
+	data, err := setNetPeeringState(ctx, r, stateData)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to set Net Peering state.",
@@ -497,7 +471,11 @@ func setNetPeeringState(ctx context.Context, r *resourceNetPeering, data NetPeer
 	}
 
 	netPeering := readResp.GetNetPeerings()[0]
-	data.Tags = getTagsFromApiResponse(netPeering.GetTags())
+	tags, diag := flattenOAPITagsFW(ctx, netPeering.GetTags())
+	if diag.HasError() {
+		return data, fmt.Errorf("unable to flatten tags: %v", diags.Errors())
+	}
+	data.Tags = tags
 
 	sourceNet, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: netAttrTypes}, SourceNetToList(netPeering.GetSourceNet()))
 	if diags.HasError() {

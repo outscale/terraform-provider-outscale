@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"reflect"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -26,14 +25,13 @@ var (
 )
 
 type InternetServiceModel struct {
-	InternetServiceId types.String  `tfsdk:"internet_service_id"`
-	NetId             types.String  `tfsdk:"net_id"`
-	State             types.String  `tfsdk:"state"`
-	Tags              []ResourceTag `tfsdk:"tags"`
-
-	RequestId types.String   `tfsdk:"request_id"`
-	Timeouts  timeouts.Value `tfsdk:"timeouts"`
-	Id        types.String   `tfsdk:"id"`
+	InternetServiceId types.String   `tfsdk:"internet_service_id"`
+	NetId             types.String   `tfsdk:"net_id"`
+	State             types.String   `tfsdk:"state"`
+	RequestId         types.String   `tfsdk:"request_id"`
+	Timeouts          timeouts.Value `tfsdk:"timeouts"`
+	Id                types.String   `tfsdk:"id"`
+	TagsModel
 }
 
 type resourceInternetService struct {
@@ -81,6 +79,8 @@ func (r *resourceInternetService) ImportState(ctx context.Context, req resource.
 		return
 	}
 	data.Timeouts = timeouts
+	data.Tags = TagsNull()
+
 	diags := resp.State.Set(ctx, &data)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -105,7 +105,7 @@ func (r *resourceInternetService) ModifyPlan(ctx context.Context, req resource.M
 func (r *resourceInternetService) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Blocks: map[string]schema.Block{
-			"tags": TagsSchema(),
+			"tags": TagsSchemaFW(),
 			"timeouts": timeouts.Block(ctx, timeouts.Opts{
 				Create: true,
 				Read:   true,
@@ -174,15 +174,9 @@ func (r *resourceInternetService) Create(ctx context.Context, req resource.Creat
 	data.RequestId = types.StringValue(createResp.ResponseContext.GetRequestId())
 	internetService := createResp.GetInternetService()
 
-	if len(data.Tags) > 0 {
-		err = createFrameworkTags(ctx, r.Client, tagsToOSCResourceTag(data.Tags), internetService.GetInternetServiceId())
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable to add Tags on outscale_internet_service resource.",
-				err.Error(),
-			)
-			return
-		}
+	diag := createOAPITagsFW(ctx, r.Client, data.Tags, internetService.GetInternetServiceId())
+	if utils.CheckDiags(resp, diag) {
+		return
 	}
 
 	data.InternetServiceId = types.StringValue(internetService.GetInternetServiceId())
@@ -240,16 +234,9 @@ func (r *resourceInternetService) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
-	if !reflect.DeepEqual(planData.Tags, stateData.Tags) {
-		toRemove, toCreate := diffOSCAPITags(tagsToOSCResourceTag(planData.Tags), tagsToOSCResourceTag(stateData.Tags))
-		err := updateFrameworkTags(ctx, r.Client, toCreate, toRemove, stateData.InternetServiceId.ValueString())
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable to update Tags on Internet Service resource.",
-				err.Error(),
-			)
-			return
-		}
+	diag := updateOAPITagsFW(ctx, r.Client, stateData.Tags, planData.Tags, stateData.InternetServiceId.ValueString())
+	if utils.CheckDiags(resp, diag) {
+		return
 	}
 
 	stateData, err := setInternetServiceState(ctx, r, planData)
@@ -332,7 +319,11 @@ func setInternetServiceState(ctx context.Context, r *resourceInternetService, da
 
 	internetService := readResp.GetInternetServices()[0]
 
-	data.Tags = getTagsFromApiResponse(internetService.GetTags())
+	tags, diag := flattenOAPITagsFW(ctx, internetService.GetTags())
+	if diag.HasError() {
+		return data, fmt.Errorf("unable to flatten tags: %v", diags.Errors())
+	}
+	data.Tags = tags
 	data.RequestId = types.StringValue(readResp.ResponseContext.GetRequestId())
 	data.NetId = types.StringValue(internetService.GetNetId())
 	data.State = types.StringValue(internetService.GetState())

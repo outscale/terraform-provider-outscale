@@ -206,7 +206,7 @@ func DataSourceOutscaleNic() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": dataSourceTagsSchema(),
+			"tags": TagsSchemaComputedSDK(),
 			"net_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -322,7 +322,7 @@ func DataSourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 	if err := d.Set("state", eni.GetState()); err != nil {
 		return err
 	}
-	if err := d.Set("tags", tagsOSCAPIToMap(eni.GetTags())); err != nil {
+	if err := d.Set("tags", flattenOAPITagsSDK(eni.GetTags())); err != nil {
 		return err
 	}
 	if err := d.Set("net_id", eni.GetNetId()); err != nil {
