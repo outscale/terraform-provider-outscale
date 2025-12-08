@@ -43,7 +43,7 @@ func DataSourceOutscaleInternetServices() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"tags": dataSourceTagsSchema(),
+						"tags": TagsSchemaComputedSDK(),
 					},
 				},
 			},
@@ -128,7 +128,7 @@ func internetServicesOAPIDescriptionAttributes(d *schema.ResourceData, internetS
 			im["internet_service_id"] = v.GetInternetServiceId()
 		}
 		if v.Tags != nil {
-			im["tags"] = tagsOSCAPIToMap(v.GetTags())
+			im["tags"] = flattenOAPITagsSDK(v.GetTags())
 		}
 		i[k] = im
 	}

@@ -63,7 +63,7 @@ func ResourceOutscaleDHCPOption() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": tagsListOAPISchema(),
+			"tags": TagsSchemaSDK(),
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -102,15 +102,12 @@ func ResourceOutscaleDHCPOptionCreate(d *schema.ResourceData, meta interface{}) 
 	if err != nil {
 		return err
 	}
-
-	if tags, ok := d.GetOk("tags"); ok {
-		err := assignTags(tags.(*schema.Set), dhcp.GetDhcpOptionsSetId(), conn)
-		if err != nil {
-			return err
-		}
-	}
-
 	d.SetId(dhcp.GetDhcpOptionsSetId())
+
+	err = createOAPITagsSDK(conn, d)
+	if err != nil {
+		return err
+	}
 
 	return ResourceOutscaleDHCPOptionRead(d, meta)
 }
@@ -149,7 +146,7 @@ func ResourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) er
 	if err := d.Set("dhcp_options_set_id", dhcp.GetDhcpOptionsSetId()); err != nil {
 		return err
 	}
-	if err := d.Set("tags", tagsOSCAPIToMap(dhcp.GetTags())); err != nil {
+	if err := d.Set("tags", flattenOAPITagsSDK(dhcp.GetTags())); err != nil {
 		return err
 	}
 
@@ -159,7 +156,7 @@ func ResourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) er
 func ResourceOutscaleDHCPOptionUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := updateOAPITagsSDK(conn, d); err != nil {
 		return err
 	}
 	return ResourceOutscaleDHCPOptionRead(d, meta)

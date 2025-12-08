@@ -195,7 +195,7 @@ func ResourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"tags": tagsListOAPISchema2(true),
+			"tags": TagsSchemaComputedSDK(),
 
 			"dns_name": {
 				Type:     schema.TypeString,

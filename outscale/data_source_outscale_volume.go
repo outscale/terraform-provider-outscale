@@ -79,7 +79,7 @@ func DataSourceOutscaleVolume() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": dataSourceTagsSchema(),
+			"tags": TagsSchemaComputedSDK(),
 			"volume_id": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -196,7 +196,7 @@ func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oscgo.Volum
 	}
 
 	if volume.GetTags() != nil {
-		if err := d.Set("tags", tagsOSCAPIToMap(volume.GetTags())); err != nil {
+		if err := d.Set("tags", flattenOAPITagsSDK(volume.GetTags())); err != nil {
 			return err
 		}
 	} else {

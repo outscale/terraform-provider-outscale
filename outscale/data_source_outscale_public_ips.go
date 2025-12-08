@@ -58,7 +58,7 @@ func oapiGetPublicIPSDataSourceSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"tags": dataSourceTagsSchema(),
+					"tags": TagsSchemaComputedSDK(),
 				},
 			},
 		},
@@ -125,7 +125,7 @@ func DataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{}) e
 		add["nic_account_id"] = v.NicAccountId
 		add["private_ip"] = v.PrivateIp
 		add["public_ip"] = v.PublicIp
-		add["tags"] = getOapiTagSet(v.Tags)
+		add["tags"] = flattenOAPITagsSDK(v.GetTags())
 		address[k] = add
 	}
 

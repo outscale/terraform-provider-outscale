@@ -77,7 +77,7 @@ func DataSourceOutscaleSnapshot() *schema.Resource {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			"tags": dataSourceTagsSchema(),
+			"tags": TagsSchemaComputedSDK(),
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -186,7 +186,7 @@ func snapshotOAPIDescriptionAttributes(d *schema.ResourceData, snapshot *oscgo.S
 		return err
 	}
 
-	return d.Set("tags", tagsOSCAPIToMap(snapshot.GetTags()))
+	return d.Set("tags", flattenOAPITagsSDK(snapshot.GetTags()))
 }
 
 func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set) (*oscgo.FiltersSnapshot, error) {

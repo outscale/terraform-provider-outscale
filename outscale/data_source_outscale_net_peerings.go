@@ -48,7 +48,7 @@ func DataSourceOutscaleLinPeeringsConnection() *schema.Resource {
 								},
 							},
 						},
-						"tags": dataSourceTagsSchema(),
+						"tags": TagsSchemaComputedSDK(),
 					},
 				},
 			},
@@ -125,7 +125,7 @@ func setNetPeeringsAttributtes(peerings []oscgo.NetPeering) (res []map[string]in
 			netP["state"] = getOAPINetPeeringState(p.GetState())
 		}
 		if p.HasTags() {
-			netP["tags"] = getOapiTagSet(p.Tags)
+			netP["tags"] = flattenOAPITagsSDK(p.GetTags())
 		}
 		res = append(res, netP)
 	}

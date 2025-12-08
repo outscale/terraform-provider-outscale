@@ -59,7 +59,7 @@ func getOAPIPublicIPDataSourceSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"tags": dataSourceTagsSchema(),
+		"tags": TagsSchemaComputedSDK(),
 	}
 }
 
@@ -140,7 +140,7 @@ func DataSourceOutscalePublicIPRead(d *schema.ResourceData, meta interface{}) er
 		return err
 	}
 
-	if err := d.Set("tags", tagsOSCAPIToMap(address.GetTags())); err != nil {
+	if err := d.Set("tags", flattenOAPITagsSDK(address.GetTags())); err != nil {
 		return fmt.Errorf("Error setting PublicIp tags: %s", err)
 	}
 

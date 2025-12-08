@@ -31,8 +31,8 @@ type EphemeralKeypairModel struct {
 	PublicKey          types.String   `tfsdk:"public_key"`
 	RequestId          types.String   `tfsdk:"request_id"`
 	Timeouts           timeouts.Value `tfsdk:"timeouts"`
-	Tags               []ResourceTag  `tfsdk:"tags"`
 	Id                 types.String   `tfsdk:"id"`
+	TagsModel
 }
 
 func NewKeypairEphemeralResource() ephemeral.EphemeralResource {
@@ -82,7 +82,7 @@ func (r *resourceEphemeralKeypair) Schema(ctx context.Context, _ ephemeral.Schem
 	resp.Schema = schema.Schema{
 
 		Blocks: map[string]schema.Block{
-			"tags": TagsSchema(),
+			"tags": TagsSchemaFW(),
 			"timeouts": timeouts.Block(ctx, timeouts.Opts{
 				Create: true,
 				Read:   true,
@@ -174,16 +174,11 @@ func (e *resourceEphemeralKeypair) Open(ctx context.Context, req ephemeral.OpenR
 		if createReq.HasPublicKey() {
 			data.PublicKey = types.StringValue(createReq.GetPublicKey())
 		}
-		if len(data.Tags) > 0 {
-			err = createFrameworkTags(ctx, e.Client, tagsToOSCResourceTag(data.Tags), keypair.GetKeypairId())
-			if err != nil {
-				resp.Diagnostics.AddError(
-					"Unable to add Tags on ephemeral keypair resource",
-					err.Error(),
-				)
-				return
-			}
+		diag := createOAPITagsFW(ctx, e.Client, data.Tags, keypair.GetKeypairId())
+		if utils.CheckDiags(resp, diag) {
+			return
 		}
+
 		data.PrivateKey = types.StringValue(keypair.GetPrivateKey())
 		if createReq.HasPublicKey() {
 			data.PublicKey = types.StringValue(createReq.GetPublicKey())
@@ -246,7 +241,12 @@ func setEphKeypairState(ctx context.Context, r *resourceEphemeralKeypair, data *
 	}
 
 	keypair := readResp.GetKeypairs()[0]
-	data.Tags = getTagsFromApiResponse(keypair.GetTags())
+
+	tags, diag := flattenOAPITagsFW(ctx, keypair.GetTags())
+	if diag.HasError() {
+		return fmt.Errorf("unable to flatten tags: %v", diags.Errors())
+	}
+	data.Tags = tags
 	data.KeypairFingerprint = types.StringValue(keypair.GetKeypairFingerprint())
 	data.KeypairName = types.StringValue(keypair.GetKeypairName())
 	data.KeypairType = types.StringValue(keypair.GetKeypairType())

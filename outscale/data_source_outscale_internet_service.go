@@ -34,7 +34,7 @@ func DataSourceOutscaleInternetService() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": dataSourceTagsSchema(),
+			"tags": TagsSchemaComputedSDK(),
 		},
 	}
 }
@@ -105,7 +105,7 @@ func DataSourceOutscaleInternetServiceRead(d *schema.ResourceData, meta interfac
 
 	d.SetId(result.GetInternetServiceId())
 
-	return d.Set("tags", tagsOSCAPIToMap(result.GetTags()))
+	return d.Set("tags", flattenOAPITagsSDK(result.GetTags()))
 }
 
 func buildOutscaleOSCAPIDataSourceInternetServiceFilters(set *schema.Set) (*oscgo.FiltersInternetService, error) {

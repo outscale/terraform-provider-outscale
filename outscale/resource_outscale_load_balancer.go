@@ -79,7 +79,7 @@ func ResourceOutscaleLoadBalancer() *schema.Resource {
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"tags": tagsListOAPISchema2(false),
+			"tags": TagsSchemaSDK(),
 
 			"dns_name": {
 				Type:     schema.TypeString,
@@ -365,7 +365,7 @@ func ResourceOutscaleLoadBalancerCreate_(d *schema.ResourceData, meta interface{
 	}
 
 	if v, ok := d.GetOk("tags"); ok {
-		r := tagsFromSliceMap(v.(*schema.Set))
+		r := expandOAPITagsSDK(v.(*schema.Set))
 		req.Tags = &r
 	}
 
@@ -585,7 +585,7 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 		oraw, nraw := d.GetChange("tags")
 		o := oraw.(*schema.Set)
 		n := nraw.(*schema.Set)
-		create := tagsFromSliceMap(n)
+		create := expandOAPITagsSDK(n)
 		var remove []oscgo.ResourceLoadBalancerTag
 		for _, t := range o.List() {
 			tag := t.(map[string]interface{})

@@ -82,7 +82,7 @@ func DataSourceOutscaleVolumes() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"tags": dataSourceTagsSchema(),
+						"tags": TagsSchemaComputedSDK(),
 						"volume_id": {
 							Type:     schema.TypeString,
 							Computed: true,
@@ -166,7 +166,7 @@ func getOAPIVolumes(volumes []oscgo.Volume) (res []map[string]interface{}) {
 			"snapshot_id":    v.SnapshotId,
 			"state":          v.State,
 			"subregion_name": v.SubregionName,
-			"tags":           tagsOSCAPIToMap(v.GetTags()),
+			"tags":           flattenOAPITagsSDK(v.GetTags()),
 			"volume_id":      v.VolumeId,
 			"volume_type":    v.VolumeType,
 		})

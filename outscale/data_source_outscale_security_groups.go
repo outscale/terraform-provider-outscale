@@ -166,7 +166,7 @@ func DataSourceOutscaleSecurityGroups() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"tags": dataSourceTagsSchema(),
+						"tags": TagsSchemaComputedSDK(),
 					},
 				},
 			},
@@ -252,7 +252,7 @@ func DataSourceOutscaleSecurityGroupsRead(d *schema.ResourceData, meta interface
 			s["net_id"] = v.GetNetId()
 		}
 		s["account_id"] = v.GetAccountId()
-		s["tags"] = tagsOSCAPIToMap(v.GetTags())
+		s["tags"] = flattenOAPITagsSDK(v.GetTags())
 		s["inbound_rules"] = flattenOAPISecurityGroupRule(v.GetInboundRules())
 		s["outbound_rules"] = flattenOAPISecurityGroupRule(v.GetOutboundRules())
 		sg[k] = s

@@ -87,7 +87,7 @@ func DataSourceOutscaleOAPiKeyPairsRead(d *schema.ResourceData, meta interface{}
 			keypair["keypair_type"] = v.GetKeypairType()
 		}
 		if v.HasTags() {
-			keypair["tags"] = tagsOSCAPIToMap(v.GetTags())
+			keypair["tags"] = flattenOAPITagsSDK(v.GetTags())
 		}
 		keypairs[k] = keypair
 	}
@@ -130,7 +130,7 @@ func DataSourceOutscaleKeyPairs() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"tags": dataSourceTagsSchema(),
+						"tags": TagsSchemaComputedSDK(),
 					},
 				},
 			},

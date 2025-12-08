@@ -38,7 +38,7 @@ func DataSourceOutscaleClientGateway() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": dataSourceTagsSchema(),
+			"tags": TagsSchemaComputedSDK(),
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -112,7 +112,7 @@ func DataSourceOutscaleClientGatewayRead(d *schema.ResourceData, meta interface{
 	if err := d.Set("state", clientGateway.GetState()); err != nil {
 		return err
 	}
-	if err := d.Set("tags", tagsOSCAPIToMap(clientGateway.GetTags())); err != nil {
+	if err := d.Set("tags", flattenOAPITagsSDK(clientGateway.GetTags())); err != nil {
 		return err
 	}
 

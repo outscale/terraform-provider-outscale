@@ -290,7 +290,7 @@ func DataSourceOutscaleImagesRead(d *schema.ResourceData, meta interface{}) erro
 				"product_codes":         image.GetProductCodes(),
 				"state_comment":         omiOAPIStateReason(image.StateComment),
 				"permissions_to_launch": omiOAPIPermissionToLuch(image.PermissionsToLaunch),
-				"tags":                  getOapiTagSet(image.Tags),
+				"tags":                  flattenOAPITagsSDK(image.GetTags()),
 			}
 		}
 

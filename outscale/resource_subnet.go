@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"reflect"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
@@ -29,18 +28,17 @@ var (
 )
 
 type SubnetModel struct {
-	AvailableIpsCount   types.Int32   `tfsdk:"available_ips_count"`
-	IpRange             types.String  `tfsdk:"ip_range"`
-	MapPublicIpOnLaunch types.Bool    `tfsdk:"map_public_ip_on_launch"`
-	NetId               types.String  `tfsdk:"net_id"`
-	State               types.String  `tfsdk:"state"`
-	SubnetId            types.String  `tfsdk:"subnet_id"`
-	SubregionName       types.String  `tfsdk:"subregion_name"`
-	Tags                []ResourceTag `tfsdk:"tags"`
-
-	RequestId types.String   `tfsdk:"request_id"`
-	Timeouts  timeouts.Value `tfsdk:"timeouts"`
-	Id        types.String   `tfsdk:"id"`
+	AvailableIpsCount   types.Int32    `tfsdk:"available_ips_count"`
+	IpRange             types.String   `tfsdk:"ip_range"`
+	MapPublicIpOnLaunch types.Bool     `tfsdk:"map_public_ip_on_launch"`
+	NetId               types.String   `tfsdk:"net_id"`
+	State               types.String   `tfsdk:"state"`
+	SubnetId            types.String   `tfsdk:"subnet_id"`
+	SubregionName       types.String   `tfsdk:"subregion_name"`
+	RequestId           types.String   `tfsdk:"request_id"`
+	Timeouts            timeouts.Value `tfsdk:"timeouts"`
+	Id                  types.String   `tfsdk:"id"`
+	TagsModel
 }
 
 type resourceSubnet struct {
@@ -88,6 +86,8 @@ func (r *resourceSubnet) ImportState(ctx context.Context, req resource.ImportSta
 		return
 	}
 	data.Timeouts = timeouts
+	data.Tags = TagsNull()
+
 	diags := resp.State.Set(ctx, &data)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -112,7 +112,7 @@ func (r *resourceSubnet) ModifyPlan(ctx context.Context, req resource.ModifyPlan
 func (r *resourceSubnet) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Blocks: map[string]schema.Block{
-			"tags": TagsSchema(),
+			"tags": TagsSchemaFW(),
 			"timeouts": timeouts.Block(ctx, timeouts.Opts{
 				Create: true,
 				Read:   true,
@@ -212,16 +212,11 @@ func (r *resourceSubnet) Create(ctx context.Context, req resource.CreateRequest,
 	data.RequestId = types.StringValue(*createResp.ResponseContext.RequestId)
 	subnet := createResp.GetSubnet()
 
-	if len(data.Tags) > 0 {
-		err = createFrameworkTags(ctx, r.Client, tagsToOSCResourceTag(data.Tags), subnet.GetSubnetId())
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable to add Tags on outscale_subnet resource.",
-				err.Error(),
-			)
-			return
-		}
+	diag := createOAPITagsFW(ctx, r.Client, data.Tags, subnet.GetSubnetId())
+	if utils.CheckDiags(resp, diag) {
+		return
 	}
+
 	readReq := oscgo.ReadSubnetsRequest{Filters: &oscgo.FiltersSubnet{SubnetIds: &[]string{subnet.GetSubnetId()}}}
 
 	stateConf := &retry.StateChangeConf{
@@ -322,40 +317,15 @@ func (r *resourceSubnet) Read(ctx context.Context, req resource.ReadRequest, res
 }
 
 func (r *resourceSubnet) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var (
-		tagsPlan, tagsState []ResourceTag
-		resourceId          types.String
-		err                 error
-	)
-
-	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("tags"), &tagsPlan)...)
-	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("tags"), &tagsState)...)
-	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("subnet_id"), &resourceId)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	if !reflect.DeepEqual(tagsPlan, tagsState) {
-		toRemove, toCreate := diffOSCAPITags(tagsToOSCResourceTag(tagsPlan), tagsToOSCResourceTag(tagsState))
-		err := updateFrameworkTags(ctx, r.Client, toCreate, toRemove, resourceId.ValueString())
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable to update Tags on subnet resource.",
-				err.Error(),
-			)
-			return
-		}
-	}
-
-	var stateData, planData SubnetModel
-
+	var planData, stateData SubnetModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &planData)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &stateData)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &planData)...)
-	if resp.Diagnostics.HasError() {
+	diag := updateOAPITagsFW(ctx, r.Client, stateData.Tags, planData.Tags, stateData.SubnetId.ValueString())
+	if utils.CheckDiags(resp, diag) {
 		return
 	}
 
@@ -369,7 +339,7 @@ func (r *resourceSubnet) Update(ctx context.Context, req resource.UpdateRequest,
 		SubnetId:            stateData.SubnetId.ValueString(),
 		MapPublicIpOnLaunch: planData.MapPublicIpOnLaunch.ValueBool(),
 	}
-	err = retry.RetryContext(ctx, updateTimeout, func() *retry.RetryError {
+	err := retry.RetryContext(ctx, updateTimeout, func() *retry.RetryError {
 		_, httpResp, err := r.Client.SubnetApi.UpdateSubnet(ctx).UpdateSubnetRequest(updateReq).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -378,14 +348,13 @@ func (r *resourceSubnet) Update(ctx context.Context, req resource.UpdateRequest,
 	})
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to update subnet resource.",
+			"Unable to update subnet resource",
 			err.Error(),
 		)
 		return
 	}
 
-	planData.SubnetId = resourceId
-	data, err := setSubnetState(ctx, r, planData)
+	data, err := setSubnetState(ctx, r, stateData)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to set subnet state.",
@@ -463,7 +432,11 @@ func setSubnetState(ctx context.Context, r *resourceSubnet, data SubnetModel) (S
 	}
 
 	subnet := readResp.GetSubnets()[0]
-	data.Tags = getTagsFromApiResponse(subnet.GetTags())
+	tags, diags := flattenOAPITagsFW(ctx, subnet.GetTags())
+	if diags.HasError() {
+		return data, fmt.Errorf("unable to flatten tags: %v", diags.Errors())
+	}
+	data.Tags = tags
 
 	data.RequestId = types.StringValue(readResp.ResponseContext.GetRequestId())
 	data.AvailableIpsCount = types.Int32Value(subnet.GetAvailableIpsCount())

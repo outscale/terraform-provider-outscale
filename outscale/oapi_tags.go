@@ -5,218 +5,63 @@ import (
 	"fmt"
 
 	"regexp"
-	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	fwschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
+
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
+	"github.com/outscale/terraform-provider-outscale/utils/to"
+	"github.com/samber/lo"
 )
 
-func setOSCAPITags(conn *oscgo.APIClient, d *schema.ResourceData) error {
-
-	oraw, nraw := d.GetChange("tags")
-	o := oraw.(*schema.Set)
-	n := nraw.(*schema.Set)
-	create, remove := diffOSCAPITags(tagsFromSliceMap(o), tagsFromSliceMap(n))
-	resourceId := d.Id()
-	// Set tag
-	if len(remove) > 0 {
-		err := resource.Retry(60*time.Second, func() *resource.RetryError {
-			_, httpResp, err := conn.TagApi.DeleteTags(context.Background()).DeleteTagsRequest(oscgo.DeleteTagsRequest{
-				ResourceIds: []string{resourceId},
-				Tags:        remove,
-			}).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			return nil
-		})
-		if err != nil {
-			return err
-		}
-	}
-	if len(create) > 0 {
-		err := resource.Retry(60*time.Second, func() *resource.RetryError {
-			_, httpResp, err := conn.TagApi.CreateTags(context.Background()).CreateTagsRequest(oscgo.CreateTagsRequest{
-				ResourceIds: []string{resourceId},
-				Tags:        create,
-			}).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			return nil
-		})
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+type TagsModel struct {
+	Tags types.Set `tfsdk:"tags"`
 }
 
-func updateFrameworkTags(ctx context.Context, conn *oscgo.APIClient, create, remove []oscgo.ResourceTag, resourceId string) error {
-	if len(remove) > 0 {
-		err := retry.RetryContext(ctx, 60*time.Second, func() *retry.RetryError {
-			_, httpResp, err := conn.TagApi.DeleteTags(context.Background()).DeleteTagsRequest(oscgo.DeleteTagsRequest{
-				ResourceIds: []string{resourceId},
-				Tags:        remove,
-			}).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			return nil
-		})
-		if err != nil {
-			return err
-		}
-	}
-	if len(create) > 0 {
-		err := retry.RetryContext(ctx, 60*time.Second, func() *resource.RetryError {
-			_, httpResp, err := conn.TagApi.CreateTags(context.Background()).CreateTagsRequest(oscgo.CreateTagsRequest{
-				ResourceIds: []string{resourceId},
-				Tags:        create,
-			}).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			return nil
-		})
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+type TagsComputedModel struct {
+	Tags types.List `tfsdk:"tags"`
 }
 
-func createFrameworkTags(ctx context.Context, conn *oscgo.APIClient, tagsToCreate []oscgo.ResourceTag, resourceId string) error {
-	resId := []string{resourceId}
-	tagReq := oscgo.NewCreateTagsRequest(resId, tagsToCreate)
-	err := retry.RetryContext(ctx, 60*time.Second, func() *retry.RetryError {
-		_, httpResp, err := conn.TagApi.CreateTags(context.Background()).CreateTagsRequest(*tagReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
-	if err != nil {
-		return err
-	}
-	return nil
+type ResourceTag struct {
+	Key   types.String `tfsdk:"key"`
+	Value types.String `tfsdk:"value"`
 }
 
-func getTagsFromApiResponse(respTags []oscgo.ResourceTag) []ResourceTag {
-	tags := make([]ResourceTag, 0, len(respTags))
-	for _, tag := range respTags {
-		rTag := ResourceTag{
-			Key:   types.StringValue(tag.GetKey()),
-			Value: types.StringValue(tag.GetValue()),
-		}
-		tags = append(tags, rTag)
-	}
-	return tags
-}
-func updateBsuTags(conn *oscgo.APIClient, d *schema.ResourceData, addTags map[string]interface{}, delTags map[string]interface{}) error {
-
-	var resp oscgo.ReadVmsResponse
-	err := resource.Retry(60*time.Second, func() *resource.RetryError {
-		rp, httpResp, err := conn.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
-			Filters: &oscgo.FiltersVm{
-				VmIds: &[]string{d.Id()},
+func TagsSchemaFW() *fwschema.SetNestedBlock {
+	return &fwschema.SetNestedBlock{
+		NestedObject: fwschema.NestedBlockObject{
+			Attributes: map[string]fwschema.Attribute{
+				"key": fwschema.StringAttribute{
+					Required: true,
+				},
+				"value": fwschema.StringAttribute{
+					Optional: true,
+					Computed: true,
+				},
 			},
-		}).Execute()
-
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
-	if err != nil {
-		return err
+		},
 	}
-
-	if delTags != nil {
-		for dName := range delTags {
-			err := resource.Retry(60*time.Second, func() *resource.RetryError {
-				_, httpResp, err := conn.TagApi.DeleteTags(context.Background()).DeleteTagsRequest(oscgo.DeleteTagsRequest{
-					ResourceIds: []string{utils.GetBsuId(resp.GetVms()[0], dName)},
-					Tags:        tagsFromSliceMap(delTags[dName].(*schema.Set)),
-				}).Execute()
-				if err != nil {
-					return utils.CheckThrottling(httpResp, err)
-				}
-				return nil
-			})
-			if err != nil {
-				return err
-			}
-		}
-	}
-	if addTags != nil {
-		for dName := range addTags {
-			err := resource.Retry(60*time.Second, func() *resource.RetryError {
-				_, httpResp, err := conn.TagApi.CreateTags(context.Background()).CreateTagsRequest(oscgo.CreateTagsRequest{
-					ResourceIds: []string{utils.GetBsuId(resp.GetVms()[0], dName)},
-					Tags:        tagsFromSliceMap(addTags[dName].(*schema.Set)),
-				}).Execute()
-				if err != nil {
-					return utils.CheckThrottling(httpResp, err)
-				}
-				return nil
-			})
-			if err != nil {
-				return err
-			}
-		}
-	}
-	return nil
 }
 
-func tagsOAPIListSchemaComputed() *schema.Schema {
-	return &schema.Schema{
-		Type:     schema.TypeSet,
+func TagsSchemaComputedFW() *fwschema.ListAttribute {
+	return &fwschema.ListAttribute{
 		Computed: true,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"key": {
-					Type:     schema.TypeString,
-					Computed: true,
-				},
-				"value": {
-					Type:     schema.TypeString,
-					Computed: true,
-				},
+		ElementType: types.ObjectType{
+			AttrTypes: map[string]attr.Type{
+				"key":   types.StringType,
+				"value": types.StringType,
 			},
 		},
 	}
 }
 
-func tagsListOAPISchema2(computed bool) *schema.Schema {
-	stype := schema.TypeSet
-
-	if computed {
-		stype = schema.TypeList
-	}
-
-	return &schema.Schema{
-		Type: stype,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"key": mk_elem(computed, false,
-					schema.TypeString),
-				"value": mk_elem(computed, false,
-					schema.TypeString),
-			},
-		},
-		Optional: true,
-		Computed: computed,
-	}
-}
-
-func tagsListOAPISchema() *schema.Schema {
+func TagsSchemaSDK() *schema.Schema {
 	return &schema.Schema{
 		Type: schema.TypeSet,
 		Elem: &schema.Resource{
@@ -237,135 +82,9 @@ func tagsListOAPISchema() *schema.Schema {
 	}
 }
 
-// tagsOSCsAPI	ToMap turns the list of tag into a map.
-func tagsOSCAPIToMap(ts []oscgo.ResourceTag) []map[string]string {
-	result := make([]map[string]string, len(ts))
-	if len(ts) > 0 {
-		for k, t := range ts {
-			tag := make(map[string]string)
-			tag["key"] = t.Key
-			tag["value"] = t.Value
-			result[k] = tag
-		}
-	} else {
-		result = make([]map[string]string, 0)
-	}
-
-	return result
-}
-
-func tagsOSCAPIFromMap(m map[string]interface{}) []oscgo.ResourceTag {
-	result := make([]oscgo.ResourceTag, 0, len(m))
-	for k, v := range m {
-		t := oscgo.ResourceTag{
-			Key:   k,
-			Value: v.(string),
-		}
-		result = append(result, t)
-	}
-
-	return result
-}
-
-// diffOSCAPITags takes our tag locally and the ones remotely and returns
-// the set of tag that must be created, and the set of tag that must
-// be destroyed.
-func diffOSCAPITags(oldTags, newTags []oscgo.ResourceTag) ([]oscgo.ResourceTag, []oscgo.ResourceTag) {
-	// First, we're creating everything we have
-	create := make(map[string]interface{})
-	for _, t := range newTags {
-		create[t.Key] = t.Value
-	}
-
-	stateTags := make(map[string]interface{})
-	for _, t := range oldTags {
-		stateTags[t.Key] = t.Value
-	}
-
-	tagsToCreate := make(map[string]interface{})
-	for _, t := range newTags {
-		old, ok := stateTags[t.Key]
-		if !ok || old != t.Value {
-			tagsToCreate[t.Key] = t.Value
-		}
-	}
-
-	// Build the list of what to remove
-	var remove []oscgo.ResourceTag
-	for _, t := range oldTags {
-		old, ok := create[t.Key]
-		if !ok || old != t.Value {
-			remove = append(remove, t)
-		}
-	}
-
-	return tagsOSCAPIFromMap(tagsToCreate), remove
-}
-
-func tagsFromSliceMap(m *schema.Set) []oscgo.ResourceTag {
-	result := make([]oscgo.ResourceTag, 0, m.Len())
-	for _, v := range m.List() {
-		tag := v.(map[string]interface{})
-		t := oscgo.ResourceTag{
-			Key:   tag["key"].(string),
-			Value: tag["value"].(string),
-		}
-		result = append(result, t)
-	}
-
-	return result
-}
-
-func oapiTagsDescToList(ts []oscgo.Tag) []map[string]interface{} {
-	res := make([]map[string]interface{}, len(ts))
-
-	for i, t := range ts {
-		if !oapiTagDescIgnored(&t) {
-			res[i] = map[string]interface{}{
-				"key":           t.Key,
-				"value":         t.Value,
-				"resource_id":   t.ResourceId,
-				"resource_type": t.ResourceType,
-			}
-		}
-	}
-	return res
-}
-
-func oapiTagDescIgnored(t *oscgo.Tag) bool {
-	filter := []string{"^outscale:"}
-	for _, v := range filter {
-		if r, _ := regexp.MatchString(v, t.GetKey()); r {
-			return true
-		}
-	}
-	return false
-}
-
-func assignTags(tag *schema.Set, resourceID string, conn *oscgo.APIClient) error {
-	request := oscgo.CreateTagsRequest{}
-	request.Tags = tagsFromSliceMap(tag)
-	request.ResourceIds = []string{resourceID}
-	err := resource.Retry(60*time.Second, func() *resource.RetryError {
-		_, httpResp, err := conn.TagApi.CreateTags(context.Background()).CreateTagsRequest(request).Execute()
-
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "NotFound") {
-				return resource.RetryableError(err)
-			}
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func dataSourceTagsSchema() *schema.Schema {
+func TagsSchemaComputedSDK() *schema.Schema {
 	return &schema.Schema{
-		Type:     schema.TypeList,
+		Type:     schema.TypeSet,
 		Computed: true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -382,42 +101,228 @@ func dataSourceTagsSchema() *schema.Schema {
 	}
 }
 
-func tagsSchema() *schema.Schema {
-	return &schema.Schema{
-		Type:     schema.TypeMap,
-		Optional: true,
-		ForceNew: true,
-	}
+var OAPITagAttrTypes = utils.GetAttrTypes(ResourceTag{})
+
+func ComputedTagsNull() types.List {
+	return types.ListNull(types.ObjectType{AttrTypes: OAPITagAttrTypes})
 }
 
-func getOapiTagSet(tags *[]oscgo.ResourceTag) []map[string]interface{} {
-	res := []map[string]interface{}{}
+func TagsNull() types.Set {
+	return types.SetNull(types.ObjectType{AttrTypes: OAPITagAttrTypes})
+}
 
-	if tags != nil {
-		for _, t := range *tags {
-			tag := map[string]interface{}{}
+func createOAPITags(ctx context.Context, client *oscgo.APIClient, tags []oscgo.ResourceTag, resourceId string) error {
+	req := oscgo.NewCreateTagsRequest([]string{resourceId}, tags)
 
-			tag["key"] = t.Key
-			tag["value"] = t.Value
+	err := retry.RetryContext(ctx, 60*time.Second, func() *retry.RetryError {
+		_, httpResp, err := client.TagApi.CreateTags(context.Background()).CreateTagsRequest(*req).Execute()
+		if err != nil {
+			return utils.CheckThrottling(httpResp, err)
+		}
+		return nil
+	})
 
-			res = append(res, tag)
+	return err
+}
+
+func createOAPITagsFW(ctx context.Context, client *oscgo.APIClient, tagsSet types.Set, resourceId string) diag.Diagnostics {
+	if utils.IsSet(tagsSet) {
+		var diags diag.Diagnostics
+		tagsModel, diag := to.Slice[ResourceTag](ctx, tagsSet)
+		tags := expandOAPITagsFW(tagsModel)
+		if diag.HasError() {
+			return diag
+		}
+
+		err := createOAPITags(ctx, client, tags, resourceId)
+		if err != nil {
+			diags.AddError(
+				"Unable to create tags",
+				err.Error(),
+			)
+			return diags
 		}
 	}
 
-	return res
+	return nil
 }
 
-func getOscAPITagSet(tags []oscgo.ResourceTag) []map[string]interface{} {
-	res := []map[string]interface{}{}
+func createOAPITagsSDK(client *oscgo.APIClient, d *schema.ResourceData) error {
+	if tagsSchema, ok := d.GetOk("tags"); ok {
+		set := tagsSchema.(*schema.Set)
+		tags := expandOAPITagsSDK(set)
+		resourceId := d.Id()
 
-	for _, t := range tags {
-		tag := map[string]interface{}{}
-
-		tag["key"] = t.Key
-		tag["value"] = t.Value
-
-		res = append(res, tag)
+		err := createOAPITags(context.Background(), client, tags, resourceId)
+		if err != nil {
+			return fmt.Errorf("unable to create tags: %s", err)
+		}
 	}
 
+	return nil
+}
+
+func updateOAPITags(ctx context.Context, client *oscgo.APIClient, toCreate, toRemove []oscgo.ResourceTag, resourceId string) error {
+	if len(toRemove) > 0 {
+		err := retry.RetryContext(ctx, 60*time.Second, func() *retry.RetryError {
+			_, httpResp, err := client.TagApi.DeleteTags(ctx).DeleteTagsRequest(oscgo.DeleteTagsRequest{
+				ResourceIds: []string{resourceId},
+				Tags:        toRemove,
+			}).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp, err)
+			}
+			return nil
+		})
+		if err != nil {
+			return fmt.Errorf("unable to delete tags: %s", err.Error())
+		}
+	}
+	if len(toCreate) > 0 {
+		err := retry.RetryContext(ctx, 60*time.Second, func() *retry.RetryError {
+			_, httpResp, err := client.TagApi.CreateTags(ctx).CreateTagsRequest(oscgo.CreateTagsRequest{
+				ResourceIds: []string{resourceId},
+				Tags:        toCreate,
+			}).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp, err)
+			}
+			return nil
+		})
+		if err != nil {
+			return fmt.Errorf("unable to create tags: %s", err.Error())
+		}
+	}
+
+	return nil
+}
+
+func diffOAPITagsFW(ctx context.Context, oldSet, newSet types.Set) ([]oscgo.ResourceTag, []oscgo.ResourceTag, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	oldTagsModel, diag := to.Slice[ResourceTag](ctx, oldSet)
+	diags.Append(diag...)
+	newTagsModel, diag := to.Slice[ResourceTag](ctx, newSet)
+	diags.Append(diag...)
+	if diag.HasError() {
+		return nil, nil, diag
+	}
+
+	oldTags := expandOAPITagsFW(oldTagsModel)
+	newTags := expandOAPITagsFW(newTagsModel)
+
+	toCreate, toRemove := diffOAPITags(oldTags, newTags)
+	return toCreate, toRemove, nil
+}
+
+func diffOAPITags(oldTags, newTags []oscgo.ResourceTag) ([]oscgo.ResourceTag, []oscgo.ResourceTag) {
+	return lo.Difference(newTags, oldTags)
+}
+
+func updateOAPITagsSDK(client *oscgo.APIClient, d *schema.ResourceData) error {
+	if d.HasChange("tags") {
+		oldRaw, newRaw := d.GetChange("tags")
+		old := oldRaw.(*schema.Set)
+		new := newRaw.(*schema.Set)
+		create, remove := diffOAPITags(expandOAPITagsSDK(old), expandOAPITagsSDK(new))
+		resourceId := d.Id()
+
+		return updateOAPITags(context.Background(), client, create, remove, resourceId)
+	}
+
+	return nil
+}
+
+func updateOAPITagsFW(ctx context.Context, client *oscgo.APIClient, oldSet, newSet types.Set, resourceId string) diag.Diagnostics {
+	if oldSet.Equal(newSet) {
+		return nil
+	}
+	var diags diag.Diagnostics
+
+	create, remove, diag := diffOAPITagsFW(ctx, oldSet, newSet)
+	diags.Append(diag...)
+	if diags.HasError() {
+		return diags
+	}
+
+	err := updateOAPITags(ctx, client, create, remove, resourceId)
+	if err != nil {
+		diags.AddError("Error updating tags", err.Error())
+	}
+
+	return diags
+}
+
+func flattenOAPITagsFW(ctx context.Context, tags []oscgo.ResourceTag) (types.Set, diag.Diagnostics) {
+	tagsModel := lo.Map(tags, func(tag oscgo.ResourceTag, _ int) ResourceTag {
+		return ResourceTag{
+			Key:   to.String(tag.GetKey()),
+			Value: to.String(tag.GetValue()),
+		}
+	})
+	return types.SetValueFrom(ctx, types.ObjectType{AttrTypes: OAPITagAttrTypes}, tagsModel)
+}
+
+func flattenOAPIComputedTagsFW(ctx context.Context, tags []oscgo.ResourceTag) (types.List, diag.Diagnostics) {
+	tagsModel := lo.Map(tags, func(tag oscgo.ResourceTag, _ int) ResourceTag {
+		return ResourceTag{
+			Key:   to.String(tag.GetKey()),
+			Value: to.String(tag.GetValue()),
+		}
+	})
+	return types.ListValueFrom(ctx, types.ObjectType{AttrTypes: OAPITagAttrTypes}, tagsModel)
+}
+
+func flattenOAPITagsSDK(tags []oscgo.ResourceTag) []map[string]string {
+	return lo.Map(tags, func(tag oscgo.ResourceTag, _ int) map[string]string {
+		return map[string]string{
+			"key":   tag.Key,
+			"value": tag.Value,
+		}
+	})
+}
+
+func expandOAPITagsSDK(tags *schema.Set) []oscgo.ResourceTag {
+	return lo.Map(tags.List(), func(v any, _ int) oscgo.ResourceTag {
+		tag := v.(map[string]any)
+		return oscgo.ResourceTag{
+			Key:   tag["key"].(string),
+			Value: tag["value"].(string),
+		}
+	})
+}
+
+func expandOAPITagsFW(tags []ResourceTag) []oscgo.ResourceTag {
+	return lo.Map(tags, func(tag ResourceTag, _ int) oscgo.ResourceTag {
+		return oscgo.ResourceTag{
+			Key:   tag.Key.ValueString(),
+			Value: tag.Value.ValueString(),
+		}
+	})
+}
+
+func oapiTagDescIgnored(t *oscgo.Tag) bool {
+	filter := []string{"^outscale:"}
+	for _, v := range filter {
+		if r, _ := regexp.MatchString(v, t.GetKey()); r {
+			return true
+		}
+	}
+	return false
+}
+
+func flattenOAPITagsDescSDK(tags []oscgo.Tag) []map[string]any {
+	res := make([]map[string]any, len(tags))
+
+	for i, t := range tags {
+		if !oapiTagDescIgnored(&t) {
+			res[i] = map[string]any{
+				"key":           t.Key,
+				"value":         t.Value,
+				"resource_id":   t.ResourceId,
+				"resource_type": t.ResourceType,
+			}
+		}
+	}
 	return res
 }

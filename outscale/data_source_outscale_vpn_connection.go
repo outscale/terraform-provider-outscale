@@ -66,7 +66,7 @@ func DataSourceOutscaleVPNConnection() *schema.Resource {
 					},
 				},
 			},
-			"tags": dataSourceTagsSchema(),
+			"tags": TagsSchemaComputedSDK(),
 			"vgw_telemetries": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -176,7 +176,7 @@ func DataSourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{
 	if err := d.Set("routes", flattenVPNConnection(vpnConnection.GetRoutes())); err != nil {
 		return err
 	}
-	if err := d.Set("tags", tagsOSCAPIToMap(vpnConnection.GetTags())); err != nil {
+	if err := d.Set("tags", flattenOAPITagsSDK(vpnConnection.GetTags())); err != nil {
 		return err
 	}
 	if err := d.Set("vgw_telemetries", flattenVgwTelemetries(vpnConnection.GetVgwTelemetries())); err != nil {

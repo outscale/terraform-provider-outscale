@@ -314,7 +314,7 @@ func DataSourceOutscaleImageRead(d *schema.ResourceData, meta interface{}) error
 		if err := set("permissions_to_launch", omiOAPIPermissionToLuch(image.PermissionsToLaunch)); err != nil {
 			return err
 		}
-		if err := set("tags", getOapiTagSet(image.Tags)); err != nil {
+		if err := set("tags", flattenOAPITagsSDK(image.GetTags())); err != nil {
 			return err
 		}
 

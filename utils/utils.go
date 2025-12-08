@@ -16,19 +16,21 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	set "github.com/deckarep/golang-set/v2"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	fw_data "github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	fw_resource "github.com/hashicorp/terraform-plugin-framework/resource"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/nav-inc/datetime"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/spf13/cast"
 )
 
@@ -539,7 +541,7 @@ func WaitForResource[T any](ctx context.Context, conf *retry.StateChangeConf) (*
 	return resp, nil
 }
 
-func CheckDiags[T *fw_resource.CreateResponse | *fw_resource.UpdateResponse | *fw_resource.DeleteResponse | *fw_resource.ReadResponse | *fw_resource.ModifyPlanResponse | *fw_resource.ImportStateResponse | *fw_data.ReadResponse | *fw_resource.ValidateConfigResponse](resp T, diags diag.
+func CheckDiags[T *fw_resource.CreateResponse | *fw_resource.UpdateResponse | *fw_resource.DeleteResponse | *fw_resource.ReadResponse | *fw_resource.ModifyPlanResponse | *fw_resource.ImportStateResponse | *fw_data.ReadResponse | *fw_resource.ValidateConfigResponse | *ephemeral.OpenResponse](resp T, diags diag.
 	Diagnostics) bool {
 	switch r := any(resp).(type) {
 	case *fw_resource.DeleteResponse:

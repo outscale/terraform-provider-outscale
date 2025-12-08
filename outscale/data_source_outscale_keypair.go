@@ -76,7 +76,7 @@ func DataSourceOutscaleKeyPairRead(d *schema.ResourceData, meta interface{}) err
 	if err := d.Set("keypair_id", keypair.GetKeypairId()); err != nil {
 		return err
 	}
-	if err := d.Set("tags", tagsOSCAPIToMap(keypair.GetTags())); err != nil {
+	if err := d.Set("tags", flattenOAPITagsSDK(keypair.GetTags())); err != nil {
 		return err
 	}
 	d.SetId(keypair.GetKeypairId())
@@ -107,7 +107,7 @@ func DataSourceOutscaleKeyPair() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": dataSourceTagsSchema(),
+			"tags": TagsSchemaComputedSDK(),
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,

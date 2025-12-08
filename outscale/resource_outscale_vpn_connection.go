@@ -83,7 +83,7 @@ func ResourceOutscaleVPNConnection() *schema.Resource {
 					},
 				},
 			},
-			"tags": tagsListOAPISchema(),
+			"tags": TagsSchemaSDK(),
 			"vgw_telemetries": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -146,14 +146,12 @@ func ResourceOutscaleVPNConnectionCreate(d *schema.ResourceData, meta interface{
 		return fmt.Errorf("Error creating Outscale VPN Conecction: %s", err)
 	}
 
-	if tags, ok := d.GetOk("tags"); ok {
-		err := assignTags(tags.(*schema.Set), *resp.GetVpnConnection().VpnConnectionId, conn)
-		if err != nil {
-			return err
-		}
-	}
-
 	d.SetId(*resp.GetVpnConnection().VpnConnectionId)
+
+	err = createOAPITagsSDK(conn, d)
+	if err != nil {
+		return err
+	}
 
 	return ResourceOutscaleVPNConnectionRead(d, meta)
 }
@@ -208,7 +206,7 @@ func ResourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{})
 	if err := d.Set("routes", flattenVPNConnection(vpnConnection.GetRoutes())); err != nil {
 		return err
 	}
-	if err := d.Set("tags", tagsOSCAPIToMap(vpnConnection.GetTags())); err != nil {
+	if err := d.Set("tags", flattenOAPITagsSDK(vpnConnection.GetTags())); err != nil {
 		return err
 	}
 	if err := d.Set("vgw_telemetries", flattenVgwTelemetries(vpnConnection.GetVgwTelemetries())); err != nil {
@@ -220,7 +218,7 @@ func ResourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{})
 func ResourceOutscaleVPNConnectionUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := updateOAPITagsSDK(conn, d); err != nil {
 		return err
 	}
 	return ResourceOutscaleVPNConnectionRead(d, meta)

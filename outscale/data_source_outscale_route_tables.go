@@ -41,7 +41,7 @@ func DataSourceOutscaleRouteTables() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"tags": dataSourceTagsSchema(),
+						"tags": TagsSchemaComputedSDK(),
 						"route_propagating_virtual_gateways": {
 							Type:     schema.TypeList,
 							Computed: true,
@@ -200,7 +200,7 @@ func DataSourceOutscaleRouteTablesRead(d *schema.ResourceData, meta interface{})
 		routeTable["route_propagating_virtual_gateways"] = setOSCAPIPropagatingVirtualGateways(v.GetRoutePropagatingVirtualGateways())
 		routeTable["route_table_id"] = v.GetRouteTableId()
 		routeTable["net_id"] = v.GetNetId()
-		routeTable["tags"] = tagsOSCAPIToMap(v.GetTags())
+		routeTable["tags"] = flattenOAPITagsSDK(v.GetTags())
 		routeTable["routes"] = setOSCAPIRoutes(v.GetRoutes())
 		routeTable["link_route_tables"] = setOSCAPILinkRouteTables(v.GetLinkRouteTables())
 		routeTables[k] = routeTable

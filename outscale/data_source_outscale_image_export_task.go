@@ -80,7 +80,7 @@ func DataSourceOutscaleImageExportTask() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": dataSourceTagsSchema(),
+			"tags": TagsSchemaComputedSDK(),
 		},
 	}
 }
@@ -154,7 +154,7 @@ func dataSourceOAPISnapshotImageTaskRead(d *schema.ResourceData, meta interface{
 	if err = d.Set("osu_export", exp); err != nil {
 		return err
 	}
-	if err = d.Set("tags", tagsOSCAPIToMap(v.GetTags())); err != nil {
+	if err = d.Set("tags", flattenOAPITagsSDK(v.GetTags())); err != nil {
 		return err
 	}
 	d.SetId(v.GetTaskId())

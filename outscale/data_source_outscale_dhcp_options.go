@@ -64,7 +64,7 @@ func DataSourceOutscaleDHCPOptions() *schema.Resource {
 							Type:     schema.TypeBool,
 							Computed: true,
 						},
-						"tags": dataSourceTagsSchema(),
+						"tags": TagsSchemaComputedSDK(),
 					},
 				},
 			},
@@ -135,7 +135,7 @@ func flattenDHCPOption(dhcpOptions []oscgo.DhcpOptionsSet) []map[string]interfac
 			"ntp_servers":         dhcpOption.GetNtpServers(),
 			"default":             dhcpOption.GetDefault(),
 			"dhcp_options_set_id": dhcpOption.GetDhcpOptionsSetId(),
-			"tags":                tagsOSCAPIToMap(dhcpOption.GetTags()),
+			"tags":                flattenOAPITagsSDK(dhcpOption.GetTags()),
 		}
 	}
 	return dhcpOptionsMap

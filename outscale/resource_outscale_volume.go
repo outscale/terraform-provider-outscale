@@ -110,7 +110,7 @@ func ResourceOutscaleVolume() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": tagsListOAPISchema(),
+			"tags": TagsSchemaSDK(),
 			"volume_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -185,7 +185,7 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	d.SetId(resp.Volume.GetVolumeId())
 
 	if d.IsNewResource() {
-		if err := setOSCAPITags(conn, d); err != nil {
+		if err := updateOAPITagsSDK(conn, d); err != nil {
 			return err
 		}
 	}
@@ -228,7 +228,7 @@ func resourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 func resourceOAPIVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := updateOAPITagsSDK(conn, d); err != nil {
 		return err
 	}
 
@@ -415,7 +415,7 @@ func readOAPIVolume(d *schema.ResourceData, volume oscgo.Volume) error {
 		}
 	}
 	if volume.GetTags() != nil {
-		if err := d.Set("tags", tagsOSCAPIToMap(volume.GetTags())); err != nil {
+		if err := d.Set("tags", flattenOAPITagsSDK(volume.GetTags())); err != nil {
 			return err
 		}
 	} else {

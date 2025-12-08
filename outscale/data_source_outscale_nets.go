@@ -53,7 +53,7 @@ func DataSourceOutscaleVpcs() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"tags": dataSourceTagsSchema(),
+						"tags": TagsSchemaComputedSDK(),
 					},
 				},
 			},
@@ -127,7 +127,7 @@ func DataSourceOutscaleVpcsRead(d *schema.ResourceData, meta interface{}) error 
 		net["tenancy"] = v.GetTenancy()
 		net["state"] = v.GetState()
 		if v.Tags != nil {
-			net["tags"] = tagsOSCAPIToMap(v.GetTags())
+			net["tags"] = flattenOAPITagsSDK(v.GetTags())
 		}
 
 		nets[i] = net

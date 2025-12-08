@@ -176,7 +176,7 @@ func ResourceOutscaleLoadBalancerAttributes() *schema.Resource {
 				ForceNew: true,
 			},
 
-			"tags": tagsListOAPISchema2(true),
+			"tags": TagsSchemaComputedSDK(),
 			"dns_name": {
 				Type:     schema.TypeString,
 				Computed: true,

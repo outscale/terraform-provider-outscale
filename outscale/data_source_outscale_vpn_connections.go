@@ -77,7 +77,7 @@ func DataSourceOutscaleVPNConnections() *schema.Resource {
 								},
 							},
 						},
-						"tags": dataSourceTagsSchema(),
+						"tags": TagsSchemaComputedSDK(),
 						"vgw_telemetries": {
 							Type:     schema.TypeList,
 							Computed: true,
@@ -181,7 +181,7 @@ func flattenVPNConnections(vpnConnections []oscgo.VpnConnection) []map[string]in
 			"client_gateway_configuration": vpnConnection.GetClientGatewayConfiguration(),
 			"state":                        vpnConnection.GetState(),
 			"routes":                       flattenVPNConnection(vpnConnection.GetRoutes()),
-			"tags":                         tagsOSCAPIToMap(vpnConnection.GetTags()),
+			"tags":                         flattenOAPITagsSDK(vpnConnection.GetTags()),
 			"vgw_telemetries":              flattenVgwTelemetries(vpnConnection.GetVgwTelemetries()),
 		}
 	}

@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"reflect"
 	"time"
 
 	set "github.com/deckarep/golang-set/v2"
@@ -19,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
+	"github.com/outscale/terraform-provider-outscale/utils/to"
 )
 
 var (
@@ -29,16 +29,15 @@ var (
 )
 
 type NetAccessPointModel struct {
-	NetAccessPointId types.String  `tfsdk:"net_access_point_id"`
-	NetId            types.String  `tfsdk:"net_id"`
-	RouteTableIds    types.Set     `tfsdk:"route_table_ids"`
-	ServiceName      types.String  `tfsdk:"service_name"`
-	State            types.String  `tfsdk:"state"`
-	Tags             []ResourceTag `tfsdk:"tags"`
-
-	RequestId types.String   `tfsdk:"request_id"`
-	Timeouts  timeouts.Value `tfsdk:"timeouts"`
-	Id        types.String   `tfsdk:"id"`
+	NetAccessPointId types.String   `tfsdk:"net_access_point_id"`
+	NetId            types.String   `tfsdk:"net_id"`
+	RouteTableIds    types.Set      `tfsdk:"route_table_ids"`
+	ServiceName      types.String   `tfsdk:"service_name"`
+	State            types.String   `tfsdk:"state"`
+	RequestId        types.String   `tfsdk:"request_id"`
+	Timeouts         timeouts.Value `tfsdk:"timeouts"`
+	Id               types.String   `tfsdk:"id"`
+	TagsModel
 }
 
 type resourceNetAccessPoint struct {
@@ -87,6 +86,7 @@ func (r *resourceNetAccessPoint) ImportState(ctx context.Context, req resource.I
 	}
 	data.Timeouts = timeouts
 	data.RouteTableIds = types.SetNull(types.StringType)
+	data.Tags = TagsNull()
 
 	diags := resp.State.Set(ctx, &data)
 	resp.Diagnostics.Append(diags...)
@@ -112,7 +112,7 @@ func (r *resourceNetAccessPoint) ModifyPlan(ctx context.Context, req resource.Mo
 func (r *resourceNetAccessPoint) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Blocks: map[string]schema.Block{
-			"tags": TagsSchema(),
+			"tags": TagsSchemaFW(),
 			"timeouts": timeouts.Block(ctx, timeouts.Opts{
 				Create: true,
 				Read:   true,
@@ -202,15 +202,9 @@ func (r *resourceNetAccessPoint) Create(ctx context.Context, req resource.Create
 	data.RequestId = types.StringValue(createResp.ResponseContext.GetRequestId())
 	netAccessPoint := createResp.GetNetAccessPoint()
 
-	if len(data.Tags) > 0 {
-		err = createFrameworkTags(ctx, r.Client, tagsToOSCResourceTag(data.Tags), netAccessPoint.GetNetAccessPointId())
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable to add Tags on Net Access Point resource",
-				err.Error(),
-			)
-			return
-		}
+	diag := createOAPITagsFW(ctx, r.Client, data.Tags, netAccessPoint.GetNetAccessPointId())
+	if utils.CheckDiags(resp, diag) {
+		return
 	}
 
 	stateConf := &retry.StateChangeConf{
@@ -292,24 +286,16 @@ func (r *resourceNetAccessPoint) Update(ctx context.Context, req resource.Update
 		return
 	}
 
-	if !reflect.DeepEqual(planData.Tags, stateData.Tags) {
-		toRemove, toCreate := diffOSCAPITags(tagsToOSCResourceTag(planData.Tags), tagsToOSCResourceTag(stateData.Tags))
-		err := updateFrameworkTags(ctx, r.Client, toCreate, toRemove, stateData.NetAccessPointId.ValueString())
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable to update Tags on Net Access Point resource.",
-				err.Error(),
-			)
-			return
-		}
+	diags = updateOAPITagsFW(ctx, r.Client, stateData.Tags, planData.Tags, stateData.NetAccessPointId.ValueString())
+	if utils.CheckDiags(resp, diags) {
+		return
 	}
 
 	if !planData.RouteTableIds.IsUnknown() && !planData.RouteTableIds.IsNull() {
 		extractSet := func(ctx context.Context, ids types.Set) (set.Set[string], diag.Diagnostics) {
-			var rtIds []string
-			diags := ids.ElementsAs(ctx, &rtIds, false)
-			if diags.HasError() {
-				return nil, diags
+			rtIds, diag := to.Slice[string](ctx, ids)
+			if diag.HasError() {
+				return nil, diag
 			}
 			setIds := set.NewSet[string]()
 			setIds.Append(rtIds...)
@@ -436,13 +422,18 @@ func setNetAccessPointState(ctx context.Context, r *resourceNetAccessPoint, data
 	if diags.HasError() {
 		return data, fmt.Errorf("unable to convert Route Tables Ids into a Set. Error: %v: ", diags.Errors())
 	}
+	tags, diag := flattenOAPITagsFW(ctx, netAccessPoint.GetTags())
+	if diag.HasError() {
+		return data, fmt.Errorf("unable to flatten tags: %v", diags.Errors())
+	}
+	data.Tags = tags
+
 	data.RouteTableIds = routeTablesIds
 	data.NetId = types.StringValue(netAccessPoint.GetNetId())
 	data.NetAccessPointId = types.StringValue(netAccessPoint.GetNetAccessPointId())
 	data.Id = types.StringValue(netAccessPoint.GetNetAccessPointId())
 	data.ServiceName = types.StringValue(netAccessPoint.GetServiceName())
 	data.State = types.StringValue(netAccessPoint.GetState())
-	data.Tags = getTagsFromApiResponse(netAccessPoint.GetTags())
 
 	return data, nil
 }

@@ -107,7 +107,7 @@ func ResourceOutscaleSnapshot() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": tagsListOAPISchema(),
+			"tags": TagsSchemaSDK(),
 			"volume_size": {
 				Type:     schema.TypeInt,
 				Computed: true,
@@ -186,14 +186,12 @@ func ResourceOutscaleSnapshotCreate(d *schema.ResourceData, meta interface{}) er
 		return fmt.Errorf("Error waiting for Snapshot (%s) to be ready: %w", resp.Snapshot.GetSnapshotId(), err)
 	}
 
-	if tags, ok := d.GetOk("tags"); ok {
-		err := assignTags(tags.(*schema.Set), resp.Snapshot.GetSnapshotId(), conn)
-		if err != nil {
-			return err
-		}
-	}
-
 	d.SetId(resp.Snapshot.GetSnapshotId())
+
+	err = createOAPITagsSDK(conn, d)
+	if err != nil {
+		return err
+	}
 
 	return ResourceOutscaleSnapshotRead(d, meta)
 }
@@ -253,7 +251,7 @@ func ResourceOutscaleSnapshotRead(d *schema.ResourceData, meta interface{}) erro
 		if err := set("state", snapshot.GetState()); err != nil {
 			return err
 		}
-		if err := set("tags", tagsOSCAPIToMap(snapshot.GetTags())); err != nil {
+		if err := set("tags", flattenOAPITagsSDK(snapshot.GetTags())); err != nil {
 			return err
 		}
 		if err := set("volume_size", snapshot.GetVolumeSize()); err != nil {
@@ -266,7 +264,7 @@ func ResourceOutscaleSnapshotRead(d *schema.ResourceData, meta interface{}) erro
 func ResourceOutscaleSnapshotUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := updateOAPITagsSDK(conn, d); err != nil {
 		return err
 	}
 	return ResourceOutscaleSnapshotRead(d, meta)

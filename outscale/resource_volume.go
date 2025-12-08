@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"reflect"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
@@ -21,6 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/outscale/osc-sdk-go/v2"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/fwmodifyplan"
 	"github.com/outscale/terraform-provider-outscale/utils"
 	"github.com/samber/lo"
@@ -46,8 +46,8 @@ type VolumeModel struct {
 	State                   types.String   `tfsdk:"state"`
 	Iops                    types.Int32    `tfsdk:"iops"`
 	Size                    types.Int32    `tfsdk:"size"`
-	Tags                    []ResourceTag  `tfsdk:"tags"`
 	Id                      types.String   `tfsdk:"id"`
+	TagsModel
 }
 
 type BlockLinkedVolumes struct {
@@ -146,6 +146,8 @@ func (r *resourceVolume) ImportState(ctx context.Context, req resource.ImportSta
 	}
 	data.Timeouts = timeouts
 	data.LinkedVolumes = types.SetNull(types.ObjectType{AttrTypes: utils.GetAttrTypes(BlockLinkedVolumes{})})
+	data.Tags = TagsNull()
+
 	diags := resp.State.Set(ctx, &data)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -178,7 +180,7 @@ func LinkedVolumesSchema() schema.SetAttribute {
 func (r *resourceVolume) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Blocks: map[string]schema.Block{
-			"tags": TagsSchema(),
+			"tags": TagsSchemaFW(),
 			"timeouts": timeouts.Block(ctx, timeouts.Opts{
 				Create: true,
 				Read:   true,
@@ -293,16 +295,11 @@ func (r *resourceVolume) Create(ctx context.Context, req resource.CreateRequest,
 	data.VolumeId = types.StringValue(volumeId)
 	data.Id = types.StringValue(volumeId)
 
-	if len(data.Tags) > 0 {
-		err = createFrameworkTags(ctx, r.Client, tagsToOSCResourceTag(data.Tags), volumeId)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable to add Tags on volume resource",
-				err.Error(),
-			)
-			return
-		}
+	diag := createOAPITagsFW(ctx, r.Client, data.Tags, volumeId)
+	if utils.CheckDiags(resp, diag) {
+		return
 	}
+
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"creating"},
 		Target:     []string{"available"},
@@ -360,51 +357,44 @@ func (r *resourceVolume) Read(ctx context.Context, req resource.ReadRequest, res
 }
 
 func (r *resourceVolume) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var dataPlan, dataState VolumeModel
-
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &dataPlan)...)
-	resp.Diagnostics.Append(req.State.Get(ctx, &dataState)...)
+	var planData, stateData VolumeModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &planData)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &stateData)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	updateTimeout, diags := dataPlan.Timeouts.Update(ctx, utils.UpdateDefaultTimeout)
+
+	updateTimeout, diags := planData.Timeouts.Update(ctx, utils.UpdateDefaultTimeout)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	volumeId := dataState.VolumeId.ValueString()
-	dataState.TerminationSnapshotName = dataPlan.TerminationSnapshotName
+	volumeId := stateData.VolumeId.ValueString()
+	stateData.TerminationSnapshotName = planData.TerminationSnapshotName
 
-	if !reflect.DeepEqual(dataPlan.Tags, dataState.Tags) {
-		toRemove, toCreate := diffOSCAPITags(tagsToOSCResourceTag(dataPlan.Tags), tagsToOSCResourceTag(dataState.Tags))
-		err := updateFrameworkTags(ctx, r.Client, toCreate, toRemove, volumeId)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable to update Tags on volume resource",
-				err.Error(),
-			)
-			return
-		}
+	diag := updateOAPITagsFW(ctx, r.Client, stateData.Tags, planData.Tags, volumeId)
+	if utils.CheckDiags(resp, diag) {
+		return
 	}
 
 	updateReq := osc.NewUpdateVolumeRequest(volumeId)
 	shouldUpdate := false
 
-	if utils.IsSet(dataPlan.Size) && !dataPlan.Size.Equal(dataState.Size) {
-		updateReq.Size = dataPlan.Size.ValueInt32Pointer()
+	if utils.IsSet(planData.Size) && !planData.Size.Equal(stateData.Size) {
+		updateReq.Size = planData.Size.ValueInt32Pointer()
 		shouldUpdate = true
 	}
 
 	// When updating a gp2 volume to io1 while keeping the iops value at 100 (default gp2 iops value),
 	// Terraform will not detect the change between config and state
-	if utils.IsSet(dataPlan.Iops) && (!dataPlan.Iops.Equal(dataState.Iops) || (dataPlan.VolumeType.ValueString() == "io1" && dataState.VolumeType.ValueString() != "io1")) {
-		updateReq.Iops = dataPlan.Iops.ValueInt32Pointer()
+	if utils.IsSet(planData.Iops) && (!planData.Iops.Equal(stateData.Iops) || (planData.VolumeType.ValueString() == "io1" && stateData.VolumeType.ValueString() != "io1")) {
+		updateReq.Iops = planData.Iops.ValueInt32Pointer()
 		shouldUpdate = true
 	}
 
-	if utils.IsSet(dataPlan.VolumeType) && !dataPlan.VolumeType.Equal(dataState.VolumeType) {
-		updateReq.VolumeType = dataPlan.VolumeType.ValueStringPointer()
+	if utils.IsSet(planData.VolumeType) && !planData.VolumeType.Equal(stateData.VolumeType) {
+		updateReq.VolumeType = planData.VolumeType.ValueStringPointer()
 		shouldUpdate = true
 	}
 
@@ -416,7 +406,7 @@ func (r *resourceVolume) Update(ctx context.Context, req resource.UpdateRequest,
 				return utils.CheckThrottling(httpResp, err)
 			}
 			volume = rp
-			dataState.RequestId = types.StringValue(*rp.ResponseContext.RequestId)
+			stateData.RequestId = types.StringValue(*rp.ResponseContext.RequestId)
 			return nil
 		})
 		if err != nil {
@@ -439,7 +429,7 @@ func (r *resourceVolume) Update(ctx context.Context, req resource.UpdateRequest,
 		}
 	}
 
-	err := setVolumeState(ctx, r, &dataState)
+	err := setVolumeState(ctx, r, &stateData)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to set volume state",
@@ -448,7 +438,7 @@ func (r *resourceVolume) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &dataState)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &stateData)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -540,16 +530,14 @@ func (r *resourceVolume) Delete(ctx context.Context, req resource.DeleteRequest,
 			return
 		}
 
-		snapTags := []ResourceTag{
-			{
-				Key:   types.StringValue("Name"),
-				Value: types.StringValue(data.TerminationSnapshotName.String()),
-			},
+		tags := oscgo.ResourceTag{
+			Key:   "Name",
+			Value: data.TerminationSnapshotName.String(),
 		}
-		err = createFrameworkTags(ctx, r.Client, tagsToOSCResourceTag(snapTags), snapshotId)
+		err = createOAPITags(ctx, r.Client, []oscgo.ResourceTag{tags}, snapshotId)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				"Unable to add Tags on snapshot resource",
+				fmt.Sprintf("Unable to create tags for snapshot '%s' ", snapshotId),
 				err.Error(),
 			)
 			return
@@ -606,7 +594,12 @@ func setVolumeState(ctx context.Context, r *resourceVolume, data *VolumeModel) e
 	}
 
 	volume := readResp.GetVolumes()[0]
-	data.Tags = getTagsFromApiResponse(volume.GetTags())
+	tags, diag := flattenOAPITagsFW(ctx, volume.GetTags())
+	if diag.HasError() {
+		return fmt.Errorf("unable to flatten tags: %v", diags.Errors())
+	}
+	data.Tags = tags
+
 	data.LinkedVolumes, diags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: utils.GetAttrTypes(BlockLinkedVolumes{})}, getLinkedVolumesFromApiResponse(volume.GetLinkedVolumes())) //volume.GetLinkedVolumes()) //utils.GetAttrTypes(BlockLinkedVolumes{})}, volume.GetLinkedVolumes())
 	if diags.HasError() {
 		return fmt.Errorf("unable to set LinkedVolumes block: %v: ", diags.Errors())

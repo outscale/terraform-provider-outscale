@@ -104,7 +104,7 @@ func ResourceOutscaleIMageExportTask() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": tagsListOAPISchema(),
+			"tags": TagsSchemaSDK(),
 		},
 	}
 }
@@ -175,7 +175,7 @@ func resourceOAPIImageExportTaskCreate(d *schema.ResourceData, meta interface{})
 	id := resp.ImageExportTask.GetTaskId()
 	d.SetId(id)
 	if d.IsNewResource() {
-		if err := setOSCAPITags(conn, d); err != nil {
+		if err := updateOAPITagsSDK(conn, d); err != nil {
 			return err
 		}
 	}
@@ -265,7 +265,7 @@ func resourceOAPIImageExportTaskRead(d *schema.ResourceData, meta interface{}) e
 	if err = d.Set("osu_export", exp); err != nil {
 		return err
 	}
-	if err = d.Set("tags", tagsOSCAPIToMap(v.GetTags())); err != nil {
+	if err = d.Set("tags", flattenOAPITagsSDK(v.GetTags())); err != nil {
 		return err
 	}
 
@@ -275,7 +275,7 @@ func resourceOAPIImageExportTaskRead(d *schema.ResourceData, meta interface{}) e
 func resourceOAPIImageExportTaskUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	if err := setOSCAPITags(conn, d); err != nil {
+	if err := updateOAPITagsSDK(conn, d); err != nil {
 		return err
 	}
 	return resourceOAPIImageExportTaskRead(d, meta)

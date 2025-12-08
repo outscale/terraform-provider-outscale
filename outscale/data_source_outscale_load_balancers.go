@@ -140,7 +140,7 @@ func attrLBSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"tags": tagsListOAPISchema2(true),
+					"tags": TagsSchemaComputedSDK(),
 					"security_groups": {
 						Type:     schema.TypeList,
 						Computed: true,

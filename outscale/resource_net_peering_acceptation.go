@@ -26,20 +26,19 @@ var (
 )
 
 type NetPeeringAcceptationModel struct {
-	AccepterNet        types.List   `tfsdk:"accepter_net"`
-	ExpirationDate     types.String `tfsdk:"expiration_date"`
-	NetPeeringId       types.String `tfsdk:"net_peering_id"`
-	SourceNet          types.List   `tfsdk:"source_net"`
-	State              types.List   `tfsdk:"state"`
-	AccepterOwnerId    types.String `tfsdk:"accepter_owner_id"`
-	SourceNetAccountId types.String `tfsdk:"source_net_account_id"`
-	AccepterNetId      types.String `tfsdk:"accepter_net_id"`
-	SourceNetId        types.String `tfsdk:"source_net_id"`
-	Tags               types.List   `tfsdk:"tags"`
-
-	RequestId types.String   `tfsdk:"request_id"`
-	Timeouts  timeouts.Value `tfsdk:"timeouts"`
-	Id        types.String   `tfsdk:"id"`
+	AccepterNet        types.List     `tfsdk:"accepter_net"`
+	ExpirationDate     types.String   `tfsdk:"expiration_date"`
+	NetPeeringId       types.String   `tfsdk:"net_peering_id"`
+	SourceNet          types.List     `tfsdk:"source_net"`
+	State              types.List     `tfsdk:"state"`
+	AccepterOwnerId    types.String   `tfsdk:"accepter_owner_id"`
+	SourceNetAccountId types.String   `tfsdk:"source_net_account_id"`
+	AccepterNetId      types.String   `tfsdk:"accepter_net_id"`
+	SourceNetId        types.String   `tfsdk:"source_net_id"`
+	RequestId          types.String   `tfsdk:"request_id"`
+	Timeouts           timeouts.Value `tfsdk:"timeouts"`
+	Id                 types.String   `tfsdk:"id"`
+	TagsComputedModel
 }
 
 type resourceNetPeeringAcceptation struct {
@@ -87,10 +86,10 @@ func (r *resourceNetPeeringAcceptation) ImportState(ctx context.Context, req res
 	}
 	data.Timeouts = timeouts
 
-	data.Tags = types.ListNull(types.ObjectType{AttrTypes: tagAttrTypes})
 	data.State = types.ListNull(types.ObjectType{AttrTypes: stateAttrTypes})
 	data.SourceNet = types.ListNull(types.ObjectType{AttrTypes: netAttrTypes})
 	data.AccepterNet = types.ListNull(types.ObjectType{AttrTypes: netAttrTypes})
+	data.Tags = ComputedTagsNull()
 
 	diags := resp.State.Set(ctx, &data)
 	resp.Diagnostics.Append(diags...)
@@ -123,7 +122,6 @@ func (r *resourceNetPeeringAcceptation) Schema(ctx context.Context, _ resource.S
 			}),
 		},
 		Attributes: map[string]schema.Attribute{
-			"tags": TagsSchemaComputedAttr(),
 			"net_peering_id": schema.StringAttribute{
 				Required: true,
 				PlanModifiers: []planmodifier.String{
@@ -162,23 +160,10 @@ func (r *resourceNetPeeringAcceptation) Schema(ctx context.Context, _ resource.S
 					},
 				},
 			},
+			"tags": TagsSchemaComputedFW(),
 		},
 	}
 }
-
-func TagsSchemaComputedAttr() *schema.ListAttribute {
-	return &schema.ListAttribute{
-		Computed: true,
-		ElementType: types.ObjectType{
-			AttrTypes: map[string]attr.Type{
-				"key":   types.StringType,
-				"value": types.StringType,
-			},
-		},
-	}
-}
-
-var tagAttrTypes = utils.GetAttrTypes(ResourceTag{})
 
 func (r *resourceNetPeeringAcceptation) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data NetPeeringAcceptationModel
@@ -299,8 +284,8 @@ func (r *resourceNetPeeringAcceptation) setNetPeeringAcceptationState(ctx contex
 
 	netPeering := readResp.GetNetPeerings()[0]
 
-	tags, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: tagAttrTypes}, getTagsFromApiResponse(netPeering.GetTags()))
-	if diags.HasError() {
+	tags, diag := flattenOAPIComputedTagsFW(ctx, netPeering.GetTags())
+	if diag.HasError() {
 		return data, fmt.Errorf("Unable to convert Tags to the schema List. Error: %v: ", diags.Errors())
 	}
 	sourceNet, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: netAttrTypes}, SourceNetToList(netPeering.GetSourceNet()))

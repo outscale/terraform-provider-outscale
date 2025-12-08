@@ -74,7 +74,7 @@ func DataSourceOutscaleTagsRead(d *schema.ResourceData, meta interface{}) error 
 		return err
 	}
 
-	if err := d.Set("tags", oapiTagsDescToList(resp.GetTags())); err != nil {
+	if err := d.Set("tags", flattenOAPITagsDescSDK(resp.GetTags())); err != nil {
 		return err
 	}
 	d.SetId(id.UniqueId())

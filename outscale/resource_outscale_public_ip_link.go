@@ -126,7 +126,7 @@ func ResourceOutscalePublicIPLinkRead(d *schema.ResourceData, meta interface{}) 
 		return nil
 	}
 
-	if err := d.Set("tags", getOapiTagSet(response.GetPublicIps()[0].Tags)); err != nil {
+	if err := d.Set("tags", flattenOAPITagsSDK(response.GetPublicIps()[0].GetTags())); err != nil {
 		return err
 	}
 
@@ -204,7 +204,7 @@ func readOutscalePublicIPLink(d *schema.ResourceData, address *oscgo.PublicIp) e
 		return err
 	}
 
-	if err := d.Set("tags", tagsOSCAPIToMap(address.GetTags())); err != nil {
+	if err := d.Set("tags", flattenOAPITagsSDK(address.GetTags())); err != nil {
 		fmt.Printf("[WARN] ERROR readOutscalePublicIPLink TAGS PROBLEME (%s)", err)
 	}
 
@@ -261,6 +261,6 @@ func getOAPIPublicIPLinkSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"tags": tagsOAPIListSchemaComputed(),
+		"tags": TagsSchemaComputedSDK(),
 	}
 }
