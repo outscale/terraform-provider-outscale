@@ -114,8 +114,8 @@ func testCheckResourceOAPILPIGetAttr(name, key string, value *string) r.TestChec
 
 func testAccOutscaleImageLaunchPermissionExists(accountID string, imageID *string) r.TestCheckFunc {
 	return func(s *terraform.State) error {
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
-		if has, err := hasOAPILaunchPermission(conn, *imageID); err != nil {
+		client := testAccConfiguredClient.OSCAPI
+		if has, err := hasOAPILaunchPermission(client, *imageID); err != nil {
 			return err
 		} else if !has {
 			return fmt.Errorf("launch permission does not exist for '%s' on '%s'", accountID, *imageID)
@@ -126,8 +126,8 @@ func testAccOutscaleImageLaunchPermissionExists(accountID string, imageID *strin
 
 func testAccOutscaleImageLaunchPermissionDestroyed(accountID string, imageID *string) r.TestCheckFunc {
 	return func(s *terraform.State) error {
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
-		if has, err := hasOAPILaunchPermission(conn, *imageID); err != nil {
+		client := testAccConfiguredClient.OSCAPI
+		if has, err := hasOAPILaunchPermission(client, *imageID); err != nil {
 			return err
 		} else if has {
 			return fmt.Errorf("launch permission still exists for '%s' on '%s'", accountID, *imageID)
@@ -141,14 +141,14 @@ func testAccOutscaleImageLaunchPermissionDestroyed(accountID string, imageID *st
 // so we can test that Terraform will react properly
 func testAccOutscaleImageDisappears(imageID *string) r.TestCheckFunc {
 	return func(s *terraform.State) error {
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		client := testAccConfiguredClient.OSCAPI
 		req := oscgo.DeleteImageRequest{
 			ImageId: aws.StringValue(imageID),
 		}
 
 		err := r.Retry(5*time.Minute, func() *r.RetryError {
 			var err error
-			_, httpResp, err := conn.ImageApi.DeleteImage(context.Background()).DeleteImageRequest(req).Execute()
+			_, httpResp, err := client.ImageApi.DeleteImage(context.Background()).DeleteImageRequest(req).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
 			}
@@ -158,7 +158,7 @@ func testAccOutscaleImageDisappears(imageID *string) r.TestCheckFunc {
 			return err
 		}
 
-		return ResourceOutscaleImageWaitForDestroy(*imageID, conn, 5*utils.DeleteDefaultTimeout)
+		return ResourceOutscaleImageWaitForDestroy(*imageID, client, 5*utils.DeleteDefaultTimeout)
 	}
 }
 

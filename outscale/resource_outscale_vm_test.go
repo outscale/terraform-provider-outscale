@@ -254,7 +254,7 @@ func TestAccVM_UpdateKeypair(t *testing.T) {
 			{
 				Config: testAccVmsConfigUpdateOAPIVMKey2(omi, utils.TestAccVmType, region, keypair),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPIVMExists(resourceName, &after),
+					testAccCheckOutscaleVMExists(resourceName, &after),
 					testAccCheckOAPIVMNotRecreated(t, &before, &after),
 					resource.TestCheckResourceAttr(resourceName, "vm_type", utils.TestAccVmType),
 				),
@@ -553,59 +553,9 @@ func testAccCheckOutscaleDeletionProtectionUpdateBasic(omi, keypair, vmType stri
 // 	}
 // }
 
-func testAccCheckOAPIVMExists(n string, i *oscgo.Vm) resource.TestCheckFunc {
-	providers := []*schema.Provider{testAccProvider}
-	return testAccCheckOAPIVMExistsWithProviders(n, i, &providers)
-}
-
 func getVMsFilterByVMID(vmID string) *oscgo.FiltersVm {
 	return &oscgo.FiltersVm{
 		VmIds: &[]string{vmID},
-	}
-}
-
-func testAccCheckOAPIVMExistsWithProviders(n string, i *oscgo.Vm, providers *[]*schema.Provider) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("Not found: %s", n)
-		}
-
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("No ID is set")
-		}
-		for _, provider := range *providers {
-			// Ignore if Meta is empty, this can happen for validation providers
-			if provider.Meta() == nil {
-				continue
-			}
-
-			client := provider.Meta().(*OutscaleClient)
-
-			var resp oscgo.ReadVmsResponse
-			var err error
-			err = resource.Retry(120*time.Second, func() *resource.RetryError {
-				rp, httpResp, err := client.OSCAPI.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
-					Filters: getVMsFilterByVMID(rs.Primary.ID),
-				}).Execute()
-				if err != nil {
-					return utils.CheckThrottling(httpResp, err)
-				}
-				resp = rp
-				return nil
-			})
-
-			if err != nil {
-				return err
-			}
-
-			if len(resp.GetVms()) > 0 {
-				*i = resp.GetVms()[0]
-				return nil
-			}
-		}
-
-		return fmt.Errorf("Vms not found")
 	}
 }
 
@@ -636,7 +586,7 @@ func testAccCheckOutscaleVMDestroy(s *terraform.State) error {
 // }
 
 func testAccCheckOutscaleVMDestroyWithProvider(s *terraform.State, provider *schema.Provider) error {
-	conn := provider.Meta().(*OutscaleClient)
+	client := testAccConfiguredClient.OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_vm" {
@@ -648,7 +598,7 @@ func testAccCheckOutscaleVMDestroyWithProvider(s *terraform.State, provider *sch
 		var statusCode int
 		// Try to find the resource
 		err = resource.Retry(120*time.Second, func() *resource.RetryError {
-			rp, httpResp, err := conn.OSCAPI.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
+			rp, httpResp, err := client.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
 				Filters: getVMsFilterByVMID(rs.Primary.ID),
 			}).Execute()
 			if err != nil {
@@ -678,11 +628,6 @@ func testAccCheckOutscaleVMDestroyWithProvider(s *terraform.State, provider *sch
 }
 
 func testAccCheckOutscaleVMExists(n string, i *oscgo.Vm) resource.TestCheckFunc {
-	providers := []*schema.Provider{testAccProvider}
-	return testAccCheckOutscaleVMExistsWithProviders(n, i, &providers)
-}
-
-func testAccCheckOutscaleVMExistsWithProviders(n string, i *oscgo.Vm, providers *[]*schema.Provider) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -692,39 +637,32 @@ func testAccCheckOutscaleVMExistsWithProviders(n string, i *oscgo.Vm, providers 
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("No ID is set")
 		}
-		for _, provider := range *providers {
-			// Ignore if Meta is empty, this can happen for validation providers
-			if provider.Meta() == nil {
-				continue
-			}
+		client := testAccConfiguredClient.OSCAPI
+		var resp oscgo.ReadVmsResponse
+		var err error
 
-			conn := provider.Meta().(*OutscaleClient)
-			var resp oscgo.ReadVmsResponse
-			var err error
-
-			err = resource.Retry(120*time.Second, func() *resource.RetryError {
-				rp, httpResp, err := conn.OSCAPI.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
-					Filters: getVMsFilterByVMID(rs.Primary.ID),
-				}).Execute()
-				if err != nil {
-					return utils.CheckThrottling(httpResp, err)
-				}
-				resp = rp
-				return nil
-			})
-
+		err = resource.Retry(120*time.Second, func() *resource.RetryError {
+			rp, httpResp, err := client.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
+				Filters: getVMsFilterByVMID(rs.Primary.ID),
+			}).Execute()
 			if err != nil {
-				return err
+				return utils.CheckThrottling(httpResp, err)
 			}
+			resp = rp
+			return nil
+		})
 
-			if resp.Vms == nil {
-				return fmt.Errorf("Vms not found")
-			}
+		if err != nil {
+			return err
+		}
 
-			if len(resp.GetVms()) > 0 {
-				*i = resp.GetVms()[0]
-				return nil
-			}
+		if resp.Vms == nil {
+			return fmt.Errorf("Vms not found")
+		}
+
+		if len(resp.GetVms()) > 0 {
+			*i = resp.GetVms()[0]
+			return nil
 		}
 		return fmt.Errorf("Vms not found")
 	}

@@ -45,7 +45,7 @@ func TestAccOthers_Image_basic(t *testing.T) {
 }
 
 func testAccCheckOAPIImageDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+	client := testAccConfiguredClient.OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_image" {
@@ -57,7 +57,7 @@ func testAccCheckOAPIImageDestroy(s *terraform.State) error {
 		}
 		var resp oscgo.ReadImagesResponse
 		err := resource.Retry(120*time.Second, func() *resource.RetryError {
-			rp, httpResp, err := conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(filterReq).Execute()
+			rp, httpResp, err := client.ImageApi.ReadImages(context.Background()).ReadImagesRequest(filterReq).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
 			}
@@ -83,14 +83,14 @@ func testAccCheckOAPIImageExists(n string, ami *oscgo.Image) resource.TestCheckF
 			return fmt.Errorf("No OMI ID is set")
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		client := testAccConfiguredClient.OSCAPI
 
 		filterReq := oscgo.ReadImagesRequest{
 			Filters: &oscgo.FiltersImage{ImageIds: &[]string{rs.Primary.ID}},
 		}
 		var resp oscgo.ReadImagesResponse
 		err := resource.Retry(120*time.Second, func() *resource.RetryError {
-			rp, httpResp, err := conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(filterReq).Execute()
+			rp, httpResp, err := client.ImageApi.ReadImages(context.Background()).ReadImagesRequest(filterReq).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
 			}

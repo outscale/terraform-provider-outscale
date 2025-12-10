@@ -51,7 +51,7 @@ func testAccCheckOutscalePublicIPLinkExists(name string, res *oscgo.PublicIp) re
 			return fmt.Errorf("No Public IP Link ID is set")
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient)
+		client := testAccConfiguredClient.OSCAPI
 
 		request := oscgo.ReadPublicIpsRequest{
 			Filters: &oscgo.FiltersPublicIp{
@@ -60,7 +60,7 @@ func testAccCheckOutscalePublicIPLinkExists(name string, res *oscgo.PublicIp) re
 		}
 		var response oscgo.ReadPublicIpsResponse
 		err := resource.Retry(60*time.Second, func() *resource.RetryError {
-			rp, httpResp, err := conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(request).Execute()
+			rp, httpResp, err := client.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(request).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
 			}
@@ -99,7 +99,7 @@ func testAccCheckOutscalePublicIPLinkDestroy(s *terraform.State) error {
 
 		id := rs.Primary.Attributes["link_public_ip_id"]
 
-		conn := testAccProvider.Meta().(*OutscaleClient)
+		client := testAccConfiguredClient.OSCAPI
 
 		request := oscgo.ReadPublicIpsRequest{
 			Filters: &oscgo.FiltersPublicIp{
@@ -108,7 +108,7 @@ func testAccCheckOutscalePublicIPLinkDestroy(s *terraform.State) error {
 		}
 		var response oscgo.ReadPublicIpsResponse
 		err := resource.Retry(60*time.Second, func() *resource.RetryError {
-			rp, httpResp, err := conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(request).Execute()
+			rp, httpResp, err := client.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(request).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
 			}
@@ -139,7 +139,7 @@ func testAccCheckOutscalePublicIPLExists(n string, res *oscgo.PublicIp) resource
 			return fmt.Errorf("No PublicIP ID is set")
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient)
+		client := testAccConfiguredClient.OSCAPI
 
 		// Missing on Swagger Spec
 		if strings.Contains(rs.Primary.ID, "reservation") {
@@ -150,7 +150,7 @@ func testAccCheckOutscalePublicIPLExists(n string, res *oscgo.PublicIp) resource
 			}
 			var resp oscgo.ReadPublicIpsResponse
 			err := resource.Retry(60*time.Second, func() *resource.RetryError {
-				rp, httpResp, err := conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
+				rp, httpResp, err := client.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
 				if err != nil {
 					return utils.CheckThrottling(httpResp, err)
 				}
@@ -179,7 +179,7 @@ func testAccCheckOutscalePublicIPLExists(n string, res *oscgo.PublicIp) resource
 			var statusCode int
 			err := resource.Retry(120*time.Second, func() *resource.RetryError {
 				var err error
-				rp, httpResp, err := conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
+				rp, httpResp, err := client.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
 
 				if err != nil {
 					if httpResp.StatusCode == http.StatusNotFound {
@@ -229,9 +229,9 @@ func testAccOutscalePublicIPLinkConfig(omi, vmType, region, keypair string) stri
 			security_group_ids       = [outscale_security_group.sg_link.security_group_id]
 			placement_subregion_name = "%[3]sa"
 		}
-		
+
 		resource "outscale_public_ip" "ip_link" {}
-		
+
 		resource "outscale_public_ip_link" "by_public_ip" {
 			public_ip = outscale_public_ip.ip_link.public_ip
 			vm_id     = outscale_vm.vm_link.id
