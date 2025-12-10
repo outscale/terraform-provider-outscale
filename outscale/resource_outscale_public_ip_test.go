@@ -94,7 +94,7 @@ func TestAccNet_PublicIP_associated_user_private_ip(t *testing.T) {
 }
 
 func testAccCheckOutscalePublicIPDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient)
+	client := testAccConfiguredClient.OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_public_ip" {
@@ -138,7 +138,7 @@ func testAccCheckOutscalePublicIPDestroy(s *terraform.State) error {
 		var response oscgo.ReadPublicIpsResponse
 		var statusCode int
 		err := resource.Retry(60*time.Second, func() *resource.RetryError {
-			rp, httpResp, err := conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
+			rp, httpResp, err := client.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
 			}
@@ -185,7 +185,7 @@ func testAccCheckOutscalePublicIPExists(n string, res *oscgo.PublicIp) resource.
 			return fmt.Errorf("No PublicIP ID is set")
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient)
+		client := testAccConfiguredClient.OSCAPI
 
 		//Missing on Swagger Spec
 		// if strings.Contains(rs.Primary.ID, "link") {
@@ -216,7 +216,7 @@ func testAccCheckOutscalePublicIPExists(n string, res *oscgo.PublicIp) resource.
 		var response oscgo.ReadPublicIpsResponse
 		err := resource.Retry(120*time.Second, func() *resource.RetryError {
 			var err error
-			response, _, err = conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
+			response, _, err = client.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
 
 			if err != nil {
 				if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidPublicIps.NotFound") {

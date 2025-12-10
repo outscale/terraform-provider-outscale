@@ -125,7 +125,7 @@ func testAccCheckOAPISnapshotExists(n string, v *oscgo.Snapshot) resource.TestCh
 			return fmt.Errorf("No ID is set")
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		client := testAccConfiguredClient.OSCAPI
 
 		request := oscgo.ReadSnapshotsRequest{
 			Filters: &oscgo.FiltersSnapshot{SnapshotIds: &[]string{rs.Primary.ID}},
@@ -134,7 +134,7 @@ func testAccCheckOAPISnapshotExists(n string, v *oscgo.Snapshot) resource.TestCh
 		var resp oscgo.ReadSnapshotsResponse
 
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-			rp, httpResp, err := conn.SnapshotApi.ReadSnapshots(context.Background()).ReadSnapshotsRequest(request).Execute()
+			rp, httpResp, err := client.SnapshotApi.ReadSnapshots(context.Background()).ReadSnapshotsRequest(request).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
 			}
