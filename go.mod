@@ -17,7 +17,6 @@ require (
 	github.com/hashicorp/terraform-plugin-log v0.9.0
 	github.com/hashicorp/terraform-plugin-mux v0.18.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.36.1
-	github.com/nav-inc/datetime v0.1.3
 	github.com/outscale/osc-sdk-go/v2 v2.31.0
 	github.com/outscale/osc-sdk-go/v3 v3.0.0-alpha.5.0.20251112125254-1fb3f9ca574c
 	github.com/samber/lo v1.52.0
