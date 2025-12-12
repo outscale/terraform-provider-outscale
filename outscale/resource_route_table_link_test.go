@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/outscale/terraform-provider-outscale/utils/testutils"
 )
 
 func TestAccNet_WithLinkRouteTable_Basic(t *testing.T) {
@@ -44,13 +45,7 @@ func TestAccNet_ImportLinkRouteTable_Basic(t *testing.T) {
 			{
 				Config: testAccOAPILinkRouteTableConfig,
 			},
-			{
-				ResourceName:            resourceName,
-				ImportStateIdFunc:       testAccCheckOAPILinkRouteTableImportStateIDFunc(resourceName),
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"request_id"},
-			},
+			testutils.ImportStepWithStateIdFuncFW(resourceName, testAccCheckOAPILinkRouteTableImportStateIDFunc(resourceName), testutils.DefaultIgnores()...),
 		},
 	})
 }

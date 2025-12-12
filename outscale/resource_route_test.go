@@ -6,8 +6,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/outscale/terraform-provider-outscale/utils/testutils"
+
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func TestAccNet_OutscaleRoute_noopdiff(t *testing.T) {
@@ -44,13 +45,7 @@ func TestAccNet_ImportRoute_Basic(t *testing.T) {
 			{
 				Config: testAccOutscaleRouteNoopChange,
 			},
-			{
-				ResourceName:            resourceName,
-				ImportStateIdFunc:       testAccCheckOutscaleRouteImportStateIDFunc(resourceName),
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"request_id", "await_active_state"},
-			},
+			testutils.ImportStepFW(resourceName, "request_id", "await_active_state"),
 		},
 	})
 }
@@ -65,13 +60,7 @@ func TestAccNet_Route_importWithNatService(t *testing.T) {
 			{
 				Config: testAccOutscaleRouteWithNatService,
 			},
-			{
-				ResourceName:            resourceName,
-				ImportStateIdFunc:       testAccCheckOutscaleRouteImportStateIDFunc(resourceName),
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"request_id", "await_active_state", "routes"}, /*we will remove 'routes' when autorefresh after link resources Ok*/
-			},
+			testutils.ImportStepFW(resourceName, "request_id", "await_active_state", "routes"),
 		},
 	})
 }
@@ -203,16 +192,6 @@ func TestAccNet_Route_onlyOneTarget(t *testing.T) {
 			},
 		},
 	})
-}
-
-func testAccCheckOutscaleRouteImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
-	return func(s *terraform.State) (string, error) {
-		rs, ok := s.RootModule().Resources[resourceName]
-		if !ok {
-			return "", fmt.Errorf("Not found: %s", resourceName)
-		}
-		return rs.Primary.ID, nil
-	}
 }
 
 var testAccOutscaleRouteNoopChange = `

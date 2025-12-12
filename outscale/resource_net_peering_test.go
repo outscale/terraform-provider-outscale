@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	"github.com/outscale/terraform-provider-outscale/utils"
+	"github.com/outscale/terraform-provider-outscale/utils/testutils"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func TestAccNet_PeeringConnection_Basic(t *testing.T) {
@@ -45,13 +45,7 @@ func TestAccNet_PeeringConnection_importBasic(t *testing.T) {
 			{
 				Config: testAccOAPIVpcPeeringConfig(utils.GetAccepterOwnerId()),
 			},
-			{
-				ResourceName:            resourceName,
-				ImportStateIdFunc:       testAccCheckOutscaleLinkPeeeringConnectionImportStateIDFunc(resourceName),
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"request_id"},
-			},
+			testutils.ImportStepFW(resourceName, testutils.DefaultIgnores()...),
 		},
 	})
 }
@@ -61,16 +55,6 @@ func TestAccNet_PeeringConnection_importBasic_Migration(t *testing.T) {
 		PreCheck: func() { testAccPreCheck(t) },
 		Steps:    FrameworkMigrationTestSteps("1.1.1", testAccOAPIVpcPeeringConfig(utils.GetAccepterOwnerId())),
 	})
-}
-
-func testAccCheckOutscaleLinkPeeeringConnectionImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
-	return func(s *terraform.State) (string, error) {
-		rs, ok := s.RootModule().Resources[resourceName]
-		if !ok {
-			return "", fmt.Errorf("Not found: %s", resourceName)
-		}
-		return rs.Primary.ID, nil
-	}
 }
 
 func TestAccNet_PeeringConnection_plan(t *testing.T) {

@@ -1,11 +1,10 @@
 package outscale
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/outscale/terraform-provider-outscale/utils/testutils"
 )
 
 func TestAccNet_WithInternetServiceLink_Basic(t *testing.T) {
@@ -42,25 +41,9 @@ func TestAccNet_WithImportInternetServiceLink_Basic(t *testing.T) {
 			{
 				Config: testAccOutscaleInternetServiceLinkConfig(),
 			},
-			{
-				ResourceName:            resourceName,
-				ImportStateIdFunc:       testAccCheckOutscaleInternetServiceLinkImportStateIDFunc(resourceName),
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"request_id"},
-			},
+			testutils.ImportStepFW(resourceName, testutils.DefaultIgnores()...),
 		},
 	})
-}
-
-func testAccCheckOutscaleInternetServiceLinkImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
-	return func(s *terraform.State) (string, error) {
-		rs, ok := s.RootModule().Resources[resourceName]
-		if !ok {
-			return "", fmt.Errorf("Not found: %s", resourceName)
-		}
-		return rs.Primary.ID, nil
-	}
 }
 
 func testAccOutscaleInternetServiceLinkConfig() string {

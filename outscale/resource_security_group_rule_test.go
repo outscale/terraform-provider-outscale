@@ -6,9 +6,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/outscale/terraform-provider-outscale/utils/testutils"
 )
 
 func TestAccOthers_SecurityGroupRule_Basic(t *testing.T) {
@@ -26,12 +27,7 @@ func TestAccOthers_SecurityGroupRule_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "from_port_range", "443"),
 				),
 			},
-			{
-				ImportStateIdFunc:       testAccCheckOutscaleRuleImportStateIDFunc(resourceName),
-				ResourceName:            resourceName,
-				ImportState:             true,
-				ImportStateVerifyIgnore: []string{"request_id"},
-			},
+			testutils.ImportStepWithStateIdFuncFW(resourceName, testAccCheckOutscaleRuleImportStateIDFunc(resourceName), testutils.DefaultIgnores()...),
 		},
 	})
 }

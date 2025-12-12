@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/outscale/terraform-provider-outscale/utils"
+	"github.com/outscale/terraform-provider-outscale/utils/testutils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -54,13 +55,7 @@ func TestAccNet_ImportNicLink_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "nic_id"),
 				),
 			},
-			{
-				ResourceName:            resourceName,
-				ImportStateIdFunc:       testAccCheckOutscaleNicLinkStateIDFunc(resourceName),
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{""},
-			},
+			testutils.ImportStepWithStateIdFuncSDKv2(resourceName, testAccCheckOutscaleNicLinkStateIDFunc(resourceName)),
 		},
 	})
 }
