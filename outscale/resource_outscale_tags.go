@@ -10,7 +10,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -57,11 +57,11 @@ func ResourceOutscaleTagsCreate(d *schema.ResourceData, meta interface{}) error 
 		request.SetResourceIds(rids)
 	}
 
-	err := resource.Retry(60*time.Second, func() *resource.RetryError {
+	err := retry.Retry(60*time.Second, func() *retry.RetryError {
 		_, httpResp, err := conn.TagApi.CreateTags(context.Background()).CreateTagsRequest(request).Execute()
 		if err != nil {
 			if httpResp.StatusCode == http.StatusNotFound {
-				return resource.RetryableError(err)
+				return retry.RetryableError(err)
 			}
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -116,7 +116,7 @@ func ResourceOutscaleTagsRead(d *schema.ResourceData, meta interface{}) error {
 	var resp oscgo.ReadTagsResponse
 	var err error
 
-	err = resource.Retry(60*time.Second, func() *resource.RetryError {
+	err = retry.Retry(60*time.Second, func() *retry.RetryError {
 		rp, httpResp, err := conn.TagApi.ReadTags(context.Background()).ReadTagsRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -164,11 +164,11 @@ func ResourceOutscaleTagsDelete(d *schema.ResourceData, meta interface{}) error 
 		request.SetResourceIds(rids)
 	}
 
-	err := resource.Retry(60*time.Second, func() *resource.RetryError {
+	err := retry.Retry(60*time.Second, func() *retry.RetryError {
 		_, httpResp, err := conn.TagApi.DeleteTags(context.Background()).DeleteTagsRequest(request).Execute()
 		if err != nil {
 			if httpResp.StatusCode == http.StatusNotFound {
-				return resource.RetryableError(err) // retry
+				return retry.RetryableError(err) // retry
 			}
 			return utils.CheckThrottling(httpResp, err)
 		}

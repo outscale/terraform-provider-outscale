@@ -5,7 +5,7 @@ import (
 
 	"github.com/outscale/terraform-provider-outscale/utils/testutils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccNet_withpnGatewayAttachment_basic(t *testing.T) {
@@ -37,7 +37,7 @@ func TestAccNet_VpnGatewayAttachment_importBasic(t *testing.T) {
 			{
 				Config: testAccOAPIVpnGatewayAttachmentConfig,
 			},
-			testutils.ImportStepSDKv2(resourceName, "request_id"),
+			testutils.ImportStep(resourceName, "request_id"),
 		},
 	})
 }

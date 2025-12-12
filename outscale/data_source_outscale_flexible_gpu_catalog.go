@@ -8,7 +8,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -61,7 +61,7 @@ func DataSourceOutscaleFlexibleGpuCatalogRead(d *schema.ResourceData, meta inter
 
 	var resp oscgo.ReadFlexibleGpuCatalogResponse
 	var err error
-	err = resource.Retry(20*time.Second, func() *resource.RetryError {
+	err = retry.Retry(20*time.Second, func() *retry.RetryError {
 		rp, httpResp, err := conn.FlexibleGpuApi.ReadFlexibleGpuCatalog(
 			context.Background()).
 			ReadFlexibleGpuCatalogRequest(req).Execute()

@@ -9,7 +9,7 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -152,7 +152,7 @@ func ResourceOutscaleLoadBalancerListenerRuleCreate(d *schema.ResourceData, meta
 
 	var err error
 	var resp oscgo.CreateListenerRuleResponse
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.ListenerApi.CreateListenerRule(
 			context.Background()).CreateListenerRuleRequest(*req).Execute()
 		if err != nil {
@@ -185,7 +185,7 @@ func ResourceOutscaleLoadBalancerListenerRuleRead(d *schema.ResourceData, meta i
 
 	var resp oscgo.ReadListenerRulesResponse
 	var err error
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.ListenerApi.ReadListenerRules(
 			context.Background()).ReadListenerRulesRequest(req).
 			Execute()
@@ -268,7 +268,7 @@ func ResourceOutscaleLoadBalancerListenerRuleUpdate(d *schema.ResourceData, meta
 			req.SetPathPattern("")
 		}
 
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 			_, httpResp, err := conn.ListenerApi.UpdateListenerRule(
 				context.Background()).UpdateListenerRuleRequest(req).
 				Execute()
@@ -297,7 +297,7 @@ func ResourceOutscaleLoadBalancerListenerRuleDelete(d *schema.ResourceData, meta
 
 	var err error
 
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		_, httpResp, err := conn.ListenerApi.DeleteListenerRule(
 			context.Background()).DeleteListenerRuleRequest(req).Execute()
 		if err != nil {
@@ -310,7 +310,7 @@ func ResourceOutscaleLoadBalancerListenerRuleDelete(d *schema.ResourceData, meta
 		return fmt.Errorf("Error deleting listener rule: %s", err)
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"ready"},
 		Target:  []string{},
 		Refresh: func() (interface{}, string, error) {
@@ -324,7 +324,7 @@ func ResourceOutscaleLoadBalancerListenerRuleDelete(d *schema.ResourceData, meta
 
 			var resp oscgo.ReadListenerRulesResponse
 			var err error
-			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 				rp, httpResp, err := conn.ListenerApi.ReadListenerRules(
 					context.Background()).
 					ReadListenerRulesRequest(req).Execute()

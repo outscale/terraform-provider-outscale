@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-cty/cty"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
@@ -765,7 +765,7 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 
 	// Create the vm
 	var resp oscgo.CreateVmsResponse
-	err = resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+	err = retry.Retry(d.Timeout(schema.TimeoutCreate), func() *retry.RetryError {
 		rp, httpResp, err := conn.VmApi.CreateVms(context.Background()).CreateVmsRequest(vmOpts).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -787,13 +787,13 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 	d.SetId(vm.GetVmId())
 
 	if get_psswd := d.Get("get_admin_password").(bool); get_psswd {
-		psswd_err := resource.Retry(2500*time.Second, func() *resource.RetryError {
+		psswd_err := retry.Retry(2500*time.Second, func() *retry.RetryError {
 			psswd, err := getOAPIVMAdminPassword(vm.GetVmId(), conn)
 			if err != nil || len(psswd) < 1 {
-				return resource.RetryableError(errors.New("timeout awaiting windows password"))
+				return retry.RetryableError(errors.New("timeout awaiting windows password"))
 			}
 			if err != nil {
-				return resource.NonRetryableError(err)
+				return retry.NonRetryableError(err)
 			}
 			return nil
 		})
@@ -814,7 +814,7 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"pending", "ending/wait"},
 		Target:     vmStateTarget,
 		Refresh:    vmStateRefreshFunc(conn, vm.GetVmId(), "terminated"),
@@ -872,7 +872,7 @@ func createBsuTags(client *oscgo.APIClient, vm oscgo.Vm, bsuMapsTags []map[strin
 
 func updateBsuTags(client *oscgo.APIClient, d *schema.ResourceData, addTags map[string]interface{}, delTags map[string]interface{}) error {
 	var resp oscgo.ReadVmsResponse
-	err := resource.Retry(60*time.Second, func() *resource.RetryError {
+	err := retry.Retry(60*time.Second, func() *retry.RetryError {
 		rp, httpResp, err := client.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
 			Filters: &oscgo.FiltersVm{
 				VmIds: &[]string{d.Id()},
@@ -917,7 +917,7 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	var resp oscgo.ReadVmsResponse
-	err := resource.Retry(d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
+	err := retry.Retry(d.Timeout(schema.TimeoutRead), func() *retry.RetryError {
 		rp, httpResp, err := conn.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
 			Filters: &oscgo.FiltersVm{
 				VmIds: &[]string{d.Id()},
@@ -980,7 +980,7 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 
 func getOAPIVMAdminPassword(VMID string, conn *oscgo.APIClient) (string, error) {
 	var resp oscgo.ReadAdminPasswordResponse
-	err := resource.Retry(60*time.Second, func() *resource.RetryError {
+	err := retry.Retry(60*time.Second, func() *retry.RetryError {
 		rp, httpResp, err := conn.VmApi.ReadAdminPassword(context.Background()).ReadAdminPasswordRequest(oscgo.ReadAdminPasswordRequest{VmId: VMID}).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -1222,7 +1222,7 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 
 		var tasksIds []string
 		for _, volumeReq := range updateBSUVolumeReqs {
-			err := resource.Retry(d.Timeout(schema.TimeoutUpdate), func() *resource.RetryError {
+			err := retry.Retry(d.Timeout(schema.TimeoutUpdate), func() *retry.RetryError {
 				rp, httpResp, err := conn.VolumeApi.UpdateVolume(context.Background()).UpdateVolumeRequest(volumeReq).Execute()
 				if err != nil {
 					return utils.CheckThrottling(httpResp, err)
@@ -1288,7 +1288,7 @@ func resourceOAPIVMDelete(d *schema.ResourceData, meta interface{}) error {
 	id := d.Id()
 	var err error
 
-	err = resource.Retry(d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+	err = retry.Retry(d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
 		_, httpResp, err := conn.VmApi.StopVms(context.Background()).StopVmsRequest(oscgo.StopVmsRequest{
 			VmIds:     []string{id},
 			ForceStop: oscgo.PtrBool(true),
@@ -1303,7 +1303,7 @@ func resourceOAPIVMDelete(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error Force stopping vms before destroy %s", err)
 	}
 
-	err = resource.Retry(d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+	err = retry.Retry(d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
 		_, httpResp, err := conn.VmApi.DeleteVms(context.Background()).DeleteVmsRequest(oscgo.DeleteVmsRequest{
 			VmIds: []string{id},
 		}).Execute()
@@ -1320,7 +1320,7 @@ func resourceOAPIVMDelete(d *schema.ResourceData, meta interface{}) error {
 
 	log.Printf("[DEBUG] Waiting for VM (%s) to become terminated", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"pending", "running", "shutting-down", "stopped", "stopping"},
 		Target:     []string{"terminated"},
 		Refresh:    vmStateRefreshFunc(conn, id, ""),
@@ -1578,10 +1578,10 @@ func expandPlacement(d *schema.ResourceData) (*oscgo.Placement, error) {
 	}
 }
 
-func vmStateRefreshFunc(conn *oscgo.APIClient, instanceID, failState string) resource.StateRefreshFunc {
+func vmStateRefreshFunc(conn *oscgo.APIClient, instanceID, failState string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		var resp oscgo.ReadVmsResponse
-		err := resource.Retry(30*time.Second, func() *resource.RetryError {
+		err := retry.Retry(30*time.Second, func() *retry.RetryError {
 			rp, httpResp, err := conn.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
 				Filters: &oscgo.FiltersVm{
 					VmIds: &[]string{instanceID},
@@ -1631,7 +1631,7 @@ func stopVM(vmID string, conn *oscgo.APIClient, timeOut time.Duration) error {
 		}
 	}
 
-	err = resource.Retry(timeOut, func() *resource.RetryError {
+	err = retry.Retry(timeOut, func() *retry.RetryError {
 		_, httpResp, err := conn.VmApi.StopVms(context.Background()).StopVmsRequest(oscgo.StopVmsRequest{
 			VmIds: []string{vmID},
 		}).Execute()
@@ -1645,7 +1645,7 @@ func stopVM(vmID string, conn *oscgo.APIClient, timeOut time.Duration) error {
 		return fmt.Errorf("error stopping vms %s", err)
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"pending", "running", "shutting-down", "stopped", "stopping"},
 		Target:     []string{"stopped"},
 		Refresh:    vmStateRefreshFunc(conn, vmID, ""),
@@ -1671,7 +1671,7 @@ func stopVM(vmID string, conn *oscgo.APIClient, timeOut time.Duration) error {
 }
 
 func startVM(vmID string, conn *oscgo.APIClient, timeOut time.Duration) error {
-	err := resource.Retry(timeOut, func() *resource.RetryError {
+	err := retry.Retry(timeOut, func() *retry.RetryError {
 		_, httpResp, err := conn.VmApi.StartVms(context.Background()).StartVmsRequest(oscgo.StartVmsRequest{
 			VmIds: []string{vmID},
 		}).Execute()
@@ -1685,7 +1685,7 @@ func startVM(vmID string, conn *oscgo.APIClient, timeOut time.Duration) error {
 		return fmt.Errorf("error starting vm %s", err)
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"pending", "stopped"},
 		Target:     []string{"running"},
 		Refresh:    vmStateRefreshFunc(conn, vmID, ""),
@@ -1702,7 +1702,7 @@ func startVM(vmID string, conn *oscgo.APIClient, timeOut time.Duration) error {
 }
 
 func updateVmAttr(conn *oscgo.APIClient, instanceAttrOpts oscgo.UpdateVmRequest) error {
-	err := resource.Retry(50*time.Second, func() *resource.RetryError {
+	err := retry.Retry(50*time.Second, func() *retry.RetryError {
 		_, httpResp, err := conn.VmApi.UpdateVm(context.Background()).UpdateVmRequest(instanceAttrOpts).Execute()
 		if err != nil {
 			_, errBody := ioutil.ReadAll(httpResp.Body)
@@ -1723,7 +1723,7 @@ func updateVmAttr(conn *oscgo.APIClient, instanceAttrOpts oscgo.UpdateVmRequest)
 func readVM(vmID string, conn *oscgo.APIClient, timeOut time.Duration) (oscgo.ReadVmsResponse, *http.Response, error) {
 	var resp oscgo.ReadVmsResponse
 	var httpResult *http.Response
-	err := resource.Retry(timeOut, func() *resource.RetryError {
+	err := retry.Retry(timeOut, func() *retry.RetryError {
 		rp, httpResp, err := conn.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
 			Filters: &oscgo.FiltersVm{
 				VmIds: &[]string{vmID},

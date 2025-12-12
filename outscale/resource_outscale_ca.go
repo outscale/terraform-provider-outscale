@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
@@ -63,7 +63,7 @@ func ResourceOutscaleCaCreate(d *schema.ResourceData, meta interface{}) error {
 
 	var resp oscgo.CreateCaResponse
 	var err error
-	err = resource.Retry(120*time.Second, func() *resource.RetryError {
+	err = retry.Retry(120*time.Second, func() *retry.RetryError {
 		rp, httpResp, err := conn.CaApi.CreateCa(context.Background()).CreateCaRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -88,7 +88,7 @@ func ResourceOutscaleCaRead(d *schema.ResourceData, meta interface{}) error {
 
 	var resp oscgo.ReadCasResponse
 	var err error
-	err = resource.Retry(120*time.Second, func() *resource.RetryError {
+	err = retry.Retry(120*time.Second, func() *retry.RetryError {
 		rp, httpResp, err := conn.CaApi.ReadCas(context.Background()).ReadCasRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -133,7 +133,7 @@ func ResourceOutscaleCaUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	var err error
-	err = resource.Retry(120*time.Second, func() *resource.RetryError {
+	err = retry.Retry(120*time.Second, func() *retry.RetryError {
 		_, httpResp, err := conn.CaApi.UpdateCa(context.Background()).UpdateCaRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -154,7 +154,7 @@ func ResourceOutscaleCaDelete(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	var err error
-	err = resource.Retry(120*time.Second, func() *resource.RetryError {
+	err = retry.Retry(120*time.Second, func() *retry.RetryError {
 		_, httpResp, err := conn.CaApi.DeleteCa(context.Background()).DeleteCaRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)

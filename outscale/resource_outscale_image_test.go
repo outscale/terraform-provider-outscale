@@ -10,9 +10,10 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func TestAccOthers_Image_basic(t *testing.T) {
@@ -56,7 +57,7 @@ func testAccCheckOAPIImageDestroy(s *terraform.State) error {
 			Filters: &oscgo.FiltersImage{ImageIds: &[]string{rs.Primary.ID}},
 		}
 		var resp oscgo.ReadImagesResponse
-		err := resource.Retry(120*time.Second, func() *resource.RetryError {
+		err := retry.Retry(120*time.Second, func() *retry.RetryError {
 			rp, httpResp, err := client.ImageApi.ReadImages(context.Background()).ReadImagesRequest(filterReq).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
@@ -89,7 +90,7 @@ func testAccCheckOAPIImageExists(n string, ami *oscgo.Image) resource.TestCheckF
 			Filters: &oscgo.FiltersImage{ImageIds: &[]string{rs.Primary.ID}},
 		}
 		var resp oscgo.ReadImagesResponse
-		err := resource.Retry(120*time.Second, func() *resource.RetryError {
+		err := retry.Retry(120*time.Second, func() *retry.RetryError {
 			rp, httpResp, err := client.ImageApi.ReadImages(context.Background()).ReadImagesRequest(filterReq).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)

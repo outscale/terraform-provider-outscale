@@ -10,7 +10,7 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -62,7 +62,7 @@ func ResourceOutscaleLinkRouteTableCreate(d *schema.ResourceData, meta interface
 		RouteTableId: d.Get("route_table_id").(string),
 		SubnetId:     d.Get("subnet_id").(string),
 	}
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		var err error
 		rp, httpResp, err := conn.RouteTableApi.LinkRouteTable(context.Background()).LinkRouteTableRequest(linkRouteTableOpts).Execute()
 		if err != nil {
@@ -111,7 +111,7 @@ func ResourceOutscaleLinkRouteTableRead(d *schema.ResourceData, meta interface{}
 func ResourceOutscaleLinkRouteTableDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
 		_, httpResp, err := conn.RouteTableApi.UnlinkRouteTable(context.Background()).UnlinkRouteTableRequest(oscgo.UnlinkRouteTableRequest{
 			LinkRouteTableId: d.Id(),
 		}).Execute()
@@ -166,7 +166,7 @@ func readOutscaleLinkRouteTable(meta *OutscaleClient, routeTableID, linkRouteTab
 	routeTableRequest := oscgo.ReadRouteTablesRequest{}
 	routeTableRequest.Filters = &oscgo.FiltersRouteTable{RouteTableIds: &[]string{routeTableID}}
 
-	err = resource.Retry(15*time.Minute, func() *resource.RetryError {
+	err = retry.Retry(15*time.Minute, func() *retry.RetryError {
 		var err error
 		rp, httpResp, err := conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(routeTableRequest).Execute()
 		if err != nil {

@@ -45,7 +45,7 @@ func TestAccNet_ImportLinkRouteTable_Basic(t *testing.T) {
 			{
 				Config: testAccOAPILinkRouteTableConfig,
 			},
-			testutils.ImportStepWithStateIdFuncFW(resourceName, testAccCheckOAPILinkRouteTableImportStateIDFunc(resourceName), testutils.DefaultIgnores()...),
+			testutils.ImportStepWithStateIdFunc(resourceName, testAccCheckOAPILinkRouteTableImportStateIDFunc(resourceName), testutils.DefaultIgnores()...),
 		},
 	})
 }

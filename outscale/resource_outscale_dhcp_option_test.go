@@ -8,8 +8,8 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 	"github.com/outscale/terraform-provider-outscale/utils/testutils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 )
 
@@ -141,7 +141,7 @@ func TestAccOthers_DHCPOption_importBasic(t *testing.T) {
 			{
 				Config: testAccOAPIDHCPOptionalBasicConfig(value, true, true),
 			},
-			testutils.ImportStepSDKv2(resourceName, testutils.DefaultIgnores()...),
+			testutils.ImportStep(resourceName, testutils.DefaultIgnores()...),
 		},
 	})
 }

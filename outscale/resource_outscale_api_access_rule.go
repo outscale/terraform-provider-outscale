@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
@@ -79,7 +79,7 @@ func ResourceOutscaleApiAccessRuleCreate(d *schema.ResourceData, meta interface{
 
 	var resp oscgo.CreateApiAccessRuleResponse
 	var err error
-	err = resource.Retry(60*time.Second, func() *resource.RetryError {
+	err = retry.Retry(60*time.Second, func() *retry.RetryError {
 		rp, httpResp, err := conn.ApiAccessRuleApi.CreateApiAccessRule(context.Background()).CreateApiAccessRuleRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -104,7 +104,7 @@ func ResourceOutscaleApiAccessRuleRead(d *schema.ResourceData, meta interface{})
 
 	var resp oscgo.ReadApiAccessRulesResponse
 	var err error
-	err = resource.Retry(120*time.Second, func() *resource.RetryError {
+	err = retry.Retry(120*time.Second, func() *retry.RetryError {
 		rp, httpResp, err := conn.ApiAccessRuleApi.ReadApiAccessRules(context.Background()).ReadApiAccessRulesRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -187,7 +187,7 @@ func ResourceOutscaleApiAccessRuleUpdate(d *schema.ResourceData, meta interface{
 	}
 
 	var err error
-	err = resource.Retry(120*time.Second, func() *resource.RetryError {
+	err = retry.Retry(120*time.Second, func() *retry.RetryError {
 		_, httpResp, err := conn.ApiAccessRuleApi.UpdateApiAccessRule(context.Background()).UpdateApiAccessRuleRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -208,7 +208,7 @@ func ResourceOutscaleApiAccessRuleDelete(d *schema.ResourceData, meta interface{
 	}
 
 	var err error
-	err = resource.Retry(120*time.Second, func() *resource.RetryError {
+	err = retry.Retry(120*time.Second, func() *retry.RetryError {
 		_, httpResp, err := conn.ApiAccessRuleApi.DeleteApiAccessRule(context.Background()).DeleteApiAccessRuleRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)

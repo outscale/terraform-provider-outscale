@@ -9,7 +9,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -104,7 +104,7 @@ func dataSourceOAPISnapshotExportTasksRead(d *schema.ResourceData, meta interfac
 	}
 
 	var resp oscgo.ReadSnapshotExportTasksResponse
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.SnapshotApi.ReadSnapshotExportTasks(context.Background()).
 			ReadSnapshotExportTasksRequest(oscgo.ReadSnapshotExportTasksRequest{
 				Filters: filtersReq,

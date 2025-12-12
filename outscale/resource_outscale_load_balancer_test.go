@@ -10,8 +10,9 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func TestAccOthers_LBUBasic(t *testing.T) {
@@ -81,7 +82,7 @@ func testAccCheckOutscaleLBUDestroy(s *terraform.State) error {
 
 		var err error
 		var resp oscgo.ReadLoadBalancersResponse
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 			filter := &oscgo.FiltersLoadBalancer{
 				LoadBalancerNames: &[]string{rs.Primary.ID},
 			}
@@ -135,7 +136,7 @@ func testAccCheckOutscaleLBUExists(n string, res *oscgo.LoadBalancer) resource.T
 
 		var err error
 		var resp oscgo.ReadLoadBalancersResponse
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 			filter := &oscgo.FiltersLoadBalancer{
 				LoadBalancerNames: &[]string{rs.Primary.ID},
 			}

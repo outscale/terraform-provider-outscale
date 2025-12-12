@@ -15,7 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
@@ -151,7 +151,7 @@ func (d *dataSourceQuota) Read(ctx context.Context, req datasource.ReadRequest, 
 	}
 	reqApi.Filters = filters
 
-	err = resource.Retry(120*time.Second, func() *resource.RetryError {
+	err = retry.Retry(120*time.Second, func() *retry.RetryError {
 		var err error
 		rp, httpResp, err := d.Client.QuotaApi.ReadQuotas(context.Background()).ReadQuotasRequest(reqApi).Execute()
 		if err != nil {

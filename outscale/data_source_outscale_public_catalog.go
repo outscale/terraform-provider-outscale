@@ -7,7 +7,7 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
@@ -79,7 +79,7 @@ func DataSourceOutscalePublicCatalogRead(d *schema.ResourceData, meta interface{
 
 	var resp oscgo.ReadPublicCatalogResponse
 	var err error
-	err = resource.Retry(20*time.Second, func() *resource.RetryError {
+	err = retry.Retry(20*time.Second, func() *retry.RetryError {
 		rp, httpResp, err := conn.PublicCatalogApi.ReadPublicCatalog(context.Background()).ReadPublicCatalogRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)

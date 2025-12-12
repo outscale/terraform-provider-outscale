@@ -55,7 +55,7 @@ func TestAccVM_ImportVolumeAttachment_Basic(t *testing.T) {
 			{
 				Config: testAccOAPIVolumeAttachmentConfig(omi, utils.TestAccVmType, utils.GetRegion(), keypair),
 			},
-			testutils.ImportStepFW(resourceName, testutils.DefaultIgnores()...),
+			testutils.ImportStep(resourceName, testutils.DefaultIgnores()...),
 		},
 	})
 }

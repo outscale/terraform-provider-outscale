@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
@@ -45,7 +45,7 @@ func DataSourceOutscaleVMRead(d *schema.ResourceData, meta interface{}) error {
 	log.Printf("[DEBUG] ReadVmsRequest -> %+v\n", params)
 
 	var resp oscgo.ReadVmsResponse
-	err = resource.Retry(30*time.Second, func() *resource.RetryError {
+	err = retry.Retry(30*time.Second, func() *retry.RetryError {
 		rp, httpResp, err := client.VmApi.ReadVms(context.Background()).ReadVmsRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)

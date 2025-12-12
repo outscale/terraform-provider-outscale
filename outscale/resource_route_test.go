@@ -45,7 +45,7 @@ func TestAccNet_ImportRoute_Basic(t *testing.T) {
 			{
 				Config: testAccOutscaleRouteNoopChange,
 			},
-			testutils.ImportStepFW(resourceName, "request_id", "await_active_state"),
+			testutils.ImportStep(resourceName, "request_id", "await_active_state"),
 		},
 	})
 }
@@ -60,7 +60,7 @@ func TestAccNet_Route_importWithNatService(t *testing.T) {
 			{
 				Config: testAccOutscaleRouteWithNatService,
 			},
-			testutils.ImportStepFW(resourceName, "request_id", "await_active_state", "routes"),
+			testutils.ImportStep(resourceName, "request_id", "await_active_state", "routes"),
 		},
 	})
 }

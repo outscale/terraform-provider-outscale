@@ -27,7 +27,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/outscale/osc-sdk-go/v3/pkg/iso8601"
@@ -100,7 +99,7 @@ func getBsuTags(volumeId string, conn *oscgo.APIClient) ([]oscgo.ResourceTag, er
 		Filters: &oscgo.FiltersVolume{VolumeIds: &[]string{volumeId}},
 	}
 	var resp oscgo.ReadVolumesResponse
-	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
 		r, httpResp, err := conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(request).Execute()
 		if err != nil {
 			return CheckThrottling(httpResp, err)

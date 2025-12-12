@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
@@ -78,7 +78,7 @@ func DataSourceOutscaleVMTypesRead(d *schema.ResourceData, meta interface{}) err
 	}
 
 	var resp oscgo.ReadVmTypesResponse
-	err = resource.Retry(30*time.Second, func() *resource.RetryError {
+	err = retry.Retry(30*time.Second, func() *retry.RetryError {
 		var err error
 		rp, httpResp, err := conn.VmApi.ReadVmTypes(context.Background()).ReadVmTypesRequest(req).Execute()
 		if err != nil {

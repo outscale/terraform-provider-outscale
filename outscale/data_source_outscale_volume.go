@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cast"
 
 	"github.com/davecgh/go-spew/spew"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
@@ -114,7 +114,7 @@ func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	var resp oscgo.ReadVolumesResponse
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)

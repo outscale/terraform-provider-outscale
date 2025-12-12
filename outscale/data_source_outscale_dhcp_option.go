@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
@@ -85,7 +85,7 @@ func DataSourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) 
 
 	var resp oscgo.ReadDhcpOptionsResponse
 	var err error
-	err = resource.Retry(120*time.Second, func() *resource.RetryError {
+	err = retry.Retry(120*time.Second, func() *retry.RetryError {
 		rp, httpResp, err := conn.DhcpOptionApi.ReadDhcpOptions(context.Background()).ReadDhcpOptionsRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)

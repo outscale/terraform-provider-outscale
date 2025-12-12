@@ -11,7 +11,7 @@ import (
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -243,7 +243,7 @@ func DataSourceOutscaleRouteTableRead(d *schema.ResourceData, meta interface{}) 
 	}
 
 	var resp oscgo.ReadRouteTablesResponse
-	err = resource.Retry(60*time.Second, func() *resource.RetryError {
+	err = retry.Retry(60*time.Second, func() *retry.RetryError {
 		rp, httpResp, err := conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)

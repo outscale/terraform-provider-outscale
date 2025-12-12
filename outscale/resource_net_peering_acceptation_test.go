@@ -44,7 +44,7 @@ func TestAccNet_PeeringConnectionAccepter_importBasic(t *testing.T) {
 			{
 				Config: testAccOutscaleLinPeeringConnectionAccepterSameAccountConfig(utils.GetAccepterOwnerId()),
 			},
-			testutils.ImportStepFW(resourceName, testutils.DefaultIgnores()...),
+			testutils.ImportStep(resourceName, testutils.DefaultIgnores()...),
 		},
 	})
 }
@@ -60,7 +60,7 @@ func TestAccNet_PeeringConnectionAccepter_importBasic_Migration(t *testing.T) {
 			{
 				Config: testAccOutscaleLinPeeringConnectionAccepterSameAccountConfig(utils.GetAccepterOwnerId()),
 			},
-			testutils.ImportStepFW(resourceName, testutils.DefaultIgnores()...),
+			testutils.ImportStep(resourceName, testutils.DefaultIgnores()...),
 		},
 	})
 }

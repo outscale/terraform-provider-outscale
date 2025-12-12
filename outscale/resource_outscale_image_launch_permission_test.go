@@ -8,9 +8,10 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	r "github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
@@ -25,28 +26,28 @@ func TestAccVM_WithImageLaunchPermission_Basic(t *testing.T) {
 
 	rInt := acctest.RandInt()
 
-	r.Test(t, r.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
-		Steps: []r.TestStep{
+		Steps: []resource.TestStep{
 			// Scaffold everything
 			{
 				Config: testAccOutscaleImageLaunchPermissionConfig(omi, utils.TestAccVmType, region, accountID, keypair, true, rInt),
-				Check: r.ComposeTestCheckFunc(
+				Check: resource.ComposeTestCheckFunc(
 					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
 				),
 			},
 			// Drop just launch permission to test destruction
 			{
 				Config: testAccOutscaleImageLaunchPermissionConfig(omi, utils.TestAccVmType, region, accountID, keypair, false, rInt),
-				Check: r.ComposeTestCheckFunc(
+				Check: resource.ComposeTestCheckFunc(
 					testAccOutscaleImageLaunchPermissionDestroyed(accountID, &imageID),
 				),
 			},
 			// Re-add everything so we can test when AMI disappears
 			{
 				Config: testAccOutscaleImageLaunchPermissionConfig(omi, utils.TestAccVmType, region, accountID, keypair, true, rInt),
-				Check: r.ComposeTestCheckFunc(
+				Check: resource.ComposeTestCheckFunc(
 					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
 				),
 			},
@@ -54,7 +55,7 @@ func TestAccVM_WithImageLaunchPermission_Basic(t *testing.T) {
 			// should not error.
 			{
 				Config: testAccOutscaleImageLaunchPermissionConfig(omi, utils.TestAccVmType, region, accountID, keypair, true, rInt),
-				Check: r.ComposeTestCheckFunc(
+				Check: resource.ComposeTestCheckFunc(
 					testAccOutscaleImageDisappears(&imageID),
 				),
 				ExpectNonEmptyPlan: true,
@@ -72,21 +73,21 @@ func TestAccVM_ImageLaunchPermissionDestruction_Basic(t *testing.T) {
 	var imageID string
 	rInt := acctest.RandInt()
 
-	r.Test(t, r.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
-		Steps: []r.TestStep{
+		Steps: []resource.TestStep{
 			// Scaffold everything
 			{
 				Config: testAccOutscaleImageLaunchPermissionCreateConfig(omi, utils.TestAccVmType, region, keypair, rInt, true, false),
-				Check: r.ComposeTestCheckFunc(
+				Check: resource.ComposeTestCheckFunc(
 					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
 					testAccOutscaleImageLaunchPermissionExists(accountID, &imageID),
 				),
 			},
 			{
 				Config: testAccOutscaleImageLaunchPermissionCreateConfig(omi, utils.TestAccVmType, region, keypair, rInt, true, true),
-				Check: r.ComposeTestCheckFunc(
+				Check: resource.ComposeTestCheckFunc(
 					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
 				),
 			},
@@ -94,7 +95,7 @@ func TestAccVM_ImageLaunchPermissionDestruction_Basic(t *testing.T) {
 	})
 }
 
-func testCheckResourceOAPILPIGetAttr(name, key string, value *string) r.TestCheckFunc {
+func testCheckResourceOAPILPIGetAttr(name, key string, value *string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		ms := s.RootModule()
 		rs, ok := ms.Resources[name]
@@ -112,7 +113,7 @@ func testCheckResourceOAPILPIGetAttr(name, key string, value *string) r.TestChec
 	}
 }
 
-func testAccOutscaleImageLaunchPermissionExists(accountID string, imageID *string) r.TestCheckFunc {
+func testAccOutscaleImageLaunchPermissionExists(accountID string, imageID *string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client := testAccConfiguredClient.OSCAPI
 		if has, err := hasOAPILaunchPermission(client, *imageID); err != nil {
@@ -124,7 +125,7 @@ func testAccOutscaleImageLaunchPermissionExists(accountID string, imageID *strin
 	}
 }
 
-func testAccOutscaleImageLaunchPermissionDestroyed(accountID string, imageID *string) r.TestCheckFunc {
+func testAccOutscaleImageLaunchPermissionDestroyed(accountID string, imageID *string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client := testAccConfiguredClient.OSCAPI
 		if has, err := hasOAPILaunchPermission(client, *imageID); err != nil {
@@ -139,14 +140,14 @@ func testAccOutscaleImageLaunchPermissionDestroyed(accountID string, imageID *st
 // testAccOutscaleImageDisappears is technically a "test check function" but really it
 // exists to perform a side effect of deleting an AMI out from under a resource
 // so we can test that Terraform will react properly
-func testAccOutscaleImageDisappears(imageID *string) r.TestCheckFunc {
+func testAccOutscaleImageDisappears(imageID *string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client := testAccConfiguredClient.OSCAPI
 		req := oscgo.DeleteImageRequest{
 			ImageId: aws.StringValue(imageID),
 		}
 
-		err := r.Retry(5*time.Minute, func() *r.RetryError {
+		err := retry.Retry(5*time.Minute, func() *retry.RetryError {
 			var err error
 			_, httpResp, err := client.ImageApi.DeleteImage(context.Background()).DeleteImageRequest(req).Execute()
 			if err != nil {
@@ -162,7 +163,7 @@ func testAccOutscaleImageDisappears(imageID *string) r.TestCheckFunc {
 	}
 }
 
-func testCheckResourceGetAttr(name, key string, value *string) r.TestCheckFunc {
+func testCheckResourceGetAttr(name, key string, value *string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		ms := s.RootModule()
 		rs, ok := ms.Resources[name]

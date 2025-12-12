@@ -114,7 +114,7 @@ func TestAccNet_RouteTable_importBasic(t *testing.T) {
 			{
 				Config: testAccOAPIRouteTableConfig,
 			},
-			testutils.ImportStepFW(resourceName, testutils.DefaultIgnores()...),
+			testutils.ImportStep(resourceName, testutils.DefaultIgnores()...),
 		},
 	})
 }

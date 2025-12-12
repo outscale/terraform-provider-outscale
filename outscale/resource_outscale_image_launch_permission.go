@@ -13,7 +13,7 @@ import (
 
 	"github.com/spf13/cast"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -153,7 +153,7 @@ func ResourceOutscaleImageLaunchPermissionCreate(d *schema.ResourceData, meta in
 		PermissionsToLaunch: &permissionLaunch,
 	}
 
-	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
 		var err error
 		_, httpResp, err := conn.ImageApi.UpdateImage(context.Background()).UpdateImageRequest(request).Execute()
 		if err != nil {
@@ -178,7 +178,7 @@ func ResourceOutscaleImageLaunchPermissionRead(d *schema.ResourceData, meta inte
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	var resp oscgo.ReadImagesResponse
-	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
 		var err error
 		rp, httpResp, err := conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(oscgo.ReadImagesRequest{
 			Filters: &oscgo.FiltersImage{
@@ -237,7 +237,7 @@ func ResourceOutscaleImageLaunchPermissionDelete(d *schema.ResourceData, meta in
 		permission.SetRemovals(expandOAPIImagePermission(permissionAdditions))
 		request.SetPermissionsToLaunch(permission)
 
-		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+		err := retry.Retry(5*time.Minute, func() *retry.RetryError {
 			_, httpResp, err := conn.ImageApi.UpdateImage(context.Background()).UpdateImageRequest(request).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
@@ -259,7 +259,7 @@ func ResourceOutscaleImageLaunchPermissionDelete(d *schema.ResourceData, meta in
 
 func hasOAPILaunchPermission(conn *oscgo.APIClient, imageID string) (bool, error) {
 	var resp oscgo.ReadImagesResponse
-	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
 		var err error
 		rp, httpResp, err := conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(oscgo.ReadImagesRequest{
 			Filters: &oscgo.FiltersImage{

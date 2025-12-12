@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
@@ -68,7 +68,7 @@ func resourceLinkMainRouteTableCreate(d *schema.ResourceData, meta interface{}) 
 	}
 	updateRequest.SetLinkRouteTableId(oldLinkRouteTableId)
 	resp := oscgo.UpdateRouteTableLinkResponse{}
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.RouteTableApi.UpdateRouteTableLink(
 			context.Background()).UpdateRouteTableLinkRequest(updateRequest).Execute()
 		if err != nil {
@@ -132,7 +132,7 @@ func resourceLinkMainRouteTableDelete(d *schema.ResourceData, meta interface{}) 
 		RouteTableId:     d.Get("default_route_table_id").(string),
 	}
 
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		_, httpResp, err := conn.RouteTableApi.UpdateRouteTableLink(
 			context.Background()).UpdateRouteTableLinkRequest(updateRequest).Execute()
 		if err != nil {
@@ -160,7 +160,7 @@ func readMainLinkRouteTable(meta *OutscaleClient, netID string) (oscgo.RouteTabl
 		NetIds:             &[]string{netID},
 		LinkRouteTableMain: &[]bool{true}[0],
 	}
-	err = resource.Retry(15*time.Minute, func() *resource.RetryError {
+	err = retry.Retry(15*time.Minute, func() *retry.RetryError {
 		var err error
 		rp, httpResp, err := conn.RouteTableApi.ReadRouteTables(
 			context.Background()).ReadRouteTablesRequest(rtbRequest).Execute()

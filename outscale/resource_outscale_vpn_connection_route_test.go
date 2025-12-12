@@ -11,8 +11,9 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 	"github.com/outscale/terraform-provider-outscale/utils/testutils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func TestAccOthers_VPNConnectionRoute_basic(t *testing.T) {
@@ -60,7 +61,7 @@ func TestAccOthers_ImportVPNConnectionRoute_basic(t *testing.T) {
 						resource.TestCheckResourceAttrSet(resourceName, "vpn_connection_id"),
 					),
 				},
-				testutils.ImportStepSDKv2(resourceName, testutils.DefaultIgnores()...),
+				testutils.ImportStep(resourceName, testutils.DefaultIgnores()...),
 			},
 		})
 	} else {
@@ -91,7 +92,7 @@ func testAccOutscaleVPNConnectionRouteExists(resourceName string) resource.TestC
 		}
 		var resp oscgo.ReadVpnConnectionsResponse
 		var err error
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 			rp, httpResp, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(filter).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
@@ -133,7 +134,7 @@ func testAccOutscaleVPNConnectionRouteDestroy(s *terraform.State) error {
 		}
 		var resp oscgo.ReadVpnConnectionsResponse
 		var err error
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 			rp, httpResp, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(filter).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)

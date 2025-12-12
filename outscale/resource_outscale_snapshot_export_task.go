@@ -10,7 +10,7 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -149,7 +149,7 @@ func resourceOAPISnapshotExportTaskCreate(d *schema.ResourceData, meta interface
 	}
 
 	var resp oscgo.CreateSnapshotExportTaskResponse
-	err := resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+	err := retry.Retry(d.Timeout(schema.TimeoutCreate), func() *retry.RetryError {
 		var err error
 		rp, httpResp, err := conn.SnapshotApi.CreateSnapshotExportTask(context.Background()).
 			CreateSnapshotExportTaskRequest(request).Execute()
@@ -184,7 +184,7 @@ func resourceOAPISnapshotExportTaskRead(d *schema.ResourceData, meta interface{}
 
 	var resp oscgo.ReadSnapshotExportTasksResponse
 	filter := &oscgo.FiltersExportTask{TaskIds: &[]string{d.Id()}}
-	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
 		var err error
 		rp, httpResp, err := conn.SnapshotApi.ReadSnapshotExportTasks(context.Background()).
 			ReadSnapshotExportTasksRequest(oscgo.ReadSnapshotExportTasksRequest{
@@ -270,7 +270,7 @@ func resourceOAPISnapshotExportTaskUpdate(d *schema.ResourceData, meta interface
 func ResourceOutscaleSnapshotTaskWaitForAvailable(id string, client *oscgo.APIClient, timeout time.Duration) (oscgo.SnapshotExportTask, error) {
 	log.Printf("Waiting for Image Task %s to become available...", id)
 	var snap oscgo.SnapshotExportTask
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"pending", "pending/queued", "queued"},
 		Target:     []string{"completed", "active"},
 		Refresh:    SnapshotTaskStateRefreshFunc(client, id),
@@ -296,12 +296,12 @@ func resourceOAPISnapshotExportTaskDelete(d *schema.ResourceData, meta interface
 }
 
 // SnapshotTaskStateRefreshFunc ...
-func SnapshotTaskStateRefreshFunc(client *oscgo.APIClient, id string) resource.StateRefreshFunc {
+func SnapshotTaskStateRefreshFunc(client *oscgo.APIClient, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		var resp oscgo.ReadSnapshotExportTasksResponse
 		filter := &oscgo.FiltersExportTask{TaskIds: &[]string{id}}
 		var statusCode int
-		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+		err := retry.Retry(5*time.Minute, func() *retry.RetryError {
 			var err error
 			rp, httpResp, err := client.SnapshotApi.ReadSnapshotExportTasks(context.Background()).
 				ReadSnapshotExportTasksRequest(oscgo.ReadSnapshotExportTasksRequest{

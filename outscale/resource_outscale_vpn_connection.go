@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/outscale/terraform-provider-outscale/utils"
 	"github.com/spf13/cast"
@@ -133,7 +133,7 @@ func ResourceOutscaleVPNConnectionCreate(d *schema.ResourceData, meta interface{
 		req.SetStaticRoutesOnly(cast.ToBool(staticRoutesOnly))
 	}
 	var resp oscgo.CreateVpnConnectionResponse
-	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.VpnConnectionApi.CreateVpnConnection(context.Background()).CreateVpnConnectionRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -161,7 +161,7 @@ func ResourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{})
 
 	vpnConnectionID := d.Id()
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"pending"},
 		Target:     []string{"available", "failed"},
 		Refresh:    vpnConnectionRefreshFunc(conn, &vpnConnectionID),
@@ -232,7 +232,7 @@ func ResourceOutscaleVPNConnectionDelete(d *schema.ResourceData, meta interface{
 	req := oscgo.DeleteVpnConnectionRequest{
 		VpnConnectionId: vpnConnectionID,
 	}
-	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
 		_, httpResp, err := conn.VpnConnectionApi.DeleteVpnConnection(context.Background()).DeleteVpnConnectionRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -243,7 +243,7 @@ func ResourceOutscaleVPNConnectionDelete(d *schema.ResourceData, meta interface{
 		return err
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"deleting"},
 		Target:     []string{"deleted", "failed"},
 		Refresh:    vpnConnectionRefreshFunc(conn, &vpnConnectionID),
@@ -260,7 +260,7 @@ func ResourceOutscaleVPNConnectionDelete(d *schema.ResourceData, meta interface{
 	return nil
 }
 
-func vpnConnectionRefreshFunc(conn *oscgo.APIClient, vpnConnectionID *string) resource.StateRefreshFunc {
+func vpnConnectionRefreshFunc(conn *oscgo.APIClient, vpnConnectionID *string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		filter := oscgo.ReadVpnConnectionsRequest{

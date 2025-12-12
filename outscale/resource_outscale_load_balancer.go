@@ -12,7 +12,6 @@ import (
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/outscale/terraform-provider-outscale/utils"
@@ -398,13 +397,13 @@ func ResourceOutscaleLoadBalancerCreate_(d *schema.ResourceData, meta interface{
 	}
 
 	log.Printf("[DEBUG] Load Balancer request configuration: %#v", *req)
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		_, httpResp, err := conn.LoadBalancerApi.CreateLoadBalancer(
 			context.Background()).
 			CreateLoadBalancerRequest(*req).Execute()
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "NoSuchCertificate") {
-				return resource.RetryableError(
+				return retry.RetryableError(
 					fmt.Errorf("[WARN] Error creating Load Balancer Listener with SSL Cert, retrying: %w", err))
 			}
 			return utils.CheckThrottling(httpResp, err)
@@ -425,7 +424,7 @@ func ResourceOutscaleLoadBalancerCreate_(d *schema.ResourceData, meta interface{
 			LoadBalancerName: d.Id(),
 		}
 		req.SetSecuredCookies(scVal.(bool))
-		err = resource.Retry(1*time.Minute, func() *resource.RetryError {
+		err = retry.Retry(1*time.Minute, func() *retry.RetryError {
 			_, httpResp, err := conn.LoadBalancerApi.UpdateLoadBalancer(
 				context.Background()).UpdateLoadBalancerRequest(req).Execute()
 			if err != nil {
@@ -452,7 +451,7 @@ func readResourceLb(conn *oscgo.APIClient, elbName string) (*oscgo.LoadBalancer,
 	}
 
 	var resp oscgo.ReadLoadBalancersResponse
-	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.LoadBalancerApi.ReadLoadBalancers(
 			context.Background()).
 			ReadLoadBalancersRequest(req).Execute()
@@ -567,7 +566,7 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 		nSg, _ := d.GetOk("security_groups")
 		req.SecurityGroups = utils.SetToStringSlicePtr(nSg.(*schema.Set))
 
-		err = resource.Retry(4*time.Minute, func() *resource.RetryError {
+		err = retry.Retry(4*time.Minute, func() *retry.RetryError {
 			_, httpResp, err := conn.LoadBalancerApi.UpdateLoadBalancer(
 				context.Background()).UpdateLoadBalancerRequest(req).Execute()
 			if err != nil {
@@ -599,7 +598,7 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 			goto skip_delete
 		}
 
-		err = resource.Retry(60*time.Second, func() *resource.RetryError {
+		err = retry.Retry(60*time.Second, func() *retry.RetryError {
 			_, httpResp, err := conn.LoadBalancerApi.DeleteLoadBalancerTags(
 				context.Background()).
 				DeleteLoadBalancerTagsRequest(
@@ -621,7 +620,7 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 			goto skip_create
 		}
 
-		err = resource.Retry(60*time.Second, func() *resource.RetryError {
+		err = retry.Retry(60*time.Second, func() *retry.RetryError {
 			_, httpResp, err := conn.LoadBalancerApi.CreateLoadBalancerTags(
 				context.Background()).
 				CreateLoadBalancerTagsRequest(
@@ -631,7 +630,7 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 					}).Execute()
 			if err != nil {
 				if httpResp.StatusCode == http.StatusNotFound {
-					return resource.RetryableError(err) // retry
+					return retry.RetryableError(err) // retry
 				}
 				return utils.CheckThrottling(httpResp, err)
 			}
@@ -702,7 +701,7 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 
 			// Occasionally AWS will error with a 'duplicate listener', without any
 			// other listeners on the Load Balancer. Retry here to eliminate that.
-			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 				_, httpResp, err := conn.ListenerApi.CreateLoadBalancerListeners(
 					context.Background()).CreateLoadBalancerListenersRequest(req).Execute()
 				if err != nil {
@@ -743,7 +742,7 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 				req.HealthCheck.Path = &p
 			}
 
-			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 				_, httpResp, err := conn.LoadBalancerApi.UpdateLoadBalancer(
 					context.Background()).UpdateLoadBalancerRequest(req).
 					Execute()
@@ -778,7 +777,7 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 				},
 			}
 
-			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 				_, httpResp, err := conn.LoadBalancerApi.UpdateLoadBalancer(
 					context.Background()).UpdateLoadBalancerRequest(req).Execute()
 				if err != nil {
@@ -799,7 +798,7 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 		}
 		req.SetSecuredCookies(d.Get("secured_cookies").(bool))
 
-		err = resource.Retry(1*time.Minute, func() *resource.RetryError {
+		err = retry.Retry(1*time.Minute, func() *retry.RetryError {
 			_, httpResp, err := conn.LoadBalancerApi.UpdateLoadBalancer(
 				context.Background()).UpdateLoadBalancerRequest(req).Execute()
 			if err != nil {
@@ -826,7 +825,7 @@ func ResourceOutscaleLoadBalancerDelete(d *schema.ResourceData, meta interface{}
 		LoadBalancerName: d.Id(),
 	}
 
-	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
 		_, httpResp, err := conn.LoadBalancerApi.DeleteLoadBalancer(
 			context.Background()).DeleteLoadBalancerRequest(req).Execute()
 		if err != nil {
@@ -839,7 +838,7 @@ func ResourceOutscaleLoadBalancerDelete(d *schema.ResourceData, meta interface{}
 		return fmt.Errorf("error deleting Load Balancer: %w", err)
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"ready"},
 		Target:  []string{},
 		Refresh: func() (interface{}, string, error) {
