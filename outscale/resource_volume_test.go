@@ -6,10 +6,10 @@ import (
 
 	"github.com/outscale/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccOthers_Volume_basic(t *testing.T) {
+func TestAccOthers_Volume_Basic(t *testing.T) {
 	t.Parallel()
 
 	resourceName := "outscale_volume.accvolume"
@@ -34,7 +34,14 @@ func TestAccOthers_Volume_basic(t *testing.T) {
 	})
 }
 
-func TestAccOthers_Volume_updateSize(t *testing.T) {
+func TestAccOthers_Volume_Basic_Migration(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { testAccPreCheck(t) },
+		Steps:    FrameworkMigrationTestSteps("1.1.3", testAccOutscaleVolumeConfig(utils.GetRegion())),
+	})
+}
+
+func TestAccOthers_Volume_UpdateSize(t *testing.T) {
 	t.Parallel()
 	region := utils.GetRegion()
 
@@ -72,7 +79,16 @@ func TestAccOthers_Volume_updateSize(t *testing.T) {
 	})
 }
 
-func TestAccOthers_Volume_io1Type(t *testing.T) {
+func TestAccOthers_Volume_UpdateSize_Migration(t *testing.T) {
+	region := utils.GetRegion()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { testAccPreCheck(t) },
+		Steps:    FrameworkMigrationTestSteps("1.1.3", testOutscaleVolumeConfigUpdate(region)),
+	})
+}
+
+func TestAccOthers_Volume_IO1Type(t *testing.T) {
 	t.Parallel()
 
 	region := utils.GetRegion()
@@ -98,6 +114,14 @@ func TestAccOthers_Volume_io1Type(t *testing.T) {
 				),
 			},
 		},
+	})
+}
+
+func TestAccOthers_Volume_IO1Type_Migration(t *testing.T) {
+	region := utils.GetRegion()
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { testAccPreCheck(t) },
+		Steps:    FrameworkMigrationTestSteps("1.1.3", test_IO1VolumeTypeConfig(region)),
 	})
 }
 

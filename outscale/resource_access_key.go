@@ -148,7 +148,9 @@ func (r *resourceAccessKey) Schema(ctx context.Context, _ resource.SchemaRequest
 				Validators: []validator.String{
 					fwvalidators.DateValidator(),
 				},
-				PlanModifiers: []planmodifier.String{},
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"last_modification_date": schema.StringAttribute{
 				Computed: true,

@@ -7,11 +7,11 @@ import (
 
 	"github.com/outscale/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-func TestAccNet_WithRouteTable_basic(t *testing.T) {
+func TestAccNet_WithRouteTable_Basic(t *testing.T) {
 
 	resourceName := "outscale_route_table.rtbTest"
 	resource.Test(t, resource.TestCase{
@@ -30,7 +30,14 @@ func TestAccNet_WithRouteTable_basic(t *testing.T) {
 	})
 }
 
-func TestAccNet_RouteTable_instance(t *testing.T) {
+func TestAccNet_WithRouteTable_Basic_Migration(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { testAccPreCheck(t) },
+		Steps:    FrameworkMigrationTestSteps("1.1.3", testAccOAPIRouteTableConfig),
+	})
+}
+
+func TestAccNet_RouteTable_Instance(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	resourceName := "outscale_route_table.rtbTest"
 
@@ -46,6 +53,15 @@ func TestAccNet_RouteTable_instance(t *testing.T) {
 				),
 			},
 		},
+	})
+}
+
+func TestAccNet_RouteTable_Instance_Migration(t *testing.T) {
+	omi := os.Getenv("OUTSCALE_IMAGEID")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { testAccPreCheck(t) },
+		Steps:    FrameworkMigrationTestSteps("1.1.3", testAccOAPIRouteTableConfigInstance(omi, utils.TestAccVmType, utils.GetRegion())),
 	})
 }
 

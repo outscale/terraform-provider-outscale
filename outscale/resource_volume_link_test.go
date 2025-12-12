@@ -7,11 +7,11 @@ import (
 
 	"github.com/outscale/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-func TestAccVM_WithVolumeAttachment_basic(t *testing.T) {
+func TestAccVM_WithVolumeAttachment_Basic(t *testing.T) {
 	t.Parallel()
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	keypair := "terraform-basic"
@@ -28,6 +28,16 @@ func TestAccVM_WithVolumeAttachment_basic(t *testing.T) {
 				),
 			},
 		},
+	})
+}
+
+func TestAccVM_WithVolumeAttachment_Basic_Migration(t *testing.T) {
+	omi := os.Getenv("OUTSCALE_IMAGEID")
+	keypair := "terraform-basic"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { testAccPreCheck(t) },
+		Steps:    FrameworkMigrationTestSteps("1.1.3", testAccOAPIVolumeAttachmentConfig(omi, utils.TestAccVmType, utils.GetRegion(), keypair)),
 	})
 }
 

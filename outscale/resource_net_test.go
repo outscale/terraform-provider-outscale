@@ -4,13 +4,11 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccNet_Bacic(t *testing.T) {
-
-	t.Parallel()
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		PreCheck:                 func() { TestAccFwPreCheck(t) },
 		Steps: []resource.TestStep{
@@ -23,10 +21,17 @@ func TestAccNet_Bacic(t *testing.T) {
 		},
 	})
 }
-func TestAccNet_UpdateTags(t *testing.T) {
-	t.Parallel()
-	netName := "outscale_net.basic_net"
+
+func TestAccNet_Migration(t *testing.T) {
 	resource.Test(t, resource.TestCase{
+		PreCheck: func() { testAccPreCheck(t) },
+		Steps:    FrameworkMigrationTestSteps("1.0.1", configNetBasic),
+	})
+}
+
+func TestAccNet_UpdateTags(t *testing.T) {
+	netName := "outscale_net.basic_net"
+	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		PreCheck:                 func() { TestAccFwPreCheck(t) },
 		Steps: []resource.TestStep{
@@ -53,10 +58,6 @@ const configNetBasic = `
 			key = "Name"
 			value = "testacc-net-rs"
 		}
-			timeouts {
-			create = "15m"
-			}
-
 	}
 `
 

@@ -3,10 +3,10 @@ package outscale
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccNet_WithLinkMainRouteTable_basic(t *testing.T) {
+func TestAccNet_WithLinkMainRouteTable_Basic(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_main_route_table_link.main"
 	resource.Test(t, resource.TestCase{
@@ -22,6 +22,13 @@ func TestAccNet_WithLinkMainRouteTable_basic(t *testing.T) {
 				),
 			},
 		},
+	})
+}
+
+func TestAccNet_WithLinkMainRouteTable_Basic_Migration(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { testAccPreCheck(t) },
+		Steps:    FrameworkMigrationTestSteps("1.1.3", testAccLinkMainRouteTableConfig),
 	})
 }
 

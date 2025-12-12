@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func TestAccNet_OutscaleRoute_noopdiff(t *testing.T) {
@@ -24,6 +24,13 @@ func TestAccNet_OutscaleRoute_noopdiff(t *testing.T) {
 				),
 			},
 		},
+	})
+}
+
+func TestAccNet_OutscaleRoute_noopdiff_Migration(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { testAccPreCheck(t) },
+		Steps:    FrameworkMigrationTestSteps("1.1.3", testAccOutscaleRouteNoopChange),
 	})
 }
 
@@ -69,14 +76,18 @@ func TestAccNet_Route_importWithNatService(t *testing.T) {
 	})
 }
 
+func TestAccNet_Route_importWithNatService_Migration(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { testAccPreCheck(t) },
+		Steps:    FrameworkMigrationTestSteps("1.1.3", testAccOutscaleRouteWithNatService),
+	})
+}
+
 func TestAccNet_Route_changeTarget(t *testing.T) {
 	resourceName := "outscale_route.rtnatdef"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheck(t)
-
-		},
+		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
@@ -92,6 +103,13 @@ func TestAccNet_Route_changeTarget(t *testing.T) {
 				),
 			},
 		},
+	})
+}
+
+func TestAccNet_Route_changeTarget_Migration(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { testAccPreCheck(t) },
+		Steps:    FrameworkMigrationTestSteps("1.1.3", computeConfigTestChangeTarget([]string{"nat_service_id"})),
 	})
 }
 

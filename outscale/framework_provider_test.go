@@ -4,21 +4,20 @@ import (
 	"context"
 	"testing"
 
-	sdkresource "github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	vers "github.com/outscale/terraform-provider-outscale/version"
-
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
 	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/outscale/terraform-provider-outscale/utils"
 	"github.com/outscale/terraform-provider-outscale/version"
+	"github.com/samber/lo"
 )
 
 func TestFwProvider_impl(t *testing.T) {
-	var _ provider.Provider = New(vers.GetVersion())
+	var _ provider.Provider = New(version.GetVersion())
 }
 
 func TestAccFwPreCheck(t *testing.T) {
@@ -106,22 +105,66 @@ func DefineTestProviderFactoriesV6() map[string]func() (tfprotov6.ProviderServer
 	}
 }
 
-func FrameworkMigrationTestSteps(sdkVersion string, config string) []sdkresource.TestStep {
-	return []sdkresource.TestStep{
-		{
-			ExternalProviders: map[string]sdkresource.ExternalProvider{
-				"outscale": {
-					VersionConstraint: sdkVersion,
-					Source:            "outscale/outscale",
+type MigrationTestConfig struct {
+	Config                  string
+	ExpectUpdateActionsAddr []string
+}
+
+func FrameworkMigrationTestSteps(sdkVersion string, configs ...string) []resource.TestStep {
+	migrationConfigs := lo.Map(configs, func(config string, _ int) MigrationTestConfig {
+		return MigrationTestConfig{Config: config}
+	})
+	return frameworkMigrationTestStepsWithOptions(sdkVersion, migrationConfigs...)
+}
+
+// Creates migration test steps with expected update actions (without resource replacement)
+func FrameworkMigrationTestStepsWithUpdate(sdkVersion string, configs ...MigrationTestConfig) []resource.TestStep {
+	return frameworkMigrationTestStepsWithOptions(sdkVersion, configs...)
+}
+
+func frameworkMigrationTestStepsWithOptions(sdkVersion string, configs ...MigrationTestConfig) []resource.TestStep {
+	return lo.FlatMap(configs, func(c MigrationTestConfig, i int) []resource.TestStep {
+		var steps []resource.TestStep
+
+		// If not the first config, destroy the previous one first to avoid provider init conflict
+		if i > 0 {
+			steps = append(steps, resource.TestStep{
+				ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
+				Config:                   configs[i-1].Config,
+				Destroy:                  true,
+			})
+		}
+
+		var planChecks []plancheck.PlanCheck
+		if len(c.ExpectUpdateActionsAddr) > 0 {
+			for _, addr := range c.ExpectUpdateActionsAddr {
+				planChecks = append(planChecks,
+					plancheck.ExpectResourceAction(addr, plancheck.ResourceActionUpdate),
+				)
+			}
+		} else {
+			planChecks = []plancheck.PlanCheck{
+				plancheck.ExpectEmptyPlan(),
+			}
+		}
+
+		return append(steps,
+			resource.TestStep{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"outscale": {
+						VersionConstraint: sdkVersion,
+						Source:            "outscale/outscale",
+					},
+				},
+				Config: c.Config,
+			},
+			resource.TestStep{
+				ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
+				Config:                   c.Config,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: planChecks,
 				},
 			},
-			Config: config,
-		},
-		{
-			ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
-			Config:                   config,
-			PlanOnly:                 true,
-			ExpectNonEmptyPlan:       false,
-		},
-	}
+		)
+	})
 }

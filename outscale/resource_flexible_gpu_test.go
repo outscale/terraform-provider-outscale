@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func TestAccOthers_FlexibleGpu_basic(t *testing.T) {
+func TestAccOthers_FlexibleGpu_Basic(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_flexible_gpu.fGPU-1"
 	resource.Test(t, resource.TestCase{
@@ -34,6 +34,13 @@ func TestAccOthers_FlexibleGpu_basic(t *testing.T) {
 				),
 			},
 		},
+	})
+}
+
+func TestAccOthers_FlexibleGpu_Basic_Migration(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { testAccPreCheck(t) },
+		Steps:    FrameworkMigrationTestSteps("1.0.1", testAccFlexibleGpuConfig(utils.GetRegion(), false)),
 	})
 }
 

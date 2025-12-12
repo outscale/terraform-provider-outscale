@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func TestAccNet_AccessPoint_basic(t *testing.T) {
+func TestAccNet_AccessPoint_Basic(t *testing.T) {
 	serviceName := fmt.Sprintf("com.outscale.%s.api", utils.GetRegion())
 	resourceName := "outscale_net_access_point.net_access_point_1"
 
@@ -26,6 +26,15 @@ func TestAccNet_AccessPoint_basic(t *testing.T) {
 				),
 			},
 		},
+	})
+}
+
+func TestAccNet_AccessPoint_Basic_Migration(t *testing.T) {
+	serviceName := fmt.Sprintf("com.outscale.%s.api", utils.GetRegion())
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { testAccPreCheck(t) },
+		Steps:    FrameworkMigrationTestSteps("1.1.3", testAccOutscaleNetAccessPointConfig(serviceName)),
 	})
 }
 

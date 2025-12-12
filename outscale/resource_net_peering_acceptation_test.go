@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
@@ -25,7 +25,36 @@ func TestAccNet_PeeringConnectionAccepter_sameAccount(t *testing.T) {
 	})
 }
 
+func TestAccNet_PeeringConnectionAccepter_sameAccount_Migration(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { testAccPreCheck(t) },
+		Steps:    FrameworkMigrationTestSteps("1.1.1", testAccOutscaleLinPeeringConnectionAccepterSameAccountConfig(utils.GetAccepterOwnerId())),
+	})
+}
+
 func TestAccNet_PeeringConnectionAccepter_importBasic(t *testing.T) {
+	resourceName := "outscale_net_peering_acceptation.peer"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
+
+		Steps: []resource.TestStep{
+			{
+				Config: testAccOutscaleLinPeeringConnectionAccepterSameAccountConfig(utils.GetAccepterOwnerId()),
+			},
+			{
+				ResourceName:            resourceName,
+				ImportStateIdFunc:       testAccCheckOutscaleLinkPeeeringConnectionImportStateIDFunc(resourceName),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"request_id"},
+			},
+		},
+	})
+}
+
+func TestAccNet_PeeringConnectionAccepter_importBasic_Migration(t *testing.T) {
 	resourceName := "outscale_net_peering_acceptation.peer"
 
 	resource.ParallelTest(t, resource.TestCase{
