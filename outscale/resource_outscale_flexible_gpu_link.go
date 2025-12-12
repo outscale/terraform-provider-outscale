@@ -8,7 +8,7 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
@@ -62,7 +62,7 @@ func ResourceOutscaleFlexibleGpuLinkCreate(d *schema.ResourceData, meta interfac
 			FlexibleGpuId: flexGpuID,
 			VmId:          vmId,
 		}
-		err := resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		err := retry.Retry(d.Timeout(schema.TimeoutCreate), func() *retry.RetryError {
 			var err error
 			rp, httpResp, err := conn.FlexibleGpuApi.LinkFlexibleGpu(
 				context.Background()).LinkFlexibleGpuRequest(reqLink).Execute()
@@ -97,7 +97,7 @@ func ResourceOutscaleFlexibleGpuLinkRead(d *schema.ResourceData, meta interface{
 	}
 	var resp oscgo.ReadFlexibleGpusResponse
 	var err error
-	err = resource.Retry(d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
+	err = retry.Retry(d.Timeout(schema.TimeoutRead), func() *retry.RetryError {
 		rp, httpResp, err := conn.FlexibleGpuApi.ReadFlexibleGpus(
 			context.Background()).
 			ReadFlexibleGpusRequest(*req).Execute()
@@ -140,7 +140,7 @@ func ResourceOutscaleFlexibleGpuLinkDelete(d *schema.ResourceData, meta interfac
 		req := &oscgo.UnlinkFlexibleGpuRequest{
 			FlexibleGpuId: flexGpuID,
 		}
-		err = resource.Retry(d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+		err = retry.Retry(d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
 			_, httpResp, err := conn.FlexibleGpuApi.UnlinkFlexibleGpu(
 				context.Background()).UnlinkFlexibleGpuRequest(*req).Execute()
 			if err != nil {
@@ -158,7 +158,7 @@ func ResourceOutscaleFlexibleGpuLinkDelete(d *schema.ResourceData, meta interfac
 				FlexibleGpuIds: &[]string{flexGpuID},
 			},
 		}
-		err = resource.Retry(d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+		err = retry.Retry(d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
 			rp, httpResp, err := conn.FlexibleGpuApi.ReadFlexibleGpus(context.Background()).
 				ReadFlexibleGpusRequest(*reqFlex).Execute()
 
@@ -204,7 +204,7 @@ func resourceFlexibleGpuLinkUpdate(d *schema.ResourceData, meta interface{}) err
 			req := &oscgo.UnlinkFlexibleGpuRequest{
 				FlexibleGpuId: flexGpuID,
 			}
-			err = resource.Retry(20*time.Second, func() *resource.RetryError {
+			err = retry.Retry(20*time.Second, func() *retry.RetryError {
 				_, httpResp, err := conn.FlexibleGpuApi.UnlinkFlexibleGpu(
 					context.Background()).UnlinkFlexibleGpuRequest(*req).Execute()
 				if err != nil {
@@ -223,7 +223,7 @@ func resourceFlexibleGpuLinkUpdate(d *schema.ResourceData, meta interface{}) err
 				FlexibleGpuId: flexGpuID,
 				VmId:          vmId,
 			}
-			err = resource.Retry(20*time.Second, func() *resource.RetryError {
+			err = retry.Retry(20*time.Second, func() *retry.RetryError {
 				_, httpResp, err := conn.FlexibleGpuApi.LinkFlexibleGpu(
 					context.Background()).LinkFlexibleGpuRequest(*req).Execute()
 				if err != nil {
@@ -245,7 +245,7 @@ func resourceFlexibleGpuLinkUpdate(d *schema.ResourceData, meta interface{}) err
 
 func changeShutdownBehavior(conn *oscgo.APIClient, vmId string, timeOut time.Duration) error {
 	var resp oscgo.ReadVmsResponse
-	err := resource.Retry(timeOut, func() *resource.RetryError {
+	err := retry.Retry(timeOut, func() *retry.RetryError {
 		rp, httpResp, err := conn.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
 			Filters: &oscgo.FiltersVm{
 				VmIds: &[]string{vmId},

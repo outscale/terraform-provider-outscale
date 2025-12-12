@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
@@ -138,7 +138,7 @@ func ResourceUserGroupCreate(d *schema.ResourceData, meta interface{}) error {
 	req.SetPath(groupPath)
 
 	var resp oscgo.CreateUserGroupResponse
-	err := resource.Retry(2*time.Minute, func() *resource.RetryError {
+	err := retry.Retry(2*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.UserGroupApi.CreateUserGroup(context.Background()).CreateUserGroupRequest(*req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -166,7 +166,7 @@ func ResourceUserGroupCreate(d *schema.ResourceData, meta interface{}) error {
 				reqUserAdd.SetUserPath(path)
 			}
 			reqUserAdd.SetUserGroupPath(groupPath)
-			err := resource.Retry(1*time.Minute, func() *resource.RetryError {
+			err := retry.Retry(1*time.Minute, func() *retry.RetryError {
 				_, httpResp, err := conn.UserGroupApi.AddUserToUserGroup(context.Background()).AddUserToUserGroupRequest(reqUserAdd).Execute()
 				if err != nil {
 					return utils.CheckThrottling(httpResp, err)
@@ -188,7 +188,7 @@ func ResourceUserGroupCreate(d *schema.ResourceData, meta interface{}) error {
 
 			reqAddPolicy.SetUserGroupName(d.Get("user_group_name").(string))
 			reqAddPolicy.SetPolicyOrn(policy["policy_orn"].(string))
-			err := resource.Retry(1*time.Minute, func() *resource.RetryError {
+			err := retry.Retry(1*time.Minute, func() *retry.RetryError {
 				_, httpResp, err := conn.PolicyApi.LinkManagedPolicyToUserGroup(context.Background()).LinkManagedPolicyToUserGroupRequest(reqAddPolicy).Execute()
 				if err != nil {
 					return utils.CheckThrottling(httpResp, err)
@@ -217,7 +217,7 @@ func ResourceUserGroupRead(d *schema.ResourceData, meta interface{}) error {
 	req.SetFilters(filter)
 	var statusCode int
 	var resp oscgo.ReadUserGroupsResponse
-	err := resource.Retry(1*time.Minute, func() *resource.RetryError {
+	err := retry.Retry(1*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.UserGroupApi.ReadUserGroups(context.Background()).ReadUserGroupsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -242,7 +242,7 @@ func ResourceUserGroupRead(d *schema.ResourceData, meta interface{}) error {
 	reqUser := oscgo.NewReadUserGroupRequest(userGroup.GetName())
 
 	var groupUsers []oscgo.User
-	err = resource.Retry(1*time.Minute, func() *resource.RetryError {
+	err = retry.Retry(1*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.UserGroupApi.ReadUserGroup(context.Background()).ReadUserGroupRequest(*reqUser).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -257,7 +257,7 @@ func ResourceUserGroupRead(d *schema.ResourceData, meta interface{}) error {
 
 	linkReq := oscgo.NewReadManagedPoliciesLinkedToUserGroupRequest(userGroup.GetName())
 	var linkResp oscgo.ReadManagedPoliciesLinkedToUserGroupResponse
-	err = resource.Retry(1*time.Minute, func() *resource.RetryError {
+	err = retry.Retry(1*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.PolicyApi.ReadManagedPoliciesLinkedToUserGroup(context.Background()).ReadManagedPoliciesLinkedToUserGroupRequest(*linkReq).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -375,7 +375,7 @@ func ResourceUserGroupUpdate(d *schema.ResourceData, meta interface{}) error {
 				if path := user["path"].(string); path != "" {
 					rmUserReq.SetUserPath(path)
 				}
-				err = resource.Retry(2*time.Minute, func() *resource.RetryError {
+				err = retry.Retry(2*time.Minute, func() *retry.RetryError {
 					_, httpResp, err := conn.UserGroupApi.RemoveUserFromUserGroup(context.Background()).RemoveUserFromUserGroupRequest(rmUserReq).Execute()
 					if err != nil {
 						return utils.CheckThrottling(httpResp, err)
@@ -410,7 +410,7 @@ func ResourceUserGroupUpdate(d *schema.ResourceData, meta interface{}) error {
 				if path := user["path"].(string); path != "" {
 					addUserReq.SetUserPath(path)
 				}
-				err := resource.Retry(2*time.Minute, func() *resource.RetryError {
+				err := retry.Retry(2*time.Minute, func() *retry.RetryError {
 					_, httpResp, err := conn.UserGroupApi.AddUserToUserGroup(context.Background()).AddUserToUserGroupRequest(addUserReq).Execute()
 					if err != nil {
 						return utils.CheckThrottling(httpResp, err)
@@ -438,7 +438,7 @@ func ResourceUserGroupUpdate(d *schema.ResourceData, meta interface{}) error {
 			for _, v := range toRemove.List() {
 				policy := v.(map[string]interface{})
 				unlinkReq.SetPolicyOrn(policy["policy_orn"].(string))
-				err := resource.Retry(2*time.Minute, func() *resource.RetryError {
+				err := retry.Retry(2*time.Minute, func() *retry.RetryError {
 					_, httpResp, err := conn.PolicyApi.UnlinkManagedPolicyFromUserGroup(context.Background()).UnlinkManagedPolicyFromUserGroupRequest(unlinkReq).Execute()
 					if err != nil {
 						log.Println("[INFO]: The policy has already been removed")
@@ -462,7 +462,7 @@ func ResourceUserGroupUpdate(d *schema.ResourceData, meta interface{}) error {
 			for _, v := range toCreate.List() {
 				policy := v.(map[string]interface{})
 				linkReq.SetPolicyOrn(policy["policy_orn"].(string))
-				err := resource.Retry(2*time.Minute, func() *resource.RetryError {
+				err := retry.Retry(2*time.Minute, func() *retry.RetryError {
 					_, httpResp, err := conn.PolicyApi.LinkManagedPolicyToUserGroup(context.Background()).LinkManagedPolicyToUserGroupRequest(linkReq).Execute()
 					if err != nil {
 						return utils.CheckThrottling(httpResp, err)
@@ -481,7 +481,7 @@ func ResourceUserGroupUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 	if isUpdateGroup {
-		err := resource.Retry(2*time.Minute, func() *resource.RetryError {
+		err := retry.Retry(2*time.Minute, func() *retry.RetryError {
 			_, httpResp, err := conn.UserGroupApi.UpdateUserGroup(context.Background()).UpdateUserGroupRequest(req).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
@@ -503,7 +503,7 @@ func ResourceUserGroupDelete(d *schema.ResourceData, meta interface{}) error {
 		Force:         &forceDeletion,
 	}
 
-	err := resource.Retry(3*time.Minute, func() *resource.RetryError {
+	err := retry.Retry(3*time.Minute, func() *retry.RetryError {
 		_, httpResp, err := conn.UserGroupApi.DeleteUserGroup(context.Background()).DeleteUserGroupRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -519,7 +519,7 @@ func ResourceUserGroupDelete(d *schema.ResourceData, meta interface{}) error {
 
 func getPolicyVersion(conn *oscgo.APIClient, policyOrn string) (string, error) {
 	version_id := ""
-	err := resource.Retry(3*time.Minute, func() *resource.RetryError {
+	err := retry.Retry(3*time.Minute, func() *retry.RetryError {
 		resp, httpResp, err := conn.PolicyApi.ReadPolicy(context.Background()).ReadPolicyRequest(
 			oscgo.ReadPolicyRequest{PolicyOrn: policyOrn}).Execute()
 		if err != nil {
@@ -536,7 +536,7 @@ func getPolicyVersion(conn *oscgo.APIClient, policyOrn string) (string, error) {
 }
 
 func setDefaultPolicyVersion(conn *oscgo.APIClient, policyOrn, version string) error {
-	err := resource.Retry(1*time.Minute, func() *resource.RetryError {
+	err := retry.Retry(1*time.Minute, func() *retry.RetryError {
 		_, httpResp, err := conn.PolicyApi.SetDefaultPolicyVersion(context.Background()).SetDefaultPolicyVersionRequest(
 			oscgo.SetDefaultPolicyVersionRequest{
 				PolicyOrn: policyOrn,
@@ -554,7 +554,7 @@ func getUsersLinkedToGroup(conn *oscgo.APIClient, toCreate []interface{}, groupN
 	reqUser := oscgo.NewReadUserGroupRequest(groupName)
 
 	var users []oscgo.User
-	err := resource.Retry(1*time.Minute, func() *resource.RetryError {
+	err := retry.Retry(1*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.UserGroupApi.ReadUserGroup(context.Background()).ReadUserGroupRequest(*reqUser).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)

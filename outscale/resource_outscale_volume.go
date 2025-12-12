@@ -11,7 +11,7 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -153,7 +153,7 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	var resp oscgo.CreateVolumeResponse
 	var err error
 
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.VolumeApi.CreateVolume(context.Background()).CreateVolumeRequest(request).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -168,7 +168,7 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 
 	log.Println("[DEBUG] Waiting for Volume to become available")
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"creating"},
 		Target:     []string{"available"},
 		Refresh:    volumeOAPIStateRefreshFunc(conn, resp.Volume.GetVolumeId()),
@@ -201,7 +201,7 @@ func resourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 
 	var resp oscgo.ReadVolumesResponse
 	var statusCode int
-	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
 		r, httpResp, err := conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(request).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -232,7 +232,7 @@ func resourceOAPIVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"creating"},
 		Target:     []string{"available", "in-use"},
 		Refresh:    volumeOAPIStateRefreshFunc(conn, d.Id()),
@@ -259,7 +259,7 @@ func resourceOAPIVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 			Description: &description,
 			VolumeId:    &volId,
 		}
-		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+		err := retry.Retry(5*time.Minute, func() *retry.RetryError {
 			var err error
 			r, httpResp, err := conn.SnapshotApi.CreateSnapshot(context.Background()).CreateSnapshotRequest(request).Execute()
 			if err != nil {
@@ -280,7 +280,7 @@ func resourceOAPIVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 				},
 			},
 		}
-		err = resource.Retry(60*time.Second, func() *resource.RetryError {
+		err = retry.Retry(60*time.Second, func() *retry.RetryError {
 			_, httpResp, err := conn.TagApi.CreateTags(context.Background()).CreateTagsRequest(snapTagsReq).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
@@ -292,14 +292,14 @@ func resourceOAPIVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	return resource.Retry(5*time.Minute, func() *resource.RetryError {
+	return retry.Retry(5*time.Minute, func() *retry.RetryError {
 		request := oscgo.DeleteVolumeRequest{
 			VolumeId: d.Id(),
 		}
 		_, httpResp, err := conn.VolumeApi.DeleteVolume(context.Background()).DeleteVolumeRequest(request).Execute()
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "VolumeInUse") {
-				return resource.RetryableError(fmt.Errorf("Outscale VolumeInUse - trying again while it detaches"))
+				return retry.RetryableError(fmt.Errorf("Outscale VolumeInUse - trying again while it detaches"))
 			}
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -307,11 +307,11 @@ func resourceOAPIVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 	})
 }
 
-func volumeOAPIStateRefreshFunc(conn *oscgo.APIClient, volumeID string) resource.StateRefreshFunc {
+func volumeOAPIStateRefreshFunc(conn *oscgo.APIClient, volumeID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		var resp oscgo.ReadVolumesResponse
 		var err error
-		err = resource.Retry(3*time.Minute, func() *resource.RetryError {
+		err = retry.Retry(3*time.Minute, func() *retry.RetryError {
 			rp, httpResp, err := conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(oscgo.ReadVolumesRequest{
 				Filters: &oscgo.FiltersVolume{
 					VolumeIds: &[]string{volumeID},

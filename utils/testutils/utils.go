@@ -3,59 +3,27 @@ package testutils
 import (
 	"fmt"
 
-	sdkresource "github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	sdktf "github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	fwresource "github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	fwtf "github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-func ImportStepWithStateIdFuncSDKv2(resourceName string, importStateIdFunc sdkresource.ImportStateIdFunc, ignore ...string) sdkresource.TestStep {
-	return importStepSDKv2(resourceName, importStateIdFunc, ignore...)
+func ImportStepWithStateIdFunc(resourceName string, importStateIdFunc resource.ImportStateIdFunc, ignore ...string) resource.TestStep {
+	return importStep(resourceName, importStateIdFunc, ignore...)
 }
 
-func ImportStepSDKv2(resourceName string, ignore ...string) sdkresource.TestStep {
-	idFunc := func(s *sdktf.State) (string, error) {
+func ImportStep(resourceName string, ignore ...string) resource.TestStep {
+	idFunc := func(s *terraform.State) (string, error) {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
 			return "", fmt.Errorf("Not found: %s", resourceName)
 		}
 		return rs.Primary.ID, nil
 	}
-	return importStepSDKv2(resourceName, idFunc, ignore...)
+	return importStep(resourceName, idFunc, ignore...)
 }
 
-func importStepSDKv2(resourceName string, importStateIdFunc sdkresource.ImportStateIdFunc, ignore ...string) sdkresource.TestStep {
-	step := sdkresource.TestStep{
-		ResourceName:      resourceName,
-		ImportState:       true,
-		ImportStateVerify: true,
-		ImportStateIdFunc: importStateIdFunc,
-	}
-
-	if len(ignore) > 0 {
-		step.ImportStateVerifyIgnore = ignore
-	}
-
-	return step
-}
-
-func ImportStepWithStateIdFuncFW(resourceName string, importStateIdFunc fwresource.ImportStateIdFunc, ignore ...string) fwresource.TestStep {
-	return importStepFW(resourceName, importStateIdFunc, ignore...)
-}
-
-func ImportStepFW(resourceName string, ignore ...string) fwresource.TestStep {
-	idFunc := func(s *fwtf.State) (string, error) {
-		rs, ok := s.RootModule().Resources[resourceName]
-		if !ok {
-			return "", fmt.Errorf("Not found: %s", resourceName)
-		}
-		return rs.Primary.ID, nil
-	}
-	return importStepFW(resourceName, idFunc, ignore...)
-}
-
-func importStepFW(resourceName string, importStateIdFunc fwresource.ImportStateIdFunc, ignore ...string) fwresource.TestStep {
-	step := fwresource.TestStep{
+func importStep(resourceName string, importStateIdFunc resource.ImportStateIdFunc, ignore ...string) resource.TestStep {
+	step := resource.TestStep{
 		ResourceName:      resourceName,
 		ImportState:       true,
 		ImportStateVerify: true,

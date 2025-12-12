@@ -41,7 +41,7 @@ func TestAccNet_WithImportInternetServiceLink_Basic(t *testing.T) {
 			{
 				Config: testAccOutscaleInternetServiceLinkConfig(),
 			},
-			testutils.ImportStepFW(resourceName, testutils.DefaultIgnores()...),
+			testutils.ImportStep(resourceName, testutils.DefaultIgnores()...),
 		},
 	})
 }

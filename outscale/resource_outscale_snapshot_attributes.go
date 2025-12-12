@@ -8,7 +8,7 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -136,7 +136,7 @@ func ResourcedOutscaleSnapshotAttributesCreate(d *schema.ResourceData, meta inte
 	req.SetPermissionsToCreateVolume(perms)
 
 	var err error
-	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
+	err = retry.Retry(2*time.Minute, func() *retry.RetryError {
 		_, httpResp, err := conn.SnapshotApi.UpdateSnapshot(context.Background()).UpdateSnapshotRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -155,7 +155,7 @@ func ResourcedOutscaleSnapshotAttributesRead(d *schema.ResourceData, meta interf
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	var resp oscgo.ReadSnapshotsResponse
-	err := resource.Retry(2*time.Minute, func() *resource.RetryError {
+	err := retry.Retry(2*time.Minute, func() *retry.RetryError {
 		var err error
 		rp, httpResp, err := conn.SnapshotApi.ReadSnapshots(context.Background()).ReadSnapshotsRequest(oscgo.ReadSnapshotsRequest{
 			Filters: &oscgo.FiltersSnapshot{

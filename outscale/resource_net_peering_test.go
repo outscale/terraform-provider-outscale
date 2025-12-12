@@ -45,7 +45,7 @@ func TestAccNet_PeeringConnection_importBasic(t *testing.T) {
 			{
 				Config: testAccOAPIVpcPeeringConfig(utils.GetAccepterOwnerId()),
 			},
-			testutils.ImportStepFW(resourceName, testutils.DefaultIgnores()...),
+			testutils.ImportStep(resourceName, testutils.DefaultIgnores()...),
 		},
 	})
 }

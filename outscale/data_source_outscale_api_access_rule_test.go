@@ -7,8 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
@@ -47,7 +48,7 @@ func testAccDataCheckOutscaleApiAccessRuleDestroy(s *terraform.State) error {
 		var resp oscgo.ReadApiAccessRulesResponse
 		var err error
 		exists := false
-		err = resource.Retry(120*time.Second, func() *resource.RetryError {
+		err = retry.Retry(120*time.Second, func() *retry.RetryError {
 			rp, httpResp, err := conn.ApiAccessRuleApi.ReadApiAccessRules(context.Background()).ReadApiAccessRulesRequest(req).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
@@ -73,7 +74,7 @@ func testAccDataCheckOutscaleApiAccessRuleDestroy(s *terraform.State) error {
 
 func testAccDataOutscaleApiAccessRuleConfig(path string) string {
 	return fmt.Sprintf(`
-resource "outscale_ca" "ca_rule" { 
+resource "outscale_ca" "ca_rule" {
    ca_pem       = file(%q)
    description  = "Ca data test create"
 }
@@ -94,7 +95,7 @@ data "outscale_api_access_rule" "api_access_rule" {
     name   = "ip_ranges"
     values = ["192.4.2.32/16"]
   }
- 
+
   filter {
     name   = "descriptions"
     values = ["test api access rule"]

@@ -6,9 +6,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
 	"github.com/spf13/cast"
@@ -104,7 +105,7 @@ func testAccCheckClientGatewayExists(resourceName string) resource.TestCheckFunc
 			},
 		}
 		var resp oscgo.ReadClientGatewaysResponse
-		err := resource.Retry(120*time.Second, func() *resource.RetryError {
+		err := retry.Retry(120*time.Second, func() *retry.RetryError {
 			rp, httpResp, err := conn.ClientGatewayApi.ReadClientGateways(context.Background()).ReadClientGatewaysRequest(filter).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
@@ -134,7 +135,7 @@ func testAccCheckClientGatewayDestroy(s *terraform.State) error {
 			},
 		}
 		var resp oscgo.ReadClientGatewaysResponse
-		err := resource.Retry(120*time.Second, func() *resource.RetryError {
+		err := retry.Retry(120*time.Second, func() *retry.RetryError {
 			rp, httpResp, err := conn.ClientGatewayApi.ReadClientGateways(context.Background()).ReadClientGatewaysRequest(filter).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)

@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
@@ -58,7 +58,7 @@ func DataSourcePoliciesLinkedToUserRead(d *schema.ResourceData, meta interface{}
 	req := oscgo.NewReadLinkedPoliciesRequest(d.Get("user_name").(string))
 	var resp oscgo.ReadLinkedPoliciesResponse
 
-	err := resource.Retry(2*time.Minute, func() *resource.RetryError {
+	err := retry.Retry(2*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.PolicyApi.ReadLinkedPolicies(context.Background()).ReadLinkedPoliciesRequest(*req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)

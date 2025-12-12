@@ -8,11 +8,11 @@ import (
 	"strings"
 	"time"
 
+	sdkid "github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceOutscaleLoadBalancerVmsHeals() *schema.Resource {
@@ -63,8 +63,7 @@ func DataSourceOutscaleLoadBalancerVmsHeals() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleLoadBalancerVmsHealRead(d *schema.ResourceData,
-	meta interface{}) error {
+func DataSourceOutscaleLoadBalancerVmsHealRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	ename, ok := d.GetOk("load_balancer_name")
@@ -89,16 +88,15 @@ func DataSourceOutscaleLoadBalancerVmsHealRead(d *schema.ResourceData,
 
 	var resp oscgo.ReadVmsHealthResponse
 	var err error
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.LoadBalancerApi.ReadVmsHealth(
 			context.Background()).ReadVmsHealthRequest(req).
 			Execute()
-
 		if err != nil {
 			log.Printf("[DEBUG] err: (%s)", err)
 			if strings.Contains(fmt.Sprint(err), "InvalidResource") ||
 				strings.Contains(fmt.Sprint(err), "Bad Request") {
-				return resource.RetryableError(err)
+				return retry.RetryableError(err)
 			}
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -124,6 +122,6 @@ func DataSourceOutscaleLoadBalancerVmsHealRead(d *schema.ResourceData,
 	d.Set("backend_vm_health", lbvh)
 	//  ename.(string) "-heal-" id.UniqueId()
 	id := ename.(string) + "-heal-"
-	d.SetId(resource.PrefixedUniqueId(id))
+	d.SetId(sdkid.PrefixedUniqueId(id))
 	return nil
 }
