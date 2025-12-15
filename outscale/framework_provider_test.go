@@ -39,7 +39,6 @@ func TestMuxServer(t *testing.T) {
 
 func TestDataSource_UpgradeFromVersion(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
@@ -78,7 +77,6 @@ func DefineTestProviderFactoriesV6() map[string]func() (tfprotov6.ProviderServer
 				ctx,
 				Provider().GRPCProvider,
 			)
-
 			if err != nil {
 				return nil, err
 			}
@@ -95,7 +93,6 @@ func DefineTestProviderFactoriesV6() map[string]func() (tfprotov6.ProviderServer
 			}
 
 			muxServer, err := tf6muxserver.NewMuxServer(ctx, providers...)
-
 			if err != nil {
 				return nil, err
 			}
@@ -107,22 +104,23 @@ func DefineTestProviderFactoriesV6() map[string]func() (tfprotov6.ProviderServer
 
 type MigrationTestConfig struct {
 	Config                  string
-	ExpectUpdateActionsAddr []string
+	ExpectUpdateActionsAddr string
 }
 
+// Creates migration test steps which expects an empty plan after apply comparing current and specified version
 func FrameworkMigrationTestSteps(sdkVersion string, configs ...string) []resource.TestStep {
 	migrationConfigs := lo.Map(configs, func(config string, _ int) MigrationTestConfig {
 		return MigrationTestConfig{Config: config}
 	})
-	return frameworkMigrationTestStepsWithOptions(sdkVersion, migrationConfigs...)
+	return frameworkMigrationTestStepsWithConfigs(sdkVersion, migrationConfigs...)
 }
 
-// Creates migration test steps with expected update actions (without resource replacement)
-func FrameworkMigrationTestStepsWithUpdate(sdkVersion string, configs ...MigrationTestConfig) []resource.TestStep {
-	return frameworkMigrationTestStepsWithOptions(sdkVersion, configs...)
+// Creates migration test steps with configurable update plan checks
+func FrameworkMigrationTestStepsWithConfigs(sdkVersion string, configs ...MigrationTestConfig) []resource.TestStep {
+	return frameworkMigrationTestStepsWithConfigs(sdkVersion, configs...)
 }
 
-func frameworkMigrationTestStepsWithOptions(sdkVersion string, configs ...MigrationTestConfig) []resource.TestStep {
+func frameworkMigrationTestStepsWithConfigs(sdkVersion string, configs ...MigrationTestConfig) []resource.TestStep {
 	return lo.FlatMap(configs, func(c MigrationTestConfig, i int) []resource.TestStep {
 		var steps []resource.TestStep
 
@@ -136,12 +134,8 @@ func frameworkMigrationTestStepsWithOptions(sdkVersion string, configs ...Migrat
 		}
 
 		var planChecks []plancheck.PlanCheck
-		if len(c.ExpectUpdateActionsAddr) > 0 {
-			for _, addr := range c.ExpectUpdateActionsAddr {
-				planChecks = append(planChecks,
-					plancheck.ExpectResourceAction(addr, plancheck.ResourceActionUpdate),
-				)
-			}
+		if c.ExpectUpdateActionsAddr != "" {
+			plancheck.ExpectResourceAction(c.ExpectUpdateActionsAddr, plancheck.ResourceActionUpdate)
 		} else {
 			planChecks = []plancheck.PlanCheck{
 				plancheck.ExpectEmptyPlan(),

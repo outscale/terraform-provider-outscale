@@ -25,7 +25,7 @@ func TestAccNet_WithLinkMainRouteTable_Basic(t *testing.T) {
 	})
 }
 
-func TestAccNet_WithLinkMainRouteTable_Basic_Migration(t *testing.T) {
+func TestAccNet_WithLinkMainRouteTable_Migration(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { testAccPreCheck(t) },
 		Steps:    FrameworkMigrationTestSteps("1.1.3", testAccLinkMainRouteTableConfig),

@@ -37,7 +37,7 @@ func TestAccOthers_FlexibleGpu_Basic(t *testing.T) {
 	})
 }
 
-func TestAccOthers_FlexibleGpu_Basic_Migration(t *testing.T) {
+func TestAccOthers_FlexibleGpu_Migration(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { testAccPreCheck(t) },
 		Steps:    FrameworkMigrationTestSteps("1.0.1", testAccFlexibleGpuConfig(utils.GetRegion(), false)),

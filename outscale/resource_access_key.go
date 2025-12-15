@@ -17,8 +17,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
-	"github.com/outscale/osc-sdk-go/v3/pkg/iso8601"
-	"github.com/outscale/terraform-provider-outscale/fwvalidators"
+	"github.com/outscale/terraform-provider-outscale/framework/fwmodifyplan"
+	"github.com/outscale/terraform-provider-outscale/framework/fwtypes"
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
@@ -29,16 +29,16 @@ var (
 )
 
 type AccessKeyModel struct {
-	AccessKeyId          types.String   `tfsdk:"access_key_id"`
-	SecretKey            types.String   `tfsdk:"secret_key"`
-	UserName             types.String   `tfsdk:"user_name"`
-	State                types.String   `tfsdk:"state"`
-	CreationDate         types.String   `tfsdk:"creation_date"`
-	ExpirationDate       types.String   `tfsdk:"expiration_date"`
-	LastModificationDate types.String   `tfsdk:"last_modification_date"`
-	Timeouts             timeouts.Value `tfsdk:"timeouts"`
-	RequestId            types.String   `tfsdk:"request_id"`
-	Id                   types.String   `tfsdk:"id"`
+	AccessKeyId          types.String    `tfsdk:"access_key_id"`
+	SecretKey            types.String    `tfsdk:"secret_key"`
+	UserName             types.String    `tfsdk:"user_name"`
+	State                types.String    `tfsdk:"state"`
+	CreationDate         types.String    `tfsdk:"creation_date"`
+	ExpirationDate       fwtypes.ISO8601 `tfsdk:"expiration_date"`
+	LastModificationDate types.String    `tfsdk:"last_modification_date"`
+	Timeouts             timeouts.Value  `tfsdk:"timeouts"`
+	RequestId            types.String    `tfsdk:"request_id"`
+	Id                   types.String    `tfsdk:"id"`
 }
 
 type resourceAccessKey struct {
@@ -109,7 +109,6 @@ func (r *resourceAccessKey) Metadata(ctx context.Context, req resource.MetadataR
 
 func (r *resourceAccessKey) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-
 		Blocks: map[string]schema.Block{
 			"timeouts": timeouts.Block(ctx, timeouts.Opts{
 				Create: true,
@@ -121,9 +120,15 @@ func (r *resourceAccessKey) Schema(ctx context.Context, _ resource.SchemaRequest
 		Attributes: map[string]schema.Attribute{
 			"access_key_id": schema.StringAttribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"secret_key": schema.StringAttribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"user_name": schema.StringAttribute{
 				Optional: true,
@@ -141,15 +146,19 @@ func (r *resourceAccessKey) Schema(ctx context.Context, _ resource.SchemaRequest
 			},
 			"creation_date": schema.StringAttribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"expiration_date": schema.StringAttribute{
-				Computed: true,
-				Optional: true,
-				Validators: []validator.String{
-					fwvalidators.DateValidator(),
-				},
+				CustomType: fwtypes.ISO8601Type{},
+				Computed:   true,
+				Optional:   true,
+				// Validators: []validator.String{
+				// 	fwvalidators.DateValidator(),
+				// },
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
+					fwmodifyplan.CheckExpirationDate(),
 				},
 			},
 			"last_modification_date": schema.StringAttribute{
@@ -160,6 +169,9 @@ func (r *resourceAccessKey) Schema(ctx context.Context, _ resource.SchemaRequest
 			},
 			"id": schema.StringAttribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 		},
 	}
@@ -180,7 +192,7 @@ func (r *resourceAccessKey) Create(ctx context.Context, req resource.CreateReque
 	}
 
 	createReq := oscgo.CreateAccessKeyRequest{}
-	if expirDate := data.ExpirationDate.ValueString(); expirDate != "" {
+	if utils.IsSet(data.ExpirationDate) {
 		createReq.SetExpirationDate(data.ExpirationDate.ValueString())
 	}
 	if useName := data.UserName.ValueString(); useName != "" {
@@ -281,20 +293,23 @@ func (r *resourceAccessKey) Update(ctx context.Context, req resource.UpdateReque
 		AccessKeyId: stateData.AccessKeyId.ValueString(),
 		State:       planData.State.ValueString(),
 	}
-	if expireDate := planData.ExpirationDate.ValueString(); expireDate != "" {
-		updateReq.SetExpirationDate(expireDate)
-		stateData.ExpirationDate = planData.ExpirationDate
+	if !stateData.ExpirationDate.IsNull() {
+		updateReq.SetExpirationDate(stateData.ExpirationDate.ValueString())
+	}
+	if !planData.ExpirationDate.Equal(stateData.ExpirationDate) {
+		updateReq.SetExpirationDate(planData.ExpirationDate.ValueString())
+		// stateData.ExpirationDate = planData.ExpirationDate
 	}
 	if useName := stateData.UserName.ValueString(); useName != "" {
 		updateReq.SetUserName(useName)
 	}
-	var updateResp oscgo.UpdateAccessKeyResponse
+	// var updateResp oscgo.UpdateAccessKeyResponse
 	err := retry.RetryContext(ctx, updateTimeout, func() *retry.RetryError {
-		resp, httpResp, err := r.Client.AccessKeyApi.UpdateAccessKey(ctx).UpdateAccessKeyRequest(updateReq).Execute()
+		_, httpResp, err := r.Client.AccessKeyApi.UpdateAccessKey(ctx).UpdateAccessKeyRequest(updateReq).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
-		updateResp = resp
+		// updateResp = resp
 		return nil
 	})
 	if err != nil {
@@ -305,10 +320,10 @@ func (r *resourceAccessKey) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	accKey := updateResp.GetAccessKey()
-	if !accKey.HasExpirationDate() {
-		stateData.ExpirationDate = types.StringNull()
-	}
+	// accKey := updateResp.GetAccessKey()
+	// if !accKey.HasExpirationDate() {
+	// 	stateData.ExpirationDate = fwtypes.NewISO8601Null()
+	// }
 	err = setAccessKeyState(ctx, r, &stateData)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -391,7 +406,6 @@ func setAccessKeyState(ctx context.Context, r *resourceAccessKey, data *AccessKe
 	var readResp oscgo.ReadAccessKeysResponse
 	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
 		rp, httpResp, err := r.Client.AccessKeyApi.ReadAccessKeys(ctx).ReadAccessKeysRequest(readReq).Execute()
-
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -408,26 +422,11 @@ func setAccessKeyState(ctx context.Context, r *resourceAccessKey, data *AccessKe
 	data.RequestId = types.StringValue(readResp.ResponseContext.GetRequestId())
 	acckey := readResp.GetAccessKeys()[0]
 
-	if stateExpirDate := data.ExpirationDate.ValueString(); stateExpirDate != "" {
-		remoteExpirDate := acckey.GetExpirationDate()
-
-		datesEqual := false
-		if stateExpirDate != "" && remoteExpirDate != "" {
-			stateDate, err := iso8601.Parse([]byte(stateExpirDate))
-			if err != nil {
-				return err
-			}
-			remoteDate, err := iso8601.Parse([]byte(remoteExpirDate))
-			if err != nil {
-				return err
-			}
-			datesEqual = stateDate.Equal(remoteDate)
-		}
-
-		if !datesEqual {
-			data.ExpirationDate = types.StringValue(remoteExpirDate)
-		}
+	expirationDate, diag := fwtypes.NewISO8601Value(acckey.GetExpirationDate())
+	if diag.HasError() {
+		return fmt.Errorf("%v", diag.Errors())
 	}
+	data.ExpirationDate = expirationDate
 
 	data.AccessKeyId = types.StringValue(acckey.GetAccessKeyId())
 	data.State = types.StringValue(acckey.GetState())
@@ -445,8 +444,8 @@ func inactiveAccessKey(ctx context.Context, r *resourceAccessKey, data AccessKey
 	if data.UserName.ValueString() != "" {
 		req.SetUserName(data.UserName.ValueString())
 	}
-	if expireDate := data.ExpirationDate.ValueString(); expireDate != "" {
-		req.SetExpirationDate(expireDate)
+	if utils.IsSet(data.ExpirationDate) {
+		req.SetExpirationDate(data.ExpirationDate.ValueString())
 	}
 
 	updateTimeout, diags := data.Timeouts.Create(ctx, utils.UpdateDefaultTimeout)

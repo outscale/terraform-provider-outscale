@@ -32,16 +32,6 @@ func TestAccVM_WithVolumeAttachment_Basic(t *testing.T) {
 	})
 }
 
-func TestAccVM_WithVolumeAttachment_Basic_Migration(t *testing.T) {
-	omi := os.Getenv("OUTSCALE_IMAGEID")
-	keypair := "terraform-basic"
-
-	resource.Test(t, resource.TestCase{
-		PreCheck: func() { testAccPreCheck(t) },
-		Steps:    FrameworkMigrationTestSteps("1.1.3", testAccOAPIVolumeAttachmentConfig(omi, utils.TestAccVmType, utils.GetRegion(), keypair)),
-	})
-}
-
 func TestAccVM_ImportVolumeAttachment_Basic(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	keypair := "terraform-basic"
@@ -57,6 +47,16 @@ func TestAccVM_ImportVolumeAttachment_Basic(t *testing.T) {
 			},
 			testutils.ImportStep(resourceName, testutils.DefaultIgnores()...),
 		},
+	})
+}
+
+func TestAccVM_WithVolumeAttachment_Migration(t *testing.T) {
+	omi := os.Getenv("OUTSCALE_IMAGEID")
+	keypair := "terraform-basic"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { testAccPreCheck(t) },
+		Steps:    FrameworkMigrationTestSteps("1.1.3", testAccOAPIVolumeAttachmentConfig(omi, utils.TestAccVmType, utils.GetRegion(), keypair)),
 	})
 }
 

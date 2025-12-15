@@ -24,7 +24,7 @@ func TestAccNet_Attributes_Basic(t *testing.T) {
 	})
 }
 
-func TestAccNet_Attributes_Basic_Migration(t *testing.T) {
+func TestAccNet_Attributes_Migration(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { testAccPreCheck(t) },
 		Steps:    FrameworkMigrationTestSteps("1.1.2", testAccOutscaleLinAttrConfig),

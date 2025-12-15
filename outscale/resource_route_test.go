@@ -28,13 +28,6 @@ func TestAccNet_OutscaleRoute_noopdiff(t *testing.T) {
 	})
 }
 
-func TestAccNet_OutscaleRoute_noopdiff_Migration(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		PreCheck: func() { testAccPreCheck(t) },
-		Steps:    FrameworkMigrationTestSteps("1.1.3", testAccOutscaleRouteNoopChange),
-	})
-}
-
 func TestAccNet_ImportRoute_Basic(t *testing.T) {
 	resourceName := "outscale_route.test"
 
@@ -65,13 +58,6 @@ func TestAccNet_Route_importWithNatService(t *testing.T) {
 	})
 }
 
-func TestAccNet_Route_importWithNatService_Migration(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		PreCheck: func() { testAccPreCheck(t) },
-		Steps:    FrameworkMigrationTestSteps("1.1.3", testAccOutscaleRouteWithNatService),
-	})
-}
-
 func TestAccNet_Route_changeTarget(t *testing.T) {
 	resourceName := "outscale_route.rtnatdef"
 
@@ -95,20 +81,12 @@ func TestAccNet_Route_changeTarget(t *testing.T) {
 	})
 }
 
-func TestAccNet_Route_changeTarget_Migration(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		PreCheck: func() { testAccPreCheck(t) },
-		Steps:    FrameworkMigrationTestSteps("1.1.3", computeConfigTestChangeTarget([]string{"nat_service_id"})),
-	})
-}
-
 func TestAccNet_Route_onlyOneTarget(t *testing.T) {
 	regex := regexp.MustCompile(".*")
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		PreCheck: func() {
 			testAccPreCheck(t)
-
 		},
 		Steps: []resource.TestStep{
 			{
@@ -191,6 +169,17 @@ func TestAccNet_Route_onlyOneTarget(t *testing.T) {
 				ExpectError: regex,
 			},
 		},
+	})
+}
+
+func TestAccNet_Route_Migration(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { testAccPreCheck(t) },
+		Steps: FrameworkMigrationTestSteps("1.1.3",
+			testAccOutscaleRouteNoopChange,
+			testAccOutscaleRouteWithNatService,
+			computeConfigTestChangeTarget([]string{"nat_service_id"}),
+		),
 	})
 }
 

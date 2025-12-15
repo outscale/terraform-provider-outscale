@@ -20,9 +20,14 @@ func (m datePlanModify) MarkdownDescription(ctx context.Context) string {
 }
 
 func (m datePlanModify) PlanModifyString(ctx context.Context, req planmodifier.StringRequest, resp *planmodifier.StringResponse) {
-	// Do nothing if there is no state value or an unknown configuration value.
-	if req.StateValue.IsNull() || req.StateValue.ValueString() == "" || req.ConfigValue.IsUnknown() ||
-		req.ConfigValue.IsNull() || req.ConfigValue.ValueString() == "" {
+	// Do nothing if there is no state value.
+	if req.StateValue.IsNull() {
+		return
+	}
+
+	// If config is null or unknown, keep the current state value.
+	if req.ConfigValue.IsNull() || req.ConfigValue.IsUnknown() {
+		resp.PlanValue = req.StateValue
 		return
 	}
 
@@ -46,7 +51,7 @@ func (m datePlanModify) PlanModifyString(ctx context.Context, req planmodifier.S
 
 	// if configDate.Equal(stateDate) {
 	// 	resp.PlanValue = req.StateValue
-	// } else
+	// } else if configDate.Before(stateDate) {
 	if configDate.Before(stateDate) {
 		resp.Diagnostics.AddError(
 			m.Description(ctx),

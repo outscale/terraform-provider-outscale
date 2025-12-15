@@ -47,9 +47,8 @@ func TestAccVM_LbuBackends_Basic(t *testing.T) {
 	})
 }
 
-func TestAccVM_LbuBackends_Basic_Migration(t *testing.T) {
+func TestAccVM_LbuBackends_Migration(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	// resourceName := "outscale_load_balancer_vms.backend_test"
 	rand := acctest.RandIntRange(0, 50)
 	region := utils.GetRegion()
 	vmType := utils.TestAccVmType

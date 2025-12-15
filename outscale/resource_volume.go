@@ -21,7 +21,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/outscale/osc-sdk-go/v2"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
-	"github.com/outscale/terraform-provider-outscale/fwmodifyplan"
+	"github.com/outscale/terraform-provider-outscale/framework/fwmodifyplan"
 	"github.com/outscale/terraform-provider-outscale/utils"
 	"github.com/samber/lo"
 )

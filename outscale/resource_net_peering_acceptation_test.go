@@ -26,13 +26,6 @@ func TestAccNet_PeeringConnectionAccepter_sameAccount(t *testing.T) {
 	})
 }
 
-func TestAccNet_PeeringConnectionAccepter_sameAccount_Migration(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		PreCheck: func() { testAccPreCheck(t) },
-		Steps:    FrameworkMigrationTestSteps("1.1.1", testAccOutscaleLinPeeringConnectionAccepterSameAccountConfig(utils.GetAccepterOwnerId())),
-	})
-}
-
 func TestAccNet_PeeringConnectionAccepter_importBasic(t *testing.T) {
 	resourceName := "outscale_net_peering_acceptation.peer"
 
@@ -62,6 +55,13 @@ func TestAccNet_PeeringConnectionAccepter_importBasic_Migration(t *testing.T) {
 			},
 			testutils.ImportStep(resourceName, testutils.DefaultIgnores()...),
 		},
+	})
+}
+
+func TestAccNet_PeeringConnectionAccepter_Migration(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { testAccPreCheck(t) },
+		Steps:    FrameworkMigrationTestSteps("1.1.1", testAccOutscaleLinPeeringConnectionAccepterSameAccountConfig(utils.GetAccepterOwnerId())),
 	})
 }
 

@@ -141,12 +141,14 @@ func TestAccOthers_AccessKeyUpdatedExpirationDate(t *testing.T) {
 
 func TestAccOthers_AccessKey_Migration(t *testing.T) {
 	state := "INACTIVE"
+	stateUpdated := "ACTIVE"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { TestAccFwPreCheck(t) },
 		Steps: FrameworkMigrationTestSteps("1.0.1",
 			testAccAccessKeyBasicConfig,
 			testAccAccessKeyUpdateState(state),
+			testAccAccessKeyUpdateState(stateUpdated),
 		),
 	})
 }
@@ -156,12 +158,10 @@ func TestAccOthers_AccessKey_ExpirationDate_Migration(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { TestAccFwPreCheck(t) },
-		Steps: FrameworkMigrationTestStepsWithUpdate("1.0.1",
+		Steps: FrameworkMigrationTestStepsWithConfigs("1.0.1",
 			MigrationTestConfig{
-				Config: testAccAccessKeyExpirationDateConfig(expirDate),
-				ExpectUpdateActionsAddr: []string{
-					"outscale_access_key.date_access_key",
-				},
+				Config:                  testAccAccessKeyExpirationDateConfig(expirDate),
+				ExpectUpdateActionsAddr: "outscale_access_key.date_access_key",
 			},
 		),
 	})

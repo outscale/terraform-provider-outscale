@@ -27,13 +27,6 @@ func TestAccNet_PeeringConnection_Basic(t *testing.T) {
 	})
 }
 
-func TestAccNet_PeeringConnection_Basic_Migration(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		PreCheck: func() { testAccPreCheck(t) },
-		Steps:    FrameworkMigrationTestSteps("1.1.1", testAccOAPIVpcPeeringConfig2()),
-	})
-}
-
 func TestAccNet_PeeringConnection_importBasic(t *testing.T) {
 	resourceName := "outscale_net_peering.foo"
 
@@ -50,15 +43,7 @@ func TestAccNet_PeeringConnection_importBasic(t *testing.T) {
 	})
 }
 
-func TestAccNet_PeeringConnection_importBasic_Migration(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		PreCheck: func() { testAccPreCheck(t) },
-		Steps:    FrameworkMigrationTestSteps("1.1.1", testAccOAPIVpcPeeringConfig(utils.GetAccepterOwnerId())),
-	})
-}
-
 func TestAccNet_PeeringConnection_plan(t *testing.T) {
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
@@ -69,6 +54,16 @@ func TestAccNet_PeeringConnection_plan(t *testing.T) {
 				PlanOnly:           true,
 			},
 		},
+	})
+}
+
+func TestAccNet_PeeringConnection_Migration(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { testAccPreCheck(t) },
+		Steps: FrameworkMigrationTestSteps("1.1.1",
+			testAccOAPIVpcPeeringConfig2(),
+			testAccOAPIVpcPeeringConfig(utils.GetAccepterOwnerId()),
+		),
 	})
 }
 

@@ -26,7 +26,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/outscale/osc-sdk-go/v3/pkg/oks"
-	"github.com/outscale/terraform-provider-outscale/fwvalidators"
+	"github.com/outscale/terraform-provider-outscale/framework/fwvalidators"
 	"github.com/outscale/terraform-provider-outscale/utils"
 	"github.com/outscale/terraform-provider-outscale/utils/to"
 )

@@ -12,7 +12,6 @@ import (
 )
 
 func TestAccNet_WithRouteTable_Basic(t *testing.T) {
-
 	resourceName := "outscale_route_table.rtbTest"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
@@ -27,13 +26,6 @@ func TestAccNet_WithRouteTable_Basic(t *testing.T) {
 				),
 			},
 		},
-	})
-}
-
-func TestAccNet_WithRouteTable_Basic_Migration(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		PreCheck: func() { testAccPreCheck(t) },
-		Steps:    FrameworkMigrationTestSteps("1.1.3", testAccOAPIRouteTableConfig),
 	})
 }
 
@@ -53,15 +45,6 @@ func TestAccNet_RouteTable_Instance(t *testing.T) {
 				),
 			},
 		},
-	})
-}
-
-func TestAccNet_RouteTable_Instance_Migration(t *testing.T) {
-	omi := os.Getenv("OUTSCALE_IMAGEID")
-
-	resource.Test(t, resource.TestCase{
-		PreCheck: func() { testAccPreCheck(t) },
-		Steps:    FrameworkMigrationTestSteps("1.1.3", testAccOAPIRouteTableConfigInstance(omi, utils.TestAccVmType, utils.GetRegion())),
 	})
 }
 
@@ -116,6 +99,17 @@ func TestAccNet_RouteTable_importBasic(t *testing.T) {
 			},
 			testutils.ImportStep(resourceName, testutils.DefaultIgnores()...),
 		},
+	})
+}
+
+func TestAccNet_WithRouteTable_Migration(t *testing.T) {
+	omi := os.Getenv("OUTSCALE_IMAGEID")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { testAccPreCheck(t) },
+		Steps: FrameworkMigrationTestSteps("1.1.3",
+			testAccOAPIRouteTableConfig,
+			testAccOAPIRouteTableConfigInstance(omi, utils.TestAccVmType, utils.GetRegion())),
 	})
 }
 

@@ -24,7 +24,7 @@ func TestAccOthers_InternetService_Basic(t *testing.T) {
 	})
 }
 
-func TestAccOthers_InternetService_Basic_Migration(t *testing.T) {
+func TestAccOthers_InternetService_Migration(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { testAccPreCheck(t) },
 		Steps:    FrameworkMigrationTestSteps("1.1.2", testAccOutscaleInternetServiceConfig()),
