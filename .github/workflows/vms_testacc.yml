@@ -1,51 +1,51 @@
 name: vms Acceptances tests
 
 on:
-  pull_request:
-    branches:
-      - master
-    paths:
-      - '**.go'
-      - '**.sum'
-      - '**.mod'
-      - 'GNUmakefile'
-  workflow_dispatch:
+    pull_request:
+        branches:
+            - master
+        paths:
+            - "**.go"
+            - "**.sum"
+            - "**.mod"
+            - "GNUmakefile"
+    workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
 
 jobs:
-  Vms_Acceptances_tests:
-    environment: test-eu-west-2
-    runs-on: [self-hosted, linux, eu-west-2]
-    steps:
-      - uses: actions/checkout@v4
-        with:
-            repository: ${{ github.event.pull_request.head.repo.full_name }}
-            ref: ${{ github.event.pull_request.head.ref }}
-      - uses: outscale/frieza-github-actions/frieza-clean@master
-        with:
-          access_key: ${{ secrets.OSC_ACCESS_KEY }}
-          secret_key: ${{ secrets.OSC_SECRET_KEY }}
-          region: ${{ secrets.OSC_REGION }}
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: './go.mod'
-      - name: Build go test
-        run: make test
-        env:
-          OUTSCALE_ACCESSKEYID: ${{ secrets.OSC_ACCESS_KEY }}
-          OUTSCALE_SECRETKEYID: ${{ secrets.OSC_SECRET_KEY }}
-          OUTSCALE_REGION: ${{ secrets.OSC_REGION }}
-          OUTSCALE_ACCOUNT: ${{ secrets.OSC_ACCOUNT_ID }}
-          OUTSCALE_IMAGEID: ${{ secrets.OUTSCALE_IMAGEID }}
-      - name: Run vms acceptances tests
-        run: make test-vm
-        env:
-          OUTSCALE_ACCESSKEYID: ${{ secrets.OSC_ACCESS_KEY }}
-          OUTSCALE_SECRETKEYID: ${{ secrets.OSC_SECRET_KEY }}
-          OUTSCALE_REGION: ${{ secrets.OSC_REGION }}
-          OUTSCALE_ACCOUNT: ${{ secrets.OSC_ACCOUNT_ID }}
-          OUTSCALE_IMAGEID: ${{ secrets.OUTSCALE_IMAGEID }}
+    Vms_Acceptances_tests:
+        environment: test-eu-west-2
+        runs-on: [self-hosted, linux, eu-west-2]
+        steps:
+            - uses: actions/checkout@v5
+              with:
+                  repository: ${{ github.event.pull_request.head.repo.full_name }}
+                  ref: ${{ github.event.pull_request.head.ref }}
+            - uses: outscale/frieza-github-actions/frieza-clean@master
+              with:
+                  access_key: ${{ secrets.OSC_ACCESS_KEY }}
+                  secret_key: ${{ secrets.OSC_SECRET_KEY }}
+                  region: ${{ secrets.OSC_REGION }}
+            - name: Set up Go
+              uses: actions/setup-go@v5
+              with:
+                  go-version-file: "./go.mod"
+            - name: Build go test
+              run: make test
+              env:
+                  OUTSCALE_ACCESSKEYID: ${{ secrets.OSC_ACCESS_KEY }}
+                  OUTSCALE_SECRETKEYID: ${{ secrets.OSC_SECRET_KEY }}
+                  OUTSCALE_REGION: ${{ secrets.OSC_REGION }}
+                  OUTSCALE_ACCOUNT: ${{ secrets.OSC_ACCOUNT_ID }}
+                  OUTSCALE_IMAGEID: ${{ secrets.OUTSCALE_IMAGEID }}
+            - name: Run vms acceptances tests
+              run: make test-vm
+              env:
+                  OUTSCALE_ACCESSKEYID: ${{ secrets.OSC_ACCESS_KEY }}
+                  OUTSCALE_SECRETKEYID: ${{ secrets.OSC_SECRET_KEY }}
+                  OUTSCALE_REGION: ${{ secrets.OSC_REGION }}
+                  OUTSCALE_ACCOUNT: ${{ secrets.OSC_ACCOUNT_ID }}
+                  OUTSCALE_IMAGEID: ${{ secrets.OUTSCALE_IMAGEID }}

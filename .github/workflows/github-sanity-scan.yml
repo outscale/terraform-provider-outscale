@@ -1,18 +1,18 @@
 name: Github sanity scanner
 
 on:
-  pull_request:
-    branches: [ master ]
+    pull_request:
+        branches: [master]
 
 permissions:
-  contents: read
+    contents: read
 
 jobs:
-  github-sanity-scan:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - name: Github sanity scanner
-      uses: outscale/github-sanity-scan@main
-      with:
-        no-pull-request-target: true
+    github-sanity-scan:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v5
+            - name: Github sanity scanner
+              uses: outscale/github-sanity-scan@main
+              with:
+                  no-pull-request-target: true
