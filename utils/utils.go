@@ -27,10 +27,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/nav-inc/datetime"
+	"github.com/outscale/osc-sdk-go/v3/pkg/iso8601"
 	"github.com/spf13/cast"
 )
 
@@ -100,7 +99,7 @@ func getBsuTags(volumeId string, conn *oscgo.APIClient) ([]oscgo.ResourceTag, er
 		Filters: &oscgo.FiltersVolume{VolumeIds: &[]string{volumeId}},
 	}
 	var resp oscgo.ReadVolumesResponse
-	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
 		r, httpResp, err := conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(request).Execute()
 		if err != nil {
 			return CheckThrottling(httpResp, err)
@@ -320,8 +319,10 @@ func ParsingfilterToDateFormat(filterName, value string) (time.Time, error) {
 	var err error
 	var filterDate time.Time
 
-	if filterDate, err = datetime.Parse(value, time.UTC); err != nil {
-		return filterDate, fmt.Errorf("%s value should be 'ISO 8601' format ('2017-06-14' or '2017-06-14T00:00:00Z, ...) %s", filterName, err)
+	if value != "" {
+		if filterDate, err = iso8601.Parse([]byte(value)); err != nil {
+			return filterDate, fmt.Errorf("%s value should be 'ISO 8601' format ('2017-06-14' or '2017-06-14T00:00:00Z, ...) %s", filterName, err)
+		}
 	}
 	return filterDate, nil
 }
@@ -422,20 +423,6 @@ func CheckPath(path string) error {
 		return nil
 	}
 	return fmt.Errorf("invalid path:\n %v", pathError)
-}
-
-func CheckDateFormat(dateFormat string) error {
-	var err error
-	var settingDate time.Time
-	currentDate := time.Now()
-
-	if settingDate, err = datetime.Parse(dateFormat, time.UTC); err != nil {
-		return fmt.Errorf(" Expiration Date should be 'ISO 8601' format ('2017-06-14' or '2017-06-14T00:00:00Z, ...) %s", err)
-	}
-	if currentDate.After(settingDate) {
-		return fmt.Errorf(" Expiration date: '%s' should be after current date '%s'", settingDate, currentDate)
-	}
-	return nil
 }
 
 func UnknownDataSourceFilterError(ctx context.Context, filterName string) error {

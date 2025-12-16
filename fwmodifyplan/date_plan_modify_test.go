@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/nav-inc/datetime"
+	"github.com/outscale/osc-sdk-go/v3/pkg/iso8601"
 )
 
 func TestFwDatemodifyplan(t *testing.T) {
@@ -16,11 +16,11 @@ func TestFwDatemodifyplan(t *testing.T) {
 
 	oldDate, err := time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
 	if err != nil {
-		t.Errorf("Unable to parse date: %v ", err.Error())
+		t.Errorf("%v", err.Error())
 	}
-	newDate, err := datetime.Parse(oldDate.AddDate(0, 1, 10).Format(time.RFC3339), time.UTC)
+	newDate, err := iso8601.Parse([]byte(oldDate.AddDate(0, 1, 10).Format(time.RFC3339)))
 	if err != nil {
-		t.Errorf("Unable to parse date: %v ", err.Error())
+		t.Errorf("%v", err.Error())
 	}
 
 	currentDate := oldDate.Format(time.RFC3339)
@@ -73,7 +73,7 @@ func TestFwDatemodifyplan(t *testing.T) {
 				Diagnostics: diag.Diagnostics{},
 			}
 
-			CkeckExpirationDate().PlanModifyString(context.Background(), req, &resp)
+			CheckExpirationDate().PlanModifyString(context.Background(), req, &resp)
 			if !tc.ExpectedError && resp.Diagnostics.HasError() {
 				t.Errorf("got unexpected error: %s", resp.Diagnostics.Errors())
 			}
