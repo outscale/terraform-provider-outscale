@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-func TestAccVM_WithVolumeAttachment_basic(t *testing.T) {
+func TestAccVM_WithVolumeAttachment_Basic(t *testing.T) {
 	t.Parallel()
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	keypair := "terraform-basic"
@@ -50,14 +50,14 @@ func TestAccVM_ImportVolumeAttachment_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckOAPIVolumeAttachmentImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
-	return func(s *terraform.State) (string, error) {
-		rs, ok := s.RootModule().Resources[resourceName]
-		if !ok {
-			return "", fmt.Errorf("Not found: %s", resourceName)
-		}
-		return rs.Primary.ID, nil
-	}
+func TestAccVM_WithVolumeAttachment_Migration(t *testing.T) {
+	omi := os.Getenv("OUTSCALE_IMAGEID")
+	keypair := "terraform-basic"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { testAccPreCheck(t) },
+		Steps:    FrameworkMigrationTestSteps("1.1.3", testAccOAPIVolumeAttachmentConfig(omi, utils.TestAccVmType, utils.GetRegion(), keypair)),
+	})
 }
 
 func testAccCheckOAPIVolumeAttachmentDestroy(s *terraform.State) error {

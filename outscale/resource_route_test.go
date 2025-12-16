@@ -62,10 +62,7 @@ func TestAccNet_Route_changeTarget(t *testing.T) {
 	resourceName := "outscale_route.rtnatdef"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheck(t)
-
-		},
+		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
@@ -90,7 +87,6 @@ func TestAccNet_Route_onlyOneTarget(t *testing.T) {
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		PreCheck: func() {
 			testAccPreCheck(t)
-
 		},
 		Steps: []resource.TestStep{
 			{
@@ -176,14 +172,15 @@ func TestAccNet_Route_onlyOneTarget(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleRouteImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
-	return func(s *terraform.State) (string, error) {
-		rs, ok := s.RootModule().Resources[resourceName]
-		if !ok {
-			return "", fmt.Errorf("Not found: %s", resourceName)
-		}
-		return rs.Primary.ID, nil
-	}
+func TestAccNet_Route_Migration(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { testAccPreCheck(t) },
+		Steps: FrameworkMigrationTestSteps("1.1.3",
+			testAccOutscaleRouteNoopChange,
+			testAccOutscaleRouteWithNatService,
+			computeConfigTestChangeTarget([]string{"nat_service_id"}),
+		),
+	})
 }
 
 var testAccOutscaleRouteNoopChange = `

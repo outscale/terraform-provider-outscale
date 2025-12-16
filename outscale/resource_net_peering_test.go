@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccNet_PeeringConnection_basic(t *testing.T) {
+func TestAccNet_PeeringConnection_Basic(t *testing.T) {
 	resourceName := "outscale_net_peering.foo"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
@@ -54,6 +54,16 @@ func TestAccNet_PeeringConnection_plan(t *testing.T) {
 				PlanOnly:           true,
 			},
 		},
+	})
+}
+
+func TestAccNet_PeeringConnection_Migration(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { testAccPreCheck(t) },
+		Steps: FrameworkMigrationTestSteps("1.1.1",
+			testAccOAPIVpcPeeringConfig2(),
+			testAccOAPIVpcPeeringConfig(utils.GetAccepterOwnerId()),
+		),
 	})
 }
 

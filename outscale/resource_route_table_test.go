@@ -11,8 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccNet_WithRouteTable_basic(t *testing.T) {
-
+func TestAccNet_WithRouteTable_Basic(t *testing.T) {
 	resourceName := "outscale_route_table.rtbTest"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
@@ -30,7 +29,7 @@ func TestAccNet_WithRouteTable_basic(t *testing.T) {
 	})
 }
 
-func TestAccNet_RouteTable_instance(t *testing.T) {
+func TestAccNet_RouteTable_Instance(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	resourceName := "outscale_route_table.rtbTest"
 
@@ -103,15 +102,15 @@ func TestAccNet_RouteTable_importBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleRouteTableImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
-	return func(s *terraform.State) (string, error) {
-		rs, ok := s.RootModule().Resources[resourceName]
-		if !ok {
-			return "", fmt.Errorf("Not found: %s", resourceName)
-		}
+func TestAccNet_WithRouteTable_Migration(t *testing.T) {
+	omi := os.Getenv("OUTSCALE_IMAGEID")
 
-		return rs.Primary.ID, nil
-	}
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { testAccPreCheck(t) },
+		Steps: FrameworkMigrationTestSteps("1.1.3",
+			testAccOAPIRouteTableConfig,
+			testAccOAPIRouteTableConfigInstance(omi, utils.TestAccVmType, utils.GetRegion())),
+	})
 }
 
 // VPC Peering connections are prefixed with pcx

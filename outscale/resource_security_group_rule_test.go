@@ -68,13 +68,24 @@ func TestAccOthers_SecurityGroupRule_WithSecurityGroupMember(t *testing.T) {
 	})
 }
 
+func TestAccOthers_SecurityGroupRule_Migration(t *testing.T) {
+	rInt := acctest.RandInt()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { testAccPreCheck(t) },
+		Steps:    FrameworkMigrationTestSteps("1.2.1", testAccOutscaleSecurityGroupRuleEgressConfig(rInt)),
+	})
+}
+
 func TestAccOthers_SecurityGroupRule_WithSecurityGroupMember_Migration(t *testing.T) {
 	accountID := os.Getenv("OUTSCALE_ACCOUNT")
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { testAccPreCheck(t) },
-		Steps:    FrameworkMigrationTestSteps("1.2.1", testAccOutscaleSecurityGroupRuleWithGroupMembers(rInt, accountID)),
+		Steps: FrameworkMigrationTestStepsWithExpectNonEmptyPlan("1.2.1",
+			testAccOutscaleSecurityGroupRuleWithGroupMembers(rInt, accountID),
+		),
 	})
 }
 

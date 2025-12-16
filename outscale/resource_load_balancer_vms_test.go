@@ -5,12 +5,12 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func TestAccVM_LbuBackends_basic(t *testing.T) {
+func TestAccVM_LbuBackends_Basic(t *testing.T) {
 	t.Parallel()
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	resourceName := "outscale_load_balancer_vms.backend_test"
@@ -44,6 +44,21 @@ func TestAccVM_LbuBackends_basic(t *testing.T) {
 				),
 			},
 		},
+	})
+}
+
+func TestAccVM_LbuBackends_Migration(t *testing.T) {
+	omi := os.Getenv("OUTSCALE_IMAGEID")
+	rand := acctest.RandIntRange(0, 50)
+	region := utils.GetRegion()
+	vmType := utils.TestAccVmType
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { testAccPreCheck(t) },
+		Steps: FrameworkMigrationTestSteps("1.1.3",
+			testAccLBUAttachmentConfig1(rand, omi, region, vmType),
+			testAccLBUAttachmentAddUpdate(rand, omi, region, vmType),
+		),
 	})
 }
 

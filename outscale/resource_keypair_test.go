@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccOthers_keypair_basic(t *testing.T) {
+func TestAccOthers_keypair_Basic(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_keypair.basic_keypair"
 
@@ -27,6 +27,13 @@ func TestAccOthers_keypair_basic(t *testing.T) {
 				),
 			},
 		},
+	})
+}
+
+func TestAccOthers_keypair_Basic_Migration(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { TestAccFwPreCheck(t) },
+		Steps:    FrameworkMigrationTestSteps("1.0.1", testAccKeypairBasicConfig),
 	})
 }
 
@@ -80,7 +87,7 @@ func testAcckeypairUpdateTags(value string) string {
 			tags {
 				key   = "name"
 				value = "%s"
-		}
+			}
 		}
 	`, value)
 }
