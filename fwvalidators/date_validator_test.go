@@ -8,19 +8,19 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/nav-inc/datetime"
+	"github.com/outscale/osc-sdk-go/v3/pkg/iso8601"
 )
 
-func TestFwDatevalidators(t *testing.T) {
+func TestFwDateValidators(t *testing.T) {
 	t.Parallel()
 
 	oldDate, err := time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
 	if err != nil {
-		t.Errorf("Unable to parse date: %v ", err.Error())
+		t.Errorf("unable to parse date: %v", err.Error())
 	}
-	newDate, err := datetime.Parse(oldDate.AddDate(0, 1, 10).Format(time.RFC3339), time.UTC)
+	newDate, err := iso8601.Parse([]byte(oldDate.AddDate(0, 1, 10).Format(time.RFC3339)))
 	if err != nil {
-		t.Errorf("Unable to parse date: %v ", err.Error())
+		t.Errorf("unable to parse date: %v", err.Error())
 	}
 
 	currentDate := oldDate.Format(time.RFC3339)
