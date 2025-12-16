@@ -1,35 +1,35 @@
 # This GitHub action can generate binaries for the PR and upload them for future use
 name: Generate binaries on PR
 on:
-  pull_request:
-    branches:
-      - master
-    paths:
-      - '**.go'
-      - '**.sum'
-      - '**.mod'
-      - 'GNUmakefile'
-  workflow_dispatch:
+    pull_request:
+        branches:
+            - master
+        paths:
+            - "**.go"
+            - "**.sum"
+            - "**.mod"
+            - "GNUmakefile"
+    workflow_dispatch:
 
 jobs:
-  goreleaser:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: './go.mod'
-      - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v5
-        with:
-          version: latest
-          args: build --rm-dist --snapshot
-      - name: Upload assets
-        uses: actions/upload-artifact@v4
-        with:
-          name: terraform-provider-outscale
-          path: dist/terraform-provider-outscale*
+    goreleaser:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v5
+              with:
+                  fetch-depth: 0
+            - name: Set up Go
+              uses: actions/setup-go@v5
+              with:
+                  go-version-file: "./go.mod"
+            - name: Run GoReleaser
+              uses: goreleaser/goreleaser-action@v5
+              with:
+                  version: latest
+                  args: build --rm-dist --snapshot
+            - name: Upload assets
+              uses: actions/upload-artifact@v4
+              with:
+                  name: terraform-provider-outscale
+                  path: dist/terraform-provider-outscale*

@@ -1,43 +1,43 @@
 name: Examples terraform tests
 
 on:
-  pull_request:
-    branches:
-      - master
-    paths:
-      - 'examples/**.tfvars'
-      - 'examples/**.tf'
-      - 'scripts/test-examples.sh'
-      - 'GNUmakefile'
-  schedule:
-    - cron: '30 22 * * *'
-  workflow_dispatch:
+    pull_request:
+        branches:
+            - master
+        paths:
+            - "examples/**.tfvars"
+            - "examples/**.tf"
+            - "scripts/test-examples.sh"
+            - "GNUmakefile"
+    schedule:
+        - cron: "30 22 * * *"
+    workflow_dispatch:
 
 jobs:
-  Examples_terraform_tests:
-    environment: test-eu-west-2
-    runs-on: [self-hosted, linux, eu-west-2]
-    steps:
-      - uses: actions/checkout@v4
-        with:
-            repository: ${{ github.event.pull_request.head.repo.full_name }}
-            ref: ${{ github.event.pull_request.head.ref }}
-      - uses: outscale/frieza-github-actions/frieza-clean@master
-        with:
-          access_key: ${{ secrets.OSC_ACCESS_KEY }}
-          secret_key: ${{ secrets.OSC_SECRET_KEY }}
-          region: ${{ secrets.OSC_REGION }}
-      - uses: actions/setup-go@v5
-        with:
-          go-version-file: './go.mod'
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_wrapper: false
-      - name: Run Examples
-        run: make terraform-examples
-        env:
-          TF_VAR_access_key_id: ${{ secrets.OSC_ACCESS_KEY }}
-          TF_VAR_secret_key_id: ${{ secrets.OSC_SECRET_KEY }}
-          TF_VAR_region: ${{ secrets.OSC_REGION }}
-          TF_VAR_image_id: ${{ secrets.OSC_OMI_EXEMPLE }}
+    Examples_terraform_tests:
+        environment: test-eu-west-2
+        runs-on: [self-hosted, linux, eu-west-2]
+        steps:
+            - uses: actions/checkout@v5
+              with:
+                  repository: ${{ github.event.pull_request.head.repo.full_name }}
+                  ref: ${{ github.event.pull_request.head.ref }}
+            - uses: outscale/frieza-github-actions/frieza-clean@master
+              with:
+                  access_key: ${{ secrets.OSC_ACCESS_KEY }}
+                  secret_key: ${{ secrets.OSC_SECRET_KEY }}
+                  region: ${{ secrets.OSC_REGION }}
+            - uses: actions/setup-go@v5
+              with:
+                  go-version-file: "./go.mod"
+            - name: Setup Terraform
+              uses: hashicorp/setup-terraform@v3
+              with:
+                  terraform_wrapper: false
+            - name: Run Examples
+              run: make terraform-examples
+              env:
+                  TF_VAR_access_key_id: ${{ secrets.OSC_ACCESS_KEY }}
+                  TF_VAR_secret_key_id: ${{ secrets.OSC_SECRET_KEY }}
+                  TF_VAR_region: ${{ secrets.OSC_REGION }}
+                  TF_VAR_image_id: ${{ secrets.OSC_OMI_EXEMPLE }}
