@@ -8,7 +8,7 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -187,7 +187,7 @@ func ResourceOutscaleDHCPOptionDelete(d *schema.ResourceData, meta interface{}) 
 func createDhcpOption(conn *oscgo.APIClient, dhcp oscgo.CreateDhcpOptionsRequest) (*oscgo.DhcpOptionsSet, *oscgo.CreateDhcpOptionsResponse, error) {
 	var resp oscgo.CreateDhcpOptionsResponse
 	var err error
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.DhcpOptionApi.CreateDhcpOptions(context.Background()).CreateDhcpOptionsRequest(dhcp).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -209,7 +209,7 @@ func readDhcpOption(conn *oscgo.APIClient, dhcpID string) (*oscgo.DhcpOptionsSet
 
 	var resp oscgo.ReadDhcpOptionsResponse
 	var err error
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.DhcpOptionApi.ReadDhcpOptions(context.Background()).ReadDhcpOptionsRequest(filterRequest).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -230,7 +230,7 @@ func readDhcpOption(conn *oscgo.APIClient, dhcpID string) (*oscgo.DhcpOptionsSet
 }
 
 func deleteDhcpOptions(conn *oscgo.APIClient, dhcpID string) error {
-	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
 		_, httpResp, err := conn.DhcpOptionApi.DeleteDhcpOptions(context.Background()).DeleteDhcpOptionsRequest(oscgo.DeleteDhcpOptionsRequest{
 			DhcpOptionsSetId: dhcpID,
 		}).Execute()
@@ -246,7 +246,7 @@ func getAttachedDHCPs(conn *oscgo.APIClient, dhcpID string) ([]oscgo.Net, error)
 	// Validate if the DHCP  Option is attached to a Net
 	var resp oscgo.ReadNetsResponse
 	var err error
-	err = resource.Retry(120*time.Second, func() *resource.RetryError {
+	err = retry.Retry(120*time.Second, func() *retry.RetryError {
 		rp, httpResp, err := conn.NetApi.ReadNets(context.Background()).ReadNetsRequest(oscgo.ReadNetsRequest{
 			Filters: &oscgo.FiltersNet{
 				DhcpOptionsSetIds: &[]string{dhcpID},
@@ -268,7 +268,7 @@ func getAttachedDHCPs(conn *oscgo.APIClient, dhcpID string) ([]oscgo.Net, error)
 func detachDHCPs(conn *oscgo.APIClient, nets []oscgo.Net) error {
 	// Detaching the dhcp of the nets
 	for _, net := range nets {
-		err := resource.Retry(120*time.Second, func() *resource.RetryError {
+		err := retry.Retry(120*time.Second, func() *retry.RetryError {
 			_, httpResp, err := conn.NetApi.UpdateNet(context.Background()).UpdateNetRequest(oscgo.UpdateNetRequest{
 				DhcpOptionsSetId: "default",
 				NetId:            net.GetNetId(),

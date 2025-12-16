@@ -8,7 +8,7 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
@@ -108,7 +108,7 @@ func DataSourceOutscaleLoadBalancerLDRuleRead(d *schema.ResourceData, meta inter
 
 	var resp oscgo.ReadListenerRulesResponse
 	var err error
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.ListenerApi.ReadListenerRules(
 			context.Background()).
 			ReadListenerRulesRequest(req).Execute()

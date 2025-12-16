@@ -597,7 +597,7 @@ func testAccCheckOutscaleVMDestroyWithProvider(s *terraform.State, provider *sch
 		var err error
 		var statusCode int
 		// Try to find the resource
-		err = resource.Retry(120*time.Second, func() *resource.RetryError {
+		err = retry.Retry(120*time.Second, func() *retry.RetryError {
 			rp, httpResp, err := client.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
 				Filters: getVMsFilterByVMID(rs.Primary.ID),
 			}).Execute()
@@ -641,7 +641,7 @@ func testAccCheckOutscaleVMExists(n string, i *oscgo.Vm) resource.TestCheckFunc 
 		var resp oscgo.ReadVmsResponse
 		var err error
 
-		err = resource.Retry(120*time.Second, func() *resource.RetryError {
+		err = retry.Retry(120*time.Second, func() *retry.RetryError {
 			rp, httpResp, err := client.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
 				Filters: getVMsFilterByVMID(rs.Primary.ID),
 			}).Execute()

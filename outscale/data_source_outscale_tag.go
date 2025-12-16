@@ -9,7 +9,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -55,7 +55,7 @@ func DataSourceOutscaleTagRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	var resp oscgo.ReadTagsResponse
-	err = resource.Retry(60*time.Second, func() *resource.RetryError {
+	err = retry.Retry(60*time.Second, func() *retry.RetryError {
 		rp, httpResp, err := conn.TagApi.ReadTags(context.Background()).ReadTagsRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)

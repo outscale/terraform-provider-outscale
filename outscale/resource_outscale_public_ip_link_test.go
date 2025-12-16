@@ -13,8 +13,9 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func TestAccVM_WithPublicIPLink_basic(t *testing.T) {
@@ -59,7 +60,7 @@ func testAccCheckOutscalePublicIPLinkExists(name string, res *oscgo.PublicIp) re
 			},
 		}
 		var response oscgo.ReadPublicIpsResponse
-		err := resource.Retry(60*time.Second, func() *resource.RetryError {
+		err := retry.Retry(60*time.Second, func() *retry.RetryError {
 			rp, httpResp, err := client.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(request).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
@@ -107,7 +108,7 @@ func testAccCheckOutscalePublicIPLinkDestroy(s *terraform.State) error {
 			},
 		}
 		var response oscgo.ReadPublicIpsResponse
-		err := resource.Retry(60*time.Second, func() *resource.RetryError {
+		err := retry.Retry(60*time.Second, func() *retry.RetryError {
 			rp, httpResp, err := client.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(request).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
@@ -149,7 +150,7 @@ func testAccCheckOutscalePublicIPLExists(n string, res *oscgo.PublicIp) resource
 				},
 			}
 			var resp oscgo.ReadPublicIpsResponse
-			err := resource.Retry(60*time.Second, func() *resource.RetryError {
+			err := retry.Retry(60*time.Second, func() *retry.RetryError {
 				rp, httpResp, err := client.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
 				if err != nil {
 					return utils.CheckThrottling(httpResp, err)
@@ -177,13 +178,13 @@ func testAccCheckOutscalePublicIPLExists(n string, res *oscgo.PublicIp) resource
 
 			var response oscgo.ReadPublicIpsResponse
 			var statusCode int
-			err := resource.Retry(120*time.Second, func() *resource.RetryError {
+			err := retry.Retry(120*time.Second, func() *retry.RetryError {
 				var err error
 				rp, httpResp, err := client.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
 
 				if err != nil {
 					if httpResp.StatusCode == http.StatusNotFound {
-						return resource.RetryableError(err)
+						return retry.RetryableError(err)
 					}
 					return utils.CheckThrottling(httpResp, err)
 				}

@@ -96,7 +96,7 @@ func testAccOutscaleVPNConnectionRouteExists(resourceName string) resource.TestC
 		}
 		var resp oscgo.ReadVpnConnectionsResponse
 		var err error
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 			rp, httpResp, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(filter).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
@@ -138,7 +138,7 @@ func testAccOutscaleVPNConnectionRouteDestroy(s *terraform.State) error {
 		}
 		var resp oscgo.ReadVpnConnectionsResponse
 		var err error
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 			rp, httpResp, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(filter).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)

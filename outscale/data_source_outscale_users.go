@@ -9,7 +9,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -68,7 +68,7 @@ func DataSourceUsersRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	var resp oscgo.ReadUsersResponse
-	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
+	err = retry.Retry(2*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.UserApi.ReadUsers(context.Background()).ReadUsersRequest(*req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)

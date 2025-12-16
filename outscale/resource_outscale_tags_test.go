@@ -13,9 +13,10 @@ import (
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func TestAccVM_tags(t *testing.T) {
@@ -87,7 +88,7 @@ func oapiTestAccCheckOutscaleVMExistsWithProviders(n string, i *oscgo.Vm, provid
 			var resp oscgo.ReadVmsResponse
 			var err error
 
-			err = resource.Retry(30*time.Second, func() *resource.RetryError {
+			err = retry.Retry(30*time.Second, func() *retry.RetryError {
 				rp, httpResp, err := conn.OSCAPI.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
 					Filters: &oscgo.FiltersVm{
 						VmIds: &[]string{rs.Primary.ID},

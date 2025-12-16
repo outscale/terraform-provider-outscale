@@ -6,9 +6,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
@@ -143,7 +144,7 @@ func testAccCheckOutscaleServerCertificateExists(n string) resource.TestCheckFun
 		}
 		exists := false
 		var resp oscgo.ReadServerCertificatesResponse
-		err := resource.Retry(3*time.Minute, func() *resource.RetryError {
+		err := retry.Retry(3*time.Minute, func() *retry.RetryError {
 			rp, httpResp, err := conn.ServerCertificateApi.ReadServerCertificates(context.Background()).ReadServerCertificatesRequest(oscgo.ReadServerCertificatesRequest{}).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
@@ -182,7 +183,7 @@ func testAccCheckOutscaleServerCertificateDestroy(s *terraform.State) error {
 
 		var resp oscgo.ReadServerCertificatesResponse
 		var err error
-		err = resource.Retry(3*time.Minute, func() *resource.RetryError {
+		err = retry.Retry(3*time.Minute, func() *retry.RetryError {
 			rp, httpResp, err := conn.ServerCertificateApi.ReadServerCertificates(context.Background()).ReadServerCertificatesRequest(oscgo.ReadServerCertificatesRequest{}).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
@@ -210,7 +211,7 @@ func testAccCheckOutscaleServerCertificateDestroy(s *terraform.State) error {
 
 func testAccOutscaleServerCertificateConfig(name, body, privateKey string) string {
 	return fmt.Sprintf(`
-resource "outscale_server_certificate" "test" { 
+resource "outscale_server_certificate" "test" {
    name        =  %[1]q
    body        =  %[2]q
    private_key =  %[3]q

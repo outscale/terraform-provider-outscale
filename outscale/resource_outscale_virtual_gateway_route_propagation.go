@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
@@ -53,7 +53,7 @@ func ResourceOutscaleVpnGatewayRoutePropagationEnable(d *schema.ResourceData, me
 
 	var err error
 
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		_, httpResp, err := conn.VirtualGatewayApi.UpdateRoutePropagation(context.Background()).UpdateRoutePropagationRequest(oscgo.UpdateRoutePropagationRequest{
 			VirtualGatewayId: gwID,
 			RouteTableId:     rtID,
@@ -85,7 +85,7 @@ func ResourceOutscaleVpnGatewayRoutePropagationDisable(d *schema.ResourceData, m
 
 	var err error
 
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		_, httpResp, err := conn.VirtualGatewayApi.UpdateRoutePropagation(context.Background()).UpdateRoutePropagationRequest(oscgo.UpdateRoutePropagationRequest{
 			VirtualGatewayId: gwID,
 			RouteTableId:     rtID,
@@ -113,7 +113,7 @@ func ResourceOutscaleVpnGatewayRoutePropagationRead(d *schema.ResourceData, meta
 
 	var resp oscgo.ReadRouteTablesResponse
 	var err error
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(oscgo.ReadRouteTablesRequest{
 			Filters: &oscgo.FiltersRouteTable{RouteTableIds: &[]string{rtID}},
 		}).Execute()

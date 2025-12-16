@@ -12,7 +12,7 @@ import (
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -158,7 +158,7 @@ func resourceOAPIImageExportTaskCreate(d *schema.ResourceData, meta interface{})
 	var resp oscgo.CreateImageExportTaskResponse
 	var err error
 
-	err = resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+	err = retry.Retry(d.Timeout(schema.TimeoutCreate), func() *retry.RetryError {
 		rp, httpResp, err := conn.ImageApi.CreateImageExportTask(context.Background()).
 			CreateImageExportTaskRequest(request).Execute()
 		if err != nil {
@@ -193,7 +193,7 @@ func resourceOAPIImageExportTaskRead(d *schema.ResourceData, meta interface{}) e
 	var resp oscgo.ReadImageExportTasksResponse
 	var err error
 	filter := &oscgo.FiltersExportTask{TaskIds: &[]string{d.Id()}}
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.ImageApi.ReadImageExportTasks(context.Background()).
 			ReadImageExportTasksRequest(oscgo.ReadImageExportTasksRequest{
 				Filters: filter,
@@ -284,7 +284,7 @@ func resourceOAPIImageExportTaskUpdate(d *schema.ResourceData, meta interface{})
 func ResourceOutscaleImageTaskWaitForAvailable(id string, client *oscgo.APIClient, timeout time.Duration) (oscgo.ImageExportTask, error) {
 	log.Printf("Waiting for Image Task %s to become available...", id)
 	var image oscgo.ImageExportTask
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"pending", "pending/queued", "queued"},
 		Target:     []string{"completed"},
 		Refresh:    ImageTaskStateRefreshFunc(client, id),
@@ -312,13 +312,13 @@ func resourceOAPIImageExportTaskDelete(d *schema.ResourceData, meta interface{})
 }
 
 // ImageTaskStateRefreshFunc ...
-func ImageTaskStateRefreshFunc(client *oscgo.APIClient, id string) resource.StateRefreshFunc {
+func ImageTaskStateRefreshFunc(client *oscgo.APIClient, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		var resp oscgo.ReadImageExportTasksResponse
 		var err error
 		var statusCode int
 
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 			filter := &oscgo.FiltersExportTask{TaskIds: &[]string{id}}
 			rp, httpResp, err := client.ImageApi.ReadImageExportTasks(context.Background()).
 				ReadImageExportTasksRequest(oscgo.ReadImageExportTasksRequest{

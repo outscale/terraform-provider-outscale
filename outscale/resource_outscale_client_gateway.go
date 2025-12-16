@@ -9,7 +9,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 	"github.com/spf13/cast"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -68,7 +68,7 @@ func ResourceOutscaleClientGatewayCreate(d *schema.ResourceData, meta interface{
 	}
 
 	var resp oscgo.CreateClientGatewayResponse
-	err := resource.Retry(120*time.Second, func() *resource.RetryError {
+	err := retry.Retry(120*time.Second, func() *retry.RetryError {
 		var err error
 		rp, httpResp, err := conn.ClientGatewayApi.CreateClientGateway(context.Background()).CreateClientGatewayRequest(req).Execute()
 		if err != nil {
@@ -95,7 +95,7 @@ func ResourceOutscaleClientGatewayRead(d *schema.ResourceData, meta interface{})
 
 	clientGatewayID := d.Id()
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"pending"},
 		Target:     []string{"available", "failed"},
 		Refresh:    clientGatewayRefreshFunc(conn, &clientGatewayID),
@@ -157,7 +157,7 @@ func ResourceOutscaleClientGatewayDelete(d *schema.ResourceData, meta interface{
 		ClientGatewayId: gatewayID,
 	}
 
-	err := resource.Retry(120*time.Second, func() *resource.RetryError {
+	err := retry.Retry(120*time.Second, func() *retry.RetryError {
 		_, httpResp, err := conn.ClientGatewayApi.DeleteClientGateway(context.Background()).DeleteClientGatewayRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -169,7 +169,7 @@ func ResourceOutscaleClientGatewayDelete(d *schema.ResourceData, meta interface{
 		return err
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"deleting"},
 		Target:     []string{"deleted", "failed"},
 		Refresh:    clientGatewayRefreshFunc(conn, &gatewayID),
@@ -186,7 +186,7 @@ func ResourceOutscaleClientGatewayDelete(d *schema.ResourceData, meta interface{
 	return nil
 }
 
-func clientGatewayRefreshFunc(conn *oscgo.APIClient, gatewayID *string) resource.StateRefreshFunc {
+func clientGatewayRefreshFunc(conn *oscgo.APIClient, gatewayID *string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		filter := oscgo.ReadClientGatewaysRequest{
@@ -196,7 +196,7 @@ func clientGatewayRefreshFunc(conn *oscgo.APIClient, gatewayID *string) resource
 		}
 		var resp oscgo.ReadClientGatewaysResponse
 		var statusCode int
-		err := resource.Retry(120*time.Second, func() *resource.RetryError {
+		err := retry.Retry(120*time.Second, func() *retry.RetryError {
 			rp, httpResp, err := conn.ClientGatewayApi.ReadClientGateways(context.Background()).ReadClientGatewaysRequest(filter).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)

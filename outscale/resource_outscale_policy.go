@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -86,7 +85,7 @@ func ResourceOutscalePolicyCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	var resp oscgo.CreatePolicyResponse
-	err := resource.Retry(2*time.Minute, func() *resource.RetryError {
+	err := retry.Retry(2*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.PolicyApi.CreatePolicy(context.Background()).CreatePolicyRequest(*req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -107,7 +106,7 @@ func ResourceOutscalePolicyRead(d *schema.ResourceData, meta interface{}) error 
 	req := oscgo.NewReadPolicyRequest(d.Id())
 
 	var resp oscgo.ReadPolicyResponse
-	err := resource.Retry(2*time.Minute, func() *resource.RetryError {
+	err := retry.Retry(2*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.PolicyApi.ReadPolicy(context.Background()).ReadPolicyRequest(*req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -175,7 +174,7 @@ func ResourceOutscalePolicyDelete(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	req := oscgo.NewDeletePolicyRequest(policyOrn)
-	err := resource.Retry(2*time.Minute, func() *resource.RetryError {
+	err := retry.Retry(2*time.Minute, func() *retry.RetryError {
 		_, httpResp, err := conn.PolicyApi.DeletePolicy(context.Background()).DeletePolicyRequest(*req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -192,7 +191,7 @@ func unlinkEntitiesToPolicy(conn *oscgo.APIClient, policyOrn string) error {
 
 	req := oscgo.ReadEntitiesLinkedToPolicyRequest{PolicyOrn: policyOrn}
 	var users, groups []oscgo.MinimalPolicy
-	err := resource.Retry(2*time.Minute, func() *resource.RetryError {
+	err := retry.Retry(2*time.Minute, func() *retry.RetryError {
 		resp, httpResp, err := conn.PolicyApi.ReadEntitiesLinkedToPolicy(context.Background()).ReadEntitiesLinkedToPolicyRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -212,7 +211,7 @@ func unlinkEntitiesToPolicy(conn *oscgo.APIClient, policyOrn string) error {
 
 		for _, user := range users {
 			unlinkReq.SetUserName(*user.Name)
-			err := resource.Retry(2*time.Minute, func() *resource.RetryError {
+			err := retry.Retry(2*time.Minute, func() *retry.RetryError {
 				_, httpResp, err := conn.PolicyApi.UnlinkPolicy(context.Background()).UnlinkPolicyRequest(unlinkReq).Execute()
 				if err != nil {
 					return utils.CheckThrottling(httpResp, err)
@@ -228,7 +227,7 @@ func unlinkEntitiesToPolicy(conn *oscgo.APIClient, policyOrn string) error {
 		unlinkReq := oscgo.UnlinkManagedPolicyFromUserGroupRequest{PolicyOrn: policyOrn}
 		for _, group := range groups {
 			unlinkReq.SetUserGroupName(*group.Name)
-			err := resource.Retry(2*time.Minute, func() *resource.RetryError {
+			err := retry.Retry(2*time.Minute, func() *retry.RetryError {
 				_, httpResp, err := conn.PolicyApi.UnlinkManagedPolicyFromUserGroup(context.Background()).UnlinkManagedPolicyFromUserGroupRequest(unlinkReq).Execute()
 				if err != nil {
 					return utils.CheckThrottling(httpResp, err)

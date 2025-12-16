@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
@@ -103,7 +103,7 @@ func ResourceOutscaleUserCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	var resp oscgo.CreateUserResponse
-	err := resource.Retry(2*time.Minute, func() *resource.RetryError {
+	err := retry.Retry(2*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.UserApi.CreateUser(context.Background()).CreateUserRequest(*req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -123,7 +123,7 @@ func ResourceOutscaleUserCreate(d *schema.ResourceData, meta interface{}) error 
 			reqAddPolicy.SetUserName(d.Get("user_name").(string))
 			reqAddPolicy.SetPolicyOrn(policy["policy_orn"].(string))
 
-			err := resource.Retry(2*time.Minute, func() *resource.RetryError {
+			err := retry.Retry(2*time.Minute, func() *retry.RetryError {
 				_, httpResp, err := conn.PolicyApi.LinkPolicy(context.Background()).LinkPolicyRequest(reqAddPolicy).Execute()
 				if err != nil {
 					return utils.CheckThrottling(httpResp, err)
@@ -151,7 +151,7 @@ func ResourceOutscaleUserRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	var resp oscgo.ReadUsersResponse
-	err := resource.Retry(1*time.Minute, func() *resource.RetryError {
+	err := retry.Retry(1*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.UserApi.ReadUsers(context.Background()).ReadUsersRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -169,7 +169,7 @@ func ResourceOutscaleUserRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	linkReq := oscgo.NewReadLinkedPoliciesRequest(users[0].GetUserName())
 	var linkResp oscgo.ReadLinkedPoliciesResponse
-	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
+	err = retry.Retry(2*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.PolicyApi.ReadLinkedPolicies(context.Background()).ReadLinkedPoliciesRequest(*linkReq).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -266,7 +266,7 @@ func ResourceOutscaleUserUpdate(d *schema.ResourceData, meta interface{}) error 
 			for _, v := range toRemove.List() {
 				policy := v.(map[string]interface{})
 				unlinkReq.SetPolicyOrn(policy["policy_orn"].(string))
-				err := resource.Retry(2*time.Minute, func() *resource.RetryError {
+				err := retry.Retry(2*time.Minute, func() *retry.RetryError {
 					_, httpResp, err := conn.PolicyApi.UnlinkPolicy(context.Background()).UnlinkPolicyRequest(unlinkReq).Execute()
 					if err != nil {
 						log.Println("[INFO]: The policy has already been removed")
@@ -291,7 +291,7 @@ func ResourceOutscaleUserUpdate(d *schema.ResourceData, meta interface{}) error 
 				policy := v.(map[string]interface{})
 				linkReq.SetPolicyOrn(policy["policy_orn"].(string))
 
-				err := resource.Retry(2*time.Minute, func() *resource.RetryError {
+				err := retry.Retry(2*time.Minute, func() *retry.RetryError {
 					_, httpResp, err := conn.PolicyApi.LinkPolicy(context.Background()).LinkPolicyRequest(linkReq).Execute()
 					if err != nil {
 						return utils.CheckThrottling(httpResp, err)
@@ -310,7 +310,7 @@ func ResourceOutscaleUserUpdate(d *schema.ResourceData, meta interface{}) error 
 		}
 	}
 	if isUpdateUser {
-		err := resource.Retry(2*time.Minute, func() *resource.RetryError {
+		err := retry.Retry(2*time.Minute, func() *retry.RetryError {
 			_, httpResp, err := conn.UserApi.UpdateUser(context.Background()).UpdateUserRequest(req).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
@@ -333,7 +333,7 @@ func ResourceOutscaleUserDelete(d *schema.ResourceData, meta interface{}) error 
 			unlinkReq.SetUserName(d.Get("user_name").(string))
 			policy := v.(map[string]interface{})
 			unlinkReq.SetPolicyOrn(policy["policy_orn"].(string))
-			err := resource.Retry(2*time.Minute, func() *resource.RetryError {
+			err := retry.Retry(2*time.Minute, func() *retry.RetryError {
 				_, httpResp, err := conn.PolicyApi.UnlinkPolicy(context.Background()).UnlinkPolicyRequest(unlinkReq).Execute()
 				if err != nil {
 					return utils.CheckThrottling(httpResp, err)
@@ -349,7 +349,7 @@ func ResourceOutscaleUserDelete(d *schema.ResourceData, meta interface{}) error 
 	req := oscgo.DeleteUserRequest{
 		UserName: d.Get("user_name").(string),
 	}
-	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
 		_, httpResp, err := conn.UserApi.DeleteUser(context.Background()).DeleteUserRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)

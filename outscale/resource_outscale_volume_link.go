@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
@@ -87,7 +87,7 @@ func resourceOAPIVolumeLinkCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 	var err error
 	var resp oscgo.ReadVolumesResponse
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(request).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -101,7 +101,7 @@ func resourceOAPIVolumeLinkCreate(d *schema.ResourceData, meta interface{}) erro
 		// a spot request and whilst the request has been fulfilled the
 		// instance is not running yet
 
-		stateConf := &resource.StateChangeConf{
+		stateConf := &retry.StateChangeConf{
 			Pending:    []string{"pending"},
 			Target:     []string{"running"},
 			Refresh:    vmStateRefreshFunc(conn, iID, ""),
@@ -125,7 +125,7 @@ func resourceOAPIVolumeLinkCreate(d *schema.ResourceData, meta interface{}) erro
 
 		log.Printf("[DEBUG] Attaching Volume (%s) to Instance (%s)", vID, iID)
 
-		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+		err := retry.Retry(5*time.Minute, func() *retry.RetryError {
 			var err error
 			_, httpResp, err := conn.VolumeApi.LinkVolume(context.Background()).LinkVolumeRequest(opts).Execute()
 			if err != nil {
@@ -139,7 +139,7 @@ func resourceOAPIVolumeLinkCreate(d *schema.ResourceData, meta interface{}) erro
 		}
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"attaching"},
 		Target:     []string{"attached"},
 		Refresh:    volumeOAPIAttachmentStateRefreshFunc(conn, vID, iID),
@@ -174,7 +174,7 @@ func isElegibleToLink(volumes []oscgo.Volume, instanceID string) bool {
 	return elegible
 }
 
-func volumeOAPIAttachmentStateRefreshFunc(conn *oscgo.APIClient, volumeID, instanceID string) resource.StateRefreshFunc {
+func volumeOAPIAttachmentStateRefreshFunc(conn *oscgo.APIClient, volumeID, instanceID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		request := oscgo.ReadVolumesRequest{
@@ -186,7 +186,7 @@ func volumeOAPIAttachmentStateRefreshFunc(conn *oscgo.APIClient, volumeID, insta
 		var err error
 		var resp oscgo.ReadVolumesResponse
 
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 			var err error
 			rp, httpResp, err := conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(request).Execute()
 			if err != nil {
@@ -225,7 +225,7 @@ func resourceOAPIVolumeLinkRead(d *schema.ResourceData, meta interface{}) error 
 	var err error
 	var resp oscgo.ReadVolumesResponse
 	var statusCode int
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(request).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -298,7 +298,7 @@ func resourceOAPIVolumeLinkDelete(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	var err error
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		var err error
 		_, httpResp, err := conn.VolumeApi.UnlinkVolume(context.Background()).UnlinkVolumeRequest(opts).Execute()
 		if err != nil {
@@ -311,7 +311,7 @@ func resourceOAPIVolumeLinkDelete(d *schema.ResourceData, meta interface{}) erro
 		return fmt.Errorf("Failed to detach Volume (%s) from Instance (%s): %s",
 			vID, iID, err)
 	}
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"detaching"},
 		Target:     []string{"detached"},
 		Refresh:    volumeOAPIAttachmentStateRefreshFunc(conn, vID, iID),
