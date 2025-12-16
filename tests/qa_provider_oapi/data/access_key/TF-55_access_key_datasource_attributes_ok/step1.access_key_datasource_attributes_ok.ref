@@ -43,6 +43,7 @@
                         "expiration_date": "########",
                         "id": "##id-0##",
                         "last_modification_date": "########",
+                        "request_id": "########",
                         "secret_key": "########",
                         "state": "ACTIVE",
                         "timeouts": null,
