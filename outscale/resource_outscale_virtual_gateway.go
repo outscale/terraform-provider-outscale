@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
@@ -76,7 +76,7 @@ func ResourceOutscaleVirtualGatewayCreate(d *schema.ResourceData, meta interface
 	}
 
 	var resp oscgo.CreateVirtualGatewayResponse
-	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
 		var err error
 		rp, httpResp, err := conn.VirtualGatewayApi.CreateVirtualGateway(context.Background()).CreateVirtualGatewayRequest(createOpts).Execute()
 		if err != nil {
@@ -89,7 +89,7 @@ func ResourceOutscaleVirtualGatewayCreate(d *schema.ResourceData, meta interface
 		return fmt.Errorf("Error creating VPN gateway: %s", err)
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"pending", "ending/wait"},
 		Target:     []string{"available"},
 		Refresh:    virtualGatewayStateRefreshFunc(conn, resp.VirtualGateway.GetVirtualGatewayId(), "terminated"),
@@ -122,7 +122,7 @@ func ResourceOutscaleVirtualGatewayRead(d *schema.ResourceData, meta interface{}
 	var err error
 	var statusCode int
 
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(oscgo.ReadVirtualGatewaysRequest{
 			Filters: &oscgo.FiltersVirtualGateway{VirtualGatewayIds: &[]string{d.Id()}},
 		}).Execute()
@@ -182,7 +182,7 @@ func ResourceOutscaleVirtualGatewayUpdate(d *schema.ResourceData, meta interface
 func ResourceOutscaleVirtualGatewayDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	return resource.Retry(5*time.Minute, func() *resource.RetryError {
+	return retry.Retry(5*time.Minute, func() *retry.RetryError {
 		_, httpResp, err := conn.VirtualGatewayApi.DeleteVirtualGateway(context.Background()).DeleteVirtualGatewayRequest(
 			oscgo.DeleteVirtualGatewayRequest{VirtualGatewayId: d.Id()}).Execute()
 		if err != nil {
@@ -197,15 +197,15 @@ func ResourceOutscaleVirtualGatewayDelete(d *schema.ResourceData, meta interface
 	})
 }
 
-// vpnGatewayAttachStateRefreshFunc returns a resource.StateRefreshFunc that is used to watch
+// vpnGatewayAttachStateRefreshFunc returns a retry.StateRefreshFunc that is used to watch
 // the state of a VPN gateway's attachment
-func vpnGatewayAttachStateRefreshFunc(conn *oscgo.APIClient, id string, expected string) resource.StateRefreshFunc {
+func vpnGatewayAttachStateRefreshFunc(conn *oscgo.APIClient, id string, expected string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		var resp oscgo.ReadVirtualGatewaysResponse
 		var err error
 		var statusCode int
 
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 			rp, httpResp, err := conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(oscgo.ReadVirtualGatewaysRequest{
 				Filters: &oscgo.FiltersVirtualGateway{VirtualGatewayIds: &[]string{id}},
 			}).Execute()
@@ -249,11 +249,11 @@ func oapiVpnGatewayGetLink(vgw oscgo.VirtualGateway) *oscgo.NetToVirtualGatewayL
 	return &oscgo.NetToVirtualGatewayLink{State: aws.String("detached")}
 }
 
-func virtualGatewayStateRefreshFunc(conn *oscgo.APIClient, instanceID, failState string) resource.StateRefreshFunc {
+func virtualGatewayStateRefreshFunc(conn *oscgo.APIClient, instanceID, failState string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		var resp oscgo.ReadVirtualGatewaysResponse
-		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+		err := retry.Retry(5*time.Minute, func() *retry.RetryError {
 			var err error
 			rp, httpResp, err := conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(oscgo.ReadVirtualGatewaysRequest{
 				Filters: &oscgo.FiltersVirtualGateway{

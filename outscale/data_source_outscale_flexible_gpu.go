@@ -7,7 +7,7 @@ import (
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/outscale/terraform-provider-outscale/utils"
 	"github.com/spf13/cast"
@@ -81,7 +81,7 @@ func DataSourceOutscaleFlexibleGpuRead(d *schema.ResourceData, meta interface{})
 
 	var resp oscgo.ReadFlexibleGpusResponse
 
-	err = resource.Retry(30*time.Second, func() *resource.RetryError {
+	err = retry.Retry(30*time.Second, func() *retry.RetryError {
 		rp, httpResp, err := conn.FlexibleGpuApi.ReadFlexibleGpus(
 			context.Background()).ReadFlexibleGpusRequest(req).Execute()
 		if err != nil {

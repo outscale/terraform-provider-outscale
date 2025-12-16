@@ -10,7 +10,7 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -78,11 +78,11 @@ func ResourceOutscaleVirtualGatewayLinkCreate(d *schema.ResourceData, meta inter
 
 	var err error
 
-	err = resource.Retry(30*time.Second, func() *resource.RetryError {
+	err = retry.Retry(30*time.Second, func() *retry.RetryError {
 		_, httpResp, err := conn.VirtualGatewayApi.LinkVirtualGateway(context.Background()).LinkVirtualGatewayRequest(createOpts).Execute()
 		if err != nil {
 			if httpResp.StatusCode == http.StatusNotFound {
-				return resource.RetryableError(
+				return retry.RetryableError(
 					fmt.Errorf("Gateway not found, retry for eventual consistancy"))
 			}
 			return utils.CheckThrottling(httpResp, err)
@@ -95,7 +95,7 @@ func ResourceOutscaleVirtualGatewayLinkCreate(d *schema.ResourceData, meta inter
 			vgwID, netID, err)
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"detached", "attaching"},
 		Target:     []string{"attached"},
 		Refresh:    vpnGatewayLinkStateRefresh(conn, netID, vgwID),
@@ -124,7 +124,7 @@ func ResourceOutscaleVirtualGatewayLinkRead(d *schema.ResourceData, meta interfa
 	var resp oscgo.ReadVirtualGatewaysResponse
 	var err error
 	var statusCode int
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(oscgo.ReadVirtualGatewaysRequest{
 			Filters: &oscgo.FiltersVirtualGateway{VirtualGatewayIds: &[]string{vgwID}},
 		}).Execute()
@@ -209,14 +209,14 @@ func ResourceOutscaleVirtualGatewayLinkDelete(d *schema.ResourceData, meta inter
 
 	var err error
 	var statusCode int
-	err = resource.Retry(30*time.Second, func() *resource.RetryError {
+	err = retry.Retry(30*time.Second, func() *retry.RetryError {
 		_, httpResp, err := conn.VirtualGatewayApi.UnlinkVirtualGateway(context.Background()).UnlinkVirtualGatewayRequest(oscgo.UnlinkVirtualGatewayRequest{
 			VirtualGatewayId: d.Id(),
 			NetId:            netID.(string),
 		}).Execute()
 		if err != nil {
 			if httpResp.StatusCode == http.StatusNotFound {
-				return resource.RetryableError(
+				return retry.RetryableError(
 					fmt.Errorf("Gateway not found, retry for eventual consistancy"))
 			}
 			return utils.CheckThrottling(httpResp, err)
@@ -241,7 +241,7 @@ func ResourceOutscaleVirtualGatewayLinkDelete(d *schema.ResourceData, meta inter
 
 	// Wait for it to be fully detached before continuing
 	log.Printf("[DEBUG] Waiting for VPN gateway (%s) to detach", d.Get("virtual_gateway_id").(string))
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"attached", "detaching", "available"},
 		Target:  []string{"detached"},
 		Refresh: vpnGatewayAttachStateRefreshFunc(conn, d.Get("virtual_gateway_id").(string), "detached"),
@@ -256,19 +256,19 @@ func ResourceOutscaleVirtualGatewayLinkDelete(d *schema.ResourceData, meta inter
 	return nil
 }
 
-func vpnGatewayLinkStateRefresh(conn *oscgo.APIClient, vpcID, vgwID string) resource.StateRefreshFunc {
+func vpnGatewayLinkStateRefresh(conn *oscgo.APIClient, vpcID, vgwID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		var err error
 		var resp oscgo.ReadVirtualGatewaysResponse
 		var statusCode int
-		err = resource.Retry(30*time.Second, func() *resource.RetryError {
+		err = retry.Retry(30*time.Second, func() *retry.RetryError {
 			rp, httpResp, err := conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(oscgo.ReadVirtualGatewaysRequest{Filters: &oscgo.FiltersVirtualGateway{
 				VirtualGatewayIds: &[]string{vgwID},
 				LinkNetIds:        &[]string{vpcID},
 			}}).Execute()
 			if err != nil {
 				if httpResp.StatusCode == http.StatusNotFound {
-					return resource.RetryableError(
+					return retry.RetryableError(
 						fmt.Errorf("Gateway not found, retry for eventual consistancy"))
 				}
 				return utils.CheckThrottling(httpResp, err)

@@ -10,7 +10,6 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -336,7 +335,7 @@ func resourceOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	var resp oscgo.ReadImagesResponse
-	err := retry.RetryContext(context.Background(), d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
+	err := retry.RetryContext(context.Background(), d.Timeout(schema.TimeoutRead), func() *retry.RetryError {
 		var err error
 		rp, httpResp, err := conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(req).Execute()
 		if err != nil {
@@ -485,7 +484,7 @@ func ResourceOutscaleImageWaitForDestroy(id string, conn *oscgo.APIClient, timeO
 }
 
 // ImageOAPIStateRefreshFunc ...
-func ImageOAPIStateRefreshFunc(client *oscgo.APIClient, req oscgo.ReadImagesRequest, failState string, timeOut time.Duration) resource.StateRefreshFunc {
+func ImageOAPIStateRefreshFunc(client *oscgo.APIClient, req oscgo.ReadImagesRequest, failState string, timeOut time.Duration) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		var resp oscgo.ReadImagesResponse
 		var err error
