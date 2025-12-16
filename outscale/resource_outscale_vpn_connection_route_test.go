@@ -9,9 +9,11 @@ import (
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
+	"github.com/outscale/terraform-provider-outscale/utils/testutils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func TestAccOthers_VPNConnectionRoute_basic(t *testing.T) {
@@ -59,13 +61,7 @@ func TestAccOthers_ImportVPNConnectionRoute_basic(t *testing.T) {
 						resource.TestCheckResourceAttrSet(resourceName, "vpn_connection_id"),
 					),
 				},
-				{
-					ResourceName:            resourceName,
-					ImportState:             true,
-					ImportStateIdFunc:       testAccCheckOutscaleRouteImportStateIDFunc(resourceName),
-					ImportStateVerify:       true,
-					ImportStateVerifyIgnore: []string{"request_id"},
-				},
+				testutils.ImportStep(resourceName, testutils.DefaultIgnores()...),
 			},
 		})
 	} else {

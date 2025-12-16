@@ -6,8 +6,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/outscale/terraform-provider-outscale/utils/testutils"
+
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccNet_OutscaleRoute_noopdiff(t *testing.T) {
@@ -37,13 +38,7 @@ func TestAccNet_ImportRoute_Basic(t *testing.T) {
 			{
 				Config: testAccOutscaleRouteNoopChange,
 			},
-			{
-				ResourceName:            resourceName,
-				ImportStateIdFunc:       testAccCheckOutscaleRouteImportStateIDFunc(resourceName),
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"request_id", "await_active_state"},
-			},
+			testutils.ImportStep(resourceName, "request_id", "await_active_state"),
 		},
 	})
 }
@@ -58,13 +53,7 @@ func TestAccNet_Route_importWithNatService(t *testing.T) {
 			{
 				Config: testAccOutscaleRouteWithNatService,
 			},
-			{
-				ResourceName:            resourceName,
-				ImportStateIdFunc:       testAccCheckOutscaleRouteImportStateIDFunc(resourceName),
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"request_id", "await_active_state", "routes"}, /*we will remove 'routes' when autorefresh after link resources Ok*/
-			},
+			testutils.ImportStep(resourceName, "request_id", "await_active_state", "routes"),
 		},
 	})
 }

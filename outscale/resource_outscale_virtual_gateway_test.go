@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/outscale/terraform-provider-outscale/utils/testutils"
 )
 
 func TestAccNet_WithVirtualGateway_basic(t *testing.T) {
@@ -71,12 +71,7 @@ func TestAccOthres_ImportVirtualGateway_Basic(t *testing.T) {
 			{
 				Config: testAccOAPIVirtualGatewayConfig,
 			},
-			{
-				ResourceName:            resourceName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"request_id"},
-			},
+			testutils.ImportStep(resourceName, testutils.DefaultIgnores()...),
 		},
 	})
 }
@@ -111,14 +106,4 @@ func testAccOAPIVirtualGatewayConfigChangeTags(connectionType, name string) stri
 		}
 
 	`, connectionType, name)
-}
-
-func testAccCheckOutscaleVirtualGatewayImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
-	return func(s *terraform.State) (string, error) {
-		rs, ok := s.RootModule().Resources[resourceName]
-		if !ok {
-			return "", fmt.Errorf("Not found: %s", resourceName)
-		}
-		return rs.Primary.ID, nil
-	}
 }

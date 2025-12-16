@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/outscale/terraform-provider-outscale/utils/testutils"
 )
 
 func TestAccOKSProject_basic(t *testing.T) {
@@ -23,12 +24,7 @@ func TestAccOKSProject_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "cidr", "10.50.0.0/18"),
 				),
 			},
-			{
-				ResourceName:            resourceName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"request_id"},
-			},
+			testutils.ImportStep(resourceName, testutils.DefaultIgnores()...),
 		},
 	})
 }

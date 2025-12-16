@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/outscale/terraform-provider-outscale/utils"
+	"github.com/outscale/terraform-provider-outscale/utils/testutils"
 )
 
 func TestAccNet_AccessPoint_basic(t *testing.T) {
@@ -41,12 +42,7 @@ func TestAccNet_AccessPoint_import(t *testing.T) {
 			{
 				Config: testAccOutscaleNetAccessPointConfig(serviceName),
 			},
-			{
-				ResourceName:            resourceName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"request_id"},
-			},
+			testutils.ImportStep(resourceName, testutils.DefaultIgnores()...),
 		},
 	})
 }
