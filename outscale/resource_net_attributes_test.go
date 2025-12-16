@@ -3,10 +3,10 @@ package outscale
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccNet_Attributes_basic(t *testing.T) {
+func TestAccNet_Attributes_Basic(t *testing.T) {
 	resourceName := "outscale_net_attributes.outscale_net_attributes"
 
 	resource.Test(t, resource.TestCase{
@@ -21,6 +21,13 @@ func TestAccNet_Attributes_basic(t *testing.T) {
 				),
 			},
 		},
+	})
+}
+
+func TestAccNet_Attributes_Migration(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { testAccPreCheck(t) },
+		Steps:    FrameworkMigrationTestSteps("1.1.2", testAccOutscaleLinAttrConfig),
 	})
 }
 

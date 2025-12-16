@@ -3,10 +3,10 @@ package outscale
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccOthers_InternetService_basic(t *testing.T) {
+func TestAccOthers_InternetService_Basic(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_internet_service.internet_service"
 	resource.Test(t, resource.TestCase{
@@ -21,6 +21,13 @@ func TestAccOthers_InternetService_basic(t *testing.T) {
 				),
 			},
 		},
+	})
+}
+
+func TestAccOthers_InternetService_Migration(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { testAccPreCheck(t) },
+		Steps:    FrameworkMigrationTestSteps("1.1.2", testAccOutscaleInternetServiceConfig()),
 	})
 }
 

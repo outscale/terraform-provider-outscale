@@ -42,6 +42,13 @@ func TestAccNet_PeeringConnectionAccepter_importBasic(t *testing.T) {
 	})
 }
 
+func TestAccNet_PeeringConnectionAccepter_Migration(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { testAccPreCheck(t) },
+		Steps:    FrameworkMigrationTestSteps("1.1.1", testAccOutscaleLinPeeringConnectionAccepterSameAccountConfig(utils.GetAccepterOwnerId())),
+	})
+}
+
 func testAccOutscaleLinPeeringConnectionAccepterSameAccountConfig(accountId string) string {
 	return fmt.Sprintf(`
 	resource "outscale_net" "foo" {

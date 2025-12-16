@@ -7,7 +7,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils/testutils"
 )
 
-func TestAccNet_WithInternetServiceLink_basic(t *testing.T) {
+func TestAccNet_WithInternetServiceLink_Basic(t *testing.T) {
 	resourceName := "outscale_internet_service_link.outscale_internet_service_link"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
@@ -39,14 +39,11 @@ func TestAccNet_WithImportInternetServiceLink_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleInternetServiceLinkImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
-	return func(s *terraform.State) (string, error) {
-		rs, ok := s.RootModule().Resources[resourceName]
-		if !ok {
-			return "", fmt.Errorf("Not found: %s", resourceName)
-		}
-		return rs.Primary.ID, nil
-	}
+func TestAccNet_WithInternetServiceLink_Migration(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { testAccPreCheck(t) },
+		Steps:    FrameworkMigrationTestSteps("1.1.3", testAccOutscaleInternetServiceLinkConfig()),
+	})
 }
 
 func testAccOutscaleInternetServiceLinkConfig() string {

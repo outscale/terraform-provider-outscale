@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
-func TestAccNet_WithSubNet_basic(t *testing.T) {
+func TestAccNet_WithSubNet_Basic(t *testing.T) {
 	t.Parallel()
 
 	resourceName := "outscale_subnet.subnet"
@@ -30,6 +30,13 @@ func TestAccNet_WithSubNet_basic(t *testing.T) {
 				),
 			},
 		},
+	})
+}
+
+func TestAccNet_WithSubNet_Basic_Migration(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { testAccPreCheck(t) },
+		Steps:    FrameworkMigrationTestSteps("1.1.0", testAccOutscaleSubnetConfig(utils.GetRegion(), false)),
 	})
 }
 
