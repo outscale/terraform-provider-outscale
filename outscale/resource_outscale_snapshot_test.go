@@ -8,6 +8,7 @@ import (
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
+	"github.com/outscale/terraform-provider-outscale/utils/testutils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -74,7 +75,7 @@ func TestAccOthers_Snapshot_UpdateTags(t *testing.T) {
 	t.Parallel()
 
 	region := utils.GetRegion()
-	//var v oscgo.Snapshot
+	// var v oscgo.Snapshot
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
@@ -105,12 +106,7 @@ func TestAccOthers_Snapshot_importBasic(t *testing.T) {
 					testAccCheckOAPISnapshotExists("outscale_snapshot.outscale_snapshot", &v),
 				),
 			},
-			{
-				ResourceName:            "outscale_snapshot.outscale_snapshot",
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"request_id"},
-			},
+			testutils.ImportStep("outscale_snapshot.outscale_snapshot", "permissions_to_create_volume", "request_id"),
 		},
 	})
 }

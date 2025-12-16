@@ -6,9 +6,9 @@ import (
 	"testing"
 
 	"github.com/outscale/terraform-provider-outscale/utils"
+	"github.com/outscale/terraform-provider-outscale/utils/testutils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccNet_WithRouteTable_basic(t *testing.T) {
@@ -98,13 +98,7 @@ func TestAccNet_RouteTable_importBasic(t *testing.T) {
 			{
 				Config: testAccOAPIRouteTableConfig,
 			},
-			{
-				ResourceName:            resourceName,
-				ImportStateIdFunc:       testAccCheckOutscaleRouteTableImportStateIDFunc(resourceName),
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"request_id"},
-			},
+			testutils.ImportStep(resourceName, testutils.DefaultIgnores()...),
 		},
 	})
 }

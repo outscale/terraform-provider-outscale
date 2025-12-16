@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/outscale/terraform-provider-outscale/utils"
+	"github.com/outscale/terraform-provider-outscale/utils/testutils"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -38,12 +39,7 @@ func TestAccNet_Import_NIC_PrivateIP_Basic(t *testing.T) {
 			{
 				Config: testAccOutscaleNetworkInterfacePrivateIPConfigBasic(utils.GetRegion()),
 			},
-			{
-				ResourceName:            resourceName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"request_id"},
-			},
+			testutils.ImportStep(resourceName, testutils.DefaultIgnores()...),
 		},
 	})
 }

@@ -6,9 +6,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/outscale/terraform-provider-outscale/utils/testutils"
 )
 
 func TestAccOthers_SecurityGroupRule_Basic(t *testing.T) {
@@ -26,22 +27,24 @@ func TestAccOthers_SecurityGroupRule_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "from_port_range", "443"),
 				),
 			},
-			{
-				ImportStateIdFunc:       testAccCheckOutscaleRuleImportStateIDFunc(resourceName),
-				ResourceName:            resourceName,
-				ImportState:             true,
-				ImportStateVerifyIgnore: []string{"request_id"},
-			},
+			testutils.ImportStepWithStateIdFunc(resourceName, testAccCheckOutscaleRuleImportStateIDFunc(resourceName), testutils.DefaultIgnores()...),
 		},
 	})
 }
 
-func TestAccOthers_SecurityGroupRule_Basic_Migration(t *testing.T) {
-	rInt := acctest.RandInt()
+func TestAccOthers_SecurityGroupRule_Import(t *testing.T) {
+	resourceName := "outscale_security_group_rule.outscale_security_group_rule_https"
 
-	resource.Test(t, resource.TestCase{
-		PreCheck: func() { testAccPreCheck(t) },
-		Steps:    FrameworkMigrationTestSteps("1.2.1", testAccOutscaleSecurityGroupRuleEgressConfig(rInt)),
+	rInt := acctest.RandInt()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccOutscaleSecurityGroupRuleImport(rInt),
+			},
+			testutils.ImportStepWithStateIdFunc(resourceName, testAccCheckOutscaleRuleImportStateIDFunc(resourceName), testutils.DefaultIgnores()...),
+		},
 	})
 }
 
@@ -96,6 +99,24 @@ func testAccOutscaleSecurityGroupRuleEgressConfig(rInt int) string {
 			ip_range        = "0.0.0.0/0"
 		}
 
+		resource "outscale_security_group_rule" "outscale_security_group_rule_https" {
+			flow              = "Inbound"
+			from_port_range   = 443
+			to_port_range     = 443
+			ip_protocol       = "tcp"
+			ip_range          = "46.231.147.8/32"
+			security_group_id = outscale_security_group.outscale_security_group.security_group_id
+		}
+
+		resource "outscale_security_group" "outscale_security_group" {
+			description         = "test group"
+			security_group_name = "sg1-test-group_test_%d"
+		}
+	`, rInt)
+}
+
+func testAccOutscaleSecurityGroupRuleImport(rInt int) string {
+	return fmt.Sprintf(`
 		resource "outscale_security_group_rule" "outscale_security_group_rule_https" {
 			flow              = "Inbound"
 			from_port_range   = 443

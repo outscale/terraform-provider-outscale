@@ -8,6 +8,7 @@ import (
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
+	"github.com/outscale/terraform-provider-outscale/utils/testutils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -106,8 +107,8 @@ func TestAccOutscaleVPNConnection_withTags(t *testing.T) {
 
 					resource.TestCheckResourceAttr(resourceName, "connection_type", "ipsec.1"),
 					resource.TestCheckResourceAttr(resourceName, "tags.#", "1"),
-					//resource.TestCheckResourceAttr(resourceName, "tags.0.key", "Name"),
-					//resource.TestCheckResourceAttr(resourceName, "tags.0.value", value),
+					// resource.TestCheckResourceAttr(resourceName, "tags.0.key", "Name"),
+					// resource.TestCheckResourceAttr(resourceName, "tags.0.value", value),
 				),
 			},
 		},
@@ -137,12 +138,7 @@ func TestAccOutscaleVPNConnection_importBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "static_routes_only", "true"),
 				),
 			},
-			{
-				ResourceName:            resourceName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"request_id"},
-			},
+			testutils.ImportStep(resourceName, testutils.DefaultIgnores()...),
 		},
 	})
 }

@@ -10,10 +10,12 @@ import (
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
+	"github.com/outscale/terraform-provider-outscale/utils/testutils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func TestAccVM_Basic(t *testing.T) {
@@ -140,25 +142,9 @@ func TestAccVM_importBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "tags.#", "1"),
 				),
 			},
-			{
-				ResourceName:            resourceName,
-				ImportStateIdFunc:       testAccCheckOutscaleVMImportStateIDFunc(resourceName),
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"private_ips", "request_id"},
-			},
+			testutils.ImportStep(resourceName, "private_ips", "request_id"),
 		},
 	})
-}
-
-func testAccCheckOutscaleVMImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
-	return func(s *terraform.State) (string, error) {
-		rs, ok := s.RootModule().Resources[resourceName]
-		if !ok {
-			return "", fmt.Errorf("Not found: %s", resourceName)
-		}
-		return rs.Primary.ID, nil
-	}
 }
 
 func TestAccNet_VM_withNicAttached(t *testing.T) {

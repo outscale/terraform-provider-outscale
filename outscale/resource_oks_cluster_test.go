@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/outscale/terraform-provider-outscale/utils/testutils"
 )
 
 func TestAccOKSCluster_basic(t *testing.T) {
@@ -28,12 +29,7 @@ func TestAccOKSCluster_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "version", "1.32"),
 				),
 			},
-			{
-				ResourceName:            resourceName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"request_id"},
-			},
+			testutils.ImportStep(resourceName, testutils.DefaultIgnores()...),
 		},
 	})
 }

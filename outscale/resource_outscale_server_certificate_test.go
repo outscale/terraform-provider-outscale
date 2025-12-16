@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
+	"github.com/outscale/terraform-provider-outscale/utils/testutils"
 )
 
 func TestAccOthers_ServerCertificate_basic(t *testing.T) {
@@ -120,12 +121,7 @@ kbcI5Y2wveEgMqPSRya2OapYGiPeqYhg6JAGPRXtOfOq9IUDcPuc2emnihNpSa8y
 					testAccCheckOutscaleServerCertificateExists(resourceName),
 				),
 			},
-			{
-				ResourceName:            resourceName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"request_id", "body", "private_key"},
-			},
+			testutils.ImportStep(resourceName, "request_id", "body", "private_key"),
 		},
 	})
 }
@@ -191,7 +187,6 @@ func testAccCheckOutscaleServerCertificateDestroy(s *terraform.State) error {
 			resp = rp
 			return nil
 		})
-
 		if err != nil {
 			return fmt.Errorf("Server Certificate reading (%s)", rs.Primary.ID)
 		}
