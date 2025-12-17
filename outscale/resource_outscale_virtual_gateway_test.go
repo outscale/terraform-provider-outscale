@@ -16,7 +16,6 @@ func TestAccNet_WithVirtualGateway_basic(t *testing.T) {
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
-		IDRefreshName:            resourceName,
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
@@ -31,6 +30,8 @@ func TestAccNet_WithVirtualGateway_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "net_to_virtual_gateway_links.0.net_id"),
 				),
 			},
+			// Ignore attributes related to the Gateway Link, that gets populated after a refresh
+			testutils.ImportStep(resourceName, "net_to_virtual_gateway_links", "request_id"),
 		},
 	})
 }

@@ -27,7 +27,6 @@ func TestAccOthers_SecurityGroupRule_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "from_port_range", "443"),
 				),
 			},
-			testutils.ImportStepWithStateIdFunc(resourceName, testAccCheckOutscaleRuleImportStateIDFunc(resourceName), testutils.DefaultIgnores()...),
 		},
 	})
 }
@@ -43,6 +42,7 @@ func TestAccOthers_SecurityGroupRule_Import(t *testing.T) {
 			{
 				Config: testAccOutscaleSecurityGroupRuleImport(rInt),
 			},
+			// Ignore attributes related to the SG Rule, that gets populated after a refresh
 			testutils.ImportStepWithStateIdFunc(resourceName, testAccCheckOutscaleRuleImportStateIDFunc(resourceName), testutils.DefaultIgnores()...),
 		},
 	})
