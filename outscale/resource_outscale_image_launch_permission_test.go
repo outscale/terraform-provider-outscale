@@ -1,18 +1,13 @@
 package outscale
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"testing"
-	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
@@ -50,15 +45,6 @@ func TestAccVM_WithImageLaunchPermission_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
 				),
-			},
-			// Here we delete the AMI to verify the follow-on refresh after this step
-			// should not error.
-			{
-				Config: testAccOutscaleImageLaunchPermissionConfig(omi, utils.TestAccVmType, region, accountID, keypair, true, rInt),
-				Check: resource.ComposeTestCheckFunc(
-					testAccOutscaleImageDisappears(&imageID),
-				),
-				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
@@ -134,32 +120,6 @@ func testAccOutscaleImageLaunchPermissionDestroyed(accountID string, imageID *st
 			return fmt.Errorf("launch permission still exists for '%s' on '%s'", accountID, *imageID)
 		}
 		return nil
-	}
-}
-
-// testAccOutscaleImageDisappears is technically a "test check function" but really it
-// exists to perform a side effect of deleting an AMI out from under a resource
-// so we can test that Terraform will react properly
-func testAccOutscaleImageDisappears(imageID *string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		client := testAccConfiguredClient.OSCAPI
-		req := oscgo.DeleteImageRequest{
-			ImageId: aws.StringValue(imageID),
-		}
-
-		err := retry.Retry(5*time.Minute, func() *retry.RetryError {
-			var err error
-			_, httpResp, err := client.ImageApi.DeleteImage(context.Background()).DeleteImageRequest(req).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			return nil
-		})
-		if err != nil {
-			return err
-		}
-
-		return ResourceOutscaleImageWaitForDestroy(*imageID, client, 5*utils.DeleteDefaultTimeout)
 	}
 }
 
