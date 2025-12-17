@@ -50,7 +50,6 @@ func TestAccNet_WithVpnGatewayAttachment_deleted(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
-		IDRefreshName:            resourceName2,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOAPIVpnGatewayAttachmentConfig,
@@ -69,6 +68,8 @@ func TestAccNet_WithVpnGatewayAttachment_deleted(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName2, "net_to_virtual_gateway_links.0.state", "detached"),
 				),
 			},
+			// Ignore attributes related to the Gateway Link, that gets populated after a refresh
+			testutils.ImportStep(resourceName2, "net_to_virtual_gateway_links", "request_id"),
 		},
 	})
 }

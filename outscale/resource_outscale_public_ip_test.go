@@ -11,6 +11,7 @@ import (
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/utils"
+	"github.com/outscale/terraform-provider-outscale/utils/testutils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -23,7 +24,6 @@ func TestAccOthers_PublicIP_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		IDRefreshName:            "outscale_public_ip.bar",
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		CheckDestroy:             testAccCheckOutscalePublicIPDestroy,
 		Steps: []resource.TestStep{
@@ -44,10 +44,8 @@ func TestAccVM_PublicIP_instance(t *testing.T) {
 	region := utils.GetRegion()
 	keypair := "terraform-basic"
 
-	//rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		IDRefreshName:            "outscale_public_ip.bar1",
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		CheckDestroy:             testAccCheckOutscalePublicIPDestroy,
 		Steps: []resource.TestStep{
@@ -58,6 +56,8 @@ func TestAccVM_PublicIP_instance(t *testing.T) {
 					testAccCheckOutscalePublicIPAttributes(&conf),
 				),
 			},
+			// Ignore attributes related to the Public IP Link, that gets populated after a refresh
+			testutils.ImportStep("outscale_public_ip.bar1", "link_public_ip_id", "nic_account_id", "nic_id", "private_ip", "vm_id", "request_id"),
 		},
 	})
 }
@@ -101,7 +101,7 @@ func testAccCheckOutscalePublicIPDestroy(s *terraform.State) error {
 		if rs.Type != "outscale_public_ip" {
 			continue
 		}
-		//Missing on Swagger Spec
+		// Missing on Swagger Spec
 		// if strings.Contains(rs.Primary.ID, "reservation") {
 		// 	req := oscgo.ReadPublicIpsRequest{
 		// 		Filters: oscgo.FiltersPublicIpcIp{
@@ -147,7 +147,6 @@ func testAccCheckOutscalePublicIPDestroy(s *terraform.State) error {
 			statusCode = httpResp.StatusCode
 			return nil
 		})
-
 		if err != nil {
 			// Verify the error is what we want
 			if statusCode == http.StatusNotFound {
@@ -188,7 +187,7 @@ func testAccCheckOutscalePublicIPExists(n string, res *oscgo.PublicIp) resource.
 
 		client := testAccConfiguredClient.OSCAPI
 
-		//Missing on Swagger Spec
+		// Missing on Swagger Spec
 		// if strings.Contains(rs.Primary.ID, "link") {
 		// 	req := oscgo.ReadPublicIpsRequest{
 		// 		Filters: oscgo.FiltersPublicIp{
@@ -218,7 +217,6 @@ func testAccCheckOutscalePublicIPExists(n string, res *oscgo.PublicIp) resource.
 		err := retry.Retry(120*time.Second, func() *retry.RetryError {
 			var err error
 			response, _, err = client.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
-
 			if err != nil {
 				if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidPublicIps.NotFound") {
 					return retry.RetryableError(err)
@@ -229,7 +227,6 @@ func testAccCheckOutscalePublicIPExists(n string, res *oscgo.PublicIp) resource.
 
 			return nil
 		})
-
 		if err != nil {
 			if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidPublicIps.NotFound") {
 				return nil
