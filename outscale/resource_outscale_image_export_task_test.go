@@ -26,7 +26,7 @@ func TestAccVM_withImageExportTask_basic(t *testing.T) {
 			value = "test-1"
 		}`
 	if os.Getenv("TEST_QUOTA") == "true" {
-		resource.Test(t, resource.TestCase{
+		resource.ParallelTest(t, resource.TestCase{
 			PreCheck: func() {
 				testAccPreCheck(t)
 			},

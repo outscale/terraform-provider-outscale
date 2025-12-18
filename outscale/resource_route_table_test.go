@@ -13,7 +13,7 @@ import (
 
 func TestAccNet_WithRouteTable_Basic(t *testing.T) {
 	resourceName := "outscale_route_table.rtbTest"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 
@@ -33,7 +33,7 @@ func TestAccNet_RouteTable_Instance(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	resourceName := "outscale_route_table.rtbTest"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
@@ -66,7 +66,7 @@ func TestAccNet_WithRouteTable_tags(t *testing.T) {
 	}`
 	resourceName := "outscale_route_table.rtbTest"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
@@ -137,7 +137,7 @@ func TestAccNet_WithRouteTable_Migration(t *testing.T) {
 
 // 		return nil
 // 	}
-// 	resource.Test(t, resource.TestCase{
+// 	resource.ParallelTest(t, resource.TestCase{
 // 		PreCheck:     func() { testAccPreCheck(t) },
 // 		Providers:    testAccProviders,
 // 		CheckDestroy: testAccCheckOAPIRouteTableDestroy,
@@ -175,7 +175,7 @@ func TestAccNet_WithRouteTable_Migration(t *testing.T) {
 // 		return nil
 
 // 	}
-// 	resource.Test(t, resource.TestCase{
+// 	resource.ParallelTest(t, resource.TestCase{
 // 		PreCheck:  func() { testAccPreCheck(t) },
 // 		ProtoV6ProviderFactories: defineTestProviderFactoriesV6(),
 // 		CheckDestroy: resource.ComposeTestCheckFunc(

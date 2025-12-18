@@ -9,11 +9,10 @@ import (
 )
 
 func TestAccNet_AccessPointsDataSource_basic(t *testing.T) {
-	t.Parallel()
 	serviceName := fmt.Sprintf("com.outscale.%s.api", utils.GetRegion())
 	resourceName := "data.outscale_net_access_points.data_net_access_points"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

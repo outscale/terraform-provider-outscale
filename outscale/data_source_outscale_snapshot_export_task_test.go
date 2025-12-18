@@ -12,9 +12,9 @@ import (
 
 func TestAccOthers_SnapshotExportTaskDataSource_basic(t *testing.T) {
 	t.Skip("")
-	t.Parallel()
+
 	imageName := acctest.RandomWithPrefix("terraform-export-")
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
@@ -44,7 +44,7 @@ func testAccCheckOutscaleSnapshotExportTaskDataSourceID(n string) resource.TestC
 }
 
 func testAccOutscaleSnapshotExportTaskDataSourceConfig(testName, region string) string {
-	var stringTemplate = `
+	stringTemplate := `
 		resource "outscale_volume" "outscale_volume_snap" {
 			subregion_name   = "%[2]sa"
 			size                = 10

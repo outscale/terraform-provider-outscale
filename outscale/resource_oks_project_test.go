@@ -12,7 +12,7 @@ import (
 func TestAccOKSProject_basic(t *testing.T) {
 	name := acctest.RandomWithPrefix("project-basic")
 	resourceName := "outscale_oks_project.project"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 

@@ -24,7 +24,7 @@ func TestAccVM_tags(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 
 	if os.Getenv("TEST_QUOTA") == "true" {
-		resource.Test(t, resource.TestCase{
+		resource.ParallelTest(t, resource.TestCase{
 			PreCheck:     func() { testAccPreCheck(t) },
 			Providers:    testAccProviders,
 			CheckDestroy: testAccCheckOutscaleVMDestroy,
@@ -119,7 +119,8 @@ func oapiTestAccCheckOutscaleVMExistsWithProviders(n string, i *oscgo.Vm, provid
 }
 
 func testAccCheckOAPITags(
-	ts *[]oscgo.ResourceTag, key string, value string) resource.TestCheckFunc {
+	ts *[]oscgo.ResourceTag, key string, value string,
+) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		expected := map[string]string{
 			"key":   key,

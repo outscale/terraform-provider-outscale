@@ -15,7 +15,7 @@ func TestAccNet_NICPrivateIPBasic(t *testing.T) {
 	resourceName := "outscale_nic_private_ip.outscale_nic_private_ip"
 	sgName := acctest.RandomWithPrefix("testacc-sg")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{

@@ -13,7 +13,7 @@ func TestAccOthers_GatewayDatasource_basic(t *testing.T) {
 	rBgpAsn := utils.RandBgpAsn()
 	value := fmt.Sprintf("testacc-%s", acctest.RandString(5))
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
@@ -25,12 +25,11 @@ func TestAccOthers_GatewayDatasource_basic(t *testing.T) {
 }
 
 func TestAccOthers_GatewayDatasource_withFilters(t *testing.T) {
-	t.Parallel()
 	// datasourceName := "data.outscale_client_gateway.test"
 	rBgpAsn := utils.RandBgpAsn()
 	value := fmt.Sprintf("testacc-%s", acctest.RandString(5))
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{

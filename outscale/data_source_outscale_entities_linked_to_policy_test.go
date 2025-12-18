@@ -9,14 +9,13 @@ import (
 )
 
 func TestAccOthers_entities_linked_to_policy_basic(t *testing.T) {
-	t.Parallel()
 	resourceName := "data.outscale_entities_linked_to_policy.entitiesLinked"
 
 	policyName := acctest.RandomWithPrefix("test-policy")
 	groupName1 := acctest.RandomWithPrefix("testacc-usergroupname")
 	groupName2 := acctest.RandomWithPrefix("testacc-usergroupname")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{

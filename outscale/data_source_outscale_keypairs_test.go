@@ -10,9 +10,8 @@ import (
 )
 
 func TestAccOthers_KeypairsDataSource_Instance(t *testing.T) {
-	t.Parallel()
 	keyPairName := fmt.Sprintf("testacc-keypair-%d", utils.RandIntRange(0, 400))
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{

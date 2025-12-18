@@ -9,11 +9,10 @@ import (
 )
 
 func TestAccOthers_LBUs_basic(t *testing.T) {
-	t.Parallel()
 	region := fmt.Sprintf("%sa", utils.GetRegion())
 	numLbu := utils.RandIntRange(0, 50)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
@@ -24,7 +23,8 @@ func TestAccOthers_LBUs_basic(t *testing.T) {
 				Config: testAccDSOutscaleLBsUConfig(region, numLbu),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.outscale_load_balancers.test", "load_balancer.#", "1"),
-				)},
+				),
+			},
 		},
 	})
 }

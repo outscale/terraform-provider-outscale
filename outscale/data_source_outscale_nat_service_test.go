@@ -9,8 +9,7 @@ import (
 )
 
 func TestAccNet_WithNatServiceDataSource_Instance(t *testing.T) {
-	t.Parallel()
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{

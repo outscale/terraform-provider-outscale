@@ -12,7 +12,7 @@ func TestAccNet_WithSecurityGroups_DataSource(t *testing.T) {
 	rInt := acctest.RandInt()
 	resouceName1 := "data.outscale_security_groups.by_id"
 	resouceName2 := "data.outscale_security_groups.by_filter"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{

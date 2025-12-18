@@ -5,6 +5,8 @@ TEST?=./...
 VERSION=$(shell git describe --exact-match 2> /dev/null || \
                  git describe --match=$(git rev-parse --short=8 HEAD) --always --dirty --abbrev=8)
 WEBSITE_REPO=github.com/hashicorp/terraform-website
+TF_ACC_PARALLEL=10
+TF_ACC_NETS_PARALLEL=2
 
 .PHONY: default
 default: build
@@ -23,23 +25,23 @@ vet: fmtcheck
 
 .PHONY: test
 test: fmtcheck vet
-	go test $(TEST) -count 1 -timeout=30s -parallel=4
+	go test $(TEST) -count 1 -timeout=30s -parallel $(TF_ACC_PARALLEL)
 
 .PHONY: testacc
 testacc: fmtcheck
-	TF_ACC=1 go test $(TEST) -count 1 -v -parallel 4 $(TESTARGS) -timeout 240m -cover
+	TF_ACC=1 go test $(TEST) -count 1 -v -parallel $(TF_ACC_NETS_PARALLEL) $(TESTARGS) -timeout 240m -cover
 
 .PHONY: test-net
 test-net: fmtcheck
-	TF_ACC=1 go test $(TEST) -run=TestAccNet -count 1 -v -parallel 1 $(TESTARGS) -timeout 240m -cover
+	TF_ACC=1 go test $(TEST) -run=TestAccNet -count 1 -v -parallel $(TF_ACC_NETS_PARALLEL) $(TESTARGS) -timeout 240m -cover
 
 .PHONY: test-vm
 test-vm: fmtcheck
-	TF_ACC=1 go test $(TEST) -run=TestAccVM -count 1 -v -parallel 6 $(TESTARGS) -timeout 240m -cover
+	TF_ACC=1 go test $(TEST) -run=TestAccVM -count 1 -v -parallel $(TF_ACC_PARALLEL) $(TESTARGS) -timeout 240m -cover
 
 .PHONY: test-others
 test-others: fmtcheck test-gen-cert
-	TF_ACC=1 go test $(TEST) -run=TestAccOthers -count 1 -v -parallel 6 $(TESTARGS) -timeout 240m -cover
+	TF_ACC=1 go test $(TEST) -run=TestAccOthers -count 1 -v -parallel $(TF_ACC_PARALLEL) $(TESTARGS) -timeout 240m -cover
 
 .PHONY: fmt
 fmt:

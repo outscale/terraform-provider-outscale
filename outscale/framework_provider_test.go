@@ -22,7 +22,7 @@ func TestAccFwPreCheck(t *testing.T) {
 }
 
 func TestMuxServer(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{

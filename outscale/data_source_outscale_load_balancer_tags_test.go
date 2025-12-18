@@ -11,10 +11,9 @@ import (
 )
 
 func TestAccOutscaleDSLoadBalancerTags_basic(t *testing.T) {
-	t.Parallel()
 	r := acctest.RandString(4)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
@@ -26,7 +25,8 @@ func TestAccOutscaleDSLoadBalancerTags_basic(t *testing.T) {
 					testAccCheckODSutscaleOAPILBUDSTagsExists("data.outscale_load_balancer_tags.testds"),
 					resource.TestCheckResourceAttr(
 						"data.outscale_load_balancer_tags.testds", "tags.#", "1"),
-				)},
+				),
+			},
 		},
 	})
 }
@@ -51,20 +51,20 @@ func getTestAccDSODSutscaleOAPILBUDSTagsConfig(r string, zone string) string {
 		resource "outscale_load_balancer" "barTags" {
 			subregion_names    = ["%sa"]
 			load_balancer_name = "foobar-terraform-elb-%s"
-		
+
 			listeners {
 				backend_port           = 8000
 				backend_protocol       = "HTTP"
 				load_balancer_port     = 80
 				load_balancer_protocol = "HTTP"
 			}
-		
+
 			tags {
 				key = "name"
 				value = "baz"
 			}
 		}
-		
+
 		data "outscale_load_balancer_tags" "testds" {
 			load_balancer_names = [outscale_load_balancer.barTags.id]
 		}

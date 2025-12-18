@@ -18,7 +18,7 @@ func TestAccOthers_DataOutscaleCas_basic(t *testing.T) {
 	resName := "outscale_ca.ca_test"
 	ca_path := os.Getenv("CA_PATH")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccDataCheckOutscaleCasDestroy,

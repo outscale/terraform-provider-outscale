@@ -15,11 +15,10 @@ import (
 )
 
 func TestAccOthers_Ca_basic(t *testing.T) {
-	t.Parallel()
 	resourceName := "outscale_ca.ca_test"
 	ca_path := os.Getenv("CA_PATH")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleCaDestroy,

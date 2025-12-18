@@ -8,8 +8,7 @@ import (
 )
 
 func TestAccOthers_DataSourcePublicIPS(t *testing.T) {
-	t.Parallel()
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
@@ -29,9 +28,8 @@ func TestAccOthers_DataSourcePublicIPS(t *testing.T) {
 }
 
 func TestAccOthers_DataSourcePublicIPS_withTags(t *testing.T) {
-	t.Parallel()
 	if os.Getenv("TEST_QUOTA") == "true" {
-		resource.Test(t, resource.TestCase{
+		resource.ParallelTest(t, resource.TestCase{
 			PreCheck:  func() { testAccPreCheck(t) },
 			Providers: testAccProviders,
 			Steps: []resource.TestStep{

@@ -16,10 +16,8 @@ import (
 )
 
 func TestAccOthers_Snapshot_basic(t *testing.T) {
-	t.Parallel()
-
 	var v oscgo.Snapshot
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
@@ -34,10 +32,8 @@ func TestAccOthers_Snapshot_basic(t *testing.T) {
 }
 
 func TestAccOthers_Snapshot_withDescription(t *testing.T) {
-	t.Parallel()
-
 	var v oscgo.Snapshot
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
@@ -53,10 +49,8 @@ func TestAccOthers_Snapshot_withDescription(t *testing.T) {
 }
 
 func TestAccOthers_Snapshot_CopySnapshot(t *testing.T) {
-	t.Parallel()
-
 	var v oscgo.Snapshot
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
@@ -72,11 +66,9 @@ func TestAccOthers_Snapshot_CopySnapshot(t *testing.T) {
 }
 
 func TestAccOthers_Snapshot_UpdateTags(t *testing.T) {
-	t.Parallel()
-
 	region := utils.GetRegion()
 	// var v oscgo.Snapshot
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
@@ -93,10 +85,8 @@ func TestAccOthers_Snapshot_UpdateTags(t *testing.T) {
 }
 
 func TestAccOthers_Snapshot_importBasic(t *testing.T) {
-	t.Parallel()
-
 	var v oscgo.Snapshot
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{

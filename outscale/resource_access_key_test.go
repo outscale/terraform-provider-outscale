@@ -37,7 +37,7 @@ func TestAccOthers_AccessKeyUpdatedToInactivedKey(t *testing.T) {
 	state := "ACTIVE"
 	stateUpdated := "INACTIVE"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		PreCheck:                 func() { TestAccFwPreCheck(t) },
 		Steps: []resource.TestStep{
@@ -75,7 +75,7 @@ func TestAccOthers_AccessKeyUpdatedToActivedKey(t *testing.T) {
 	state := "INACTIVE"
 	stateUpdated := "ACTIVE"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		PreCheck:                 func() { TestAccFwPreCheck(t) },
 		Steps: []resource.TestStep{

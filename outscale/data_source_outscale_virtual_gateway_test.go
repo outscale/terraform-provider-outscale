@@ -8,10 +8,9 @@ import (
 )
 
 func TestAccOthers_DataSourceVirtualGateway_unattached(t *testing.T) {
-	//t.Skip()
-	t.Parallel()
+	// t.Skip()
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
@@ -34,9 +33,9 @@ func TestAccOthers_DataSourceVirtualGateway_unattached(t *testing.T) {
 func testAccDataSourceOutscaleVirtualGatewayUnattachedConfig() string {
 	return fmt.Sprintf(`
 		resource "outscale_virtual_gateway" "unattached" {
-			connection_type = "ipsec.1"	
+			connection_type = "ipsec.1"
 		}
-		
+
 		data "outscale_virtual_gateway" "test_by_id" {
 			virtual_gateway_id = outscale_virtual_gateway.unattached.id
 		}

@@ -9,7 +9,6 @@ import (
 )
 
 func TestAccOthers_ServerCertificateDatasource_basic(t *testing.T) {
-	t.Parallel()
 	rName := acctest.RandomWithPrefix("acc-test")
 	body := `-----BEGIN CERTIFICATE-----
 MIIFETCCAvkCFE1QlISgW8h5/akhNlZzb+or8HgYMA0GCSqGSIb3DQEBCwUAMEUx
@@ -95,7 +94,7 @@ kbcI5Y2wveEgMqPSRya2OapYGiPeqYhg6JAGPRXtOfOq9IUDcPuc2emnihNpSa8y
 0UFH3oBALPqPwDIt0F+wjSaY2bcmCjo=
 -----END PRIVATE KEY-----`
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
@@ -108,7 +107,7 @@ kbcI5Y2wveEgMqPSRya2OapYGiPeqYhg6JAGPRXtOfOq9IUDcPuc2emnihNpSa8y
 
 func testAccOutscaleServerCertificateDatasourceConfig(name, body, privateKey string) string {
 	return fmt.Sprintf(`
-resource "outscale_server_certificate" "test" { 
+resource "outscale_server_certificate" "test" {
    name        =  %[1]q
    body        =  %[2]q
    private_key =  %[3]q

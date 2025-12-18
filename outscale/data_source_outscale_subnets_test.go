@@ -9,10 +9,9 @@ import (
 )
 
 func TestAccNet_WithSubnetsDataSource(t *testing.T) {
-	t.Parallel()
 	rInt := utils.RandIntRange(16, 31)
 	resouceName := "data.outscale_subnets.by_filter"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
@@ -27,9 +26,8 @@ func TestAccNet_WithSubnetsDataSource(t *testing.T) {
 }
 
 func TestAccNet_Subnets_withAvailableIpsCountsFilter(t *testing.T) {
-	t.Parallel()
 	resouceName := "data.outscale_subnets.by_filters"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{

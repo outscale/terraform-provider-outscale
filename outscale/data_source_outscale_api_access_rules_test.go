@@ -15,10 +15,9 @@ import (
 )
 
 func TestAccDataOutscaleApiAccessRules_basic(t *testing.T) {
-	t.Parallel()
 	resourceName := "outscale_api_access_rule.rule_data"
 	ca_path := os.Getenv("CA_PATH")
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccDataCheckOutscaleApiAccessRuleDestroy,

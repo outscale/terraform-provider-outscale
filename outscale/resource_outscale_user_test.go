@@ -8,10 +8,9 @@ import (
 )
 
 func TestAccOthers_User_basic(t *testing.T) {
-	t.Parallel()
 	resourceName := "outscale_user.basic_user"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { TestAccFwPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
@@ -27,12 +26,11 @@ func TestAccOthers_User_basic(t *testing.T) {
 }
 
 func TestAccOthers_User_update(t *testing.T) {
-	t.Parallel()
 	resourceName := "outscale_user.update_user"
 	name := "TestACC_user1"
 	newName := "TestACC_user2"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { TestAccFwPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{

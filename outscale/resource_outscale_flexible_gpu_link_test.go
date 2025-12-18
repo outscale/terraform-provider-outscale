@@ -15,7 +15,7 @@ func TestAccVM_withFlexibleGpuLink_basic(t *testing.T) {
 		omi := os.Getenv("OUTSCALE_IMAGEID")
 		sgName := acctest.RandomWithPrefix("testacc-sg")
 
-		resource.Test(t, resource.TestCase{
+		resource.ParallelTest(t, resource.TestCase{
 			PreCheck:                 func() { testAccPreCheck(t) },
 			ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 			Steps: []resource.TestStep{

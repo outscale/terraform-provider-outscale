@@ -7,8 +7,7 @@ import (
 )
 
 func TestAccOthers_DataSourceProductType(t *testing.T) {
-	t.Parallel()
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
@@ -21,7 +20,7 @@ func TestAccOthers_DataSourceProductType(t *testing.T) {
 }
 
 const testAccDataSourceOutscaleProductTypeConfig = `
- data "outscale_product_type" "test" { 
+ data "outscale_product_type" "test" {
    filter {
         name     = "product_type_ids"
         values   = ["0001"]

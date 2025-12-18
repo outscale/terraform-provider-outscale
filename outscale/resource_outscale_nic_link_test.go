@@ -20,7 +20,7 @@ func TestAccNet_withNicLink_Basic(t *testing.T) {
 	rInt := acctest.RandInt()
 	resourceName := "outscale_nic_link.outscale_nic_link"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		IDRefreshName:            resourceName,
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),

@@ -12,7 +12,7 @@ func TestAccOthers_VPNConnectionsDataSource_basic(t *testing.T) {
 	publicIP := fmt.Sprintf("172.0.0.%d", utils.RandIntRange(1, 255))
 	bgpAsn := utils.RandBgpAsn()
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
@@ -27,7 +27,7 @@ func TestAccOthers_VPNConnectionsDataSource_withFilters(t *testing.T) {
 	publicIP := fmt.Sprintf("172.0.0.%d", utils.RandIntRange(1, 255))
 	bgpAsn := utils.RandBgpAsn()
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{

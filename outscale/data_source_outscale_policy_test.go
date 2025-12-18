@@ -9,11 +9,10 @@ import (
 )
 
 func TestAccOthers_data_policy_basic(t *testing.T) {
-	t.Parallel()
 	resourceName := "data.outscale_policy.data_test"
 	policyName := acctest.RandomWithPrefix("test-policy")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{

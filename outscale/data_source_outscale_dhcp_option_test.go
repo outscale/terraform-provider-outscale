@@ -9,12 +9,11 @@ import (
 )
 
 func TestAccOthers_DHCPOption_basic(t *testing.T) {
-	t.Parallel()
 	resourceName := "outscale_dhcp_option.foo"
 	dataSourceName := "data.outscale_dhcp_option.test"
 	value := fmt.Sprintf("test-acc-value-%s", acctest.RandString(5))
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
@@ -38,12 +37,11 @@ func TestAccOthers_DHCPOption_basic(t *testing.T) {
 }
 
 func TestAccOthers_DHCPOption_withFilters(t *testing.T) {
-	t.Parallel()
 	resourceName := "outscale_dhcp_option.foo"
 	dataSourceName := "data.outscale_dhcp_option.test"
 	value := fmt.Sprintf("test-acc-value-%s", acctest.RandString(5))
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{

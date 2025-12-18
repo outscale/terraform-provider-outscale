@@ -25,7 +25,7 @@ func TestAccVM_WithPublicIPLink_basic(t *testing.T) {
 	keypair := "terraform-basic"
 	sgName := acctest.RandomWithPrefix("testacc-sg")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		CheckDestroy:             testAccCheckOutscalePublicIPLinkDestroy,

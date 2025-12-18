@@ -9,9 +9,8 @@ import (
 )
 
 func TestAccOthers_FlexibleGpu_Basic(t *testing.T) {
-	t.Parallel()
 	resourceName := "outscale_flexible_gpu.fGPU-1"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
