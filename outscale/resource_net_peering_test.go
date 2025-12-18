@@ -12,7 +12,7 @@ import (
 
 func TestAccNet_PeeringConnection_Basic(t *testing.T) {
 	resourceName := "outscale_net_peering.foo"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
@@ -44,7 +44,7 @@ func TestAccNet_PeeringConnection_importBasic(t *testing.T) {
 }
 
 func TestAccNet_PeeringConnection_plan(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{

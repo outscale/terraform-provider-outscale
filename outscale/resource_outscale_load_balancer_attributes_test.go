@@ -12,7 +12,6 @@ import (
 )
 
 func TestAccOthers_LBUAttr_basic(t *testing.T) {
-	t.Parallel()
 	var conf oscgo.AccessLog
 	const (
 		MIN_LB_NAME_SUFFIX int = 1
@@ -20,7 +19,7 @@ func TestAccOthers_LBUAttr_basic(t *testing.T) {
 	)
 	suffix := utils.RandIntRange(MIN_LB_NAME_SUFFIX, MAX_LB_NAME_SUFFIX)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
@@ -31,7 +30,8 @@ func TestAccOthers_LBUAttr_basic(t *testing.T) {
 				Config: testAccOutscaleLBUAttrConfig(utils.GetRegion(), suffix),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleLBUAttrExists("outscale_load_balancer_attributes.bar2", &conf),
-				)},
+				),
+			},
 		},
 	})
 }

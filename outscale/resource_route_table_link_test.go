@@ -10,10 +10,9 @@ import (
 )
 
 func TestAccNet_WithLinkRouteTable_Basic(t *testing.T) {
-	t.Parallel()
 	resourceName := "outscale_route_table_link.foo"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{

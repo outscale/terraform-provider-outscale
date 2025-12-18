@@ -8,10 +8,9 @@ import (
 )
 
 func TestAccOthers_user_group_basic(t *testing.T) {
-	t.Parallel()
 	resourceName := "outscale_user_group.basic_group"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
@@ -25,12 +24,12 @@ func TestAccOthers_user_group_basic(t *testing.T) {
 		},
 	})
 }
+
 func TestAccOthers_userGroup_with_user(t *testing.T) {
-	t.Parallel()
 	resourceName := "outscale_user_group.userGroupAcc"
 	groupName := "groupWithUsers"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
@@ -47,14 +46,13 @@ func TestAccOthers_userGroup_with_user(t *testing.T) {
 }
 
 func TestAccOthers_userGroup_update(t *testing.T) {
-	t.Parallel()
 	resourceName := "outscale_user_group.userGroupTAcc1"
 	groupName := "Gp1UpUser"
 	userName := "userGp1"
 	newGpName := "Gp2UpUsers"
 	newUsName := "userGp2"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{

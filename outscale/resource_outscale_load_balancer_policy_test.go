@@ -11,13 +11,12 @@ import (
 )
 
 func TestAccOthers_CookieStickinessPolicy_basic(t *testing.T) {
-	t.Parallel()
 	lbName := fmt.Sprintf("tf-test-lb-%s", acctest.RandString(10))
 	policyName1 := acctest.RandomWithPrefix("test-policy")
 	policyName2 := acctest.RandomWithPrefix("test-policy")
 	zone := fmt.Sprintf("%sa", utils.GetRegion())
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckAppCookieStickinessPolicyDestroy,

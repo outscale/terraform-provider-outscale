@@ -17,7 +17,6 @@ import (
 )
 
 func TestAccOthers_Image_basic(t *testing.T) {
-	t.Parallel()
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := utils.GetRegion()
 	sgName := acctest.RandomWithPrefix("testacc-sg")
@@ -25,7 +24,7 @@ func TestAccOthers_Image_basic(t *testing.T) {
 	var ami oscgo.Image
 	rInt := acctest.RandInt()
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		CheckDestroy:             testAccCheckOAPIImageDestroy,

@@ -9,11 +9,9 @@ import (
 )
 
 func TestAccNet_WithSubNet_Basic(t *testing.T) {
-	t.Parallel()
-
 	resourceName := "outscale_subnet.subnet"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{

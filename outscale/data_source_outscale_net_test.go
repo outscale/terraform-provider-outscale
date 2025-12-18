@@ -10,11 +10,10 @@ import (
 )
 
 func TestAccNet_DataSource_basic(t *testing.T) {
-	t.Parallel()
 	ipRange := utils.RandVpcCidr()
 	tag := fmt.Sprintf("terraform-testacc-vpc-data-source-%s", ipRange)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{

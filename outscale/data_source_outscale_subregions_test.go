@@ -10,9 +10,7 @@ import (
 )
 
 func TestAccOthers_SubregionsDataSource_Basic(t *testing.T) {
-	t.Parallel()
-
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
@@ -29,8 +27,7 @@ func TestAccOthers_SubregionsDataSource_Basic(t *testing.T) {
 }
 
 func TestAccOthers_SubregionsDataSource_All(t *testing.T) {
-	t.Parallel()
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

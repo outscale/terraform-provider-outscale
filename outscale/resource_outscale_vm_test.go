@@ -20,7 +20,6 @@ import (
 )
 
 func TestAccVM_Basic(t *testing.T) {
-	t.Parallel()
 	var server oscgo.Vm
 
 	resourceName := "outscale_vm.basic"
@@ -30,7 +29,7 @@ func TestAccVM_Basic(t *testing.T) {
 	region := fmt.Sprintf("%sa", utils.GetRegion())
 	sgName := acctest.RandomWithPrefix("testacc-sg")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		CheckDestroy:             testAccCheckOutscaleVMDestroy,
@@ -51,7 +50,6 @@ func TestAccVM_Basic(t *testing.T) {
 }
 
 func TestAccVM_uefi(t *testing.T) {
-	t.Parallel()
 	var server oscgo.Vm
 
 	resourceName := "outscale_vm.uefi"
@@ -61,7 +59,7 @@ func TestAccVM_uefi(t *testing.T) {
 	region := fmt.Sprintf("%sa", utils.GetRegion())
 	sgName := acctest.RandomWithPrefix("testacc-sg")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		CheckDestroy:             testAccCheckOutscaleVMDestroy,
@@ -83,14 +81,13 @@ func TestAccVM_uefi(t *testing.T) {
 }
 
 func TestAccVM_Behavior_Basic(t *testing.T) {
-	t.Parallel()
 	var server oscgo.Vm
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	keypair := "terraform-basic"
 	region := fmt.Sprintf("%sa", utils.GetRegion())
 	sgName := acctest.RandomWithPrefix("testacc-sg")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		CheckDestroy:             testAccCheckOutscaleVMDestroy,
@@ -159,7 +156,7 @@ func TestAccNet_VM_withNicAttached(t *testing.T) {
 	sgName1 := acctest.RandomWithPrefix("testacc-sg")
 	sgName2 := acctest.RandomWithPrefix("testacc-sg")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
@@ -175,14 +172,13 @@ func TestAccNet_VM_withNicAttached(t *testing.T) {
 }
 
 func TestAccVM_withTags(t *testing.T) {
-	t.Parallel()
 	var server oscgo.Vm
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	keypair := "terraform-basic"
 	tagsValue := "test_tags1"
 	sgName := acctest.RandomWithPrefix("testacc-sg")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		CheckDestroy:             testAccCheckOutscaleVMDestroy,
@@ -208,7 +204,7 @@ func TestAccNet_VM_withNics(t *testing.T) {
 	resourceName := "outscale_vm.basic_with_nic"
 	sgName := acctest.RandomWithPrefix("testacc-sg")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
@@ -224,7 +220,6 @@ func TestAccNet_VM_withNics(t *testing.T) {
 }
 
 func TestAccVM_UpdateKeypair(t *testing.T) {
-	t.Parallel()
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := utils.GetRegion()
 	resourceName := "outscale_vm.basic"
@@ -236,7 +231,7 @@ func TestAccVM_UpdateKeypair(t *testing.T) {
 	var before oscgo.Vm
 	var after oscgo.Vm
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
@@ -267,7 +262,7 @@ func TestAccNet_VM_WithSubnet(t *testing.T) {
 	resourceName := "outscale_vm.basic"
 	sgName := acctest.RandomWithPrefix("testacc-sg")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
@@ -283,13 +278,12 @@ func TestAccNet_VM_WithSubnet(t *testing.T) {
 }
 
 func TestAccVM_UpdateDeletionProtection(t *testing.T) {
-	t.Parallel()
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	keypair := "terraform-basic"
 	vmType := utils.TestAccVmType
 	sgName := acctest.RandomWithPrefix("testacc-sg")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		CheckDestroy:             testAccCheckOutscaleVMDestroy,
@@ -311,14 +305,13 @@ func TestAccVM_UpdateDeletionProtection(t *testing.T) {
 }
 
 func TestAccVM_UpdateTags(t *testing.T) {
-	t.Parallel()
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	keypair := "terraform-basic"
 	tagsValue := "test_tags1"
 	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	// TODO: check tags
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		CheckDestroy:             testAccCheckOutscaleVMDestroy,
@@ -342,7 +335,7 @@ func TestAccNet_WithVM_PublicIp_Link(t *testing.T) {
 	resourceName := "outscale_vm.outscale_vmnet"
 	sgName := acctest.RandomWithPrefix("testacc-sg")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
@@ -358,14 +351,13 @@ func TestAccNet_WithVM_PublicIp_Link(t *testing.T) {
 }
 
 func TestAccVM_multiBlockDeviceMapping(t *testing.T) {
-	t.Parallel()
 	var vmID string
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	keypair := "terraform-basic"
 	resourceName := "outscale_vm.outscale_vm"
 	sgName := acctest.RandomWithPrefix("testacc-vm")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 

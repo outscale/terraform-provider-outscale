@@ -13,7 +13,7 @@ import (
 
 func TestAccNet_OutscaleRoute_noopdiff(t *testing.T) {
 	resourceName := "outscale_route.test"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
@@ -61,8 +61,10 @@ func TestAccNet_Route_importWithNatService(t *testing.T) {
 func TestAccNet_Route_changeTarget(t *testing.T) {
 	resourceName := "outscale_route.rtnatdef"
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+		},
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
@@ -83,7 +85,7 @@ func TestAccNet_Route_changeTarget(t *testing.T) {
 
 func TestAccNet_Route_onlyOneTarget(t *testing.T) {
 	regex := regexp.MustCompile(".*")
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		PreCheck: func() {
 			testAccPreCheck(t)

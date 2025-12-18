@@ -9,7 +9,7 @@ import (
 func TestAccNet_Attributes_Basic(t *testing.T) {
 	resourceName := "outscale_net_attributes.outscale_net_attributes"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{

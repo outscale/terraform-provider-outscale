@@ -16,7 +16,6 @@ import (
 )
 
 func TestAccOthers_ServerCertificate_basic(t *testing.T) {
-	t.Parallel()
 	resourceName := "outscale_server_certificate.test"
 	rName := acctest.RandomWithPrefix("acc-test")
 	rNameUpdated := acctest.RandomWithPrefix("acc-test")
@@ -104,7 +103,7 @@ kbcI5Y2wveEgMqPSRya2OapYGiPeqYhg6JAGPRXtOfOq9IUDcPuc2emnihNpSa8y
 0UFH3oBALPqPwDIt0F+wjSaY2bcmCjo=
 -----END PRIVATE KEY-----`
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleServerCertificateDestroy,

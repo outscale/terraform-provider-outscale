@@ -9,10 +9,9 @@ import (
 )
 
 func TestAccNet_WithSecurityGroupDataSource_basic(t *testing.T) {
-	t.Parallel()
 	rInt := acctest.RandInt()
 	resourceName := "outscale_security_group.netSGtest"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
@@ -27,10 +26,9 @@ func TestAccNet_WithSecurityGroupDataSource_basic(t *testing.T) {
 }
 
 func TestAccOthers_WithSecurityGroupPublic(t *testing.T) {
-	t.Parallel()
 	rInt := acctest.RandInt()
 	resourceName := "outscale_security_group.test"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{

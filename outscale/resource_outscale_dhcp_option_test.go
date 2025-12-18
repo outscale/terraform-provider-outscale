@@ -14,12 +14,11 @@ import (
 )
 
 func TestAccOthers_DhcpOptional_basic(t *testing.T) {
-	t.Parallel()
 	resourceName := "outscale_dhcp_option.foo"
 	value := fmt.Sprintf("test-acc-value-%s", acctest.RandString(5))
 	updateValue := fmt.Sprintf("test-acc-value-%s", acctest.RandString(5))
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		IDRefreshName:            resourceName,
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
@@ -61,7 +60,7 @@ func TestAccOthers_DhcpOptional_withEmptyAttrs(t *testing.T) {
 	ntpServers := []string{"192.0.0.1", "192.0.0.2"}
 	ntpServersUpdated := []string{"192.0.0.1", "192.0.0.3"}
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		IDRefreshName:            resourceName,
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
@@ -91,7 +90,6 @@ func TestAccOthers_DhcpOptional_withEmptyAttrs(t *testing.T) {
 }
 
 func TestAccNet_withDhcpOptional(t *testing.T) {
-	t.Parallel()
 	resourceName := "outscale_dhcp_option.outscale_dhcp_option"
 	domainName := fmt.Sprintf("%s.compute%s.internal", utils.GetRegion(), acctest.RandString(3))
 	domainServers := []string{"192.168.12.12", "192.168.12.132"}
@@ -102,7 +100,7 @@ func TestAccNet_withDhcpOptional(t *testing.T) {
 
 	domainNameUpdated := fmt.Sprintf("%s.compute%s.internal", utils.GetRegion(), acctest.RandString(3))
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		IDRefreshName:            resourceName,
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),

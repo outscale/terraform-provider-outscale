@@ -24,7 +24,7 @@ func TestAccOthers_SnapshotExportTask_basic(t *testing.T) {
 		key = "test-1"
 		value = "test-1"
 	}`
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{

@@ -8,10 +8,9 @@ import (
 )
 
 func TestAccNet_WithVirtualRoutePropagation_basic(t *testing.T) {
-	t.Parallel()
 	resourceName := "outscale_virtual_gateway_route_propagation.outscale_virtual_gateway_route_propagation"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

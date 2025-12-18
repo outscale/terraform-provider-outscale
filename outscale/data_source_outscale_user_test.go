@@ -7,10 +7,9 @@ import (
 )
 
 func TestAccOthers_data_user_basic(t *testing.T) {
-	t.Parallel()
 	resourceName := "data.outscale_user.basicTestUser"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{

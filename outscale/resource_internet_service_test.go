@@ -7,9 +7,8 @@ import (
 )
 
 func TestAccOthers_InternetService_Basic(t *testing.T) {
-	t.Parallel()
 	resourceName := "outscale_internet_service.internet_service"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{

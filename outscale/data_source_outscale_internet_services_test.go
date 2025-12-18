@@ -7,8 +7,7 @@ import (
 )
 
 func TestAccOthers_InternetServicesDatasource_basic(t *testing.T) {
-	t.Parallel()
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{

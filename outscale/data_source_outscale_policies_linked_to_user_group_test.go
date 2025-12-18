@@ -9,11 +9,11 @@ import (
 )
 
 func TestAccOthers_policies_linked_to_user_group_basic(t *testing.T) {
-	name1 := acctest.RandomWithPrefix("test-policy")
-	name2 := acctest.RandomWithPrefix("test-policy")
-	groupName := acctest.RandomWithPrefix("test-policy")
+	name1 := acctest.RandomWithPrefix("testacc-policy")
+	name2 := acctest.RandomWithPrefix("testacc-policy")
+	groupName := acctest.RandomWithPrefix("testacc-policy")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{

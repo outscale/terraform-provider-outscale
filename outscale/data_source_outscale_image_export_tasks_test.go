@@ -12,12 +12,11 @@ import (
 )
 
 func TestAccVM_withImageExportTasksDataSource_basic(t *testing.T) {
-	t.Parallel()
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	imageName := acctest.RandomWithPrefix("test-image-name")
 
 	if os.Getenv("TEST_QUOTA") == "true" {
-		resource.Test(t, resource.TestCase{
+		resource.ParallelTest(t, resource.TestCase{
 			PreCheck: func() {
 				testAccPreCheck(t)
 			},

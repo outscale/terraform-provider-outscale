@@ -11,9 +11,7 @@ import (
 )
 
 func TestAccOthers_SnapshotDataSource_basic(t *testing.T) {
-	t.Parallel()
-
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
@@ -29,9 +27,7 @@ func TestAccOthers_SnapshotDataSource_basic(t *testing.T) {
 }
 
 func TestAccOthers_SnapshotDataSource_multipleFilters(t *testing.T) {
-	t.Parallel()
-
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{

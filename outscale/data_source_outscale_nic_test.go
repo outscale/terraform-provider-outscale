@@ -10,11 +10,10 @@ import (
 )
 
 func TestAccNet_WithNicDataSource_basic(t *testing.T) {
-	t.Parallel()
 	resourceName := "data.outscale_nic.data_nic"
 	sgName := acctest.RandomWithPrefix("testacc-sg")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		IDRefreshName:            "outscale_nic.outscale_nic",
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
@@ -30,11 +29,10 @@ func TestAccNet_WithNicDataSource_basic(t *testing.T) {
 }
 
 func TestAccNet_WithNicDataSource_basicFilter(t *testing.T) {
-	t.Parallel()
 	resourceName := "data.outscale_nic.data_nic"
 	sgName := acctest.RandomWithPrefix("testacc-sg")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		IDRefreshName:            "outscale_nic.outscale_nic",
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),

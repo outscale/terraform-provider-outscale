@@ -9,10 +9,9 @@ import (
 )
 
 func TestAccOthers_Ephemeral_keypair_basic(t *testing.T) {
-	t.Parallel()
 	keypairName := acctest.RandomWithPrefix("testacc-ephemeral-keypair")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		PreCheck:                 func() { TestAccFwPreCheck(t) },
 		Steps: []resource.TestStep{

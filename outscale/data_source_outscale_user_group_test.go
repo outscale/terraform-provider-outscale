@@ -9,11 +9,10 @@ import (
 )
 
 func TestAccOthers_data_user_group_basic(t *testing.T) {
-	t.Parallel()
 	resourceName := "data.outscale_user_group.basicUTest"
 	groupName := acctest.RandomWithPrefix("test-policy")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{

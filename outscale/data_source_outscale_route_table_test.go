@@ -8,7 +8,7 @@ import (
 
 func TestAccNet_WithRouteTableDataSource_basic(t *testing.T) {
 	resourceName := "data.outscale_route_table.by_filter"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{

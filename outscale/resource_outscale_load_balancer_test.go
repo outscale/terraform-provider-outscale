@@ -16,14 +16,13 @@ import (
 )
 
 func TestAccOthers_LBUBasic(t *testing.T) {
-	t.Parallel()
 	var conf oscgo.LoadBalancer
 
 	lbResourceName := "outscale_load_balancer.barRes"
 	r := utils.RandIntRange(0, 10)
 	zone := fmt.Sprintf("%sa", utils.GetRegion())
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
@@ -39,21 +38,22 @@ func TestAccOthers_LBUBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(lbResourceName, "subregion_names.0", zone),
 					resource.TestCheckResourceAttr(lbResourceName, "listeners.#", "1"),
 					resource.TestCheckResourceAttr(lbResourceName, "secured_cookies", "true"),
-				)},
+				),
+			},
 		},
 	})
 }
 
 func TestAccOthers_LBUPublicIp(t *testing.T) {
 	t.Skip("Conflict UnlinkPublicIp: will be done soon")
-	t.Parallel()
+
 	var conf oscgo.LoadBalancer
 
 	resourceName := "outscale_load_balancer.barIp"
 
 	r := utils.RandIntRange(10, 20)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
@@ -67,7 +67,8 @@ func TestAccOthers_LBUPublicIp(t *testing.T) {
 					testAccCheckOutscaleLBUExists(resourceName, &conf),
 					resource.TestCheckResourceAttr(resourceName, "listeners.#", "1"),
 					resource.TestCheckResourceAttrSet(resourceName, "public_ip"),
-				)},
+				),
+			},
 		},
 	})
 }
@@ -93,7 +94,6 @@ func testAccCheckOutscaleLBUDestroy(s *terraform.State) error {
 
 			rp, httpResp, err := conn.LoadBalancerApi.ReadLoadBalancers(
 				context.Background()).ReadLoadBalancersRequest(*req).Execute()
-
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
 			}
@@ -147,14 +147,12 @@ func testAccCheckOutscaleLBUExists(n string, res *oscgo.LoadBalancer) resource.T
 
 			rp, httpResp, err := conn.LoadBalancerApi.ReadLoadBalancers(
 				context.Background()).ReadLoadBalancersRequest(*req).Execute()
-
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
 			}
 			resp = rp
 			return nil
 		})
-
 		if err != nil {
 			return err
 		}

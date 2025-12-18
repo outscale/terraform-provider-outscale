@@ -20,10 +20,9 @@ import (
 )
 
 func TestAccOthers_PublicIP_basic(t *testing.T) {
-	t.Parallel()
 	var conf oscgo.PublicIp
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		CheckDestroy:             testAccCheckOutscalePublicIPDestroy,
@@ -46,7 +45,7 @@ func TestAccVM_PublicIP_instance(t *testing.T) {
 	keypair := "terraform-basic"
 	sgName := acctest.RandomWithPrefix("testacc-sg")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		CheckDestroy:             testAccCheckOutscalePublicIPDestroy,
@@ -73,7 +72,7 @@ func TestAccNet_PublicIP_associated_user_private_ip(t *testing.T) {
 	keypair := "terraform-basic"
 	sgName := acctest.RandomWithPrefix("testacc-sg")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		IDRefreshName:            "outscale_public_ip.bar",
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),

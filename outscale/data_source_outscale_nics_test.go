@@ -13,7 +13,7 @@ func TestAccNet_WithNicsDataSource(t *testing.T) {
 	resourceName := "data.outscale_nics.data_nics"
 	sgName := acctest.RandomWithPrefix("testacc-sg")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{

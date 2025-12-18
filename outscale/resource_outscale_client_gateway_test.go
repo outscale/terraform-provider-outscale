@@ -16,12 +16,11 @@ import (
 )
 
 func TestAccOthers_ClientGateway_basic(t *testing.T) {
-	t.Parallel()
 	resourceName := "outscale_client_gateway.foo"
 	rBgpAsn := utils.RandBgpAsn()
 	rBgpAsnUpdated := utils.RandBgpAsn()
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: resourceName,
 		Providers:     testAccProviders,
@@ -58,7 +57,7 @@ func TestAccOthers_ClientGateway_withTags(t *testing.T) {
 	value := fmt.Sprintf("testacc-%s", acctest.RandString(5))
 	valueUpdated := fmt.Sprintf("testacc-%s", acctest.RandString(5))
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: resourceName,
 		Providers:     testAccProviders,

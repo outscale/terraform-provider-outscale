@@ -9,12 +9,11 @@ import (
 )
 
 func TestAccOthers_policies_linked_to_user_basic(t *testing.T) {
-	t.Parallel()
 	resourceName := "data.outscale_policies_linked_to_user.policiesLinkedToUser"
 	name1 := acctest.RandomWithPrefix("test-policy")
 	name2 := acctest.RandomWithPrefix("test-policy")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{

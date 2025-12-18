@@ -11,7 +11,6 @@ import (
 )
 
 func TestAccOthers_LBU_basic(t *testing.T) {
-	t.Parallel()
 	const (
 		MIN_LB_NAME_SUFFIX int = 1000
 		MAX_LB_NAME_SUFFIX int = 5000
@@ -21,7 +20,7 @@ func TestAccOthers_LBU_basic(t *testing.T) {
 
 	zone := fmt.Sprintf("%sa", utils.GetRegion())
 	suffix := utils.RandIntRange(MIN_LB_NAME_SUFFIX, MAX_LB_NAME_SUFFIX)
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
@@ -37,7 +36,8 @@ func TestAccOthers_LBU_basic(t *testing.T) {
 						"data.outscale_load_balancer.dataTest", "subregion_names.#", "1"),
 					resource.TestCheckResourceAttr(
 						"data.outscale_load_balancer.dataTest", "subregion_names.0", zone),
-				)},
+				),
+			},
 		},
 	})
 }

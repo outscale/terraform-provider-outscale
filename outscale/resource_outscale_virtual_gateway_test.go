@@ -9,10 +9,9 @@ import (
 )
 
 func TestAccNet_WithVirtualGateway_basic(t *testing.T) {
-	t.Parallel()
 	resourceName := "outscale_virtual_gateway.foo"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
@@ -38,7 +37,7 @@ func TestAccNet_WithVirtualGateway_basic(t *testing.T) {
 
 func TestAccOthers_VirtualGatewayChangeTags(t *testing.T) {
 	resourceName := "outscale_virtual_gateway.outscale_virtual_gateway"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

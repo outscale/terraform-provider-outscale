@@ -8,12 +8,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccOthers_keypair_Basic(t *testing.T) {
-	t.Parallel()
+func TestAccOthers_keypair_basic(t *testing.T) {
 	resourceName := "outscale_keypair.basic_keypair"
 	keypairName := acctest.RandomWithPrefix("testacc-keypair")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		PreCheck:                 func() { TestAccFwPreCheck(t) },
 		Steps: []resource.TestStep{
@@ -42,13 +41,12 @@ func TestAccOthers_keypair_Basic_Migration(t *testing.T) {
 }
 
 func TestAccOthers_keypairUpdateTags(t *testing.T) {
-	t.Parallel()
 	resourceName := "outscale_keypair.update_keypair"
 	tagValue1 := "testACC-01"
 	tagValue2 := "testACC-02"
 	keypairName := acctest.RandomWithPrefix("basic-keypair")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		PreCheck:                 func() { TestAccFwPreCheck(t) },
 		Steps: []resource.TestStep{

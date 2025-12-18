@@ -11,7 +11,7 @@ import (
 
 func TestAccNet_PeeringConnectionAccepter_sameAccount(t *testing.T) {
 	resourceName := "outscale_net_peering_acceptation.peer"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{

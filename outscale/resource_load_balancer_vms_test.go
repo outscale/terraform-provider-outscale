@@ -11,7 +11,6 @@ import (
 )
 
 func TestAccVM_LbuBackends_Basic(t *testing.T) {
-	t.Parallel()
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	resourceName := "outscale_load_balancer_vms.backend_test"
 	sgName := acctest.RandomWithPrefix("testacc-sg")
@@ -19,7 +18,7 @@ func TestAccVM_LbuBackends_Basic(t *testing.T) {
 	region := utils.GetRegion()
 	vmType := utils.TestAccVmType
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{

@@ -12,8 +12,7 @@ import (
 )
 
 func TestAccOthers_DataSourcePublicIP(t *testing.T) {
-	t.Parallel()
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
@@ -29,11 +28,10 @@ func TestAccOthers_DataSourcePublicIP(t *testing.T) {
 }
 
 func TestAccVM_WithPublicIP(t *testing.T) {
-	t.Parallel()
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	sgName := acctest.RandomWithPrefix("testacc-sg")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
@@ -80,7 +78,7 @@ func testAccDataSourceOutscalePublicIPCheck(name string) resource.TestCheckFunc 
 }
 
 func TestAccOthers_DataSourcePublicIP_withTags(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{

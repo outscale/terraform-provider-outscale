@@ -14,7 +14,7 @@ func TestAccOutscaleSnapshotAttributes_Basic(t *testing.T) {
 	var snapshotID string
 	accountID := os.Getenv("OUTSCALE_ACCOUNT")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{

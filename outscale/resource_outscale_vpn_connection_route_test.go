@@ -17,14 +17,13 @@ import (
 )
 
 func TestAccOthers_VPNConnectionRoute_basic(t *testing.T) {
-	t.Parallel()
 	resourceName := "outscale_vpn_connection_route.foo"
 
 	publicIP := fmt.Sprintf("172.0.0.%d", utils.RandIntRange(1, 255))
 	destinationIPRange := fmt.Sprintf("172.168.%d.0/24", utils.RandIntRange(1, 255))
 	bgpAsn := utils.RandBgpAsn()
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccOutscaleVPNConnectionRouteDestroy,
@@ -42,7 +41,6 @@ func TestAccOthers_VPNConnectionRoute_basic(t *testing.T) {
 }
 
 func TestAccOthers_ImportVPNConnectionRoute_basic(t *testing.T) {
-	t.Parallel()
 	if os.Getenv("TEST_QUOTA") == "true" {
 		resourceName := "outscale_vpn_connection_route.foo"
 
@@ -50,7 +48,7 @@ func TestAccOthers_ImportVPNConnectionRoute_basic(t *testing.T) {
 		destinationIPRange := fmt.Sprintf("172.168.%d.0/24", utils.RandIntRange(1, 255))
 		bgpAsn := utils.RandBgpAsn()
 
-		resource.Test(t, resource.TestCase{
+		resource.ParallelTest(t, resource.TestCase{
 			PreCheck:     func() { testAccPreCheck(t) },
 			Providers:    testAccProviders,
 			CheckDestroy: testAccOutscaleVPNConnectionRouteDestroy,

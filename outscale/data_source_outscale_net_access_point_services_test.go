@@ -9,10 +9,9 @@ import (
 )
 
 func TestAccNet_AccessPointServicesDataSource_basic(t *testing.T) {
-	t.Parallel()
 	serviceName := fmt.Sprintf("com.outscale.%s.api", utils.GetRegion())
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{

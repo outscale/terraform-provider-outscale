@@ -9,10 +9,9 @@ import (
 )
 
 func TestAccOthers_DHCPOptionsDatasource_basic(t *testing.T) {
-	t.Parallel()
 	value := fmt.Sprintf("test-acc-value-%s", acctest.RandString(5))
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
@@ -24,10 +23,9 @@ func TestAccOthers_DHCPOptionsDatasource_basic(t *testing.T) {
 }
 
 func TestAccOthers_DHCPOptionsDatasource_withFilters(t *testing.T) {
-	t.Parallel()
 	value := fmt.Sprintf("test-acc-value-%s", acctest.RandString(5))
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
@@ -92,7 +90,7 @@ func testAccOutscaleDHCPOptionsDatasourceConfigWithFilters(value string) string 
 			domain_name_servers = ["192.168.12.2"]
 			ntp_servers         = ["192.0.0.3"]
 			log_servers         = ["192.0.0.13"]
-			
+
 			tags {
 				key   = "name"
 				value = "%[1]s"
