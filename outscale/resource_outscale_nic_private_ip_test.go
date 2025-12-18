@@ -7,17 +7,20 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 	"github.com/outscale/terraform-provider-outscale/utils/testutils"
 
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccNet_NICPrivateIPBasic(t *testing.T) {
 	resourceName := "outscale_nic_private_ip.outscale_nic_private_ip"
+	sgName := acctest.RandomWithPrefix("testacc-sg")
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleNetworkInterfacePrivateIPConfigBasic(utils.GetRegion()),
+				Config: testAccOutscaleNetworkInterfacePrivateIPConfigBasic(utils.GetRegion(), sgName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "private_ips.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "private_ips.0", "10.0.45.67"),
@@ -29,7 +32,7 @@ func TestAccNet_NICPrivateIPBasic(t *testing.T) {
 	})
 }
 
-func testAccOutscaleNetworkInterfacePrivateIPConfigBasic(region string) string {
+func testAccOutscaleNetworkInterfacePrivateIPConfigBasic(region, sgName string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "outscale_net" {
 			ip_range = "10.0.0.0/16"
@@ -48,7 +51,7 @@ func testAccOutscaleNetworkInterfacePrivateIPConfigBasic(region string) string {
 
 		resource "outscale_security_group" "sg_PrNic" {
 			description         = "sg for terraform tests"
-			security_group_name = "terraform-sg"
+			security_group_name = "%[2]s"
 			net_id              = outscale_net.outscale_net.net_id
 		}
 
@@ -61,5 +64,5 @@ func testAccOutscaleNetworkInterfacePrivateIPConfigBasic(region string) string {
 			nic_id      = outscale_nic.outscale_nic.nic_id
 			private_ips = ["10.0.45.67"]
 		}
-	`, region)
+	`, region, sgName)
 }

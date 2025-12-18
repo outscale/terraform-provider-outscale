@@ -20,6 +20,7 @@ func TestAccOthers_Image_basic(t *testing.T) {
 	t.Parallel()
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := utils.GetRegion()
+	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	var ami oscgo.Image
 	rInt := acctest.RandInt()
@@ -30,7 +31,7 @@ func TestAccOthers_Image_basic(t *testing.T) {
 		CheckDestroy:             testAccCheckOAPIImageDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIImageConfigBasic(omi, utils.TestAccVmType, region, rInt),
+				Config: testAccOAPIImageConfigBasic(omi, utils.TestAccVmType, region, rInt, sgName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIImageExists("outscale_image.foo", &ami),
 					resource.TestCheckResourceAttr(
@@ -109,10 +110,10 @@ func testAccCheckOAPIImageExists(n string, ami *oscgo.Image) resource.TestCheckF
 	}
 }
 
-func testAccOAPIImageConfigBasic(omi, vmType, region string, rInt int) string {
+func testAccOAPIImageConfigBasic(omi, vmType, region string, rInt int, sgName string) string {
 	return fmt.Sprintf(`
 		resource "outscale_security_group" "sg_img" {
-			security_group_name = "terraform_test_img"
+			security_group_name = "%[5]s"
 			description         = "Used in the terraform acceptance tests"
  			tags {
 				key   = "Name"
@@ -146,5 +147,5 @@ func testAccOAPIImageConfigBasic(omi, vmType, region string, rInt int) string {
                          device_name = "/dev/sda1"
                       }
 		}
-	`, omi, vmType, region, rInt)
+	`, omi, vmType, region, rInt, sgName)
 }

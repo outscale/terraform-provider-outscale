@@ -4,18 +4,21 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
 
 func TestAccNet_WithNicsDataSource(t *testing.T) {
 	resourceName := "data.outscale_nics.data_nics"
+	sgName := acctest.RandomWithPrefix("testacc-sg")
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleNicsDataSourceConfig(utils.GetRegion()),
+				Config: testAccCheckOutscaleNicsDataSourceConfig(utils.GetRegion(), sgName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "nics.#", "1"),
 				),
@@ -24,7 +27,7 @@ func TestAccNet_WithNicsDataSource(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleNicsDataSourceConfig(subregion string) string {
+func testAccCheckOutscaleNicsDataSourceConfig(subregion, sgName string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "outscale_net" {
 			ip_range = "10.0.0.0/16"
@@ -43,7 +46,7 @@ func testAccCheckOutscaleNicsDataSourceConfig(subregion string) string {
 
 		resource "outscale_security_group" "sg_dataNic" {
 			description         = "sg for terraform tests"
-			security_group_name = "terraform-sg"
+			security_group_name = "%[2]s"
 			net_id              = outscale_net.outscale_net.net_id
 		}
 
@@ -59,5 +62,5 @@ func testAccCheckOutscaleNicsDataSourceConfig(subregion string) string {
 			}
 			depends_on = [outscale_nic.outscale_nic]
 		}
-	`, subregion)
+	`, subregion, sgName)
 }

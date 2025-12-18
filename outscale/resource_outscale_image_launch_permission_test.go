@@ -16,6 +16,7 @@ func TestAccVM_WithImageLaunchPermission_Basic(t *testing.T) {
 	region := utils.GetRegion()
 	accountID := os.Getenv("OUTSCALE_ACCOUNT")
 	keypair := "terraform-basic"
+	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	imageID := ""
 
@@ -27,21 +28,21 @@ func TestAccVM_WithImageLaunchPermission_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Scaffold everything
 			{
-				Config: testAccOutscaleImageLaunchPermissionConfig(omi, utils.TestAccVmType, region, accountID, keypair, true, rInt),
+				Config: testAccOutscaleImageLaunchPermissionConfig(omi, utils.TestAccVmType, region, accountID, keypair, true, rInt, sgName),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
 				),
 			},
 			// Drop just launch permission to test destruction
 			{
-				Config: testAccOutscaleImageLaunchPermissionConfig(omi, utils.TestAccVmType, region, accountID, keypair, false, rInt),
+				Config: testAccOutscaleImageLaunchPermissionConfig(omi, utils.TestAccVmType, region, accountID, keypair, false, rInt, sgName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccOutscaleImageLaunchPermissionDestroyed(accountID, &imageID),
 				),
 			},
 			// Re-add everything so we can test when AMI disappears
 			{
-				Config: testAccOutscaleImageLaunchPermissionConfig(omi, utils.TestAccVmType, region, accountID, keypair, true, rInt),
+				Config: testAccOutscaleImageLaunchPermissionConfig(omi, utils.TestAccVmType, region, accountID, keypair, true, rInt, sgName),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
 				),
@@ -55,6 +56,7 @@ func TestAccVM_ImageLaunchPermissionDestruction_Basic(t *testing.T) {
 	region := utils.GetRegion()
 	accountID := os.Getenv("OUTSCALE_ACCOUNT")
 	keypair := "terraform-basic"
+	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	var imageID string
 	rInt := acctest.RandInt()
@@ -65,14 +67,14 @@ func TestAccVM_ImageLaunchPermissionDestruction_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Scaffold everything
 			{
-				Config: testAccOutscaleImageLaunchPermissionCreateConfig(omi, utils.TestAccVmType, region, keypair, rInt, true, false),
+				Config: testAccOutscaleImageLaunchPermissionCreateConfig(omi, utils.TestAccVmType, region, keypair, rInt, true, false, sgName),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
 					testAccOutscaleImageLaunchPermissionExists(accountID, &imageID),
 				),
 			},
 			{
-				Config: testAccOutscaleImageLaunchPermissionCreateConfig(omi, utils.TestAccVmType, region, keypair, rInt, true, true),
+				Config: testAccOutscaleImageLaunchPermissionCreateConfig(omi, utils.TestAccVmType, region, keypair, rInt, true, true, sgName),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
 				),
@@ -141,10 +143,10 @@ func testCheckResourceGetAttr(name, key string, value *string) resource.TestChec
 	}
 }
 
-func testAccOutscaleImageLaunchPermissionConfig(omi, vmType, region, accountID, keypair string, includeLaunchPermission bool, r int) string {
+func testAccOutscaleImageLaunchPermissionConfig(omi, vmType, region, accountID, keypair string, includeLaunchPermission bool, r int, sgName string) string {
 	base := fmt.Sprintf(`
 		resource "outscale_security_group" "sg_perm" {
-			security_group_name = "sgLPerm"
+			security_group_name = "%[6]s"
 			description         = "Used in the terraform acceptance tests"
 
 			tags {
@@ -166,7 +168,7 @@ func testAccOutscaleImageLaunchPermissionConfig(omi, vmType, region, accountID, 
 			vm_id = outscale_vm.outscale_instance.vm_id
 			no_reboot   = "true"
 		}
-	`, omi, vmType, region, r, keypair)
+	`, omi, vmType, region, r, keypair, sgName)
 
 	if !includeLaunchPermission {
 		return base
@@ -182,10 +184,10 @@ func testAccOutscaleImageLaunchPermissionConfig(omi, vmType, region, accountID, 
 	`, accountID)
 }
 
-func testAccOutscaleImageLaunchPermissionCreateConfig(omi, vmType, region, keypair string, r int, includeAddtion, includeRemoval bool) string {
+func testAccOutscaleImageLaunchPermissionCreateConfig(omi, vmType, region, keypair string, r int, includeAddtion, includeRemoval bool, sgName string) string {
 	base := fmt.Sprintf(`
 		resource "outscale_security_group" "sg_perm" {
-			security_group_name = "sgLPerm"
+			security_group_name = "%[6]s"
 			description         = "Used in the terraform acceptance tests"
 
 			tags {
@@ -206,7 +208,7 @@ func testAccOutscaleImageLaunchPermissionCreateConfig(omi, vmType, region, keypa
 			vm_id      = outscale_vm.outscale_instance.vm_id
 			no_reboot  = "true"
 		}
-	`, omi, vmType, region, r, keypair)
+	`, omi, vmType, region, r, keypair, sgName)
 
 	if includeAddtion {
 		return base + `

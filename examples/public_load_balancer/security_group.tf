@@ -1,5 +1,6 @@
 resource "outscale_security_group" "my_sg" {
   description = "test security group"
+  security_group_name = "example-sg-${random_string.suffix.result}"
 }
 
 resource "outscale_security_group_rule" "my_sg_rule" {

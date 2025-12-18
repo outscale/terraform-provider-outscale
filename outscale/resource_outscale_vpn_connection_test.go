@@ -20,6 +20,7 @@ func TestAccOutscaleVPNConnection_basic(t *testing.T) {
 	resourceName := "outscale_vpn_connection.vpn_basic"
 
 	publicIP := fmt.Sprintf("172.0.0.%d", utils.RandIntRange(1, 255))
+	bgpAsn := utils.RandBgpAsn()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
@@ -28,7 +29,7 @@ func TestAccOutscaleVPNConnection_basic(t *testing.T) {
 		CheckDestroy:  testAccOutscaleVPNConnectionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleVPNConnectionConfig(publicIP, true),
+				Config: testAccOutscaleVPNConnectionConfig(bgpAsn, publicIP, true),
 				Check: resource.ComposeTestCheckFunc(
 					testAccOutscaleVPNConnectionExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "client_gateway_id"),
@@ -42,7 +43,7 @@ func TestAccOutscaleVPNConnection_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccOutscaleVPNConnectionConfig(publicIP, false),
+				Config: testAccOutscaleVPNConnectionConfig(bgpAsn, publicIP, false),
 				Check: resource.ComposeTestCheckFunc(
 					testAccOutscaleVPNConnectionExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "client_gateway_id"),
@@ -62,6 +63,7 @@ func TestAccOutscaleVPNConnection_basic(t *testing.T) {
 func TestAccOutscaleVPNConnection_withoutStaticRoutes(t *testing.T) {
 	resourceName := "outscale_vpn_connection.foo"
 	publicIP := fmt.Sprintf("172.0.0.%d", utils.RandIntRange(0, 255))
+	bgpAsn := utils.RandBgpAsn()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
@@ -70,7 +72,7 @@ func TestAccOutscaleVPNConnection_withoutStaticRoutes(t *testing.T) {
 		CheckDestroy:  testAccOutscaleVPNConnectionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleVPNConnectionConfigWithoutStaticRoutes(publicIP),
+				Config: testAccOutscaleVPNConnectionConfigWithoutStaticRoutes(bgpAsn, publicIP),
 				Check: resource.ComposeTestCheckFunc(
 					testAccOutscaleVPNConnectionExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "client_gateway_id"),
@@ -89,6 +91,7 @@ func TestAccOutscaleVPNConnection_withTags(t *testing.T) {
 
 	publicIP := fmt.Sprintf("172.0.0.%d", utils.RandIntRange(1, 255))
 	value := fmt.Sprintf("testacc-%s", acctest.RandString(5))
+	bgpAsn := utils.RandBgpAsn()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
@@ -97,7 +100,7 @@ func TestAccOutscaleVPNConnection_withTags(t *testing.T) {
 		CheckDestroy:  testAccOutscaleVPNConnectionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleVPNConnectionConfigWithTags(publicIP, value),
+				Config: testAccOutscaleVPNConnectionConfigWithTags(bgpAsn, publicIP, value),
 				Check: resource.ComposeTestCheckFunc(
 					testAccOutscaleVPNConnectionExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "client_gateway_id"),
@@ -119,6 +122,7 @@ func TestAccOutscaleVPNConnection_importBasic(t *testing.T) {
 	resourceName := "outscale_vpn_connection.vpn_basic"
 
 	publicIP := fmt.Sprintf("172.0.0.%d", utils.RandIntRange(1, 255))
+	bgpAsn := utils.RandBgpAsn()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
@@ -127,7 +131,7 @@ func TestAccOutscaleVPNConnection_importBasic(t *testing.T) {
 		CheckDestroy:  testAccOutscaleVPNConnectionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleVPNConnectionConfig(publicIP, true),
+				Config: testAccOutscaleVPNConnectionConfig(bgpAsn, publicIP, true),
 				Check: resource.ComposeTestCheckFunc(
 					testAccOutscaleVPNConnectionExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "client_gateway_id"),
@@ -211,14 +215,14 @@ func testAccOutscaleVPNConnectionDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccOutscaleVPNConnectionConfig(publicIP string, staticRoutesOnly bool) string {
+func testAccOutscaleVPNConnectionConfig(bgpAsn int, publicIP string, staticRoutesOnly bool) string {
 	return fmt.Sprintf(`
 		resource "outscale_virtual_gateway" "virtual_gateway" {
 			connection_type = "ipsec.1"
 		}
 
 		resource "outscale_client_gateway" "customer_gateway" {
-			bgp_asn         = 3
+			bgp_asn         = %d
 			public_ip       = "%s"
 			connection_type = "ipsec.1"
 		}
@@ -229,17 +233,17 @@ func testAccOutscaleVPNConnectionConfig(publicIP string, staticRoutesOnly bool) 
 			connection_type    = "ipsec.1"
 			static_routes_only = "%t"
 		}
-	`, publicIP, staticRoutesOnly)
+	`, bgpAsn, publicIP, staticRoutesOnly)
 }
 
-func testAccOutscaleVPNConnectionConfigWithoutStaticRoutes(publicIP string) string {
+func testAccOutscaleVPNConnectionConfigWithoutStaticRoutes(bgpAsn int, publicIP string) string {
 	return fmt.Sprintf(`
 		resource "outscale_virtual_gateway" "virtual_gateway" {
 			connection_type = "ipsec.1"
 		}
 
 		resource "outscale_client_gateway" "customer_gateway" {
-			bgp_asn         = 3
+			bgp_asn         = %d
 			public_ip       = "%s"
 			connection_type = "ipsec.1"
 		}
@@ -249,17 +253,17 @@ func testAccOutscaleVPNConnectionConfigWithoutStaticRoutes(publicIP string) stri
 			virtual_gateway_id = outscale_virtual_gateway.virtual_gateway.id
 			connection_type    = "ipsec.1"
 		}
-	`, publicIP)
+	`, bgpAsn, publicIP)
 }
 
-func testAccOutscaleVPNConnectionConfigWithTags(publicIP, value string) string {
+func testAccOutscaleVPNConnectionConfigWithTags(bgpAsn int, publicIP, value string) string {
 	return fmt.Sprintf(`
 		resource "outscale_virtual_gateway" "virtual_gateway" {
 			connection_type = "ipsec.1"
 		}
 
 		resource "outscale_client_gateway" "customer_gateway" {
-			bgp_asn         = 3
+			bgp_asn         = %d
 			public_ip       = "%s"
 			connection_type = "ipsec.1"
 		}
@@ -276,5 +280,5 @@ func testAccOutscaleVPNConnectionConfigWithTags(publicIP, value string) string {
 				value = "%s"
 			}
 		}
-	`, publicIP, value)
+	`, bgpAsn, publicIP, value)
 }

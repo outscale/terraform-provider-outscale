@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/outscale/terraform-provider-outscale/utils"
@@ -30,13 +31,14 @@ func TestAccOthers_DataSourcePublicIP(t *testing.T) {
 func TestAccVM_WithPublicIP(t *testing.T) {
 	t.Parallel()
 	omi := os.Getenv("OUTSCALE_IMAGEID")
+	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscalePublicIPConfigwithVM(omi, utils.GetRegion(), utils.TestAccVmType),
+				Config: testAccDataSourceOutscalePublicIPConfigwithVM(omi, utils.GetRegion(), utils.TestAccVmType, sgName),
 			},
 		},
 	})
@@ -78,7 +80,6 @@ func testAccDataSourceOutscalePublicIPCheck(name string) resource.TestCheckFunc 
 }
 
 func TestAccOthers_DataSourcePublicIP_withTags(t *testing.T) {
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
@@ -126,10 +127,10 @@ const testAccDataSourceOutscalePublicIPConfigWithTags = `
 	}
 `
 
-func testAccDataSourceOutscalePublicIPConfigwithVM(omi, region, vmType string) string {
+func testAccDataSourceOutscalePublicIPConfigwithVM(omi, region, vmType, sgName string) string {
 	return fmt.Sprintf(`
 		resource "outscale_security_group" "sg_Pbip" {
-			security_group_name = "sg_data_ip"
+			security_group_name = "%[4]s"
 			description         = "Used in the terraform acceptance tests"
 
 			tags {
@@ -139,7 +140,7 @@ func testAccDataSourceOutscalePublicIPConfigwithVM(omi, region, vmType string) s
 		}
 
 		resource "outscale_vm" "outscale_vm" {
-			image_id     = "%s"
+			image_id     = "%[1]s"
 			vm_type      = "%[3]s"
 			keypair_name = "terraform-basic"
 			security_group_ids = [outscale_security_group.sg_Pbip.security_group_id]
@@ -171,5 +172,5 @@ func testAccDataSourceOutscalePublicIPConfigwithVM(omi, region, vmType string) s
 				values = [outscale_public_ip_link.outscale_public_ip_link.link_public_ip_id]
 			}
 		}
-	`, omi, region, vmType)
+	`, omi, region, vmType, sgName)
 }

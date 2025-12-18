@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
@@ -11,13 +12,15 @@ import (
 func TestAccNet_WithNicDataSource_basic(t *testing.T) {
 	t.Parallel()
 	resourceName := "data.outscale_nic.data_nic"
+	sgName := acctest.RandomWithPrefix("testacc-sg")
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		IDRefreshName:            "outscale_nic.outscale_nic",
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleENIDataSourceConfig(utils.GetRegion()),
+				Config: testAccOutscaleENIDataSourceConfig(utils.GetRegion(), sgName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "state", "available"),
 				),
@@ -29,13 +32,15 @@ func TestAccNet_WithNicDataSource_basic(t *testing.T) {
 func TestAccNet_WithNicDataSource_basicFilter(t *testing.T) {
 	t.Parallel()
 	resourceName := "data.outscale_nic.data_nic"
+	sgName := acctest.RandomWithPrefix("testacc-sg")
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		IDRefreshName:            "outscale_nic.outscale_nic",
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleENIDataSourceConfigFilter(utils.GetRegion()),
+				Config: testAccOutscaleENIDataSourceConfigFilter(utils.GetRegion(), sgName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "net_id"),
 				),
@@ -44,7 +49,7 @@ func TestAccNet_WithNicDataSource_basicFilter(t *testing.T) {
 	})
 }
 
-func testAccOutscaleENIDataSourceConfig(subregion string) string {
+func testAccOutscaleENIDataSourceConfig(subregion, sgName string) string {
 	return fmt.Sprintf(`
 	resource "outscale_net" "outscale_net" {
 		ip_range = "10.0.0.0/16"
@@ -60,7 +65,7 @@ func testAccOutscaleENIDataSourceConfig(subregion string) string {
 		net_id         = outscale_net.outscale_net.id
 	}
 	resource "outscale_security_group" "sgdatNic" {
-		security_group_name = "test_sgNic"
+		security_group_name = "%[2]s"
 		description         = "Used in the terraform acceptance tests"
 		tags {
 			key   = "Name"
@@ -84,10 +89,10 @@ func testAccOutscaleENIDataSourceConfig(subregion string) string {
 			values = [outscale_nic.outscale_nic.nic_id]
 		}
 	}
-	`, subregion)
+	`, subregion, sgName)
 }
 
-func testAccOutscaleENIDataSourceConfigFilter(subregion string) string {
+func testAccOutscaleENIDataSourceConfigFilter(subregion, sgName string) string {
 	return fmt.Sprintf(`
 	resource "outscale_net" "outscale_net" {
 		ip_range = "10.0.0.0/16"
@@ -104,7 +109,7 @@ func testAccOutscaleENIDataSourceConfigFilter(subregion string) string {
 		net_id         = outscale_net.outscale_net.id
 	}
 	resource "outscale_security_group" "sgdatNic" {
-		security_group_name = "test_sgNic"
+		security_group_name = "%[2]s"
 		description         = "Used in the terraform acceptance tests"
 		tags {
 			key   = "Name"
@@ -128,5 +133,5 @@ func testAccOutscaleENIDataSourceConfigFilter(subregion string) string {
 			values = [outscale_nic.outscale_nic.nic_id]
 		}
 	}
-`, subregion)
+`, subregion, sgName)
 }

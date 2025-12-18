@@ -8,6 +8,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/utils"
 	"github.com/outscale/terraform-provider-outscale/utils/testutils"
 
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
@@ -16,13 +17,14 @@ func TestAccVM_WithVolumeAttachment_Basic(t *testing.T) {
 	t.Parallel()
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	keypair := "terraform-basic"
+	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIVolumeAttachmentConfig(omi, utils.TestAccVmType, utils.GetRegion(), keypair),
+				Config: testAccOAPIVolumeAttachmentConfig(omi, utils.TestAccVmType, utils.GetRegion(), keypair, sgName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"outscale_volume_link.ebs_att", "device_name", "/dev/sdh"),
@@ -37,13 +39,14 @@ func TestAccVM_ImportVolumeAttachment_Basic(t *testing.T) {
 	keypair := "terraform-basic"
 
 	resourceName := "outscale_volume_link.ebs_att"
+	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(), CheckDestroy: testAccCheckOAPIVolumeAttachmentDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIVolumeAttachmentConfig(omi, utils.TestAccVmType, utils.GetRegion(), keypair),
+				Config: testAccOAPIVolumeAttachmentConfig(omi, utils.TestAccVmType, utils.GetRegion(), keypair, sgName),
 			},
 			testutils.ImportStep(resourceName, testutils.DefaultIgnores()...),
 		},
@@ -53,10 +56,13 @@ func TestAccVM_ImportVolumeAttachment_Basic(t *testing.T) {
 func TestAccVM_WithVolumeAttachment_Migration(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	keypair := "terraform-basic"
+	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { testAccPreCheck(t) },
-		Steps:    FrameworkMigrationTestSteps("1.1.3", testAccOAPIVolumeAttachmentConfig(omi, utils.TestAccVmType, utils.GetRegion(), keypair)),
+		Steps: FrameworkMigrationTestSteps("1.1.3",
+			testAccOAPIVolumeAttachmentConfig(omi, utils.TestAccVmType, utils.GetRegion(), keypair, sgName),
+		),
 	})
 }
 
@@ -69,11 +75,11 @@ func testAccCheckOAPIVolumeAttachmentDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccOAPIVolumeAttachmentConfig(omi, vmType, region, keypair string) string {
+func testAccOAPIVolumeAttachmentConfig(omi, vmType, region, keypair, sgName string) string {
 	return fmt.Sprintf(`
 		resource "outscale_security_group" "sg_vol_link" {
 			description                  = "testAcc Terraform security group"
-			security_group_name          = "sg_volumes_link"
+			security_group_name          = "%[5]s"
 		}
 		resource "outscale_vm" "web" {
 			image_id                 = "%[1]s"
@@ -94,5 +100,5 @@ func testAccOAPIVolumeAttachmentConfig(omi, vmType, region, keypair string) stri
 			volume_id   = outscale_volume.volume.id
 			vm_id       = outscale_vm.web.id
 		}
-	`, omi, vmType, region, keypair)
+	`, omi, vmType, region, keypair, sgName)
 }

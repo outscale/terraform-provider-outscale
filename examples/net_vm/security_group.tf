@@ -1,6 +1,7 @@
 resource "outscale_security_group" "my_sg" {
-  description = "test security group"
-  net_id      = outscale_net.my_net.net_id
+  description         = "test security group"
+  net_id              = outscale_net.my_net.net_id
+  security_group_name = "example-sg-${random_string.suffix.result}"
 }
 
 resource "outscale_security_group_rule" "my_sg_rule" {
