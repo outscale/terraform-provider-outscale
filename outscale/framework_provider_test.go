@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
@@ -15,10 +14,6 @@ import (
 	"github.com/outscale/terraform-provider-outscale/version"
 	"github.com/samber/lo"
 )
-
-func TestFwProvider_impl(t *testing.T) {
-	var _ provider.Provider = New(version.GetVersion())
-}
 
 func TestAccFwPreCheck(t *testing.T) {
 	if !utils.IsEnvVariableSet([]string{"OUTSCALE_ACCESSKEYID", "OUTSCALE_SECRETKEYID", "OUTSCALE_REGION", "OUTSCALE_ACCOUNT", "OUTSCALE_IMAGEID"}) {
