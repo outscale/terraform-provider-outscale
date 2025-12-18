@@ -38,6 +38,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### 🌱 Others
 - (nothing yet)
 
+## [1.3.0] - 2025-12-18
+
+### 🛠️ Changed / Refactoring
+* ♻️ refactor: security group resource migrate  by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/609
+
+### 🌱 Others
+* 👷 ci: cancel concurrent tests by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/607
+* 🔧 config: Update CODEOWNERS file by @outscale-rce in https://github.com/outscale/terraform-provider-outscale/pull/610
+* ✅ test: add migration tests by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/611
+
+### 📝 Documentation
+* 📝 docs: fixing indentation for tenancy subparameters by @annakeita in https://github.com/outscale/terraform-provider-outscale/pull/608
+
 ## [1.3.0-beta.1] - 2025-11-26
 
 ### ✨ Added
