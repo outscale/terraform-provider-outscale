@@ -4,26 +4,28 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccOthers_keypair_Basic(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_keypair.basic_keypair"
+	keypairName := acctest.RandomWithPrefix("testacc-keypair")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		PreCheck:                 func() { TestAccFwPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
-				Config: testAccKeypairBasicConfig,
+				Config: testAcckeypairBasicConfig(keypairName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "keypair_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "keypair_name"),
 					resource.TestCheckResourceAttrSet(resourceName, "keypair_type"),
 					resource.TestCheckResourceAttrSet(resourceName, "private_key"),
 
-					resource.TestCheckResourceAttr(resourceName, "keypair_name", "tesTACC-keypair"),
+					resource.TestCheckResourceAttr(resourceName, "keypair_name", keypairName),
 				),
 			},
 		},
@@ -31,9 +33,11 @@ func TestAccOthers_keypair_Basic(t *testing.T) {
 }
 
 func TestAccOthers_keypair_Basic_Migration(t *testing.T) {
+	keypairName := acctest.RandomWithPrefix("testacc-keypair")
+
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { TestAccFwPreCheck(t) },
-		Steps:    FrameworkMigrationTestSteps("1.0.1", testAccKeypairBasicConfig),
+		Steps:    FrameworkMigrationTestSteps("1.0.1", testAcckeypairBasicConfig(keypairName)),
 	})
 }
 
@@ -42,32 +46,33 @@ func TestAccOthers_keypairUpdateTags(t *testing.T) {
 	resourceName := "outscale_keypair.update_keypair"
 	tagValue1 := "testACC-01"
 	tagValue2 := "testACC-02"
+	keypairName := acctest.RandomWithPrefix("basic-keypair")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		PreCheck:                 func() { TestAccFwPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
-				Config: testAcckeypairUpdateTags(tagValue1),
+				Config: testAcckeypairUpdateTags(keypairName, tagValue1),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "keypair_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "keypair_name"),
 					resource.TestCheckResourceAttrSet(resourceName, "keypair_type"),
 					resource.TestCheckResourceAttrSet(resourceName, "private_key"),
 
-					resource.TestCheckResourceAttr(resourceName, "keypair_name", "testTags-keypair"),
+					resource.TestCheckResourceAttr(resourceName, "keypair_name", keypairName),
 					resource.TestCheckResourceAttr(resourceName, "tags.0.value", tagValue1),
 				),
 			},
 			{
-				Config: testAcckeypairUpdateTags(tagValue2),
+				Config: testAcckeypairUpdateTags(keypairName, tagValue2),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "keypair_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "keypair_name"),
 					resource.TestCheckResourceAttrSet(resourceName, "keypair_type"),
 					resource.TestCheckResourceAttrSet(resourceName, "private_key"),
 
-					resource.TestCheckResourceAttr(resourceName, "keypair_name", "testTags-keypair"),
+					resource.TestCheckResourceAttr(resourceName, "keypair_name", keypairName),
 					resource.TestCheckResourceAttr(resourceName, "tags.0.value", tagValue2),
 				),
 			},
@@ -75,19 +80,22 @@ func TestAccOthers_keypairUpdateTags(t *testing.T) {
 	})
 }
 
-const testAccKeypairBasicConfig = `
-	resource "outscale_keypair" "basic_keypair" {
-		keypair_name = "tesTACC-keypair"
-	}`
+func testAcckeypairBasicConfig(keypair string) string {
+	return fmt.Sprintf(`
+			resource "outscale_keypair" "basic_keypair" {
+				keypair_name = "%s"
+			}
+		`, keypair)
+}
 
-func testAcckeypairUpdateTags(value string) string {
+func testAcckeypairUpdateTags(keypairName, value string) string {
 	return fmt.Sprintf(`
 		resource "outscale_keypair" "update_keypair" {
-			keypair_name = "testTags-keypair"
+			keypair_name = "%[1]s"
 			tags {
 				key   = "name"
-				value = "%s"
+				value = "%[2]s"
 			}
 		}
-	`, value)
+		`, keypairName, value)
 }

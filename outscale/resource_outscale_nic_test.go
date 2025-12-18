@@ -6,12 +6,14 @@ import (
 
 	"github.com/outscale/terraform-provider-outscale/utils"
 
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccNet_WithNic_basic(t *testing.T) {
 	subregion := utils.GetRegion()
 	resourceName := "outscale_nic.outscale_nic"
+	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
@@ -20,13 +22,13 @@ func TestAccNet_WithNic_basic(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleENIConfig(subregion),
+				Config: testAccOutscaleENIConfig(subregion, sgName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "private_ips.#", "2"),
 				),
 			},
 			{
-				Config: testAccOutscaleENIConfigUpdate(subregion),
+				Config: testAccOutscaleENIConfigUpdate(subregion, sgName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "subregion_name", fmt.Sprintf("%sa", subregion)),
 					resource.TestCheckResourceAttr(resourceName, "private_ips.#", "3"),
@@ -36,7 +38,7 @@ func TestAccNet_WithNic_basic(t *testing.T) {
 	})
 }
 
-func testAccOutscaleENIConfig(subregion string) string {
+func testAccOutscaleENIConfig(subregion, sgName string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "outscale_net" {
 			ip_range = "10.0.0.0/16"
@@ -54,7 +56,7 @@ func testAccOutscaleENIConfig(subregion string) string {
 
 		resource "outscale_security_group" "outscale_sg" {
 			description         = "sg for terraform tests"
-			security_group_name = "terraform-sg"
+			security_group_name = "%[2]s"
 			net_id              = outscale_net.outscale_net.net_id
 		}
 
@@ -72,10 +74,10 @@ func testAccOutscaleENIConfig(subregion string) string {
 				private_ip = "10.0.0.46"
 			}
 		}
-	`, subregion)
+	`, subregion, sgName)
 }
 
-func testAccOutscaleENIConfigUpdate(subregion string) string {
+func testAccOutscaleENIConfigUpdate(subregion, sgName string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "outscale_net" {
 			ip_range = "10.0.0.0/16"
@@ -93,7 +95,7 @@ func testAccOutscaleENIConfigUpdate(subregion string) string {
 
 		resource "outscale_security_group" "outscale_sg" {
 			description         = "sg for terraform tests"
-			security_group_name = "terraform-sg"
+			security_group_name = "%[2]s"
 			net_id              = outscale_net.outscale_net.net_id
 		}
 
@@ -116,5 +118,5 @@ func testAccOutscaleENIConfigUpdate(subregion string) string {
 				private_ip = "10.0.0.69"
 			}
 		}
-	`, subregion)
+	`, subregion, sgName)
 }

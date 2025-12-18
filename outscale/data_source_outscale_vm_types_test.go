@@ -5,12 +5,14 @@ import (
 	"os"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccVM_TypesDataSource_basic(t *testing.T) {
 	t.Parallel()
 	omi := os.Getenv("OUTSCALE_IMAGEID")
+	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -19,16 +21,16 @@ func TestAccVM_TypesDataSource_basic(t *testing.T) {
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleVMTypesConfig(omi, "tinav5.c2r2p2"),
+				Config: testAccDataSourceOutscaleVMTypesConfig(omi, "tinav5.c2r2p2", sgName),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleVMTypesConfig(omi, vmType string) string {
+func testAccDataSourceOutscaleVMTypesConfig(omi, vmType, sgName string) string {
 	return fmt.Sprintf(`
 		resource "outscale_security_group" "sg_vms_types" {
-			security_group_name = "sg_vm_type"
+			security_group_name = "%[3]s"
 			description         = "Used in the terraform acceptance tests"
 
 			tags {
@@ -38,8 +40,8 @@ func testAccDataSourceOutscaleVMTypesConfig(omi, vmType string) string {
 		}
 
 		resource "outscale_vm" "basic_types" {
-			image_id     = "%s"
-			vm_type      = "%s"
+			image_id     = "%[1]s"
+			vm_type      = "%[2]s"
 			keypair_name = "terraform-basic"
 			security_group_ids = [outscale_security_group.sg_vms_types.security_group_id]
 		}
@@ -52,5 +54,5 @@ func testAccDataSourceOutscaleVMTypesConfig(omi, vmType string) string {
 		}
 
 		data "outscale_vm_types" "all-types" { }
-	`, omi, vmType)
+	`, omi, vmType, sgName)
 }

@@ -226,10 +226,12 @@ func TestAccNet_VM_withNics(t *testing.T) {
 func TestAccVM_UpdateKeypair(t *testing.T) {
 	t.Parallel()
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	keypair := "terraform-basic"
 	region := utils.GetRegion()
 	resourceName := "outscale_vm.basic"
 	sgName := acctest.RandomWithPrefix("testacc-sg")
+
+	existingKeypair := "terraform-basic"
+	generatedKeypair := acctest.RandomWithPrefix("testacc-keypair")
 
 	var before oscgo.Vm
 	var after oscgo.Vm
@@ -239,7 +241,7 @@ func TestAccVM_UpdateKeypair(t *testing.T) {
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccVmsConfigUpdateOAPIVMKey(omi, utils.TestAccVmType, region, sgName),
+				Config: testAccVmsConfigUpdateOAPIVMKey(omi, utils.TestAccVmType, region, generatedKeypair, sgName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleVMExists(resourceName, &before),
 					testAccCheckOutscaleVMAttributes(t, &before, omi),
@@ -248,7 +250,7 @@ func TestAccVM_UpdateKeypair(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccVmsConfigUpdateOAPIVMKey2(omi, utils.TestAccVmType, region, keypair, sgName),
+				Config: testAccVmsConfigUpdateOAPIVMKey2(omi, utils.TestAccVmType, region, generatedKeypair, existingKeypair, sgName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleVMExists(resourceName, &after),
 					testAccCheckOAPIVMNotRecreated(t, &before, &after),
@@ -833,35 +835,10 @@ func testAccCheckOutscaleVMConfigBasicWithNics(omi, vmType, keypair, region, sgN
 	  }`, omi, vmType, keypair, region, sgName)
 }
 
-func testAccVmsConfigUpdateOAPIVMKey(omi, vmType, region, sgName string) string {
+func testAccVmsConfigUpdateOAPIVMKey(omi, vmType, region, keypairName, sgName string) string {
 	return fmt.Sprintf(`
 		resource "outscale_keypair" "keypair01" {
-		keypair_name = "terraform-keypair-create"
-		}
-		resource "outscale_security_group" "sg_keypair" {
-			security_group_name = "%[4]s"
-			description         = "Used in the terraform acceptance tests"
-
-			tags {
-				key   = "Name"
-				value = "tf-acc-test"
-			}
-		}
-
-		resource "outscale_vm" "basic" {
-			image_id                 = "%[1]s"
-			vm_type                  = "%[2]s"
-			keypair_name             = outscale_keypair.keypair01.keypair_name
-			security_group_ids       = [outscale_security_group.sg_keypair.security_group_id]
-			placement_subregion_name = "%[3]sb"
-		}
-	`, omi, vmType, region, sgName)
-}
-
-func testAccVmsConfigUpdateOAPIVMKey2(omi, vmType, region, keypair, sgName string) string {
-	return fmt.Sprintf(`
-		resource "outscale_keypair" "keypair01" {
-			keypair_name = "terraform-keypair-create"
+			keypair_name = "%[4]s"
 		}
 
 		resource "outscale_security_group" "sg_keypair" {
@@ -877,11 +854,36 @@ func testAccVmsConfigUpdateOAPIVMKey2(omi, vmType, region, keypair, sgName strin
 		resource "outscale_vm" "basic" {
 			image_id                 = "%[1]s"
 			vm_type                  = "%[2]s"
-			keypair_name             = "%[4]s"
 			security_group_ids       = [outscale_security_group.sg_keypair.security_group_id]
 			placement_subregion_name = "%[3]sb"
 		}
-	`, omi, vmType, region, keypair, sgName)
+	`, omi, vmType, region, keypairName, sgName)
+}
+
+func testAccVmsConfigUpdateOAPIVMKey2(omi, vmType, region, keypair, newKeypair, sgName string) string {
+	return fmt.Sprintf(`
+		resource "outscale_keypair" "keypair01" {
+			keypair_name = "%[4]s"
+		}
+
+		resource "outscale_security_group" "sg_keypair" {
+			security_group_name = "%[6]s"
+			description         = "Used in the terraform acceptance tests"
+
+			tags {
+				key   = "Name"
+				value = "tf-acc-test"
+			}
+		}
+
+		resource "outscale_vm" "basic" {
+			image_id                 = "%[1]s"
+			vm_type                  = "%[2]s"
+			keypair_name             = "%[5]s"
+			security_group_ids       = [outscale_security_group.sg_keypair.security_group_id]
+			placement_subregion_name = "%[3]sb"
+		}
+	`, omi, vmType, region, keypair, newKeypair, sgName)
 }
 
 func testAccVmsConfigUpdateOAPIVMTags(omi, vmType, region, value, keypair, sgName string) string {

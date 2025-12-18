@@ -10,6 +10,6 @@ resource "local_file" "my_key" {
 }
 
 resource "outscale_keypair" "my_keypair" {
-  keypair_name = "yunohost-vm-keypair"
+  keypair_name = "example-keypair-${random_string.suffix.result}"
   public_key   = tls_private_key.my_key.public_key_openssh
 }

@@ -1,6 +1,6 @@
 resource "outscale_load_balancer" "my_public_lb" {
   subregion_names    = ["${var.region}a"]
-  load_balancer_name = "my-lb-public${var.suffixe_lbu_name}"
+  load_balancer_name = "example-lb-${random_string.suffix.result}"
   listeners {
     backend_port           = 80
     backend_protocol       = "HTTP"

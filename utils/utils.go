@@ -114,7 +114,6 @@ func getBsuTags(volumeId string, conn *oscgo.APIClient) ([]oscgo.ResourceTag, er
 }
 
 func GetBsuTagsMaps(vmResp oscgo.Vm, conn *oscgo.APIClient) (map[string]interface{}, error) {
-
 	blocks := vmResp.GetBlockDeviceMappings()
 	bsuTagsMaps := make(map[string]interface{})
 	for _, v := range blocks {
@@ -179,7 +178,6 @@ func StringSliceToInt64Slice(src []string) (res []int64) {
 }
 
 func SliceToTftypesValueSlice(src []string) (basetypes.SetValue, diag.Diagnostics) {
-
 	nSet := []attr.Value{}
 	for _, str := range src {
 		nSet = append(nSet, types.StringValue(str))
@@ -230,7 +228,6 @@ func IsResponseEmptyOrMutiple(rLen int, resName string) error {
 }
 
 func CheckThrottling(httpResp *http.Response, err error) *retry.RetryError {
-
 	if httpResp != nil {
 		errCode := httpResp.StatusCode
 		errBody := getHttpErrorResponse(httpResp.Body, err)
@@ -264,17 +261,18 @@ func RandVpcCidr() string {
 	prefix := RandIntRange(16, 29)
 	switch rand.Intn(3) {
 	case 0:
-		//10.0.0.0 - 10.255.255.255 (10/8 prefix)
+		// 10.0.0.0 - 10.255.255.255 (10/8 prefix)
 		result = fmt.Sprintf("10.%d.0.0/%d", rand.Intn(256), prefix)
 	case 1:
-		//172.16.0.0 - 172.31.255.255 (172.16/12 prefix)
+		// 172.16.0.0 - 172.31.255.255 (172.16/12 prefix)
 		result = fmt.Sprintf("172.%d.0.0/%d", RandIntRange(16, 32), prefix)
 	case 2:
-		//192.168.0.0 - 192.168.255.255 (192.168/16 prefix)
+		// 192.168.0.0 - 192.168.255.255 (192.168/16 prefix)
 		result = fmt.Sprintf("192.168.0.0/%d", prefix)
 	}
 	return result
 }
+
 func InterfaceSliceToStringSlicePtr(slice []interface{}) *[]string {
 	result := InterfaceSliceToStringSlice(slice)
 	return &result
@@ -362,6 +360,7 @@ func GetRegion() string {
 	}
 	return region
 }
+
 func GetAccepterOwnerId() string {
 	accountId := os.Getenv("OUTSCALE_ACCOUNT")
 	if accountId == "" {
@@ -399,7 +398,6 @@ func Strings(strings []string) string {
 }
 
 func GetEnvVariableValue(envVariables []string) string {
-
 	for _, envVariable := range envVariables {
 		if value := os.Getenv(envVariable); value != "" {
 			return value
@@ -407,6 +405,7 @@ func GetEnvVariableValue(envVariables []string) string {
 	}
 	return ""
 }
+
 func IsEnvVariableSet(envVariables []string) bool {
 	for _, envVariable := range envVariables {
 		if value := os.Getenv(envVariable); value == "" {
@@ -528,8 +527,7 @@ func WaitForResource[T any](ctx context.Context, conf *retry.StateChangeConf) (*
 	return resp, nil
 }
 
-func CheckDiags[T *fw_resource.CreateResponse | *fw_resource.UpdateResponse | *fw_resource.DeleteResponse | *fw_resource.ReadResponse | *fw_resource.ModifyPlanResponse | *fw_resource.ImportStateResponse | *fw_data.ReadResponse | *fw_resource.ValidateConfigResponse | *ephemeral.OpenResponse](resp T, diags diag.
-	Diagnostics) bool {
+func CheckDiags[T *fw_resource.CreateResponse | *fw_resource.UpdateResponse | *fw_resource.DeleteResponse | *fw_resource.ReadResponse | *fw_resource.ModifyPlanResponse | *fw_resource.ImportStateResponse | *fw_data.ReadResponse | *fw_resource.ValidateConfigResponse | *ephemeral.OpenResponse](resp T, diags diag.Diagnostics) bool {
 	switch r := any(resp).(type) {
 	case *fw_resource.DeleteResponse:
 		r.Diagnostics.Append(diags...)
@@ -562,4 +560,8 @@ func CheckDiags[T *fw_resource.CreateResponse | *fw_resource.UpdateResponse | *f
 
 func IsSet(v attr.Value) bool {
 	return !v.IsNull() && !v.IsUnknown()
+}
+
+func RandBgpAsn() int {
+	return RandIntRange(1, 50620)
 }

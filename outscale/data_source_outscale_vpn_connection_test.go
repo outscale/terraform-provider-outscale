@@ -10,13 +10,14 @@ import (
 
 func TestAccOthers_VPNConnectionDataSource_basic(t *testing.T) {
 	publicIP := fmt.Sprintf("172.0.0.%d", utils.RandIntRange(1, 255))
+	bgpAsn := utils.RandBgpAsn()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleVPNConnectionDataSourceConfigBasic(publicIP),
+				Config: testAccOutscaleVPNConnectionDataSourceConfigBasic(bgpAsn, publicIP),
 			},
 		},
 	})
@@ -24,26 +25,27 @@ func TestAccOthers_VPNConnectionDataSource_basic(t *testing.T) {
 
 func TestAccOthers_VPNConnectionDataSource_withFilters(t *testing.T) {
 	publicIP := fmt.Sprintf("172.0.0.%d", utils.RandIntRange(1, 255))
+	bgpAsn := utils.RandBgpAsn()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleVPNConnectionDataSourceConfigWithFilters(publicIP),
+				Config: testAccOutscaleVPNConnectionDataSourceConfigWithFilters(bgpAsn, publicIP),
 			},
 		},
 	})
 }
 
-func testAccOutscaleVPNConnectionDataSourceConfigBasic(publicIP string) string {
+func testAccOutscaleVPNConnectionDataSourceConfigBasic(bgpAsn int, publicIP string) string {
 	return fmt.Sprintf(`
 		resource "outscale_virtual_gateway" "virtual_gateway1" {
 			connection_type = "ipsec.1"
 		}
 
 		resource "outscale_client_gateway" "customer_gateway1" {
-			bgp_asn         = 3
+			bgp_asn         = %d
 			public_ip       = "%s"
 			connection_type = "ipsec.1"
 		}
@@ -63,17 +65,17 @@ func testAccOutscaleVPNConnectionDataSourceConfigBasic(publicIP string) string {
 		data "outscale_vpn_connection" "test" {
 			vpn_connection_id = outscale_vpn_connection.foo1.id
 		}
-	`, publicIP)
+	`, bgpAsn, publicIP)
 }
 
-func testAccOutscaleVPNConnectionDataSourceConfigWithFilters(publicIP string) string {
+func testAccOutscaleVPNConnectionDataSourceConfigWithFilters(bgpAsn int, publicIP string) string {
 	return fmt.Sprintf(`
 		resource "outscale_virtual_gateway" "virtual_gateway" {
 			connection_type = "ipsec.1"
 		}
 
 		resource "outscale_client_gateway" "customer_gateway" {
-			bgp_asn         = 3
+			bgp_asn         = %d
 			public_ip       = "%s"
 			connection_type = "ipsec.1"
 		}
@@ -91,5 +93,5 @@ func testAccOutscaleVPNConnectionDataSourceConfigWithFilters(publicIP string) st
 				values = [outscale_vpn_connection.foo.id]
 			}
 		}
-	`, publicIP)
+	`, bgpAsn, publicIP)
 }

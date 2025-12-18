@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/outscale/terraform-provider-outscale/utils"
 )
@@ -49,13 +50,14 @@ func TestAccOthers_VolumeDataSource_multipleVIdsFilters(t *testing.T) {
 func TestAccVM_withVolumesDataSource(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	keypair := "terraform-basic"
+	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleVolumesDataSourceConfigWithVM(utils.GetRegion(), omi, keypair, utils.TestAccVmType),
+				Config: testAccCheckOutscaleVolumesDataSourceConfigWithVM(utils.GetRegion(), omi, keypair, utils.TestAccVmType, sgName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleVolumeDataSourceID("data.outscale_volumes.outscale_volumes"),
 					resource.TestCheckResourceAttrSet("data.outscale_volumes.outscale_volumes", "volumes.#"),
@@ -113,7 +115,7 @@ func testAccCheckOutscaleVolumesDataSourceConfigWithMultipleVolumeIDsFilter(regi
 	`, region)
 }
 
-func testAccCheckOutscaleVolumesDataSourceConfigWithVM(region, imageID, keypair, vmType string) string {
+func testAccCheckOutscaleVolumesDataSourceConfigWithVM(region, imageID, keypair, vmType, sgName string) string {
 	return fmt.Sprintf(`
 		resource "outscale_volume" "outscale_volume" {
 			subregion_name = "%[1]sa"
@@ -146,7 +148,7 @@ func testAccCheckOutscaleVolumesDataSourceConfigWithVM(region, imageID, keypair,
 		}
 
 		resource "outscale_security_group" "sg_volumes" {
-			security_group_name = "sg_vols"
+			security_group_name = "%[5]s"
 			description         = "Used in the terraform acceptance tests"
 
 			tags {
@@ -186,5 +188,5 @@ func testAccCheckOutscaleVolumesDataSourceConfigWithVM(region, imageID, keypair,
 				values = [outscale_vm.outscale_vm.vm_id]
 			}
 		}
-	`, region, imageID, keypair, vmType)
+	`, region, imageID, keypair, vmType, sgName)
 }

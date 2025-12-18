@@ -10,8 +10,7 @@ import (
 )
 
 func TestAccOthers_GatewayDatasource_basic(t *testing.T) {
-	t.Parallel()
-	rBgpAsn := utils.RandIntRange(64512, 65534)
+	rBgpAsn := utils.RandBgpAsn()
 	value := fmt.Sprintf("testacc-%s", acctest.RandString(5))
 
 	resource.Test(t, resource.TestCase{
@@ -28,7 +27,7 @@ func TestAccOthers_GatewayDatasource_basic(t *testing.T) {
 func TestAccOthers_GatewayDatasource_withFilters(t *testing.T) {
 	t.Parallel()
 	// datasourceName := "data.outscale_client_gateway.test"
-	rBgpAsn := utils.RandIntRange(64512, 65534)
+	rBgpAsn := utils.RandBgpAsn()
 	value := fmt.Sprintf("testacc-%s", acctest.RandString(5))
 
 	resource.Test(t, resource.TestCase{
@@ -43,13 +42,13 @@ func TestAccOthers_GatewayDatasource_withFilters(t *testing.T) {
 }
 
 func TestAccOthers_GatewayDatasource_withFiltersNoLocalhost(t *testing.T) {
-	t.Parallel()
-	resource.Test(t, resource.TestCase{
+	bgpAsn := utils.RandBgpAsn()
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccClientGatewayDatasourceWithFiltersNoLocalhost(),
+				Config: testAccClientGatewayDatasourceWithFiltersNoLocalhost(bgpAsn),
 			},
 		},
 	})
@@ -96,10 +95,10 @@ func testAccClientGatewayDatasourceWithFilters(rBgpAsn int, value string) string
 	`, rBgpAsn, value)
 }
 
-func testAccClientGatewayDatasourceWithFiltersNoLocalhost() string {
+func testAccClientGatewayDatasourceWithFiltersNoLocalhost(asn int) string {
 	return fmt.Sprintf(`
 	resource "outscale_client_gateway" "outscale_client_gateway" {
-		bgp_asn     = 571
+		bgp_asn     = %d
 		public_ip  = "171.33.75.123"
 		connection_type        = "ipsec.1"
 		tags {
@@ -107,12 +106,12 @@ func testAccClientGatewayDatasourceWithFiltersNoLocalhost() string {
 		 value = "CGW_1_mzi"
 		}
 	}
-	
+
 	data "outscale_client_gateway" "outscale_client_gateway_2" {
 		filter {
 		   name   = "client_gateway_ids"
 		   values = [outscale_client_gateway.outscale_client_gateway.client_gateway_id]
 		}
 	}
-	`)
+	`, asn)
 }

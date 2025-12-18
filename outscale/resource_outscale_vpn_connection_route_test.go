@@ -22,6 +22,7 @@ func TestAccOthers_VPNConnectionRoute_basic(t *testing.T) {
 
 	publicIP := fmt.Sprintf("172.0.0.%d", utils.RandIntRange(1, 255))
 	destinationIPRange := fmt.Sprintf("172.168.%d.0/24", utils.RandIntRange(1, 255))
+	bgpAsn := utils.RandBgpAsn()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -29,7 +30,7 @@ func TestAccOthers_VPNConnectionRoute_basic(t *testing.T) {
 		CheckDestroy: testAccOutscaleVPNConnectionRouteDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleVPNConnectionRouteConfig(publicIP, destinationIPRange),
+				Config: testAccOutscaleVPNConnectionRouteConfig(bgpAsn, publicIP, destinationIPRange),
 				Check: resource.ComposeTestCheckFunc(
 					testAccOutscaleVPNConnectionRouteExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "destination_ip_range"),
@@ -47,6 +48,7 @@ func TestAccOthers_ImportVPNConnectionRoute_basic(t *testing.T) {
 
 		publicIP := fmt.Sprintf("172.0.0.%d", utils.RandIntRange(1, 255))
 		destinationIPRange := fmt.Sprintf("172.168.%d.0/24", utils.RandIntRange(1, 255))
+		bgpAsn := utils.RandBgpAsn()
 
 		resource.Test(t, resource.TestCase{
 			PreCheck:     func() { testAccPreCheck(t) },
@@ -54,7 +56,7 @@ func TestAccOthers_ImportVPNConnectionRoute_basic(t *testing.T) {
 			CheckDestroy: testAccOutscaleVPNConnectionRouteDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: testAccOutscaleVPNConnectionRouteConfig(publicIP, destinationIPRange),
+					Config: testAccOutscaleVPNConnectionRouteConfig(bgpAsn, publicIP, destinationIPRange),
 					Check: resource.ComposeTestCheckFunc(
 						testAccOutscaleVPNConnectionRouteExists(resourceName),
 						resource.TestCheckResourceAttrSet(resourceName, "destination_ip_range"),
@@ -160,14 +162,14 @@ func testAccOutscaleVPNConnectionRouteDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccOutscaleVPNConnectionRouteConfig(publicIP, destinationIPRange string) string {
+func testAccOutscaleVPNConnectionRouteConfig(bgpAsn int, publicIP, destinationIPRange string) string {
 	return fmt.Sprintf(`
 		resource "outscale_virtual_gateway" "virtual_gateway" {
 			connection_type = "ipsec.1"
 		}
 
 		resource "outscale_client_gateway" "customer_gateway" {
-			bgp_asn         = 3
+			bgp_asn         = %d
 			public_ip       = "%s"
 			connection_type = "ipsec.1"
 		}
@@ -183,5 +185,5 @@ func testAccOutscaleVPNConnectionRouteConfig(publicIP, destinationIPRange string
 			destination_ip_range = "%s"
 			vpn_connection_id    = outscale_vpn_connection.vpn_connection.id
 		}
-	`, publicIP, destinationIPRange)
+	`, bgpAsn, publicIP, destinationIPRange)
 }

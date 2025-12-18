@@ -15,6 +15,7 @@ func TestAccVM_WithImagesDataSource_basic(t *testing.T) {
 	t.Parallel()
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	imageName := fmt.Sprintf("image-test-%d", acctest.RandInt())
+	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -23,7 +24,7 @@ func TestAccVM_WithImagesDataSource_basic(t *testing.T) {
 		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleImagesDataSourceConfig(omi, utils.TestAccVmType, utils.GetRegion(), imageName),
+				Config: testAccCheckOutscaleImagesDataSourceConfig(omi, utils.TestAccVmType, utils.GetRegion(), imageName, sgName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleImagesDataSourceID("data.outscale_images.nat_ami"),
 				),
@@ -47,10 +48,10 @@ func testAccCheckOutscaleImagesDataSourceID(n string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckOutscaleImagesDataSourceConfig(omi, vmType, region, imageName string) string {
+func testAccCheckOutscaleImagesDataSourceConfig(omi, vmType, region, imageName, sgName string) string {
 	return fmt.Sprintf(`
 		resource "outscale_security_group" "sg_imgs_data" {
-			security_group_name = "sg_imgsData"
+			security_group_name = "%[5]s"
 			description         = "Used in the terraform acceptance tests"
 
 			tags {
@@ -91,5 +92,5 @@ func testAccCheckOutscaleImagesDataSourceConfig(omi, vmType, region, imageName s
 				values = [outscale_image.image_one.id, outscale_image.image_two.id]
 			}
 		}
-	`, omi, vmType, region, imageName)
+	`, omi, vmType, region, imageName, sgName)
 }

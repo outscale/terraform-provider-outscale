@@ -15,6 +15,8 @@ func TestAccVM_withImageExportTask_basic(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := utils.GetRegion()
 	imageName := acctest.RandomWithPrefix("test-image-name")
+	sgName := acctest.RandomWithPrefix("testacc-sg")
+
 	tags := `tags {
 			key = "test"
 			value = "test"
@@ -31,13 +33,13 @@ func TestAccVM_withImageExportTask_basic(t *testing.T) {
 			ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
 			Steps: []resource.TestStep{
 				{
-					Config: testAccOAPIImageExportTaskConfigBasic(omi, utils.TestAccVmType, region, imageName, ""),
+					Config: testAccOAPIImageExportTaskConfigBasic(omi, utils.TestAccVmType, region, imageName, "", sgName),
 					Check: resource.ComposeTestCheckFunc(
 						testAccCheckOutscalemageExportTaskExists("outscale_image_export_task.outscale_image_export_task"),
 					),
 				},
 				{
-					Config: testAccOAPIImageExportTaskConfigBasic(omi, utils.TestAccVmType, region, imageName, tags),
+					Config: testAccOAPIImageExportTaskConfigBasic(omi, utils.TestAccVmType, region, imageName, tags, sgName),
 					Check: resource.ComposeTestCheckFunc(
 						testAccCheckOutscalemageExportTaskExists("outscale_image_export_task.outscale_image_export_task"),
 					),
@@ -64,10 +66,10 @@ func testAccCheckOutscalemageExportTaskExists(n string) resource.TestCheckFunc {
 	}
 }
 
-func testAccOAPIImageExportTaskConfigBasic(omi, vmType, region, imageName, tags string) string {
+func testAccOAPIImageExportTaskConfigBasic(omi, vmType, region, imageName, tags, sgName string) string {
 	return fmt.Sprintf(`
 	resource "outscale_security_group" "sg_task" {
-		security_group_name = "sg_export_task"
+		security_group_name = "%[7]s"
 		description         = "Used in the terraform acceptance tests"
 
 		tags {
@@ -77,8 +79,8 @@ func testAccOAPIImageExportTaskConfigBasic(omi, vmType, region, imageName, tags 
 	}
 
 	resource "outscale_vm" "basic" {
-		image_id	         = "%s"
-		vm_type                  = "%s"
+		image_id	         = "%[1]s"
+		vm_type                  = "%[2]s"
 		keypair_name		 = "terraform-basic"
 		placement_subregion_name = "%sa"
 		security_group_ids = [outscale_security_group.sg_task.security_group_id]
@@ -98,5 +100,5 @@ func testAccOAPIImageExportTaskConfigBasic(omi, vmType, region, imageName, tags 
 		}
 		%s
 	}
-	`, omi, vmType, region, imageName, imageName, tags)
+	`, omi, vmType, region, imageName, imageName, tags, sgName)
 }

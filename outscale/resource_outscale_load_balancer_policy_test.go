@@ -13,6 +13,8 @@ import (
 func TestAccOthers_CookieStickinessPolicy_basic(t *testing.T) {
 	t.Parallel()
 	lbName := fmt.Sprintf("tf-test-lb-%s", acctest.RandString(10))
+	policyName1 := acctest.RandomWithPrefix("test-policy")
+	policyName2 := acctest.RandomWithPrefix("test-policy")
 	zone := fmt.Sprintf("%sa", utils.GetRegion())
 
 	resource.Test(t, resource.TestCase{
@@ -21,7 +23,7 @@ func TestAccOthers_CookieStickinessPolicy_basic(t *testing.T) {
 		CheckDestroy: testAccCheckAppCookieStickinessPolicyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCookieStickinessPolicyConfig(lbName, zone),
+				Config: testAccCookieStickinessPolicyConfig(lbName, zone, policyName1, policyName2),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAppCookieStickinessPolicy(
 						"outscale_load_balancer.lb",
@@ -30,7 +32,7 @@ func TestAccOthers_CookieStickinessPolicy_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCookieStickinessPolicyConfigUpdate(lbName, zone),
+				Config: testAccCookieStickinessPolicyConfigUpdate(lbName, zone, policyName1, policyName2),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAppCookieStickinessPolicy(
 						"outscale_load_balancer.lb",
@@ -43,7 +45,6 @@ func TestAccOthers_CookieStickinessPolicy_basic(t *testing.T) {
 }
 
 func testAccCheckAppCookieStickinessPolicyDestroy(s *terraform.State) error {
-
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_load_balancer_cookiepolicy" {
 			continue
@@ -71,7 +72,7 @@ func testAccCheckAppCookieStickinessPolicy(elbResource string, policyResource st
 	}
 }
 
-func testAccCookieStickinessPolicyConfig(rName string, zone string) string {
+func testAccCookieStickinessPolicyConfig(rName, zone, policyName1, policyName2 string) string {
 	return fmt.Sprintf(`
 resource "outscale_load_balancer" "lb" {
 	load_balancer_name = "%s"
@@ -86,22 +87,22 @@ resource "outscale_load_balancer" "lb" {
 
 resource "outscale_load_balancer_policy" "app-policy" {
 	policy_type = "app"
-	policy_name = "foo-policy"
+	policy_name = "%[3]s"
 	load_balancer_name = outscale_load_balancer.lb.id
 	cookie_name = "MyAppCookie"
 }
 
 resource "outscale_load_balancer_policy" "lb-policy" {
 	policy_type = "load_balancer"
-	policy_name = "lb-policy"
+	policy_name = "%[4]s"
 	load_balancer_name = outscale_load_balancer.lb.id
 	cookie_expiration_period = 180
 }
-`, rName, zone)
+`, rName, zone, policyName1, policyName2)
 }
 
 // Change the cookie_name to "MyOtherAppCookie".
-func testAccCookieStickinessPolicyConfigUpdate(rName string, zone string) string {
+func testAccCookieStickinessPolicyConfigUpdate(rName, zone, policyName1, policyName2 string) string {
 	return fmt.Sprintf(`
 resource "outscale_load_balancer" "lb" {
 	load_balancer_name = "%s"
@@ -116,15 +117,15 @@ resource "outscale_load_balancer" "lb" {
 
 resource "outscale_load_balancer_policy" "app-policy" {
 	policy_type = "app"
-	policy_name = "foo-policy"
+	policy_name = "%[3]s"
 	load_balancer_name = outscale_load_balancer.lb.id
 	cookie_name = "MyOtherAppCookie"
 }
 
 resource "outscale_load_balancer_policy" "lb-policy" {
 	policy_type = "load_balancer"
-	policy_name = "lb-policy"
+	policy_name = "%[4]s"
 	load_balancer_name = outscale_load_balancer.lb.id
 	cookie_expiration_period = 100
-}`, rName, zone)
+}`, rName, zone, policyName1, policyName2)
 }

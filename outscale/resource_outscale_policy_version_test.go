@@ -1,21 +1,24 @@
 package outscale
 
 import (
+	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccOthers_policy_Version_basic(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_policy_version.policy_version"
+	policyName := acctest.RandomWithPrefix("test-policy")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccPolicyVersionConfig,
+				Config: testAccPolicyVersionConfig(policyName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "creation_date"),
 					resource.TestCheckResourceAttrSet(resourceName, "body"),
@@ -26,9 +29,10 @@ func TestAccOthers_policy_Version_basic(t *testing.T) {
 	})
 }
 
-const testAccPolicyVersionConfig = `
+func testAccPolicyVersionConfig(name string) string {
+	return fmt.Sprintf(`
 	resource "outscale_policy" "vers_policy" {
-	  policy_name = "TestACC_VersionPolicy"
+	  policy_name = "%s"
 	  document = "{\"Statement\": [ {\"Effect\": \"Allow\", \"Action\": [\"*\"], \"Resource\": [\"*\"]} ]}"
 	  path = "/"
 	}
@@ -36,4 +40,5 @@ const testAccPolicyVersionConfig = `
 	  policy_orn = outscale_policy.vers_policy.orn
 	  document = "{\"Statement\": [ {\"Effect\": \"Allow\", \"Action\": [\"*\"], \"Resource\": [\"*\"]} ]}"
 	}
-`
+`, name)
+}

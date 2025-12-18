@@ -18,8 +18,8 @@ import (
 func TestAccOthers_ClientGateway_basic(t *testing.T) {
 	t.Parallel()
 	resourceName := "outscale_client_gateway.foo"
-	rBgpAsn := utils.RandIntRange(64512, 65534)
-	rBgpAsnUpdated := utils.RandIntRange(64512, 65534)
+	rBgpAsn := utils.RandBgpAsn()
+	rBgpAsnUpdated := utils.RandBgpAsn()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
