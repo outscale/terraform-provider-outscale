@@ -97,7 +97,7 @@ func ResourceOutscaleClientGatewayRead(d *schema.ResourceData, meta interface{})
 
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"pending"},
-		Target:     []string{"available", "failed"},
+		Target:     []string{"available", "failed", "deleted"},
 		Refresh:    clientGatewayRefreshFunc(conn, &clientGatewayID),
 		Timeout:    10 * time.Minute,
 		Delay:      5 * time.Second,
@@ -110,7 +110,8 @@ func ResourceOutscaleClientGatewayRead(d *schema.ResourceData, meta interface{})
 	}
 
 	resp := r.(oscgo.ReadClientGatewaysResponse)
-	if !resp.HasClientGateways() || utils.IsResponseEmpty(len(resp.GetClientGateways()), "ClientGateway", d.Id()) {
+	if !resp.HasClientGateways() || utils.IsResponseEmpty(len(resp.GetClientGateways()), "ClientGateway", d.Id()) ||
+		resp.GetClientGateways()[0].GetState() == "deleted" {
 		d.SetId("")
 		return nil
 	}
@@ -164,7 +165,6 @@ func ResourceOutscaleClientGatewayDelete(d *schema.ResourceData, meta interface{
 		}
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}
@@ -188,7 +188,6 @@ func ResourceOutscaleClientGatewayDelete(d *schema.ResourceData, meta interface{
 
 func clientGatewayRefreshFunc(conn *oscgo.APIClient, gatewayID *string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-
 		filter := oscgo.ReadClientGatewaysRequest{
 			Filters: &oscgo.FiltersClientGateway{
 				ClientGatewayIds: &[]string{*gatewayID},
