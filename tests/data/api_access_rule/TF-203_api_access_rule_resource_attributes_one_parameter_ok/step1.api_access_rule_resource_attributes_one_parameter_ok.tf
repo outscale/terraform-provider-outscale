@@ -1,5 +1,5 @@
 resource "outscale_ca" "new_ca" {
-  ca_pem      = file("data/cert_example/certificate.pem")
+  ca_pem      = file("certs/certificate.pem")
 }
 
 resource "outscale_api_access_rule" "aar_1" {
@@ -9,4 +9,3 @@ resource "outscale_api_access_rule" "aar_1" {
   cns = ["test-TF203"]
 
 }
-

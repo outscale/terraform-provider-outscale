@@ -1,5 +1,5 @@
 resource "outscale_ca" "new_ca" {
-  ca_pem      = file("data/cert_example/certificate.pem")
+  ca_pem      = file("certs/certificate.pem")
   description = "test-TF197"
 }
 

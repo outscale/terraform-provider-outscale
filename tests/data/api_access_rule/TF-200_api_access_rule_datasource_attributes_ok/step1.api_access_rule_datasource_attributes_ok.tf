@@ -1,10 +1,10 @@
 resource "outscale_ca" "ca_for_api_access_rule" {
-  ca_pem      = file("data/cert_example/certificate.pem")
+  ca_pem      = file("certs/certificate.pem")
 }
 
 resource "outscale_ca" "ca_for_api_access_rule_2" {
-  ca_pem      = file("data/cert_example/certificate.pem")
-} 
+  ca_pem      = file("certs/certificate.pem")
+}
 
 
 resource "outscale_api_access_rule" "api_access_rule_1" {
@@ -42,8 +42,8 @@ depends_on =[outscale_api_access_rule.api_access_rule_1]
 
 
 data "outscale_api_access_rule" "data_api_access_rule_3" {
-  
-  filter { 
+
+  filter {
     name   = "ip_ranges"
     values = ["192.14.0.0/16"]
   }

@@ -1,9 +1,9 @@
 resource "outscale_ca" "ca_for_aar" {
-  ca_pem      = file("data/cert_example/certificate.pem")
+  ca_pem      = file("certs/certificate.pem")
 }
 
 resource "outscale_ca" "ca_for_aar_2" {
-  ca_pem      = file("data/cert_example/certificate.pem")
+  ca_pem      = file("certs/certificate.pem")
 }
 
 
@@ -18,5 +18,3 @@ resource "outscale_api_access_rule" "aar_1" {
   description = "API Access rules-TF-201"
 
 }
-
-

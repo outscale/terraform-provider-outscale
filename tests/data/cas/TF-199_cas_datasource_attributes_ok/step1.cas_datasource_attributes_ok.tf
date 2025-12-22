@@ -1,10 +1,10 @@
 resource "outscale_ca" "new_ca_for_data" {
-  ca_pem      = file("data/cert_example/certificate.pem")
+  ca_pem      = file("certs/certificate.pem")
   description = "test-TF199"
 }
 
 resource "outscale_ca" "new_ca_for_data_2" {
-  ca_pem      = file("data/cert_example/certificate.pem")
+  ca_pem      = file("certs/certificate.pem")
   description = "test-TF199-2"
 }
 

@@ -8,7 +8,7 @@
     "test_access_keys_TF-196_access_keys_datasource_with_expiration_date",
     "test_product_types_TF-184_product_type_datasources_all_ok",
     "waiting for io1 to fix volume test tf-154",
-    "test_cert_example_.terraform",
+    "test_certs_.terraform",
     "test_load_balancer_vm_health_TF-92_load_balancer_vm_health_datasource_attributes_ok",
     "test_load_balancer_attributes_TF-83_update_load_balancer_access_logs_ok"
 ]
