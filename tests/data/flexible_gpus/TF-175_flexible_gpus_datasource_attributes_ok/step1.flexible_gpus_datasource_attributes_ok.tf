@@ -1,10 +1,10 @@
 resource "outscale_keypair" "my_keypair" {
- keypair_name = "KP-TF1775"
+ keypair_name = "test-keypair-${random_string.suffix[0].result}"
 }
 
 resource "outscale_security_group" "my_sgfgs" {
    description         = "test security group_fg"
-   security_group_name = "SG-inteFlg"
+   security_group_name = "test-sg-${random_string.suffix[0].result}"
 }
 
 resource "outscale_vm" "MaVM" {
@@ -63,7 +63,7 @@ filter {
     }
   filter {
         name     = "subregion_names"
-        values   = ["${var.region}a"] 
+        values   = ["${var.region}a"]
     }
 
 depends_on =[outscale_flexible_gpu_link.link_fGPU]

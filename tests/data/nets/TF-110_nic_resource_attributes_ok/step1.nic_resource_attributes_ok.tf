@@ -9,7 +9,7 @@ resource "outscale_subnet" "outscale_subnet" {
 }
 
 resource "outscale_nic" "outscale_nic" {
-   
+
     subnet_id = outscale_subnet.outscale_subnet.subnet_id
     private_ips {
      is_primary = true
@@ -19,7 +19,7 @@ resource "outscale_nic" "outscale_nic" {
 
 resource "outscale_security_group" "outscale_sg" {
     description         = "sg for terraform tests"
-    security_group_name = "terraform-sg-TF110"
+    security_group_name = "test-sg-${random_string.suffix[0].result}"
     net_id              = outscale_net.outscale_net.net_id
 }
 

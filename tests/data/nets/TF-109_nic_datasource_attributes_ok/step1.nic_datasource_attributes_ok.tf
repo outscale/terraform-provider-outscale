@@ -16,7 +16,7 @@ resource "outscale_subnet" "subnet02" {
 
 resource "outscale_security_group" "security_group01" {
   description         = "Terraform security group test"
-  security_group_name = "Terraform-SG"
+  security_group_name = "test-sg-${random_string.suffix[0].result}"
   net_id              = outscale_net.outscale_net.net_id
 }
 
@@ -186,4 +186,3 @@ data "outscale_nic" "nic-6" {
 
   depends_on = [outscale_nic.outscale_nic, outscale_nic.outscale_nic_2, outscale_nic.outscale_nic_3]
 }
-

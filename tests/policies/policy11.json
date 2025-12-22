@@ -1,0 +1,13 @@
+{
+    "Statement": [
+        {
+            "Action": [
+                "api:*"
+            ],
+            "Effect": "Allow",
+            "Resource": [
+                "*"
+            ]
+        }
+    ]
+}

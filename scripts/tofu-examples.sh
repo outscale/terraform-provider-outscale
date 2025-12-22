@@ -7,7 +7,6 @@ project_root=$(cd $project_dir/.. && pwd)
 EXAMPLES_DIR=$project_root/examples
 
 go build -o terraform-provider-outscale
-export TF_VAR_suffixe_lbu_name=$((RANDOM%10000))
 
 for f in $EXAMPLES_DIR/*
 do

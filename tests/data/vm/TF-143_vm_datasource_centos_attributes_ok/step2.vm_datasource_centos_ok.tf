@@ -1,9 +1,9 @@
 resource "outscale_keypair" "my_keypair" {
- keypair_name = "KP-TF143"
+ keypair_name = "test-keypair-${random_string.suffix[0].result}"
 }
 resource "outscale_security_group" "public_sg" {
     description         = "test vms"
-    security_group_name = "terraform-public-sg"
+    security_group_name = "test-sg-${random_string.suffix[0].result}"
 }
 
 resource "outscale_vm" "outscale_vm_centos" {

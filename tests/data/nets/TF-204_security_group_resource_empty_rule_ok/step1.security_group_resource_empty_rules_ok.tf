@@ -5,6 +5,6 @@ resource "outscale_net" "outscale_net_sg" {
 resource "outscale_security_group" "private_sg" {
     remove_default_outbound_rule = true
     description         = "test group-TF204"
-    security_group_name = "terraform-TF204"
+    security_group_name = "test-sg-${random_string.suffix[0].result}"
     net_id              = outscale_net.outscale_net_sg.net_id
 }

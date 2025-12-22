@@ -1,5 +1,5 @@
 resource "outscale_security_group" "my_sgImg1" {
-  security_group_name = "security_group_TF67"
+  security_group_name = "test-sg-${random_string.suffix[0].result}"
   description         = "test sg group"
 }
 
@@ -10,7 +10,7 @@ resource "outscale_vm" "my-vm" {
 }
 
 resource "outscale_image" "outscale_image" {
-  image_name = "terraform-image-2"
+  image_name = "test-image-${random_string.suffix[0].result}"
   vm_id      = outscale_vm.my-vm.vm_id
   no_reboot  = "true"
   tags {
@@ -27,7 +27,7 @@ resource "outscale_image" "outscale_image" {
 
 resource "outscale_image" "outscale_image_2" {
   description        = "Test-copy-image"
-  image_name         = "terraform-copy-image"
+  image_name = "test-image-${random_string.suffix[1].result}"
   source_image_id    = outscale_image.outscale_image.image_id
   source_region_name = var.region
   boot_modes         = ["uefi", "legacy"]

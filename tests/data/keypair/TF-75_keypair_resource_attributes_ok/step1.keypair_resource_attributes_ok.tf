@@ -1,3 +1,3 @@
 resource "outscale_keypair" "outscale_keypair" {
-    keypair_name = "keyname_test_"
+    keypair_name = "test-keypair-${random_string.suffix[0].result}"
 }

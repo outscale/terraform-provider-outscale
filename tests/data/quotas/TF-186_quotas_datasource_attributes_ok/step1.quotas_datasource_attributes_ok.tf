@@ -1,7 +1,7 @@
 ## Create a Load Balancer###
 
 resource "outscale_load_balancer" "load_balancer01" {
-  load_balancer_name = "terraform-lb-TF186-${var.suffixe_lbu_name}"
+  load_balancer_name = "test-lb-${random_string.suffix[0].result}"
   subregion_names    = ["${var.region}a"]
   listeners {
     backend_port           = 8080

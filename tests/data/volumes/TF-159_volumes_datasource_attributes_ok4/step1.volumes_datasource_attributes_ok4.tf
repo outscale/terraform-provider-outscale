@@ -1,5 +1,5 @@
 resource "outscale_keypair" "my_keypair" {
- keypair_name = "KP-TF159"
+ keypair_name = "test-keypair-${random_string.suffix[0].result}"
 }
 resource "outscale_volume" "outscale_volume3" {
     subregion_name = "${var.region}a"
@@ -16,7 +16,7 @@ resource "outscale_volume" "outscale_volume3" {
 
 resource "outscale_security_group" "security_group_TF159" {
   description         = "test-terraform-TF159"
-  security_group_name = "terraform-sg-159"
+  security_group_name = "test-sg-${random_string.suffix[0].result}"
 }
 
 resource "outscale_vm" "outscale_vm" {
@@ -30,7 +30,7 @@ resource "outscale_volume_link" "outscale_volume_link" {
     device_name = "/dev/xvdc"
     volume_id   = outscale_volume.outscale_volume3.id
     vm_id       = outscale_vm.outscale_vm.id
-} 
+}
 
 
 

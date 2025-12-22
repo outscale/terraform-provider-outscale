@@ -12,7 +12,7 @@ resource "outscale_route_table" "outscale_route_table" {
 }
 resource "outscale_security_group" "outscale_security_group" {
     description         = "test lbu-2"
-    security_group_name = "TF81-lbu-1"
+    security_group_name = "test-sg-${random_string.suffix[0].result}"
     net_id              = outscale_net.outscale_net.net_id
     tags {
         key   = "Name"
@@ -22,7 +22,7 @@ resource "outscale_security_group" "outscale_security_group" {
 
 resource "outscale_security_group" "outscale_security_group-2" {
     description         = "test lbu-2"
-    security_group_name = "TF81-lbu-2"
+    security_group_name = "test-sg-${random_string.suffix[1].result}"
     net_id              = outscale_net.outscale_net.net_id
     tags {
         key   = "Name"
@@ -60,7 +60,7 @@ resource "outscale_route_table_link" "outscale_route_table_link" {
 
 
 resource "outscale_load_balancer" "private_lbu_1" {
-  load_balancer_name ="lbu-TF-81-${var.suffixe_lbu_name}"
+  load_balancer_name = "test-lb-${random_string.suffix[0].result}"
   listeners {
      backend_port = 80
      backend_protocol= "TCP"

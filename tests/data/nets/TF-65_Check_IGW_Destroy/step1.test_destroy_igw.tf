@@ -91,12 +91,12 @@ resource "outscale_vm" "vm2" {
 }
 resource "outscale_security_group" "nomad-sg1" {
                 description         = "sg for terraform tests"
-                security_group_name = "TF65-sg-1"
+                security_group_name = "test-sg-${random_string.suffix[0].result}"
                 net_id              = outscale_net.nomad.net_id
         }
 resource "outscale_security_group" "nomad-sg2" {
                 description         = "sg for terraform tests"
-                security_group_name = "TF65-sg-2"
+                security_group_name = "test-sg-${random_string.suffix[1].result}"
                 net_id              = outscale_net.nomad.net_id
         }
 

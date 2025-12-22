@@ -1,10 +1,10 @@
 resource "outscale_keypair" "my_keypair" {
- keypair_name = "KP-TF92"
+ keypair_name = "test-keypair-${random_string.suffix[0].result}"
 }
 
 resource "outscale_security_group" "public_sg" {
     description         = "test lbu vm health"
-    security_group_name = "sgTF-92"
+    security_group_name = "test-sg-${random_string.suffix[0].result}"
 }
 
 resource "outscale_security_group_rule" "outscale_security_group_rule" {
@@ -31,7 +31,7 @@ resource "outscale_vm" "outscale_vm-1" {
 }
 
 resource "outscale_load_balancer" "public_lbu2" {
-    load_balancer_name = "lbu-TF-92-${var.suffixe_lbu_name}"
+    load_balancer_name = "test-lb-${random_string.suffix[0].result}"
     subregion_names    = ["${var.region}a"]
     listeners {
        backend_port          = 8080
@@ -59,10 +59,10 @@ resource "outscale_load_balancer_attributes" "attributes-1" {
 
 resource "outscale_load_balancer_vms" "outscale_load_balancer_vms" {
     load_balancer_name = outscale_load_balancer.public_lbu2.load_balancer_name
-    backend_vm_ids     = [outscale_vm.outscale_vm-1.vm_id] 
+    backend_vm_ids     = [outscale_vm.outscale_vm-1.vm_id]
 }
 
-data "outscale_load_balancer_vm_health""outscale_load_balancer_vm_health" { 
+data "outscale_load_balancer_vm_health""outscale_load_balancer_vm_health" {
      load_balancer_name  = outscale_load_balancer.public_lbu2.load_balancer_name
      backend_vm_ids      = [outscale_vm.outscale_vm-1.vm_id]
 depends_on = [outscale_load_balancer_attributes.attributes-1,outscale_load_balancer_vms.outscale_load_balancer_vms]

@@ -1,5 +1,5 @@
 resource "outscale_keypair" "my_keypair" {
- keypair_name = "KP-TF111"
+ keypair_name = "test-keypair-${random_string.suffix[0].result}"
 }
 resource "outscale_vm" "outscale_vm" {
     image_id                 = var.image_id
@@ -16,7 +16,7 @@ resource "outscale_net" "outscale_net" {
 
 resource "outscale_security_group" "outscale_security_group" {
     description         = "test group"
-    security_group_name = "sg1-test-group_TF111"
+    security_group_name = "test-sg-${random_string.suffix[0].result}"
     net_id              = outscale_net.outscale_net.net_id
 }
 

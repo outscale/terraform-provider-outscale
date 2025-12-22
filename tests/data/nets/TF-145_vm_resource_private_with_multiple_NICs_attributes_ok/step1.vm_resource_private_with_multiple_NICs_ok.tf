@@ -1,5 +1,5 @@
 resource "outscale_keypair" "my_keypair" {
- keypair_name = "KP-TF145"
+ keypair_name = "test-keypair-${random_string.suffix[0].result}"
 }
 ## Test Private VM with multiple NICs  ##
 
@@ -15,13 +15,13 @@ resource "outscale_subnet" "outscale_subnet" {
 
 resource "outscale_security_group" "outscale_security_group" {
     description         = "test vm with nic"
-    security_group_name = "private-sg-1"
+    security_group_name = "test-sg-${random_string.suffix[0].result}"
     net_id              = outscale_net.outscale_net.net_id
 }
 
 resource "outscale_security_group" "outscale_security_group2" {
     description         = "test vm with nic"
-    security_group_name = "private-sg-2"
+    security_group_name = "test-sg-${random_string.suffix[1].result}"
     net_id              = outscale_net.outscale_net.net_id
 }
 
@@ -50,7 +50,6 @@ resource "outscale_vm" "outscale_vm" {
     }
     tags {
        key = "name"
-       value = "test-VM-with-Nics"   
-    } 
+       value = "test-VM-with-Nics"
+    }
  }
-

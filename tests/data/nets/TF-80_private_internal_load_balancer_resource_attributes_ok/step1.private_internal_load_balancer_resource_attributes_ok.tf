@@ -4,7 +4,7 @@ resource "outscale_net" "outscale_net" {
 
 resource "outscale_security_group" "outscale_security_group" {
     description         = "test lbu-1"
-    security_group_name = "sg1-terraform-lbu-test"
+    security_group_name = "test-sg-${random_string.suffix[0].result}"
     net_id              = outscale_net.outscale_net.net_id
     tags {
         key   = "Name"
@@ -22,7 +22,7 @@ resource "outscale_subnet" "subnet-1" {
 }
 
 resource "outscale_load_balancer" "private_lbuTF80_1" {
-   load_balancer_name ="lbuTF-80-${var.suffixe_lbu_name}"
+   load_balancer_name = "test-lb-${random_string.suffix[0].result}"
    listeners {
       backend_port = 80
       backend_protocol= "TCP"

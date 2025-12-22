@@ -1,5 +1,5 @@
 resource "outscale_client_gateway" "outscale_client_gateway" {
-    bgp_asn     = 571
+    bgp_asn = random_integer.bgp_asn[0].result
     public_ip  = "171.33.75.123"
     connection_type        = "ipsec.1"
     tags {
@@ -20,4 +20,3 @@ filter {
        values = [outscale_client_gateway.outscale_client_gateway.client_gateway_id]
     }
 }
-

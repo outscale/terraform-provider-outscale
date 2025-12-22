@@ -1,10 +1,10 @@
 resource "outscale_keypair" "my_keypairL" {
- keypair_name = "LKP-TF89"
+ keypair_name = "test-keypair-${random_string.suffix[0].result}"
 }
 
 resource "outscale_security_group" "my_sgLburs" {
    description = "test sg-group-lburs"
-   security_group_name = "SG-inteLburs"
+   security_group_name = "test-sg-${random_string.suffix[0].result}"
 }
 
 resource "outscale_vm" "public_vm_1" {
@@ -15,7 +15,7 @@ resource "outscale_vm" "public_vm_1" {
 }
 
 resource "outscale_load_balancer" "public_lbu2" {
-   load_balancer_name ="lbu-TF-89-${var.suffixe_lbu_name}"
+   load_balancer_name = "test-lb-${random_string.suffix[0].result}"
    subregion_names= ["${var.region}a"]
    listeners {
       backend_port = 80
@@ -43,7 +43,7 @@ resource "outscale_load_balancer_listener_rule" "rule-1" {
 
     listener_rule {
       action                  = "forward"
-      listener_rule_name      = "listener-rule-1-${var.suffixe_lbu_name}"
+        listener_rule_name = "test-listener-rule-${random_string.suffix[0].result}"
       path_pattern             = "*.abc.*.abc.*.com"
       priority                 = 10
     }
@@ -58,7 +58,7 @@ resource "outscale_load_balancer_listener_rule" "rule-2" {
 
     listener_rule {
       action                  = "forward"
-      listener_rule_name      = "listener-rule-2-${var.suffixe_lbu_name}"
+        listener_rule_name = "test-listener-rule-${random_string.suffix[1].result}"
       host_name_pattern       = "*.abc.-.abc.*.com"
       priority                 = 1
     }
@@ -68,7 +68,7 @@ resource "outscale_load_balancer_listener_rule" "rule-2" {
 data "outscale_load_balancer_listener_rules" "outscale_load_balancer_listener_rules" {
  filter {
         name = "listener_rule_names"
-        values = ["listener-rule-2-${var.suffixe_lbu_name}","listener-rule-1-${var.suffixe_lbu_name}"]
+        values = ["test-listener-rule-${random_string.suffix[0].result}", "test-listener-rule-${random_string.suffix[1].result}"]
       }
  depends_on =[outscale_load_balancer_listener_rule.rule-2,outscale_load_balancer_listener_rule.rule-1]
 }

@@ -1,5 +1,5 @@
 resource "outscale_keypair" "my_keypair" {
-  keypair_name = "KP-TF01"
+  keypair_name = "test-keypair-${random_string.suffix[0].result}"
 }
 resource "outscale_public_ip" "public_ip01" {
   tags {
@@ -10,7 +10,7 @@ resource "outscale_public_ip" "public_ip01" {
 
 resource "outscale_security_group" "security_groupTF01" {
   description         = "Terraform"
-  security_group_name = "terraform-TF01"
+  security_group_name = "test-sg-${random_string.suffix[0].result}"
 }
 
 resource "outscale_vm" "vm01" {
@@ -31,7 +31,7 @@ resource "outscale_public_ip_link" "public_ip_link01" {
 
 
 resource "outscale_load_balancer" "public_lbu1" {
-  load_balancer_name = "lbu-TF-01-${var.suffixe_lbu_name}"
+  load_balancer_name = "test-lb-${random_string.suffix[0].result}"
   subregion_names    = ["${var.region}a"]
   listeners {
     backend_port           = 80

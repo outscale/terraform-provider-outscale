@@ -1,11 +1,11 @@
 
 resource "outscale_keypair" "my_keypair" {
-  keypair_name = "KP-TF177"
+  keypair_name = "test-keypair-${random_string.suffix[0].result}"
 }
 
 resource "outscale_security_group" "my_sgfg" {
   description         = "test security group"
-  security_group_name = "SG-inteFg"
+  security_group_name = "test-sg-${random_string.suffix[0].result}"
 }
 
 resource "outscale_vm" "MaVM" {

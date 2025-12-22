@@ -1,10 +1,10 @@
 resource "outscale_security_group" "my_sgImgl" {
    description = "test sg_group"
-   security_group_name = "SG-inteImgl"
+   security_group_name = "test-sg-${random_string.suffix[0].result}"
 }
 
 resource "outscale_keypair" "my_keypair" {
- keypair_name = "KP-TF68"
+ keypair_name = "test-keypair-${random_string.suffix[0].result}"
 }
 
 resource "outscale_vm" "outscale_vm" {
@@ -15,7 +15,7 @@ resource "outscale_vm" "outscale_vm" {
 }
 
 resource "outscale_image" "outscale_image" {
-    image_name = "terraform-TF68"
+    image_name = "test-image-${random_string.suffix[0].result}"
     vm_id      = outscale_vm.outscale_vm.vm_id
     no_reboot  = "true"
 }
