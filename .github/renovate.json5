@@ -1,0 +1,6 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "github>outscale/oks-tools-team//renovate/default.json5#initial"
+  ]
+}
