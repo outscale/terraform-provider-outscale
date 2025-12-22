@@ -3,7 +3,7 @@
 set -e
 project_dir=$(cd "$(dirname $0)" && pwd)
 project_root=$(cd $project_dir/.. && pwd)
-BUILD_DIR=$project_root/tests/qa_provider_oapi
+BUILD_DIR=$project_root/tests
 export TF_VAR_suffixe_lbu_name=$RANDOM
 
 python3 --version || (echo "We need 'python3' intalled to run integration tests"; exit 1)

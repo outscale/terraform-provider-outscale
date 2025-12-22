@@ -4,7 +4,6 @@ PKG_NAME=outscale
 TEST?=./...
 VERSION=$(shell git describe --exact-match 2> /dev/null || \
                  git describe --match=$(git rev-parse --short=8 HEAD) --always --dirty --abbrev=8)
-WEBSITE_REPO=github.com/hashicorp/terraform-website
 TF_ACC_PARALLEL=10
 TF_ACC_NETS_PARALLEL=2
 
@@ -87,30 +86,6 @@ test-integration: test-gen-cert
 .PHONY: test-gen-cert
 test-gen-cert:
 	@sh -c "'$(CURDIR)/scripts/generate-certificate.sh'"
-
-.PHONY: website
-website:
-ifeq (,$(wildcard $(GOPATH)/src/$(WEBSITE_REPO)))
-	echo "$(WEBSITE_REPO) not found in your GOPATH (necessary for layouts and assets), get-ting..."
-	git clone https://$(WEBSITE_REPO) $(GOPATH)/src/$(WEBSITE_REPO)
-endif
-	@$(MAKE) -C $(GOPATH)/src/$(WEBSITE_REPO) website-provider PROVIDER_PATH=$(shell pwd) PROVIDER_NAME=$(PKG_NAME)
-
-.PHONY: website-local
-website-local:
-	@sh -c "'$(CURDIR)/scripts/test-doc.sh'"
-
-.PHONY: website-lint
-website-lint:
-	@misspell -error -source=text website/
-
-.PHONY: website-test
-website-test:
-ifeq (,$(wildcard $(GOPATH)/src/$(WEBSITE_REPO)))
-	echo "$(WEBSITE_REPO) not found in your GOPATH (necessary for layouts and assets), get-ting..."
-	git clone https://$(WEBSITE_REPO) $(GOPATH)/src/$(WEBSITE_REPO)
-endif
-	@$(MAKE) -C $(GOPATH)/src/$(WEBSITE_REPO) website-provider-test PROVIDER_PATH=$(shell pwd) PROVIDER_NAME=$(PKG_NAME)
 
 .PHONY: doc
 doc:

@@ -7,8 +7,7 @@ import os
 import subprocess
 
 import pytest
-
-from qa_provider_oapi.check import main
+from check import main
 
 # TODO check if this could be better using regular expressions
 IGNORE_PATHS = [
@@ -438,7 +437,7 @@ class TestProviderOapi(metaclass=ProviderOapiMeta):
     @classmethod
     def setup_class(cls):
         cls.logger = logging.getLogger("tpd_test")
-        cls.log = None
+        cls.log = ""
         cls.error = False
 
     def setup_method(self, method):
