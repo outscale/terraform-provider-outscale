@@ -4,10 +4,10 @@ set -e
 
 project_dir=$(cd "$(dirname $0)" && pwd)
 project_root=$(cd $project_dir/.. && pwd)
-if [ ! -d "$project_root/tests/data/cert_example" ]; then
-    mkdir $project_root/tests/data/cert_example
+if [ ! -d "$project_root/tests/certs" ]; then
+    mkdir $project_root/tests/certs
 fi
-build_dir=$(cd $project_root/tests/data/cert_example && pwd)
+build_dir=$(cd $project_root/tests/certs && pwd)
 tf_file="gen-cert-test.tf"
 
 cd $project_root

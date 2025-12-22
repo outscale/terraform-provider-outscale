@@ -39,7 +39,7 @@ outscale/certificate.key
 outscale/certificate.pem
 outscale/gen-cert-test.tf
 terraform-provider-outscale_v0.5.32
-tests/data/cert_example/
+tests/certs/
 
 # docs
 docs/generation_log.txt
