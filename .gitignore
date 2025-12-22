@@ -34,12 +34,12 @@ terraformStatePull.json
 /tests/test.tf
 /tests/old.py
 /tests/tmp.txt
-/tests/qa_provider_oapi/terraform.d/
+/tests/terraform.d/
 outscale/certificate.key
 outscale/certificate.pem
 outscale/gen-cert-test.tf
 terraform-provider-outscale_v0.5.32
-tests/qa_provider_oapi/data/cert_example/
+tests/data/cert_example/
 
 # docs
 docs/generation_log.txt

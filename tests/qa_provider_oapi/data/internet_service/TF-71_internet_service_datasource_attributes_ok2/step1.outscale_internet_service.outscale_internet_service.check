@@ -1,9 +1,0 @@
-internet_service_id
-net_id
-state
-tags.#
-tags.0.key
-tags.0.value
-request_id
-# correctives below
-id

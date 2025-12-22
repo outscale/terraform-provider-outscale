@@ -1,4 +1,0 @@
-
-python file: provider_outscale_oapi/test//outscale_vms/test_outscale_vms_datasource_attributes_ok.py
-tf file: provider_outscale_oapi/config/outscale_vms/config_outscale_vms_datasource_attributes_ok
-check file: provider_outscale_oapi/test/outscale_vms/outscale_vms_datasource_attributes.txt
