@@ -1,6 +1,6 @@
 resource "outscale_security_group" "My-SGTF66" {
   description         = "test security group"
-  security_group_name = "SG-TF66"
+  security_group_name = "test-sg-${random_string.suffix[0].result}"
 }
 
 resource "outscale_vm" "my-vm" {
@@ -10,7 +10,7 @@ resource "outscale_vm" "my-vm" {
 }
 
 resource "outscale_image" "outscale_image" {
-  image_name  = "image-TF66"
+  image_name = "test-image-${random_string.suffix[0].result}"
   vm_id       = outscale_vm.my-vm.vm_id
   description = "TF-66"
   no_reboot   = "true"

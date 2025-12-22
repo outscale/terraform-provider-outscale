@@ -4,7 +4,7 @@ resource "outscale_net" "outscale_net" {
 
 resource "outscale_security_group" "outscale_security_group" {
   description         = "test group-1"
-  security_group_name = "terraform-TF125"
+  security_group_name = "test-sg-${random_string.suffix[0].result}"
   net_id              = outscale_net.outscale_net.net_id
   tags {
     key   = "Name"
@@ -18,7 +18,7 @@ resource "outscale_security_group" "outscale_security_group" {
 
 resource "outscale_security_group" "outscale_security_group2" {
   description         = "test group-2"
-  security_group_name = "terraform-TF125-2"
+  security_group_name = "test-sg-${random_string.suffix[1].result}"
   net_id              = outscale_net.outscale_net.net_id
   tags {
     key   = "Name"

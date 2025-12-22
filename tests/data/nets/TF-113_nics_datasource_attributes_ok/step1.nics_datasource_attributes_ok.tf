@@ -16,7 +16,7 @@ resource "outscale_subnet" "subnet02" {
 
 resource "outscale_security_group" "security_group01" {
   description         = "Terraform security group test"
-  security_group_name = "Terraform-SG-TF113"
+  security_group_name = "test-sg-${random_string.suffix[0].result}"
   net_id              = outscale_net.outscale_net.net_id
 }
 
@@ -58,11 +58,11 @@ resource "outscale_nic" "outscale_nic_2" {
       is_primary = true
       private_ip = "10.5.0.41"
     }
-    private_ips { 
+    private_ips {
       is_primary = false
       private_ip = "10.5.0.42"
     }
-    tags {             
+    tags {
       key        = "Name"
       value      = "Nic-2"
     }
@@ -70,7 +70,7 @@ resource "outscale_nic" "outscale_nic_2" {
 
 resource "outscale_nic" "outscale_nic_3" {
     subnet_id = outscale_subnet.subnet02.subnet_id
-   security_group_ids = [outscale_security_group.security_group01.security_group_id] 
+   security_group_ids = [outscale_security_group.security_group01.security_group_id]
    private_ips {
       is_primary = true
       private_ip = "10.5.2.21"
@@ -103,7 +103,7 @@ data "outscale_nics" "nic-0" {
     filter {
         name = "nic_ids"
         values = [outscale_nic.outscale_nic.nic_id]
-    }    
+    }
 depends_on =[outscale_nic_link.nic_link01,outscale_nic_link.nic_link02]
 }
 
@@ -150,4 +150,3 @@ data "outscale_nics" "nic-7" {
     }
 depends_on=[outscale_nic.outscale_nic_3]
 }
-

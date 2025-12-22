@@ -1,10 +1,10 @@
 # Scenario: Succesfull creation of a blank volume
 # Given a configuration file declaring a volume without snapshot_id
-# When running terraform apply 
+# When running terraform apply
 # Then the volume is created. Can be seen in cockpit and attached to a vm. Seen as empty volume.
 
 resource "outscale_keypair" "my_keypair" {
- keypair_name = "KP-TF160"
+ keypair_name = "test-keypair-${random_string.suffix[0].result}"
 }
 
 resource "outscale_volume" "outscale_volume" {
@@ -19,7 +19,7 @@ resource "outscale_volume" "outscale_volume" {
 # the instance is created at the same time to get the attributes of both resources prior to perform the link
 resource "outscale_security_group" "security_group_TF160" {
   description         = "test-terraform-TF160"
-  security_group_name = "terraform-sg-160"
+  security_group_name = "test-sg-${random_string.suffix[0].result}"
 }
 
 resource "outscale_vm" "outscale_vm" {

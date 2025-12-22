@@ -1,6 +1,6 @@
 resource "outscale_security_group" "my_sgImgs" {
    description         = "test sg-group"
-   security_group_name = "SG-TF69"
+   security_group_name = "test-sg-${random_string.suffix[0].result}"
 }
 
 resource "outscale_vm" "outscale_vm" {
@@ -10,7 +10,7 @@ resource "outscale_vm" "outscale_vm" {
 }
 
 resource "outscale_image" "outscale_image1" {
-    image_name = "TF-69-name"
+    image_name = "test-image-${random_string.suffix[0].result}"
     vm_id      = outscale_vm.outscale_vm.vm_id
     no_reboot  = "true"
     tags {
@@ -21,4 +21,4 @@ resource "outscale_image" "outscale_image1" {
        key = "Key-2"
        value = "value-tags-2"
      }
-} 
+}

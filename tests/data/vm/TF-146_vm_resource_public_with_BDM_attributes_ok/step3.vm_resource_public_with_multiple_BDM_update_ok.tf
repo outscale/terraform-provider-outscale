@@ -1,5 +1,5 @@
 resource "outscale_keypair" "my_keypair" {
-  keypair_name = "KP-TF146"
+  keypair_name = "test-keypair-${random_string.suffix[0].result}"
 }
 
 resource "outscale_volume" "my_volume" {
@@ -9,7 +9,7 @@ resource "outscale_volume" "my_volume" {
 
 resource "outscale_security_group" "sg_snap" {
   description         = "test vms"
-  security_group_name = "test-sgSnap"
+  security_group_name = "test-sg-${random_string.suffix[0].result}"
 }
 
 resource "outscale_snapshot" "my_snapshot" {

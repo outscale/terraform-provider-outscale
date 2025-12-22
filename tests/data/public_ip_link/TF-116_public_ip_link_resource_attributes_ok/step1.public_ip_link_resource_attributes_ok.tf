@@ -1,5 +1,5 @@
 resource "outscale_keypair" "my_keypair" {
- keypair_name = "KP-TF116"
+ keypair_name = "test-keypair-${random_string.suffix[0].result}"
 }
 resource "outscale_public_ip" "outscale_public_ip" {
  tags {
@@ -10,7 +10,7 @@ resource "outscale_public_ip" "outscale_public_ip" {
 
 resource "outscale_security_group" "sgPub" {
    description         = "sg for terraform tests"
-   security_group_name = "terraform-sg_TF116"
+   security_group_name = "test-sg-${random_string.suffix[0].result}"
 }
 
 

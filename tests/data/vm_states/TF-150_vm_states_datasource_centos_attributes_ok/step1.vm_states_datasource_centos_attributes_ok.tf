@@ -1,10 +1,10 @@
 resource "outscale_keypair" "my_keypair" {
- keypair_name = "KP-TF150"
+ keypair_name = "test-keypair-${random_string.suffix[0].result}"
 }
 
 resource "outscale_security_group" "security_group_TF150" {
   description         = "test-terraform-TF150"
-  security_group_name = "terraform-sg-150"
+  security_group_name = "test-sg-${random_string.suffix[0].result}"
 }
 
 resource "outscale_vm" "outscale_vm" {

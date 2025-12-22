@@ -35,5 +35,19 @@ fi
 
 cd $BUILD_DIR
 pip install -r requirements.txt
-pytest -v ./test_provider_oapi.py || pytest --lf -v ./test_provider_oapi.py
+
+if [ -n "$RUN_NETS_ONLY" ]; then
+    PARALLEL_VALUE=$PYTEST_NETS_PARALLEL
+else
+    PARALLEL_VALUE=$PYTEST_PARALLEL
+fi
+
+if [ -n "$PARALLEL_VALUE" ] && [ "$PARALLEL_VALUE" -gt 1 ] 2>/dev/null; then
+    echo "Running tests with $PARALLEL_VALUE workers"
+    pytest -n $PARALLEL_VALUE -v ./test_provider_oapi.py || pytest --lf -n $PARALLEL_VALUE -v ./test_provider_oapi.py
+else
+    echo "Running tests sequentially"
+    pytest -v ./test_provider_oapi.py || pytest --lf -v ./test_provider_oapi.py
+fi
+
 rm -fr terraform.d || exit 0

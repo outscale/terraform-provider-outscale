@@ -4,10 +4,8 @@
 import json
 import logging
 import os
+import shutil
 import subprocess
-
-import pytest
-from check import main
 
 # TODO check if this could be better using regular expressions
 IGNORE_PATHS = [
@@ -29,13 +27,11 @@ IGNORE_END_ELEMENTS = [
     "private_key",
     "private_ip",
     "filter",
-    "image_name",
     "creation_date",
     "public_dns_name",
     "private_dns_name",
     "dns_name",
     "secret_key",
-    "cookie_name",
     "client_gateway_configuration",
     "last_modification_date",
     "upload_date",
@@ -53,9 +49,6 @@ IGNORE_END_ELEMENTS = [
     "last_state_change_date",
     "outside_ip_address",
     "available_ips_count",
-    "load_balancer_name",
-    "load_balancer_names",
-    "listener_rule_name",
     "backend_ips",
     "quota_type",
     "used_value",
@@ -63,11 +56,33 @@ IGNORE_END_ELEMENTS = [
     "updated_at",
     "kubeconfig",
     "expiration_date",
+    "private",
+    # Randomized values
+    "bgp_asn",
+    "load_balancer_name",
+    "load_balancer_names",
+    "listener_rule_name",
+    "keypair_name",
+    "security_group_name",
+    "image_name",
+    "policy_name",
+    "cookie_name",
+    "user_group_name",
+    "policy_orn",
+    "user_name",
+    "policy_names",
+    "security_group_names",
 ]
 IGNORE_TYPE_ELEMENTS = {
     "outscale_net_peering": "expiration_date",
     "outscale_net_peering_acceptation": "expiration_date",
+    "outscale_oks_project": "name",
+    "outscale_oks_cluster": "name",
 }
+IGNORE_RESOURCE_TYPES = [
+    "random_string",
+    "random_integer",
+]
 IGNORE_END_PATHS = []
 TINA_ID_PREFIXES = [
     "i",
@@ -194,6 +209,18 @@ def validate_ref(path, parent, value, ids):
         if path.endswith(p):
             parent[path_end] = NO_TEST_VALUE
             return None
+
+    if type(value) is list and path == ".resources":
+        # Remove resources that we do not want to store in the ref file
+        value[:] = [
+            resource
+            for resource in value
+            if not (
+                isinstance(resource, dict)
+                and resource.get("type") in IGNORE_RESOURCE_TYPES
+            )
+        ]
+
     if path_end == "type" and value in IGNORE_TYPE_ELEMENTS:
         ignored_key = IGNORE_TYPE_ELEMENTS[value]
 
@@ -397,8 +424,8 @@ class ProviderOapiMeta(type):
             return False
 
         def create_test_func(resource, test_name, test_path):
-            def func(self):
-                self.exec_test(test_name, test_path)
+            def func(self, tmp_path):
+                self.exec_test(test_name, test_path, tmp_path)
 
             func.__name__ = "test_{}_{}".format(resource, test_name)
             return func
@@ -441,24 +468,24 @@ class TestProviderOapi(metaclass=ProviderOapiMeta):
         cls.error = False
 
     def setup_method(self, method):
+        self.error = False
+        self.work_dir = None
+        self.original_dir = None
         self.log = """
 ==========
 Log: {}
 ==========
         """.format(method.__name__)
-        self.error = False
-        try:
-            self.run_cmd(["terraform init -no-color"])
-            stdout, _ = self.run_cmd(["terraform version -no-color"])
-            self.log += "\nVERSION:{}\n".format("\n".join(stdout.splitlines()[:2]))
-        except Exception:
-            raise
 
     def run_cmd(self, cmd, exp_ret_code=0):
         self.logger.debug("Exec: %s", cmd)
 
         proc = subprocess.Popen(
-            cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            cmd,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            cwd=self.work_dir,
         )
         stdout, stderr = proc.communicate()
         stdout = stdout.decode("utf-8")
@@ -494,68 +521,56 @@ Log: {}
         )
         self.run_cmd(["terraform state pull > {}".format(out_file_path)])
 
-    def exec_test(self, test_name, test_path):
+    def exec_test(self, test_name, test_path, tmp_path):
+        self.work_dir = str(tmp_path)
+        self.original_dir = os.getcwd()
+
+        test_root = os.path.dirname(__file__)
+        provider_files = [
+            "provider.tf",
+            "variables.tf",
+            "resources.auto.tfvars",
+            "random.tf",
+        ]
+        for file_name in provider_files:
+            src_file = os.path.join(test_root, file_name)
+            if os.path.exists(src_file):
+                shutil.copy2(src_file, self.work_dir)
+
+        provider_dirs = ["terraform.d", "certs", "policies"]
+        for dir_name in provider_dirs:
+            src_dir = os.path.join(test_root, dir_name)
+            if os.path.exists(src_dir):
+                os.symlink(src_dir, os.path.join(self.work_dir, dir_name))
+
         try:
-            self.logger.debug("Start test: '%s'", test_name)
-            if os.path.exists("{}/origin.txt".format(test_path)):
-                with open("{}/origin.txt".format(test_path), "r") as test_file:
-                    ret = test_file.read().find("WARNING")
-                    if ret > 0:
-                        pytest.skip("WARNING during test migration")
+            self.logger.debug("Start test: '%s' in %s", test_name, self.work_dir)
+
+            self.run_cmd(["terraform init -no-color"])
+            stdout, _ = self.run_cmd(["terraform version -no-color"])
+            self.log += "\nVERSION:{}\n".format("\n".join(stdout.splitlines()[:2]))
+
             tf_file_names = get_test_file_names(test_path, prefix="step", suffix=".tf")
-            # TDOD erase once not needed anymore
-            check_file_names = get_test_file_names(
-                test_path, prefix="step", suffix=".check"
-            )
-            check_file_index = 0
             if not tf_file_names:
                 assert False, "No step found in test directory"
             for tf_file_name in tf_file_names:
-                try:
-                    tf_file_path = os.path.join(test_path, tf_file_name)
-                    self.logger.debug("Process step: %s", tf_file_name)
-                    self.log += "\n*** step {} ***\n".format(tf_file_path)
+                tf_file_path = os.path.join(test_path, tf_file_name)
+                self.logger.debug("Process step: %s", tf_file_name)
+                self.log += "\n*** step {} ***\n".format(tf_file_path)
 
-                    self.run_cmd(["rm -f test.tf"])
-                    self.run_cmd(["ln -s {} test.tf".format(tf_file_path)])
+                test_tf_path = os.path.join(self.work_dir, "test.tf")
+                shutil.copy2(tf_file_path, test_tf_path)
 
-                    with open("test.tf") as tmp_file:
-                        self.log += "\nTest file:\n{}".format(tmp_file.read())
+                with open(test_tf_path) as tmp_file:
+                    self.log += "\nTest file:\n{}".format(tmp_file.read())
 
-                    out_file_path = tf_file_path.replace(".tf", ".out")
-                    ref_file_path = tf_file_path.replace(".tf", ".ref")
-                    self.exec_test_step(tf_file_path, out_file_path)
+                out_file_path = tf_file_path.replace(".tf", ".out")
+                ref_file_path = tf_file_path.replace(".tf", ".ref")
+                self.exec_test_step(tf_file_path, out_file_path)
 
-                    # TDOD erase once not needed anymore
-                    if os.getenv("OSC_GENREF", False) or os.path.exists(ref_file_path):
-                        compare_json_files(out_file_path, ref_file_path)
-                    else:
-                        check_file_name = check_file_names[check_file_index]
-                        resource = ".".join(check_file_name.split(".")[1:3])
-                        ret = main(
-                            out_file_path,
-                            os.path.join(test_path, check_file_name),
-                            resource,
-                        )
-                        if ret:
-                            self.log += "\nCheck File {}:\n".format(resource)
-                            with open(
-                                os.path.join(test_path, check_file_name)
-                            ) as tmp_file:
-                                self.log += tmp_file.read()
-                            self.log += "\n\nMissing in {}:\n".format(resource)
-                            for attr in ret:
-                                self.log += "  - {}\n".format(attr)
-                        assert not ret
-                finally:
-                    check_file_index += 1
+                compare_json_files(out_file_path, ref_file_path)
         except Exception as error:
             self.error = True
             raise error
         finally:
-            try:
-                self.run_cmd("terraform destroy -auto-approve -no-color")
-            finally:
-                self.run_cmd(["rm -f test.tf"])
-                self.run_cmd(["rm -f terraform.tfstate"])
-                self.run_cmd(["rm -f .terraform.lock.hcl"])
+            self.run_cmd("terraform destroy -auto-approve -no-color")

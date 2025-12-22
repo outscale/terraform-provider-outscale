@@ -8,7 +8,7 @@ resource "outscale_net" "outscale_net" {
 
 resource "outscale_security_group" "outscale_security_group" {
     description         = "test group"
-    security_group_name = "sg1-terraform-test"
+    security_group_name = "test-sg-${random_string.suffix[0].result}"
     net_id              = outscale_net.outscale_net.net_id
     tags {
         key   = "Name"
@@ -18,7 +18,7 @@ resource "outscale_security_group" "outscale_security_group" {
 
 resource "outscale_security_group" "outscale_security_group2" {
     description         = "test group"
-    security_group_name = "sg2-terraform-test"
+    security_group_name = "test-sg-${random_string.suffix[1].result}"
     net_id              = outscale_net.outscale_net.net_id
     tags {
         key   = "Name"
@@ -58,7 +58,7 @@ depends_on = [outscale_security_group.outscale_security_group2, outscale_securit
 
 resource "outscale_security_group" "outscale_security_group3" {
   description         = "test group"
-  security_group_name = "sg3-terraform-test"
+  security_group_name = "test-sg-${random_string.suffix[2].result}"
   tags {
     key   = "Name"
     value = "outscale_sg3"
@@ -67,7 +67,7 @@ resource "outscale_security_group" "outscale_security_group3" {
 
 resource "outscale_security_group" "outscale_security_group4" {
   description         = "test group"
-  security_group_name = "sg4-terraform-test"
+  security_group_name = "test-sg-${random_string.suffix[3].result}"
   tags {
     key   = "Name"
     value = "outscale_sg4"

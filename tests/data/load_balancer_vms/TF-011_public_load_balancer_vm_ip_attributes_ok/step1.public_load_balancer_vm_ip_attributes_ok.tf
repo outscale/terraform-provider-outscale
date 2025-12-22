@@ -1,10 +1,10 @@
 resource "outscale_keypair" "my_keypair" {
- keypair_name = "KP-TF011"
+ keypair_name = "test-keypair-${random_string.suffix[0].result}"
 }
 
 resource "outscale_security_group" "security_groupTF011" {
     description          = "Terraform"
-    security_group_name = "terraform-TF011"
+    security_group_name = "test-sg-${random_string.suffix[0].result}"
 }
 
 
@@ -22,7 +22,7 @@ tags {
 
 
 resource "outscale_load_balancer" "public_lbu11" {
-  load_balancer_name        = "lbu-TF-011-${var.suffixe_lbu_name}"
+  load_balancer_name = "test-lb-${random_string.suffix[0].result}"
   subregion_names           = ["${var.region}a"]
   listeners {
      backend_port           = 80

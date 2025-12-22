@@ -1,10 +1,10 @@
 resource "outscale_keypair" "my_keypair" {
- keypair_name = "KP-TF144"
+ keypair_name = "test-keypair-${random_string.suffix[0].result}"
 }
 
 resource "outscale_security_group" "public_sg_terraform" {
     description         = "test vms_2"
-    security_group_name = "terraform-public-sg_for_vms"
+    security_group_name = "test-sg-${random_string.suffix[0].result}"
 }
 resource "outscale_vm" "outscale_vm" {
     image_id                 = var.image_id
@@ -37,7 +37,7 @@ resource "outscale_vm" "outscale_vm2" {
 resource "outscale_net" "outscale_net" {
     ip_range = "10.0.0.0/16"
 
-    tags  {                               
+    tags  {
         key   = "name"
         value = "Terraform_net_TF144"
       }
@@ -48,7 +48,7 @@ resource "outscale_subnet" "outscale_subnet" {
     ip_range       = "10.0.0.0/24"
     subregion_name = "${var.region}a"
 
-    tags {                               
+    tags {
         key   = "name"
         value = "Terraform_subnet_TF144"
       }
@@ -56,16 +56,16 @@ resource "outscale_subnet" "outscale_subnet" {
 
 resource "outscale_security_group" "outscale_sg" {
     description         = "sg for terraform tests"
-    security_group_name = "terraform-sg-TF144"
+    security_group_name = "test-sg-${random_string.suffix[1].result}"
     net_id              = outscale_net.outscale_net.net_id
-     tags {                               
+     tags {
         key   = "name"
         value = "outscale_sg"
       }
-} 
- 
+}
+
 resource "outscale_internet_service" "outscale_internet_service" {
-tags {                               
+tags {
         key   = "name"
         value = "outscale_internet_service_TF144"
       }
@@ -75,7 +75,7 @@ depends_on = [outscale_net.outscale_net]
 resource "outscale_route_table" "outscale_route_table" {
     net_id = outscale_net.outscale_net.net_id
 
-    tags {                               
+    tags {
         key   = "name"
         value = "Terraform_RT_TF144"
       }
@@ -95,7 +95,7 @@ resource "outscale_route" "outscale_route" {
     gateway_id           = outscale_internet_service.outscale_internet_service.internet_service_id
      destination_ip_range = "0.0.0.0/0"
     route_table_id       = outscale_route_table.outscale_route_table.route_table_id
-} 
+}
 
 resource "outscale_vm" "outscale_vmnet" {
     image_id           = var.image_id
@@ -110,7 +110,7 @@ resource "outscale_vm" "outscale_vmnet" {
 }
 
 resource "outscale_public_ip" "outscale_public_ip" {
-tags {                               
+tags {
         key   = "name"
         value = "outscale_public_ip_TF144"
       }

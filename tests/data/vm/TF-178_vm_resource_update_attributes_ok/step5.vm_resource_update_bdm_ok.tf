@@ -1,12 +1,12 @@
 resource "outscale_keypair" "keypair-TF178" {
   count        = 2
-  keypair_name = "keyname_TF178-${count.index}"
+  keypair_name = "test-keypair-${random_string.suffix[0].result}-${count.index}"
 }
 
 resource "outscale_security_group" "security_group_TF178" {
   count               = 2
   description         = "test-terraform-TF178"
-  security_group_name = "terraform-sg-TF178-${count.index}"
+  security_group_name = "test-sg-${random_string.suffix[0].result}-${count.index}"
 }
 
 resource "outscale_vm" "outscale_vm-TF178" {

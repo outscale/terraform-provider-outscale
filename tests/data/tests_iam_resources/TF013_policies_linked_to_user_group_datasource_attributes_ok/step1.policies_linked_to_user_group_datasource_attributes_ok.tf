@@ -1,5 +1,5 @@
 resource "outscale_user_group" "group-1" {
- user_group_name = "Group-TF-policy-1"
+ user_group_name = "test-usergroup-${random_string.suffix[0].result}"
  path            = "/terraform/"
  policy {
   policy_orn = outscale_policy.policy-1.orn
@@ -11,16 +11,16 @@ resource "outscale_user_group" "group-1" {
 }
 
 resource "outscale_policy" "policy-1"  {
-  policy_name = "terraform-policy-1"
+  policy_name = "test-policy-${random_string.suffix[0].result}"
   description = "test-terraform"
-  document = file("data/policies_files/policy11.json")
+  document = file("policies/policy11.json")
   path = "/"
 }
 
 resource "outscale_policy" "policy-2"  {
-  policy_name = "terraform-policy-2"
+  policy_name = "test-policy-${random_string.suffix[1].result}"
   description = "test-terraform"
-  document = file("data/policies_files/policy12.json")
+  document = file("policies/policy12.json")
   path = "/terraform2/"
 }
 

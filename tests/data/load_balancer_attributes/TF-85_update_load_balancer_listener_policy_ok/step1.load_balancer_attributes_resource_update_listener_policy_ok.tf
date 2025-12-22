@@ -1,5 +1,5 @@
 resource "outscale_load_balancer" "public_lbu1" {
-   load_balancer_name ="lbu-TF-85-1"
+   load_balancer_name = "test-lb-${random_string.suffix[0].result}"
    subregion_names= ["${var.region}a"]
    listeners {
       backend_port = 80
@@ -25,7 +25,7 @@ resource "outscale_load_balancer" "public_lbu1" {
 
 resource "outscale_load_balancer_policy" "policy-1" {
     load_balancer_name = outscale_load_balancer.public_lbu1.load_balancer_name
-    policy_name        = "policy-lbu-terraform-TF85"
+    policy_name = "test-policy-${random_string.suffix[0].result}"
     policy_type        = "load_balancer"
 }
 
@@ -33,7 +33,6 @@ resource "outscale_load_balancer_policy" "policy-1" {
 resource "outscale_load_balancer_attributes" "attributes-policy" {
    load_balancer_name = outscale_load_balancer.public_lbu1.id
    load_balancer_port = 80
-   policy_names       = ["policy-lbu-terraform-TF85" ]
+   policy_names       = ["test-policy-${random_string.suffix[0].result}"]
 depends_on =[outscale_load_balancer_policy.policy-1]
 }
-

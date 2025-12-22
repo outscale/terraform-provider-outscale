@@ -1,10 +1,10 @@
 resource "outscale_keypair" "my_keypair" {
- keypair_name = "KP-TF148"
+ keypair_name = "test-keypair-${random_string.suffix[0].result}"
 }
 
 resource "outscale_security_group" "sgUsd" {
     description         = "test vms"
-    security_group_name = "test-sgUsd"
+    security_group_name = "test-sg-${random_string.suffix[0].result}"
 }
 
 resource "outscale_vm" "outscale_vm1" {
@@ -27,4 +27,3 @@ tags {
   value = "Terraform_VM12"
  }
 }
-

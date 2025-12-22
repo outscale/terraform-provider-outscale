@@ -7,6 +7,9 @@ VERSION=$(shell git describe --exact-match 2> /dev/null || \
 TF_ACC_PARALLEL=10
 TF_ACC_NETS_PARALLEL=2
 
+PYTEST_PARALLEL=10
+PYTEST_NETS_PARALLEL=4
+
 .PHONY: default
 default: build
 
@@ -81,7 +84,7 @@ tofu-examples:
 
 .PHONY: test-integration
 test-integration: test-gen-cert
-	@sh -c "'$(CURDIR)/scripts/integration.sh'"
+	PYTEST_PARALLEL=$(PYTEST_PARALLEL) PYTEST_NETS_PARALLEL=$(PYTEST_NETS_PARALLEL) sh -c "'$(CURDIR)/scripts/integration.sh'"
 
 .PHONY: test-gen-cert
 test-gen-cert:
