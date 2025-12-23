@@ -44,7 +44,7 @@
                                 "backend_protocol": "TCP",
                                 "load_balancer_port": 80,
                                 "load_balancer_protocol": "TCP",
-                                "policy_names": [],
+                                "policy_names": "########",
                                 "server_certificate_id": ""
                             }
                         ],
@@ -59,7 +59,7 @@
                         "source_security_group": [
                             {
                                 "security_group_account_id": "##id-1##",
-                                "security_group_name": "outscale-elb-sg"
+                                "security_group_name": "########"
                             }
                         ],
                         "subnets": [],
@@ -79,7 +79,10 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########",
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -134,7 +137,7 @@
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-5##",
-                        "security_group_name": "sg1-terraform-lbu-test",
+                        "security_group_name": "########",
                         "tags": [
                             {
                                 "key": "Name",
@@ -146,7 +149,8 @@
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
                     "dependencies": [
-                        "outscale_net.outscale_net"
+                        "outscale_net.outscale_net",
+                        "random_string.suffix"
                     ]
                 }
             ]

@@ -181,7 +181,7 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
+                    "private": "########",
                     "dependencies": [
                         "outscale_ca.ca_for_api_access_rule",
                         "outscale_ca.ca_for_api_access_rule_2"
@@ -207,7 +207,7 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########"
                 }
             ]
         },
@@ -229,7 +229,7 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########"
                 }
             ]
         }

@@ -21,17 +21,17 @@
                                 "last_modification_date": "########",
                                 "orn": "########",
                                 "policy_id": "##id-1##",
-                                "policy_name": "terraform-policy-2"
+                                "policy_name": "########"
                             },
                             {
                                 "creation_date": "########",
                                 "last_modification_date": "########",
                                 "orn": "########",
                                 "policy_id": "##id-2##",
-                                "policy_name": "terraform-policy-1"
+                                "policy_name": "########"
                             }
                         ],
-                        "user_name": "User-TF-linkPolicy"
+                        "user_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0
@@ -57,12 +57,15 @@
                         "path": "/",
                         "policy_default_version_id": "##id-4##",
                         "policy_id": "##id-2##",
-                        "policy_name": "terraform-policy-1",
+                        "policy_name": "########",
                         "resources_count": 0
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########",
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -85,12 +88,15 @@
                         "path": "/terraform2/",
                         "policy_default_version_id": "##id-4##",
                         "policy_id": "##id-1##",
-                        "policy_name": "terraform-policy-2",
+                        "policy_name": "########",
                         "resources_count": 0
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########",
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -112,29 +118,30 @@
                                 "creation_date": "########",
                                 "default_version_id": "##id-4##",
                                 "last_modification_date": "########",
-                                "policy_id": "##id-2##",
-                                "policy_name": "terraform-policy-1",
-                                "policy_orn": "orn:ows:idauth::339215505907:policy/terraform-policy-1"
+                                "policy_id": "##id-1##",
+                                "policy_name": "########",
+                                "policy_orn": "########"
                             },
                             {
                                 "creation_date": "########",
                                 "default_version_id": "##id-4##",
                                 "last_modification_date": "########",
-                                "policy_id": "##id-1##",
-                                "policy_name": "terraform-policy-2",
-                                "policy_orn": "orn:ows:idauth::339215505907:policy/terraform2/terraform-policy-2"
+                                "policy_id": "##id-2##",
+                                "policy_name": "########",
+                                "policy_orn": "########"
                             }
                         ],
                         "user_email": "customer-tooling@outscale.com",
                         "user_id": "##id-6##",
-                        "user_name": "User-TF-linkPolicy"
+                        "user_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
+                    "private": "########",
                     "dependencies": [
                         "outscale_policy.policy-1",
-                        "outscale_policy.policy-2"
+                        "outscale_policy.policy-2",
+                        "random_string.suffix"
                     ]
                 }
             ]

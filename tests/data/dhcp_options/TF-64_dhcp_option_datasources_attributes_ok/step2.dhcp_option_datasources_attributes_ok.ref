@@ -33,11 +33,11 @@
                                 ],
                                 "tags": [
                                     {
-                                        "key": "name-1",
+                                        "key": "Project",
                                         "value": "test-MZI-3"
                                     },
                                     {
-                                        "key": "Project",
+                                        "key": "name-1",
                                         "value": "test-MZI-3"
                                     }
                                 ]
@@ -97,11 +97,11 @@
                                 ],
                                 "tags": [
                                     {
-                                        "key": "name-1",
+                                        "key": "Project",
                                         "value": "test-MZI-3"
                                     },
                                     {
-                                        "key": "Project",
+                                        "key": "name-1",
                                         "value": "test-MZI-3"
                                     }
                                 ]
@@ -156,7 +156,7 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########"
                 }
             ]
         },
@@ -188,7 +188,7 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########"
                 }
             ]
         }

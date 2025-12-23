@@ -23,7 +23,7 @@
                         "secret_key": "########",
                         "state": "ACTIVE",
                         "timeouts": null,
-                        "user_name": null
+                        "user_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0

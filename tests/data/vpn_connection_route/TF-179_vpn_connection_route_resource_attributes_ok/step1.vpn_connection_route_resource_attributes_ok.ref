@@ -61,7 +61,7 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "bgp_asn": 65000,
+                        "bgp_asn": "########",
                         "client_gateway_id": "##id-0##",
                         "connection_type": "ipsec.1",
                         "id": "##id-0##",
@@ -72,7 +72,10 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########",
+                    "dependencies": [
+                        "random_integer.bgp_asn"
+                    ]
                 }
             ]
         },
@@ -95,7 +98,7 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########"
                 }
             ]
         },
@@ -137,10 +140,11 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
+                    "private": "########",
                     "dependencies": [
                         "outscale_client_gateway.My_CGW",
-                        "outscale_virtual_gateway.My_VGW"
+                        "outscale_virtual_gateway.My_VGW",
+                        "random_integer.bgp_asn"
                     ]
                 }
             ]
@@ -161,11 +165,12 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
+                    "private": "########",
                     "dependencies": [
                         "outscale_client_gateway.My_CGW",
                         "outscale_virtual_gateway.My_VGW",
-                        "outscale_vpn_connection.outscale_vpn_connection"
+                        "outscale_vpn_connection.outscale_vpn_connection",
+                        "random_integer.bgp_asn"
                     ]
                 }
             ]

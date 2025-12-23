@@ -44,7 +44,7 @@
                                 "backend_protocol": "HTTP",
                                 "load_balancer_port": 8080,
                                 "load_balancer_protocol": "HTTP",
-                                "policy_names": [],
+                                "policy_names": "########",
                                 "server_certificate_id": ""
                             },
                             {
@@ -52,7 +52,7 @@
                                 "backend_protocol": "TCP",
                                 "load_balancer_port": 80,
                                 "load_balancer_protocol": "TCP",
-                                "policy_names": [],
+                                "policy_names": "########",
                                 "server_certificate_id": ""
                             }
                         ],
@@ -69,7 +69,7 @@
                         "source_security_group": [
                             {
                                 "security_group_account_id": "##id-3##",
-                                "security_group_name": "sg1-terraform-lbu-test"
+                                "security_group_name": "########"
                             }
                         ],
                         "subnets": [
@@ -87,11 +87,12 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
+                    "private": "########",
                     "dependencies": [
                         "outscale_net.outscale_net",
                         "outscale_security_group.outscale_security_group",
-                        "outscale_subnet.subnet-1"
+                        "outscale_subnet.subnet-1",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -147,7 +148,7 @@
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-2##",
-                        "security_group_name": "sg1-terraform-lbu-test",
+                        "security_group_name": "########",
                         "tags": [
                             {
                                 "key": "Name",
@@ -159,7 +160,8 @@
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
                     "dependencies": [
-                        "outscale_net.outscale_net"
+                        "outscale_net.outscale_net",
+                        "random_string.suffix"
                     ]
                 }
             ]

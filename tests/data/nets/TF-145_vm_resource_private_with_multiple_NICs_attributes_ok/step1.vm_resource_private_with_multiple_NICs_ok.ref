@@ -17,7 +17,7 @@
                         "id": "##id-0##",
                         "keypair_fingerprint": "########",
                         "keypair_id": "##id-0##",
-                        "keypair_name": "KP-TF145",
+                        "keypair_name": "########",
                         "keypair_type": "ssh-rsa",
                         "private_key": "########",
                         "public_key": null,
@@ -26,7 +26,10 @@
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -90,7 +93,7 @@
                         "security_groups": [
                             {
                                 "security_group_id": "##id-5##",
-                                "security_group_name": "default"
+                                "security_group_name": "########"
                             }
                         ],
                         "state": "available",
@@ -101,7 +104,7 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
+                    "private": "########",
                     "dependencies": [
                         "outscale_net.outscale_net",
                         "outscale_subnet.outscale_subnet"
@@ -136,14 +139,15 @@
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-7##",
-                        "security_group_name": "private-sg-1",
+                        "security_group_name": "########",
                         "tags": [],
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
                     "dependencies": [
-                        "outscale_net.outscale_net"
+                        "outscale_net.outscale_net",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -175,14 +179,15 @@
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-8##",
-                        "security_group_name": "private-sg-2",
+                        "security_group_name": "########",
                         "tags": [],
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
                     "dependencies": [
-                        "outscale_net.outscale_net"
+                        "outscale_net.outscale_net",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -257,7 +262,7 @@
                         "id": "##id-10##",
                         "image_id": "##id-11##",
                         "is_source_dest_checked": true,
-                        "keypair_name": "KP-TF145",
+                        "keypair_name": "########",
                         "keypair_name_wo": null,
                         "launch_number": 0,
                         "nested_virtualization": false,
@@ -297,7 +302,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-5##",
-                                        "security_group_name": "default"
+                                        "security_group_name": "########"
                                     }
                                 ],
                                 "state": "in-use",
@@ -337,7 +342,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-7##",
-                                        "security_group_name": "private-sg-1"
+                                        "security_group_name": "########"
                                     }
                                 ],
                                 "state": "in-use",
@@ -383,7 +388,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-7##",
-                                        "security_group_name": "private-sg-1"
+                                        "security_group_name": "########"
                                     }
                                 ],
                                 "state": "in-use",
@@ -404,11 +409,11 @@
                         "root_device_type": "ebs",
                         "secure_boot_action": null,
                         "security_group_ids": null,
-                        "security_group_names": null,
+                        "security_group_names": "########",
                         "security_groups": [
                             {
                                 "security_group_id": "##id-7##",
-                                "security_group_name": "private-sg-1"
+                                "security_group_name": "########"
                             }
                         ],
                         "state": "running",
@@ -428,13 +433,14 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
+                    "private": "########",
                     "dependencies": [
                         "outscale_keypair.my_keypair",
                         "outscale_net.outscale_net",
                         "outscale_nic.outscale_nic",
                         "outscale_security_group.outscale_security_group",
-                        "outscale_subnet.outscale_subnet"
+                        "outscale_subnet.outscale_subnet",
+                        "random_string.suffix"
                     ]
                 }
             ]

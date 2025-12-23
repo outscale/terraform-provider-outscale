@@ -78,7 +78,7 @@
                         "id": "##id-2##",
                         "keypair_fingerprint": "########",
                         "keypair_id": "##id-2##",
-                        "keypair_name": "KP-TF144",
+                        "keypair_name": "########",
                         "keypair_type": "ssh-rsa",
                         "private_key": "########",
                         "public_key": null,
@@ -87,7 +87,10 @@
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -148,7 +151,7 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxODAwMDAwMDAwMDAwLCJkZWxldGUiOjE4MDAwMDAwMDAwMDB9fQ=="
+                    "private": "########"
                 }
             ]
         },
@@ -181,14 +184,15 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwfX0=",
+                    "private": "########",
                     "dependencies": [
                         "outscale_keypair.my_keypair",
                         "outscale_net.outscale_net",
                         "outscale_public_ip.outscale_public_ip",
                         "outscale_security_group.outscale_sg",
                         "outscale_subnet.outscale_subnet",
-                        "outscale_vm.outscale_vmnet"
+                        "outscale_vm.outscale_vmnet",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -330,7 +334,7 @@
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-14##",
-                        "security_group_name": "terraform-sg-TF144",
+                        "security_group_name": "########",
                         "tags": [
                             {
                                 "key": "name",
@@ -342,7 +346,8 @@
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
                     "dependencies": [
-                        "outscale_net.outscale_net"
+                        "outscale_net.outscale_net",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -365,12 +370,15 @@
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-15##",
-                        "security_group_name": "terraform-public-sg_for_vms",
+                        "security_group_name": "########",
                         "tags": [],
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -449,7 +457,7 @@
                         "id": "##id-17##",
                         "image_id": "##id-18##",
                         "is_source_dest_checked": false,
-                        "keypair_name": "KP-TF144",
+                        "keypair_name": "########",
                         "keypair_name_wo": null,
                         "launch_number": 0,
                         "nested_virtualization": false,
@@ -476,11 +484,11 @@
                         "security_group_ids": [
                             "##id-15##"
                         ],
-                        "security_group_names": null,
+                        "security_group_names": "########",
                         "security_groups": [
                             {
                                 "security_group_id": "##id-15##",
-                                "security_group_name": "terraform-public-sg_for_vms"
+                                "security_group_name": "########"
                             }
                         ],
                         "state": "running",
@@ -500,10 +508,11 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
+                    "private": "########",
                     "dependencies": [
                         "outscale_keypair.my_keypair",
-                        "outscale_security_group.public_sg_terraform"
+                        "outscale_security_group.public_sg_terraform",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -549,7 +558,7 @@
                         "id": "##id-21##",
                         "image_id": "##id-18##",
                         "is_source_dest_checked": false,
-                        "keypair_name": "KP-TF144",
+                        "keypair_name": "########",
                         "keypair_name_wo": null,
                         "launch_number": 0,
                         "nested_virtualization": false,
@@ -576,13 +585,11 @@
                         "security_group_ids": [
                             "##id-15##"
                         ],
-                        "security_group_names": [
-                            "terraform-public-sg_for_vms"
-                        ],
+                        "security_group_names": "########",
                         "security_groups": [
                             {
                                 "security_group_id": "##id-15##",
-                                "security_group_name": "terraform-public-sg_for_vms"
+                                "security_group_name": "########"
                             }
                         ],
                         "state": "running",
@@ -602,10 +609,11 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
+                    "private": "########",
                     "dependencies": [
                         "outscale_keypair.my_keypair",
-                        "outscale_security_group.public_sg_terraform"
+                        "outscale_security_group.public_sg_terraform",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -651,7 +659,7 @@
                         "id": "##id-8##",
                         "image_id": "##id-18##",
                         "is_source_dest_checked": true,
-                        "keypair_name": "KP-TF144",
+                        "keypair_name": "########",
                         "keypair_name_wo": null,
                         "launch_number": 0,
                         "nested_virtualization": false,
@@ -691,7 +699,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-14##",
-                                        "security_group_name": "terraform-sg-TF144"
+                                        "security_group_name": "########"
                                     }
                                 ],
                                 "state": "in-use",
@@ -737,7 +745,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-14##",
-                                        "security_group_name": "terraform-sg-TF144"
+                                        "security_group_name": "########"
                                     }
                                 ],
                                 "state": "in-use",
@@ -760,11 +768,11 @@
                         "security_group_ids": [
                             "##id-14##"
                         ],
-                        "security_group_names": null,
+                        "security_group_names": "########",
                         "security_groups": [
                             {
                                 "security_group_id": "##id-14##",
-                                "security_group_name": "terraform-sg-TF144"
+                                "security_group_name": "########"
                             }
                         ],
                         "state": "running",
@@ -784,12 +792,13 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
+                    "private": "########",
                     "dependencies": [
                         "outscale_keypair.my_keypair",
                         "outscale_net.outscale_net",
                         "outscale_security_group.outscale_sg",
-                        "outscale_subnet.outscale_subnet"
+                        "outscale_subnet.outscale_subnet",
+                        "random_string.suffix"
                     ]
                 }
             ]

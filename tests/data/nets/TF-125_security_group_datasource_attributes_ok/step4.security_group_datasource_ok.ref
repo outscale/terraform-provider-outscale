@@ -38,7 +38,7 @@
                                     {
                                         "account_id": "##id-0##",
                                         "security_group_id": "##id-3##",
-                                        "security_group_name": ""
+                                        "security_group_name": "########"
                                     }
                                 ],
                                 "to_port_range": 22
@@ -46,7 +46,7 @@
                         ],
                         "request_id": "########",
                         "security_group_id": "##id-1##",
-                        "security_group_name": "terraform-TF125",
+                        "security_group_name": "########",
                         "tags": [
                             {
                                 "key": "Key:",
@@ -108,7 +108,7 @@
                                     {
                                         "account_id": "##id-0##",
                                         "security_group_id": "##id-3##",
-                                        "security_group_name": ""
+                                        "security_group_name": "########"
                                     }
                                 ],
                                 "service_ids": null,
@@ -129,7 +129,7 @@
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-1##",
-                        "security_group_name": "terraform-TF125",
+                        "security_group_name": "########",
                         "tags": [
                             {
                                 "key": "Key:",
@@ -145,7 +145,8 @@
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
                     "dependencies": [
-                        "outscale_net.outscale_net"
+                        "outscale_net.outscale_net",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -177,7 +178,7 @@
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-3##",
-                        "security_group_name": "terraform-TF125-2",
+                        "security_group_name": "########",
                         "tags": [
                             {
                                 "key": "Name",
@@ -189,7 +190,8 @@
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
                     "dependencies": [
-                        "outscale_net.outscale_net"
+                        "outscale_net.outscale_net",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -219,7 +221,7 @@
                                     {
                                         "account_id": "##id-0##",
                                         "security_group_id": "##id-3##",
-                                        "security_group_name": ""
+                                        "security_group_name": "########"
                                     }
                                 ],
                                 "service_ids": [],
@@ -228,7 +230,7 @@
                         ],
                         "security_group_account_id_to_link": null,
                         "security_group_id": "##id-1##",
-                        "security_group_name": "terraform-TF125",
+                        "security_group_name": "########",
                         "security_group_name_to_link": null,
                         "timeouts": null,
                         "to_port_range": null
@@ -238,7 +240,8 @@
                     "dependencies": [
                         "outscale_net.outscale_net",
                         "outscale_security_group.outscale_security_group",
-                        "outscale_security_group.outscale_security_group2"
+                        "outscale_security_group.outscale_security_group2",
+                        "random_string.suffix"
                     ]
                 }
             ]

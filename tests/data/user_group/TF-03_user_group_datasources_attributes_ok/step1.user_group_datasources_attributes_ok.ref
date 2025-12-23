@@ -23,7 +23,7 @@
                                 "orn": "########",
                                 "path": "/TestdataUG/",
                                 "user_group_id": "##id-1##",
-                                "user_group_name": "testDataugInteg"
+                                "user_group_name": "########"
                             }
                         ]
                     },
@@ -51,12 +51,15 @@
                         "path": "/okht/",
                         "policy_default_version_id": "##id-3##",
                         "policy_id": "##id-4##",
-                        "policy_name": "group-policy",
+                        "policy_name": "########",
                         "resources_count": 0
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########",
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -79,12 +82,15 @@
                         "path": "/",
                         "policy_default_version_id": "##id-3##",
                         "policy_id": "##id-6##",
-                        "policy_name": "user-policy",
+                        "policy_name": "########",
                         "resources_count": 0
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########",
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -107,19 +113,20 @@
                                 "default_version_id": "##id-3##",
                                 "last_modification_date": "########",
                                 "policy_id": "##id-6##",
-                                "policy_name": "user-policy",
-                                "policy_orn": "orn:ows:idauth::339215505907:policy/user-policy"
+                                "policy_name": "########",
+                                "policy_orn": "########"
                             }
                         ],
                         "user_email": "customer-tooling@outscale.com",
                         "user_id": "##id-7##",
-                        "user_name": "group_user"
+                        "user_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
+                    "private": "########",
                     "dependencies": [
-                        "outscale_policy.policy_userTest"
+                        "outscale_policy.policy_userTest",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -144,19 +151,20 @@
                                 "default_version_id": "##id-3##",
                                 "last_modification_date": "########",
                                 "policy_id": "##id-4##",
-                                "policy_name": "group-policy",
-                                "policy_orn": "orn:ows:idauth::339215505907:policy/okht/group-policy"
+                                "policy_name": "########",
+                                "policy_orn": "########"
                             }
                         ],
                         "user": [],
                         "user_group_id": "##id-1##",
-                        "user_group_name": "testDataugInteg"
+                        "user_group_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
+                    "private": "########",
                     "dependencies": [
-                        "outscale_policy.policy_userGroup01"
+                        "outscale_policy.policy_userGroup01",
+                        "random_string.suffix"
                     ]
                 }
             ]

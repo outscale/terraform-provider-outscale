@@ -29,8 +29,32 @@
                                 "source_net": [
                                     {
                                         "account_id": "##id-1##",
-                                        "ip_range": "10.31.0.0/16",
+                                        "ip_range": "10.20.0.0/16",
                                         "net_id": "##id-4##"
+                                    }
+                                ],
+                                "state": [
+                                    {
+                                        "message": "########",
+                                        "name": "pending-acceptance"
+                                    }
+                                ],
+                                "tags": []
+                            },
+                            {
+                                "accepter_net": [
+                                    {
+                                        "account_id": "##id-1##",
+                                        "ip_range": "10.10.0.0/24",
+                                        "net_id": "##id-2##"
+                                    }
+                                ],
+                                "net_peering_id": "##id-5##",
+                                "source_net": [
+                                    {
+                                        "account_id": "##id-1##",
+                                        "ip_range": "10.31.0.0/16",
+                                        "net_id": "##id-6##"
                                     }
                                 ],
                                 "state": [
@@ -49,30 +73,6 @@
                                         "value": "value-tags-2"
                                     }
                                 ]
-                            },
-                            {
-                                "accepter_net": [
-                                    {
-                                        "account_id": "##id-1##",
-                                        "ip_range": "10.10.0.0/24",
-                                        "net_id": "##id-2##"
-                                    }
-                                ],
-                                "net_peering_id": "##id-5##",
-                                "source_net": [
-                                    {
-                                        "account_id": "##id-1##",
-                                        "ip_range": "10.20.0.0/16",
-                                        "net_id": "##id-6##"
-                                    }
-                                ],
-                                "state": [
-                                    {
-                                        "message": "########",
-                                        "name": "pending-acceptance"
-                                    }
-                                ],
-                                "tags": []
                             }
                         ],
                         "request_id": "########"
@@ -122,9 +122,9 @@
                     "schema_version": 0,
                     "attributes": {
                         "dhcp_options_set_id": "##id-7##",
-                        "id": "##id-4##",
+                        "id": "##id-6##",
                         "ip_range": "10.31.0.0/16",
-                        "net_id": "##id-4##",
+                        "net_id": "##id-6##",
                         "request_id": "########",
                         "state": "available",
                         "tags": [
@@ -151,9 +151,9 @@
                     "schema_version": 0,
                     "attributes": {
                         "dhcp_options_set_id": "##id-7##",
-                        "id": "##id-6##",
+                        "id": "##id-4##",
                         "ip_range": "10.20.0.0/16",
-                        "net_id": "##id-6##",
+                        "net_id": "##id-4##",
                         "request_id": "########",
                         "state": "available",
                         "tags": [
@@ -189,18 +189,18 @@
                         "accepter_net_id": "##id-2##",
                         "accepter_owner_id": "##id-1##",
                         "expiration_date": "########",
-                        "id": "##id-3##",
-                        "net_peering_id": "##id-3##",
+                        "id": "##id-5##",
+                        "net_peering_id": "##id-5##",
                         "request_id": "########",
                         "source_net": [
                             {
                                 "account_id": "##id-1##",
                                 "ip_range": "10.31.0.0/16",
-                                "net_id": "##id-4##"
+                                "net_id": "##id-6##"
                             }
                         ],
                         "source_net_account_id": "##id-1##",
-                        "source_net_id": "##id-4##",
+                        "source_net_id": "##id-6##",
                         "state": [
                             {
                                 "message": "########",
@@ -247,18 +247,18 @@
                         "accepter_net_id": "##id-2##",
                         "accepter_owner_id": "##id-1##",
                         "expiration_date": "########",
-                        "id": "##id-5##",
-                        "net_peering_id": "##id-5##",
+                        "id": "##id-3##",
+                        "net_peering_id": "##id-3##",
                         "request_id": "########",
                         "source_net": [
                             {
                                 "account_id": "##id-1##",
                                 "ip_range": "10.20.0.0/16",
-                                "net_id": "##id-6##"
+                                "net_id": "##id-4##"
                             }
                         ],
                         "source_net_account_id": "##id-1##",
-                        "source_net_id": "##id-6##",
+                        "source_net_id": "##id-4##",
                         "state": [
                             {
                                 "message": "########",

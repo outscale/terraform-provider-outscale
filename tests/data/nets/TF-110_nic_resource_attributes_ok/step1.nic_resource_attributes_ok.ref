@@ -65,7 +65,7 @@
                         "security_groups": [
                             {
                                 "security_group_id": "##id-4##",
-                                "security_group_name": "default"
+                                "security_group_name": "########"
                             }
                         ],
                         "state": "available",
@@ -76,7 +76,7 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
+                    "private": "########",
                     "dependencies": [
                         "outscale_net.outscale_net",
                         "outscale_subnet.outscale_subnet"
@@ -126,7 +126,7 @@
                         "security_groups": [
                             {
                                 "security_group_id": "##id-7##",
-                                "security_group_name": "terraform-sg-TF110"
+                                "security_group_name": "########"
                             }
                         ],
                         "state": "available",
@@ -137,11 +137,12 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
+                    "private": "########",
                     "dependencies": [
                         "outscale_net.outscale_net",
                         "outscale_security_group.outscale_sg",
-                        "outscale_subnet.outscale_subnet"
+                        "outscale_subnet.outscale_subnet",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -173,14 +174,15 @@
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-7##",
-                        "security_group_name": "terraform-sg-TF110",
+                        "security_group_name": "########",
                         "tags": [],
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
                     "dependencies": [
-                        "outscale_net.outscale_net"
+                        "outscale_net.outscale_net",
+                        "random_string.suffix"
                     ]
                 }
             ]

@@ -17,7 +17,7 @@
                         "id": "##id-0##",
                         "keypair_fingerprint": "########",
                         "keypair_id": "##id-0##",
-                        "keypair_name": "KP-TF88",
+                        "keypair_name": "########",
                         "keypair_type": "ssh-rsa",
                         "private_key": "########",
                         "public_key": null,
@@ -26,7 +26,10 @@
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -71,7 +74,7 @@
                                 "backend_protocol": "TCP",
                                 "load_balancer_port": 80,
                                 "load_balancer_protocol": "TCP",
-                                "policy_names": [],
+                                "policy_names": "########",
                                 "server_certificate_id": ""
                             }
                         ],
@@ -86,7 +89,7 @@
                         "source_security_group": [
                             {
                                 "security_group_account_id": "##id-3##",
-                                "security_group_name": "outscale-elb-sg"
+                                "security_group_name": "########"
                             }
                         ],
                         "subnets": [],
@@ -102,7 +105,10 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########",
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -140,12 +146,13 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
+                    "private": "########",
                     "dependencies": [
                         "outscale_keypair.my_keypair",
                         "outscale_load_balancer.public_lbu2",
                         "outscale_security_group.my_sgLbur",
-                        "outscale_vm.public_vm_1"
+                        "outscale_vm.public_vm_1",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -184,12 +191,13 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
+                    "private": "########",
                     "dependencies": [
                         "outscale_keypair.my_keypair",
                         "outscale_load_balancer.public_lbu2",
                         "outscale_security_group.my_sgLbur",
-                        "outscale_vm.public_vm_1"
+                        "outscale_vm.public_vm_1",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -228,12 +236,13 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
+                    "private": "########",
                     "dependencies": [
                         "outscale_keypair.my_keypair",
                         "outscale_load_balancer.public_lbu2",
                         "outscale_security_group.my_sgLbur",
-                        "outscale_vm.public_vm_1"
+                        "outscale_vm.public_vm_1",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -262,7 +271,8 @@
                         "outscale_keypair.my_keypair",
                         "outscale_load_balancer.public_lbu2",
                         "outscale_security_group.my_sgLbur",
-                        "outscale_vm.public_vm_1"
+                        "outscale_vm.public_vm_1",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -285,12 +295,15 @@
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-12##",
-                        "security_group_name": "SG-inteLbulist",
+                        "security_group_name": "########",
                         "tags": [],
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -335,7 +348,7 @@
                         "id": "##id-1##",
                         "image_id": "##id-14##",
                         "is_source_dest_checked": false,
-                        "keypair_name": "KP-TF88",
+                        "keypair_name": "########",
                         "keypair_name_wo": null,
                         "launch_number": 0,
                         "nested_virtualization": false,
@@ -362,11 +375,11 @@
                         "security_group_ids": [
                             "##id-12##"
                         ],
-                        "security_group_names": null,
+                        "security_group_names": "########",
                         "security_groups": [
                             {
                                 "security_group_id": "##id-12##",
-                                "security_group_name": "SG-inteLbulist"
+                                "security_group_name": "########"
                             }
                         ],
                         "state": "running",
@@ -381,10 +394,11 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
+                    "private": "########",
                     "dependencies": [
                         "outscale_keypair.my_keypair",
-                        "outscale_security_group.my_sgLbur"
+                        "outscale_security_group.my_sgLbur",
+                        "random_string.suffix"
                     ]
                 }
             ]

@@ -45,7 +45,7 @@
                                 "backend_protocol": "TCP",
                                 "load_balancer_port": 80,
                                 "load_balancer_protocol": "TCP",
-                                "policy_names": [],
+                                "policy_names": "########",
                                 "server_certificate_id": ""
                             },
                             {
@@ -53,7 +53,7 @@
                                 "backend_protocol": "HTTP",
                                 "load_balancer_port": 8080,
                                 "load_balancer_protocol": "HTTP",
-                                "policy_names": [],
+                                "policy_names": "########",
                                 "server_certificate_id": ""
                             }
                         ],
@@ -68,7 +68,7 @@
                         "source_security_group": [
                             {
                                 "security_group_account_id": "##id-1##",
-                                "security_group_name": "outscale-elb-sg"
+                                "security_group_name": "########"
                             }
                         ],
                         "subnets": [],
@@ -99,7 +99,7 @@
                         "id": "##id-2##",
                         "keypair_fingerprint": "########",
                         "keypair_id": "##id-2##",
-                        "keypair_name": "KP-TF011",
+                        "keypair_name": "########",
                         "keypair_type": "ssh-rsa",
                         "private_key": "########",
                         "public_key": null,
@@ -108,7 +108,10 @@
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -151,7 +154,7 @@
                                 "backend_protocol": "HTTP",
                                 "load_balancer_port": 8080,
                                 "load_balancer_protocol": "HTTP",
-                                "policy_names": [],
+                                "policy_names": "########",
                                 "server_certificate_id": ""
                             },
                             {
@@ -159,7 +162,7 @@
                                 "backend_protocol": "TCP",
                                 "load_balancer_port": 80,
                                 "load_balancer_protocol": "TCP",
-                                "policy_names": [],
+                                "policy_names": "########",
                                 "server_certificate_id": ""
                             }
                         ],
@@ -174,7 +177,7 @@
                         "source_security_group": [
                             {
                                 "security_group_account_id": "##id-1##",
-                                "security_group_name": "outscale-elb-sg"
+                                "security_group_name": "########"
                             }
                         ],
                         "subnets": [],
@@ -190,7 +193,10 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########",
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -216,7 +222,8 @@
                         "outscale_keypair.my_keypair",
                         "outscale_load_balancer.public_lbu11",
                         "outscale_security_group.security_groupTF011",
-                        "outscale_vm.vm011"
+                        "outscale_vm.vm011",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -239,12 +246,15 @@
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-4##",
-                        "security_group_name": "terraform-TF011",
+                        "security_group_name": "########",
                         "tags": [],
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -290,7 +300,7 @@
                         "id": "##id-6##",
                         "image_id": "##id-7##",
                         "is_source_dest_checked": false,
-                        "keypair_name": "KP-TF011",
+                        "keypair_name": "########",
                         "keypair_name_wo": null,
                         "launch_number": 0,
                         "nested_virtualization": false,
@@ -317,11 +327,11 @@
                         "security_group_ids": [
                             "##id-4##"
                         ],
-                        "security_group_names": null,
+                        "security_group_names": "########",
                         "security_groups": [
                             {
                                 "security_group_id": "##id-4##",
-                                "security_group_name": "terraform-TF011"
+                                "security_group_name": "########"
                             }
                         ],
                         "state": "running",
@@ -341,10 +351,11 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
+                    "private": "########",
                     "dependencies": [
                         "outscale_keypair.my_keypair",
-                        "outscale_security_group.security_groupTF011"
+                        "outscale_security_group.security_groupTF011",
+                        "random_string.suffix"
                     ]
                 },
                 {
@@ -383,7 +394,7 @@
                         "id": "##id-10##",
                         "image_id": "##id-7##",
                         "is_source_dest_checked": false,
-                        "keypair_name": "KP-TF011",
+                        "keypair_name": "########",
                         "keypair_name_wo": null,
                         "launch_number": 0,
                         "nested_virtualization": false,
@@ -410,11 +421,11 @@
                         "security_group_ids": [
                             "##id-4##"
                         ],
-                        "security_group_names": null,
+                        "security_group_names": "########",
                         "security_groups": [
                             {
                                 "security_group_id": "##id-4##",
-                                "security_group_name": "terraform-TF011"
+                                "security_group_name": "########"
                             }
                         ],
                         "state": "running",
@@ -434,10 +445,11 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
+                    "private": "########",
                     "dependencies": [
                         "outscale_keypair.my_keypair",
-                        "outscale_security_group.security_groupTF011"
+                        "outscale_security_group.security_groupTF011",
+                        "random_string.suffix"
                     ]
                 },
                 {
@@ -476,7 +488,7 @@
                         "id": "##id-13##",
                         "image_id": "##id-7##",
                         "is_source_dest_checked": false,
-                        "keypair_name": "KP-TF011",
+                        "keypair_name": "########",
                         "keypair_name_wo": null,
                         "launch_number": 0,
                         "nested_virtualization": false,
@@ -503,11 +515,11 @@
                         "security_group_ids": [
                             "##id-4##"
                         ],
-                        "security_group_names": null,
+                        "security_group_names": "########",
                         "security_groups": [
                             {
                                 "security_group_id": "##id-4##",
-                                "security_group_name": "terraform-TF011"
+                                "security_group_name": "########"
                             }
                         ],
                         "state": "running",
@@ -527,10 +539,11 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
+                    "private": "########",
                     "dependencies": [
                         "outscale_keypair.my_keypair",
-                        "outscale_security_group.security_groupTF011"
+                        "outscale_security_group.security_groupTF011",
+                        "random_string.suffix"
                     ]
                 }
             ]

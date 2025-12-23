@@ -23,7 +23,7 @@
                                 "path": "/terraform/",
                                 "user_email": "test-TF11@test2.fr",
                                 "user_id": "##id-1##",
-                                "user_name": "User-TF-11"
+                                "user_name": "########"
                             },
                             {
                                 "creation_date": "########",
@@ -31,7 +31,7 @@
                                 "path": "/terraform2/",
                                 "user_email": "test-TF12@test2.fr",
                                 "user_id": "##id-2##",
-                                "user_name": "User-TF-12"
+                                "user_name": "########"
                             }
                         ]
                     },
@@ -56,11 +56,14 @@
                         "policy": [],
                         "user_email": "test-TF11@test2.fr",
                         "user_id": "##id-1##",
-                        "user_name": "User-TF-11"
+                        "user_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########",
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -80,11 +83,14 @@
                         "policy": [],
                         "user_email": "test-TF12@test2.fr",
                         "user_id": "##id-2##",
-                        "user_name": "User-TF-12"
+                        "user_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########",
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         }

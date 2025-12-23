@@ -41,8 +41,12 @@
                                 ],
                                 "tags": [
                                     {
+                                        "key": "Key",
+                                        "value": "value-tags"
+                                    },
+                                    {
                                         "key": "name",
-                                        "value": "RT-1"
+                                        "value": "RT-2"
                                     }
                                 ]
                             },
@@ -68,12 +72,8 @@
                                 ],
                                 "tags": [
                                     {
-                                        "key": "Key",
-                                        "value": "value-tags"
-                                    },
-                                    {
                                         "key": "name",
-                                        "value": "RT-2"
+                                        "value": "RT-1"
                                     }
                                 ]
                             }
@@ -117,12 +117,12 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-2##",
+                        "id": "##id-4##",
                         "link_route_tables": [],
                         "net_id": "##id-1##",
                         "request_id": "########",
                         "route_propagating_virtual_gateways": [],
-                        "route_table_id": "##id-2##",
+                        "route_table_id": "##id-4##",
                         "routes": [
                             {
                                 "creation_method": "CreateRouteTable",
@@ -163,12 +163,12 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-4##",
+                        "id": "##id-2##",
                         "link_route_tables": [],
                         "net_id": "##id-1##",
                         "request_id": "########",
                         "route_propagating_virtual_gateways": [],
-                        "route_table_id": "##id-4##",
+                        "route_table_id": "##id-2##",
                         "routes": [
                             {
                                 "creation_method": "CreateRouteTable",

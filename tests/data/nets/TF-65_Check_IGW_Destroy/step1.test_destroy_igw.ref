@@ -82,7 +82,7 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
+                    "private": "########",
                     "dependencies": [
                         "outscale_internet_service.nomad",
                         "outscale_net.nomad",
@@ -149,7 +149,7 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxODAwMDAwMDAwMDAwLCJkZWxldGUiOjE4MDAwMDAwMDAwMDB9fQ=="
+                    "private": "########"
                 }
             ]
         },
@@ -181,7 +181,7 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxODAwMDAwMDAwMDAwLCJkZWxldGUiOjE4MDAwMDAwMDAwMDB9fQ=="
+                    "private": "########"
                 }
             ]
         },
@@ -213,7 +213,7 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxODAwMDAwMDAwMDAwLCJkZWxldGUiOjE4MDAwMDAwMDAwMDB9fQ=="
+                    "private": "########"
                 }
             ]
         },
@@ -246,13 +246,14 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwfX0=",
+                    "private": "########",
                     "dependencies": [
                         "outscale_net.nomad",
                         "outscale_public_ip.EIP",
                         "outscale_security_group.nomad-sg2",
                         "outscale_subnet.bastion",
-                        "outscale_vm.consul_server_1"
+                        "outscale_vm.consul_server_1",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -286,13 +287,14 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwfX0=",
+                    "private": "########",
                     "dependencies": [
                         "outscale_net.nomad",
                         "outscale_public_ip.EIP2",
                         "outscale_security_group.nomad-sg2",
                         "outscale_subnet.bastion",
-                        "outscale_vm.consul_server_1"
+                        "outscale_vm.consul_server_1",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -539,14 +541,15 @@
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-23##",
-                        "security_group_name": "TF65-sg-1",
+                        "security_group_name": "########",
                         "tags": [],
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
                     "dependencies": [
-                        "outscale_net.nomad"
+                        "outscale_net.nomad",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -578,14 +581,15 @@
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-24##",
-                        "security_group_name": "TF65-sg-2",
+                        "security_group_name": "########",
                         "tags": [],
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
                     "dependencies": [
-                        "outscale_net.nomad"
+                        "outscale_net.nomad",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -609,7 +613,7 @@
                         "rules": [],
                         "security_group_account_id_to_link": null,
                         "security_group_id": "##id-23##",
-                        "security_group_name": "TF65-sg-1",
+                        "security_group_name": "########",
                         "security_group_name_to_link": null,
                         "timeouts": null,
                         "to_port_range": 0
@@ -618,7 +622,8 @@
                     "identity_schema_version": 0,
                     "dependencies": [
                         "outscale_net.nomad",
-                        "outscale_security_group.nomad-sg1"
+                        "outscale_security_group.nomad-sg1",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -642,7 +647,7 @@
                         "rules": [],
                         "security_group_account_id_to_link": null,
                         "security_group_id": "##id-24##",
-                        "security_group_name": "TF65-sg-2",
+                        "security_group_name": "########",
                         "security_group_name_to_link": null,
                         "timeouts": null,
                         "to_port_range": 0
@@ -651,7 +656,8 @@
                     "identity_schema_version": 0,
                     "dependencies": [
                         "outscale_net.nomad",
-                        "outscale_security_group.nomad-sg2"
+                        "outscale_security_group.nomad-sg2",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -675,7 +681,7 @@
                         "rules": [],
                         "security_group_account_id_to_link": null,
                         "security_group_id": "##id-23##",
-                        "security_group_name": "TF65-sg-1",
+                        "security_group_name": "########",
                         "security_group_name_to_link": null,
                         "timeouts": null,
                         "to_port_range": 22
@@ -685,7 +691,8 @@
                     "dependencies": [
                         "outscale_net.nomad",
                         "outscale_security_group.nomad-sg1",
-                        "outscale_security_group_rule.rule1-sg1"
+                        "outscale_security_group_rule.rule1-sg1",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -709,7 +716,7 @@
                         "rules": [],
                         "security_group_account_id_to_link": null,
                         "security_group_id": "##id-24##",
-                        "security_group_name": "TF65-sg-2",
+                        "security_group_name": "########",
                         "security_group_name_to_link": null,
                         "timeouts": null,
                         "to_port_range": 80
@@ -719,7 +726,8 @@
                     "dependencies": [
                         "outscale_net.nomad",
                         "outscale_security_group.nomad-sg2",
-                        "outscale_security_group_rule.rule1-sg2"
+                        "outscale_security_group_rule.rule1-sg2",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -743,7 +751,7 @@
                         "rules": [],
                         "security_group_account_id_to_link": null,
                         "security_group_id": "##id-23##",
-                        "security_group_name": "TF65-sg-1",
+                        "security_group_name": "########",
                         "security_group_name_to_link": null,
                         "timeouts": null,
                         "to_port_range": 1024
@@ -754,7 +762,8 @@
                         "outscale_net.nomad",
                         "outscale_security_group.nomad-sg1",
                         "outscale_security_group_rule.rule1-sg1",
-                        "outscale_security_group_rule.rule2-sg1"
+                        "outscale_security_group_rule.rule2-sg1",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -778,7 +787,7 @@
                         "rules": [],
                         "security_group_account_id_to_link": null,
                         "security_group_id": "##id-24##",
-                        "security_group_name": "TF65-sg-2",
+                        "security_group_name": "########",
                         "security_group_name_to_link": null,
                         "timeouts": null,
                         "to_port_range": 1024
@@ -789,7 +798,8 @@
                         "outscale_net.nomad",
                         "outscale_security_group.nomad-sg2",
                         "outscale_security_group_rule.rule1-sg2",
-                        "outscale_security_group_rule.rule2-sg2"
+                        "outscale_security_group_rule.rule2-sg2",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -904,7 +914,7 @@
                         "id": "##id-11##",
                         "image_id": "##id-26##",
                         "is_source_dest_checked": true,
-                        "keypair_name": "",
+                        "keypair_name": "########",
                         "keypair_name_wo": null,
                         "launch_number": 0,
                         "nested_virtualization": false,
@@ -944,7 +954,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-24##",
-                                        "security_group_name": "TF65-sg-2"
+                                        "security_group_name": "########"
                                     }
                                 ],
                                 "state": "in-use",
@@ -990,7 +1000,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-24##",
-                                        "security_group_name": "TF65-sg-2"
+                                        "security_group_name": "########"
                                     }
                                 ],
                                 "state": "in-use",
@@ -1013,11 +1023,11 @@
                         "security_group_ids": [
                             "##id-24##"
                         ],
-                        "security_group_names": null,
+                        "security_group_names": "########",
                         "security_groups": [
                             {
                                 "security_group_id": "##id-24##",
-                                "security_group_name": "TF65-sg-2"
+                                "security_group_name": "########"
                             }
                         ],
                         "state": "running",
@@ -1037,11 +1047,12 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
+                    "private": "########",
                     "dependencies": [
                         "outscale_net.nomad",
                         "outscale_security_group.nomad-sg2",
-                        "outscale_subnet.bastion"
+                        "outscale_subnet.bastion",
+                        "random_string.suffix"
                     ]
                 },
                 {
@@ -1080,7 +1091,7 @@
                         "id": "##id-14##",
                         "image_id": "##id-26##",
                         "is_source_dest_checked": true,
-                        "keypair_name": "",
+                        "keypair_name": "########",
                         "keypair_name_wo": null,
                         "launch_number": 0,
                         "nested_virtualization": false,
@@ -1120,7 +1131,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-24##",
-                                        "security_group_name": "TF65-sg-2"
+                                        "security_group_name": "########"
                                     }
                                 ],
                                 "state": "in-use",
@@ -1166,7 +1177,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-24##",
-                                        "security_group_name": "TF65-sg-2"
+                                        "security_group_name": "########"
                                     }
                                 ],
                                 "state": "in-use",
@@ -1189,11 +1200,11 @@
                         "security_group_ids": [
                             "##id-24##"
                         ],
-                        "security_group_names": null,
+                        "security_group_names": "########",
                         "security_groups": [
                             {
                                 "security_group_id": "##id-24##",
-                                "security_group_name": "TF65-sg-2"
+                                "security_group_name": "########"
                             }
                         ],
                         "state": "running",
@@ -1213,11 +1224,12 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
+                    "private": "########",
                     "dependencies": [
                         "outscale_net.nomad",
                         "outscale_security_group.nomad-sg2",
-                        "outscale_subnet.bastion"
+                        "outscale_subnet.bastion",
+                        "random_string.suffix"
                     ]
                 },
                 {
@@ -1256,7 +1268,7 @@
                         "id": "##id-33##",
                         "image_id": "##id-26##",
                         "is_source_dest_checked": true,
-                        "keypair_name": "",
+                        "keypair_name": "########",
                         "keypair_name_wo": null,
                         "launch_number": 0,
                         "nested_virtualization": false,
@@ -1296,7 +1308,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-24##",
-                                        "security_group_name": "TF65-sg-2"
+                                        "security_group_name": "########"
                                     }
                                 ],
                                 "state": "in-use",
@@ -1342,7 +1354,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-24##",
-                                        "security_group_name": "TF65-sg-2"
+                                        "security_group_name": "########"
                                     }
                                 ],
                                 "state": "in-use",
@@ -1365,11 +1377,11 @@
                         "security_group_ids": [
                             "##id-24##"
                         ],
-                        "security_group_names": null,
+                        "security_group_names": "########",
                         "security_groups": [
                             {
                                 "security_group_id": "##id-24##",
-                                "security_group_name": "TF65-sg-2"
+                                "security_group_name": "########"
                             }
                         ],
                         "state": "running",
@@ -1389,11 +1401,12 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
+                    "private": "########",
                     "dependencies": [
                         "outscale_net.nomad",
                         "outscale_security_group.nomad-sg2",
-                        "outscale_subnet.bastion"
+                        "outscale_subnet.bastion",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -1440,7 +1453,7 @@
                         "id": "##id-38##",
                         "image_id": "##id-26##",
                         "is_source_dest_checked": true,
-                        "keypair_name": "",
+                        "keypair_name": "########",
                         "keypair_name_wo": null,
                         "launch_number": 0,
                         "nested_virtualization": false,
@@ -1480,7 +1493,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-23##",
-                                        "security_group_name": "TF65-sg-1"
+                                        "security_group_name": "########"
                                     }
                                 ],
                                 "state": "in-use",
@@ -1526,7 +1539,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-23##",
-                                        "security_group_name": "TF65-sg-1"
+                                        "security_group_name": "########"
                                     }
                                 ],
                                 "state": "in-use",
@@ -1549,11 +1562,11 @@
                         "security_group_ids": [
                             "##id-23##"
                         ],
-                        "security_group_names": null,
+                        "security_group_names": "########",
                         "security_groups": [
                             {
                                 "security_group_id": "##id-23##",
-                                "security_group_name": "TF65-sg-1"
+                                "security_group_name": "########"
                             }
                         ],
                         "state": "running",
@@ -1573,11 +1586,12 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
+                    "private": "########",
                     "dependencies": [
                         "outscale_net.nomad",
                         "outscale_security_group.nomad-sg1",
-                        "outscale_subnet.adm"
+                        "outscale_subnet.adm",
+                        "random_string.suffix"
                     ]
                 },
                 {
@@ -1616,7 +1630,7 @@
                         "id": "##id-43##",
                         "image_id": "##id-26##",
                         "is_source_dest_checked": true,
-                        "keypair_name": "",
+                        "keypair_name": "########",
                         "keypair_name_wo": null,
                         "launch_number": 0,
                         "nested_virtualization": false,
@@ -1656,7 +1670,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-23##",
-                                        "security_group_name": "TF65-sg-1"
+                                        "security_group_name": "########"
                                     }
                                 ],
                                 "state": "in-use",
@@ -1702,7 +1716,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-23##",
-                                        "security_group_name": "TF65-sg-1"
+                                        "security_group_name": "########"
                                     }
                                 ],
                                 "state": "in-use",
@@ -1725,11 +1739,11 @@
                         "security_group_ids": [
                             "##id-23##"
                         ],
-                        "security_group_names": null,
+                        "security_group_names": "########",
                         "security_groups": [
                             {
                                 "security_group_id": "##id-23##",
-                                "security_group_name": "TF65-sg-1"
+                                "security_group_name": "########"
                             }
                         ],
                         "state": "running",
@@ -1749,11 +1763,12 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
+                    "private": "########",
                     "dependencies": [
                         "outscale_net.nomad",
                         "outscale_security_group.nomad-sg1",
-                        "outscale_subnet.adm"
+                        "outscale_subnet.adm",
+                        "random_string.suffix"
                     ]
                 },
                 {
@@ -1792,7 +1807,7 @@
                         "id": "##id-48##",
                         "image_id": "##id-26##",
                         "is_source_dest_checked": true,
-                        "keypair_name": "",
+                        "keypair_name": "########",
                         "keypair_name_wo": null,
                         "launch_number": 0,
                         "nested_virtualization": false,
@@ -1832,7 +1847,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-23##",
-                                        "security_group_name": "TF65-sg-1"
+                                        "security_group_name": "########"
                                     }
                                 ],
                                 "state": "in-use",
@@ -1878,7 +1893,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-23##",
-                                        "security_group_name": "TF65-sg-1"
+                                        "security_group_name": "########"
                                     }
                                 ],
                                 "state": "in-use",
@@ -1901,11 +1916,11 @@
                         "security_group_ids": [
                             "##id-23##"
                         ],
-                        "security_group_names": null,
+                        "security_group_names": "########",
                         "security_groups": [
                             {
                                 "security_group_id": "##id-23##",
-                                "security_group_name": "TF65-sg-1"
+                                "security_group_name": "########"
                             }
                         ],
                         "state": "running",
@@ -1925,11 +1940,12 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
+                    "private": "########",
                     "dependencies": [
                         "outscale_net.nomad",
                         "outscale_security_group.nomad-sg1",
-                        "outscale_subnet.adm"
+                        "outscale_subnet.adm",
+                        "random_string.suffix"
                     ]
                 }
             ]

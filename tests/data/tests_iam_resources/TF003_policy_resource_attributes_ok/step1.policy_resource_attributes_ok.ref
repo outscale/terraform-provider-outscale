@@ -24,12 +24,15 @@
                         "path": "/terraform/",
                         "policy_default_version_id": "##id-1##",
                         "policy_id": "##id-2##",
-                        "policy_name": "terraform-RO-policy",
+                        "policy_name": "########",
                         "resources_count": 0
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########",
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -52,12 +55,15 @@
                         "path": "/",
                         "policy_default_version_id": "##id-1##",
                         "policy_id": "##id-4##",
-                        "policy_name": "terraform-Read-Account_consumption_only",
+                        "policy_name": "########",
                         "resources_count": 0
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########",
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         }

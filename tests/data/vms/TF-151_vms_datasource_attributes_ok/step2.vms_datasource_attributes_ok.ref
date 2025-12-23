@@ -47,7 +47,7 @@
                                 "hypervisor": "xen",
                                 "image_id": "##id-2##",
                                 "is_source_dest_checked": false,
-                                "keypair_name": "KP-TF151",
+                                "keypair_name": "########",
                                 "launch_number": 0,
                                 "nested_virtualization": false,
                                 "net_id": "",
@@ -70,11 +70,11 @@
                                 "root_device_name": "/dev/sda1",
                                 "root_device_type": "ebs",
                                 "security_group_ids": [],
-                                "security_group_names": [],
+                                "security_group_names": "########",
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-4##",
-                                        "security_group_name": "terraform-sg-151"
+                                        "security_group_name": "########"
                                     }
                                 ],
                                 "state": "running",
@@ -115,7 +115,7 @@
                                 "hypervisor": "xen",
                                 "image_id": "##id-2##",
                                 "is_source_dest_checked": false,
-                                "keypair_name": "KP-TF151",
+                                "keypair_name": "########",
                                 "launch_number": 0,
                                 "nested_virtualization": false,
                                 "net_id": "",
@@ -138,11 +138,11 @@
                                 "root_device_name": "/dev/sda1",
                                 "root_device_type": "ebs",
                                 "security_group_ids": [],
-                                "security_group_names": [],
+                                "security_group_names": "########",
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-4##",
-                                        "security_group_name": "terraform-sg-151"
+                                        "security_group_name": "########"
                                     }
                                 ],
                                 "state": "running",
@@ -203,7 +203,7 @@
                                 "hypervisor": "xen",
                                 "image_id": "##id-2##",
                                 "is_source_dest_checked": false,
-                                "keypair_name": "KP-TF151",
+                                "keypair_name": "########",
                                 "launch_number": 0,
                                 "nested_virtualization": false,
                                 "net_id": "",
@@ -226,11 +226,11 @@
                                 "root_device_name": "/dev/sda1",
                                 "root_device_type": "ebs",
                                 "security_group_ids": [],
-                                "security_group_names": [],
+                                "security_group_names": "########",
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-4##",
-                                        "security_group_name": "terraform-sg-151"
+                                        "security_group_name": "########"
                                     }
                                 ],
                                 "state": "running",
@@ -300,7 +300,7 @@
                                 "hypervisor": "xen",
                                 "image_id": "##id-2##",
                                 "is_source_dest_checked": false,
-                                "keypair_name": "KP-TF151",
+                                "keypair_name": "########",
                                 "launch_number": 0,
                                 "nested_virtualization": false,
                                 "net_id": "",
@@ -323,11 +323,11 @@
                                 "root_device_name": "/dev/sda1",
                                 "root_device_type": "ebs",
                                 "security_group_ids": [],
-                                "security_group_names": [],
+                                "security_group_names": "########",
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-4##",
-                                        "security_group_name": "terraform-sg-151"
+                                        "security_group_name": "########"
                                     }
                                 ],
                                 "state": "running",
@@ -397,7 +397,7 @@
                                 "hypervisor": "xen",
                                 "image_id": "##id-2##",
                                 "is_source_dest_checked": false,
-                                "keypair_name": "KP-TF151",
+                                "keypair_name": "########",
                                 "launch_number": 0,
                                 "nested_virtualization": false,
                                 "net_id": "",
@@ -420,11 +420,11 @@
                                 "root_device_name": "/dev/sda1",
                                 "root_device_type": "ebs",
                                 "security_group_ids": [],
-                                "security_group_names": [],
+                                "security_group_names": "########",
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-4##",
-                                        "security_group_name": "terraform-sg-151"
+                                        "security_group_name": "########"
                                     }
                                 ],
                                 "state": "running",
@@ -464,7 +464,7 @@
                         "id": "##id-15##",
                         "keypair_fingerprint": "########",
                         "keypair_id": "##id-15##",
-                        "keypair_name": "KP-TF151",
+                        "keypair_name": "########",
                         "keypair_type": "ssh-rsa",
                         "private_key": "########",
                         "public_key": null,
@@ -473,7 +473,10 @@
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -495,12 +498,15 @@
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-4##",
-                        "security_group_name": "terraform-sg-151",
+                        "security_group_name": "########",
                         "tags": [],
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -512,94 +518,6 @@
             "instances": [
                 {
                     "index_key": 0,
-                    "schema_version": 0,
-                    "attributes": {
-                        "actions_on_next_boot": [
-                            {
-                                "secure_boot": ""
-                            }
-                        ],
-                        "admin_password": "",
-                        "architecture": "x86_64",
-                        "block_device_mappings": [],
-                        "block_device_mappings_created": [
-                            {
-                                "bsu": [
-                                    {
-                                        "delete_on_vm_deletion": true,
-                                        "link_date": "########",
-                                        "state": "attached",
-                                        "tags": [],
-                                        "volume_id": "##id-1##"
-                                    }
-                                ],
-                                "device_name": "/dev/sda1"
-                            }
-                        ],
-                        "boot_mode": "legacy",
-                        "bsu_optimized": false,
-                        "client_token": "",
-                        "creation_date": "########",
-                        "deletion_protection": false,
-                        "get_admin_password": null,
-                        "hypervisor": "xen",
-                        "id": "##id-5##",
-                        "image_id": "##id-2##",
-                        "is_source_dest_checked": false,
-                        "keypair_name": "KP-TF151",
-                        "keypair_name_wo": null,
-                        "launch_number": 0,
-                        "nested_virtualization": false,
-                        "net_id": "",
-                        "nics": [],
-                        "os_family": "",
-                        "performance": "medium",
-                        "placement_subregion_name": "eu-west-2a",
-                        "placement_tenancy": "default",
-                        "primary_nic": [],
-                        "private_dns_name": "########",
-                        "private_ip": "########",
-                        "private_ips": null,
-                        "product_codes": [
-                            "0001"
-                        ],
-                        "public_dns_name": "########",
-                        "public_ip": "########",
-                        "request_id": "########",
-                        "reservation_id": "##id-3##",
-                        "root_device_name": "/dev/sda1",
-                        "root_device_type": "ebs",
-                        "secure_boot_action": null,
-                        "security_group_ids": [
-                            "##id-4##"
-                        ],
-                        "security_group_names": null,
-                        "security_groups": [
-                            {
-                                "security_group_id": "##id-4##",
-                                "security_group_name": "terraform-sg-151"
-                            }
-                        ],
-                        "state": "running",
-                        "state_reason": "",
-                        "subnet_id": "",
-                        "tags": [],
-                        "timeouts": null,
-                        "user_data": "",
-                        "vm_id": "##id-5##",
-                        "vm_initiated_shutdown_behavior": "stop",
-                        "vm_type": "###vm_type###"
-                    },
-                    "sensitive_attributes": [],
-                    "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
-                    "dependencies": [
-                        "outscale_keypair.my_keypair",
-                        "outscale_security_group.security_group_TF151"
-                    ]
-                },
-                {
-                    "index_key": 1,
                     "schema_version": 0,
                     "attributes": {
                         "actions_on_next_boot": [
@@ -634,7 +552,7 @@
                         "id": "##id-8##",
                         "image_id": "##id-2##",
                         "is_source_dest_checked": false,
-                        "keypair_name": "KP-TF151",
+                        "keypair_name": "########",
                         "keypair_name_wo": null,
                         "launch_number": 0,
                         "nested_virtualization": false,
@@ -661,11 +579,11 @@
                         "security_group_ids": [
                             "##id-4##"
                         ],
-                        "security_group_names": null,
+                        "security_group_names": "########",
                         "security_groups": [
                             {
                                 "security_group_id": "##id-4##",
-                                "security_group_name": "terraform-sg-151"
+                                "security_group_name": "########"
                             }
                         ],
                         "state": "running",
@@ -680,10 +598,100 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
+                    "private": "########",
                     "dependencies": [
                         "outscale_keypair.my_keypair",
-                        "outscale_security_group.security_group_TF151"
+                        "outscale_security_group.security_group_TF151",
+                        "random_string.suffix"
+                    ]
+                },
+                {
+                    "index_key": 1,
+                    "schema_version": 0,
+                    "attributes": {
+                        "actions_on_next_boot": [
+                            {
+                                "secure_boot": ""
+                            }
+                        ],
+                        "admin_password": "",
+                        "architecture": "x86_64",
+                        "block_device_mappings": [],
+                        "block_device_mappings_created": [
+                            {
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "link_date": "########",
+                                        "state": "attached",
+                                        "tags": [],
+                                        "volume_id": "##id-1##"
+                                    }
+                                ],
+                                "device_name": "/dev/sda1"
+                            }
+                        ],
+                        "boot_mode": "legacy",
+                        "bsu_optimized": false,
+                        "client_token": "",
+                        "creation_date": "########",
+                        "deletion_protection": false,
+                        "get_admin_password": null,
+                        "hypervisor": "xen",
+                        "id": "##id-5##",
+                        "image_id": "##id-2##",
+                        "is_source_dest_checked": false,
+                        "keypair_name": "########",
+                        "keypair_name_wo": null,
+                        "launch_number": 0,
+                        "nested_virtualization": false,
+                        "net_id": "",
+                        "nics": [],
+                        "os_family": "",
+                        "performance": "medium",
+                        "placement_subregion_name": "eu-west-2a",
+                        "placement_tenancy": "default",
+                        "primary_nic": [],
+                        "private_dns_name": "########",
+                        "private_ip": "########",
+                        "private_ips": null,
+                        "product_codes": [
+                            "0001"
+                        ],
+                        "public_dns_name": "########",
+                        "public_ip": "########",
+                        "request_id": "########",
+                        "reservation_id": "##id-3##",
+                        "root_device_name": "/dev/sda1",
+                        "root_device_type": "ebs",
+                        "secure_boot_action": null,
+                        "security_group_ids": [
+                            "##id-4##"
+                        ],
+                        "security_group_names": "########",
+                        "security_groups": [
+                            {
+                                "security_group_id": "##id-4##",
+                                "security_group_name": "########"
+                            }
+                        ],
+                        "state": "running",
+                        "state_reason": "",
+                        "subnet_id": "",
+                        "tags": [],
+                        "timeouts": null,
+                        "user_data": "",
+                        "vm_id": "##id-5##",
+                        "vm_initiated_shutdown_behavior": "stop",
+                        "vm_type": "###vm_type###"
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0,
+                    "private": "########",
+                    "dependencies": [
+                        "outscale_keypair.my_keypair",
+                        "outscale_security_group.security_group_TF151",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -729,7 +737,7 @@
                         "id": "##id-12##",
                         "image_id": "##id-2##",
                         "is_source_dest_checked": false,
-                        "keypair_name": "KP-TF151",
+                        "keypair_name": "########",
                         "keypair_name_wo": null,
                         "launch_number": 0,
                         "nested_virtualization": false,
@@ -756,11 +764,11 @@
                         "security_group_ids": [
                             "##id-4##"
                         ],
-                        "security_group_names": null,
+                        "security_group_names": "########",
                         "security_groups": [
                             {
                                 "security_group_id": "##id-4##",
-                                "security_group_name": "terraform-sg-151"
+                                "security_group_name": "########"
                             }
                         ],
                         "state": "running",
@@ -784,10 +792,11 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
+                    "private": "########",
                     "dependencies": [
                         "outscale_keypair.my_keypair",
-                        "outscale_security_group.security_group_TF151"
+                        "outscale_security_group.security_group_TF151",
+                        "random_string.suffix"
                     ]
                 }
             ]

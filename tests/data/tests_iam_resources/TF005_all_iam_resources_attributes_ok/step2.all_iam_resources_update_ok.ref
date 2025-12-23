@@ -24,12 +24,15 @@
                         "path": "/",
                         "policy_default_version_id": "##id-1##",
                         "policy_id": "##id-2##",
-                        "policy_name": "terraform-policy-1",
+                        "policy_name": "########",
                         "resources_count": 1
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########",
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -52,12 +55,15 @@
                         "path": "/",
                         "policy_default_version_id": "##id-1##",
                         "policy_id": "##id-4##",
-                        "policy_name": "terraform-policy-2",
+                        "policy_name": "########",
                         "resources_count": 0
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########",
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -80,12 +86,15 @@
                         "path": "/",
                         "policy_default_version_id": "##id-1##",
                         "policy_id": "##id-6##",
-                        "policy_name": "terraform-policy-RO",
+                        "policy_name": "########",
                         "resources_count": 1
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########",
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -103,15 +112,16 @@
                         "default_version": false,
                         "document": "{\n    \"Statement\": [\n        {\n            \"Action\": [\n                \"api:*VM*\"\n            ],\n            \"Effect\": \"Allow\",\n            \"Resource\": [\n                \"*\"\n            ]\n        }\n    ]\n}\n",
                         "id": "##id-7##",
-                        "policy_orn": "orn:ows:idauth::339215505907:policy/terraform-policy-2",
+                        "policy_orn": "########",
                         "set_as_default": null,
                         "version_id": "##id-8##"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
+                    "private": "########",
                     "dependencies": [
-                        "outscale_policy.policy-2"
+                        "outscale_policy.policy-2",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -133,11 +143,14 @@
                         "policy": [],
                         "user_email": "test-0@test2.fr",
                         "user_id": "##id-9##",
-                        "user_name": "TF-User-0-3"
+                        "user_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########",
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 },
                 {
                     "index_key": 1,
@@ -150,11 +163,14 @@
                         "policy": [],
                         "user_email": "test-1@test2.fr",
                         "user_id": "##id-10##",
-                        "user_name": "TF-User-1-3"
+                        "user_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########",
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 },
                 {
                     "index_key": 2,
@@ -167,11 +183,14 @@
                         "policy": [],
                         "user_email": "test-2@test2.fr",
                         "user_id": "##id-11##",
-                        "user_name": "TF-User-2-3"
+                        "user_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########",
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -194,19 +213,20 @@
                                 "default_version_id": "##id-1##",
                                 "last_modification_date": "########",
                                 "policy_id": "##id-2##",
-                                "policy_name": "terraform-policy-1",
-                                "policy_orn": "orn:ows:idauth::339215505907:policy/terraform-policy-1"
+                                "policy_name": "########",
+                                "policy_orn": "########"
                             }
                         ],
                         "user_email": "test-TF11@test2.fr",
                         "user_id": "##id-12##",
-                        "user_name": "User-TF-RW-11"
+                        "user_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
+                    "private": "########",
                     "dependencies": [
-                        "outscale_policy.policy-1"
+                        "outscale_policy.policy-1",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -230,19 +250,20 @@
                                 "default_version_id": "##id-8##",
                                 "last_modification_date": "########",
                                 "policy_id": "##id-4##",
-                                "policy_name": "terraform-policy-2",
-                                "policy_orn": "orn:ows:idauth::339215505907:policy/terraform-policy-2"
+                                "policy_name": "########",
+                                "policy_orn": "########"
                             }
                         ],
                         "user_email": "test-TF12@test2.fr",
                         "user_id": "##id-13##",
-                        "user_name": "User-TF-RW-22"
+                        "user_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
+                    "private": "########",
                     "dependencies": [
-                        "outscale_policy.policy-2"
+                        "outscale_policy.policy-2",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -266,29 +287,30 @@
                             {
                                 "creation_date": "########",
                                 "last_modification_date": "########",
-                                "path": "/terraform/",
-                                "user_id": "##id-12##",
-                                "user_name": "User-TF-RW-11"
+                                "path": "/terraform2/",
+                                "user_id": "##id-13##",
+                                "user_name": "########"
                             },
                             {
                                 "creation_date": "########",
                                 "last_modification_date": "########",
-                                "path": "/terraform2/",
-                                "user_id": "##id-13##",
-                                "user_name": "User-TF-RW-22"
+                                "path": "/terraform/",
+                                "user_id": "##id-12##",
+                                "user_name": "########"
                             }
                         ],
                         "user_group_id": "##id-14##",
-                        "user_group_name": "Group-TF-test-1"
+                        "user_group_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
+                    "private": "########",
                     "dependencies": [
                         "outscale_policy.policy-1",
                         "outscale_policy.policy-2",
                         "outscale_user.user-1",
-                        "outscale_user.user-2"
+                        "outscale_user.user-2",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -313,8 +335,8 @@
                                 "default_version_id": "##id-1##",
                                 "last_modification_date": "########",
                                 "policy_id": "##id-6##",
-                                "policy_name": "terraform-policy-RO",
-                                "policy_orn": "orn:ows:idauth::339215505907:policy/terraform-policy-RO"
+                                "policy_name": "########",
+                                "policy_orn": "########"
                             }
                         ],
                         "user": [
@@ -322,33 +344,34 @@
                                 "creation_date": "########",
                                 "last_modification_date": "########",
                                 "path": "/",
-                                "user_id": "##id-11##",
-                                "user_name": "TF-User-2-3"
+                                "user_id": "##id-9##",
+                                "user_name": "########"
                             },
                             {
                                 "creation_date": "########",
                                 "last_modification_date": "########",
                                 "path": "/",
                                 "user_id": "##id-10##",
-                                "user_name": "TF-User-1-3"
+                                "user_name": "########"
                             },
                             {
                                 "creation_date": "########",
                                 "last_modification_date": "########",
                                 "path": "/",
-                                "user_id": "##id-9##",
-                                "user_name": "TF-User-0-3"
+                                "user_id": "##id-11##",
+                                "user_name": "########"
                             }
                         ],
                         "user_group_id": "##id-15##",
-                        "user_group_name": "Group-TF-RO"
+                        "user_group_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
+                    "private": "########",
                     "dependencies": [
                         "outscale_policy.policy-RO",
-                        "outscale_user.multiple_users"
+                        "outscale_user.multiple_users",
+                        "random_string.suffix"
                     ]
                 }
             ]
