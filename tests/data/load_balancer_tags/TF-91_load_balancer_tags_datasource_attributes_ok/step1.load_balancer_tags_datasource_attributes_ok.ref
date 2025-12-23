@@ -22,7 +22,12 @@
                             {
                                 "key": "name",
                                 "load_balancer_name": "########",
-                                "value": "public_lbu2"
+                                "value": "public_lbu1"
+                            },
+                            {
+                                "key": "User",
+                                "load_balancer_name": "########",
+                                "value": "mzi"
                             },
                             {
                                 "key": "Platfotm",
@@ -32,12 +37,7 @@
                             {
                                 "key": "name",
                                 "load_balancer_name": "########",
-                                "value": "public_lbu1"
-                            },
-                            {
-                                "key": "User",
-                                "load_balancer_name": "########",
-                                "value": "mzi"
+                                "value": "public_lbu2"
                             },
                             {
                                 "key": "Platfotm",
@@ -90,7 +90,7 @@
                                 "backend_protocol": "HTTP",
                                 "load_balancer_port": 80,
                                 "load_balancer_protocol": "HTTP",
-                                "policy_names": [],
+                                "policy_names": "########",
                                 "server_certificate_id": ""
                             }
                         ],
@@ -105,7 +105,7 @@
                         "source_security_group": [
                             {
                                 "security_group_account_id": "##id-2##",
-                                "security_group_name": "outscale-elb-sg"
+                                "security_group_name": "########"
                             }
                         ],
                         "subnets": [],
@@ -129,7 +129,10 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########",
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -172,7 +175,7 @@
                                 "backend_protocol": "HTTP",
                                 "load_balancer_port": 80,
                                 "load_balancer_protocol": "HTTP",
-                                "policy_names": [],
+                                "policy_names": "########",
                                 "server_certificate_id": ""
                             }
                         ],
@@ -187,7 +190,7 @@
                         "source_security_group": [
                             {
                                 "security_group_account_id": "##id-2##",
-                                "security_group_name": "outscale-elb-sg"
+                                "security_group_name": "########"
                             }
                         ],
                         "subnets": [],
@@ -207,7 +210,10 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########",
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         }

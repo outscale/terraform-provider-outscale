@@ -22,7 +22,7 @@
                         "last_modification_date": "########",
                         "request_id": "########",
                         "state": "INACTIVE",
-                        "user_name": "User-TF-65"
+                        "user_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0
@@ -52,7 +52,7 @@
                         "id": "##id-1##",
                         "request_id": "########",
                         "states": null,
-                        "user_name": "User-TF-65"
+                        "user_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0
@@ -75,7 +75,7 @@
                         "path": "/test/terraform/",
                         "user_email": "test@test65.fr",
                         "user_id": "##id-3##",
-                        "user_name": "User-TF-65"
+                        "user_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0
@@ -100,12 +100,13 @@
                         "secret_key": "########",
                         "state": "INACTIVE",
                         "timeouts": null,
-                        "user_name": "User-TF-65"
+                        "user_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
                     "dependencies": [
-                        "outscale_user.user1"
+                        "outscale_user.user1",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -126,11 +127,14 @@
                         "policy": [],
                         "user_email": "test@test65.fr",
                         "user_id": "##id-3##",
-                        "user_name": "User-TF-65"
+                        "user_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########",
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         }

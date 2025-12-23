@@ -44,7 +44,7 @@
                                 "backend_protocol": "HTTPS",
                                 "load_balancer_port": 8080,
                                 "load_balancer_protocol": "HTTPS",
-                                "policy_names": [],
+                                "policy_names": "########",
                                 "server_certificate_id": "##id-1##"
                             }
                         ],
@@ -59,7 +59,7 @@
                         "source_security_group": [
                             {
                                 "security_group_account_id": "##id-2##",
-                                "security_group_name": "outscale-elb-sg"
+                                "security_group_name": "########"
                             }
                         ],
                         "subnets": [],
@@ -75,9 +75,10 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
+                    "private": "########",
                     "dependencies": [
-                        "outscale_server_certificate.my_server_certificate_TF-86"
+                        "outscale_server_certificate.my_server_certificate_TF-86",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -120,7 +121,7 @@
                                 "backend_protocol": "HTTPS",
                                 "load_balancer_port": 8080,
                                 "load_balancer_protocol": "HTTPS",
-                                "policy_names": [],
+                                "policy_names": "########",
                                 "server_certificate_id": "##id-3##"
                             }
                         ],
@@ -128,14 +129,14 @@
                         "load_balancer_port": 8080,
                         "load_balancer_sticky_cookie_policies": [],
                         "load_balancer_type": null,
-                        "policy_names": null,
+                        "policy_names": "########",
                         "request_id": "########",
                         "security_groups": [],
                         "server_certificate_id": "##id-3##",
                         "source_security_group": [
                             {
                                 "security_group_account_id": "##id-2##",
-                                "security_group_name": "outscale-elb-sg"
+                                "security_group_name": "########"
                             }
                         ],
                         "subnets": [],
@@ -151,11 +152,12 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
+                    "private": "########",
                     "dependencies": [
                         "outscale_load_balancer.public_lbu1",
                         "outscale_server_certificate.my_server_certificate_TF-86",
-                        "outscale_server_certificate.my_server_certificate_TF-86_2"
+                        "outscale_server_certificate.my_server_certificate_TF-86_2",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -183,7 +185,7 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########"
                 }
             ]
         },
@@ -210,7 +212,7 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########"
                 }
             ]
         }

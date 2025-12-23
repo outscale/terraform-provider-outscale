@@ -30,7 +30,7 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
+                    "private": "########",
                     "dependencies": [
                         "outscale_ca.ca_for_aar",
                         "outscale_ca.ca_for_aar_2"
@@ -56,7 +56,7 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########"
                 }
             ]
         },
@@ -78,7 +78,7 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########"
                 }
             ]
         }

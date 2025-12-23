@@ -40,12 +40,15 @@
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-1##",
-                        "security_group_name": "sg1-test-group_test",
+                        "security_group_name": "########",
                         "tags": [],
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         }

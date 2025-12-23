@@ -77,7 +77,7 @@
                         "disable_api_termination": false,
                         "id": "##id-0##",
                         "kubeconfig": "########",
-                        "name": "oks-cluster-tf-209",
+                        "name": "########",
                         "project_id": "##id-1##",
                         "quirks": null,
                         "request_id": "########",
@@ -104,7 +104,8 @@
                     ],
                     "identity_schema_version": 0,
                     "dependencies": [
-                        "outscale_oks_project.project"
+                        "outscale_oks_project.project",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -123,7 +124,7 @@
                         "description": "TF209 OKS project",
                         "disable_api_termination": false,
                         "id": "##id-1##",
-                        "name": "oks-project-tf-209",
+                        "name": "########",
                         "quirks": null,
                         "region": "eu-west-2",
                         "request_id": "########",
@@ -133,7 +134,10 @@
                         "updated_at": "########"
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         }

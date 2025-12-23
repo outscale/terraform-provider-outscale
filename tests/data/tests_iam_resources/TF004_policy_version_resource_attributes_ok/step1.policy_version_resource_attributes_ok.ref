@@ -24,12 +24,15 @@
                         "path": "/",
                         "policy_default_version_id": "##id-1##",
                         "policy_id": "##id-2##",
-                        "policy_name": "terraform-policy-01",
+                        "policy_name": "########",
                         "resources_count": 0
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########",
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -47,15 +50,16 @@
                         "default_version": false,
                         "document": "{\n    \"Statement\": [\n        {\n            \"Action\": [\n                \"api:Read*\"\n            ],\n            \"Effect\": \"Allow\",\n            \"Resource\": [\n                \"*\"\n            ]\n        }\n    ]\n} \n",
                         "id": "##id-3##",
-                        "policy_orn": "orn:ows:idauth::339215505907:policy/terraform-policy-01",
+                        "policy_orn": "########",
                         "set_as_default": null,
                         "version_id": "##id-4##"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
+                    "private": "########",
                     "dependencies": [
-                        "outscale_policy.policy-1"
+                        "outscale_policy.policy-1",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -74,16 +78,17 @@
                         "default_version": true,
                         "document": "{\n    \"Statement\": [\n        {\n            \"Action\": [\n                \"*\"\n            ],\n            \"Resource\": [\n                \"*\"\n            ],\n            \"Effect\": \"Allow\"\n        }\n    ]\n}\n",
                         "id": "##id-5##",
-                        "policy_orn": "orn:ows:idauth::339215505907:policy/terraform-policy-01",
+                        "policy_orn": "########",
                         "set_as_default": true,
                         "version_id": "##id-6##"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
+                    "private": "########",
                     "dependencies": [
                         "outscale_policy.policy-1",
-                        "outscale_policy_version.policy-1_version-02"
+                        "outscale_policy_version.policy-1_version-02",
+                        "random_string.suffix"
                     ]
                 }
             ]

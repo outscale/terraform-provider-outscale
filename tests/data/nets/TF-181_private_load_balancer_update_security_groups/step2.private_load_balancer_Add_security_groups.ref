@@ -44,7 +44,7 @@
                                 "backend_protocol": "HTTP",
                                 "load_balancer_port": 80,
                                 "load_balancer_protocol": "HTTP",
-                                "policy_names": [],
+                                "policy_names": "########",
                                 "server_certificate_id": ""
                             }
                         ],
@@ -62,7 +62,7 @@
                         "source_security_group": [
                             {
                                 "security_group_account_id": "##id-4##",
-                                "security_group_name": "terraform-sg-lbu-TF181-2"
+                                "security_group_name": "########"
                             }
                         ],
                         "subnets": [
@@ -80,12 +80,13 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
+                    "private": "########",
                     "dependencies": [
                         "outscale_net.outscale_net",
                         "outscale_security_group.outscale_security_group",
                         "outscale_security_group.outscale_security_group-2",
-                        "outscale_subnet.subnet-1"
+                        "outscale_subnet.subnet-1",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -125,45 +126,6 @@
                     "attributes": {
                         "account_id": "##id-4##",
                         "description": "test lbu-TF181",
-                        "id": "##id-3##",
-                        "inbound_rules": [],
-                        "net_id": "##id-1##",
-                        "outbound_rules": [
-                            {
-                                "from_port_range": -1,
-                                "ip_protocol": "-1",
-                                "ip_ranges": "########",
-                                "security_groups_members": [],
-                                "service_ids": null,
-                                "to_port_range": -1
-                            }
-                        ],
-                        "remove_default_outbound_rule": false,
-                        "request_id": "########",
-                        "security_group_id": "##id-3##",
-                        "security_group_name": "terraform-sg-lbu-TF181-1",
-                        "tags": [],
-                        "timeouts": null
-                    },
-                    "sensitive_attributes": [],
-                    "identity_schema_version": 0,
-                    "dependencies": [
-                        "outscale_net.outscale_net"
-                    ]
-                }
-            ]
-        },
-        {
-            "mode": "managed",
-            "type": "outscale_security_group",
-            "name": "outscale_security_group-2",
-            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
-            "instances": [
-                {
-                    "schema_version": 0,
-                    "attributes": {
-                        "account_id": "##id-4##",
-                        "description": "test lbu-2",
                         "id": "##id-2##",
                         "inbound_rules": [],
                         "net_id": "##id-1##",
@@ -180,14 +142,55 @@
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-2##",
-                        "security_group_name": "terraform-sg-lbu-TF181-2",
+                        "security_group_name": "########",
                         "tags": [],
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
                     "dependencies": [
-                        "outscale_net.outscale_net"
+                        "outscale_net.outscale_net",
+                        "random_string.suffix"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_security_group",
+            "name": "outscale_security_group-2",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-4##",
+                        "description": "test lbu-2",
+                        "id": "##id-3##",
+                        "inbound_rules": [],
+                        "net_id": "##id-1##",
+                        "outbound_rules": [
+                            {
+                                "from_port_range": -1,
+                                "ip_protocol": "-1",
+                                "ip_ranges": "########",
+                                "security_groups_members": [],
+                                "service_ids": null,
+                                "to_port_range": -1
+                            }
+                        ],
+                        "remove_default_outbound_rule": false,
+                        "request_id": "########",
+                        "security_group_id": "##id-3##",
+                        "security_group_name": "########",
+                        "tags": [],
+                        "timeouts": null
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "outscale_net.outscale_net",
+                        "random_string.suffix"
                     ]
                 }
             ]

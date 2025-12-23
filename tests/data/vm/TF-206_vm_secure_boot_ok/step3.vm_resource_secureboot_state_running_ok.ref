@@ -46,7 +46,7 @@
                         "id": "##id-1##",
                         "image_id": "##id-2##",
                         "is_source_dest_checked": false,
-                        "keypair_name": "",
+                        "keypair_name": "########",
                         "keypair_name_wo": null,
                         "launch_number": 0,
                         "nested_virtualization": false,
@@ -71,11 +71,11 @@
                         "root_device_type": "ebs",
                         "secure_boot_action": "enable",
                         "security_group_ids": [],
-                        "security_group_names": null,
+                        "security_group_names": "########",
                         "security_groups": [
                             {
                                 "security_group_id": "##id-4##",
-                                "security_group_name": "default"
+                                "security_group_name": "########"
                             }
                         ],
                         "state": "running",
@@ -95,7 +95,7 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0="
+                    "private": "########"
                 }
             ]
         }

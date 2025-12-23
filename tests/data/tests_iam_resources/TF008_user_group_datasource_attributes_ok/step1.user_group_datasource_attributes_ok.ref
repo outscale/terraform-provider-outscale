@@ -26,7 +26,7 @@
                                 "path": "/terraform/",
                                 "user_email": "test-TF011@test2.fr",
                                 "user_id": "##id-1##",
-                                "user_name": "User-TF-001"
+                                "user_name": "########"
                             },
                             {
                                 "creation_date": "########",
@@ -34,11 +34,11 @@
                                 "path": "/terraform2/",
                                 "user_email": "test-TF002@test2.fr",
                                 "user_id": "##id-2##",
-                                "user_name": "User-TF-002"
+                                "user_name": "########"
                             }
                         ],
                         "user_group_id": "##id-3##",
-                        "user_group_name": "Group-TF-test-1"
+                        "user_group_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0
@@ -61,11 +61,14 @@
                         "policy": [],
                         "user_email": "test-TF011@test2.fr",
                         "user_id": "##id-1##",
-                        "user_name": "User-TF-001"
+                        "user_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########",
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -85,11 +88,14 @@
                         "policy": [],
                         "user_email": "test-TF002@test2.fr",
                         "user_id": "##id-2##",
-                        "user_name": "User-TF-002"
+                        "user_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########",
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -114,25 +120,26 @@
                                 "last_modification_date": "########",
                                 "path": "/terraform/",
                                 "user_id": "##id-1##",
-                                "user_name": "User-TF-001"
+                                "user_name": "########"
                             },
                             {
                                 "creation_date": "########",
                                 "last_modification_date": "########",
                                 "path": "/terraform2/",
                                 "user_id": "##id-2##",
-                                "user_name": "User-TF-002"
+                                "user_name": "########"
                             }
                         ],
                         "user_group_id": "##id-3##",
-                        "user_group_name": "Group-TF-test-1"
+                        "user_group_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
+                    "private": "########",
                     "dependencies": [
                         "outscale_user.user-1",
-                        "outscale_user.user-2"
+                        "outscale_user.user-2",
+                        "random_string.suffix"
                     ]
                 }
             ]
