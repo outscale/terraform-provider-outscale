@@ -14,7 +14,7 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "bgp_asn": 571,
+                        "bgp_asn": "########",
                         "client_gateway_id": "##id-0##",
                         "connection_type": "ipsec.1",
                         "filter": "########",
@@ -47,7 +47,7 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "bgp_asn": 571,
+                        "bgp_asn": "########",
                         "client_gateway_id": "##id-0##",
                         "connection_type": "ipsec.1",
                         "filter": "########",
@@ -80,7 +80,7 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "bgp_asn": 571,
+                        "bgp_asn": "########",
                         "client_gateway_id": "##id-0##",
                         "connection_type": "ipsec.1",
                         "filter": "########",
@@ -113,7 +113,7 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "bgp_asn": 571,
+                        "bgp_asn": "########",
                         "client_gateway_id": "##id-0##",
                         "connection_type": "ipsec.1",
                         "filter": "########",
@@ -146,7 +146,7 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "bgp_asn": 571,
+                        "bgp_asn": "########",
                         "client_gateway_id": "##id-0##",
                         "connection_type": "ipsec.1",
                         "id": "##id-0##",
@@ -166,7 +166,10 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########",
+                    "dependencies": [
+                        "random_integer.bgp_asn"
+                    ]
                 }
             ]
         }

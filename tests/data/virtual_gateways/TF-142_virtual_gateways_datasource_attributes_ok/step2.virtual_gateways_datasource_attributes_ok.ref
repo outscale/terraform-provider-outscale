@@ -25,12 +25,12 @@
                                 "state": "available",
                                 "tags": [
                                     {
-                                        "key": "name-Datasources",
-                                        "value": "VGW-1-Datasources"
-                                    },
-                                    {
                                         "key": "Project-Datasources",
                                         "value": "Terraform-Datasources"
+                                    },
+                                    {
+                                        "key": "name-Datasources",
+                                        "value": "VGW-1-Datasources"
                                     }
                                 ],
                                 "virtual_gateway_id": "##id-1##"
@@ -62,12 +62,12 @@
                                 "state": "available",
                                 "tags": [
                                     {
-                                        "key": "name-Datasources",
-                                        "value": "VGW-1-Datasources"
-                                    },
-                                    {
                                         "key": "Project-Datasources",
                                         "value": "Terraform-Datasources"
+                                    },
+                                    {
+                                        "key": "name-Datasources",
+                                        "value": "VGW-1-Datasources"
                                     }
                                 ],
                                 "virtual_gateway_id": "##id-1##"
@@ -140,7 +140,7 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########"
                 }
             ]
         },
@@ -168,7 +168,7 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########"
                 }
             ]
         }

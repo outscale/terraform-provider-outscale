@@ -17,7 +17,7 @@
                         "id": "##id-0##",
                         "keypair_fingerprint": "########",
                         "keypair_id": "##id-0##",
-                        "keypair_name": "KP-TF148",
+                        "keypair_name": "########",
                         "keypair_type": "ssh-rsa",
                         "private_key": "########",
                         "public_key": null,
@@ -26,7 +26,10 @@
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -48,12 +51,15 @@
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-2##",
-                        "security_group_name": "test-sgUsd",
+                        "security_group_name": "########",
                         "tags": [],
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -98,7 +104,7 @@
                         "id": "##id-4##",
                         "image_id": "##id-5##",
                         "is_source_dest_checked": false,
-                        "keypair_name": "KP-TF148",
+                        "keypair_name": "########",
                         "keypair_name_wo": null,
                         "launch_number": 0,
                         "nested_virtualization": false,
@@ -125,13 +131,11 @@
                         "security_group_ids": [
                             "##id-2##"
                         ],
-                        "security_group_names": [
-                            "test-sgUsd"
-                        ],
+                        "security_group_names": "########",
                         "security_groups": [
                             {
                                 "security_group_id": "##id-2##",
-                                "security_group_name": "test-sgUsd"
+                                "security_group_name": "########"
                             }
                         ],
                         "state": "running",
@@ -151,10 +155,11 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
+                    "private": "########",
                     "dependencies": [
                         "outscale_keypair.my_keypair",
-                        "outscale_security_group.sgUsd"
+                        "outscale_security_group.sgUsd",
+                        "random_string.suffix"
                     ]
                 }
             ]

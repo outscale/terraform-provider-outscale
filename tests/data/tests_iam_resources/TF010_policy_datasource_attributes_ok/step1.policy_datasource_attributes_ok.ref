@@ -24,8 +24,8 @@
                         "path": "/",
                         "policy_default_version_id": "##id-1##",
                         "policy_id": "##id-2##",
-                        "policy_name": "terraform-policy-11",
-                        "policy_orn": "orn:ows:idauth::339215505907:policy/terraform-policy-11",
+                        "policy_name": "########",
+                        "policy_orn": "########",
                         "resources_count": 2
                     },
                     "sensitive_attributes": [],
@@ -52,12 +52,15 @@
                         "path": "/",
                         "policy_default_version_id": "##id-4##",
                         "policy_id": "##id-2##",
-                        "policy_name": "terraform-policy-11",
+                        "policy_name": "########",
                         "resources_count": 0
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########",
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -75,15 +78,16 @@
                         "default_version": true,
                         "document": "{\n    \"Statement\": [\n        {\n            \"Action\": [\n                \"api:Read*\"\n            ],\n            \"Effect\": \"Allow\",\n            \"Resource\": [\n                \"*\"\n            ]\n        }\n    ]\n}\n",
                         "id": "##id-5##",
-                        "policy_orn": "orn:ows:idauth::339215505907:policy/terraform-policy-11",
+                        "policy_orn": "########",
                         "set_as_default": true,
                         "version_id": "##id-1##"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
+                    "private": "########",
                     "dependencies": [
-                        "outscale_policy.policy-1"
+                        "outscale_policy.policy-1",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -107,19 +111,20 @@
                                 "default_version_id": "##id-1##",
                                 "last_modification_date": "########",
                                 "policy_id": "##id-2##",
-                                "policy_name": "terraform-policy-11",
-                                "policy_orn": "orn:ows:idauth::339215505907:policy/terraform-policy-11"
+                                "policy_name": "########",
+                                "policy_orn": "########"
                             }
                         ],
                         "user_email": "customer-tooling@outscale.com",
                         "user_id": "##id-6##",
-                        "user_name": "User-TF-1"
+                        "user_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
+                    "private": "########",
                     "dependencies": [
-                        "outscale_policy.policy-1"
+                        "outscale_policy.policy-1",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -144,19 +149,20 @@
                                 "default_version_id": "##id-1##",
                                 "last_modification_date": "########",
                                 "policy_id": "##id-2##",
-                                "policy_name": "terraform-policy-11",
-                                "policy_orn": "orn:ows:idauth::339215505907:policy/terraform-policy-11"
+                                "policy_name": "########",
+                                "policy_orn": "########"
                             }
                         ],
                         "user": [],
                         "user_group_id": "##id-7##",
-                        "user_group_name": "Group-TF-test-1"
+                        "user_group_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
+                    "private": "########",
                     "dependencies": [
-                        "outscale_policy.policy-1"
+                        "outscale_policy.policy-1",
+                        "random_string.suffix"
                     ]
                 }
             ]

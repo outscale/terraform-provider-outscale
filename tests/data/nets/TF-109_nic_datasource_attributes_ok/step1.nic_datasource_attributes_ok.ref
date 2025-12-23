@@ -46,7 +46,7 @@
                         "security_groups": [
                             {
                                 "security_group_id": "##id-3##",
-                                "security_group_name": "Terraform-SG"
+                                "security_group_name": "########"
                             }
                         ],
                         "state": "available",
@@ -54,12 +54,12 @@
                         "subregion_name": "us-east-2a",
                         "tags": [
                             {
-                                "key": "Key:",
-                                "value": ":value-tags"
-                            },
-                            {
                                 "key": "Key-2",
                                 "value": "value-tags-2"
+                            },
+                            {
+                                "key": "Key:",
+                                "value": ":value-tags"
                             }
                         ]
                     },
@@ -109,7 +109,7 @@
                         "security_groups": [
                             {
                                 "security_group_id": "##id-3##",
-                                "security_group_name": "Terraform-SG"
+                                "security_group_name": "########"
                             }
                         ],
                         "state": "available",
@@ -117,12 +117,12 @@
                         "subregion_name": "us-east-2a",
                         "tags": [
                             {
-                                "key": "Key:",
-                                "value": ":value-tags"
-                            },
-                            {
                                 "key": "Key-2",
                                 "value": "value-tags-2"
+                            },
+                            {
+                                "key": "Key:",
+                                "value": ":value-tags"
                             }
                         ]
                     },
@@ -175,7 +175,7 @@
                         "security_groups": [
                             {
                                 "security_group_id": "##id-8##",
-                                "security_group_name": "default"
+                                "security_group_name": "########"
                             }
                         ],
                         "state": "in-use",
@@ -229,7 +229,7 @@
                         "security_groups": [
                             {
                                 "security_group_id": "##id-3##",
-                                "security_group_name": "Terraform-SG"
+                                "security_group_name": "########"
                             }
                         ],
                         "state": "available",
@@ -288,7 +288,7 @@
                         "security_groups": [
                             {
                                 "security_group_id": "##id-3##",
-                                "security_group_name": "Terraform-SG"
+                                "security_group_name": "########"
                             }
                         ],
                         "state": "available",
@@ -296,12 +296,12 @@
                         "subregion_name": "us-east-2a",
                         "tags": [
                             {
-                                "key": "Key:",
-                                "value": ":value-tags"
-                            },
-                            {
                                 "key": "Key-2",
                                 "value": "value-tags-2"
+                            },
+                            {
+                                "key": "Key:",
+                                "value": ":value-tags"
                             }
                         ]
                     },
@@ -345,7 +345,7 @@
                         "security_groups": [
                             {
                                 "security_group_id": "##id-3##",
-                                "security_group_name": "Terraform-SG"
+                                "security_group_name": "########"
                             }
                         ],
                         "state": "available",
@@ -353,12 +353,12 @@
                         "subregion_name": "us-east-2b",
                         "tags": [
                             {
-                                "key": "Key:",
-                                "value": ":value-tags"
-                            },
-                            {
                                 "key": "Key-2",
                                 "value": "value-tags-2"
+                            },
+                            {
+                                "key": "Key:",
+                                "value": ":value-tags"
                             }
                         ]
                     },
@@ -433,7 +433,7 @@
                         "security_groups": [
                             {
                                 "security_group_id": "##id-3##",
-                                "security_group_name": "Terraform-SG"
+                                "security_group_name": "########"
                             }
                         ],
                         "state": "available",
@@ -453,11 +453,12 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
+                    "private": "########",
                     "dependencies": [
                         "outscale_net.outscale_net",
                         "outscale_security_group.security_group01",
-                        "outscale_subnet.subnet01"
+                        "outscale_subnet.subnet01",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -504,7 +505,7 @@
                         "security_groups": [
                             {
                                 "security_group_id": "##id-3##",
-                                "security_group_name": "Terraform-SG"
+                                "security_group_name": "########"
                             }
                         ],
                         "state": "available",
@@ -520,11 +521,12 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
+                    "private": "########",
                     "dependencies": [
                         "outscale_net.outscale_net",
                         "outscale_security_group.security_group01",
-                        "outscale_subnet.subnet01"
+                        "outscale_subnet.subnet01",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -565,7 +567,7 @@
                         "security_groups": [
                             {
                                 "security_group_id": "##id-3##",
-                                "security_group_name": "Terraform-SG"
+                                "security_group_name": "########"
                             }
                         ],
                         "state": "available",
@@ -585,11 +587,12 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
+                    "private": "########",
                     "dependencies": [
                         "outscale_net.outscale_net",
                         "outscale_security_group.security_group01",
-                        "outscale_subnet.subnet02"
+                        "outscale_subnet.subnet02",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -615,13 +618,14 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
+                    "private": "########",
                     "dependencies": [
                         "outscale_net.outscale_net",
                         "outscale_nic.outscale_nic",
                         "outscale_security_group.security_group01",
                         "outscale_subnet.subnet01",
-                        "outscale_vm.vm01"
+                        "outscale_vm.vm01",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -647,13 +651,14 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
+                    "private": "########",
                     "dependencies": [
                         "outscale_net.outscale_net",
                         "outscale_nic.outscale_nic_2",
                         "outscale_security_group.security_group01",
                         "outscale_subnet.subnet01",
-                        "outscale_vm.vm01"
+                        "outscale_vm.vm01",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -685,14 +690,15 @@
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-3##",
-                        "security_group_name": "Terraform-SG",
+                        "security_group_name": "########",
                         "tags": [],
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
                     "dependencies": [
-                        "outscale_net.outscale_net"
+                        "outscale_net.outscale_net",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -796,7 +802,7 @@
                         "id": "##id-7##",
                         "image_id": "##id-16##",
                         "is_source_dest_checked": true,
-                        "keypair_name": "",
+                        "keypair_name": "########",
                         "keypair_name_wo": null,
                         "launch_number": 0,
                         "nested_virtualization": false,
@@ -836,7 +842,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-8##",
-                                        "security_group_name": "default"
+                                        "security_group_name": "########"
                                     }
                                 ],
                                 "state": "in-use",
@@ -882,7 +888,7 @@
                                 "security_groups": [
                                     {
                                         "security_group_id": "##id-8##",
-                                        "security_group_name": "default"
+                                        "security_group_name": "########"
                                     }
                                 ],
                                 "state": "in-use",
@@ -905,11 +911,11 @@
                         "security_group_ids": [
                             "##id-8##"
                         ],
-                        "security_group_names": null,
+                        "security_group_names": "########",
                         "security_groups": [
                             {
                                 "security_group_id": "##id-8##",
-                                "security_group_name": "default"
+                                "security_group_name": "########"
                             }
                         ],
                         "state": "running",
@@ -924,7 +930,7 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
+                    "private": "########",
                     "dependencies": [
                         "outscale_net.outscale_net",
                         "outscale_subnet.subnet01"

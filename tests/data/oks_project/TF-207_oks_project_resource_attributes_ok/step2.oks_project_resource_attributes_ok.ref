@@ -19,7 +19,7 @@
                         "description": "TF207 OKS project",
                         "disable_api_termination": false,
                         "id": "##id-0##",
-                        "name": "oks-project-tf-207",
+                        "name": "########",
                         "quirks": null,
                         "region": "eu-west-2",
                         "request_id": "########",
@@ -32,7 +32,10 @@
                         "updated_at": "########"
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         }

@@ -44,7 +44,7 @@
                                 "backend_protocol": "TCP",
                                 "load_balancer_port": 1024,
                                 "load_balancer_protocol": "TCP",
-                                "policy_names": [],
+                                "policy_names": "########",
                                 "server_certificate_id": ""
                             },
                             {
@@ -52,14 +52,14 @@
                                 "backend_protocol": "HTTP",
                                 "load_balancer_port": 80,
                                 "load_balancer_protocol": "HTTP",
-                                "policy_names": [],
+                                "policy_names": "########",
                                 "server_certificate_id": ""
                             }
                         ],
                         "load_balancer_name": "########",
                         "load_balancer_sticky_cookie_policies": [
                             {
-                                "policy_name": "policy-lbu-terraform-TF85"
+                                "policy_name": "########"
                             }
                         ],
                         "load_balancer_type": "internet-facing",
@@ -71,7 +71,7 @@
                         "source_security_group": [
                             {
                                 "security_group_account_id": "##id-1##",
-                                "security_group_name": "outscale-elb-sg"
+                                "security_group_name": "########"
                             }
                         ],
                         "subnets": [],
@@ -91,7 +91,10 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########",
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -133,9 +136,7 @@
                                 "backend_protocol": "HTTP",
                                 "load_balancer_port": 80,
                                 "load_balancer_protocol": "HTTP",
-                                "policy_names": [
-                                    "policy-lbu-terraform-TF85"
-                                ],
+                                "policy_names": "########",
                                 "server_certificate_id": ""
                             },
                             {
@@ -143,7 +144,7 @@
                                 "backend_protocol": "TCP",
                                 "load_balancer_port": 1024,
                                 "load_balancer_protocol": "TCP",
-                                "policy_names": [],
+                                "policy_names": "########",
                                 "server_certificate_id": ""
                             }
                         ],
@@ -151,20 +152,18 @@
                         "load_balancer_port": 80,
                         "load_balancer_sticky_cookie_policies": [
                             {
-                                "policy_name": "policy-lbu-terraform-TF85"
+                                "policy_name": "########"
                             }
                         ],
                         "load_balancer_type": null,
-                        "policy_names": [
-                            "policy-lbu-terraform-TF85"
-                        ],
+                        "policy_names": "########",
                         "request_id": "########",
                         "security_groups": [],
                         "server_certificate_id": null,
                         "source_security_group": [
                             {
                                 "security_group_account_id": "##id-1##",
-                                "security_group_name": "outscale-elb-sg"
+                                "security_group_name": "########"
                             }
                         ],
                         "subnets": [],
@@ -184,10 +183,11 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
+                    "private": "########",
                     "dependencies": [
                         "outscale_load_balancer.public_lbu1",
-                        "outscale_load_balancer_policy.policy-1"
+                        "outscale_load_balancer_policy.policy-1",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -232,7 +232,7 @@
                                 "backend_protocol": "HTTP",
                                 "load_balancer_port": 80,
                                 "load_balancer_protocol": "HTTP",
-                                "policy_names": [],
+                                "policy_names": "########",
                                 "server_certificate_id": ""
                             },
                             {
@@ -240,19 +240,19 @@
                                 "backend_protocol": "TCP",
                                 "load_balancer_port": 1024,
                                 "load_balancer_protocol": "TCP",
-                                "policy_names": [],
+                                "policy_names": "########",
                                 "server_certificate_id": ""
                             }
                         ],
                         "load_balancer_name": "########",
                         "load_balancer_sticky_cookie_policies": [
                             {
-                                "policy_name": "policy-lbu-terraform-TF85"
+                                "policy_name": "########"
                             }
                         ],
                         "load_balancer_type": "internet-facing",
                         "net_id": "",
-                        "policy_name": "policy-lbu-terraform-TF85",
+                        "policy_name": "########",
                         "policy_type": "load_balancer",
                         "public_ip": "########",
                         "request_id": "########",
@@ -261,7 +261,7 @@
                         "source_security_group": [
                             {
                                 "security_group_account_id": "##id-1##",
-                                "security_group_name": "outscale-elb-sg"
+                                "security_group_name": "########"
                             }
                         ],
                         "subnets": [],
@@ -281,9 +281,10 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA==",
+                    "private": "########",
                     "dependencies": [
-                        "outscale_load_balancer.public_lbu1"
+                        "outscale_load_balancer.public_lbu1",
+                        "random_string.suffix"
                     ]
                 }
             ]

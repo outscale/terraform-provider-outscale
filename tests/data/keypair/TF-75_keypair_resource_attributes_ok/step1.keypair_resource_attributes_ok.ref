@@ -17,7 +17,7 @@
                         "id": "##id-0##",
                         "keypair_fingerprint": "########",
                         "keypair_id": "##id-0##",
-                        "keypair_name": "keyname_test_",
+                        "keypair_name": "########",
                         "keypair_type": "ssh-rsa",
                         "private_key": "########",
                         "public_key": null,
@@ -26,7 +26,10 @@
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         }

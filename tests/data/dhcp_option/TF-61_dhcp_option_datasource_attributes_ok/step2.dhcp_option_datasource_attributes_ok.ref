@@ -77,12 +77,12 @@
                         "request_id": "########",
                         "tags": [
                             {
-                                "key": "Project",
-                                "value": "terraform"
-                            },
-                            {
                                 "key": "Name-1",
                                 "value": "test-MZI-3"
+                            },
+                            {
+                                "key": "Project",
+                                "value": "terraform"
                             }
                         ]
                     },
@@ -130,7 +130,7 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########"
                 }
             ]
         }

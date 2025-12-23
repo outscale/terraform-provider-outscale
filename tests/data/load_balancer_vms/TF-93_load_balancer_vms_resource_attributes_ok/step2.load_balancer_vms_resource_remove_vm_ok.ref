@@ -17,7 +17,7 @@
                         "id": "##id-0##",
                         "keypair_fingerprint": "########",
                         "keypair_id": "##id-0##",
-                        "keypair_name": "KP-TF93",
+                        "keypair_name": "########",
                         "keypair_type": "ssh-rsa",
                         "private_key": "########",
                         "public_key": null,
@@ -26,7 +26,10 @@
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -49,7 +52,10 @@
                         ],
                         "application_sticky_cookie_policies": [],
                         "backend_ips": "########",
-                        "backend_vm_ids": [],
+                        "backend_vm_ids": [
+                            "##id-1##",
+                            "##id-2##"
+                        ],
                         "dns_name": "########",
                         "health_check": [
                             {
@@ -62,14 +68,14 @@
                                 "unhealthy_threshold": 2
                             }
                         ],
-                        "id": "##id-1##",
+                        "id": "##id-3##",
                         "listeners": [
                             {
                                 "backend_port": 8080,
                                 "backend_protocol": "HTTP",
                                 "load_balancer_port": 8080,
                                 "load_balancer_protocol": "HTTP",
-                                "policy_names": [],
+                                "policy_names": "########",
                                 "server_certificate_id": ""
                             },
                             {
@@ -77,7 +83,7 @@
                                 "backend_protocol": "TCP",
                                 "load_balancer_port": 80,
                                 "load_balancer_protocol": "TCP",
-                                "policy_names": [],
+                                "policy_names": "########",
                                 "server_certificate_id": ""
                             }
                         ],
@@ -91,8 +97,8 @@
                         "security_groups": [],
                         "source_security_group": [
                             {
-                                "security_group_account_id": "##id-2##",
-                                "security_group_name": "outscale-elb-sg"
+                                "security_group_account_id": "##id-4##",
+                                "security_group_name": "########"
                             }
                         ],
                         "subnets": [],
@@ -108,7 +114,10 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########",
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -123,9 +132,9 @@
                     "attributes": {
                         "backend_ips": "########",
                         "backend_vm_ids": [
-                            "##id-3##"
+                            "##id-1##"
                         ],
-                        "id": "##id-1##",
+                        "id": "##id-3##",
                         "load_balancer_name": "########",
                         "request_id": "########",
                         "timeouts": null
@@ -136,7 +145,8 @@
                         "outscale_keypair.my_keypair",
                         "outscale_load_balancer.public_lbu1",
                         "outscale_security_group.public_sglb",
-                        "outscale_vm.outscale_vms_lbu"
+                        "outscale_vm.outscale_vms_lbu",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -150,21 +160,24 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "account_id": "##id-4##",
+                        "account_id": "##id-5##",
                         "description": "test lbu vm health",
-                        "id": "##id-5##",
+                        "id": "##id-6##",
                         "inbound_rules": [],
                         "net_id": "",
                         "outbound_rules": [],
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
-                        "security_group_id": "##id-5##",
-                        "security_group_name": "sgTF-93",
+                        "security_group_id": "##id-6##",
+                        "security_group_name": "########",
                         "tags": [],
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -194,7 +207,7 @@
                                         "link_date": "########",
                                         "state": "attached",
                                         "tags": [],
-                                        "volume_id": "##id-6##"
+                                        "volume_id": "##id-7##"
                                     }
                                 ],
                                 "device_name": "/dev/sda1"
@@ -207,10 +220,10 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-3##",
-                        "image_id": "##id-7##",
+                        "id": "##id-1##",
+                        "image_id": "##id-8##",
                         "is_source_dest_checked": false,
-                        "keypair_name": "KP-TF93",
+                        "keypair_name": "########",
                         "keypair_name_wo": null,
                         "launch_number": 0,
                         "nested_virtualization": false,
@@ -230,18 +243,18 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-8##",
+                        "reservation_id": "##id-9##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
                         "secure_boot_action": null,
                         "security_group_ids": [
-                            "##id-5##"
+                            "##id-6##"
                         ],
-                        "security_group_names": null,
+                        "security_group_names": "########",
                         "security_groups": [
                             {
-                                "security_group_id": "##id-5##",
-                                "security_group_name": "sgTF-93"
+                                "security_group_id": "##id-6##",
+                                "security_group_name": "########"
                             }
                         ],
                         "state": "running",
@@ -255,16 +268,17 @@
                         ],
                         "timeouts": null,
                         "user_data": "ICAgICAjIS9iaW4vYmFzaAogICAgcHVzaGQgL2hvbWUKICAgIG5vaHVwIHB5dGhvbiAtbSBTaW1wbGVIVFRQU2VydmVyIDgwODAK",
-                        "vm_id": "##id-3##",
+                        "vm_id": "##id-1##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
+                    "private": "########",
                     "dependencies": [
                         "outscale_keypair.my_keypair",
-                        "outscale_security_group.public_sglb"
+                        "outscale_security_group.public_sglb",
+                        "random_string.suffix"
                     ]
                 },
                 {
@@ -287,7 +301,7 @@
                                         "link_date": "########",
                                         "state": "attached",
                                         "tags": [],
-                                        "volume_id": "##id-9##"
+                                        "volume_id": "##id-10##"
                                     }
                                 ],
                                 "device_name": "/dev/sda1"
@@ -300,10 +314,10 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-10##",
-                        "image_id": "##id-7##",
+                        "id": "##id-2##",
+                        "image_id": "##id-8##",
                         "is_source_dest_checked": false,
-                        "keypair_name": "KP-TF93",
+                        "keypair_name": "########",
                         "keypair_name_wo": null,
                         "launch_number": 0,
                         "nested_virtualization": false,
@@ -328,13 +342,13 @@
                         "root_device_type": "ebs",
                         "secure_boot_action": null,
                         "security_group_ids": [
-                            "##id-5##"
+                            "##id-6##"
                         ],
-                        "security_group_names": null,
+                        "security_group_names": "########",
                         "security_groups": [
                             {
-                                "security_group_id": "##id-5##",
-                                "security_group_name": "sgTF-93"
+                                "security_group_id": "##id-6##",
+                                "security_group_name": "########"
                             }
                         ],
                         "state": "running",
@@ -348,16 +362,17 @@
                         ],
                         "timeouts": null,
                         "user_data": "ICAgICAjIS9iaW4vYmFzaAogICAgcHVzaGQgL2hvbWUKICAgIG5vaHVwIHB5dGhvbiAtbSBTaW1wbGVIVFRQU2VydmVyIDgwODAK",
-                        "vm_id": "##id-10##",
+                        "vm_id": "##id-2##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
+                    "private": "########",
                     "dependencies": [
                         "outscale_keypair.my_keypair",
-                        "outscale_security_group.public_sglb"
+                        "outscale_security_group.public_sglb",
+                        "random_string.suffix"
                     ]
                 }
             ]

@@ -23,12 +23,15 @@
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-1##",
-                        "security_group_name": "sg1-test-group_test",
+                        "security_group_name": "########",
                         "tags": [],
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -51,7 +54,7 @@
                         "rules": [],
                         "security_group_account_id_to_link": null,
                         "security_group_id": "##id-1##",
-                        "security_group_name": "sg1-test-group_test",
+                        "security_group_name": "########",
                         "security_group_name_to_link": null,
                         "timeouts": null,
                         "to_port_range": 443
@@ -59,7 +62,8 @@
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
                     "dependencies": [
-                        "outscale_security_group.outscale_security_group"
+                        "outscale_security_group.outscale_security_group",
+                        "random_string.suffix"
                     ]
                 }
             ]

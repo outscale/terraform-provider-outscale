@@ -22,11 +22,14 @@
                         "policy": [],
                         "user": [],
                         "user_group_id": "##id-0##",
-                        "user_group_name": "Group-terraform-test-2"
+                        "user_group_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "bnVsbA=="
+                    "private": "########",
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         }

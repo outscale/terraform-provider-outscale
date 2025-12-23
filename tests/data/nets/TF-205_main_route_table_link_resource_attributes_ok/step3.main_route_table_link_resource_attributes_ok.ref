@@ -139,13 +139,13 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-7##",
-                        "link_route_table_id": "##id-7##",
+                        "id": "##id-5##",
+                        "link_route_table_id": "##id-5##",
                         "main": true,
                         "net_id": "",
                         "request_id": "########",
                         "route_table_id": "##id-3##",
-                        "subnet_id": "##id-8##",
+                        "subnet_id": "##id-6##",
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
@@ -167,13 +167,13 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-5##",
-                        "link_route_table_id": "##id-5##",
+                        "id": "##id-7##",
+                        "link_route_table_id": "##id-7##",
                         "main": true,
                         "net_id": "",
                         "request_id": "########",
                         "route_table_id": "##id-3##",
-                        "subnet_id": "##id-6##",
+                        "subnet_id": "##id-8##",
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
@@ -196,13 +196,13 @@
                     "schema_version": 0,
                     "attributes": {
                         "available_ips_count": "########",
-                        "id": "##id-8##",
+                        "id": "##id-6##",
                         "ip_range": "10.0.0.0/24",
                         "map_public_ip_on_launch": false,
                         "net_id": "##id-2##",
                         "request_id": "########",
                         "state": "available",
-                        "subnet_id": "##id-8##",
+                        "subnet_id": "##id-6##",
                         "subregion_name": "us-east-2a",
                         "tags": [
                             {
@@ -230,13 +230,13 @@
                     "schema_version": 0,
                     "attributes": {
                         "available_ips_count": "########",
-                        "id": "##id-6##",
+                        "id": "##id-8##",
                         "ip_range": "10.0.1.0/24",
                         "map_public_ip_on_launch": false,
                         "net_id": "##id-2##",
                         "request_id": "########",
                         "state": "available",
-                        "subnet_id": "##id-6##",
+                        "subnet_id": "##id-8##",
                         "subregion_name": "us-east-2a",
                         "tags": [
                             {

@@ -47,14 +47,15 @@
                         "remove_default_outbound_rule": true,
                         "request_id": "########",
                         "security_group_id": "##id-3##",
-                        "security_group_name": "terraform-TF204",
+                        "security_group_name": "########",
                         "tags": [],
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
                     "dependencies": [
-                        "outscale_net.outscale_net_sg"
+                        "outscale_net.outscale_net_sg",
+                        "random_string.suffix"
                     ]
                 }
             ]
