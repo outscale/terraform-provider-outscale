@@ -30,12 +30,12 @@ func ResourceOutscaleVM() *schema.Resource {
 			State: schema.ImportStatePassthrough,
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(10 * time.Minute),
+			Create: schema.DefaultTimeout(12 * time.Minute),
 			Read:   schema.DefaultTimeout(5 * time.Minute),
 			Update: schema.DefaultTimeout(5 * time.Minute),
 			Delete: schema.DefaultTimeout(5 * time.Minute),
 		},
-		//Schema: //omitted for brevity
+		// Schema: //omitted for brevity
 		ValidateRawResourceConfigFuncs: []schema.ValidateRawResourceConfigFunc{
 			validation.PreferWriteOnlyAttribute(cty.GetAttrPath("keypair_name"), cty.GetAttrPath("keypair_name_wo")),
 		},
@@ -773,7 +773,6 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		return fmt.Errorf("error launching source VM: %v", utils.GetErrorResponse(err))
 	}
@@ -878,7 +877,6 @@ func updateBsuTags(client *oscgo.APIClient, d *schema.ResourceData, addTags map[
 				VmIds: &[]string{d.Id()},
 			},
 		}).Execute()
-
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -923,14 +921,12 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 				VmIds: &[]string{d.Id()},
 			},
 		}).Execute()
-
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		return fmt.Errorf("error reading the VM (%s): %s", d.Id(), err)
 	}
@@ -988,7 +984,6 @@ func getOAPIVMAdminPassword(VMID string, conn *oscgo.APIClient) (string, error) 
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		return "", fmt.Errorf("error reading the VM's password %s", err)
 	}
@@ -1234,7 +1229,6 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 				}
 				return nil
 			})
-
 			if err != nil {
 				return err
 			}
@@ -1298,7 +1292,6 @@ func resourceOAPIVMDelete(d *schema.ResourceData, meta interface{}) error {
 		}
 		return nil
 	})
-
 	if err != nil {
 		return fmt.Errorf("Error Force stopping vms before destroy %s", err)
 	}
@@ -1307,13 +1300,11 @@ func resourceOAPIVMDelete(d *schema.ResourceData, meta interface{}) error {
 		_, httpResp, err := conn.VmApi.DeleteVms(context.Background()).DeleteVmsRequest(oscgo.DeleteVmsRequest{
 			VmIds: []string{id},
 		}).Execute()
-
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})
-
 	if err != nil {
 		return fmt.Errorf("Error deleting the VM")
 	}
@@ -1504,7 +1495,6 @@ func expandBlockDeviceBSU(bsu map[string]interface{}, deviceName string) (oscgo.
 }
 
 func buildNetworkOApiInterfaceOpts(d *schema.ResourceData) []oscgo.NicForVmCreation {
-
 	networkInterfaces := []oscgo.NicForVmCreation{}
 	if nics := d.Get("primary_nic").(*schema.Set).List(); len(nics) > 0 {
 		buildNicForVmCreation(nics, &networkInterfaces)
@@ -1516,7 +1506,6 @@ func buildNetworkOApiInterfaceOpts(d *schema.ResourceData) []oscgo.NicForVmCreat
 }
 
 func buildNicForVmCreation(nics []interface{}, listNics *[]oscgo.NicForVmCreation) {
-
 	for _, v := range nics {
 		nic := v.(map[string]interface{})
 		ni := oscgo.NicForVmCreation{
@@ -1541,7 +1530,6 @@ func buildNicForVmCreation(nics []interface{}, listNics *[]oscgo.NicForVmCreatio
 		}
 		*listNics = append(*listNics, ni)
 	}
-
 }
 
 func expandPrivatePublicIps(p *schema.Set) []oscgo.PrivateIpLight {
@@ -1607,7 +1595,6 @@ func vmStateRefreshFunc(conn *oscgo.APIClient, instanceID, failState string) ret
 
 		if state == failState {
 			return vm, state, fmt.Errorf("failed to reach target state. Reason: %v", *vm.State)
-
 		}
 
 		return vm, state, nil
@@ -1640,7 +1627,6 @@ func stopVM(vmID string, conn *oscgo.APIClient, timeOut time.Duration) error {
 		}
 		return nil
 	})
-
 	if err != nil {
 		return fmt.Errorf("error stopping vms %s", err)
 	}
@@ -1680,7 +1666,6 @@ func startVM(vmID string, conn *oscgo.APIClient, timeOut time.Duration) error {
 		}
 		return nil
 	})
-
 	if err != nil {
 		return fmt.Errorf("error starting vm %s", err)
 	}
@@ -1713,7 +1698,6 @@ func updateVmAttr(conn *oscgo.APIClient, instanceAttrOpts oscgo.UpdateVmRequest)
 		}
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}
