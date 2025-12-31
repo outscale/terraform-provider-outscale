@@ -1,0 +1,75 @@
+package oapi_test
+
+import (
+	"fmt"
+	"testing"
+
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/outscale/terraform-provider-outscale/internal/testacc"
+	"github.com/outscale/terraform-provider-outscale/internal/utils"
+)
+
+func TestAccOthers_SnapshotExportTaskDataSource_basic(t *testing.T) {
+	t.Skip("")
+
+	imageName := acctest.RandomWithPrefix("terraform-export-")
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 func() { testacc.PreCheck(t) },
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccOutscaleSnapshotExportTaskDataSourceConfig(imageName, utils.GetRegion()),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleSnapshotExportTaskDataSourceID("data.outscale_snapshot_export_task.export_task"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckOutscaleSnapshotExportTaskDataSourceID(n string) resource.TestCheckFunc {
+	// Wait for IAM role
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("can't find Snapshot Export Task data source: %s", n)
+		}
+
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("Snapshot Export Task data source ID not set")
+		}
+		return nil
+	}
+}
+
+func testAccOutscaleSnapshotExportTaskDataSourceConfig(testName, region string) string {
+	stringTemplate := `
+		resource "outscale_volume" "outscale_volume_snap" {
+			subregion_name   = "%[2]sa"
+			size                = 10
+		}
+
+		resource "outscale_snapshot" "outscale_snapshot" {
+			volume_id = outscale_volume.outscale_volume_snap.volume_id
+		}
+
+		resource "outscale_snapshot_export_task" "outscale_snapshot_export_task" {
+			snapshot_id                     = outscale_snapshot.outscale_snapshot.snapshot_id
+			osu_export {
+				disk_image_format = "qcow2"
+				osu_bucket        = "%[1]s"
+				osu_prefix        = "new-export"
+				}
+		}
+
+		data "outscale_snapshot_export_task" "export_task" {
+			filter {
+				name = "task_ids"
+				values = [outscale_snapshot_export_task.outscale_snapshot_export_task.id]
+			}
+		}
+		`
+	return fmt.Sprintf(stringTemplate, testName, region)
+}
