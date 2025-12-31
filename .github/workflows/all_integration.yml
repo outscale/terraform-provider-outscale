@@ -1,0 +1,36 @@
+name: All Integration Tests
+
+on:
+    push:
+        branches:
+            - master
+    schedule:
+        # Run daily at 2 AM UTC
+        - cron: "0 2 * * *"
+    workflow_dispatch:
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    oapi-nets-integration-tests:
+        uses: ./.github/workflows/reusable_integration_test.yml
+        with:
+            test-command: test-integration-oapi-nets
+            runner: us-east-2
+        secrets: inherit
+
+    oapi-integration-tests:
+        uses: ./.github/workflows/reusable_integration_test.yml
+        with:
+            test-command: test-integration-oapi
+            runner: eu-west-2
+        secrets: inherit
+
+    oks-integration-tests:
+        uses: ./.github/workflows/reusable_integration_test.yml
+        with:
+            test-command: test-integration-oks
+            runner: eu-west-2
+        secrets: inherit
