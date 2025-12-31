@@ -1,0 +1,65 @@
+package oapi_test
+
+import (
+	"testing"
+
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/outscale/terraform-provider-outscale/internal/testacc"
+)
+
+func TestAccNet_WithRouteTablesDataSource_basic(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 func() { testacc.PreCheck(t) },
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccDataSourceOutscaleRouteTablesGroupConfig,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.outscale_route_tables.by_filter", "route_tables.#", "1"),
+					resource.TestCheckResourceAttr("data.outscale_route_tables.by_id", "route_tables.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+const testAccDataSourceOutscaleRouteTablesGroupConfig = `
+	resource "outscale_net" "test" {
+		ip_range = "172.16.0.0/16"
+
+		tags {
+			key   = "Name"
+			value = "terraform-testacc-data-source"
+		}
+	}
+
+	resource "outscale_subnet" "test" {
+		ip_range = "172.16.0.0/24"
+		net_id   = "${outscale_net.test.id}"
+
+		tags {
+			key   = "Name"
+			value = "terraform-testacc-data-source"
+		}
+	}
+
+	resource "outscale_route_table" "test" {
+		net_id = "${outscale_net.test.id}"
+
+		tags {
+			key   = "Name"
+			value = "terraform-testacc-routetable-data-source"
+		}
+	}
+
+	data "outscale_route_tables" "by_filter" {
+		filter {
+			name   = "route_table_ids"
+			values = ["${outscale_route_table.test.id}"]
+		}
+	}
+
+	data "outscale_route_tables" "by_id" {
+		route_table_id = ["${outscale_route_table.test.id}"]
+	}
+`

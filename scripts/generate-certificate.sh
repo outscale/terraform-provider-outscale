@@ -4,6 +4,7 @@ set -e
 
 project_dir=$(cd "$(dirname $0)" && pwd)
 project_root=$(cd $project_dir/.. && pwd)
+
 if [ ! -d "$project_root/tests/certs" ]; then
     mkdir $project_root/tests/certs
 fi
@@ -47,6 +48,13 @@ terraform apply -auto-approve || exit 1
 cd $build_dir
 terraform init || exit 1
 terraform apply -auto-approve || exit 1
+
+oapi_testdata="$project_root/internal/services/oapi/testdata"
+if [ ! -d "$oapi_testdata" ]; then
+    mkdir $oapi_testdata
+fi
+cp certificate.pem certificate.key $oapi_testdata/
+
 cd $project_root
 
 exit 0

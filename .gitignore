@@ -40,6 +40,7 @@ outscale/certificate.pem
 outscale/gen-cert-test.tf
 terraform-provider-outscale_v0.5.32
 tests/certs/
+internal/services/oapi/testdata
 
 # docs
 docs/generation_log.txt
