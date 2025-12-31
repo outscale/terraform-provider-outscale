@@ -58,6 +58,17 @@ To run the full suite of acceptance tests, use:
 make testacc
 ```
 
+You can also run tests for specific services or categories:
+
+```sh
+make testacc-oapi         # All OAPI service tests
+make testacc-oapi-net     # OAPI network tests only
+make testacc-oapi-vm      # OAPI VM tests only
+make testacc-oapi-others  # OAPI other tests only
+make testacc-oks          # All OKS service tests
+make testacc-provider     # Provider-level tests only
+```
+
 **Notes:**
 
 - **Cost**: Acceptance tests create real resources and may incur costs.
@@ -69,12 +80,6 @@ export OUTSCALE_ACCESSKEYID="<ACCESSKEY>" # Example: "XXXXXXXXXXXXXXXXXXXX"
 export OUTSCALE_SECRETKEYID="<SECRETKEY>" # Example: "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY"
 export OUTSCALE_REGION="<REGION>"         # Example: "eu-west-2"
 export OUTSCALE_ACCOUNT="<ACCOUNTPID>"    # Example: "XXXXXXXXXXXX"
-```
-
-Run the tests:
-
-```sh
-make testacc
 ```
 
 ---

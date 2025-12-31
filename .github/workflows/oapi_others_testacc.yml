@@ -1,0 +1,37 @@
+name: OAPI - Others Tests
+
+on:
+    pull_request:
+        branches:
+            - master
+        paths:
+            - ".github/workflows/oapi_others_testacc.yml"
+            - ".github/workflows/reusable-acceptance-test.yml"
+            - "internal/services/oapi/**"
+            - "internal/client/**"
+            - "internal/testacc/**"
+            - "internal/fwhelpers/**"
+            - "internal/fwmodifyplan/**"
+            - "internal/fwvalidators/**"
+            - "internal/utils/**"
+            - "provider/**"
+            - "go.sum"
+            - "go.mod"
+            - "GNUmakefile"
+    push:
+        branches:
+            - master
+    workflow_dispatch:
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    oapi-others-tests:
+        uses: ./.github/workflows/reusable_acceptance_test.yml
+        with:
+            test-command: testacc-oapi-others
+            runner: eu-west-2
+            needs-terraform: true
+        secrets: inherit

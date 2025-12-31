@@ -35,10 +35,7 @@ terraformStatePull.json
 /tests/old.py
 /tests/tmp.txt
 /tests/terraform.d/
-outscale/certificate.key
-outscale/certificate.pem
-outscale/gen-cert-test.tf
-terraform-provider-outscale_v0.5.32
+terraform-provider-outscale_v1.0.0-test
 tests/certs/
 
 # docs
