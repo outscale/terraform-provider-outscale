@@ -1,0 +1,64 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "data",
+            "type": "outscale_internet_service",
+            "name": "outscale_internet_serviced",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "filter": "########",
+                        "id": "##id-0##",
+                        "internet_service_id": "##id-0##",
+                        "net_id": "",
+                        "request_id": "########",
+                        "state": "",
+                        "tags": [
+                            {
+                                "key": "test",
+                                "value": "internet_service"
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_internet_service",
+            "name": "outscale_internet_service",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "id": "##id-1##",
+                        "internet_service_id": "##id-1##",
+                        "net_id": "",
+                        "request_id": "########",
+                        "state": "",
+                        "tags": [
+                            {
+                                "key": "test",
+                                "value": "internet_service"
+                            }
+                        ],
+                        "timeouts": null
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
+                }
+            ]
+        }
+    ],
+    "check_results": "########"
+}
