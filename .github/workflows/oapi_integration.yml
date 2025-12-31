@@ -1,0 +1,42 @@
+name: OAPI - Integration Tests
+
+on:
+    pull_request:
+        branches:
+            - master
+        paths:
+            - ".github/workflows/oapi_integration.yml"
+            - ".github/workflows/reusable-integration-test.yml"
+            - "internal/services/oapi/**"
+            - "internal/client/**"
+            - "internal/testacc/**"
+            - "internal/fwhelpers/**"
+            - "internal/fwmodifyplan/**"
+            - "internal/fwvalidators/**"
+            - "internal/utils/**"
+            - "provider/**"
+            - "tests/data/oapi/**"
+            - "tests/test_provider_oapi.py"
+            - "tests/test_provider_base.py"
+            - "tests/test_provider_oapi_config.py"
+            - "scripts/test-integration.sh"
+            - "scripts/test-integration-common.sh"
+            - "go.sum"
+            - "go.mod"
+            - "GNUmakefile"
+    push:
+        branches:
+            - master
+    workflow_dispatch:
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    oapi-integration-tests:
+        uses: ./.github/workflows/reusable_integration_test.yml
+        with:
+            test-command: test-integration-oapi
+            runner: eu-west-2
+        secrets: inherit

@@ -1,0 +1,239 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "data",
+            "type": "outscale_public_ips",
+            "name": "outscale_public_ips",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "filter": "########",
+                        "id": "##id-0##",
+                        "public_ips": [
+                            {
+                                "link_public_ip_id": "",
+                                "nic_account_id": "",
+                                "nic_id": "",
+                                "private_ip": "########",
+                                "public_ip": "########",
+                                "public_ip_id": "##id-1##",
+                                "tags": [],
+                                "vm_id": ""
+                            },
+                            {
+                                "link_public_ip_id": "",
+                                "nic_account_id": "",
+                                "nic_id": "",
+                                "private_ip": "########",
+                                "public_ip": "########",
+                                "public_ip_id": "##id-2##",
+                                "tags": [
+                                    {
+                                        "key": "Key",
+                                        "value": "value-tags"
+                                    },
+                                    {
+                                        "key": "name-2",
+                                        "value": "test-data-2"
+                                    }
+                                ],
+                                "vm_id": ""
+                            }
+                        ],
+                        "request_id": "########"
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_public_ips",
+            "name": "outscale_public_ips_2",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "filter": "########",
+                        "id": "##id-3##",
+                        "public_ips": [
+                            {
+                                "link_public_ip_id": "",
+                                "nic_account_id": "",
+                                "nic_id": "",
+                                "private_ip": "########",
+                                "public_ip": "########",
+                                "public_ip_id": "##id-2##",
+                                "tags": [
+                                    {
+                                        "key": "Key",
+                                        "value": "value-tags"
+                                    },
+                                    {
+                                        "key": "name-2",
+                                        "value": "test-data-2"
+                                    }
+                                ],
+                                "vm_id": ""
+                            }
+                        ],
+                        "request_id": "########"
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_public_ips",
+            "name": "outscale_public_ips_3",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "filter": "########",
+                        "id": "##id-4##",
+                        "public_ips": [
+                            {
+                                "link_public_ip_id": "",
+                                "nic_account_id": "",
+                                "nic_id": "",
+                                "private_ip": "########",
+                                "public_ip": "########",
+                                "public_ip_id": "##id-2##",
+                                "tags": [
+                                    {
+                                        "key": "Key",
+                                        "value": "value-tags"
+                                    },
+                                    {
+                                        "key": "name-2",
+                                        "value": "test-data-2"
+                                    }
+                                ],
+                                "vm_id": ""
+                            }
+                        ],
+                        "request_id": "########"
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_public_ips",
+            "name": "outscale_public_ips_4",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "filter": "########",
+                        "id": "##id-5##",
+                        "public_ips": [
+                            {
+                                "link_public_ip_id": "",
+                                "nic_account_id": "",
+                                "nic_id": "",
+                                "private_ip": "########",
+                                "public_ip": "########",
+                                "public_ip_id": "##id-2##",
+                                "tags": [
+                                    {
+                                        "key": "Key",
+                                        "value": "value-tags"
+                                    },
+                                    {
+                                        "key": "name-2",
+                                        "value": "test-data-2"
+                                    }
+                                ],
+                                "vm_id": ""
+                            }
+                        ],
+                        "request_id": "########"
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_public_ip",
+            "name": "outscale_public_ip",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "id": "##id-2##",
+                        "link_public_ip_id": "",
+                        "nic_account_id": "",
+                        "nic_id": "",
+                        "private_ip": "########",
+                        "public_ip": "########",
+                        "public_ip_id": "##id-2##",
+                        "request_id": "########",
+                        "tags": [
+                            {
+                                "key": "Key",
+                                "value": "value-tags"
+                            },
+                            {
+                                "key": "name-2",
+                                "value": "test-data-2"
+                            }
+                        ],
+                        "timeouts": null,
+                        "vm_id": ""
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0,
+                    "private": "########"
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_public_ip",
+            "name": "outscale_public_ip2",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "id": "##id-1##",
+                        "link_public_ip_id": "",
+                        "nic_account_id": "",
+                        "nic_id": "",
+                        "private_ip": "########",
+                        "public_ip": "########",
+                        "public_ip_id": "##id-1##",
+                        "request_id": "########",
+                        "tags": [],
+                        "timeouts": null,
+                        "vm_id": ""
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0,
+                    "private": "########"
+                }
+            ]
+        }
+    ],
+    "check_results": "########"
+}
