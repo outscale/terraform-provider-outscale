@@ -1,0 +1,87 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "managed",
+            "type": "outscale_api_access_rule",
+            "name": "aar_1",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "api_access_rule_id": "##id-0##",
+                        "ca_ids": [
+                            "##id-1##",
+                            "##id-2##"
+                        ],
+                        "cns": [
+                            "test-TF201",
+                            "test-TF201-2"
+                        ],
+                        "description": "API Access rules-TF-201",
+                        "id": "##id-0##",
+                        "ip_ranges": "########",
+                        "request_id": "########"
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0,
+                    "private": "########",
+                    "dependencies": [
+                        "outscale_ca.ca_for_aar",
+                        "outscale_ca.ca_for_aar_2"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_ca",
+            "name": "ca_for_aar",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "ca_fingerprint": "########",
+                        "ca_id": "##id-1##",
+                        "ca_pem": "########",
+                        "description": "",
+                        "id": "##id-1##",
+                        "request_id": "########"
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0,
+                    "private": "########"
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_ca",
+            "name": "ca_for_aar_2",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "ca_fingerprint": "########",
+                        "ca_id": "##id-2##",
+                        "ca_pem": "########",
+                        "description": "",
+                        "id": "##id-2##",
+                        "request_id": "########"
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0,
+                    "private": "########"
+                }
+            ]
+        }
+    ],
+    "check_results": "########"
+}
