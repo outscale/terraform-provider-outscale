@@ -1,0 +1,29 @@
+package oapi_test
+
+import (
+	"testing"
+
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/outscale/terraform-provider-outscale/internal/testacc"
+)
+
+func TestAccFwOthers_DataSourceQuota(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testacc.PreCheck(t) },
+		Providers: testacc.SDKProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccFwDataSourceOutscaleQuotaConfig,
+				Check:  resource.ComposeTestCheckFunc(),
+			},
+		},
+	})
+}
+
+const testAccFwDataSourceOutscaleQuotaConfig = `
+	data "outscale_quota" "lbuQuota1" {
+	   filter {
+	      name     = "quota_names"
+	      values   = ["lb_listeners_limit"]
+	   }
+	}`

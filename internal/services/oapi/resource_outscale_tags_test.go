@@ -1,0 +1,162 @@
+package oapi_test
+
+import (
+	"context"
+	"fmt"
+	"log"
+	"os"
+	"testing"
+	"time"
+
+	oscgo "github.com/outscale/osc-sdk-go/v2"
+
+	"github.com/go-test/deep"
+	"github.com/outscale/terraform-provider-outscale/internal/client"
+	"github.com/outscale/terraform-provider-outscale/internal/services/oapi"
+	"github.com/outscale/terraform-provider-outscale/internal/services/oapi/oapihelpers"
+	"github.com/outscale/terraform-provider-outscale/internal/testacc"
+	"github.com/outscale/terraform-provider-outscale/internal/utils"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
+)
+
+func TestAccVM_tags(t *testing.T) {
+	v := &oscgo.Vm{}
+	omi := os.Getenv("OUTSCALE_IMAGEID")
+
+	if os.Getenv("TEST_QUOTA") == "true" {
+		resource.ParallelTest(t, resource.TestCase{
+			PreCheck:     func() { testacc.PreCheck(t) },
+			Providers:    testacc.SDKProviders,
+			CheckDestroy: testAccCheckOutscaleVMDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: testAccCheckOAPIInstanceConfigTags(omi, oapi.TestAccVmType, utils.GetRegion(), "keyOriginal", "valueOriginal"),
+					Check: resource.ComposeTestCheckFunc(
+						oapiTestAccCheckOutscaleVMExists("outscale_vm.vm", v),
+						testAccCheckOAPIVMTags(v, "keyOriginal", "valueOriginal"),
+						// Guard against regression of https://github.com/hashicorp/terraform/issues/914
+						resource.TestCheckResourceAttr(
+							"outscale_tag.foo", "tags.#", "1"),
+					),
+				},
+				{
+					Config: testAccCheckOAPIInstanceConfigTags(omi, oapi.TestAccVmType, utils.GetRegion(), "keyUpdated", "valueUpdated"),
+					Check: resource.ComposeTestCheckFunc(
+						oapiTestAccCheckOutscaleVMExists("outscale_vm.vm", v),
+						testAccCheckOAPIVMTags(v, "keyUpdated", "valueUpdated"),
+						// Guard against regression of https://github.com/hashicorp/terraform/issues/914
+						resource.TestCheckResourceAttr(
+							"outscale_tag.foo", "tags.#", "1"),
+					),
+				},
+			},
+		})
+	} else {
+		t.Skip("will be done soon")
+	}
+}
+
+func testAccCheckOAPIVMTags(vm *oscgo.Vm, key, value string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		tags := vm.GetTags()
+		return checkOAPITags(tags, key, value)
+	}
+}
+
+func oapiTestAccCheckOutscaleVMExists(n string, i *oscgo.Vm) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("Not found: %s", n)
+		}
+
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("No ID is set")
+		}
+
+		conn := testacc.SDKProvider.Meta().(*client.OutscaleClient)
+		var resp oscgo.ReadVmsResponse
+		var err error
+
+		err = retry.Retry(30*time.Second, func() *retry.RetryError {
+			rp, httpResp, err := conn.OSCAPI.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
+				Filters: &oscgo.FiltersVm{
+					VmIds: &[]string{rs.Primary.ID},
+				},
+			}).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp, err)
+			}
+			resp = rp
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+
+		if len(resp.GetVms()) == 0 {
+			return fmt.Errorf("VM not found")
+		}
+
+		if len(resp.GetVms()) > 0 {
+			*i = resp.GetVms()[0]
+			log.Printf("[DEBUG] VMS READ %+v", i)
+			return nil
+		}
+
+		return fmt.Errorf("VM not found")
+	}
+}
+
+func testAccCheckOAPITags(
+	ts *[]oscgo.ResourceTag, key string, value string,
+) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		expected := map[string]string{
+			"key":   key,
+			"value": value,
+		}
+		tags := oapihelpers.FlattenOAPITagsSDK(*ts)
+		for _, tag := range tags {
+			if diff := deep.Equal(tag, expected); diff != nil {
+				continue
+			}
+			return nil
+		}
+		return fmt.Errorf("error checking tags expected tag %+v is not found in %+v", expected, tags)
+	}
+}
+
+func checkOAPITags(ts []oscgo.ResourceTag, key, value string) error {
+	m := oapihelpers.FlattenOAPITagsSDK(ts)
+	log.Printf("[DEBUG], tagsOAPIToMap=%+v", m)
+	tag := m[0]
+
+	if tag["key"] != key || tag["value"] != value {
+		return fmt.Errorf("bad value expected: map[key:%s value:%s] got %+v", key, value, tag)
+	}
+	return nil
+}
+
+func testAccCheckOAPIInstanceConfigTags(omi, vmType, region, key, value string) string {
+	return fmt.Sprintf(`
+		resource "outscale_vm" "vm" {
+			image_id                 = "%s"
+			vm_type                  = "%s"
+			keypair_name             = "terraform-basic"
+			placement_subregion_name = "%[3]sa"
+		}
+
+		resource "outscale_tag" "foo" {
+			resource_ids = [outscale_vm.vm.id]
+
+			tag {
+				key   = "%s"
+				value = "%s"
+			}
+		}
+	`, omi, vmType, region, key, value)
+}
