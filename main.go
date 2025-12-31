@@ -11,13 +11,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
 	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
 
-	"github.com/outscale/terraform-provider-outscale/outscale"
+	"github.com/outscale/terraform-provider-outscale/provider"
 	vers "github.com/outscale/terraform-provider-outscale/version"
 )
 
-var (
-	version string = vers.GetVersion()
-)
+var version string = vers.GetVersion()
 
 func main() {
 	ctx := context.Background()
@@ -28,20 +26,20 @@ func main() {
 
 	upgradedSdkServer, err := tf5to6server.UpgradeServer(
 		ctx,
-		outscale.Provider().GRPCProvider,
+		provider.Provider().GRPCProvider,
 	)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	providers := []func() tfprotov6.ProviderServer{
-		providerserver.NewProtocol6(outscale.New(version)),
+		providerserver.NewProtocol6(provider.New(version)),
 		func() tfprotov6.ProviderServer {
 			return upgradedSdkServer
 		},
 	}
 
-	//using muxer
+	// using muxer
 	muxServer, err := tf6muxserver.NewMuxServer(ctx, providers...)
 	if err != nil {
 		log.Fatal(err)
@@ -58,7 +56,6 @@ func main() {
 		muxServer.ProviderServer,
 		serveOpts...,
 	)
-
 	if err != nil {
 		log.Fatal(err)
 	}

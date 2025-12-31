@@ -3,10 +3,9 @@ module github.com/outscale/terraform-provider-outscale
 go 1.25.4
 
 require (
-	github.com/aws/aws-sdk-go v1.55.8
+	github.com/aws/smithy-go/aws-http-auth v1.0.0
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
 	github.com/deckarep/golang-set/v2 v2.8.0
-	github.com/go-test/deep v1.0.8
 	github.com/hashicorp/errwrap v1.1.0
 	github.com/hashicorp/go-cty v1.5.0
 	github.com/hashicorp/terraform-plugin-framework v1.17.0
@@ -18,8 +17,9 @@ require (
 	github.com/hashicorp/terraform-plugin-mux v0.21.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.38.1
 	github.com/hashicorp/terraform-plugin-testing v1.14.0
+	github.com/outscale/goutils/sdk v0.0.0-20251230125904-cf90f7c6a4a4
 	github.com/outscale/osc-sdk-go/v2 v2.31.0
-	github.com/outscale/osc-sdk-go/v3 v3.0.0-alpha.5.0.20251112125254-1fb3f9ca574c
+	github.com/outscale/osc-sdk-go/v3 v3.0.0-beta.2
 	github.com/samber/lo v1.52.0
 	github.com/spf13/cast v1.6.0
 	github.com/tidwall/gjson v1.18.0
@@ -31,11 +31,12 @@ require (
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
-	github.com/aws/smithy-go/aws-http-auth v1.0.0 // indirect
+	github.com/aws/aws-sdk-go v1.55.8 // indirect
 	github.com/benbjohnson/clock v1.3.0 // indirect
 	github.com/cloudflare/circl v1.6.1 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/go-git/go-git/v5 v5.16.3 // indirect
+	github.com/go-test/deep v1.0.8 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
