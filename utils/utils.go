@@ -18,13 +18,13 @@ import (
 
 	set "github.com/deckarep/golang-set/v2"
 	fw_data "github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
 	fw_resource "github.com/hashicorp/terraform-plugin-framework/resource"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -527,8 +527,8 @@ func WaitForResource[T any](ctx context.Context, conf *retry.StateChangeConf) (*
 	return resp, nil
 }
 
-func CheckDiags[T *fw_resource.CreateResponse | *fw_resource.UpdateResponse | *fw_resource.DeleteResponse | *fw_resource.ReadResponse | *fw_resource.ModifyPlanResponse | *fw_resource.ImportStateResponse | *fw_data.ReadResponse | *fw_resource.ValidateConfigResponse | *ephemeral.OpenResponse](resp T, diags diag.Diagnostics) bool {
-	switch r := any(resp).(type) {
+func CheckDiags(resp any, diags diag.Diagnostics) bool {
+	switch r := resp.(type) {
 	case *fw_resource.DeleteResponse:
 		r.Diagnostics.Append(diags...)
 		return r.Diagnostics.HasError()
@@ -550,11 +550,14 @@ func CheckDiags[T *fw_resource.CreateResponse | *fw_resource.UpdateResponse | *f
 	case *fw_data.ReadResponse:
 		r.Diagnostics.Append(diags...)
 		return r.Diagnostics.HasError()
-	case *fw_data.ValidateConfigResponse:
+	case *ephemeral.OpenResponse:
+		r.Diagnostics.Append(diags...)
+		return r.Diagnostics.HasError()
+	case *fw_resource.ValidateConfigResponse:
 		r.Diagnostics.Append(diags...)
 		return r.Diagnostics.HasError()
 	default:
-		return true
+		panic(fmt.Sprintf("unexpected response type: %T", resp))
 	}
 }
 
