@@ -26,12 +26,29 @@ func TestAccNet_WithSecurityGroup(t *testing.T) {
 	})
 }
 
+func TestAccOthers_SecurityGroupWithoutName(t *testing.T) {
+	resourceName := "outscale_security_group.noname"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: DefineTestProviderFactoriesV6(),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccOutscaleSecurityGroupWithoutNameConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resourceName, "security_group_name"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccNet_WithSecurityGroup_Migration(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { testAccPreCheck(t) },
-		Steps:    FrameworkMigrationTestSteps("1.2.1", testAccOutscaleSecurityGroupConfig(rInt)),
+		Steps:    FrameworkMigrationTestSteps("1.2.1", testAccOutscaleSecurityGroupConfig(rInt), testAccOutscaleSecurityGroupWithoutNameConfig()),
 	})
 }
 
@@ -58,4 +75,17 @@ func testAccOutscaleSecurityGroupConfig(rInt int) string {
 			net_id = outscale_net.net.id
 		}
 	`, rInt)
+}
+
+func testAccOutscaleSecurityGroupWithoutNameConfig() string {
+	return fmt.Sprintf(`
+		resource "outscale_security_group" "noname" {
+			description         = "Used in the terraform acceptance tests"
+
+			tags {
+				key   = "Name"
+				value = "tf-acc-test-no-name"
+			}
+		}
+	`)
 }

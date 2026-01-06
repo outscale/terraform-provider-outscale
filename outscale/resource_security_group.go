@@ -18,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/fwmodifyplan"
@@ -159,9 +160,10 @@ func (r *resourceSecurityGroup) Schema(ctx context.Context, _ resource.SchemaReq
 				},
 			},
 			"security_group_name": schema.StringAttribute{
-				Required: true,
+				Computed: true,
+				Optional: true,
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
+					fwmodifyplan.ForceNewFramework(),
 				},
 				Validators: []validator.String{
 					stringvalidator.LengthAtMost(255),
@@ -205,6 +207,10 @@ func (r *resourceSecurityGroup) Create(ctx context.Context, req resource.CreateR
 
 	ctx, cancel := context.WithTimeout(ctx, createTimeout)
 	defer cancel()
+
+	if !utils.IsSet(data.SecurityGroupName) {
+		data.SecurityGroupName = types.StringValue(id.UniqueId())
+	}
 
 	createReq := oscgo.CreateSecurityGroupRequest{
 		Description:       data.Description.ValueString(),
