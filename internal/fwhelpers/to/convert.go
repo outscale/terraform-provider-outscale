@@ -24,6 +24,20 @@ func String[T ~string | *string](v T) types.String {
 	}
 }
 
+func Int32[T ~int32 | *int32](v T) types.Int32 {
+	switch v := any(v).(type) {
+	case int32:
+		return types.Int32Value(v)
+	case *int32:
+		if v == nil {
+			return types.Int32Null()
+		}
+		return types.Int32Value(*v)
+	default:
+		return types.Int32Null()
+	}
+}
+
 func Int64[T ~int | ~int64 | *int | *int64](v T) types.Int64 {
 	switch v := any(v).(type) {
 	case int:
