@@ -38,6 +38,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### 🌱 Others
 - (nothing yet)
 
+## [1.3.1] - 2026-01-07
+
+### 🐛 Fixed
+* 🐛 fix(security_group): optional name by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/618
+
+### 🛠️ Changed / Refactoring
+* ✅ test: parallelize testing by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/614
+
 ## [1.3.0] - 2025-12-18
 
 ### 🛠️ Changed / Refactoring
