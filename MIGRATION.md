@@ -28,7 +28,15 @@ Before starting, **always back up your Terraform state and configuration files.*
 
 ## 📝 Migration Steps
 
-### Step 1: Update Provider Version
+### Step 1: Refresh Terraform State
+
+To make sure the state is up-to-date with the current provider version, run:
+
+```sh
+terraform refresh
+```
+
+### Step 2: Update Provider Version
 
 In your Terraform configuration:
 
@@ -37,7 +45,7 @@ terraform {
   required_providers {
     outscale = {
       source  = "outscale/outscale"
-      version = "1.1.3"
+      version = "1.3.1"
     }
   }
 }
@@ -55,7 +63,7 @@ terraform init -upgrade
 
 ---
 
-### Step 2: Clean Up Terraform State & Configuration
+### Step 3: Clean Up Terraform State & Configuration
 
 Some resource attributes and block names have changed in v1.x.
 You must clean and adapt your state file and Terraform configuration.
