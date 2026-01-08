@@ -157,7 +157,7 @@ func ImportStep(resourceName string, ignore ...string) resource.TestStep {
 	idFunc := func(s *terraform.State) (string, error) {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
-			return "", fmt.Errorf("Not found: %s", resourceName)
+			return "", fmt.Errorf("not found: %s", resourceName)
 		}
 		return rs.Primary.ID, nil
 	}

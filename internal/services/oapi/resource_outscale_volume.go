@@ -23,7 +23,7 @@ func ResourceOutscaleVolume() *schema.Resource {
 		Update: resourceOAPIVolumeUpdate,
 		Delete: resourceOAPIVolumeDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			// Arguments
@@ -135,11 +135,11 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	vType := d.Get("volume_type").(string)
 
 	if snapId == "" && vSize == 0 {
-		return fmt.Errorf("Error: 'size' parameter is required if the volume is not created from a snapshot (SnapshotId unspecified)")
+		return fmt.Errorf("error: 'size' parameter is required if the volume is not created from a snapshot (snapshotid unspecified)")
 	}
 	if value, ok := d.GetOk("iops"); ok {
 		if vType != "io1" {
-			return fmt.Errorf("Error: %s", VolumeIOPSError)
+			return ErrResourceInvalidIOPS
 		}
 		request.SetIops(int32(value.(int)))
 	}
@@ -163,7 +163,7 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("Error creating Outscale BSU volume: %s", utils.GetErrorResponse(err))
+		return fmt.Errorf("error creating outscale bsu volume: %s", utils.GetErrorResponse(err))
 	}
 
 	log.Println("[DEBUG] Waiting for Volume to become available")
@@ -179,7 +179,7 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 
 	_, err = stateConf.WaitForState()
 	if err != nil {
-		return fmt.Errorf("Error waiting for Volume (%s) to become available: %s", resp.Volume.GetVolumeId(), err)
+		return fmt.Errorf("error waiting for volume (%s) to become available: %s", resp.Volume.GetVolumeId(), err)
 	}
 
 	d.SetId(resp.Volume.GetVolumeId())
@@ -215,7 +215,7 @@ func resourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error reading Outscale volume %s: %s", d.Id(), err)
+		return fmt.Errorf("error reading outscale volume %s: %s", d.Id(), err)
 	}
 
 	if utils.IsResponseEmpty(len(resp.GetVolumes()), "Snapshot", d.Id()) {
@@ -243,7 +243,7 @@ func resourceOAPIVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	_, err := stateConf.WaitForState()
 	if err != nil {
-		return fmt.Errorf("Error waiting for Volume (%s) to update: %s", d.Id(), err)
+		return fmt.Errorf("error waiting for volume (%s) to update: %s", d.Id(), err)
 	}
 	return resourceOAPIVolumeRead(d, meta)
 }
@@ -299,7 +299,7 @@ func resourceOAPIVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 		_, httpResp, err := conn.VolumeApi.DeleteVolume(context.Background()).DeleteVolumeRequest(request).Execute()
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "VolumeInUse") {
-				return retry.RetryableError(fmt.Errorf("Outscale VolumeInUse - trying again while it detaches"))
+				return retry.RetryableError(fmt.Errorf("outscale volumeinuse: trying again while it detaches"))
 			}
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -310,8 +310,7 @@ func resourceOAPIVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 func volumeOAPIStateRefreshFunc(conn *oscgo.APIClient, volumeID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		var resp oscgo.ReadVolumesResponse
-		var err error
-		err = retry.Retry(3*time.Minute, func() *retry.RetryError {
+		err := retry.Retry(3*time.Minute, func() *retry.RetryError {
 			rp, httpResp, err := conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(oscgo.ReadVolumesRequest{
 				Filters: &oscgo.FiltersVolume{
 					VolumeIds: &[]string{volumeID},

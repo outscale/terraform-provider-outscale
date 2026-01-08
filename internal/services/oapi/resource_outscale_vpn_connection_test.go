@@ -153,13 +153,13 @@ func testAccOutscaleVPNConnectionExists(resourceName string) resource.TestCheckF
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
-			return fmt.Errorf("Not found: %s", resourceName)
+			return fmt.Errorf("not found: %s", resourceName)
 		}
 
 		conn := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSCAPI
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No VPN Connection ID is set")
+			return fmt.Errorf("no vpn connection id is set")
 		}
 
 		filter := oscgo.ReadVpnConnectionsRequest{
@@ -169,8 +169,7 @@ func testAccOutscaleVPNConnectionExists(resourceName string) resource.TestCheckF
 		}
 
 		var resp oscgo.ReadVpnConnectionsResponse
-		var err error
-		err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+		var err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 			rp, httpResp, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(filter).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
@@ -180,7 +179,7 @@ func testAccOutscaleVPNConnectionExists(resourceName string) resource.TestCheckF
 		})
 
 		if err != nil || len(resp.GetVpnConnections()) < 1 {
-			return fmt.Errorf("Outscale VPN Connection not found (%s)", rs.Primary.ID)
+			return fmt.Errorf("outscale vpn connection not found (%s)", rs.Primary.ID)
 		}
 		return nil
 	}
@@ -199,8 +198,7 @@ func testAccOutscaleVPNConnectionDestroy(s *terraform.State) error {
 			},
 		}
 		var resp oscgo.ReadVpnConnectionsResponse
-		var err error
-		err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+		var err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 			rp, httpResp, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(filter).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
@@ -211,7 +209,7 @@ func testAccOutscaleVPNConnectionDestroy(s *terraform.State) error {
 
 		if err != nil ||
 			len(resp.GetVpnConnections()) > 0 && resp.GetVpnConnections()[0].GetState() != "deleted" {
-			return fmt.Errorf("Outscale VPN Connection still exists (%s): %s", rs.Primary.ID, err)
+			return fmt.Errorf("outscale vpn connection still exists (%s): %s", rs.Primary.ID, err)
 		}
 	}
 	return nil

@@ -1,7 +1,6 @@
 package oapi_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -29,7 +28,7 @@ func TestAccNet_WithVirtualRoutePropagation_basic(t *testing.T) {
 }
 
 func testAccOutscaleVpnRoutePropagationConfig() string {
-	return fmt.Sprintf(`
+	return `
 		resource "outscale_virtual_gateway" "outscale_virtual_gateway" {
  connection_type = "ipsec.1"
 }
@@ -55,5 +54,5 @@ virtual_gateway_id = outscale_virtual_gateway_link.outscale_virtual_gateway_link
     route_table_id  = outscale_route_table.outscale_route_table.route_table_id
     enable = true
 }
-	`)
+	`
 }

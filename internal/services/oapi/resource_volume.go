@@ -20,7 +20,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/outscale/osc-sdk-go/v2"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/fwhelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/fwmodifyplan"
@@ -111,7 +110,7 @@ func (r *resourceVolume) ModifyPlan(ctx context.Context, req resource.ModifyPlan
 	if data.VolumeType.ValueString() != "io1" && !data.Iops.IsNull() && !data.Iops.IsUnknown() {
 		resp.Diagnostics.AddError(
 			"Setting IOPS Considerations",
-			VolumeIOPSError,
+			ErrResourceInvalidIOPS.Error(),
 		)
 		return
 	}
@@ -341,7 +340,7 @@ func (r *resourceVolume) Read(ctx context.Context, req resource.ReadRequest, res
 
 	err := setVolumeState(ctx, r, &data)
 	if err != nil {
-		if err.Error() == "Empty" {
+		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
 			return
 		}
@@ -480,7 +479,7 @@ func WaitForVolumeTasks(ctx context.Context, timeout time.Duration, tasksIds []s
 			}
 
 			failedTasks := lo.FilterMap(resp.GetVolumeUpdateTasks(), func(task osc.VolumeUpdateTask, _ int) (error, bool) {
-				return fmt.Errorf("task (%s) did not complete and ended with state: %s. Comment: %s", task.GetTaskId(), task.GetState(), task.GetComment()), lo.Contains(failed, task.GetState())
+				return fmt.Errorf("task (%s) did not complete and ended with state: %s - comment: %s", task.GetTaskId(), task.GetState(), task.GetComment()), lo.Contains(failed, task.GetState())
 			})
 			if len(failedTasks) > 0 {
 				return resp, "failed", fmt.Errorf("volume update tasks failed: %w", errors.Join(failedTasks...))
@@ -531,11 +530,11 @@ func (r *resourceVolume) Delete(ctx context.Context, req resource.DeleteRequest,
 			return
 		}
 
-		tags := oscgo.ResourceTag{
+		tags := osc.ResourceTag{
 			Key:   "Name",
 			Value: data.TerminationSnapshotName.String(),
 		}
-		err = createOAPITags(ctx, r.Client, []oscgo.ResourceTag{tags}, snapshotId)
+		err = createOAPITags(ctx, r.Client, []osc.ResourceTag{tags}, snapshotId)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				fmt.Sprintf("Unable to create tags for snapshot '%s' ", snapshotId),
@@ -571,7 +570,7 @@ func setVolumeState(ctx context.Context, r *resourceVolume, data *VolumeModel) e
 
 	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if diags.HasError() {
-		return fmt.Errorf("unable to parse 'volume' read timeout value. Error: %v: ", diags.Errors())
+		return fmt.Errorf("unable to parse 'volume' read timeout value: %v", diags.Errors())
 	}
 
 	readReq := osc.ReadVolumesRequest{
@@ -590,7 +589,7 @@ func setVolumeState(ctx context.Context, r *resourceVolume, data *VolumeModel) e
 		return err
 	}
 	if len(readResp.GetVolumes()) == 0 {
-		return errors.New("Empty")
+		return ErrResourceEmpty
 	}
 
 	volume := readResp.GetVolumes()[0]
@@ -602,7 +601,7 @@ func setVolumeState(ctx context.Context, r *resourceVolume, data *VolumeModel) e
 
 	data.LinkedVolumes, diags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: fwhelpers.GetAttrTypes(BlockLinkedVolumes{})}, getLinkedVolumesFromApiResponse(volume.GetLinkedVolumes())) // volume.GetLinkedVolumes()) //fwhelpers.GetAttrTypes(BlockLinkedVolumes{})}, volume.GetLinkedVolumes())
 	if diags.HasError() {
-		return fmt.Errorf("unable to set LinkedVolumes block: %v: ", diags.Errors())
+		return fmt.Errorf("unable to set linkedvolumes block: %v", diags.Errors())
 	}
 	data.CreationDate = types.StringValue(volume.GetCreationDate())
 	if data.TerminationSnapshotName.IsNull() {

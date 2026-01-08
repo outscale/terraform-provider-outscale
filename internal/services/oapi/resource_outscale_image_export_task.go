@@ -24,7 +24,7 @@ func ResourceOutscaleImageExportTask() *schema.Resource {
 		Update: resourceOAPIImageExportTaskUpdate,
 		Delete: resourceOAPIImageExportTaskDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Timeouts: &schema.ResourceTimeout{
@@ -118,7 +118,7 @@ func resourceOAPIImageExportTaskCreate(d *schema.ResourceData, meta interface{})
 	request := oscgo.CreateImageExportTaskRequest{}
 
 	if !etoOk && !ok {
-		return fmt.Errorf("Please provide the required attributes osu_export and image_id")
+		return fmt.Errorf("please provide the required attributes osu_export and image_id")
 	}
 
 	request.SetImageId(v.(string))
@@ -169,7 +169,7 @@ func resourceOAPIImageExportTaskCreate(d *schema.ResourceData, meta interface{})
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("[DEBUG] Error image task %s", err)
+		return fmt.Errorf("error image task %s", err)
 	}
 
 	id := resp.ImageExportTask.GetTaskId()
@@ -294,7 +294,7 @@ func ResourceOutscaleImageTaskWaitForAvailable(id string, client *oscgo.APIClien
 
 	info, err := stateConf.WaitForState()
 	if err != nil {
-		return image, fmt.Errorf("Error waiting for Image export task (%s) to be ready: %s", id, err)
+		return image, fmt.Errorf("error waiting for image export task (%s) to be ready: %s", id, err)
 	}
 	image = info.(oscgo.ImageExportTask)
 	return image, nil

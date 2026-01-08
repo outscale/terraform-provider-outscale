@@ -231,7 +231,7 @@ func (r *resourceKeypair) Read(ctx context.Context, req resource.ReadRequest, re
 
 	err := setKeypairState(ctx, r, &data)
 	if err != nil {
-		if err.Error() == "Empty" {
+		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
 			return
 		}
@@ -316,7 +316,7 @@ func setKeypairState(ctx context.Context, r *resourceKeypair, data *KeypairModel
 
 	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if diags.HasError() {
-		return fmt.Errorf("unable to parse 'keypair' read timeout value. Error: %v: ", diags.Errors())
+		return fmt.Errorf("unable to parse 'keypair' read timeout value: %v", diags.Errors())
 	}
 
 	readReq := oscgo.ReadKeypairsRequest{
@@ -335,7 +335,7 @@ func setKeypairState(ctx context.Context, r *resourceKeypair, data *KeypairModel
 		return err
 	}
 	if len(readResp.GetKeypairs()) == 0 {
-		return errors.New("Empty")
+		return ErrResourceEmpty
 	}
 
 	keypair := readResp.GetKeypairs()[0]

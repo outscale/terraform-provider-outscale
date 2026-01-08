@@ -302,7 +302,7 @@ func (r *resourceSubnet) Read(ctx context.Context, req resource.ReadRequest, res
 
 	data, err := setSubnetState(ctx, r, data)
 	if err != nil {
-		if err.Error() == "Empty" {
+		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
 			return
 		}
@@ -414,7 +414,7 @@ func setSubnetState(ctx context.Context, r *resourceSubnet, data SubnetModel) (S
 
 	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to parse 'subnet' read timeout value. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("unable to parse 'subnet' read timeout value: %v", diags.Errors())
 	}
 
 	var readResp oscgo.ReadSubnetsResponse
@@ -430,7 +430,7 @@ func setSubnetState(ctx context.Context, r *resourceSubnet, data SubnetModel) (S
 		return data, err
 	}
 	if len(readResp.GetSubnets()) == 0 {
-		return data, errors.New("Empty")
+		return data, ErrResourceEmpty
 	}
 
 	subnet := readResp.GetSubnets()[0]

@@ -212,7 +212,7 @@ func (r *fgpuResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 
 	data, err = setFlexibleGpuState(ctx, r, data)
 	if err != nil {
-		if err.Error() == "Empty" {
+		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
 			return
 		}
@@ -323,7 +323,7 @@ func setFlexibleGpuState(ctx context.Context, r *fgpuResource, data GpuModel) (G
 
 	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to parse 'flexible_gpu' read timeout value. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("unable to parse 'flexible_gpu' read timeout value: %v", diags.Errors())
 	}
 	var readResp oscgo.ReadFlexibleGpusResponse
 	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
@@ -339,7 +339,7 @@ func setFlexibleGpuState(ctx context.Context, r *fgpuResource, data GpuModel) (G
 	}
 
 	if len(readResp.GetFlexibleGpus()) == 0 {
-		return data, errors.New("Empty")
+		return data, ErrResourceEmpty
 	}
 	fgpu := readResp.GetFlexibleGpus()[0]
 	data.DeleteOnVmDeletion = types.BoolValue(fgpu.GetDeleteOnVmDeletion())

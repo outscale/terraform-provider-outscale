@@ -57,7 +57,7 @@ func testAccDataCheckOutscaleApiAccessRuleDestroy(s *terraform.State) error {
 			return nil
 		})
 		if err != nil {
-			return fmt.Errorf("Api Access Rule reading (%s)", rs.Primary.ID)
+			return fmt.Errorf("api access rule reading (%s)", rs.Primary.ID)
 		}
 
 		for _, r := range resp.GetApiAccessRules() {
@@ -66,7 +66,7 @@ func testAccDataCheckOutscaleApiAccessRuleDestroy(s *terraform.State) error {
 			}
 		}
 		if exists {
-			return fmt.Errorf("Api Access Rule still exists (%s)", rs.Primary.ID)
+			return fmt.Errorf("api access rule still exists (%s)", rs.Primary.ID)
 		}
 	}
 	return nil

@@ -7,7 +7,6 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/hashicorp/errwrap"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -85,7 +84,7 @@ func DataSourceOutscaleLinPeeringConnectionRead(d *schema.ResourceData, meta int
 
 	filters, filtersOk := d.GetOk("filter")
 	if !filtersOk {
-		return fmt.Errorf("filters must be assigned")
+		return ErrFilterRequired
 	}
 	req.Filters, err = buildOutscaleLinPeeringConnectionFilters(filters.(*schema.Set))
 	if err != nil {
@@ -95,7 +94,6 @@ func DataSourceOutscaleLinPeeringConnectionRead(d *schema.ResourceData, meta int
 	var resp oscgo.ReadNetPeeringsResponse
 	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.NetPeeringApi.ReadNetPeerings(context.Background()).ReadNetPeeringsRequest(req).Execute()
-
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -103,14 +101,14 @@ func DataSourceOutscaleLinPeeringConnectionRead(d *schema.ResourceData, meta int
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("Error reading Net Peering Connection details: %s", err)
+		return fmt.Errorf("error reading net peering connection details: %s", err)
 	}
 
 	if len(resp.GetNetPeerings()) == 0 {
-		return fmt.Errorf("No matching Net Peering Connection found")
+		return ErrNoResults
 	}
 	if len(resp.GetNetPeerings()) > 1 {
-		return fmt.Errorf("multiple Net Peering connections matched; use additional constraints to reduce matches to a single Net Peering Connection")
+		return ErrMultipleResults
 	}
 	netPeering := resp.GetNetPeerings()[0]
 
@@ -155,7 +153,7 @@ func DataSourceOutscaleLinPeeringConnectionRead(d *schema.ResourceData, meta int
 		return err
 	}
 	if err := d.Set("tags", FlattenOAPITagsSDK(netPeering.GetTags())); err != nil {
-		return errwrap.Wrapf("Error setting Net Peering tags: {{err}}", err)
+		return fmt.Errorf("error setting net peering tags: %s", err)
 	}
 
 	d.SetId(netPeering.GetNetPeeringId())

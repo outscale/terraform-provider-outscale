@@ -34,7 +34,7 @@ func ResourceOutscaleImage() *schema.Resource {
 		Update: resourceOAPIImageUpdate,
 		Delete: resourceOAPIImageDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Timeouts: &schema.ResourceTimeout{
@@ -278,7 +278,7 @@ func resourceOAPIImageCreate(d *schema.ResourceData, meta interface{}) error {
 		if lo.EveryBy(modes, func(s string) bool { return slices.Contains([]string{"uefi", "legacy"}, s) }) {
 			imageRequest.SetBootModes(lo.Map(modes, func(s string, _ int) oscgo.BootMode { return (oscgo.BootMode)(s) }))
 		} else {
-			return fmt.Errorf("The boot modes compatible with the OMI are: uefi, legacy. Provided: %v", modes)
+			return fmt.Errorf("the boot modes compatible with the omi are: uefi, legacy - provided: %v", modes)
 		}
 	}
 	var resp oscgo.CreateImageResponse
@@ -315,7 +315,7 @@ func resourceOAPIImageCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if _, err = stateConf.WaitForStateContext(context.Background()); err != nil {
-		return fmt.Errorf("Error waiting for OMI (%s) to be ready: %w", *image.ImageId, err)
+		return fmt.Errorf("error waiting for omi (%s) to be ready: %w", *image.ImageId, err)
 	}
 	d.SetId(image.GetImageId())
 
@@ -346,7 +346,7 @@ func resourceOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("Error reading for OMI (%s): %w", id, err)
+		return fmt.Errorf("error reading for omi (%s): %w", id, err)
 	}
 	if utils.IsResponseEmpty(len(resp.GetImages()), "Image", d.Id()) {
 		d.SetId("")
@@ -409,7 +409,7 @@ func resourceOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
 			return err
 		}
 		if err := d.Set("tags", FlattenOAPITagsSDK(image.GetTags())); err != nil {
-			return fmt.Errorf("Unable to set image tags: %w", err)
+			return fmt.Errorf("unable to set image tags: %w", err)
 		}
 
 		return nil
@@ -437,8 +437,7 @@ func resourceOAPIImageUpdate(d *schema.ResourceData, meta interface{}) error {
 func resourceOAPIImageDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
 
-	var err error
-	err = retry.RetryContext(context.Background(), d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
+	err := retry.RetryContext(context.Background(), d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
 		_, httpResp, err := conn.ImageApi.DeleteImage(context.Background()).DeleteImageRequest(oscgo.DeleteImageRequest{
 			ImageId: d.Id(),
 		}).Execute()
@@ -448,7 +447,7 @@ func resourceOAPIImageDelete(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("Error deleting the image %w", err)
+		return fmt.Errorf("error deleting the image %w", err)
 	}
 
 	if err := ResourceOutscaleImageWaitForDestroy(d.Id(), conn, d.Timeout(schema.TimeoutDelete)); err != nil {
@@ -476,7 +475,7 @@ func ResourceOutscaleImageWaitForDestroy(id string, conn *oscgo.APIClient, timeO
 	}
 
 	if _, err := stateConf.WaitForStateContext(context.Background()); err != nil {
-		return fmt.Errorf("Error waiting for OMI (%s) to be deleted: %w", id, err)
+		return fmt.Errorf("error waiting for omi (%s) to be deleted: %w", id, err)
 	}
 
 	return nil
@@ -486,8 +485,7 @@ func ResourceOutscaleImageWaitForDestroy(id string, conn *oscgo.APIClient, timeO
 func ImageOAPIStateRefreshFunc(client *oscgo.APIClient, req oscgo.ReadImagesRequest, failState string, timeOut time.Duration) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		var resp oscgo.ReadImagesResponse
-		var err error
-		err = retry.RetryContext(context.Background(), timeOut, func() *retry.RetryError {
+		err := retry.RetryContext(context.Background(), timeOut, func() *retry.RetryError {
 			var err error
 			rp, httpResp, err := client.ImageApi.ReadImages(context.Background()).ReadImagesRequest(req).Execute()
 			if err != nil {
@@ -507,7 +505,7 @@ func ImageOAPIStateRefreshFunc(client *oscgo.APIClient, req oscgo.ReadImagesRequ
 			state = images[0].GetState()
 
 			if state == failState {
-				return images[0], state, fmt.Errorf("Failed to reach target state. Reason: %v", state)
+				return images[0], state, fmt.Errorf("failed to reach target state:: %v", state)
 			}
 		}
 

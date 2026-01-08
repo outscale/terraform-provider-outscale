@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/outscale/osc-sdk-go/v2"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/services/oapi/oapihelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
@@ -230,7 +229,7 @@ func DataSourceOutscaleNicsRead(d *schema.ResourceData, meta interface{}) error 
 	filters, filtersOk := d.GetOk("filter")
 
 	var err error
-	params := oscgo.ReadNicsRequest{}
+	params := osc.ReadNicsRequest{}
 	if filtersOk {
 		params.Filters, err = buildOutscaleDataSourceNicFilters(filters.(*schema.Set))
 		if err != nil {
@@ -238,7 +237,7 @@ func DataSourceOutscaleNicsRead(d *schema.ResourceData, meta interface{}) error 
 		}
 	}
 
-	var resp oscgo.ReadNicsResponse
+	var resp osc.ReadNicsResponse
 	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(params).Execute()
 		if err != nil {
@@ -248,15 +247,15 @@ func DataSourceOutscaleNicsRead(d *schema.ResourceData, meta interface{}) error 
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("Error reading Network Interface Cards : %s", err)
+		return fmt.Errorf("error reading network interface cards : %s", err)
 	}
 
 	if resp.GetNics() == nil {
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
+		return ErrNoResults
 	}
 
 	if len(resp.GetNics()) == 0 {
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
+		return ErrNoResults
 	}
 	nics := resp.GetNics()
 

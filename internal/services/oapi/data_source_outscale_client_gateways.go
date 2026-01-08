@@ -70,7 +70,7 @@ func DataSourceOutscaleClientGatewaysRead(d *schema.ResourceData, meta interface
 	clientGatewayIDs, clientGatewayOk := d.GetOk("client_gateway_ids")
 
 	if !filtersOk && !clientGatewayOk {
-		return fmt.Errorf("One of filters, or client_gateway_id must be assigned")
+		return fmt.Errorf("one of filters, or client_gateway_id must be assigned")
 	}
 
 	params := oscgo.ReadClientGatewaysRequest{}
@@ -90,8 +90,7 @@ func DataSourceOutscaleClientGatewaysRead(d *schema.ResourceData, meta interface
 	}
 
 	var resp oscgo.ReadClientGatewaysResponse
-	var err error
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.ClientGatewayApi.ReadClientGateways(context.Background()).ReadClientGatewaysRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -104,7 +103,7 @@ func DataSourceOutscaleClientGatewaysRead(d *schema.ResourceData, meta interface
 	}
 
 	if len(resp.GetClientGateways()) == 0 {
-		return fmt.Errorf("Unable to find Client Gateways")
+		return ErrNoResults
 	}
 
 	if err := d.Set("client_gateways", flattenClientGateways(resp.GetClientGateways())); err != nil {

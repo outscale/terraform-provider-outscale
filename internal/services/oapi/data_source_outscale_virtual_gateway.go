@@ -67,7 +67,7 @@ func DataSourceOutscaleVirtualGatewayRead(d *schema.ResourceData, meta interface
 	virtualId, vpnOk := d.GetOk("virtual_gateway_id")
 
 	if !filtersOk && !vpnOk {
-		return fmt.Errorf("One of virtual_gateway_id or filter must be assigned")
+		return fmt.Errorf("one of virtual_gateway_id or filter must be assigned")
 	}
 
 	params := oscgo.ReadVirtualGatewaysRequest{}
@@ -100,7 +100,7 @@ func DataSourceOutscaleVirtualGatewayRead(d *schema.ResourceData, meta interface
 		return fmt.Errorf("no matching virtual gateway found: %#v", params)
 	}
 	if len(resp.GetVirtualGateways()) > 1 {
-		return fmt.Errorf("multiple virtual gateways matched; use additional constraints to reduce matches to a single virtual gateway")
+		return ErrMultipleResults
 	}
 
 	vgw := resp.GetVirtualGateways()[0]

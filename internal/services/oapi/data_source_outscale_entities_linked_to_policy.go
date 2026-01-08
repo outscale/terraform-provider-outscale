@@ -123,7 +123,7 @@ func DataSourceEntitiesLinkedToPoliciesRead(d *schema.ResourceData, meta interfa
 	}
 	entities, ok := resp.GetPolicyEntitiesOk()
 	if !ok {
-		return fmt.Errorf("unable to find Entities linked to policy")
+		return fmt.Errorf("unable to find entities linked to policy")
 	}
 	d.SetId(id.UniqueId())
 

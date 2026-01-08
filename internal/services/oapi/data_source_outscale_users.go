@@ -2,7 +2,6 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -84,7 +83,7 @@ func DataSourceUsersRead(d *schema.ResourceData, meta interface{}) error {
 	users := resp.GetUsers()
 	d.SetId(id.UniqueId())
 	if len(users) == 0 {
-		return fmt.Errorf("Unable to find users")
+		return ErrNoResults
 	}
 	d.SetId(id.UniqueId())
 	usersToSet := make([]map[string]interface{}, len(users))

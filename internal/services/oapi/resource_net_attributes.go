@@ -202,7 +202,7 @@ func (r *resourceNetAttributes) Read(ctx context.Context, req resource.ReadReque
 
 	data, err := r.setNetAttributesState(ctx, data)
 	if err != nil {
-		if err.Error() == "Empty" {
+		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
 			return
 		}
@@ -286,7 +286,7 @@ func (r *resourceNetAttributes) setNetAttributesState(ctx context.Context, data 
 
 	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to parse 'net' read timeout value. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("unable to parse 'net' read timeout value: %v", diags.Errors())
 	}
 	var readResp oscgo.ReadNetsResponse
 	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
@@ -303,14 +303,14 @@ func (r *resourceNetAttributes) setNetAttributesState(ctx context.Context, data 
 
 	data.RequestId = types.StringValue(readResp.ResponseContext.GetRequestId())
 	if len(readResp.GetNets()) == 0 {
-		return data, errors.New("Empty")
+		return data, ErrResourceEmpty
 	}
 
 	net := readResp.GetNets()[0]
 
 	tags, diag := flattenOAPIComputedTagsFW(ctx, net.GetTags())
 	if diag.HasError() {
-		return data, fmt.Errorf("unable to flatten tags. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("unable to flatten tags: %v", diags.Errors())
 	}
 	data.Tags = tags
 	data.Id = types.StringValue(net.GetNetId())

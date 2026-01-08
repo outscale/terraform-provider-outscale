@@ -363,7 +363,7 @@ func (r *resourceNetPeering) Read(ctx context.Context, req resource.ReadRequest,
 
 	data, err := setNetPeeringState(ctx, r, data)
 	if err != nil {
-		if err.Error() == "Empty" {
+		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
 			return
 		}
@@ -451,7 +451,7 @@ func setNetPeeringState(ctx context.Context, r *resourceNetPeering, data NetPeer
 
 	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to parse 'net peering' read timeout value. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("unable to parse 'net peering' read timeout value: %v", diags.Errors())
 	}
 
 	var readResp oscgo.ReadNetPeeringsResponse
@@ -468,7 +468,7 @@ func setNetPeeringState(ctx context.Context, r *resourceNetPeering, data NetPeer
 	}
 	data.RequestId = types.StringValue(readResp.ResponseContext.GetRequestId())
 	if len(readResp.GetNetPeerings()) == 0 {
-		return data, errors.New("Empty")
+		return data, ErrResourceEmpty
 	}
 
 	netPeering := readResp.GetNetPeerings()[0]
@@ -480,15 +480,15 @@ func setNetPeeringState(ctx context.Context, r *resourceNetPeering, data NetPeer
 
 	sourceNet, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: netAttrTypes}, SourceNetToList(netPeering.GetSourceNet()))
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to convert Source Net to the schema List: %v", diags.Errors())
+		return data, fmt.Errorf("unable to convert source net to the schema list: %v", diags.Errors())
 	}
 	accepterNet, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: netAttrTypes}, AccepterNetToList(netPeering.GetAccepterNet()))
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to convert Accepter Net to the schema List: %v", diags.Errors())
+		return data, fmt.Errorf("unable to convert accepter net to the schema list: %v", diags.Errors())
 	}
 	state, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: stateAttrTypes}, NetPeerStateToList(netPeering.GetState()))
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to convert State to the schema List: %v", diags.Errors())
+		return data, fmt.Errorf("unable to convert state to the schema list: %v", diags.Errors())
 	}
 
 	data.ExpirationDate = types.StringValue(netPeering.GetExpirationDate())

@@ -3,7 +3,6 @@ package oapi
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -93,7 +92,7 @@ func DataSourceOutscaleVMStatesRead(d *schema.ResourceData, meta interface{}) er
 	filteredStates := resp.GetVmStates()[:]
 
 	if len(filteredStates) < 1 {
-		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
+		return ErrNoResults
 	}
 
 	return statusDescriptionOAPIVMStatesAttributes(d, filteredStates)

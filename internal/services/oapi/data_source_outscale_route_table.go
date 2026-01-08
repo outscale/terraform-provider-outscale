@@ -225,7 +225,7 @@ func DataSourceOutscaleRouteTableRead(d *schema.ResourceData, meta interface{}) 
 	filter, filterOk := d.GetOk("filter")
 
 	if !filterOk && !routeTableIDOk {
-		return fmt.Errorf("One of route_table_id or filters must be assigned")
+		return fmt.Errorf("one of route_table_id or filters must be assigned")
 	}
 
 	params := oscgo.ReadRouteTablesRequest{}
@@ -257,16 +257,15 @@ func DataSourceOutscaleRouteTableRead(d *schema.ResourceData, meta interface{}) 
 	}
 
 	numRouteTables := len(resp.GetRouteTables())
-	if numRouteTables <= 0 {
-		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
+	if numRouteTables == 0 {
+		return ErrNoResults
 	}
 	if numRouteTables > 1 {
-		return fmt.Errorf("Multiple Route Table matched; use additional constraints to reduce matches to a single Route Table")
+		return ErrMultipleResults
 	}
 
 	rt := resp.GetRouteTables()[0]
-	if err :=
-		d.Set("route_propagating_virtual_gateways", setOSCAPIPropagatingVirtualGateways(rt.GetRoutePropagatingVirtualGateways())); err != nil {
+	if err := d.Set("route_propagating_virtual_gateways", setOSCAPIPropagatingVirtualGateways(rt.GetRoutePropagatingVirtualGateways())); err != nil {
 		return err
 	}
 	if err := d.Set("route_table_id", rt.GetRouteTableId()); err != nil {

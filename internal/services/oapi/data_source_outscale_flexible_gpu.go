@@ -62,7 +62,7 @@ func DataSourceOutscaleFlexibleGpuRead(d *schema.ResourceData, meta interface{})
 	flexID, IDOk := d.GetOk("flexible_gpu_id")
 
 	if !filtersOk && !IDOk {
-		return fmt.Errorf("One of filters, or flexible_gpu_id must be assigned")
+		return fmt.Errorf("one of filters, or flexible_gpu_id must be assigned")
 	}
 
 	var err error
@@ -94,8 +94,11 @@ func DataSourceOutscaleFlexibleGpuRead(d *schema.ResourceData, meta interface{})
 		return err
 	}
 
-	if err := utils.IsResponseEmptyOrMutiple(len(resp.GetFlexibleGpus()), "FlexibleGpu"); err != nil {
-		return err
+	if len(resp.GetFlexibleGpus()) == 0 {
+		return ErrNoResults
+	}
+	if len(resp.GetFlexibleGpus()) > 1 {
+		return ErrMultipleResults
 	}
 
 	fg := (*resp.FlexibleGpus)[0]

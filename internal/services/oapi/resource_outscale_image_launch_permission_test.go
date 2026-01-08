@@ -90,11 +90,11 @@ func testCheckResourceOAPILPIGetAttr(name, key string, value *string) resource.T
 		ms := s.RootModule()
 		rs, ok := ms.Resources[name]
 		if !ok {
-			return fmt.Errorf("Not found: %s", name)
+			return fmt.Errorf("not found: %s", name)
 		}
 
 		if rs.Primary == nil {
-			return fmt.Errorf("No primary instance: %s", name)
+			return fmt.Errorf("no primary instance: %s", name)
 		}
 
 		*value = rs.Primary.Attributes[key]
@@ -132,12 +132,12 @@ func testCheckResourceGetAttr(name, key string, value *string) resource.TestChec
 		ms := s.RootModule()
 		rs, ok := ms.Resources[name]
 		if !ok {
-			return fmt.Errorf("Not found: %s", name)
+			return fmt.Errorf("not found: %s", name)
 		}
 
 		is := rs.Primary
 		if is == nil {
-			return fmt.Errorf("No primary instance: %s", name)
+			return fmt.Errorf("no primary instance: %s", name)
 		}
 
 		*value = is.Attributes[key]

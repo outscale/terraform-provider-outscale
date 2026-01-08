@@ -20,7 +20,7 @@ func ResourceOutscaleApiAccessPolicy() *schema.Resource {
 		Update: ResourceOutscaleApiAccessPolicyUpdate,
 		Delete: ResourceOutscaleApiAccessPolicyDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"max_access_key_expiration_seconds": {
@@ -45,8 +45,8 @@ func ResourceOutscaleApiAccessPolicyCreate(d *schema.ResourceData, meta interfac
 	maxAcc := d.Get("max_access_key_expiration_seconds")
 	trustEnv := d.Get("require_trusted_env")
 
-	if trustEnv.(bool) == true && maxAcc == 0 {
-		return fmt.Errorf("Error 'max_access_key_expiration_seconds' value must be greater than '0' if 'require_trusted_env' value is 'true'")
+	if trustEnv.(bool) && maxAcc == 0 {
+		return fmt.Errorf("error 'max_access_key_expiration_seconds' value must be greater than '0' if 'require_trusted_env' value is 'true'")
 	}
 
 	req := oscgo.UpdateApiAccessPolicyRequest{
@@ -54,8 +54,7 @@ func ResourceOutscaleApiAccessPolicyCreate(d *schema.ResourceData, meta interfac
 		RequireTrustedEnv:             trustEnv.(bool),
 	}
 
-	var err error
-	err = retry.Retry(120*time.Second, func() *retry.RetryError {
+	err := retry.Retry(120*time.Second, func() *retry.RetryError {
 		_, httpResp, err := conn.ApiAccessPolicyApi.UpdateApiAccessPolicy(context.Background()).UpdateApiAccessPolicyRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -74,8 +73,7 @@ func ResourceOutscaleApiAccessPolicyRead(d *schema.ResourceData, meta interface{
 	req := oscgo.ReadApiAccessPolicyRequest{}
 
 	var resp oscgo.ReadApiAccessPolicyResponse
-	var err error
-	err = retry.Retry(120*time.Second, func() *retry.RetryError {
+	err := retry.Retry(120*time.Second, func() *retry.RetryError {
 		rp, httpResp, err := conn.ApiAccessPolicyApi.ReadApiAccessPolicy(context.Background()).ReadApiAccessPolicyRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -85,12 +83,12 @@ func ResourceOutscaleApiAccessPolicyRead(d *schema.ResourceData, meta interface{
 	})
 
 	if err != nil {
-		return fmt.Errorf("[DEBUG] Error reading Api Access Policy id (%s)", utils.GetErrorResponse(err))
+		return fmt.Errorf("error reading api access policy id (%s)", utils.GetErrorResponse(err))
 	}
 
 	if !resp.HasApiAccessPolicy() {
 		d.SetId("")
-		return fmt.Errorf("Api Access Policy not found")
+		return fmt.Errorf("api access policy not found")
 	}
 
 	policy := resp.GetApiAccessPolicy()
@@ -110,8 +108,8 @@ func ResourceOutscaleApiAccessPolicyUpdate(d *schema.ResourceData, meta interfac
 	_, maxAcc := d.GetChange("max_access_key_expiration_seconds")
 	_, trustEnv := d.GetChange("require_trusted_env")
 
-	if trustEnv.(bool) == true && maxAcc == 0 {
-		return fmt.Errorf("Error 'max_access_key_expiration_seconds' value must be greater than '0' if 'require_trusted_env' value is 'true'")
+	if trustEnv.(bool) && maxAcc == 0 {
+		return fmt.Errorf("error 'max_access_key_expiration_seconds' value must be greater than '0' if 'require_trusted_env' value is 'true'")
 	}
 
 	req := oscgo.UpdateApiAccessPolicyRequest{
@@ -119,8 +117,7 @@ func ResourceOutscaleApiAccessPolicyUpdate(d *schema.ResourceData, meta interfac
 		RequireTrustedEnv:             trustEnv.(bool),
 	}
 
-	var err error
-	err = retry.Retry(120*time.Second, func() *retry.RetryError {
+	err := retry.Retry(120*time.Second, func() *retry.RetryError {
 		_, httpResp, err := conn.ApiAccessPolicyApi.UpdateApiAccessPolicy(context.Background()).UpdateApiAccessPolicyRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)

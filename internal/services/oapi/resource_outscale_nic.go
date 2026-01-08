@@ -26,7 +26,7 @@ func ResourceOutscaleNic() *schema.Resource {
 		Update: ResourceOutscaleNicUpdate,
 		Delete: ResourceOutscaleNicDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
@@ -264,7 +264,7 @@ func ResourceOutscaleNicCreate(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("Error creating NIC: %s", err)
+		return fmt.Errorf("error creating nic: %s", err)
 	}
 
 	d.SetId(resp.Nic.GetNicId())
@@ -294,8 +294,7 @@ func ResourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	var resp oscgo.ReadNicsResponse
-	var err error
-	err = retry.RetryContext(context.Background(), d.Timeout(schema.TimeoutRead), func() *retry.RetryError {
+	err := retry.RetryContext(context.Background(), d.Timeout(schema.TimeoutRead), func() *retry.RetryError {
 		rp, httpResp, err := conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(dnir).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -304,7 +303,7 @@ func ResourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("Error describing Network Interfaces : %s", err)
+		return fmt.Errorf("error describing network interfaces : %s", err)
 	}
 
 	if utils.IsResponseEmpty(len(resp.GetNics()), "Nic", d.Id()) {
@@ -392,7 +391,7 @@ func ResourceOutscaleNicDelete(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("Error Deleting ENI: %s", err)
+		return fmt.Errorf("error deleting eni: %s", err)
 	}
 
 	return nil
@@ -412,7 +411,7 @@ func ResourceOutscaleNicDetach(meta interface{}, nicID string, timeout time.Dura
 	resp, err := stateConf.WaitForStateContext(context.Background())
 	if err != nil {
 		return fmt.Errorf(
-			"Error waiting for ENI (%s) to become dettached: %s", nicID, err)
+			"error waiting for eni (%s) to become dettached: %s", nicID, err)
 	}
 
 	r := resp.(oscgo.ReadNicsResponse)
@@ -435,7 +434,7 @@ func ResourceOutscaleNicDetach(meta interface{}, nicID string, timeout time.Dura
 		})
 		if err != nil {
 			if statusCode == http.StatusNotFound {
-				return fmt.Errorf("Error detaching ENI: %s", err)
+				return fmt.Errorf("error detaching eni: %s", err)
 			}
 		}
 	}
@@ -466,7 +465,7 @@ func ResourceOutscaleNicUpdate(d *schema.ResourceData, meta interface{}) error {
 				return nil
 			})
 			if err != nil {
-				return fmt.Errorf("Failure to unassign Private IPs: %s", err)
+				return fmt.Errorf("failure to unassign private ips: %s", err)
 			}
 		}
 
@@ -486,7 +485,7 @@ func ResourceOutscaleNicUpdate(d *schema.ResourceData, meta interface{}) error {
 				return nil
 			})
 			if err != nil {
-				return fmt.Errorf("Failure to assign Private IPs: %s", err)
+				return fmt.Errorf("failure to assign private ips: %s", err)
 			}
 		}
 	}
@@ -505,7 +504,7 @@ func ResourceOutscaleNicUpdate(d *schema.ResourceData, meta interface{}) error {
 			return nil
 		})
 		if err != nil {
-			return fmt.Errorf("Failure updating ENI: %s", err)
+			return fmt.Errorf("failure updating eni: %s", err)
 		}
 	}
 
@@ -514,8 +513,7 @@ func ResourceOutscaleNicUpdate(d *schema.ResourceData, meta interface{}) error {
 			NicId: d.Id(),
 		}
 		request.SetDescription(d.Get("description").(string))
-		var err error
-		err = retry.RetryContext(context.Background(), d.Timeout(schema.TimeoutUpdate), func() *retry.RetryError {
+		err := retry.RetryContext(context.Background(), d.Timeout(schema.TimeoutUpdate), func() *retry.RetryError {
 			_, httpResp, err := conn.NicApi.UpdateNic(context.Background()).UpdateNicRequest(request).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
@@ -523,7 +521,7 @@ func ResourceOutscaleNicUpdate(d *schema.ResourceData, meta interface{}) error {
 			return nil
 		})
 		if err != nil {
-			return fmt.Errorf("Failure updating ENI: %s", err)
+			return fmt.Errorf("failure updating eni: %s", err)
 		}
 	}
 

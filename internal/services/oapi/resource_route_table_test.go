@@ -214,23 +214,6 @@ resource "outscale_route_table" "rtbTest" {
 }
 `
 
-const testAccOAPIRouteTableConfigChange = `
-resource "outscale_net" "foo" {
-	ip_range = "10.1.0.0/16"
-
-	tags {
-		key = "Name"
-		value = "testacc-route-table-rs"
-	}
-}
-
-resource "outscale_internet_service" "foo" {}
-
-resource "outscale_route_table" "rtbTest" {
-	net_id = outscale_net.foo.id
-}
-`
-
 func testAccOAPIRouteTableConfigInstance(omi, vmType, region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "foo" {

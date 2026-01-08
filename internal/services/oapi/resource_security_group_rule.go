@@ -547,7 +547,7 @@ func (r *resourceSecurityGroupRule) Read(ctx context.Context, req resource.ReadR
 
 	data, err := setSecurityGroupRuleState(ctx, r, data)
 	if err != nil {
-		if err.Error() == "Empty" {
+		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
 			return
 		}
@@ -630,7 +630,7 @@ func (r *resourceSecurityGroupRule) Delete(ctx context.Context, req resource.Del
 func (r *resourceSecurityGroupRule) readSecurityGroupsWithFilters(ctx context.Context, data SecurityGroupRuleModel, filter *oscgo.FiltersSecurityGroup) (*oscgo.ReadSecurityGroupsResponse, error) {
 	readTimeout, diag := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if diag.HasError() {
-		return nil, fmt.Errorf("unable to parse 'security_group_rule' read timeout value. Error: %v: ", diag.Errors())
+		return nil, fmt.Errorf("unable to parse 'security_group_rule' read timeout value: %v", diag.Errors())
 	}
 	ctx, cancel := context.WithTimeout(ctx, readTimeout)
 	defer cancel()
@@ -662,7 +662,7 @@ func setSecurityGroupRuleState(ctx context.Context, r *resourceSecurityGroupRule
 	}
 	data.RequestId = types.StringValue(readResp.ResponseContext.GetRequestId())
 	if len(readResp.GetSecurityGroups()) == 0 {
-		return data, errors.New("Empty")
+		return data, ErrResourceEmpty
 	}
 	securityGroup := readResp.GetSecurityGroups()[0]
 

@@ -258,7 +258,7 @@ func (r *resourceVolumeLink) Read(ctx context.Context, req resource.ReadRequest,
 
 	err := setLinkedVolumeState(ctx, r, &data)
 	if err != nil {
-		if err.Error() == "Empty" {
+		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
 			return
 		}
@@ -357,7 +357,7 @@ func setLinkedVolumeState(ctx context.Context, r *resourceVolumeLink, data *Volu
 
 	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if diags.HasError() {
-		return fmt.Errorf("unable to parse 'volume_link' read timeout value. Error: %v: ", diags.Errors())
+		return fmt.Errorf("unable to parse 'volume_link' read timeout value: %v", diags.Errors())
 	}
 
 	readReq := oscgo.ReadVolumesRequest{
@@ -376,7 +376,7 @@ func setLinkedVolumeState(ctx context.Context, r *resourceVolumeLink, data *Volu
 		return err
 	}
 	if len(readResp.GetVolumes()) == 0 || len(readResp.GetVolumes()[0].GetLinkedVolumes()) == 0 {
-		return errors.New("Empty")
+		return ErrResourceEmpty
 	}
 
 	isForceUnlink := false

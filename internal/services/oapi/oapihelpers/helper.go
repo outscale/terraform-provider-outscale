@@ -165,15 +165,6 @@ func GetOAPILinkPublicIPsForNic(l osc.LinkPublicIp) []map[string]interface{} {
 	}}
 }
 
-func getOAPIBsuSet(bsu osc.BsuCreated) []map[string]interface{} {
-	return []map[string]interface{}{{
-		"delete_on_vm_deletion": bsu.GetDeleteOnVmDeletion(),
-		"link_date":             bsu.GetLinkDate(),
-		"state":                 bsu.GetState(),
-		"volume_id":             bsu.GetVolumeId(),
-	}}
-}
-
 func getOAPILinkPublicIpsForVm(l osc.LinkPublicIpLightForVm) []map[string]interface{} {
 	return []map[string]interface{}{{
 		"public_dns_name":      l.GetPublicDnsName(),
@@ -325,7 +316,7 @@ func ImageHasLaunchPermission(conn *osc.APIClient, imageID string) (bool, error)
 		}
 		errString = err.Error()
 
-		return false, fmt.Errorf("Error creating Outscale VM volume: %s", errString)
+		return false, fmt.Errorf("error creating outscale vm volume: %s", errString)
 	}
 
 	if len(resp.GetImages()) == 0 {

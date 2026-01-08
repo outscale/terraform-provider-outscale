@@ -2,7 +2,6 @@ package oapi
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 
@@ -53,14 +52,14 @@ func DataSourceOutscaleKeyPairRead(d *schema.ResourceData, meta interface{}) err
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error retrieving Keypair: %w", err)
+		return fmt.Errorf("error retrieving keypair: %w", err)
 	}
 
-	if len(resp.GetKeypairs()) < 1 {
-		return errors.New("Unable to find keypair, please provide a better query criteria")
+	if len(resp.GetKeypairs()) == 0 {
+		return ErrNoResults
 	}
 	if len(resp.GetKeypairs()) > 1 {
-		return errors.New("Found to many keypairs, please provide a better query criteria")
+		return ErrMultipleResults
 	}
 
 	keypair := resp.GetKeypairs()[0]

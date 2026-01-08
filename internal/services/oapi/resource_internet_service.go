@@ -208,7 +208,7 @@ func (r *resourceInternetService) Read(ctx context.Context, req resource.ReadReq
 
 	data, err := setInternetServiceState(ctx, r, data)
 	if err != nil {
-		if err.Error() == "Empty" {
+		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
 			return
 		}
@@ -300,7 +300,7 @@ func setInternetServiceState(ctx context.Context, r *resourceInternetService, da
 
 	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to parse 'internet service' read timeout value. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("unable to parse 'internet service' read timeout value: %v", diags.Errors())
 	}
 
 	var readResp oscgo.ReadInternetServicesResponse
@@ -316,7 +316,7 @@ func setInternetServiceState(ctx context.Context, r *resourceInternetService, da
 		return data, err
 	}
 	if len(readResp.GetInternetServices()) == 0 {
-		return data, errors.New("Empty")
+		return data, ErrResourceEmpty
 	}
 
 	internetService := readResp.GetInternetServices()[0]

@@ -64,7 +64,7 @@ func testAccCheckOutscaleNicLinkStateIDFunc(resourceName string) resource.Import
 	return func(s *terraform.State) (string, error) {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
-			return "", fmt.Errorf("Not found: %s", resourceName)
+			return "", fmt.Errorf("not found: %s", resourceName)
 		}
 		log.Printf("LOG_ : %#+v\n", rs.Primary.Attributes["nic_id"])
 		return rs.Primary.Attributes["nic_id"], nil

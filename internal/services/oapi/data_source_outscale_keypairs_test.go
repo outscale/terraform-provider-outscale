@@ -32,11 +32,11 @@ func testAccCheckOutscaleKeypairsDataSourceID(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Can't find keypair data source: %s", n)
+			return fmt.Errorf("can't find keypair data source: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("Key Pair data source ID not set")
+			return fmt.Errorf("key pair data source id not set")
 		}
 		return nil
 	}

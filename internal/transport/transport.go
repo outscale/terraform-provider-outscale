@@ -39,12 +39,12 @@ func (t *transport) sign(req *http.Request) error {
 	sigReq := sigv4.SignRequestInput{
 		Request: req,
 		Credentials: credentials.Credentials{
-			AccessKeyID:     t.securityProviderAWSv4.accessKey,
-			SecretAccessKey: t.securityProviderAWSv4.secretKey,
-			SessionToken:    t.securityProviderAWSv4.sessionToken,
+			AccessKeyID:     t.accessKey,
+			SecretAccessKey: t.secretKey,
+			SessionToken:    t.sessionToken,
 		},
-		Service: t.securityProviderAWSv4.service,
-		Region:  t.securityProviderAWSv4.region,
+		Service: t.service,
+		Region:  t.region,
 	}
 	if req.GetBody != nil {
 		h := sha256.New()

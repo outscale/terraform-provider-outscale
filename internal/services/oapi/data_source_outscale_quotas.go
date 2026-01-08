@@ -96,11 +96,11 @@ func DataSourceOutscaleQuotasRead(d *schema.ResourceData, meta interface{}) erro
 	var errString string
 	if err != nil {
 		errString = err.Error()
-		return fmt.Errorf("[DEBUG] Error reading Quotas type (%s)", errString)
+		return fmt.Errorf("error reading quotas type (%s)", errString)
 	}
 
 	if len(resp.GetQuotaTypes()) == 0 {
-		return fmt.Errorf("no matching Quotas type found")
+		return ErrNoResults
 	}
 
 	quotas := make([]map[string]interface{}, 0)

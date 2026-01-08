@@ -189,7 +189,6 @@ func getDataSourceSchemas(attrsSchema map[string]*schema.Schema) map[string]*sch
 	}
 
 	return wholeSchema
-
 }
 
 func DataSourceOutscaleLoadBalancer() *schema.Resource {
@@ -233,7 +232,7 @@ func readLbs_(conn *oscgo.APIClient, d *schema.ResourceData, t schema.ValueType)
 	}
 
 	if !nameOk && !filtersOk {
-		return nil, nil, fmt.Errorf("One of filters, or load_balancer_name must be assigned")
+		return nil, nil, fmt.Errorf("one of filters, or load_balancer_name must be assigned")
 	}
 
 	var err error
@@ -264,14 +263,13 @@ func readLbs_(conn *oscgo.APIClient, d *schema.ResourceData, t schema.ValueType)
 		statusCode = httpResp.StatusCode
 		return nil
 	})
-
 	if err != nil {
 		if statusCode == http.StatusNotFound {
 			d.SetId("")
-			return nil, nil, fmt.Errorf("Loadbalancer Not Found")
+			return nil, nil, fmt.Errorf("loadbalancer not found")
 		}
 
-		return nil, nil, fmt.Errorf("Error retrieving ELB: %s", err)
+		return nil, nil, fmt.Errorf("error retrieving elb: %s", err)
 	}
 	return &resp, &elbName, nil
 }
@@ -282,8 +280,11 @@ func readLbs0(conn *oscgo.APIClient, d *schema.ResourceData) (*oscgo.LoadBalance
 		return nil, nil, err
 	}
 
-	if err := utils.IsResponseEmptyOrMutiple(len(resp.GetLoadBalancers()), "LoadBalancer"); err != nil {
-		return nil, nil, err
+	if len(resp.GetLoadBalancers()) == 0 {
+		return nil, nil, ErrNoResults
+	}
+	if len(resp.GetLoadBalancers()) > 1 {
+		return nil, nil, ErrMultipleResults
 	}
 
 	lbs := *resp.LoadBalancers
@@ -294,7 +295,6 @@ func DataSourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}
 	conn := meta.(*client.OutscaleClient).OSCAPI
 
 	lb, _, err := readLbs0(conn, d)
-
 	if err != nil {
 		return err
 	}

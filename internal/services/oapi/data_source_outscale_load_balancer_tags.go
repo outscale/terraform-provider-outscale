@@ -37,8 +37,7 @@ func DataSourceOutscaleLBUTagsRead(d *schema.ResourceData, meta interface{}) err
 	}
 
 	var resp oscgo.ReadLoadBalancerTagsResponse
-	var err error
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+	var err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.LoadBalancerApi.ReadLoadBalancerTags(
 			context.Background()).
 			ReadLoadBalancerTagsRequest(req).Execute()

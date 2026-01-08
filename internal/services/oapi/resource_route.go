@@ -321,7 +321,7 @@ func GetRouteFromRouteTable(routeTable oscgo.RouteTable, destinationIpRange stri
 			return route, nil
 		}
 	}
-	return oscgo.Route{}, fmt.Errorf("unable to find matching route for Route Table (%s) "+
+	return oscgo.Route{}, fmt.Errorf("unable to find matching route for route table (%s) "+
 		"and destination CIDR block (%s)", routeTable.GetRouteTableId(), destinationIpRange)
 }
 
@@ -349,7 +349,7 @@ func ResourceRouteStateRefreshFunc(ctx context.Context, r *resourceRoute, failSt
 			return resp, "error", err
 		}
 		if route.GetState() == failState {
-			return resp, failState, fmt.Errorf("failed to reach target state. Route is in '%v' failing state", failState)
+			return resp, failState, fmt.Errorf("failed to reach target state: route is in '%v' failing state", failState)
 		}
 
 		return resp, route.GetState(), nil
@@ -366,7 +366,7 @@ func (r *resourceRoute) Read(ctx context.Context, req resource.ReadRequest, resp
 
 	data, err := r.setRouteState(ctx, data)
 	if err != nil {
-		if err.Error() == "Empty" {
+		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
 			return
 		}
@@ -527,7 +527,7 @@ func (r *resourceRoute) setRouteState(ctx context.Context, data RouteModel) (Rou
 
 	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to parse 'route' read timeout value. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("unable to parse 'route' read timeout value: %v", diags.Errors())
 	}
 
 	var readResp oscgo.ReadRouteTablesResponse
@@ -547,7 +547,7 @@ func (r *resourceRoute) setRouteState(ctx context.Context, data RouteModel) (Rou
 	routeTable := readResp.GetRouteTables()[0]
 	route, err := GetRouteFromRouteTable(routeTable, data.DestinationIpRange.ValueString())
 	if err != nil {
-		return data, errors.New("Empty")
+		return data, ErrResourceEmpty
 	}
 
 	data.GatewayId = types.StringValue(route.GetGatewayId())

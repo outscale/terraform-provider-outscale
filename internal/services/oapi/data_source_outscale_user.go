@@ -71,17 +71,16 @@ func DataSourceUserRead(d *schema.ResourceData, meta interface{}) error {
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}
 	users := resp.GetUsers()
 	d.SetId(id.UniqueId())
 	if len(users) == 0 {
-		return fmt.Errorf("Unable to find user")
+		return ErrNoResults
 	}
 	if len(users) > 1 {
-		return fmt.Errorf("Find To many users")
+		return ErrMultipleResults
 	}
 
 	if err := d.Set("user_name", users[0].GetUserName()); err != nil {

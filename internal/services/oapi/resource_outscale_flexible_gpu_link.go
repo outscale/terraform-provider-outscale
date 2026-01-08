@@ -21,7 +21,7 @@ func ResourceOutscaleFlexibleGpuLink() *schema.Resource {
 		Update: resourceFlexibleGpuLinkUpdate,
 		Delete: ResourceOutscaleFlexibleGpuLinkDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(5 * time.Minute),
@@ -74,15 +74,15 @@ func ResourceOutscaleFlexibleGpuLinkCreate(d *schema.ResourceData, meta interfac
 			return nil
 		})
 		if err != nil {
-			return fmt.Errorf("Error Link flexibe gpu: %s", err.Error())
+			return fmt.Errorf("error link flexibe gpu: %s", err.Error())
 		}
 		if !resp.HasResponseContext() {
-			return fmt.Errorf("Error there is not Link flexible gpu (%s)", err)
+			return fmt.Errorf("error there is not link flexible gpu (%s)", err)
 		}
 	}
 
 	if err := changeShutdownBehavior(conn, vmId, d.Timeout(schema.TimeoutDelete)); err != nil {
-		return fmt.Errorf("Unable to change ShutdownBehavior: %s\n", err)
+		return fmt.Errorf("unable to change shutdownbehavior: %s", err)
 	}
 
 	return ResourceOutscaleFlexibleGpuLinkRead(d, meta)
@@ -97,8 +97,7 @@ func ResourceOutscaleFlexibleGpuLinkRead(d *schema.ResourceData, meta interface{
 		},
 	}
 	var resp oscgo.ReadFlexibleGpusResponse
-	var err error
-	err = retry.Retry(d.Timeout(schema.TimeoutRead), func() *retry.RetryError {
+	err := retry.Retry(d.Timeout(schema.TimeoutRead), func() *retry.RetryError {
 		rp, httpResp, err := conn.FlexibleGpuApi.ReadFlexibleGpus(
 			context.Background()).
 			ReadFlexibleGpusRequest(*req).Execute()
@@ -162,7 +161,6 @@ func ResourceOutscaleFlexibleGpuLinkDelete(d *schema.ResourceData, meta interfac
 		err = retry.Retry(d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
 			rp, httpResp, err := conn.FlexibleGpuApi.ReadFlexibleGpus(context.Background()).
 				ReadFlexibleGpusRequest(*reqFlex).Execute()
-
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
 			}
@@ -170,20 +168,20 @@ func ResourceOutscaleFlexibleGpuLinkDelete(d *schema.ResourceData, meta interfac
 			return nil
 		})
 		if err != nil {
-			return fmt.Errorf("error reading the FlexibleGpu %s", err)
+			return fmt.Errorf("error reading the flexiblegpu %s", err)
 		}
 
 		if len(*resp.FlexibleGpus) != 1 {
-			return fmt.Errorf("Unable to find Flexible GPU")
+			return fmt.Errorf("unable to find flexible gpu")
 		}
 		if (*resp.FlexibleGpus)[0].GetState() != "detaching" &&
 			(*resp.FlexibleGpus)[0].GetState() != "allocated" {
-			return fmt.Errorf("Unable to unlink Flexible GPU")
+			return fmt.Errorf("unable to unlink flexible gpu")
 		}
 	}
 
 	if err := changeShutdownBehavior(conn, vmId, d.Timeout(schema.TimeoutDelete)); err != nil {
-		return fmt.Errorf("Unable to change ShutdownBehavior: %s\n", err)
+		return fmt.Errorf("unable to change shutdownbehavior: %s", err)
 	}
 
 	d.SetId("")
@@ -238,7 +236,7 @@ func resourceFlexibleGpuLinkUpdate(d *schema.ResourceData, meta interface{}) err
 		}
 	}
 	if err := changeShutdownBehavior(conn, vmId, d.Timeout(schema.TimeoutUpdate)); err != nil {
-		return fmt.Errorf("Unable to change ShutdownBehavior: %s\n", err)
+		return fmt.Errorf("unable to change shutdownbehavior: %s", err)
 	}
 
 	return ResourceOutscaleFlexibleGpuLinkRead(d, meta)
@@ -250,7 +248,8 @@ func changeShutdownBehavior(conn *oscgo.APIClient, vmId string, timeOut time.Dur
 		rp, httpResp, err := conn.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
 			Filters: &oscgo.FiltersVm{
 				VmIds: &[]string{vmId},
-			}}).Execute()
+			},
+		}).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -258,10 +257,10 @@ func changeShutdownBehavior(conn *oscgo.APIClient, vmId string, timeOut time.Dur
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("error reading the VM %s", err)
+		return fmt.Errorf("error reading the vm %s", err)
 	}
 	if len(resp.GetVms()) == 0 {
-		return fmt.Errorf("error reading the VM %s err %s ", vmId, err)
+		return fmt.Errorf("error reading the vm %s err %s ", vmId, err)
 	}
 	vm := resp.GetVms()[0]
 

@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strconv"
-	"strings"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -23,7 +21,7 @@ func ResourceOutscaleLoadBalancerAttributes() *schema.Resource {
 		Read:   ResourceOutscaleLoadBalancerAttributesRead,
 		Delete: ResourceOutscaleLoadBalancerAttributesDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -258,21 +256,6 @@ func ResourceOutscaleLoadBalancerAttributes() *schema.Resource {
 	}
 }
 
-func isLoadBalancerNotFound(err error) bool {
-	return strings.Contains(fmt.Sprint(err), "LoadBalancerNotFound")
-}
-
-func lb_atoi_at(hc map[string]interface{}, el string) (int, bool) {
-	hc_el := hc[el]
-
-	if hc_el == nil {
-		return 0, false
-	}
-
-	r, err := strconv.Atoi(hc_el.(string))
-	return r, err == nil
-}
-
 func ResourceOutscaleLoadBalancerAttributesUpdate(d *schema.ResourceData,
 	meta interface{},
 ) error {
@@ -285,8 +268,7 @@ func ResourceOutscaleLoadBalancerAttributesCreate(d *schema.ResourceData, meta i
 
 func loadBalancerAttributesDoRequest(d *schema.ResourceData, meta interface{}, req oscgo.UpdateLoadBalancerRequest) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
-	var err error
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
 		_, httpResp, err := conn.LoadBalancerApi.UpdateLoadBalancer(
 			context.Background()).UpdateLoadBalancerRequest(req).Execute()
 		if err != nil {
@@ -343,7 +325,7 @@ func ResourceOutscaleLoadBalancerAttributesCreate_(d *schema.ResourceData, meta 
 	if al, alok := d.GetOk("access_log"); alok {
 		dals := al.([]interface{})
 		dal := dals[0].(map[string]interface{})
-		check, _ := dal["is_enabled"]
+		check := dal["is_enabled"]
 		access := &oscgo.AccessLog{}
 
 		if check != nil {

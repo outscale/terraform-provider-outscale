@@ -949,23 +949,23 @@ func (r *oksClusterResource) setOKSClusterState(ctx context.Context, data Cluste
 
 	adminWhiteList, diags := types.SetValueFrom(ctx, types.StringType, cluster.AdminWhitelist)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to convert AdminWhitelist into a Set. Error: %v", diags.Errors())
+		return data, fmt.Errorf("unable to convert adminwhitelist into a set: %v", diags.Errors())
 	}
 	cpSubregions, diags := types.SetValueFrom(ctx, types.StringType, cluster.CpSubregions)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to convert CPSubregions into a Set. Error: %v", diags.Errors())
+		return data, fmt.Errorf("unable to convert cpsubregions into a set: %v", diags.Errors())
 	}
 	diags = r.setOKSAdmissionFlags(ctx, &data, cluster.AdmissionFlags)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to convert AdmissionFlags into the Schema Model. Error: %v", diags.Errors())
+		return data, fmt.Errorf("unable to convert admissionflags into the schema model: %v", diags.Errors())
 	}
 	diags = r.setOKSAutoMaintenances(ctx, &data, cluster.AutoMaintenances)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to convert AutoMaintenances into the Schema Model. Error: %v", diags.Errors())
+		return data, fmt.Errorf("unable to convert automaintenances into the schema model: %v", diags.Errors())
 	}
 	diags = r.setOKSStatuses(ctx, &data, cluster.Statuses)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to convert Statuses into the Schema Model. Error: %v", diags.Errors())
+		return data, fmt.Errorf("unable to convert statuses into the schema model: %v", diags.Errors())
 	}
 
 	data.AdminLbu = to.Bool(cluster.AdminLbu)

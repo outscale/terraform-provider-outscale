@@ -53,7 +53,7 @@ func DataSourceOutscaleServerCertificateRead(d *schema.ResourceData, meta interf
 	filters, filtersOk := d.GetOk("filter")
 
 	if !filtersOk {
-		return fmt.Errorf("filters must be assigned")
+		return ErrFilterRequired
 	}
 
 	// Build up search parameters
@@ -77,17 +77,16 @@ func DataSourceOutscaleServerCertificateRead(d *schema.ResourceData, meta interf
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
-		return fmt.Errorf("[DEBUG] Error reading Server Certificate id (%s)", utils.GetErrorResponse(err))
+		return fmt.Errorf("error reading server certificate id (%s)", utils.GetErrorResponse(err))
 	}
 
 	if !resp.HasServerCertificates() || len(resp.GetServerCertificates()) == 0 {
-		return fmt.Errorf("Error reading Server Certificate: Server Certificates is not found with the seatch criteria")
+		return ErrNoResults
 	}
 
 	if len(resp.GetServerCertificates()) > 1 {
-		return fmt.Errorf("your query returned more than one result, please try a more specific search criteria")
+		return ErrMultipleResults
 	}
 
 	result := resp.GetServerCertificates()[0]

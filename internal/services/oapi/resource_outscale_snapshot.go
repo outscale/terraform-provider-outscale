@@ -22,7 +22,7 @@ func ResourceOutscaleSnapshot() *schema.Resource {
 		Update: ResourceOutscaleSnapshotUpdate,
 		Delete: ResourceOutscaleSnapshotDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(40 * time.Minute),
@@ -184,7 +184,7 @@ func ResourceOutscaleSnapshotCreate(d *schema.ResourceData, meta interface{}) er
 	}
 
 	if _, err = stateConf.WaitForStateContext(context.Background()); err != nil {
-		return fmt.Errorf("Error waiting for Snapshot (%s) to be ready: %w", resp.Snapshot.GetSnapshotId(), err)
+		return fmt.Errorf("error waiting for snapshot (%s) to be ready: %w", resp.Snapshot.GetSnapshotId(), err)
 	}
 
 	d.SetId(resp.Snapshot.GetSnapshotId())
@@ -215,7 +215,7 @@ func ResourceOutscaleSnapshotRead(d *schema.ResourceData, meta interface{}) erro
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("Error reading the snapshot: %w", err)
+		return fmt.Errorf("error reading the snapshot: %w", err)
 	}
 	if utils.IsResponseEmpty(len(resp.GetSnapshots()), "Snapshot", d.Id()) {
 		d.SetId("")
@@ -303,7 +303,6 @@ func SnapshotOAPIStateRefreshFunc(client *oscgo.APIClient, id string, timeOut ti
 			statusCode = httpResp.StatusCode
 			return nil
 		})
-
 		if err != nil {
 			if statusCode == http.StatusNotFound {
 				log.Printf("[INFO] OMI %s state %s", id, "destroyed")
@@ -313,7 +312,7 @@ func SnapshotOAPIStateRefreshFunc(client *oscgo.APIClient, id string, timeOut ti
 				log.Printf("[INFO] OMI %s state %s", id, "destroyed")
 				return emptyResp, "destroyed", nil
 			} else {
-				return emptyResp, "", fmt.Errorf("Error on refresh: %w", err)
+				return emptyResp, "", fmt.Errorf("error on refresh: %w", err)
 			}
 		}
 

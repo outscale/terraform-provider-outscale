@@ -245,7 +245,7 @@ func (r *resourceAccessKey) Read(ctx context.Context, req resource.ReadRequest, 
 
 	err := setAccessKeyState(ctx, r, &data)
 	if err != nil {
-		if err.Error() == "Empty" {
+		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
 			return
 		}
@@ -380,7 +380,7 @@ func setAccessKeyState(ctx context.Context, r *resourceAccessKey, data *AccessKe
 	}
 	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if diags.HasError() {
-		return fmt.Errorf("unable to parse 'access_key' read timeout value. Error: %v: ", diags.Errors())
+		return fmt.Errorf("unable to parse 'access_key' read timeout value: %v", diags.Errors())
 	}
 
 	readReq := oscgo.ReadAccessKeysRequest{
@@ -403,7 +403,7 @@ func setAccessKeyState(ctx context.Context, r *resourceAccessKey, data *AccessKe
 		return utils.GetErrorResponse(err)
 	}
 	if len(readResp.GetAccessKeys()) == 0 {
-		return errors.New("Empty")
+		return ErrResourceEmpty
 	}
 
 	data.RequestId = types.StringValue(readResp.ResponseContext.GetRequestId())

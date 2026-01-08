@@ -2,7 +2,6 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -145,7 +144,7 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 	volumes := resp.GetVolumes()
 
 	if len(volumes) < 1 {
-		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
+		return ErrNoResults
 	}
 
 	if err := d.Set("volumes", getOAPIVolumes(volumes)); err != nil {

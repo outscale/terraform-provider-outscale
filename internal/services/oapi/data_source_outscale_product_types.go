@@ -76,11 +76,11 @@ func DataSourceOutscaleProductTypesRead(d *schema.ResourceData, meta interface{}
 	var errString string
 	if err != nil {
 		errString = err.Error()
-		return fmt.Errorf("[DEBUG] Error reading product types (%s)", errString)
+		return fmt.Errorf("error reading product types (%s)", errString)
 	}
 
 	if len(resp.GetProductTypes()) == 0 {
-		return fmt.Errorf("no matching product types found")
+		return ErrNoResults
 	}
 
 	productTypes := make([]map[string]interface{}, len(resp.GetProductTypes()))

@@ -127,7 +127,7 @@ func (r *resourceMainRouteTableLink) GetAssociatedRouteTable(ctx context.Context
 
 	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if diags.HasError() {
-		return readResp, fmt.Errorf("unable to parse 'Route Table' read timeout value. Error: %v: ", diags.Errors())
+		return readResp, fmt.Errorf("unable to parse 'route table' read timeout value: %v", diags.Errors())
 	}
 
 	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
@@ -218,7 +218,7 @@ func (r *resourceMainRouteTableLink) Read(ctx context.Context, req resource.Read
 
 	data, err := setMainRouteTableLinkState(ctx, r, data)
 	if err != nil {
-		if err.Error() == "Empty" {
+		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
 			return
 		}
@@ -280,7 +280,7 @@ func setMainRouteTableLinkState(ctx context.Context, r *resourceMainRouteTableLi
 	}
 	data.RequestId = types.StringValue(routeTableResp.ResponseContext.GetRequestId())
 	if len(routeTableResp.GetRouteTables()) == 0 {
-		return data, errors.New("Empty")
+		return data, ErrResourceEmpty
 	}
 
 	var mainRouteTableLink oscgo.LinkRouteTable

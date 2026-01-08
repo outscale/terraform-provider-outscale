@@ -292,7 +292,7 @@ func (r *resourceRouteTable) Read(ctx context.Context, req resource.ReadRequest,
 
 	data, err := setRouteTableState(ctx, r, data)
 	if err != nil {
-		if err.Error() == "Empty" {
+		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
 			return
 		}
@@ -380,7 +380,7 @@ func setRouteTableState(ctx context.Context, r *resourceRouteTable, data RouteTa
 
 	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to parse 'Route Table' read timeout value. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("unable to parse 'route table' read timeout value: %v", diags.Errors())
 	}
 
 	var readResp oscgo.ReadRouteTablesResponse
@@ -397,7 +397,7 @@ func setRouteTableState(ctx context.Context, r *resourceRouteTable, data RouteTa
 	}
 	data.RequestId = types.StringValue(readResp.ResponseContext.GetRequestId())
 	if len(readResp.GetRouteTables()) == 0 {
-		return data, errors.New("Empty")
+		return data, ErrResourceEmpty
 	}
 
 	routeTable := readResp.GetRouteTables()[0]
@@ -409,15 +409,15 @@ func setRouteTableState(ctx context.Context, r *resourceRouteTable, data RouteTa
 
 	linkRouteTables, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: linkRouteTableAttrTypes}, LinkRouteTablesToModel(routeTable.GetLinkRouteTables()))
 	if diags.HasError() {
-		return data, fmt.Errorf("Unable to convert Link Route Tables to the schema Set. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("unable to convert link route tables to the schema set: %v", diags.Errors())
 	}
 	routePropagatingVirtualGateways, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: routePropagatingVirtualGatewayAttrTypes}, RoutePropagatingVirtualGatewaysToModel(routeTable.GetRoutePropagatingVirtualGateways()))
 	if diags.HasError() {
-		return data, fmt.Errorf("Unable to convert Route Propagating Virtual Gateways to the schema Set. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("unable to convert route propagating virtual gateways to the schema set: %v", diags.Errors())
 	}
 	routes, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: routeAttrTypes}, RoutesToModel(routeTable.GetRoutes()))
 	if diags.HasError() {
-		return data, fmt.Errorf("Unable to convert Routes to the schema Set. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("unable to convert routes to the schema set: %v", diags.Errors())
 	}
 
 	data.LinkRouteTables = linkRouteTables

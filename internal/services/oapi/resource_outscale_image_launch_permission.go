@@ -26,7 +26,7 @@ func ResourceOutscaleImageLaunchPermission() *schema.Resource {
 		Read:   ResourceOutscaleImageLaunchPermissionRead,
 		Delete: ResourceOutscaleImageLaunchPermissionDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -203,7 +203,7 @@ func ResourceOutscaleImageLaunchPermissionRead(d *schema.ResourceData, meta inte
 		}
 		errString = err.Error()
 
-		return fmt.Errorf("Error reading Outscale image permission: %s", errString)
+		return fmt.Errorf("error reading outscale image permission: %s", errString)
 	}
 	if utils.IsResponseEmpty(len(resp.GetImages()), "ImageLaunchPermission", d.Id()) {
 		d.SetId("")

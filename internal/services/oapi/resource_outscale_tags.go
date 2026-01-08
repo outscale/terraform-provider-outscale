@@ -21,7 +21,7 @@ func ResourceOutscaleTags() *schema.Resource {
 		Read:   ResourceOutscaleTagsRead,
 		Delete: ResourceOutscaleTagsDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Timeouts: &schema.ResourceTimeout{
@@ -42,7 +42,7 @@ func ResourceOutscaleTagsCreate(d *schema.ResourceData, meta interface{}) error 
 	tag, tagsOk := d.GetOk("tag")
 	resourceIds, resourceIdsOk := d.GetOk("resource_ids")
 	if !tagsOk && !resourceIdsOk {
-		return fmt.Errorf("One tag and resource id, must be assigned")
+		return fmt.Errorf("one tag and resource id, must be assigned")
 	}
 
 	if tagsOk {
@@ -116,9 +116,7 @@ func ResourceOutscaleTagsRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	var resp oscgo.ReadTagsResponse
-	var err error
-
-	err = retry.Retry(60*time.Second, func() *retry.RetryError {
+	err := retry.Retry(60*time.Second, func() *retry.RetryError {
 		rp, httpResp, err := conn.TagApi.ReadTags(context.Background()).ReadTagsRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -148,7 +146,7 @@ func ResourceOutscaleTagsDelete(d *schema.ResourceData, meta interface{}) error 
 	resourceIds, resourceIdsOk := d.GetOk("resource_ids")
 
 	if !tagsOk && !resourceIdsOk {
-		return fmt.Errorf("One tag and resource id, must be assigned")
+		return fmt.Errorf("one tag and resource id, must be assigned")
 	}
 
 	if tagsOk {

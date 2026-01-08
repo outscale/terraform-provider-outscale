@@ -83,8 +83,7 @@ func ResourceOutscaleNetworkInterfaceAttachmentCreate(d *schema.ResourceData, me
 	log.Printf("[DEBUG] Attaching network interface (%s) to instance (%s)", nicID, vmID)
 
 	var resp oscgo.LinkNicResponse
-	var err error
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.NicApi.LinkNic(context.Background()).LinkNicRequest(opts).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -92,9 +91,8 @@ func ResourceOutscaleNetworkInterfaceAttachmentCreate(d *schema.ResourceData, me
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
-		return fmt.Errorf("Error creating Outscale LinkNic: %s", err)
+		return fmt.Errorf("error creating outscale linknic: %s", err)
 	}
 
 	d.SetId(resp.GetLinkNicId())
@@ -118,7 +116,7 @@ func ResourceOutscaleNetworkInterfaceAttachmentRead(d *schema.ResourceData, meta
 	resp, err := stateConf.WaitForState()
 	if err != nil {
 		return fmt.Errorf(
-			"Error waiting for NIC to attach to Instance: %s, error: %s", nicID, err)
+			"error waiting for nic to attach to Instance: %s, error: %s", nicID, err)
 	}
 
 	r := resp.(oscgo.ReadNicsResponse)
@@ -163,10 +161,9 @@ func ResourceOutscaleNetworkInterfaceAttachmentDelete(d *schema.ResourceData, me
 		statusCode = httpResp.StatusCode
 		return nil
 	})
-
 	if err != nil {
 		if statusCode == http.StatusNotFound {
-			return fmt.Errorf("Error detaching ENI: %s", err)
+			return fmt.Errorf("error detaching eni: %s", err)
 		}
 	}
 
@@ -185,7 +182,7 @@ func ResourceOutscaleNetworkInterfaceAttachmentDelete(d *schema.ResourceData, me
 	_, err = stateConf.WaitForState()
 	if err != nil {
 		return fmt.Errorf(
-			"Error waiting for Volume to dettache to Instance: %s, error: %s", nicID, err)
+			"error waiting for volume to dettached from instance: %s, error: %s", nicID, err)
 	}
 
 	return nil
@@ -207,7 +204,7 @@ func ResourceOutscaleNetworkInterfaceAttachmentImportState(d *schema.ResourceDat
 	resp, err := stateConf.WaitForState()
 	if err != nil {
 		return nil, fmt.Errorf(
-			"Error waiting for NIC to attach to Instance: %s, error: %s", d.Id(), err)
+			"error waiting for nic to attach to instance: %s, error: %s", d.Id(), err)
 	}
 	r := resp.(oscgo.ReadNicsResponse)
 	linkNic := r.GetNics()[0].GetLinkNic()
@@ -236,8 +233,7 @@ func nicLinkRefreshFunc(conn *oscgo.APIClient, nicID string) retry.StateRefreshF
 		}
 
 		var resp oscgo.ReadNicsResponse
-		var err error
-		err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+		err := retry.Retry(5*time.Minute, func() *retry.RetryError {
 			rp, httpResp, err := conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(req).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
@@ -245,12 +241,11 @@ func nicLinkRefreshFunc(conn *oscgo.APIClient, nicID string) retry.StateRefreshF
 			resp = rp
 			return nil
 		})
-
 		if err != nil {
 			return nil, "failed", err
 		}
 		if len(resp.GetNics()) < 1 {
-			return nil, "failed", fmt.Errorf("error to find the Outscale Nic(%s): %#v", nicID, resp.GetNics())
+			return nil, "failed", fmt.Errorf("error to find the outscale nic(%s): %#v", nicID, resp.GetNics())
 		}
 
 		linkNic := resp.GetNics()[0].GetLinkNic()
