@@ -107,7 +107,7 @@ func testAccCheckOutscaleLBUDestroy(s *terraform.State) error {
 			if len(*resp.LoadBalancers) != 0 &&
 				*(*resp.LoadBalancers)[0].LoadBalancerName ==
 					rs.Primary.ID {
-				return fmt.Errorf("LBU still exists")
+				return fmt.Errorf("lbu still exists")
 			}
 		}
 
@@ -127,11 +127,11 @@ func testAccCheckOutscaleLBUExists(n string, res *oscgo.LoadBalancer) resource.T
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return fmt.Errorf("not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No LBU ID is set")
+			return fmt.Errorf("no lbu id is set")
 		}
 
 		conn := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSCAPI
@@ -161,7 +161,7 @@ func testAccCheckOutscaleLBUExists(n string, res *oscgo.LoadBalancer) resource.T
 
 		if len(*resp.LoadBalancers) != 1 ||
 			*(*resp.LoadBalancers)[0].LoadBalancerName != rs.Primary.ID {
-			return fmt.Errorf("LBU not found")
+			return fmt.Errorf("lbu not found")
 		}
 
 		res = &(*resp.LoadBalancers)[0]
@@ -169,7 +169,7 @@ func testAccCheckOutscaleLBUExists(n string, res *oscgo.LoadBalancer) resource.T
 		if res.NetId != nil {
 			sgid := rs.Primary.Attributes["source_security_group_id"]
 			if sgid == "" {
-				return fmt.Errorf("Expected to find source_security_group_id for LBU, but was empty")
+				return fmt.Errorf("expected to find source_security_group_id for lbu, but was empty")
 			}
 		}
 

@@ -20,7 +20,7 @@ func ResourceOutscaleCa() *schema.Resource {
 		Update: ResourceOutscaleCaUpdate,
 		Delete: ResourceOutscaleCaDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"ca_pem": {
@@ -51,8 +51,8 @@ func ResourceOutscaleCa() *schema.Resource {
 func ResourceOutscaleCaCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
 
-	if _, ok := d.GetOk("ca_pem"); ok == false {
-		return fmt.Errorf("[DEBUG] Error 'ca_pem' field is require for certificate authority creation")
+	if _, ok := d.GetOk("ca_pem"); !ok {
+		return fmt.Errorf("error 'ca_pem' field is require for certificate authority creation")
 	}
 
 	req := oscgo.CreateCaRequest{
@@ -63,8 +63,7 @@ func ResourceOutscaleCaCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	var resp oscgo.CreateCaResponse
-	var err error
-	err = retry.Retry(120*time.Second, func() *retry.RetryError {
+	err := retry.Retry(120*time.Second, func() *retry.RetryError {
 		rp, httpResp, err := conn.CaApi.CreateCa(context.Background()).CreateCaRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -88,8 +87,7 @@ func ResourceOutscaleCaRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	var resp oscgo.ReadCasResponse
-	var err error
-	err = retry.Retry(120*time.Second, func() *retry.RetryError {
+	err := retry.Retry(120*time.Second, func() *retry.RetryError {
 		rp, httpResp, err := conn.CaApi.ReadCas(context.Background()).ReadCasRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -98,10 +96,10 @@ func ResourceOutscaleCaRead(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("[DEBUG] Error reading certificate authority id (%s)", utils.GetErrorResponse(err))
+		return fmt.Errorf("error reading certificate authority id (%s)", utils.GetErrorResponse(err))
 	}
 	if !resp.HasCas() {
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
+		return ErrNoResults
 	}
 	if utils.IsResponseEmpty(len(resp.GetCas()), "Ca", d.Id()) {
 		d.SetId("")
@@ -132,8 +130,7 @@ func ResourceOutscaleCaUpdate(d *schema.ResourceData, meta interface{}) error {
 		req.SetDescription(d.Get("description").(string))
 	}
 
-	var err error
-	err = retry.Retry(120*time.Second, func() *retry.RetryError {
+	err := retry.Retry(120*time.Second, func() *retry.RetryError {
 		_, httpResp, err := conn.CaApi.UpdateCa(context.Background()).UpdateCaRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -153,8 +150,7 @@ func ResourceOutscaleCaDelete(d *schema.ResourceData, meta interface{}) error {
 		CaId: d.Get("ca_id").(string),
 	}
 
-	var err error
-	err = retry.Retry(120*time.Second, func() *retry.RetryError {
+	err := retry.Retry(120*time.Second, func() *retry.RetryError {
 		_, httpResp, err := conn.CaApi.DeleteCa(context.Background()).DeleteCaRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)

@@ -54,7 +54,7 @@ func DataSourceOutscaleApiAccessRuleRead(d *schema.ResourceData, meta interface{
 
 	filters, filtersOk := d.GetOk("filter")
 	if !filtersOk {
-		return fmt.Errorf("filters must be assigned")
+		return ErrFilterRequired
 	}
 
 	filterParams, err := buildOutscaleApiAccessRuleFilters(filters.(*schema.Set))
@@ -74,17 +74,16 @@ func DataSourceOutscaleApiAccessRuleRead(d *schema.ResourceData, meta interface{
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
-		return fmt.Errorf("[DEBUG] Error reading api access rule id (%s)", utils.GetErrorResponse(err))
+		return fmt.Errorf("error reading api access rule id (%s)", utils.GetErrorResponse(err))
 	}
 	apiAccessRules := resp.GetApiAccessRules()[:]
 	if len(apiAccessRules) < 1 {
 		d.SetId("")
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
+		return ErrNoResults
 	}
 	if len(apiAccessRules) > 1 {
-		return fmt.Errorf("Your query returned more results. Please change your search criteria and try again")
+		return ErrMultipleResults
 	}
 
 	accRule := apiAccessRules[0]

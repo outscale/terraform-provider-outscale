@@ -2,7 +2,6 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -58,7 +57,7 @@ func DataSourceOutscaleNetAccessPointRead(d *schema.ResourceData, meta interface
 
 	filters, filtersOk := d.GetOk("filter")
 	if !filtersOk {
-		return fmt.Errorf("One of filters must be assigned")
+		return ErrFilterRequired
 	}
 
 	var resp oscgo.ReadNetAccessPointsResponse
@@ -80,13 +79,15 @@ func DataSourceOutscaleNetAccessPointRead(d *schema.ResourceData, meta interface
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}
 
-	if err := utils.IsResponseEmptyOrMutiple(len(resp.GetNetAccessPoints()), "NetAccessPoint"); err != nil {
-		return err
+	if len(resp.GetNetAccessPoints()) == 0 {
+		return ErrNoResults
+	}
+	if len(resp.GetNetAccessPoints()) > 1 {
+		return ErrMultipleResults
 	}
 
 	nap := resp.GetNetAccessPoints()[0]

@@ -146,7 +146,7 @@ func GetErrorResponseToString(err error) string {
 }
 
 func UnknownDataSourceFilterError(ctx context.Context, filterName string) error {
-	return fmt.Errorf("datasource filter '%s' is not implemented in the provider or not supported by the API", filterName)
+	return fmt.Errorf("datasource filter '%s' is not implemented in the provider or not supported by the api", filterName)
 }
 
 func ParseStringToInt32(str string) int32 {
@@ -218,16 +218,6 @@ func IsResponseEmpty(len int, name, id string) bool {
 	return false
 }
 
-func IsResponseEmptyOrMutiple(rLen int, resName string) error {
-	if rLen == 0 {
-		return fmt.Errorf("unable to find %v", resName)
-	}
-	if rLen > 1 {
-		return fmt.Errorf("multiple %vs matched; use additional constraints to reduce matches to a single %v", resName, resName)
-	}
-	return nil
-}
-
 func RandIntRange(min, max int) int {
 	return min + rand.IntN(max-min)
 }
@@ -286,5 +276,5 @@ func CheckPath(path string) error {
 	if regCheckPath.MatchString(path) || path == "/" {
 		return nil
 	}
-	return fmt.Errorf("invalid path:\n %v", pathError)
+	return fmt.Errorf("invalid path: %v", pathError)
 }

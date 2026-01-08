@@ -2,7 +2,6 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -61,8 +60,7 @@ func DataSourceOutscaleVpcAttrRead(d *schema.ResourceData, meta interface{}) err
 	}
 
 	var resp oscgo.ReadNetsResponse
-	var err error
-	err = retry.Retry(120*time.Second, func() *retry.RetryError {
+	err := retry.Retry(120*time.Second, func() *retry.RetryError {
 		rp, httpResp, err := conn.NetApi.ReadNets(context.Background()).ReadNetsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -76,7 +74,7 @@ func DataSourceOutscaleVpcAttrRead(d *schema.ResourceData, meta interface{}) err
 
 	if len(resp.GetNets()) == 0 {
 		d.SetId("")
-		return fmt.Errorf("oAPI Net not found")
+		return ErrNoResults
 	}
 
 	d.SetId(resp.GetNets()[0].GetNetId())

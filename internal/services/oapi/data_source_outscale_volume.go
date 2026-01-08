@@ -2,7 +2,6 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -134,12 +133,11 @@ func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 
 	var volume oscgo.Volume
 	if len(filteredVolumes) < 1 {
-		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
+		return ErrNoResults
 	}
 
 	if len(filteredVolumes) > 1 {
-		return fmt.Errorf("your query returned more than one result, please try a more " +
-			"specific search criteria")
+		return ErrMultipleResults
 	}
 
 	// Query returned single result.

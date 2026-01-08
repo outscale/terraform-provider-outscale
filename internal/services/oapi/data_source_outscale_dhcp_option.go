@@ -67,7 +67,7 @@ func DataSourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) 
 	filters, filtersOk := d.GetOk("filter")
 	dhcpID, dhcpIDOk := d.GetOk("dhcp_options_set_id")
 	if !dhcpIDOk && !filtersOk {
-		return fmt.Errorf("One of filters, or dhcp_options_set_id must be provided")
+		return fmt.Errorf("one of filters, or dhcp_options_set_id must be provided")
 	}
 
 	params := oscgo.ReadDhcpOptionsRequest{}
@@ -85,8 +85,7 @@ func DataSourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) 
 	}
 
 	var resp oscgo.ReadDhcpOptionsResponse
-	var err error
-	err = retry.Retry(120*time.Second, func() *retry.RetryError {
+	err := retry.Retry(120*time.Second, func() *retry.RetryError {
 		rp, httpResp, err := conn.DhcpOptionApi.ReadDhcpOptions(context.Background()).ReadDhcpOptionsRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -99,11 +98,11 @@ func DataSourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) 
 	}
 
 	if len(resp.GetDhcpOptionsSets()) == 0 {
-		return fmt.Errorf("Unable to find DHCP Option")
+		return ErrNoResults
 	}
 
 	if len(resp.GetDhcpOptionsSets()) > 1 {
-		return fmt.Errorf("multiple results returned, please use a more specific criteria in your query")
+		return ErrMultipleResults
 	}
 
 	dhcpOption := resp.GetDhcpOptionsSets()[0]

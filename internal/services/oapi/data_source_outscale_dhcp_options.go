@@ -83,7 +83,7 @@ func DataSourceOutscaleDHCPOptionsRead(d *schema.ResourceData, meta interface{})
 	filters, filtersOk := d.GetOk("filter")
 	dhcpIDs, dhcpIDOk := d.GetOk("dhcp_options_set_ids")
 	if !dhcpIDOk && !filtersOk {
-		return fmt.Errorf("One of filters, or dhcp_options_set_id must be provided")
+		return fmt.Errorf("one of filters, or dhcp_options_set_id must be provided")
 	}
 
 	var err error
@@ -113,7 +113,7 @@ func DataSourceOutscaleDHCPOptionsRead(d *schema.ResourceData, meta interface{})
 		return err
 	}
 	if len(resp.GetDhcpOptionsSets()) == 0 {
-		return fmt.Errorf("Unable to find DHCP Option")
+		return ErrNoResults
 	}
 
 	if err := d.Set("dhcp_options", flattenDHCPOption(resp.GetDhcpOptionsSets())); err != nil {

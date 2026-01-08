@@ -93,7 +93,7 @@ func testAccCheckOutscaleRuleImportStateIDFunc(resourceName string) resource.Imp
 	return func(s *terraform.State) (string, error) {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
-			return "", fmt.Errorf("Not found: %s", resourceName)
+			return "", fmt.Errorf("not found: %s", resourceName)
 		}
 		return fmt.Sprintf("%s_%s_%s_%s_%s_%s", rs.Primary.ID, strings.ToLower(rs.Primary.Attributes["flow"]), rs.Primary.Attributes["ip_protocol"], rs.Primary.Attributes["from_port_range"], rs.Primary.Attributes["to_port_range"], rs.Primary.Attributes["ip_range"]), nil
 	}

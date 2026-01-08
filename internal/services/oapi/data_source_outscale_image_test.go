@@ -38,11 +38,11 @@ func testAccCheckOutscaleImageDataSourceID(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Can't find AMI data source: %s", n)
+			return fmt.Errorf("can't find omi data source: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("AMI data source ID not set")
+			return fmt.Errorf("omi data source id not set")
 		}
 		return nil
 	}

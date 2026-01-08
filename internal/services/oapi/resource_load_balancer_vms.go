@@ -214,7 +214,7 @@ func (r *resourceLbuVms) Read(ctx context.Context, req resource.ReadRequest, res
 	}
 	err := setLbuBackendState(ctx, r, &data)
 	if err != nil {
-		if err.Error() == "Empty" {
+		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
 			return
 		}
@@ -354,7 +354,7 @@ func setLbuBackendState(ctx context.Context, r *resourceLbuVms, data *LbuBackend
 
 	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if diags.HasError() {
-		return fmt.Errorf("unable to parse read timeout value. Error: %v: ", diags.Errors())
+		return fmt.Errorf("unable to parse read timeout value: %v", diags.Errors())
 	}
 	ctx, cancel := context.WithTimeout(ctx, readTimeout)
 	defer cancel()
@@ -375,7 +375,7 @@ func setLbuBackendState(ctx context.Context, r *resourceLbuVms, data *LbuBackend
 		return err
 	}
 	if len(readResp.GetLoadBalancers()) == 0 {
-		return errors.New("Empty")
+		return ErrResourceEmpty
 	}
 
 	data.RequestId = types.StringValue(*readResp.ResponseContext.RequestId)
@@ -383,13 +383,13 @@ func setLbuBackendState(ctx context.Context, r *resourceLbuVms, data *LbuBackend
 	if !data.BackendVmIds.IsUnknown() && !data.BackendVmIds.IsNull() {
 		data.BackendVmIds, diags = types.SetValueFrom(ctx, types.StringType, lbu.GetBackendVmIds())
 		if diags.HasError() {
-			return fmt.Errorf("unable to set LBU backend_vm_ips: %v", diags.Errors())
+			return fmt.Errorf("unable to set lbu backend_vm_ips: %v", diags.Errors())
 		}
 	}
 	if !data.BackendIps.IsUnknown() && !data.BackendIps.IsNull() {
 		data.BackendIps, diags = types.SetValueFrom(ctx, types.StringType, lbu.GetBackendIps())
 		if diags.HasError() {
-			return fmt.Errorf("unable to set LBU backend_ips: %v", diags.Errors())
+			return fmt.Errorf("unable to set lbu backend_ips: %v", diags.Errors())
 		}
 	}
 	data.LoadBalancerName = types.StringValue(lbu.GetLoadBalancerName())
@@ -422,13 +422,13 @@ func buildFwUpdateBackendsRequest(ctx context.Context, lbuName string, stateData
 	if !reflect.DeepEqual(planData.BackendIps, stateData.BackendIps) {
 		ipsToAdd, ipsToRemove, diags = fwhelpers.GetSlicesFromTypesSetForUpdating(ctx, stateData.BackendIps, planData.BackendIps)
 		if diags.HasError() {
-			return linkReq, unLinkReq, fmt.Errorf("unable to get 'backend_ips' form typeSet: %v", diags.Errors())
+			return linkReq, unLinkReq, fmt.Errorf("unable to get 'backend_ips' form typeset: %v", diags.Errors())
 		}
 	}
 	if !reflect.DeepEqual(planData.BackendVmIds, stateData.BackendVmIds) {
 		vmIdsToAdd, vmIdsToRemove, diags = fwhelpers.GetSlicesFromTypesSetForUpdating(ctx, stateData.BackendVmIds, planData.BackendVmIds)
 		if diags.HasError() {
-			return linkReq, unLinkReq, fmt.Errorf("unable to get 'backend_vm_ids' form typeSet: %v", diags.Errors())
+			return linkReq, unLinkReq, fmt.Errorf("unable to get 'backend_vm_ids' form typeset: %v", diags.Errors())
 		}
 	}
 	if len(ipsToAdd) > 0 {

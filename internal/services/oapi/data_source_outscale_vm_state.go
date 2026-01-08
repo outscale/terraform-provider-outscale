@@ -3,7 +3,6 @@ package oapi
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"time"
 
@@ -128,12 +127,11 @@ func DataSourceOutscaleVMStateRead(d *schema.ResourceData, meta interface{}) err
 
 	var state oscgo.VmStates
 	if len(filteredStates) < 1 {
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
+		return ErrNoResults
 	}
 
 	if len(filteredStates) > 1 {
-		return fmt.Errorf("Your query returned more than one result. Please try a more " +
-			"specific search criteria.")
+		return ErrMultipleResults
 	}
 
 	state = filteredStates[0]

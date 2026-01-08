@@ -18,7 +18,7 @@ func ResourceOutscalePolicy() *schema.Resource {
 		Read:   ResourceOutscalePolicyRead,
 		Delete: ResourceOutscalePolicyDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -115,7 +115,6 @@ func ResourceOutscalePolicyRead(d *schema.ResourceData, meta interface{}) error 
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}
@@ -183,13 +182,12 @@ func ResourceOutscalePolicyDelete(d *schema.ResourceData, meta interface{}) erro
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("error deleting Outscale Policy %s: %s", d.Id(), err)
+		return fmt.Errorf("error deleting outscale policy %s: %s", d.Id(), err)
 	}
 	return nil
 }
 
 func unlinkEntitiesToPolicy(conn *oscgo.APIClient, policyOrn string) error {
-
 	req := oscgo.ReadEntitiesLinkedToPolicyRequest{PolicyOrn: policyOrn}
 	var users, groups []oscgo.MinimalPolicy
 	err := retry.Retry(2*time.Minute, func() *retry.RetryError {
@@ -245,7 +243,6 @@ func unlinkEntitiesToPolicy(conn *oscgo.APIClient, policyOrn string) error {
 }
 
 func getPolicyDocument(conn *oscgo.APIClient, policyOrn, policyVersionId string) (string, error) {
-
 	req := oscgo.NewReadPolicyVersionRequest(policyOrn, policyVersionId)
 	var resp oscgo.ReadPolicyVersionResponse
 	err := retry.Retry(2*time.Minute, func() *retry.RetryError {
@@ -260,7 +257,7 @@ func getPolicyDocument(conn *oscgo.APIClient, policyOrn, policyVersionId string)
 		return "", err
 	}
 	if _, ok := resp.GetPolicyVersionOk(); !ok {
-		return "", fmt.Errorf("cannot find Policy version: %v", policyVersionId)
+		return "", fmt.Errorf("cannot find policy version: %v", policyVersionId)
 	}
 
 	return *resp.GetPolicyVersion().Body, err

@@ -107,12 +107,11 @@ func DataSourceOutscaleVpcsRead(d *schema.ResourceData, meta interface{}) error 
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}
 	if len(resp.GetNets()) == 0 {
-		return fmt.Errorf("no matching VPC found")
+		return ErrNoResults
 	}
 
 	d.SetId(id.UniqueId())

@@ -108,8 +108,7 @@ func DataSourceOutscaleLoadBalancerLDRuleRead(d *schema.ResourceData, meta inter
 	}
 
 	var resp oscgo.ReadListenerRulesResponse
-	var err error
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+	var err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.ListenerApi.ReadListenerRules(
 			context.Background()).
 			ReadListenerRulesRequest(req).Execute()
@@ -125,7 +124,7 @@ func DataSourceOutscaleLoadBalancerLDRuleRead(d *schema.ResourceData, meta inter
 	}
 
 	if len(*resp.ListenerRules) < 1 {
-		return fmt.Errorf("can't find listener rule")
+		return ErrNoResults
 	}
 	lr := (*resp.ListenerRules)[0]
 	if lr.Action != nil {

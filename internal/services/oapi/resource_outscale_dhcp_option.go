@@ -20,7 +20,7 @@ func ResourceOutscaleDHCPOption() *schema.Resource {
 		Update: ResourceOutscaleDHCPOptionUpdate,
 		Delete: ResourceOutscaleDHCPOptionDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"domain_name": {
@@ -84,7 +84,7 @@ func ResourceOutscaleDHCPOptionCreate(d *schema.ResourceData, meta interface{}) 
 	ntpServers, okNTPServers := d.GetOk("ntp_servers")
 
 	if !okDomainName && !okDomainNameServers && !okLogServers && !okNTPServers {
-		return fmt.Errorf("Insufficient parameters provided out of: domainName, domainNameServers, logServers, ntpServers. Expected at least: 1")
+		return fmt.Errorf("insufficient parameters provided out of: domainname, domainnameservers, logservers, ntpservers - expected at least: 1")
 	}
 	if okDomainName {
 		createOpts.SetDomainName(domainName.(string))
@@ -187,8 +187,7 @@ func ResourceOutscaleDHCPOptionDelete(d *schema.ResourceData, meta interface{}) 
 
 func createDhcpOption(conn *oscgo.APIClient, dhcp oscgo.CreateDhcpOptionsRequest) (*oscgo.DhcpOptionsSet, *oscgo.CreateDhcpOptionsResponse, error) {
 	var resp oscgo.CreateDhcpOptionsResponse
-	var err error
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.DhcpOptionApi.CreateDhcpOptions(context.Background()).CreateDhcpOptionsRequest(dhcp).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -209,8 +208,7 @@ func readDhcpOption(conn *oscgo.APIClient, dhcpID string) (*oscgo.DhcpOptionsSet
 	}
 
 	var resp oscgo.ReadDhcpOptionsResponse
-	var err error
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.DhcpOptionApi.ReadDhcpOptions(context.Background()).ReadDhcpOptionsRequest(filterRequest).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -224,7 +222,7 @@ func readDhcpOption(conn *oscgo.APIClient, dhcpID string) (*oscgo.DhcpOptionsSet
 
 	dhcps := resp.GetDhcpOptionsSets()
 	if len(dhcps) == 0 {
-		return nil, &resp, fmt.Errorf("the Outscale DHCP Option is not found %s", dhcpID)
+		return nil, &resp, fmt.Errorf("the outscale dhcp option is not found %s", dhcpID)
 	}
 
 	return &dhcps[0], &resp, err
@@ -246,8 +244,7 @@ func deleteDhcpOptions(conn *oscgo.APIClient, dhcpID string) error {
 func getAttachedDHCPs(conn *oscgo.APIClient, dhcpID string) ([]oscgo.Net, error) {
 	// Validate if the DHCP  Option is attached to a Net
 	var resp oscgo.ReadNetsResponse
-	var err error
-	err = retry.Retry(120*time.Second, func() *retry.RetryError {
+	err := retry.Retry(120*time.Second, func() *retry.RetryError {
 		rp, httpResp, err := conn.NetApi.ReadNets(context.Background()).ReadNetsRequest(oscgo.ReadNetsRequest{
 			Filters: &oscgo.FiltersNet{
 				DhcpOptionsSetIds: &[]string{dhcpID},
@@ -260,7 +257,7 @@ func getAttachedDHCPs(conn *oscgo.APIClient, dhcpID string) ([]oscgo.Net, error)
 		return nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("[DEBUG] Error reading network (%s)", err)
+		return nil, fmt.Errorf("error reading network (%s)", err)
 	}
 
 	return resp.GetNets(), nil
@@ -280,7 +277,7 @@ func detachDHCPs(conn *oscgo.APIClient, nets []oscgo.Net) error {
 			return nil
 		})
 		if err != nil {
-			return fmt.Errorf("Error updating net(%s) in DHCP Option resource: %s", net.GetNetId(), err)
+			return fmt.Errorf("error updating net(%s) in dhcp option resource: %s", net.GetNetId(), err)
 		}
 	}
 	return nil

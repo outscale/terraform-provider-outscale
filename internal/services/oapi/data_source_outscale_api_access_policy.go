@@ -39,8 +39,7 @@ func DataSourceOutscaleApiAccessPolicyRead(d *schema.ResourceData, meta interfac
 	req := oscgo.ReadApiAccessPolicyRequest{}
 
 	var resp oscgo.ReadApiAccessPolicyResponse
-	var err error
-	err = retry.Retry(120*time.Second, func() *retry.RetryError {
+	err := retry.Retry(120*time.Second, func() *retry.RetryError {
 		rp, httpResp, err := conn.ApiAccessPolicyApi.ReadApiAccessPolicy(context.Background()).ReadApiAccessPolicyRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -50,12 +49,12 @@ func DataSourceOutscaleApiAccessPolicyRead(d *schema.ResourceData, meta interfac
 	})
 
 	if err != nil {
-		return fmt.Errorf("[DEBUG] Error reading Api Access Policy id (%s)", utils.GetErrorResponse(err))
+		return fmt.Errorf("error reading api access policy id (%s)", utils.GetErrorResponse(err))
 	}
 
 	if !resp.HasApiAccessPolicy() {
 		d.SetId("")
-		return fmt.Errorf("Api Access Policy not found")
+		return ErrNoResults
 	}
 
 	policy := resp.GetApiAccessPolicy()

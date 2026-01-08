@@ -19,7 +19,7 @@ func ResourceOutscalePolicyVersion() *schema.Resource {
 		Read:   ResourceOutscalePolicyVersionRead,
 		Delete: ResourceOutscalePolicyVersionDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -136,7 +136,7 @@ func ResourceOutscalePolicyVersionDelete(d *schema.ResourceData, meta interface{
 		}
 		pVersions := resps.GetPolicyVersions()
 		if len(pVersions) <= 1 {
-			return fmt.Errorf("cannot delete the default policy version\n It will be deleted with the policy")
+			return fmt.Errorf("cannot delete the default policy version, it will be deleted with the policy")
 		}
 		for _, version := range pVersions {
 			if version.GetVersionId() == "v1" {
@@ -166,7 +166,7 @@ func ResourceOutscalePolicyVersionDelete(d *schema.ResourceData, meta interface{
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("error deleting Outscale Policy version %s: %s", d.Id(), err)
+		return fmt.Errorf("error deleting outscale policy version %s: %s", d.Id(), err)
 	}
 
 	return nil

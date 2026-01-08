@@ -1,18 +1,11 @@
 package oapi_test
 
 import (
-	"context"
 	"fmt"
 	"testing"
-	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
-	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 func TestAccDataOutscaleApiAccessRules_basic(t *testing.T) {
@@ -31,44 +24,6 @@ func TestAccDataOutscaleApiAccessRules_basic(t *testing.T) {
 			},
 		},
 	})
-}
-
-func testAccDataCheckOutscaleApiAccessRulesDestroy(s *terraform.State) error {
-	conn := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSCAPI
-
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "outscale_api_access_rule" {
-			continue
-		}
-		req := oscgo.ReadApiAccessRulesRequest{
-			Filters: &oscgo.FiltersApiAccessRule{ApiAccessRuleIds: &[]string{rs.Primary.ID}},
-		}
-
-		var resp oscgo.ReadApiAccessRulesResponse
-		var err error
-		exists := false
-		err = retry.Retry(120*time.Second, func() *retry.RetryError {
-			rp, httpResp, err := conn.ApiAccessRuleApi.ReadApiAccessRules(context.Background()).ReadApiAccessRulesRequest(req).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
-		if err != nil {
-			return fmt.Errorf("Api Access Rule reading (%s)", rs.Primary.ID)
-		}
-
-		for _, r := range resp.GetApiAccessRules() {
-			if r.GetApiAccessRuleId() == rs.Primary.ID {
-				exists = true
-			}
-		}
-		if exists {
-			return fmt.Errorf("Api Access Rule still exists (%s)", rs.Primary.ID)
-		}
-	}
-	return nil
 }
 
 func testAccDataOutscaleApiAccessRulesConfig(cert_path string) string {

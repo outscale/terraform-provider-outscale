@@ -46,7 +46,7 @@ func DataSourceOutscaleCaRead(d *schema.ResourceData, meta interface{}) error {
 
 	filters, filtersOk := d.GetOk("filter")
 	if !filtersOk {
-		return fmt.Errorf("filters must be assigned")
+		return ErrFilterRequired
 	}
 
 	params := oscgo.ReadCasRequest{}
@@ -59,8 +59,7 @@ func DataSourceOutscaleCaRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	var resp oscgo.ReadCasResponse
-	var err error
-	err = retry.Retry(120*time.Second, func() *retry.RetryError {
+	err := retry.Retry(120*time.Second, func() *retry.RetryError {
 		rp, httpResp, err := conn.CaApi.ReadCas(context.Background()).ReadCasRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -68,20 +67,17 @@ func DataSourceOutscaleCaRead(d *schema.ResourceData, meta interface{}) error {
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
-		return fmt.Errorf("[DEBUG] Error reading certificate authority id (%s)", utils.GetErrorResponse(err))
+		return fmt.Errorf("error reading certificate authority id (%s)", utils.GetErrorResponse(err))
 	}
-	if !resp.HasCas() {
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
-	}
-	if len(resp.GetCas()) == 0 {
+
+	if !resp.HasCas() || len(resp.GetCas()) == 0 {
 		d.SetId("")
-		return fmt.Errorf("Certificate authority not found")
+		return ErrNoResults
 	}
 
 	if len(resp.GetCas()) > 1 {
-		return fmt.Errorf("your query returned more than one result, please try a more specific search criteria")
+		return ErrMultipleResults
 	}
 
 	ca := resp.GetCas()[0]

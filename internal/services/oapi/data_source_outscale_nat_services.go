@@ -121,11 +121,11 @@ func DataSourceOutscaleNatServicesRead(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		errString = err.Error()
 
-		return fmt.Errorf("[DEBUG] Error reading Nar Service (%s)", errString)
+		return fmt.Errorf("error reading nat service (%s)", errString)
 	}
 
 	if len(resp.GetNatServices()) < 1 {
-		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
+		return ErrNoResults
 	}
 
 	return ngsOAPIDescriptionAttributes(d, resp.GetNatServices())

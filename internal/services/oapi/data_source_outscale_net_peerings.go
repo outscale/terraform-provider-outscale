@@ -68,7 +68,7 @@ func DataSourceOutscaleLinPeeringsConnectionRead(d *schema.ResourceData, meta in
 
 	filters, filtersOk := d.GetOk("filter")
 	if !filtersOk {
-		return fmt.Errorf("One of filters must be assigned")
+		return ErrFilterRequired
 	}
 
 	var err error
@@ -88,12 +88,12 @@ func DataSourceOutscaleLinPeeringsConnectionRead(d *schema.ResourceData, meta in
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("Error reading the Net Peerings %s", err)
+		return fmt.Errorf("error reading the net peerings %s", err)
 	}
 	peerings := resp.GetNetPeerings()
 
-	if peerings == nil || len(peerings) == 0 {
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
+	if len(peerings) == 0 {
+		return ErrNoResults
 	}
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
 		d.SetId(id.UniqueId())

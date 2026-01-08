@@ -229,7 +229,7 @@ func DataSourceOutscaleImagesRead(d *schema.ResourceData, meta interface{}) erro
 	filters, filtersOk := d.GetOk("filter")
 	aids, ownersOk := d.GetOk("account_ids")
 	if !executableUsersOk && !filtersOk && !ownersOk {
-		return fmt.Errorf("One of executable_users, filters, or account_ids must be assigned")
+		return fmt.Errorf("one of executable_users, filters, or account_ids must be assigned")
 	}
 
 	var err error
@@ -264,7 +264,7 @@ func DataSourceOutscaleImagesRead(d *schema.ResourceData, meta interface{}) erro
 
 	images := resp.GetImages()
 	if len(images) == 0 {
-		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
+		return ErrNoResults
 	}
 
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {

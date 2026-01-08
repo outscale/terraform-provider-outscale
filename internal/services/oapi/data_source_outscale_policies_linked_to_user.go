@@ -2,7 +2,6 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
@@ -26,7 +25,6 @@ func DataSourcePoliciesLinkedToUser() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-
 						"policy_name": {
 							Type:     schema.TypeString,
 							Computed: true,
@@ -67,13 +65,12 @@ func DataSourcePoliciesLinkedToUserRead(d *schema.ResourceData, meta interface{}
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}
 	policiesList := resp.GetPolicies()
 	if len(policiesList) == 0 {
-		return fmt.Errorf("unable to find Policies linked to user: %v", d.Get("user_name").(string))
+		return ErrNoResults
 	}
 	d.SetId(id.UniqueId())
 

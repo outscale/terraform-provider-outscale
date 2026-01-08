@@ -21,7 +21,7 @@ func ResourceOutscaleServerCertificate() *schema.Resource {
 		Update: ResourceOutscaleServerCertificateUpdate,
 		Delete: ResourceOutscaleServerCertificateDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"body": {
@@ -80,12 +80,12 @@ func ResourceOutscaleServerCertificateCreate(d *schema.ResourceData, meta interf
 		PrivateKey: d.Get("private_key").(string),
 	}
 
-	if _, ok := d.GetOk("body"); ok == false {
-		return fmt.Errorf("[DEBUG] Error 'body' field is require for server certificate creation")
+	if _, ok := d.GetOk("body"); !ok {
+		return fmt.Errorf("error 'body' field is require for server certificate creation")
 	}
 
-	if _, ok := d.GetOk("private_key"); ok == false {
-		return fmt.Errorf("[DEBUG] Error 'private_key' field is require for server certificate creation")
+	if _, ok := d.GetOk("private_key"); !ok {
+		return fmt.Errorf("error 'private_key' field is require for server certificate creation")
 	}
 
 	if _, ok := d.GetOk("chain"); ok {
@@ -98,8 +98,7 @@ func ResourceOutscaleServerCertificateCreate(d *schema.ResourceData, meta interf
 		req.SetPath(d.Get("path").(string))
 	}
 	var resp oscgo.CreateServerCertificateResponse
-	var err error
-	err = retry.Retry(120*time.Second, func() *retry.RetryError {
+	err := retry.Retry(120*time.Second, func() *retry.RetryError {
 		rp, httpResp, err := conn.ServerCertificateApi.CreateServerCertificate(context.Background()).CreateServerCertificateRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -108,7 +107,7 @@ func ResourceOutscaleServerCertificateCreate(d *schema.ResourceData, meta interf
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("[DEBUG] Error reading Server Certificate: %s", utils.GetErrorResponse(err))
+		return fmt.Errorf("error reading server certificate: %s", utils.GetErrorResponse(err))
 	}
 
 	d.SetId(cast.ToString(resp.ServerCertificate.Id))
@@ -124,8 +123,7 @@ func ResourceOutscaleServerCertificateRead(d *schema.ResourceData, meta interfac
 	log.Printf("[DEBUG] Reading Server Certificate id (%s)", id)
 
 	var resp oscgo.ReadServerCertificatesResponse
-	var err error
-	err = retry.Retry(120*time.Second, func() *retry.RetryError {
+	err := retry.Retry(120*time.Second, func() *retry.RetryError {
 		rp, httpResp, err := conn.ServerCertificateApi.ReadServerCertificates(context.Background()).ReadServerCertificatesRequest(oscgo.ReadServerCertificatesRequest{}).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -135,11 +133,10 @@ func ResourceOutscaleServerCertificateRead(d *schema.ResourceData, meta interfac
 	})
 
 	if err != nil {
-		return fmt.Errorf("[DEBUG] Error reading Server Certificate id (%s)", utils.GetErrorResponse(err))
-
+		return fmt.Errorf("error reading server certificate id (%s)", utils.GetErrorResponse(err))
 	}
 	if !resp.HasServerCertificates() {
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
+		return ErrNoResults
 	}
 
 	if len(resp.GetServerCertificates()) == 0 {
@@ -180,8 +177,7 @@ func ResourceOutscaleServerCertificateUpdate(d *schema.ResourceData, meta interf
 		req.SetNewPath(d.Get("path").(string))
 	}
 
-	var err error
-	err = retry.Retry(120*time.Second, func() *retry.RetryError {
+	err := retry.Retry(120*time.Second, func() *retry.RetryError {
 		_, httpResp, err := conn.ServerCertificateApi.UpdateServerCertificate(context.Background()).UpdateServerCertificateRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -189,7 +185,7 @@ func ResourceOutscaleServerCertificateUpdate(d *schema.ResourceData, meta interf
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("[DEBUG] Error update Server Certificate: %s", utils.GetErrorResponse(err))
+		return fmt.Errorf("error update server certificate: %s", utils.GetErrorResponse(err))
 	}
 
 	return ResourceOutscaleServerCertificateRead(d, meta)
@@ -202,8 +198,7 @@ func ResourceOutscaleServerCertificateDelete(d *schema.ResourceData, meta interf
 		Name: d.Get("name").(string),
 	}
 
-	var err error
-	err = retry.Retry(120*time.Second, func() *retry.RetryError {
+	err := retry.Retry(120*time.Second, func() *retry.RetryError {
 		_, httpResp, err := conn.ServerCertificateApi.DeleteServerCertificate(context.Background()).DeleteServerCertificateRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)

@@ -30,11 +30,11 @@ func testAccCheckOutscaleNatServiceDataSourceID(n string) resource.TestCheckFunc
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Can't find Nat Service data source: %s", n)
+			return fmt.Errorf("can't find nat service data source: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("Nat Service data source ID not set")
+			return fmt.Errorf("nat service data source id not set")
 		}
 		return nil
 	}

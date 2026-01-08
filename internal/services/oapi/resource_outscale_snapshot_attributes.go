@@ -136,8 +136,7 @@ func ResourceOutscaleSnapshotAttributesCreate(d *schema.ResourceData, meta inter
 
 	req.SetPermissionsToCreateVolume(perms)
 
-	var err error
-	err = retry.Retry(2*time.Minute, func() *retry.RetryError {
+	var err = retry.Retry(2*time.Minute, func() *retry.RetryError {
 		_, httpResp, err := conn.SnapshotApi.UpdateSnapshot(context.Background()).UpdateSnapshotRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -145,7 +144,7 @@ func ResourceOutscaleSnapshotAttributesCreate(d *schema.ResourceData, meta inter
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("Error createing snapshot createVolumePermission: %s", err)
+		return fmt.Errorf("error createing snapshot createvolumepermission: %s", err)
 	}
 	d.SetId(snapshotID)
 
@@ -170,7 +169,7 @@ func ResourceOutscaleSnapshotAttributesRead(d *schema.ResourceData, meta interfa
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("Error refreshing snapshot createVolumePermission state: %s", err)
+		return fmt.Errorf("error refreshing snapshot createvolumepermission state: %s", err)
 	}
 	if utils.IsResponseEmpty(len(resp.GetSnapshots()), "SnapshotAtribute", d.Id()) {
 		d.SetId("")

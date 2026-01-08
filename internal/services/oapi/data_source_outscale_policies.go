@@ -2,7 +2,6 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
@@ -24,7 +23,6 @@ func DataSourcePolicies() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-
 						"policy_name": {
 							Type:     schema.TypeString,
 							Required: true,
@@ -94,13 +92,12 @@ func DataSourcePoliciesRead(d *schema.ResourceData, meta interface{}) error {
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}
 	policyResp := resp.GetPolicies()
 	if len(policyResp) == 0 {
-		return fmt.Errorf("Unable to find Policies with fileters: %v", filters.(*schema.Set))
+		return ErrNoResults
 	}
 	d.SetId(id.UniqueId())
 

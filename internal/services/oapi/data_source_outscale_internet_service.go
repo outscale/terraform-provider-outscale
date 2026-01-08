@@ -47,7 +47,7 @@ func DataSourceOutscaleInternetServiceRead(d *schema.ResourceData, meta interfac
 	internetID, insternetIDOk := d.GetOk("internet_service_id")
 
 	if !filtersOk && !insternetIDOk {
-		return fmt.Errorf("One of filters, or instance_id must be assigned")
+		return fmt.Errorf("one of filters, or instance_id must be assigned")
 	}
 
 	// Build up search parameters
@@ -58,7 +58,6 @@ func DataSourceOutscaleInternetServiceRead(d *schema.ResourceData, meta interfac
 		params.Filters = &oscgo.FiltersInternetService{
 			InternetServiceIds: &[]string{internetID.(string)},
 		}
-
 	}
 
 	if filtersOk {
@@ -79,13 +78,12 @@ func DataSourceOutscaleInternetServiceRead(d *schema.ResourceData, meta interfac
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
-		return fmt.Errorf("[DEBUG] Error reading Internet Service id (%s)", utils.GetErrorResponse(err))
+		return fmt.Errorf("error reading internet service id (%s)", utils.GetErrorResponse(err))
 	}
 
 	if !resp.HasInternetServices() || len(resp.GetInternetServices()) == 0 {
-		return fmt.Errorf("Error reading Internet Service: Internet Services is not found with the seatch criteria")
+		return ErrNoResults
 	}
 
 	result := resp.GetInternetServices()[0]

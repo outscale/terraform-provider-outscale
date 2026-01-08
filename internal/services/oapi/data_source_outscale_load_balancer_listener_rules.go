@@ -115,8 +115,7 @@ func DataSourceOutscaleLoadBalancerLDRulesRead(d *schema.ResourceData, meta inte
 	}
 
 	var resp oscgo.ReadListenerRulesResponse
-	var err error
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+	var err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.ListenerApi.ReadListenerRules(
 			context.Background()).
 			ReadListenerRulesRequest(req).Execute()

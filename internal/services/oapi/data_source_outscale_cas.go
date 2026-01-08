@@ -71,12 +71,12 @@ func DataSourceOutscaleCasRead(d *schema.ResourceData, meta interface{}) error {
 	})
 
 	if err != nil {
-		return fmt.Errorf("[DEBUG] Error reading certificate authority id (%s)", utils.GetErrorResponse(err))
+		return fmt.Errorf("error reading certificate authority id (%s)", utils.GetErrorResponse(err))
 	}
 	respCas := resp.GetCas()[:]
 	if len(respCas) < 1 {
 		d.SetId("")
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
+		return ErrNoResults
 	}
 
 	blockCas := make([]map[string]interface{}, len(respCas))

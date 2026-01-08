@@ -21,7 +21,7 @@ func ResourceOutscalePublicIPLink() *schema.Resource {
 		Read:   ResourceOutscalePublicIPLinkRead,
 		Delete: ResourceOutscalePublicIPLinkDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Timeouts: &schema.ResourceTimeout{
@@ -61,9 +61,7 @@ func ResourceOutscalePublicIPLinkCreate(d *schema.ResourceData, meta interface{}
 	log.Printf("[DEBUG] EIP association configuration: %#v", request)
 
 	var resp oscgo.LinkPublicIpResponse
-	var err error
-
-	err = retry.Retry(60*time.Second, func() *retry.RetryError {
+	err := retry.Retry(60*time.Second, func() *retry.RetryError {
 		rp, httpResp, err := conn.PublicIpApi.LinkPublicIp(context.Background()).LinkPublicIpRequest(request).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -76,7 +74,7 @@ func ResourceOutscalePublicIPLinkCreate(d *schema.ResourceData, meta interface{}
 		log.Printf("[WARN] ERROR ResourceOutscalePublicIPLinkCreate (%s)", err)
 		return err
 	}
-	//Using validation with request.
+	// Using validation with request.
 	if resp.GetLinkPublicIpId() != "" && len(resp.GetLinkPublicIpId()) > 0 {
 		d.SetId(resp.GetLinkPublicIpId())
 	} else {
@@ -107,9 +105,7 @@ func ResourceOutscalePublicIPLinkRead(d *schema.ResourceData, meta interface{}) 
 	}
 
 	var response oscgo.ReadPublicIpsResponse
-	var err error
-
-	err = retry.Retry(60*time.Second, func() *retry.RetryError {
+	err := retry.Retry(60*time.Second, func() *retry.RetryError {
 		resp, httpResp, err := conn.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(request).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -120,7 +116,7 @@ func ResourceOutscalePublicIPLinkRead(d *schema.ResourceData, meta interface{}) 
 
 	if err != nil {
 		log.Printf("[WARN] ERROR ResourceOutscalePublicIPLinkRead (%s)", err)
-		return fmt.Errorf("Error reading Outscale VM Public IP %s: %#v", d.Get("public_ip_id").(string), err)
+		return fmt.Errorf("error reading outscale vm public ip %s: %#v", d.Get("public_ip_id").(string), err)
 	}
 	if utils.IsResponseEmpty(len(response.GetPublicIps()), "PublicIpLink", d.Id()) {
 		d.SetId("")
@@ -142,9 +138,7 @@ func ResourceOutscalePublicIPLinkDelete(d *schema.ResourceData, meta interface{}
 	opts := oscgo.UnlinkPublicIpRequest{}
 	opts.SetLinkPublicIpId(linkID.(string))
 
-	var err error
-
-	err = retry.Retry(60*time.Second, func() *retry.RetryError {
+	err := retry.Retry(60*time.Second, func() *retry.RetryError {
 		_, httpResp, err := conn.PublicIpApi.UnlinkPublicIp(context.Background()).UnlinkPublicIpRequest(opts).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -154,7 +148,7 @@ func ResourceOutscalePublicIPLinkDelete(d *schema.ResourceData, meta interface{}
 
 	if err != nil {
 		log.Printf("[WARN] ERROR ResourceOutscalePublicIPLinkDelete (%s)", err)
-		return fmt.Errorf("Error deleting Elastic IP association: %s", err)
+		return fmt.Errorf("error deleting elastic ip association: %s", err)
 	}
 
 	return nil

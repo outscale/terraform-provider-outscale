@@ -2,7 +2,6 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -124,7 +123,7 @@ func DataSourceOutscaleNetAccessPointsRead(d *schema.ResourceData, meta interfac
 
 	naps := resp.GetNetAccessPoints()[:]
 	if len(naps) < 1 {
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
+		return ErrNoResults
 	}
 
 	nap_ret := make([]map[string]interface{}, len(naps))

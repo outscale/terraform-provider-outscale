@@ -254,7 +254,7 @@ func (r *resourceNetAccessPoint) Read(ctx context.Context, req resource.ReadRequ
 
 	data, err := setNetAccessPointState(ctx, r, data)
 	if err != nil {
-		if err.Error() == "Empty" {
+		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
 			return
 		}
@@ -397,7 +397,7 @@ func setNetAccessPointState(ctx context.Context, r *resourceNetAccessPoint, data
 
 	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to parse 'net access point' read timeout value. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("unable to parse 'net access point' read timeout value: %v", diags.Errors())
 	}
 
 	var readResp oscgo.ReadNetAccessPointsResponse
@@ -415,13 +415,13 @@ func setNetAccessPointState(ctx context.Context, r *resourceNetAccessPoint, data
 	data.RequestId = types.StringValue(readResp.ResponseContext.GetRequestId())
 
 	if len(readResp.GetNetAccessPoints()) == 0 {
-		return data, errors.New("Empty")
+		return data, ErrResourceEmpty
 	}
 	netAccessPoint := readResp.GetNetAccessPoints()[0]
 
 	routeTablesIds, diags := types.SetValueFrom(ctx, types.StringType, netAccessPoint.GetRouteTableIds())
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to convert Route Tables Ids into a Set. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("unable to convert route tables ids into a set: %v", diags.Errors())
 	}
 	tags, diag := flattenOAPITagsFW(ctx, netAccessPoint.GetTags())
 	if diag.HasError() {

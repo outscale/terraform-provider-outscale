@@ -34,7 +34,7 @@ func testAccCheckOutscaleRegionsDataSourceID(n string) resource.TestCheckFunc {
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("regions data source ID not set")
+			return fmt.Errorf("regions data source id not set")
 		}
 		return nil
 	}

@@ -213,7 +213,7 @@ func DataSourceOutscaleImageRead(d *schema.ResourceData, meta interface{}) error
 	ai, aisOk := d.GetOk("account_id")
 	imageID, imageIDOk := d.GetOk("image_id")
 	if !executableUsersOk && !filtersOk && !aisOk && !imageIDOk {
-		return fmt.Errorf("One of executable_users, filters, or account_id must be assigned, or image_id must be provided")
+		return fmt.Errorf("one of executable_users, filters, or account_id must be assigned, or image_id must be provided")
 	}
 
 	var err error
@@ -252,10 +252,10 @@ func DataSourceOutscaleImageRead(d *schema.ResourceData, meta interface{}) error
 	images := resp.GetImages()
 
 	if len(images) < 1 {
-		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
+		return ErrNoResults
 	}
 	if len(images) > 1 {
-		return fmt.Errorf("your query returned more than one result, please try a more specific search criteria")
+		return ErrMultipleResults
 	}
 
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {

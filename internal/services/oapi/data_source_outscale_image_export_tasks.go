@@ -19,7 +19,7 @@ func DataSourceOutscaleImageExportTasks() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceOAPIImageExportTasksRead,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Timeouts: &schema.ResourceTimeout{
@@ -119,13 +119,12 @@ func dataSourceOAPIImageExportTasksRead(d *schema.ResourceData, meta interface{}
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		return fmt.Errorf("error reading task image %s", err)
 	}
 
 	if len(resp.GetImageExportTasks()) == 0 {
-		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
+		return ErrNoResults
 	}
 
 	snapshots := make([]map[string]interface{}, len(resp.GetImageExportTasks()))

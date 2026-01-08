@@ -100,18 +100,19 @@ func DataSourceOutscalePublicIPRead(d *schema.ResourceData, meta interface{}) er
 		statusCode = httpResp.StatusCode
 		return nil
 	})
-
 	if err != nil {
 		if statusCode == http.StatusNotFound {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error retrieving EIP: %s", err)
+		return fmt.Errorf("error retrieving eip: %s", err)
 	}
 
-	// Verify Outscale returned our EIP
-	if err := utils.IsResponseEmptyOrMutiple(len(response.GetPublicIps()), "PublicIp"); err != nil {
-		return err
+	if len(response.GetPublicIps()) == 0 {
+		return ErrNoResults
+	}
+	if len(response.GetPublicIps()) > 1 {
+		return ErrMultipleResults
 	}
 
 	address := response.GetPublicIps()[0]
@@ -142,7 +143,7 @@ func DataSourceOutscalePublicIPRead(d *schema.ResourceData, meta interface{}) er
 	}
 
 	if err := d.Set("tags", FlattenOAPITagsSDK(address.GetTags())); err != nil {
-		return fmt.Errorf("Error setting PublicIp tags: %s", err)
+		return fmt.Errorf("error setting publicip tags: %s", err)
 	}
 
 	d.Set("public_ip", address.PublicIp)

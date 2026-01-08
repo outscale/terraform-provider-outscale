@@ -68,7 +68,7 @@ func DataSourceOutscaleLoadBalancerVmsHealRead(d *schema.ResourceData, meta inte
 	conn := meta.(*client.OutscaleClient).OSCAPI
 
 	ename, ok := d.GetOk("load_balancer_name")
-	if ok == false {
+	if !ok {
 		return errors.New("load_balancer_name is require")
 	}
 
@@ -88,8 +88,7 @@ func DataSourceOutscaleLoadBalancerVmsHealRead(d *schema.ResourceData, meta inte
 	}
 
 	var resp oscgo.ReadVmsHealthResponse
-	var err error
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.LoadBalancerApi.ReadVmsHealth(
 			context.Background()).ReadVmsHealthRequest(req).
 			Execute()
@@ -105,11 +104,11 @@ func DataSourceOutscaleLoadBalancerVmsHealRead(d *schema.ResourceData, meta inte
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("Error retrieving Load Balacer Vms Heal: %s", err)
+		return fmt.Errorf("error retrieving load balacer vms health: %s", err)
 	}
 
 	if resp.BackendVmHealth == nil {
-		return fmt.Errorf("lb.BackendVmHealth not found")
+		return fmt.Errorf("lb.backendvmhealth not found")
 	}
 	lbvh := make([]map[string]interface{}, len(*resp.BackendVmHealth))
 	for k, v := range *resp.BackendVmHealth {

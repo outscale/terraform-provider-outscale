@@ -2,7 +2,6 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -115,7 +114,7 @@ func DataSourceOutscaleAccessKeysRead(d *schema.ResourceData, meta interface{}) 
 	}
 
 	if len(resp.GetAccessKeys()) == 0 {
-		return fmt.Errorf("unable to find Access Keys")
+		return ErrNoResults
 	}
 
 	if err := d.Set("access_keys", flattenAccessKeys(resp.GetAccessKeys())); err != nil {

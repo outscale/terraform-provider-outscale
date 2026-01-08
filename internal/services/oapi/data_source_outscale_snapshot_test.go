@@ -47,11 +47,11 @@ func testAccCheckOutscaleSnapshotDataSourceID(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Can't find snapshot data source: %s", n)
+			return fmt.Errorf("can't find snapshot data source: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("Snapshot data source ID not set")
+			return fmt.Errorf("snapshot data source id not set")
 		}
 		return nil
 	}

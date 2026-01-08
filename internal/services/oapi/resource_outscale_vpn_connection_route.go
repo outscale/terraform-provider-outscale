@@ -63,7 +63,7 @@ func ResourceOutscaleVPNConnectionRouteCreate(d *schema.ResourceData, meta inter
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("Error creating Outscale VPN Conecction Route: %s", err)
+		return fmt.Errorf("error creating outscale vpn conecction route: %s", err)
 	}
 
 	d.SetId(fmt.Sprintf("%s:%s", destinationIPRange, vpnConnectionID))
@@ -87,7 +87,7 @@ func ResourceOutscaleVPNConnectionRouteRead(d *schema.ResourceData, meta interfa
 
 	val, err := stateConf.WaitForState()
 	if err != nil {
-		return fmt.Errorf("Error waiting for Outscale VPN Connection Route(%s) to become ready: %s", d.Id(), err)
+		return fmt.Errorf("error waiting for outscale vpn connection route(%s) to become ready: %s", d.Id(), err)
 	}
 	if val == nil {
 		utils.LogManuallyDeleted("VpnConnectionRoute", d.Id())
@@ -128,7 +128,7 @@ func ResourceOutscaleVPNConnectionRouteDelete(d *schema.ResourceData, meta inter
 
 	_, err = stateConf.WaitForState()
 	if err != nil {
-		return fmt.Errorf("Error waiting for Outscale VPN Connection Route(%s) to become deleted: %s", vpnConnectionID, err)
+		return fmt.Errorf("error waiting for outscale vpn connection route(%s) to become deleted: %s", vpnConnectionID, err)
 	}
 
 	return nil
@@ -145,13 +145,13 @@ func vpnConnectionRouteRefreshFunc(conn *oscgo.APIClient, destinationIPRange, vp
 
 		resp, httpResp, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(filter).Execute()
 		if err != nil {
-			switch {
-			case httpResp.StatusCode == http.StatusServiceUnavailable:
+			switch httpResp.StatusCode {
+			case http.StatusServiceUnavailable:
 				return nil, "pending", nil
-			case httpResp.StatusCode == http.StatusNotFound:
+			case http.StatusNotFound:
 				return nil, "deleted", nil
 			default:
-				return nil, "failed", fmt.Errorf("Error on vpnConnectionRouteRefresh: %s", err)
+				return nil, "failed", fmt.Errorf("error on vpnconnectionrouterefresh: %s", err)
 			}
 		}
 
@@ -195,7 +195,7 @@ func ResourceOutscaleVPNConnectionRouteImportState(d *schema.ResourceData, meta 
 
 	val, err := stateConf.WaitForState()
 	if err != nil {
-		return nil, fmt.Errorf("Error waiting for Outscale VPN Connection Route import(%s) to become ready: %s", d.Id(), err)
+		return nil, fmt.Errorf("error waiting for outscale vpn connection route import(%s) to become ready: %s", d.Id(), err)
 	}
 	if val == nil {
 		log.Printf("[WARN] VPN Connection route %q could not be found. Removing Route from state.", vpnConnectionID)
@@ -203,10 +203,10 @@ func ResourceOutscaleVPNConnectionRouteImportState(d *schema.ResourceData, meta 
 	}
 
 	if err := d.Set("vpn_connection_id", vpnConnectionID); err != nil {
-		return nil, fmt.Errorf("error setting `%s` for Outscale VPN Connection Route(%s): %s", "vpn_connection_id", vpnConnectionID, err)
+		return nil, fmt.Errorf("error setting `%s` for outscale vpn connection route(%s): %s", "vpn_connection_id", vpnConnectionID, err)
 	}
 	if err := d.Set("destination_ip_range", destinationIPRange); err != nil {
-		return nil, fmt.Errorf("error setting `%s` for Outscale VPN Connection Route(%s): %s", "destination_ip_range", destinationIPRange, err)
+		return nil, fmt.Errorf("error setting `%s` for outscale vpn connection route(%s): %s", "destination_ip_range", destinationIPRange, err)
 	}
 
 	d.SetId(fmt.Sprintf("%s:%s", destinationIPRange, vpnConnectionID))

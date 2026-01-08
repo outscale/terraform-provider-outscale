@@ -75,13 +75,13 @@ func testAccOutscaleVPNConnectionRouteExists(resourceName string) resource.TestC
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
-			return fmt.Errorf("Not found: %s", resourceName)
+			return fmt.Errorf("not found: %s", resourceName)
 		}
 
 		conn := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSCAPI
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No VPN Connection Route ID is set")
+			return fmt.Errorf("no vpn connection route id is set")
 		}
 
 		destinationIPRange, vpnConnectionID := oapihelpers.ParseVPNConnectionRouteID(rs.Primary.ID)
@@ -93,8 +93,7 @@ func testAccOutscaleVPNConnectionRouteExists(resourceName string) resource.TestC
 			},
 		}
 		var resp oscgo.ReadVpnConnectionsResponse
-		var err error
-		err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+		var err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 			rp, httpResp, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(filter).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
@@ -113,7 +112,7 @@ func testAccOutscaleVPNConnectionRouteExists(resourceName string) resource.TestC
 		}
 
 		if err != nil || state == "deleted" {
-			return fmt.Errorf("Outscale VPN Connection Route not found (%s)", rs.Primary.ID)
+			return fmt.Errorf("outscale vpn connection route not found (%s)", rs.Primary.ID)
 		}
 		return nil
 	}
@@ -135,8 +134,7 @@ func testAccOutscaleVPNConnectionRouteDestroy(s *terraform.State) error {
 			},
 		}
 		var resp oscgo.ReadVpnConnectionsResponse
-		var err error
-		err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+		var err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 			rp, httpResp, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(filter).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
@@ -155,7 +153,7 @@ func testAccOutscaleVPNConnectionRouteDestroy(s *terraform.State) error {
 		}
 
 		if err != nil || state == "available" {
-			return fmt.Errorf("Outscale VPN Connection Route still exists (%s): %s", rs.Primary.ID, err)
+			return fmt.Errorf("outscale vpn connection route still exists (%s): %s", rs.Primary.ID, err)
 		}
 
 	}

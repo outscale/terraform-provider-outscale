@@ -58,7 +58,7 @@ func testAccDataCheckOutscaleCasDestroy(s *terraform.State) error {
 			return nil
 		})
 		if err != nil {
-			return fmt.Errorf("Ca reading (%s)", rs.Primary.ID)
+			return fmt.Errorf("ca reading (%s)", rs.Primary.ID)
 		}
 
 		for _, ca := range resp.GetCas() {
@@ -68,7 +68,7 @@ func testAccDataCheckOutscaleCasDestroy(s *terraform.State) error {
 		}
 
 		if exists {
-			return fmt.Errorf("Ca still exists (%s)", rs.Primary.ID)
+			return fmt.Errorf("ca still exists (%s)", rs.Primary.ID)
 		}
 	}
 	return nil

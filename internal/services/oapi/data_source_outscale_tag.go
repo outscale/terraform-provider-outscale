@@ -2,7 +2,6 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -70,12 +69,11 @@ func DataSourceOutscaleTagRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if len(resp.GetTags()) < 1 {
-		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
+		return ErrNoResults
 	}
 
 	if len(resp.GetTags()) > 1 {
-		return fmt.Errorf("your query returned more than one result, Please try a more " +
-			"specific search criteria")
+		return ErrMultipleResults
 	}
 
 	tag := resp.GetTags()[0]

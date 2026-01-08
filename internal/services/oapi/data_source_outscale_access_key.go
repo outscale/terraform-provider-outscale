@@ -99,11 +99,11 @@ func DataSourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) e
 	}
 
 	if len(resp.GetAccessKeys()) == 0 {
-		return fmt.Errorf("unable to find Access Key")
+		return ErrNoResults
 	}
 
 	if len(resp.GetAccessKeys()) > 1 {
-		return fmt.Errorf("multiple results returned, please use a more specific criteria in your query")
+		return ErrMultipleResults
 	}
 
 	accessKey := resp.GetAccessKeys()[0]

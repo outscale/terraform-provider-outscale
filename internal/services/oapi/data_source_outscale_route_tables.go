@@ -147,7 +147,7 @@ func DataSourceOutscaleRouteTablesRead(d *schema.ResourceData, meta interface{})
 	rtbID, rtbOk := d.GetOk("route_table_id")
 	filter, filterOk := d.GetOk("filter")
 	if !filterOk && !rtbOk {
-		return fmt.Errorf("One of route_table_id or filters must be assigned")
+		return fmt.Errorf("one of route_table_id or filters must be assigned")
 	}
 
 	params := oscgo.ReadRouteTablesRequest{
@@ -186,12 +186,12 @@ func DataSourceOutscaleRouteTablesRead(d *schema.ResourceData, meta interface{})
 	var errString string
 	if err != nil {
 		errString = err.Error()
-		return fmt.Errorf("[DEBUG] Error reading Internet Services (%s)", errString)
+		return fmt.Errorf("error reading internet services (%s)", errString)
 	}
 
 	rt := resp.GetRouteTables()
 	if len(rt) == 0 {
-		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
+		return ErrNoResults
 	}
 
 	routeTables := make([]map[string]interface{}, len(rt))

@@ -286,7 +286,7 @@ func ResourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, met
 	})
 
 	if err != nil {
-		return fmt.Errorf("Error creating AppCookieStickinessPolicy: %s", err)
+		return fmt.Errorf("error creating appcookiestickinesspolicy: %s", err)
 	}
 
 	if resp.LoadBalancer != nil {
@@ -374,8 +374,7 @@ func ResourceOutscaleAppCookieStickinessPolicyDelete(d *schema.ResourceData, met
 		PolicyName:       p,
 	}
 
-	var err error
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+	var err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		_, httpResp, err := elbconn.LoadBalancerPolicyApi.
 			DeleteLoadBalancerPolicy(
 				context.Background()).
@@ -388,7 +387,7 @@ func ResourceOutscaleAppCookieStickinessPolicyDelete(d *schema.ResourceData, met
 	})
 
 	if err != nil {
-		return fmt.Errorf("Error deleting App stickiness policy %s: %s", d.Id(), err)
+		return fmt.Errorf("error deleting app stickiness policy %s: %s", d.Id(), err)
 	}
 	return nil
 }

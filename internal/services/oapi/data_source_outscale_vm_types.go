@@ -2,7 +2,6 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
@@ -96,7 +95,7 @@ func DataSourceOutscaleVMTypesRead(d *schema.ResourceData, meta interface{}) err
 	filteredTypes := resp.GetVmTypes()[:]
 
 	if len(filteredTypes) < 1 {
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
+		return ErrNoResults
 	}
 
 	return statusDescriptionOAPIVMTypesAttributes(d, filteredTypes)

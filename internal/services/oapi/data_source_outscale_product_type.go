@@ -67,15 +67,15 @@ func DataSourceOutscaleProductTypeRead(d *schema.ResourceData, meta interface{})
 
 	if err != nil {
 		errString := err.Error()
-		return fmt.Errorf("[DEBUG] Error reading ProductType (%s)", errString)
+		return fmt.Errorf("error reading producttype (%s)", errString)
 	}
 
 	if len(resp.GetProductTypes()) == 0 {
-		return fmt.Errorf("no matching product type found")
+		return ErrNoResults
 	}
 
 	if len(resp.GetProductTypes()) > 1 {
-		return fmt.Errorf("multiple product type matched; use additional constraints to reduce matches to a single product type")
+		return ErrMultipleResults
 	}
 
 	productType := resp.GetProductTypes()[0]

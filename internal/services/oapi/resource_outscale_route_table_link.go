@@ -77,7 +77,7 @@ func ResourceOutscaleLinkRouteTableCreate(d *schema.ResourceData, meta interface
 	if err != nil {
 		errString = err.Error()
 
-		return fmt.Errorf("Error creating route table link: %s", errString)
+		return fmt.Errorf("error creating route table link: %s", errString)
 	}
 
 	d.SetId(resp.GetLinkRouteTableId())
@@ -122,7 +122,7 @@ func ResourceOutscaleLinkRouteTableDelete(d *schema.ResourceData, meta interface
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("Error deleting link route table: %s", err)
+		return fmt.Errorf("error deleting link route table: %s", err)
 	}
 
 	return nil
@@ -139,10 +139,10 @@ func ResourceOutscaleLinkRouteTableImportState(d *schema.ResourceData, meta inte
 
 	linkRTable, err := readOutscaleLinkRouteTable(meta.(*client.OutscaleClient), routeTableID, linkRouteTableID)
 	if err != nil {
-		return nil, fmt.Errorf("couldn't import Link Route Table(%s), error: %s", linkRouteTableID, err)
+		return nil, fmt.Errorf("couldn't import link route table(%s), error: %s", linkRouteTableID, err)
 	}
 	if linkRTable == nil {
-		return nil, fmt.Errorf("oAPI route tables for get link table not found")
+		return nil, fmt.Errorf("oapi route tables for get link table not found")
 	}
 	if err := d.Set("route_table_id", linkRTable.GetRouteTableId()); err != nil {
 		return nil, fmt.Errorf(errorLinkRouteTableSetting, "route_table_id", linkRTable.GetLinkRouteTableId(), err)

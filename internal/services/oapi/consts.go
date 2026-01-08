@@ -15,11 +15,6 @@ const (
 	DefaultIops int32 = 150
 	MaxSize     int32 = 14901
 
-	VolumeIOPSError string = `
-The "iops" parameter can only be set when creating an "io1" volume.
-Check Outscale API documentation for more details:
-https://docs.outscale.com/en/userguide/About-Volumes.html#_volume_types_and_iops
-`
 	AwaitActiveStateDefaultValue          bool = true
 	RemoveDefaultOutboundRuleDefaultValue bool = false
 )

@@ -20,7 +20,7 @@ func ResourceOutscaleApiAccessRule() *schema.Resource {
 		Update: ResourceOutscaleApiAccessRuleUpdate,
 		Delete: ResourceOutscaleApiAccessRuleDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"api_access_rule_id": {
@@ -56,7 +56,7 @@ func ResourceOutscaleApiAccessRule() *schema.Resource {
 
 func ResourceOutscaleApiAccessRuleCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
-	var checkParam = false
+	checkParam := false
 	req := oscgo.CreateApiAccessRuleRequest{}
 
 	if val, ok := d.GetOk("ca_ids"); ok {
@@ -68,7 +68,7 @@ func ResourceOutscaleApiAccessRuleCreate(d *schema.ResourceData, meta interface{
 		req.IpRanges = utils.SetToStringSlicePtr(val.(*schema.Set))
 	}
 	if !checkParam {
-		return fmt.Errorf("[DEBUG] Error 'ca_ids' or 'ip_ranges' field is require for API Access Rules creation")
+		return fmt.Errorf("error 'ca_ids' or 'ip_ranges' field is require for api access rules creation")
 	}
 
 	if val, ok := d.GetOk("cns"); ok {
@@ -79,8 +79,7 @@ func ResourceOutscaleApiAccessRuleCreate(d *schema.ResourceData, meta interface{
 	}
 
 	var resp oscgo.CreateApiAccessRuleResponse
-	var err error
-	err = retry.Retry(60*time.Second, func() *retry.RetryError {
+	err := retry.Retry(60*time.Second, func() *retry.RetryError {
 		rp, httpResp, err := conn.ApiAccessRuleApi.CreateApiAccessRule(context.Background()).CreateApiAccessRuleRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -104,8 +103,7 @@ func ResourceOutscaleApiAccessRuleRead(d *schema.ResourceData, meta interface{})
 	}
 
 	var resp oscgo.ReadApiAccessRulesResponse
-	var err error
-	err = retry.Retry(120*time.Second, func() *retry.RetryError {
+	err := retry.Retry(120*time.Second, func() *retry.RetryError {
 		rp, httpResp, err := conn.ApiAccessRuleApi.ReadApiAccessRules(context.Background()).ReadApiAccessRulesRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -113,12 +111,11 @@ func ResourceOutscaleApiAccessRuleRead(d *schema.ResourceData, meta interface{})
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
-		return fmt.Errorf("[DEBUG] Error reading api access rule id (%s)", utils.GetErrorResponse(err))
+		return fmt.Errorf("error reading api access rule id (%s)", utils.GetErrorResponse(err))
 	}
 	if !resp.HasApiAccessRules() {
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
+		return ErrNoResults
 	}
 	if utils.IsResponseEmpty(len(resp.GetApiAccessRules()), "ApiAccessRule", d.Id()) {
 		d.SetId("")
@@ -159,10 +156,10 @@ func ResourceOutscaleApiAccessRuleUpdate(d *schema.ResourceData, meta interface{
 
 	accRid, isIdOk := d.GetOk("api_access_rule_id")
 	if !isIdOk {
-		return fmt.Errorf("[DEBUG] Error 'api_access_rule_id' field is required to update API Access Rules")
+		return fmt.Errorf("error 'api_access_rule_id' field is required to update api access rules")
 	}
 
-	var checkParam = false
+	checkParam := false
 	req := oscgo.UpdateApiAccessRuleRequest{
 		ApiAccessRuleId: accRid.(string),
 	}
@@ -177,7 +174,7 @@ func ResourceOutscaleApiAccessRuleUpdate(d *schema.ResourceData, meta interface{
 	}
 
 	if !checkParam {
-		return fmt.Errorf("[DEBUG] Error 'ca_ids' or 'ip_ranges' field is require to update API Access Rules")
+		return fmt.Errorf("error 'ca_ids' or 'ip_ranges' field is require to update api access rules")
 	}
 
 	if val, ok := d.GetOk("cns"); ok {
@@ -187,8 +184,7 @@ func ResourceOutscaleApiAccessRuleUpdate(d *schema.ResourceData, meta interface{
 		req.SetDescription(v.(string))
 	}
 
-	var err error
-	err = retry.Retry(120*time.Second, func() *retry.RetryError {
+	err := retry.Retry(120*time.Second, func() *retry.RetryError {
 		_, httpResp, err := conn.ApiAccessRuleApi.UpdateApiAccessRule(context.Background()).UpdateApiAccessRuleRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -208,8 +204,7 @@ func ResourceOutscaleApiAccessRuleDelete(d *schema.ResourceData, meta interface{
 		ApiAccessRuleId: d.Id(),
 	}
 
-	var err error
-	err = retry.Retry(120*time.Second, func() *retry.RetryError {
+	err := retry.Retry(120*time.Second, func() *retry.RetryError {
 		_, httpResp, err := conn.ApiAccessRuleApi.DeleteApiAccessRule(context.Background()).DeleteApiAccessRuleRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -217,14 +212,4 @@ func ResourceOutscaleApiAccessRuleDelete(d *schema.ResourceData, meta interface{
 		return nil
 	})
 	return err
-}
-
-func getParameters(d *schema.ResourceData, param string) []string {
-	_, val := d.GetChange(param)
-	m := val.([]interface{})
-	a := make([]string, len(m))
-	for k, v := range m {
-		a[k] = v.(string)
-	}
-	return a
 }

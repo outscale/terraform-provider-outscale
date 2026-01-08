@@ -2,7 +2,6 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
@@ -31,7 +30,6 @@ func NewDataSourceQuota() datasource.DataSource {
 }
 
 func (d *dataSourceQuota) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-
 	if req.ProviderData == nil {
 		return
 	}
@@ -46,7 +44,7 @@ type dataSourceQuota struct {
 
 // ExampleDataSourceModel describes the data source data model.
 type quotaModel struct {
-	//ConfigurableAttribute types.String `tfsdk:"configurable_attribute"`
+	// ConfigurableAttribute types.String `tfsdk:"configurable_attribute"`
 	Id               types.String `tfsdk:"id"`
 	Filter           types.Set    `tfsdk:"filter"`
 	Name             types.String `tfsdk:"name"`
@@ -165,21 +163,21 @@ func (d *dataSourceQuota) Read(ctx context.Context, req datasource.ReadRequest, 
 		goto CHECK_ERR
 	}
 	if len(respApi.GetQuotaTypes()) == 0 {
-		err = fmt.Errorf("no matching quotas type found")
+		err = ErrNoResults
 		goto CHECK_ERR
 	}
 	if len(respApi.GetQuotaTypes()) > 1 {
-		err = fmt.Errorf("multiple quotas type matched; use additional constraints to reduce matches to a single quotaType")
+		err = ErrMultipleResults
 		goto CHECK_ERR
 	}
 	quotaType = respApi.GetQuotaTypes()[0]
 	if len(quotaType.GetQuotas()) == 0 {
-		err = fmt.Errorf("no matching quotas found")
+		err = ErrNoResults
 		goto CHECK_ERR
 	}
 
 	if len(quotaType.GetQuotas()) > 1 {
-		err = fmt.Errorf("multiple quotas matched; use additional constraints to reduce matches to a single quotaType")
+		err = ErrMultipleResults
 		goto CHECK_ERR
 	}
 
@@ -216,7 +214,7 @@ CHECK_ERR:
 				"Outscale Client Error: "+err.Error(),
 		)
 
-		//resp.Diagnostics.Append(err...)
+		// resp.Diagnostics.Append(err...)
 		if resp.Diagnostics.HasError() {
 			return
 		}

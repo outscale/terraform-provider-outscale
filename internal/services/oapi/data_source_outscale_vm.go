@@ -2,7 +2,6 @@ package oapi
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -58,11 +57,11 @@ func DataSourceOutscaleVMRead(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("error reading the VM %s", err)
+		return fmt.Errorf("error reading the vm %s", err)
 	}
 
 	if !resp.HasVms() {
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
+		return ErrNoResults
 	}
 
 	var filteredVms []osc.Vm
@@ -75,13 +74,12 @@ func DataSourceOutscaleVMRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	var vm osc.Vm
-	if len(filteredVms) < 1 {
-		return errors.New("Your query returned no results. Please change your search criteria and try again")
+	if len(filteredVms) == 0 {
+		return ErrNoResults
 	}
 
 	if len(filteredVms) > 1 {
-		return errors.New("Your query returned more than one result. Please try a more " +
-			"specific search criteria")
+		return ErrMultipleResults
 	}
 
 	vm = filteredVms[0]

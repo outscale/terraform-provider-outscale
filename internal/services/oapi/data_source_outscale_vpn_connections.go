@@ -125,7 +125,7 @@ func DataSourceOutscaleVPNConnectionsRead(d *schema.ResourceData, meta interface
 	vpnConnectionIDs, vpnConnectionOk := d.GetOk("vpn_connection_ids")
 
 	if !filtersOk && !vpnConnectionOk {
-		return fmt.Errorf("One of filters, or vpn_connection_ids must be assigned")
+		return fmt.Errorf("one of filters, or vpn_connection_ids must be assigned")
 	}
 
 	log.Printf("vpnConnectionIDs: %#+v\n", vpnConnectionIDs)
@@ -159,7 +159,7 @@ func DataSourceOutscaleVPNConnectionsRead(d *schema.ResourceData, meta interface
 	}
 
 	if len(resp.GetVpnConnections()) == 0 {
-		return fmt.Errorf("Unable to find VPN Connections")
+		return ErrNoResults
 	}
 	if err := d.Set("vpn_connections", flattenVPNConnections(resp.GetVpnConnections())); err != nil {
 		return err

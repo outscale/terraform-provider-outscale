@@ -95,20 +95,18 @@ func DataSourceOutscaleNatServiceRead(d *schema.ResourceData, meta interface{}) 
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		errString := err.Error()
 
-		return fmt.Errorf("[DEBUG] Error reading Nar Service (%s)", errString)
+		return fmt.Errorf("error reading nat service (%s)", errString)
 	}
 
 	if len(resp.GetNatServices()) < 1 {
-		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
+		return ErrNoResults
 	}
 
 	if len(resp.GetNatServices()) > 1 {
-		return fmt.Errorf("your query returned more than one result, please try a more " +
-			"specific search criteria")
+		return ErrMultipleResults
 	}
 
 	return ngOAPIDescriptionAttributes(d, resp.GetNatServices()[0])
@@ -116,7 +114,6 @@ func DataSourceOutscaleNatServiceRead(d *schema.ResourceData, meta interface{}) 
 
 // populate the numerous fields that the image description returns.
 func ngOAPIDescriptionAttributes(d *schema.ResourceData, ng oscgo.NatService) error {
-
 	d.SetId(ng.GetNatServiceId())
 
 	if err := d.Set("nat_service_id", ng.GetNatServiceId()); err != nil {
@@ -127,19 +124,16 @@ func ngOAPIDescriptionAttributes(d *schema.ResourceData, ng oscgo.NatService) er
 		if err := d.Set("state", ng.State); err != nil {
 			return err
 		}
-
 	}
 	if ng.GetSubnetId() != "" {
 		if err := d.Set("subnet_id", ng.GetSubnetId()); err != nil {
 			return err
 		}
-
 	}
 	if ng.GetNetId() != "" {
 		if err := d.Set("net_id", ng.GetNetId()); err != nil {
 			return err
 		}
-
 	}
 
 	addresses := make([]map[string]interface{}, len(ng.GetPublicIps()))

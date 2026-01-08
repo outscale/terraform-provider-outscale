@@ -2,7 +2,6 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -84,10 +83,10 @@ func DataSourceOutscaleVpcRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	if len(resp.GetNets()) == 0 {
-		return fmt.Errorf("No matching Net found")
+		return ErrNoResults
 	}
 	if len(resp.GetNets()) > 1 {
-		return fmt.Errorf("Multiple Nets matched; use additional constraints to reduce matches to a single Net")
+		return ErrMultipleResults
 	}
 
 	net := resp.GetNets()[0]

@@ -2,7 +2,6 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
@@ -97,7 +96,7 @@ func DataSourceUserGroupRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if _, ok := resp.GetUserGroupOk(); !ok {
-		return fmt.Errorf("Unable to find user group")
+		return ErrNoResults
 	}
 	d.SetId(id.UniqueId())
 	group := resp.GetUserGroup()

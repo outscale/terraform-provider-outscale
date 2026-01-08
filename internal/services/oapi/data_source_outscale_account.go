@@ -2,7 +2,6 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -88,15 +87,12 @@ func DataSourceAccount() *schema.Resource {
 }
 
 func DataSourceAccountRead(d *schema.ResourceData, meta interface{}) error {
-
 	conn := meta.(*client.OutscaleClient).OSCAPI
 
 	req := oscgo.ReadAccountsRequest{}
 
 	var resp oscgo.ReadAccountsResponse
-	var err error
-
-	err = retry.Retry(30*time.Second, func() *retry.RetryError {
+	err := retry.Retry(30*time.Second, func() *retry.RetryError {
 		rp, httpResp, err := conn.AccountApi.ReadAccounts(context.Background()).ReadAccountsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -109,11 +105,11 @@ func DataSourceAccountRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if len(resp.GetAccounts()) == 0 {
-		return fmt.Errorf("Unable to find Account")
+		return ErrNoResults
 	}
 
 	if len(resp.GetAccounts()) > 1 {
-		return fmt.Errorf("multiple results returned, please use a more specific criteria in your query")
+		return ErrMultipleResults
 	}
 
 	account := resp.GetAccounts()[0]

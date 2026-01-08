@@ -76,8 +76,7 @@ func DataSourceOutscaleServerCertificatesRead(d *schema.ResourceData, meta inter
 	}
 
 	var resp oscgo.ReadServerCertificatesResponse
-	var err error
-	err = retry.Retry(120*time.Second, func() *retry.RetryError {
+	var err = retry.Retry(120*time.Second, func() *retry.RetryError {
 		rp, httpResp, err := conn.ServerCertificateApi.ReadServerCertificates(context.Background()).ReadServerCertificatesRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -89,7 +88,7 @@ func DataSourceOutscaleServerCertificatesRead(d *schema.ResourceData, meta inter
 	var errString string
 	if err != nil {
 		errString = err.Error()
-		return fmt.Errorf("[DEBUG] Error reading Server Certificates (%s)", errString)
+		return fmt.Errorf("error reading server certificates (%s)", errString)
 	}
 
 	log.Printf("[DEBUG] Setting Server Certificates id (%s)", err)

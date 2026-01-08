@@ -219,7 +219,7 @@ func (r *resourceRouteTableLink) Read(ctx context.Context, req resource.ReadRequ
 
 	data, err := setRouteTableLinkState(ctx, r, data)
 	if err != nil {
-		if err.Error() == "Empty" {
+		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
 			return
 		}
@@ -282,7 +282,7 @@ func setRouteTableLinkState(ctx context.Context, r *resourceRouteTableLink, data
 
 	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to parse 'Route Table Link' read timeout value. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("unable to parse 'route table link' read timeout value: %v", diags.Errors())
 	}
 
 	var readResp oscgo.ReadRouteTablesResponse
@@ -299,7 +299,7 @@ func setRouteTableLinkState(ctx context.Context, r *resourceRouteTableLink, data
 	}
 	data.RequestId = types.StringValue(readResp.ResponseContext.GetRequestId())
 	if len(readResp.GetRouteTables()) == 0 {
-		return data, errors.New("Empty")
+		return data, ErrResourceEmpty
 	}
 
 	var routeTableLink oscgo.LinkRouteTable

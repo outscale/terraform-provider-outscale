@@ -201,19 +201,18 @@ func DataSourceOutscaleSecurityGroupRead(d *schema.ResourceData, meta interface{
 			resp.SetSecurityGroups(nil)
 			err = nil
 		} else {
-			//fmt.Printf("\n\nError on SGStateRefresh: %s", err)
+			// fmt.Printf("\n\nError on SGStateRefresh: %s", err)
 			errString = err.Error()
 		}
 
-		return fmt.Errorf("Error on SGStateRefresh: %s", errString)
+		return fmt.Errorf("error on sgstaterefresh: %s", errString)
 	}
 
 	if resp.GetSecurityGroups() == nil || len(resp.GetSecurityGroups()) == 0 {
-		return fmt.Errorf("Unable to find Security Group")
+		return ErrNoResults
 	}
-
 	if len(resp.GetSecurityGroups()) > 1 {
-		return fmt.Errorf("multiple results returned, please use a more specific criteria in your query")
+		return ErrMultipleResults
 	}
 
 	sg := resp.GetSecurityGroups()[0]

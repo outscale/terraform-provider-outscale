@@ -104,12 +104,12 @@ func DataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{}) e
 			return nil
 		}
 
-		return fmt.Errorf("Error retrieving EIP: %s", err)
+		return fmt.Errorf("error retrieving eip: %s", err)
 	}
 
 	// Verify Outscale returned our EIP
 	if len(resp.GetPublicIps()) == 0 {
-		return fmt.Errorf("Unable to find EIP: %#v", resp.GetPublicIps())
+		return ErrNoResults
 	}
 
 	addresses := resp.GetPublicIps()

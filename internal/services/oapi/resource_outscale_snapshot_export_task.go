@@ -22,7 +22,7 @@ func ResourceOutscaleSnapshotExportTask() *schema.Resource {
 		Update: resourceOAPISnapshotExportTaskUpdate,
 		Delete: resourceOAPISnapshotExportTaskDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Timeouts: &schema.ResourceTimeout{
@@ -160,9 +160,8 @@ func resourceOAPISnapshotExportTaskCreate(d *schema.ResourceData, meta interface
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
-		return fmt.Errorf("[DEBUG] Error image task %s", err)
+		return fmt.Errorf("error image task %s", err)
 	}
 
 	id := resp.SnapshotExportTask.GetTaskId()
@@ -197,7 +196,6 @@ func resourceOAPISnapshotExportTaskRead(d *schema.ResourceData, meta interface{}
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		return fmt.Errorf("error reading task image %s", err)
 	}
@@ -282,7 +280,7 @@ func ResourceOutscaleSnapshotTaskWaitForAvailable(id string, client *oscgo.APICl
 
 	info, err := stateConf.WaitForState()
 	if err != nil {
-		return snap, fmt.Errorf("Error waiting for Snapshot export task (%s) to be ready: %s", id, err)
+		return snap, fmt.Errorf("error waiting for snapshot export task (%s) to be ready: %s", id, err)
 	}
 	snap = info.(oscgo.SnapshotExportTask)
 	return snap, nil
@@ -315,7 +313,6 @@ func SnapshotTaskStateRefreshFunc(client *oscgo.APIClient, id string) retry.Stat
 			statusCode = httpResp.StatusCode
 			return nil
 		})
-
 		if err != nil {
 			if statusCode == http.StatusNotFound {
 				log.Printf("[INFO] Snapshot export task %s state %s", id, "destroyed")

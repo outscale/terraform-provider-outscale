@@ -38,13 +38,13 @@ func testAccCheckOutscaleApiAccessRuleExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return fmt.Errorf("not found: %s", n)
 		}
 
 		conn := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSCAPI
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No id is set")
+			return fmt.Errorf("no id is set")
 		}
 		req := oscgo.ReadApiAccessRulesRequest{
 			Filters: &oscgo.FiltersApiAccessRule{ApiAccessRuleIds: &[]string{rs.Primary.ID}},
@@ -62,7 +62,7 @@ func testAccCheckOutscaleApiAccessRuleExists(n string) resource.TestCheckFunc {
 		})
 
 		if err != nil || len(resp.GetApiAccessRules()) == 0 {
-			return fmt.Errorf("Api Access Rule not found (%s)", rs.Primary.ID)
+			return fmt.Errorf("api access rule not found (%s)", rs.Primary.ID)
 		}
 
 		for _, rule := range resp.GetApiAccessRules() {
@@ -72,7 +72,7 @@ func testAccCheckOutscaleApiAccessRuleExists(n string) resource.TestCheckFunc {
 		}
 
 		if !exists {
-			return fmt.Errorf("Api Access Rule not found (%s)", rs.Primary.ID)
+			return fmt.Errorf("api access rule not found (%s)", rs.Primary.ID)
 		}
 
 		return nil
@@ -102,7 +102,7 @@ func testAccCheckOutscaleApiAccessRuleDestroy(s *terraform.State) error {
 			return nil
 		})
 		if err != nil {
-			return fmt.Errorf("Api Access Rule reading (%s)", rs.Primary.ID)
+			return fmt.Errorf("api access rule reading (%s)", rs.Primary.ID)
 		}
 
 		for _, r := range resp.GetApiAccessRules() {
@@ -112,7 +112,7 @@ func testAccCheckOutscaleApiAccessRuleDestroy(s *terraform.State) error {
 		}
 
 		if exists {
-			return fmt.Errorf("Api Access Rule still exists (%s)", rs.Primary.ID)
+			return fmt.Errorf("api access rule still exists (%s)", rs.Primary.ID)
 		}
 	}
 	return nil
