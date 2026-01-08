@@ -41,11 +41,11 @@ func testAccCheckOutscaleLBUAttrExists(n string, res *oscgo.AccessLog) resource.
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return fmt.Errorf("not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No LBU Attr ID is set")
+			return fmt.Errorf("no lbu attr id is set")
 		}
 
 		return nil

@@ -1,7 +1,6 @@
 package oapi_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -23,7 +22,7 @@ func TestAccOthers_DataSourceAccount_basic(t *testing.T) {
 }
 
 func testAccDataSourceAccountConfig() string {
-	return fmt.Sprintf(`
-              data "outscale_account" "account" { }
-	`)
+	return `
+    	data "outscale_account" "account" { }
+	`
 }

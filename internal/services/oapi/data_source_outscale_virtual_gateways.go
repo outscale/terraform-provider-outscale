@@ -77,7 +77,7 @@ func DataSourceOutscaleVirtualGatewaysRead(d *schema.ResourceData, meta interfac
 	_, vpnOk := d.GetOk("virtual_gateway_id")
 
 	if !filtersOk && !vpnOk {
-		return fmt.Errorf("One of virtual_gateway_id or filter must be assigned")
+		return fmt.Errorf("one of virtual_gateway_id or filter must be assigned")
 	}
 
 	var err error
@@ -103,7 +103,7 @@ func DataSourceOutscaleVirtualGatewaysRead(d *schema.ResourceData, meta interfac
 		return err
 	}
 	if resp.GetVirtualGateways() == nil || len(resp.GetVirtualGateways()) == 0 {
-		return fmt.Errorf("no matching VPN gateway found: %#v", params)
+		return fmt.Errorf("no matching vpn gateway found: %#v", params)
 	}
 
 	vpns := make([]map[string]interface{}, len(resp.GetVirtualGateways()))

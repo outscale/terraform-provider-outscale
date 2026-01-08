@@ -77,8 +77,7 @@ func ResourceOutscaleNetworkInterfacePrivateIPCreate(d *schema.ResourceData, met
 		input.SetPrivateIps(utils.InterfaceSliceToStringSlice(v.([]interface{})))
 	}
 
-	var err error
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+	var err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		_, httpResp, err := conn.NicApi.LinkPrivateIps(context.Background()).LinkPrivateIpsRequest(input).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -87,7 +86,7 @@ func ResourceOutscaleNetworkInterfacePrivateIPCreate(d *schema.ResourceData, met
 	})
 	if err != nil {
 		errString := err.Error()
-		return fmt.Errorf("Failure to assign Private IPs: %s", errString)
+		return fmt.Errorf("failure to assign private ips: %s", errString)
 	}
 
 	d.SetId(input.NicId)
@@ -121,7 +120,7 @@ func ResourceOutscaleNetworkInterfacePrivateIPRead(d *schema.ResourceData, meta 
 			return nil
 		}
 		errString := err.Error()
-		return fmt.Errorf("Could not find network interface: %s", errString)
+		return fmt.Errorf("could not find network interface: %s", errString)
 
 	}
 	if utils.IsResponseEmpty(len(resp.GetNics()), "NicPrivateIp", d.Id()) {
@@ -183,8 +182,7 @@ func ResourceOutscaleNetworkInterfacePrivateIPDelete(d *schema.ResourceData, met
 		input.SetPrivateIps(utils.InterfaceSliceToStringSlice(v.([]interface{})))
 	}
 
-	var err error
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+	var err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		_, httpResp, err := conn.NicApi.UnlinkPrivateIps(context.Background()).UnlinkPrivateIpsRequest(input).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -193,7 +191,7 @@ func ResourceOutscaleNetworkInterfacePrivateIPDelete(d *schema.ResourceData, met
 	})
 	if err != nil {
 		errString := err.Error()
-		return fmt.Errorf("Failure to unassign Private IPs: %s", errString)
+		return fmt.Errorf("failure to unassign private ips: %s", errString)
 	}
 	d.SetId("")
 	return nil

@@ -63,7 +63,7 @@ func DataSourceOutscaleInternetServicesRead(d *schema.ResourceData, meta interfa
 	internetID, internetIDOk := d.GetOk("internet_service_ids")
 
 	if !filtersOk && !internetIDOk {
-		return fmt.Errorf("One of filters, or instance_id must be assigned")
+		return fmt.Errorf("one of filters, or instance_id must be assigned")
 	}
 
 	// Build up search parameters
@@ -102,7 +102,7 @@ func DataSourceOutscaleInternetServicesRead(d *schema.ResourceData, meta interfa
 	if err != nil {
 		errString = err.Error()
 
-		return fmt.Errorf("[DEBUG] Error reading Internet Services (%s)", errString)
+		return fmt.Errorf("error reading internet services (%s)", errString)
 	}
 
 	log.Printf("[DEBUG] Setting OAPI LIN Internet Gateways id (%s)", err)

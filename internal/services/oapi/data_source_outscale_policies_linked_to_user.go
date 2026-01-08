@@ -73,7 +73,7 @@ func DataSourcePoliciesLinkedToUserRead(d *schema.ResourceData, meta interface{}
 	}
 	policiesList := resp.GetPolicies()
 	if len(policiesList) == 0 {
-		return fmt.Errorf("unable to find Policies linked to user: %v", d.Get("user_name").(string))
+		return fmt.Errorf("unable to find policies linked to user: %v", d.Get("user_name").(string))
 	}
 	d.SetId(id.UniqueId())
 

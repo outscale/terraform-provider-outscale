@@ -320,7 +320,7 @@ func setNetState(ctx context.Context, r *resourceNet, data NetModel) (NetModel, 
 
 	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to parse 'net' read timeout value. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("unable to parse 'net' read timeout value - error: %v", diags.Errors())
 	}
 	var readResp oscgo.ReadNetsResponse
 	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {

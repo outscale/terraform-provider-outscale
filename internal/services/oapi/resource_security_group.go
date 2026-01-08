@@ -377,7 +377,7 @@ func setSecurityGroupState(ctx context.Context, r *resourceSecurityGroup, data S
 
 	readTimeout, diag := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if diag.HasError() {
-		return data, fmt.Errorf("unable to parse 'security_group' read timeout value. Error: %v: ", diag.Errors())
+		return data, fmt.Errorf("unable to parse 'security_group' read timeout value - error: %v", diag.Errors())
 	}
 	ctx, cancel := context.WithTimeout(ctx, readTimeout)
 	defer cancel()
@@ -408,19 +408,19 @@ func setSecurityGroupState(ctx context.Context, r *resourceSecurityGroup, data S
 
 	inboundRulesModels, diag := flattenSecurityGroupRules(ctx, securityGroup.GetInboundRules())
 	if diag.HasError() {
-		return data, fmt.Errorf("Unable to convert Inbound Rules to the model. Error: %v: ", diag.Errors())
+		return data, fmt.Errorf("unable to convert inbound rules to the model - error: %v", diag.Errors())
 	}
 	inboundRules, diag := types.ListValueFrom(ctx, securityGroupRulesModelAttrTypes, inboundRulesModels)
 	if diag.HasError() {
-		return data, fmt.Errorf("Unable to convert Inbound Rules to the schema List. Error: %v: ", diag.Errors())
+		return data, fmt.Errorf("unable to convert inbound rules to the schema list - error: %v", diag.Errors())
 	}
 	outboundRulesModels, diag := flattenSecurityGroupRules(ctx, securityGroup.GetOutboundRules())
 	if diag.HasError() {
-		return data, fmt.Errorf("Unable to convert Outbound Rules to the model. Error: %v: ", diag.Errors())
+		return data, fmt.Errorf("unable to convert outbound rules to the model - error: %v", diag.Errors())
 	}
 	outboundRules, diag := types.ListValueFrom(ctx, securityGroupRulesModelAttrTypes, outboundRulesModels)
 	if diag.HasError() {
-		return data, fmt.Errorf("Unable to convert Outbound Rules to the schema List. Error: %v: ", diag.Errors())
+		return data, fmt.Errorf("unable to convert outbound rules to the schema list - error: %v", diag.Errors())
 	}
 
 	data.AccountId = types.StringValue(securityGroup.GetAccountId())

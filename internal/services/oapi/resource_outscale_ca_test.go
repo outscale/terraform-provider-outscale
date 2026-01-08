@@ -44,13 +44,13 @@ func testAccCheckOutscaleCaExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return fmt.Errorf("not found: %s", n)
 		}
 
 		conn := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSCAPI
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No id is set")
+			return fmt.Errorf("no id is set")
 		}
 
 		var resp oscgo.ReadCasResponse
@@ -66,7 +66,7 @@ func testAccCheckOutscaleCaExists(n string) resource.TestCheckFunc {
 		})
 
 		if err != nil || len(resp.GetCas()) == 0 {
-			return fmt.Errorf("Ca not found (%s)", rs.Primary.ID)
+			return fmt.Errorf("ca not found (%s)", rs.Primary.ID)
 		}
 
 		for _, ca := range resp.GetCas() {
@@ -76,7 +76,7 @@ func testAccCheckOutscaleCaExists(n string) resource.TestCheckFunc {
 		}
 
 		if !exists {
-			return fmt.Errorf("Ca not found (%s)", rs.Primary.ID)
+			return fmt.Errorf("ca not found (%s)", rs.Primary.ID)
 		}
 
 		return nil
@@ -107,7 +107,7 @@ func testAccCheckOutscaleCaDestroy(s *terraform.State) error {
 			return nil
 		})
 		if err != nil {
-			return fmt.Errorf("Ca reading (%s)", rs.Primary.ID)
+			return fmt.Errorf("ca reading (%s)", rs.Primary.ID)
 		}
 
 		for _, ca := range resp.GetCas() {
@@ -117,7 +117,7 @@ func testAccCheckOutscaleCaDestroy(s *terraform.State) error {
 		}
 
 		if exists {
-			return fmt.Errorf("Ca still exists (%s)", rs.Primary.ID)
+			return fmt.Errorf("ca still exists (%s)", rs.Primary.ID)
 		}
 	}
 	return nil

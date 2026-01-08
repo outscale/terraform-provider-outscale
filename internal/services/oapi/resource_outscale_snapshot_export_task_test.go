@@ -49,11 +49,11 @@ func testAccCheckOutscaleSnapshotExportTaskExists(n string) resource.TestCheckFu
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return fmt.Errorf("not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No image task id is set")
+			return fmt.Errorf("no image task id is set")
 		}
 
 		return nil

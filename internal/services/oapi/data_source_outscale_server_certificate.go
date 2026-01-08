@@ -79,11 +79,11 @@ func DataSourceOutscaleServerCertificateRead(d *schema.ResourceData, meta interf
 	})
 
 	if err != nil {
-		return fmt.Errorf("[DEBUG] Error reading Server Certificate id (%s)", utils.GetErrorResponse(err))
+		return fmt.Errorf("error reading server certificate id (%s)", utils.GetErrorResponse(err))
 	}
 
 	if !resp.HasServerCertificates() || len(resp.GetServerCertificates()) == 0 {
-		return fmt.Errorf("Error reading Server Certificate: Server Certificates is not found with the seatch criteria")
+		return fmt.Errorf("error reading server certificate: server certificates is not found with the seatch criteria")
 	}
 
 	if len(resp.GetServerCertificates()) > 1 {

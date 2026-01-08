@@ -106,7 +106,7 @@ func DataSourceOutscalePublicIPRead(d *schema.ResourceData, meta interface{}) er
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error retrieving EIP: %s", err)
+		return fmt.Errorf("error retrieving eip: %s", err)
 	}
 
 	// Verify Outscale returned our EIP
@@ -142,7 +142,7 @@ func DataSourceOutscalePublicIPRead(d *schema.ResourceData, meta interface{}) er
 	}
 
 	if err := d.Set("tags", FlattenOAPITagsSDK(address.GetTags())); err != nil {
-		return fmt.Errorf("Error setting PublicIp tags: %s", err)
+		return fmt.Errorf("error setting publicip tags: %s", err)
 	}
 
 	d.Set("public_ip", address.PublicIp)

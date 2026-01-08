@@ -68,7 +68,7 @@ func testAccCheckOAPIImageDestroy(s *terraform.State) error {
 		})
 
 		if err != nil || len(resp.GetImages()) > 0 {
-			return fmt.Errorf("Image still exists (%s)", rs.Primary.ID)
+			return fmt.Errorf("image still exists (%s)", rs.Primary.ID)
 		}
 	}
 	return nil
@@ -78,11 +78,11 @@ func testAccCheckOAPIImageExists(n string, ami *oscgo.Image) resource.TestCheckF
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("OMI Not found: %s", n)
+			return fmt.Errorf("omi not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No OMI ID is set")
+			return fmt.Errorf("no omi id is set")
 		}
 
 		client := testacc.ConfiguredClient.OSCAPI
@@ -101,7 +101,7 @@ func testAccCheckOAPIImageExists(n string, ami *oscgo.Image) resource.TestCheckF
 		})
 
 		if err != nil || len(resp.GetImages()) < 1 {
-			return fmt.Errorf("Image not found (%s)", rs.Primary.ID)
+			return fmt.Errorf("image not found (%s)", rs.Primary.ID)
 		}
 
 		ami = &resp.GetImages()[0]

@@ -262,7 +262,7 @@ func (r *resourceNetPeeringAcceptation) setNetPeeringAcceptationState(ctx contex
 
 	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to parse 'net peering' read timeout value. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("unable to parse 'net peering' read timeout value - error: %v", diags.Errors())
 	}
 
 	var readResp oscgo.ReadNetPeeringsResponse
@@ -286,19 +286,19 @@ func (r *resourceNetPeeringAcceptation) setNetPeeringAcceptationState(ctx contex
 
 	tags, diag := flattenOAPIComputedTagsFW(ctx, netPeering.GetTags())
 	if diag.HasError() {
-		return data, fmt.Errorf("Unable to convert Tags to the schema List. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("unable to convert tags to the schema list - error: %v", diags.Errors())
 	}
 	sourceNet, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: netAttrTypes}, SourceNetToList(netPeering.GetSourceNet()))
 	if diags.HasError() {
-		return data, fmt.Errorf("Unable to convert Source Net to the schema List. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("unable to convert source net to the schema list - error: %v", diags.Errors())
 	}
 	accepterNet, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: netAttrTypes}, AccepterNetToList(netPeering.GetAccepterNet()))
 	if diags.HasError() {
-		return data, fmt.Errorf("Unable to convert Accepter Net to the schema List. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("unable to convert accepter net to the schema list - error: %v", diags.Errors())
 	}
 	state, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: stateAttrTypes}, NetPeerStateToList(netPeering.GetState()))
 	if diags.HasError() {
-		return data, fmt.Errorf("Unable to convert State to the schema List. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("unable to convert state to the schema list - error: %v", diags.Errors())
 	}
 
 	data.ExpirationDate = types.StringValue(netPeering.GetExpirationDate())

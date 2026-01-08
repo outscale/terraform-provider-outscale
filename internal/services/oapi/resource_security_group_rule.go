@@ -630,7 +630,7 @@ func (r *resourceSecurityGroupRule) Delete(ctx context.Context, req resource.Del
 func (r *resourceSecurityGroupRule) readSecurityGroupsWithFilters(ctx context.Context, data SecurityGroupRuleModel, filter *oscgo.FiltersSecurityGroup) (*oscgo.ReadSecurityGroupsResponse, error) {
 	readTimeout, diag := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if diag.HasError() {
-		return nil, fmt.Errorf("unable to parse 'security_group_rule' read timeout value. Error: %v: ", diag.Errors())
+		return nil, fmt.Errorf("unable to parse 'security_group_rule' read timeout value - error: %v", diag.Errors())
 	}
 	ctx, cancel := context.WithTimeout(ctx, readTimeout)
 	defer cancel()

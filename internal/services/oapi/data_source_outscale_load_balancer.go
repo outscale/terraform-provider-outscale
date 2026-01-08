@@ -233,7 +233,7 @@ func readLbs_(conn *oscgo.APIClient, d *schema.ResourceData, t schema.ValueType)
 	}
 
 	if !nameOk && !filtersOk {
-		return nil, nil, fmt.Errorf("One of filters, or load_balancer_name must be assigned")
+		return nil, nil, fmt.Errorf("one of filters, or load_balancer_name must be assigned")
 	}
 
 	var err error
@@ -268,10 +268,10 @@ func readLbs_(conn *oscgo.APIClient, d *schema.ResourceData, t schema.ValueType)
 	if err != nil {
 		if statusCode == http.StatusNotFound {
 			d.SetId("")
-			return nil, nil, fmt.Errorf("Loadbalancer Not Found")
+			return nil, nil, fmt.Errorf("loadbalancer not found")
 		}
 
-		return nil, nil, fmt.Errorf("Error retrieving ELB: %s", err)
+		return nil, nil, fmt.Errorf("error retrieving elb: %s", err)
 	}
 	return &resp, &elbName, nil
 }

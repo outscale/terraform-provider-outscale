@@ -183,7 +183,7 @@ func ResourceOutscalePolicyDelete(d *schema.ResourceData, meta interface{}) erro
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("error deleting Outscale Policy %s: %s", d.Id(), err)
+		return fmt.Errorf("error deleting outscale policy %s: %s", d.Id(), err)
 	}
 	return nil
 }
@@ -260,7 +260,7 @@ func getPolicyDocument(conn *oscgo.APIClient, policyOrn, policyVersionId string)
 		return "", err
 	}
 	if _, ok := resp.GetPolicyVersionOk(); !ok {
-		return "", fmt.Errorf("cannot find Policy version: %v", policyVersionId)
+		return "", fmt.Errorf("cannot find policy version: %v", policyVersionId)
 	}
 
 	return *resp.GetPolicyVersion().Body, err

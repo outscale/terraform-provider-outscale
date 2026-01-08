@@ -59,7 +59,7 @@ func testAccClientAccessKeysDataSourceBasic() string {
 }
 
 func testAccClientAccessKeysDataSourceWithFilters() string {
-	return fmt.Sprintf(`
+	return `
 		resource "outscale_access_key" "datas_access_key" {}
 
 		data "outscale_access_keys" "filters_access_key" {
@@ -68,5 +68,5 @@ func testAccClientAccessKeysDataSourceWithFilters() string {
 				values = [outscale_access_key.datas_access_key.id]
 			}
 		}
-	`)
+	`
 }

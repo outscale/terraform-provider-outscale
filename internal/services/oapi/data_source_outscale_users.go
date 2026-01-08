@@ -84,7 +84,7 @@ func DataSourceUsersRead(d *schema.ResourceData, meta interface{}) error {
 	users := resp.GetUsers()
 	d.SetId(id.UniqueId())
 	if len(users) == 0 {
-		return fmt.Errorf("Unable to find users")
+		return fmt.Errorf("unable to find users")
 	}
 	d.SetId(id.UniqueId())
 	usersToSet := make([]map[string]interface{}, len(users))

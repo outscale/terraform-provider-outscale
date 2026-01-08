@@ -316,7 +316,7 @@ func setKeypairState(ctx context.Context, r *resourceKeypair, data *KeypairModel
 
 	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if diags.HasError() {
-		return fmt.Errorf("unable to parse 'keypair' read timeout value. Error: %v: ", diags.Errors())
+		return fmt.Errorf("unable to parse 'keypair' read timeout value - error: %v", diags.Errors())
 	}
 
 	readReq := oscgo.ReadKeypairsRequest{

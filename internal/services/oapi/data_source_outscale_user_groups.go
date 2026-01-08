@@ -82,7 +82,7 @@ func DataSourceUserGroupsRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if _, ok := resp.GetUserGroupsOk(); !ok {
-		return fmt.Errorf("Unable to find user groups")
+		return fmt.Errorf("unable to find user groups")
 	}
 	d.SetId(id.UniqueId())
 	userGps := resp.GetUserGroups()

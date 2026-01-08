@@ -115,7 +115,7 @@ func DataSourceOutscaleAccessKeysRead(d *schema.ResourceData, meta interface{}) 
 	}
 
 	if len(resp.GetAccessKeys()) == 0 {
-		return fmt.Errorf("unable to find Access Keys")
+		return fmt.Errorf("unable to find access keys")
 	}
 
 	if err := d.Set("access_keys", flattenAccessKeys(resp.GetAccessKeys())); err != nil {

@@ -79,7 +79,7 @@ func testAccOutscaleSecurityGroupConfig(rInt int) string {
 }
 
 func testAccOutscaleSecurityGroupWithoutNameConfig() string {
-	return fmt.Sprintf(`
+	return `
 		resource "outscale_security_group" "noname" {
 			description         = "Used in the terraform acceptance tests"
 
@@ -88,5 +88,5 @@ func testAccOutscaleSecurityGroupWithoutNameConfig() string {
 				value = "tf-acc-test-no-name"
 			}
 		}
-	`)
+	`
 }

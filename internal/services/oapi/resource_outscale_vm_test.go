@@ -584,18 +584,18 @@ func testAccCheckOutscaleVMDestroy(s *terraform.State) error {
 			return nil
 		})
 		if err != nil {
+			if statusCode == http.StatusNotFound {
+				continue
+			}
 			return err
 		}
 		for _, i := range resp.GetVms() {
 			if i.GetState() != "" && i.GetState() != "terminated" {
-				return fmt.Errorf("Found running instance: %s", i.GetVmId())
+				return fmt.Errorf("found running instance: %s", i.GetVmId())
 			}
 		}
 
 		// Verify the error is what we want
-		if err != nil && statusCode == http.StatusNotFound {
-			continue
-		}
 		return err
 	}
 	return nil
@@ -605,17 +605,15 @@ func testAccCheckOutscaleVMExists(n string, i *oscgo.Vm) resource.TestCheckFunc 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return fmt.Errorf("not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No ID is set")
+			return fmt.Errorf("no id is set")
 		}
 		client := testacc.ConfiguredClient.OSCAPI
 		var resp oscgo.ReadVmsResponse
-		var err error
-
-		err = retry.Retry(120*time.Second, func() *retry.RetryError {
+		var err = retry.Retry(120*time.Second, func() *retry.RetryError {
 			rp, httpResp, err := client.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
 				Filters: getVMsFilterByVMID(rs.Primary.ID),
 			}).Execute()
@@ -630,14 +628,14 @@ func testAccCheckOutscaleVMExists(n string, i *oscgo.Vm) resource.TestCheckFunc 
 		}
 
 		if resp.Vms == nil {
-			return fmt.Errorf("Vms not found")
+			return fmt.Errorf("vms not found")
 		}
 
 		if len(resp.GetVms()) > 0 {
 			*i = resp.GetVms()[0]
 			return nil
 		}
-		return fmt.Errorf("Vms not found")
+		return fmt.Errorf("vms not found")
 	}
 }
 

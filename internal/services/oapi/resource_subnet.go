@@ -414,7 +414,7 @@ func setSubnetState(ctx context.Context, r *resourceSubnet, data SubnetModel) (S
 
 	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to parse 'subnet' read timeout value. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("unable to parse 'subnet' read timeout value - error: %v", diags.Errors())
 	}
 
 	var readResp oscgo.ReadSubnetsResponse

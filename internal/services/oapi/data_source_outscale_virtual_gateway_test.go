@@ -1,7 +1,6 @@
 package oapi_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -32,7 +31,7 @@ func TestAccOthers_DataSourceVirtualGateway_unattached(t *testing.T) {
 }
 
 func testAccDataSourceOutscaleVirtualGatewayUnattachedConfig() string {
-	return fmt.Sprintf(`
+	return `
 		resource "outscale_virtual_gateway" "unattached" {
 			connection_type = "ipsec.1"
 		}
@@ -40,5 +39,5 @@ func testAccDataSourceOutscaleVirtualGatewayUnattachedConfig() string {
 		data "outscale_virtual_gateway" "test_by_id" {
 			virtual_gateway_id = outscale_virtual_gateway.unattached.id
 		}
-	`)
+	`
 }

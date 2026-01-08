@@ -58,11 +58,11 @@ func DataSourceOutscaleVMRead(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("error reading the VM %s", err)
+		return fmt.Errorf("error reading the vm %s", err)
 	}
 
 	if !resp.HasVms() {
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
+		return fmt.Errorf("your query returned no results - please change your search criteria and try again")
 	}
 
 	var filteredVms []osc.Vm

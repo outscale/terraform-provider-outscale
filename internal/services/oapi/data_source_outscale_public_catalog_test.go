@@ -1,7 +1,6 @@
 package oapi_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -23,7 +22,7 @@ func TestAccOthers_DataSourcePublicCatalog_basic(t *testing.T) {
 }
 
 func testAccDataSourceOutscalePublicCatalogConfig() string {
-	return fmt.Sprintf(`
+	return `
               data "outscale_public_catalog" "catalog" { }
-	`)
+	`
 }

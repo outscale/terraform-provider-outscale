@@ -67,7 +67,7 @@ func DataSourceOutscaleProductTypeRead(d *schema.ResourceData, meta interface{})
 
 	if err != nil {
 		errString := err.Error()
-		return fmt.Errorf("[DEBUG] Error reading ProductType (%s)", errString)
+		return fmt.Errorf("error reading producttype (%s)", errString)
 	}
 
 	if len(resp.GetProductTypes()) == 0 {

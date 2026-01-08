@@ -121,7 +121,7 @@ func DataSourceOutscaleNatServicesRead(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		errString = err.Error()
 
-		return fmt.Errorf("[DEBUG] Error reading Nar Service (%s)", errString)
+		return fmt.Errorf("error reading nar service (%s)", errString)
 	}
 
 	if len(resp.GetNatServices()) < 1 {

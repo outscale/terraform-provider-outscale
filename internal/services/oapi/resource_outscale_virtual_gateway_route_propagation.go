@@ -52,9 +52,7 @@ func ResourceOutscaleVpnGatewayRoutePropagationEnable(d *schema.ResourceData, me
 
 	log.Printf("\n\n[INFO] Enabling virtual gateway route propagation from %s to %s", gwID, rtID)
 
-	var err error
-
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+	var err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		_, httpResp, err := conn.VirtualGatewayApi.UpdateRoutePropagation(context.Background()).UpdateRoutePropagationRequest(oscgo.UpdateRoutePropagationRequest{
 			VirtualGatewayId: gwID,
 			RouteTableId:     rtID,
@@ -67,7 +65,7 @@ func ResourceOutscaleVpnGatewayRoutePropagationEnable(d *schema.ResourceData, me
 	})
 
 	if err != nil {
-		return fmt.Errorf("error enabling VGW propagation: %s", err)
+		return fmt.Errorf("error enabling vgw propagation: %s", err)
 	}
 
 	d.SetId(fmt.Sprintf("%s_%s", gwID, rtID))
@@ -84,9 +82,7 @@ func ResourceOutscaleVpnGatewayRoutePropagationDisable(d *schema.ResourceData, m
 
 	log.Printf("\n\n[INFO] Disabling VGW propagation from %s to %s", gwID, rtID)
 
-	var err error
-
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+	var err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		_, httpResp, err := conn.VirtualGatewayApi.UpdateRoutePropagation(context.Background()).UpdateRoutePropagationRequest(oscgo.UpdateRoutePropagationRequest{
 			VirtualGatewayId: gwID,
 			RouteTableId:     rtID,
@@ -99,7 +95,7 @@ func ResourceOutscaleVpnGatewayRoutePropagationDisable(d *schema.ResourceData, m
 	})
 
 	if err != nil {
-		return fmt.Errorf("error disabling VGW propagation: %s", err)
+		return fmt.Errorf("error disabling vgw propagation: %s", err)
 	}
 
 	d.SetId("")
@@ -113,8 +109,7 @@ func ResourceOutscaleVpnGatewayRoutePropagationRead(d *schema.ResourceData, meta
 	rtID := d.Get("route_table_id").(string)
 
 	var resp oscgo.ReadRouteTablesResponse
-	var err error
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+	var err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(oscgo.ReadRouteTablesRequest{
 			Filters: &oscgo.FiltersRouteTable{RouteTableIds: &[]string{rtID}},
 		}).Execute()

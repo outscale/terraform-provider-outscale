@@ -102,9 +102,7 @@ func DataSourceAccountsRead(d *schema.ResourceData, meta interface{}) error {
 	req := oscgo.ReadAccountsRequest{}
 
 	var resp oscgo.ReadAccountsResponse
-	var err error
-
-	err = retry.Retry(30*time.Second, func() *retry.RetryError {
+	var err = retry.Retry(30*time.Second, func() *retry.RetryError {
 		rp, httpResp, err := conn.AccountApi.ReadAccounts(context.Background()).ReadAccountsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -117,7 +115,7 @@ func DataSourceAccountsRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if len(resp.GetAccounts()) == 0 {
-		return fmt.Errorf("Unable to find Accounts")
+		return fmt.Errorf("unable to find accounts")
 	}
 
 	if err := d.Set("accounts", flattenAccounts(resp.GetAccounts())); err != nil {

@@ -48,7 +48,7 @@ func testAccDataCheckOutscaleApiAccessRuleDestroy(s *terraform.State) error {
 		var resp oscgo.ReadApiAccessRulesResponse
 		var err error
 		exists := false
-		err = retry.Retry(120*time.Second, func() *retry.RetryError {
+		err = retry.RetryContext(context.Background(), 120*time.Second, func() *retry.RetryError {
 			rp, httpResp, err := conn.ApiAccessRuleApi.ReadApiAccessRules(context.Background()).ReadApiAccessRulesRequest(req).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
@@ -57,7 +57,7 @@ func testAccDataCheckOutscaleApiAccessRuleDestroy(s *terraform.State) error {
 			return nil
 		})
 		if err != nil {
-			return fmt.Errorf("Api Access Rule reading (%s)", rs.Primary.ID)
+			return fmt.Errorf("api access rule reading (%s)", rs.Primary.ID)
 		}
 
 		for _, r := range resp.GetApiAccessRules() {
@@ -66,7 +66,7 @@ func testAccDataCheckOutscaleApiAccessRuleDestroy(s *terraform.State) error {
 			}
 		}
 		if exists {
-			return fmt.Errorf("Api Access Rule still exists (%s)", rs.Primary.ID)
+			return fmt.Errorf("api access rule still exists (%s)", rs.Primary.ID)
 		}
 	}
 	return nil

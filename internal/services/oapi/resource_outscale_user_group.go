@@ -506,7 +506,7 @@ func ResourceOutscaleUserGroupDelete(d *schema.ResourceData, meta interface{}) e
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("error deleting Outscale User Group %s: %s", d.Id(), err)
+		return fmt.Errorf("error deleting outscale user group %s: %s", d.Id(), err)
 	}
 
 	return nil

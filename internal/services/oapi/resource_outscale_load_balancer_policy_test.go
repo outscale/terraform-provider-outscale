@@ -57,15 +57,15 @@ func testAccCheckAppCookieStickinessPolicy(elbResource string, policyResource st
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[elbResource]
 		if !ok {
-			return fmt.Errorf("Not found: %s", elbResource)
+			return fmt.Errorf("not found: %s", elbResource)
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No ID is set")
+			return fmt.Errorf("no id is set")
 		}
 
 		if !ok {
-			return fmt.Errorf("Not found: %s", policyResource)
+			return fmt.Errorf("not found: %s", policyResource)
 		}
 
 		return nil

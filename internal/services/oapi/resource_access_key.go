@@ -380,7 +380,7 @@ func setAccessKeyState(ctx context.Context, r *resourceAccessKey, data *AccessKe
 	}
 	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if diags.HasError() {
-		return fmt.Errorf("unable to parse 'access_key' read timeout value. Error: %v: ", diags.Errors())
+		return fmt.Errorf("unable to parse 'access_key' read timeout value - error: %v", diags.Errors())
 	}
 
 	readReq := oscgo.ReadAccessKeysRequest{

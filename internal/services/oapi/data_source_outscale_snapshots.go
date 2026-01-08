@@ -116,7 +116,7 @@ func DataSourceOutscaleSnapshotsRead(d *schema.ResourceData, meta interface{}) e
 	owners, ownersOk := d.GetOk("account_id")
 
 	if restorableUsers == false && !filtersOk && snapshotIds == false && !ownersOk {
-		return fmt.Errorf("One of snapshot_ids, filters, restorable_by_user_ids, or owners must be assigned")
+		return fmt.Errorf("one of snapshot_ids, filters, restorable_by_user_ids, or owners must be assigned")
 	}
 
 	params := oscgo.ReadSnapshotsRequest{

@@ -18,7 +18,7 @@ func DataSourceOutscaleSnapshotExportTasks() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceOAPISnapshotExportTasksRead,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Timeouts: &schema.ResourceTimeout{
@@ -116,9 +116,8 @@ func dataSourceOAPISnapshotExportTasksRead(d *schema.ResourceData, meta interfac
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
-		return fmt.Errorf("Error reading task image %s", err)
+		return fmt.Errorf("error reading task image %s", err)
 	}
 
 	if len(resp.GetSnapshotExportTasks()) == 0 {

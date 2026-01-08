@@ -97,7 +97,7 @@ func DataSourceUserGroupRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if _, ok := resp.GetUserGroupOk(); !ok {
-		return fmt.Errorf("Unable to find user group")
+		return fmt.Errorf("unable to find user group")
 	}
 	d.SetId(id.UniqueId())
 	group := resp.GetUserGroup()

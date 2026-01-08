@@ -136,7 +136,7 @@ func resourceOAPIVolumeLinkCreate(d *schema.ResourceData, meta interface{}) erro
 		})
 
 		if err != nil {
-			return fmt.Errorf("[WARN] Error attaching volume (%s) to instance (%s), message:'%s'", vID, iID, err)
+			return fmt.Errorf("error attaching volume (%s) to instance (%s), message:'%s'", vID, iID, err)
 		}
 	}
 
@@ -241,7 +241,7 @@ func resourceOAPIVolumeLinkRead(d *schema.ResourceData, meta interface{}) error 
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error reading Outscale volume %s for instance: %s: %#v", d.Get("volume_id").(string), d.Get("vm_id").(string), err)
+		return fmt.Errorf("error reading outscale volume %s for instance: %s: %#v", d.Get("volume_id").(string), d.Get("vm_id").(string), err)
 	}
 	if utils.IsResponseEmpty(len(resp.GetVolumes()), "VolumeLink", d.Id()) {
 		d.SetId("")
@@ -254,19 +254,19 @@ func resourceOAPIVolumeLinkRead(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	if err := d.Set("device_name", linkedVolume.GetDeviceName()); err != nil {
-		return fmt.Errorf("error sertting %s in Volume Link(%s): %s", `device_name`, linkedVolume.GetVolumeId(), err)
+		return fmt.Errorf("error sertting %s in volume link(%s): %s", `device_name`, linkedVolume.GetVolumeId(), err)
 	}
 	if err := d.Set("vm_id", linkedVolume.GetVmId()); err != nil {
-		return fmt.Errorf("error sertting %s in Volume Link(%s): %s", `vm_id`, linkedVolume.GetVolumeId(), err)
+		return fmt.Errorf("error sertting %s in volume link(%s): %s", `vm_id`, linkedVolume.GetVolumeId(), err)
 	}
 	if err := d.Set("volume_id", linkedVolume.GetVolumeId()); err != nil {
-		return fmt.Errorf("error sertting %s in Volume Link(%s): %s", `volume_id`, linkedVolume.GetVolumeId(), err)
+		return fmt.Errorf("error sertting %s in volume link(%s): %s", `volume_id`, linkedVolume.GetVolumeId(), err)
 	}
 	if err := d.Set("delete_on_vm_termination", linkedVolume.GetDeleteOnVmDeletion()); err != nil {
-		return fmt.Errorf("error sertting %s in Volume Link(%s): %s", `delete_on_vm_termination`, linkedVolume.GetVolumeId(), err)
+		return fmt.Errorf("error sertting %s in volume link(%s): %s", `delete_on_vm_termination`, linkedVolume.GetVolumeId(), err)
 	}
 	if err := d.Set("state", linkedVolume.GetState()); err != nil {
-		return fmt.Errorf("error sertting %s in Volume Link(%s): %s", `state`, linkedVolume.GetVolumeId(), err)
+		return fmt.Errorf("error sertting %s in volume link(%s): %s", `state`, linkedVolume.GetVolumeId(), err)
 	}
 	if len(resp.GetVolumes()) == 0 || resp.GetVolumes()[0].GetState() == "available" || isElegibleToLink(resp.GetVolumes(), d.Get("vm_id").(string)) {
 		log.Printf("[DEBUG] Volume Attachment (%s) not found, removing from state", d.Id())
@@ -309,7 +309,7 @@ func resourceOAPIVolumeLinkDelete(d *schema.ResourceData, meta interface{}) erro
 	})
 
 	if err != nil {
-		return fmt.Errorf("Failed to detach Volume (%s) from Instance (%s): %s",
+		return fmt.Errorf("failed to detach volume (%s) from instance (%s): %s",
 			vID, iID, err)
 	}
 	stateConf := &retry.StateChangeConf{

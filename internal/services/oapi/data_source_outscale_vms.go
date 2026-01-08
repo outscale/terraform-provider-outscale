@@ -72,7 +72,7 @@ func DataSourceOutscaleVMSRead(d *schema.ResourceData, meta interface{}) error {
 	vmID, vmIDOk := d.GetOk("vm_id")
 	var err error
 	if !filtersOk && !vmIDOk {
-		return fmt.Errorf("One of filters, and vm ID must be assigned")
+		return fmt.Errorf("one of filters, and vm id must be assigned")
 	}
 
 	// Build up search parameters
@@ -97,12 +97,12 @@ func DataSourceOutscaleVMSRead(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("error reading the VMs %s", err)
+		return fmt.Errorf("error reading the vms %s", err)
 	}
 
 	// If no instances were returned, return
 	if !resp.HasVms() {
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
+		return fmt.Errorf("your query returned no results - please change your search criteria and try again")
 	}
 
 	var filteredVms []oscgo.Vm

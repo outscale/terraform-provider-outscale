@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/spf13/cast"
-
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -88,10 +86,9 @@ func DataSourceOutscaleSubnetRead(d *schema.ResourceData, meta interface{}) erro
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		errString := err.Error()
-		return fmt.Errorf("[DEBUG] Error reading Subnet (%s)", errString)
+		return fmt.Errorf("error reading subnet (%s)", errString)
 	}
 
 	if len(resp.GetSubnets()) == 0 {
@@ -138,10 +135,8 @@ func buildOutscaleSubnetDataSourceFilters(set *schema.Set) (*oscgo.FiltersSubnet
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
-		var availableIPsCounts []int32
 		for _, e := range m["values"].([]interface{}) {
 			filterValues = append(filterValues, e.(string))
-			availableIPsCounts = append(availableIPsCounts, cast.ToInt32(e))
 		}
 
 		switch name := m["name"].(string); name {

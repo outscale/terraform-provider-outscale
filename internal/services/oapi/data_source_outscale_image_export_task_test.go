@@ -42,11 +42,11 @@ func testAccCheckOutscaleImageExportTaskDataSourceID(n string) resource.TestChec
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("can't find Image Export Task data source: %s", n)
+			return fmt.Errorf("can't find image export task data source: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("image Export Task data source ID not set")
+			return fmt.Errorf("image export task data source id not set")
 		}
 		return nil
 	}

@@ -58,18 +58,16 @@ func oapiTestAccCheckOutscaleVMExists(n string, i *oscgo.Vm) resource.TestCheckF
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return fmt.Errorf("not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No ID is set")
+			return fmt.Errorf("no id is set")
 		}
 
 		conn := testacc.SDKProvider.Meta().(*client.OutscaleClient)
 		var resp oscgo.ReadVmsResponse
-		var err error
-
-		err = retry.Retry(30*time.Second, func() *retry.RetryError {
+		var err = retry.Retry(30*time.Second, func() *retry.RetryError {
 			rp, httpResp, err := conn.OSCAPI.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
 				Filters: &oscgo.FiltersVm{
 					VmIds: &[]string{rs.Primary.ID},
@@ -86,7 +84,7 @@ func oapiTestAccCheckOutscaleVMExists(n string, i *oscgo.Vm) resource.TestCheckF
 		}
 
 		if len(resp.GetVms()) == 0 {
-			return fmt.Errorf("VM not found")
+			return fmt.Errorf("vm not found")
 		}
 
 		*i = resp.GetVms()[0]

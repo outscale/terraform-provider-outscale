@@ -162,7 +162,7 @@ func resourceOAPISnapshotExportTaskCreate(d *schema.ResourceData, meta interface
 	})
 
 	if err != nil {
-		return fmt.Errorf("[DEBUG] Error image task %s", err)
+		return fmt.Errorf("error image task %s", err)
 	}
 
 	id := resp.SnapshotExportTask.GetTaskId()
@@ -282,7 +282,7 @@ func ResourceOutscaleSnapshotTaskWaitForAvailable(id string, client *oscgo.APICl
 
 	info, err := stateConf.WaitForState()
 	if err != nil {
-		return snap, fmt.Errorf("Error waiting for Snapshot export task (%s) to be ready: %s", id, err)
+		return snap, fmt.Errorf("error waiting for snapshot export task (%s) to be ready: %s", id, err)
 	}
 	snap = info.(oscgo.SnapshotExportTask)
 	return snap, nil

@@ -286,7 +286,7 @@ func (r *resourceNetAttributes) setNetAttributesState(ctx context.Context, data 
 
 	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to parse 'net' read timeout value. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("unable to parse 'net' read timeout value - error: %v", diags.Errors())
 	}
 	var readResp oscgo.ReadNetsResponse
 	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
@@ -310,7 +310,7 @@ func (r *resourceNetAttributes) setNetAttributesState(ctx context.Context, data 
 
 	tags, diag := flattenOAPIComputedTagsFW(ctx, net.GetTags())
 	if diag.HasError() {
-		return data, fmt.Errorf("unable to flatten tags. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("unable to flatten tags - error: %v", diags.Errors())
 	}
 	data.Tags = tags
 	data.Id = types.StringValue(net.GetNetId())

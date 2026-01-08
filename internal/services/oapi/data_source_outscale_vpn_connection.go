@@ -111,7 +111,7 @@ func DataSourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{
 	vpnConnectionID, vpnConnectionOk := d.GetOk("vpn_connection_id")
 
 	if !filtersOk && !vpnConnectionOk {
-		return fmt.Errorf("One of filters, or vpn_connection_id must be assigned")
+		return fmt.Errorf("one of filters, or vpn_connection_id must be assigned")
 	}
 
 	params := oscgo.ReadVpnConnectionsRequest{}
@@ -144,7 +144,7 @@ func DataSourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{
 	}
 
 	if len(resp.GetVpnConnections()) == 0 {
-		return fmt.Errorf("Unable to find Client Gateway")
+		return fmt.Errorf("unable to find client gateway")
 	}
 
 	if len(resp.GetVpnConnections()) > 1 {

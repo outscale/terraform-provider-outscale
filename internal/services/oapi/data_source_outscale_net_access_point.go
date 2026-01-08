@@ -58,7 +58,7 @@ func DataSourceOutscaleNetAccessPointRead(d *schema.ResourceData, meta interface
 
 	filters, filtersOk := d.GetOk("filter")
 	if !filtersOk {
-		return fmt.Errorf("One of filters must be assigned")
+		return fmt.Errorf("one of filters must be assigned")
 	}
 
 	var resp oscgo.ReadNetAccessPointsResponse

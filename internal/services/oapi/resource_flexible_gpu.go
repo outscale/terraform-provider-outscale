@@ -323,7 +323,7 @@ func setFlexibleGpuState(ctx context.Context, r *fgpuResource, data GpuModel) (G
 
 	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to parse 'flexible_gpu' read timeout value. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("unable to parse 'flexible_gpu' read timeout value - error: %v", diags.Errors())
 	}
 	var readResp oscgo.ReadFlexibleGpusResponse
 	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {

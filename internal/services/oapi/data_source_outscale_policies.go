@@ -100,7 +100,7 @@ func DataSourcePoliciesRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	policyResp := resp.GetPolicies()
 	if len(policyResp) == 0 {
-		return fmt.Errorf("Unable to find Policies with fileters: %v", filters.(*schema.Set))
+		return fmt.Errorf("unable to find policies with fileters: %v", filters.(*schema.Set))
 	}
 	d.SetId(id.UniqueId())
 

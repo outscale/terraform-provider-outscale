@@ -86,7 +86,7 @@ func DataSourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) e
 	}
 	var resp oscgo.ReadAccessKeysResponse
 
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+	err = retry.RetryContext(context.Background(), 5*time.Minute, func() *retry.RetryError {
 		rp, httpResp, err := conn.AccessKeyApi.ReadAccessKeys(context.Background()).ReadAccessKeysRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -99,7 +99,7 @@ func DataSourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) e
 	}
 
 	if len(resp.GetAccessKeys()) == 0 {
-		return fmt.Errorf("unable to find Access Key")
+		return fmt.Errorf("unable to find access key")
 	}
 
 	if len(resp.GetAccessKeys()) > 1 {

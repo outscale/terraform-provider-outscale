@@ -92,13 +92,13 @@ func testAccCheckClientGatewayExists(resourceName string) resource.TestCheckFunc
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
-			return fmt.Errorf("Not found: %s", resourceName)
+			return fmt.Errorf("not found: %s", resourceName)
 		}
 
 		conn := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSCAPI
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No Client Gateway ID is set")
+			return fmt.Errorf("no client gateway id is set")
 		}
 
 		filter := oscgo.ReadClientGatewaysRequest{
@@ -117,7 +117,7 @@ func testAccCheckClientGatewayExists(resourceName string) resource.TestCheckFunc
 		})
 
 		if err != nil || len(resp.GetClientGateways()) < 1 {
-			return fmt.Errorf("Outscale Client Gateway not found (%s)", rs.Primary.ID)
+			return fmt.Errorf("outscale client gateway not found (%s)", rs.Primary.ID)
 		}
 		return nil
 	}
@@ -148,7 +148,7 @@ func testAccCheckClientGatewayDestroy(s *terraform.State) error {
 
 		if err != nil ||
 			len(resp.GetClientGateways()) > 0 && resp.GetClientGateways()[0].GetState() != "deleted" {
-			return fmt.Errorf("Outscale Client Gateway still exists (%s): %s", rs.Primary.ID, err)
+			return fmt.Errorf("outscale client gateway still exists (%s): %s", rs.Primary.ID, err)
 		}
 	}
 	return nil

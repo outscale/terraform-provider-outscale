@@ -99,7 +99,7 @@ func DataSourceOutscaleNatServiceRead(d *schema.ResourceData, meta interface{}) 
 	if err != nil {
 		errString := err.Error()
 
-		return fmt.Errorf("[DEBUG] Error reading Nar Service (%s)", errString)
+		return fmt.Errorf("error reading nar service (%s)", errString)
 	}
 
 	if len(resp.GetNatServices()) < 1 {
@@ -107,8 +107,7 @@ func DataSourceOutscaleNatServiceRead(d *schema.ResourceData, meta interface{}) 
 	}
 
 	if len(resp.GetNatServices()) > 1 {
-		return fmt.Errorf("your query returned more than one result, please try a more " +
-			"specific search criteria")
+		return fmt.Errorf("your query returned more than one result, please try a more specific search criteria")
 	}
 
 	return ngOAPIDescriptionAttributes(d, resp.GetNatServices()[0])

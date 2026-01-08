@@ -180,11 +180,11 @@ func testAccCheckOutscalePublicIPExists(n string, res *oscgo.PublicIp) resource.
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return fmt.Errorf("not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No PublicIP ID is set")
+			return fmt.Errorf("no publicip id is set")
 		}
 
 		client := testacc.ConfiguredClient.OSCAPI
@@ -204,7 +204,7 @@ func testAccCheckOutscalePublicIPExists(n string, res *oscgo.PublicIp) resource.
 
 		// 	if len(response.OK.PublicIps) != 1 ||
 		// 		response.OK.PublicIps[0].ReservationId != rs.Primary.ID {
-		// 		return fmt.Errorf("PublicIP not found")
+		// 		return fmt.Errorf("publicip not found")
 		// 	}
 		// 	*res = response.OK.PublicIps[0]
 
@@ -239,7 +239,7 @@ func testAccCheckOutscalePublicIPExists(n string, res *oscgo.PublicIp) resource.
 
 		if len(response.GetPublicIps()) != 1 ||
 			response.GetPublicIps()[0].GetPublicIpId() != rs.Primary.ID {
-			return fmt.Errorf("PublicIP not found")
+			return fmt.Errorf("publicip not found")
 		}
 		*res = response.GetPublicIps()[0]
 		//}

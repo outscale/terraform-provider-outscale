@@ -84,7 +84,7 @@ func ResourceOutscaleVirtualGatewayLinkCreate(d *schema.ResourceData, meta inter
 		if err != nil {
 			if httpResp.StatusCode == http.StatusNotFound {
 				return retry.RetryableError(
-					fmt.Errorf("Gateway not found, retry for eventual consistancy"))
+					fmt.Errorf("gateway not found, retry for eventual consistancy"))
 			}
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -92,7 +92,7 @@ func ResourceOutscaleVirtualGatewayLinkCreate(d *schema.ResourceData, meta inter
 	})
 
 	if err != nil {
-		return fmt.Errorf("Error attaching Virtual Gateway %q to VPC %q: %s",
+		return fmt.Errorf("error attaching virtual gateway %q to vpc %q: %s",
 			vgwID, netID, err)
 	}
 
@@ -107,7 +107,7 @@ func ResourceOutscaleVirtualGatewayLinkCreate(d *schema.ResourceData, meta inter
 
 	_, err = stateConf.WaitForState()
 	if err != nil {
-		return fmt.Errorf("Error waiting for Virtual Gateway %q to attach to VPC %q: %s",
+		return fmt.Errorf("error waiting for virtual gateway %q to attach to vpc %q: %s",
 			vgwID, netID, err)
 	}
 	log.Printf("[DEBUG] Virtual Gateway %q attached to VPC %q.", vgwID, netID)
@@ -218,7 +218,7 @@ func ResourceOutscaleVirtualGatewayLinkDelete(d *schema.ResourceData, meta inter
 		if err != nil {
 			if httpResp.StatusCode == http.StatusNotFound {
 				return retry.RetryableError(
-					fmt.Errorf("Gateway not found, retry for eventual consistancy"))
+					fmt.Errorf("gateway not found, retry for eventual consistancy"))
 			}
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -270,7 +270,7 @@ func vpnGatewayLinkStateRefresh(conn *oscgo.APIClient, vpcID, vgwID string) retr
 			if err != nil {
 				if httpResp.StatusCode == http.StatusNotFound {
 					return retry.RetryableError(
-						fmt.Errorf("Gateway not found, retry for eventual consistancy"))
+						fmt.Errorf("gateway not found, retry for eventual consistancy"))
 				}
 				return utils.CheckThrottling(httpResp, err)
 			}

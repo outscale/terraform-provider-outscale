@@ -146,7 +146,7 @@ func GetErrorResponseToString(err error) string {
 }
 
 func UnknownDataSourceFilterError(ctx context.Context, filterName string) error {
-	return fmt.Errorf("datasource filter '%s' is not implemented in the provider or not supported by the API", filterName)
+	return fmt.Errorf("datasource filter '%s' is not implemented in the provider or not supported by the api", filterName)
 }
 
 func ParseStringToInt32(str string) int32 {
@@ -238,7 +238,7 @@ func ParsingfilterToDateFormat(filterName, value string) (time.Time, error) {
 
 	if value != "" {
 		if filterDate, err = iso8601.Parse([]byte(value)); err != nil {
-			return filterDate, fmt.Errorf("%s value should be 'ISO 8601' format ('2017-06-14' or '2017-06-14T00:00:00Z, ...) %s", filterName, err)
+			return filterDate, fmt.Errorf("%s value should be 'iso 8601' format ('2017-06-14' or '2017-06-14t00:00:00z, ...) %s", filterName, err)
 		}
 	}
 	return filterDate, nil
@@ -286,5 +286,5 @@ func CheckPath(path string) error {
 	if regCheckPath.MatchString(path) || path == "/" {
 		return nil
 	}
-	return fmt.Errorf("invalid path:\n %v", pathError)
+	return fmt.Errorf("invalid path: %v", pathError)
 }

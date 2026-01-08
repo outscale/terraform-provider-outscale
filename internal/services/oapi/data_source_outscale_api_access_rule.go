@@ -76,15 +76,15 @@ func DataSourceOutscaleApiAccessRuleRead(d *schema.ResourceData, meta interface{
 	})
 
 	if err != nil {
-		return fmt.Errorf("[DEBUG] Error reading api access rule id (%s)", utils.GetErrorResponse(err))
+		return fmt.Errorf("error reading api access rule id (%s)", utils.GetErrorResponse(err))
 	}
 	apiAccessRules := resp.GetApiAccessRules()[:]
 	if len(apiAccessRules) < 1 {
 		d.SetId("")
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
+		return fmt.Errorf("your query returned no results - please change your search criteria and try again")
 	}
 	if len(apiAccessRules) > 1 {
-		return fmt.Errorf("Your query returned more results. Please change your search criteria and try again")
+		return fmt.Errorf("your query returned more results - please change your search criteria and try again")
 	}
 
 	accRule := apiAccessRules[0]

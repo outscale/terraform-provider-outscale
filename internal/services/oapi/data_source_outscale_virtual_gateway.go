@@ -67,7 +67,7 @@ func DataSourceOutscaleVirtualGatewayRead(d *schema.ResourceData, meta interface
 	virtualId, vpnOk := d.GetOk("virtual_gateway_id")
 
 	if !filtersOk && !vpnOk {
-		return fmt.Errorf("One of virtual_gateway_id or filter must be assigned")
+		return fmt.Errorf("one of virtual_gateway_id or filter must be assigned")
 	}
 
 	params := oscgo.ReadVirtualGatewaysRequest{}

@@ -127,7 +127,7 @@ func (r *resourceMainRouteTableLink) GetAssociatedRouteTable(ctx context.Context
 
 	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if diags.HasError() {
-		return readResp, fmt.Errorf("unable to parse 'Route Table' read timeout value. Error: %v: ", diags.Errors())
+		return readResp, fmt.Errorf("unable to parse 'route table' read timeout value - error: %v", diags.Errors())
 	}
 
 	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {

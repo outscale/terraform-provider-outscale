@@ -357,7 +357,7 @@ func setLinkedVolumeState(ctx context.Context, r *resourceVolumeLink, data *Volu
 
 	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if diags.HasError() {
-		return fmt.Errorf("unable to parse 'volume_link' read timeout value. Error: %v: ", diags.Errors())
+		return fmt.Errorf("unable to parse 'volume_link' read timeout value - error: %v", diags.Errors())
 	}
 
 	readReq := oscgo.ReadVolumesRequest{

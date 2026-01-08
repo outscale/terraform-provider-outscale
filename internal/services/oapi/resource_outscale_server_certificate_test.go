@@ -130,13 +130,13 @@ func testAccCheckOutscaleServerCertificateExists(n string) resource.TestCheckFun
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return fmt.Errorf("not found: %s", n)
 		}
 
 		conn := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSCAPI
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No id is set")
+			return fmt.Errorf("no id is set")
 		}
 		exists := false
 		var resp oscgo.ReadServerCertificatesResponse
@@ -150,7 +150,7 @@ func testAccCheckOutscaleServerCertificateExists(n string) resource.TestCheckFun
 		})
 
 		if err != nil || len(resp.GetServerCertificates()) == 0 {
-			return fmt.Errorf("Server Certificate not found (%s)", rs.Primary.ID)
+			return fmt.Errorf("server certificate not found (%s)", rs.Primary.ID)
 		}
 
 		for _, server := range resp.GetServerCertificates() {
@@ -160,7 +160,7 @@ func testAccCheckOutscaleServerCertificateExists(n string) resource.TestCheckFun
 		}
 
 		if !exists {
-			return fmt.Errorf("Server Certificate not found (%s)", rs.Primary.ID)
+			return fmt.Errorf("server certificate not found (%s)", rs.Primary.ID)
 		}
 
 		return nil
@@ -178,8 +178,7 @@ func testAccCheckOutscaleServerCertificateDestroy(s *terraform.State) error {
 		exists := false
 
 		var resp oscgo.ReadServerCertificatesResponse
-		var err error
-		err = retry.Retry(3*time.Minute, func() *retry.RetryError {
+		var err = retry.Retry(3*time.Minute, func() *retry.RetryError {
 			rp, httpResp, err := conn.ServerCertificateApi.ReadServerCertificates(context.Background()).ReadServerCertificatesRequest(oscgo.ReadServerCertificatesRequest{}).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
@@ -188,7 +187,7 @@ func testAccCheckOutscaleServerCertificateDestroy(s *terraform.State) error {
 			return nil
 		})
 		if err != nil {
-			return fmt.Errorf("Server Certificate reading (%s)", rs.Primary.ID)
+			return fmt.Errorf("server certificate reading (%s)", rs.Primary.ID)
 		}
 
 		for _, server := range resp.GetServerCertificates() {
@@ -198,7 +197,7 @@ func testAccCheckOutscaleServerCertificateDestroy(s *terraform.State) error {
 		}
 
 		if exists {
-			return fmt.Errorf("Server Certificate still exists (%s)", rs.Primary.ID)
+			return fmt.Errorf("server certificate still exists (%s)", rs.Primary.ID)
 		}
 	}
 	return nil

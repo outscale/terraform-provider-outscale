@@ -169,7 +169,7 @@ func (d *dataSourceQuota) Read(ctx context.Context, req datasource.ReadRequest, 
 		goto CHECK_ERR
 	}
 	if len(respApi.GetQuotaTypes()) > 1 {
-		err = fmt.Errorf("multiple quotas type matched; use additional constraints to reduce matches to a single quotaType")
+		err = fmt.Errorf("multiple quotas type matched; use additional constraints to reduce matches to a single quotatype")
 		goto CHECK_ERR
 	}
 	quotaType = respApi.GetQuotaTypes()[0]
@@ -179,7 +179,7 @@ func (d *dataSourceQuota) Read(ctx context.Context, req datasource.ReadRequest, 
 	}
 
 	if len(quotaType.GetQuotas()) > 1 {
-		err = fmt.Errorf("multiple quotas matched; use additional constraints to reduce matches to a single quotaType")
+		err = fmt.Errorf("multiple quotas matched; use additional constraints to reduce matches to a single quotatype")
 		goto CHECK_ERR
 	}
 

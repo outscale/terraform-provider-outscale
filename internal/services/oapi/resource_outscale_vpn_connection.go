@@ -144,7 +144,7 @@ func ResourceOutscaleVPNConnectionCreate(d *schema.ResourceData, meta interface{
 	})
 
 	if err != nil {
-		return fmt.Errorf("Error creating Outscale VPN Conecction: %s", err)
+		return fmt.Errorf("error creating outscale vpn conecction: %s", err)
 	}
 
 	d.SetId(*resp.GetVpnConnection().VpnConnectionId)
@@ -173,7 +173,7 @@ func ResourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{})
 
 	r, err := stateConf.WaitForState()
 	if err != nil {
-		return fmt.Errorf("Error waiting for Outscale VPN Connection(%s) to become ready: %s", vpnConnectionID, err)
+		return fmt.Errorf("error waiting for outscale vpn connection(%s) to become ready: %s", vpnConnectionID, err)
 	}
 
 	resp := r.(oscgo.ReadVpnConnectionsResponse)
@@ -255,7 +255,7 @@ func ResourceOutscaleVPNConnectionDelete(d *schema.ResourceData, meta interface{
 
 	_, err = stateConf.WaitForState()
 	if err != nil {
-		return fmt.Errorf("Error waiting for Outscale VPN Connection(%s) to become deleted: %s", vpnConnectionID, err)
+		return fmt.Errorf("error waiting for outscale vpn connection(%s) to become deleted: %s", vpnConnectionID, err)
 	}
 
 	return nil
@@ -272,21 +272,21 @@ func vpnConnectionRefreshFunc(conn *oscgo.APIClient, vpnConnectionID *string) re
 		resp, httpResp, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(filter).Execute()
 		if err != nil {
 			if httpResp != nil {
-				switch {
-				case httpResp.StatusCode == http.StatusServiceUnavailable:
+				switch httpResp.StatusCode {
+				case http.StatusServiceUnavailable:
 					return nil, "pending", nil
-				case httpResp.StatusCode == http.StatusNotFound:
+				case http.StatusNotFound:
 					return nil, "deleted", nil
 				default:
-					return nil, "failed", fmt.Errorf("Error on vpnConnectionRefresh: %s", err)
+					return nil, "failed", fmt.Errorf("error on vpnconnectionrefresh: %s", err)
 				}
 			} else {
-				return nil, "failed", fmt.Errorf("Error on vpnConnectionRefresh: %s", err)
+				return nil, "failed", fmt.Errorf("error on vpnconnectionrefresh: %s", err)
 			}
 		}
 
 		if len(resp.GetVpnConnections()) == 0 {
-			return nil, "failed", fmt.Errorf("error on vpnConnectionRefresh: there are not vpn connections(%s)", *vpnConnectionID)
+			return nil, "failed", fmt.Errorf("error on vpnconnectionrefresh: there are not vpn connections(%s)", *vpnConnectionID)
 		}
 
 		vpnConnection := resp.GetVpnConnections()[0]

@@ -62,7 +62,7 @@ func DataSourceOutscaleFlexibleGpuRead(d *schema.ResourceData, meta interface{})
 	flexID, IDOk := d.GetOk("flexible_gpu_id")
 
 	if !filtersOk && !IDOk {
-		return fmt.Errorf("One of filters, or flexible_gpu_id must be assigned")
+		return fmt.Errorf("one of filters, or flexible_gpu_id must be assigned")
 	}
 
 	var err error

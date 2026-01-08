@@ -74,8 +74,7 @@ func DataSourceOutscaleTagRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if len(resp.GetTags()) > 1 {
-		return fmt.Errorf("your query returned more than one result, Please try a more " +
-			"specific search criteria")
+		return fmt.Errorf("your query returned more than one result, please try a more specific search criteria")
 	}
 
 	tag := resp.GetTags()[0]

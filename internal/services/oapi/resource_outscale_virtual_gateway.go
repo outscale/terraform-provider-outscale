@@ -87,7 +87,7 @@ func ResourceOutscaleVirtualGatewayCreate(d *schema.ResourceData, meta interface
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("Error creating VPN gateway: %s", err)
+		return fmt.Errorf("error creating vpn gateway: %s", err)
 	}
 
 	stateConf := &retry.StateChangeConf{
@@ -278,7 +278,7 @@ func virtualGatewayStateRefreshFunc(conn *oscgo.APIClient, instanceID, failState
 		state := virtualGateway.GetState()
 
 		if state == failState {
-			return virtualGateway, state, fmt.Errorf("Failed to reach target state. Reason: %v", *virtualGateway.State)
+			return virtualGateway, state, fmt.Errorf("failed to reach target state - reason: %v", *virtualGateway.State)
 		}
 
 		return virtualGateway, state, nil

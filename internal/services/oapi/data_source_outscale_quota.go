@@ -87,7 +87,7 @@ func DataSourceOutscaleQuotaRead(d *schema.ResourceData, meta interface{}) error
 
 	if err != nil {
 		errString := err.Error()
-		return fmt.Errorf("[DEBUG] Error reading quotaType (%s)", errString)
+		return fmt.Errorf("error reading quotatype (%s)", errString)
 	}
 
 	if len(resp.GetQuotaTypes()) == 0 {
@@ -95,7 +95,7 @@ func DataSourceOutscaleQuotaRead(d *schema.ResourceData, meta interface{}) error
 	}
 
 	if len(resp.GetQuotaTypes()) > 1 {
-		return fmt.Errorf("multiple quotas type matched; use additional constraints to reduce matches to a single quotaType")
+		return fmt.Errorf("multiple quotas type matched; use additional constraints to reduce matches to a single quotatype")
 	}
 
 	quotaType := resp.GetQuotaTypes()[0]
@@ -109,7 +109,7 @@ func DataSourceOutscaleQuotaRead(d *schema.ResourceData, meta interface{}) error
 	}
 
 	if len(quotaType.GetQuotas()) > 1 {
-		return fmt.Errorf("multiple quotas matched; use additional constraints to reduce matches to a single quotaType")
+		return fmt.Errorf("multiple quotas matched; use additional constraints to reduce matches to a single quotatype")
 	}
 
 	quota := quotaType.GetQuotas()[0]

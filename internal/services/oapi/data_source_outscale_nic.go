@@ -253,7 +253,7 @@ func DataSourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error describing Network Interfaces: %s", err)
+		return fmt.Errorf("error describing network interfaces: %s", err)
 	}
 	if err := utils.IsResponseEmptyOrMutiple(len(resp.GetNics()), "Nic"); err != nil {
 		return err

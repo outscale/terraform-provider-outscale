@@ -91,11 +91,11 @@ func resourceOAPINatServiceCreate(d *schema.ResourceData, meta interface{}) erro
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("Error creating Nat Service: %s", err.Error())
+		return fmt.Errorf("error creating nat service: %s", err.Error())
 	}
 
 	if !resp.HasNatService() {
-		return fmt.Errorf("Error there is not Nat Service (%s)", err)
+		return fmt.Errorf("error there is not nat service (%s)", err)
 	}
 
 	natService := resp.GetNatService()
@@ -118,7 +118,7 @@ func resourceOAPINatServiceCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	if _, err := stateConf.WaitForState(); err != nil {
-		return fmt.Errorf("error waiting for NAT Service (%s) to become available: %s", natService.GetNatServiceId(), err)
+		return fmt.Errorf("error waiting for nat service (%s) to become available: %s", natService.GetNatServiceId(), err)
 	}
 	d.SetId(natService.GetNatServiceId())
 
@@ -147,7 +147,7 @@ func resourceOAPINatServiceRead(d *schema.ResourceData, meta interface{}) error 
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("error waiting for NAT Service (%s) to become available: %s", d.Id(), err)
+		return fmt.Errorf("error waiting for nat service (%s) to become available: %s", d.Id(), err)
 	}
 	if utils.IsResponseEmpty(len(resp.GetNatServices()), "NatService", d.Id()) {
 		d.SetId("")
@@ -218,7 +218,7 @@ func resourceOAPINatServiceDelete(d *schema.ResourceData, meta interface{}) erro
 	})
 
 	if err != nil {
-		return fmt.Errorf("Error deleting Nat Service: %s", err)
+		return fmt.Errorf("error deleting nat service: %s", err)
 	}
 
 	filterReq := oscgo.ReadNatServicesRequest{
@@ -236,7 +236,7 @@ func resourceOAPINatServiceDelete(d *schema.ResourceData, meta interface{}) erro
 
 	_, stateErr := stateConf.WaitForState()
 	if stateErr != nil {
-		return fmt.Errorf("Error waiting for NAT Service (%s) to delete: %s", d.Id(), stateErr)
+		return fmt.Errorf("error waiting for nat service (%s) to delete: %s", d.Id(), stateErr)
 	}
 	return nil
 }
@@ -265,7 +265,7 @@ func NGOAPIStateRefreshFunc(client *oscgo.APIClient, req oscgo.ReadNatServicesRe
 			state = natServices[0].GetState()
 
 			if state == failState {
-				return natServices[0], state, fmt.Errorf("Failed to reach target state. Reason: %v", state)
+				return natServices[0], state, fmt.Errorf("failed to reach target state - reason: %v", state)
 			}
 		}
 

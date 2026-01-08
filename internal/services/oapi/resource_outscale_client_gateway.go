@@ -23,7 +23,7 @@ func ResourceOutscaleClientGateway() *schema.Resource {
 		Update: ResourceOutscaleClientGatewayUpdate,
 		Delete: ResourceOutscaleClientGatewayDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -107,7 +107,7 @@ func ResourceOutscaleClientGatewayRead(d *schema.ResourceData, meta interface{})
 
 	r, err := stateConf.WaitForState()
 	if err != nil {
-		return fmt.Errorf("Error waiting for Outscale Client Gateway (%s) to become ready: %s", clientGatewayID, err)
+		return fmt.Errorf("error waiting for outscale client gateway (%s) to become ready: %s", clientGatewayID, err)
 	}
 
 	resp := r.(oscgo.ReadClientGatewaysResponse)
@@ -181,7 +181,7 @@ func ResourceOutscaleClientGatewayDelete(d *schema.ResourceData, meta interface{
 
 	_, err = stateConf.WaitForState()
 	if err != nil {
-		return fmt.Errorf("Error waiting for Outscale Client Gateway (%s) to become deleted: %s", gatewayID, err)
+		return fmt.Errorf("error waiting for outscale client gateway (%s) to become deleted: %s", gatewayID, err)
 	}
 
 	return nil
@@ -212,7 +212,7 @@ func clientGatewayRefreshFunc(conn *oscgo.APIClient, gatewayID *string) retry.St
 			case statusCode == http.StatusNotFound || len(resp.GetClientGateways()) == 0:
 				return nil, "deleted", nil
 			default:
-				return nil, "failed", fmt.Errorf("Error on clientGatewayRefresh: %s", err)
+				return nil, "failed", fmt.Errorf("error on clientgatewayrefresh: %s", err)
 			}
 		}
 

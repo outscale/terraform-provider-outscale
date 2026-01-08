@@ -397,7 +397,7 @@ func setNetAccessPointState(ctx context.Context, r *resourceNetAccessPoint, data
 
 	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to parse 'net access point' read timeout value. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("unable to parse 'net access point' read timeout value - error: %v", diags.Errors())
 	}
 
 	var readResp oscgo.ReadNetAccessPointsResponse
@@ -421,7 +421,7 @@ func setNetAccessPointState(ctx context.Context, r *resourceNetAccessPoint, data
 
 	routeTablesIds, diags := types.SetValueFrom(ctx, types.StringType, netAccessPoint.GetRouteTableIds())
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to convert Route Tables Ids into a Set. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("unable to convert route tables ids into a set - error: %v", diags.Errors())
 	}
 	tags, diag := flattenOAPITagsFW(ctx, netAccessPoint.GetTags())
 	if diag.HasError() {

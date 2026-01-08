@@ -1,7 +1,6 @@
 package oapi_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -23,7 +22,7 @@ func TestAccDataSourceOutscaleApiAccessPolicy_basic(t *testing.T) {
 }
 
 func testAccDataSourceOutscaleApiAccessPolicyConfig() string {
-	return fmt.Sprintf(`
+	return `
               data "outscale_api_access_policy" "api_access_policy" {}
-	`)
+	`
 }

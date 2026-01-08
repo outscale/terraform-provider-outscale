@@ -61,8 +61,7 @@ func DataSourceOutscaleVpcAttrRead(d *schema.ResourceData, meta interface{}) err
 	}
 
 	var resp oscgo.ReadNetsResponse
-	var err error
-	err = retry.Retry(120*time.Second, func() *retry.RetryError {
+	var err = retry.Retry(120*time.Second, func() *retry.RetryError {
 		rp, httpResp, err := conn.NetApi.ReadNets(context.Background()).ReadNetsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -76,7 +75,7 @@ func DataSourceOutscaleVpcAttrRead(d *schema.ResourceData, meta interface{}) err
 
 	if len(resp.GetNets()) == 0 {
 		d.SetId("")
-		return fmt.Errorf("oAPI Net not found")
+		return fmt.Errorf("oapi net not found")
 	}
 
 	d.SetId(resp.GetNets()[0].GetNetId())

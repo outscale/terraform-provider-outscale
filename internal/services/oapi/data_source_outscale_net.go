@@ -84,10 +84,10 @@ func DataSourceOutscaleVpcRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	if len(resp.GetNets()) == 0 {
-		return fmt.Errorf("No matching Net found")
+		return fmt.Errorf("no matching net found")
 	}
 	if len(resp.GetNets()) > 1 {
-		return fmt.Errorf("Multiple Nets matched; use additional constraints to reduce matches to a single Net")
+		return fmt.Errorf("multiple nets matched; use additional constraints to reduce matches to a single net")
 	}
 
 	net := resp.GetNets()[0]

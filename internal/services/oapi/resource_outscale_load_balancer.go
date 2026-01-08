@@ -405,7 +405,7 @@ func ResourceOutscaleLoadBalancerCreate_(d *schema.ResourceData, meta interface{
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "NoSuchCertificate") {
 				return retry.RetryableError(
-					fmt.Errorf("[WARN] Error creating Load Balancer Listener with SSL Cert, retrying: %w", err))
+					fmt.Errorf("error creating load balancer listener with ssl cert, retrying: %w", err))
 			}
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -435,7 +435,7 @@ func ResourceOutscaleLoadBalancerCreate_(d *schema.ResourceData, meta interface{
 		})
 
 		if err != nil {
-			return fmt.Errorf("failure updating SecruedCookies: %w", err)
+			return fmt.Errorf("failure updating secruedcookies: %w", err)
 		}
 	}
 
@@ -464,7 +464,7 @@ func readResourceLb(conn *oscgo.APIClient, elbName string) (*oscgo.LoadBalancer,
 	})
 
 	if err != nil {
-		return nil, nil, fmt.Errorf("error retrieving Load Balancer: %w", err)
+		return nil, nil, fmt.Errorf("error retrieving load balancer: %w", err)
 	}
 	if len(resp.GetLoadBalancers()) == 0 {
 		return nil, nil, nil
@@ -577,7 +577,7 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 		})
 
 		if err != nil {
-			return fmt.Errorf("failure updating SecurityGroups: %w", err)
+			return fmt.Errorf("failure updating securitygroups: %w", err)
 		}
 	}
 
@@ -690,7 +690,7 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 			})
 
 			if err != nil {
-				return fmt.Errorf("failure removing outdated Load Balancer listeners: %w", err)
+				return fmt.Errorf("failure removing outdated load balancer listeners: %w", err)
 			}
 		}
 
@@ -718,7 +718,7 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 				return nil
 			})
 			if err != nil {
-				return fmt.Errorf("failure adding new or updated Load Balancer listeners: %w", err)
+				return fmt.Errorf("failure adding new or updated load balancer listeners: %w", err)
 			}
 		}
 	}
@@ -754,7 +754,7 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 			})
 
 			if err != nil {
-				return fmt.Errorf("failure configuring health check for Load Balancer: %w", err)
+				return fmt.Errorf("failure configuring health check for load balancer: %w", err)
 			}
 		}
 	}
@@ -788,7 +788,7 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 			})
 
 			if err != nil {
-				return fmt.Errorf("failure configuring access log for Load Balancer: %w", err)
+				return fmt.Errorf("failure configuring access log for load balancer: %w", err)
 			}
 		}
 	}
@@ -809,7 +809,7 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 		})
 
 		if err != nil {
-			return fmt.Errorf("failure updating SecruedCookies: %w", err)
+			return fmt.Errorf("failure updating secruedcookies: %w", err)
 		}
 	}
 
@@ -836,7 +836,7 @@ func ResourceOutscaleLoadBalancerDelete(d *schema.ResourceData, meta interface{}
 	})
 
 	if err != nil {
-		return fmt.Errorf("error deleting Load Balancer: %w", err)
+		return fmt.Errorf("error deleting load balancer: %w", err)
 	}
 
 	stateConf := &retry.StateChangeConf{

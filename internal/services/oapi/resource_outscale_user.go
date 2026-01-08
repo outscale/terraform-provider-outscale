@@ -352,7 +352,7 @@ func ResourceOutscaleUserDelete(d *schema.ResourceData, meta interface{}) error 
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("error deleting Outscale user %s: %s", d.Id(), err)
+		return fmt.Errorf("error deleting outscale user %s: %s", d.Id(), err)
 	}
 
 	return nil

@@ -247,7 +247,7 @@ func ResourceOutscaleLoadBalancerListenerRuleUpdate(d *schema.ResourceData, meta
 		var err error
 		nw := d.Get("listener_rule").([]interface{})
 		if len(nw) != 1 {
-			return fmt.Errorf("Error Multiple listener_rule matched or empty: %s", err)
+			return fmt.Errorf("error multiple listener_rule matched or empty: %s", err)
 		}
 		check := nw[0].(map[string]interface{})
 		req := oscgo.UpdateListenerRuleRequest{
@@ -296,9 +296,7 @@ func ResourceOutscaleLoadBalancerListenerRuleDelete(d *schema.ResourceData, meta
 		ListenerRuleName: d.Id(),
 	}
 
-	var err error
-
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+	var err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		_, httpResp, err := conn.ListenerApi.DeleteListenerRule(
 			context.Background()).DeleteListenerRuleRequest(req).Execute()
 		if err != nil {
@@ -308,7 +306,7 @@ func ResourceOutscaleLoadBalancerListenerRuleDelete(d *schema.ResourceData, meta
 	})
 
 	if err != nil {
-		return fmt.Errorf("Error deleting listener rule: %s", err)
+		return fmt.Errorf("error deleting listener rule: %s", err)
 	}
 
 	stateConf := &retry.StateChangeConf{
@@ -324,8 +322,7 @@ func ResourceOutscaleLoadBalancerListenerRuleDelete(d *schema.ResourceData, meta
 			}
 
 			var resp oscgo.ReadListenerRulesResponse
-			var err error
-			err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+			var err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 				rp, httpResp, err := conn.ListenerApi.ReadListenerRules(
 					context.Background()).
 					ReadListenerRulesRequest(req).Execute()
@@ -346,7 +343,7 @@ func ResourceOutscaleLoadBalancerListenerRuleDelete(d *schema.ResourceData, meta
 		MinTimeout: 10 * time.Second,
 	}
 	if _, err := stateConf.WaitForState(); err != nil {
-		return fmt.Errorf("Error waiting for listener rule (%s) to become nil: %s", d.Id(), err)
+		return fmt.Errorf("error waiting for listener rule (%s) to become nil: %s", d.Id(), err)
 	}
 
 	return nil

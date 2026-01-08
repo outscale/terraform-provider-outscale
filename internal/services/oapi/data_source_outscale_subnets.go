@@ -112,7 +112,7 @@ func DataSourceOutscaleSubnetsRead(d *schema.ResourceData, meta interface{}) err
 	if err != nil {
 		errString = err.Error()
 
-		return fmt.Errorf("[DEBUG] Error reading Subnet (%s)", errString)
+		return fmt.Errorf("error reading subnet (%s)", errString)
 	}
 
 	if len(resp.GetSubnets()) == 0 {

@@ -48,11 +48,11 @@ func testAccCheckOutscalePublicIPLinkExists(name string, res *oscgo.PublicIp) re
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
-			return fmt.Errorf("Not found: %s", name)
+			return fmt.Errorf("not found: %s", name)
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No Public IP Link ID is set")
+			return fmt.Errorf("no public ip link id is set")
 		}
 
 		client := testacc.ConfiguredClient.OSCAPI
@@ -79,11 +79,11 @@ func testAccCheckOutscalePublicIPLinkExists(name string, res *oscgo.PublicIp) re
 		// Missing on Swagger Spec
 		if len(response.GetPublicIps()) != 1 ||
 			response.GetPublicIps()[0].GetLinkPublicIpId() != res.GetLinkPublicIpId() {
-			return fmt.Errorf("Public IP Link not found")
+			return fmt.Errorf("public ip link not found")
 		}
 
 		if len(response.GetPublicIps()) != 1 {
-			return fmt.Errorf("Public IP Link not found")
+			return fmt.Errorf("public ip link not found")
 		}
 
 		return nil
@@ -97,7 +97,7 @@ func testAccCheckOutscalePublicIPLinkDestroy(s *terraform.State) error {
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No Public IP Link ID is set")
+			return fmt.Errorf("no public ip link id is set")
 		}
 
 		id := rs.Primary.Attributes["link_public_ip_id"]
@@ -124,7 +124,7 @@ func testAccCheckOutscalePublicIPLinkDestroy(s *terraform.State) error {
 		}
 
 		if len(response.GetPublicIps()) > 0 {
-			return fmt.Errorf("Public IP Link still exists")
+			return fmt.Errorf("public ip link still exists")
 		}
 	}
 	return nil
@@ -134,11 +134,11 @@ func testAccCheckOutscalePublicIPLExists(n string, res *oscgo.PublicIp) resource
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return fmt.Errorf("not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No PublicIP ID is set")
+			return fmt.Errorf("no publicip id is set")
 		}
 
 		client := testacc.ConfiguredClient.OSCAPI
@@ -165,7 +165,7 @@ func testAccCheckOutscalePublicIPLExists(n string, res *oscgo.PublicIp) resource
 
 			if len(resp.GetPublicIps()) != 1 ||
 				resp.GetPublicIps()[0].GetLinkPublicIpId() != rs.Primary.ID {
-				return fmt.Errorf("PublicIP not found")
+				return fmt.Errorf("publicip not found")
 			}
 			*res = resp.GetPublicIps()[0]
 
@@ -200,7 +200,7 @@ func testAccCheckOutscalePublicIPLExists(n string, res *oscgo.PublicIp) resource
 
 			if len(response.GetPublicIps()) != 1 ||
 				response.GetPublicIps()[0].GetPublicIpId() != rs.Primary.ID {
-				return fmt.Errorf("PublicIP not found")
+				return fmt.Errorf("publicip not found")
 			}
 			*res = response.GetPublicIps()[0]
 		}

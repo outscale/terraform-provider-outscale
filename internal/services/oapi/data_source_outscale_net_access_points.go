@@ -124,7 +124,7 @@ func DataSourceOutscaleNetAccessPointsRead(d *schema.ResourceData, meta interfac
 
 	naps := resp.GetNetAccessPoints()[:]
 	if len(naps) < 1 {
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
+		return fmt.Errorf("your query returned no results - please change your search criteria and try again")
 	}
 
 	nap_ret := make([]map[string]interface{}, len(naps))

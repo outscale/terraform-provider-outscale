@@ -221,7 +221,7 @@ func setEphKeypairState(ctx context.Context, r *resourceEphemeralKeypair, data *
 
 	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if diags.HasError() {
-		return fmt.Errorf("unable to parse 'keypair' read timeout value. Error: %v: ", diags.Errors())
+		return fmt.Errorf("unable to parse 'keypair' read timeout value - error: %v", diags.Errors())
 	}
 
 	readReq := oscgo.ReadKeypairsRequest{
@@ -264,7 +264,7 @@ func isResourceExist(ctx context.Context, data *EphemeralKeypairModel, e *resour
 	isKeypairExist := false
 	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if diags.HasError() {
-		return isKeypairExist, fmt.Errorf("unable to parse 'ephemeral keypair' read timeout value. Error: %v: ", diags.Errors())
+		return isKeypairExist, fmt.Errorf("unable to parse 'ephemeral keypair' read timeout value - error: %v", diags.Errors())
 	}
 
 	readReq := oscgo.ReadKeypairsRequest{

@@ -213,7 +213,7 @@ func DataSourceOutscaleImageRead(d *schema.ResourceData, meta interface{}) error
 	ai, aisOk := d.GetOk("account_id")
 	imageID, imageIDOk := d.GetOk("image_id")
 	if !executableUsersOk && !filtersOk && !aisOk && !imageIDOk {
-		return fmt.Errorf("One of executable_users, filters, or account_id must be assigned, or image_id must be provided")
+		return fmt.Errorf("one of executable_users, filters, or account_id must be assigned, or image_id must be provided")
 	}
 
 	var err error

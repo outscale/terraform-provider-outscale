@@ -268,7 +268,7 @@ func setInternetServiceLinkState(ctx context.Context, r *resourceInternetService
 
 	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to parse 'internet service' read timeout value. Error: %v: ", diags.Errors())
+		return data, fmt.Errorf("unable to parse 'internet service' read timeout value - error: %v", diags.Errors())
 	}
 
 	var readResp oscgo.ReadInternetServicesResponse

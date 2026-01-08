@@ -53,7 +53,7 @@ func testAccCheckOutscaleSubregionsDataSourceID(n string) resource.TestCheckFunc
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("subregions data source ID not set")
+			return fmt.Errorf("subregions data source id not set")
 		}
 		return nil
 	}
