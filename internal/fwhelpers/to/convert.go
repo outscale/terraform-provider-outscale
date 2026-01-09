@@ -2,6 +2,7 @@ package to
 
 import (
 	"context"
+	"reflect"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
@@ -11,17 +12,12 @@ import (
 )
 
 func String[T ~string | *string](v T) types.String {
-	switch v := any(v).(type) {
-	case string:
-		return types.StringValue(v)
-	case *string:
-		if v == nil {
-			return types.StringNull()
-		}
-		return types.StringValue(*v)
-	default:
+	rv := reflect.ValueOf(v)
+	if rv.Kind() == reflect.Pointer && rv.IsNil() {
 		return types.StringNull()
 	}
+
+	return types.StringValue(reflect.Indirect(rv).String())
 }
 
 func Int64[T ~int | ~int64 | *int | *int64](v T) types.Int64 {
