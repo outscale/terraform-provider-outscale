@@ -4,13 +4,14 @@ set -e
 
 project_dir=$(cd "$(dirname $0)" && pwd)
 project_root=$(cd $project_dir/.. && pwd)
+
 if [ ! -d "$project_root/tests/certs" ]; then
     mkdir $project_root/tests/certs
 fi
 build_dir=$(cd $project_root/tests/certs && pwd)
 tf_file="gen-cert-test.tf"
 
-cd $project_root
+cd $build_dir
 echo '
 terraform {
   required_providers {
@@ -33,20 +34,23 @@ EOF
   }
   working_directory = path.module
 }
-' | tee "$project_root/outscale/$tf_file"  "$build_dir/$tf_file"
+' > "$build_dir/$tf_file"
 
-if [ ! -e "$build_dir/$tf_file" ] && [ ! -e "$project_root/outscale/$tf_file" ]; then
-    echo " $tf_file doesn't existe"
+if [ ! -e "$build_dir/$tf_file" ]; then
+    echo "$tf_file doesn't exist"
     exit 1
 fi
 
-cd outscale/
+echo "Generating certificates in $build_dir"
 terraform init || exit 1
 terraform apply -auto-approve || exit 1
 
-cd $build_dir
-terraform init || exit 1
-terraform apply -auto-approve || exit 1
+oapi_testdata="$project_root/internal/services/oapi/testdata"
+if [ ! -d "$oapi_testdata" ]; then
+    mkdir $oapi_testdata
+fi
+cp certificate.pem certificate.key $oapi_testdata/
+
 cd $project_root
 
 exit 0

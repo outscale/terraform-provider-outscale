@@ -1,0 +1,51 @@
+name: Reusable Acceptance Test
+
+on:
+    workflow_call:
+        inputs:
+            test-command:
+                required: true
+                type: string
+            runner:
+                required: true
+                type: string
+
+jobs:
+    acceptance-test:
+        environment: test-${{ inputs.runner }}
+        runs-on:
+            - self-hosted
+            - linux
+            - ${{ inputs.runner }}
+        steps:
+            - uses: actions/checkout@v5
+            - uses: outscale/frieza-github-actions/frieza-clean@master
+              with:
+                  access_key: ${{ secrets.OSC_ACCESS_KEY }}
+                  secret_key: ${{ secrets.OSC_SECRET_KEY }}
+                  region: ${{ secrets.OSC_REGION }}
+            - name: Set up Go
+              uses: actions/setup-go@v5
+              with:
+                  go-version-file: "./go.mod"
+            - name: Setup Terraform
+              uses: hashicorp/setup-terraform@v3
+              with:
+                  terraform_version: 1.14.3
+                  terraform_wrapper: false
+            - name: Build go test
+              run: make test
+              env:
+                  OUTSCALE_ACCESSKEYID: ${{ secrets.OSC_ACCESS_KEY }}
+                  OUTSCALE_SECRETKEYID: ${{ secrets.OSC_SECRET_KEY }}
+                  OUTSCALE_REGION: ${{ secrets.OSC_REGION }}
+                  OUTSCALE_ACCOUNT: ${{ secrets.OSC_ACCOUNT_ID }}
+                  OUTSCALE_IMAGEID: ${{ secrets.OUTSCALE_IMAGEID }}
+            - name: Run acceptance tests
+              run: make ${{ inputs.test-command }}
+              env:
+                  OUTSCALE_ACCESSKEYID: ${{ secrets.OSC_ACCESS_KEY }}
+                  OUTSCALE_SECRETKEYID: ${{ secrets.OSC_SECRET_KEY }}
+                  OUTSCALE_REGION: ${{ secrets.OSC_REGION }}
+                  OUTSCALE_ACCOUNT: ${{ secrets.OSC_ACCOUNT_ID }}
+                  OUTSCALE_IMAGEID: ${{ secrets.OUTSCALE_IMAGEID }}
