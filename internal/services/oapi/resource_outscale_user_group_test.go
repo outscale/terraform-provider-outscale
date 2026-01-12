@@ -4,19 +4,21 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 )
 
 func TestAccOthers_user_group_basic(t *testing.T) {
 	resourceName := "outscale_user_group.basic_group"
+	groupName := acctest.RandomWithPrefix("testacc-ug")
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testacc.PreCheck(t) },
 		Providers: testacc.SDKProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccUserGroupBasicConfig,
+				Config: testAccUserGroupBasicConfig(groupName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "user_group_name"),
 					resource.TestCheckResourceAttr(resourceName, "path", "/"),
@@ -78,11 +80,13 @@ func TestAccOthers_userGroup_update(t *testing.T) {
 	})
 }
 
-const testAccUserGroupBasicConfig = `
+func testAccUserGroupBasicConfig(name string) string {
+	return fmt.Sprintf(`
 	resource "outscale_user_group" "basic_group" {
-	  user_group_name = "TestACC_group1"
+	  user_group_name = "%s"
 	  path = "/"
-	}`
+	}`, name)
+}
 
 func testAccUserGroupWithUsers(name string) string {
 	return fmt.Sprintf(`
