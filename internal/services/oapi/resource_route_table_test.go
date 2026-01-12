@@ -8,6 +8,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
@@ -32,13 +33,14 @@ func TestAccNet_WithRouteTable_Basic(t *testing.T) {
 func TestAccNet_RouteTable_Instance(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	resourceName := "outscale_route_table.rtbTest"
+	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIRouteTableConfigInstance(omi, testAccVmType, utils.GetRegion()),
+				Config: testAccOAPIRouteTableConfigInstance(sgName, omi, testAccVmType, utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "net_id"),
 					resource.TestCheckResourceAttr(resourceName, "routes.0.state", "active"),
@@ -104,12 +106,13 @@ func TestAccNet_RouteTable_importBasic(t *testing.T) {
 
 func TestAccNet_WithRouteTable_Migration(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
+	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { testacc.PreCheck(t) },
 		Steps: testacc.FrameworkMigrationTestSteps("1.1.3",
 			testAccOAPIRouteTableConfig,
-			testAccOAPIRouteTableConfigInstance(omi, testAccVmType, utils.GetRegion())),
+			testAccOAPIRouteTableConfigInstance(sgName, omi, testAccVmType, utils.GetRegion())),
 	})
 }
 
@@ -214,7 +217,7 @@ resource "outscale_route_table" "rtbTest" {
 }
 `
 
-func testAccOAPIRouteTableConfigInstance(omi, vmType, region string) string {
+func testAccOAPIRouteTableConfigInstance(sgName, omi, vmType, region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "foo" {
 			ip_range = "10.1.0.0/16"
@@ -232,7 +235,7 @@ func testAccOAPIRouteTableConfigInstance(omi, vmType, region string) string {
 
 		resource "outscale_security_group" "sg_route" {
 			description           = "testAcc Terraform security group"
-			security_group_name   = "sgRoute"
+			security_group_name   = "%s"
 			net_id                = outscale_net.foo.net_id
 
 		}
@@ -250,7 +253,7 @@ func testAccOAPIRouteTableConfigInstance(omi, vmType, region string) string {
 		resource "outscale_route_table" "rtbTest" {
 			net_id = outscale_net.foo.id
 		}
-	`, omi, vmType, region)
+	`, sgName, omi, vmType, region)
 }
 
 func testAccOAPIRouteTableConfigTags(value string) string {

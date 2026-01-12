@@ -13,6 +13,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
@@ -21,7 +22,7 @@ func TestAccOthers_LBUBasic(t *testing.T) {
 	var conf oscgo.LoadBalancer
 
 	lbResourceName := "outscale_load_balancer.barRes"
-	r := utils.RandIntRange(0, 10)
+	r := acctest.RandString(5)
 	zone := fmt.Sprintf("%sa", utils.GetRegion())
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -52,8 +53,7 @@ func TestAccOthers_LBUPublicIp(t *testing.T) {
 	var conf oscgo.LoadBalancer
 
 	resourceName := "outscale_load_balancer.barIp"
-
-	r := utils.RandIntRange(10, 20)
+	r := acctest.RandString(5)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
@@ -177,11 +177,11 @@ func testAccCheckOutscaleLBUExists(n string, res *oscgo.LoadBalancer) resource.T
 	}
 }
 
-func testAccOutscaleLBUConfig(r int) string {
+func testAccOutscaleLBUConfig(r string) string {
 	return fmt.Sprintf(`
 resource "outscale_load_balancer" "barRes" {
 	subregion_names = ["%sa"]
-	load_balancer_name               = "foobar-terraform-elb-%d"
+	load_balancer_name               = "foobar-terraform-elb-%s"
 
 	secured_cookies                  = true
 
@@ -201,7 +201,7 @@ resource "outscale_load_balancer" "barRes" {
 `, utils.GetRegion(), r)
 }
 
-func testAccOutscaleLBUPublicIpConfig(r int) string {
+func testAccOutscaleLBUPublicIpConfig(r string) string {
 	return fmt.Sprintf(`
 
 	resource "outscale_public_ip" "my_public_ip" {
@@ -209,7 +209,7 @@ func testAccOutscaleLBUPublicIpConfig(r int) string {
 
 	resource "outscale_load_balancer" "barIp" {
 		subregion_names = ["%[1]sa"]
-		load_balancer_name = "foobar-terraform-elb-%[2]d"
+		load_balancer_name = "foobar-terraform-elb-%s"
 
 		listeners {
 		  backend_port           = 80
