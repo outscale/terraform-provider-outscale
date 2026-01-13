@@ -114,8 +114,6 @@ func Provider() *schema.Provider {
 			"outscale_api_access_policy":                 oapi.ResourceOutscaleApiAccessPolicy(),
 			"outscale_user":                              oapi.ResourceOutscaleUser(),
 			"outscale_user_group":                        oapi.ResourceOutscaleUserGroup(),
-			"outscale_policy":                            oapi.ResourceOutscalePolicy(),
-			"outscale_policy_version":                    oapi.ResourceOutscalePolicyVersion(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"outscale_vm":                            oapi.DataSourceOutscaleVM(),

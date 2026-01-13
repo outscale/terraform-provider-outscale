@@ -14,8 +14,8 @@ func TestAccOthers_data_policy_basic(t *testing.T) {
 	policyName := acctest.RandomWithPrefix("test-policy")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testacc.PreCheck(t) },
-		Providers: testacc.SDKProviders,
+		PreCheck:                 func() { testacc.PreCheck(t) },
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccPolicyDataConfig(policyName),
