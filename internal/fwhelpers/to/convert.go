@@ -20,7 +20,21 @@ func String[T ~string | *string](v T) types.String {
 	return types.StringValue(reflect.Indirect(rv).String())
 }
 
-func Int64[T ~int | ~int64 | *int | *int64](v T) types.Int64 {
+func Int32[T int32 | *int32](v T) types.Int32 {
+	switch v := any(v).(type) {
+	case int32:
+		return types.Int32Value(v)
+	case *int32:
+		if v == nil {
+			return types.Int32Null()
+		}
+		return types.Int32Value(*v)
+	default:
+		return types.Int32Null()
+	}
+}
+
+func Int64[T int | ~int64 | *int | *int64](v T) types.Int64 {
 	switch v := any(v).(type) {
 	case int:
 		return types.Int64Value(int64(v))
@@ -41,7 +55,7 @@ func Int64[T ~int | ~int64 | *int | *int64](v T) types.Int64 {
 	}
 }
 
-func Bool[T ~bool | *bool](v T) types.Bool {
+func Bool[T bool | *bool](v T) types.Bool {
 	switch v := any(v).(type) {
 	case bool:
 		return types.BoolValue(v)
@@ -55,7 +69,7 @@ func Bool[T ~bool | *bool](v T) types.Bool {
 	}
 }
 
-func Float64[T ~float64 | *float64](v T) types.Float64 {
+func Float64[T float64 | *float64](v T) types.Float64 {
 	switch v := any(v).(type) {
 	case float64:
 		return types.Float64Value(v)

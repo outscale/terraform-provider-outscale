@@ -15,8 +15,8 @@ func TestAccOthers_policies_linked_to_user_basic(t *testing.T) {
 	name2 := acctest.RandomWithPrefix("test-policy")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testacc.PreCheck(t) },
-		Providers: testacc.SDKProviders,
+		PreCheck:                 func() { testacc.PreCheck(t) },
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataPoliciesLinkedConfig(name1, name2),

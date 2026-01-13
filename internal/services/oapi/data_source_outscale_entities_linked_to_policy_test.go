@@ -17,8 +17,8 @@ func TestAccOthers_entities_linked_to_policy_basic(t *testing.T) {
 	groupName2 := acctest.RandomWithPrefix("testacc-usergroupname")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testacc.PreCheck(t) },
-		Providers: testacc.SDKProviders,
+		PreCheck:                 func() { testacc.PreCheck(t) },
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataEntitiesLinkedConfig(policyName, groupName1, groupName2),

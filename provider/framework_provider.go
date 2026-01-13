@@ -240,6 +240,8 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		oks.NewResourceCluster,
 		oapi.NewResourceSecurityGroup,
 		oapi.NewResourceSecurityGroupRule,
+		oapi.NewResourcePolicy,
+		oapi.NewResourcePolicyVersion,
 	}
 }
 
