@@ -9,13 +9,13 @@ import (
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 )
 
-func TestAccOthers_policy_Version_basic(t *testing.T) {
+func TestAccOthers_PolicyVersion_Basic(t *testing.T) {
 	resourceName := "outscale_policy_version.policy_version"
 	policyName := acctest.RandomWithPrefix("test-policy")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testacc.PreCheck(t) },
-		Providers: testacc.SDKProviders,
+		PreCheck:                 func() { testacc.PreCheck(t) },
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccPolicyVersionConfig(policyName),
@@ -26,6 +26,15 @@ func TestAccOthers_policy_Version_basic(t *testing.T) {
 				),
 			},
 		},
+	})
+}
+
+func TestAccOthers_PolicyVersion_Migration(t *testing.T) {
+	policyName := acctest.RandomWithPrefix("test-policy")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { testacc.PreCheck(t) },
+		Steps:    testacc.FrameworkMigrationTestSteps("1.3.1", testAccPolicyVersionConfig(policyName)),
 	})
 }
 

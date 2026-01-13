@@ -15,8 +15,8 @@ func TestAccOthers_policies_linked_to_user_group_basic(t *testing.T) {
 	groupName := acctest.RandomWithPrefix("testacc-policy")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testacc.PreCheck(t) },
-		Providers: testacc.SDKProviders,
+		PreCheck:                 func() { testacc.PreCheck(t) },
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataPoliciesToGroupConfig(name1, name2, groupName),
