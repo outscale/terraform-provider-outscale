@@ -13,13 +13,14 @@ func TestAccOthers_user_groups_per_user_basic(t *testing.T) {
 	resourceName := "data.outscale_user_groups_per_user.groupList"
 	groupName1 := acctest.RandomWithPrefix("testacc-usergroup")
 	groupName2 := acctest.RandomWithPrefix("testacc-usergroup")
+	userName := acctest.RandomWithPrefix("testacc-user")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testacc.PreCheck(t) },
-		Providers: testacc.SDKProviders,
+		PreCheck:                 func() { testacc.PreCheck(t) },
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataUserGroupsPerUserBasicConfig(groupName1, groupName2),
+				Config: testAccDataUserGroupsPerUserBasicConfig(groupName1, groupName2, userName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "user_groups.#"),
 				),
@@ -28,10 +29,10 @@ func TestAccOthers_user_groups_per_user_basic(t *testing.T) {
 	})
 }
 
-func testAccDataUserGroupsPerUserBasicConfig(name1, name2 string) string {
+func testAccDataUserGroupsPerUserBasicConfig(name1, name2, userName string) string {
 	return fmt.Sprintf(`
 resource "outscale_user" "userForGroup01" {
-  user_name = "user1_per_group"
+  user_name = "%s"
   path      = "/groupsPerUser/"
 }
 
@@ -53,5 +54,5 @@ resource "outscale_user_group" "uGroup2FORuser" {
 data "outscale_user_groups_per_user" "groupList" {
 			user_name   = outscale_user.userForGroup01.user_name
 			depends_on =[outscale_user_group.uGroup2FORuser]
-}`, name1, name2)
+}`, userName, name1, name2)
 }

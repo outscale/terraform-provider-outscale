@@ -13,13 +13,14 @@ func TestAccOthers_policies_linked_to_user_basic(t *testing.T) {
 	resourceName := "data.outscale_policies_linked_to_user.policiesLinkedToUser"
 	name1 := acctest.RandomWithPrefix("test-policy")
 	name2 := acctest.RandomWithPrefix("test-policy")
+	userName := acctest.RandomWithPrefix("testacc-user")
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataPoliciesLinkedConfig(name1, name2),
+				Config: testAccDataPoliciesLinkedConfig(name1, name2, userName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "policies.#"),
 				),
@@ -28,10 +29,10 @@ func TestAccOthers_policies_linked_to_user_basic(t *testing.T) {
 	})
 }
 
-func testAccDataPoliciesLinkedConfig(name1, name2 string) string {
+func testAccDataPoliciesLinkedConfig(name1, name2, userName string) string {
 	return fmt.Sprintf(`
 	resource "outscale_user" "userPolicies01" {
-	    user_name = "userLedGroup"
+	    user_name = "%[3]s"
 	    path      = "/policiesUser/"
 	    policy {
 		   policy_orn = outscale_policy.policyLinked_01.orn
@@ -57,5 +58,5 @@ func testAccDataPoliciesLinkedConfig(name1, name2 string) string {
 		user_name = outscale_user.userPolicies01.user_name
 		depends_on = [outscale_user.userPolicies01]
 	}
-	`, name1, name2)
+	`, name1, name2, userName)
 }

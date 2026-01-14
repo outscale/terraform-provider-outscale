@@ -1,21 +1,24 @@
 package oapi_test
 
 import (
+	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 )
 
 func TestAccOthers_data_user_basic(t *testing.T) {
 	resourceName := "data.outscale_user.basicTestUser"
+	userName := acctest.RandomWithPrefix("testacc-user")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testacc.PreCheck(t) },
-		Providers: testacc.SDKProviders,
+		PreCheck:                 func() { testacc.PreCheck(t) },
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataUserBasicConfig,
+				Config: testAccDataUserBasicConfig(userName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "user_id"),
 				),
@@ -24,9 +27,10 @@ func TestAccOthers_data_user_basic(t *testing.T) {
 	})
 }
 
-const testAccDataUserBasicConfig = `
+func testAccDataUserBasicConfig(userName string) string {
+	return fmt.Sprintf(`
 	resource "outscale_user" "basic_dataUser" {
-		user_name = "ACC_user_data1"
+		user_name = "%s"
 		path = "/"
 	}
         data "outscale_user" "basicTestUser" {
@@ -35,4 +39,5 @@ const testAccDataUserBasicConfig = `
 			values = [outscale_user.basic_dataUser.user_id]
 		}
         }
-`
+`, userName)
+}

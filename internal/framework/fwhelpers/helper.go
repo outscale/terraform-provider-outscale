@@ -6,6 +6,7 @@ import (
 	"reflect"
 
 	mapset "github.com/deckarep/golang-set/v2"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwtypes"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -65,14 +66,17 @@ func IsSet(v attr.Value) bool {
 	return !v.IsNull() && !v.IsUnknown()
 }
 
+func HasChange(planValue, stateValue attr.Value) bool {
+	return IsSet(planValue) && !planValue.Equal(stateValue)
+}
+
 func GetAttrTypes(model any) map[string]attr.Type {
 	attrTypes := make(map[string]attr.Type)
 
-	v := reflect.ValueOf(model)
-	t := v.Type()
+	v := reflect.TypeOf(model)
 
 	for i := range v.NumField() {
-		field := t.Field(i)
+		field := v.Field(i)
 		tfsdkTag := field.Tag.Get("tfsdk")
 		if tfsdkTag == "" {
 			continue
@@ -89,8 +93,13 @@ func GetAttrTypes(model any) map[string]attr.Type {
 			attrTypes[tfsdkTag] = types.Float64Type
 		case reflect.TypeOf(types.Int32{}):
 			attrTypes[tfsdkTag] = types.Int32Type
+		case reflect.TypeOf(fwtypes.CaseInsensitiveStringValue{}):
+			attrTypes[tfsdkTag] = fwtypes.CaseInsensitiveStringType{}
+		default:
+			panic(fmt.Sprintf("unhandled field type: %v for field: %s", field.Type, field.Name))
 		}
 	}
+
 	return attrTypes
 }
 
