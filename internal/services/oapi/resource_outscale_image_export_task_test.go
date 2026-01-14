@@ -26,30 +26,27 @@ func TestAccVM_withImageExportTask_basic(t *testing.T) {
 			key = "test-1"
 			value = "test-1"
 		}`
-	if os.Getenv("TEST_QUOTA") == "true" {
-		resource.ParallelTest(t, resource.TestCase{
-			PreCheck: func() {
-				testacc.PreCheck(t)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: func() {
+			testacc.PreCheck(t)
+		},
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccOAPIImageExportTaskConfigBasic(omi, testAccVmType, region, imageName, "", sgName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscalemageExportTaskExists("outscale_image_export_task.outscale_image_export_task"),
+				),
 			},
-			ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
-			Steps: []resource.TestStep{
-				{
-					Config: testAccOAPIImageExportTaskConfigBasic(omi, testAccVmType, region, imageName, "", sgName),
-					Check: resource.ComposeTestCheckFunc(
-						testAccCheckOutscalemageExportTaskExists("outscale_image_export_task.outscale_image_export_task"),
-					),
-				},
-				{
-					Config: testAccOAPIImageExportTaskConfigBasic(omi, testAccVmType, region, imageName, tags, sgName),
-					Check: resource.ComposeTestCheckFunc(
-						testAccCheckOutscalemageExportTaskExists("outscale_image_export_task.outscale_image_export_task"),
-					),
-				},
+			{
+				Config: testAccOAPIImageExportTaskConfigBasic(omi, testAccVmType, region, imageName, tags, sgName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscalemageExportTaskExists("outscale_image_export_task.outscale_image_export_task"),
+				),
 			},
-		})
-	} else {
-		t.Skip("will be done soon")
-	}
+		},
+	})
 }
 
 func testAccCheckOutscalemageExportTaskExists(n string) resource.TestCheckFunc {
