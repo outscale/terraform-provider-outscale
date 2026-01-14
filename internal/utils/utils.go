@@ -49,7 +49,8 @@ func CheckThrottling(httpResp *http.Response, err error) *retry.RetryError {
 		errBody := getHttpErrorResponse(httpResp.Body, err)
 
 		if errCode == http.StatusServiceUnavailable || errCode == http.StatusTooManyRequests ||
-			errCode == http.StatusConflict || errCode == http.StatusFailedDependency {
+			errCode == http.StatusConflict || errCode == http.StatusFailedDependency ||
+			errCode == http.StatusGatewayTimeout {
 			randTime := (rand.Float64()*(randMax-randMin) + randMin) * 1000
 			time.Sleep(time.Duration(randTime) * time.Millisecond)
 			return retry.RetryableError(errBody)
