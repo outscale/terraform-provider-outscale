@@ -26,7 +26,7 @@
                             {
                                 "access_key_id": "##id-1##",
                                 "creation_date": "########",
-                                "expiration_date": "2028-02-20T10:04:05.000+0000",
+                                "expiration_date": "2128-02-20T10:04:05.000+0000",
                                 "last_modification_date": "########",
                                 "state": "ACTIVE"
                             }
@@ -34,9 +34,11 @@
                         "filter": "########",
                         "id": "##id-2##",
                         "request_id": "########",
-                        "states": null
+                        "states": null,
+                        "user_name": "########"
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -52,15 +54,17 @@
                     "attributes": {
                         "access_key_id": "##id-1##",
                         "creation_date": "########",
-                        "expiration_date": "2028-02-20T10:04:05.000+0000",
+                        "expiration_date": "2128-02-20T10:04:05.000Z",
                         "id": "##id-1##",
                         "last_modification_date": "########",
                         "request_id": "########",
                         "secret_key": "########",
-                        "state": "ACTIVE"
+                        "state": "ACTIVE",
+                        "timeouts": null,
+                        "user_name": "########"
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA=="
+                    "identity_schema_version": 0
                 },
                 {
                     "index_key": 1,
@@ -68,15 +72,17 @@
                     "attributes": {
                         "access_key_id": "##id-3##",
                         "creation_date": "########",
-                        "expiration_date": "2028-02-20T10:04:05.000+0000",
+                        "expiration_date": "2128-02-20T10:04:05.000Z",
                         "id": "##id-3##",
                         "last_modification_date": "########",
                         "request_id": "########",
                         "secret_key": "########",
-                        "state": "ACTIVE"
+                        "state": "ACTIVE",
+                        "timeouts": null,
+                        "user_name": "########"
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA=="
+                    "identity_schema_version": 0
                 },
                 {
                     "index_key": 2,
@@ -84,15 +90,17 @@
                     "attributes": {
                         "access_key_id": "##id-4##",
                         "creation_date": "########",
-                        "expiration_date": "2028-02-20T10:04:05.000+0000",
+                        "expiration_date": "2128-02-20T10:04:05.000Z",
                         "id": "##id-4##",
                         "last_modification_date": "########",
                         "request_id": "########",
                         "secret_key": "########",
-                        "state": "ACTIVE"
+                        "state": "ACTIVE",
+                        "timeouts": null,
+                        "user_name": "########"
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA=="
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -112,10 +120,12 @@
                         "last_modification_date": "########",
                         "request_id": "########",
                         "secret_key": "########",
-                        "state": "ACTIVE"
+                        "state": "ACTIVE",
+                        "timeouts": null,
+                        "user_name": "########"
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA=="
+                    "identity_schema_version": 0
                 }
             ]
         }
