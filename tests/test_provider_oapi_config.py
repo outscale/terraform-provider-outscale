@@ -38,8 +38,8 @@ OAPI_IGNORE_END_ELEMENTS = [
     "created_at",
     "updated_at",
     "kubeconfig",
-    "expiration_date",
     "private",
+    "backend_vm_health",
     # Randomized values
     "bgp_asn",
     "load_balancer_name",
@@ -60,6 +60,7 @@ OAPI_IGNORE_END_ELEMENTS = [
 OAPI_IGNORE_TYPE_ELEMENTS = {
     "outscale_net_peering": "expiration_date",
     "outscale_net_peering_acceptation": "expiration_date",
+    "outscale_server_certificate": "expiration_date",
 }
 
 OAPI_ID_PREFIXES = [
