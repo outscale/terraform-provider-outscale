@@ -91,9 +91,9 @@ func ResourceOutscaleVirtualGatewayCreate(d *schema.ResourceData, meta interface
 	}
 
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{"pending", "ending/wait"},
+		Pending:    []string{"pending"},
 		Target:     []string{"available"},
-		Refresh:    virtualGatewayStateRefreshFunc(conn, resp.VirtualGateway.GetVirtualGatewayId(), "terminated"),
+		Refresh:    virtualGatewayStateRefreshFunc(conn, resp.VirtualGateway.GetVirtualGatewayId(), "deleted"),
 		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      5 * time.Second,
 		MinTimeout: 3 * time.Second,
