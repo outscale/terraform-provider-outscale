@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
 )
 
 func String[T ~string | *string](v T) types.String {
@@ -124,4 +125,20 @@ func Slice[T any, C types.List | types.Set](ctx context.Context, v C) ([]T, diag
 	default:
 		return nil, diags
 	}
+}
+
+func Set[T any](ctx context.Context, slice []T) (types.Set, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	var zeroVal T
+	attrTypes := fwhelpers.GetAttrTypes(zeroVal)
+	objType := types.ObjectType{AttrTypes: attrTypes}
+
+	if len(slice) == 0 {
+		return types.SetNull(objType), diags
+	}
+
+	set, d := types.SetValueFrom(ctx, objType, slice)
+	diags.Append(d...)
+	return set, diags
 }

@@ -211,6 +211,7 @@ func (p *FrameworkProvider) Configure(ctx context.Context, req provider.Configur
 func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		oapi.NewDataSourceQuota,
+
 		oks.NewDataSourceOKSQuotas,
 		oks.NewDataSourceOKSKubeconfig,
 	}
@@ -236,12 +237,15 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		oapi.NewResourceVolume,
 		oapi.NewResourceVolumeLink,
 		oapi.NewResourceLBUVms,
-		oks.NewResourceProject,
-		oks.NewResourceCluster,
 		oapi.NewResourceSecurityGroup,
 		oapi.NewResourceSecurityGroupRule,
 		oapi.NewResourcePolicy,
 		oapi.NewResourcePolicyVersion,
+		oapi.NewResourceUser,
+		oapi.NewResourceUserGroup,
+
+		oks.NewResourceProject,
+		oks.NewResourceCluster,
 	}
 }
 

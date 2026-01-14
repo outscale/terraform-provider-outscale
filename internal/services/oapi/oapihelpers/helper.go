@@ -3,6 +3,7 @@ package oapihelpers
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"math/rand"
@@ -20,6 +21,19 @@ import (
 	"github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
+
+func GetError(err error) osc.Errors {
+	if e, ok := err.(osc.GenericOpenAPIError); ok {
+		var errorResponse osc.ErrorResponse
+		if json.Unmarshal(e.Body(), &errorResponse) == nil {
+			errors := errorResponse.GetErrors()
+			if len(errors) > 0 {
+				return errors[0]
+			}
+		}
+	}
+	return osc.Errors{}
+}
 
 func GetBsuId(vmResp osc.Vm, deviceName string) string {
 	diskID := ""
