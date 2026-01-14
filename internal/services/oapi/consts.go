@@ -1,6 +1,9 @@
 package oapi
 
-import "time"
+import (
+	"regexp"
+	"time"
+)
 
 const (
 	CreateDefaultTimeout time.Duration = 10 * time.Minute
@@ -17,4 +20,8 @@ const (
 
 	AwaitActiveStateDefaultValue          bool = true
 	RemoveDefaultOutboundRuleDefaultValue bool = false
+
+	eimPathRegex = "^(/[a-zA-Z0-9/_]+/){1,512}$"
 )
+
+var EIMPathRegexp = regexp.MustCompile(eimPathRegex)

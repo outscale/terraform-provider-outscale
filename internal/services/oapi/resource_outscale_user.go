@@ -32,10 +32,10 @@ func ResourceOutscaleUser() *schema.Resource {
 				Optional: true,
 				Default:  "/",
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
-					pathVal := val.(string)
-					if err := utils.CheckPath(pathVal); err != nil {
-						errs = append(errs, fmt.Errorf("%v, got:%v", err, pathVal))
-					}
+					// pathVal := val.(string)
+					// if err := utils.CheckPath(pathVal); err != nil {
+					// 	errs = append(errs, fmt.Errorf("%v, got:%v", err, pathVal))
+					// }
 					return
 				},
 			},

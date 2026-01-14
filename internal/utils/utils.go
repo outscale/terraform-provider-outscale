@@ -9,7 +9,6 @@ import (
 	"math/rand/v2"
 	"net/http"
 	"os"
-	"regexp"
 	"strconv"
 	"time"
 
@@ -27,8 +26,6 @@ import (
 
 const (
 	SuffixConfigFilePath string = "/.osc/config.json"
-	pathRegex            string = "^(/[a-zA-Z0-9/_]+/)"
-	pathError            string = "path must begin and end with '/' and contain only alphanumeric characters and/or '/', '_' characters"
 )
 
 func getHttpErrorResponse(httpBody io.ReadCloser, err error) error {
@@ -269,13 +266,4 @@ func GetRegion() string {
 		region = os.Getenv("OSC_REGION")
 	}
 	return region
-}
-
-var regCheckPath = regexp.MustCompile(pathRegex)
-
-func CheckPath(path string) error {
-	if regCheckPath.MatchString(path) || path == "/" {
-		return nil
-	}
-	return fmt.Errorf("invalid path: %v", pathError)
 }
