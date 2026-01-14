@@ -17,24 +17,20 @@ func TestAccVM_withImageExportTaskDataSource_basic(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	imageName := acctest.RandomWithPrefix("test-image-name")
 
-	if os.Getenv("TEST_QUOTA") == "true" {
-		resource.ParallelTest(t, resource.TestCase{
-			PreCheck: func() {
-				testacc.PreCheck(t)
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: func() {
+			testacc.PreCheck(t)
+		},
+		Providers: testacc.SDKProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccOutscaleImageExportTaskDataSourceConfig(omi, testAccVmType, utils.GetRegion(), imageName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleImageExportTaskDataSourceID("data.outscale_image_export_task.test"),
+				),
 			},
-			Providers: testacc.SDKProviders,
-			Steps: []resource.TestStep{
-				{
-					Config: testAccOutscaleImageExportTaskDataSourceConfig(omi, testAccVmType, utils.GetRegion(), imageName),
-					Check: resource.ComposeTestCheckFunc(
-						testAccCheckOutscaleImageExportTaskDataSourceID("data.outscale_image_export_task.test"),
-					),
-				},
-			},
-		})
-	} else {
-		t.Skip("will be done soon")
-	}
+		},
+	})
 }
 
 func testAccCheckOutscaleImageExportTaskDataSourceID(n string) resource.TestCheckFunc {

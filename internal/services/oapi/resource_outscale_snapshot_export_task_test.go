@@ -12,7 +12,6 @@ import (
 )
 
 func TestAccOthers_SnapshotExportTask_basic(t *testing.T) {
-	t.Skip("")
 	osuBucketNames := []string{
 		acctest.RandomWithPrefix("terraform-export-bucket-"),
 		acctest.RandomWithPrefix("terraform-export-bucket-"),

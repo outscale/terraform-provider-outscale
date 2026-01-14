@@ -1,7 +1,6 @@
 package oapi_test
 
 import (
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -29,19 +28,15 @@ func TestAccOthers_DataSourcePublicIPS(t *testing.T) {
 }
 
 func TestAccOthers_DataSourcePublicIPS_withTags(t *testing.T) {
-	if os.Getenv("TEST_QUOTA") == "true" {
-		resource.ParallelTest(t, resource.TestCase{
-			PreCheck:  func() { testacc.PreCheck(t) },
-			Providers: testacc.SDKProviders,
-			Steps: []resource.TestStep{
-				{
-					Config: testAccDataSourceOutscalePublicIPSConfigWithTags,
-				},
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testacc.PreCheck(t) },
+		Providers: testacc.SDKProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccDataSourceOutscalePublicIPSConfigWithTags,
 			},
-		})
-	} else {
-		t.Skip("will be done soon")
-	}
+		},
+	})
 }
 
 const testAccDataSourceOutscalePublicIPSConfig = `

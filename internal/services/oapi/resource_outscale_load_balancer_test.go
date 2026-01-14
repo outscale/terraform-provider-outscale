@@ -48,7 +48,7 @@ func TestAccOthers_LBUBasic(t *testing.T) {
 }
 
 func TestAccOthers_LBUPublicIp(t *testing.T) {
-	t.Skip("Conflict UnlinkPublicIp: will be done soon")
+	t.Skip("Deleting a public_ip linked to a load balancer fails")
 
 	var conf oscgo.LoadBalancer
 
