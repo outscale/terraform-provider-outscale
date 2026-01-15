@@ -25,11 +25,11 @@
                         "policy_default_version_id": "##id-1##",
                         "policy_id": "##id-2##",
                         "policy_name": "########",
-                        "resources_count": 0
+                        "resources_count": 0,
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "random_string.suffix"
                     ]
@@ -46,7 +46,7 @@
                     "schema_version": 0,
                     "attributes": {
                         "creation_date": "########",
-                        "description": "",
+                        "description": null,
                         "document": "{\n    \"Statement\": [\n        {\n            \"Effect\": \"Allow\",\n            \"Action\": [\n                \"api:ReadConsumptionAccount\"\n            ],\n            \"Resource\": [\n                \"*\"\n            ]\n        }\n    ]\n} \n",
                         "id": "##id-3##",
                         "is_linkable": true,
@@ -56,11 +56,11 @@
                         "policy_default_version_id": "##id-1##",
                         "policy_id": "##id-4##",
                         "policy_name": "########",
-                        "resources_count": 0
+                        "resources_count": 0,
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "random_string.suffix"
                     ]

@@ -25,11 +25,11 @@
                         "policy_default_version_id": "##id-1##",
                         "policy_id": "##id-2##",
                         "policy_name": "########",
-                        "resources_count": 0
+                        "resources_count": 0,
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "random_string.suffix"
                     ]
@@ -56,11 +56,11 @@
                         "policy_default_version_id": "##id-1##",
                         "policy_id": "##id-4##",
                         "policy_name": "########",
-                        "resources_count": 0
+                        "resources_count": 0,
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "random_string.suffix"
                     ]
@@ -87,11 +87,11 @@
                         "policy_default_version_id": "##id-1##",
                         "policy_id": "##id-6##",
                         "policy_name": "########",
-                        "resources_count": 0
+                        "resources_count": 0,
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "random_string.suffix"
                     ]
@@ -114,11 +114,11 @@
                         "id": "##id-7##",
                         "policy_orn": "########",
                         "set_as_default": null,
+                        "timeouts": null,
                         "version_id": "##id-8##"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "outscale_policy.policy-2",
                         "random_string.suffix"
@@ -351,14 +351,14 @@
                                 "creation_date": "########",
                                 "last_modification_date": "########",
                                 "path": "/",
-                                "user_id": "##id-9##",
+                                "user_id": "##id-11##",
                                 "user_name": "########"
                             },
                             {
                                 "creation_date": "########",
                                 "last_modification_date": "########",
                                 "path": "/",
-                                "user_id": "##id-11##",
+                                "user_id": "##id-9##",
                                 "user_name": "########"
                             }
                         ],
