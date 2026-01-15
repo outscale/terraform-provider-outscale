@@ -58,11 +58,11 @@
                         "policy_default_version_id": "##id-4##",
                         "policy_id": "##id-1##",
                         "policy_name": "########",
-                        "resources_count": 0
+                        "resources_count": 0,
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "random_string.suffix"
                     ]
@@ -89,11 +89,11 @@
                         "policy_default_version_id": "##id-4##",
                         "policy_id": "##id-2##",
                         "policy_name": "########",
-                        "resources_count": 0
+                        "resources_count": 0,
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "random_string.suffix"
                     ]
@@ -118,7 +118,7 @@
                                 "creation_date": "########",
                                 "default_version_id": "##id-4##",
                                 "last_modification_date": "########",
-                                "policy_id": "##id-2##",
+                                "policy_id": "##id-1##",
                                 "policy_name": "########",
                                 "policy_orn": "########"
                             },
@@ -126,7 +126,7 @@
                                 "creation_date": "########",
                                 "default_version_id": "##id-4##",
                                 "last_modification_date": "########",
-                                "policy_id": "##id-1##",
+                                "policy_id": "##id-2##",
                                 "policy_name": "########",
                                 "policy_orn": "########"
                             }

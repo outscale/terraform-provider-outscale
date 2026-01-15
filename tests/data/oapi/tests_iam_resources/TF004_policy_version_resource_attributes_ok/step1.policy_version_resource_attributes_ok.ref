@@ -25,11 +25,11 @@
                         "policy_default_version_id": "##id-1##",
                         "policy_id": "##id-2##",
                         "policy_name": "########",
-                        "resources_count": 0
+                        "resources_count": 0,
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "random_string.suffix"
                     ]
@@ -52,11 +52,11 @@
                         "id": "##id-3##",
                         "policy_orn": "########",
                         "set_as_default": null,
+                        "timeouts": null,
                         "version_id": "##id-4##"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "outscale_policy.policy-1",
                         "random_string.suffix"
@@ -80,11 +80,11 @@
                         "id": "##id-5##",
                         "policy_orn": "########",
                         "set_as_default": true,
+                        "timeouts": null,
                         "version_id": "##id-6##"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "outscale_policy.policy-1",
                         "outscale_policy_version.policy-1_version-02",
