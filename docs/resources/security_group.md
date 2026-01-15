@@ -56,8 +56,8 @@ This description can contain between 1 and 255 characters. Allowed characters ar
 * `net_id` - (Optional) The ID of the Net for the security group.
 * `remove_default_outbound_rule` - (Optional) (Net only) By default or if set to false, the security group is created with a default outbound rule allowing all outbound flows. If set to true, the security group is created without a default outbound rule. For an existing security group, setting this parameter to true deletes the security group and creates a new one.
 * `security_group_name` - (Optional) A name for the security group.<br />
-This name must not start with `sg-`.<br />
-This name must be unique and contain between 1 and 255 characters. Allowed characters are `a-z`, `A-Z`, `0-9`, spaces, and `_.-:/()#,@[]+=&;{}!$*`.
+This name must be unique and contain between 1 and 255 characters. It must not start with `sg-`. Allowed characters are `a-z`, `A-Z`, `0-9`, spaces, and `_.-:/()#,@[]+=&;{}!$*`.<br />
+If not specified, the security group name is randomly generated.
 * `tags` - (Optional) A tag to add to this resource. You can specify this argument several times.
     * `key` - (Required) The key of the tag, with a minimum of 1 character.
     * `value` - (Required) The value of the tag, between 0 and 255 characters.
