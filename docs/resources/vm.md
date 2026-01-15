@@ -66,7 +66,7 @@ resource "outscale_vm" "vm02" {
 	keypair_name            = var.keypair_name
 	security_group_ids  	= [outscale_security_group.security_group01.security_group_id]
 	block_device_mappings {
-		device_name = "/dev/sda1" # /dev/sda1 corresponds to the root device of the VM
+		device_name = "/dev/sdb" # /dev/sdb corresponds to the root device of the VM
 		bsu {
 			volume_size = 15
 			volume_type = "gp2"
@@ -74,7 +74,7 @@ resource "outscale_vm" "vm02" {
 		}
 	}
 	block_device_mappings {
-		device_name = "/dev/sdb"
+		device_name = "/dev/sdc"
 		bsu {
 			volume_size           = 22
 			volume_type           = "io1"
@@ -96,7 +96,7 @@ resource "outscale_vm" "vm02" {
  	keypair_name 			= var.keypair_name
 	security_group_ids 		= [outscale_security_group.security_group01.security_group_id]
  	block_device_mappings {
-		device_name = "/dev/sdb"
+		device_name = "/dev/sdc"
 		bsu {
 			volume_size           = 30
 			volume_type           = "gp2"
@@ -434,7 +434,7 @@ The following attributes are exported:
 * `public_dns_name` - The name of the public DNS.
 * `public_ip` - The public IP of the VM.
 * `reservation_id` - The reservation ID of the VM.
-* `root_device_name` - The name of the root device for the VM (for example, `/dev/sda1`).
+* `root_device_name` - The name of the root device for the VM (for example, `/dev/sdb`).
 * `root_device_type` - The type of root device used by the VM (always `bsu`).
 * `secure_boot_action` - The action to perform on the next boot of the VM (`enable` | `disable` | `setup-mode` |`none`).
 * `security_groups` - One or more security groups associated with the VM.
