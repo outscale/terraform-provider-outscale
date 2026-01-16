@@ -66,7 +66,7 @@ resource "outscale_vm" "vm02" {
 	keypair_name            = var.keypair_name
 	security_group_ids  	= [outscale_security_group.security_group01.security_group_id]
 	block_device_mappings {
-		device_name = "/dev/sda1" # /dev/sda1 corresponds to the root device of the VM
+		device_name = "/dev/sdb" # /dev/sdb
 		bsu {
 			volume_size = 15
 			volume_type = "gp2"
@@ -74,7 +74,7 @@ resource "outscale_vm" "vm02" {
 		}
 	}
 	block_device_mappings {
-		device_name = "/dev/sdb"
+		device_name = "/dev/sdc"
 		bsu {
 			volume_size           = 22
 			volume_type           = "io1"
