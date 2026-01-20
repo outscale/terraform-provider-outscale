@@ -1,4 +1,4 @@
-package fwvalidators
+package validatorstring
 
 import (
 	"context"
@@ -33,7 +33,6 @@ func (v ipValidator) ValidateString(ctx context.Context, req validator.StringReq
 		))
 		return
 	}
-
 }
 
 func IsIP() validator.String {

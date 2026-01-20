@@ -27,9 +27,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/outscale/osc-sdk-go/v3/pkg/oks"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/fwhelpers"
-	"github.com/outscale/terraform-provider-outscale/internal/fwhelpers/to"
-	"github.com/outscale/terraform-provider-outscale/internal/fwvalidators"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/validators/validatorstring"
 )
 
 var (
@@ -235,7 +235,7 @@ func (r *oksClusterResource) Schema(ctx context.Context, _ resource.SchemaReques
 			"cidr_pods": schema.StringAttribute{
 				Required: true,
 				Validators: []validator.String{
-					fwvalidators.IsCIDR(),
+					validatorstring.IsCIDR(),
 				},
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
@@ -244,7 +244,7 @@ func (r *oksClusterResource) Schema(ctx context.Context, _ resource.SchemaReques
 			"cidr_service": schema.StringAttribute{
 				Required: true,
 				Validators: []validator.String{
-					fwvalidators.IsCIDR(),
+					validatorstring.IsCIDR(),
 				},
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
@@ -254,7 +254,7 @@ func (r *oksClusterResource) Schema(ctx context.Context, _ resource.SchemaReques
 				Computed: true,
 				Optional: true,
 				Validators: []validator.String{
-					fwvalidators.IsIP(),
+					validatorstring.IsIP(),
 				},
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
@@ -264,7 +264,7 @@ func (r *oksClusterResource) Schema(ctx context.Context, _ resource.SchemaReques
 			"cni": schema.StringAttribute{
 				Computed: true,
 				Validators: []validator.String{
-					fwvalidators.IsIP(),
+					validatorstring.IsIP(),
 				},
 			},
 			"control_planes": schema.StringAttribute{
