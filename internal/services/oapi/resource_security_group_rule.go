@@ -8,7 +8,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -27,8 +26,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/fwhelpers"
-	"github.com/outscale/terraform-provider-outscale/internal/fwhelpers/to"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/validators/validatorint32"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/validators/validatorlist"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 	"github.com/spf13/cast"
 )
@@ -185,6 +186,40 @@ func (r *resourceSecurityGroupRule) ModifyPlan(ctx context.Context, req resource
 			"Applying this resource destruction will fully destroy this resource.",
 		)
 	}
+	if req.State.Raw.IsNull() {
+		check := func(ctx context.Context, config tfsdk.Config, diags *diag.Diagnostics, parentPath path.Path) {
+			var protocol types.String
+			var fromPort, toPort types.Int32
+			protocolPath := parentPath.AtName("ip_protocol")
+			fromPath := parentPath.AtName("from_port_range")
+			toPath := parentPath.AtName("to_port_range")
+
+			diags.Append(config.GetAttribute(ctx, protocolPath, &protocol)...)
+			diags.Append(config.GetAttribute(ctx, fromPath, &fromPort)...)
+			diags.Append(config.GetAttribute(ctx, toPath, &toPort)...)
+			if diags.HasError() {
+				return
+			}
+
+			if fwhelpers.IsSet(protocol) && protocol.ValueString() == "-1" &&
+				(fwhelpers.IsSet(fromPort) || fwhelpers.IsSet(toPort)) {
+				diags.AddWarning(
+					"IP Protocol Configuration",
+					"Attribute `ip_protocol` set to -1 targets all protocols, `from_port_range` and `to_port_range` attributes will be ignored. \nDocumentation: https://docs.outscale.com/en/userguide/About-Security-Group-Rules.html",
+				)
+			}
+		}
+		check(ctx, req.Config, &resp.Diagnostics, path.Empty())
+
+		var rules types.List
+		diag := req.Config.GetAttribute(ctx, path.Root("rules"), &rules)
+		if fwhelpers.CheckDiags(resp, diag) {
+			return
+		}
+		for i := range rules.Elements() {
+			check(ctx, req.Config, &resp.Diagnostics, path.Root("rules").AtListIndex(i))
+		}
+	}
 }
 
 func (r *resourceSecurityGroupRule) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
@@ -215,39 +250,24 @@ func (r *resourceSecurityGroupRule) ValidateConfig(ctx context.Context, req reso
 			fmt.Sprintf("At least one of %v should be set.", attrs),
 		)
 	}
+}
 
-	checkProtocolPorts := func(ctx context.Context, config tfsdk.Config, diags *diag.Diagnostics, parentPath path.Path) {
-		var protocol types.String
-		var fromPort, toPort types.Int32
-		protocolPath := parentPath.AtName("ip_protocol")
-		fromPath := parentPath.AtName("from_port_range")
-		toPath := parentPath.AtName("to_port_range")
-
-		diags.Append(config.GetAttribute(ctx, protocolPath, &protocol)...)
-		diags.Append(config.GetAttribute(ctx, fromPath, &fromPort)...)
-		diags.Append(config.GetAttribute(ctx, toPath, &toPort)...)
-		if diags.HasError() {
-			return
-		}
-
-		if !protocol.IsNull() && !protocol.IsUnknown() && protocol.ValueString() == "-1" &&
-			!fromPort.IsNull() && !fromPort.IsUnknown() && !toPort.IsNull() && !toPort.IsUnknown() {
-			diags.AddWarning(
-				"IP Protocol Configuration",
-				"Attribute `ip_protocol` set to -1 targets all protocols, `from_port_range` and `to_port_range` attributes will be ignored. \nDocumentation: https://docs.outscale.com/en/userguide/About-Security-Group-Rules.html",
-			)
-		}
+func ifAllProtocolInt32(ctx context.Context, req validator.Int32Request) bool {
+	var protocol types.String
+	diags := req.Config.GetAttribute(ctx, req.Path.ParentPath().AtName("ip_protocol"), &protocol)
+	if diags.HasError() {
+		return false
 	}
-	checkProtocolPorts(ctx, req.Config, &resp.Diagnostics, path.Empty())
+	return protocol.IsNull() || protocol.IsUnknown() || protocol.ValueString() != "-1"
+}
 
-	var rules types.List
-	diag := req.Config.GetAttribute(ctx, path.Root("rules"), &rules)
-	if fwhelpers.CheckDiags(resp, diag) {
-		return
+func ifAllProtocolList(ctx context.Context, req validator.ListRequest) bool {
+	var protocol types.String
+	diags := req.Config.GetAttribute(ctx, req.Path.ParentPath().AtName("ip_protocol"), &protocol)
+	if diags.HasError() {
+		return false
 	}
-	for i := range rules.Elements() {
-		checkProtocolPorts(ctx, req.Config, &resp.Diagnostics, path.Root("rules").AtListIndex(i))
-	}
+	return protocol.IsNull() || protocol.IsUnknown() || protocol.ValueString() != "-1"
 }
 
 func (r *resourceSecurityGroupRule) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -294,9 +314,7 @@ func (r *resourceSecurityGroupRule) Schema(ctx context.Context, _ resource.Schem
 						"from_port_range": schema.Int32Attribute{
 							Optional: true,
 							Validators: []validator.Int32{
-								int32validator.AlsoRequires(
-									path.MatchRelative().AtParent().AtName("to_port_range"),
-								),
+								validatorint32.AlsoRequiresIf(path.MatchRelative().AtParent().AtName("to_port_range"), ifAllProtocolInt32),
 							},
 						},
 						"ip_protocol": schema.StringAttribute{
@@ -307,10 +325,8 @@ func (r *resourceSecurityGroupRule) Schema(ctx context.Context, _ resource.Schem
 							Computed:    true,
 							Optional:    true,
 							Validators: []validator.List{
-								listvalidator.AlsoRequires(
-									path.MatchRelative().AtParent().AtName("to_port_range"),
-									path.MatchRelative().AtParent().AtName("from_port_range"),
-								),
+								validatorlist.AlsoRequiresIf(path.MatchRelative().AtParent().AtName("to_port_range"), ifAllProtocolList),
+								validatorlist.AlsoRequiresIf(path.MatchRelative().AtParent().AtName("from_port_range"), ifAllProtocolList),
 							},
 							Default: listdefault.StaticValue(types.ListValueMust(types.StringType, []attr.Value{})),
 						},
@@ -324,9 +340,7 @@ func (r *resourceSecurityGroupRule) Schema(ctx context.Context, _ resource.Schem
 						"to_port_range": schema.Int32Attribute{
 							Optional: true,
 							Validators: []validator.Int32{
-								int32validator.AlsoRequires(
-									path.MatchRelative().AtParent().AtName("from_port_range"),
-								),
+								validatorint32.AlsoRequiresIf(path.MatchRelative().AtParent().AtName("from_port_range"), ifAllProtocolInt32),
 							},
 						},
 					},
@@ -353,9 +367,7 @@ func (r *resourceSecurityGroupRule) Schema(ctx context.Context, _ resource.Schem
 						path.MatchRoot("security_group_account_id_to_link"),
 						path.MatchRoot("security_group_name_to_link"),
 					),
-					int32validator.AlsoRequires(
-						path.MatchRoot("to_port_range"),
-					),
+					validatorint32.AlsoRequiresIf(path.MatchRoot("to_port_range"), ifAllProtocolInt32),
 				},
 				PlanModifiers: []planmodifier.Int32{
 					int32planmodifier.RequiresReplace(),
@@ -431,9 +443,7 @@ func (r *resourceSecurityGroupRule) Schema(ctx context.Context, _ resource.Schem
 						path.MatchRoot("security_group_account_id_to_link"),
 						path.MatchRoot("security_group_name_to_link"),
 					),
-					int32validator.AlsoRequires(
-						path.MatchRoot("from_port_range"),
-					),
+					validatorint32.AlsoRequiresIf(path.MatchRoot("from_port_range"), ifAllProtocolInt32),
 				},
 				PlanModifiers: []planmodifier.Int32{
 					int32planmodifier.RequiresReplace(),
