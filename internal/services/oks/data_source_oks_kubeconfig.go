@@ -10,8 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/outscale/osc-sdk-go/v3/pkg/oks"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/fwhelpers"
-	"github.com/outscale/terraform-provider-outscale/internal/fwhelpers/to"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 )
 
 var (

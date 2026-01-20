@@ -1,4 +1,4 @@
-package fwmodifyplan
+package modifyplans
 
 import (
 	"context"

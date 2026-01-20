@@ -1,4 +1,4 @@
-package fwvalidators
+package validatorstring
 
 import (
 	"context"

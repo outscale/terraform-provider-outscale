@@ -1,4 +1,4 @@
-package fwvalidators
+package validatorstring
 
 import (
 	"context"
@@ -33,7 +33,6 @@ func (v cidrValidator) ValidateString(ctx context.Context, req validator.StringR
 		))
 		return
 	}
-
 }
 
 func IsCIDR() validator.String {

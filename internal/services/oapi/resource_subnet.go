@@ -17,8 +17,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/fwhelpers"
-	"github.com/outscale/terraform-provider-outscale/internal/fwmodifyplan"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/modifyplans"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
@@ -139,7 +139,7 @@ func (r *resourceSubnet) Schema(ctx context.Context, _ resource.SchemaRequest, r
 				Optional: true,
 				Computed: true,
 				PlanModifiers: []planmodifier.String{
-					fwmodifyplan.ForceNewFramework(),
+					modifyplans.ForceNewFramework(),
 				},
 			},
 			"available_ips_count": schema.Int32Attribute{

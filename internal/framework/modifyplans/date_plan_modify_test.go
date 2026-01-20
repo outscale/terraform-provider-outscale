@@ -1,4 +1,4 @@
-package fwvalidators
+package modifyplans
 
 import (
 	"context"
@@ -6,25 +6,26 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/outscale/osc-sdk-go/v3/pkg/iso8601"
 )
 
-func TestFwDateValidators(t *testing.T) {
+func TestFwDatemodifyplan(t *testing.T) {
 	t.Parallel()
 
 	oldDate, err := time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
 	if err != nil {
-		t.Errorf("unable to parse date: %v", err.Error())
+		t.Errorf("%v", err.Error())
 	}
 	newDate, err := iso8601.Parse([]byte(oldDate.AddDate(0, 1, 10).Format(time.RFC3339)))
 	if err != nil {
-		t.Errorf("unable to parse date: %v", err.Error())
+		t.Errorf("%v", err.Error())
 	}
 
 	currentDate := oldDate.Format(time.RFC3339)
 	updatetime := newDate.Format(time.RFC3339)
+	invalidDate := newDate.Format(time.RFC1123Z)
 	cases := map[string]struct {
 		ConfigValue   types.String
 		StateValue    types.String
@@ -32,36 +33,47 @@ func TestFwDateValidators(t *testing.T) {
 	}{
 		"valide_date_updating": {
 			ConfigValue:   types.StringValue(updatetime),
+			StateValue:    types.StringValue(currentDate),
 			ExpectedError: false,
 		},
-		"invalid_date_current_date": {
+		"valid_date_plan": {
 			ConfigValue:   types.StringValue(currentDate),
-			ExpectedError: true,
+			StateValue:    types.StringValue(currentDate),
+			ExpectedError: false,
 		},
 		"valid_date_unknown_values": {
 			ConfigValue:   types.StringUnknown(),
+			StateValue:    types.StringUnknown(),
 			ExpectedError: false,
 		},
 		"valid_date_configValue": {
 			ConfigValue:   types.StringValue(updatetime),
+			StateValue:    types.StringNull(),
 			ExpectedError: false,
 		},
 		"valid_date_unset_Values": {
 			ConfigValue:   types.StringNull(),
+			StateValue:    types.StringNull(),
 			ExpectedError: false,
+		},
+		"invalid_date_unset_Values": {
+			ConfigValue:   types.StringValue(invalidDate),
+			StateValue:    types.StringValue(updatetime),
+			ExpectedError: true,
 		},
 	}
 
 	for tn, tc := range cases {
 		t.Run(tn, func(t *testing.T) {
-			req := validator.StringRequest{
+			req := planmodifier.StringRequest{
 				ConfigValue: tc.ConfigValue,
+				StateValue:  tc.StateValue,
 			}
-
-			resp := validator.StringResponse{
+			resp := planmodifier.StringResponse{
 				Diagnostics: diag.Diagnostics{},
 			}
-			DateValidator().ValidateString(context.Background(), req, &resp)
+
+			CheckExpirationDate().PlanModifyString(context.Background(), req, &resp)
 			if !tc.ExpectedError && resp.Diagnostics.HasError() {
 				t.Errorf("got unexpected error: %s", resp.Diagnostics.Errors())
 			}

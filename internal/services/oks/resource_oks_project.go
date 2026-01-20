@@ -19,9 +19,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/outscale/osc-sdk-go/v3/pkg/oks"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/fwhelpers"
-	"github.com/outscale/terraform-provider-outscale/internal/fwhelpers/to"
-	"github.com/outscale/terraform-provider-outscale/internal/fwvalidators"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/validators/validatorstring"
 )
 
 var (
@@ -93,7 +93,7 @@ func (r *oksProjectResource) Schema(ctx context.Context, _ resource.SchemaReques
 					stringplanmodifier.RequiresReplace(),
 				},
 				Validators: []validator.String{
-					fwvalidators.IsCIDR(),
+					validatorstring.IsCIDR(),
 				},
 			},
 			"created_at": schema.StringAttribute{

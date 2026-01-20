@@ -20,8 +20,8 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/osc-sdk-go/v3/pkg/iso8601"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/fwmodifyplan"
-	"github.com/outscale/terraform-provider-outscale/internal/fwvalidators"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/modifyplans"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/validators/validatorstring"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
@@ -148,10 +148,10 @@ func (r *resourceAccessKey) Schema(ctx context.Context, _ resource.SchemaRequest
 				Computed: true,
 				Optional: true,
 				Validators: []validator.String{
-					fwvalidators.DateValidator(),
+					validatorstring.DateValidator(),
 				},
 				PlanModifiers: []planmodifier.String{
-					fwmodifyplan.CheckExpirationDate(),
+					modifyplans.CheckExpirationDate(),
 				},
 			},
 			"last_modification_date": schema.StringAttribute{

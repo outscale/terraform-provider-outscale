@@ -17,8 +17,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/fwhelpers"
-	"github.com/outscale/terraform-provider-outscale/internal/fwmodifyplan"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/modifyplans"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
@@ -184,14 +184,14 @@ func (r *resourceNetPeering) Schema(ctx context.Context, _ resource.SchemaReques
 				Optional: true,
 				Computed: true,
 				PlanModifiers: []planmodifier.String{
-					fwmodifyplan.ForceNewFramework(),
+					modifyplans.ForceNewFramework(),
 				},
 			},
 			"accepter_owner_id": schema.StringAttribute{
 				Optional: true,
 				Computed: true,
 				PlanModifiers: []planmodifier.String{
-					fwmodifyplan.ForceNewFramework(),
+					modifyplans.ForceNewFramework(),
 				},
 			},
 			"accepter_net_id": schema.StringAttribute{
