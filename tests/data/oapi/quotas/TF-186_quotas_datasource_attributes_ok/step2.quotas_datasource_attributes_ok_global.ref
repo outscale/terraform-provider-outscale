@@ -486,6 +486,16 @@
                                 "quota_type": "########",
                                 "short_description": "Bypass Group Size Limit",
                                 "used_value": "########"
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "Maximum number of product types the user can own",
+                                "max_value": "########",
+                                "name": "pty_limit",
+                                "quota_collection": "Other",
+                                "quota_type": "########",
+                                "short_description": "Product Type Limit",
+                                "used_value": "########"
                             }
                         ],
                         "request_id": "########"
