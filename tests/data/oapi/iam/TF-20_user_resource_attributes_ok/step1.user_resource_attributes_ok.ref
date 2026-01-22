@@ -19,13 +19,13 @@
                         "last_modification_date": "########",
                         "path": "/",
                         "policy": [],
-                        "user_email": "customer-tooling@outscale.com",
+                        "timeouts": null,
+                        "user_email": "lucas.rodriguez@outscale.com",
                         "user_id": "##id-0##",
                         "user_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "random_string.suffix"
                     ]
