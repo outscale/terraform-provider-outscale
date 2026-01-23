@@ -115,13 +115,13 @@
                                 "policy_orn": "########"
                             }
                         ],
+                        "timeouts": null,
                         "user_email": "customer-tooling@outscale.com",
                         "user_id": "##id-6##",
                         "user_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "outscale_policy.policy-1",
                         "random_string.suffix"
@@ -153,13 +153,13 @@
                                 "policy_orn": "########"
                             }
                         ],
+                        "timeouts": null,
                         "user": [],
                         "user_group_id": "##id-7##",
                         "user_group_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "outscale_policy.policy-1",
                         "random_string.suffix"

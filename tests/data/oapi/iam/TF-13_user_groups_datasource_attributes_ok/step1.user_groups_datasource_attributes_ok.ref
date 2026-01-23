@@ -81,13 +81,13 @@
                         "last_modification_date": "########",
                         "path": "/terraform/",
                         "policy": [],
+                        "timeouts": null,
                         "user_email": "test-TF11@test2.fr",
                         "user_id": "##id-4##",
                         "user_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "random_string.suffix"
                     ]
@@ -108,13 +108,13 @@
                         "last_modification_date": "########",
                         "path": "/terraform2/",
                         "policy": [],
+                        "timeouts": null,
                         "user_email": "test-TF12@test2.fr",
                         "user_id": "##id-5##",
                         "user_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "random_string.suffix"
                     ]
@@ -136,6 +136,7 @@
                         "orn": "########",
                         "path": "/terraform/",
                         "policy": [],
+                        "timeouts": null,
                         "user": [
                             {
                                 "creation_date": "########",
@@ -157,7 +158,6 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "outscale_user.user-1",
                         "outscale_user.user-2",
@@ -181,13 +181,13 @@
                         "orn": "########",
                         "path": "/terraform3/",
                         "policy": [],
+                        "timeouts": null,
                         "user": [],
                         "user_group_id": "##id-3##",
                         "user_group_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "random_string.suffix"
                     ]

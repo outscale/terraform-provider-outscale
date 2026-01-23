@@ -53,10 +53,10 @@
                         "last_modification_date": "########",
                         "orn": "########",
                         "path": "/",
-                        "policy_default_version_id": "##id-1##",
-                        "policy_id": "##id-4##",
+                        "policy_default_version_id": "##id-4##",
+                        "policy_id": "##id-5##",
                         "policy_name": "########",
-                        "resources_count": 0,
+                        "resources_count": 1,
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
@@ -79,13 +79,13 @@
                         "creation_date": "########",
                         "description": "test-terraform-ro",
                         "document": "{\n    \"Statement\": [\n        {\n            \"Action\": [\n                \"api:Read*\"\n            ],\n            \"Effect\": \"Allow\",\n            \"Resource\": [\n                \"*\"\n            ]\n        }\n    ]\n} \n",
-                        "id": "##id-5##",
+                        "id": "##id-6##",
                         "is_linkable": true,
                         "last_modification_date": "########",
                         "orn": "########",
                         "path": "/",
                         "policy_default_version_id": "##id-1##",
-                        "policy_id": "##id-6##",
+                        "policy_id": "##id-7##",
                         "policy_name": "########",
                         "resources_count": 1,
                         "timeouts": null
@@ -109,13 +109,13 @@
                     "attributes": {
                         "body": "########",
                         "creation_date": "########",
-                        "default_version": false,
+                        "default_version": true,
                         "document": "{\n    \"Statement\": [\n        {\n            \"Action\": [\n                \"api:*VM*\"\n            ],\n            \"Effect\": \"Allow\",\n            \"Resource\": [\n                \"*\"\n            ]\n        }\n    ]\n}\n",
-                        "id": "##id-7##",
+                        "id": "##id-8##",
                         "policy_orn": "########",
                         "set_as_default": null,
                         "timeouts": null,
-                        "version_id": "##id-8##"
+                        "version_id": "##id-4##"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
@@ -141,13 +141,13 @@
                         "last_modification_date": "########",
                         "path": "/",
                         "policy": [],
+                        "timeouts": null,
                         "user_email": "test-0@test2.fr",
                         "user_id": "##id-9##",
                         "user_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "random_string.suffix"
                     ]
@@ -161,13 +161,13 @@
                         "last_modification_date": "########",
                         "path": "/",
                         "policy": [],
+                        "timeouts": null,
                         "user_email": "test-1@test2.fr",
                         "user_id": "##id-10##",
                         "user_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "random_string.suffix"
                     ]
@@ -181,13 +181,13 @@
                         "last_modification_date": "########",
                         "path": "/",
                         "policy": [],
+                        "timeouts": null,
                         "user_email": "test-2@test2.fr",
                         "user_id": "##id-11##",
                         "user_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "random_string.suffix"
                     ]
@@ -217,13 +217,13 @@
                                 "policy_orn": "########"
                             }
                         ],
+                        "timeouts": null,
                         "user_email": "test-TF11@test2.fr",
                         "user_id": "##id-12##",
                         "user_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "outscale_policy.policy-1",
                         "random_string.suffix"
@@ -247,20 +247,20 @@
                         "policy": [
                             {
                                 "creation_date": "########",
-                                "default_version_id": "##id-8##",
+                                "default_version_id": "##id-14##",
                                 "last_modification_date": "########",
-                                "policy_id": "##id-4##",
+                                "policy_id": "##id-5##",
                                 "policy_name": "########",
                                 "policy_orn": "########"
                             }
                         ],
+                        "timeouts": null,
                         "user_email": "test-TF12@test2.fr",
                         "user_id": "##id-13##",
                         "user_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "outscale_policy.policy-2",
                         "random_string.suffix"
@@ -278,11 +278,12 @@
                     "schema_version": 0,
                     "attributes": {
                         "creation_date": "########",
-                        "id": "##id-14##",
+                        "id": "##id-15##",
                         "last_modification_date": "########",
                         "orn": "########",
                         "path": "/terraform/",
                         "policy": [],
+                        "timeouts": null,
                         "user": [
                             {
                                 "creation_date": "########",
@@ -299,12 +300,11 @@
                                 "user_name": "########"
                             }
                         ],
-                        "user_group_id": "##id-14##",
+                        "user_group_id": "##id-15##",
                         "user_group_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "outscale_policy.policy-1",
                         "outscale_policy.policy-2",
@@ -325,7 +325,7 @@
                     "schema_version": 0,
                     "attributes": {
                         "creation_date": "########",
-                        "id": "##id-15##",
+                        "id": "##id-16##",
                         "last_modification_date": "########",
                         "orn": "########",
                         "path": "/",
@@ -334,11 +334,12 @@
                                 "creation_date": "########",
                                 "default_version_id": "##id-1##",
                                 "last_modification_date": "########",
-                                "policy_id": "##id-6##",
+                                "policy_id": "##id-7##",
                                 "policy_name": "########",
                                 "policy_orn": "########"
                             }
                         ],
+                        "timeouts": null,
                         "user": [
                             {
                                 "creation_date": "########",
@@ -362,12 +363,11 @@
                                 "user_name": "########"
                             }
                         ],
-                        "user_group_id": "##id-15##",
+                        "user_group_id": "##id-16##",
                         "user_group_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "outscale_policy.policy-RO",
                         "outscale_user.multiple_users",

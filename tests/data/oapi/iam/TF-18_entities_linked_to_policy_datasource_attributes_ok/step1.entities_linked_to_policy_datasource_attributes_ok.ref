@@ -90,13 +90,13 @@
                                 "policy_orn": "########"
                             }
                         ],
+                        "timeouts": null,
                         "user_email": "test-TF11@test2.fr",
                         "user_id": "##id-5##",
                         "user_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "outscale_policy.policy-1",
                         "random_string.suffix"
@@ -127,13 +127,13 @@
                                 "policy_orn": "########"
                             }
                         ],
+                        "timeouts": null,
                         "user_email": "test-TF12@test2.fr",
                         "user_id": "##id-6##",
                         "user_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "outscale_policy.policy-1",
                         "random_string.suffix"
@@ -173,6 +173,7 @@
                                 "policy_orn": "########"
                             }
                         ],
+                        "timeouts": null,
                         "user": [
                             {
                                 "creation_date": "########",
@@ -194,7 +195,6 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "outscale_policy.policy-1",
                         "outscale_policy.policy-2",
@@ -229,6 +229,7 @@
                                 "policy_orn": "########"
                             }
                         ],
+                        "timeouts": null,
                         "user": [
                             {
                                 "creation_date": "########",
@@ -250,7 +251,6 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "outscale_policy.policy-1",
                         "outscale_policy.policy-2",

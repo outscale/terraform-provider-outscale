@@ -48,13 +48,13 @@
                         "last_modification_date": "########",
                         "path": "/terraform_update/",
                         "policy": [],
+                        "timeouts": null,
                         "user_email": "test-TF11@test2.fr",
                         "user_id": "##id-1##",
                         "user_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "random_string.suffix"
                     ]
@@ -75,13 +75,13 @@
                         "last_modification_date": "########",
                         "path": "/",
                         "policy": [],
+                        "timeouts": null,
                         "user_email": "customer-tooling@outscale.com",
                         "user_id": "##id-2##",
                         "user_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "random_string.suffix"
                     ]

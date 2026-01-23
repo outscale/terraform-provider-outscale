@@ -59,13 +59,13 @@
                         "last_modification_date": "########",
                         "path": "/terraform/",
                         "policy": [],
+                        "timeouts": null,
                         "user_email": "test-TF011@test2.fr",
                         "user_id": "##id-1##",
                         "user_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "random_string.suffix"
                     ]
@@ -86,13 +86,13 @@
                         "last_modification_date": "########",
                         "path": "/terraform2/",
                         "policy": [],
+                        "timeouts": null,
                         "user_email": "test-TF002@test2.fr",
                         "user_id": "##id-2##",
                         "user_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "random_string.suffix"
                     ]
@@ -114,6 +114,7 @@
                         "orn": "########",
                         "path": "/terraform/",
                         "policy": [],
+                        "timeouts": null,
                         "user": [
                             {
                                 "creation_date": "########",
@@ -135,7 +136,6 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "outscale_user.user-1",
                         "outscale_user.user-2",
