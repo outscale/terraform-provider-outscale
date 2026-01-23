@@ -38,13 +38,13 @@
                         "last_modification_date": "########",
                         "path": "/terraform/",
                         "policy": [],
+                        "timeouts": null,
                         "user_email": "customer-tooling@outscale.com",
                         "user_id": "##id-1##",
                         "user_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "random_string.suffix"
                     ]
@@ -66,6 +66,7 @@
                         "orn": "########",
                         "path": "/terraform/",
                         "policy": [],
+                        "timeouts": null,
                         "user": [
                             {
                                 "creation_date": "########",
@@ -80,7 +81,6 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "outscale_user.user-1",
                         "random_string.suffix"
@@ -103,6 +103,7 @@
                         "orn": "########",
                         "path": "/terraform3/",
                         "policy": [],
+                        "timeouts": null,
                         "user": [
                             {
                                 "creation_date": "########",
@@ -117,7 +118,6 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "outscale_user.user-1",
                         "random_string.suffix"

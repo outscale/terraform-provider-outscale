@@ -20,13 +20,13 @@
                         "orn": "########",
                         "path": "/terraform_group/",
                         "policy": [],
+                        "timeouts": null,
                         "user": [],
                         "user_group_id": "##id-0##",
                         "user_group_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "random_string.suffix"
                     ]

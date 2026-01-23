@@ -53,7 +53,7 @@
                         "last_modification_date": "########",
                         "orn": "########",
                         "path": "/policy1/",
-                        "policy_default_version_id": "##id-1##",
+                        "policy_default_version_id": "##id-4##",
                         "policy_id": "##id-2##",
                         "policy_name": "########",
                         "resources_count": 0,
@@ -79,13 +79,13 @@
                         "creation_date": "########",
                         "description": "test-terraform-12",
                         "document": "{\n    \"Statement\": [\n        {\n            \"Action\": [\n                \"api:Read*\"\n            ],\n            \"Effect\": \"Allow\",\n            \"Resource\": [\n                \"*\"\n            ]\n        }\n    ]\n}\n",
-                        "id": "##id-4##",
+                        "id": "##id-5##",
                         "is_linkable": true,
                         "last_modification_date": "########",
                         "orn": "########",
                         "path": "/policy12/",
-                        "policy_default_version_id": "##id-1##",
-                        "policy_id": "##id-5##",
+                        "policy_default_version_id": "##id-4##",
+                        "policy_id": "##id-6##",
                         "policy_name": "########",
                         "resources_count": 0,
                         "timeouts": null
@@ -111,11 +111,11 @@
                         "creation_date": "########",
                         "default_version": true,
                         "document": "{\n    \"Statement\": [\n        {\n            \"Action\": [\n                \"api:Read*\"\n            ],\n            \"Effect\": \"Allow\",\n            \"Resource\": [\n                \"*\"\n            ]\n        }\n    ]\n}\n",
-                        "id": "##id-6##",
+                        "id": "##id-7##",
                         "policy_orn": "########",
                         "set_as_default": true,
                         "timeouts": null,
-                        "version_id": "##id-7##"
+                        "version_id": "##id-1##"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
@@ -142,20 +142,20 @@
                         "policy": [
                             {
                                 "creation_date": "########",
-                                "default_version_id": "##id-7##",
+                                "default_version_id": "##id-1##",
                                 "last_modification_date": "########",
                                 "policy_id": "##id-2##",
                                 "policy_name": "########",
                                 "policy_orn": "########"
                             }
                         ],
+                        "timeouts": null,
                         "user_email": "customer-tooling@outscale.com",
                         "user_id": "##id-8##",
                         "user_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "outscale_policy.policy-1",
                         "random_string.suffix"
@@ -180,20 +180,20 @@
                         "policy": [
                             {
                                 "creation_date": "########",
-                                "default_version_id": "##id-7##",
+                                "default_version_id": "##id-1##",
                                 "last_modification_date": "########",
                                 "policy_id": "##id-2##",
                                 "policy_name": "########",
                                 "policy_orn": "########"
                             }
                         ],
+                        "timeouts": null,
                         "user": [],
                         "user_group_id": "##id-9##",
                         "user_group_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "outscale_policy.policy-1",
                         "random_string.suffix"

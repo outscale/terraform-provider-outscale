@@ -125,13 +125,13 @@
                         "last_modification_date": "########",
                         "path": "/test/terraform/",
                         "policy": [],
+                        "timeouts": null,
                         "user_email": "test@test65.fr",
                         "user_id": "##id-3##",
                         "user_name": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "random_string.suffix"
                     ]
