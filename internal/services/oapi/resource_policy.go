@@ -115,6 +115,9 @@ func (r *resourcePolicy) Schema(ctx context.Context, _ resource.SchemaRequest, r
 			},
 			"orn": schema.StringAttribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"path": schema.StringAttribute{
 				Optional: true,
@@ -195,7 +198,7 @@ func (r *resourcePolicy) Create(ctx context.Context, req resource.CreateRequest,
 
 	data.Id = to.String(policy.Orn)
 
-	stateData, err := r.setPolicyState(ctx, createTimeout, data)
+	stateData, err := r.read(ctx, createTimeout, data)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to set Policy state",
@@ -216,7 +219,7 @@ func (r *resourcePolicy) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	stateData, err := r.setPolicyState(ctx, readTimeout, data)
+	stateData, err := r.read(ctx, readTimeout, data)
 	if err != nil {
 		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
@@ -282,8 +285,24 @@ func (r *resourcePolicy) Delete(ctx context.Context, req resource.DeleteRequest,
 	}
 }
 
+func (r *resourcePolicy) getPolicyVersions(ctx context.Context, timeout time.Duration, policyOrn string) ([]osc.PolicyVersion, error) {
+	req := osc.NewReadPolicyVersionsRequest(policyOrn)
+
+	var resp osc.ReadPolicyVersionsResponse
+	err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
+		rp, httpResp, err := r.Client.PolicyApi.ReadPolicyVersions(ctx).ReadPolicyVersionsRequest(*req).Execute()
+		if err != nil {
+			return utils.CheckThrottling(httpResp, err)
+		}
+		resp = rp
+		return nil
+	})
+
+	return resp.GetPolicyVersions(), err
+}
+
 func (r *resourcePolicy) deleteVersions(ctx context.Context, to time.Duration, orn string) error {
-	versions, err := getPolicyVersions(ctx, r.Client, to, orn)
+	versions, err := r.getPolicyVersions(ctx, to, orn)
 	if err != nil {
 		return err
 	}
@@ -394,7 +413,7 @@ func (r *resourcePolicy) getDocument(ctx context.Context, to time.Duration, orn,
 	return *resp.GetPolicyVersion().Body, err
 }
 
-func (r *resourcePolicy) setPolicyState(ctx context.Context, timeout time.Duration, data PolicyModel) (PolicyModel, error) {
+func (r *resourcePolicy) read(ctx context.Context, timeout time.Duration, data PolicyModel) (PolicyModel, error) {
 	req := osc.NewReadPolicyRequest(data.Id.ValueString())
 
 	var resp osc.ReadPolicyResponse
@@ -414,7 +433,7 @@ func (r *resourcePolicy) setPolicyState(ctx context.Context, timeout time.Durati
 	}
 
 	policy := resp.GetPolicy()
-	document, err := r.getDocument(ctx, timeout, policy.GetOrn(), policy.GetPolicyDefaultVersionId())
+	document, err := r.getDocument(ctx, timeout, policy.GetOrn(), "v1")
 	if err != nil {
 		return data, err
 	}
