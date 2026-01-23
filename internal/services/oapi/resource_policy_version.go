@@ -78,6 +78,9 @@ func (r *resourcePolicyVersion) Schema(ctx context.Context, _ resource.SchemaReq
 		Attributes: map[string]schema.Attribute{
 			"body": schema.StringAttribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"creation_date": schema.StringAttribute{
 				Computed: true,
@@ -157,7 +160,7 @@ func (r *resourcePolicyVersion) Create(ctx context.Context, req resource.CreateR
 	data.Id = to.String(id.UniqueId())
 	data.VersionId = to.String(policyVersion.VersionId)
 
-	stateData, err := r.setPolicyVersionState(ctx, createTimeout, data)
+	stateData, err := r.read(ctx, createTimeout, data)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to set Policy Version state",
@@ -178,7 +181,7 @@ func (r *resourcePolicyVersion) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	stateData, err := r.setPolicyVersionState(ctx, to, data)
+	stateData, err := r.read(ctx, to, data)
 	if err != nil {
 		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
@@ -206,46 +209,43 @@ func (r *resourcePolicyVersion) Delete(ctx context.Context, req resource.DeleteR
 		return
 	}
 
+	// Refresh state to check current default version status
+	// This is necessary because user/user_group resources can change the default version
+	stateData, err := r.read(ctx, deleteTimeout, data)
+	if err != nil {
+		if errors.Is(err, ErrResourceEmpty) {
+			return
+		}
+		resp.Diagnostics.AddError(
+			"Unable to refresh Policy Version state before deletion",
+			err.Error(),
+		)
+		return
+	}
+	data = stateData
+
+	// If this version is currently the default, we need to set v1 as default first
 	if data.DefaultVersion.ValueBool() {
-		versions, err := getPolicyVersions(ctx, r.Client, deleteTimeout, data.PolicyOrn.ValueString())
+		req := osc.NewSetDefaultPolicyVersionRequest(data.PolicyOrn.ValueString(), "v1")
+		err = retry.RetryContext(ctx, deleteTimeout, func() *retry.RetryError {
+			_, httpResp, err := r.Client.PolicyApi.SetDefaultPolicyVersion(ctx).SetDefaultPolicyVersionRequest(*req).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp, err)
+			}
+			return nil
+		})
 		if err != nil {
 			resp.Diagnostics.AddError(
-				"Unable to get versions linked to Policy",
+				"Unable to set Policy Version v1 as default before deletion",
 				err.Error(),
 			)
 			return
-		}
-		if len(versions) == 1 {
-			resp.Diagnostics.AddError(
-				"Unable to delete default Policy Version",
-				"The default Policy Version will be deleted during Policy deletion",
-			)
-			return
-		}
-		for _, version := range versions {
-			if version.GetVersionId() == "v1" {
-				req := osc.NewSetDefaultPolicyVersionRequest(data.PolicyOrn.ValueString(), version.GetVersionId())
-				err = retry.RetryContext(ctx, deleteTimeout, func() *retry.RetryError {
-					_, httpResp, err := r.Client.PolicyApi.SetDefaultPolicyVersion(ctx).SetDefaultPolicyVersionRequest(*req).Execute()
-					if err != nil {
-						return utils.CheckThrottling(httpResp, err)
-					}
-					return nil
-				})
-				if err != nil {
-					resp.Diagnostics.AddError(
-						"Unable to set Policy Version v1 as default Policy Version",
-						err.Error(),
-					)
-					return
-				}
-			}
 		}
 	}
 
 	deleteReq := osc.NewDeletePolicyVersionRequest(data.PolicyOrn.ValueString(), data.VersionId.ValueString())
 
-	err := retry.RetryContext(ctx, deleteTimeout, func() *retry.RetryError {
+	err = retry.RetryContext(ctx, deleteTimeout, func() *retry.RetryError {
 		_, httpResp, err := r.Client.PolicyApi.DeletePolicyVersion(ctx).DeletePolicyVersionRequest(*deleteReq).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -254,29 +254,13 @@ func (r *resourcePolicyVersion) Delete(ctx context.Context, req resource.DeleteR
 	})
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to delete default Policy Version",
+			"Unable to delete Policy Version",
 			err.Error(),
 		)
 	}
 }
 
-func getPolicyVersions(ctx context.Context, client *osc.APIClient, timeout time.Duration, policyOrn string) ([]osc.PolicyVersion, error) {
-	req := osc.NewReadPolicyVersionsRequest(policyOrn)
-
-	var resp osc.ReadPolicyVersionsResponse
-	err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		rp, httpResp, err := client.PolicyApi.ReadPolicyVersions(ctx).ReadPolicyVersionsRequest(*req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
-
-	return resp.GetPolicyVersions(), err
-}
-
-func (r *resourcePolicyVersion) setPolicyVersionState(ctx context.Context, timeout time.Duration, data PolicyVersionModel) (PolicyVersionModel, error) {
+func (r *resourcePolicyVersion) read(ctx context.Context, timeout time.Duration, data PolicyVersionModel) (PolicyVersionModel, error) {
 	req := osc.NewReadPolicyVersionRequest(data.PolicyOrn.ValueString(), data.VersionId.ValueString())
 
 	var resp osc.ReadPolicyVersionResponse
