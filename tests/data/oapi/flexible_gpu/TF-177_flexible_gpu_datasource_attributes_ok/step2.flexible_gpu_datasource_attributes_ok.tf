@@ -60,6 +60,10 @@ data "outscale_flexible_gpu" "data-fGPU-2" {
     name   = "subregion_names"
     values = ["${var.region}a"]
   }
+  filter {
+    name   = "flexible_gpu_ids"
+    values = [outscale_flexible_gpu.fGPU-1.flexible_gpu_id]
+  }
 
   depends_on = [outscale_flexible_gpu_link.link_fGPU, outscale_flexible_gpu.fGPU-1]
 }
