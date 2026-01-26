@@ -79,11 +79,11 @@
                         "ca_pem": "########",
                         "description": "test-TF199",
                         "id": "##id-1##",
-                        "request_id": "########"
+                        "request_id": "########",
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0,
-                    "private": "########"
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -101,11 +101,11 @@
                         "ca_pem": "########",
                         "description": "test-TF199-2",
                         "id": "##id-0##",
-                        "request_id": "########"
+                        "request_id": "########",
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0,
-                    "private": "########"
+                    "identity_schema_version": 0
                 }
             ]
         }
