@@ -63,11 +63,11 @@
                         "ca_pem": "########",
                         "description": "test-TF197",
                         "id": "##id-0##",
-                        "request_id": "########"
+                        "request_id": "########",
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0,
-                    "private": "########"
+                    "identity_schema_version": 0
                 }
             ]
         }

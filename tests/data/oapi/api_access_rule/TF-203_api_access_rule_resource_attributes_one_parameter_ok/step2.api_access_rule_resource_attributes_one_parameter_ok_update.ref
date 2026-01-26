@@ -40,13 +40,13 @@
                         "ca_fingerprint": "########",
                         "ca_id": "##id-1##",
                         "ca_pem": "########",
-                        "description": "",
+                        "description": null,
                         "id": "##id-1##",
-                        "request_id": "########"
+                        "request_id": "########",
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0,
-                    "private": "########"
+                    "identity_schema_version": 0
                 }
             ]
         }
