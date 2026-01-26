@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
-	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
@@ -20,9 +19,9 @@ func TestAccOthers_AccessRule_basic(t *testing.T) {
 	ca_path := testAccCertPath
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testacc.PreCheck(t) },
-		Providers:    testacc.SDKProviders,
-		CheckDestroy: testAccCheckOutscaleApiAccessRuleDestroy,
+		PreCheck:                 func() { testacc.PreCheck(t) },
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
+		CheckDestroy:             testAccCheckOutscaleApiAccessRuleDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleApiAccessRuleConfig(ca_path),
@@ -41,7 +40,7 @@ func testAccCheckOutscaleApiAccessRuleExists(n string) resource.TestCheckFunc {
 			return fmt.Errorf("not found: %s", n)
 		}
 
-		conn := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSCAPI
+		conn := testacc.ConfiguredClient.OSCAPI
 
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("no id is set")
@@ -80,7 +79,7 @@ func testAccCheckOutscaleApiAccessRuleExists(n string) resource.TestCheckFunc {
 }
 
 func testAccCheckOutscaleApiAccessRuleDestroy(s *terraform.State) error {
-	conn := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSCAPI
+	conn := testacc.ConfiguredClient.OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_api_access_rule" {

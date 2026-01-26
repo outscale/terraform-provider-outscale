@@ -243,6 +243,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		oapi.NewResourcePolicyVersion,
 		oapi.NewResourceUser,
 		oapi.NewResourceUserGroup,
+		oapi.NewResourceCa,
 
 		oks.NewResourceProject,
 		oks.NewResourceCluster,

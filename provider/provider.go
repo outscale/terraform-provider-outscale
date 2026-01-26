@@ -109,7 +109,6 @@ func Provider() *schema.Provider {
 			"outscale_image_export_task":                 oapi.ResourceOutscaleImageExportTask(),
 			"outscale_server_certificate":                oapi.ResourceOutscaleServerCertificate(),
 			"outscale_snapshot_export_task":              oapi.ResourceOutscaleSnapshotExportTask(),
-			"outscale_ca":                                oapi.ResourceOutscaleCa(),
 			"outscale_api_access_rule":                   oapi.ResourceOutscaleApiAccessRule(),
 			"outscale_api_access_policy":                 oapi.ResourceOutscaleApiAccessPolicy(),
 		},
