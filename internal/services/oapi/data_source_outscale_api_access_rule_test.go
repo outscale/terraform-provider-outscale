@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
-	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
@@ -20,9 +19,9 @@ func TestAccOthers_DataOutscaleApiAccessRule_basic(t *testing.T) {
 	ca_path := testAccCertPath
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testacc.PreCheck(t) },
-		Providers:    testacc.SDKProviders,
-		CheckDestroy: testAccDataCheckOutscaleApiAccessRuleDestroy,
+		PreCheck:                 func() { testacc.PreCheck(t) },
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
+		CheckDestroy:             testAccDataCheckOutscaleApiAccessRuleDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataOutscaleApiAccessRuleConfig(ca_path),
@@ -35,7 +34,7 @@ func TestAccOthers_DataOutscaleApiAccessRule_basic(t *testing.T) {
 }
 
 func testAccDataCheckOutscaleApiAccessRuleDestroy(s *terraform.State) error {
-	conn := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSCAPI
+	conn := testacc.ConfiguredClient.OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_api_access_rule" {

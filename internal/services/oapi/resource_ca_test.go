@@ -9,20 +9,19 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
-	"github.com/outscale/terraform-provider-outscale/internal/client"
+	"github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
-func TestAccOthers_Ca_basic(t *testing.T) {
+func TestAccOthers_Ca_Basic(t *testing.T) {
 	resourceName := "outscale_ca.ca_test"
 	ca_path := testAccCertPath
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testacc.PreCheck(t) },
-		Providers:    testacc.SDKProviders,
-		CheckDestroy: testAccCheckOutscaleCaDestroy,
+		PreCheck:                 func() { testacc.PreCheck(t) },
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
+		CheckDestroy:             testAccCheckOutscaleCaDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleCaConfig(ca_path),
@@ -36,7 +35,15 @@ func TestAccOthers_Ca_basic(t *testing.T) {
 					testAccCheckOutscaleCaExists(resourceName),
 				),
 			},
+			testacc.ImportStep(resourceName, append(testacc.DefaultIgnores(), "ca_pem")...),
 		},
+	})
+}
+
+func TestAccOthers_Ca_Migration(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { testacc.PreCheck(t) },
+		Steps:    testacc.FrameworkMigrationTestSteps("1.3.1", testAccOutscaleCaConfig(testAccCertPath)),
 	})
 }
 
@@ -47,17 +54,17 @@ func testAccCheckOutscaleCaExists(n string) resource.TestCheckFunc {
 			return fmt.Errorf("not found: %s", n)
 		}
 
-		conn := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSCAPI
+		conn := testacc.ConfiguredClient.OSCAPI
 
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("no id is set")
 		}
 
-		var resp oscgo.ReadCasResponse
+		var resp osc.ReadCasResponse
 		var err error
 		exists := false
 		err = retry.Retry(120*time.Second, func() *retry.RetryError {
-			rp, httpResp, err := conn.CaApi.ReadCas(context.Background()).ReadCasRequest(oscgo.ReadCasRequest{}).Execute()
+			rp, httpResp, err := conn.CaApi.ReadCas(context.Background()).ReadCasRequest(osc.ReadCasRequest{}).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)
 			}
@@ -84,18 +91,18 @@ func testAccCheckOutscaleCaExists(n string) resource.TestCheckFunc {
 }
 
 func testAccCheckOutscaleCaDestroy(s *terraform.State) error {
-	conn := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSCAPI
+	conn := testacc.ConfiguredClient.OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_ca" {
 			continue
 		}
-		req := oscgo.ReadCasRequest{}
-		req.Filters = &oscgo.FiltersCa{
+		req := osc.ReadCasRequest{}
+		req.Filters = &osc.FiltersCa{
 			CaIds: &[]string{rs.Primary.ID},
 		}
 
-		var resp oscgo.ReadCasResponse
+		var resp osc.ReadCasResponse
 		var err error
 		exists := false
 		err = retry.Retry(120*time.Second, func() *retry.RetryError {
