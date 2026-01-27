@@ -9,7 +9,7 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - uses: EndBug/label-sync@v2
+      - uses: EndBug/label-sync@52074158190acb45f3077f9099fea818aa43f97a # v2
         with:
           config-file: 'https://raw.githubusercontent.com/outscale/.github/main/labels.yml'
           # delete-other-labels: false   # set to true for strict sync
