@@ -15,16 +15,16 @@
                     "schema_version": 0,
                     "attributes": {
                         "api_access_rule_id": "##id-0##",
-                        "ca_ids": [],
-                        "cns": [],
+                        "ca_ids": null,
+                        "cns": null,
                         "description": null,
                         "id": "##id-0##",
                         "ip_ranges": "########",
-                        "request_id": "########"
+                        "request_id": "########",
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0,
-                    "private": "########"
+                    "identity_schema_version": 0
                 }
             ]
         },
