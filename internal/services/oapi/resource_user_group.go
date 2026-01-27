@@ -455,14 +455,14 @@ func (r *resourceUserGroup) read(ctx context.Context, timeout time.Duration, dat
 	if err != nil {
 		return data, err
 	}
-	policiesSet, diag := to.Set(ctx, policies)
+	policiesSet, diag := to.SetObject(ctx, policies)
 	if diag.HasError() {
 		return data, fmt.Errorf("unable to convert policies to a set: %v", diag.Errors())
 	}
 	data.Policies = policiesSet
 
 	users := r.flattenUsers(respUsers)
-	usersSet, diag := to.Set(ctx, users)
+	usersSet, diag := to.SetObject(ctx, users)
 	if diag.HasError() {
 		return data, fmt.Errorf("unable to convert users to a set: %v", diag.Errors())
 	}

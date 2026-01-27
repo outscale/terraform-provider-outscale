@@ -2,10 +2,12 @@ package to
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -127,7 +129,7 @@ func Slice[T any, C types.List | types.Set](ctx context.Context, v C) ([]T, diag
 	}
 }
 
-func Set[T any](ctx context.Context, slice []T) (types.Set, diag.Diagnostics) {
+func SetObject[T any](ctx context.Context, slice []T) (types.Set, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	var zeroVal T
@@ -140,5 +142,29 @@ func Set[T any](ctx context.Context, slice []T) (types.Set, diag.Diagnostics) {
 
 	set, d := types.SetValueFrom(ctx, objType, slice)
 	diags.Append(d...)
+	return set, diags
+}
+
+func Set[T any](ctx context.Context, slice []T) (types.Set, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	var zero T
+
+	var elemType attr.Type
+	switch any(zero).(type) {
+	case string:
+		elemType = types.StringType
+	case int32:
+		elemType = types.Int32Type
+	case int64:
+		elemType = types.Int64Type
+	default:
+		panic(fmt.Sprintf("unsupported type %T", zero))
+	}
+	if len(slice) == 0 {
+		return types.SetNull(elemType), diags
+	}
+	set, d := types.SetValueFrom(ctx, elemType, slice)
+	diags.Append(d...)
+
 	return set, diags
 }
