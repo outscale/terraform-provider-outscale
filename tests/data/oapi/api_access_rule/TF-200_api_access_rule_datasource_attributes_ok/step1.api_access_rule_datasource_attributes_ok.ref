@@ -177,11 +177,11 @@
                         "description": "API Access rules-TF-200",
                         "id": "##id-0##",
                         "ip_ranges": "########",
-                        "request_id": "########"
+                        "request_id": "########",
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "outscale_ca.ca_for_api_access_rule",
                         "outscale_ca.ca_for_api_access_rule_2"
