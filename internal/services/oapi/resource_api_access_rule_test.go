@@ -14,7 +14,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
-func TestAccOthers_AccessRule_basic(t *testing.T) {
+func TestAccOthers_AccessRule_Basic(t *testing.T) {
 	resourceName := "outscale_api_access_rule.rule_test"
 	ca_path := testAccCertPath
 
@@ -29,7 +29,19 @@ func TestAccOthers_AccessRule_basic(t *testing.T) {
 					testAccCheckOutscaleApiAccessRuleExists(resourceName),
 				),
 			},
+			testacc.ImportStep(resourceName, testacc.DefaultIgnores()...),
 		},
+	})
+}
+
+func TestAccOthers_AccessRule_Migration(t *testing.T) {
+	ca_path := testAccCertPath
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { testacc.PreCheck(t) },
+		Steps: testacc.FrameworkMigrationTestSteps("1.3.1",
+			testAccOutscaleApiAccessRuleConfig(ca_path),
+		),
 	})
 }
 

@@ -512,7 +512,7 @@ func (r *resourceUser) read(ctx context.Context, timeout time.Duration, data Use
 		return data, err
 	}
 
-	policiesSet, diag := to.Set(ctx, policies)
+	policiesSet, diag := to.SetObject(ctx, policies)
 	if diag.HasError() {
 		return data, fmt.Errorf("unable to convert policies to a set: %v", diag.Errors())
 	}
