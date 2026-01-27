@@ -563,7 +563,7 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 		nSg, _ := d.GetOk("security_groups")
 		req.SecurityGroups = utils.SetToStringSlicePtr(nSg.(*schema.Set))
 
-		err = retry.Retry(4*time.Minute, func() *retry.RetryError {
+		err = retry.Retry(8*time.Minute, func() *retry.RetryError {
 			_, httpResp, err := conn.LoadBalancerApi.UpdateLoadBalancer(
 				context.Background()).UpdateLoadBalancerRequest(req).Execute()
 			if err != nil {
