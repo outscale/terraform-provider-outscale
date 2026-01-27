@@ -3,7 +3,7 @@ module github.com/outscale/terraform-provider-outscale
 go 1.25.4
 
 require (
-	github.com/aws/smithy-go/aws-http-auth v1.0.0
+	github.com/aws/smithy-go/aws-http-auth v1.1.1
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
 	github.com/deckarep/golang-set/v2 v2.8.0
 	github.com/hashicorp/go-cty v1.5.0
