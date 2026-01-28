@@ -109,6 +109,9 @@ func oapiVMDescriptionAttributes(set AttributeSetter, vm *osc.Vm) error {
 	if err := set("boot_mode", vm.GetBootMode()); err != nil {
 		return err
 	}
+	if err := set("tpm_enabled", vm.GetTpmEnabled()); err != nil {
+		return err
+	}
 	if err := set("architecture", vm.GetArchitecture()); err != nil {
 		return err
 	}
@@ -508,6 +511,10 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 		},
 		"boot_mode": {
 			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"tpm_enabled": {
+			Type:     schema.TypeBool,
 			Computed: true,
 		},
 		"bsu_optimized": {
