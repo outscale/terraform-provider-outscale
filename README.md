@@ -50,7 +50,7 @@ terraform {
   required_providers {
     outscale = {
       source  = "outscale/outscale"
-      version = "1.3.1"
+      version = "1.3.2"
     }
   }
 }
@@ -102,7 +102,7 @@ terraform {
   required_providers {
     outscale = {
       source  = "outscale/outscale"
-      version = "1.3.1"
+      version = "1.3.2"
     }
   }
 }
@@ -122,7 +122,7 @@ terraform {
   required_providers {
     outscale = {
       source  = "outscale/outscale"
-      version = "1.3.1"
+      version = "1.3.2"
     }
   }
 }
@@ -175,9 +175,9 @@ export OUTSCALE_X509KEY=/myrepository/certificate/client_ca.key
 
 Clone and build:
 ```sh
-git clone --branch v1.3.1 https://github.com/outscale/terraform-provider-outscale
+git clone --branch v1.3.2 https://github.com/outscale/terraform-provider-outscale
 cd terraform-provider-outscale
-go build -o terraform-provider-outscale_v1.3.1
+go build -o terraform-provider-outscale_v1.3.2
 ```
 
 ---
@@ -194,8 +194,8 @@ After building the provider manually, install it locally depending on your platf
 
 2. Move the plugin to the repository:
 ```sh
-mkdir -p terraform.d/plugins/registry.terraform.io/outscale/outscale/1.3.1/linux_amd64
-mv terraform-provider-outscale_v1.3.1 terraform.d/plugins/registry.terraform.io/outscale/outscale/1.3.1/linux_amd64/
+mkdir -p terraform.d/plugins/registry.terraform.io/outscale/outscale/1.3.2/linux_amd64
+mv terraform-provider-outscale_v1.3.2 terraform.d/plugins/registry.terraform.io/outscale/outscale/1.3.2/linux_amd64/
 ```
 
 3. Initialize Terraform:
@@ -215,8 +215,8 @@ terraform plan
 
 2. Move the plugin to the repository:
 ```sh
-mkdir -p terraform.d/plugins/registry.terraform.io/outscale/outscale/1.3.1/darwin_arm64
-mv terraform-provider-outscale_v1.3.1 terraform.d/plugins/registry.terraform.io/outscale/outscale/1.3.1/darwin_arm64/
+mkdir -p terraform.d/plugins/registry.terraform.io/outscale/outscale/1.3.2/darwin_arm64
+mv terraform-provider-outscale_v1.3.2 terraform.d/plugins/registry.terraform.io/outscale/outscale/1.3.2/darwin_arm64/
 ```
 
 3. Initialize Terraform:
@@ -240,8 +240,8 @@ terraform plan
 
 2. Move the plugin to the repository:
 ```sh
-mkdir -p terraform.d/plugins/registry.opentofu.org/outscale/outscale/1.3.1/linux_amd64
-mv terraform-provider-outscale_v1.3.1 terraform.d/plugins/registry.opentofu.org/outscale/outscale/1.3.1/linux_amd64/
+mkdir -p terraform.d/plugins/registry.opentofu.org/outscale/outscale/1.3.2/linux_amd64
+mv terraform-provider-outscale_v1.3.2 terraform.d/plugins/registry.opentofu.org/outscale/outscale/1.3.2/linux_amd64/
 ```
 
 3. Initialize OpenTofu:
@@ -261,8 +261,8 @@ tofu plan
 
 2. Move the plugin to the repository:
 ```sh
-mkdir -p terraform.d/plugins/registry.opentofu.org/outscale/outscale/1.3.1/darwin_arm64
-mv terraform-provider-outscale_v1.3.1 terraform.d/plugins/registry.opentofu.org/outscale/outscale/1.3.1/darwin_arm64/
+mkdir -p terraform.d/plugins/registry.opentofu.org/outscale/outscale/1.3.2/darwin_arm64
+mv terraform-provider-outscale_v1.3.2 terraform.d/plugins/registry.opentofu.org/outscale/outscale/1.3.2/darwin_arm64/
 ```
 
 3. Initialize OpenTofu:
