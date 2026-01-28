@@ -38,6 +38,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### 🌱 Others
 - (nothing yet)
 
+## [1.3.2] - 2026-01-28
+
+### 🛠️ Changed / Refactoring
+* 🎨 refactor: split by service by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/619
+* 🚨 fix: golangci-lint errors by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/624
+* ♻️ refactor: policy resource migrate by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/629
+* ♻️ refactor: user & user_group resource migrate by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/634
+* ♻️ refactor: ca resource migrate by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/635
+* ♻️ refactor: api_access_(rule & policy) resource migrate by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/649
+
+### 📝 Documentation
+* 📝 docs: marking the security_group_name argument as optional by @annakeita in https://github.com/outscale/terraform-provider-outscale/pull/620
+* 📝 docs: changing device names in the vm resource examples by @annakeita in https://github.com/outscale/terraform-provider-outscale/pull/630
+
+### 🐛 Fixed
+* 🐛 fix: virtual gateway state retry by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/628
+* 🐛 fix(security_group_rule): bypass port_range requirement on condition by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/632
+
+### 📦 Dependency updates
+* chore: Configure Renovate by @Open-Source-Bot in https://github.com/outscale/terraform-provider-outscale/pull/615
+* ⬆️ deps(gomod): update module github.com/aws/smithy-go/aws-http-auth to v1.1.1 by @Open-Source-Bot in https://github.com/outscale/terraform-provider-outscale/pull/641
+
+### 🌱 Others
+* 👷 ci: trigger push tests pre-release by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/626
+* 👷 ci: trigger push tests pre-release sequel by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/627
+* :white_check_mark: test: missing name randomization by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/625
+
 ## [1.3.1] - 2026-01-07
 
 ### 🐛 Fixed
