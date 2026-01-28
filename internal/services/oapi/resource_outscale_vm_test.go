@@ -613,7 +613,7 @@ func testAccCheckOutscaleVMExists(n string, i *oscgo.Vm) resource.TestCheckFunc 
 		}
 		client := testacc.ConfiguredClient.OSCAPI
 		var resp oscgo.ReadVmsResponse
-		var err = retry.Retry(120*time.Second, func() *retry.RetryError {
+		err := retry.Retry(120*time.Second, func() *retry.RetryError {
 			rp, httpResp, err := client.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
 				Filters: getVMsFilterByVMID(rs.Primary.ID),
 			}).Execute()
@@ -660,6 +660,7 @@ func testAccCheckOutscaleVMUefi(omi, vmType, region, keypair, sgName string) str
 			placement_subregion_name = "%[3]s"
 			security_group_ids = [outscale_security_group.sg_vm_uefi.security_group_id]
 			boot_mode = "uefi"
+			tpm_enabled = true
 			tags {
 				key   = "name"
 				value = "terraform_vm_uefi"

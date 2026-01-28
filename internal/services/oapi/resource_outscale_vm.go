@@ -59,6 +59,12 @@ func ResourceOutscaleVM() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice([]string{"enable", "disable", "setup-mode", "none"}, false),
 			},
+			"tpm_enabled": {
+				Type:     schema.TypeBool,
+				Computed: true,
+				Optional: true,
+				ForceNew: true,
+			},
 			"block_device_mappings": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -1407,6 +1413,9 @@ func buildCreateVmsRequest(d *schema.ResourceData) (oscgo.CreateVmsRequest, []ma
 	if v := d.Get("secure_boot_action").(string); v != "" {
 		action := (oscgo.SecureBootAction)(d.Get("secure_boot_action").(string))
 		request.SetActionsOnNextBoot(oscgo.ActionsOnNextBoot{SecureBoot: &action})
+	}
+	if v, ok := d.GetOk("tpm_enabled"); ok {
+		request.SetTpmEnabled(v.(bool))
 	}
 
 	kpName, diags := d.GetRawConfigAt(cty.GetAttrPath("keypair_name_wo"))
