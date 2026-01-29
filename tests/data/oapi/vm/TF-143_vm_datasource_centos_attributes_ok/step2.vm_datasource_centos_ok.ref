@@ -87,6 +87,7 @@
                                 "value": "test-VM-tag"
                             }
                         ],
+                        "tpm_enabled": false,
                         "user_data": "",
                         "vm_id": "##id-1##",
                         "vm_initiated_shutdown_behavior": "stop",
@@ -179,6 +180,7 @@
                                 "value": "test-VM-tag"
                             }
                         ],
+                        "tpm_enabled": false,
                         "user_data": "",
                         "vm_id": "##id-1##",
                         "vm_initiated_shutdown_behavior": "stop",
@@ -271,6 +273,7 @@
                                 "value": "test-VM-tag"
                             }
                         ],
+                        "tpm_enabled": false,
                         "user_data": "",
                         "vm_id": "##id-1##",
                         "vm_initiated_shutdown_behavior": "stop",
@@ -359,6 +362,7 @@
                                 "value": "test-VM-tag-2"
                             }
                         ],
+                        "tpm_enabled": false,
                         "user_data": "",
                         "vm_id": "##id-6##",
                         "vm_initiated_shutdown_behavior": "stop",
@@ -447,6 +451,7 @@
                                 "value": "test-VM-tag-2"
                             }
                         ],
+                        "tpm_enabled": false,
                         "user_data": "",
                         "vm_id": "##id-9##",
                         "vm_initiated_shutdown_behavior": "stop",
@@ -602,6 +607,7 @@
                             }
                         ],
                         "timeouts": null,
+                        "tpm_enabled": false,
                         "user_data": "",
                         "vm_id": "##id-1##",
                         "vm_initiated_shutdown_behavior": "stop",
@@ -704,6 +710,7 @@
                             }
                         ],
                         "timeouts": null,
+                        "tpm_enabled": false,
                         "user_data": "",
                         "vm_id": "##id-6##",
                         "vm_initiated_shutdown_behavior": "stop",
@@ -798,6 +805,7 @@
                             }
                         ],
                         "timeouts": null,
+                        "tpm_enabled": false,
                         "user_data": "",
                         "vm_id": "##id-9##",
                         "vm_initiated_shutdown_behavior": "stop",

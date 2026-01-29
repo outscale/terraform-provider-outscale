@@ -143,6 +143,7 @@
                         "subnet_id": "",
                         "tags": [],
                         "timeouts": null,
+                        "tpm_enabled": false,
                         "user_data": "",
                         "vm_id": "##id-4##",
                         "vm_initiated_shutdown_behavior": "stop",
