@@ -230,6 +230,7 @@
                             }
                         ],
                         "timeouts": null,
+                        "tpm_enabled": false,
                         "user_data": "LS0tLS1CRUdJTiBPVVRTQ0FMRSBTRUNUSU9OLS0tLS0KCnByaXZhdGVfb25seT10cnVlCgotLS0tLUVORCBPVVRTQ0FMRSBTRUNUSU9OLS0tLS0=",
                         "vm_id": "##id-4##",
                         "vm_initiated_shutdown_behavior": "stop",

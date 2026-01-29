@@ -88,6 +88,7 @@
                             }
                         ],
                         "timeouts": null,
+                        "tpm_enabled": false,
                         "user_data": "",
                         "vm_id": "##id-1##",
                         "vm_initiated_shutdown_behavior": "stop",

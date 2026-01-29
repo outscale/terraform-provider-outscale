@@ -1040,6 +1040,7 @@
                             }
                         ],
                         "timeouts": null,
+                        "tpm_enabled": false,
                         "user_data": "",
                         "vm_id": "##id-11##",
                         "vm_initiated_shutdown_behavior": "stop",
@@ -1217,6 +1218,7 @@
                             }
                         ],
                         "timeouts": null,
+                        "tpm_enabled": false,
                         "user_data": "",
                         "vm_id": "##id-14##",
                         "vm_initiated_shutdown_behavior": "stop",
@@ -1394,6 +1396,7 @@
                             }
                         ],
                         "timeouts": null,
+                        "tpm_enabled": false,
                         "user_data": "",
                         "vm_id": "##id-33##",
                         "vm_initiated_shutdown_behavior": "stop",
@@ -1579,6 +1582,7 @@
                             }
                         ],
                         "timeouts": null,
+                        "tpm_enabled": false,
                         "user_data": "",
                         "vm_id": "##id-38##",
                         "vm_initiated_shutdown_behavior": "stop",
@@ -1756,6 +1760,7 @@
                             }
                         ],
                         "timeouts": null,
+                        "tpm_enabled": false,
                         "user_data": "",
                         "vm_id": "##id-43##",
                         "vm_initiated_shutdown_behavior": "stop",
@@ -1933,6 +1938,7 @@
                             }
                         ],
                         "timeouts": null,
+                        "tpm_enabled": false,
                         "user_data": "",
                         "vm_id": "##id-48##",
                         "vm_initiated_shutdown_behavior": "stop",
