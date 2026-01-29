@@ -14,14 +14,7 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "backend_vm_health": [
-                            {
-                                "description": "Instance registration is pending",
-                                "state": "DOWN",
-                                "state_reason": "ELB",
-                                "vm_id": "##id-0##"
-                            }
-                        ],
+                        "backend_vm_health": "########",
                         "backend_vm_ids": [
                             "##id-0##"
                         ],
@@ -30,7 +23,8 @@
                         "load_balancer_name": "########",
                         "request_id": "########"
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -46,7 +40,7 @@
                         "id": "##id-2##",
                         "keypair_fingerprint": "########",
                         "keypair_id": "##id-2##",
-                        "keypair_name": "KP-TF92",
+                        "keypair_name": "########",
                         "keypair_type": "ssh-rsa",
                         "private_key": "########",
                         "public_key": null,
@@ -54,7 +48,11 @@
                         "tags": [],
                         "timeouts": null
                     },
-                    "sensitive_attributes": []
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -76,6 +74,7 @@
                             }
                         ],
                         "application_sticky_cookie_policies": [],
+                        "backend_ips": "########",
                         "backend_vm_ids": [],
                         "dns_name": "########",
                         "health_check": [
@@ -96,7 +95,7 @@
                                 "backend_protocol": "HTTP",
                                 "load_balancer_port": 8080,
                                 "load_balancer_protocol": "HTTP",
-                                "policy_names": [],
+                                "policy_names": "########",
                                 "server_certificate_id": ""
                             }
                         ],
@@ -111,7 +110,7 @@
                         "source_security_group": [
                             {
                                 "security_group_account_id": "##id-4##",
-                                "security_group_name": "outscale-elb-sg"
+                                "security_group_name": "########"
                             }
                         ],
                         "subnets": [],
@@ -126,7 +125,11 @@
                         ]
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA=="
+                    "identity_schema_version": 0,
+                    "private": "########",
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -168,7 +171,7 @@
                                 "backend_protocol": "HTTP",
                                 "load_balancer_port": 8080,
                                 "load_balancer_protocol": "HTTP",
-                                "policy_names": [],
+                                "policy_names": "########",
                                 "server_certificate_id": ""
                             }
                         ],
@@ -176,14 +179,14 @@
                         "load_balancer_port": null,
                         "load_balancer_sticky_cookie_policies": [],
                         "load_balancer_type": null,
-                        "policy_names": null,
+                        "policy_names": "########",
                         "request_id": "########",
                         "security_groups": [],
                         "server_certificate_id": null,
                         "source_security_group": [
                             {
                                 "security_group_account_id": "##id-4##",
-                                "security_group_name": "outscale-elb-sg"
+                                "security_group_name": "########"
                             }
                         ],
                         "subnets": [],
@@ -198,9 +201,11 @@
                         ]
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
+                    "identity_schema_version": 0,
+                    "private": "########",
                     "dependencies": [
-                        "outscale_load_balancer.public_lbu2"
+                        "outscale_load_balancer.public_lbu2",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -220,15 +225,17 @@
                         ],
                         "id": "##id-3##",
                         "load_balancer_name": "########",
-                        "request_id": "########"
+                        "request_id": "########",
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
+                    "identity_schema_version": 0,
                     "dependencies": [
                         "outscale_keypair.my_keypair",
                         "outscale_load_balancer.public_lbu2",
                         "outscale_security_group.public_sg",
-                        "outscale_vm.outscale_vm-1"
+                        "outscale_vm.outscale_vm-1",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -251,12 +258,15 @@
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
                         "security_group_id": "##id-6##",
-                        "security_group_name": "sgTF-92",
-                        "tag": null,
-                        "tags": []
+                        "security_group_name": "########",
+                        "tags": [],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA=="
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -279,14 +289,16 @@
                         "rules": [],
                         "security_group_account_id_to_link": null,
                         "security_group_id": "##id-6##",
-                        "security_group_name": "sgTF-92",
+                        "security_group_name": "########",
                         "security_group_name_to_link": null,
+                        "timeouts": null,
                         "to_port_range": 8080
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
+                    "identity_schema_version": 0,
                     "dependencies": [
-                        "outscale_security_group.public_sg"
+                        "outscale_security_group.public_sg",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -300,6 +312,11 @@
                 {
                     "schema_version": 0,
                     "attributes": {
+                        "actions_on_next_boot": [
+                            {
+                                "secure_boot": ""
+                            }
+                        ],
                         "admin_password": "",
                         "architecture": "x86_64",
                         "block_device_mappings": [],
@@ -317,6 +334,7 @@
                                 "device_name": "/dev/sda1"
                             }
                         ],
+                        "boot_mode": "legacy",
                         "bsu_optimized": false,
                         "client_token": "",
                         "creation_date": "########",
@@ -326,7 +344,8 @@
                         "id": "##id-0##",
                         "image_id": "##id-8##",
                         "is_source_dest_checked": false,
-                        "keypair_name": "KP-TF92",
+                        "keypair_name": "########",
+                        "keypair_name_wo": null,
                         "launch_number": 0,
                         "nested_virtualization": false,
                         "net_id": "",
@@ -348,14 +367,15 @@
                         "reservation_id": "##id-9##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
+                        "secure_boot_action": null,
                         "security_group_ids": [
                             "##id-6##"
                         ],
-                        "security_group_names": null,
+                        "security_group_names": "########",
                         "security_groups": [
                             {
                                 "security_group_id": "##id-6##",
-                                "security_group_name": "sgTF-92"
+                                "security_group_name": "########"
                             }
                         ],
                         "state": "running",
@@ -369,10 +389,12 @@
                         "vm_type": "###vm_type###"
                     },
                     "sensitive_attributes": [],
-                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJyZWFkIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
+                    "identity_schema_version": 0,
+                    "private": "########",
                     "dependencies": [
                         "outscale_keypair.my_keypair",
-                        "outscale_security_group.public_sg"
+                        "outscale_security_group.public_sg",
+                        "random_string.suffix"
                     ]
                 }
             ]
