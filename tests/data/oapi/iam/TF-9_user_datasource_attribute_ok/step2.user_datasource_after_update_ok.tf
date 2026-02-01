@@ -6,7 +6,7 @@ resource "outscale_user" "user1" {
 
 resource "outscale_access_key" "access_key_01" {
   user_name       = outscale_user.user1.user_name
-  expiration_date = "2038-01-01"
+  expiration_date = "2138-01-01"
   state           = "INACTIVE"
   depends_on      = [outscale_user.user1]
 }
@@ -42,4 +42,3 @@ data "outscale_access_keys" "access_keys_user01" {
   }
   depends_on = [outscale_user.user1]
 }
-

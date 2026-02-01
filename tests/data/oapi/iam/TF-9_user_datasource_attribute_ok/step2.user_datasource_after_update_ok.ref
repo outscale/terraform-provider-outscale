@@ -16,7 +16,7 @@
                     "attributes": {
                         "access_key_id": "##id-0##",
                         "creation_date": "########",
-                        "expiration_date": "########",
+                        "expiration_date": "2138-01-01T00:00:00.000+0000",
                         "filter": "########",
                         "id": "##id-0##",
                         "last_modification_date": "########",
@@ -43,7 +43,7 @@
                             {
                                 "access_key_id": "##id-0##",
                                 "creation_date": "########",
-                                "expiration_date": "########",
+                                "expiration_date": "2138-01-01T00:00:00.000+0000",
                                 "last_modification_date": "########",
                                 "state": "INACTIVE"
                             }
@@ -93,7 +93,7 @@
                     "attributes": {
                         "access_key_id": "##id-0##",
                         "creation_date": "########",
-                        "expiration_date": "########",
+                        "expiration_date": "2138-01-01",
                         "id": "##id-0##",
                         "last_modification_date": "########",
                         "request_id": "########",
