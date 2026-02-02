@@ -3,7 +3,6 @@ package oapi
 import (
 	"context"
 	"fmt"
-	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
@@ -18,6 +17,12 @@ func ResourceOutscaleSnapshotAttributes() *schema.Resource {
 		Create: ResourceOutscaleSnapshotAttributesCreate,
 		Read:   ResourceOutscaleSnapshotAttributesRead,
 		Delete: ResourceOutscaleSnapshotAttributesDelete,
+
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(CreateDefaultTimeout),
+			Read:   schema.DefaultTimeout(ReadDefaultTimeout),
+			Delete: schema.DefaultTimeout(DeleteDefaultTimeout),
+		},
 
 		Schema: map[string]*schema.Schema{
 			"permissions_to_create_volume_additions": {
@@ -76,6 +81,7 @@ func ResourceOutscaleSnapshotAttributes() *schema.Resource {
 
 func ResourceOutscaleSnapshotAttributesCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutCreate)
 
 	snapshotID := d.Get("snapshot_id").(string)
 
@@ -136,7 +142,7 @@ func ResourceOutscaleSnapshotAttributesCreate(d *schema.ResourceData, meta inter
 
 	req.SetPermissionsToCreateVolume(perms)
 
-	var err = retry.Retry(2*time.Minute, func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		_, httpResp, err := conn.SnapshotApi.UpdateSnapshot(context.Background()).UpdateSnapshotRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -153,9 +159,10 @@ func ResourceOutscaleSnapshotAttributesCreate(d *schema.ResourceData, meta inter
 
 func ResourceOutscaleSnapshotAttributesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutRead)
 
 	var resp oscgo.ReadSnapshotsResponse
-	err := retry.Retry(2*time.Minute, func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		var err error
 		rp, httpResp, err := conn.SnapshotApi.ReadSnapshots(context.Background()).ReadSnapshotsRequest(oscgo.ReadSnapshotsRequest{
 			Filters: &oscgo.FiltersSnapshot{

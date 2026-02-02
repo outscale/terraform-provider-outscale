@@ -25,9 +25,10 @@ func ResourceOutscaleVPNConnection() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(10 * time.Minute),
-			Update: schema.DefaultTimeout(10 * time.Minute),
-			Delete: schema.DefaultTimeout(10 * time.Minute),
+			Create: schema.DefaultTimeout(CreateDefaultTimeout),
+			Read:   schema.DefaultTimeout(ReadDefaultTimeout),
+			Update: schema.DefaultTimeout(UpdateDefaultTimeout),
+			Delete: schema.DefaultTimeout(DeleteDefaultTimeout),
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -123,6 +124,7 @@ func ResourceOutscaleVPNConnection() *schema.Resource {
 
 func ResourceOutscaleVPNConnectionCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutCreate)
 
 	req := oscgo.CreateVpnConnectionRequest{
 		ClientGatewayId:  d.Get("client_gateway_id").(string),
@@ -134,7 +136,7 @@ func ResourceOutscaleVPNConnectionCreate(d *schema.ResourceData, meta interface{
 		req.SetStaticRoutesOnly(cast.ToBool(staticRoutesOnly))
 	}
 	var resp oscgo.CreateVpnConnectionResponse
-	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		rp, httpResp, err := conn.VpnConnectionApi.CreateVpnConnection(context.Background()).CreateVpnConnectionRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -158,6 +160,7 @@ func ResourceOutscaleVPNConnectionCreate(d *schema.ResourceData, meta interface{
 
 func ResourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutRead)
 
 	vpnConnectionID := d.Id()
 
@@ -165,7 +168,7 @@ func ResourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{})
 		Pending:    []string{"pending"},
 		Target:     []string{"available", "failed"},
 		Refresh:    vpnConnectionRefreshFunc(conn, &vpnConnectionID),
-		Timeout:    10 * time.Minute,
+		Timeout:    timeout,
 		Delay:      5 * time.Second,
 		MinTimeout: 3 * time.Second,
 	}
@@ -226,13 +229,14 @@ func ResourceOutscaleVPNConnectionUpdate(d *schema.ResourceData, meta interface{
 
 func ResourceOutscaleVPNConnectionDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutDelete)
 
 	vpnConnectionID := d.Id()
 
 	req := oscgo.DeleteVpnConnectionRequest{
 		VpnConnectionId: vpnConnectionID,
 	}
-	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		_, httpResp, err := conn.VpnConnectionApi.DeleteVpnConnection(context.Background()).DeleteVpnConnectionRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -247,7 +251,7 @@ func ResourceOutscaleVPNConnectionDelete(d *schema.ResourceData, meta interface{
 		Pending:    []string{"deleting"},
 		Target:     []string{"deleted", "failed"},
 		Refresh:    vpnConnectionRefreshFunc(conn, &vpnConnectionID),
-		Timeout:    10 * time.Minute,
+		Timeout:    timeout,
 		Delay:      5 * time.Second,
 		MinTimeout: 3 * time.Second,
 	}

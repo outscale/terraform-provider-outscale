@@ -26,8 +26,9 @@ func ResourceOutscaleSnapshot() *schema.Resource {
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(40 * time.Minute),
-			Update: schema.DefaultTimeout(40 * time.Minute),
-			Delete: schema.DefaultTimeout(40 * time.Minute),
+			Read:   schema.DefaultTimeout(ReadDefaultTimeout),
+			Update: schema.DefaultTimeout(UpdateDefaultTimeout),
+			Delete: schema.DefaultTimeout(DeleteDefaultTimeout),
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -123,6 +124,7 @@ func ResourceOutscaleSnapshot() *schema.Resource {
 
 func ResourceOutscaleSnapshotCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutCreate)
 
 	v, ok := d.GetOk("volume_id")
 	snp, sok := d.GetOk("snapshot_size")
@@ -159,7 +161,7 @@ func ResourceOutscaleSnapshotCreate(d *schema.ResourceData, meta interface{}) er
 	}
 
 	var resp oscgo.CreateSnapshotResponse
-	err := retry.RetryContext(context.Background(), d.Timeout(schema.TimeoutCreate), func() *retry.RetryError {
+	err := retry.RetryContext(context.Background(), timeout, func() *retry.RetryError {
 		var err error
 		rp, httpResp, err := conn.SnapshotApi.CreateSnapshot(context.Background()).CreateSnapshotRequest(request).Execute()
 		if err != nil {
@@ -177,8 +179,8 @@ func ResourceOutscaleSnapshotCreate(d *schema.ResourceData, meta interface{}) er
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"pending", "in-queue", "queued", "importing"},
 		Target:     []string{"completed"},
-		Refresh:    SnapshotOAPIStateRefreshFunc(conn, resp.Snapshot.GetSnapshotId(), d.Timeout(schema.TimeoutCreate)),
-		Timeout:    d.Timeout(schema.TimeoutCreate),
+		Refresh:    SnapshotOAPIStateRefreshFunc(conn, resp.Snapshot.GetSnapshotId(), timeout),
+		Timeout:    timeout,
 		Delay:      OutscaleImageRetryDelay,
 		MinTimeout: OutscaleImageRetryMinTimeout,
 	}
@@ -199,13 +201,14 @@ func ResourceOutscaleSnapshotCreate(d *schema.ResourceData, meta interface{}) er
 
 func ResourceOutscaleSnapshotRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutRead)
 
 	req := oscgo.ReadSnapshotsRequest{
 		Filters: &oscgo.FiltersSnapshot{SnapshotIds: &[]string{d.Id()}},
 	}
 
 	var resp oscgo.ReadSnapshotsResponse
-	err := retry.RetryContext(context.Background(), d.Timeout(schema.TimeoutRead), func() *retry.RetryError {
+	err := retry.RetryContext(context.Background(), timeout, func() *retry.RetryError {
 		var err error
 		rp, httpResp, err := conn.SnapshotApi.ReadSnapshots(context.Background()).ReadSnapshotsRequest(req).Execute()
 		if err != nil {
@@ -273,8 +276,9 @@ func ResourceOutscaleSnapshotUpdate(d *schema.ResourceData, meta interface{}) er
 
 func ResourceOutscaleSnapshotDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutDelete)
 
-	return retry.RetryContext(context.Background(), d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
+	return retry.RetryContext(context.Background(), timeout, func() *retry.RetryError {
 		request := oscgo.DeleteSnapshotRequest{SnapshotId: d.Id()}
 		_, httpResp, err := conn.SnapshotApi.DeleteSnapshot(context.Background()).DeleteSnapshotRequest(request).Execute()
 		if err != nil {

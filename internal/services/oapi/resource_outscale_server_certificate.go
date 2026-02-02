@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -23,6 +22,13 @@ func ResourceOutscaleServerCertificate() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(CreateDefaultTimeout),
+			Read:   schema.DefaultTimeout(ReadDefaultTimeout),
+			Update: schema.DefaultTimeout(UpdateDefaultTimeout),
+			Delete: schema.DefaultTimeout(DeleteDefaultTimeout),
+		},
+
 		Schema: map[string]*schema.Schema{
 			"body": {
 				Type:     schema.TypeString,
@@ -73,6 +79,7 @@ func ResourceOutscaleServerCertificate() *schema.Resource {
 
 func ResourceOutscaleServerCertificateCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutCreate)
 
 	req := oscgo.CreateServerCertificateRequest{
 		Body:       d.Get("body").(string),
@@ -98,7 +105,7 @@ func ResourceOutscaleServerCertificateCreate(d *schema.ResourceData, meta interf
 		req.SetPath(d.Get("path").(string))
 	}
 	var resp oscgo.CreateServerCertificateResponse
-	err := retry.Retry(120*time.Second, func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		rp, httpResp, err := conn.ServerCertificateApi.CreateServerCertificate(context.Background()).CreateServerCertificateRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -117,13 +124,14 @@ func ResourceOutscaleServerCertificateCreate(d *schema.ResourceData, meta interf
 
 func ResourceOutscaleServerCertificateRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutRead)
 
 	id := d.Id()
 
 	log.Printf("[DEBUG] Reading Server Certificate id (%s)", id)
 
 	var resp oscgo.ReadServerCertificatesResponse
-	err := retry.Retry(120*time.Second, func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		rp, httpResp, err := conn.ServerCertificateApi.ReadServerCertificates(context.Background()).ReadServerCertificatesRequest(oscgo.ReadServerCertificatesRequest{}).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -131,7 +139,6 @@ func ResourceOutscaleServerCertificateRead(d *schema.ResourceData, meta interfac
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		return fmt.Errorf("error reading server certificate id (%s)", utils.GetErrorResponse(err))
 	}
@@ -164,6 +171,7 @@ func ResourceOutscaleServerCertificateRead(d *schema.ResourceData, meta interfac
 
 func ResourceOutscaleServerCertificateUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutUpdate)
 
 	oldName, _ := d.GetChange("name")
 	req := oscgo.UpdateServerCertificateRequest{
@@ -177,7 +185,7 @@ func ResourceOutscaleServerCertificateUpdate(d *schema.ResourceData, meta interf
 		req.SetNewPath(d.Get("path").(string))
 	}
 
-	err := retry.Retry(120*time.Second, func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		_, httpResp, err := conn.ServerCertificateApi.UpdateServerCertificate(context.Background()).UpdateServerCertificateRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -193,12 +201,13 @@ func ResourceOutscaleServerCertificateUpdate(d *schema.ResourceData, meta interf
 
 func ResourceOutscaleServerCertificateDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutDelete)
 
 	req := oscgo.DeleteServerCertificateRequest{
 		Name: d.Get("name").(string),
 	}
 
-	err := retry.Retry(120*time.Second, func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		_, httpResp, err := conn.ServerCertificateApi.DeleteServerCertificate(context.Background()).DeleteServerCertificateRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)

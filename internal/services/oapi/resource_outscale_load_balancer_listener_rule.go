@@ -24,6 +24,13 @@ func ResourceOutscaleLoadBalancerListenerRule() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(CreateDefaultTimeout),
+			Update: schema.DefaultTimeout(UpdateDefaultTimeout),
+			Read:   schema.DefaultTimeout(ReadDefaultTimeout),
+			Delete: schema.DefaultTimeout(DeleteDefaultTimeout),
+		},
+
 		Schema: map[string]*schema.Schema{
 			"vm_ids": {
 				Type:     schema.TypeSet,
@@ -100,6 +107,7 @@ func ResourceOutscaleLoadBalancerListenerRule() *schema.Resource {
 
 func ResourceOutscaleLoadBalancerListenerRuleCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutCreate)
 	req := &oscgo.CreateListenerRuleRequest{}
 
 	if vids, ok := d.GetOk("vm_ids"); ok {
@@ -153,7 +161,7 @@ func ResourceOutscaleLoadBalancerListenerRuleCreate(d *schema.ResourceData, meta
 
 	var err error
 	var resp oscgo.CreateListenerRuleResponse
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+	err = retry.Retry(timeout, func() *retry.RetryError {
 		rp, httpResp, err := conn.ListenerApi.CreateListenerRule(
 			context.Background()).CreateListenerRuleRequest(*req).Execute()
 		if err != nil {
@@ -173,6 +181,7 @@ func ResourceOutscaleLoadBalancerListenerRuleCreate(d *schema.ResourceData, meta
 
 func ResourceOutscaleLoadBalancerListenerRuleRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutRead)
 	lrName := d.Id()
 
 	filter := &oscgo.FiltersListenerRule{
@@ -185,7 +194,7 @@ func ResourceOutscaleLoadBalancerListenerRuleRead(d *schema.ResourceData, meta i
 
 	var resp oscgo.ReadListenerRulesResponse
 	var err error
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+	err = retry.Retry(timeout, func() *retry.RetryError {
 		rp, httpResp, err := conn.ListenerApi.ReadListenerRules(
 			context.Background()).ReadListenerRulesRequest(req).
 			Execute()
@@ -240,6 +249,7 @@ func ResourceOutscaleLoadBalancerListenerRuleRead(d *schema.ResourceData, meta i
 
 func ResourceOutscaleLoadBalancerListenerRuleUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutUpdate)
 
 	if d.HasChange("listener_rule") {
 		var err error
@@ -267,7 +277,7 @@ func ResourceOutscaleLoadBalancerListenerRuleUpdate(d *schema.ResourceData, meta
 			req.SetPathPattern("")
 		}
 
-		err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+		err = retry.Retry(timeout, func() *retry.RetryError {
 			_, httpResp, err := conn.ListenerApi.UpdateListenerRule(
 				context.Background()).UpdateListenerRuleRequest(req).
 				Execute()
@@ -285,6 +295,7 @@ func ResourceOutscaleLoadBalancerListenerRuleUpdate(d *schema.ResourceData, meta
 
 func ResourceOutscaleLoadBalancerListenerRuleDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutDelete)
 
 	log.Printf("[INFO] Deleting Listener Rule: %s", d.Id())
 
@@ -293,7 +304,7 @@ func ResourceOutscaleLoadBalancerListenerRuleDelete(d *schema.ResourceData, meta
 		ListenerRuleName: d.Id(),
 	}
 
-	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		_, httpResp, err := conn.ListenerApi.DeleteListenerRule(
 			context.Background()).DeleteListenerRuleRequest(req).Execute()
 		if err != nil {
@@ -301,7 +312,6 @@ func ResourceOutscaleLoadBalancerListenerRuleDelete(d *schema.ResourceData, meta
 		}
 		return nil
 	})
-
 	if err != nil {
 		return fmt.Errorf("error deleting listener rule: %s", err)
 	}
@@ -319,7 +329,7 @@ func ResourceOutscaleLoadBalancerListenerRuleDelete(d *schema.ResourceData, meta
 			}
 
 			var resp oscgo.ReadListenerRulesResponse
-			err := retry.Retry(5*time.Minute, func() *retry.RetryError {
+			err := retry.Retry(timeout, func() *retry.RetryError {
 				rp, httpResp, err := conn.ListenerApi.ReadListenerRules(
 					context.Background()).
 					ReadListenerRulesRequest(req).Execute()
@@ -336,7 +346,7 @@ func ResourceOutscaleLoadBalancerListenerRuleDelete(d *schema.ResourceData, meta
 
 			return &(*resp.ListenerRules)[0], "ready", nil
 		},
-		Timeout:    5 * time.Minute,
+		Timeout:    timeout,
 		MinTimeout: 10 * time.Second,
 	}
 	if _, err := stateConf.WaitForState(); err != nil {

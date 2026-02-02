@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -18,6 +17,12 @@ func ResourceOutscaleVirtualGatewayRoutePropagation() *schema.Resource {
 		Create: ResourceOutscaleVpnGatewayRoutePropagationEnable,
 		Read:   ResourceOutscaleVpnGatewayRoutePropagationRead,
 		Delete: ResourceOutscaleVpnGatewayRoutePropagationDisable,
+
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(CreateDefaultTimeout),
+			Read:   schema.DefaultTimeout(ReadDefaultTimeout),
+			Delete: schema.DefaultTimeout(DeleteDefaultTimeout),
+		},
 
 		Schema: map[string]*schema.Schema{
 			"virtual_gateway_id": {
@@ -45,6 +50,7 @@ func ResourceOutscaleVirtualGatewayRoutePropagation() *schema.Resource {
 
 func ResourceOutscaleVpnGatewayRoutePropagationEnable(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutCreate)
 
 	gwID := d.Get("virtual_gateway_id").(string)
 	rtID := d.Get("route_table_id").(string)
@@ -52,7 +58,7 @@ func ResourceOutscaleVpnGatewayRoutePropagationEnable(d *schema.ResourceData, me
 
 	log.Printf("\n\n[INFO] Enabling virtual gateway route propagation from %s to %s", gwID, rtID)
 
-	var err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		_, httpResp, err := conn.VirtualGatewayApi.UpdateRoutePropagation(context.Background()).UpdateRoutePropagationRequest(oscgo.UpdateRoutePropagationRequest{
 			VirtualGatewayId: gwID,
 			RouteTableId:     rtID,
@@ -75,6 +81,7 @@ func ResourceOutscaleVpnGatewayRoutePropagationEnable(d *schema.ResourceData, me
 
 func ResourceOutscaleVpnGatewayRoutePropagationDisable(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutDelete)
 
 	gwID := d.Get("virtual_gateway_id").(string)
 	rtID := d.Get("route_table_id").(string)
@@ -82,7 +89,7 @@ func ResourceOutscaleVpnGatewayRoutePropagationDisable(d *schema.ResourceData, m
 
 	log.Printf("\n\n[INFO] Disabling VGW propagation from %s to %s", gwID, rtID)
 
-	var err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		_, httpResp, err := conn.VirtualGatewayApi.UpdateRoutePropagation(context.Background()).UpdateRoutePropagationRequest(oscgo.UpdateRoutePropagationRequest{
 			VirtualGatewayId: gwID,
 			RouteTableId:     rtID,
@@ -104,12 +111,13 @@ func ResourceOutscaleVpnGatewayRoutePropagationDisable(d *schema.ResourceData, m
 
 func ResourceOutscaleVpnGatewayRoutePropagationRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutRead)
 
 	gwID := d.Get("virtual_gateway_id").(string)
 	rtID := d.Get("route_table_id").(string)
 
 	var resp oscgo.ReadRouteTablesResponse
-	var err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		rp, httpResp, err := conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(oscgo.ReadRouteTablesRequest{
 			Filters: &oscgo.FiltersRouteTable{RouteTableIds: &[]string{rtID}},
 		}).Execute()

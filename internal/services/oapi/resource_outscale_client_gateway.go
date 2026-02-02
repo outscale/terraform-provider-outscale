@@ -25,6 +25,12 @@ func ResourceOutscaleClientGateway() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(CreateDefaultTimeout),
+			Read:   schema.DefaultTimeout(ReadDefaultTimeout),
+			Update: schema.DefaultTimeout(UpdateDefaultTimeout),
+			Delete: schema.DefaultTimeout(DeleteDefaultTimeout),
+		},
 
 		Schema: map[string]*schema.Schema{
 			"bgp_asn": {
@@ -61,6 +67,7 @@ func ResourceOutscaleClientGateway() *schema.Resource {
 
 func ResourceOutscaleClientGatewayCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutCreate)
 
 	req := oscgo.CreateClientGatewayRequest{
 		BgpAsn:         cast.ToInt32(d.Get("bgp_asn")),
@@ -69,7 +76,7 @@ func ResourceOutscaleClientGatewayCreate(d *schema.ResourceData, meta interface{
 	}
 
 	var resp oscgo.CreateClientGatewayResponse
-	err := retry.Retry(120*time.Second, func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		var err error
 		rp, httpResp, err := conn.ClientGatewayApi.CreateClientGateway(context.Background()).CreateClientGatewayRequest(req).Execute()
 		if err != nil {
@@ -93,14 +100,15 @@ func ResourceOutscaleClientGatewayCreate(d *schema.ResourceData, meta interface{
 
 func ResourceOutscaleClientGatewayRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutRead)
 
 	clientGatewayID := d.Id()
 
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"pending"},
 		Target:     []string{"available", "failed", "deleted"},
-		Refresh:    clientGatewayRefreshFunc(conn, &clientGatewayID),
-		Timeout:    10 * time.Minute,
+		Refresh:    clientGatewayRefreshFunc(conn, timeout, &clientGatewayID),
+		Timeout:    timeout,
 		Delay:      5 * time.Second,
 		MinTimeout: 3 * time.Second,
 	}
@@ -153,13 +161,14 @@ func ResourceOutscaleClientGatewayUpdate(d *schema.ResourceData, meta interface{
 
 func ResourceOutscaleClientGatewayDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutDelete)
 
 	gatewayID := d.Id()
 	req := oscgo.DeleteClientGatewayRequest{
 		ClientGatewayId: gatewayID,
 	}
 
-	err := retry.Retry(120*time.Second, func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		_, httpResp, err := conn.ClientGatewayApi.DeleteClientGateway(context.Background()).DeleteClientGatewayRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -173,8 +182,8 @@ func ResourceOutscaleClientGatewayDelete(d *schema.ResourceData, meta interface{
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"deleting"},
 		Target:     []string{"deleted", "failed"},
-		Refresh:    clientGatewayRefreshFunc(conn, &gatewayID),
-		Timeout:    10 * time.Minute,
+		Refresh:    clientGatewayRefreshFunc(conn, timeout, &gatewayID),
+		Timeout:    timeout,
 		Delay:      5 * time.Second,
 		MinTimeout: 3 * time.Second,
 	}
@@ -187,7 +196,7 @@ func ResourceOutscaleClientGatewayDelete(d *schema.ResourceData, meta interface{
 	return nil
 }
 
-func clientGatewayRefreshFunc(conn *oscgo.APIClient, gatewayID *string) retry.StateRefreshFunc {
+func clientGatewayRefreshFunc(conn *oscgo.APIClient, timeout time.Duration, gatewayID *string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		filter := oscgo.ReadClientGatewaysRequest{
 			Filters: &oscgo.FiltersClientGateway{
@@ -196,7 +205,7 @@ func clientGatewayRefreshFunc(conn *oscgo.APIClient, gatewayID *string) retry.St
 		}
 		var resp oscgo.ReadClientGatewaysResponse
 		var statusCode int
-		err := retry.Retry(120*time.Second, func() *retry.RetryError {
+		err := retry.Retry(timeout, func() *retry.RetryError {
 			rp, httpResp, err := conn.ClientGatewayApi.ReadClientGateways(context.Background()).ReadClientGatewaysRequest(filter).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)

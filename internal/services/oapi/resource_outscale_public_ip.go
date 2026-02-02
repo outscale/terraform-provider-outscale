@@ -25,8 +25,10 @@ func ResourceOutscalePublicIP() *schema.Resource {
 		},
 
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(30 * time.Minute),
-			Delete: schema.DefaultTimeout(30 * time.Minute),
+			Create: schema.DefaultTimeout(CreateDefaultTimeout),
+			Read:   schema.DefaultTimeout(ReadDefaultTimeout),
+			Update: schema.DefaultTimeout(UpdateDefaultTimeout),
+			Delete: schema.DefaultTimeout(DeleteDefaultTimeout),
 		},
 
 		Schema: getOAPIPublicIPSchema(),
@@ -35,12 +37,13 @@ func ResourceOutscalePublicIP() *schema.Resource {
 
 func ResourceOutscalePublicIPCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutCreate)
 
 	allocOpts := oscgo.CreatePublicIpRequest{}
 
 	var resp oscgo.CreatePublicIpResponse
 	log.Printf("[DEBUG] EIP create configuration: %#v", allocOpts)
-	err := retry.Retry(60*time.Second, func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		rp, httpResp, err := conn.PublicIpApi.CreatePublicIp(context.Background()).CreatePublicIpRequest(allocOpts).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -69,6 +72,7 @@ func ResourceOutscalePublicIPCreate(d *schema.ResourceData, meta interface{}) er
 
 func ResourceOutscalePublicIPRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutRead)
 
 	id := d.Id()
 
@@ -77,7 +81,7 @@ func ResourceOutscalePublicIPRead(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	var response oscgo.ReadPublicIpsResponse
-	err := retry.Retry(60*time.Second, func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		resp, httpResp, err := conn.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -85,7 +89,6 @@ func ResourceOutscalePublicIPRead(d *schema.ResourceData, meta interface{}) erro
 		response = resp
 		return nil
 	})
-
 	if err != nil {
 		if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
 			d.SetId("")
@@ -133,6 +136,7 @@ func ResourceOutscalePublicIPRead(d *schema.ResourceData, meta interface{}) erro
 
 func ResourceOutscalePublicIPUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutUpdate)
 
 	vVm, okInstance := d.GetOk("vm_id")
 	vNic, okInterface := d.GetOk("nic_id")
@@ -152,7 +156,7 @@ func ResourceOutscalePublicIPUpdate(d *schema.ResourceData, meta interface{}) er
 			assocOpts.SetAllowRelink(v.(bool))
 		}
 
-		err := retry.Retry(120*time.Second, func() *retry.RetryError {
+		err := retry.Retry(timeout, func() *retry.RetryError {
 			var err error
 			_, httpResp, err := conn.PublicIpApi.LinkPublicIp(context.Background()).LinkPublicIpRequest(assocOpts).Execute()
 			if err != nil {
@@ -182,8 +186,8 @@ func ResourceOutscalePublicIPUpdate(d *schema.ResourceData, meta interface{}) er
 	return ResourceOutscalePublicIPRead(d, meta)
 }
 
-func unlinkPublicIp(conn *oscgo.APIClient, publicIpId *string) error {
-	err := retry.Retry(60*time.Second, func() *retry.RetryError {
+func unlinkPublicIp(conn *oscgo.APIClient, publicIpId *string, timeout time.Duration) error {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		_, httpResp, err := conn.PublicIpApi.UnlinkPublicIp(context.Background()).UnlinkPublicIpRequest(oscgo.UnlinkPublicIpRequest{
 			LinkPublicIpId: publicIpId,
 		}).Execute()
@@ -197,6 +201,7 @@ func unlinkPublicIp(conn *oscgo.APIClient, publicIpId *string) error {
 
 func ResourceOutscalePublicIPDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutDelete)
 
 	if err := ResourceOutscalePublicIPRead(d, meta); err != nil {
 		return err
@@ -214,10 +219,10 @@ func ResourceOutscalePublicIPDelete(d *schema.ResourceData, meta interface{}) er
 		switch ResourceOutscalePublicIPDomain(d) {
 		case "vpc":
 			linIpId := d.Get("link_public_ip_id").(string)
-			err = unlinkPublicIp(conn, &linIpId)
+			err = unlinkPublicIp(conn, &linIpId, timeout)
 		case "standard":
 			pIP := d.Get("public_ip").(string)
-			err = unlinkPublicIp(conn, &pIP)
+			err = unlinkPublicIp(conn, &pIP, timeout)
 		}
 
 		if err != nil {
@@ -228,7 +233,7 @@ func ResourceOutscalePublicIPDelete(d *schema.ResourceData, meta interface{}) er
 		}
 	}
 
-	return retry.Retry(3*time.Minute, func() *retry.RetryError {
+	return retry.Retry(timeout, func() *retry.RetryError {
 		var err error
 
 		idIP := d.Id()

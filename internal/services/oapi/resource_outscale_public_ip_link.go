@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"strings"
-	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
@@ -25,8 +24,9 @@ func ResourceOutscalePublicIPLink() *schema.Resource {
 		},
 
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(10 * time.Minute),
-			Delete: schema.DefaultTimeout(10 * time.Minute),
+			Create: schema.DefaultTimeout(CreateDefaultTimeout),
+			Read:   schema.DefaultTimeout(ReadDefaultTimeout),
+			Delete: schema.DefaultTimeout(DeleteDefaultTimeout),
 		},
 
 		Schema: getOAPIPublicIPLinkSchema(),
@@ -35,6 +35,7 @@ func ResourceOutscalePublicIPLink() *schema.Resource {
 
 func ResourceOutscalePublicIPLinkCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutCreate)
 
 	request := oscgo.LinkPublicIpRequest{}
 
@@ -61,7 +62,7 @@ func ResourceOutscalePublicIPLinkCreate(d *schema.ResourceData, meta interface{}
 	log.Printf("[DEBUG] EIP association configuration: %#v", request)
 
 	var resp oscgo.LinkPublicIpResponse
-	err := retry.Retry(60*time.Second, func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		rp, httpResp, err := conn.PublicIpApi.LinkPublicIp(context.Background()).LinkPublicIpRequest(request).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -69,7 +70,6 @@ func ResourceOutscalePublicIPLinkCreate(d *schema.ResourceData, meta interface{}
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		log.Printf("[WARN] ERROR ResourceOutscalePublicIPLinkCreate (%s)", err)
 		return err
@@ -86,6 +86,7 @@ func ResourceOutscalePublicIPLinkCreate(d *schema.ResourceData, meta interface{}
 
 func ResourceOutscalePublicIPLinkRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutRead)
 
 	id := d.Id()
 	var request oscgo.ReadPublicIpsRequest
@@ -105,7 +106,7 @@ func ResourceOutscalePublicIPLinkRead(d *schema.ResourceData, meta interface{}) 
 	}
 
 	var response oscgo.ReadPublicIpsResponse
-	err := retry.Retry(60*time.Second, func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		resp, httpResp, err := conn.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(request).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -113,7 +114,6 @@ func ResourceOutscalePublicIPLinkRead(d *schema.ResourceData, meta interface{}) 
 		response = resp
 		return nil
 	})
-
 	if err != nil {
 		log.Printf("[WARN] ERROR ResourceOutscalePublicIPLinkRead (%s)", err)
 		return fmt.Errorf("error reading outscale vm public ip %s: %#v", d.Get("public_ip_id").(string), err)
@@ -132,20 +132,20 @@ func ResourceOutscalePublicIPLinkRead(d *schema.ResourceData, meta interface{}) 
 
 func ResourceOutscalePublicIPLinkDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutDelete)
 
 	linkID := d.Get("link_public_ip_id")
 
 	opts := oscgo.UnlinkPublicIpRequest{}
 	opts.SetLinkPublicIpId(linkID.(string))
 
-	err := retry.Retry(60*time.Second, func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		_, httpResp, err := conn.PublicIpApi.UnlinkPublicIp(context.Background()).UnlinkPublicIpRequest(opts).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})
-
 	if err != nil {
 		log.Printf("[WARN] ERROR ResourceOutscalePublicIPLinkDelete (%s)", err)
 		return fmt.Errorf("error deleting elastic ip association: %s", err)

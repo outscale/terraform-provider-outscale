@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"regexp"
-	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
@@ -21,6 +20,12 @@ func ResourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
 		Create: ResourceOutscaleAppCookieStickinessPolicyCreate,
 		Read:   ResourceOutscaleAppCookieStickinessPolicyRead,
 		Delete: ResourceOutscaleAppCookieStickinessPolicyDelete,
+
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(CreateDefaultTimeout),
+			Read:   schema.DefaultTimeout(ReadDefaultTimeout),
+			Delete: schema.DefaultTimeout(DeleteDefaultTimeout),
+		},
 
 		Schema: map[string]*schema.Schema{
 			"policy_name": {
@@ -243,6 +248,7 @@ func ResourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
 
 func ResourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutCreate)
 
 	l := d.Get("load_balancer_name")
 	pn := d.Get("policy_name")
@@ -272,19 +278,17 @@ func ResourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, met
 	}
 	var err error
 	var resp oscgo.CreateLoadBalancerPolicyResponse
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+	err = retry.Retry(timeout, func() *retry.RetryError {
 		rp, httpResp, err := conn.LoadBalancerPolicyApi.
 			CreateLoadBalancerPolicy(
 				context.Background()).
 			CreateLoadBalancerPolicyRequest(req).Execute()
-
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		return fmt.Errorf("error creating appcookiestickinesspolicy: %s", err)
 	}
@@ -365,6 +369,7 @@ func ResourceOutscaleAppCookieStickinessPolicyRead(d *schema.ResourceData, meta 
 
 func ResourceOutscaleAppCookieStickinessPolicyDelete(d *schema.ResourceData, meta interface{}) error {
 	elbconn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutDelete)
 
 	l := d.Get("load_balancer_name").(string)
 	p := d.Get("policy_name").(string)
@@ -374,18 +379,16 @@ func ResourceOutscaleAppCookieStickinessPolicyDelete(d *schema.ResourceData, met
 		PolicyName:       p,
 	}
 
-	var err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		_, httpResp, err := elbconn.LoadBalancerPolicyApi.
 			DeleteLoadBalancerPolicy(
 				context.Background()).
 			DeleteLoadBalancerPolicyRequest(request).Execute()
-
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
 		return nil
 	})
-
 	if err != nil {
 		return fmt.Errorf("error deleting app stickiness policy %s: %s", d.Id(), err)
 	}
