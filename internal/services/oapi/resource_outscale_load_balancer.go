@@ -46,6 +46,12 @@ func ResourceOutscaleLoadBalancer() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(CreateDefaultTimeout),
+			Update: schema.DefaultTimeout(UpdateDefaultTimeout),
+			Read:   schema.DefaultTimeout(ReadDefaultTimeout),
+			Delete: schema.DefaultTimeout(DeleteDefaultTimeout),
+		},
 
 		Schema: map[string]*schema.Schema{
 			"subregion_names": {
@@ -350,6 +356,7 @@ func ResourceOutscaleLoadBalancerCreate(d *schema.ResourceData, meta interface{}
 
 func ResourceOutscaleLoadBalancerCreate_(d *schema.ResourceData, meta interface{}, isUpdate bool) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutCreate)
 
 	req := &oscgo.CreateLoadBalancerRequest{}
 
@@ -398,7 +405,7 @@ func ResourceOutscaleLoadBalancerCreate_(d *schema.ResourceData, meta interface{
 	}
 
 	log.Printf("[DEBUG] Load Balancer request configuration: %#v", *req)
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+	err = retry.Retry(timeout, func() *retry.RetryError {
 		_, httpResp, err := conn.LoadBalancerApi.CreateLoadBalancer(
 			context.Background()).
 			CreateLoadBalancerRequest(*req).Execute()
@@ -424,7 +431,7 @@ func ResourceOutscaleLoadBalancerCreate_(d *schema.ResourceData, meta interface{
 			LoadBalancerName: d.Id(),
 		}
 		req.SetSecuredCookies(scVal.(bool))
-		err = retry.Retry(1*time.Minute, func() *retry.RetryError {
+		err = retry.Retry(timeout, func() *retry.RetryError {
 			_, httpResp, err := conn.LoadBalancerApi.UpdateLoadBalancer(
 				context.Background()).UpdateLoadBalancerRequest(req).Execute()
 			if err != nil {
@@ -440,7 +447,7 @@ func ResourceOutscaleLoadBalancerCreate_(d *schema.ResourceData, meta interface{
 	return ResourceOutscaleLoadBalancerRead(d, meta)
 }
 
-func readResourceLb(conn *oscgo.APIClient, elbName string) (*oscgo.LoadBalancer, *oscgo.ReadLoadBalancersResponse, error) {
+func readResourceLb(conn *oscgo.APIClient, elbName string, timeout time.Duration) (*oscgo.LoadBalancer, *oscgo.ReadLoadBalancersResponse, error) {
 	filter := &oscgo.FiltersLoadBalancer{
 		LoadBalancerNames: &[]string{elbName},
 	}
@@ -450,7 +457,7 @@ func readResourceLb(conn *oscgo.APIClient, elbName string) (*oscgo.LoadBalancer,
 	}
 
 	var resp oscgo.ReadLoadBalancersResponse
-	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		rp, httpResp, err := conn.LoadBalancerApi.ReadLoadBalancers(
 			context.Background()).
 			ReadLoadBalancersRequest(req).Execute()
@@ -473,9 +480,10 @@ func readResourceLb(conn *oscgo.APIClient, elbName string) (*oscgo.LoadBalancer,
 
 func ResourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutRead)
 	elbName := d.Id()
 
-	lb, _, err := readResourceLb(conn, elbName)
+	lb, _, err := readResourceLb(conn, elbName, timeout)
 	if err != nil {
 		return err
 	}
@@ -554,6 +562,7 @@ func ResourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}) 
 
 func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutUpdate)
 	var err error
 
 	if d.HasChange("security_groups") {
@@ -563,7 +572,7 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 		nSg, _ := d.GetOk("security_groups")
 		req.SecurityGroups = utils.SetToStringSlicePtr(nSg.(*schema.Set))
 
-		err = retry.Retry(8*time.Minute, func() *retry.RetryError {
+		err = retry.Retry(timeout, func() *retry.RetryError {
 			_, httpResp, err := conn.LoadBalancerApi.UpdateLoadBalancer(
 				context.Background()).UpdateLoadBalancerRequest(req).Execute()
 			if err != nil {
@@ -594,7 +603,7 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 			goto skip_delete
 		}
 
-		err = retry.Retry(60*time.Second, func() *retry.RetryError {
+		err = retry.Retry(timeout, func() *retry.RetryError {
 			_, httpResp, err := conn.LoadBalancerApi.DeleteLoadBalancerTags(
 				context.Background()).
 				DeleteLoadBalancerTagsRequest(
@@ -616,7 +625,7 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 			goto skip_create
 		}
 
-		err = retry.Retry(60*time.Second, func() *retry.RetryError {
+		err = retry.Retry(timeout, func() *retry.RetryError {
 			_, httpResp, err := conn.LoadBalancerApi.CreateLoadBalancerTags(
 				context.Background()).
 				CreateLoadBalancerTagsRequest(
@@ -672,7 +681,7 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 			}
 
 			log.Printf("[DEBUG] Load Balancer Delete Listeners")
-			err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+			err = retry.Retry(timeout, func() *retry.RetryError {
 				_, httpResp, err := conn.ListenerApi.DeleteLoadBalancerListeners(
 					context.Background()).
 					DeleteLoadBalancerListenersRequest(req).
@@ -695,7 +704,7 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 
 			// Occasionally AWS will error with a 'duplicate listener', without any
 			// other listeners on the Load Balancer. Retry here to eliminate that.
-			err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+			err = retry.Retry(timeout, func() *retry.RetryError {
 				_, httpResp, err := conn.ListenerApi.CreateLoadBalancerListeners(
 					context.Background()).CreateLoadBalancerListenersRequest(req).Execute()
 				if err != nil {
@@ -736,7 +745,7 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 				req.HealthCheck.Path = &p
 			}
 
-			err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+			err = retry.Retry(timeout, func() *retry.RetryError {
 				_, httpResp, err := conn.LoadBalancerApi.UpdateLoadBalancer(
 					context.Background()).UpdateLoadBalancerRequest(req).
 					Execute()
@@ -770,7 +779,7 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 				},
 			}
 
-			err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+			err = retry.Retry(timeout, func() *retry.RetryError {
 				_, httpResp, err := conn.LoadBalancerApi.UpdateLoadBalancer(
 					context.Background()).UpdateLoadBalancerRequest(req).Execute()
 				if err != nil {
@@ -790,7 +799,7 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 		}
 		req.SetSecuredCookies(d.Get("secured_cookies").(bool))
 
-		err = retry.Retry(1*time.Minute, func() *retry.RetryError {
+		err = retry.Retry(timeout, func() *retry.RetryError {
 			_, httpResp, err := conn.LoadBalancerApi.UpdateLoadBalancer(
 				context.Background()).UpdateLoadBalancerRequest(req).Execute()
 			if err != nil {
@@ -808,6 +817,7 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 
 func ResourceOutscaleLoadBalancerDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutDelete)
 
 	log.Printf("[INFO] Deleting Load Balancer: %s", d.Id())
 
@@ -816,7 +826,7 @@ func ResourceOutscaleLoadBalancerDelete(d *schema.ResourceData, meta interface{}
 		LoadBalancerName: d.Id(),
 	}
 
-	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		_, httpResp, err := conn.LoadBalancerApi.DeleteLoadBalancer(
 			context.Background()).DeleteLoadBalancerRequest(req).Execute()
 		if err != nil {
@@ -832,13 +842,13 @@ func ResourceOutscaleLoadBalancerDelete(d *schema.ResourceData, meta interface{}
 		Pending: []string{"ready"},
 		Target:  []string{},
 		Refresh: func() (interface{}, string, error) {
-			lb, _, _ := readResourceLb(conn, d.Id())
+			lb, _, _ := readResourceLb(conn, d.Id(), timeout)
 			if lb == nil {
 				return nil, "", nil
 			}
 			return lb, "ready", nil
 		},
-		Timeout:    5 * time.Minute,
+		Timeout:    timeout,
 		MinTimeout: 10 * time.Second,
 	}
 	if _, err := stateConf.WaitForState(); err != nil {

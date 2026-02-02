@@ -26,10 +26,11 @@ func ResourceOutscaleImageExportTask() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(40 * time.Minute),
-			Delete: schema.DefaultTimeout(40 * time.Minute),
+			Read:   schema.DefaultTimeout(ReadDefaultTimeout),
+			Update: schema.DefaultTimeout(UpdateDefaultTimeout),
+			Delete: schema.DefaultTimeout(DeleteDefaultTimeout),
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -112,6 +113,7 @@ func ResourceOutscaleImageExportTask() *schema.Resource {
 
 func resourceOAPIImageExportTaskCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutCreate)
 
 	eto, etoOk := d.GetOk("osu_export")
 	v, ok := d.GetOk("image_id")
@@ -159,7 +161,7 @@ func resourceOAPIImageExportTaskCreate(d *schema.ResourceData, meta interface{})
 	var resp oscgo.CreateImageExportTaskResponse
 	var err error
 
-	err = retry.Retry(d.Timeout(schema.TimeoutCreate), func() *retry.RetryError {
+	err = retry.Retry(timeout, func() *retry.RetryError {
 		rp, httpResp, err := conn.ImageApi.CreateImageExportTask(context.Background()).
 			CreateImageExportTaskRequest(request).Execute()
 		if err != nil {
@@ -179,7 +181,7 @@ func resourceOAPIImageExportTaskCreate(d *schema.ResourceData, meta interface{})
 			return err
 		}
 	}
-	_, err = ResourceOutscaleImageTaskWaitForAvailable(id, conn, d.Timeout(schema.TimeoutCreate))
+	_, err = ResourceOutscaleImageTaskWaitForAvailable(id, conn, timeout)
 	if err != nil {
 		return err
 	}
@@ -189,11 +191,12 @@ func resourceOAPIImageExportTaskCreate(d *schema.ResourceData, meta interface{})
 
 func resourceOAPIImageExportTaskRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutRead)
 
 	var resp oscgo.ReadImageExportTasksResponse
 	var err error
 	filter := &oscgo.FiltersExportTask{TaskIds: &[]string{d.Id()}}
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+	err = retry.Retry(timeout, func() *retry.RetryError {
 		rp, httpResp, err := conn.ImageApi.ReadImageExportTasks(context.Background()).
 			ReadImageExportTasksRequest(oscgo.ReadImageExportTasksRequest{
 				Filters: filter,
@@ -286,7 +289,7 @@ func ResourceOutscaleImageTaskWaitForAvailable(id string, client *oscgo.APIClien
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"pending", "pending/queued", "queued"},
 		Target:     []string{"completed"},
-		Refresh:    ImageTaskStateRefreshFunc(client, id),
+		Refresh:    ImageTaskStateRefreshFunc(client, id, timeout),
 		Timeout:    timeout,
 		Delay:      OutscaleImageRetryDelay,
 		MinTimeout: OutscaleImageRetryMinTimeout,
@@ -310,13 +313,13 @@ func resourceOAPIImageExportTaskDelete(d *schema.ResourceData, meta interface{})
 }
 
 // ImageTaskStateRefreshFunc ...
-func ImageTaskStateRefreshFunc(client *oscgo.APIClient, id string) retry.StateRefreshFunc {
+func ImageTaskStateRefreshFunc(client *oscgo.APIClient, id string, timeout time.Duration) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		var resp oscgo.ReadImageExportTasksResponse
 		var err error
 		var statusCode int
 
-		err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+		err = retry.Retry(timeout, func() *retry.RetryError {
 			filter := &oscgo.FiltersExportTask{TaskIds: &[]string{id}}
 			rp, httpResp, err := client.ImageApi.ReadImageExportTasks(context.Background()).
 				ReadImageExportTasksRequest(oscgo.ReadImageExportTasksRequest{

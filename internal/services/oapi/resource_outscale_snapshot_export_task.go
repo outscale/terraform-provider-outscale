@@ -27,6 +27,8 @@ func ResourceOutscaleSnapshotExportTask() *schema.Resource {
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(40 * time.Minute),
+			Read:   schema.DefaultTimeout(ReadDefaultTimeout),
+			Update: schema.DefaultTimeout(UpdateDefaultTimeout),
 			Delete: schema.DefaultTimeout(40 * time.Minute),
 		},
 
@@ -107,6 +109,7 @@ func ResourceOutscaleSnapshotExportTask() *schema.Resource {
 
 func resourceOAPISnapshotExportTaskCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutCreate)
 
 	eto, etoOk := d.GetOk("osu_export")
 	v, ok := d.GetOk("snapshot_id")
@@ -150,7 +153,7 @@ func resourceOAPISnapshotExportTaskCreate(d *schema.ResourceData, meta interface
 	}
 
 	var resp oscgo.CreateSnapshotExportTaskResponse
-	err := retry.Retry(d.Timeout(schema.TimeoutCreate), func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		var err error
 		rp, httpResp, err := conn.SnapshotApi.CreateSnapshotExportTask(context.Background()).
 			CreateSnapshotExportTaskRequest(request).Execute()
@@ -171,7 +174,7 @@ func resourceOAPISnapshotExportTaskCreate(d *schema.ResourceData, meta interface
 			return err
 		}
 	}
-	_, err = ResourceOutscaleSnapshotTaskWaitForAvailable(id, conn, d.Timeout(schema.TimeoutCreate))
+	_, err = ResourceOutscaleSnapshotTaskWaitForAvailable(id, conn, timeout)
 	if err != nil {
 		return err
 	}
@@ -181,10 +184,11 @@ func resourceOAPISnapshotExportTaskCreate(d *schema.ResourceData, meta interface
 
 func resourceOAPISnapshotExportTaskRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutRead)
 
 	var resp oscgo.ReadSnapshotExportTasksResponse
 	filter := &oscgo.FiltersExportTask{TaskIds: &[]string{d.Id()}}
-	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		var err error
 		rp, httpResp, err := conn.SnapshotApi.ReadSnapshotExportTasks(context.Background()).
 			ReadSnapshotExportTasksRequest(oscgo.ReadSnapshotExportTasksRequest{
@@ -272,7 +276,7 @@ func ResourceOutscaleSnapshotTaskWaitForAvailable(id string, client *oscgo.APICl
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"pending", "pending/queued", "queued"},
 		Target:     []string{"completed", "active"},
-		Refresh:    SnapshotTaskStateRefreshFunc(client, id),
+		Refresh:    SnapshotTaskStateRefreshFunc(client, id, timeout),
 		Timeout:    timeout,
 		Delay:      OutscaleImageRetryDelay,
 		MinTimeout: OutscaleImageRetryMinTimeout,
@@ -295,12 +299,12 @@ func resourceOAPISnapshotExportTaskDelete(d *schema.ResourceData, meta interface
 }
 
 // SnapshotTaskStateRefreshFunc ...
-func SnapshotTaskStateRefreshFunc(client *oscgo.APIClient, id string) retry.StateRefreshFunc {
+func SnapshotTaskStateRefreshFunc(client *oscgo.APIClient, id string, timeout time.Duration) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		var resp oscgo.ReadSnapshotExportTasksResponse
 		filter := &oscgo.FiltersExportTask{TaskIds: &[]string{id}}
 		var statusCode int
-		err := retry.Retry(5*time.Minute, func() *retry.RetryError {
+		err := retry.Retry(timeout, func() *retry.RetryError {
 			var err error
 			rp, httpResp, err := client.SnapshotApi.ReadSnapshotExportTasks(context.Background()).
 				ReadSnapshotExportTasksRequest(oscgo.ReadSnapshotExportTasksRequest{

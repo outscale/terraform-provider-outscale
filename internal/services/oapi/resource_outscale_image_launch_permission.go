@@ -6,7 +6,6 @@ import (
 	"log"
 	"strconv"
 	"strings"
-	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
@@ -27,6 +26,11 @@ func ResourceOutscaleImageLaunchPermission() *schema.Resource {
 		Delete: ResourceOutscaleImageLaunchPermissionDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(CreateDefaultTimeout),
+			Read:   schema.DefaultTimeout(ReadDefaultTimeout),
+			Delete: schema.DefaultTimeout(DeleteDefaultTimeout),
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -133,6 +137,7 @@ func expandOAPIImagePermission(permissionType interface{}) (res oscgo.Permission
 
 func ResourceOutscaleImageLaunchPermissionCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutCreate)
 
 	imageID, ok := d.GetOk("image_id")
 
@@ -154,7 +159,7 @@ func ResourceOutscaleImageLaunchPermissionCreate(d *schema.ResourceData, meta in
 		PermissionsToLaunch: &permissionLaunch,
 	}
 
-	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		var err error
 		_, httpResp, err := conn.ImageApi.UpdateImage(context.Background()).UpdateImageRequest(request).Execute()
 		if err != nil {
@@ -177,9 +182,10 @@ func ResourceOutscaleImageLaunchPermissionCreate(d *schema.ResourceData, meta in
 
 func ResourceOutscaleImageLaunchPermissionRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutRead)
 
 	var resp oscgo.ReadImagesResponse
-	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		var err error
 		rp, httpResp, err := conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(oscgo.ReadImagesRequest{
 			Filters: &oscgo.FiltersImage{
@@ -224,6 +230,7 @@ func ResourceOutscaleImageLaunchPermissionRead(d *schema.ResourceData, meta inte
 
 func ResourceOutscaleImageLaunchPermissionDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutDelete)
 
 	imageID, ok := d.GetOk("image_id")
 	if !ok {
@@ -238,7 +245,7 @@ func ResourceOutscaleImageLaunchPermissionDelete(d *schema.ResourceData, meta in
 		permission.SetRemovals(expandOAPIImagePermission(permissionAdditions))
 		request.SetPermissionsToLaunch(permission)
 
-		err := retry.Retry(5*time.Minute, func() *retry.RetryError {
+		err := retry.Retry(timeout, func() *retry.RetryError {
 			_, httpResp, err := conn.ImageApi.UpdateImage(context.Background()).UpdateImageRequest(request).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)

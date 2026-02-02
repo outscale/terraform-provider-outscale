@@ -23,6 +23,13 @@ func ResourceOutscaleNatService() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(CreateDefaultTimeout),
+			Read:   schema.DefaultTimeout(ReadDefaultTimeout),
+			Update: schema.DefaultTimeout(UpdateDefaultTimeout),
+			Delete: schema.DefaultTimeout(DeleteDefaultTimeout),
+		},
+
 		Schema: map[string]*schema.Schema{
 			"public_ip_id": {
 				Type:     schema.TypeString,
@@ -74,6 +81,7 @@ func ResourceOutscaleNatService() *schema.Resource {
 
 func resourceOAPINatServiceCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutCreate)
 
 	req := oscgo.CreateNatServiceRequest{
 		PublicIpId: d.Get("public_ip_id").(string),
@@ -82,7 +90,7 @@ func resourceOAPINatServiceCreate(d *schema.ResourceData, meta interface{}) erro
 
 	var resp oscgo.CreateNatServiceResponse
 	var err error
-	err = retry.Retry(60*time.Second, func() *retry.RetryError {
+	err = retry.Retry(timeout, func() *retry.RetryError {
 		rp, httpResp, err := conn.NatServiceApi.CreateNatService(context.Background()).CreateNatServiceRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -113,8 +121,8 @@ func resourceOAPINatServiceCreate(d *schema.ResourceData, meta interface{}) erro
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{"pending"},
 		Target:  []string{"available"},
-		Refresh: NGOAPIStateRefreshFunc(conn, filterReq, "failed"),
-		Timeout: 10 * time.Minute,
+		Refresh: NGOAPIStateRefreshFunc(conn, filterReq, "failed", timeout),
+		Timeout: timeout,
 	}
 
 	if _, err := stateConf.WaitForState(); err != nil {
@@ -132,13 +140,14 @@ func resourceOAPINatServiceCreate(d *schema.ResourceData, meta interface{}) erro
 
 func resourceOAPINatServiceRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutRead)
 
 	filterReq := oscgo.ReadNatServicesRequest{
 		Filters: &oscgo.FiltersNatService{NatServiceIds: &[]string{d.Id()}},
 	}
 
 	var resp oscgo.ReadNatServicesResponse
-	err := retry.Retry(120*time.Second, func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		rp, httpResp, err := conn.NatServiceApi.ReadNatServices(context.Background()).ReadNatServicesRequest(filterReq).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -205,9 +214,10 @@ func ResourceOutscaleNatServiceUpdate(d *schema.ResourceData, meta interface{}) 
 
 func resourceOAPINatServiceDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutDelete)
 
 	log.Printf("[INFO] Deleting NAT Service: %s\n", d.Id())
-	err := retry.Retry(120*time.Second, func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		_, httpResp, err := conn.NatServiceApi.DeleteNatService(context.Background()).DeleteNatServiceRequest(oscgo.DeleteNatServiceRequest{
 			NatServiceId: d.Id(),
 		}).Execute()
@@ -227,8 +237,8 @@ func resourceOAPINatServiceDelete(d *schema.ResourceData, meta interface{}) erro
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"deleting"},
 		Target:     []string{"deleted", "available"},
-		Refresh:    NGOAPIStateRefreshFunc(conn, filterReq, "failed"),
-		Timeout:    30 * time.Minute,
+		Refresh:    NGOAPIStateRefreshFunc(conn, filterReq, "failed", timeout),
+		Timeout:    timeout,
 		Delay:      5 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
@@ -242,10 +252,10 @@ func resourceOAPINatServiceDelete(d *schema.ResourceData, meta interface{}) erro
 
 // NGOAPIStateRefreshFunc returns a retry.StateRefreshFunc that is used to watch
 // a NAT Service.
-func NGOAPIStateRefreshFunc(client *oscgo.APIClient, req oscgo.ReadNatServicesRequest, failState string) retry.StateRefreshFunc {
+func NGOAPIStateRefreshFunc(client *oscgo.APIClient, req oscgo.ReadNatServicesRequest, failState string, timeout time.Duration) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		var resp oscgo.ReadNatServicesResponse
-		err := retry.Retry(120*time.Second, func() *retry.RetryError {
+		err := retry.Retry(timeout, func() *retry.RetryError {
 			var err error
 			rp, httpResp, err := client.NatServiceApi.ReadNatServices(context.Background()).ReadNatServicesRequest(req).Execute()
 			if err != nil {

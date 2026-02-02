@@ -36,11 +36,11 @@ func ResourceOutscaleImage() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(40 * time.Minute),
-			Update: schema.DefaultTimeout(40 * time.Minute),
-			Delete: schema.DefaultTimeout(40 * time.Minute),
+			Read:   schema.DefaultTimeout(ReadDefaultTimeout),
+			Update: schema.DefaultTimeout(UpdateDefaultTimeout),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -234,6 +234,7 @@ func ResourceOutscaleImage() *schema.Resource {
 
 func resourceOAPIImageCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutCreate)
 
 	imageRequest := oscgo.CreateImageRequest{}
 	if v, ok := d.GetOk("image_name"); ok {
@@ -283,7 +284,7 @@ func resourceOAPIImageCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 	var resp oscgo.CreateImageResponse
 	var err error
-	err = retry.RetryContext(context.Background(), d.Timeout(schema.TimeoutCreate), func() *retry.RetryError {
+	err = retry.RetryContext(context.Background(), timeout, func() *retry.RetryError {
 		rp, httpResp, err := conn.ImageApi.CreateImage(context.Background()).CreateImageRequest(imageRequest).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -308,8 +309,8 @@ func resourceOAPIImageCreate(d *schema.ResourceData, meta interface{}) error {
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"pending"},
 		Target:     []string{"available"},
-		Refresh:    ImageOAPIStateRefreshFunc(conn, req, "failed", d.Timeout(schema.TimeoutCreate)),
-		Timeout:    d.Timeout(schema.TimeoutCreate),
+		Refresh:    ImageOAPIStateRefreshFunc(conn, req, "failed", timeout),
+		Timeout:    timeout,
 		MinTimeout: 30 * time.Second,
 		Delay:      5 * time.Second,
 	}
@@ -329,6 +330,7 @@ func resourceOAPIImageCreate(d *schema.ResourceData, meta interface{}) error {
 
 func resourceOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutRead)
 	id := d.Id()
 
 	req := oscgo.ReadImagesRequest{
@@ -336,7 +338,7 @@ func resourceOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	var resp oscgo.ReadImagesResponse
-	err := retry.RetryContext(context.Background(), d.Timeout(schema.TimeoutRead), func() *retry.RetryError {
+	err := retry.RetryContext(context.Background(), timeout, func() *retry.RetryError {
 		var err error
 		rp, httpResp, err := conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(req).Execute()
 		if err != nil {
@@ -436,8 +438,9 @@ func resourceOAPIImageUpdate(d *schema.ResourceData, meta interface{}) error {
 
 func resourceOAPIImageDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutDelete)
 
-	err := retry.RetryContext(context.Background(), d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
+	err := retry.RetryContext(context.Background(), timeout, func() *retry.RetryError {
 		_, httpResp, err := conn.ImageApi.DeleteImage(context.Background()).DeleteImageRequest(oscgo.DeleteImageRequest{
 			ImageId: d.Id(),
 		}).Execute()
@@ -450,7 +453,7 @@ func resourceOAPIImageDelete(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("error deleting the image %w", err)
 	}
 
-	if err := ResourceOutscaleImageWaitForDestroy(d.Id(), conn, d.Timeout(schema.TimeoutDelete)); err != nil {
+	if err := ResourceOutscaleImageWaitForDestroy(d.Id(), conn, timeout); err != nil {
 		return err
 	}
 
@@ -469,7 +472,7 @@ func ResourceOutscaleImageWaitForDestroy(id string, conn *oscgo.APIClient, timeO
 		Pending:    []string{"available", "pending"},
 		Target:     []string{"destroyed", "failed"},
 		Refresh:    ImageOAPIStateRefreshFunc(conn, filterReq, "failed", timeOut),
-		Timeout:    10 * time.Minute,
+		Timeout:    timeOut,
 		MinTimeout: 30 * time.Second,
 		Delay:      5 * time.Second,
 	}

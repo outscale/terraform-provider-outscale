@@ -25,6 +25,12 @@ func ResourceOutscaleNetworkInterfaceAttachment() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			State: ResourceOutscaleNetworkInterfaceAttachmentImportState,
 		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(CreateDefaultTimeout),
+			Read:   schema.DefaultTimeout(ReadDefaultTimeout),
+			Delete: schema.DefaultTimeout(DeleteDefaultTimeout),
+		},
+
 		Schema: map[string]*schema.Schema{
 			"device_number": {
 				Type:     schema.TypeInt,
@@ -69,6 +75,7 @@ func ResourceOutscaleNetworkInterfaceAttachment() *schema.Resource {
 
 func ResourceOutscaleNetworkInterfaceAttachmentCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutCreate)
 
 	di := d.Get("device_number").(int)
 	vmID := d.Get("vm_id").(string)
@@ -83,7 +90,7 @@ func ResourceOutscaleNetworkInterfaceAttachmentCreate(d *schema.ResourceData, me
 	log.Printf("[DEBUG] Attaching network interface (%s) to instance (%s)", nicID, vmID)
 
 	var resp oscgo.LinkNicResponse
-	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		rp, httpResp, err := conn.NicApi.LinkNic(context.Background()).LinkNicRequest(opts).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -101,14 +108,15 @@ func ResourceOutscaleNetworkInterfaceAttachmentCreate(d *schema.ResourceData, me
 
 func ResourceOutscaleNetworkInterfaceAttachmentRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutRead)
 
 	nicID := d.Get("nic_id").(string)
 
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"attaching", "detaching"},
 		Target:     []string{"attached", "detached", "failed"},
-		Refresh:    nicLinkRefreshFunc(conn, nicID),
-		Timeout:    5 * time.Minute,
+		Refresh:    nicLinkRefreshFunc(conn, nicID, timeout),
+		Timeout:    timeout,
 		Delay:      2 * time.Second,
 		MinTimeout: 3 * time.Second,
 	}
@@ -144,6 +152,7 @@ func ResourceOutscaleNetworkInterfaceAttachmentRead(d *schema.ResourceData, meta
 
 func ResourceOutscaleNetworkInterfaceAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutDelete)
 
 	interfaceID := d.Id()
 
@@ -153,7 +162,7 @@ func ResourceOutscaleNetworkInterfaceAttachmentDelete(d *schema.ResourceData, me
 
 	var err error
 	var statusCode int
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+	err = retry.Retry(timeout, func() *retry.RetryError {
 		_, httpResp, err := conn.NicApi.UnlinkNic(context.Background()).UnlinkNicRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -173,8 +182,8 @@ func ResourceOutscaleNetworkInterfaceAttachmentDelete(d *schema.ResourceData, me
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"detaching"},
 		Target:     []string{"detached", "failed"},
-		Refresh:    nicLinkRefreshFunc(conn, nicID),
-		Timeout:    5 * time.Minute,
+		Refresh:    nicLinkRefreshFunc(conn, nicID, timeout),
+		Timeout:    timeout,
 		Delay:      5 * time.Second,
 		MinTimeout: 3 * time.Second,
 	}
@@ -193,11 +202,13 @@ func ResourceOutscaleNetworkInterfaceAttachmentImportState(d *schema.ResourceDat
 		return nil, errors.New("import error: to import a Nic Link, use the format {nic_id} it must not be empty")
 	}
 
+	timeout := d.Timeout(schema.TimeoutRead)
+
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"attaching", "detaching"},
 		Target:     []string{"attached", "detached", "failed"},
-		Refresh:    nicLinkRefreshFunc(meta.(*client.OutscaleClient).OSCAPI, d.Id()),
-		Timeout:    5 * time.Minute,
+		Refresh:    nicLinkRefreshFunc(meta.(*client.OutscaleClient).OSCAPI, d.Id(), timeout),
+		Timeout:    timeout,
 		MinTimeout: 3 * time.Second,
 	}
 
@@ -224,7 +235,7 @@ func ResourceOutscaleNetworkInterfaceAttachmentImportState(d *schema.ResourceDat
 	return []*schema.ResourceData{d}, nil
 }
 
-func nicLinkRefreshFunc(conn *oscgo.APIClient, nicID string) retry.StateRefreshFunc {
+func nicLinkRefreshFunc(conn *oscgo.APIClient, nicID string, timeout time.Duration) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		req := oscgo.ReadNicsRequest{
 			Filters: &oscgo.FiltersNic{
@@ -233,7 +244,7 @@ func nicLinkRefreshFunc(conn *oscgo.APIClient, nicID string) retry.StateRefreshF
 		}
 
 		var resp oscgo.ReadNicsResponse
-		err := retry.Retry(5*time.Minute, func() *retry.RetryError {
+		err := retry.Retry(timeout, func() *retry.RetryError {
 			rp, httpResp, err := conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(req).Execute()
 			if err != nil {
 				return utils.CheckThrottling(httpResp, err)

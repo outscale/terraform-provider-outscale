@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
@@ -21,6 +20,11 @@ func ResourceOutscaleNetworkInterfacePrivateIP() *schema.Resource {
 		Delete: ResourceOutscaleNetworkInterfacePrivateIPDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(CreateDefaultTimeout),
+			Read:   schema.DefaultTimeout(ReadDefaultTimeout),
+			Delete: schema.DefaultTimeout(DeleteDefaultTimeout),
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -60,6 +64,7 @@ func ResourceOutscaleNetworkInterfacePrivateIP() *schema.Resource {
 
 func ResourceOutscaleNetworkInterfacePrivateIPCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutCreate)
 
 	input := oscgo.LinkPrivateIpsRequest{
 		NicId: d.Get("nic_id").(string),
@@ -77,7 +82,7 @@ func ResourceOutscaleNetworkInterfacePrivateIPCreate(d *schema.ResourceData, met
 		input.SetPrivateIps(utils.InterfaceSliceToStringSlice(v.([]interface{})))
 	}
 
-	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		_, httpResp, err := conn.NicApi.LinkPrivateIps(context.Background()).LinkPrivateIpsRequest(input).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -96,6 +101,7 @@ func ResourceOutscaleNetworkInterfacePrivateIPCreate(d *schema.ResourceData, met
 
 func ResourceOutscaleNetworkInterfacePrivateIPRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutRead)
 
 	req := oscgo.ReadNicsRequest{
 		Filters: &oscgo.FiltersNic{NicIds: &[]string{d.Id()}},
@@ -104,7 +110,7 @@ func ResourceOutscaleNetworkInterfacePrivateIPRead(d *schema.ResourceData, meta 
 	var resp oscgo.ReadNicsResponse
 	var err error
 	var statusCode int
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+	err = retry.Retry(timeout, func() *retry.RetryError {
 		rp, httpResp, err := conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -173,6 +179,7 @@ func ResourceOutscaleNetworkInterfacePrivateIPRead(d *schema.ResourceData, meta 
 
 func ResourceOutscaleNetworkInterfacePrivateIPDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutDelete)
 
 	input := oscgo.UnlinkPrivateIpsRequest{
 		NicId: d.Id(),
@@ -182,7 +189,7 @@ func ResourceOutscaleNetworkInterfacePrivateIPDelete(d *schema.ResourceData, met
 		input.SetPrivateIps(utils.InterfaceSliceToStringSlice(v.([]interface{})))
 	}
 
-	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		_, httpResp, err := conn.NicApi.UnlinkPrivateIps(context.Background()).UnlinkPrivateIpsRequest(input).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)

@@ -23,6 +23,12 @@ func ResourceOutscaleLoadBalancerAttributes() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(CreateDefaultTimeout),
+			Update: schema.DefaultTimeout(UpdateDefaultTimeout),
+			Read:   schema.DefaultTimeout(ReadDefaultTimeout),
+			Delete: schema.DefaultTimeout(DeleteDefaultTimeout),
+		},
 
 		Schema: map[string]*schema.Schema{
 			"access_log": {
@@ -266,9 +272,9 @@ func ResourceOutscaleLoadBalancerAttributesCreate(d *schema.ResourceData, meta i
 	return ResourceOutscaleLoadBalancerAttributesCreate_(d, meta, false)
 }
 
-func loadBalancerAttributesDoRequest(d *schema.ResourceData, meta interface{}, req oscgo.UpdateLoadBalancerRequest) error {
+func loadBalancerAttributesDoRequest(d *schema.ResourceData, meta interface{}, req oscgo.UpdateLoadBalancerRequest, timeout time.Duration) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
-	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		_, httpResp, err := conn.LoadBalancerApi.UpdateLoadBalancer(
 			context.Background()).UpdateLoadBalancerRequest(req).Execute()
 		if err != nil {
@@ -287,6 +293,11 @@ func loadBalancerAttributesDoRequest(d *schema.ResourceData, meta interface{}, r
 }
 
 func ResourceOutscaleLoadBalancerAttributesCreate_(d *schema.ResourceData, meta interface{}, isUpdate bool) error {
+	timeout := d.Timeout(schema.TimeoutCreate)
+	if isUpdate {
+		timeout = d.Timeout(schema.TimeoutUpdate)
+	}
+
 	ename, ok := d.GetOk("load_balancer_name")
 
 	if !ok {
@@ -314,7 +325,7 @@ func ResourceOutscaleLoadBalancerAttributesCreate_(d *schema.ResourceData, meta 
 		req.PolicyNames = &a
 	}
 	if isUpdate {
-		return loadBalancerAttributesDoRequest(d, meta, req)
+		return loadBalancerAttributesDoRequest(d, meta, req, timeout)
 	}
 
 	if ssl, sok := d.GetOk("server_certificate_id"); sok {
@@ -373,14 +384,15 @@ func ResourceOutscaleLoadBalancerAttributesCreate_(d *schema.ResourceData, meta 
 		req.SetHealthCheck(healthCheck)
 	}
 
-	return loadBalancerAttributesDoRequest(d, meta, req)
+	return loadBalancerAttributesDoRequest(d, meta, req, timeout)
 }
 
 func ResourceOutscaleLoadBalancerAttributesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutRead)
 	elbName := d.Id()
 
-	lb, _, err := readResourceLb(conn, elbName)
+	lb, _, err := readResourceLb(conn, elbName, timeout)
 	if err != nil {
 		return err
 	}
@@ -478,6 +490,7 @@ func ResourceOutscaleLoadBalancerAttributesRead(d *schema.ResourceData, meta int
 
 func ResourceOutscaleLoadBalancerAttributesDelete(d *schema.ResourceData, meta interface{}) error {
 	var err error
+	timeout := d.Timeout(schema.TimeoutDelete)
 
 	conn := meta.(*client.OutscaleClient).OSCAPI
 	ename, ok := d.GetOk("load_balancer_name")
@@ -504,7 +517,7 @@ func ResourceOutscaleLoadBalancerAttributesDelete(d *schema.ResourceData, meta i
 		LoadBalancerPort: &p32,
 	}
 
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+	err = retry.Retry(timeout, func() *retry.RetryError {
 		_, httpResp, err := conn.LoadBalancerApi.UpdateLoadBalancer(
 			context.Background()).UpdateLoadBalancerRequest(req).Execute()
 		if err != nil {

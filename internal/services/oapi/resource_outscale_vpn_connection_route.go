@@ -26,6 +26,12 @@ func ResourceOutscaleVPNConnectionRoute() *schema.Resource {
 			State: ResourceOutscaleVPNConnectionRouteImportState,
 		},
 
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(CreateDefaultTimeout),
+			Read:   schema.DefaultTimeout(ReadDefaultTimeout),
+			Delete: schema.DefaultTimeout(DeleteDefaultTimeout),
+		},
+
 		Schema: map[string]*schema.Schema{
 			"destination_ip_range": {
 				Type:     schema.TypeString,
@@ -47,6 +53,7 @@ func ResourceOutscaleVPNConnectionRoute() *schema.Resource {
 
 func ResourceOutscaleVPNConnectionRouteCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutCreate)
 
 	destinationIPRange := d.Get("destination_ip_range").(string)
 	vpnConnectionID := d.Get("vpn_connection_id").(string)
@@ -55,7 +62,7 @@ func ResourceOutscaleVPNConnectionRouteCreate(d *schema.ResourceData, meta inter
 		DestinationIpRange: destinationIPRange,
 		VpnConnectionId:    vpnConnectionID,
 	}
-	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		_, httpResp, err := conn.VpnConnectionApi.CreateVpnConnectionRoute(context.Background()).CreateVpnConnectionRouteRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -73,6 +80,7 @@ func ResourceOutscaleVPNConnectionRouteCreate(d *schema.ResourceData, meta inter
 
 func ResourceOutscaleVPNConnectionRouteRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutRead)
 
 	destinationIPRange, vpnConnectionID := oapihelpers.ParseVPNConnectionRouteID(d.Id())
 
@@ -80,7 +88,7 @@ func ResourceOutscaleVPNConnectionRouteRead(d *schema.ResourceData, meta interfa
 		Pending:    []string{"pending"},
 		Target:     []string{"available", "failed"},
 		Refresh:    vpnConnectionRouteRefreshFunc(conn, &destinationIPRange, &vpnConnectionID),
-		Timeout:    10 * time.Minute,
+		Timeout:    timeout,
 		Delay:      5 * time.Second,
 		MinTimeout: 3 * time.Second,
 	}
@@ -99,6 +107,7 @@ func ResourceOutscaleVPNConnectionRouteRead(d *schema.ResourceData, meta interfa
 
 func ResourceOutscaleVPNConnectionRouteDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutDelete)
 
 	destinationIPRange, vpnConnectionID := oapihelpers.ParseVPNConnectionRouteID(d.Id())
 
@@ -106,7 +115,7 @@ func ResourceOutscaleVPNConnectionRouteDelete(d *schema.ResourceData, meta inter
 		DestinationIpRange: destinationIPRange,
 		VpnConnectionId:    vpnConnectionID,
 	}
-	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		_, httpResp, err := conn.VpnConnectionApi.DeleteVpnConnectionRoute(context.Background()).DeleteVpnConnectionRouteRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -121,7 +130,7 @@ func ResourceOutscaleVPNConnectionRouteDelete(d *schema.ResourceData, meta inter
 		Pending:    []string{"deleting"},
 		Target:     []string{"deleted", "failed"},
 		Refresh:    vpnConnectionRouteRefreshFunc(conn, &destinationIPRange, &vpnConnectionID),
-		Timeout:    10 * time.Minute,
+		Timeout:    timeout,
 		Delay:      5 * time.Second,
 		MinTimeout: 3 * time.Second,
 	}
@@ -175,6 +184,7 @@ func vpnConnectionRouteRefreshFunc(conn *oscgo.APIClient, destinationIPRange, vp
 
 func ResourceOutscaleVPNConnectionRouteImportState(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutRead)
 
 	parts := strings.SplitN(d.Id(), "_", 2)
 	if len(parts) != 2 {
@@ -188,7 +198,7 @@ func ResourceOutscaleVPNConnectionRouteImportState(d *schema.ResourceData, meta 
 		Pending:    []string{"pending"},
 		Target:     []string{"available", "failed"},
 		Refresh:    vpnConnectionRouteRefreshFunc(conn, &destinationIPRange, &vpnConnectionID),
-		Timeout:    10 * time.Minute,
+		Timeout:    timeout,
 		Delay:      1 * time.Second,
 		MinTimeout: 3 * time.Second,
 	}

@@ -24,6 +24,12 @@ func ResourceOutscaleVirtualGatewayLink() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(CreateDefaultTimeout),
+			Read:   schema.DefaultTimeout(ReadDefaultTimeout),
+			Delete: schema.DefaultTimeout(DeleteDefaultTimeout),
+		},
+
 		Schema: map[string]*schema.Schema{
 			"net_id": {
 				Type:     schema.TypeString,
@@ -67,6 +73,7 @@ func ResourceOutscaleVirtualGatewayLink() *schema.Resource {
 
 func ResourceOutscaleVirtualGatewayLinkCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutCreate)
 
 	netID := d.Get("net_id").(string)
 	vgwID := d.Get("virtual_gateway_id").(string)
@@ -79,7 +86,7 @@ func ResourceOutscaleVirtualGatewayLinkCreate(d *schema.ResourceData, meta inter
 
 	var err error
 
-	err = retry.Retry(30*time.Second, func() *retry.RetryError {
+	err = retry.Retry(timeout, func() *retry.RetryError {
 		_, httpResp, err := conn.VirtualGatewayApi.LinkVirtualGateway(context.Background()).LinkVirtualGatewayRequest(createOpts).Execute()
 		if err != nil {
 			if httpResp.StatusCode == http.StatusNotFound {
@@ -98,8 +105,8 @@ func ResourceOutscaleVirtualGatewayLinkCreate(d *schema.ResourceData, meta inter
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"detached", "attaching"},
 		Target:     []string{"attached"},
-		Refresh:    vpnGatewayLinkStateRefresh(conn, netID, vgwID),
-		Timeout:    15 * time.Minute,
+		Refresh:    vpnGatewayLinkStateRefresh(conn, netID, vgwID, timeout),
+		Timeout:    timeout,
 		Delay:      2 * time.Second,
 		MinTimeout: 3 * time.Second,
 	}
@@ -118,13 +125,14 @@ func ResourceOutscaleVirtualGatewayLinkCreate(d *schema.ResourceData, meta inter
 
 func ResourceOutscaleVirtualGatewayLinkRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutRead)
 
 	vgwID := d.Id()
 
 	var resp oscgo.ReadVirtualGatewaysResponse
 	var err error
 	var statusCode int
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
+	err = retry.Retry(timeout, func() *retry.RetryError {
 		rp, httpResp, err := conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(oscgo.ReadVirtualGatewaysRequest{
 			Filters: &oscgo.FiltersVirtualGateway{VirtualGatewayIds: &[]string{vgwID}},
 		}).Execute()
@@ -188,6 +196,7 @@ func flattenNetToVirtualGatewayLinks(netToVirtualGatewayLinks *[]oscgo.NetToVirt
 
 func ResourceOutscaleVirtualGatewayLinkDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutDelete)
 
 	// Get the old VPC ID to detach from
 	netID, _ := d.GetChange("net_id")
@@ -208,7 +217,7 @@ func ResourceOutscaleVirtualGatewayLinkDelete(d *schema.ResourceData, meta inter
 
 	var err error
 	var statusCode int
-	err = retry.Retry(30*time.Second, func() *retry.RetryError {
+	err = retry.Retry(timeout, func() *retry.RetryError {
 		_, httpResp, err := conn.VirtualGatewayApi.UnlinkVirtualGateway(context.Background()).UnlinkVirtualGatewayRequest(oscgo.UnlinkVirtualGatewayRequest{
 			VirtualGatewayId: d.Id(),
 			NetId:            netID.(string),
@@ -242,8 +251,8 @@ func ResourceOutscaleVirtualGatewayLinkDelete(d *schema.ResourceData, meta inter
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{"attached", "detaching", "available"},
 		Target:  []string{"detached"},
-		Refresh: vpnGatewayAttachStateRefreshFunc(conn, d.Get("virtual_gateway_id").(string), "detached"),
-		Timeout: 5 * time.Minute,
+		Refresh: vpnGatewayAttachStateRefreshFunc(conn, d.Get("virtual_gateway_id").(string), "detached", timeout),
+		Timeout: timeout,
 	}
 	if _, err := stateConf.WaitForState(); err != nil {
 		return fmt.Errorf(
@@ -254,12 +263,12 @@ func ResourceOutscaleVirtualGatewayLinkDelete(d *schema.ResourceData, meta inter
 	return nil
 }
 
-func vpnGatewayLinkStateRefresh(conn *oscgo.APIClient, vpcID, vgwID string) retry.StateRefreshFunc {
+func vpnGatewayLinkStateRefresh(conn *oscgo.APIClient, vpcID, vgwID string, timeout time.Duration) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		var err error
 		var resp oscgo.ReadVirtualGatewaysResponse
 		var statusCode int
-		err = retry.Retry(30*time.Second, func() *retry.RetryError {
+		err = retry.Retry(timeout, func() *retry.RetryError {
 			rp, httpResp, err := conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(oscgo.ReadVirtualGatewaysRequest{Filters: &oscgo.FiltersVirtualGateway{
 				VirtualGatewayIds: &[]string{vgwID},
 				LinkNetIds:        &[]string{vpcID},

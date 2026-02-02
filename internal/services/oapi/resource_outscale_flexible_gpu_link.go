@@ -25,9 +25,9 @@ func ResourceOutscaleFlexibleGpuLink() *schema.Resource {
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(5 * time.Minute),
-			Read:   schema.DefaultTimeout(5 * time.Minute),
-			Update: schema.DefaultTimeout(10 * time.Minute),
-			Delete: schema.DefaultTimeout(5 * time.Minute),
+			Read:   schema.DefaultTimeout(ReadDefaultTimeout),
+			Update: schema.DefaultTimeout(UpdateDefaultTimeout),
+			Delete: schema.DefaultTimeout(DeleteDefaultTimeout),
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -54,6 +54,7 @@ func ResourceOutscaleFlexibleGpuLink() *schema.Resource {
 
 func ResourceOutscaleFlexibleGpuLinkCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutCreate)
 	vmId := d.Get("vm_id").(string)
 	GpuIdsList := utils.SetToStringSlice(d.Get("flexible_gpu_ids").(*schema.Set))
 
@@ -63,7 +64,7 @@ func ResourceOutscaleFlexibleGpuLinkCreate(d *schema.ResourceData, meta interfac
 			FlexibleGpuId: flexGpuID,
 			VmId:          vmId,
 		}
-		err := retry.Retry(d.Timeout(schema.TimeoutCreate), func() *retry.RetryError {
+		err := retry.Retry(timeout, func() *retry.RetryError {
 			var err error
 			rp, httpResp, err := conn.FlexibleGpuApi.LinkFlexibleGpu(
 				context.Background()).LinkFlexibleGpuRequest(reqLink).Execute()
@@ -81,7 +82,7 @@ func ResourceOutscaleFlexibleGpuLinkCreate(d *schema.ResourceData, meta interfac
 		}
 	}
 
-	if err := changeShutdownBehavior(conn, vmId, d.Timeout(schema.TimeoutDelete)); err != nil {
+	if err := changeShutdownBehavior(conn, vmId, timeout); err != nil {
 		return fmt.Errorf("unable to change shutdownbehavior: %s", err)
 	}
 
@@ -90,6 +91,7 @@ func ResourceOutscaleFlexibleGpuLinkCreate(d *schema.ResourceData, meta interfac
 
 func ResourceOutscaleFlexibleGpuLinkRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutRead)
 	vmId := d.Get("vm_id").(string)
 	req := &oscgo.ReadFlexibleGpusRequest{
 		Filters: &oscgo.FiltersFlexibleGpu{
@@ -97,7 +99,7 @@ func ResourceOutscaleFlexibleGpuLinkRead(d *schema.ResourceData, meta interface{
 		},
 	}
 	var resp oscgo.ReadFlexibleGpusResponse
-	err := retry.Retry(d.Timeout(schema.TimeoutRead), func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		rp, httpResp, err := conn.FlexibleGpuApi.ReadFlexibleGpus(
 			context.Background()).
 			ReadFlexibleGpusRequest(*req).Execute()
@@ -107,7 +109,6 @@ func ResourceOutscaleFlexibleGpuLinkRead(d *schema.ResourceData, meta interface{
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}
@@ -132,6 +133,7 @@ func ResourceOutscaleFlexibleGpuLinkRead(d *schema.ResourceData, meta interface{
 
 func ResourceOutscaleFlexibleGpuLinkDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutDelete)
 	GpuIdsList := utils.SetToStringSlice(d.Get("flexible_gpu_ids").(*schema.Set))
 	vmId := d.Get("vm_id").(string)
 	var err error
@@ -140,7 +142,7 @@ func ResourceOutscaleFlexibleGpuLinkDelete(d *schema.ResourceData, meta interfac
 		req := &oscgo.UnlinkFlexibleGpuRequest{
 			FlexibleGpuId: flexGpuID,
 		}
-		err = retry.Retry(d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
+		err = retry.Retry(timeout, func() *retry.RetryError {
 			_, httpResp, err := conn.FlexibleGpuApi.UnlinkFlexibleGpu(
 				context.Background()).UnlinkFlexibleGpuRequest(*req).Execute()
 			if err != nil {
@@ -158,7 +160,7 @@ func ResourceOutscaleFlexibleGpuLinkDelete(d *schema.ResourceData, meta interfac
 				FlexibleGpuIds: &[]string{flexGpuID},
 			},
 		}
-		err = retry.Retry(d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
+		err = retry.Retry(timeout, func() *retry.RetryError {
 			rp, httpResp, err := conn.FlexibleGpuApi.ReadFlexibleGpus(context.Background()).
 				ReadFlexibleGpusRequest(*reqFlex).Execute()
 			if err != nil {
@@ -180,7 +182,7 @@ func ResourceOutscaleFlexibleGpuLinkDelete(d *schema.ResourceData, meta interfac
 		}
 	}
 
-	if err := changeShutdownBehavior(conn, vmId, d.Timeout(schema.TimeoutDelete)); err != nil {
+	if err := changeShutdownBehavior(conn, vmId, timeout); err != nil {
 		return fmt.Errorf("unable to change shutdownbehavior: %s", err)
 	}
 
@@ -190,6 +192,7 @@ func ResourceOutscaleFlexibleGpuLinkDelete(d *schema.ResourceData, meta interfac
 
 func resourceFlexibleGpuLinkUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutUpdate)
 	vmId := d.Get("vm_id").(string)
 	oldIds, newIds := d.GetChange("flexible_gpu_ids")
 
@@ -203,7 +206,7 @@ func resourceFlexibleGpuLinkUpdate(d *schema.ResourceData, meta interface{}) err
 			req := &oscgo.UnlinkFlexibleGpuRequest{
 				FlexibleGpuId: flexGpuID,
 			}
-			err = retry.Retry(20*time.Second, func() *retry.RetryError {
+			err = retry.Retry(timeout, func() *retry.RetryError {
 				_, httpResp, err := conn.FlexibleGpuApi.UnlinkFlexibleGpu(
 					context.Background()).UnlinkFlexibleGpuRequest(*req).Execute()
 				if err != nil {
@@ -222,7 +225,7 @@ func resourceFlexibleGpuLinkUpdate(d *schema.ResourceData, meta interface{}) err
 				FlexibleGpuId: flexGpuID,
 				VmId:          vmId,
 			}
-			err = retry.Retry(20*time.Second, func() *retry.RetryError {
+			err = retry.Retry(timeout, func() *retry.RetryError {
 				_, httpResp, err := conn.FlexibleGpuApi.LinkFlexibleGpu(
 					context.Background()).LinkFlexibleGpuRequest(*req).Execute()
 				if err != nil {
@@ -235,16 +238,16 @@ func resourceFlexibleGpuLinkUpdate(d *schema.ResourceData, meta interface{}) err
 			}
 		}
 	}
-	if err := changeShutdownBehavior(conn, vmId, d.Timeout(schema.TimeoutUpdate)); err != nil {
+	if err := changeShutdownBehavior(conn, vmId, timeout); err != nil {
 		return fmt.Errorf("unable to change shutdownbehavior: %s", err)
 	}
 
 	return ResourceOutscaleFlexibleGpuLinkRead(d, meta)
 }
 
-func changeShutdownBehavior(conn *oscgo.APIClient, vmId string, timeOut time.Duration) error {
+func changeShutdownBehavior(conn *oscgo.APIClient, vmId string, timeout time.Duration) error {
 	var resp oscgo.ReadVmsResponse
-	err := retry.Retry(timeOut, func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		rp, httpResp, err := conn.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
 			Filters: &oscgo.FiltersVm{
 				VmIds: &[]string{vmId},
@@ -268,24 +271,24 @@ func changeShutdownBehavior(conn *oscgo.APIClient, vmId string, timeOut time.Dur
 	if shutdownBehOpt != "stop" {
 		sbOpts := oscgo.UpdateVmRequest{VmId: vm.GetVmId()}
 		sbOpts.SetVmInitiatedShutdownBehavior("stop")
-		if err := updateVmAttr(conn, sbOpts); err != nil {
+		if err := updateVmAttr(conn, timeout, sbOpts); err != nil {
 			return err
 		}
 	}
 
-	if err := stopVM(vmId, conn, timeOut); err != nil {
+	if err := stopVM(vmId, conn, timeout); err != nil {
 		return err
 	}
 
 	if shutdownBehOpt != "stop" {
 		sbReq := oscgo.UpdateVmRequest{VmId: vmId}
 		sbReq.SetVmInitiatedShutdownBehavior(shutdownBehOpt)
-		if err = updateVmAttr(conn, sbReq); err != nil {
+		if err = updateVmAttr(conn, timeout, sbReq); err != nil {
 			return err
 		}
 	}
 
-	if err := startVM(vmId, conn, timeOut); err != nil {
+	if err := startVM(vmId, conn, timeout); err != nil {
 		return err
 	}
 	return nil

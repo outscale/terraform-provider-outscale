@@ -22,6 +22,13 @@ func ResourceOutscaleDHCPOption() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(CreateDefaultTimeout),
+			Read:   schema.DefaultTimeout(ReadDefaultTimeout),
+			Update: schema.DefaultTimeout(UpdateDefaultTimeout),
+			Delete: schema.DefaultTimeout(DeleteDefaultTimeout),
+		},
+
 		Schema: map[string]*schema.Schema{
 			"domain_name": {
 				Type:     schema.TypeString,
@@ -75,6 +82,7 @@ func ResourceOutscaleDHCPOption() *schema.Resource {
 
 func ResourceOutscaleDHCPOptionCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutCreate)
 
 	createOpts := oscgo.CreateDhcpOptionsRequest{}
 
@@ -99,7 +107,7 @@ func ResourceOutscaleDHCPOptionCreate(d *schema.ResourceData, meta interface{}) 
 		createOpts.SetNtpServers(utils.InterfaceSliceToStringSlice(ntpServers.([]interface{})))
 	}
 
-	dhcp, _, err := createDhcpOption(conn, createOpts)
+	dhcp, _, err := createDhcpOption(conn, timeout, createOpts)
 	if err != nil {
 		return err
 	}
@@ -115,9 +123,10 @@ func ResourceOutscaleDHCPOptionCreate(d *schema.ResourceData, meta interface{}) 
 
 func ResourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutRead)
 	dhcpID := d.Id()
 
-	_, resp, err := readDhcpOption(conn, dhcpID)
+	_, resp, err := readDhcpOption(conn, timeout, dhcpID)
 	if err != nil {
 		return err
 	}
@@ -165,29 +174,30 @@ func ResourceOutscaleDHCPOptionUpdate(d *schema.ResourceData, meta interface{}) 
 
 func ResourceOutscaleDHCPOptionDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutDelete)
 
 	dhcpID := d.Id()
 
-	nets, err := getAttachedDHCPs(conn, dhcpID)
+	nets, err := getAttachedDHCPs(conn, timeout, dhcpID)
 	if err != nil {
 		return err
 	}
 
-	if err := detachDHCPs(conn, nets); err != nil {
+	if err := detachDHCPs(conn, timeout, nets); err != nil {
 		return err
 	}
 
 	// Deletes the dhcp option
-	if err := deleteDhcpOptions(conn, dhcpID); err != nil {
+	if err := deleteDhcpOptions(conn, timeout, dhcpID); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func createDhcpOption(conn *oscgo.APIClient, dhcp oscgo.CreateDhcpOptionsRequest) (*oscgo.DhcpOptionsSet, *oscgo.CreateDhcpOptionsResponse, error) {
+func createDhcpOption(conn *oscgo.APIClient, timeout time.Duration, dhcp oscgo.CreateDhcpOptionsRequest) (*oscgo.DhcpOptionsSet, *oscgo.CreateDhcpOptionsResponse, error) {
 	var resp oscgo.CreateDhcpOptionsResponse
-	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		rp, httpResp, err := conn.DhcpOptionApi.CreateDhcpOptions(context.Background()).CreateDhcpOptionsRequest(dhcp).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -202,13 +212,13 @@ func createDhcpOption(conn *oscgo.APIClient, dhcp oscgo.CreateDhcpOptionsRequest
 	return resp.DhcpOptionsSet, &resp, err
 }
 
-func readDhcpOption(conn *oscgo.APIClient, dhcpID string) (*oscgo.DhcpOptionsSet, *oscgo.ReadDhcpOptionsResponse, error) {
+func readDhcpOption(conn *oscgo.APIClient, timeout time.Duration, dhcpID string) (*oscgo.DhcpOptionsSet, *oscgo.ReadDhcpOptionsResponse, error) {
 	filterRequest := oscgo.ReadDhcpOptionsRequest{
 		Filters: &oscgo.FiltersDhcpOptions{DhcpOptionsSetIds: &[]string{dhcpID}},
 	}
 
 	var resp oscgo.ReadDhcpOptionsResponse
-	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		rp, httpResp, err := conn.DhcpOptionApi.ReadDhcpOptions(context.Background()).ReadDhcpOptionsRequest(filterRequest).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -228,8 +238,8 @@ func readDhcpOption(conn *oscgo.APIClient, dhcpID string) (*oscgo.DhcpOptionsSet
 	return &dhcps[0], &resp, err
 }
 
-func deleteDhcpOptions(conn *oscgo.APIClient, dhcpID string) error {
-	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
+func deleteDhcpOptions(conn *oscgo.APIClient, timeout time.Duration, dhcpID string) error {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		_, httpResp, err := conn.DhcpOptionApi.DeleteDhcpOptions(context.Background()).DeleteDhcpOptionsRequest(oscgo.DeleteDhcpOptionsRequest{
 			DhcpOptionsSetId: dhcpID,
 		}).Execute()
@@ -241,10 +251,10 @@ func deleteDhcpOptions(conn *oscgo.APIClient, dhcpID string) error {
 	return err
 }
 
-func getAttachedDHCPs(conn *oscgo.APIClient, dhcpID string) ([]oscgo.Net, error) {
+func getAttachedDHCPs(conn *oscgo.APIClient, timeout time.Duration, dhcpID string) ([]oscgo.Net, error) {
 	// Validate if the DHCP  Option is attached to a Net
 	var resp oscgo.ReadNetsResponse
-	err := retry.Retry(120*time.Second, func() *retry.RetryError {
+	err := retry.Retry(timeout, func() *retry.RetryError {
 		rp, httpResp, err := conn.NetApi.ReadNets(context.Background()).ReadNetsRequest(oscgo.ReadNetsRequest{
 			Filters: &oscgo.FiltersNet{
 				DhcpOptionsSetIds: &[]string{dhcpID},
@@ -263,10 +273,10 @@ func getAttachedDHCPs(conn *oscgo.APIClient, dhcpID string) ([]oscgo.Net, error)
 	return resp.GetNets(), nil
 }
 
-func detachDHCPs(conn *oscgo.APIClient, nets []oscgo.Net) error {
+func detachDHCPs(conn *oscgo.APIClient, timeout time.Duration, nets []oscgo.Net) error {
 	// Detaching the dhcp of the nets
 	for _, net := range nets {
-		err := retry.Retry(120*time.Second, func() *retry.RetryError {
+		err := retry.Retry(timeout, func() *retry.RetryError {
 			_, httpResp, err := conn.NetApi.UpdateNet(context.Background()).UpdateNetRequest(oscgo.UpdateNetRequest{
 				DhcpOptionsSetId: "default",
 				NetId:            net.GetNetId(),
