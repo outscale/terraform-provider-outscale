@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -44,6 +45,7 @@ type ClusterModel struct {
 	AdminWhitelist        types.Set      `tfsdk:"admin_whitelist"`
 	AdmissionFlags        types.Object   `tfsdk:"admission_flags"`
 	AutoMaintenances      types.Object   `tfsdk:"auto_maintenances"`
+	MaintenanceWindow     types.Object   `tfsdk:"maintenance_window"`
 	CidrPods              types.String   `tfsdk:"cidr_pods"`
 	CidrService           types.String   `tfsdk:"cidr_service"`
 	ClusterDns            types.String   `tfsdk:"cluster_dns"`
@@ -80,7 +82,17 @@ type MaintenanceWindowModel struct {
 	WeekDay       types.String `tfsdk:"week_day"`
 }
 
-var maintenanceWindowAttrTypes = fwhelpers.GetAttrTypes(MaintenanceWindowModel{})
+type MaintenanceModel struct {
+	DurationHours types.Int64  `tfsdk:"duration_hours"`
+	StartHour     types.Int64  `tfsdk:"start_hour"`
+	Tz            types.String `tfsdk:"tz"`
+	WeekDay       types.String `tfsdk:"week_day"`
+}
+
+var (
+	maintenanceWindowAttrTypes = fwhelpers.GetAttrTypes(MaintenanceWindowModel{})
+	maintenanceAttrTypes       = fwhelpers.GetAttrTypes(MaintenanceModel{})
+)
 
 type AdmissionFlagsModel struct {
 	AppliedAdmissionPlugins       types.Set `tfsdk:"applied_admission_plugins"`
@@ -211,8 +223,12 @@ func (r *oksClusterResource) Schema(ctx context.Context, _ resource.SchemaReques
 				},
 			},
 			"auto_maintenances": schema.SingleNestedAttribute{
-				Computed: true,
-				Optional: true,
+				Computed:           true,
+				Optional:           true,
+				DeprecationMessage: "Configure \"maintenance_window\" instead. This attribute will be removed in the next major version of the provider.",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.MatchRoot("maintenance_window")),
+				},
 				Attributes: map[string]schema.Attribute{
 					"minor_upgrade_maintenance_actual": schema.SingleNestedAttribute{
 						Computed:   true,
@@ -229,6 +245,28 @@ func (r *oksClusterResource) Schema(ctx context.Context, _ resource.SchemaReques
 					"patch_upgrade_maintenance": schema.SingleNestedAttribute{
 						Optional:   true,
 						Attributes: maintenancesWindowSchema,
+					},
+				},
+			},
+			"maintenance_window": schema.SingleNestedAttribute{
+				Computed: true,
+				Optional: true,
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.MatchRoot("auto_maintenances")),
+				},
+				Attributes: map[string]schema.Attribute{
+					"duration_hours": schema.Int64Attribute{
+						Required: true,
+					},
+					"start_hour": schema.Int64Attribute{
+						Required: true,
+					},
+					"week_day": schema.StringAttribute{
+						Required: true,
+					},
+					"tz": schema.StringAttribute{
+						Computed: true,
+						Optional: true,
 					},
 				},
 			},
@@ -400,7 +438,7 @@ var maintenancesWindowSchemaActual = map[string]schema.Attribute{
 	},
 }
 
-func (r *oksClusterResource) expandOKSAutoMaintenances(ctx context.Context, obj basetypes.ObjectValue) (auto oks.MaintenanceWindow, _ diag.Diagnostics) {
+func (r *oksClusterResource) expandAutoMaintenances(ctx context.Context, obj basetypes.ObjectValue) (auto oks.MaintenanceWindow, _ diag.Diagnostics) {
 	if fwhelpers.IsSet(obj) {
 		window, diags := to.Model[MaintenanceWindowModel](ctx, obj)
 		if diags.HasError() {
@@ -428,7 +466,30 @@ func (r *oksClusterResource) expandOKSAutoMaintenances(ctx context.Context, obj 
 	return
 }
 
-func (r *oksClusterResource) expandOKSAdmissionFlags(ctx context.Context, data AdmissionFlagsModel) (oks.AdmissionFlagsInput, diag.Diagnostics) {
+func (r *oksClusterResource) expandMaintenances(ctx context.Context, obj basetypes.ObjectValue) (maintenance oks.Maintenance, _ diag.Diagnostics) {
+	if fwhelpers.IsSet(obj) {
+		maintenanceModel, diags := to.Model[MaintenanceModel](ctx, obj)
+		if diags.HasError() {
+			return maintenance, diags
+		}
+
+		if fwhelpers.IsSet(maintenanceModel.DurationHours) {
+			maintenance.DurationHours = int(maintenanceModel.DurationHours.ValueInt64())
+		}
+		if fwhelpers.IsSet(maintenanceModel.StartHour) {
+			maintenance.StartHour = int(maintenanceModel.StartHour.ValueInt64())
+		}
+		if fwhelpers.IsSet(maintenanceModel.Tz) {
+			maintenance.Tz = maintenanceModel.Tz.ValueStringPointer()
+		}
+		if fwhelpers.IsSet(maintenanceModel.WeekDay) {
+			maintenance.WeekDay = (oks.MaintenanceWeekDay)(maintenanceModel.WeekDay.ValueString())
+		}
+	}
+	return
+}
+
+func (r *oksClusterResource) expandAdmissionFlags(ctx context.Context, data AdmissionFlagsModel) (oks.AdmissionFlagsInput, diag.Diagnostics) {
 	var (
 		admissionFlags oks.AdmissionFlagsInput
 		diags          diag.Diagnostics
@@ -460,10 +521,6 @@ func (r *oksClusterResource) Create(ctx context.Context, req resource.CreateRequ
 		Name:      plan.Name.ValueString(),
 		ProjectId: plan.ProjectId.ValueString(),
 		Version:   plan.Version.ValueString(),
-		AutoMaintenances: oks.AutoMaintenances{
-			MinorUpgradeMaintenance: oks.MaintenanceWindow{},
-			PatchUpgradeMaintenance: oks.MaintenanceWindow{},
-		},
 	}
 
 	whitelist, diag := to.Slice[string](ctx, plan.AdminWhitelist)
@@ -485,10 +542,10 @@ func (r *oksClusterResource) Create(ctx context.Context, req resource.CreateRequ
 		input.AdminLbu = plan.AdminLbu.ValueBoolPointer()
 	}
 	if fwhelpers.IsSet(plan.CidrPods) {
-		input.CidrPods = plan.CidrPods.ValueStringPointer()
+		input.CidrPods = plan.CidrPods.ValueString()
 	}
 	if fwhelpers.IsSet(plan.CidrService) {
-		input.CidrService = plan.CidrService.ValueStringPointer()
+		input.CidrService = plan.CidrService.ValueString()
 	}
 	if fwhelpers.IsSet(plan.ClusterDns) {
 		input.ClusterDns = plan.ClusterDns.ValueStringPointer()
@@ -510,18 +567,26 @@ func (r *oksClusterResource) Create(ctx context.Context, req resource.CreateRequ
 	input.Tags = &tags
 
 	if fwhelpers.IsSet(plan.AutoMaintenances) {
+		autoInput := oks.AutoMaintenances{}
 		auto, diag := to.Model[AutoMaintenancesModel](ctx, plan.AutoMaintenances)
 		if fwhelpers.CheckDiags(resp, diag) {
 			return
 		}
 
-		minor, diag := r.expandOKSAutoMaintenances(ctx, auto.MinorUpgradeMaintenance)
+		minor, diag := r.expandAutoMaintenances(ctx, auto.MinorUpgradeMaintenance)
 		resp.Diagnostics.Append(diag...)
-		patch, diag := r.expandOKSAutoMaintenances(ctx, auto.PatchUpgradeMaintenance)
+		patch, diag := r.expandAutoMaintenances(ctx, auto.PatchUpgradeMaintenance)
 		resp.Diagnostics.Append(diag...)
 
-		input.AutoMaintenances.MinorUpgradeMaintenance = minor
-		input.AutoMaintenances.PatchUpgradeMaintenance = patch
+		autoInput.MinorUpgradeMaintenance = minor
+		autoInput.PatchUpgradeMaintenance = patch
+		input.AutoMaintenances = &autoInput
+	}
+	if fwhelpers.IsSet(plan.MaintenanceWindow) {
+		maintenance, diag := r.expandMaintenances(ctx, plan.MaintenanceWindow)
+		resp.Diagnostics.Append(diag...)
+
+		input.MaintenanceWindow = &maintenance
 	}
 	if fwhelpers.IsSet(plan.AdmissionFlags) {
 		admissionModel, diag := to.Model[AdmissionFlagsModel](ctx, plan.AdmissionFlags)
@@ -529,7 +594,7 @@ func (r *oksClusterResource) Create(ctx context.Context, req resource.CreateRequ
 			return
 		}
 
-		admissionFlags, diag := r.expandOKSAdmissionFlags(ctx, admissionModel)
+		admissionFlags, diag := r.expandAdmissionFlags(ctx, admissionModel)
 		resp.Diagnostics.Append(diag...)
 		input.AdmissionFlags = &admissionFlags
 	}
@@ -552,7 +617,7 @@ func (r *oksClusterResource) Create(ctx context.Context, req resource.CreateRequ
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
-	data, err := r.setOKSClusterState(ctx, plan, to)
+	data, err := r.read(ctx, plan, to)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to set Cluster state",
@@ -575,7 +640,7 @@ func (r *oksClusterResource) Read(ctx context.Context, req resource.ReadRequest,
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
-	data, err := r.setOKSClusterState(ctx, data, to)
+	data, err := r.read(ctx, data, to)
 	if err != nil {
 		if oks.IsNotFound(err) {
 			resp.State.RemoveResource(ctx)
@@ -673,14 +738,14 @@ func (r *oksClusterResource) Update(ctx context.Context, req resource.UpdateRequ
 			if planAuto.MinorUpgradeMaintenance.IsNull() && !planAuto.MinorUpgradeMaintenance.Equal(stateAuto.MinorUpgradeMaintenance) {
 				updateReq.AutoMaintenances.MinorUpgradeMaintenance = oks.MaintenanceWindow{}
 			} else {
-				minor, diag := r.expandOKSAutoMaintenances(ctx, planAuto.MinorUpgradeMaintenance)
+				minor, diag := r.expandAutoMaintenances(ctx, planAuto.MinorUpgradeMaintenance)
 				resp.Diagnostics.Append(diag...)
 				updateReq.AutoMaintenances.MinorUpgradeMaintenance = minor
 			}
 			if planAuto.PatchUpgradeMaintenance.IsNull() && !planAuto.PatchUpgradeMaintenance.Equal(stateAuto.PatchUpgradeMaintenance) {
 				updateReq.AutoMaintenances.PatchUpgradeMaintenance = oks.MaintenanceWindow{}
 			} else {
-				patch, diag := r.expandOKSAutoMaintenances(ctx, planAuto.PatchUpgradeMaintenance)
+				patch, diag := r.expandAutoMaintenances(ctx, planAuto.PatchUpgradeMaintenance)
 				resp.Diagnostics.Append(diag...)
 				updateReq.AutoMaintenances.PatchUpgradeMaintenance = patch
 			}
@@ -691,6 +756,13 @@ func (r *oksClusterResource) Update(ctx context.Context, req resource.UpdateRequ
 		}
 		// Set new optional value to state, since Read does not write it
 		state.AutoMaintenances = plan.AutoMaintenances
+	}
+	if fwhelpers.IsSet(plan.MaintenanceWindow) && !plan.MaintenanceWindow.Equal(state.MaintenanceWindow) {
+		maintenance, diag := r.expandMaintenances(ctx, plan.MaintenanceWindow)
+		if fwhelpers.CheckDiags(resp, diag) {
+			return
+		}
+		updateReq.MaintenanceWindow = &maintenance
 	}
 	if fwhelpers.IsSet(plan.ControlPlanes) && !plan.ControlPlanes.Equal(state.ControlPlanes) {
 		updateReq.ControlPlanes = plan.ControlPlanes.ValueStringPointer()
@@ -758,7 +830,7 @@ func (r *oksClusterResource) Update(ctx context.Context, req resource.UpdateRequ
 		tflog.Info(ctx, fmt.Sprintf("Cluster upgrading. Timeout is set at %s.", timeout.String()))
 	}
 
-	data, err := r.setOKSClusterState(ctx, state, timeout)
+	data, err := r.read(ctx, state, timeout)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to set Cluster state",
@@ -821,57 +893,58 @@ func (r *oksClusterResource) waitForClusterState(ctx context.Context, id string,
 	return resp, nil
 }
 
-func (r *oksClusterResource) setOKSAdmissionFlags(ctx context.Context, data *ClusterModel, auto *oks.AdmissionFlags) diag.Diagnostics {
+func (r *oksClusterResource) setAdmissionFlags(ctx context.Context, data *ClusterModel, auto oks.AdmissionFlags) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	if auto != nil {
-		var model AdmissionFlagsModel
-		applied, diag := types.SetValueFrom(ctx, types.StringType, auto.AppliedAdmissionPlugins)
-		diags.Append(diag...)
+	var model AdmissionFlagsModel
+	applied, diag := types.SetValueFrom(ctx, types.StringType, auto.AppliedAdmissionPlugins)
+	diags.Append(diag...)
 
-		disable, diag := types.SetValueFrom(ctx, types.StringType, auto.DisableAdmissionPlugins)
-		diags.Append(diag...)
+	disable, diag := types.SetValueFrom(ctx, types.StringType, auto.DisableAdmissionPlugins)
+	diags.Append(diag...)
 
-		enable, diag := types.SetValueFrom(ctx, types.StringType, auto.EnableAdmissionPlugins)
-		diags.Append(diag...)
-		if diags.HasError() {
-			return diags
-		}
-
-		model.DisableAdmissionPlugins = types.SetValueMust(types.StringType, []attr.Value{})
-		model.EnableAdmissionPlugins = types.SetValueMust(types.StringType, []attr.Value{})
-		if fwhelpers.IsSet(data.AdmissionFlags) {
-			stateModel, diag := to.Model[AdmissionFlagsModel](ctx, data.AdmissionFlags)
-			diags.Append(diag...)
-			if diag.HasError() {
-				return diags
-			}
-			if fwhelpers.IsSet(stateModel.EnableAdmissionPlugins) {
-				model.EnableAdmissionPlugins = stateModel.EnableAdmissionPlugins
-			}
-			if fwhelpers.IsSet(stateModel.DisableAdmissionPlugins) {
-				model.DisableAdmissionPlugins = stateModel.DisableAdmissionPlugins
-			}
-		}
-
-		// Set computed values
-		model.AppliedAdmissionPlugins = applied
-		model.DisableAdmissionPluginsActual = disable
-		model.EnableAdmissionPluginsActual = enable
-
-		obj, diag := types.ObjectValueFrom(ctx, data.AdmissionFlags.AttributeTypes(ctx), model)
-		diags.Append(diag...)
-		if diags.HasError() {
-			return diags
-		}
-		data.AdmissionFlags = obj
+	enable, diag := types.SetValueFrom(ctx, types.StringType, auto.EnableAdmissionPlugins)
+	diags.Append(diag...)
+	if diags.HasError() {
+		return diags
 	}
+
+	model.DisableAdmissionPlugins = types.SetValueMust(types.StringType, []attr.Value{})
+	model.EnableAdmissionPlugins = types.SetValueMust(types.StringType, []attr.Value{})
+	if fwhelpers.IsSet(data.AdmissionFlags) {
+		stateModel, diag := to.Model[AdmissionFlagsModel](ctx, data.AdmissionFlags)
+		diags.Append(diag...)
+		if diag.HasError() {
+			return diags
+		}
+		if fwhelpers.IsSet(stateModel.EnableAdmissionPlugins) {
+			model.EnableAdmissionPlugins = stateModel.EnableAdmissionPlugins
+		}
+		if fwhelpers.IsSet(stateModel.DisableAdmissionPlugins) {
+			model.DisableAdmissionPlugins = stateModel.DisableAdmissionPlugins
+		}
+	}
+
+	// Set computed values
+	model.AppliedAdmissionPlugins = applied
+	model.DisableAdmissionPluginsActual = disable
+	model.EnableAdmissionPluginsActual = enable
+
+	obj, diag := types.ObjectValueFrom(ctx, data.AdmissionFlags.AttributeTypes(ctx), model)
+	diags.Append(diag...)
+	if diags.HasError() {
+		return diags
+	}
+	data.AdmissionFlags = obj
 
 	return diags
 }
 
-func (r *oksClusterResource) setOKSAutoMaintenances(ctx context.Context, data *ClusterModel, auto oks.AutoMaintenances) diag.Diagnostics {
+func (r *oksClusterResource) setAutoMaintenances(ctx context.Context, data *ClusterModel, auto *oks.AutoMaintenances) diag.Diagnostics {
 	var diags diag.Diagnostics
+	if auto == nil {
+		return diags
+	}
 
 	setMaintenanceWindow := func(window oks.MaintenanceWindow) (types.Object, diag.Diagnostics) {
 		var windowModel MaintenanceWindowModel
@@ -923,7 +996,29 @@ func (r *oksClusterResource) setOKSAutoMaintenances(ctx context.Context, data *C
 	return diags
 }
 
-func (r *oksClusterResource) setOKSStatuses(ctx context.Context, data *ClusterModel, auto oks.Statuses) diag.Diagnostics {
+func (r *oksClusterResource) setMaintenance(ctx context.Context, data *ClusterModel, maintenance *oks.Maintenance) diag.Diagnostics {
+	data.MaintenanceWindow = types.ObjectNull(maintenanceAttrTypes)
+	if maintenance == nil {
+		return nil
+	}
+
+	maintenanceModel := MaintenanceModel{
+		DurationHours: to.Int64(maintenance.DurationHours),
+		StartHour:     to.Int64(maintenance.StartHour),
+		Tz:            to.String(maintenance.Tz),
+		WeekDay:       to.String((string)(maintenance.WeekDay)),
+	}
+
+	obj, diag := types.ObjectValueFrom(ctx, maintenanceAttrTypes, maintenanceModel)
+	if diag.HasError() {
+		return diag
+	}
+	data.MaintenanceWindow = obj
+
+	return nil
+}
+
+func (r *oksClusterResource) setStatuses(ctx context.Context, data *ClusterModel, auto oks.Statuses) diag.Diagnostics {
 	var model StatusesModel
 	model.AvailableUpgrade = to.String(auto.AvailableUpgrade)
 	model.CreatedAt = to.RFC3339(auto.CreatedAt)
@@ -940,7 +1035,7 @@ func (r *oksClusterResource) setOKSStatuses(ctx context.Context, data *ClusterMo
 	return nil
 }
 
-func (r *oksClusterResource) setOKSClusterState(ctx context.Context, data ClusterModel, timeout time.Duration) (ClusterModel, error) {
+func (r *oksClusterResource) read(ctx context.Context, data ClusterModel, timeout time.Duration) (ClusterModel, error) {
 	resp, err := r.waitForClusterState(ctx, data.Id.ValueString(), []string{"pending", "deploying", "updating", "upgrading"}, []string{"ready", "deleting"}, timeout)
 	if err != nil {
 		return data, err
@@ -949,21 +1044,25 @@ func (r *oksClusterResource) setOKSClusterState(ctx context.Context, data Cluste
 
 	adminWhiteList, diags := types.SetValueFrom(ctx, types.StringType, cluster.AdminWhitelist)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to convert adminwhitelist into a set: %v", diags.Errors())
+		return data, fmt.Errorf("unable to convert admin_whitelist into a set: %v", diags.Errors())
 	}
 	cpSubregions, diags := types.SetValueFrom(ctx, types.StringType, cluster.CpSubregions)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to convert cpsubregions into a set: %v", diags.Errors())
+		return data, fmt.Errorf("unable to convert cp_subregions into a set: %v", diags.Errors())
 	}
-	diags = r.setOKSAdmissionFlags(ctx, &data, cluster.AdmissionFlags)
+	diags = r.setAdmissionFlags(ctx, &data, cluster.AdmissionFlags)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to convert admissionflags into the schema model: %v", diags.Errors())
+		return data, fmt.Errorf("unable to convert admission_flags into the schema model: %v", diags.Errors())
 	}
-	diags = r.setOKSAutoMaintenances(ctx, &data, cluster.AutoMaintenances)
+	diags = r.setAutoMaintenances(ctx, &data, cluster.AutoMaintenances)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to convert automaintenances into the schema model: %v", diags.Errors())
+		return data, fmt.Errorf("unable to convert auto_maintenances into the schema model: %v", diags.Errors())
 	}
-	diags = r.setOKSStatuses(ctx, &data, cluster.Statuses)
+	diags = r.setMaintenance(ctx, &data, cluster.MaintenanceWindow)
+	if diags.HasError() {
+		return data, fmt.Errorf("unable to convert maintenance_window into the schema model: %v", diags.Errors())
+	}
+	diags = r.setStatuses(ctx, &data, cluster.Statuses)
 	if diags.HasError() {
 		return data, fmt.Errorf("unable to convert statuses into the schema model: %v", diags.Errors())
 	}
