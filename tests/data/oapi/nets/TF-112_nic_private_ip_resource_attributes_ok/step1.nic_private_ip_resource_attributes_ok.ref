@@ -101,7 +101,8 @@
                             "10.0.45.67"
                         ],
                         "request_id": "########",
-                        "secondary_private_ip_count": 1
+                        "secondary_private_ip_count": 1,
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,

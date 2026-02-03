@@ -38,16 +38,17 @@
                     "schema_version": 0,
                     "attributes": {
                         "default": false,
-                        "dhcp_options_set_id": "##id-0##",
+                        "dhcp_options_set_id": "##id-2##",
                         "domain_name": "test",
                         "domain_name_servers": [
                             "OutscaleProvidedDNS"
                         ],
-                        "id": "##id-0##",
+                        "id": "##id-2##",
                         "log_servers": [],
                         "ntp_servers": [],
                         "request_id": "########",
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
@@ -64,7 +65,7 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "dhcp_options_set_id": "##id-2##",
+                        "dhcp_options_set_id": "##id-0##",
                         "id": "##id-1##",
                         "ip_range": "10.0.0.0/16",
                         "net_id": "##id-1##",
@@ -88,7 +89,7 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "dhcp_options_set_id": "##id-0##",
+                        "dhcp_options_set_id": "##id-2##",
                         "id": "##id-1##",
                         "ip_range": "10.0.0.0/16",
                         "net_id": "##id-1##",

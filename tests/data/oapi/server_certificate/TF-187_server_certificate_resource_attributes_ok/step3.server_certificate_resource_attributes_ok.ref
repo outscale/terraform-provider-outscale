@@ -19,16 +19,20 @@
                         "dry_run": null,
                         "expiration_date": "########",
                         "id": "##id-0##",
-                        "name": "Cert-TF187-update",
+                        "name": "########",
                         "orn": "########",
                         "path": "/terraform/",
                         "private_key": "########",
                         "request_id": "########",
+                        "timeouts": null,
                         "upload_date": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########"
+                    "private": "########",
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         }

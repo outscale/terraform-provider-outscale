@@ -346,7 +346,8 @@
                         "public_ip": "########",
                         "request_id": "########",
                         "state": "available",
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
@@ -373,7 +374,8 @@
                         "public_ip": "########",
                         "request_id": "########",
                         "state": "available",
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
@@ -399,6 +401,7 @@
                         "request_id": "########",
                         "state": "available",
                         "tags": [],
+                        "timeouts": null,
                         "virtual_gateway_id": "##id-2##"
                     },
                     "sensitive_attributes": [],

@@ -75,7 +75,8 @@
                                 "key": "test-1",
                                 "value": "outscale_terraform_lbu"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,

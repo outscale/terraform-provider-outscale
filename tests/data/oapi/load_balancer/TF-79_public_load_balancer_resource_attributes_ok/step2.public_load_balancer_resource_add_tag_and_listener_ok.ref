@@ -95,7 +95,8 @@
                                 "key": "test-2",
                                 "value": "test-tag-2"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,

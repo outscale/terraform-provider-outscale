@@ -161,7 +161,8 @@
                                 "key": "name-test",
                                 "value": "test-tags"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,

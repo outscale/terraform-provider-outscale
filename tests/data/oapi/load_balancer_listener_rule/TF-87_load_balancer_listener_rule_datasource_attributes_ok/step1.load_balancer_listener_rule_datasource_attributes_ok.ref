@@ -127,7 +127,8 @@
                                 "key": "name",
                                 "value": "listener-rule"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
@@ -166,6 +167,7 @@
                             }
                         ],
                         "request_id": "########",
+                        "timeouts": null,
                         "vm_ids": [
                             "##id-3##"
                         ]
@@ -211,6 +213,7 @@
                             }
                         ],
                         "request_id": "########",
+                        "timeouts": null,
                         "vm_ids": [
                             "##id-3##"
                         ]
@@ -336,7 +339,7 @@
                         "net_id": "",
                         "nics": [],
                         "os_family": "",
-                        "performance": "medium",
+                        "performance": "highest",
                         "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "primary_nic": [],

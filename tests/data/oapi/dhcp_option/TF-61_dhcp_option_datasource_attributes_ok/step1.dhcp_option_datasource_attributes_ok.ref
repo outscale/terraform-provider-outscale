@@ -83,7 +83,8 @@
                                 "key": "Project",
                                 "value": "terraform"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,

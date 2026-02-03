@@ -21,23 +21,6 @@
                         "volumes": [
                             {
                                 "creation_date": "########",
-                                "iops": 120,
-                                "linked_volumes": [],
-                                "size": 13,
-                                "snapshot_id": "",
-                                "state": "available",
-                                "subregion_name": "eu-west-2a",
-                                "tags": [
-                                    {
-                                        "key": "Name",
-                                        "value": "volume-io1-1"
-                                    }
-                                ],
-                                "volume_id": "##id-1##",
-                                "volume_type": "io1"
-                            },
-                            {
-                                "creation_date": "########",
                                 "iops": 150,
                                 "linked_volumes": [],
                                 "size": 12,
@@ -50,8 +33,25 @@
                                         "value": "volume-standard-1"
                                     }
                                 ],
-                                "volume_id": "##id-2##",
+                                "volume_id": "##id-1##",
                                 "volume_type": "standard"
+                            },
+                            {
+                                "creation_date": "########",
+                                "iops": 120,
+                                "linked_volumes": [],
+                                "size": 13,
+                                "snapshot_id": "",
+                                "state": "available",
+                                "subregion_name": "eu-west-2a",
+                                "tags": [
+                                    {
+                                        "key": "Name",
+                                        "value": "volume-io1-1"
+                                    }
+                                ],
+                                "volume_id": "##id-2##",
+                                "volume_type": "io1"
                             }
                         ]
                     },
@@ -70,7 +70,7 @@
                     "schema_version": 0,
                     "attributes": {
                         "creation_date": "########",
-                        "id": "##id-2##",
+                        "id": "##id-1##",
                         "iops": null,
                         "linked_volumes": [],
                         "request_id": "########",
@@ -86,7 +86,7 @@
                         ],
                         "termination_snapshot_name": null,
                         "timeouts": null,
-                        "volume_id": "##id-2##",
+                        "volume_id": "##id-1##",
                         "volume_type": "standard"
                     },
                     "sensitive_attributes": [],
@@ -104,7 +104,7 @@
                     "schema_version": 0,
                     "attributes": {
                         "creation_date": "########",
-                        "id": "##id-1##",
+                        "id": "##id-2##",
                         "iops": 120,
                         "linked_volumes": [],
                         "request_id": "########",
@@ -120,7 +120,7 @@
                         ],
                         "termination_snapshot_name": null,
                         "timeouts": null,
-                        "volume_id": "##id-1##",
+                        "volume_id": "##id-2##",
                         "volume_type": "io1"
                     },
                     "sensitive_attributes": [],

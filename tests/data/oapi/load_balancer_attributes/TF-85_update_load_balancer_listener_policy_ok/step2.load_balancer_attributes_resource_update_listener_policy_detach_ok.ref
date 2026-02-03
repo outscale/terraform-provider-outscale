@@ -87,7 +87,8 @@
                                 "key": "test",
                                 "value": "tags"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
@@ -179,7 +180,8 @@
                                 "key": "test",
                                 "value": "tags"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
@@ -276,7 +278,8 @@
                                 "key": "test",
                                 "value": "tags"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,

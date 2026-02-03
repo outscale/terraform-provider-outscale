@@ -152,7 +152,8 @@
                                 "key": "name-1",
                                 "value": "test-MZI-3"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
@@ -184,7 +185,8 @@
                                 "key": "name",
                                 "value": "test-MZI_2"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,

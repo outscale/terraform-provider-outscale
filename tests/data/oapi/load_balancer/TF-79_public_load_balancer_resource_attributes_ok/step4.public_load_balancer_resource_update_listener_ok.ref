@@ -66,7 +66,8 @@
                         "subregion_names": [
                             "eu-west-2a"
                         ],
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
@@ -92,16 +93,20 @@
                         "dry_run": null,
                         "expiration_date": "########",
                         "id": "##id-3##",
-                        "name": "Certificate-TF-79-1",
+                        "name": "########",
                         "orn": "########",
                         "path": "/",
                         "private_key": "########",
                         "request_id": "########",
+                        "timeouts": null,
                         "upload_date": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########"
+                    "private": "########",
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         }

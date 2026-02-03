@@ -56,7 +56,7 @@
                         "orn": "########",
                         "path": "/",
                         "policy_default_version_id": "##id-4##",
-                        "policy_id": "##id-2##",
+                        "policy_id": "##id-1##",
                         "policy_name": "########",
                         "resources_count": 0,
                         "timeouts": null
@@ -87,7 +87,7 @@
                         "orn": "########",
                         "path": "/terraform2/",
                         "policy_default_version_id": "##id-4##",
-                        "policy_id": "##id-1##",
+                        "policy_id": "##id-2##",
                         "policy_name": "########",
                         "resources_count": 0,
                         "timeouts": null

@@ -17,7 +17,7 @@
                         "expiration_date": "########",
                         "filter": "########",
                         "id": "##id-0##",
-                        "name": "Certificate-TF188",
+                        "name": "########",
                         "orn": "########",
                         "path": "/terraform/test/",
                         "request_id": "########",
@@ -42,16 +42,20 @@
                         "dry_run": null,
                         "expiration_date": "########",
                         "id": "##id-0##",
-                        "name": "Certificate-TF188",
+                        "name": "########",
                         "orn": "########",
                         "path": "/terraform/test/",
                         "private_key": "########",
                         "request_id": "########",
+                        "timeouts": null,
                         "upload_date": "########"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########"
+                    "private": "########",
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         }

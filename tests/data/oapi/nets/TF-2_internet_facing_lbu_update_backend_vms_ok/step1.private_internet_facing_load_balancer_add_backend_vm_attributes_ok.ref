@@ -217,7 +217,8 @@
                                 "key": "name",
                                 "value": "lbu-internet-facing-TF02"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
@@ -650,7 +651,7 @@
                             }
                         ],
                         "os_family": "",
-                        "performance": "medium",
+                        "performance": "highest",
                         "placement_subregion_name": "us-east-2a",
                         "placement_tenancy": "default",
                         "primary_nic": [

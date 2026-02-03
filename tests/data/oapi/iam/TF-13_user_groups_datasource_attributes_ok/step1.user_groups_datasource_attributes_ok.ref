@@ -48,16 +48,16 @@
                                 "creation_date": "########",
                                 "last_modification_date": "########",
                                 "orn": "########",
-                                "path": "/terraform3/",
-                                "user_group_id": "##id-3##",
+                                "path": "/terraform/",
+                                "user_group_id": "##id-1##",
                                 "user_group_name": "########"
                             },
                             {
                                 "creation_date": "########",
                                 "last_modification_date": "########",
                                 "orn": "########",
-                                "path": "/terraform/",
-                                "user_group_id": "##id-1##",
+                                "path": "/terraform3/",
+                                "user_group_id": "##id-3##",
                                 "user_group_name": "########"
                             }
                         ]

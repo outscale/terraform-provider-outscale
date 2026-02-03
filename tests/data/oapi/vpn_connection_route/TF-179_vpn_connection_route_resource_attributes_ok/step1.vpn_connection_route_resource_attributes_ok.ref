@@ -68,7 +68,8 @@
                         "public_ip": "########",
                         "request_id": "########",
                         "state": "available",
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
@@ -94,6 +95,7 @@
                         "request_id": "########",
                         "state": "available",
                         "tags": [],
+                        "timeouts": null,
                         "virtual_gateway_id": "##id-2##"
                     },
                     "sensitive_attributes": [],
@@ -161,6 +163,7 @@
                         "destination_ip_range": "40.0.0.0/16",
                         "id": "##id-3##",
                         "request_id": "########",
+                        "timeouts": null,
                         "vpn_connection_id": "##id-1##"
                     },
                     "sensitive_attributes": [],
