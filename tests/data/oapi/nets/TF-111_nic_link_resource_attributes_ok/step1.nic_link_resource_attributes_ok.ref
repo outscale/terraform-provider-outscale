@@ -130,6 +130,7 @@
                         "nic_id": "##id-4##",
                         "request_id": "########",
                         "state": null,
+                        "timeouts": null,
                         "vm_account_id": null,
                         "vm_id": "##id-8##"
                     },
@@ -306,7 +307,7 @@
                             }
                         ],
                         "os_family": "",
-                        "performance": "medium",
+                        "performance": "highest",
                         "placement_subregion_name": "us-east-2a",
                         "placement_tenancy": "default",
                         "primary_nic": [

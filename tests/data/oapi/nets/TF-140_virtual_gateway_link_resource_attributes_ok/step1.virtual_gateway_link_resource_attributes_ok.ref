@@ -49,6 +49,7 @@
                                 "value": "test-VGW-2"
                             }
                         ],
+                        "timeouts": null,
                         "virtual_gateway_id": "##id-2##"
                     },
                     "sensitive_attributes": [],
@@ -76,6 +77,7 @@
                             }
                         ],
                         "request_id": "########",
+                        "timeouts": null,
                         "virtual_gateway_id": "##id-2##"
                     },
                     "sensitive_attributes": [],

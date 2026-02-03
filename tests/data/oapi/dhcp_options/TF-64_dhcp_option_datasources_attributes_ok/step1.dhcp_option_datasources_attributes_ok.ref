@@ -168,7 +168,8 @@
                                 "key": "name-1",
                                 "value": "test-terraform-3"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
@@ -200,7 +201,8 @@
                                 "key": "name",
                                 "value": "test-terraform_2"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,

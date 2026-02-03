@@ -295,13 +295,13 @@
                             },
                             {
                                 "account_id": "##id-1##",
-                                "description": "Primary network interface",
+                                "description": "TF-113",
                                 "is_source_dest_checked": true,
                                 "link_nic": [
                                     {
-                                        "delete_on_vm_deletion": true,
-                                        "device_number": 0,
-                                        "link_nic_id": "##id-9##",
+                                        "delete_on_vm_deletion": false,
+                                        "device_number": 1,
+                                        "link_nic_id": "##id-2##",
                                         "state": "attached",
                                         "vm_account_id": "##id-1##",
                                         "vm_id": "##id-3##"
@@ -310,11 +310,17 @@
                                 "link_public_ip": [],
                                 "mac_address": "########",
                                 "net_id": "##id-4##",
-                                "nic_id": "##id-10##",
+                                "nic_id": "##id-5##",
                                 "private_dns_name": "########",
                                 "private_ips": [
                                     {
                                         "is_primary": true,
+                                        "link_public_ip": [],
+                                        "private_dns_name": "########",
+                                        "private_ip": "########"
+                                    },
+                                    {
+                                        "is_primary": false,
                                         "link_public_ip": [],
                                         "private_dns_name": "########",
                                         "private_ip": "########"
@@ -329,7 +335,16 @@
                                 "state": "in-use",
                                 "subnet_id": "##id-7##",
                                 "subregion_name": "us-east-2a",
-                                "tags": []
+                                "tags": [
+                                    {
+                                        "key": "Key:",
+                                        "value": ":value-tags"
+                                    },
+                                    {
+                                        "key": "Key-2",
+                                        "value": "value-tags-2"
+                                    }
+                                ]
                             },
                             {
                                 "account_id": "##id-1##",
@@ -382,13 +397,13 @@
                             },
                             {
                                 "account_id": "##id-1##",
-                                "description": "TF-113",
+                                "description": "Primary network interface",
                                 "is_source_dest_checked": true,
                                 "link_nic": [
                                     {
-                                        "delete_on_vm_deletion": false,
-                                        "device_number": 1,
-                                        "link_nic_id": "##id-2##",
+                                        "delete_on_vm_deletion": true,
+                                        "device_number": 0,
+                                        "link_nic_id": "##id-9##",
                                         "state": "attached",
                                         "vm_account_id": "##id-1##",
                                         "vm_id": "##id-3##"
@@ -397,17 +412,11 @@
                                 "link_public_ip": [],
                                 "mac_address": "########",
                                 "net_id": "##id-4##",
-                                "nic_id": "##id-5##",
+                                "nic_id": "##id-10##",
                                 "private_dns_name": "########",
                                 "private_ips": [
                                     {
                                         "is_primary": true,
-                                        "link_public_ip": [],
-                                        "private_dns_name": "########",
-                                        "private_ip": "########"
-                                    },
-                                    {
-                                        "is_primary": false,
                                         "link_public_ip": [],
                                         "private_dns_name": "########",
                                         "private_ip": "########"
@@ -422,16 +431,7 @@
                                 "state": "in-use",
                                 "subnet_id": "##id-7##",
                                 "subregion_name": "us-east-2a",
-                                "tags": [
-                                    {
-                                        "key": "Key:",
-                                        "value": ":value-tags"
-                                    },
-                                    {
-                                        "key": "Key-2",
-                                        "value": "value-tags-2"
-                                    }
-                                ]
+                                "tags": []
                             }
                         ],
                         "request_id": "########"
@@ -493,13 +493,13 @@
                             },
                             {
                                 "account_id": "##id-1##",
-                                "description": "Primary network interface",
+                                "description": "TF-113",
                                 "is_source_dest_checked": true,
                                 "link_nic": [
                                     {
-                                        "delete_on_vm_deletion": true,
-                                        "device_number": 0,
-                                        "link_nic_id": "##id-9##",
+                                        "delete_on_vm_deletion": false,
+                                        "device_number": 1,
+                                        "link_nic_id": "##id-2##",
                                         "state": "attached",
                                         "vm_account_id": "##id-1##",
                                         "vm_id": "##id-3##"
@@ -508,11 +508,17 @@
                                 "link_public_ip": [],
                                 "mac_address": "########",
                                 "net_id": "##id-4##",
-                                "nic_id": "##id-10##",
+                                "nic_id": "##id-5##",
                                 "private_dns_name": "########",
                                 "private_ips": [
                                     {
                                         "is_primary": true,
+                                        "link_public_ip": [],
+                                        "private_dns_name": "########",
+                                        "private_ip": "########"
+                                    },
+                                    {
+                                        "is_primary": false,
                                         "link_public_ip": [],
                                         "private_dns_name": "########",
                                         "private_ip": "########"
@@ -527,7 +533,16 @@
                                 "state": "in-use",
                                 "subnet_id": "##id-7##",
                                 "subregion_name": "us-east-2a",
-                                "tags": []
+                                "tags": [
+                                    {
+                                        "key": "Key:",
+                                        "value": ":value-tags"
+                                    },
+                                    {
+                                        "key": "Key-2",
+                                        "value": "value-tags-2"
+                                    }
+                                ]
                             },
                             {
                                 "account_id": "##id-1##",
@@ -580,13 +595,13 @@
                             },
                             {
                                 "account_id": "##id-1##",
-                                "description": "TF-113",
+                                "description": "Primary network interface",
                                 "is_source_dest_checked": true,
                                 "link_nic": [
                                     {
-                                        "delete_on_vm_deletion": false,
-                                        "device_number": 1,
-                                        "link_nic_id": "##id-2##",
+                                        "delete_on_vm_deletion": true,
+                                        "device_number": 0,
+                                        "link_nic_id": "##id-9##",
                                         "state": "attached",
                                         "vm_account_id": "##id-1##",
                                         "vm_id": "##id-3##"
@@ -595,17 +610,11 @@
                                 "link_public_ip": [],
                                 "mac_address": "########",
                                 "net_id": "##id-4##",
-                                "nic_id": "##id-5##",
+                                "nic_id": "##id-10##",
                                 "private_dns_name": "########",
                                 "private_ips": [
                                     {
                                         "is_primary": true,
-                                        "link_public_ip": [],
-                                        "private_dns_name": "########",
-                                        "private_ip": "########"
-                                    },
-                                    {
-                                        "is_primary": false,
                                         "link_public_ip": [],
                                         "private_dns_name": "########",
                                         "private_ip": "########"
@@ -620,16 +629,7 @@
                                 "state": "in-use",
                                 "subnet_id": "##id-7##",
                                 "subregion_name": "us-east-2a",
-                                "tags": [
-                                    {
-                                        "key": "Key:",
-                                        "value": ":value-tags"
-                                    },
-                                    {
-                                        "key": "Key-2",
-                                        "value": "value-tags-2"
-                                    }
-                                ]
+                                "tags": []
                             }
                         ],
                         "request_id": "########"
@@ -943,6 +943,7 @@
                         "nic_id": "##id-5##",
                         "request_id": "########",
                         "state": null,
+                        "timeouts": null,
                         "vm_account_id": null,
                         "vm_id": "##id-3##"
                     },
@@ -976,6 +977,7 @@
                         "nic_id": "##id-15##",
                         "request_id": "########",
                         "state": null,
+                        "timeouts": null,
                         "vm_account_id": null,
                         "vm_id": "##id-3##"
                     },
@@ -1180,7 +1182,7 @@
                             }
                         ],
                         "os_family": "",
-                        "performance": "medium",
+                        "performance": "highest",
                         "placement_subregion_name": "us-east-2a",
                         "placement_tenancy": "default",
                         "primary_nic": [

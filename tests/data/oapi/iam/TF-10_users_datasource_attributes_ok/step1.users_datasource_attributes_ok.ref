@@ -20,16 +20,16 @@
                             {
                                 "creation_date": "########",
                                 "last_modification_date": "########",
-                                "path": "/terraform2/",
-                                "user_email": "test-TF12@test2.fr",
+                                "path": "/terraform/",
+                                "user_email": "test-TF11@test2.fr",
                                 "user_id": "##id-1##",
                                 "user_name": "########"
                             },
                             {
                                 "creation_date": "########",
                                 "last_modification_date": "########",
-                                "path": "/terraform/",
-                                "user_email": "test-TF11@test2.fr",
+                                "path": "/terraform2/",
+                                "user_email": "test-TF12@test2.fr",
                                 "user_id": "##id-2##",
                                 "user_name": "########"
                             }
@@ -50,13 +50,13 @@
                     "schema_version": 0,
                     "attributes": {
                         "creation_date": "########",
-                        "id": "##id-2##",
+                        "id": "##id-1##",
                         "last_modification_date": "########",
                         "path": "/terraform/",
                         "policy": [],
                         "timeouts": null,
                         "user_email": "test-TF11@test2.fr",
-                        "user_id": "##id-2##",
+                        "user_id": "##id-1##",
                         "user_name": "########"
                     },
                     "sensitive_attributes": [],
@@ -77,13 +77,13 @@
                     "schema_version": 0,
                     "attributes": {
                         "creation_date": "########",
-                        "id": "##id-1##",
+                        "id": "##id-2##",
                         "last_modification_date": "########",
                         "path": "/terraform2/",
                         "policy": [],
                         "timeouts": null,
                         "user_email": "test-TF12@test2.fr",
-                        "user_id": "##id-1##",
+                        "user_id": "##id-2##",
                         "user_name": "########"
                     },
                     "sensitive_attributes": [],

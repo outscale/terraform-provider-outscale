@@ -31,8 +31,8 @@
                                 "subnet_id": "##id-4##",
                                 "tags": [
                                     {
-                                        "key": "Key",
-                                        "value": "value-tags"
+                                        "key": "Key-1",
+                                        "value": "value-tags-1"
                                     },
                                     {
                                         "key": "Key:2",
@@ -53,8 +53,8 @@
                                 "subnet_id": "##id-7##",
                                 "tags": [
                                     {
-                                        "key": "Key-1",
-                                        "value": "value-tags-1"
+                                        "key": "Key",
+                                        "value": "value-tags"
                                     },
                                     {
                                         "key": "Key:2",
@@ -84,16 +84,16 @@
                         "nat_service_ids": null,
                         "nat_services": [
                             {
-                                "nat_service_id": "##id-5##",
+                                "nat_service_id": "##id-1##",
                                 "net_id": "##id-2##",
                                 "public_ips": [
                                     {
                                         "public_ip": "########",
-                                        "public_ip_id": "##id-6##"
+                                        "public_ip_id": "##id-3##"
                                     }
                                 ],
                                 "state": "available",
-                                "subnet_id": "##id-7##",
+                                "subnet_id": "##id-4##",
                                 "tags": [
                                     {
                                         "key": "Key-1",
@@ -139,8 +139,8 @@
                                 "subnet_id": "##id-4##",
                                 "tags": [
                                     {
-                                        "key": "Key",
-                                        "value": "value-tags"
+                                        "key": "Key-1",
+                                        "value": "value-tags-1"
                                     },
                                     {
                                         "key": "Key:2",
@@ -161,8 +161,8 @@
                                 "subnet_id": "##id-7##",
                                 "tags": [
                                     {
-                                        "key": "Key-1",
-                                        "value": "value-tags-1"
+                                        "key": "Key",
+                                        "value": "value-tags"
                                     },
                                     {
                                         "key": "Key:2",
@@ -204,8 +204,8 @@
                                 "subnet_id": "##id-4##",
                                 "tags": [
                                     {
-                                        "key": "Key",
-                                        "value": "value-tags"
+                                        "key": "Key-1",
+                                        "value": "value-tags-1"
                                     },
                                     {
                                         "key": "Key:2",
@@ -226,8 +226,8 @@
                                 "subnet_id": "##id-7##",
                                 "tags": [
                                     {
-                                        "key": "Key-1",
-                                        "value": "value-tags-1"
+                                        "key": "Key",
+                                        "value": "value-tags"
                                     },
                                     {
                                         "key": "Key:2",
@@ -269,8 +269,8 @@
                                 "subnet_id": "##id-4##",
                                 "tags": [
                                     {
-                                        "key": "Key",
-                                        "value": "value-tags"
+                                        "key": "Key-1",
+                                        "value": "value-tags-1"
                                     },
                                     {
                                         "key": "Key:2",
@@ -291,8 +291,8 @@
                                 "subnet_id": "##id-7##",
                                 "tags": [
                                     {
-                                        "key": "Key-1",
-                                        "value": "value-tags-1"
+                                        "key": "Key",
+                                        "value": "value-tags"
                                     },
                                     {
                                         "key": "Key:2",
@@ -334,8 +334,8 @@
                                 "subnet_id": "##id-4##",
                                 "tags": [
                                     {
-                                        "key": "Key",
-                                        "value": "value-tags"
+                                        "key": "Key-1",
+                                        "value": "value-tags-1"
                                     },
                                     {
                                         "key": "Key:2",
@@ -356,8 +356,8 @@
                                 "subnet_id": "##id-7##",
                                 "tags": [
                                     {
-                                        "key": "Key-1",
-                                        "value": "value-tags-1"
+                                        "key": "Key",
+                                        "value": "value-tags"
                                     },
                                     {
                                         "key": "Key:2",
@@ -430,19 +430,19 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-5##",
-                        "nat_service_id": "##id-5##",
+                        "id": "##id-1##",
+                        "nat_service_id": "##id-1##",
                         "net_id": "##id-2##",
-                        "public_ip_id": "##id-6##",
+                        "public_ip_id": "##id-3##",
                         "public_ips": [
                             {
                                 "public_ip": "########",
-                                "public_ip_id": "##id-6##"
+                                "public_ip_id": "##id-3##"
                             }
                         ],
                         "request_id": "########",
                         "state": "available",
-                        "subnet_id": "##id-7##",
+                        "subnet_id": "##id-4##",
                         "tags": [
                             {
                                 "key": "Key-1",
@@ -452,7 +452,8 @@
                                 "key": "Key:2",
                                 "value": "value-tags:2"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
@@ -477,19 +478,19 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-1##",
-                        "nat_service_id": "##id-1##",
+                        "id": "##id-5##",
+                        "nat_service_id": "##id-5##",
                         "net_id": "##id-2##",
-                        "public_ip_id": "##id-3##",
+                        "public_ip_id": "##id-6##",
                         "public_ips": [
                             {
                                 "public_ip": "########",
-                                "public_ip_id": "##id-3##"
+                                "public_ip_id": "##id-6##"
                             }
                         ],
                         "request_id": "########",
                         "state": "available",
-                        "subnet_id": "##id-4##",
+                        "subnet_id": "##id-7##",
                         "tags": [
                             {
                                 "key": "Key",
@@ -499,7 +500,8 @@
                                 "key": "Key:2",
                                 "value": "value-tags:2"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
@@ -548,13 +550,13 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-6##",
+                        "id": "##id-3##",
                         "link_public_ip_id": "",
                         "nic_account_id": "",
                         "nic_id": "",
                         "private_ip": "########",
                         "public_ip": "########",
-                        "public_ip_id": "##id-6##",
+                        "public_ip_id": "##id-3##",
                         "request_id": "########",
                         "tags": [],
                         "timeouts": null,
@@ -575,13 +577,13 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-3##",
+                        "id": "##id-6##",
                         "link_public_ip_id": "",
                         "nic_account_id": "",
                         "nic_id": "",
                         "private_ip": "########",
                         "public_ip": "########",
-                        "public_ip_id": "##id-3##",
+                        "public_ip_id": "##id-6##",
                         "request_id": "########",
                         "tags": [],
                         "timeouts": null,
@@ -762,7 +764,7 @@
                         "net_id": "",
                         "request_id": "########",
                         "route_table_id": "##id-16##",
-                        "subnet_id": "##id-7##",
+                        "subnet_id": "##id-4##",
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
@@ -790,7 +792,7 @@
                         "net_id": "",
                         "request_id": "########",
                         "route_table_id": "##id-18##",
-                        "subnet_id": "##id-4##",
+                        "subnet_id": "##id-7##",
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
@@ -813,13 +815,13 @@
                     "schema_version": 0,
                     "attributes": {
                         "available_ips_count": "########",
-                        "id": "##id-7##",
+                        "id": "##id-4##",
                         "ip_range": "10.0.0.0/24",
                         "map_public_ip_on_launch": false,
                         "net_id": "##id-2##",
                         "request_id": "########",
                         "state": "available",
-                        "subnet_id": "##id-7##",
+                        "subnet_id": "##id-4##",
                         "subregion_name": "us-east-2a",
                         "tags": [],
                         "timeouts": null
@@ -842,13 +844,13 @@
                     "schema_version": 0,
                     "attributes": {
                         "available_ips_count": "########",
-                        "id": "##id-4##",
+                        "id": "##id-7##",
                         "ip_range": "10.0.1.0/24",
                         "map_public_ip_on_launch": false,
                         "net_id": "##id-2##",
                         "request_id": "########",
                         "state": "available",
-                        "subnet_id": "##id-4##",
+                        "subnet_id": "##id-7##",
                         "subregion_name": "us-east-2a",
                         "tags": [],
                         "timeouts": null

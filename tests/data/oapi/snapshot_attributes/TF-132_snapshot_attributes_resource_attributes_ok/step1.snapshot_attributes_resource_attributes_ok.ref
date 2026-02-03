@@ -99,7 +99,8 @@
                         ],
                         "permissions_to_create_volume_removals": [],
                         "request_id": "########",
-                        "snapshot_id": "##id-1##"
+                        "snapshot_id": "##id-1##",
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,

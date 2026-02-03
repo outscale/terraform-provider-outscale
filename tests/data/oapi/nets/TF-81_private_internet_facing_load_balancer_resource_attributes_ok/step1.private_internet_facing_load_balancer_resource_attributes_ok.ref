@@ -132,7 +132,8 @@
                                 "key": "name",
                                 "value": "lbu-internet-facing"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,

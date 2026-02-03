@@ -29,7 +29,8 @@
                                 "key": "name-2",
                                 "value": "test-MZI-3"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,

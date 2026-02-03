@@ -24,7 +24,8 @@
                         "log_servers": [],
                         "ntp_servers": [],
                         "request_id": "########",
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,

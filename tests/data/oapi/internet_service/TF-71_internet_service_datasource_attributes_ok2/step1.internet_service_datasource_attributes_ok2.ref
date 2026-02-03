@@ -41,8 +41,8 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-1##",
-                        "internet_service_id": "##id-1##",
+                        "id": "##id-0##",
+                        "internet_service_id": "##id-0##",
                         "net_id": "",
                         "request_id": "########",
                         "state": "",

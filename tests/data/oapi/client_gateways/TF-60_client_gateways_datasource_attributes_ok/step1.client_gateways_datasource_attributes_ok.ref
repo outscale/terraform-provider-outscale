@@ -25,7 +25,11 @@
                                 "tags": [
                                     {
                                         "key": "name-mzi",
-                                        "value": "CGW_2_mzi"
+                                        "value": "CGW_1_mzi"
+                                    },
+                                    {
+                                        "key": "project",
+                                        "value": "terraform"
                                     }
                                 ]
                             },
@@ -38,11 +42,7 @@
                                 "tags": [
                                     {
                                         "key": "name-mzi",
-                                        "value": "CGW_1_mzi"
-                                    },
-                                    {
-                                        "key": "project",
-                                        "value": "terraform"
+                                        "value": "CGW_2_mzi"
                                     }
                                 ]
                             }
@@ -66,9 +66,9 @@
                     "schema_version": 0,
                     "attributes": {
                         "bgp_asn": "########",
-                        "client_gateway_id": "##id-1##",
+                        "client_gateway_id": "##id-0##",
                         "connection_type": "ipsec.1",
-                        "id": "##id-1##",
+                        "id": "##id-0##",
                         "public_ip": "########",
                         "request_id": "########",
                         "state": "available",
@@ -81,7 +81,8 @@
                                 "key": "project",
                                 "value": "terraform"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
@@ -102,9 +103,9 @@
                     "schema_version": 0,
                     "attributes": {
                         "bgp_asn": "########",
-                        "client_gateway_id": "##id-0##",
+                        "client_gateway_id": "##id-1##",
                         "connection_type": "ipsec.1",
-                        "id": "##id-0##",
+                        "id": "##id-1##",
                         "public_ip": "########",
                         "request_id": "########",
                         "state": "available",
@@ -113,7 +114,8 @@
                                 "key": "name-mzi",
                                 "value": "CGW_2_mzi"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,

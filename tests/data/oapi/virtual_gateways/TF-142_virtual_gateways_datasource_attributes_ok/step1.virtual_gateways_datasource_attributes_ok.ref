@@ -78,6 +78,7 @@
                                 "value": "VGW-1-Datasources"
                             }
                         ],
+                        "timeouts": null,
                         "virtual_gateway_id": "##id-2##"
                     },
                     "sensitive_attributes": [],
@@ -106,6 +107,7 @@
                                 "value": "VGW-2-Datasources"
                             }
                         ],
+                        "timeouts": null,
                         "virtual_gateway_id": "##id-1##"
                     },
                     "sensitive_attributes": [],

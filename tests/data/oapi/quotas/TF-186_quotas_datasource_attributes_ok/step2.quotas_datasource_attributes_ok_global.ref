@@ -566,7 +566,8 @@
                         "subregion_names": [
                             "eu-west-2a"
                         ],
-                        "tags": []
+                        "tags": [],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,

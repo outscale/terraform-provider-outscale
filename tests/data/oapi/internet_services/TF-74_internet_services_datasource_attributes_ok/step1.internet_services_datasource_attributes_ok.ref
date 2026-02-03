@@ -24,12 +24,8 @@
                                 "state": "",
                                 "tags": [
                                     {
-                                        "key": "Key",
-                                        "value": "value-tags"
-                                    },
-                                    {
                                         "key": "name",
-                                        "value": "Internet-service-1"
+                                        "value": "Internet-service-2"
                                     }
                                 ]
                             },
@@ -39,8 +35,12 @@
                                 "state": "",
                                 "tags": [
                                     {
+                                        "key": "Key",
+                                        "value": "value-tags"
+                                    },
+                                    {
                                         "key": "name",
-                                        "value": "Internet-service-2"
+                                        "value": "Internet-service-1"
                                     }
                                 ]
                             }
@@ -61,8 +61,8 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-1##",
-                        "internet_service_id": "##id-1##",
+                        "id": "##id-2##",
+                        "internet_service_id": "##id-2##",
                         "net_id": "",
                         "request_id": "########",
                         "state": "",
@@ -92,8 +92,8 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-2##",
-                        "internet_service_id": "##id-2##",
+                        "id": "##id-1##",
+                        "internet_service_id": "##id-1##",
                         "net_id": "",
                         "request_id": "########",
                         "state": "",

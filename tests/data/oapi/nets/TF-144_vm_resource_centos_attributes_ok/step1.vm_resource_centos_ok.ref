@@ -464,7 +464,7 @@
                         "net_id": "",
                         "nics": [],
                         "os_family": "",
-                        "performance": "medium",
+                        "performance": "highest",
                         "placement_subregion_name": "us-east-2a",
                         "placement_tenancy": "default",
                         "primary_nic": [],
@@ -566,7 +566,7 @@
                         "net_id": "",
                         "nics": [],
                         "os_family": "",
-                        "performance": "medium",
+                        "performance": "highest",
                         "placement_subregion_name": "us-east-2a",
                         "placement_tenancy": "default",
                         "primary_nic": [],
@@ -709,7 +709,7 @@
                             }
                         ],
                         "os_family": "",
-                        "performance": "medium",
+                        "performance": "highest",
                         "placement_subregion_name": "us-east-2a",
                         "placement_tenancy": "default",
                         "primary_nic": [

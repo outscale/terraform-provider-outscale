@@ -76,7 +76,8 @@
                                 "key": "name",
                                 "value": "lbu-update-sg"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,

@@ -90,6 +90,7 @@
                                 "value": "Terraform-Datasource"
                             }
                         ],
+                        "timeouts": null,
                         "virtual_gateway_id": "##id-0##"
                     },
                     "sensitive_attributes": [],
@@ -117,6 +118,7 @@
                             }
                         ],
                         "request_id": "########",
+                        "timeouts": null,
                         "virtual_gateway_id": "##id-0##"
                     },
                     "sensitive_attributes": [],

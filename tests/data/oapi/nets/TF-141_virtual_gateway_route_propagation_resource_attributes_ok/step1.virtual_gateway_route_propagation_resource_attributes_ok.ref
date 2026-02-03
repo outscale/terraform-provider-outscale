@@ -95,6 +95,7 @@
                                 "value": "VGW-2"
                             }
                         ],
+                        "timeouts": null,
                         "virtual_gateway_id": "##id-4##"
                     },
                     "sensitive_attributes": [],
@@ -122,6 +123,7 @@
                             }
                         ],
                         "request_id": "########",
+                        "timeouts": null,
                         "virtual_gateway_id": "##id-4##"
                     },
                     "sensitive_attributes": [],
@@ -147,6 +149,7 @@
                         "id": "##id-5##",
                         "request_id": "########",
                         "route_table_id": "##id-2##",
+                        "timeouts": null,
                         "virtual_gateway_id": "##id-4##"
                     },
                     "sensitive_attributes": [],

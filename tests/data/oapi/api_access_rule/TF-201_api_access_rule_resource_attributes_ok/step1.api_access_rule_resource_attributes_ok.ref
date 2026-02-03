@@ -48,10 +48,10 @@
                     "schema_version": 0,
                     "attributes": {
                         "ca_fingerprint": "########",
-                        "ca_id": "##id-2##",
+                        "ca_id": "##id-1##",
                         "ca_pem": "########",
                         "description": null,
-                        "id": "##id-2##",
+                        "id": "##id-1##",
                         "request_id": "########",
                         "timeouts": null
                     },
@@ -70,10 +70,10 @@
                     "schema_version": 0,
                     "attributes": {
                         "ca_fingerprint": "########",
-                        "ca_id": "##id-1##",
+                        "ca_id": "##id-2##",
                         "ca_pem": "########",
                         "description": null,
-                        "id": "##id-1##",
+                        "id": "##id-2##",
                         "request_id": "########",
                         "timeouts": null
                     },

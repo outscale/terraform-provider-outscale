@@ -213,16 +213,16 @@
                                 ],
                                 "secondary_private_ip_count": 0,
                                 "security_group_ids": [
-                                    "##id-4##",
-                                    "##id-3##"
+                                    "##id-3##",
+                                    "##id-4##"
                                 ],
                                 "security_groups": [
                                     {
-                                        "security_group_id": "##id-4##",
+                                        "security_group_id": "##id-3##",
                                         "security_group_name": "########"
                                     },
                                     {
-                                        "security_group_id": "##id-3##",
+                                        "security_group_id": "##id-4##",
                                         "security_group_name": "########"
                                     }
                                 ],
@@ -264,16 +264,16 @@
                                 ],
                                 "secondary_private_ip_count": 0,
                                 "security_group_ids": [
-                                    "##id-4##",
-                                    "##id-3##"
+                                    "##id-3##",
+                                    "##id-4##"
                                 ],
                                 "security_groups": [
                                     {
-                                        "security_group_id": "##id-4##",
+                                        "security_group_id": "##id-3##",
                                         "security_group_name": "########"
                                     },
                                     {
-                                        "security_group_id": "##id-3##",
+                                        "security_group_id": "##id-4##",
                                         "security_group_name": "########"
                                     }
                                 ],
@@ -295,17 +295,17 @@
                         "root_device_type": "ebs",
                         "secure_boot_action": null,
                         "security_group_ids": [
-                            "##id-4##",
-                            "##id-3##"
+                            "##id-3##",
+                            "##id-4##"
                         ],
                         "security_group_names": "########",
                         "security_groups": [
                             {
-                                "security_group_id": "##id-4##",
+                                "security_group_id": "##id-3##",
                                 "security_group_name": "########"
                             },
                             {
-                                "security_group_id": "##id-3##",
+                                "security_group_id": "##id-4##",
                                 "security_group_name": "########"
                             }
                         ],
