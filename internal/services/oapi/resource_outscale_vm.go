@@ -1419,8 +1419,9 @@ func buildCreateVmsRequest(d *schema.ResourceData) (oscgo.CreateVmsRequest, []ma
 		action := (oscgo.SecureBootAction)(d.Get("secure_boot_action").(string))
 		request.SetActionsOnNextBoot(oscgo.ActionsOnNextBoot{SecureBoot: &action})
 	}
-	if v, ok := d.GetOk("tpm_enabled"); ok {
-		request.SetTpmEnabled(v.(bool))
+	tpmEnabled := d.GetRawConfig().GetAttr("tpm_enabled")
+	if !tpmEnabled.IsNull() {
+		request.SetTpmEnabled(tpmEnabled.True())
 	}
 
 	kpName, diags := d.GetRawConfigAt(cty.GetAttrPath("keypair_name_wo"))
