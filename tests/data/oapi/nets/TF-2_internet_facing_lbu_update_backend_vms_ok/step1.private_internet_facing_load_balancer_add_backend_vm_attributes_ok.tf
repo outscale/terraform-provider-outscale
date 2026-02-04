@@ -84,6 +84,9 @@ resource "outscale_vm" "vm03" {
     vm_type            = var.vm_type
     security_group_ids = [outscale_security_group.outscale_security_group.id]
     subnet_id          = outscale_subnet.subnet-1.subnet_id
+    timeouts {
+      create = "30m"
+    }
 }
 
 resource "outscale_public_ip" "public_ip02" {
