@@ -67,6 +67,7 @@
                         ],
                         "tags": [],
                         "timeouts": null,
+                        "tpm_mandatory": false,
                         "vm_id": "##id-3##"
                     },
                     "sensitive_attributes": [],

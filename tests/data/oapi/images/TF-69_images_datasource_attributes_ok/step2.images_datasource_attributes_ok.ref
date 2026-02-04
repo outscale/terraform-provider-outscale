@@ -70,7 +70,8 @@
                                         "key": "Key:TF69",
                                         "value": "value-tags"
                                     }
-                                ]
+                                ],
+                                "tpm_mandatory": false
                             },
                             {
                                 "account_alias": "",
@@ -123,7 +124,8 @@
                                         "key": "Key:TF69",
                                         "value": "value:TF69"
                                     }
-                                ]
+                                ],
+                                "tpm_mandatory": false
                             }
                         ],
                         "permissions": null,
@@ -199,7 +201,8 @@
                                         "key": "Key:TF69",
                                         "value": "value-tags"
                                     }
-                                ]
+                                ],
+                                "tpm_mandatory": false
                             },
                             {
                                 "account_alias": "",
@@ -252,7 +255,8 @@
                                         "key": "Key:TF69",
                                         "value": "value:TF69"
                                     }
-                                ]
+                                ],
+                                "tpm_mandatory": false
                             }
                         ],
                         "permissions": null,
@@ -328,7 +332,8 @@
                                         "key": "Key:TF69",
                                         "value": "value-tags"
                                     }
-                                ]
+                                ],
+                                "tpm_mandatory": false
                             },
                             {
                                 "account_alias": "",
@@ -381,7 +386,8 @@
                                         "key": "Key:TF69",
                                         "value": "value:TF69"
                                     }
-                                ]
+                                ],
+                                "tpm_mandatory": false
                             }
                         ],
                         "permissions": null,
@@ -457,7 +463,8 @@
                                         "key": "Key:TF69",
                                         "value": "value-tags"
                                     }
-                                ]
+                                ],
+                                "tpm_mandatory": false
                             },
                             {
                                 "account_alias": "",
@@ -510,7 +517,8 @@
                                         "key": "Key:TF69",
                                         "value": "value:TF69"
                                     }
-                                ]
+                                ],
+                                "tpm_mandatory": false
                             }
                         ],
                         "permissions": null,
@@ -586,7 +594,8 @@
                                         "key": "Key:TF69",
                                         "value": "value:TF69"
                                     }
-                                ]
+                                ],
+                                "tpm_mandatory": false
                             }
                         ],
                         "permissions": null,
@@ -662,7 +671,8 @@
                                         "key": "Key:TF69",
                                         "value": "value:TF69"
                                     }
-                                ]
+                                ],
+                                "tpm_mandatory": false
                             }
                         ],
                         "permissions": null,
@@ -744,6 +754,7 @@
                             }
                         ],
                         "timeouts": null,
+                        "tpm_mandatory": false,
                         "vm_id": "##id-11##"
                     },
                     "sensitive_attributes": [],
@@ -828,6 +839,7 @@
                             }
                         ],
                         "timeouts": null,
+                        "tpm_mandatory": false,
                         "vm_id": "##id-11##"
                     },
                     "sensitive_attributes": [],

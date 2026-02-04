@@ -69,7 +69,8 @@
                                 "key": "Key:TF66",
                                 "value": "value:TF66"
                             }
-                        ]
+                        ],
+                        "tpm_mandatory": false
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0
@@ -140,7 +141,8 @@
                                 "key": "Key:TF66",
                                 "value": "value:TF66"
                             }
-                        ]
+                        ],
+                        "tpm_mandatory": false
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0
@@ -211,7 +213,8 @@
                                 "key": "Key:TF66",
                                 "value": "value:TF66"
                             }
-                        ]
+                        ],
+                        "tpm_mandatory": false
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0
@@ -282,7 +285,8 @@
                                 "key": "Key:TF66",
                                 "value": "value:TF66"
                             }
-                        ]
+                        ],
+                        "tpm_mandatory": false
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0
@@ -353,7 +357,8 @@
                                 "key": "Key:TF66",
                                 "value": "value:TF66"
                             }
-                        ]
+                        ],
+                        "tpm_mandatory": false
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0
@@ -424,7 +429,8 @@
                                 "key": "Key:TF66",
                                 "value": "value:TF66"
                             }
-                        ]
+                        ],
+                        "tpm_mandatory": false
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0
@@ -495,7 +501,8 @@
                                 "key": "Key:TF66",
                                 "value": "value:TF66"
                             }
-                        ]
+                        ],
+                        "tpm_mandatory": false
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0
@@ -573,6 +580,7 @@
                             }
                         ],
                         "timeouts": null,
+                        "tpm_mandatory": false,
                         "vm_id": "##id-3##"
                     },
                     "sensitive_attributes": [],
