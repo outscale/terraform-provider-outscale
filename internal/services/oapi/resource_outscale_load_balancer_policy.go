@@ -8,6 +8,7 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
+	"github.com/samber/lo"
 	"github.com/spf13/cast"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
@@ -277,93 +278,112 @@ func ResourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, met
 		req.SetCookieExpirationPeriod(cast.ToInt32(cep))
 	}
 	var err error
-	var resp oscgo.CreateLoadBalancerPolicyResponse
 	err = retry.Retry(timeout, func() *retry.RetryError {
-		rp, httpResp, err := conn.LoadBalancerPolicyApi.
+		_, httpResp, err := conn.LoadBalancerPolicyApi.
 			CreateLoadBalancerPolicy(
 				context.Background()).
 			CreateLoadBalancerPolicyRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
-		resp = rp
 		return nil
 	})
 	if err != nil {
 		return fmt.Errorf("error creating appcookiestickinesspolicy: %s", err)
 	}
-
-	if resp.LoadBalancer != nil {
-		lb := resp.LoadBalancer
-		d.Set("access_log", flattenOAPIAccessLog(lb.AccessLog))
-		d.Set("listeners", flattenOAPIListeners(lb.Listeners))
-		d.Set("subregion_names", utils.StringSlicePtrToInterfaceSlice(lb.SubregionNames))
-		d.Set("load_balancer_type", lb.LoadBalancerType)
-		if lb.SecurityGroups != nil {
-			d.Set("security_groups", utils.StringSlicePtrToInterfaceSlice(lb.SecurityGroups))
-		} else {
-			d.Set("security_groups", make([]map[string]interface{}, 0))
-		}
-		d.Set("dns_name", lb.DnsName)
-		d.Set("subnets", utils.StringSlicePtrToInterfaceSlice(lb.Subnets))
-		d.Set("health_check", flattenOAPIHealthCheck(lb.HealthCheck))
-		d.Set("backend_vm_ids", utils.StringSlicePtrToInterfaceSlice(lb.BackendVmIds))
-		if lb.Tags != nil {
-			ta := make([]map[string]interface{}, len(*lb.Tags))
-			for k1, v1 := range *lb.Tags {
-				t := make(map[string]interface{})
-				t["key"] = v1.Key
-				t["value"] = v1.Value
-				ta[k1] = t
-			}
-			d.Set("tags", ta)
-		} else {
-			d.Set("tags", make([]map[string]interface{}, 0))
-		}
-		if lb.ApplicationStickyCookiePolicies != nil {
-			app := make([]map[string]interface{},
-				len(*lb.ApplicationStickyCookiePolicies))
-			for k, v := range *lb.ApplicationStickyCookiePolicies {
-				a := make(map[string]interface{})
-				a["cookie_name"] = v.CookieName
-				a["policy_name"] = v.PolicyName
-				if v.GetPolicyName() == pn.(string) {
-					d.Set("cookie_name", v.GetCookieName())
-				}
-				app[k] = a
-			}
-			d.Set("application_sticky_cookie_policies", app)
-		}
-		if lb.LoadBalancerStickyCookiePolicies != nil {
-			lbc := make([]map[string]interface{},
-				len(*lb.LoadBalancerStickyCookiePolicies))
-			for k, v := range *lb.LoadBalancerStickyCookiePolicies {
-				a := make(map[string]interface{})
-				a["policy_name"] = v.PolicyName
-				if v.GetPolicyName() == pn.(string) {
-					d.Set("cookie_expiration_period", cast.ToInt32(v.CookieExpirationPeriod))
-				}
-				lbc[k] = a
-			}
-			d.Set("load_balancer_sticky_cookie_policies", lbc)
-		}
-
-		if lb.SourceSecurityGroup != nil {
-			d.Set("source_security_group", flattenSource_sg(lb.SourceSecurityGroup))
-		}
-		d.Set("public_ip", lb.PublicIp)
-		d.Set("secured_cookies", lb.SecuredCookies)
-		d.Set("net_id", lb.NetId)
-	}
-
 	d.SetId(id.UniqueId())
 	d.Set("load_balancer_name", l.(string))
 	d.Set("policy_name", pn.(string))
 	d.Set("policy_type", pt.(string))
-	return nil
+
+	return ResourceOutscaleAppCookieStickinessPolicyRead(d, meta)
 }
 
 func ResourceOutscaleAppCookieStickinessPolicyRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*client.OutscaleClient).OSCAPI
+	timeout := d.Timeout(schema.TimeoutRead)
+
+	lbuName := d.Get("load_balancer_name").(string)
+	policyName := d.Get("policy_name").(string)
+	lb, _, err := readResourceLb(conn, lbuName, timeout)
+	if err != nil {
+		return err
+	}
+	if lb == nil || (lb.ApplicationStickyCookiePolicies == nil && lb.LoadBalancerStickyCookiePolicies == nil) {
+		d.SetId("")
+		return nil
+	}
+	_, foundAppPolicy := lo.Find(*lb.ApplicationStickyCookiePolicies, func(v oscgo.ApplicationStickyCookiePolicy) bool {
+		return v.GetPolicyName() == policyName
+	})
+	_, foundLbuPolicy := lo.Find(*lb.LoadBalancerStickyCookiePolicies, func(v oscgo.LoadBalancerStickyCookiePolicy) bool {
+		return v.GetPolicyName() == policyName
+	})
+	if !foundAppPolicy && !foundLbuPolicy {
+		d.SetId("")
+		return nil
+	}
+
+	d.Set("access_log", flattenOAPIAccessLog(lb.AccessLog))
+	d.Set("listeners", flattenOAPIListeners(lb.Listeners))
+	d.Set("subregion_names", utils.StringSlicePtrToInterfaceSlice(lb.SubregionNames))
+	d.Set("load_balancer_type", lb.LoadBalancerType)
+	if lb.SecurityGroups != nil {
+		d.Set("security_groups", utils.StringSlicePtrToInterfaceSlice(lb.SecurityGroups))
+	} else {
+		d.Set("security_groups", make([]map[string]interface{}, 0))
+	}
+	d.Set("dns_name", lb.DnsName)
+	d.Set("subnets", utils.StringSlicePtrToInterfaceSlice(lb.Subnets))
+	d.Set("health_check", flattenOAPIHealthCheck(lb.HealthCheck))
+	d.Set("backend_vm_ids", utils.StringSlicePtrToInterfaceSlice(lb.BackendVmIds))
+	if lb.Tags != nil {
+		ta := make([]map[string]interface{}, len(*lb.Tags))
+		for k1, v1 := range *lb.Tags {
+			t := make(map[string]interface{})
+			t["key"] = v1.Key
+			t["value"] = v1.Value
+			ta[k1] = t
+		}
+		d.Set("tags", ta)
+	} else {
+		d.Set("tags", make([]map[string]interface{}, 0))
+	}
+	if lb.ApplicationStickyCookiePolicies != nil {
+		app := make([]map[string]interface{},
+			len(*lb.ApplicationStickyCookiePolicies))
+		for k, v := range *lb.ApplicationStickyCookiePolicies {
+			a := make(map[string]interface{})
+			a["cookie_name"] = v.CookieName
+			a["policy_name"] = v.PolicyName
+			if v.GetPolicyName() == policyName {
+				d.Set("cookie_name", v.GetCookieName())
+			}
+			app[k] = a
+		}
+		d.Set("application_sticky_cookie_policies", app)
+	}
+	if lb.LoadBalancerStickyCookiePolicies != nil {
+		lbc := make([]map[string]interface{},
+			len(*lb.LoadBalancerStickyCookiePolicies))
+		for k, v := range *lb.LoadBalancerStickyCookiePolicies {
+			a := make(map[string]interface{})
+			a["policy_name"] = v.PolicyName
+			if v.GetPolicyName() == policyName {
+				d.Set("cookie_expiration_period", cast.ToInt32(v.CookieExpirationPeriod))
+			}
+			lbc[k] = a
+		}
+		d.Set("load_balancer_sticky_cookie_policies", lbc)
+	}
+
+	if lb.SourceSecurityGroup != nil {
+		d.Set("source_security_group", flattenSource_sg(lb.SourceSecurityGroup))
+	}
+	d.Set("public_ip", lb.PublicIp)
+	d.Set("secured_cookies", lb.SecuredCookies)
+	d.Set("net_id", lb.NetId)
+
 	return nil
 }
 

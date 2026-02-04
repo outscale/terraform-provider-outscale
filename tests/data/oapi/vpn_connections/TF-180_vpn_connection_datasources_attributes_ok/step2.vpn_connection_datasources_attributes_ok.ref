@@ -6,6 +6,131 @@
     "outputs": {},
     "resources": [
         {
+            "mode": "data",
+            "type": "outscale_vpn_connections",
+            "name": "data_vpn_connections_1",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "filter": "########",
+                        "id": "##id-0##",
+                        "request_id": "########",
+                        "vpn_connection_ids": null,
+                        "vpn_connections": [
+                            {
+                                "client_gateway_configuration": "########",
+                                "client_gateway_id": "##id-1##",
+                                "connection_type": "ipsec.1",
+                                "routes": [],
+                                "state": "available",
+                                "static_routes_only": false,
+                                "tags": [
+                                    {
+                                        "key": "Test-TF180",
+                                        "value": "Terraform"
+                                    },
+                                    {
+                                        "key": "Type:TF-180",
+                                        "value": "Dynamic-TF:180"
+                                    }
+                                ],
+                                "vgw_telemetries": [
+                                    {
+                                        "accepted_route_count": 0,
+                                        "last_state_change_date": "########",
+                                        "outside_ip_address": "########",
+                                        "state": "DOWN",
+                                        "state_description": "IPSEC IS DOWN"
+                                    }
+                                ],
+                                "virtual_gateway_id": "##id-2##",
+                                "vpn_connection_id": "##id-3##"
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_vpn_connections",
+            "name": "data_vpn_connections_1_2",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "filter": "########",
+                        "id": "##id-4##",
+                        "request_id": "########",
+                        "vpn_connection_ids": null,
+                        "vpn_connections": [
+                            {
+                                "client_gateway_configuration": "########",
+                                "client_gateway_id": "##id-5##",
+                                "connection_type": "ipsec.1",
+                                "routes": [],
+                                "state": "available",
+                                "static_routes_only": true,
+                                "tags": [
+                                    {
+                                        "key": "Type:TF-180",
+                                        "value": "Static-TF:180"
+                                    }
+                                ],
+                                "vgw_telemetries": [
+                                    {
+                                        "accepted_route_count": 0,
+                                        "last_state_change_date": "########",
+                                        "outside_ip_address": "########",
+                                        "state": "DOWN",
+                                        "state_description": "IPSEC IS DOWN"
+                                    }
+                                ],
+                                "virtual_gateway_id": "##id-2##",
+                                "vpn_connection_id": "##id-6##"
+                            },
+                            {
+                                "client_gateway_configuration": "########",
+                                "client_gateway_id": "##id-1##",
+                                "connection_type": "ipsec.1",
+                                "routes": [],
+                                "state": "available",
+                                "static_routes_only": false,
+                                "tags": [
+                                    {
+                                        "key": "Test-TF180",
+                                        "value": "Terraform"
+                                    },
+                                    {
+                                        "key": "Type:TF-180",
+                                        "value": "Dynamic-TF:180"
+                                    }
+                                ],
+                                "vgw_telemetries": [
+                                    {
+                                        "accepted_route_count": 0,
+                                        "last_state_change_date": "########",
+                                        "outside_ip_address": "########",
+                                        "state": "DOWN",
+                                        "state_description": "IPSEC IS DOWN"
+                                    }
+                                ],
+                                "virtual_gateway_id": "##id-2##",
+                                "vpn_connection_id": "##id-3##"
+                            }
+                        ]
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
+                }
+            ]
+        },
+        {
             "mode": "managed",
             "type": "outscale_client_gateway",
             "name": "My_CGW",
@@ -15,9 +140,9 @@
                     "schema_version": 0,
                     "attributes": {
                         "bgp_asn": "########",
-                        "client_gateway_id": "##id-0##",
+                        "client_gateway_id": "##id-1##",
                         "connection_type": "ipsec.1",
-                        "id": "##id-0##",
+                        "id": "##id-1##",
                         "public_ip": "########",
                         "request_id": "########",
                         "state": "available",
@@ -43,9 +168,9 @@
                     "schema_version": 0,
                     "attributes": {
                         "bgp_asn": "########",
-                        "client_gateway_id": "##id-1##",
+                        "client_gateway_id": "##id-5##",
                         "connection_type": "ipsec.1",
-                        "id": "##id-1##",
+                        "id": "##id-5##",
                         "public_ip": "########",
                         "request_id": "########",
                         "state": "available",
@@ -95,7 +220,7 @@
                     "schema_version": 0,
                     "attributes": {
                         "client_gateway_configuration": "########",
-                        "client_gateway_id": "##id-0##",
+                        "client_gateway_id": "##id-1##",
                         "connection_type": "ipsec.1",
                         "id": "##id-3##",
                         "request_id": "########",
@@ -146,9 +271,9 @@
                     "schema_version": 0,
                     "attributes": {
                         "client_gateway_configuration": "########",
-                        "client_gateway_id": "##id-1##",
+                        "client_gateway_id": "##id-5##",
                         "connection_type": "ipsec.1",
-                        "id": "##id-4##",
+                        "id": "##id-6##",
                         "request_id": "########",
                         "routes": [],
                         "state": "available",
@@ -170,7 +295,7 @@
                             }
                         ],
                         "virtual_gateway_id": "##id-2##",
-                        "vpn_connection_id": "##id-4##"
+                        "vpn_connection_id": "##id-6##"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
