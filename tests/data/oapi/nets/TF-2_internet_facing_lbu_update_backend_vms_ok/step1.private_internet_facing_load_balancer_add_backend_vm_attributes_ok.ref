@@ -723,7 +723,12 @@
                         "state_reason": "",
                         "subnet_id": "##id-4##",
                         "tags": [],
-                        "timeouts": null,
+                        "timeouts": {
+                            "create": "30m",
+                            "delete": null,
+                            "read": null,
+                            "update": null
+                        },
                         "tpm_enabled": false,
                         "user_data": "",
                         "vm_id": "##id-10##",
