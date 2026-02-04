@@ -1,0 +1,180 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "managed",
+            "type": "outscale_image",
+            "name": "image03",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_alias": "",
+                        "account_id": "##id-0##",
+                        "architecture": "x86_64",
+                        "block_device_mappings": [
+                            {
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "iops": 0,
+                                        "snapshot_id": "##id-1##",
+                                        "volume_size": 50,
+                                        "volume_type": "gp2"
+                                    }
+                                ],
+                                "device_name": "/dev/sda1",
+                                "virtual_device_name": ""
+                            }
+                        ],
+                        "boot_modes": [
+                            "uefi"
+                        ],
+                        "creation_date": "########",
+                        "description": "Copy OMI for Terraform CI (Do not delete)",
+                        "file_location": "########",
+                        "id": "##id-2##",
+                        "image_id": "##id-2##",
+                        "image_name": "########",
+                        "image_type": "machine",
+                        "is_public": null,
+                        "no_reboot": null,
+                        "permissions_to_launch": [
+                            {
+                                "account_ids": [],
+                                "global_permission": true
+                            }
+                        ],
+                        "product_codes": [
+                            "0002"
+                        ],
+                        "request_id": "########",
+                        "root_device_name": "/dev/sda1",
+                        "root_device_type": "bsu",
+                        "source_image_id": "##id-3##",
+                        "source_region_name": "eu-west-2",
+                        "state": "available",
+                        "state_comment": [
+                            {
+                                "state_code": "",
+                                "state_message": ""
+                            }
+                        ],
+                        "tags": [],
+                        "timeouts": null,
+                        "tpm_mandatory": true,
+                        "vm_id": null
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0,
+                    "private": "########",
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_vm",
+            "name": "outscale_vm_TF206",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "actions_on_next_boot": [
+                            {
+                                "secure_boot": "none"
+                            }
+                        ],
+                        "admin_password": "",
+                        "architecture": "x86_64",
+                        "block_device_mappings": [],
+                        "block_device_mappings_created": [
+                            {
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "link_date": "########",
+                                        "state": "attached",
+                                        "tags": [],
+                                        "volume_id": "##id-4##"
+                                    }
+                                ],
+                                "device_name": "/dev/sda1"
+                            }
+                        ],
+                        "boot_mode": "uefi",
+                        "bsu_optimized": false,
+                        "client_token": "",
+                        "creation_date": "########",
+                        "deletion_protection": false,
+                        "get_admin_password": null,
+                        "hypervisor": "xen",
+                        "id": "##id-5##",
+                        "image_id": "##id-2##",
+                        "is_source_dest_checked": false,
+                        "keypair_name": "########",
+                        "keypair_name_wo": null,
+                        "launch_number": 0,
+                        "nested_virtualization": false,
+                        "net_id": "",
+                        "nics": [],
+                        "os_family": "",
+                        "performance": "highest",
+                        "placement_subregion_name": "eu-west-2a",
+                        "placement_tenancy": "default",
+                        "primary_nic": [],
+                        "private_dns_name": "########",
+                        "private_ip": "########",
+                        "private_ips": null,
+                        "product_codes": [
+                            "0002"
+                        ],
+                        "public_dns_name": "########",
+                        "public_ip": "########",
+                        "request_id": "########",
+                        "reservation_id": "##id-6##",
+                        "root_device_name": "/dev/sda1",
+                        "root_device_type": "ebs",
+                        "secure_boot_action": null,
+                        "security_group_ids": [
+                            "##id-7##"
+                        ],
+                        "security_group_names": "########",
+                        "security_groups": [
+                            {
+                                "security_group_id": "##id-7##",
+                                "security_group_name": "########"
+                            }
+                        ],
+                        "state": "running",
+                        "state_reason": "",
+                        "subnet_id": "",
+                        "tags": [],
+                        "timeouts": null,
+                        "tpm_enabled": true,
+                        "user_data": "",
+                        "vm_id": "##id-5##",
+                        "vm_initiated_shutdown_behavior": "stop",
+                        "vm_type": "###vm_type###"
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0,
+                    "private": "########",
+                    "dependencies": [
+                        "outscale_image.image03",
+                        "random_string.suffix"
+                    ]
+                }
+            ]
+        }
+    ],
+    "check_results": "########"
+}

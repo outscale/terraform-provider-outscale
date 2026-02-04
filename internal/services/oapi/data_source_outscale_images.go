@@ -71,6 +71,10 @@ func DataSourceOutscaleImages() *schema.Resource {
 							Type:     schema.TypeBool,
 							Computed: true,
 						},
+						"tpm_mandatory": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
 						"block_device_mappings": {
 							Type:     schema.TypeList,
 							Optional: true,
@@ -276,6 +280,7 @@ func DataSourceOutscaleImagesRead(d *schema.ResourceData, meta interface{}) erro
 				"architecture":          image.GetArchitecture(),
 				"boot_modes":            lo.Map(image.GetBootModes(), func(b oscgo.BootMode, _ int) string { return string(b) }),
 				"secure_boot":           image.GetSecureBoot(),
+				"tpm_mandatory":         image.GetTpmMandatory(),
 				"creation_date":         image.GetCreationDate(),
 				"description":           image.GetDescription(),
 				"image_id":              image.GetImageId(),
