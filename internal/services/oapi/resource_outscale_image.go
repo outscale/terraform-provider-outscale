@@ -145,7 +145,12 @@ func ResourceOutscaleImage() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-
+			"tpm_mandatory": {
+				Type:     schema.TypeBool,
+				Computed: true,
+				Optional: true,
+				ForceNew: true,
+			},
 			"account_alias": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -268,6 +273,10 @@ func resourceOAPIImageCreate(d *schema.ResourceData, meta interface{}) error {
 
 	if v, ok := d.GetOk("source_region_name"); ok {
 		imageRequest.SetSourceRegionName(v.(string))
+	}
+	tpm := d.GetRawConfig().GetAttr("tpm_mandatory")
+	if !tpm.IsNull() {
+		imageRequest.SetTpmMandatory(tpm.True())
 	}
 
 	if v, ok := d.GetOk("root_device_name"); ok {
@@ -408,6 +417,9 @@ func resourceOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
 			return err
 		}
 		if err := set("permissions_to_launch", setResourcePermissions(*image.PermissionsToLaunch)); err != nil {
+			return err
+		}
+		if err := set("tpm_mandatory", image.TpmMandatory); err != nil {
 			return err
 		}
 		if err := d.Set("tags", FlattenOAPITagsSDK(image.GetTags())); err != nil {

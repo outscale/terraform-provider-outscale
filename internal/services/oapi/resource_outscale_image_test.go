@@ -40,6 +40,8 @@ func TestAccOthers_Image_basic(t *testing.T) {
 						"outscale_image.foo", "block_device_mappings.0.device_name", "/dev/sda1"),
 					resource.TestCheckResourceAttr(
 						"outscale_image.foo", "block_device_mappings.0.bsu.0.delete_on_vm_deletion", "true"),
+					resource.TestCheckResourceAttr(
+						"outscale_image.foo", "tpm_mandatory", "false"),
 				),
 			},
 		},

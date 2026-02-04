@@ -18,3 +18,8 @@ variable "fgpu_vm_type" {
   type    = string
   default = "tinav5.c2r2p1"
 }
+
+variable "image_id_uefi_tpm" {
+  type    = string
+  default = "ami-cdd42a02"
+}

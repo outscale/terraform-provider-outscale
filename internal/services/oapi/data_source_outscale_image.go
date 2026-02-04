@@ -37,6 +37,10 @@ func DataSourceOutscaleImage() *schema.Resource {
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
+			"tpm_mandatory": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
 			"secure_boot": {
 				Type:     schema.TypeBool,
 				Computed: true,
@@ -270,6 +274,9 @@ func DataSourceOutscaleImageRead(d *schema.ResourceData, meta interface{}) error
 			return err
 		}
 		if err := set("secure_boot", image.GetSecureBoot()); err != nil {
+			return err
+		}
+		if err := set("tpm_mandatory", image.GetTpmMandatory()); err != nil {
 			return err
 		}
 		if err := set("creation_date", image.CreationDate); err != nil {
