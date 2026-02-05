@@ -256,7 +256,9 @@ def compare_json_values(path, val_out, val_ref, ids):
         return
 
     if (
-        val_out not in ids
+        type(val_out) is str
+        and type(val_ref) is str
+        and val_out not in ids
         and val_out.startswith(ID_PREFIX)
         and val_ref.startswith(ID_PREFIX)
     ):
