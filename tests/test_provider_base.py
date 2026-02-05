@@ -211,7 +211,7 @@ def compare_json_lists(path, list_out, list_ref, ids):
                 current_ids = tmp_ids
                 errors = []
                 break
-            except Exception as error:
+            except AssertionError as error:
                 errors.append(error)
         if errors:
             assert False, "Could not match list values for path {}, {}".format(
@@ -235,7 +235,7 @@ def compare_json_sets(path, set_out, set_ref, ids):
                 current_ids = tmp_ids
                 errors = []
                 break
-            except Exception as error:
+            except AssertionError as error:
                 errors.append(error)
         if errors:
             assert False, "Could not match set values for path {}, {}".format(
@@ -277,12 +277,9 @@ def compare_json_values(path, val_out, val_ref, ids):
         except ValueError:
             pass
 
-    try:
-        assert False, "Values {} and {} in path {} are different".format(
-            val_out, val_ref, path
-        )
-    except AssertionError as error:
-        raise error
+    assert False, "Values {} and {} in path {} are different".format(
+        val_out, val_ref, path
+    )
 
 
 def compare_json(path, out, ref, ids):
@@ -313,17 +310,39 @@ def compare_json_files(output_file_name, ref_file_name, service_config):
             json_out = validate_ref("", None, json.load(out_file), ids, service_config)
     except FileNotFoundError:
         assert False, "Could not load file, missing output file {}".format(
-            ref_file_name
+            output_file_name
         )
+    except Exception as e:
+        assert False, "Error validating output file {}: {}".format(output_file_name, e)
 
     if os.getenv("OSC_GENREF", False):
-        print(
-            "Generating reference file {} from {}".format(
-                ref_file_name, output_file_name
+        ref_exists = os.path.exists(ref_file_name)
+        regenerate = True
+
+        if ref_exists:
+            with open(ref_file_name, "r") as tmp_file:
+                json_ref = json.load(tmp_file)
+
+            try:
+                compare_json("", json_out, json_ref, {})
+                print(
+                    "Reference file {} is semantically equal, skipping regeneration".format(
+                        ref_file_name
+                    )
+                )
+                regenerate = False
+            except AssertionError:
+                print("Reference file {} differs, regenerating".format(ref_file_name))
+
+        if regenerate:
+            print(
+                "Generating reference file {} from {}".format(
+                    ref_file_name, output_file_name
+                )
             )
-        )
-        with open(ref_file_name, "w") as ref_file:
-            ref_file.write(json.dumps(json_out, indent=4))
+            with open(ref_file_name, "w") as ref_file:
+                ref_file.write(json.dumps(json_out, indent=4))
+
         return
 
     print("Comparing {} with {}".format(output_file_name, ref_file_name))
