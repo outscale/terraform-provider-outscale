@@ -18,7 +18,7 @@
                             {
                                 "default": false,
                                 "dhcp_options_set_id": "##id-0##",
-                                "domain_name": "test234.fr",
+                                "domain_name": "test-terraform.fr",
                                 "domain_name_servers": [
                                     "192.168.12.12",
                                     "192.168.12.132"
@@ -82,7 +82,7 @@
                             {
                                 "default": false,
                                 "dhcp_options_set_id": "##id-0##",
-                                "domain_name": "test234.fr",
+                                "domain_name": "test-terraform.fr",
                                 "domain_name_servers": [
                                     "192.168.12.12",
                                     "192.168.12.132"
@@ -128,7 +128,7 @@
                     "attributes": {
                         "default": false,
                         "dhcp_options_set_id": "##id-0##",
-                        "domain_name": "test234.fr",
+                        "domain_name": "test-terraform.fr",
                         "domain_name_servers": [
                             "192.168.12.12",
                             "192.168.12.132"
