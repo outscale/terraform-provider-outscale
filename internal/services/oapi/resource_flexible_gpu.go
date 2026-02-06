@@ -118,6 +118,7 @@ func (r *fgpuResource) Schema(ctx context.Context, _ resource.SchemaRequest, res
 				Computed: true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"delete_on_vm_deletion": schema.BoolAttribute{
