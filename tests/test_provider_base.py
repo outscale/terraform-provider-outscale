@@ -211,7 +211,7 @@ def compare_json_lists(path, list_out, list_ref, ids):
                 current_ids = tmp_ids
                 errors = []
                 break
-            except Exception as error:
+            except AssertionError as error:
                 errors.append(error)
         if errors:
             assert False, "Could not match list values for path {}, {}".format(
@@ -235,7 +235,7 @@ def compare_json_sets(path, set_out, set_ref, ids):
                 current_ids = tmp_ids
                 errors = []
                 break
-            except Exception as error:
+            except AssertionError as error:
                 errors.append(error)
         if errors:
             assert False, "Could not match set values for path {}, {}".format(
@@ -256,7 +256,9 @@ def compare_json_values(path, val_out, val_ref, ids):
         return
 
     if (
-        val_out not in ids
+        type(val_out) is str
+        and type(val_ref) is str
+        and val_out not in ids
         and val_out.startswith(ID_PREFIX)
         and val_ref.startswith(ID_PREFIX)
     ):
@@ -277,12 +279,9 @@ def compare_json_values(path, val_out, val_ref, ids):
         except ValueError:
             pass
 
-    try:
-        assert False, "Values {} and {} in path {} are different".format(
-            val_out, val_ref, path
-        )
-    except AssertionError as error:
-        raise error
+    assert False, "Values {} and {} in path {} are different".format(
+        val_out, val_ref, path
+    )
 
 
 def compare_json(path, out, ref, ids):
@@ -313,17 +312,39 @@ def compare_json_files(output_file_name, ref_file_name, service_config):
             json_out = validate_ref("", None, json.load(out_file), ids, service_config)
     except FileNotFoundError:
         assert False, "Could not load file, missing output file {}".format(
-            ref_file_name
+            output_file_name
         )
+    except Exception as e:
+        assert False, "Error validating output file {}: {}".format(output_file_name, e)
 
     if os.getenv("OSC_GENREF", False):
-        print(
-            "Generating reference file {} from {}".format(
-                ref_file_name, output_file_name
+        ref_exists = os.path.exists(ref_file_name)
+        regenerate = True
+
+        if ref_exists:
+            with open(ref_file_name, "r") as tmp_file:
+                json_ref = json.load(tmp_file)
+
+            try:
+                compare_json("", json_out, json_ref, {})
+                print(
+                    "Reference file {} is semantically equal, skipping regeneration".format(
+                        ref_file_name
+                    )
+                )
+                regenerate = False
+            except AssertionError:
+                print("Reference file {} differs, regenerating".format(ref_file_name))
+
+        if regenerate:
+            print(
+                "Generating reference file {} from {}".format(
+                    ref_file_name, output_file_name
+                )
             )
-        )
-        with open(ref_file_name, "w") as ref_file:
-            ref_file.write(json.dumps(json_out, indent=4))
+            with open(ref_file_name, "w") as ref_file:
+                ref_file.write(json.dumps(json_out, indent=4))
+
         return
 
     print("Comparing {} with {}".format(output_file_name, ref_file_name))
@@ -335,6 +356,33 @@ def compare_json_files(output_file_name, ref_file_name, service_config):
             ref_file_name
         )
     compare_json("", json_out, json_ref, {})
+
+
+def check_recreation(plan_json_path):
+    try:
+        with open(plan_json_path, "r") as f:
+            plan = json.load(f)
+    except FileNotFoundError:
+        return []
+
+    changes = []
+
+    resource_changes = plan.get("resource_changes", [])
+    for change in resource_changes:
+        actions = change.get("change", {}).get("actions", [])
+        resource_type = change.get("type", "unknown")
+        resource_name = change.get("name", "unknown")
+        path = change.get("address", f"{resource_type}.{resource_name}")
+
+        if set(actions) == {"delete", "create"}:
+            changes.append(
+                {
+                    "path": path,
+                    "actions": actions,
+                }
+            )
+
+    return changes
 
 
 def create_provider_test_metaclass(root_dir, resource_filter=None):
@@ -429,11 +477,33 @@ Log: {}
             )
         return stdout, stderr
 
-    def exec_test_step(self, tf_file_path, out_file_path):
+    def exec_test_step(self, tf_file_path, out_file_path, is_first_step=True):
         self.logger.debug("Exec step : {}".format(tf_file_path))
         self.log += "\nTerraform validate:\n{}".format(
             self.run_cmd(["terraform validate -no-color"])[0]
         )
+
+        plan_json_path = out_file_path.replace(".out", ".plan.json")
+        plan_file_path = out_file_path.replace(".out", ".tfplan")
+
+        self.run_cmd(
+            "terraform plan -out={} -lock=false -no-color".format(plan_file_path)
+        )
+        self.run_cmd(
+            "terraform show -json {} > {}".format(plan_file_path, plan_json_path)
+        )
+
+        if not is_first_step:
+            changes = check_recreation(plan_json_path)
+            if changes:
+                err = "resource replacement:\n"
+                for change in changes:
+                    err += "  - {} (actions: {})\n".format(
+                        change["path"], change["actions"]
+                    )
+                self.log += "\n" + err
+                assert False, err
+
         self.log += "\nTerraform plan:\n{}".format(
             self.run_cmd("terraform plan -lock=false -no-color")[0]
         )
@@ -477,7 +547,7 @@ Log: {}
             tf_file_names = get_test_file_names(test_path, prefix="step", suffix=".tf")
             if not tf_file_names:
                 assert False, "No step found in test directory"
-            for tf_file_name in tf_file_names:
+            for i, tf_file_name in enumerate(tf_file_names):
                 tf_file_path = os.path.join(test_path, tf_file_name)
                 self.logger.debug("Process step: %s", tf_file_name)
                 self.log += "\n*** step {} ***\n".format(tf_file_path)
@@ -490,7 +560,8 @@ Log: {}
 
                 out_file_path = tf_file_path.replace(".tf", ".out")
                 ref_file_path = tf_file_path.replace(".tf", ".ref")
-                self.exec_test_step(tf_file_path, out_file_path)
+                is_first_step = i == 0
+                self.exec_test_step(tf_file_path, out_file_path, is_first_step)
 
                 compare_json_files(out_file_path, ref_file_path, self.service_config)
         except Exception as error:

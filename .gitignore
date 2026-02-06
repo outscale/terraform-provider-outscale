@@ -39,6 +39,8 @@ terraformStatePull.json
 terraform-provider-outscale_v1.0.0-test
 tests/certs/
 internal/services/oapi/testdata
+tests/data/**/*.tfplan
+tests/data/**/*.plan.json
 
 # docs
 docs/generation_log.txt

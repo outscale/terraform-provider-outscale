@@ -82,7 +82,7 @@
                         "quirks": null,
                         "request_id": "########",
                         "statuses": {
-                            "available_upgrade": "",
+                            "available_upgrade": "1.33",
                             "created_at": "########",
                             "deleted_at": null,
                             "status": "ready",
