@@ -86,7 +86,7 @@ func testAccOAPIImageExportTaskConfigBasic(omi, vmType, region, imageName, tags,
 
 	resource "outscale_image" "foo" {
 		image_name  = "%s"
-		vm_id       = "outscale_vm.basic.id"
+		vm_id       = outscale_vm.basic.id
 		no_reboot   = "true"
 		description = "terraform testing"
 	}
