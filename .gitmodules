@@ -1,3 +1,0 @@
-[submodule "docs/doc-terraform-template"]
-	path = scripts/docs/doc-terraform-template
-	url = https://github.com/outscale-dev/terraform-provider-outscale-doc-components.git

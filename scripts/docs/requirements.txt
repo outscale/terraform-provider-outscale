@@ -1,4 +1,0 @@
-prance==0.22.11.4.0
-pyyaml
-openapi-spec-validator==0.6
-osc-openapi-framework
