@@ -98,6 +98,7 @@ Constraints: 3-128 alphanumeric characters, underscores (`_`), spaces (` `), par
 * `tags` - (Optional) A tag to add to this resource. You can specify this argument several times.
     * `key` - (Required) The key of the tag, with a minimum of 1 character.
     * `value` - (Required) The value of the tag, between 0 and 255 characters.
+* `tpm_mandatory` - (Optional) By default or if set to false, a virtual Trusted Platform Module (vTPM) is not mandatory on VMs created from this OMI. If true, VMs created from this OMI must have a vTPM enabled.
 * `vm_id` - (Optional) **(required) When creating from a VM:** The ID of the VM from which you want to create the OMI.
 
 ## Attribute Reference
@@ -142,6 +143,7 @@ For more information about volume types, see [About Volumes > Volume Types and I
 * `tags` - One or more tags associated with the OMI.
     * `key` - The key of the tag, with a minimum of 1 character.
     * `value` - The value of the tag, between 0 and 255 characters.
+* `tpm_mandatory` - If true, a virtual Trusted Platform Module (vTPM) is mandatory for VMs created from this OMI. If false, a vTPM is not mandatory.
 
 ## Import
 
