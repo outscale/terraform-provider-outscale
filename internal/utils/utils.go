@@ -28,7 +28,7 @@ const (
 	SuffixConfigFilePath string = "/.osc/config.json"
 )
 
-func getHttpErrorResponse(httpBody io.ReadCloser, err error) error {
+func GetHttpErrorResponse(httpBody io.ReadCloser, err error) error {
 	errBody, readErr := io.ReadAll(httpBody)
 	defer httpBody.Close()
 	if readErr != nil {
@@ -43,7 +43,7 @@ func CheckThrottling(httpResp *http.Response, err error) *retry.RetryError {
 		randMax := 20.0
 
 		errCode := httpResp.StatusCode
-		errBody := getHttpErrorResponse(httpResp.Body, err)
+		errBody := GetHttpErrorResponse(httpResp.Body, err)
 
 		if errCode == http.StatusServiceUnavailable || errCode == http.StatusTooManyRequests ||
 			errCode == http.StatusConflict || errCode == http.StatusFailedDependency ||

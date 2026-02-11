@@ -23,3 +23,8 @@ variable "image_id_uefi_tpm" {
   type    = string
   default = "ami-cdd42a02"
 }
+
+variable "keypair_name" {
+  type    = string
+  default = "terraform-basic"
+}
