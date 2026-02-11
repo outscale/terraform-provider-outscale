@@ -314,6 +314,12 @@ func (r *resourceSecurityGroup) Create(ctx context.Context, req resource.CreateR
 	err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
 		rp, httpResp, err := r.Client.SecurityGroupApi.CreateSecurityGroup(ctx).CreateSecurityGroupRequest(createReq).Execute()
 		if err != nil {
+			apiErr := oapihelpers.GetError(err)
+			// Fail fast when the security group name already exists
+			if apiErr.GetCode() == "9008" {
+				errBody := utils.GetHttpErrorResponse(httpResp.Body, err)
+				return retry.NonRetryableError(errBody)
+			}
 			return utils.CheckThrottling(httpResp, err)
 		}
 		createResp = rp
