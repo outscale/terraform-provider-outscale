@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/boolvalidator"
@@ -25,7 +27,9 @@ import (
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/modifyplans"
+	"github.com/outscale/terraform-provider-outscale/internal/services/oapi/oapihelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
+	"github.com/samber/lo"
 )
 
 var (
@@ -108,11 +112,94 @@ func (r *resourceSecurityGroup) Metadata(ctx context.Context, req resource.Metad
 }
 
 func (r *resourceSecurityGroup) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	if req.Plan.Raw.IsNull() && req.Plan.Raw.IsFullyKnown() {
+	// Do not verify plan if this is a new resource
+	if req.State.Raw.IsNull() {
+		return
+	}
+
+	var stateData SecurityGroupModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &stateData)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	isDestroy := req.Plan.Raw.IsNull()
+	isReplace := false
+	sameName := false
+
+	if !isDestroy {
+		var planData SecurityGroupModel
+		resp.Diagnostics.Append(req.Plan.Get(ctx, &planData)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		// A replacement happens if any "RequiresReplace" attribute is changed
+		isReplace = !planData.Description.Equal(stateData.Description) ||
+			!planData.NetId.Equal(stateData.NetId) ||
+			!planData.RemoveDefaultOutboundRule.Equal(stateData.RemoveDefaultOutboundRule) ||
+			!planData.SecurityGroupName.Equal(stateData.SecurityGroupName)
+		sameName = planData.SecurityGroupName.Equal(stateData.SecurityGroupName)
+	}
+	if !isDestroy && !isReplace {
+		return
+	}
+
+	to, diag := stateData.Timeouts.Delete(ctx, DeleteDefaultTimeout)
+	if fwhelpers.CheckDiags(resp, diag) {
+		return
+	}
+	vms, nics, lbus, diag := r.getLinkedResources(ctx, to, stateData.Id.ValueString())
+	if diag.HasError() {
+		resp.Diagnostics.Append(diag...)
+		return
+	}
+
+	resources := []string{}
+	for _, vm := range vms {
+		if vm.SecurityGroups != nil && len(*vm.SecurityGroups) == 1 {
+			resources = append(resources, *vm.VmId)
+		}
+	}
+	for _, nic := range nics {
+		if nic.SecurityGroups != nil && len(*nic.SecurityGroups) == 1 {
+			resources = append(resources, *nic.NicId)
+		}
+	}
+	targetSG := []string{stateData.Id.ValueString()}
+	for _, lbu := range lbus {
+		if lbu.SecurityGroups != nil && slices.Equal(*lbu.SecurityGroups, targetSG) {
+			resources = append(resources, *lbu.LoadBalancerName)
+		}
+	}
+
+	if len(resources) > 0 {
+		errDetailMsg := `The resource is being destroyed and this operation will fail because other resources depend on it as their only security group.`
+		if isReplace {
+			errDetailMsg += `
+
+Add this lifecycle block to create the new Security Group before destroying the old one (prevents dependent resources from having zero security groups):
+
+resource "outscale_security_group" "foo" {
+  # ... configuration ...
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}`
+		}
+
 		resp.Diagnostics.AddWarning(
-			"Resource Destruction Considerations",
-			"Applying this resource destruction will fully destroy this resource.",
+			fmt.Sprintf("The Security Group is the unique Security Group of the following resources: %v.", resources),
+			errDetailMsg,
 		)
+
+		if isReplace && sameName {
+			resp.Diagnostics.AddWarning(
+				"Security Group name conflict.",
+				`When using "create_before_destroy", change the "security_group_name" to a different value. Both security groups exist temporarily during replacement, and the API requires unique names.`,
+			)
+		}
 	}
 }
 
@@ -352,10 +439,17 @@ func (r *resourceSecurityGroup) Delete(ctx context.Context, req resource.DeleteR
 		SecurityGroupId: &sgId,
 	}
 
+	sgLinked := false
 	err := retry.RetryContext(ctx, deleteTimeout, func() *retry.RetryError {
 		_, httpResp, err := r.Client.SecurityGroupApi.DeleteSecurityGroup(ctx).DeleteSecurityGroupRequest(delReq).Execute()
 		if err != nil {
+			oscErr := oapihelpers.GetError(err)
+			if oscErr.GetCode() == "9085" {
+				sgLinked = true
+				return nil
+			}
 			return utils.CheckThrottling(httpResp, err)
+
 		}
 		return nil
 	})
@@ -366,6 +460,229 @@ func (r *resourceSecurityGroup) Delete(ctx context.Context, req resource.DeleteR
 		)
 		return
 	}
+
+	if sgLinked {
+		diag = r.unlink(ctx, deleteTimeout, data)
+		if diag.HasError() {
+			resp.Diagnostics.Append(diag...)
+			return
+		}
+
+		err := retry.RetryContext(ctx, deleteTimeout, func() *retry.RetryError {
+			_, httpResp, err := r.Client.SecurityGroupApi.DeleteSecurityGroup(ctx).DeleteSecurityGroupRequest(delReq).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp, err)
+			}
+			return nil
+		})
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable to delete Security Group after unlinking from resources.",
+				err.Error(),
+			)
+			return
+		}
+	}
+}
+
+func (r *resourceSecurityGroup) getLinkedResources(ctx context.Context, to time.Duration, sgId string) ([]oscgo.Vm, []oscgo.Nic, []oscgo.LoadBalancer, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Get VMs linked to Security Group
+	readVmReq := oscgo.ReadVmsRequest{
+		Filters: &oscgo.FiltersVm{
+			SecurityGroupIds: &[]string{sgId},
+		},
+	}
+
+	var vms []oscgo.Vm
+	err := retry.RetryContext(ctx, to, func() *retry.RetryError {
+		resp, httpResp, err := r.Client.VmApi.ReadVms(ctx).ReadVmsRequest(readVmReq).Execute()
+		if err != nil {
+			return utils.CheckThrottling(httpResp, err)
+		}
+		vms = *resp.Vms
+		return nil
+	})
+	if err != nil {
+		diags.AddError(
+			"Unable to find VMs linked to Security Group.",
+			err.Error(),
+		)
+		return nil, nil, nil, diags
+	}
+
+	// Get NICs linked to Security Group
+	readNicsReq := oscgo.ReadNicsRequest{
+		Filters: &oscgo.FiltersNic{
+			SecurityGroupIds: &[]string{sgId},
+		},
+	}
+
+	var nics []oscgo.Nic
+	err = retry.RetryContext(ctx, to, func() *retry.RetryError {
+		resp, httpResp, err := r.Client.NicApi.ReadNics(ctx).ReadNicsRequest(readNicsReq).Execute()
+		if err != nil {
+			return utils.CheckThrottling(httpResp, err)
+		}
+		nics = *resp.Nics
+		return nil
+	})
+	if err != nil {
+		diags.AddError(
+			"Unable to find NICs linked to Security Group.",
+			err.Error(),
+		)
+		return nil, nil, nil, diags
+	}
+
+	// Get LBUs linked to Security Group
+	var lbus []oscgo.LoadBalancer
+	err = retry.RetryContext(ctx, to, func() *retry.RetryError {
+		resp, httpResp, err := r.Client.LoadBalancerApi.ReadLoadBalancers(ctx).ReadLoadBalancersRequest(oscgo.ReadLoadBalancersRequest{}).Execute()
+		if err != nil {
+			return utils.CheckThrottling(httpResp, err)
+		}
+		lbus = *resp.LoadBalancers
+		return nil
+	})
+	if err != nil {
+		diags.AddError(
+			"Unable to find Load Balancers linked to Security Group.",
+			err.Error(),
+		)
+		return nil, nil, nil, diags
+	}
+
+	return vms, nics, lbus, nil
+}
+
+func (r *resourceSecurityGroup) unlink(ctx context.Context, to time.Duration, data SecurityGroupModel) (diags diag.Diagnostics) {
+	vms, nics, lbus, diag := r.getLinkedResources(ctx, to, data.Id.ValueString())
+	if diag.HasError() {
+		diags = append(diags, diag...)
+		return diags
+	}
+
+	// Check if the Security Group is the unique Security Group of any VM
+	vmsUniqueSG := lo.FilterMap(vms, func(vm oscgo.Vm, _ int) (string, bool) {
+		return *vm.VmId, (vm.SecurityGroups != nil && len(*vm.SecurityGroups) == 1)
+	})
+	// Check if the Security Group is the unique Security Group of any NIC
+	nicsUniqueSG := lo.FilterMap(nics, func(nic oscgo.Nic, _ int) (string, bool) {
+		return *nic.NicId, (nic.SecurityGroups != nil && len(*nic.SecurityGroups) == 1)
+	})
+	targetSG := []string{data.Id.ValueString()}
+	// Check if the Security Group is the unique Security Group of any LBU
+	lbusUniqueSG := lo.FilterMap(lbus, func(lbu oscgo.LoadBalancer, _ int) (string, bool) {
+		return *lbu.LoadBalancerName, (lbu.SecurityGroups != nil && slices.Equal(*lbu.SecurityGroups, targetSG))
+	})
+
+	if len(vmsUniqueSG) > 0 {
+		diags.AddError(
+			fmt.Sprintf("The Security Group is the unique Security Group of the following VMs: %v.", vmsUniqueSG),
+			"The Security Group cannot be deleted and needs to be removed from the VMs first.",
+		)
+	}
+	if len(nicsUniqueSG) > 0 {
+		diags.AddError(
+			fmt.Sprintf("The Security Group is the unique Security Group of the following NICs: %v.", nicsUniqueSG),
+			"The Security Group cannot be deleted and needs to be removed from the NICs first.",
+		)
+	}
+	if len(lbusUniqueSG) > 0 {
+		diags.AddError(
+			fmt.Sprintf("The Security Group is the unique Security Group of the following LBUs: %v.", lbusUniqueSG),
+			"The Security Group cannot be deleted and needs to be removed from the LBUs first.",
+		)
+	}
+
+	if diags.HasError() {
+		return
+	}
+
+	for _, vm := range vms {
+		// Get the Security Group IDs of the VM without the current Security Group
+		sgIds := lo.FilterMap(*vm.SecurityGroups, func(sg oscgo.SecurityGroupLight, _ int) (string, bool) {
+			return *sg.SecurityGroupId, (*sg.SecurityGroupId != data.Id.ValueString())
+		})
+		updateReq := oscgo.UpdateVmRequest{
+			VmId:             *vm.VmId,
+			SecurityGroupIds: &sgIds,
+		}
+
+		err := retry.RetryContext(ctx, to, func() *retry.RetryError {
+			_, httpResp, err := r.Client.VmApi.UpdateVm(ctx).UpdateVmRequest(updateReq).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp, err)
+			}
+			return nil
+		})
+		if err != nil {
+			diags.AddError(
+				fmt.Sprintf("Unable to remove Security Group (%s) from VM (%s)", data.Id.ValueString(), *vm.VmId),
+				err.Error(),
+			)
+			return
+		}
+	}
+
+	for _, nic := range nics {
+		// Get the Security Group IDs of the NIC without the current Security Group
+		sgIds := lo.FilterMap(*nic.SecurityGroups, func(sg oscgo.SecurityGroupLight, _ int) (string, bool) {
+			return *sg.SecurityGroupId, (*sg.SecurityGroupId != data.Id.ValueString())
+		})
+		updateReq := oscgo.UpdateNicRequest{
+			NicId:            *nic.NicId,
+			SecurityGroupIds: &sgIds,
+		}
+
+		err := retry.RetryContext(ctx, to, func() *retry.RetryError {
+			_, httpResp, err := r.Client.NicApi.UpdateNic(ctx).UpdateNicRequest(updateReq).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp, err)
+			}
+			return nil
+		})
+		if err != nil {
+			diags.AddError(
+				fmt.Sprintf("Unable to remove Security Group (%s) from NIC (%s)", data.Id.ValueString(), *nic.NicId),
+				err.Error(),
+			)
+			return
+		}
+	}
+
+	for _, lbu := range lbus {
+		if lbu.SecurityGroups == nil {
+			continue
+		}
+		// Get the Security Group IDs of the LBU without the current Security Group
+		sgIds := lo.FilterMap(*lbu.SecurityGroups, func(sg string, _ int) (string, bool) {
+			return sg, (sg != data.Id.ValueString())
+		})
+		updateReq := oscgo.UpdateLoadBalancerRequest{
+			LoadBalancerName: *lbu.LoadBalancerName,
+			SecurityGroups:   &sgIds,
+		}
+
+		err := retry.RetryContext(ctx, to, func() *retry.RetryError {
+			_, httpResp, err := r.Client.LoadBalancerApi.UpdateLoadBalancer(ctx).UpdateLoadBalancerRequest(updateReq).Execute()
+			if err != nil {
+				return utils.CheckThrottling(httpResp, err)
+			}
+			return nil
+		})
+		if err != nil {
+			diags.AddError(
+				fmt.Sprintf("Unable to remove Security Group (%s) from Load Balancer (%s)", data.Id.ValueString(), *lbu.LoadBalancerName),
+				err.Error(),
+			)
+			return
+		}
+	}
+
+	return
 }
 
 func setSecurityGroupState(ctx context.Context, r *resourceSecurityGroup, data SecurityGroupModel) (SecurityGroupModel, error) {
