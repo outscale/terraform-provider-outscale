@@ -145,6 +145,15 @@ For more information about volume types, see [About Volumes > Volume Types and I
     * `value` - The value of the tag, between 0 and 255 characters.
 * `tpm_mandatory` - If true, a virtual Trusted Platform Module (vTPM) is mandatory for VMs created from this OMI. If false, a vTPM is not mandatory.
 
+## Timeouts
+
+The `timeouts` block enables you to configure [timeouts](https://developer.hashicorp.com/terraform/language/resources/configure#define-operation-timeouts) for certain actions:
+
+* `create` - Defaults to 40 minutes.
+* `read` - Defaults to 5 minutes.
+* `update` - Defaults to 10 minutes.
+* `delete` - Defaults to 10 minutes.
+
 ## Import
 
 An image can be imported using its ID. For example:

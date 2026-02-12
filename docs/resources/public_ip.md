@@ -44,6 +44,15 @@ The following attributes are exported:
     * `value` - The value of the tag, between 0 and 255 characters.
 * `vm_id` - The ID of the VM the public IP is associated with (if any).
 
+## Timeouts
+
+The `timeouts` block enables you to configure [timeouts](https://developer.hashicorp.com/terraform/language/resources/configure#define-operation-timeouts) for certain actions:
+
+* `create` - Defaults to 10 minutes.
+* `read` - Defaults to 5 minutes.
+* `update` - Defaults to 10 minutes.
+* `delete` - Defaults to 5 minutes.
+
 ## Import
 
 A public IP can be imported using its ID. For example:

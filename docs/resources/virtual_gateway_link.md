@@ -51,6 +51,14 @@ The following attributes are exported:
 * `net_id` - The ID of the Net to which the virtual gateway is attached.
 * `state` - The state of the attachment (`attaching` \| `attached` \| `detaching` \| `detached`).
 
+## Timeouts
+
+The `timeouts` block enables you to configure [timeouts](https://developer.hashicorp.com/terraform/language/resources/configure#define-operation-timeouts) for certain actions:
+
+* `create` - Defaults to 10 minutes.
+* `read` - Defaults to 5 minutes.
+* `delete` - Defaults to 5 minutes.
+
 ## Import
 
 A virtual gateway link can be imported using its virtual gateway ID. For example:

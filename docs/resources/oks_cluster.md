@@ -97,6 +97,15 @@ The following attributes are exported:
 * `disable_api_termination` - If true, cluster deletion through the API is disabled. If false, it is enabled.
 
 
+## Timeouts
+
+The `timeouts` block enables you to configure [timeouts](https://developer.hashicorp.com/terraform/language/resources/configure#define-operation-timeouts) for certain actions:
+
+* `create` - Defaults to 15 minutes.
+* `read` - Defaults to 2 minutes.
+* `update` - Defaults to 10 minutes.
+* `delete` - Defaults to 10 minutes.
+
 ## Import
 
 An OKS cluster can be imported using its ID. For example:

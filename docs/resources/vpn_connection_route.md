@@ -57,6 +57,14 @@ The following arguments are supported:
 
 No attribute is exported.
 
+## Timeouts
+
+The `timeouts` block enables you to configure [timeouts](https://developer.hashicorp.com/terraform/language/resources/configure#define-operation-timeouts) for certain actions:
+
+* `create` - Defaults to 10 minutes.
+* `read` - Defaults to 5 minutes.
+* `delete` - Defaults to 5 minutes.
+
 ## Import
 
 A VPN connection route can be imported using the VPN connection ID and the route destination IP range. For example:

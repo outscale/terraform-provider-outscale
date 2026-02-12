@@ -58,6 +58,15 @@ The following attributes are exported:
 * `route_table_id` - The ID of the route table.
 * `subnet_id` - The ID of the Subnet.
 
+## Timeouts
+
+The `timeouts` block enables you to configure [timeouts](https://developer.hashicorp.com/terraform/language/resources/configure#define-operation-timeouts) for certain actions:
+
+* `create` - Defaults to 10 minutes.
+* `read` - Defaults to 5 minutes.
+* `update` - Defaults to 10 minutes.
+* `delete` - Defaults to 5 minutes.
+
 ## Import
 
 A route table link can be imported using the route table ID and the route table link ID. For example:

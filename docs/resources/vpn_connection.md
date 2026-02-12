@@ -82,6 +82,15 @@ The following attributes are exported:
 * `virtual_gateway_id` - The ID of the virtual gateway used on the OUTSCALE end of the connection.
 * `vpn_connection_id` - The ID of the VPN connection.
 
+## Timeouts
+
+The `timeouts` block enables you to configure [timeouts](https://developer.hashicorp.com/terraform/language/resources/configure#define-operation-timeouts) for certain actions:
+
+* `create` - Defaults to 10 minutes.
+* `read` - Defaults to 5 minutes.
+* `update` - Defaults to 10 minutes.
+* `delete` - Defaults to 5 minutes.
+
 ## Import
 
 A VPN connection can be imported using its ID. For example:

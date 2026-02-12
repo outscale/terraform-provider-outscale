@@ -49,6 +49,14 @@ The following attributes are exported:
 * `policy_name` - The name of the policy.
 * `resources_count` - The number of resources attached to the policy.
 
+## Timeouts
+
+The `timeouts` block enables you to configure [timeouts](https://developer.hashicorp.com/terraform/language/resources/configure#define-operation-timeouts) for certain actions:
+
+* `create` - Defaults to 10 minutes.
+* `read` - Defaults to 5 minutes.
+* `delete` - Defaults to 5 minutes.
+
 ## Import
 
 A policy can be imported using its ORN. For example:

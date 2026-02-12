@@ -62,3 +62,10 @@ The following attributes are exported:
 (Request) Set this parameter to true to make the resource public (if the parent parameter is `additions`) or to make the resource private (if the parent parameter is `removals`).<br />
 (Response) If true, the resource is public. If false, the resource is private.
 
+## Timeouts
+
+The `timeouts` block enables you to configure [timeouts](https://developer.hashicorp.com/terraform/language/resources/configure#define-operation-timeouts) for certain actions:
+
+* `create` - Defaults to 10 minutes.
+* `read` - Defaults to 5 minutes.
+* `delete` - Defaults to 5 minutes.
