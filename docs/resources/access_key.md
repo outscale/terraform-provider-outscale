@@ -58,6 +58,15 @@ The following attributes are exported:
 * `secret_key` - The secret key that enables you to send requests.
 * `state` - The state of the access key (`ACTIVE` if the key is valid for API calls, or `INACTIVE` if not).
 
+## Timeouts
+
+The `timeouts` block enables you to configure [timeouts](https://developer.hashicorp.com/terraform/language/resources/configure#define-operation-timeouts) for certain actions:
+
+* `create` - Defaults to 10 minutes.
+* `read` - Defaults to 5 minutes.
+* `update` - Defaults to 10 minutes.
+* `delete` - Defaults to 5 minutes.
+
 ## Import
 
 An access key can be imported using its ID. For example:

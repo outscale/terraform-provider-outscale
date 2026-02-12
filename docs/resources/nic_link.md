@@ -65,6 +65,14 @@ The following attributes are exported:
 
 * `link_nic_id` - The ID of the NIC attachment.
 
+## Timeouts
+
+The `timeouts` block enables you to configure [timeouts](https://developer.hashicorp.com/terraform/language/resources/configure#define-operation-timeouts) for certain actions:
+
+* `create` - Defaults to 10 minutes.
+* `read` - Defaults to 5 minutes.
+* `delete` - Defaults to 5 minutes.
+
 ## Import
 
 A NIC link can be imported using the NIC ID. For example:

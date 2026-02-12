@@ -48,6 +48,15 @@ The following attributes are exported:
 * `subregion_name` - The Subregion where the fGPU is located.
 * `vm_id` - The ID of the VM the fGPU is attached to, if any.
 
+## Timeouts
+
+The `timeouts` block enables you to configure [timeouts](https://developer.hashicorp.com/terraform/language/resources/configure#define-operation-timeouts) for certain actions:
+
+* `create` - Defaults to 10 minutes.
+* `read` - Defaults to 5 minutes.
+* `update` - Defaults to 10 minutes.
+* `delete` - Defaults to 5 minutes.
+
 ## Import
 
 A flexible GPU can be imported using its ID. For example:
