@@ -178,6 +178,7 @@ The following attributes are exported:
     * `tags` - One or more tags associated with the VM.
         * `key` - The key of the tag, with a minimum of 1 character.
         * `value` - The value of the tag, between 0 and 255 characters.
+    * `tpm_enabled` - If true, a virtual Trusted Platform Module (vTPM) is enabled on the VM. If false, it is not.<br />The default behavior for `tpm_enabled` varies depending on the source OMI of the VM.<br />If the `tpm_mandatory` attribute of the source OMI is true, a vTPM has to be attached to the VM and it will be created by default. Setting `tpm_enabled` to false will cause the creation request to fail.<br />If the `tpm_mandatory` attribute of the source OMI is false, only setting `tpm_enabled` to true will create and attach a vTPM to the VM.
     * `user_data` - The Base64-encoded MIME user data.
     * `vm_id` - The ID of the VM.
     * `vm_initiated_shutdown_behavior` - The VM behavior when you stop it. If set to `stop`, the VM stops. If set to `restart`, the VM stops then automatically restarts. If set to `terminate`, the VM stops and is deleted.
