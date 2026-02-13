@@ -58,6 +58,15 @@ The following attributes are exported:
 * `user_id` - The ID of the EIM user.
 * `user_name` - The name of the EIM user.
 
+## Timeouts
+
+The `timeouts` block enables you to configure [timeouts](https://developer.hashicorp.com/terraform/language/resources/configure#define-operation-timeouts) for certain actions:
+
+* `create` - Defaults to 10 minutes.
+* `read` - Defaults to 5 minutes.
+* `update` - Defaults to 10 minutes.
+* `delete` - Defaults to 5 minutes.
+
 ## Import
 
 A user can be imported using its ID. For example:

@@ -91,6 +91,15 @@ The following attributes are exported:
 * `path` - The path to the user group.
 * `user_group_id` - The ID of the user group.
 
+## Timeouts
+
+The `timeouts` block enables you to configure [timeouts](https://developer.hashicorp.com/terraform/language/resources/configure#define-operation-timeouts) for certain actions:
+
+* `create` - Defaults to 10 minutes.
+* `read` - Defaults to 5 minutes.
+* `update` - Defaults to 10 minutes.
+* `delete` - Defaults to 5 minutes.
+
 ## Import
 
 A user group can be imported using its group ID. For example:

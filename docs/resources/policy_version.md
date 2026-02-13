@@ -44,3 +44,10 @@ The following attributes are exported:
 * `default_version` - If true, the version is the default one.
 * `version_id` - The ID of the version.
 
+## Timeouts
+
+The `timeouts` block enables you to configure [timeouts](https://developer.hashicorp.com/terraform/language/resources/configure#define-operation-timeouts) for certain actions:
+
+* `create` - Defaults to 10 minutes.
+* `read` - Defaults to 5 minutes.
+* `delete` - Defaults to 5 minutes.

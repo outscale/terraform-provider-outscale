@@ -79,6 +79,15 @@ The following attributes are exported:
 * `volume_id` - The ID of the volume used to create the snapshot.
 * `volume_size` - The size of the volume used to create the snapshot, in gibibytes (GiB).
 
+## Timeouts
+
+The `timeouts` block enables you to configure [timeouts](https://developer.hashicorp.com/terraform/language/resources/configure#define-operation-timeouts) for certain actions:
+
+* `create` - Defaults to 40 minutes.
+* `read` - Defaults to 5 minutes.
+* `update` - Defaults to 10 minutes.
+* `delete` - Defaults to 5 minutes.
+
 ## Import
 
 A snapshot can be imported using its ID. For example:

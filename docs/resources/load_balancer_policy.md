@@ -116,3 +116,10 @@ To only allow traffic from load balancers, add a security group rule that specif
     * `key` - The key of the tag, with a minimum of 1 character.
     * `value` - The value of the tag, between 0 and 255 characters.
 
+## Timeouts
+
+The `timeouts` block enables you to configure [timeouts](https://developer.hashicorp.com/terraform/language/resources/configure#define-operation-timeouts) for certain actions:
+
+* `create` - Defaults to 10 minutes.
+* `read` - Defaults to 5 minutes.
+* `delete` - Defaults to 5 minutes.

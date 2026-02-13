@@ -59,6 +59,15 @@ The following attributes are exported:
 * `description` - The description of the API access rule.
 * `ip_ranges` - One or more IP ranges used for the API access rule, in CIDR notation (for example, `192.0.2.0/16`).
 
+## Timeouts
+
+The `timeouts` block enables you to configure [timeouts](https://developer.hashicorp.com/terraform/language/resources/configure#define-operation-timeouts) for certain actions:
+
+* `create` - Defaults to 10 minutes.
+* `read` - Defaults to 5 minutes.
+* `update` - Defaults to 10 minutes.
+* `delete` - Defaults to 5 minutes.
+
 ## Import
 
 An API access rule can be imported using its ID. For example:

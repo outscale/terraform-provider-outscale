@@ -56,6 +56,14 @@ The following attributes are exported:
 
 * `link_public_ip_id` - (Net only) The ID representing the association of the public IP with the VM or the NIC.
 
+## Timeouts
+
+The `timeouts` block enables you to configure [timeouts](https://developer.hashicorp.com/terraform/language/resources/configure#define-operation-timeouts) for certain actions:
+
+* `create` - Defaults to 10 minutes.
+* `read` - Defaults to 5 minutes.
+* `delete` - Defaults to 5 minutes.
+
 ## Import
 
 A public IP link can be imported using the public IP or the public IP link ID. For example:

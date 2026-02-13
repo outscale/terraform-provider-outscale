@@ -60,6 +60,15 @@ The following attributes are exported:
 * `vm_id` - The ID of the VM.
 * `volume_id` - The ID of the volume.
 
+## Timeouts
+
+The `timeouts` block enables you to configure [timeouts](https://developer.hashicorp.com/terraform/language/resources/configure#define-operation-timeouts) for certain actions:
+
+* `create` - Defaults to 10 minutes.
+* `read` - Defaults to 5 minutes.
+* `update` - Defaults to 10 minutes.
+* `delete` - Defaults to 5 minutes.
+
 ## Import
 
 A volume link can be imported using a volume ID. For example:

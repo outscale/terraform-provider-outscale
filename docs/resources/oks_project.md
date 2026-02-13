@@ -55,6 +55,15 @@ The following attributes are exported:
 * `updated_at` - The timestamp when the project was last updated (date-time).
 * `deleted_at` - The timestamp when the project was deleted (if applicable) (date-time).
 
+## Timeouts
+
+The `timeouts` block enables you to configure [timeouts](https://developer.hashicorp.com/terraform/language/resources/configure#define-operation-timeouts) for certain actions:
+
+* `create` - Defaults to 15 minutes.
+* `read` - Defaults to 2 minutes.
+* `update` - Defaults to 10 minutes.
+* `delete` - Defaults to 10 minutes.
+
 ## Import
 
 An OKS project can be imported using its ID. For example:
