@@ -16,6 +16,10 @@ var endpointServiceNames = []string{
 	"oks",
 }
 
+func deprecatedMsg(attr string) string {
+	return fmt.Sprintf("'%s' is deprecated: use the 'iaas' or 'oks' block for per-service configuration. This will be removed in the next major version of the provider.", attr)
+}
+
 // Provider ...
 func Provider() *schema.Provider {
 	return &schema.Provider{
@@ -33,11 +37,13 @@ func Provider() *schema.Provider {
 			"region": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Deprecated:  deprecatedMsg("region"),
 				Description: "The Region for API operations.",
 			},
 			"endpoints": {
-				Type:     schema.TypeSet,
-				Optional: true,
+				Type:       schema.TypeSet,
+				Optional:   true,
+				Deprecated: deprecatedMsg("endpoints"),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"api": {
@@ -53,31 +59,83 @@ func Provider() *schema.Provider {
 					},
 				},
 			},
+			"iaas": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"endpoint": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"region": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"x509_cert_path": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Path to the x509 certificate",
+						},
+						"x509_key_path": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Path to the x509 key",
+						},
+						"insecure": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "TLS insecure connection",
+						},
+					},
+				},
+			},
+			"oks": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"endpoint": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"region": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+					},
+				},
+			},
 			"x509_cert_path": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The path to your x509 cert",
+				Deprecated:  deprecatedMsg("x509_cert_path"),
+				Description: "Path to the x509 certificate for IaaS API operations.",
 			},
 			"x509_key_path": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The path to your x509 key",
+				Deprecated:  deprecatedMsg("x509_key_path"),
+				Description: "Path to the x509 key for IaaS API operations.",
 			},
 			"config_file": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The path to your configuration file in which you have defined your credentials.",
+				Description: "Path to the configuration file in which you have defined your credentials.",
 			},
 			"profile": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The name of your profile in which you define your credencial",
+				Description: "Name of your profile in which you define your credencial",
 			},
 			"insecure": {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
-				Description: "tls insecure connection",
+				Deprecated:  deprecatedMsg("insecure"),
+				Description: "TLS insecure connection for IaaS API operations.",
 			},
 		},
 
@@ -214,6 +272,7 @@ func providerConfigureClient(d *schema.ResourceData) (interface{}, error) {
 		Profile:      d.Get("profile").(string),
 		Insecure:     d.Get("insecure").(bool),
 	}
+
 	endpointsSet := d.Get("endpoints").(*schema.Set)
 	for _, endpointsSetI := range endpointsSet.List() {
 		endpoints := make(map[string]string)
@@ -232,6 +291,59 @@ func providerConfigureClient(d *schema.ResourceData) (interface{}, error) {
 	if !ok {
 		setProviderDefaultEnv(&config)
 	}
+
+	if iaasList, ok := d.GetOk("iaas"); ok {
+		iaas := iaasList.([]any)[0].(map[string]any)
+		if v, ok := iaas["endpoint"].(string); ok && v != "" {
+			config.IAASEndpoint = v
+		}
+		if v, ok := iaas["region"].(string); ok && v != "" {
+			config.IAASRegion = v
+		}
+		if v, ok := iaas["x509_cert_path"].(string); ok && v != "" {
+			config.IAASX509Cert = v
+		}
+		if v, ok := iaas["x509_key_path"].(string); ok && v != "" {
+			config.IAASX509Key = v
+		}
+		if v, ok := iaas["insecure"].(bool); ok {
+			config.IAASInsecure = v
+		}
+	}
+	// fallback to deprecated configuration
+	if config.IAASEndpoint == "" {
+		config.IAASEndpoint = config.Endpoints["api"]
+	}
+	if config.IAASX509Cert == "" {
+		config.IAASX509Cert = config.X509CertPath
+	}
+	if config.IAASX509Key == "" {
+		config.IAASX509Key = config.X509KeyPath
+	}
+	if !config.IAASInsecure {
+		config.IAASInsecure = config.Insecure
+	}
+	if config.IAASRegion == "" {
+		config.IAASRegion = config.Region
+	}
+
+	if oksList, ok := d.GetOk("oks"); ok {
+		oksBlock := oksList.([]any)[0].(map[string]any)
+		if v, ok := oksBlock["endpoint"].(string); ok && v != "" {
+			config.OKSEndpoint = v
+		}
+		if v, ok := oksBlock["region"].(string); ok && v != "" {
+			config.OKSRegion = v
+		}
+	}
+	// fallback to deprecated configuration
+	if config.OKSEndpoint == "" {
+		config.OKSEndpoint = config.Endpoints["oks"]
+	}
+	if config.OKSRegion == "" {
+		config.OKSRegion = config.Region
+	}
+
 	return config.Client()
 }
 
@@ -309,8 +421,11 @@ func setOldProfile(conf *Config, profile gjson.Result) {
 	if len(conf.Endpoints) == 0 {
 		if profile.Get("endpoints").Exists() {
 			endpoints := profile.Get("endpoints").Value().(map[string]interface{})
-			if endpoint := endpoints["api"].(string); endpoint != "" {
+			if endpoint, ok := endpoints["api"].(string); ok && endpoint != "" {
 				conf.Endpoints["api"] = endpoint
+			}
+			if endpoint, ok := endpoints["oks"].(string); ok && endpoint != "" {
+				conf.Endpoints["oks"] = endpoint
 			}
 		}
 	}
@@ -346,9 +461,17 @@ func setProviderDefaultEnv(conf *Config) {
 		}
 	}
 	if len(conf.Endpoints) == 0 {
-		if endpoints := utils.GetEnvVariableValue([]string{"OSC_ENDPOINT_API", "OUTSCALE_OAPI_URL"}); endpoints != "" {
-			endpointsAttributes := make(map[string]string)
-			endpointsAttributes["api"] = endpoints
+		endpointsAttributes := make(map[string]string)
+		hasEndpoint := false
+		if endpoint := utils.GetEnvVariableValue([]string{"OSC_ENDPOINT_API", "OUTSCALE_OAPI_URL"}); endpoint != "" {
+			endpointsAttributes["api"] = endpoint
+			hasEndpoint = true
+		}
+		if endpoint := utils.GetEnvVariableValue([]string{"OSC_ENDPOINT_OKS"}); endpoint != "" {
+			endpointsAttributes["oks"] = endpoint
+			hasEndpoint = true
+		}
+		if hasEndpoint {
 			conf.Endpoints = endpointsAttributes
 		}
 	}
