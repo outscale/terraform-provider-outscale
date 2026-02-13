@@ -3,12 +3,17 @@ package provider
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/boolvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/services/oapi"
@@ -39,15 +44,32 @@ func NewWithConfigure(version string, on func(*client.OutscaleClient)) provider.
 }
 
 type ProviderModel struct {
-	AccessKeyId  types.String `tfsdk:"access_key_id"`
-	SecretKeyId  types.String `tfsdk:"secret_key_id"`
-	Region       types.String `tfsdk:"region"`
+	AccessKeyId types.String `tfsdk:"access_key_id"`
+	SecretKeyId types.String `tfsdk:"secret_key_id"`
+	Region      types.String `tfsdk:"region"`
+	API         types.List   `tfsdk:"api"`
+	OKS         types.List   `tfsdk:"oks"`
+	ConfigFile  types.String `tfsdk:"config_file"`
+	Profile     types.String `tfsdk:"profile"`
+
+	// Deprecated
+	X509KeyPath  types.String `tfsdk:"x509_key_path"`
+	X509CertPath types.String `tfsdk:"x509_cert_path"`
 	Endpoints    []Endpoints  `tfsdk:"endpoints"`
+	Insecure     types.Bool   `tfsdk:"insecure"`
+}
+
+type APIModel struct {
 	X509CertPath types.String `tfsdk:"x509_cert_path"`
 	X509KeyPath  types.String `tfsdk:"x509_key_path"`
-	ConfigFile   types.String `tfsdk:"config_file"`
-	Profile      types.String `tfsdk:"profile"`
 	Insecure     types.Bool   `tfsdk:"insecure"`
+	Endpoint     types.String `tfsdk:"endpoint"`
+	Region       types.String `tfsdk:"region"`
+}
+
+type OKSModel struct {
+	Endpoint types.String `tfsdk:"endpoint"`
+	Region   types.String `tfsdk:"region"`
 }
 
 type Endpoints struct {
@@ -64,6 +86,10 @@ func (p *FrameworkProvider) Schema(ctx context.Context, req provider.SchemaReque
 	resp.Schema = schema.Schema{
 		Blocks: map[string]schema.Block{
 			"endpoints": schema.SetNestedBlock{
+				Validators: []validator.Set{
+					setvalidator.ConflictsWith(path.MatchRoot("api"), path.MatchRoot("oks")),
+				},
+				DeprecationMessage: deprecatedMsg("endpoints"),
 				NestedObject: schema.NestedBlockObject{
 					Attributes: map[string]schema.Attribute{
 						"api": schema.StringAttribute{
@@ -73,6 +99,48 @@ func (p *FrameworkProvider) Schema(ctx context.Context, req provider.SchemaReque
 						"oks": schema.StringAttribute{
 							Optional:    true,
 							Description: "The Endpoint for OKS API operations.",
+						},
+					},
+				},
+			},
+			"api": schema.ListNestedBlock{
+				Validators: []validator.List{
+					listvalidator.SizeAtMost(1),
+				},
+				NestedObject: schema.NestedBlockObject{
+					Attributes: map[string]schema.Attribute{
+						"endpoint": schema.StringAttribute{
+							Optional: true,
+						},
+						"region": schema.StringAttribute{
+							Optional: true,
+						},
+						"x509_cert_path": schema.StringAttribute{
+							Optional:    true,
+							Description: "Path to the x509 certificate",
+						},
+						"x509_key_path": schema.StringAttribute{
+							Optional:    true,
+							Description: "Path to the x509 key",
+						},
+						"insecure": schema.BoolAttribute{
+							Optional:    true,
+							Description: "TLS insecure connection",
+						},
+					},
+				},
+			},
+			"oks": schema.ListNestedBlock{
+				Validators: []validator.List{
+					listvalidator.SizeAtMost(1),
+				},
+				NestedObject: schema.NestedBlockObject{
+					Attributes: map[string]schema.Attribute{
+						"endpoint": schema.StringAttribute{
+							Optional: true,
+						},
+						"region": schema.StringAttribute{
+							Optional: true,
 						},
 					},
 				},
@@ -89,28 +157,42 @@ func (p *FrameworkProvider) Schema(ctx context.Context, req provider.SchemaReque
 				Description: "The Secret Key ID for API operations.",
 			},
 			"region": schema.StringAttribute{
-				Optional:    true,
-				Description: "The Region for API operations.",
-			},
-			"x509_cert_path": schema.StringAttribute{
-				Optional:    true,
-				Description: "The path to your x509 cert",
-			},
-			"x509_key_path": schema.StringAttribute{
-				Optional:    true,
-				Description: "The path to your x509 key",
+				Optional:           true,
+				DeprecationMessage: deprecatedMsg("region"),
+				Description:        "The Region for API operations.",
 			},
 			"config_file": schema.StringAttribute{
 				Optional:    true,
-				Description: "The path to your configuration file in which you have defined your credentials.",
+				Description: "Path to the configuration file in which you have defined your credentials.",
 			},
 			"profile": schema.StringAttribute{
 				Optional:    true,
-				Description: "The name of your profile in which you define your credencial",
+				Description: "Name of your profile in which you define your credencial",
+			},
+			// Deprecated attributes
+			"x509_cert_path": schema.StringAttribute{
+				Optional:           true,
+				DeprecationMessage: deprecatedMsg("x509_cert_path"),
+				Description:        "Path to the x509 certificate for IaaS API operations.",
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.MatchRoot("api"), path.MatchRoot("oks")),
+				},
+			},
+			"x509_key_path": schema.StringAttribute{
+				Optional:           true,
+				DeprecationMessage: deprecatedMsg("x509_key_path"),
+				Description:        "Path to the x509 key for IaaS API operations.",
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.MatchRoot("api"), path.MatchRoot("oks")),
+				},
 			},
 			"insecure": schema.BoolAttribute{
-				Optional:    true,
-				Description: "tls insecure connection",
+				Optional:           true,
+				DeprecationMessage: deprecatedMsg("insecure"),
+				Description:        "TLS insecure connection for IaaS API operations.",
+				Validators: []validator.Bool{
+					boolvalidator.ConflictsWith(path.MatchRoot("api"), path.MatchRoot("oks")),
+				},
 			},
 		},
 	}

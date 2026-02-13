@@ -9,11 +9,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 	"github.com/tidwall/gjson"
 )
 
-// Client ...
 func (c *FrameworkProvider) ClientFW(ctx context.Context, data *ProviderModel, diags *diag.Diagnostics) (*client.OutscaleClient, error) {
 	loadConfigFromEnv(data)
 	err := mergeProfileConfig(data)
@@ -21,25 +22,68 @@ func (c *FrameworkProvider) ClientFW(ctx context.Context, data *ProviderModel, d
 		return nil, err
 	}
 
-	if data.Region.IsNull() && len(data.Endpoints) == 0 {
-		return nil, errors.New("'region' or 'endpoints' must be set for provider configuration")
+	var apiEndpoint, apiRegion, apiCertPath, apiKeyPath string
+	var apiInsecure bool
+	if fwhelpers.IsSet(data.API) {
+		apiModel, diag := to.Slice[APIModel](ctx, data.API)
+		diags.Append(diag...)
+		if diags.HasError() {
+			return nil, errors.New("failed to extract api configuration")
+		}
+		if len(apiModel) > 0 {
+			apiEndpoint = apiModel[0].Endpoint.ValueString()
+			apiRegion = apiModel[0].Region.ValueString()
+			apiCertPath = apiModel[0].X509CertPath.ValueString()
+			apiKeyPath = apiModel[0].X509KeyPath.ValueString()
+			apiInsecure = apiModel[0].Insecure.ValueBool()
+		}
+	}
+	// fallback to deprecated configuration
+	if apiEndpoint == "" && len(data.Endpoints) > 0 {
+		apiEndpoint = data.Endpoints[0].API.ValueString()
+	}
+	if apiCertPath == "" {
+		apiCertPath = data.X509CertPath.ValueString()
+	}
+	if apiKeyPath == "" {
+		apiKeyPath = data.X509KeyPath.ValueString()
+	}
+	if apiInsecure == false {
+		apiInsecure = data.Insecure.ValueBool()
+	}
+	if apiRegion == "" {
+		apiRegion = data.Region.ValueString()
 	}
 
-	apiEndpoint := ""
 	oksEndpoint := ""
-	if len(data.Endpoints) > 0 {
-		apiEndpoint = data.Endpoints[0].API.ValueString()
+	oksRegion := ""
+	if fwhelpers.IsSet(data.OKS) {
+		oksModels, diag := to.Slice[OKSModel](ctx, data.OKS)
+		diags.Append(diag...)
+		if diags.HasError() {
+			return nil, errors.New("failed to extract oks configuration")
+		}
+		if len(oksModels) > 0 {
+			oksEndpoint = oksModels[0].Endpoint.ValueString()
+			oksRegion = oksModels[0].Region.ValueString()
+		}
+	}
+	// fallback to deprecated configuration
+	if oksEndpoint == "" && len(data.Endpoints) > 0 {
 		oksEndpoint = data.Endpoints[0].OKS.ValueString()
+	}
+	if oksRegion == "" {
+		oksRegion = data.Region.ValueString()
 	}
 
 	oscClient, err := client.NewOAPIClient(client.Config{
 		AccessKeyID:  data.AccessKeyId.ValueString(),
 		SecretKeyID:  data.SecretKeyId.ValueString(),
-		Region:       data.Region.ValueString(),
+		Region:       apiRegion,
 		APIEndpoint:  apiEndpoint,
-		X509CertPath: data.X509CertPath.ValueString(),
-		X509KeyPath:  data.X509KeyPath.ValueString(),
-		Insecure:     data.Insecure.ValueBool(),
+		X509CertPath: apiCertPath,
+		X509KeyPath:  apiKeyPath,
+		Insecure:     apiInsecure,
 		UserAgent:    UserAgent,
 	})
 	if err != nil {
@@ -47,15 +91,11 @@ func (c *FrameworkProvider) ClientFW(ctx context.Context, data *ProviderModel, d
 	}
 
 	oksClient, err := client.NewOKSClient(client.Config{
-		AccessKeyID:  data.AccessKeyId.ValueString(),
-		SecretKeyID:  data.SecretKeyId.ValueString(),
-		Region:       data.Region.ValueString(),
-		APIEndpoint:  apiEndpoint,
-		OKSEndpoint:  oksEndpoint,
-		X509CertPath: data.X509CertPath.ValueString(),
-		X509KeyPath:  data.X509KeyPath.ValueString(),
-		Insecure:     data.Insecure.ValueBool(),
-		UserAgent:    UserAgent,
+		AccessKeyID: data.AccessKeyId.ValueString(),
+		SecretKeyID: data.SecretKeyId.ValueString(),
+		Region:      oksRegion,
+		OKSEndpoint: oksEndpoint,
+		UserAgent:   UserAgent,
 	})
 	if err != nil {
 		return nil, err
@@ -141,10 +181,10 @@ func setProfile(data *ProviderModel, profile gjson.Result) {
 		if profile.Get("endpoints").Exists() {
 			endpoints := profile.Get("endpoints").Value().(map[string]interface{})
 			endp := make([]Endpoints, 1)
-			if endpoint := endpoints["api"].(string); endpoint != "" {
+			if endpoint, ok := endpoints["api"].(string); ok && endpoint != "" {
 				endp[0].API = types.StringValue(endpoint)
 			}
-			if endpoint := endpoints["oks"].(string); endpoint != "" {
+			if endpoint, ok := endpoints["oks"].(string); ok && endpoint != "" {
 				endp[0].OKS = types.StringValue(endpoint)
 			}
 			data.Endpoints = endp
@@ -183,12 +223,17 @@ func loadConfigFromEnv(data *ProviderModel) {
 	}
 	if len(data.Endpoints) == 0 {
 		endp := make([]Endpoints, 1)
+		hasEndpoint := false
 		if endpoint := utils.GetEnvVariableValue([]string{"OSC_ENDPOINT_API", "OUTSCALE_OAPI_URL"}); endpoint != "" {
 			endp[0].API = types.StringValue(endpoint)
+			hasEndpoint = true
 		}
 		if endpoint := utils.GetEnvVariableValue([]string{"OSC_ENDPOINT_OKS"}); endpoint != "" {
 			endp[0].OKS = types.StringValue(endpoint)
+			hasEndpoint = true
 		}
-		data.Endpoints = endp
+		if hasEndpoint {
+			data.Endpoints = endp
+		}
 	}
 }

@@ -88,16 +88,12 @@ func NewOAPIClient(cfg Config) (*oscgo.APIClient, error) {
 
 func NewOKSClient(cfg Config) (*sdkv3_oks.Client, error) {
 	profile := sdkv3_profile.Profile{
-		AccessKey:      cfg.AccessKeyID,
-		SecretKey:      cfg.SecretKeyID,
-		Region:         cfg.Region,
-		X509ClientCert: cfg.X509CertPath,
-		X509ClientKey:  cfg.X509KeyPath,
-		TlsSkipVerify:  cfg.Insecure,
-		Protocol:       "https",
+		AccessKey: cfg.AccessKeyID,
+		SecretKey: cfg.SecretKeyID,
+		Region:    cfg.Region,
+		Protocol:  "https",
 		Endpoints: sdkv3_profile.Endpoint{
 			OKS: cfg.OKSEndpoint,
-			API: cfg.APIEndpoint,
 		},
 	}
 
