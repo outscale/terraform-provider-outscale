@@ -8,21 +8,21 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func ResourceOutscaleImageExportTask() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOAPIImageExportTaskCreate,
-		Read:   resourceOAPIImageExportTaskRead,
-		Update: resourceOAPIImageExportTaskUpdate,
-		Delete: resourceOAPIImageExportTaskDelete,
+		CreateContext: resourceOAPIImageExportTaskCreate,
+		ReadContext:   resourceOAPIImageExportTaskRead,
+		UpdateContext: resourceOAPIImageExportTaskUpdate,
+		DeleteContext: resourceOAPIImageExportTaskDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -106,12 +106,18 @@ func ResourceOutscaleImageExportTask() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"wait_for_completion": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				ForceNew: true,
+				Default:  true,
+			},
 			"tags": TagsSchemaSDK(),
 		},
 	}
 }
 
-func resourceOAPIImageExportTaskCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceOAPIImageExportTaskCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	conn := meta.(*client.OutscaleClient).OSCAPI
 	timeout := d.Timeout(schema.TimeoutCreate)
 
@@ -120,7 +126,7 @@ func resourceOAPIImageExportTaskCreate(d *schema.ResourceData, meta interface{})
 	request := oscgo.CreateImageExportTaskRequest{}
 
 	if !etoOk && !ok {
-		return fmt.Errorf("please provide the required attributes osu_export and image_id")
+		return diag.Errorf("please provide the required attributes osu_export and image_id")
 	}
 
 	request.SetImageId(v.(string))
@@ -161,8 +167,8 @@ func resourceOAPIImageExportTaskCreate(d *schema.ResourceData, meta interface{})
 	var resp oscgo.CreateImageExportTaskResponse
 	var err error
 
-	err = retry.Retry(timeout, func() *retry.RetryError {
-		rp, httpResp, err := conn.ImageApi.CreateImageExportTask(context.Background()).
+	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
+		rp, httpResp, err := conn.ImageApi.CreateImageExportTask(ctx).
 			CreateImageExportTaskRequest(request).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -171,33 +177,38 @@ func resourceOAPIImageExportTaskCreate(d *schema.ResourceData, meta interface{})
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("error image task %s", err)
+		return diag.Errorf("error image task %s", err)
 	}
 
 	id := resp.ImageExportTask.GetTaskId()
+
+	wait := d.Get("wait_for_completion").(bool)
+	if wait {
+		_, err = ResourceOutscaleImageTaskWaitForAvailable(ctx, id, conn, timeout)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	d.SetId(id)
 	if d.IsNewResource() {
 		if err := updateOAPITagsSDK(conn, d); err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
-	_, err = ResourceOutscaleImageTaskWaitForAvailable(id, conn, timeout)
-	if err != nil {
-		return err
-	}
 
-	return resourceOAPIImageExportTaskRead(d, meta)
+	return resourceOAPIImageExportTaskRead(ctx, d, meta)
 }
 
-func resourceOAPIImageExportTaskRead(d *schema.ResourceData, meta interface{}) error {
+func resourceOAPIImageExportTaskRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	conn := meta.(*client.OutscaleClient).OSCAPI
 	timeout := d.Timeout(schema.TimeoutRead)
 
 	var resp oscgo.ReadImageExportTasksResponse
 	var err error
 	filter := &oscgo.FiltersExportTask{TaskIds: &[]string{d.Id()}}
-	err = retry.Retry(timeout, func() *retry.RetryError {
-		rp, httpResp, err := conn.ImageApi.ReadImageExportTasks(context.Background()).
+	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
+		rp, httpResp, err := conn.ImageApi.ReadImageExportTasks(ctx).
 			ReadImageExportTasksRequest(oscgo.ReadImageExportTasksRequest{
 				Filters: filter,
 			}).Execute()
@@ -208,7 +219,7 @@ func resourceOAPIImageExportTaskRead(d *schema.ResourceData, meta interface{}) e
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("error reading task image %w", err)
+		return diag.Errorf("error reading task image %s", err)
 	}
 	if utils.IsResponseEmpty(len(resp.GetImageExportTasks()), "ImageExportTask", d.Id()) {
 		d.SetId("")
@@ -216,17 +227,33 @@ func resourceOAPIImageExportTaskRead(d *schema.ResourceData, meta interface{}) e
 	}
 	v := resp.GetImageExportTasks()[0]
 
+	if v.GetState() == "failed" || v.GetState() == "cancelled" {
+		taskId := d.Id()
+		d.SetId("")
+
+		errMsg := fmt.Sprintf("Image export task (%s) did not succeed. Status: %s", taskId, v.GetState())
+		errMsg += "\n" + `To remove it from state, run "terraform refresh" or recreate the resource.`
+
+		return diag.Diagnostics{
+			diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "Image export task " + v.GetState(),
+				Detail:   errMsg,
+			},
+		}
+	}
+
 	if err = d.Set("progress", v.GetProgress()); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err = d.Set("task_id", v.GetTaskId()); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err = d.Set("state", v.GetState()); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err = d.Set("comment", v.GetComment()); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	exp := make([]map[string]interface{}, 1)
@@ -262,40 +289,40 @@ func resourceOAPIImageExportTaskRead(d *schema.ResourceData, meta interface{}) e
 	exp[0] = exportToOsu
 
 	if err = d.Set("image_id", v.GetImageId()); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err = d.Set("osu_export", exp); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err = d.Set("tags", FlattenOAPITagsSDK(v.GetTags())); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil
 }
 
-func resourceOAPIImageExportTaskUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceOAPIImageExportTaskUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	conn := meta.(*client.OutscaleClient).OSCAPI
 
 	if err := updateOAPITagsSDK(conn, d); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return resourceOAPIImageExportTaskRead(d, meta)
+	return resourceOAPIImageExportTaskRead(ctx, d, meta)
 }
 
-func ResourceOutscaleImageTaskWaitForAvailable(id string, client *oscgo.APIClient, timeout time.Duration) (oscgo.ImageExportTask, error) {
+func ResourceOutscaleImageTaskWaitForAvailable(ctx context.Context, id string, client *oscgo.APIClient, timeout time.Duration) (oscgo.ImageExportTask, error) {
 	log.Printf("Waiting for Image Task %s to become available...", id)
 	var image oscgo.ImageExportTask
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"pending", "pending/queued", "queued"},
 		Target:     []string{"completed"},
-		Refresh:    ImageTaskStateRefreshFunc(client, id, timeout),
+		Refresh:    ImageTaskStateRefreshFunc(client, ctx, id, timeout),
 		Timeout:    timeout,
 		Delay:      OutscaleImageRetryDelay,
 		MinTimeout: OutscaleImageRetryMinTimeout,
 	}
 
-	info, err := stateConf.WaitForState()
+	info, err := stateConf.WaitForStateContext(ctx)
 	if err != nil {
 		return image, fmt.Errorf("error waiting for image export task (%s) to be ready: %s", id, err)
 	}
@@ -303,23 +330,23 @@ func ResourceOutscaleImageTaskWaitForAvailable(id string, client *oscgo.APIClien
 	return image, nil
 }
 
-func resourceOAPIImageExportTaskDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceOAPIImageExportTaskDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	d.SetId("")
 	if err := d.Set("osu_export", nil); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil
 }
 
 // ImageTaskStateRefreshFunc ...
-func ImageTaskStateRefreshFunc(client *oscgo.APIClient, id string, timeout time.Duration) retry.StateRefreshFunc {
+func ImageTaskStateRefreshFunc(client *oscgo.APIClient, ctx context.Context, id string, timeout time.Duration) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		var resp oscgo.ReadImageExportTasksResponse
 		var err error
 		var statusCode int
 
-		err = retry.Retry(timeout, func() *retry.RetryError {
+		err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
 			filter := &oscgo.FiltersExportTask{TaskIds: &[]string{id}}
 			rp, httpResp, err := client.ImageApi.ReadImageExportTasks(context.Background()).
 				ReadImageExportTasksRequest(oscgo.ReadImageExportTasksRequest{
