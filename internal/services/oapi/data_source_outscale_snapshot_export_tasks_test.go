@@ -11,8 +11,8 @@ import (
 )
 
 func TestAccOthers_SnapshotExportTasksDataSource_basic(t *testing.T) {
-	t.Skip("")
 	imageName := acctest.RandomWithPrefix("terraform-export")
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
