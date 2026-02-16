@@ -63,7 +63,7 @@ The following arguments are supported:
 * `tags` - (Optional) A tag to add to this resource. You can specify this argument several times.
     * `key` - (Required) The key of the tag, with a minimum of 1 character.
     * `value` - (Required) The value of the tag, between 0 and 255 characters.
-* `wait_for_completion` (Optional) - By default or if set to true, the resource isn't returned until the export task is completed. If false, the resource returns immediately without waiting for the export task to complete.
+* `wait_for_completion` (Optional) - By default or if set to true, the resource is returned only after the export task is completed. If false, the resource returns immediately without waiting for the export task to complete.
 
 ## Attribute Reference
 
@@ -82,5 +82,5 @@ The following attributes are exported:
     * `key` - The key of the tag, with a minimum of 1 character.
     * `value` - The value of the tag, between 0 and 255 characters.
 * `task_id` - The ID of the OMI export task.
-* `wait_for_completion` - By default or if set to true, the resource isn't returned until the export task is completed. If false, the resource returns immediately without waiting for the export task to complete.
+* `wait_for_completion` - By default or if set to true, the resource is returned only after the export task is completed. If false, the resource returns immediately without waiting for the export task to complete.
 
