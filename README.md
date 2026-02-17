@@ -159,8 +159,10 @@ set HTTPS_PROXY=http://192.168.1.24:3128
 Add to your provider config:
 ```hcl
 provider "outscale" {
-  x509_cert_path = "/myrepository/certificate/client_ca.crt"
-  x509_key_path  = "/myrepository/certificate/client_ca.key"
+  api {
+    x509_cert_path = "/myrepository/certificate/client_ca.crt"
+    x509_key_path  = "/myrepository/certificate/client_ca.key"
+  }
 }
 ```
 Or set environment variables:
