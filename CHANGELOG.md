@@ -38,6 +38,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### 🌱 Others
 - (nothing yet)
 
+## [1.4.0] - 2026-02-18
+
+### ✨ Added
+* ✨ feat(vm): tpm support by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/655
+* :sparkles: feat: add configurable timeouts to all resources by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/661
+* ✨ feat(image): tpm support by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/665
+* ✨ feat: image & snapshot task waiting option by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/677
+
+### 🐛 Fixed
+* :bug: fix: go-releaser argument deprecation by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/657
+* 🐛 fix(lbu-policies): remove from state when already deleted by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/666
+* 🐛 fix(sg): unlink before destroy by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/674
+* 🐛 fix: per-service configuration by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/681
+
+### 📝 Documentation
+* :memo: docs: changelog v1.3.2 by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/650
+* 📝 docs: Add tpm_enabled to vm resource by @andrepasteur in https://github.com/outscale/terraform-provider-outscale/pull/660
+* 📝 docs: Adding tpm_mandatory to the image arguments by @annakeita in https://github.com/outscale/terraform-provider-outscale/pull/671
+* 📝 docs: Add tpm_enabled to vm datasource by @andrepasteur in https://github.com/outscale/terraform-provider-outscale/pull/675
+* 📝 docs: Add timeouts default values by @andrepasteur in https://github.com/outscale/terraform-provider-outscale/pull/676
+* 📝 docs: Add wait_for_completion to image export task / snapshot export task resources by @andrepasteur in https://github.com/outscale/terraform-provider-outscale/pull/680
+* 📝 docs: Modify provider configuration arguments by @andrepasteur in https://github.com/outscale/terraform-provider-outscale/pull/682
+* :memo: docs: per-service provider configuration by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/683
+
+### 📦 Dependency updates
+* ⬆️ deps(gomod): update module github.com/hashicorp/terraform-plugin-framework-timeouts to v0.7.0 by @Open-Source-Bot in https://github.com/outscale/terraform-provider-outscale/pull/642
+
+### 🌱 Others
+* 🔥 chore: remove legacy scripts by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/670
+
 ## [1.3.2] - 2026-01-28
 
 ### 🛠️ Changed / Refactoring
