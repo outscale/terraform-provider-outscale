@@ -122,8 +122,8 @@ export OSC_CONFIG_FILE="%USERPROFILE%.osc\config.json"
 
 In addition to [generic provider arguments](https://www.terraform.io/docs/configuration/providers.html), the following arguments are supported in the OUTSCALE provider block:
 
-* `config_file` - (Optional) The path to an OSC config file.
-* `profile` - (Optional) The named profile you want to use in the OSC config file.
+* `config_file` - (Optional) The path to an OSC config file. It can also be sourced from the `OSC_CONFIG_FILE` [environment variable](#set-a-profile-using-environment-variables).
+* `profile` - (Optional) The named profile you want to use in the OSC config file. It can also be sourced from the `OSC_PROFILE` [environment variable](#set-a-profile-using-environment-variables).
 * `access_key_id` - (Optional) The ID of the OUTSCALE access key. It must be provided, but it can also be sourced from the `OUTSCALE_ACCESSKEYID` [environment variable](#environment-variables).
 * `secret_key_id` - (Optional) The OUTSCALE secret key. It must be provided, but it can also be sourced from the `OUTSCALE_SECRETKEYID` [environment variable](#environment-variables).
 * `api` - (Optional) Configuration elements for OUTSCALE API operations.
