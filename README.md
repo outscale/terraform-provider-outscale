@@ -20,6 +20,9 @@
 - [Using the Provider](#-using-the-provider)
   - [With Terraform](#with-terraform)
   - [With OpenTofu](#with-opentofu)
+- [Provider Configuration](#-provider-configuration)
+  - [Basic Configuration](#basic-configuration)
+  - [Migration from Deprecated Attributes](#migration-from-deprecated-attributes)
 - [Proxy Configuration](#-proxy-configuration)
 - [x509 Authentication](#-x509-authentication)
 - [Building the Provider](#-building-the-provider)
@@ -140,6 +143,47 @@ tofu plan
 
 ---
 
+## ⚙️ Provider Configuration
+
+Starting from version 1.4.0, the provider supports per-service configuration using `api` and `oks` blocks. This allows you to specify different endpoints, regions, and authentication settings for the Outscale API and OKS API independently.
+
+### Basic Configuration
+
+```hcl
+provider "outscale" {
+  access_key_id = "your-access-key"
+  secret_key_id = "your-secret-key"
+  
+  api {
+    endpoint       = "https://api.eu-west-2.outscale.com"
+    region         = "eu-west-2"
+    x509_cert_path = "/path/to/cert.pem"
+    x509_key_path  = "/path/to/key.pem"
+    insecure       = false
+  }
+  
+  oks {
+    endpoint = "https://api.eu-west-2.oks.outscale.com/api/v2"
+    region   = "eu-west-2"
+  }
+}
+```
+
+### Migration from Deprecated Attributes
+
+> ⚠️ **Deprecation:** The following top-level attributes are deprecated and will be removed in the next major version. Please migrate to the new per-service configuration blocks.
+
+| Deprecated Attribute | Replacement |
+|---------------------|-------------|
+| `region` | `api { region = "..." }` and/or `oks { region = "..." }` |
+| `endpoints { api = "..." }` | `api { endpoint = "..." }` |
+| `endpoints { oks = "..." }` | `oks { endpoint = "..." }` |
+| `x509_cert_path` | `api { x509_cert_path = "..." }` |
+| `x509_key_path` | `api { x509_key_path = "..." }` |
+| `insecure` | `api { insecure = true }` |
+
+---
+
 ## 🌍 Proxy Configuration
 
 **Linux/macOS**
@@ -156,13 +200,17 @@ set HTTPS_PROXY=http://192.168.1.24:3128
 
 ## 🔐 x509 Authentication
 
-Add to your provider config:
+> ⚠️ **Deprecation:** Top-level `x509_cert_path` and `x509_key_path` attributes are deprecated. Use the `api` block configuration instead.
+
 ```hcl
 provider "outscale" {
-  x509_cert_path = "/myrepository/certificate/client_ca.crt"
-  x509_key_path  = "/myrepository/certificate/client_ca.key"
+  api {
+    x509_cert_path = "/myrepository/certificate/client_ca.crt"
+    x509_key_path  = "/myrepository/certificate/client_ca.key"
+  }
 }
 ```
+
 Or set environment variables:
 ```sh
 export OUTSCALE_X509CERT=/myrepository/certificate/client_ca.crt
