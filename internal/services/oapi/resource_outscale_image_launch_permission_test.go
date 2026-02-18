@@ -1,6 +1,7 @@
 package oapi_test
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"testing"
@@ -105,8 +106,8 @@ func testCheckResourceOAPILPIGetAttr(name, key string, value *string) resource.T
 
 func testAccOutscaleImageLaunchPermissionExists(accountID string, imageID *string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := testacc.ConfiguredClient.OSCAPI
-		if has, err := oapihelpers.ImageHasLaunchPermission(client, *imageID); err != nil {
+		client := testacc.ConfiguredClient.OSC
+		if has, err := oapihelpers.ImageHasLaunchPermission(context.Background(), client, DefaultTimeout, *imageID); err != nil {
 			return err
 		} else if !has {
 			return fmt.Errorf("launch permission does not exist for '%s' on '%s'", accountID, *imageID)
@@ -117,8 +118,8 @@ func testAccOutscaleImageLaunchPermissionExists(accountID string, imageID *strin
 
 func testAccOutscaleImageLaunchPermissionDestroyed(accountID string, imageID *string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := testacc.ConfiguredClient.OSCAPI
-		if has, err := oapihelpers.ImageHasLaunchPermission(client, *imageID); err != nil {
+		client := testacc.ConfiguredClient.OSC
+		if has, err := oapihelpers.ImageHasLaunchPermission(context.Background(), client, DefaultTimeout, *imageID); err != nil {
 			return err
 		} else if has {
 			return fmt.Errorf("launch permission still exists for '%s' on '%s'", accountID, *imageID)

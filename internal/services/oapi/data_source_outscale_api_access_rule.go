@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -50,7 +50,7 @@ func DataSourceOutscaleApiAccessRule() *schema.Resource {
 }
 
 func DataSourceOutscaleApiAccessRuleRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 	if !filtersOk {
@@ -61,13 +61,13 @@ func DataSourceOutscaleApiAccessRuleRead(d *schema.ResourceData, meta interface{
 	if err != nil {
 		return err
 	}
-	req := oscgo.ReadApiAccessRulesRequest{
+	req := osc.ReadApiAccessRulesRequest{
 		Filters: filterParams,
 	}
 
-	var resp oscgo.ReadApiAccessRulesResponse
+	var resp osc.ReadApiAccessRulesResponse
 	err = retry.Retry(120*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.ApiAccessRuleApi.ReadApiAccessRules(context.Background()).ReadApiAccessRulesRequest(req).Execute()
+		rp, httpResp, err := client.ApiAccessRuleApi.ReadApiAccessRules(ctx).ReadApiAccessRulesRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -115,8 +115,8 @@ func DataSourceOutscaleApiAccessRuleRead(d *schema.ResourceData, meta interface{
 	return nil
 }
 
-func buildOutscaleApiAccessRuleFilters(set *schema.Set) (*oscgo.FiltersApiAccessRule, error) {
-	var filters oscgo.FiltersApiAccessRule
+func buildOutscaleApiAccessRuleFilters(set *schema.Set) (*osc.FiltersApiAccessRule, error) {
+	var filters osc.FiltersApiAccessRule
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -136,7 +136,7 @@ func buildOutscaleApiAccessRuleFilters(set *schema.Set) (*oscgo.FiltersApiAccess
 		case "ip_ranges":
 			filters.SetIpRanges(filterValues)
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(ctx, name)
 		}
 	}
 	return &filters, nil

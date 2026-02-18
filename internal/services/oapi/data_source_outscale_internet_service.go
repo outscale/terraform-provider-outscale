@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -41,7 +41,7 @@ func DataSourceOutscaleInternetService() *schema.Resource {
 }
 
 func DataSourceOutscaleInternetServiceRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 	internetID, insternetIDOk := d.GetOk("internet_service_id")
@@ -52,10 +52,10 @@ func DataSourceOutscaleInternetServiceRead(d *schema.ResourceData, meta interfac
 
 	// Build up search parameters
 	var err error
-	params := oscgo.ReadInternetServicesRequest{}
+	params := osc.ReadInternetServicesRequest{}
 
 	if insternetIDOk {
-		params.Filters = &oscgo.FiltersInternetService{
+		params.Filters = &osc.FiltersInternetService{
 			InternetServiceIds: &[]string{internetID.(string)},
 		}
 	}
@@ -67,11 +67,11 @@ func DataSourceOutscaleInternetServiceRead(d *schema.ResourceData, meta interfac
 		}
 	}
 
-	var resp oscgo.ReadInternetServicesResponse
+	var resp osc.ReadInternetServicesResponse
 
 	err = retry.Retry(120*time.Second, func() *retry.RetryError {
 		var err error
-		rp, httpResp, err := conn.InternetServiceApi.ReadInternetServices(context.Background()).ReadInternetServicesRequest(params).Execute()
+		rp, httpResp, err := client.InternetServiceApi.ReadInternetServices(ctx).ReadInternetServicesRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -104,11 +104,11 @@ func DataSourceOutscaleInternetServiceRead(d *schema.ResourceData, meta interfac
 
 	d.SetId(result.GetInternetServiceId())
 
-	return d.Set("tags", FlattenOAPITagsSDK(result.GetTags()))
+	return d.Set("tags", FlattenOAPITagsSDK(result.Tags))
 }
 
-func buildOutscaleOSCAPIDataSourceInternetServiceFilters(set *schema.Set) (*oscgo.FiltersInternetService, error) {
-	var filters oscgo.FiltersInternetService
+func buildOutscaleOSCAPIDataSourceInternetServiceFilters(set *schema.Set) (*osc.FiltersInternetService, error) {
+	var filters osc.FiltersInternetService
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -130,7 +130,7 @@ func buildOutscaleOSCAPIDataSourceInternetServiceFilters(set *schema.Set) (*oscg
 		case "tag_values":
 			filters.SetTagValues(filterValues)
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(ctx, name)
 		}
 	}
 	return &filters, nil

@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/outscale/osc-sdk-go/v3/pkg/iso8601"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
 )
 
@@ -21,6 +22,35 @@ func String[T ~string | *string](v T) types.String {
 	}
 
 	return types.StringValue(reflect.Indirect(rv).String())
+}
+
+func ISO8601[T string | *string | time.Time | *time.Time](v T) (iso8601.Time, error) {
+	switch v := any(v).(type) {
+	case string:
+		time, err := iso8601.Parse([]byte(v))
+		if err != nil {
+			return iso8601.Time{}, err
+		}
+		return iso8601.Time{Time: time}, nil
+	case *string:
+		if v == nil {
+			return iso8601.Time{}, nil
+		}
+		time, err := iso8601.Parse([]byte(*v))
+		if err != nil {
+			return iso8601.Time{}, err
+		}
+		return iso8601.Time{Time: time}, nil
+	case time.Time:
+		return iso8601.Time{Time: v}, nil
+	case *time.Time:
+		if v == nil {
+			return iso8601.Time{}, nil
+		}
+		return iso8601.Time{Time: *v}, nil
+	default:
+		panic(fmt.Sprintf("unsupported type %T", v))
+	}
 }
 
 func Int32[T int32 | *int32](v T) types.Int32 {
@@ -145,21 +175,25 @@ func SetObject[T any](ctx context.Context, slice []T) (types.Set, diag.Diagnosti
 	return set, diags
 }
 
-func Set[T any](ctx context.Context, slice []T) (types.Set, diag.Diagnostics) {
-	var diags diag.Diagnostics
+func getAttrType[T any](T) attr.Type {
 	var zero T
-
-	var elemType attr.Type
 	switch any(zero).(type) {
 	case string:
-		elemType = types.StringType
+		return types.StringType
 	case int32:
-		elemType = types.Int32Type
+		return types.Int32Type
 	case int64:
-		elemType = types.Int64Type
+		return types.Int64Type
 	default:
 		panic(fmt.Sprintf("unsupported type %T", zero))
 	}
+}
+
+func Set[T any](ctx context.Context, slice []T) (types.Set, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	elemType := getAttrType(slice)
+
 	if len(slice) == 0 {
 		return types.SetNull(elemType), diags
 	}
@@ -168,3 +202,21 @@ func Set[T any](ctx context.Context, slice []T) (types.Set, diag.Diagnostics) {
 
 	return set, diags
 }
+
+func SetPtr[T any](ctx context.Context, slice *[]T) (types.Set, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	elemType := getAttrType(slice)
+
+	if slice == nil || len(*slice) == 0 {
+		return types.SetNull(elemType), diags
+	}
+
+	set, d := types.SetValueFrom(ctx, elemType, *slice)
+	diags.Append(d...)
+
+	return set, diags
+}
+
+//
+//

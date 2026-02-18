@@ -1,7 +1,6 @@
 package oapi
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -11,7 +10,7 @@ import (
 	sdkid "github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
@@ -65,14 +64,14 @@ func DataSourceOutscaleLoadBalancerVmsHeals() *schema.Resource {
 }
 
 func DataSourceOutscaleLoadBalancerVmsHealRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
 	ename, ok := d.GetOk("load_balancer_name")
 	if !ok {
 		return errors.New("load_balancer_name is require")
 	}
 
-	req := oscgo.ReadVmsHealthRequest{
+	req := osc.ReadVmsHealthRequest{
 		LoadBalancerName: ename.(string),
 	}
 
@@ -87,10 +86,10 @@ func DataSourceOutscaleLoadBalancerVmsHealRead(d *schema.ResourceData, meta inte
 		req.BackendVmIds = &vm_ids_s
 	}
 
-	var resp oscgo.ReadVmsHealthResponse
+	var resp osc.ReadVmsHealthResponse
 	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.LoadBalancerApi.ReadVmsHealth(
-			context.Background()).ReadVmsHealthRequest(req).
+		rp, httpResp, err := client.LoadBalancerApi.ReadVmsHealth(
+			ctx).ReadVmsHealthRequest(req).
 			Execute()
 		if err != nil {
 			log.Printf("[DEBUG] err: (%s)", err)

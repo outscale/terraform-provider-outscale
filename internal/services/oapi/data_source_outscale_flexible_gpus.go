@@ -1,11 +1,10 @@
 package oapi
 
 import (
-	"context"
 	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -65,8 +64,8 @@ func DataSourceOutscaleFlexibleGpus() *schema.Resource {
 }
 
 func DataSourceOutscaleFlexibleGpusRead(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*client.OutscaleClient).OSC
 
-	conn := meta.(*client.OutscaleClient).OSCAPI
 	filters, filtersOk := d.GetOk("filter")
 	_, IDOk := d.GetOk("flexible_gpu_id")
 
@@ -75,7 +74,7 @@ func DataSourceOutscaleFlexibleGpusRead(d *schema.ResourceData, meta interface{}
 	}
 
 	var err error
-	req := oscgo.ReadFlexibleGpusRequest{}
+	req := osc.ReadFlexibleGpusRequest{}
 	if filtersOk {
 		req.Filters, err = buildOutscaleDataSourceFlexibleGpuFilters(filters.(*schema.Set))
 		if err != nil {
@@ -83,17 +82,16 @@ func DataSourceOutscaleFlexibleGpusRead(d *schema.ResourceData, meta interface{}
 		}
 	}
 
-	var resp oscgo.ReadFlexibleGpusResponse
+	var resp osc.ReadFlexibleGpusResponse
 	err = retry.Retry(30*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.FlexibleGpuApi.ReadFlexibleGpus(
-			context.Background()).ReadFlexibleGpusRequest(req).Execute()
+		rp, httpResp, err := client.FlexibleGpuApi.ReadFlexibleGpus(
+			ctx).ReadFlexibleGpusRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		errString := err.Error()
 		return fmt.Errorf("error reading flexible gpu (%s)", errString)
@@ -110,8 +108,7 @@ func DataSourceOutscaleFlexibleGpusRead(d *schema.ResourceData, meta interface{}
 	return setOAPIFlexibleGpuAttributes(d, flexgps)
 }
 
-func setOAPIFlexibleGpuAttributes(d *schema.ResourceData, fg []oscgo.FlexibleGpu) error {
-
+func setOAPIFlexibleGpuAttributes(d *schema.ResourceData, fg []osc.FlexibleGpu) error {
 	fgpus := make([]map[string]interface{}, len(fg))
 	for k, v := range fg {
 		fgpu := make(map[string]interface{})

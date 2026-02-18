@@ -1,13 +1,12 @@
 package oapi
 
 import (
-	"context"
 	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
@@ -42,14 +41,14 @@ func DataSourceOutscaleCa() *schema.Resource {
 }
 
 func DataSourceOutscaleCaRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 	if !filtersOk {
 		return ErrFilterRequired
 	}
 
-	params := oscgo.ReadCasRequest{}
+	params := osc.ReadCasRequest{}
 	if filtersOk {
 		filterParams, err := buildOutscaleDataSourceCaFilters(filters.(*schema.Set))
 		if err != nil {
@@ -58,9 +57,9 @@ func DataSourceOutscaleCaRead(d *schema.ResourceData, meta interface{}) error {
 		params.Filters = filterParams
 	}
 
-	var resp oscgo.ReadCasResponse
+	var resp osc.ReadCasResponse
 	err := retry.Retry(120*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.CaApi.ReadCas(context.Background()).ReadCasRequest(params).Execute()
+		rp, httpResp, err := client.CaApi.ReadCas(ctx).ReadCasRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -94,8 +93,8 @@ func DataSourceOutscaleCaRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func buildOutscaleDataSourceCaFilters(set *schema.Set) (*oscgo.FiltersCa, error) {
-	var filters oscgo.FiltersCa
+func buildOutscaleDataSourceCaFilters(set *schema.Set) (*osc.FiltersCa, error) {
+	var filters osc.FiltersCa
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -111,7 +110,7 @@ func buildOutscaleDataSourceCaFilters(set *schema.Set) (*oscgo.FiltersCa, error)
 		case "descriptions":
 			filters.SetDescriptions(filterValues)
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(ctx, name)
 		}
 	}
 	return &filters, nil

@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
@@ -34,7 +34,7 @@ func DataSourceOutscaleVirtualGateways() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"connection_type": {
+						"clientection_type": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -71,7 +71,7 @@ func DataSourceOutscaleVirtualGateways() *schema.Resource {
 }
 
 func DataSourceOutscaleVirtualGatewaysRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
 	filter, filtersOk := d.GetOk("filter")
 	_, vpnOk := d.GetOk("virtual_gateway_id")
@@ -81,7 +81,7 @@ func DataSourceOutscaleVirtualGatewaysRead(d *schema.ResourceData, meta interfac
 	}
 
 	var err error
-	params := oscgo.ReadVirtualGatewaysRequest{}
+	params := osc.ReadVirtualGatewaysRequest{}
 	if filtersOk {
 		params.Filters, err = buildOutscaleAPIVirtualGatewayFilters(filter.(*schema.Set))
 		if err != nil {
@@ -89,9 +89,9 @@ func DataSourceOutscaleVirtualGatewaysRead(d *schema.ResourceData, meta interfac
 		}
 	}
 
-	var resp oscgo.ReadVirtualGatewaysResponse
+	var resp osc.ReadVirtualGatewaysResponse
 	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(params).Execute()
+		rp, httpResp, err := client.VirtualGatewayApi.ReadVirtualGateways(ctx).ReadVirtualGatewaysRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -120,9 +120,9 @@ func DataSourceOutscaleVirtualGatewaysRead(d *schema.ResourceData, meta interfac
 		}
 		vpn["net_to_virtual_gateway_links"] = vs
 		vpn["state"] = v.GetState()
-		vpn["connection_type"] = v.GetConnectionType()
+		vpn["clientection_type"] = v.GetclientectionType()
 		vpn["virtual_gateway_id"] = v.GetVirtualGatewayId()
-		vpn["tags"] = FlattenOAPITagsSDK(v.GetTags())
+		vpn["tags"] = FlattenOAPITagsSDK(v.Tags)
 
 		vpns[k] = vpn
 	}

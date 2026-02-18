@@ -1,10 +1,9 @@
 package oapi
 
 import (
-	"context"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -39,10 +38,10 @@ func DataSourceOutscaleTag() *schema.Resource {
 }
 
 func DataSourceOutscaleTagRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
 	// Build up search parameters
-	params := oscgo.ReadTagsRequest{}
+	params := osc.ReadTagsRequest{}
 
 	filters, filtersOk := d.GetOk("filter")
 
@@ -54,29 +53,28 @@ func DataSourceOutscaleTagRead(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	var resp oscgo.ReadTagsResponse
+	var resp osc.ReadTagsResponse
 	err = retry.Retry(60*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.TagApi.ReadTags(context.Background()).ReadTagsRequest(params).Execute()
+		rp, httpResp, err := client.TagApi.ReadTags(ctx).ReadTagsRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}
 
-	if len(resp.GetTags()) < 1 {
+	if len(resp.Tags) < 1 {
 		return ErrNoResults
 	}
 
-	if len(resp.GetTags()) > 1 {
+	if len(resp.Tags) > 1 {
 		return ErrMultipleResults
 	}
 
-	tag := resp.GetTags()[0]
+	tag := resp.Tags[0]
 
 	if err := d.Set("key", tag.GetKey()); err != nil {
 		return err
@@ -97,8 +95,8 @@ func DataSourceOutscaleTagRead(d *schema.ResourceData, meta interface{}) error {
 	return err
 }
 
-func oapiBuildOutscaleDataSourceFilters(set *schema.Set) (*oscgo.FiltersTag, error) {
-	filters := oscgo.FiltersTag{}
+func oapiBuildOutscaleDataSourceFilters(set *schema.Set) (*osc.FiltersTag, error) {
+	filters := osc.FiltersTag{}
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -117,7 +115,7 @@ func oapiBuildOutscaleDataSourceFilters(set *schema.Set) (*oscgo.FiltersTag, err
 		case "values":
 			filters.SetValues(filterValues)
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(ctx, name)
 		}
 	}
 

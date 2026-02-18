@@ -78,7 +78,7 @@ func TestAccOthres_ImportVirtualGateway_Basic(t *testing.T) {
 
 const testAccOAPIVirtualGatewayConfig = `
 	resource "outscale_virtual_gateway" "foo" {
-	    connection_type = "ipsec.1"
+	    clientection_type = "ipsec.1"
     }`
 
 const testAccOAPIVirtualGatewayConfigChangeVPC = `
@@ -87,7 +87,7 @@ const testAccOAPIVirtualGatewayConfigChangeVPC = `
 	}
 
 	resource "outscale_virtual_gateway" "foo" {
-	    connection_type = "ipsec.1"
+	    clientection_type = "ipsec.1"
     }
 	resource "outscale_virtual_gateway_link" "test" {
         virtual_gateway_id = outscale_virtual_gateway.foo.virtual_gateway_id
@@ -95,15 +95,15 @@ const testAccOAPIVirtualGatewayConfigChangeVPC = `
     }
 `
 
-func testAccOAPIVirtualGatewayConfigChangeTags(connectionType, name string) string {
+func testAccOAPIVirtualGatewayConfigChangeTags(clientectionType, name string) string {
 	return fmt.Sprintf(`
 		resource "outscale_virtual_gateway" "outscale_virtual_gateway" {
-		 connection_type = "%s"
+		 clientection_type = "%s"
 		 tags {
 		  key = "name"
 		  value = "%s"
 		  }
 		}
 
-	`, connectionType, name)
+	`, clientectionType, name)
 }

@@ -1,10 +1,9 @@
 package oapi
 
 import (
-	"context"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -54,10 +53,10 @@ func DataSourceOutscaleVpc() *schema.Resource {
 }
 
 func DataSourceOutscaleVpcRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
 	var err error
-	req := oscgo.ReadNetsRequest{}
+	req := osc.ReadNetsRequest{}
 
 	if v, ok := d.GetOk("filter"); ok {
 		req.Filters, err = buildOutscaleDataSourceNetFilters(v.(*schema.Set))
@@ -70,9 +69,9 @@ func DataSourceOutscaleVpcRead(d *schema.ResourceData, meta interface{}) error {
 		req.Filters.SetNetIds([]string{id.(string)})
 	}
 
-	var resp oscgo.ReadNetsResponse
+	var resp osc.ReadNetsResponse
 	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.NetApi.ReadNets(context.Background()).ReadNetsRequest(req).Execute()
+		rp, httpResp, err := client.NetApi.ReadNets(ctx).ReadNetsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -110,11 +109,11 @@ func DataSourceOutscaleVpcRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	return d.Set("tags", FlattenOAPITagsSDK(net.GetTags()))
+	return d.Set("tags", FlattenOAPITagsSDK(net.Tags))
 }
 
-func buildOutscaleDataSourceNetFilters(set *schema.Set) (*oscgo.FiltersNet, error) {
-	var filters oscgo.FiltersNet
+func buildOutscaleDataSourceNetFilters(set *schema.Set) (*osc.FiltersNet, error) {
+	var filters osc.FiltersNet
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -138,7 +137,7 @@ func buildOutscaleDataSourceNetFilters(set *schema.Set) (*oscgo.FiltersNet, erro
 		case "tags":
 			filters.SetTags(filterValues)
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(ctx, name)
 		}
 	}
 	return &filters, nil

@@ -116,17 +116,17 @@ func TestAccNet_WithRouteTable_Migration(t *testing.T) {
 	})
 }
 
-// VPC Peering connections are prefixed with pcx
+// VPC Peering clientections are prefixed with pcx
 // Right now there is no VPC Peering resource
 // func TestAccOutscaleRouteTable_vpcPeering(t *testing.T) {
-// 	var v oscgo.RouteTable
+// 	var v osc.RouteTable
 
 // 	testCheck := func(*terraform.State) error {
 // 		if len(v.Routes) != 2 {
 // 			return fmt.Errorf("bad routes: %#v", v.Routes)
 // 		}
 
-// 		routes := make(map[string]oscgo.Route)
+// 		routes := make(map[string]osc.Route)
 // 		for _, r := range v.Routes {
 // 			routes[r.DestinationIpRange] = r
 // 		}
@@ -158,15 +158,15 @@ func TestAccNet_WithRouteTable_Migration(t *testing.T) {
 // }
 
 // func TestAccOutscaleRouteTable_vgwRoutePropagation(t *testing.T) {
-// 	var v oscgo.RouteTable
-// 	var vgw oscgo.VpnGateway
+// 	var v osc.RouteTable
+// 	var vgw osc.VpnGateway
 
 // 	testCheck := func(*terraform.State) error {
 // 		if len(v.PropagatingVgws) != 1 {
 // 			return fmt.Errorf("bad propagating vgws: %#v", v.PropagatingVgws)
 // 		}
 
-// 		propagatingVGWs := make(map[string]*oscgo.PropagatingVgw)
+// 		propagatingVGWs := make(map[string]*osc.PropagatingVgw)
 // 		for _, gw := range v.PropagatingVgws {
 // 			propagatingVGWs[*gw.GatewayId] = gw
 // 		}
@@ -277,7 +277,7 @@ resource "outscale_route_table" "rtbTest" {
 }
 
 // TODO: missing resource vpc peering to make this test
-// VPC Peering connections are prefixed with pcx
+// VPC Peering clientections are prefixed with pcx
 // const testAccRouteTableVpcPeeringConfig = `
 // resource "outscale_net" "foo" {
 // 	ip_range = "10.1.0.0/16"
@@ -295,7 +295,7 @@ resource "outscale_route_table" "rtbTest" {
 // 	net_id = "${outscale_net.bar.id}"
 // }
 
-// resource "aws_vpc_peering_connection" "foo" {
+// resource "aws_vpc_peering_clientection" "foo" {
 // 		net_id = "${outscale_net.foo.id}"
 // 		peer_vpc_id = "${outscale_net.bar.id}"
 // 		tags {
@@ -308,7 +308,7 @@ resource "outscale_route_table" "rtbTest" {
 
 // 	route {
 // 		ip_range = "10.2.0.0/16"
-// 		vpc_peering_connection_id = "${aws_vpc_peering_connection.foo.id}"
+// 		vpc_peering_clientection_id = "${aws_vpc_peering_clientection.foo.id}"
 // 	}
 // }
 // `

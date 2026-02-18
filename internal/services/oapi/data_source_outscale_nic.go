@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -219,7 +219,7 @@ func DataSourceOutscaleNic() *schema.Resource {
 
 // Read Nic
 func DataSourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, okFilters := d.GetOk("filter")
 
@@ -228,7 +228,7 @@ func DataSourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	var err error
-	dnri := oscgo.ReadNicsRequest{}
+	dnri := osc.ReadNicsRequest{}
 	if okFilters {
 		dnri.Filters, err = buildOutscaleDataSourceNicFilters(filters.(*schema.Set))
 		if err != nil {
@@ -236,10 +236,10 @@ func DataSourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	var resp oscgo.ReadNicsResponse
+	var resp osc.ReadNicsResponse
 	var statusCode int
 	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(dnri).Execute()
+		rp, httpResp, err := client.NicApi.ReadNics(ctx).ReadNicsRequest(dnri).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -327,7 +327,7 @@ func DataSourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 	if err := d.Set("state", eni.GetState()); err != nil {
 		return err
 	}
-	if err := d.Set("tags", FlattenOAPITagsSDK(eni.GetTags())); err != nil {
+	if err := d.Set("tags", FlattenOAPITagsSDK(eni.Tags)); err != nil {
 		return err
 	}
 	if err := d.Set("net_id", eni.GetNetId()); err != nil {
@@ -338,8 +338,8 @@ func DataSourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func buildOutscaleDataSourceNicFilters(set *schema.Set) (*oscgo.FiltersNic, error) {
-	var filters oscgo.FiltersNic
+func buildOutscaleDataSourceNicFilters(set *schema.Set) (*osc.FiltersNic, error) {
+	var filters osc.FiltersNic
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -405,7 +405,7 @@ func buildOutscaleDataSourceNicFilters(set *schema.Set) (*oscgo.FiltersNic, erro
 		case "subregion_names":
 			filters.SetSubregionNames(filterValues)
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(ctx, name)
 		}
 	}
 	return &filters, nil

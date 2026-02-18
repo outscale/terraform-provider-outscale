@@ -17,15 +17,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/outscale/goutils/sdk/ptr"
-	"github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwtypes"
-	"github.com/outscale/terraform-provider-outscale/internal/services/oapi/oapihelpers"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 	"github.com/samber/lo"
 )
 
@@ -72,12 +70,12 @@ func (r *resourceUserGroup) Configure(_ context.Context, req resource.ConfigureR
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected *osc.APIClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *osc.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
 	}
-	r.Client = client.OSCAPI
+	r.Client = client.OSC
 }
 
 func (r *resourceUserGroup) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
@@ -211,15 +209,7 @@ func (r *resourceUserGroup) Create(ctx context.Context, req resource.CreateReque
 		Path:          ptr.To(data.Path.ValueString()),
 	}
 
-	var createResp osc.CreateUserGroupResponse
-	err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.UserGroupApi.CreateUserGroup(ctx).CreateUserGroupRequest(createReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		createResp = rp
-		return nil
-	})
+	createResp, err := r.Client.CreateUserGroup(ctx, createReq, options.WithRetryTimeout(createTimeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to create User Group",
@@ -228,7 +218,7 @@ func (r *resourceUserGroup) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 
-	data.Id = to.String(createResp.GetUserGroup().UserGroupId)
+	data.Id = to.String(createResp.UserGroup.UserGroupId)
 
 	if fwhelpers.IsSet(data.Users) {
 		users, diag := to.Slice[UserGroupUserModel](ctx, data.Users)
@@ -309,11 +299,11 @@ func (r *resourceUserGroup) Update(ctx context.Context, req resource.UpdateReque
 	updateGroup := false
 
 	if fwhelpers.HasChange(planData.UserGroupName, stateData.UserGroupName) {
-		updateReq.SetNewUserGroupName(planData.UserGroupName.ValueString())
+		updateReq.NewUserGroupName = planData.UserGroupName.ValueStringPointer()
 		updateGroup = true
 	}
 	if fwhelpers.HasChange(planData.Path, stateData.Path) {
-		updateReq.SetNewPath(planData.Path.ValueString())
+		updateReq.NewPath = planData.Path.ValueStringPointer()
 		updateGroup = true
 	}
 	if fwhelpers.HasChange(planData.Policies, stateData.Policies) {
@@ -330,13 +320,7 @@ func (r *resourceUserGroup) Update(ctx context.Context, req resource.UpdateReque
 	}
 
 	if updateGroup {
-		err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-			_, httpResp, err := r.Client.UserGroupApi.UpdateUserGroup(ctx).UpdateUserGroupRequest(updateReq).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			return nil
-		})
+		_, err := r.Client.UpdateUserGroup(ctx, updateReq, options.WithRetryTimeout(timeout))
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Unable to update User Group",
@@ -375,13 +359,7 @@ func (r *resourceUserGroup) Delete(ctx context.Context, req resource.DeleteReque
 		Force:         ptr.To(true),
 	}
 
-	err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		_, httpResp, err := r.Client.UserGroupApi.DeleteUserGroup(ctx).DeleteUserGroupRequest(deleteReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	_, err := r.Client.DeleteUserGroup(ctx, deleteReq, options.WithRetryTimeout(timeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to delete User Group",
@@ -397,48 +375,29 @@ func (r *resourceUserGroup) read(ctx context.Context, timeout time.Duration, dat
 		},
 	}
 
-	var resp osc.ReadUserGroupsResponse
-	err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.UserGroupApi.ReadUserGroups(ctx).ReadUserGroupsRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := r.Client.ReadUserGroups(ctx, req, options.WithRetryTimeout(timeout))
 	if err != nil {
 		return data, err
 	}
-	if len(resp.GetUserGroups()) == 0 {
+	if resp.UserGroups == nil || len(*resp.UserGroups) == 0 {
 		return data, ErrResourceEmpty
 	}
 
-	userGroup := resp.GetUserGroups()[0]
-	reqUserGroup := osc.NewReadUserGroupRequest(userGroup.GetName())
+	userGroup := (*resp.UserGroups)[0]
+	reqUserGroup := osc.ReadUserGroupRequest{
+		UserGroupName: *userGroup.Name,
+	}
 
-	var respUsers []osc.User
-	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.UserGroupApi.ReadUserGroup(ctx).ReadUserGroupRequest(*reqUserGroup).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		respUsers = rp.GetUsers()
-		return nil
-	})
+	respUsers, err := r.Client.ReadUserGroup(ctx, reqUserGroup, options.WithRetryTimeout(timeout))
 	if err != nil {
 		return data, err
 	}
 
-	reqLink := osc.NewReadManagedPoliciesLinkedToUserGroupRequest(userGroup.GetName())
-	var respLink osc.ReadManagedPoliciesLinkedToUserGroupResponse
-	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.PolicyApi.ReadManagedPoliciesLinkedToUserGroup(ctx).ReadManagedPoliciesLinkedToUserGroupRequest(*reqLink).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		respLink = rp
-		return nil
-	})
+	reqLink := osc.ReadManagedPoliciesLinkedToUserGroupRequest{
+		UserGroupName: *userGroup.Name,
+	}
+
+	respLink, err := r.Client.ReadManagedPoliciesLinkedToUserGroup(ctx, reqLink, options.WithRetryTimeout(timeout))
 	if err != nil {
 		return data, err
 	}
@@ -448,10 +407,10 @@ func (r *resourceUserGroup) read(ctx context.Context, timeout time.Duration, dat
 	data.UserGroupId = to.String(userGroup.UserGroupId)
 	data.Id = to.String(userGroup.UserGroupId)
 	data.Orn = to.String(userGroup.Orn)
-	data.CreationDate = to.String(userGroup.CreationDate)
-	data.LastModificationDate = to.String(userGroup.LastModificationDate)
+	data.CreationDate = to.String(userGroup.CreationDate.String())
+	data.LastModificationDate = to.String(userGroup.LastModificationDate.String())
 
-	policies, err := r.flattenPolicies(ctx, timeout, respLink.GetPolicies())
+	policies, err := r.flattenPolicies(ctx, timeout, respLink.Policies)
 	if err != nil {
 		return data, err
 	}
@@ -461,7 +420,7 @@ func (r *resourceUserGroup) read(ctx context.Context, timeout time.Duration, dat
 	}
 	data.Policies = policiesSet
 
-	users := r.flattenUsers(respUsers)
+	users := r.flattenUsers(ptr.From(respUsers.Users))
 	usersSet, diag := to.SetObject(ctx, users)
 	if diag.HasError() {
 		return data, fmt.Errorf("unable to convert users to a set: %v", diag.Errors())
@@ -480,20 +439,14 @@ func (r *resourceUserGroup) addUsers(ctx context.Context, timeout time.Duration,
 			UserGroupPath: &groupPath,
 		}
 		if fwhelpers.IsSet(user.UserName) {
-			req.SetUserName(user.UserName.ValueString())
+			req.UserName = user.UserName.ValueString()
 		}
 
 		if fwhelpers.IsSet(user.Path) {
-			req.SetUserPath(user.Path.ValueString())
+			req.UserPath = user.Path.ValueStringPointer()
 		}
 
-		err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-			_, httpResp, err := r.Client.UserGroupApi.AddUserToUserGroup(ctx).AddUserToUserGroupRequest(req).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			return nil
-		})
+		_, err := r.Client.AddUserToUserGroup(ctx, req, options.WithRetryTimeout(timeout))
 		if err != nil {
 			diags.AddError(
 				"Unable to add user to User Group",
@@ -515,27 +468,14 @@ func (r *resourceUserGroup) removeUsers(ctx context.Context, timeout time.Durati
 			UserGroupPath: &groupPath,
 		}
 		if fwhelpers.IsSet(user.UserName) {
-			req.SetUserName(user.UserName.ValueString())
+			req.UserName = user.UserName.ValueString()
 		}
 
 		if fwhelpers.IsSet(user.Path) {
-			req.SetUserPath(user.Path.ValueString())
+			req.UserPath = user.Path.ValueStringPointer()
 		}
 
-		err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-			_, httpResp, err := r.Client.UserGroupApi.RemoveUserFromUserGroup(ctx).RemoveUserFromUserGroupRequest(req).Execute()
-			if err != nil {
-				oscErr := oapihelpers.GetError(err)
-				// This case happens when a user linked to a group changes its username
-				// Terraform detects a change and need to remove and readd the user to the group
-				// Trying to remove the user based on the state name fails since the username changed
-				if oscErr.GetCode() == "5098" {
-					return nil
-				}
-				return utils.CheckThrottling(httpResp, err)
-			}
-			return nil
-		})
+		_, err := r.Client.RemoveUserFromUserGroup(ctx, req, options.WithRetryTimeout(timeout))
 		if err != nil {
 			diags.AddError(
 				"Unable to remove user from User Group",
@@ -602,13 +542,7 @@ func (r *resourceUserGroup) unlinkPolicies(ctx context.Context, timeout time.Dur
 			PolicyOrn:     policy.PolicyOrn.ValueString(),
 		}
 
-		err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-			_, httpResp, err := r.Client.PolicyApi.UnlinkManagedPolicyFromUserGroup(ctx).UnlinkManagedPolicyFromUserGroupRequest(req).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			return nil
-		})
+		_, err := r.Client.UnlinkManagedPolicyFromUserGroup(ctx, req, options.WithRetryTimeout(timeout))
 		if err != nil {
 			diags.AddError(
 				"Unable to unlink policy from User Group",
@@ -630,13 +564,7 @@ func (r *resourceUserGroup) linkPolicies(ctx context.Context, timeout time.Durat
 			PolicyOrn:     policy.PolicyOrn.ValueString(),
 		}
 
-		err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-			_, httpResp, err := r.Client.PolicyApi.LinkManagedPolicyToUserGroup(ctx).LinkManagedPolicyToUserGroupRequest(req).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			return nil
-		})
+		_, err := r.Client.LinkManagedPolicyToUserGroup(ctx, req, options.WithRetryTimeout(timeout))
 		if err != nil {
 			diags.AddError(
 				"Unable to link policy to User Group",
@@ -666,8 +594,8 @@ func (r *resourceUserGroup) flattenUsers(users []osc.User) []UserGroupUserModel 
 			UserId:               to.String(user.UserId),
 			UserName:             to.String(user.UserName),
 			Path:                 to.String(user.Path),
-			CreationDate:         to.String(user.CreationDate),
-			LastModificationDate: to.String(user.LastModificationDate),
+			CreationDate:         to.String(user.CreationDate.String()),
+			LastModificationDate: to.String(user.LastModificationDate.String()),
 		}
 	})
 }

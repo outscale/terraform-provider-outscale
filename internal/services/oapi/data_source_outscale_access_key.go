@@ -1,11 +1,10 @@
 package oapi
 
 import (
-	"context"
 	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -53,7 +52,7 @@ func DataSourceOutscaleAccessKey() *schema.Resource {
 }
 
 func DataSourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 	accessKeyID, accessKeyOk := d.GetOk("access_key_id")
@@ -64,7 +63,7 @@ func DataSourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) e
 		return fmt.Errorf("one of filters: access_key_id, state or user_name must be assigned")
 	}
 
-	filterReq := &oscgo.FiltersAccessKeys{}
+	filterReq := &osc.FiltersAccessKeys{}
 
 	var err error
 	if filtersOk {
@@ -79,15 +78,15 @@ func DataSourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) e
 	if stateOk {
 		filterReq.SetStates([]string{state.(string)})
 	}
-	req := oscgo.ReadAccessKeysRequest{}
+	req := osc.ReadAccessKeysRequest{}
 	req.SetFilters(*filterReq)
 	if userNameOk {
 		req.SetUserName(userName.(string))
 	}
-	var resp oscgo.ReadAccessKeysResponse
+	var resp osc.ReadAccessKeysResponse
 
 	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.AccessKeyApi.ReadAccessKeys(context.Background()).ReadAccessKeysRequest(req).Execute()
+		rp, httpResp, err := client.AccessKeyApi.ReadAccessKeys(ctx).ReadAccessKeysRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -129,8 +128,8 @@ func DataSourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) e
 	return nil
 }
 
-func buildOutscaleDataSourceAccessKeyFilters(set *schema.Set) (*oscgo.FiltersAccessKeys, error) {
-	var filters oscgo.FiltersAccessKeys
+func buildOutscaleDataSourceAccessKeyFilters(set *schema.Set) (*osc.FiltersAccessKeys, error) {
+	var filters osc.FiltersAccessKeys
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -144,7 +143,7 @@ func buildOutscaleDataSourceAccessKeyFilters(set *schema.Set) (*oscgo.FiltersAcc
 		case "states":
 			filters.SetStates(filterValues)
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(ctx, name)
 		}
 	}
 	return &filters, nil

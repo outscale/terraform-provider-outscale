@@ -1,13 +1,12 @@
 package oapi
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"reflect"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -16,9 +15,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func DataSourceOutscaleLinPeeringsConnection() *schema.Resource {
+func DataSourceOutscaleNetPeerings() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleLinPeeringsConnectionRead,
+		Read: DataSourceOutscaleNetPeeringsRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -27,12 +26,12 @@ func DataSourceOutscaleLinPeeringsConnection() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"accepter_net": vpcOAPIPeeringConnectionOptionsSchema(),
+						"accepter_net": vpcOAPIPeeringclientectionOptionsSchema(),
 						"net_peering_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"source_net": vpcOAPIPeeringConnectionOptionsSchema(),
+						"source_net": vpcOAPIPeeringclientectionOptionsSchema(),
 						"state": {
 							Type:     schema.TypeList,
 							Computed: true,
@@ -61,10 +60,10 @@ func DataSourceOutscaleLinPeeringsConnection() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleLinPeeringsConnectionRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleNetPeeringsRead(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*client.OutscaleClient).OSC
 
-	log.Printf("[DEBUG] Reading VPC Peering Connections.")
+	log.Printf("[DEBUG] Reading VPC Peering clientections.")
 
 	filters, filtersOk := d.GetOk("filter")
 	if !filtersOk {
@@ -72,15 +71,15 @@ func DataSourceOutscaleLinPeeringsConnectionRead(d *schema.ResourceData, meta in
 	}
 
 	var err error
-	params := oscgo.ReadNetPeeringsRequest{}
-	params.Filters, err = buildOutscaleLinPeeringConnectionFilters(filters.(*schema.Set))
+	params := osc.ReadNetPeeringsRequest{}
+	params.Filters, err = buildOutscaleLinPeeringclientectionFilters(filters.(*schema.Set))
 	if err != nil {
 		return err
 	}
 
-	var resp oscgo.ReadNetPeeringsResponse
+	var resp osc.ReadNetPeeringsResponse
 	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.NetPeeringApi.ReadNetPeerings(context.Background()).ReadNetPeeringsRequest(params).Execute()
+		rp, httpResp, err := client.NetPeeringApi.ReadNetPeerings(ctx).ReadNetPeeringsRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -105,18 +104,18 @@ func DataSourceOutscaleLinPeeringsConnectionRead(d *schema.ResourceData, meta in
 	})
 }
 
-func setNetPeeringsAttributtes(peerings []oscgo.NetPeering) (res []map[string]interface{}) {
+func setNetPeeringsAttributtes(peerings []osc.NetPeering) (res []map[string]interface{}) {
 	for _, p := range peerings {
 		netP := map[string]interface{}{
 			"net_peering_id": p.GetNetPeeringId(),
 		}
 		if p.HasAccepterNet() {
-			if !reflect.DeepEqual(p.GetAccepterNet(), oscgo.AccepterNet{}) {
+			if !reflect.DeepEqual(p.GetAccepterNet(), osc.AccepterNet{}) {
 				netP["accepter_net"] = getOAPINetPeeringAccepterNet(p.GetAccepterNet())
 			}
 		}
 		if p.HasSourceNet() {
-			if !reflect.DeepEqual(p.GetSourceNet(), oscgo.SourceNet{}) {
+			if !reflect.DeepEqual(p.GetSourceNet(), osc.SourceNet{}) {
 				netP["source_net"] = getOAPINetPeeringSourceNet(p.GetSourceNet())
 			}
 		}
@@ -124,14 +123,14 @@ func setNetPeeringsAttributtes(peerings []oscgo.NetPeering) (res []map[string]in
 			netP["state"] = getOAPINetPeeringState(p.GetState())
 		}
 		if p.HasTags() {
-			netP["tags"] = FlattenOAPITagsSDK(p.GetTags())
+			netP["tags"] = FlattenOAPITagsSDK(p.Tags)
 		}
 		res = append(res, netP)
 	}
 	return
 }
 
-func getOAPINetPeeringAccepterNet(a oscgo.AccepterNet) []map[string]interface{} {
+func getOAPINetPeeringAccepterNet(a osc.AccepterNet) []map[string]interface{} {
 	return []map[string]interface{}{{
 		"ip_range":   a.GetIpRange(),
 		"account_id": a.GetAccountId(),
@@ -139,7 +138,7 @@ func getOAPINetPeeringAccepterNet(a oscgo.AccepterNet) []map[string]interface{} 
 	}}
 }
 
-func getOAPINetPeeringSourceNet(a oscgo.SourceNet) []map[string]interface{} {
+func getOAPINetPeeringSourceNet(a osc.SourceNet) []map[string]interface{} {
 	return []map[string]interface{}{{
 		"ip_range":   a.GetIpRange(),
 		"account_id": a.GetAccountId(),
@@ -147,7 +146,7 @@ func getOAPINetPeeringSourceNet(a oscgo.SourceNet) []map[string]interface{} {
 	}}
 }
 
-func getOAPINetPeeringState(a oscgo.NetPeeringState) []map[string]interface{} {
+func getOAPINetPeeringState(a osc.NetPeeringState) []map[string]interface{} {
 	return []map[string]interface{}{{
 		"name":    a.GetName(),
 		"message": a.GetMessage(),

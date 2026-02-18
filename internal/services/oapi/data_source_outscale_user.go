@@ -1,11 +1,10 @@
 package oapi
 
 import (
-	"context"
 	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -48,23 +47,24 @@ func DataSourceUser() *schema.Resource {
 }
 
 func DataSourceUserRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
+
 	filters, filtersOk := d.GetOk("filter")
 	if !filtersOk {
 		return fmt.Errorf("filters: user_ids must be assigned")
 	}
 
 	var err error
-	req := oscgo.NewReadUsersRequest()
+	req := osc.NewReadUsersRequest()
 
 	req.Filters, err = buildUsersFilters(filters.(*schema.Set))
 	if err != nil {
 		return err
 	}
 
-	var resp oscgo.ReadUsersResponse
+	var resp osc.ReadUsersResponse
 	err = retry.Retry(2*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.UserApi.ReadUsers(context.Background()).ReadUsersRequest(*req).Execute()
+		rp, httpResp, err := client.UserApi.ReadUsers(ctx).ReadUsersRequest(*req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -104,8 +104,8 @@ func DataSourceUserRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func buildUsersFilters(set *schema.Set) (*oscgo.FiltersUsers, error) {
-	var filters oscgo.FiltersUsers
+func buildUsersFilters(set *schema.Set) (*osc.FiltersUsers, error) {
+	var filters osc.FiltersUsers
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -117,7 +117,7 @@ func buildUsersFilters(set *schema.Set) (*oscgo.FiltersUsers, error) {
 		case "user_ids":
 			filters.SetUserIds(filterValues)
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(ctx, name)
 		}
 	}
 	return &filters, nil

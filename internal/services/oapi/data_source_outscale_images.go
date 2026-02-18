@@ -1,11 +1,10 @@
 package oapi
 
 import (
-	"context"
 	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/spf13/cast"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
@@ -227,7 +226,7 @@ func DataSourceOutscaleImages() *schema.Resource {
 }
 
 func DataSourceOutscaleImagesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
 	executableUsers, executableUsersOk := d.GetOk("permissions")
 	filters, filtersOk := d.GetOk("filter")
@@ -237,7 +236,7 @@ func DataSourceOutscaleImagesRead(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	var err error
-	filtersReq := &oscgo.FiltersImage{}
+	filtersReq := &osc.FiltersImage{}
 	if filtersOk {
 		filtersReq, err = buildOutscaleDataSourceImagesFilters(filters.(*schema.Set))
 		if err != nil {
@@ -251,11 +250,11 @@ func DataSourceOutscaleImagesRead(d *schema.ResourceData, meta interface{}) erro
 		filtersReq.SetPermissionsToLaunchAccountIds(utils.InterfaceSliceToStringSlice(executableUsers.([]interface{})))
 	}
 
-	req := oscgo.ReadImagesRequest{Filters: filtersReq}
+	req := osc.ReadImagesRequest{Filters: filtersReq}
 
-	var resp oscgo.ReadImagesResponse
+	var resp osc.ReadImagesResponse
 	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(req).Execute()
+		rp, httpResp, err := client.ImageApi.ReadImages(ctx).ReadImagesRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -278,7 +277,7 @@ func DataSourceOutscaleImagesRead(d *schema.ResourceData, meta interface{}) erro
 		for i, image := range images {
 			imgs[i] = map[string]interface{}{
 				"architecture":          image.GetArchitecture(),
-				"boot_modes":            lo.Map(image.GetBootModes(), func(b oscgo.BootMode, _ int) string { return string(b) }),
+				"boot_modes":            lo.Map(image.GetBootModes(), func(b osc.BootMode, _ int) string { return string(b) }),
 				"secure_boot":           image.GetSecureBoot(),
 				"tpm_mandatory":         image.GetTpmMandatory(),
 				"creation_date":         image.GetCreationDate(),
@@ -296,7 +295,7 @@ func DataSourceOutscaleImagesRead(d *schema.ResourceData, meta interface{}) erro
 				"product_codes":         image.GetProductCodes(),
 				"state_comment":         omiOAPIStateReason(image.StateComment),
 				"permissions_to_launch": omiOAPIPermissionToLuch(image.PermissionsToLaunch),
-				"tags":                  FlattenOAPITagsSDK(image.GetTags()),
+				"tags":                  FlattenOAPITagsSDK(image.Tags),
 			}
 		}
 
@@ -304,8 +303,8 @@ func DataSourceOutscaleImagesRead(d *schema.ResourceData, meta interface{}) erro
 	})
 }
 
-func buildOutscaleDataSourceImagesFilters(set *schema.Set) (*oscgo.FiltersImage, error) {
-	filters := oscgo.FiltersImage{}
+func buildOutscaleDataSourceImagesFilters(set *schema.Set) (*osc.FiltersImage, error) {
+	filters := osc.FiltersImage{}
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -322,7 +321,7 @@ func buildOutscaleDataSourceImagesFilters(set *schema.Set) (*oscgo.FiltersImage,
 		case "architectures":
 			filters.SetArchitectures(filterValues)
 		case "boot_modes":
-			filters.SetBootModes(lo.Map(filterValues, func(s string, _ int) oscgo.BootMode { return (oscgo.BootMode)(s) }))
+			filters.SetBootModes(lo.Map(filterValues, func(s string, _ int) osc.BootMode { return (osc.BootMode)(s) }))
 		case "secure_boot":
 			filters.SetSecureBoot(cast.ToBool(filterValues[0]))
 		case "block_device_mapping_delete_on_vm_deletion":
@@ -368,7 +367,7 @@ func buildOutscaleDataSourceImagesFilters(set *schema.Set) (*oscgo.FiltersImage,
 		case "virtualization_types":
 			filters.SetVirtualizationTypes(filterValues)
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(ctx, name)
 		}
 	}
 	return &filters, nil

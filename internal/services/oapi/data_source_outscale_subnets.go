@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -75,16 +75,16 @@ func DataSourceOutscaleSubnets() *schema.Resource {
 }
 
 func DataSourceOutscaleSubnetsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
-	req := oscgo.ReadSubnetsRequest{}
+	req := osc.ReadSubnetsRequest{}
 
 	if id := d.Get("subnet_ids"); id != "" {
 		var ids []string
 		for _, v := range id.([]interface{}) {
 			ids = append(ids, v.(string))
 		}
-		req.SetFilters(oscgo.FiltersSubnet{SubnetIds: &ids})
+		req.SetFilters(osc.FiltersSubnet{SubnetIds: &ids})
 	}
 
 	filters, filtersOk := d.GetOk("filter")
@@ -97,9 +97,9 @@ func DataSourceOutscaleSubnetsRead(d *schema.ResourceData, meta interface{}) err
 		}
 	}
 
-	var resp oscgo.ReadSubnetsResponse
+	var resp osc.ReadSubnetsResponse
 	err = retry.Retry(120*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.SubnetApi.ReadSubnets(context.Background()).ReadSubnetsRequest(req).Execute()
+		rp, httpResp, err := client.SubnetApi.ReadSubnets(ctx).ReadSubnetsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -127,7 +127,7 @@ func DataSourceOutscaleSubnetsRead(d *schema.ResourceData, meta interface{}) err
 		if v.GetSubregionName() != "" {
 			subnet["subregion_name"] = v.GetSubregionName()
 		}
-		//if v.AvailableIpsCount != 0 {
+		// if v.AvailableIpsCount != 0 {
 		subnet["available_ips_count"] = v.GetAvailableIpsCount()
 		//}
 		if v.GetIpRange() != "" {
@@ -139,8 +139,8 @@ func DataSourceOutscaleSubnetsRead(d *schema.ResourceData, meta interface{}) err
 		if v.GetSubnetId() != "" {
 			subnet["subnet_id"] = v.GetSubnetId()
 		}
-		if v.GetTags() != nil {
-			subnet["tags"] = FlattenOAPITagsSDK(v.GetTags())
+		if v.Tags != nil {
+			subnet["tags"] = FlattenOAPITagsSDK(v.Tags)
 		}
 		if v.GetNetId() != "" {
 			subnet["net_id"] = v.GetNetId()

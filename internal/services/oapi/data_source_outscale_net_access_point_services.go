@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -48,12 +48,12 @@ func DataSourceOutscaleNetAccessPointServices() *schema.Resource {
 }
 
 func DataSourceOutscaleNetAccessPointServicesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 
 	var err error
-	req := oscgo.ReadNetAccessPointServicesRequest{}
+	req := osc.ReadNetAccessPointServicesRequest{}
 	if filtersOk {
 		req.Filters, err = buildOutscaleDataSourcesNAPSFilters(filters.(*schema.Set))
 		if err != nil {
@@ -61,11 +61,11 @@ func DataSourceOutscaleNetAccessPointServicesRead(d *schema.ResourceData, meta i
 		}
 	}
 
-	var resp oscgo.ReadNetAccessPointServicesResponse
+	var resp osc.ReadNetAccessPointServicesResponse
 
 	err = retry.Retry(20*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.NetAccessPointApi.ReadNetAccessPointServices(
-			context.Background()).
+		rp, httpResp, err := client.NetAccessPointApi.ReadNetAccessPointServices(
+			ctx).
 			ReadNetAccessPointServicesRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -73,7 +73,6 @@ func DataSourceOutscaleNetAccessPointServicesRead(d *schema.ResourceData, meta i
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}
@@ -98,8 +97,8 @@ func DataSourceOutscaleNetAccessPointServicesRead(d *schema.ResourceData, meta i
 	return nil
 }
 
-func buildOutscaleDataSourcesNAPSFilters(set *schema.Set) (*oscgo.FiltersService, error) {
-	var filters oscgo.FiltersService
+func buildOutscaleDataSourcesNAPSFilters(set *schema.Set) (*osc.FiltersService, error) {
+	var filters osc.FiltersService
 
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -114,7 +113,7 @@ func buildOutscaleDataSourcesNAPSFilters(set *schema.Set) (*oscgo.FiltersService
 		case "service_names":
 			filters.SetServiceNames(filterValues)
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(ctx, name)
 		}
 	}
 	return &filters, nil

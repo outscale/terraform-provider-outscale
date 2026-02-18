@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -198,8 +198,8 @@ func DataSourceOutscaleLoadBalancer() *schema.Resource {
 	}
 }
 
-func buildOutscaleDataSourceLBFilters(set *schema.Set) (*oscgo.FiltersLoadBalancer, error) {
-	filters := oscgo.FiltersLoadBalancer{}
+func buildOutscaleDataSourceLBFilters(set *schema.Set) (*osc.FiltersLoadBalancer, error) {
+	filters := osc.FiltersLoadBalancer{}
 
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -214,21 +214,21 @@ func buildOutscaleDataSourceLBFilters(set *schema.Set) (*oscgo.FiltersLoadBalanc
 		case "load_balancer_names":
 			filters.LoadBalancerNames = &filterValues
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(ctx, name)
 		}
 	}
 	return &filters, nil
 }
 
-func readLbs(conn *oscgo.APIClient, d *schema.ResourceData) (*oscgo.ReadLoadBalancersResponse, *string, error) {
-	return readLbs_(conn, d, schema.TypeString)
+func readLbs(client *osc.Client, d *schema.ResourceData) (*osc.ReadLoadBalancersResponse, *string, error) {
+	return readLbs_(client, d, schema.TypeString)
 }
 
-func readLbs_(conn *oscgo.APIClient, d *schema.ResourceData, t schema.ValueType) (*oscgo.ReadLoadBalancersResponse, *string, error) {
+func readLbs_(client *osc.Client, d *schema.ResourceData, t schema.ValueType) (*osc.ReadLoadBalancersResponse, *string, error) {
 	ename, nameOk := d.GetOk("load_balancer_name")
 	filters, filtersOk := d.GetOk("filter")
-	req := oscgo.ReadLoadBalancersRequest{
-		Filters: &oscgo.FiltersLoadBalancer{},
+	req := osc.ReadLoadBalancersRequest{
+		Filters: &osc.FiltersLoadBalancer{},
 	}
 
 	if !nameOk && !filtersOk {
@@ -244,17 +244,17 @@ func readLbs_(conn *oscgo.APIClient, d *schema.ResourceData, t schema.ValueType)
 	} else if t == schema.TypeString {
 		req.Filters.SetLoadBalancerNames([]string{ename.(string)})
 	} else { /* assuming typelist */
-		req.Filters = &oscgo.FiltersLoadBalancer{
+		req.Filters = &osc.FiltersLoadBalancer{
 			LoadBalancerNames: utils.InterfaceSliceToStringSlicePtr(ename.([]interface{})),
 		}
 	}
 	elbName := (*req.Filters.LoadBalancerNames)[0]
 
-	var resp oscgo.ReadLoadBalancersResponse
+	var resp osc.ReadLoadBalancersResponse
 	var statusCode int
 	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.LoadBalancerApi.
-			ReadLoadBalancers(context.Background()).
+		rp, httpResp, err := client.LoadBalancerApi.
+			ReadLoadBalancers(ctx).
 			ReadLoadBalancersRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -274,8 +274,8 @@ func readLbs_(conn *oscgo.APIClient, d *schema.ResourceData, t schema.ValueType)
 	return &resp, &elbName, nil
 }
 
-func readLbs0(conn *oscgo.APIClient, d *schema.ResourceData) (*oscgo.LoadBalancer, *oscgo.ReadLoadBalancersResponse, error) {
-	resp, _, err := readLbs(conn, d)
+func readLbs0(client *osc.Client, d *schema.ResourceData) (*osc.LoadBalancer, *osc.ReadLoadBalancersResponse, error) {
+	resp, _, err := readLbs(client, d)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -292,9 +292,9 @@ func readLbs0(conn *oscgo.APIClient, d *schema.ResourceData) (*oscgo.LoadBalance
 }
 
 func DataSourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
-	lb, _, err := readLbs0(conn, d)
+	lb, _, err := readLbs0(client, d)
 	if err != nil {
 		return err
 	}

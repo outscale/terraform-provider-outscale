@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
@@ -63,22 +63,21 @@ func DataSourceUserGroupsPerUser() *schema.Resource {
 }
 
 func DataSourceUserGroupsPerUserRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
-	req := oscgo.NewReadUserGroupsPerUserRequest(d.Get("user_name").(string))
+	req := osc.NewReadUserGroupsPerUserRequest(d.Get("user_name").(string))
 	if userPath := d.Get("user_path").(string); userPath != "" {
 		req.SetUserPath(userPath)
 	}
-	var resp oscgo.ReadUserGroupsPerUserResponse
+	var resp osc.ReadUserGroupsPerUserResponse
 	err := retry.Retry(2*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.UserGroupApi.ReadUserGroupsPerUser(context.Background()).ReadUserGroupsPerUserRequest(*req).Execute()
+		rp, httpResp, err := client.UserGroupApi.ReadUserGroupsPerUser(ctx).ReadUserGroupsPerUserRequest(*req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}

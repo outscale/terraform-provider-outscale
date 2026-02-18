@@ -1,13 +1,12 @@
 package oapi
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"strings"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -180,14 +179,14 @@ func DataSourceOutscaleSecurityGroups() *schema.Resource {
 }
 
 func DataSourceOutscaleSecurityGroupsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
-	req := oscgo.ReadSecurityGroupsRequest{}
+	req := osc.ReadSecurityGroupsRequest{}
 
 	filters, filtersOk := d.GetOk("filter")
 	gn, gnOk := d.GetOk("security_group_names")
 	gid, gidOk := d.GetOk("security_group_ids")
-	var filter oscgo.FiltersSecurityGroup
+	var filter osc.FiltersSecurityGroup
 	if gnOk {
 		var g []string
 		for _, v := range gn.([]interface{}) {
@@ -214,9 +213,9 @@ func DataSourceOutscaleSecurityGroupsRead(d *schema.ResourceData, meta interface
 		}
 	}
 
-	var resp oscgo.ReadSecurityGroupsResponse
+	var resp osc.ReadSecurityGroupsResponse
 	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.SecurityGroupApi.ReadSecurityGroups(context.Background()).ReadSecurityGroupsRequest(req).Execute()
+		rp, httpResp, err := client.SecurityGroupApi.ReadSecurityGroups(ctx).ReadSecurityGroupsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -253,7 +252,7 @@ func DataSourceOutscaleSecurityGroupsRead(d *schema.ResourceData, meta interface
 			s["net_id"] = v.GetNetId()
 		}
 		s["account_id"] = v.GetAccountId()
-		s["tags"] = FlattenOAPITagsSDK(v.GetTags())
+		s["tags"] = FlattenOAPITagsSDK(v.Tags)
 		s["inbound_rules"] = flattenOAPISecurityGroupRule(v.GetInboundRules())
 		s["outbound_rules"] = flattenOAPISecurityGroupRule(v.GetOutboundRules())
 		sg[k] = s
@@ -268,7 +267,7 @@ func DataSourceOutscaleSecurityGroupsRead(d *schema.ResourceData, meta interface
 	return err
 }
 
-func flattenOAPISecurityGroupRule(p []oscgo.SecurityGroupRule) []map[string]interface{} {
+func flattenOAPISecurityGroupRule(p []osc.SecurityGroupRule) []map[string]interface{} {
 	ips := make([]map[string]interface{}, len(p))
 
 	for k, v := range p {

@@ -1,11 +1,10 @@
 package oapi
 
 import (
-	"context"
 	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -77,7 +76,7 @@ func DataSourceOutscaleNatServices() *schema.Resource {
 }
 
 func DataSourceOutscaleNatServicesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 	natGatewayID, natGatewayIDOK := d.GetOk("nat_service_ids")
@@ -87,7 +86,7 @@ func DataSourceOutscaleNatServicesRead(d *schema.ResourceData, meta interface{})
 	}
 
 	var err error
-	params := oscgo.ReadNatServicesRequest{}
+	params := osc.ReadNatServicesRequest{}
 	if filtersOk {
 		params.Filters, err = buildOutscaleNatServiceDataSourceFilters(filters.(*schema.Set))
 		if err != nil {
@@ -100,15 +99,15 @@ func DataSourceOutscaleNatServicesRead(d *schema.ResourceData, meta interface{})
 		for k, v := range natGatewayID.([]interface{}) {
 			ids[k] = v.(string)
 		}
-		filter := oscgo.FiltersNatService{}
+		filter := osc.FiltersNatService{}
 		filter.SetNatServiceIds(ids)
 		params.SetFilters(filter)
 	}
 
-	var resp oscgo.ReadNatServicesResponse
+	var resp osc.ReadNatServicesResponse
 	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		var err error
-		rp, httpResp, err := conn.NatServiceApi.ReadNatServices(context.Background()).ReadNatServicesRequest(params).Execute()
+		rp, httpResp, err := client.NatServiceApi.ReadNatServices(ctx).ReadNatServicesRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -132,7 +131,7 @@ func DataSourceOutscaleNatServicesRead(d *schema.ResourceData, meta interface{})
 }
 
 // populate the numerous fields that the image description returns.
-func ngsOAPIDescriptionAttributes(d *schema.ResourceData, ngs []oscgo.NatService) error {
+func ngsOAPIDescriptionAttributes(d *schema.ResourceData, ngs []osc.NatService) error {
 	d.SetId(id.UniqueId())
 
 	addngs := make([]map[string]interface{}, len(ngs))
@@ -166,8 +165,8 @@ func ngsOAPIDescriptionAttributes(d *schema.ResourceData, ngs []oscgo.NatService
 		if v.GetNetId() != "" {
 			addng["net_id"] = v.GetNetId()
 		}
-		if v.GetTags() != nil {
-			addng["tags"] = FlattenOAPITagsSDK(v.GetTags())
+		if v.Tags != nil {
+			addng["tags"] = FlattenOAPITagsSDK(v.Tags)
 		}
 
 		addngs[k] = addng

@@ -59,7 +59,7 @@ func testAccClientGatewayDatasourceBasic(rBgpAsn int, value string) string {
 		resource "outscale_client_gateway" "foo" {
 			bgp_asn         = %d
 			public_ip       = "172.0.0.1"
-			connection_type = "ipsec.1"
+			clientection_type = "ipsec.1"
 
 			tags {
 				key = "Name"
@@ -78,7 +78,7 @@ func testAccClientGatewayDatasourceWithFilters(rBgpAsn int, value string) string
 		resource "outscale_client_gateway" "foo" {
 			bgp_asn         = %d
 			public_ip       = "172.0.0.1"
-			connection_type = "ipsec.1"
+			clientection_type = "ipsec.1"
 
 			tags {
 				key = "Name"
@@ -100,7 +100,7 @@ func testAccClientGatewayDatasourceWithFiltersNoLocalhost(asn int) string {
 	resource "outscale_client_gateway" "outscale_client_gateway" {
 		bgp_asn     = %d
 		public_ip  = "171.33.75.123"
-		connection_type        = "ipsec.1"
+		clientection_type        = "ipsec.1"
 		tags {
 		 key = "name-mzi"
 		 value = "CGW_1_mzi"

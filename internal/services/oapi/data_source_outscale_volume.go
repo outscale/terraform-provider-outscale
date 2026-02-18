@@ -1,11 +1,10 @@
 package oapi
 
 import (
-	"context"
 	"log"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/spf13/cast"
 
 	"github.com/davecgh/go-spew/spew"
@@ -93,13 +92,13 @@ func DataSourceOutscaleVolume() *schema.Resource {
 }
 
 func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 	volumeIds, VolumeIdsOk := d.GetOk("volume_id")
 
-	params := oscgo.ReadVolumesRequest{
-		Filters: &oscgo.FiltersVolume{},
+	params := osc.ReadVolumesRequest{
+		Filters: &osc.FiltersVolume{},
 	}
 	if VolumeIdsOk {
 		params.Filters.SetVolumeIds([]string{volumeIds.(string)})
@@ -113,16 +112,15 @@ func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	var resp oscgo.ReadVolumesResponse
+	var resp osc.ReadVolumesResponse
 	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(params).Execute()
+		rp, httpResp, err := client.VolumeApi.ReadVolumes(ctx).ReadVolumesRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}
@@ -131,7 +129,7 @@ func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 
 	filteredVolumes := resp.GetVolumes()[:]
 
-	var volume oscgo.Volume
+	var volume osc.Volume
 	if len(filteredVolumes) < 1 {
 		return ErrNoResults
 	}
@@ -144,10 +142,9 @@ func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	volume = filteredVolumes[0]
 	log.Printf("[DEBUG] outscale_volume - Single Volume found: %s", volume.GetVolumeId())
 	return volumeOAPIDescriptionAttributes(d, &volume)
-
 }
 
-func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oscgo.Volume) error {
+func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *osc.Volume) error {
 	if err := d.Set("volume_id", volume.GetVolumeId()); err != nil {
 		return err
 	}
@@ -194,8 +191,8 @@ func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oscgo.Volum
 		}
 	}
 
-	if volume.GetTags() != nil {
-		if err := d.Set("tags", FlattenOAPITagsSDK(volume.GetTags())); err != nil {
+	if volume.Tags != nil {
+		if err := d.Set("tags", FlattenOAPITagsSDK(volume.Tags)); err != nil {
 			return err
 		}
 	} else {
@@ -213,8 +210,8 @@ func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oscgo.Volum
 	return nil
 }
 
-func buildOutscaleOSCAPIDataSourceVolumesFilters(set *schema.Set) (*oscgo.FiltersVolume, error) {
-	var filters oscgo.FiltersVolume
+func buildOutscaleOSCAPIDataSourceVolumesFilters(set *schema.Set) (*osc.FiltersVolume, error) {
+	var filters osc.FiltersVolume
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -254,7 +251,7 @@ func buildOutscaleOSCAPIDataSourceVolumesFilters(set *schema.Set) (*oscgo.Filter
 		case "link_volume_device_names":
 			filters.SetLinkVolumeDeviceNames(filterValues)
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(ctx, name)
 		}
 	}
 	return &filters, nil

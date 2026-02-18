@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
@@ -34,20 +34,19 @@ func DataSourceOutscaleApiAccessPolicy() *schema.Resource {
 }
 
 func DataSourceOutscaleApiAccessPolicyRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
-	req := oscgo.ReadApiAccessPolicyRequest{}
+	req := osc.ReadApiAccessPolicyRequest{}
 
-	var resp oscgo.ReadApiAccessPolicyResponse
+	var resp osc.ReadApiAccessPolicyResponse
 	err := retry.Retry(120*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.ApiAccessPolicyApi.ReadApiAccessPolicy(context.Background()).ReadApiAccessPolicyRequest(req).Execute()
+		rp, httpResp, err := client.ApiAccessPolicyApi.ReadApiAccessPolicy(ctx).ReadApiAccessPolicyRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		return fmt.Errorf("error reading api access policy id (%s)", utils.GetErrorResponse(err))
 	}

@@ -78,13 +78,13 @@ const testAccNoOAPIVpnGatewayAttachmentConfig = `
 	}
 
 	resource "outscale_virtual_gateway" "test" {
-		connection_type = "ipsec.1"
+		clientection_type = "ipsec.1"
 }
 `
 
 const testAccOAPIVpnGatewayAttachmentConfig = `
 resource "outscale_virtual_gateway" "test" {
- connection_type = "ipsec.1"
+ clientection_type = "ipsec.1"
 }
 resource "outscale_net" "test" {
     ip_range = "10.0.0.0/18"

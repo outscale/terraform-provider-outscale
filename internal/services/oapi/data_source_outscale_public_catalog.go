@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -74,20 +74,20 @@ func DataSourceOutscalePublicCatalog() *schema.Resource {
 }
 
 func DataSourceOutscalePublicCatalogRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
+	
 
-	req := oscgo.ReadPublicCatalogRequest{}
+	req := osc.ReadPublicCatalogRequest{}
 
-	var resp oscgo.ReadPublicCatalogResponse
-	var err = retry.Retry(20*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.PublicCatalogApi.ReadPublicCatalog(context.Background()).ReadPublicCatalogRequest(req).Execute()
+	var resp osc.ReadPublicCatalogResponse
+	err := retry.Retry(20*time.Second, func() *retry.RetryError {
+		rp, httpResp, err := client.PublicCatalogApi.ReadPublicCatalog(ctx).ReadPublicCatalogRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}

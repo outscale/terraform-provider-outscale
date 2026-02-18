@@ -1,14 +1,13 @@
 package oapi
 
 import (
-	"context"
 	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
@@ -55,8 +54,9 @@ func DataSourcePoliciesLinkedToUserGroup() *schema.Resource {
 }
 
 func DataSourcePoliciesLinkedToUserGroupRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
-	req := oscgo.ReadManagedPoliciesLinkedToUserGroupRequest{}
+	client := meta.(*client.OutscaleClient).OSC
+
+	req := osc.ReadManagedPoliciesLinkedToUserGroupRequest{}
 	req.SetUserGroupName(d.Get("user_group_name").(string))
 
 	var err error
@@ -67,9 +67,9 @@ func DataSourcePoliciesLinkedToUserGroupRead(d *schema.ResourceData, meta interf
 		}
 	}
 
-	var resp oscgo.ReadManagedPoliciesLinkedToUserGroupResponse
+	var resp osc.ReadManagedPoliciesLinkedToUserGroupResponse
 	err = retry.Retry(2*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.PolicyApi.ReadManagedPoliciesLinkedToUserGroup(context.Background()).ReadManagedPoliciesLinkedToUserGroupRequest(req).Execute()
+		rp, httpResp, err := client.PolicyApi.ReadManagedPoliciesLinkedToUserGroup(ctx).ReadManagedPoliciesLinkedToUserGroupRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}

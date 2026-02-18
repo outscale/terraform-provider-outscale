@@ -1,10 +1,9 @@
 package oapi
 
 import (
-	"context"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -53,16 +52,16 @@ func DataSourceOutscaleNetAccessPoint() *schema.Resource {
 }
 
 func DataSourceOutscaleNetAccessPointRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 	if !filtersOk {
 		return ErrFilterRequired
 	}
 
-	var resp oscgo.ReadNetAccessPointsResponse
+	var resp osc.ReadNetAccessPointsResponse
 	var err error
-	req := oscgo.ReadNetAccessPointsRequest{}
+	req := osc.ReadNetAccessPointsRequest{}
 
 	req.Filters, err = buildOutscaleDataSourcesNAPFilters(filters.(*schema.Set))
 	if err != nil {
@@ -70,8 +69,8 @@ func DataSourceOutscaleNetAccessPointRead(d *schema.ResourceData, meta interface
 	}
 
 	err = retry.Retry(30*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.NetAccessPointApi.ReadNetAccessPoints(
-			context.Background()).
+		rp, httpResp, err := client.NetAccessPointApi.ReadNetAccessPoints(
+			ctx).
 			ReadNetAccessPointsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -97,7 +96,7 @@ func DataSourceOutscaleNetAccessPointRead(d *schema.ResourceData, meta interface
 	d.Set("net_id", nap.NetId)
 	d.Set("service_name", nap.ServiceName)
 	d.Set("state", nap.State)
-	d.Set("tags", FlattenOAPITagsSDK(nap.GetTags()))
+	d.Set("tags", FlattenOAPITagsSDK(nap.Tags))
 
 	id := *nap.NetAccessPointId
 	d.SetId(id)

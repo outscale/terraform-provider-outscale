@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -91,12 +91,13 @@ func DataSourceOutscaleSnapshotExportTasks() *schema.Resource {
 }
 
 func dataSourceOAPISnapshotExportTasksRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
+	
 
 	filters, filtersOk := d.GetOk("filter")
 
 	var err error
-	var filtersReq *oscgo.FiltersExportTask
+	var filtersReq *osc.FiltersExportTask
 	if filtersOk {
 		filtersReq, err = buildOutscaleOSCAPIDataSourceSnapshotExportTaskFilters(filters.(*schema.Set))
 		if err != nil {
@@ -104,10 +105,10 @@ func dataSourceOAPISnapshotExportTasksRead(d *schema.ResourceData, meta interfac
 		}
 	}
 
-	var resp oscgo.ReadSnapshotExportTasksResponse
+	var resp osc.ReadSnapshotExportTasksResponse
 	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.SnapshotApi.ReadSnapshotExportTasks(context.Background()).
-			ReadSnapshotExportTasksRequest(oscgo.ReadSnapshotExportTasksRequest{
+		rp, httpResp, err := client.SnapshotApi.ReadSnapshotExportTasks(ctx).
+			ReadSnapshotExportTasksRequest(osc.ReadSnapshotExportTasksRequest{
 				Filters: filtersReq,
 			}).Execute()
 		if err != nil {
@@ -144,7 +145,7 @@ func dataSourceOAPISnapshotExportTasksRead(d *schema.ResourceData, meta interfac
 		snapshot["snapshot_id"] = v.GetSnapshotId()
 		snapshot["osu_export"] = exp
 
-		snapshot["tags"] = FlattenOAPITagsSDK(v.GetTags())
+		snapshot["tags"] = FlattenOAPITagsSDK(v.Tags)
 
 		snapshots[k] = snapshot
 	}

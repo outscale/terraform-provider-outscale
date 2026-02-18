@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -56,14 +55,15 @@ func DataSourceOutscaleFlexibleGpuCatalog() *schema.Resource {
 }
 
 func DataSourceOutscaleFlexibleGpuCatalogRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
-	req := oscgo.ReadFlexibleGpuCatalogRequest{}
 
-	var resp oscgo.ReadFlexibleGpuCatalogResponse
-	var err = retry.Retry(20*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.FlexibleGpuApi.ReadFlexibleGpuCatalog(
-			context.Background()).
+	req := osc.ReadFlexibleGpuCatalogRequest{}
+
+	var resp osc.ReadFlexibleGpuCatalogResponse
+	err := retry.Retry(20*time.Second, func() *retry.RetryError {
+		rp, httpResp, err := client.FlexibleGpuApi.ReadFlexibleGpuCatalog(
+			ctx).
 			ReadFlexibleGpuCatalogRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -72,7 +72,6 @@ func DataSourceOutscaleFlexibleGpuCatalogRead(d *schema.ResourceData, meta inter
 		return nil
 	})
 
-	if err != nil {
 		return err
 	}
 

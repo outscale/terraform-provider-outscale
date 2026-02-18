@@ -1,14 +1,13 @@
 package oapi_test
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"os"
 	"testing"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -19,7 +18,7 @@ import (
 )
 
 func TestAccVM_Basic(t *testing.T) {
-	var server oscgo.Vm
+	var server osc.Vm
 
 	resourceName := "outscale_vm.basic"
 
@@ -49,7 +48,7 @@ func TestAccVM_Basic(t *testing.T) {
 }
 
 func TestAccVM_uefi(t *testing.T) {
-	var server oscgo.Vm
+	var server osc.Vm
 
 	resourceName := "outscale_vm.uefi"
 
@@ -80,7 +79,7 @@ func TestAccVM_uefi(t *testing.T) {
 }
 
 func TestAccVM_Behavior_Basic(t *testing.T) {
-	var server oscgo.Vm
+	var server osc.Vm
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	keypair := "terraform-basic"
 	region := fmt.Sprintf("%sa", utils.GetRegion())
@@ -119,7 +118,7 @@ func TestAccVM_Behavior_Basic(t *testing.T) {
 
 func TestAccVM_importBasic(t *testing.T) {
 	var (
-		server       oscgo.Vm
+		server       osc.Vm
 		resourceName = "outscale_vm.basic_import"
 		omi          = os.Getenv("OUTSCALE_IMAGEID")
 		keypair      = "terraform-basic"
@@ -171,7 +170,7 @@ func TestAccNet_VM_withNicAttached(t *testing.T) {
 }
 
 func TestAccVM_withTags(t *testing.T) {
-	var server oscgo.Vm
+	var server osc.Vm
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	keypair := "terraform-basic"
 	tagsValue := "test_tags1"
@@ -227,8 +226,8 @@ func TestAccVM_UpdateKeypair(t *testing.T) {
 	existingKeypair := "terraform-basic"
 	generatedKeypair := acctest.RandomWithPrefix("testacc-keypair")
 
-	var before oscgo.Vm
-	var after oscgo.Vm
+	var before osc.Vm
+	var after osc.Vm
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testacc.PreCheck(t) },
@@ -533,7 +532,7 @@ func testAccCheckOutscaleDeletionProtectionUpdateBasic(omi, keypair, vmType stri
 }
 
 // TODO: check if is needed
-// func testAccCheckOAPIVMSecurityGroupsUpdated(t *testing.T, before, after *oscgo.Vm) resource.TestCheckFunc {
+// func testAccCheckOAPIVMSecurityGroupsUpdated(t *testing.T, before, after *osc.Vm) resource.TestCheckFunc {
 // 	return func(s *terraform.State) error {
 // 		log.Printf("[DEBUG] ATTRS: %+v, %+v", before.GetSecurityGroups(), after.GetSecurityGroups())
 // 		if len(after.GetSecurityGroups()) > 0 && len(before.GetSecurityGroups()) > 0 {
@@ -547,13 +546,13 @@ func testAccCheckOutscaleDeletionProtectionUpdateBasic(omi, keypair, vmType stri
 // 	}
 // }
 
-func getVMsFilterByVMID(vmID string) *oscgo.FiltersVm {
-	return &oscgo.FiltersVm{
+func getVMsFilterByVMID(vmID string) *osc.FiltersVm {
+	return &osc.FiltersVm{
 		VmIds: &[]string{vmID},
 	}
 }
 
-func testAccCheckOAPIVMNotRecreated(t *testing.T, before, after *oscgo.Vm) resource.TestCheckFunc {
+func testAccCheckOAPIVMNotRecreated(t *testing.T, before, after *osc.Vm) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		assertNotEqual(t, before.VmId, after.VmId, "Outscale VM IDs have changed.")
 		return nil
@@ -561,19 +560,19 @@ func testAccCheckOAPIVMNotRecreated(t *testing.T, before, after *oscgo.Vm) resou
 }
 
 func testAccCheckOutscaleVMDestroy(s *terraform.State) error {
-	client := testacc.ConfiguredClient.OSCAPI
+	client := testacc.ConfiguredClient.OSC
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_vm" {
 			continue
 		}
 
-		var resp oscgo.ReadVmsResponse
+		var resp osc.ReadVmsResponse
 		var err error
 		var statusCode int
 		// Try to find the resource
 		err = retry.Retry(120*time.Second, func() *retry.RetryError {
-			rp, httpResp, err := client.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
+			rp, httpResp, err := client.VmApi.ReadVms(ctx).ReadVmsRequest(osc.ReadVmsRequest{
 				Filters: getVMsFilterByVMID(rs.Primary.ID),
 			}).Execute()
 			if err != nil {
@@ -601,7 +600,7 @@ func testAccCheckOutscaleVMDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOutscaleVMExists(n string, i *oscgo.Vm) resource.TestCheckFunc {
+func testAccCheckOutscaleVMExists(n string, i *osc.Vm) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -611,10 +610,10 @@ func testAccCheckOutscaleVMExists(n string, i *oscgo.Vm) resource.TestCheckFunc 
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("no id is set")
 		}
-		client := testacc.ConfiguredClient.OSCAPI
-		var resp oscgo.ReadVmsResponse
+		client := testacc.ConfiguredClient.OSC
+		var resp osc.ReadVmsResponse
 		err := retry.Retry(120*time.Second, func() *retry.RetryError {
-			rp, httpResp, err := client.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
+			rp, httpResp, err := client.VmApi.ReadVms(ctx).ReadVmsRequest(osc.ReadVmsRequest{
 				Filters: getVMsFilterByVMID(rs.Primary.ID),
 			}).Execute()
 			if err != nil {
@@ -639,7 +638,7 @@ func testAccCheckOutscaleVMExists(n string, i *oscgo.Vm) resource.TestCheckFunc 
 	}
 }
 
-func testAccCheckOutscaleVMAttributes(t *testing.T, server *oscgo.Vm, omi string) resource.TestCheckFunc {
+func testAccCheckOutscaleVMAttributes(t *testing.T, server *osc.Vm, omi string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		assertEqual(t, omi, server.GetImageId(), "Bad image_id.")
 		return nil

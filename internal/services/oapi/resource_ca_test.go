@@ -4,14 +4,12 @@ import (
 	"context"
 	"fmt"
 	"testing"
-	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 func TestAccOthers_Ca_Basic(t *testing.T) {
@@ -54,30 +52,21 @@ func testAccCheckOutscaleCaExists(n string) resource.TestCheckFunc {
 			return fmt.Errorf("not found: %s", n)
 		}
 
-		conn := testacc.ConfiguredClient.OSCAPI
+		client := testacc.ConfiguredClient.OSC
 
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("no id is set")
 		}
 
-		var resp osc.ReadCasResponse
-		var err error
 		exists := false
-		err = retry.Retry(120*time.Second, func() *retry.RetryError {
-			rp, httpResp, err := conn.CaApi.ReadCas(context.Background()).ReadCasRequest(osc.ReadCasRequest{}).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
+		resp, err := client.ReadCas(context.Background(), osc.ReadCasRequest{}, options.WithRetryTimeout(DefaultTimeout))
 
-		if err != nil || len(resp.GetCas()) == 0 {
+		if err != nil || resp.Cas == nil || len(*resp.Cas) == 0 {
 			return fmt.Errorf("ca not found (%s)", rs.Primary.ID)
 		}
 
-		for _, ca := range resp.GetCas() {
-			if ca.GetCaId() == rs.Primary.ID {
+		for _, ca := range *resp.Cas {
+			if *ca.CaId == rs.Primary.ID {
 				exists = true
 			}
 		}
@@ -91,7 +80,7 @@ func testAccCheckOutscaleCaExists(n string) resource.TestCheckFunc {
 }
 
 func testAccCheckOutscaleCaDestroy(s *terraform.State) error {
-	conn := testacc.ConfiguredClient.OSCAPI
+	client := testacc.ConfiguredClient.OSC
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_ca" {
@@ -102,23 +91,14 @@ func testAccCheckOutscaleCaDestroy(s *terraform.State) error {
 			CaIds: &[]string{rs.Primary.ID},
 		}
 
-		var resp osc.ReadCasResponse
-		var err error
 		exists := false
-		err = retry.Retry(120*time.Second, func() *retry.RetryError {
-			rp, httpResp, err := conn.CaApi.ReadCas(context.Background()).ReadCasRequest(req).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
+		resp, err := client.ReadCas(context.Background(), req, options.WithRetryTimeout(DefaultTimeout))
 		if err != nil {
 			return fmt.Errorf("ca reading (%s)", rs.Primary.ID)
 		}
 
-		for _, ca := range resp.GetCas() {
-			if ca.GetCaId() == rs.Primary.ID {
+		for _, ca := range *resp.Cas {
+			if *ca.CaId == rs.Primary.ID {
 				exists = true
 			}
 		}

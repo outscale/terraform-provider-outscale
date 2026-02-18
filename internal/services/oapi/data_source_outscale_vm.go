@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/outscale/goutils/sdk/ptr"
-	"github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/services/oapi/oapihelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
@@ -49,7 +49,7 @@ func DataSourceOutscaleVMRead(d *schema.ResourceData, meta interface{}) error {
 
 	var resp osc.ReadVmsResponse
 	err = retry.Retry(30*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := client.VmApi.ReadVms(context.Background()).ReadVmsRequest(params).Execute()
+		rp, httpResp, err := client.VmApi.ReadVms(ctx).ReadVmsRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -212,7 +212,7 @@ func oapiVMDescriptionAttributes(set AttributeSetter, vm *osc.Vm) error {
 	if err := set("vm_initiated_shutdown_behavior", vm.GetVmInitiatedShutdownBehavior()); err != nil {
 		return err
 	}
-	if err := set("tags", FlattenOAPITagsSDK(vm.GetTags())); err != nil {
+	if err := set("tags", FlattenOAPITagsSDK(vm.Tags)); err != nil {
 		return err
 	}
 	return set("vm_type", vm.GetVmType())
@@ -446,7 +446,7 @@ func buildOutscaleDataSourceVMFilters(set *schema.Set) (*osc.FiltersVm, error) {
 		case "VmTypes":
 			filters.SetVmTypes(filterValues)
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(ctx, name)
 		}
 	}
 	return filters, nil

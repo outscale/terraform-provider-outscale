@@ -9,14 +9,14 @@ import (
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 )
 
-func TestAccNet_PeeringConnectionAccepter_sameAccount(t *testing.T) {
+func TestAccNet_PeeringclientectionAccepter_sameAccount(t *testing.T) {
 	resourceName := "outscale_net_peering_acceptation.peer"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleLinPeeringConnectionAccepterSameAccountConfig(oapihelpers.GetAccepterOwnerId()),
+				Config: testAccOutscaleLinPeeringclientectionAccepterSameAccountConfig(oapihelpers.GetAccepterOwnerId()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "accepter_owner_id"),
 					resource.TestCheckResourceAttr(resourceName, "state.0.name", "active"),
@@ -26,7 +26,7 @@ func TestAccNet_PeeringConnectionAccepter_sameAccount(t *testing.T) {
 	})
 }
 
-func TestAccNet_PeeringConnectionAccepter_importBasic(t *testing.T) {
+func TestAccNet_PeeringclientectionAccepter_importBasic(t *testing.T) {
 	resourceName := "outscale_net_peering_acceptation.peer"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -35,21 +35,21 @@ func TestAccNet_PeeringConnectionAccepter_importBasic(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleLinPeeringConnectionAccepterSameAccountConfig(oapihelpers.GetAccepterOwnerId()),
+				Config: testAccOutscaleLinPeeringclientectionAccepterSameAccountConfig(oapihelpers.GetAccepterOwnerId()),
 			},
 			testacc.ImportStep(resourceName, testacc.DefaultIgnores()...),
 		},
 	})
 }
 
-func TestAccNet_PeeringConnectionAccepter_Migration(t *testing.T) {
+func TestAccNet_PeeringclientectionAccepter_Migration(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { testacc.PreCheck(t) },
-		Steps:    testacc.FrameworkMigrationTestSteps("1.1.1", testAccOutscaleLinPeeringConnectionAccepterSameAccountConfig(oapihelpers.GetAccepterOwnerId())),
+		Steps:    testacc.FrameworkMigrationTestSteps("1.1.1", testAccOutscaleLinPeeringclientectionAccepterSameAccountConfig(oapihelpers.GetAccepterOwnerId())),
 	})
 }
 
-func testAccOutscaleLinPeeringConnectionAccepterSameAccountConfig(accountId string) string {
+func testAccOutscaleLinPeeringclientectionAccepterSameAccountConfig(accountId string) string {
 	return fmt.Sprintf(`
 	resource "outscale_net" "foo" {
 		ip_range = "10.0.0.0/16"
@@ -80,7 +80,7 @@ func testAccOutscaleLinPeeringConnectionAccepterSameAccountConfig(accountId stri
 		}
 	}
 
-	// Accepter's side of the connection.
+	// Accepter's side of the clientection.
 	resource "outscale_net_peering_acceptation" "peer" {
 		net_peering_id = outscale_net_peering.foo.id
 	}

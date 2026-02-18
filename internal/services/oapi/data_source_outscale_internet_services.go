@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -57,7 +57,7 @@ func DataSourceOutscaleInternetServices() *schema.Resource {
 }
 
 func DataSourceOutscaleInternetServicesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 	internetID, internetIDOk := d.GetOk("internet_service_ids")
@@ -67,10 +67,10 @@ func DataSourceOutscaleInternetServicesRead(d *schema.ResourceData, meta interfa
 	}
 
 	// Build up search parameters
-	params := oscgo.ReadInternetServicesRequest{
-		Filters: &oscgo.FiltersInternetService{},
+	params := osc.ReadInternetServicesRequest{
+		Filters: &osc.FiltersInternetService{},
 	}
-	filter := oscgo.FiltersInternetService{}
+	filter := osc.FiltersInternetService{}
 	if internetIDOk {
 		i := internetID.([]string)
 		in := make([]string, len(i))
@@ -87,9 +87,9 @@ func DataSourceOutscaleInternetServicesRead(d *schema.ResourceData, meta interfa
 		}
 	}
 
-	var resp oscgo.ReadInternetServicesResponse
+	var resp osc.ReadInternetServicesResponse
 	err = retry.Retry(120*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.InternetServiceApi.ReadInternetServices(context.Background()).ReadInternetServicesRequest(params).Execute()
+		rp, httpResp, err := client.InternetServiceApi.ReadInternetServices(ctx).ReadInternetServicesRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -113,8 +113,7 @@ func DataSourceOutscaleInternetServicesRead(d *schema.ResourceData, meta interfa
 	return internetServicesOAPIDescriptionAttributes(d, result)
 }
 
-func internetServicesOAPIDescriptionAttributes(d *schema.ResourceData, internetServices []oscgo.InternetService) error {
-
+func internetServicesOAPIDescriptionAttributes(d *schema.ResourceData, internetServices []osc.InternetService) error {
 	i := make([]map[string]interface{}, len(internetServices))
 	for k, v := range internetServices {
 		im := make(map[string]interface{})
@@ -129,7 +128,7 @@ func internetServicesOAPIDescriptionAttributes(d *schema.ResourceData, internetS
 			im["internet_service_id"] = v.GetInternetServiceId()
 		}
 		if v.Tags != nil {
-			im["tags"] = FlattenOAPITagsSDK(v.GetTags())
+			im["tags"] = FlattenOAPITagsSDK(v.Tags)
 		}
 		i[k] = im
 	}

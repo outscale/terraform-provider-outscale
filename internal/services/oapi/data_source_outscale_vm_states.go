@@ -1,11 +1,10 @@
 package oapi
 
 import (
-	"context"
 	"errors"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -51,7 +50,7 @@ func getOAPIVMStatesDataSourceSchema() map[string]*schema.Schema {
 }
 
 func DataSourceOutscaleVMStatesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 	instanceIds, instanceIdsOk := d.GetOk("vm_ids")
@@ -61,7 +60,7 @@ func DataSourceOutscaleVMStatesRead(d *schema.ResourceData, meta interface{}) er
 	}
 
 	var err error
-	params := oscgo.ReadVmsStateRequest{}
+	params := osc.ReadVmsStateRequest{}
 	if filtersOk {
 		params.Filters, err = buildOutscaleDataSourceVMStateFilters(filters.(*schema.Set))
 		if err != nil {
@@ -70,21 +69,20 @@ func DataSourceOutscaleVMStatesRead(d *schema.ResourceData, meta interface{}) er
 	}
 
 	if instanceIdsOk {
-		filter := oscgo.FiltersVmsState{}
+		filter := osc.FiltersVmsState{}
 		filter.SetVmIds(utils.InterfaceSliceToStringSlice(instanceIds.([]interface{})))
 		params.SetFilters(filter)
 	}
 	params.SetAllVms(d.Get("all_vms").(bool))
-	var resp oscgo.ReadVmsStateResponse
+	var resp osc.ReadVmsStateResponse
 	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.VmApi.ReadVmsState(context.Background()).ReadVmsStateRequest(params).Execute()
+		rp, httpResp, err := client.VmApi.ReadVmsState(ctx).ReadVmsStateRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}
@@ -98,7 +96,7 @@ func DataSourceOutscaleVMStatesRead(d *schema.ResourceData, meta interface{}) er
 	return statusDescriptionOAPIVMStatesAttributes(d, filteredStates)
 }
 
-func statusDescriptionOAPIVMStatesAttributes(d *schema.ResourceData, status []oscgo.VmStates) error {
+func statusDescriptionOAPIVMStatesAttributes(d *schema.ResourceData, status []osc.VmStates) error {
 	d.SetId(id.UniqueId())
 
 	states := make([]map[string]interface{}, len(status))

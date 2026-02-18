@@ -33,7 +33,7 @@ func TestAccOthers_DataSourceVirtualGateway_unattached(t *testing.T) {
 func testAccDataSourceOutscaleVirtualGatewayUnattachedConfig() string {
 	return `
 		resource "outscale_virtual_gateway" "unattached" {
-			connection_type = "ipsec.1"
+			clientection_type = "ipsec.1"
 		}
 
 		data "outscale_virtual_gateway" "test_by_id" {

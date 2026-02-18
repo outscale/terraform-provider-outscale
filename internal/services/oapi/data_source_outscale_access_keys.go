@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -73,12 +73,13 @@ func DataSourceOutscaleAccessKeys() *schema.Resource {
 }
 
 func DataSourceOutscaleAccessKeysRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
+	
 
 	filters, filtersOk := d.GetOk("filter")
 	accessKeyID, accessKeyOk := d.GetOk("access_key_ids")
 	state, stateOk := d.GetOk("states")
-	filterReq := &oscgo.FiltersAccessKeys{}
+	filterReq := &osc.FiltersAccessKeys{}
 
 	var err error
 	if filtersOk {
@@ -93,16 +94,16 @@ func DataSourceOutscaleAccessKeysRead(d *schema.ResourceData, meta interface{}) 
 	if stateOk {
 		filterReq.SetStates(utils.InterfaceSliceToStringSlice(state.([]interface{})))
 	}
-	req := oscgo.ReadAccessKeysRequest{
+	req := osc.ReadAccessKeysRequest{
 		Filters: filterReq,
 	}
 
 	if userName := d.Get("user_name").(string); userName != "" {
 		req.SetUserName(userName)
 	}
-	var resp oscgo.ReadAccessKeysResponse
+	var resp osc.ReadAccessKeysResponse
 	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.AccessKeyApi.ReadAccessKeys(context.Background()).ReadAccessKeysRequest(req).Execute()
+		rp, httpResp, err := client.AccessKeyApi.ReadAccessKeys(ctx).ReadAccessKeysRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -125,7 +126,7 @@ func DataSourceOutscaleAccessKeysRead(d *schema.ResourceData, meta interface{}) 
 	return nil
 }
 
-func flattenAccessKeys(accessKeys []oscgo.AccessKey) []map[string]interface{} {
+func flattenAccessKeys(accessKeys []osc.AccessKey) []map[string]interface{} {
 	accessKeysMap := make([]map[string]interface{}, len(accessKeys))
 
 	for i, ak := range accessKeys {

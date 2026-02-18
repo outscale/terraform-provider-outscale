@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -49,19 +49,20 @@ func DataSourceOutscaleVpcAttr() *schema.Resource {
 }
 
 func DataSourceOutscaleVpcAttrRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
+	
 
-	filters := oscgo.FiltersNet{
+	filters := osc.FiltersNet{
 		NetIds: &[]string{d.Get("net_id").(string)},
 	}
 
-	req := oscgo.ReadNetsRequest{
+	req := osc.ReadNetsRequest{
 		Filters: &filters,
 	}
 
-	var resp oscgo.ReadNetsResponse
+	var resp osc.ReadNetsResponse
 	err := retry.Retry(120*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.NetApi.ReadNets(context.Background()).ReadNetsRequest(req).Execute()
+		rp, httpResp, err := client.NetApi.ReadNets(ctx).ReadNetsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -85,5 +86,5 @@ func DataSourceOutscaleVpcAttrRead(d *schema.ResourceData, meta interface{}) err
 	d.Set("net_id", resp.GetNets()[0].GetNetId())
 	d.Set("state", resp.GetNets()[0].GetState())
 
-	return d.Set("tags", FlattenOAPITagsSDK(resp.GetNets()[0].GetTags()))
+	return d.Set("tags", FlattenOAPITagsSDK(resp.GetNets()[0].Tags))
 }

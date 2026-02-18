@@ -1,12 +1,11 @@
 package oapi
 
 import (
-	"context"
 	"fmt"
 	"strings"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -158,14 +157,15 @@ func DataSourceOutscaleSecurityGroup() *schema.Resource {
 }
 
 func DataSourceOutscaleSecurityGroupRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
-	req := oscgo.ReadSecurityGroupsRequest{}
+	client := meta.(*client.OutscaleClient).OSC
+
+	req := osc.ReadSecurityGroupsRequest{}
 
 	filters, filtersOk := d.GetOk("filter")
 	gn, gnOk := d.GetOk("security_group_name")
 	gid, gidOk := d.GetOk("security_group_id")
 
-	var filter oscgo.FiltersSecurityGroup
+	var filter osc.FiltersSecurityGroup
 	if gnOk {
 		filter.SetSecurityGroupNames([]string{gn.(string)})
 		req.SetFilters(filter)
@@ -184,9 +184,9 @@ func DataSourceOutscaleSecurityGroupRead(d *schema.ResourceData, meta interface{
 		}
 	}
 
-	var resp oscgo.ReadSecurityGroupsResponse
+	var resp osc.ReadSecurityGroupsResponse
 	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.SecurityGroupApi.ReadSecurityGroups(context.Background()).ReadSecurityGroupsRequest(req).Execute()
+		rp, httpResp, err := client.SecurityGroupApi.ReadSecurityGroups(ctx).ReadSecurityGroupsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -233,7 +233,7 @@ func DataSourceOutscaleSecurityGroupRead(d *schema.ResourceData, meta interface{
 	if err := d.Set("account_id", sg.GetAccountId()); err != nil {
 		return err
 	}
-	if err := d.Set("tags", FlattenOAPITagsSDK(sg.GetTags())); err != nil {
+	if err := d.Set("tags", FlattenOAPITagsSDK(sg.Tags)); err != nil {
 		return err
 	}
 	if err := d.Set("inbound_rules", flattenOAPISecurityGroupRule(sg.GetInboundRules())); err != nil {
@@ -242,8 +242,8 @@ func DataSourceOutscaleSecurityGroupRead(d *schema.ResourceData, meta interface{
 	return d.Set("outbound_rules", flattenOAPISecurityGroupRule(sg.GetOutboundRules()))
 }
 
-func buildOutscaleDataSourceSecurityGroupFilters(set *schema.Set) (*oscgo.FiltersSecurityGroup, error) {
-	var filters oscgo.FiltersSecurityGroup
+func buildOutscaleDataSourceSecurityGroupFilters(set *schema.Set) (*osc.FiltersSecurityGroup, error) {
+	var filters osc.FiltersSecurityGroup
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -295,7 +295,7 @@ func buildOutscaleDataSourceSecurityGroupFilters(set *schema.Set) (*oscgo.Filter
 		case "tags":
 			filters.SetTags(filterValues)
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(ctx, name)
 		}
 	}
 	return &filters, nil

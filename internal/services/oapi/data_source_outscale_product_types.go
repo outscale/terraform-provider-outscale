@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -49,9 +49,10 @@ func DataSourceOutscaleProductTypes() *schema.Resource {
 }
 
 func DataSourceOutscaleProductTypesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
+	
 
-	req := oscgo.ReadProductTypesRequest{}
+	req := osc.ReadProductTypesRequest{}
 
 	var err error
 	filters, filtersOk := d.GetOk("filter")
@@ -63,9 +64,9 @@ func DataSourceOutscaleProductTypesRead(d *schema.ResourceData, meta interface{}
 		}
 	}
 
-	var resp oscgo.ReadProductTypesResponse
+	var resp osc.ReadProductTypesResponse
 	err = retry.Retry(120*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.ProductTypeApi.ReadProductTypes(context.Background()).ReadProductTypesRequest(req).Execute()
+		rp, httpResp, err := client.ProductTypeApi.ReadProductTypes(ctx).ReadProductTypesRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}

@@ -1,11 +1,10 @@
 package oapi
 
 import (
-	"context"
 	"log"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -103,17 +102,17 @@ func DataSourceOutscaleVolumes() *schema.Resource {
 }
 
 func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 	volumeIds, volumeIdsOk := d.GetOk("volume_id")
-	params := oscgo.ReadVolumesRequest{
-		Filters: &oscgo.FiltersVolume{},
+	params := osc.ReadVolumesRequest{
+		Filters: &osc.FiltersVolume{},
 	}
 
 	if volumeIdsOk {
 		volIDs := utils.InterfaceSliceToStringSlice(volumeIds.([]interface{}))
-		filter := oscgo.FiltersVolume{}
+		filter := osc.FiltersVolume{}
 		filter.SetVolumeIds(volIDs)
 		params.SetFilters(filter)
 	}
@@ -126,9 +125,9 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	var resp oscgo.ReadVolumesResponse
+	var resp osc.ReadVolumesResponse
 	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(params).Execute()
+		rp, httpResp, err := client.VolumeApi.ReadVolumes(ctx).ReadVolumesRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -156,7 +155,7 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func getOAPIVolumes(volumes []oscgo.Volume) (res []map[string]interface{}) {
+func getOAPIVolumes(volumes []osc.Volume) (res []map[string]interface{}) {
 	for _, v := range volumes {
 		res = append(res, map[string]interface{}{
 			"creation_date":  v.CreationDate,
@@ -166,7 +165,7 @@ func getOAPIVolumes(volumes []oscgo.Volume) (res []map[string]interface{}) {
 			"snapshot_id":    v.SnapshotId,
 			"state":          v.State,
 			"subregion_name": v.SubregionName,
-			"tags":           FlattenOAPITagsSDK(v.GetTags()),
+			"tags":           FlattenOAPITagsSDK(v.Tags),
 			"volume_id":      v.VolumeId,
 			"volume_type":    v.VolumeType,
 		})
@@ -174,7 +173,7 @@ func getOAPIVolumes(volumes []oscgo.Volume) (res []map[string]interface{}) {
 	return
 }
 
-func getLinkedVolumes(linkedVolumes []oscgo.LinkedVolume) (res []map[string]interface{}) {
+func getLinkedVolumes(linkedVolumes []osc.LinkedVolume) (res []map[string]interface{}) {
 	for _, l := range linkedVolumes {
 		res = append(res, map[string]interface{}{
 			"delete_on_vm_deletion": l.DeleteOnVmDeletion,

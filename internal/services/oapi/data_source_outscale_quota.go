@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -61,8 +61,9 @@ func DataSourceOutscaleQuota() *schema.Resource {
 }
 
 func DataSourceOutscaleQuotaRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
-	req := oscgo.ReadQuotasRequest{}
+	client := meta.(*client.OutscaleClient).OSC
+
+	req := osc.ReadQuotasRequest{}
 
 	filters, filtersOk := d.GetOk("filter")
 
@@ -74,10 +75,10 @@ func DataSourceOutscaleQuotaRead(d *schema.ResourceData, meta interface{}) error
 		}
 	}
 
-	var resp oscgo.ReadQuotasResponse
+	var resp osc.ReadQuotasResponse
 	err = retry.Retry(120*time.Second, func() *retry.RetryError {
 		var err error
-		rp, httpResp, err := conn.QuotaApi.ReadQuotas(context.Background()).ReadQuotasRequest(req).Execute()
+		rp, httpResp, err := client.QuotaApi.ReadQuotas(ctx).ReadQuotasRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}

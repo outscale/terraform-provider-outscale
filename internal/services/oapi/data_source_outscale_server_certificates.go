@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
@@ -60,12 +60,12 @@ func DataSourceOutscaleServerCertificates() *schema.Resource {
 }
 
 func DataSourceOutscaleServerCertificatesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 
 	// Build up search parameters
-	params := oscgo.ReadServerCertificatesRequest{}
+	params := osc.ReadServerCertificatesRequest{}
 
 	if filtersOk {
 		filters, err := buildOutscaleOSCAPIDataSourceServerCertificateFilters(filters.(*schema.Set))
@@ -75,9 +75,9 @@ func DataSourceOutscaleServerCertificatesRead(d *schema.ResourceData, meta inter
 		params.Filters = filters
 	}
 
-	var resp oscgo.ReadServerCertificatesResponse
-	var err = retry.Retry(120*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.ServerCertificateApi.ReadServerCertificates(context.Background()).ReadServerCertificatesRequest(params).Execute()
+	var resp osc.ReadServerCertificatesResponse
+	err := retry.Retry(120*time.Second, func() *retry.RetryError {
+		rp, httpResp, err := client.ServerCertificateApi.ReadServerCertificates(ctx).ReadServerCertificatesRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -97,7 +97,7 @@ func DataSourceOutscaleServerCertificatesRead(d *schema.ResourceData, meta inter
 	return nil
 }
 
-func flattenServerCertificate(apiObject oscgo.ServerCertificate) map[string]interface{} {
+func flattenServerCertificate(apiObject osc.ServerCertificate) map[string]interface{} {
 	tfMap := map[string]interface{}{}
 	tfMap["expiration_date"] = apiObject.GetExpirationDate()
 	tfMap["id"] = apiObject.GetId()
@@ -109,7 +109,7 @@ func flattenServerCertificate(apiObject oscgo.ServerCertificate) map[string]inte
 	return tfMap
 }
 
-func flattenServerCertificates(apiObjects []oscgo.ServerCertificate) []map[string]interface{} {
+func flattenServerCertificates(apiObjects []osc.ServerCertificate) []map[string]interface{} {
 	if len(apiObjects) == 0 {
 		return nil
 	}

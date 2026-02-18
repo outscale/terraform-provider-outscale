@@ -1,10 +1,9 @@
 package oapi
 
 import (
-	"context"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -47,10 +46,10 @@ func DataSourceOutscaleTags() *schema.Resource {
 }
 
 func DataSourceOutscaleTagsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
 	// Build up search parameters
-	params := oscgo.ReadTagsRequest{}
+	params := osc.ReadTagsRequest{}
 	filters, filtersOk := d.GetOk("filter")
 
 	var err error
@@ -61,9 +60,9 @@ func DataSourceOutscaleTagsRead(d *schema.ResourceData, meta interface{}) error 
 		}
 	}
 
-	var resp oscgo.ReadTagsResponse
+	var resp osc.ReadTagsResponse
 	err = retry.Retry(60*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.TagApi.ReadTags(context.Background()).ReadTagsRequest(params).Execute()
+		rp, httpResp, err := client.TagApi.ReadTags(ctx).ReadTagsRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -74,7 +73,7 @@ func DataSourceOutscaleTagsRead(d *schema.ResourceData, meta interface{}) error 
 		return err
 	}
 
-	if err := d.Set("tags", flattenOAPITagsDescSDK(resp.GetTags())); err != nil {
+	if err := d.Set("tags", flattenOAPITagsDescSDK(resp.Tags)); err != nil {
 		return err
 	}
 	d.SetId(id.UniqueId())

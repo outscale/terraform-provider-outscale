@@ -345,7 +345,6 @@ func (r *oksProjectResource) waitForProjectState(ctx context.Context, id string,
 			}
 			return resp, string(resp.Project.Status), nil
 		},
-		Timeout: timeout,
 	})
 	if err != nil {
 		return nil, err

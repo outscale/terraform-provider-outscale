@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -61,8 +61,8 @@ func DataSourceOutscaleNetAccessPoints() *schema.Resource {
 	}
 }
 
-func buildOutscaleDataSourcesNAPFilters(set *schema.Set) (*oscgo.FiltersNetAccessPoint, error) {
-	filters := oscgo.FiltersNetAccessPoint{}
+func buildOutscaleDataSourcesNAPFilters(set *schema.Set) (*osc.FiltersNetAccessPoint, error) {
+	filters := osc.FiltersNetAccessPoint{}
 
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -87,18 +87,19 @@ func buildOutscaleDataSourcesNAPFilters(set *schema.Set) (*oscgo.FiltersNetAcces
 		case "net_access_point_ids":
 			filters.NetAccessPointIds = &filterValues
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(ctx, name)
 		}
 	}
 	return &filters, nil
 }
 
 func DataSourceOutscaleNetAccessPointsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
+	
 
 	filters, filtersOk := d.GetOk("filter")
-	req := oscgo.ReadNetAccessPointsRequest{}
-	var resp oscgo.ReadNetAccessPointsResponse
+	req := osc.ReadNetAccessPointsRequest{}
+	var resp osc.ReadNetAccessPointsResponse
 	var err error
 
 	if filtersOk {
@@ -108,8 +109,8 @@ func DataSourceOutscaleNetAccessPointsRead(d *schema.ResourceData, meta interfac
 		}
 	}
 	err = retry.Retry(30*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.NetAccessPointApi.ReadNetAccessPoints(
-			context.Background()).
+		rp, httpResp, err := client.NetAccessPointApi.ReadNetAccessPoints(
+			ctx).
 			ReadNetAccessPointsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -135,7 +136,7 @@ func DataSourceOutscaleNetAccessPointsRead(d *schema.ResourceData, meta interfac
 		n["net_id"] = v.NetId
 		n["service_name"] = v.ServiceName
 		n["state"] = v.State
-		n["tags"] = FlattenOAPITagsSDK(v.GetTags())
+		n["tags"] = FlattenOAPITagsSDK(v.Tags)
 		nap_ret[k] = n
 	}
 

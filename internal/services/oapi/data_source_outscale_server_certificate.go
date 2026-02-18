@@ -1,12 +1,11 @@
 package oapi
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -48,7 +47,7 @@ func DataSourceOutscaleServerCertificate() *schema.Resource {
 }
 
 func DataSourceOutscaleServerCertificateRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 
@@ -57,7 +56,7 @@ func DataSourceOutscaleServerCertificateRead(d *schema.ResourceData, meta interf
 	}
 
 	// Build up search parameters
-	params := oscgo.ReadServerCertificatesRequest{}
+	params := osc.ReadServerCertificatesRequest{}
 
 	if filtersOk {
 		filterParams, err := buildOutscaleOSCAPIDataSourceServerCertificateFilters(filters.(*schema.Set))
@@ -67,10 +66,10 @@ func DataSourceOutscaleServerCertificateRead(d *schema.ResourceData, meta interf
 		params.Filters = filterParams
 	}
 
-	var resp oscgo.ReadServerCertificatesResponse
+	var resp osc.ReadServerCertificatesResponse
 	err := retry.Retry(120*time.Second, func() *retry.RetryError {
 		var err error
-		rp, httpResp, err := conn.ServerCertificateApi.ReadServerCertificates(context.Background()).ReadServerCertificatesRequest(params).Execute()
+		rp, httpResp, err := client.ServerCertificateApi.ReadServerCertificates(ctx).ReadServerCertificatesRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -104,8 +103,8 @@ func DataSourceOutscaleServerCertificateRead(d *schema.ResourceData, meta interf
 	return nil
 }
 
-func buildOutscaleOSCAPIDataSourceServerCertificateFilters(set *schema.Set) (*oscgo.FiltersServerCertificate, error) {
-	var filters oscgo.FiltersServerCertificate
+func buildOutscaleOSCAPIDataSourceServerCertificateFilters(set *schema.Set) (*osc.FiltersServerCertificate, error) {
+	var filters osc.FiltersServerCertificate
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -117,7 +116,7 @@ func buildOutscaleOSCAPIDataSourceServerCertificateFilters(set *schema.Set) (*os
 		case "paths":
 			filters.SetPaths(filterValues)
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(ctx, name)
 		}
 	}
 	return &filters, nil

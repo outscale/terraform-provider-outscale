@@ -30,7 +30,7 @@ func TestAccNet_WithVirtualRoutePropagation_basic(t *testing.T) {
 func testAccOutscaleVpnRoutePropagationConfig() string {
 	return `
 		resource "outscale_virtual_gateway" "outscale_virtual_gateway" {
- connection_type = "ipsec.1"
+ clientection_type = "ipsec.1"
 }
 
 resource "outscale_net" "outscale_net" {

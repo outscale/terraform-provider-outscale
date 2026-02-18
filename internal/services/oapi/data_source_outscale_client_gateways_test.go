@@ -44,13 +44,13 @@ func testAccOutscaleClientGatewaysDatasourceConfigBasic(asn1, asn2 int) string {
 	resource "outscale_client_gateway" "foo1" {
 		bgp_asn         = %[1]d
 		public_ip       = "172.0.0.1"
-		connection_type = "ipsec.1"
+		clientection_type = "ipsec.1"
 	}
 
 	resource "outscale_client_gateway" "foo2" {
 		bgp_asn         = %[2]d
 		public_ip       = "172.0.0.1"
-		connection_type = "ipsec.1"
+		clientection_type = "ipsec.1"
 	}
 
 	data "outscale_client_gateways" "test" {
@@ -64,13 +64,13 @@ func testAccOutscaleClientGatewaysDatasourceConfigWithFilters(asn1, asn2 int) st
 	resource "outscale_client_gateway" "foo1" {
 		bgp_asn         = %[1]d
 		public_ip       = "172.0.0.1"
-		connection_type = "ipsec.1"
+		clientection_type = "ipsec.1"
 	}
 
 	resource "outscale_client_gateway" "foo2" {
 		bgp_asn         = %[2]d
 		public_ip       = "172.0.0.1"
-		connection_type = "ipsec.1"
+		clientection_type = "ipsec.1"
 	}
 
 	data "outscale_client_gateways" "test" {

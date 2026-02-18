@@ -199,9 +199,9 @@ func DataSourceOutscaleLoadBalancers() *schema.Resource {
 }
 
 func DataSourceOutscaleLoadBalancersRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
-	resp, _, err := readLbs_(conn, d, schema.TypeList)
+	resp, _, err := readLbs_(client, d, schema.TypeList)
 	if err != nil {
 		return err
 	}
@@ -237,8 +237,7 @@ func DataSourceOutscaleLoadBalancersRead(d *schema.ResourceData, meta interface{
 			}
 			l["application_sticky_cookie_policies"] = app
 		} else {
-			l["application_sticky_cookie_policies"] =
-				make([]map[string]interface{}, 0)
+			l["application_sticky_cookie_policies"] = make([]map[string]interface{}, 0)
 		}
 
 		if v.LoadBalancerStickyCookiePolicies != nil {
@@ -251,8 +250,7 @@ func DataSourceOutscaleLoadBalancersRead(d *schema.ResourceData, meta interface{
 			}
 			l["load_balancer_sticky_cookie_policies"] = vc
 		} else {
-			l["load_balancer_sticky_cookie_policies"] =
-				make([]map[string]interface{}, 0)
+			l["load_balancer_sticky_cookie_policies"] = make([]map[string]interface{}, 0)
 		}
 		if v.Tags != nil {
 			ta := make([]map[string]interface{}, len(*v.Tags))
@@ -273,7 +271,6 @@ func DataSourceOutscaleLoadBalancersRead(d *schema.ResourceData, meta interface{
 			l["source_security_group"] = flattenSource_sg(v.SourceSecurityGroup)
 		} else {
 			l["source_security_group"] = ssg
-
 		}
 		l["subnet_id"] = utils.StringSlicePtrToInterfaceSlice(v.Subnets)
 		l["public_ip"] = v.PublicIp

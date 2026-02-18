@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -15,9 +15,10 @@ import (
 )
 
 func DataSourceOutscaleOAPiKeyPairsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
-	req := oscgo.ReadKeypairsRequest{
-		Filters: &oscgo.FiltersKeypair{},
+	client := meta.(*client.OutscaleClient).OSC
+	
+	req := osc.ReadKeypairsRequest{
+		Filters: &osc.FiltersKeypair{},
 	}
 
 	// filters, filtersOk := d.GetOk("filter")
@@ -28,7 +29,7 @@ func DataSourceOutscaleOAPiKeyPairsRead(d *schema.ResourceData, meta interface{}
 		for _, v := range KeyName.([]interface{}) {
 			names = append(names, v.(string))
 		}
-		filter := oscgo.FiltersKeypair{}
+		filter := osc.FiltersKeypair{}
 		filter.SetKeypairNames(names)
 		req.SetFilters(filter)
 	}
@@ -43,11 +44,11 @@ func DataSourceOutscaleOAPiKeyPairsRead(d *schema.ResourceData, meta interface{}
 		}
 	}
 
-	var resp oscgo.ReadKeypairsResponse
+	var resp osc.ReadKeypairsResponse
 	var statusCode int
-	err = retry.RetryContext(context.Background(), ReadDefaultTimeout, func() *retry.RetryError {
+	err = retry.RetryContext(ctx, ReadDefaultTimeout, func() *retry.RetryError {
 		var err error
-		rp, httpResp, err := conn.KeypairApi.ReadKeypairs(context.Background()).ReadKeypairsRequest(req).Execute()
+		rp, httpResp, err := client.KeypairApi.ReadKeypairs(ctx).ReadKeypairsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -85,7 +86,7 @@ func DataSourceOutscaleOAPiKeyPairsRead(d *schema.ResourceData, meta interface{}
 			keypair["keypair_type"] = v.GetKeypairType()
 		}
 		if v.HasTags() {
-			keypair["tags"] = FlattenOAPITagsSDK(v.GetTags())
+			keypair["tags"] = FlattenOAPITagsSDK(v.Tags)
 		}
 		keypairs[k] = keypair
 	}

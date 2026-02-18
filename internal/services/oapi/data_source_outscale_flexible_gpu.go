@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -56,7 +56,8 @@ func DataSourceOutscaleFlexibleGpu() *schema.Resource {
 }
 
 func DataSourceOutscaleFlexibleGpuRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
+	
 
 	filters, filtersOk := d.GetOk("filter")
 	flexID, IDOk := d.GetOk("flexible_gpu_id")
@@ -66,9 +67,9 @@ func DataSourceOutscaleFlexibleGpuRead(d *schema.ResourceData, meta interface{})
 	}
 
 	var err error
-	req := oscgo.ReadFlexibleGpusRequest{}
+	req := osc.ReadFlexibleGpusRequest{}
 
-	req.Filters = &oscgo.FiltersFlexibleGpu{
+	req.Filters = &osc.FiltersFlexibleGpu{
 		FlexibleGpuIds: &[]string{flexID.(string)},
 	}
 
@@ -79,11 +80,11 @@ func DataSourceOutscaleFlexibleGpuRead(d *schema.ResourceData, meta interface{})
 		}
 	}
 
-	var resp oscgo.ReadFlexibleGpusResponse
+	var resp osc.ReadFlexibleGpusResponse
 
 	err = retry.Retry(30*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.FlexibleGpuApi.ReadFlexibleGpus(
-			context.Background()).ReadFlexibleGpusRequest(req).Execute()
+		rp, httpResp, err := client.FlexibleGpuApi.ReadFlexibleGpus(
+			ctx).ReadFlexibleGpusRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -128,8 +129,8 @@ func DataSourceOutscaleFlexibleGpuRead(d *schema.ResourceData, meta interface{})
 	return nil
 }
 
-func buildOutscaleDataSourceFlexibleGpuFilters(set *schema.Set) (*oscgo.FiltersFlexibleGpu, error) {
-	var filters oscgo.FiltersFlexibleGpu
+func buildOutscaleDataSourceFlexibleGpuFilters(set *schema.Set) (*osc.FiltersFlexibleGpu, error) {
+	var filters osc.FiltersFlexibleGpu
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -153,7 +154,7 @@ func buildOutscaleDataSourceFlexibleGpuFilters(set *schema.Set) (*oscgo.FiltersF
 		case "vm_ids":
 			filters.SetVmIds(filterValues)
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(ctx, name)
 		}
 	}
 	return &filters, nil

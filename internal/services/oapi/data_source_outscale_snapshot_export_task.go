@@ -7,7 +7,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
@@ -81,12 +80,13 @@ func DataSourceOutscaleSnapshotExportTask() *schema.Resource {
 }
 
 func dataSourceOAPISnapshotExportTaskRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
+	
 
 	filters, filtersOk := d.GetOk("filter")
 
 	var err error
-	filtersReq := &oscgo.FiltersExportTask{}
+	filtersReq := &osc.FiltersExportTask{}
 	if filtersOk {
 		filtersReq, err = buildOutscaleOSCAPIDataSourceSnapshotExportTaskFilters(filters.(*schema.Set))
 		if err != nil {
@@ -94,10 +94,10 @@ func dataSourceOAPISnapshotExportTaskRead(d *schema.ResourceData, meta interface
 		}
 	}
 
-	var resp oscgo.ReadSnapshotExportTasksResponse
+	var resp osc.ReadSnapshotExportTasksResponse
 	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.SnapshotApi.ReadSnapshotExportTasks(context.Background()).
-			ReadSnapshotExportTasksRequest(oscgo.ReadSnapshotExportTasksRequest{
+		rp, httpResp, err := client.SnapshotApi.ReadSnapshotExportTasks(ctx).
+			ReadSnapshotExportTasksRequest(osc.ReadSnapshotExportTasksRequest{
 				Filters: filtersReq,
 			}).Execute()
 		if err != nil {
@@ -142,7 +142,7 @@ func dataSourceOAPISnapshotExportTaskRead(d *schema.ResourceData, meta interface
 	if err = d.Set("osu_export", exp); err != nil {
 		return err
 	}
-	if err = d.Set("tags", FlattenOAPITagsSDK(v.GetTags())); err != nil {
+	if err = d.Set("tags", FlattenOAPITagsSDK(v.Tags)); err != nil {
 		return err
 	}
 
@@ -151,8 +151,8 @@ func dataSourceOAPISnapshotExportTaskRead(d *schema.ResourceData, meta interface
 	return nil
 }
 
-func buildOutscaleOSCAPIDataSourceSnapshotExportTaskFilters(set *schema.Set) (*oscgo.FiltersExportTask, error) {
-	var filters oscgo.FiltersExportTask
+func buildOutscaleOSCAPIDataSourceSnapshotExportTaskFilters(set *schema.Set) (*osc.FiltersExportTask, error) {
+	var filters osc.FiltersExportTask
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -164,7 +164,7 @@ func buildOutscaleOSCAPIDataSourceSnapshotExportTaskFilters(set *schema.Set) (*o
 		case "task_ids":
 			filters.TaskIds = &filterValues
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(ctx, name)
 		}
 	}
 	return &filters, nil

@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
+	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -31,7 +32,7 @@ func WaitForResource[T any](ctx context.Context, conf *retry.StateChangeConf) (*
 	return resp, nil
 }
 
-func CheckDiags[T *resource.CreateResponse | *resource.UpdateResponse | *resource.DeleteResponse | *resource.ReadResponse | *resource.ModifyPlanResponse | *resource.ImportStateResponse | *datasource.ReadResponse | *resource.ValidateConfigResponse | *ephemeral.OpenResponse](resp T, diags diag.Diagnostics) bool {
+func CheckDiags[T *resource.CreateResponse | *resource.UpdateResponse | *resource.DeleteResponse | *resource.ReadResponse | *resource.ModifyPlanResponse | *resource.ImportStateResponse | *datasource.ReadResponse | *resource.ValidateConfigResponse | *ephemeral.OpenResponse | *provider.ConfigureResponse](resp T, diags diag.Diagnostics) bool {
 	switch r := any(resp).(type) {
 	case *resource.DeleteResponse:
 		r.Diagnostics.Append(diags...)
@@ -55,6 +56,9 @@ func CheckDiags[T *resource.CreateResponse | *resource.UpdateResponse | *resourc
 		r.Diagnostics.Append(diags...)
 		return r.Diagnostics.HasError()
 	case *datasource.ValidateConfigResponse:
+		r.Diagnostics.Append(diags...)
+		return r.Diagnostics.HasError()
+	case *provider.ConfigureResponse:
 		r.Diagnostics.Append(diags...)
 		return r.Diagnostics.HasError()
 	default:

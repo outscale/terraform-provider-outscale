@@ -1,11 +1,10 @@
 package oapi
 
 import (
-	"context"
 	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -62,7 +61,7 @@ func DataSourceOutscaleNatService() *schema.Resource {
 }
 
 func DataSourceOutscaleNatServiceRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 	natGatewayID, natGatewayIDOK := d.GetOk("nat_service_id")
@@ -72,7 +71,7 @@ func DataSourceOutscaleNatServiceRead(d *schema.ResourceData, meta interface{}) 
 	}
 
 	var err error
-	params := oscgo.ReadNatServicesRequest{}
+	params := osc.ReadNatServicesRequest{}
 
 	if filtersOk {
 		params.Filters, err = buildOutscaleNatServiceDataSourceFilters(filters.(*schema.Set))
@@ -81,14 +80,14 @@ func DataSourceOutscaleNatServiceRead(d *schema.ResourceData, meta interface{}) 
 		}
 	}
 	if natGatewayIDOK && natGatewayID.(string) != "" {
-		filter := oscgo.FiltersNatService{}
+		filter := osc.FiltersNatService{}
 		filter.SetNatServiceIds([]string{natGatewayID.(string)})
 		params.SetFilters(filter)
 	}
 
-	var resp oscgo.ReadNatServicesResponse
+	var resp osc.ReadNatServicesResponse
 	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.NatServiceApi.ReadNatServices(context.Background()).ReadNatServicesRequest(params).Execute()
+		rp, httpResp, err := client.NatServiceApi.ReadNatServices(ctx).ReadNatServicesRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -113,7 +112,7 @@ func DataSourceOutscaleNatServiceRead(d *schema.ResourceData, meta interface{}) 
 }
 
 // populate the numerous fields that the image description returns.
-func ngOAPIDescriptionAttributes(d *schema.ResourceData, ng oscgo.NatService) error {
+func ngOAPIDescriptionAttributes(d *schema.ResourceData, ng osc.NatService) error {
 	d.SetId(ng.GetNatServiceId())
 
 	if err := d.Set("nat_service_id", ng.GetNatServiceId()); err != nil {
@@ -151,15 +150,15 @@ func ngOAPIDescriptionAttributes(d *schema.ResourceData, ng oscgo.NatService) er
 	if err := d.Set("public_ips", addresses); err != nil {
 		return err
 	}
-	if err := d.Set("tags", FlattenOAPITagsSDK(ng.GetTags())); err != nil {
+	if err := d.Set("tags", FlattenOAPITagsSDK(ng.Tags)); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func buildOutscaleNatServiceDataSourceFilters(set *schema.Set) (*oscgo.FiltersNatService, error) {
-	var filters oscgo.FiltersNatService
+func buildOutscaleNatServiceDataSourceFilters(set *schema.Set) (*osc.FiltersNatService, error) {
+	var filters osc.FiltersNatService
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -183,7 +182,7 @@ func buildOutscaleNatServiceDataSourceFilters(set *schema.Set) (*oscgo.FiltersNa
 		case "tags":
 			filters.SetTags(filterValues)
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(ctx, name)
 		}
 	}
 	return &filters, nil

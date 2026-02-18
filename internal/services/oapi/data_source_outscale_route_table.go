@@ -1,16 +1,14 @@
 package oapi
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"time"
 
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 	"github.com/spf13/cast"
-
-	oscgo "github.com/outscale/osc-sdk-go/v2"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -132,7 +130,7 @@ func DataSourceOutscaleRouteTable() *schema.Resource {
 	}
 }
 
-func setOSCAPIRoutes(rt []oscgo.Route) []map[string]interface{} {
+func setOSCAPIRoutes(rt []osc.Route) []map[string]interface{} {
 	route := make([]map[string]interface{}, len(rt))
 	if len(rt) > 0 {
 		for k, r := range rt {
@@ -179,7 +177,7 @@ func setOSCAPIRoutes(rt []oscgo.Route) []map[string]interface{} {
 	return route
 }
 
-func setOSCAPILinkRouteTables(rt []oscgo.LinkRouteTable) []map[string]interface{} {
+func setOSCAPILinkRouteTables(rt []osc.LinkRouteTable) []map[string]interface{} {
 	linkRouteTables := make([]map[string]interface{}, len(rt))
 	log.Printf("[DEBUG] LinkRouteTable: %#v", rt)
 	if len(rt) > 0 {
@@ -204,7 +202,7 @@ func setOSCAPILinkRouteTables(rt []oscgo.LinkRouteTable) []map[string]interface{
 	return linkRouteTables
 }
 
-func setOSCAPIPropagatingVirtualGateways(vg []oscgo.RoutePropagatingVirtualGateway) (propagatingVGWs []map[string]interface{}) {
+func setOSCAPIPropagatingVirtualGateways(vg []osc.RoutePropagatingVirtualGateway) (propagatingVGWs []map[string]interface{}) {
 	propagatingVGWs = make([]map[string]interface{}, len(vg))
 
 	if len(vg) > 0 {
@@ -220,7 +218,8 @@ func setOSCAPIPropagatingVirtualGateways(vg []oscgo.RoutePropagatingVirtualGatew
 }
 
 func DataSourceOutscaleRouteTableRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
+
 	routeTableID, routeTableIDOk := d.GetOk("route_table_id")
 	filter, filterOk := d.GetOk("filter")
 
@@ -228,9 +227,9 @@ func DataSourceOutscaleRouteTableRead(d *schema.ResourceData, meta interface{}) 
 		return fmt.Errorf("one of route_table_id or filters must be assigned")
 	}
 
-	params := oscgo.ReadRouteTablesRequest{}
+	params := osc.ReadRouteTablesRequest{}
 	if routeTableIDOk {
-		params.Filters = &oscgo.FiltersRouteTable{
+		params.Filters = &osc.FiltersRouteTable{
 			RouteTableIds: &[]string{routeTableID.(string)},
 		}
 	}
@@ -243,9 +242,9 @@ func DataSourceOutscaleRouteTableRead(d *schema.ResourceData, meta interface{}) 
 		}
 	}
 
-	var resp oscgo.ReadRouteTablesResponse
+	var resp osc.ReadRouteTablesResponse
 	err = retry.Retry(60*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(params).Execute()
+		rp, httpResp, err := client.RouteTableApi.ReadRouteTables(ctx).ReadRouteTablesRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -274,7 +273,7 @@ func DataSourceOutscaleRouteTableRead(d *schema.ResourceData, meta interface{}) 
 	if err := d.Set("net_id", rt.GetNetId()); err != nil {
 		return err
 	}
-	if err := d.Set("tags", FlattenOAPITagsSDK(rt.GetTags())); err != nil {
+	if err := d.Set("tags", FlattenOAPITagsSDK(rt.Tags)); err != nil {
 		return err
 	}
 	if err := d.Set("routes", setOSCAPIRoutes(rt.GetRoutes())); err != nil {
@@ -286,8 +285,8 @@ func DataSourceOutscaleRouteTableRead(d *schema.ResourceData, meta interface{}) 
 	return d.Set("link_route_tables", setOSCAPILinkRouteTables(rt.GetLinkRouteTables()))
 }
 
-func buildOutscaleDataSourceRouteTableFilters(set *schema.Set) (*oscgo.FiltersRouteTable, error) {
-	var filters oscgo.FiltersRouteTable
+func buildOutscaleDataSourceRouteTableFilters(set *schema.Set) (*osc.FiltersRouteTable, error) {
+	var filters osc.FiltersRouteTable
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -330,7 +329,7 @@ func buildOutscaleDataSourceRouteTableFilters(set *schema.Set) (*oscgo.FiltersRo
 		case "route_vm_ids":
 			filters.SetRouteVmIds(filterValues)
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(ctx, name)
 		}
 	}
 	return &filters, nil

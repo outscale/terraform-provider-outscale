@@ -1,11 +1,10 @@
 package oapi
 
 import (
-	"context"
 	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -23,7 +22,7 @@ func DataSourceOutscaleLBUTags() *schema.Resource {
 }
 
 func DataSourceOutscaleLBUTagsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
 	ename, nameOk := d.GetOk("load_balancer_names")
 	if !nameOk {
@@ -32,23 +31,21 @@ func DataSourceOutscaleLBUTagsRead(d *schema.ResourceData, meta interface{}) err
 
 	names := ename.([]interface{})
 
-	req := oscgo.ReadLoadBalancerTagsRequest{
+	req := osc.ReadLoadBalancerTagsRequest{
 		LoadBalancerNames: utils.InterfaceSliceToStringSlice(names),
 	}
 
-	var resp oscgo.ReadLoadBalancerTagsResponse
-	var err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.LoadBalancerApi.ReadLoadBalancerTags(
-			context.Background()).
+	var resp osc.ReadLoadBalancerTagsResponse
+	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
+		rp, httpResp, err := client.LoadBalancerApi.ReadLoadBalancerTags(
+			ctx).
 			ReadLoadBalancerTagsRequest(req).Execute()
-
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}

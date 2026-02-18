@@ -1,12 +1,11 @@
 package oapi
 
 import (
-	"context"
 	"fmt"
 	"strings"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -96,12 +95,12 @@ func DataSourceOutscaleImageExportTasks() *schema.Resource {
 }
 
 func dataSourceOAPIImageExportTasksRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 
 	var err error
-	var req oscgo.ReadImageExportTasksRequest
+	var req osc.ReadImageExportTasksRequest
 	if filtersOk {
 		req.Filters, err = buildOutscaleOSCAPIDataSourceImageExportTaskFilters(filters.(*schema.Set))
 		if err != nil {
@@ -109,9 +108,9 @@ func dataSourceOAPIImageExportTasksRead(d *schema.ResourceData, meta interface{}
 		}
 	}
 
-	var resp oscgo.ReadImageExportTasksResponse
+	var resp osc.ReadImageExportTasksResponse
 	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.ImageApi.ReadImageExportTasks(context.Background()).
+		rp, httpResp, err := client.ImageApi.ReadImageExportTasks(ctx).
 			ReadImageExportTasksRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -153,7 +152,7 @@ func dataSourceOAPIImageExportTasksRead(d *schema.ResourceData, meta interface{}
 		snapshot["image_id"] = v.GetImageId()
 		snapshot["osu_export"] = exp
 
-		snapshot["tags"] = FlattenOAPITagsSDK(v.GetTags())
+		snapshot["tags"] = FlattenOAPITagsSDK(v.Tags)
 
 		snapshots[k] = snapshot
 	}

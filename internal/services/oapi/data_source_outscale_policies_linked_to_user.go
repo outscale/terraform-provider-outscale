@@ -1,13 +1,12 @@
 package oapi
 
 import (
-	"context"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
@@ -53,12 +52,13 @@ func DataSourcePoliciesLinkedToUser() *schema.Resource {
 }
 
 func DataSourcePoliciesLinkedToUserRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
-	req := oscgo.NewReadLinkedPoliciesRequest(d.Get("user_name").(string))
-	var resp oscgo.ReadLinkedPoliciesResponse
+	client := meta.(*client.OutscaleClient).OSC
+
+	req := osc.NewReadLinkedPoliciesRequest(d.Get("user_name").(string))
+	var resp osc.ReadLinkedPoliciesResponse
 
 	err := retry.Retry(2*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.PolicyApi.ReadLinkedPolicies(context.Background()).ReadLinkedPoliciesRequest(*req).Execute()
+		rp, httpResp, err := client.PolicyApi.ReadLinkedPolicies(ctx).ReadLinkedPoliciesRequest(*req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}

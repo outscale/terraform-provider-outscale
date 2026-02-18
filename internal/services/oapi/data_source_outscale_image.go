@@ -1,11 +1,10 @@
 package oapi
 
 import (
-	"context"
 	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -210,7 +209,7 @@ func DataSourceOutscaleImage() *schema.Resource {
 }
 
 func DataSourceOutscaleImageRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 	executableUsers, executableUsersOk := d.GetOk("permission")
@@ -221,7 +220,7 @@ func DataSourceOutscaleImageRead(d *schema.ResourceData, meta interface{}) error
 	}
 
 	var err error
-	filtersReq := &oscgo.FiltersImage{}
+	filtersReq := &osc.FiltersImage{}
 	if filtersOk {
 		filtersReq, err = buildOutscaleDataSourceImagesFilters(filters.(*schema.Set))
 		if err != nil {
@@ -238,11 +237,11 @@ func DataSourceOutscaleImageRead(d *schema.ResourceData, meta interface{}) error
 		filtersReq.SetPermissionsToLaunchAccountIds(utils.InterfaceSliceToStringSlice(executableUsers.([]interface{})))
 	}
 
-	req := oscgo.ReadImagesRequest{Filters: filtersReq}
+	req := osc.ReadImagesRequest{Filters: filtersReq}
 
-	var resp oscgo.ReadImagesResponse
+	var resp osc.ReadImagesResponse
 	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(req).Execute()
+		rp, httpResp, err := client.ImageApi.ReadImages(ctx).ReadImagesRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -270,7 +269,7 @@ func DataSourceOutscaleImageRead(d *schema.ResourceData, meta interface{}) error
 			return err
 		}
 
-		if err := set("boot_modes", lo.Map(image.GetBootModes(), func(b oscgo.BootMode, _ int) string { return string(b) })); err != nil {
+		if err := set("boot_modes", lo.Map(image.GetBootModes(), func(b osc.BootMode, _ int) string { return string(b) })); err != nil {
 			return err
 		}
 		if err := set("secure_boot", image.GetSecureBoot()); err != nil {
@@ -322,7 +321,7 @@ func DataSourceOutscaleImageRead(d *schema.ResourceData, meta interface{}) error
 		if err := set("permissions_to_launch", omiOAPIPermissionToLuch(image.PermissionsToLaunch)); err != nil {
 			return err
 		}
-		if err := set("tags", FlattenOAPITagsSDK(image.GetTags())); err != nil {
+		if err := set("tags", FlattenOAPITagsSDK(image.Tags)); err != nil {
 			return err
 		}
 
@@ -330,7 +329,7 @@ func DataSourceOutscaleImageRead(d *schema.ResourceData, meta interface{}) error
 	})
 }
 
-func omiOAPIPermissionToLuch(p *oscgo.PermissionsOnResource) (res []map[string]interface{}) {
+func omiOAPIPermissionToLuch(p *osc.PermissionsOnResource) (res []map[string]interface{}) {
 	for _, v := range *p.AccountIds {
 		res = append(res, map[string]interface{}{
 			"account_id":        v,

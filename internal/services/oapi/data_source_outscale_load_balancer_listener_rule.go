@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -65,11 +63,12 @@ func DataSourceOutscaleLoadBalancerLDRule() *schema.Resource {
 }
 
 func DataSourceOutscaleLoadBalancerLDRuleRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
+	
 
 	lrNamei, nameOk := d.GetOk("listener_rule_name")
 	filters, filtersOk := d.GetOk("filter")
-	filter := &oscgo.FiltersListenerRule{}
+	filter := &osc.FiltersListenerRule{}
 
 	if !nameOk && !filtersOk {
 		return fmt.Errorf("listener_rule_name must be assigned")
@@ -94,23 +93,23 @@ func DataSourceOutscaleLoadBalancerLDRuleRead(d *schema.ResourceData, meta inter
 			case "listener_rule_names":
 				filter.ListenerRuleNames = &filterValues
 			default:
-				return utils.UnknownDataSourceFilterError(context.Background(), name)
+				return utils.UnknownDataSourceFilterError(ctx, name)
 			}
 		}
 	} else {
-		filter = &oscgo.FiltersListenerRule{
+		filter = &osc.FiltersListenerRule{
 			ListenerRuleNames: &[]string{lrNamei.(string)},
 		}
 	}
 
-	req := oscgo.ReadListenerRulesRequest{
+	req := osc.ReadListenerRulesRequest{
 		Filters: filter,
 	}
 
-	var resp oscgo.ReadListenerRulesResponse
-	var err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.ListenerApi.ReadListenerRules(
-			context.Background()).
+	var resp osc.ReadListenerRulesResponse
+	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
+		rp, httpResp, err := client.ListenerApi.ReadListenerRules(
+			ctx).
 			ReadListenerRulesRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -120,7 +119,6 @@ func DataSourceOutscaleLoadBalancerLDRuleRead(d *schema.ResourceData, meta inter
 	})
 
 	if err != nil {
-		return err
 	}
 
 	if len(*resp.ListenerRules) < 1 {

@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -85,7 +85,8 @@ func getVMStateAttrsSchema() map[string]*schema.Schema {
 }
 
 func DataSourceOutscaleVMStateRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
+	
 
 	filters, filtersOk := d.GetOk("filter")
 	instanceID, instanceIDOk := d.GetOk("vm_id")
@@ -95,7 +96,7 @@ func DataSourceOutscaleVMStateRead(d *schema.ResourceData, meta interface{}) err
 	}
 
 	var err error
-	params := oscgo.ReadVmsStateRequest{}
+	params := osc.ReadVmsStateRequest{}
 	if filtersOk {
 		params.Filters, err = buildOutscaleDataSourceVMStateFilters(filters.(*schema.Set))
 		if err != nil {
@@ -104,15 +105,15 @@ func DataSourceOutscaleVMStateRead(d *schema.ResourceData, meta interface{}) err
 	}
 
 	if instanceIDOk {
-		filter := oscgo.FiltersVmsState{}
+		filter := osc.FiltersVmsState{}
 		filter.SetVmIds([]string{instanceID.(string)})
 		params.SetFilters(filter)
 	}
 	params.SetAllVms(d.Get("all_vms").(bool))
 
-	var resp oscgo.ReadVmsStateResponse
+	var resp osc.ReadVmsStateResponse
 	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.VmApi.ReadVmsState(context.Background()).ReadVmsStateRequest(params).Execute()
+		rp, httpResp, err := client.VmApi.ReadVmsState(ctx).ReadVmsStateRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -125,7 +126,7 @@ func DataSourceOutscaleVMStateRead(d *schema.ResourceData, meta interface{}) err
 
 	filteredStates := resp.GetVmStates()[:]
 
-	var state oscgo.VmStates
+	var state osc.VmStates
 	if len(filteredStates) < 1 {
 		return ErrNoResults
 	}
@@ -140,7 +141,7 @@ func DataSourceOutscaleVMStateRead(d *schema.ResourceData, meta interface{}) err
 	return vmStateDataAttrSetter(d, &state)
 }
 
-func vmStateDataAttrSetter(d *schema.ResourceData, status *oscgo.VmStates) error {
+func vmStateDataAttrSetter(d *schema.ResourceData, status *osc.VmStates) error {
 	setterFunc := func(key string, value interface{}) error {
 		return d.Set(key, value)
 	}
@@ -148,7 +149,7 @@ func vmStateDataAttrSetter(d *schema.ResourceData, status *oscgo.VmStates) error
 	return statusDescriptionOAPIVMStateAttributes(setterFunc, status)
 }
 
-func statusDescriptionOAPIVMStateAttributes(set AttributeSetter, status *oscgo.VmStates) error {
+func statusDescriptionOAPIVMStateAttributes(set AttributeSetter, status *osc.VmStates) error {
 	if err := set("subregion_name", status.GetSubregionName()); err != nil {
 		return err
 	}
@@ -165,7 +166,7 @@ func statusDescriptionOAPIVMStateAttributes(set AttributeSetter, status *oscgo.V
 	return nil
 }
 
-func statusSetOAPIVMState(status []oscgo.MaintenanceEvent) []map[string]interface{} {
+func statusSetOAPIVMState(status []osc.MaintenanceEvent) []map[string]interface{} {
 	s := make([]map[string]interface{}, len(status))
 	for k, v := range status {
 		s[k] = map[string]interface{}{
@@ -179,8 +180,8 @@ func statusSetOAPIVMState(status []oscgo.MaintenanceEvent) []map[string]interfac
 	return s
 }
 
-func buildOutscaleDataSourceVMStateFilters(set *schema.Set) (*oscgo.FiltersVmsState, error) {
-	var filters oscgo.FiltersVmsState
+func buildOutscaleDataSourceVMStateFilters(set *schema.Set) (*osc.FiltersVmsState, error) {
+	var filters osc.FiltersVmsState
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -205,7 +206,7 @@ func buildOutscaleDataSourceVMStateFilters(set *schema.Set) (*oscgo.FiltersVmsSt
 			filters.SetVmStates(filterValues)
 
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(ctx, name)
 		}
 	}
 	return &filters, nil

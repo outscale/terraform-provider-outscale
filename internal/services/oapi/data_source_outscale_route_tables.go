@@ -1,11 +1,10 @@
 package oapi
 
 import (
-	"context"
 	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -143,15 +142,16 @@ func DataSourceOutscaleRouteTables() *schema.Resource {
 }
 
 func DataSourceOutscaleRouteTablesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
+
 	rtbID, rtbOk := d.GetOk("route_table_id")
 	filter, filterOk := d.GetOk("filter")
 	if !filterOk && !rtbOk {
 		return fmt.Errorf("one of route_table_id or filters must be assigned")
 	}
 
-	params := oscgo.ReadRouteTablesRequest{
-		Filters: &oscgo.FiltersRouteTable{},
+	params := osc.ReadRouteTablesRequest{
+		Filters: &osc.FiltersRouteTable{},
 	}
 
 	if rtbOk {
@@ -160,7 +160,7 @@ func DataSourceOutscaleRouteTablesRead(d *schema.ResourceData, meta interface{})
 		for k, v := range i {
 			in[k] = v.(string)
 		}
-		filter := oscgo.FiltersRouteTable{}
+		filter := osc.FiltersRouteTable{}
 		filter.SetRouteTableIds(in)
 		params.SetFilters(filter)
 	}
@@ -173,9 +173,9 @@ func DataSourceOutscaleRouteTablesRead(d *schema.ResourceData, meta interface{})
 		}
 	}
 
-	var resp oscgo.ReadRouteTablesResponse
+	var resp osc.ReadRouteTablesResponse
 	err = retry.Retry(60*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(params).Execute()
+		rp, httpResp, err := client.RouteTableApi.ReadRouteTables(ctx).ReadRouteTablesRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -201,7 +201,7 @@ func DataSourceOutscaleRouteTablesRead(d *schema.ResourceData, meta interface{})
 		routeTable["route_propagating_virtual_gateways"] = setOSCAPIPropagatingVirtualGateways(v.GetRoutePropagatingVirtualGateways())
 		routeTable["route_table_id"] = v.GetRouteTableId()
 		routeTable["net_id"] = v.GetNetId()
-		routeTable["tags"] = FlattenOAPITagsSDK(v.GetTags())
+		routeTable["tags"] = FlattenOAPITagsSDK(v.Tags)
 		routeTable["routes"] = setOSCAPIRoutes(v.GetRoutes())
 		routeTable["link_route_tables"] = setOSCAPILinkRouteTables(v.GetLinkRouteTables())
 		routeTables[k] = routeTable

@@ -1,13 +1,12 @@
 package oapi
 
 import (
-	"context"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 	"github.com/spf13/cast"
@@ -53,12 +52,12 @@ func DataSourceOutscaleSubregions() *schema.Resource {
 }
 
 func DataSourceOutscaleSubregionsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 
 	var err error
-	filtersReq := &oscgo.FiltersSubregion{}
+	filtersReq := &osc.FiltersSubregion{}
 	if filtersOk {
 		filtersReq, err = buildOutscaleDataSourceSubregionsFilters(filters.(*schema.Set))
 		if err != nil {
@@ -66,18 +65,17 @@ func DataSourceOutscaleSubregionsRead(d *schema.ResourceData, meta interface{}) 
 		}
 	}
 
-	req := oscgo.ReadSubregionsRequest{Filters: filtersReq}
+	req := osc.ReadSubregionsRequest{Filters: filtersReq}
 
-	var resp oscgo.ReadSubregionsResponse
+	var resp osc.ReadSubregionsResponse
 	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.SubregionApi.ReadSubregions(context.Background()).ReadSubregionsRequest(req).Execute()
+		rp, httpResp, err := client.SubregionApi.ReadSubregions(ctx).ReadSubregionsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}
@@ -101,8 +99,8 @@ func DataSourceOutscaleSubregionsRead(d *schema.ResourceData, meta interface{}) 
 	})
 }
 
-func buildOutscaleDataSourceSubregionsFilters(set *schema.Set) (*oscgo.FiltersSubregion, error) {
-	filters := &oscgo.FiltersSubregion{}
+func buildOutscaleDataSourceSubregionsFilters(set *schema.Set) (*osc.FiltersSubregion, error) {
+	filters := &osc.FiltersSubregion{}
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -119,7 +117,7 @@ func buildOutscaleDataSourceSubregionsFilters(set *schema.Set) (*oscgo.FiltersSu
 		case "region_names":
 			filters.SetRegionNames(filterValues)
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(ctx, name)
 		}
 	}
 	return filters, nil

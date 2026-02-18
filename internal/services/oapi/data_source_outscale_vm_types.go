@@ -1,13 +1,12 @@
 package oapi
 
 import (
-	"context"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 	"github.com/spf13/cast"
@@ -64,11 +63,11 @@ func DataSourceOutscaleVMTypes() *schema.Resource {
 }
 
 func DataSourceOutscaleVMTypesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
 	filter, filterOk := d.GetOk("filter")
 
-	var req oscgo.ReadVmTypesRequest
+	var req osc.ReadVmTypesRequest
 	var err error
 	if filterOk {
 		req.Filters, err = buildOutscaleDataSourceVMTypesFilters(filter.(*schema.Set))
@@ -77,17 +76,16 @@ func DataSourceOutscaleVMTypesRead(d *schema.ResourceData, meta interface{}) err
 		}
 	}
 
-	var resp oscgo.ReadVmTypesResponse
+	var resp osc.ReadVmTypesResponse
 	err = retry.Retry(30*time.Second, func() *retry.RetryError {
 		var err error
-		rp, httpResp, err := conn.VmApi.ReadVmTypes(context.Background()).ReadVmTypesRequest(req).Execute()
+		rp, httpResp, err := client.VmApi.ReadVmTypes(ctx).ReadVmTypesRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}
@@ -99,11 +97,9 @@ func DataSourceOutscaleVMTypesRead(d *schema.ResourceData, meta interface{}) err
 	}
 
 	return statusDescriptionOAPIVMTypesAttributes(d, filteredTypes)
-
 }
 
-func setOAPIVMTypeAttributes(set AttributeSetter, vType *oscgo.VmType) error {
-
+func setOAPIVMTypeAttributes(set AttributeSetter, vType *osc.VmType) error {
 	if err := set("bsu_optimized", vType.GetBsuOptimized()); err != nil {
 		return err
 	}
@@ -129,7 +125,7 @@ func setOAPIVMTypeAttributes(set AttributeSetter, vType *oscgo.VmType) error {
 	return nil
 }
 
-func statusDescriptionOAPIVMTypesAttributes(d *schema.ResourceData, fTypes []oscgo.VmType) error {
+func statusDescriptionOAPIVMTypesAttributes(d *schema.ResourceData, fTypes []osc.VmType) error {
 	d.SetId(id.UniqueId())
 
 	vTypes := make([]map[string]interface{}, len(fTypes))
@@ -150,11 +146,10 @@ func statusDescriptionOAPIVMTypesAttributes(d *schema.ResourceData, fTypes []osc
 	}
 
 	return d.Set("vm_types", vTypes)
-
 }
 
-func buildOutscaleDataSourceVMTypesFilters(set *schema.Set) (*oscgo.FiltersVmType, error) {
-	var filters oscgo.FiltersVmType
+func buildOutscaleDataSourceVMTypesFilters(set *schema.Set) (*osc.FiltersVmType, error) {
+	var filters osc.FiltersVmType
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -182,7 +177,7 @@ func buildOutscaleDataSourceVMTypesFilters(set *schema.Set) (*oscgo.FiltersVmTyp
 		case "volume_sizes":
 			filters.SetVolumeSizes(utils.StringSliceToInt32Slice(filterValues))
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(ctx, name)
 		}
 	}
 	return &filters, nil

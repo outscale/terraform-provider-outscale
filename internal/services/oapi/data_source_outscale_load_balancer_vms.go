@@ -29,10 +29,11 @@ func DataSourceOutscaleLoadBalancerVms() *schema.Resource {
 }
 
 func DataSourceOutscaleLoadBalancerVmsRead(d *schema.ResourceData,
-	meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	meta interface{},
+) error {
+	client := meta.(*client.OutscaleClient).OSC
 
-	lb, _, err := readLbs0(conn, d)
+	lb, _, err := readLbs0(client, d)
 	if err != nil {
 		return err
 	}

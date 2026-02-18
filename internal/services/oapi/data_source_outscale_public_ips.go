@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -71,9 +70,10 @@ func oapiGetPublicIPSDataSourceSchema() map[string]*schema.Schema {
 }
 
 func DataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
+	
 
-	req := oscgo.ReadPublicIpsRequest{}
+	req := osc.ReadPublicIpsRequest{}
 
 	filters, filtersOk := d.GetOk("filter")
 
@@ -85,11 +85,11 @@ func DataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{}) e
 		}
 	}
 
-	var resp oscgo.ReadPublicIpsResponse
+	var resp osc.ReadPublicIpsResponse
 	var statusCode int
 	err = retry.Retry(60*time.Second, func() *retry.RetryError {
 		var err error
-		rp, httpResp, err := conn.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
+		rp, httpResp, err := client.PublicIpApi.ReadPublicIps(ctx).ReadPublicIpsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -97,7 +97,6 @@ func DataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{}) e
 		statusCode = httpResp.StatusCode
 		return nil
 	})
-
 	if err != nil {
 		if statusCode == http.StatusNotFound {
 			d.SetId("")
@@ -126,7 +125,7 @@ func DataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{}) e
 		add["nic_account_id"] = v.NicAccountId
 		add["private_ip"] = v.PrivateIp
 		add["public_ip"] = v.PublicIp
-		add["tags"] = FlattenOAPITagsSDK(v.GetTags())
+		add["tags"] = FlattenOAPITagsSDK(v.Tags)
 		address[k] = add
 	}
 

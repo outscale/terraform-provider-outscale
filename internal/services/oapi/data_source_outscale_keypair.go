@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -14,14 +14,15 @@ import (
 )
 
 func DataSourceOutscaleKeyPairRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
-	req := oscgo.ReadKeypairsRequest{
-		Filters: &oscgo.FiltersKeypair{KeypairNames: &[]string{d.Id()}},
+	client := meta.(*client.OutscaleClient).OSC
+
+	req := osc.ReadKeypairsRequest{
+		Filters: &osc.FiltersKeypair{KeypairNames: &[]string{d.Id()}},
 	}
 
 	KeyName, KeyNameisOk := d.GetOk("keypair_name")
 	if KeyNameisOk {
-		filter := oscgo.FiltersKeypair{}
+		filter := osc.FiltersKeypair{}
 		filter.SetKeypairNames([]string{KeyName.(string)})
 		req.SetFilters(filter)
 	}
@@ -36,10 +37,10 @@ func DataSourceOutscaleKeyPairRead(d *schema.ResourceData, meta interface{}) err
 		}
 	}
 
-	var resp oscgo.ReadKeypairsResponse
+	var resp osc.ReadKeypairsResponse
 	var statusCode int
-	err = retry.RetryContext(context.Background(), ReadDefaultTimeout, func() *retry.RetryError {
-		rp, httpResp, err := conn.KeypairApi.ReadKeypairs(context.Background()).ReadKeypairsRequest(req).Execute()
+	err = retry.RetryContext(ctx, ReadDefaultTimeout, func() *retry.RetryError {
+		rp, httpResp, err := client.KeypairApi.ReadKeypairs(ctx).ReadKeypairsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -75,7 +76,7 @@ func DataSourceOutscaleKeyPairRead(d *schema.ResourceData, meta interface{}) err
 	if err := d.Set("keypair_id", keypair.GetKeypairId()); err != nil {
 		return err
 	}
-	if err := d.Set("tags", FlattenOAPITagsSDK(keypair.GetTags())); err != nil {
+	if err := d.Set("tags", FlattenOAPITagsSDK(keypair.Tags)); err != nil {
 		return err
 	}
 	d.SetId(keypair.GetKeypairId())
@@ -115,8 +116,8 @@ func DataSourceOutscaleKeyPair() *schema.Resource {
 	}
 }
 
-func buildOutscaleKeyPairsDataSourceFilters(set *schema.Set) (*oscgo.FiltersKeypair, error) {
-	var filters oscgo.FiltersKeypair
+func buildOutscaleKeyPairsDataSourceFilters(set *schema.Set) (*osc.FiltersKeypair, error) {
+	var filters osc.FiltersKeypair
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -140,7 +141,7 @@ func buildOutscaleKeyPairsDataSourceFilters(set *schema.Set) (*oscgo.FiltersKeyp
 		case "tags":
 			filters.SetTags(filterValues)
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(ctx, name)
 		}
 	}
 	return &filters, nil

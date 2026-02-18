@@ -13,12 +13,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	"github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 var (
@@ -36,7 +35,7 @@ type apiAccessPolicyModel struct {
 }
 
 type resourceApiAccessPolicy struct {
-	Client *osc.APIClient
+	Client *osc.Client
 }
 
 func NewResourceApiAccessPolicy() resource.Resource {
@@ -51,12 +50,12 @@ func (r *resourceApiAccessPolicy) Configure(_ context.Context, req resource.Conf
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected *osc.APIClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *osc.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
 	}
-	r.Client = client.OSCAPI
+	r.Client = client.OSC
 }
 
 func (r *resourceApiAccessPolicy) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -123,13 +122,7 @@ func (r *resourceApiAccessPolicy) Create(ctx context.Context, req resource.Creat
 		RequireTrustedEnv:             data.RequireTrustedEnv.ValueBool(),
 	}
 
-	err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
-		_, httpResp, err := r.Client.ApiAccessPolicyApi.UpdateApiAccessPolicy(ctx).UpdateApiAccessPolicyRequest(createReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	_, err := r.Client.UpdateApiAccessPolicy(ctx, createReq, options.WithRetryTimeout(createTimeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to modify Api Access Policy",
@@ -192,19 +185,13 @@ func (r *resourceApiAccessPolicy) Update(ctx context.Context, req resource.Updat
 	updateReq := osc.UpdateApiAccessPolicyRequest{}
 
 	if fwhelpers.HasChange(planData.MaxAccessKeyExpirationSeconds, stateData.MaxAccessKeyExpirationSeconds) {
-		updateReq.SetMaxAccessKeyExpirationSeconds(planData.MaxAccessKeyExpirationSeconds.ValueInt64())
+		updateReq.MaxAccessKeyExpirationSeconds = planData.MaxAccessKeyExpirationSeconds.ValueInt64()
 	}
 	if fwhelpers.HasChange(planData.RequireTrustedEnv, stateData.RequireTrustedEnv) {
-		updateReq.SetRequireTrustedEnv(planData.RequireTrustedEnv.ValueBool())
+		updateReq.RequireTrustedEnv = planData.RequireTrustedEnv.ValueBool()
 	}
 
-	err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		_, httpResp, err := r.Client.ApiAccessPolicyApi.UpdateApiAccessPolicy(ctx).UpdateApiAccessPolicyRequest(updateReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	_, err := r.Client.UpdateApiAccessPolicy(ctx, updateReq, options.WithRetryTimeout(timeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to update Api Access Policy",
@@ -235,20 +222,13 @@ func (r *resourceApiAccessPolicy) read(ctx context.Context, timeout time.Duratio
 	req := osc.ReadApiAccessPolicyRequest{}
 
 	var resp osc.ReadApiAccessPolicyResponse
-	err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.ApiAccessPolicyApi.ReadApiAccessPolicy(ctx).ReadApiAccessPolicyRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	_, err := r.Client.ReadApiAccessPolicy(ctx, req, options.WithRetryTimeout(timeout))
 	if err != nil {
 		return data, err
 	}
 
 	data.RequestId = to.String(resp.ResponseContext.RequestId)
-	policy := resp.GetApiAccessPolicy()
+	policy := resp.ApiAccessPolicy
 
 	data.MaxAccessKeyExpirationSeconds = to.Int64(policy.MaxAccessKeyExpirationSeconds)
 	data.RequireTrustedEnv = to.Bool(policy.RequireTrustedEnv)

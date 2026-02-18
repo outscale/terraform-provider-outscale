@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -40,9 +40,9 @@ func DataSourceOutscaleProductType() *schema.Resource {
 }
 
 func DataSourceOutscaleProductTypeRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
-	req := oscgo.ReadProductTypesRequest{}
+	req := osc.ReadProductTypesRequest{}
 
 	filters, filtersOk := d.GetOk("filter")
 
@@ -54,17 +54,16 @@ func DataSourceOutscaleProductTypeRead(d *schema.ResourceData, meta interface{})
 		}
 	}
 
-	var resp oscgo.ReadProductTypesResponse
+	var resp osc.ReadProductTypesResponse
 	err = retry.Retry(120*time.Second, func() *retry.RetryError {
 		var err error
-		rp, httpResp, err := conn.ProductTypeApi.ReadProductTypes(context.Background()).ReadProductTypesRequest(req).Execute()
+		rp, httpResp, err := client.ProductTypeApi.ReadProductTypes(ctx).ReadProductTypesRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		errString := err.Error()
 		return fmt.Errorf("error reading producttype (%s)", errString)
@@ -94,8 +93,8 @@ func DataSourceOutscaleProductTypeRead(d *schema.ResourceData, meta interface{})
 	return nil
 }
 
-func buildOutscaleProductTypeDataSourceFilters(set *schema.Set) (*oscgo.FiltersProductType, error) {
-	var filters oscgo.FiltersProductType
+func buildOutscaleProductTypeDataSourceFilters(set *schema.Set) (*osc.FiltersProductType, error) {
+	var filters osc.FiltersProductType
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -107,7 +106,7 @@ func buildOutscaleProductTypeDataSourceFilters(set *schema.Set) (*oscgo.FiltersP
 		case "product_type_ids":
 			filters.ProductTypeIds = &filterValues
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(ctx, name)
 		}
 	}
 	return &filters, nil

@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -19,7 +19,7 @@ func DataSourceOutscaleSnapshot() *schema.Resource {
 		Read: DataSourceOutscaleSnapshotRead,
 
 		Schema: map[string]*schema.Schema{
-			//selection criteria
+			// selection criteria
 			"filter": dataSourceFiltersSchema(),
 			"permissions_to_create_volume": {
 				Type:     schema.TypeList,
@@ -39,7 +39,7 @@ func DataSourceOutscaleSnapshot() *schema.Resource {
 				},
 			},
 
-			//Computed values returned
+			// Computed values returned
 			"progress": {
 				Type:     schema.TypeInt,
 				Computed: true,
@@ -88,7 +88,8 @@ func DataSourceOutscaleSnapshot() *schema.Resource {
 }
 
 func DataSourceOutscaleSnapshotRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
+	
 
 	restorableUsers, restorableUsersOk := d.GetOk("permission_to_create_volume")
 	filters, filtersOk := d.GetOk("filter")
@@ -99,12 +100,12 @@ func DataSourceOutscaleSnapshotRead(d *schema.ResourceData, meta interface{}) er
 		return fmt.Errorf("one of snapshot_ids, filters, restorable_by_user_ids, or owners must be assigned")
 	}
 
-	params := oscgo.ReadSnapshotsRequest{
-		Filters: &oscgo.FiltersSnapshot{},
+	params := osc.ReadSnapshotsRequest{
+		Filters: &osc.FiltersSnapshot{},
 	}
 
 	var err error
-	filter := oscgo.FiltersSnapshot{}
+	filter := osc.FiltersSnapshot{}
 	if restorableUsersOk {
 		filter.SetPermissionsToCreateVolumeAccountIds(utils.InterfaceSliceToStringSlice(restorableUsers.([]interface{})))
 		params.SetFilters(filter)
@@ -122,9 +123,9 @@ func DataSourceOutscaleSnapshotRead(d *schema.ResourceData, meta interface{}) er
 		params.Filters.SetSnapshotIds([]string{snapshotIds.(string)})
 	}
 
-	var resp oscgo.ReadSnapshotsResponse
+	var resp osc.ReadSnapshotsResponse
 	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.SnapshotApi.ReadSnapshots(context.Background()).ReadSnapshotsRequest(params).Execute()
+		rp, httpResp, err := client.SnapshotApi.ReadSnapshots(ctx).ReadSnapshotsRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -144,11 +145,11 @@ func DataSourceOutscaleSnapshotRead(d *schema.ResourceData, meta interface{}) er
 
 	snapshot := resp.GetSnapshots()[0]
 
-	//Single Snapshot found so set to state
+	// Single Snapshot found so set to state
 	return snapshotOAPIDescriptionAttributes(d, &snapshot)
 }
 
-func snapshotOAPIDescriptionAttributes(d *schema.ResourceData, snapshot *oscgo.Snapshot) error {
+func snapshotOAPIDescriptionAttributes(d *schema.ResourceData, snapshot *osc.Snapshot) error {
 	d.SetId(snapshot.GetSnapshotId())
 	if err := d.Set("description", snapshot.GetDescription()); err != nil {
 		return err
@@ -187,11 +188,11 @@ func snapshotOAPIDescriptionAttributes(d *schema.ResourceData, snapshot *oscgo.S
 		return err
 	}
 
-	return d.Set("tags", FlattenOAPITagsSDK(snapshot.GetTags()))
+	return d.Set("tags", FlattenOAPITagsSDK(snapshot.Tags))
 }
 
-func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set) (*oscgo.FiltersSnapshot, error) {
-	var filter oscgo.FiltersSnapshot
+func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set) (*osc.FiltersSnapshot, error) {
+	var filter osc.FiltersSnapshot
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var values []string
@@ -258,7 +259,7 @@ func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set) (*oscgo.Filter
 			filter.SetVolumeSizes(utils.StringSliceToInt32Slice(values))
 
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(ctx, name)
 		}
 	}
 	return &filter, nil

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -69,9 +69,9 @@ func DataSourceOutscaleQuotas() *schema.Resource {
 }
 
 func DataSourceOutscaleQuotasRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
-	req := oscgo.ReadQuotasRequest{}
+	req := osc.ReadQuotasRequest{}
 
 	filters, filtersOk := d.GetOk("filter")
 
@@ -83,9 +83,9 @@ func DataSourceOutscaleQuotasRead(d *schema.ResourceData, meta interface{}) erro
 		}
 	}
 
-	var resp oscgo.ReadQuotasResponse
+	var resp osc.ReadQuotasResponse
 	err = retry.Retry(120*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.QuotaApi.ReadQuotas(context.Background()).ReadQuotasRequest(req).Execute()
+		rp, httpResp, err := client.QuotaApi.ReadQuotas(ctx).ReadQuotasRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -147,8 +147,8 @@ func DataSourceOutscaleQuotasRead(d *schema.ResourceData, meta interface{}) erro
 	return nil
 }
 
-func buildOutscaleQuotaDataSourceFilters(set *schema.Set) (*oscgo.FiltersQuota, error) {
-	var filters oscgo.FiltersQuota
+func buildOutscaleQuotaDataSourceFilters(set *schema.Set) (*osc.FiltersQuota, error) {
+	var filters osc.FiltersQuota
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -166,7 +166,7 @@ func buildOutscaleQuotaDataSourceFilters(set *schema.Set) (*oscgo.FiltersQuota, 
 		case "short_descriptions":
 			filters.ShortDescriptions = &filterValues
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(ctx, name)
 		}
 	}
 	return &filters, nil

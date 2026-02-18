@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 	"github.com/spf13/cast"
@@ -62,7 +62,8 @@ func DataSourceOutscaleDHCPOption() *schema.Resource {
 }
 
 func DataSourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
+	
 
 	filters, filtersOk := d.GetOk("filter")
 	dhcpID, dhcpIDOk := d.GetOk("dhcp_options_set_id")
@@ -70,9 +71,9 @@ func DataSourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) 
 		return fmt.Errorf("one of filters, or dhcp_options_set_id must be provided")
 	}
 
-	params := oscgo.ReadDhcpOptionsRequest{}
+	params := osc.ReadDhcpOptionsRequest{}
 	if dhcpIDOk {
-		params.Filters = &oscgo.FiltersDhcpOptions{
+		params.Filters = &osc.FiltersDhcpOptions{
 			DhcpOptionsSetIds: &[]string{dhcpID.(string)},
 		}
 	}
@@ -84,9 +85,9 @@ func DataSourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) 
 		params.Filters = filterParams
 	}
 
-	var resp oscgo.ReadDhcpOptionsResponse
+	var resp osc.ReadDhcpOptionsResponse
 	err := retry.Retry(120*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.DhcpOptionApi.ReadDhcpOptions(context.Background()).ReadDhcpOptionsRequest(params).Execute()
+		rp, httpResp, err := client.DhcpOptionApi.ReadDhcpOptions(ctx).ReadDhcpOptionsRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -125,7 +126,7 @@ func DataSourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) 
 	if err := d.Set("dhcp_options_set_id", dhcpOption.GetDhcpOptionsSetId()); err != nil {
 		return err
 	}
-	if err := d.Set("tags", FlattenOAPITagsSDK(dhcpOption.GetTags())); err != nil {
+	if err := d.Set("tags", FlattenOAPITagsSDK(dhcpOption.Tags)); err != nil {
 		return err
 	}
 
@@ -134,8 +135,8 @@ func DataSourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) 
 	return nil
 }
 
-func buildOutscaleDataSourceDHCPOptionFilters(set *schema.Set) (*oscgo.FiltersDhcpOptions, error) {
-	var filters oscgo.FiltersDhcpOptions
+func buildOutscaleDataSourceDHCPOptionFilters(set *schema.Set) (*osc.FiltersDhcpOptions, error) {
+	var filters osc.FiltersDhcpOptions
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -165,7 +166,7 @@ func buildOutscaleDataSourceDHCPOptionFilters(set *schema.Set) (*oscgo.FiltersDh
 		case "default":
 			filters.SetDefault(cast.ToBool(filterValues[0]))
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(ctx, name)
 		}
 	}
 	return &filters, nil

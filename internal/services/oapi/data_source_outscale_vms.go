@@ -1,7 +1,6 @@
 package oapi
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"time"
@@ -9,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/services/oapi/oapihelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
@@ -75,7 +74,7 @@ func DataSourceOutscaleVMSRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	// Build up search parameters
-	params := oscgo.ReadVmsRequest{}
+	params := osc.ReadVmsRequest{}
 	if filtersOk {
 		params.Filters, err = buildOutscaleDataSourceVMFilters(filters.(*schema.Set))
 		if err != nil {
@@ -86,9 +85,9 @@ func DataSourceOutscaleVMSRead(d *schema.ResourceData, meta interface{}) error {
 		params.Filters.VmIds = &[]string{vmID.(string)}
 	}
 
-	var resp oscgo.ReadVmsResponse
+	var resp osc.ReadVmsResponse
 	err = retry.Retry(30*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := client.VmApi.ReadVms(context.Background()).ReadVmsRequest(params).Execute()
+		rp, httpResp, err := client.VmApi.ReadVms(ctx).ReadVmsRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -104,7 +103,7 @@ func DataSourceOutscaleVMSRead(d *schema.ResourceData, meta interface{}) error {
 		return ErrNoResults
 	}
 
-	var filteredVms []oscgo.Vm
+	var filteredVms []osc.Vm
 
 	// loop through reservations, and remove terminated instances, populate vm slice
 	for _, res := range resp.GetVms() {
@@ -121,7 +120,7 @@ func DataSourceOutscaleVMSRead(d *schema.ResourceData, meta interface{}) error {
 	return d.Set("vms", dataSourceOAPIVMS(filteredVms, client))
 }
 
-func dataSourceOAPIVMS(i []oscgo.Vm, conn *oscgo.APIClient) []map[string]interface{} {
+func dataSourceOAPIVMS(i []osc.Vm, client *osc.Client) []map[string]interface{} {
 	vms := make([]map[string]interface{}, len(i))
 	for index, v := range i {
 		vm := make(map[string]interface{})
@@ -134,10 +133,10 @@ func dataSourceOAPIVMS(i []oscgo.Vm, conn *oscgo.APIClient) []map[string]interfa
 		if err := oapiVMDescriptionAttributes(setterFunc, &v); err != nil {
 			log.Fatalf("[DEBUG] oapiVMDescriptionAttributes ERROR %+v", err)
 		}
-		mapsTags, _ := oapihelpers.GetBsuTagsMaps(v, conn)
+		mapsTags, _ := oapihelpers.GetBsuTagsMaps(v, client)
 		vm["block_device_mappings_created"] = getOscAPIVMBlockDeviceMapping(mapsTags, v.GetBlockDeviceMappings())
 
-		vm["tags"] = FlattenOAPITagsSDK(v.GetTags())
+		vm["tags"] = FlattenOAPITagsSDK(v.Tags)
 		vms[index] = vm
 	}
 	return vms

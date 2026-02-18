@@ -1,11 +1,10 @@
 package oapi
 
 import (
-	"context"
 	"fmt"
 	"time"
 
-	"github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/services/oapi/oapihelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
@@ -224,7 +223,7 @@ func getDSOAPINicsSchema() map[string]*schema.Schema {
 
 // Read Nic
 func DataSourceOutscaleNicsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 
@@ -239,7 +238,7 @@ func DataSourceOutscaleNicsRead(d *schema.ResourceData, meta interface{}) error 
 
 	var resp osc.ReadNicsResponse
 	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(params).Execute()
+		rp, httpResp, err := client.NicApi.ReadNics(ctx).ReadNicsRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -285,7 +284,7 @@ func getVMNetworkInterfaceSet(nics []osc.Nic) (res []map[string]interface{}) {
 			"state":                  nic.GetState(),
 			"subnet_id":              nic.GetSubnetId(),
 			"subregion_name":         nic.GetSubregionName(),
-			"tags":                   FlattenOAPITagsSDK(nic.GetTags()),
+			"tags":                   FlattenOAPITagsSDK(nic.Tags),
 		}
 		if _, ok := nic.GetLinkNicOk(); ok {
 			r["link_nic"] = oapihelpers.GetOAPILinkNic(nic.GetLinkNic())

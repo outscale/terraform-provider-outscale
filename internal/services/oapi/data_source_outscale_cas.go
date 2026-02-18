@@ -1,14 +1,13 @@
 package oapi
 
 import (
-	"context"
 	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
@@ -47,10 +46,10 @@ func DataSourceOutscaleCas() *schema.Resource {
 }
 
 func DataSourceOutscaleCasRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
-	params := oscgo.ReadCasRequest{}
+	params := osc.ReadCasRequest{}
 
 	var err error
 	if filtersOk {
@@ -60,16 +59,15 @@ func DataSourceOutscaleCasRead(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	var resp oscgo.ReadCasResponse
+	var resp osc.ReadCasResponse
 	err = retry.Retry(120*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.CaApi.ReadCas(context.Background()).ReadCasRequest(params).Execute()
+		rp, httpResp, err := client.CaApi.ReadCas(ctx).ReadCasRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		return fmt.Errorf("error reading certificate authority id (%s)", utils.GetErrorResponse(err))
 	}

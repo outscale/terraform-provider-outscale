@@ -102,8 +102,8 @@ func (d *oksQuotasDataSource) Read(ctx context.Context, req datasource.ReadReque
 
 	data.KubeVersions = kubeVer
 	data.Projects = types.Int32Value(int32(quotas.Quotas.Projects))
-	data.RequestId = types.StringValue(quotas.ResponseContext.RequestId)
-	data.Id = types.StringValue(id.UniqueId())
+	data.RequestId = to.String(quotas.ResponseContext.RequestId)
+	data.Id = to.String(id.UniqueId())
 
 	if resp.Diagnostics.HasError() {
 		return

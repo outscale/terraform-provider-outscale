@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
@@ -101,23 +101,23 @@ func DataSourceEntitiesLinkedToPolicy() *schema.Resource {
 }
 
 func DataSourceEntitiesLinkedToPoliciesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
+	
 	orn := d.Get("policy_orn").(string)
-	req := oscgo.ReadEntitiesLinkedToPolicyRequest{PolicyOrn: orn}
+	req := osc.ReadEntitiesLinkedToPolicyRequest{PolicyOrn: orn}
 	if entities := utils.SetToStringSlice(d.Get("entities_type").(*schema.Set)); len(entities) > 0 {
 		req.SetEntitiesType(entities)
 	}
 
-	var resp oscgo.ReadEntitiesLinkedToPolicyResponse
+	var resp osc.ReadEntitiesLinkedToPolicyResponse
 	err := retry.Retry(2*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.PolicyApi.ReadEntitiesLinkedToPolicy(context.Background()).ReadEntitiesLinkedToPolicyRequest(req).Execute()
+		rp, httpResp, err := client.PolicyApi.ReadEntitiesLinkedToPolicy(ctx).ReadEntitiesLinkedToPolicyRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}

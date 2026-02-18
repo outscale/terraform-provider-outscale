@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -27,7 +27,7 @@ func DataSourceOutscaleClientGateway() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"connection_type": {
+			"clientection_type": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -49,7 +49,7 @@ func DataSourceOutscaleClientGateway() *schema.Resource {
 }
 
 func DataSourceOutscaleClientGatewayRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 	clientGatewayID, clientGatewayOk := d.GetOk("client_gateway_id")
@@ -58,10 +58,10 @@ func DataSourceOutscaleClientGatewayRead(d *schema.ResourceData, meta interface{
 		return fmt.Errorf("one of filters, or client_gateway_id must be assigned")
 	}
 
-	params := oscgo.ReadClientGatewaysRequest{}
+	params := osc.ReadClientGatewaysRequest{}
 
 	if clientGatewayOk {
-		params.Filters = &oscgo.FiltersClientGateway{
+		params.Filters = &osc.FiltersClientGateway{
 			ClientGatewayIds: &[]string{clientGatewayID.(string)},
 		}
 	}
@@ -74,9 +74,9 @@ func DataSourceOutscaleClientGatewayRead(d *schema.ResourceData, meta interface{
 		params.Filters = filterParams
 	}
 
-	var resp oscgo.ReadClientGatewaysResponse
+	var resp osc.ReadClientGatewaysResponse
 	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.ClientGatewayApi.ReadClientGateways(context.Background()).ReadClientGatewaysRequest(params).Execute()
+		rp, httpResp, err := client.ClientGatewayApi.ReadClientGateways(ctx).ReadClientGatewaysRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -103,7 +103,7 @@ func DataSourceOutscaleClientGatewayRead(d *schema.ResourceData, meta interface{
 	if err := d.Set("client_gateway_id", clientGateway.GetClientGatewayId()); err != nil {
 		return err
 	}
-	if err := d.Set("connection_type", clientGateway.GetConnectionType()); err != nil {
+	if err := d.Set("clientection_type", clientGateway.GetclientectionType()); err != nil {
 		return err
 	}
 	if err := d.Set("public_ip", clientGateway.GetPublicIp()); err != nil {
@@ -112,7 +112,7 @@ func DataSourceOutscaleClientGatewayRead(d *schema.ResourceData, meta interface{
 	if err := d.Set("state", clientGateway.GetState()); err != nil {
 		return err
 	}
-	if err := d.Set("tags", FlattenOAPITagsSDK(clientGateway.GetTags())); err != nil {
+	if err := d.Set("tags", FlattenOAPITagsSDK(clientGateway.Tags)); err != nil {
 		return err
 	}
 
@@ -121,8 +121,8 @@ func DataSourceOutscaleClientGatewayRead(d *schema.ResourceData, meta interface{
 	return nil
 }
 
-func buildOutscaleDataSourceClientGatewayFilters(set *schema.Set) (*oscgo.FiltersClientGateway, error) {
-	var filters oscgo.FiltersClientGateway
+func buildOutscaleDataSourceClientGatewayFilters(set *schema.Set) (*osc.FiltersClientGateway, error) {
+	var filters osc.FiltersClientGateway
 	for _, v := range set.List() {
 		log.Printf("[DEBUG] gateway filters %+v", v)
 		m := v.(map[string]interface{})
@@ -136,8 +136,8 @@ func buildOutscaleDataSourceClientGatewayFilters(set *schema.Set) (*oscgo.Filter
 			filters.SetBgpAsns(utils.StringSliceToInt32Slice(filterValues))
 		case "client_gateway_ids":
 			filters.SetClientGatewayIds(filterValues)
-		case "connection_types":
-			filters.SetConnectionTypes(filterValues)
+		case "clientection_types":
+			filters.SetclientectionTypes(filterValues)
 		case "public_ips":
 			filters.SetPublicIps(filterValues)
 		case "states":
@@ -149,7 +149,7 @@ func buildOutscaleDataSourceClientGatewayFilters(set *schema.Set) (*oscgo.Filter
 		case "tags":
 			filters.SetTags(filterValues)
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(ctx, name)
 		}
 	}
 	return &filters, nil

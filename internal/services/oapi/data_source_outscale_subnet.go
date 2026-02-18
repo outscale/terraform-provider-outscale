@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -58,12 +58,12 @@ func DataSourceOutscaleSubnet() *schema.Resource {
 }
 
 func DataSourceOutscaleSubnetRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
-	req := oscgo.ReadSubnetsRequest{}
+	req := osc.ReadSubnetsRequest{}
 
 	if id := d.Get("subnet_id"); id != "" {
-		req.Filters = &oscgo.FiltersSubnet{SubnetIds: &[]string{id.(string)}}
+		req.Filters = &osc.FiltersSubnet{SubnetIds: &[]string{id.(string)}}
 	}
 
 	filters, filtersOk := d.GetOk("filter")
@@ -76,10 +76,10 @@ func DataSourceOutscaleSubnetRead(d *schema.ResourceData, meta interface{}) erro
 		}
 	}
 
-	var resp oscgo.ReadSubnetsResponse
+	var resp osc.ReadSubnetsResponse
 	err = retry.Retry(120*time.Second, func() *retry.RetryError {
 		var err error
-		rp, httpResp, err := conn.SubnetApi.ReadSubnets(context.Background()).ReadSubnetsRequest(req).Execute()
+		rp, httpResp, err := client.SubnetApi.ReadSubnets(ctx).ReadSubnetsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -120,7 +120,7 @@ func DataSourceOutscaleSubnetRead(d *schema.ResourceData, meta interface{}) erro
 	if err := d.Set("map_public_ip_on_launch", subnet.GetMapPublicIpOnLaunch()); err != nil {
 		return err
 	}
-	if err := d.Set("tags", FlattenOAPITagsSDK(subnet.GetTags())); err != nil {
+	if err := d.Set("tags", FlattenOAPITagsSDK(subnet.Tags)); err != nil {
 		return err
 	}
 	if err := d.Set("available_ips_count", subnet.GetAvailableIpsCount()); err != nil {
@@ -130,8 +130,8 @@ func DataSourceOutscaleSubnetRead(d *schema.ResourceData, meta interface{}) erro
 	return nil
 }
 
-func buildOutscaleSubnetDataSourceFilters(set *schema.Set) (*oscgo.FiltersSubnet, error) {
-	var filters oscgo.FiltersSubnet
+func buildOutscaleSubnetDataSourceFilters(set *schema.Set) (*osc.FiltersSubnet, error) {
+	var filters osc.FiltersSubnet
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -160,7 +160,7 @@ func buildOutscaleSubnetDataSourceFilters(set *schema.Set) (*oscgo.FiltersSubnet
 			filters.SetTags(filterValues)
 
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(ctx, name)
 		}
 	}
 	return &filters, nil

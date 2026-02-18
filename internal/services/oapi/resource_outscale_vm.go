@@ -1,7 +1,6 @@
 package oapi
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -15,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/services/oapi/oapihelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
@@ -755,7 +754,7 @@ func ResourceOutscaleVM() *schema.Resource {
 }
 
 func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
 	vmOpts, bsuMapsTags, err := buildCreateVmsRequest(d)
 	if err != nil {
@@ -768,15 +767,15 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 	vmStateTarget := []string{"running"}
 	if vState == "stopped" {
 		vmStateTarget[0] = "stopped"
-		vmOpts.BootOnCreation = oscgo.PtrBool(false)
+		vmOpts.BootOnCreation = osc.PtrBool(false)
 	}
 
 	timeout := d.Timeout(schema.TimeoutCreate)
 
 	// Create the vm
-	var resp oscgo.CreateVmsResponse
+	var resp osc.CreateVmsResponse
 	err = retry.Retry(timeout, func() *retry.RetryError {
-		rp, httpResp, err := conn.VmApi.CreateVms(context.Background()).CreateVmsRequest(vmOpts).Execute()
+		rp, httpResp, err := client.VmApi.CreateVms(ctx).CreateVmsRequest(vmOpts).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -797,7 +796,7 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 
 	if get_psswd := d.Get("get_admin_password").(bool); get_psswd {
 		psswd_err := retry.Retry(timeout, func() *retry.RetryError {
-			psswd, err := getOAPIVMAdminPassword(vm.GetVmId(), conn, timeout)
+			psswd, err := getOAPIVMAdminPassword(vm.GetVmId(), client, timeout)
 			if err != nil || len(psswd) < 1 {
 				return retry.RetryableError(errors.New("timeout awaiting windows password"))
 			}
@@ -809,24 +808,21 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if bsuMapsTags != nil {
-		err := createBsuTags(conn, vm, bsuMapsTags)
+		err := createBsuTags(client, vm, bsuMapsTags)
 		if err != nil {
 			return err
 		}
 	}
 
-	err = createOAPITagsSDK(conn, d)
+	err = createOAPITagsSDK(client, d)
 	if err != nil {
 		return err
 	}
 
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{"pending", "ending/wait"},
-		Target:     vmStateTarget,
-		Refresh:    vmStateRefreshFunc(conn, vm.GetVmId(), "terminated", timeout),
-		Timeout:    timeout,
-		Delay:      15 * time.Second,
-		MinTimeout: 3 * time.Second,
+		Pending: []string{"pending", "ending/wait"},
+		Target:  vmStateTarget,
+		Refresh: vmStateRefreshFunc(client, vm.GetVmId(), "terminated", timeout),
 	}
 
 	_, err = stateConf.WaitForState()
@@ -835,39 +831,39 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 			"error waiting for instance (%s) to become created: %s", d.Id(), err)
 	}
 
-	// Initialize the connection info
+	// Initialize the clientection info
 	if vm.HasPublicIp() {
-		d.SetConnInfo(map[string]string{
+		d.SetclientInfo(map[string]string{
 			"type": "ssh",
 			"host": vm.GetPublicIp(),
 		})
 	} else if vm.HasPrivateIp() {
-		d.SetConnInfo(map[string]string{
+		d.SetclientInfo(map[string]string{
 			"type": "ssh",
 			"host": vm.GetPrivateIp(),
 		})
 	}
 
 	if v, exist := d.GetOkExists("is_source_dest_checked"); exist {
-		opts := oscgo.UpdateVmRequest{
+		opts := osc.UpdateVmRequest{
 			VmId: vm.GetVmId(),
 		}
 		opts.SetIsSourceDestChecked(v.(bool))
-		if err := updateVmAttr(conn, timeout, opts); err != nil {
+		if err := updateVmAttr(client, timeout, opts); err != nil {
 			return err
 		}
 	}
 	return resourceOAPIVMRead(d, meta)
 }
 
-func createBsuTags(client *oscgo.APIClient, vm oscgo.Vm, bsuMapsTags []map[string]interface{}) error {
+func createBsuTags(client *osc.Client, vm osc.Vm, bsuMapsTags []map[string]interface{}) error {
 	for _, tMaps := range bsuMapsTags {
 		for dName, tagsSchema := range tMaps {
 			set := tagsSchema.(*schema.Set)
 			tags := expandOAPITagsSDK(set)
 			id := oapihelpers.GetBsuId(vm, dName)
 
-			err := createOAPITags(context.Background(), client, tags, id)
+			err := createOAPITags(ctx, client, tags, id)
 			if err != nil {
 				return fmt.Errorf("unable to create tags: %s", err)
 			}
@@ -876,11 +872,11 @@ func createBsuTags(client *oscgo.APIClient, vm oscgo.Vm, bsuMapsTags []map[strin
 	return nil
 }
 
-func updateBsuTags(client *oscgo.APIClient, d *schema.ResourceData, addTags map[string]interface{}, delTags map[string]interface{}, timeout time.Duration) error {
-	var resp oscgo.ReadVmsResponse
+func updateBsuTags(client *osc.Client, d *schema.ResourceData, addTags map[string]interface{}, delTags map[string]interface{}, timeout time.Duration) error {
+	var resp osc.ReadVmsResponse
 	err := retry.Retry(timeout, func() *retry.RetryError {
-		rp, httpResp, err := client.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
-			Filters: &oscgo.FiltersVm{
+		rp, httpResp, err := client.VmApi.ReadVms(ctx).ReadVmsRequest(osc.ReadVmsRequest{
+			Filters: &osc.FiltersVm{
 				VmIds: &[]string{d.Id()},
 			},
 		}).Execute()
@@ -894,11 +890,11 @@ func updateBsuTags(client *oscgo.APIClient, d *schema.ResourceData, addTags map[
 		return err
 	}
 
-	var empty []oscgo.ResourceTag
+	var empty []osc.ResourceTag
 	for dName := range delTags {
 		id := oapihelpers.GetBsuId(resp.GetVms()[0], dName)
 		toRemove := expandOAPITagsSDK(delTags[dName].(*schema.Set))
-		err := updateOAPITags(context.Background(), client, empty, toRemove, id)
+		err := updateOAPITags(ctx, client, empty, toRemove, id)
 		if err != nil {
 			return err
 		}
@@ -906,7 +902,7 @@ func updateBsuTags(client *oscgo.APIClient, d *schema.ResourceData, addTags map[
 	for dName := range addTags {
 		id := oapihelpers.GetBsuId(resp.GetVms()[0], dName)
 		toAdd := expandOAPITagsSDK(addTags[dName].(*schema.Set))
-		err := updateOAPITags(context.Background(), client, toAdd, empty, id)
+		err := updateOAPITags(ctx, client, toAdd, empty, id)
 		if err != nil {
 			return err
 		}
@@ -915,13 +911,14 @@ func updateBsuTags(client *oscgo.APIClient, d *schema.ResourceData, addTags map[
 }
 
 func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
+
 	timeout := d.Timeout(schema.TimeoutRead)
 
-	var resp oscgo.ReadVmsResponse
+	var resp osc.ReadVmsResponse
 	err := retry.Retry(timeout, func() *retry.RetryError {
-		rp, httpResp, err := conn.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
-			Filters: &oscgo.FiltersVm{
+		rp, httpResp, err := client.VmApi.ReadVms(ctx).ReadVmsRequest(osc.ReadVmsRequest{
+			Filters: &osc.FiltersVm{
 				VmIds: &[]string{d.Id()},
 			},
 		}).Execute()
@@ -945,7 +942,7 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 		d.SetId("")
 		return nil
 	}
-	adminPassword, err := getOAPIVMAdminPassword(vm.GetVmId(), conn, timeout)
+	adminPassword, err := getOAPIVMAdminPassword(vm.GetVmId(), client, timeout)
 	if err != nil {
 		return err
 	}
@@ -961,7 +958,7 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 		}
 		d.SetId(vm.GetVmId())
 
-		bsuTagsMaps, errTags := oapihelpers.GetBsuTagsMaps(vm, conn)
+		bsuTagsMaps, errTags := oapihelpers.GetBsuTagsMaps(vm, client)
 		if errTags != nil {
 			return errTags
 		}
@@ -978,10 +975,10 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 	return d.Set("bsu_optimized", bsu)
 }
 
-func getOAPIVMAdminPassword(VMID string, conn *oscgo.APIClient, timeout time.Duration) (string, error) {
-	var resp oscgo.ReadAdminPasswordResponse
+func getOAPIVMAdminPassword(VMID string, client *osc.Client, timeout time.Duration) (string, error) {
+	var resp osc.ReadAdminPasswordResponse
 	err := retry.Retry(timeout, func() *retry.RetryError {
-		rp, httpResp, err := conn.VmApi.ReadAdminPassword(context.Background()).ReadAdminPasswordRequest(oscgo.ReadAdminPasswordRequest{VmId: VMID}).Execute()
+		rp, httpResp, err := client.VmApi.ReadAdminPassword(ctx).ReadAdminPasswordRequest(osc.ReadAdminPasswordRequest{VmId: VMID}).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -1014,7 +1011,8 @@ func findVolumeIdByDeviceName(d *schema.ResourceData, deviceName string) (string
 }
 
 func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
+
 	timeout := d.Timeout(schema.TimeoutUpdate)
 	id := d.Get("vm_id").(string)
 
@@ -1046,13 +1044,13 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	}
 
-	updateRequest := oscgo.UpdateVmRequest{}
+	updateRequest := osc.UpdateVmRequest{}
 	mustStartVM := false
 	if !d.IsNewResource() &&
 		(d.HasChange("vm_type") || d.HasChange("user_data") ||
 			d.HasChange("performance") || d.HasChange("nested_virtualization")) {
 
-		if err := stopVM(id, conn, timeout); err != nil {
+		if err := stopVM(id, client, timeout); err != nil {
 			return err
 		}
 		mustStartVM = true
@@ -1098,25 +1096,25 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 		updateRequest.SetIsSourceDestChecked(d.Get("is_source_dest_checked").(bool))
 	}
 
-	var updateBSUVolumeReqs []oscgo.UpdateVolumeRequest
+	var updateBSUVolumeReqs []osc.UpdateVolumeRequest
 	if d.HasChange("block_device_mappings") && !d.IsNewResource() {
 		oldT, newT := d.GetChange("block_device_mappings")
 		oldMapsTags, newMapsTags := getChangeTags(oldT, newT)
 		if oldMapsTags != nil || newMapsTags != nil {
-			if err := updateBsuTags(conn, d, oldMapsTags, newMapsTags, timeout); err != nil {
+			if err := updateBsuTags(client, d, oldMapsTags, newMapsTags, timeout); err != nil {
 				return err
 			}
 		}
 
 		oldMappings := oldT.([]any)
 		newMappings := newT.([]any)
-		var mappingsReqs []oscgo.BlockDeviceMappingVmUpdate
+		var mappingsReqs []osc.BlockDeviceMappingVmUpdate
 		for i, newMapping := range newMappings {
 			oldMapping := oldMappings[i].(map[string]any)
 			newMappingMap := newMapping.(map[string]any)
 
 			hasMappingChanges := false
-			updateMappingReq := oscgo.BlockDeviceMappingVmUpdate{}
+			updateMappingReq := osc.BlockDeviceMappingVmUpdate{}
 
 			deviceName, okName := newMappingMap["device_name"]
 			if okName && deviceName.(string) != "" {
@@ -1135,7 +1133,7 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 				newBsu := newBsu[0].(map[string]any)
 				oldBsu := oldMapping["bsu"].([]any)[0].(map[string]any)
 
-				updateBsuReq := oscgo.BsuToUpdateVm{}
+				updateBsuReq := osc.BsuToUpdateVm{}
 				if deletion, ok := newBsu["delete_on_vm_deletion"].(bool); ok && oldBsu["delete_on_vm_deletion"].(bool) != deletion {
 					updateBsuReq.SetDeleteOnVmDeletion(deletion)
 					updateMappingReq.SetBsu(updateBsuReq)
@@ -1143,7 +1141,7 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 				}
 
 				hasVolumeChanges := false
-				updateVolumeReq := oscgo.UpdateVolumeRequest{}
+				updateVolumeReq := osc.UpdateVolumeRequest{}
 
 				if size, ok := newBsu["volume_size"]; ok && oldBsu["volume_size"].(int) != size.(int) && size.(int) > 0 {
 					updateVolumeReq.SetSize(int32(size.(int)))
@@ -1179,20 +1177,20 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	if d.HasChange("secure_boot_action") && !d.IsNewResource() {
 		if action := d.Get("secure_boot_action").(string); action != "" {
-			bootAction := oscgo.SecureBootAction(action)
-			updateRequest.ActionsOnNextBoot = &oscgo.ActionsOnNextBoot{
+			bootAction := osc.SecureBootAction(action)
+			updateRequest.ActionsOnNextBoot = &osc.ActionsOnNextBoot{
 				SecureBoot: &bootAction,
 			}
 		}
 	}
 
-	if err := updateOAPITagsSDK(conn, d); err != nil {
+	if err := updateOAPITagsSDK(client, d); err != nil {
 		return err
 	}
 
 	if !reflect.ValueOf(updateRequest).IsZero() {
 		updateRequest.SetVmId(id)
-		if err := updateVmAttr(conn, timeout, updateRequest); err != nil {
+		if err := updateVmAttr(client, timeout, updateRequest); err != nil {
 			return utils.GetErrorResponse(err)
 		}
 	}
@@ -1205,17 +1203,17 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 			}
 			mustStartVM = false
 			if upState == "stopped" {
-				if err := stopVM(id, conn, timeout); err != nil {
+				if err := stopVM(id, client, timeout); err != nil {
 					return err
 				}
 			} else {
-				if err := startVM(id, conn, timeout); err != nil {
+				if err := startVM(id, client, timeout); err != nil {
 					return err
 				}
 			}
 		}
 		if mustStartVM {
-			if err := startVM(id, conn, timeout); err != nil {
+			if err := startVM(id, client, timeout); err != nil {
 				return err
 			}
 		}
@@ -1223,7 +1221,7 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 		var tasksIds []string
 		for _, volumeReq := range updateBSUVolumeReqs {
 			err := retry.Retry(timeout, func() *retry.RetryError {
-				rp, httpResp, err := conn.VolumeApi.UpdateVolume(context.Background()).UpdateVolumeRequest(volumeReq).Execute()
+				rp, httpResp, err := client.VolumeApi.UpdateVolume(ctx).UpdateVolumeRequest(volumeReq).Execute()
 				if err != nil {
 					return utils.CheckThrottling(httpResp, err)
 				}
@@ -1239,7 +1237,7 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 			}
 		}
 		if len(tasksIds) > 0 {
-			err := WaitForVolumeTasks(context.Background(), timeout, tasksIds, conn)
+			err := WaitForVolumeTasks(ctx, timeout, tasksIds, client)
 			if err != nil {
 				return err
 			}
@@ -1283,15 +1281,16 @@ func getbsuMapsTags(changeMaps []interface{}) map[string]interface{} {
 }
 
 func resourceOAPIVMDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
+
 	timeout := d.Timeout(schema.TimeoutDelete)
 	id := d.Id()
 	var err error
 
 	err = retry.Retry(timeout, func() *retry.RetryError {
-		_, httpResp, err := conn.VmApi.StopVms(context.Background()).StopVmsRequest(oscgo.StopVmsRequest{
+		_, httpResp, err := client.VmApi.StopVms(ctx).StopVmsRequest(osc.StopVmsRequest{
 			VmIds:     []string{id},
-			ForceStop: oscgo.PtrBool(true),
+			ForceStop: osc.PtrBool(true),
 		}).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
@@ -1303,7 +1302,7 @@ func resourceOAPIVMDelete(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	err = retry.Retry(timeout, func() *retry.RetryError {
-		_, httpResp, err := conn.VmApi.DeleteVms(context.Background()).DeleteVmsRequest(oscgo.DeleteVmsRequest{
+		_, httpResp, err := client.VmApi.DeleteVms(ctx).DeleteVmsRequest(osc.DeleteVmsRequest{
 			VmIds: []string{id},
 		}).Execute()
 		if err != nil {
@@ -1318,12 +1317,9 @@ func resourceOAPIVMDelete(d *schema.ResourceData, meta interface{}) error {
 	log.Printf("[DEBUG] Waiting for VM (%s) to become terminated", id)
 
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{"pending", "running", "shutting-down", "stopped", "stopping"},
-		Target:     []string{"terminated"},
-		Refresh:    vmStateRefreshFunc(conn, id, "", timeout),
-		Timeout:    timeout,
-		Delay:      10 * time.Second,
-		MinTimeout: 3 * time.Second,
+		Pending: []string{"pending", "running", "shutting-down", "stopped", "stopping"},
+		Target:  []string{"terminated"},
+		Refresh: vmStateRefreshFunc(client, id, "", timeout),
 	}
 
 	_, err = stateConf.WaitForState()
@@ -1335,12 +1331,12 @@ func resourceOAPIVMDelete(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func buildCreateVmsRequest(d *schema.ResourceData) (oscgo.CreateVmsRequest, []map[string]interface{}, error) {
-	request := oscgo.CreateVmsRequest{
-		DeletionProtection: oscgo.PtrBool(d.Get("deletion_protection").(bool)),
-		BootOnCreation:     oscgo.PtrBool(true),
-		MaxVmsCount:        oscgo.PtrInt32(1),
-		MinVmsCount:        oscgo.PtrInt32(1),
+func buildCreateVmsRequest(d *schema.ResourceData) (osc.CreateVmsRequest, []map[string]interface{}, error) {
+	request := osc.CreateVmsRequest{
+		DeletionProtection: osc.PtrBool(d.Get("deletion_protection").(bool)),
+		BootOnCreation:     osc.PtrBool(true),
+		MaxVmsCount:        osc.PtrInt32(1),
+		MinVmsCount:        osc.PtrInt32(1),
 		ImageId:            d.Get("image_id").(string),
 	}
 
@@ -1412,12 +1408,12 @@ func buildCreateVmsRequest(d *schema.ResourceData) (oscgo.CreateVmsRequest, []ma
 	}
 
 	if v := d.Get("boot_mode").(string); v != "" {
-		action := (oscgo.BootMode)(d.Get("boot_mode").(string))
+		action := (osc.BootMode)(d.Get("boot_mode").(string))
 		request.SetBootMode(action)
 	}
 	if v := d.Get("secure_boot_action").(string); v != "" {
-		action := (oscgo.SecureBootAction)(d.Get("secure_boot_action").(string))
-		request.SetActionsOnNextBoot(oscgo.ActionsOnNextBoot{SecureBoot: &action})
+		action := (osc.SecureBootAction)(d.Get("secure_boot_action").(string))
+		request.SetActionsOnNextBoot(osc.ActionsOnNextBoot{SecureBoot: &action})
 	}
 	tpmEnabled := d.GetRawConfig().GetAttr("tpm_enabled")
 	if !tpmEnabled.IsNull() {
@@ -1438,12 +1434,12 @@ func buildCreateVmsRequest(d *schema.ResourceData) (oscgo.CreateVmsRequest, []ma
 	return request, bsuMapsTags, nil
 }
 
-func expandBlockDeviceOApiMappings(d *schema.ResourceData) ([]oscgo.BlockDeviceMappingVmCreation, []map[string]interface{}, error) {
-	var blockDevices []oscgo.BlockDeviceMappingVmCreation
+func expandBlockDeviceOApiMappings(d *schema.ResourceData) ([]osc.BlockDeviceMappingVmCreation, []map[string]interface{}, error) {
+	var blockDevices []osc.BlockDeviceMappingVmCreation
 	block := d.Get("block_device_mappings").([]any)
 	bsuMapsTags := make([]map[string]any, len(block))
 	for k, v := range block {
-		blockDevice := oscgo.BlockDeviceMappingVmCreation{}
+		blockDevice := osc.BlockDeviceMappingVmCreation{}
 		value := v.(map[string]any)
 		if bsu := value["bsu"].([]any); len(bsu) > 0 {
 			expandBSU, mapsTags, err := expandBlockDeviceBSU(bsu[0].(map[string]any), value["device_name"].(string))
@@ -1467,9 +1463,9 @@ func expandBlockDeviceOApiMappings(d *schema.ResourceData) ([]oscgo.BlockDeviceM
 	return blockDevices, bsuMapsTags, nil
 }
 
-func expandBlockDeviceBSU(bsu map[string]interface{}, deviceName string) (oscgo.BsuToCreate, map[string]interface{}, error) {
+func expandBlockDeviceBSU(bsu map[string]interface{}, deviceName string) (osc.BsuToCreate, map[string]interface{}, error) {
 	bsuMapsTags := make(map[string]interface{})
-	bsuToCreate := oscgo.BsuToCreate{}
+	bsuToCreate := osc.BsuToCreate{}
 	snapshotID := bsu["snapshot_id"].(string)
 	volumeType := bsu["volume_type"].(string)
 	volumeSize := int32(bsu["volume_size"].(int))
@@ -1504,8 +1500,8 @@ func expandBlockDeviceBSU(bsu map[string]interface{}, deviceName string) (oscgo.
 	return bsuToCreate, bsuMapsTags, nil
 }
 
-func buildNetworkOApiInterfaceOpts(d *schema.ResourceData) []oscgo.NicForVmCreation {
-	networkInterfaces := []oscgo.NicForVmCreation{}
+func buildNetworkOApiInterfaceOpts(d *schema.ResourceData) []osc.NicForVmCreation {
+	networkInterfaces := []osc.NicForVmCreation{}
 	if nics := d.Get("primary_nic").(*schema.Set).List(); len(nics) > 0 {
 		buildNicForVmCreation(nics, &networkInterfaces)
 	}
@@ -1515,11 +1511,11 @@ func buildNetworkOApiInterfaceOpts(d *schema.ResourceData) []oscgo.NicForVmCreat
 	return networkInterfaces
 }
 
-func buildNicForVmCreation(nics []interface{}, listNics *[]oscgo.NicForVmCreation) {
+func buildNicForVmCreation(nics []interface{}, listNics *[]osc.NicForVmCreation) {
 	for _, v := range nics {
 		nic := v.(map[string]interface{})
-		ni := oscgo.NicForVmCreation{
-			DeviceNumber: oscgo.PtrInt32(int32(nic["device_number"].(int))),
+		ni := osc.NicForVmCreation{
+			DeviceNumber: osc.PtrInt32(int32(nic["device_number"].(int))),
 		}
 
 		if v := nic["nic_id"].(string); v != "" {
@@ -1542,8 +1538,8 @@ func buildNicForVmCreation(nics []interface{}, listNics *[]oscgo.NicForVmCreatio
 	}
 }
 
-func expandPrivatePublicIps(p *schema.Set) []oscgo.PrivateIpLight {
-	privatePublicIPS := make([]oscgo.PrivateIpLight, len(p.List()))
+func expandPrivatePublicIps(p *schema.Set) []osc.PrivateIpLight {
+	privatePublicIPS := make([]osc.PrivateIpLight, len(p.List()))
 
 	for i, v := range p.List() {
 		value := v.(map[string]interface{})
@@ -1553,8 +1549,8 @@ func expandPrivatePublicIps(p *schema.Set) []oscgo.PrivateIpLight {
 	return privatePublicIPS
 }
 
-func expandPlacement(d *schema.ResourceData) (*oscgo.Placement, error) {
-	placement := &oscgo.Placement{}
+func expandPlacement(d *schema.ResourceData) (*osc.Placement, error) {
+	placement := &osc.Placement{}
 
 	subregionName, sOK := d.GetOk("placement_subregion_name")
 	tenancy, tOK := d.GetOk("placement_tenancy")
@@ -1576,12 +1572,12 @@ func expandPlacement(d *schema.ResourceData) (*oscgo.Placement, error) {
 	}
 }
 
-func vmStateRefreshFunc(conn *oscgo.APIClient, instanceID, failState string, timeout time.Duration) retry.StateRefreshFunc {
+func vmStateRefreshFunc(client *osc.Client, instanceID, failState string, timeout time.Duration) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		var resp oscgo.ReadVmsResponse
+		var resp osc.ReadVmsResponse
 		err := retry.Retry(timeout, func() *retry.RetryError {
-			rp, httpResp, err := conn.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
-				Filters: &oscgo.FiltersVm{
+			rp, httpResp, err := client.VmApi.ReadVms(ctx).ReadVmsRequest(osc.ReadVmsRequest{
+				Filters: &osc.FiltersVm{
 					VmIds: &[]string{instanceID},
 				},
 			}).Execute()
@@ -1611,8 +1607,8 @@ func vmStateRefreshFunc(conn *oscgo.APIClient, instanceID, failState string, tim
 	}
 }
 
-func stopVM(vmID string, conn *oscgo.APIClient, timeOut time.Duration) error {
-	vmResp, _, err := readVM(vmID, conn, timeOut)
+func stopVM(vmID string, client *osc.Client, timeOut time.Duration) error {
+	vmResp, _, err := readVM(vmID, client, timeOut)
 	if err != nil {
 		return err
 	}
@@ -1620,16 +1616,16 @@ func stopVM(vmID string, conn *oscgo.APIClient, timeOut time.Duration) error {
 	if len(vmResp.GetVms()) > 0 {
 		if vmResp.GetVms()[0].GetVmInitiatedShutdownBehavior() != "stop" {
 			shutdownBehaviorOriginal = vmResp.GetVms()[0].GetVmInitiatedShutdownBehavior()
-			opts := oscgo.UpdateVmRequest{VmId: vmID}
+			opts := osc.UpdateVmRequest{VmId: vmID}
 			opts.SetVmInitiatedShutdownBehavior("stop")
-			if err = updateVmAttr(conn, timeOut, opts); err != nil {
+			if err = updateVmAttr(client, timeOut, opts); err != nil {
 				return err
 			}
 		}
 	}
 
 	err = retry.Retry(timeOut, func() *retry.RetryError {
-		_, httpResp, err := conn.VmApi.StopVms(context.Background()).StopVmsRequest(oscgo.StopVmsRequest{
+		_, httpResp, err := client.VmApi.StopVms(ctx).StopVmsRequest(osc.StopVmsRequest{
 			VmIds: []string{vmID},
 		}).Execute()
 		if err != nil {
@@ -1642,12 +1638,9 @@ func stopVM(vmID string, conn *oscgo.APIClient, timeOut time.Duration) error {
 	}
 
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{"pending", "running", "shutting-down", "stopped", "stopping"},
-		Target:     []string{"stopped"},
-		Refresh:    vmStateRefreshFunc(conn, vmID, "", timeOut),
-		Timeout:    timeOut,
-		Delay:      10 * time.Second,
-		MinTimeout: 3 * time.Second,
+		Pending: []string{"pending", "running", "shutting-down", "stopped", "stopping"},
+		Target:  []string{"stopped"},
+		Refresh: vmStateRefreshFunc(client, vmID, "", timeOut),
 	}
 
 	_, err = stateConf.WaitForState()
@@ -1656,9 +1649,9 @@ func stopVM(vmID string, conn *oscgo.APIClient, timeOut time.Duration) error {
 	}
 
 	if shutdownBehaviorOriginal != "" {
-		opts := oscgo.UpdateVmRequest{VmId: vmID}
+		opts := osc.UpdateVmRequest{VmId: vmID}
 		opts.SetVmInitiatedShutdownBehavior(shutdownBehaviorOriginal)
-		if err = updateVmAttr(conn, timeOut, opts); err != nil {
+		if err = updateVmAttr(client, timeOut, opts); err != nil {
 			return err
 		}
 	}
@@ -1666,9 +1659,9 @@ func stopVM(vmID string, conn *oscgo.APIClient, timeOut time.Duration) error {
 	return nil
 }
 
-func startVM(vmID string, conn *oscgo.APIClient, timeOut time.Duration) error {
+func startVM(vmID string, client *osc.Client, timeOut time.Duration) error {
 	err := retry.Retry(timeOut, func() *retry.RetryError {
-		_, httpResp, err := conn.VmApi.StartVms(context.Background()).StartVmsRequest(oscgo.StartVmsRequest{
+		_, httpResp, err := client.VmApi.StartVms(ctx).StartVmsRequest(osc.StartVmsRequest{
 			VmIds: []string{vmID},
 		}).Execute()
 		if err != nil {
@@ -1681,12 +1674,9 @@ func startVM(vmID string, conn *oscgo.APIClient, timeOut time.Duration) error {
 	}
 
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{"pending", "stopped"},
-		Target:     []string{"running"},
-		Refresh:    vmStateRefreshFunc(conn, vmID, "", timeOut),
-		Timeout:    timeOut,
-		Delay:      10 * time.Second,
-		MinTimeout: 3 * time.Second,
+		Pending: []string{"pending", "stopped"},
+		Target:  []string{"running"},
+		Refresh: vmStateRefreshFunc(client, vmID, "", timeOut),
 	}
 
 	if _, err := stateConf.WaitForState(); err != nil {
@@ -1696,9 +1686,9 @@ func startVM(vmID string, conn *oscgo.APIClient, timeOut time.Duration) error {
 	return nil
 }
 
-func updateVmAttr(conn *oscgo.APIClient, timeout time.Duration, instanceAttrOpts oscgo.UpdateVmRequest) error {
+func updateVmAttr(client *osc.Client, timeout time.Duration, instanceAttrOpts osc.UpdateVmRequest) error {
 	err := retry.Retry(timeout, func() *retry.RetryError {
-		_, httpResp, err := conn.VmApi.UpdateVm(context.Background()).UpdateVmRequest(instanceAttrOpts).Execute()
+		_, httpResp, err := client.VmApi.UpdateVm(ctx).UpdateVmRequest(instanceAttrOpts).Execute()
 		if err != nil {
 			_, errBody := io.ReadAll(httpResp.Body)
 			if errBody != nil {
@@ -1714,12 +1704,12 @@ func updateVmAttr(conn *oscgo.APIClient, timeout time.Duration, instanceAttrOpts
 	return nil
 }
 
-func readVM(vmID string, conn *oscgo.APIClient, timeOut time.Duration) (oscgo.ReadVmsResponse, *http.Response, error) {
-	var resp oscgo.ReadVmsResponse
+func readVM(vmID string, client *osc.Client, timeOut time.Duration) (osc.ReadVmsResponse, *http.Response, error) {
+	var resp osc.ReadVmsResponse
 	var httpResult *http.Response
 	err := retry.Retry(timeOut, func() *retry.RetryError {
-		rp, httpResp, err := conn.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
-			Filters: &oscgo.FiltersVm{
+		rp, httpResp, err := client.VmApi.ReadVms(ctx).ReadVmsRequest(osc.ReadVmsRequest{
+			Filters: &osc.FiltersVm{
 				VmIds: &[]string{vmID},
 			},
 		}).Execute()

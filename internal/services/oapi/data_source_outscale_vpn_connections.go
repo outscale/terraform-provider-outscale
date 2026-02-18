@@ -1,7 +1,6 @@
 package oapi
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"time"
@@ -9,28 +8,28 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 func DataSourceOutscaleVPNConnections() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleVPNConnectionsRead,
+		Read: DataSourceOutscaleVPNclientectionsRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"vpn_connection_ids": {
+			"vpn_clientection_ids": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"vpn_connections": {
+			"vpn_clientections": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"vpn_connection_id": {
+						"vpn_clientection_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -42,7 +41,7 @@ func DataSourceOutscaleVPNConnections() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"connection_type": {
+						"clientection_type": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -118,36 +117,36 @@ func DataSourceOutscaleVPNConnections() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleVPNConnectionsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleVPNclientectionsRead(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
-	vpnConnectionIDs, vpnConnectionOk := d.GetOk("vpn_connection_ids")
+	vpnclientectionIDs, vpnclientectionOk := d.GetOk("vpn_clientection_ids")
 
-	if !filtersOk && !vpnConnectionOk {
-		return fmt.Errorf("one of filters, or vpn_connection_ids must be assigned")
+	if !filtersOk && !vpnclientectionOk {
+		return fmt.Errorf("one of filters, or vpn_clientection_ids must be assigned")
 	}
 
-	log.Printf("vpnConnectionIDs: %#+v\n", vpnConnectionIDs)
-	params := oscgo.ReadVpnConnectionsRequest{}
+	log.Printf("vpnclientectionIDs: %#+v\n", vpnclientectionIDs)
+	params := osc.ReadVpnclientectionsRequest{}
 
-	if vpnConnectionOk {
-		params.Filters = &oscgo.FiltersVpnConnection{
-			VpnConnectionIds: utils.InterfaceSliceToStringSlicePtr(vpnConnectionIDs.([]interface{})),
+	if vpnclientectionOk {
+		params.Filters = &osc.FiltersVpnclientection{
+			VpnclientectionIds: utils.InterfaceSliceToStringSlicePtr(vpnclientectionIDs.([]interface{})),
 		}
 	}
 
 	var err error
 	if filtersOk {
-		params.Filters, err = buildOutscaleDataSourceVPNConnectionFilters(filters.(*schema.Set))
+		params.Filters, err = buildOutscaleDataSourceVPNclientectionFilters(filters.(*schema.Set))
 		if err != nil {
 			return err
 		}
 	}
 
-	var resp oscgo.ReadVpnConnectionsResponse
+	var resp osc.ReadVpnclientectionsResponse
 	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(params).Execute()
+		rp, httpResp, err := client.VpnclientectionApi.ReadVpnclientections(ctx).ReadVpnclientectionsRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -158,10 +157,10 @@ func DataSourceOutscaleVPNConnectionsRead(d *schema.ResourceData, meta interface
 		return err
 	}
 
-	if len(resp.GetVpnConnections()) == 0 {
+	if len(resp.GetVpnclientections()) == 0 {
 		return ErrNoResults
 	}
-	if err := d.Set("vpn_connections", flattenVPNConnections(resp.GetVpnConnections())); err != nil {
+	if err := d.Set("vpn_clientections", flattenVPNclientections(resp.GetVpnclientections())); err != nil {
 		return err
 	}
 
@@ -169,22 +168,22 @@ func DataSourceOutscaleVPNConnectionsRead(d *schema.ResourceData, meta interface
 	return nil
 }
 
-func flattenVPNConnections(vpnConnections []oscgo.VpnConnection) []map[string]interface{} {
-	vpnConnectionsMap := make([]map[string]interface{}, len(vpnConnections))
+func flattenVPNclientections(vpnclientections []osc.Vpnclientection) []map[string]interface{} {
+	vpnclientectionsMap := make([]map[string]interface{}, len(vpnclientections))
 
-	for i, vpnConnection := range vpnConnections {
-		vpnConnectionsMap[i] = map[string]interface{}{
-			"vpn_connection_id":            vpnConnection.GetVpnConnectionId(),
-			"client_gateway_id":            vpnConnection.GetClientGatewayId(),
-			"virtual_gateway_id":           vpnConnection.GetVirtualGatewayId(),
-			"connection_type":              vpnConnection.GetConnectionType(),
-			"static_routes_only":           vpnConnection.GetStaticRoutesOnly(),
-			"client_gateway_configuration": vpnConnection.GetClientGatewayConfiguration(),
-			"state":                        vpnConnection.GetState(),
-			"routes":                       flattenVPNConnection(vpnConnection.GetRoutes()),
-			"tags":                         FlattenOAPITagsSDK(vpnConnection.GetTags()),
-			"vgw_telemetries":              flattenVgwTelemetries(vpnConnection.GetVgwTelemetries()),
+	for i, vpnclientection := range vpnclientections {
+		vpnclientectionsMap[i] = map[string]interface{}{
+			"vpn_clientection_id":          vpnclientection.GetVpnclientectionId(),
+			"client_gateway_id":            vpnclientection.GetClientGatewayId(),
+			"virtual_gateway_id":           vpnclientection.GetVirtualGatewayId(),
+			"clientection_type":            vpnclientection.GetclientectionType(),
+			"static_routes_only":           vpnclientection.GetStaticRoutesOnly(),
+			"client_gateway_configuration": vpnclientection.GetClientGatewayConfiguration(),
+			"state":                        vpnclientection.GetState(),
+			"routes":                       flattenVPNclientection(vpnclientection.GetRoutes()),
+			"tags":                         FlattenOAPITagsSDK(vpnclientection.Tags),
+			"vgw_telemetries":              flattenVgwTelemetries(vpnclientection.GetVgwTelemetries()),
 		}
 	}
-	return vpnConnectionsMap
+	return vpnclientectionsMap
 }

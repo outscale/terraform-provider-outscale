@@ -19,7 +19,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/outscale/goutils/sdk/ptr"
-	"github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/osc-sdk-go/v3/pkg/iso8601"
 	"github.com/spf13/cast"
 )
@@ -126,20 +125,20 @@ func ToJSONString(v interface{}) string {
 }
 
 func GetErrorResponse(err error) error {
-	if e, ok := err.(osc.GenericOpenAPIError); ok {
-		if errorResponse, oker := e.Model().(osc.ErrorResponse); oker {
-			return fmt.Errorf("%s %s", err, ToJSONString(errorResponse))
-		}
-	}
+	// if e, ok := err.(osc.GenericOpenAPIError); ok {
+	// 	if errorResponse, oker := e.Model().(osc.ErrorResponse); oker {
+	// 		return fmt.Errorf("%s %s", err, ToJSONString(errorResponse))
+	// 	}
+	// }
 	return err
 }
 
 func GetErrorResponseToString(err error) string {
-	if e, ok := err.(osc.GenericOpenAPIError); ok {
-		if errorResponse, oker := e.Model().(osc.ErrorResponse); oker {
-			return ToJSONString(errorResponse)
-		}
-	}
+	// if e, ok := err.(osc.GenericOpenAPIError); ok {
+	// 	if errorResponse, oker := e.Model().(osc.ErrorResponse); oker {
+	// 		return ToJSONString(errorResponse)
+	// 	}
+	// }
 	return err.Error()
 }
 

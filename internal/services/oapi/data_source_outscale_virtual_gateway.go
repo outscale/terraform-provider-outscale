@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/outscale/goutils/sdk/ptr"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -30,7 +29,7 @@ func DataSourceOutscaleVirtualGateway() *schema.Resource {
 				Optional: true,
 				Computed: true,
 			},
-			"connection_type": {
+			"clientection_type": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
@@ -61,7 +60,8 @@ func DataSourceOutscaleVirtualGateway() *schema.Resource {
 }
 
 func DataSourceOutscaleVirtualGatewayRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
+	
 
 	filters, filtersOk := d.GetOk("filter")
 	virtualId, vpnOk := d.GetOk("virtual_gateway_id")
@@ -70,10 +70,10 @@ func DataSourceOutscaleVirtualGatewayRead(d *schema.ResourceData, meta interface
 		return fmt.Errorf("one of virtual_gateway_id or filter must be assigned")
 	}
 
-	params := oscgo.ReadVirtualGatewaysRequest{}
+	params := osc.ReadVirtualGatewaysRequest{}
 
 	if vpnOk {
-		params.SetFilters(oscgo.FiltersVirtualGateway{VirtualGatewayIds: &[]string{virtualId.(string)}})
+		params.SetFilters(osc.FiltersVirtualGateway{VirtualGatewayIds: &[]string{virtualId.(string)}})
 	}
 
 	var err error
@@ -84,9 +84,9 @@ func DataSourceOutscaleVirtualGatewayRead(d *schema.ResourceData, meta interface
 		}
 	}
 
-	var resp oscgo.ReadVirtualGatewaysResponse
+	var resp osc.ReadVirtualGatewaysResponse
 	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(params).Execute()
+		rp, httpResp, err := client.VirtualGatewayApi.ReadVirtualGateways(ctx).ReadVirtualGatewaysRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -119,14 +119,14 @@ func DataSourceOutscaleVirtualGatewayRead(d *schema.ResourceData, meta interface
 
 	d.Set("net_to_virtual_gateway_links", vs)
 	d.Set("state", ptr.From(vgw.State))
-	d.Set("connection_type", vgw.ConnectionType)
-	d.Set("tags", FlattenOAPITagsSDK(vgw.GetTags()))
+	d.Set("clientection_type", vgw.clientectionType)
+	d.Set("tags", FlattenOAPITagsSDK(vgw.Tags))
 
 	return nil
 }
 
-func buildOutscaleAPIVirtualGatewayFilters(set *schema.Set) (*oscgo.FiltersVirtualGateway, error) {
-	var filters oscgo.FiltersVirtualGateway
+func buildOutscaleAPIVirtualGatewayFilters(set *schema.Set) (*osc.FiltersVirtualGateway, error) {
+	var filters osc.FiltersVirtualGateway
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -144,8 +144,8 @@ func buildOutscaleAPIVirtualGatewayFilters(set *schema.Set) (*oscgo.FiltersVirtu
 			filters.SetTagValues(filterValues)
 		case "states":
 			filters.SetStates(filterValues)
-		case "connection_types":
-			filters.SetConnectionTypes(filterValues)
+		case "clientection_types":
+			filters.SetclientectionTypes(filterValues)
 		case "link_net_ids":
 			filters.SetLinkNetIds(filterValues)
 		case "link_states":
@@ -153,7 +153,7 @@ func buildOutscaleAPIVirtualGatewayFilters(set *schema.Set) (*oscgo.FiltersVirtu
 		case "virtual_gateway_ids":
 			filters.SetVirtualGatewayIds(filterValues)
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(ctx, name)
 		}
 	}
 	return &filters, nil

@@ -1,13 +1,12 @@
 package oapi
 
 import (
-	"context"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
@@ -77,14 +76,15 @@ func DataSourceUserGroup() *schema.Resource {
 }
 
 func DataSourceUserGroupRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
-	req := oscgo.NewReadUserGroupRequest(d.Get("user_group_name").(string))
+	client := meta.(*client.OutscaleClient).OSC
+
+	req := osc.NewReadUserGroupRequest(d.Get("user_group_name").(string))
 	if path := d.Get("path").(string); path != "" {
 		req.SetPath(path)
 	}
-	var resp oscgo.ReadUserGroupResponse
+	var resp osc.ReadUserGroupResponse
 	err := retry.Retry(2*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.UserGroupApi.ReadUserGroup(context.Background()).ReadUserGroupRequest(*req).Execute()
+		rp, httpResp, err := client.UserGroupApi.ReadUserGroup(ctx).ReadUserGroupRequest(*req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}

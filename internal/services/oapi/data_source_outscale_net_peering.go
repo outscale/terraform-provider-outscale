@@ -1,7 +1,6 @@
 package oapi
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"reflect"
@@ -9,23 +8,23 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
-func DataSourceOutscaleLinPeeringConnection() *schema.Resource {
+func DataSourceOutscaleNetPeering() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleLinPeeringConnectionRead,
+		Read: DataSourceOutscaleNetPeeringRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter":       dataSourceFiltersSchema(),
-			"accepter_net": vpcOAPIPeeringConnectionOptionsSchema(),
+			"accepter_net": vpcOAPIPeeringclientectionOptionsSchema(),
 			"net_peering_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"source_net": vpcOAPIPeeringConnectionOptionsSchema(),
+			"source_net": vpcOAPIPeeringclientectionOptionsSchema(),
 			"state": {
 				Type:     schema.TypeSet,
 				Computed: true,
@@ -51,7 +50,7 @@ func DataSourceOutscaleLinPeeringConnection() *schema.Resource {
 	}
 }
 
-func vpcOAPIPeeringConnectionOptionsSchema() *schema.Schema {
+func vpcOAPIPeeringclientectionOptionsSchema() *schema.Schema {
 	return &schema.Schema{
 		Type:     schema.TypeList,
 		Computed: true,
@@ -74,26 +73,26 @@ func vpcOAPIPeeringConnectionOptionsSchema() *schema.Schema {
 	}
 }
 
-func DataSourceOutscaleLinPeeringConnectionRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleNetPeeringRead(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*client.OutscaleClient).OSC
 
-	log.Printf("[DEBUG] Reading Net Peering Connections.")
+	log.Printf("[DEBUG] Reading Net Peering clientections.")
 
 	var err error
-	req := oscgo.ReadNetPeeringsRequest{}
+	req := osc.ReadNetPeeringsRequest{}
 
 	filters, filtersOk := d.GetOk("filter")
 	if !filtersOk {
 		return ErrFilterRequired
 	}
-	req.Filters, err = buildOutscaleLinPeeringConnectionFilters(filters.(*schema.Set))
+	req.Filters, err = buildOutscaleLinPeeringclientectionFilters(filters.(*schema.Set))
 	if err != nil {
 		return err
 	}
 
-	var resp oscgo.ReadNetPeeringsResponse
+	var resp osc.ReadNetPeeringsResponse
 	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.NetPeeringApi.ReadNetPeerings(context.Background()).ReadNetPeeringsRequest(req).Execute()
+		rp, httpResp, err := client.NetPeeringApi.ReadNetPeerings(ctx).ReadNetPeeringsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -101,7 +100,7 @@ func DataSourceOutscaleLinPeeringConnectionRead(d *schema.ResourceData, meta int
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("error reading net peering connection details: %s", err)
+		return fmt.Errorf("error reading net peering clientection details: %s", err)
 	}
 
 	if len(resp.GetNetPeerings()) == 0 {
@@ -113,9 +112,9 @@ func DataSourceOutscaleLinPeeringConnectionRead(d *schema.ResourceData, meta int
 	netPeering := resp.GetNetPeerings()[0]
 
 	// The failed status is a status that we can assume just means the
-	// connection is gone. Destruction isn't allowed, and it eventually
+	// clientection is gone. Destruction isn't allowed, and it eventually
 	// just "falls off" the console. See GH-2322
-	if !reflect.DeepEqual(netPeering.State, oscgo.NetPeeringState{}) {
+	if !reflect.DeepEqual(netPeering.State, osc.NetPeeringState{}) {
 		status := map[string]bool{
 			"deleted":  true,
 			"deleting": true,
@@ -124,22 +123,22 @@ func DataSourceOutscaleLinPeeringConnectionRead(d *schema.ResourceData, meta int
 			"rejected": true,
 		}
 		if _, ok := status[netPeering.State.GetName()]; ok {
-			log.Printf("[DEBUG] Net Peering Connection (%s) in state (%s), removing.",
+			log.Printf("[DEBUG] Net Peering clientection (%s) in state (%s), removing.",
 				d.Id(), netPeering.State.GetName())
 			return nil
 		}
 	}
-	log.Printf("[DEBUG] Net Peering Connection response: %#v", netPeering)
+	log.Printf("[DEBUG] Net Peering clientection response: %#v", netPeering)
 
-	log.Printf("[DEBUG] Net Peering Connection Source %s, Accepter %s", netPeering.SourceNet.GetAccountId(), netPeering.AccepterNet.GetAccountId())
+	log.Printf("[DEBUG] Net Peering clientection Source %s, Accepter %s", netPeering.SourceNet.GetAccountId(), netPeering.AccepterNet.GetAccountId())
 
-	if !reflect.DeepEqual(netPeering.GetAccepterNet(), oscgo.AccepterNet{}) {
+	if !reflect.DeepEqual(netPeering.GetAccepterNet(), osc.AccepterNet{}) {
 		if err := d.Set("accepter_net", getOAPINetPeeringAccepterNet(*netPeering.AccepterNet)); err != nil {
 			return err
 		}
 	}
 
-	if !reflect.DeepEqual(netPeering.SourceNet, oscgo.SourceNet{}) {
+	if !reflect.DeepEqual(netPeering.SourceNet, osc.SourceNet{}) {
 		if err := d.Set("source_net", getOAPINetPeeringSourceNet(*netPeering.SourceNet)); err != nil {
 			return err
 		}
@@ -152,7 +151,7 @@ func DataSourceOutscaleLinPeeringConnectionRead(d *schema.ResourceData, meta int
 	if err := d.Set("net_peering_id", netPeering.GetNetPeeringId()); err != nil {
 		return err
 	}
-	if err := d.Set("tags", FlattenOAPITagsSDK(netPeering.GetTags())); err != nil {
+	if err := d.Set("tags", FlattenOAPITagsSDK(netPeering.Tags)); err != nil {
 		return fmt.Errorf("error setting net peering tags: %s", err)
 	}
 
@@ -161,8 +160,8 @@ func DataSourceOutscaleLinPeeringConnectionRead(d *schema.ResourceData, meta int
 	return nil
 }
 
-func buildOutscaleLinPeeringConnectionFilters(set *schema.Set) (*oscgo.FiltersNetPeering, error) {
-	var filters oscgo.FiltersNetPeering
+func buildOutscaleLinPeeringclientectionFilters(set *schema.Set) (*osc.FiltersNetPeering, error) {
+	var filters osc.FiltersNetPeering
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -203,7 +202,7 @@ func buildOutscaleLinPeeringConnectionFilters(set *schema.Set) (*oscgo.FiltersNe
 		case "tags":
 			filters.SetTags(filterValues)
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(ctx, name)
 		}
 	}
 	return &filters, nil

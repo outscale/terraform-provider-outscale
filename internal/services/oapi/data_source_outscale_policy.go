@@ -1,13 +1,12 @@
 package oapi
 
 import (
-	"context"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
@@ -69,19 +68,19 @@ func DataSourcePolicy() *schema.Resource {
 }
 
 func DataSourcePolicyRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
-	req := oscgo.NewReadPolicyRequest(d.Get("policy_orn").(string))
+	client := meta.(*client.OutscaleClient).OSC
 
-	var resp oscgo.ReadPolicyResponse
+	req := osc.NewReadPolicyRequest(d.Get("policy_orn").(string))
+
+	var resp osc.ReadPolicyResponse
 	err := retry.Retry(2*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.PolicyApi.ReadPolicy(context.Background()).ReadPolicyRequest(*req).Execute()
+		rp, httpResp, err := client.PolicyApi.ReadPolicy(ctx).ReadPolicyRequest(*req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}

@@ -1,14 +1,13 @@
 package oapi
 
 import (
-	"context"
 	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
@@ -58,10 +57,10 @@ func DataSourceOutscaleApiAccessRules() *schema.Resource {
 }
 
 func DataSourceOutscaleApiAccessRulesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
-	req := oscgo.ReadApiAccessRulesRequest{}
+	req := osc.ReadApiAccessRulesRequest{}
 	if filtersOk {
 		filterParams, err := buildOutscaleApiAccessRuleFilters(filters.(*schema.Set))
 		if err != nil {
@@ -70,16 +69,15 @@ func DataSourceOutscaleApiAccessRulesRead(d *schema.ResourceData, meta interface
 		req.Filters = filterParams
 	}
 
-	var resp oscgo.ReadApiAccessRulesResponse
+	var resp osc.ReadApiAccessRulesResponse
 	err := retry.Retry(120*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.ApiAccessRuleApi.ReadApiAccessRules(context.Background()).ReadApiAccessRulesRequest(req).Execute()
+		rp, httpResp, err := client.ApiAccessRuleApi.ReadApiAccessRules(ctx).ReadApiAccessRulesRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		return fmt.Errorf("error reading api access rule id (%s)", utils.GetErrorResponse(err))
 	}

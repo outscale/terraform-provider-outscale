@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -55,11 +55,12 @@ func DataSourceUsers() *schema.Resource {
 }
 
 func DataSourceUsersRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
+	
 	filters, filtersOk := d.GetOk("filter")
 
 	var err error
-	req := oscgo.NewReadUsersRequest()
+	req := osc.NewReadUsersRequest()
 	if filtersOk {
 		req.Filters, err = buildUsersFilters(filters.(*schema.Set))
 		if err != nil {
@@ -67,16 +68,15 @@ func DataSourceUsersRead(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	var resp oscgo.ReadUsersResponse
+	var resp osc.ReadUsersResponse
 	err = retry.Retry(2*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.UserApi.ReadUsers(context.Background()).ReadUsersRequest(*req).Execute()
+		rp, httpResp, err := client.UserApi.ReadUsers(ctx).ReadUsersRequest(*req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
 		resp = rp
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}

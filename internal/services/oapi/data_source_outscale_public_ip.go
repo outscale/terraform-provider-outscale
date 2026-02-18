@@ -7,8 +7,6 @@ import (
 	"net/http"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
@@ -65,10 +63,11 @@ func getOAPIPublicIPDataSourceSchema() map[string]*schema.Schema {
 }
 
 func DataSourceOutscalePublicIPRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
+	
 
-	req := oscgo.ReadPublicIpsRequest{
-		Filters: &oscgo.FiltersPublicIp{},
+	req := osc.ReadPublicIpsRequest{
+		Filters: &osc.FiltersPublicIp{},
 	}
 
 	if p, ok := d.GetOk("public_ip_id"); ok {
@@ -88,11 +87,11 @@ func DataSourceOutscalePublicIPRead(d *schema.ResourceData, meta interface{}) er
 		}
 	}
 
-	var response oscgo.ReadPublicIpsResponse
+	var response osc.ReadPublicIpsResponse
 	var statusCode int
 	err = retry.Retry(60*time.Second, func() *retry.RetryError {
 		var err error
-		rp, httpResp, err := conn.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
+		rp, httpResp, err := client.PublicIpApi.ReadPublicIps(ctx).ReadPublicIpsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -142,7 +141,7 @@ func DataSourceOutscalePublicIPRead(d *schema.ResourceData, meta interface{}) er
 		return err
 	}
 
-	if err := d.Set("tags", FlattenOAPITagsSDK(address.GetTags())); err != nil {
+	if err := d.Set("tags", FlattenOAPITagsSDK(address.Tags)); err != nil {
 		return fmt.Errorf("error setting publicip tags: %s", err)
 	}
 
@@ -153,8 +152,8 @@ func DataSourceOutscalePublicIPRead(d *schema.ResourceData, meta interface{}) er
 	return nil
 }
 
-func buildOutscaleDataSourcePublicIpsFilters(set *schema.Set) (*oscgo.FiltersPublicIp, error) {
-	var filters oscgo.FiltersPublicIp
+func buildOutscaleDataSourcePublicIpsFilters(set *schema.Set) (*osc.FiltersPublicIp, error) {
+	var filters osc.FiltersPublicIp
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -186,7 +185,7 @@ func buildOutscaleDataSourcePublicIpsFilters(set *schema.Set) (*oscgo.FiltersPub
 		case "tags":
 			filters.SetTags(filterValues)
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(ctx, name)
 		}
 	}
 	return &filters, nil

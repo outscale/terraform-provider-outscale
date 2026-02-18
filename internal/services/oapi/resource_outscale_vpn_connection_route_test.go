@@ -5,21 +5,21 @@ import (
 	"fmt"
 	"os"
 	"testing"
-	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/services/oapi/oapihelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-func TestAccOthers_VPNConnectionRoute_basic(t *testing.T) {
-	resourceName := "outscale_vpn_connection_route.foo"
+func TestAccOthers_VPNclientectionRoute_basic(t *testing.T) {
+	resourceName := "outscale_vpn_clientection_route.foo"
 
 	publicIP := fmt.Sprintf("172.0.0.%d", utils.RandIntRange(1, 255))
 	destinationIPRange := fmt.Sprintf("172.168.%d.0/24", utils.RandIntRange(1, 255))
@@ -28,23 +28,23 @@ func TestAccOthers_VPNConnectionRoute_basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testacc.PreCheck(t) },
 		Providers:    testacc.SDKProviders,
-		CheckDestroy: testAccOutscaleVPNConnectionRouteDestroy,
+		CheckDestroy: testAccOutscaleVPNclientectionRouteDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleVPNConnectionRouteConfig(bgpAsn, publicIP, destinationIPRange),
+				Config: testAccOutscaleVPNclientectionRouteConfig(bgpAsn, publicIP, destinationIPRange),
 				Check: resource.ComposeTestCheckFunc(
-					testAccOutscaleVPNConnectionRouteExists(resourceName),
+					testAccOutscaleVPNclientectionRouteExists(t.Context(), resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "destination_ip_range"),
-					resource.TestCheckResourceAttrSet(resourceName, "vpn_connection_id"),
+					resource.TestCheckResourceAttrSet(resourceName, "vpn_clientection_id"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccOthers_ImportVPNConnectionRoute_basic(t *testing.T) {
+func TestAccOthers_ImportVPNclientectionRoute_basic(t *testing.T) {
 	if os.Getenv("TEST_QUOTA") == "true" {
-		resourceName := "outscale_vpn_connection_route.foo"
+		resourceName := "outscale_vpn_clientection_route.foo"
 
 		publicIP := fmt.Sprintf("172.0.0.%d", utils.RandIntRange(1, 255))
 		destinationIPRange := fmt.Sprintf("172.168.%d.0/24", utils.RandIntRange(1, 255))
@@ -53,14 +53,14 @@ func TestAccOthers_ImportVPNConnectionRoute_basic(t *testing.T) {
 		resource.ParallelTest(t, resource.TestCase{
 			PreCheck:     func() { testacc.PreCheck(t) },
 			Providers:    testacc.SDKProviders,
-			CheckDestroy: testAccOutscaleVPNConnectionRouteDestroy,
+			CheckDestroy: testAccOutscaleVPNclientectionRouteDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: testAccOutscaleVPNConnectionRouteConfig(bgpAsn, publicIP, destinationIPRange),
+					Config: testAccOutscaleVPNclientectionRouteConfig(bgpAsn, publicIP, destinationIPRange),
 					Check: resource.ComposeTestCheckFunc(
-						testAccOutscaleVPNConnectionRouteExists(resourceName),
+						testAccOutscaleVPNclientectionRouteExists(t.Context(), resourceName),
 						resource.TestCheckResourceAttrSet(resourceName, "destination_ip_range"),
-						resource.TestCheckResourceAttrSet(resourceName, "vpn_connection_id"),
+						resource.TestCheckResourceAttrSet(resourceName, "vpn_clientection_id"),
 					),
 				},
 				testacc.ImportStep(resourceName, testacc.DefaultIgnores()...),
@@ -71,117 +71,101 @@ func TestAccOthers_ImportVPNConnectionRoute_basic(t *testing.T) {
 	}
 }
 
-func testAccOutscaleVPNConnectionRouteExists(resourceName string) resource.TestCheckFunc {
+func testAccOutscaleVPNclientectionRouteExists(ctx context.Context, resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
 			return fmt.Errorf("not found: %s", resourceName)
 		}
 
-		conn := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSCAPI
+		client := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSC
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("no vpn connection route id is set")
+			return fmt.Errorf("no vpn clientection route id is set")
 		}
 
-		destinationIPRange, vpnConnectionID := oapihelpers.ParseVPNConnectionRouteID(rs.Primary.ID)
+		destinationIPRange, vpnclientectionID := oapihelpers.ParseVPNclientectionRouteID(rs.Primary.ID)
 
-		filter := oscgo.ReadVpnConnectionsRequest{
-			Filters: &oscgo.FiltersVpnConnection{
+		filter := osc.ReadVpnConnectionsRequest{
+			Filters: &osc.FiltersVpnConnection{
 				RouteDestinationIpRanges: &[]string{destinationIPRange},
-				VpnConnectionIds:         &[]string{vpnConnectionID},
+				VpnConnectionIds:         &[]string{vpnclientectionID},
 			},
 		}
-		var resp oscgo.ReadVpnConnectionsResponse
-		var err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-			rp, httpResp, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(filter).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
+		resp, err := client.ReadVpnConnections(ctx, filter, options.WithRetryTimeout(DefaultTimeout))
 
-		vpnConnection := resp.GetVpnConnections()[0]
+		vpnConnection := ptr.From(resp.VpnConnections)[0]
 
 		var state string
-		for _, route := range vpnConnection.GetRoutes() {
-			if route.GetDestinationIpRange() == destinationIPRange {
-				state = route.GetState()
+		for _, route := range ptr.From(vpnConnection.Routes) {
+			if route.DestinationIpRange == destinationIPRange {
+				state = route.State
 			}
 		}
 
 		if err != nil || state == "deleted" {
-			return fmt.Errorf("outscale vpn connection route not found (%s)", rs.Primary.ID)
+			return fmt.Errorf("outscale vpn clientection route not found (%s)", rs.Primary.ID)
 		}
 		return nil
 	}
 }
 
-func testAccOutscaleVPNConnectionRouteDestroy(s *terraform.State) error {
-	conn := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSCAPI
+func testAccOutscaleVPNclientectionRouteDestroy(s *terraform.State) error {
+	client := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSC
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "outscale_vpn_connection_route" {
+		if rs.Type != "outscale_vpn_clientection_route" {
 			continue
 		}
 
-		destinationIPRange, vpnConnectionID := oapihelpers.ParseVPNConnectionRouteID(rs.Primary.ID)
+		destinationIPRange, vpnclientectionID := oapihelpers.ParseVPNclientectionRouteID(rs.Primary.ID)
 
-		filter := oscgo.ReadVpnConnectionsRequest{
-			Filters: &oscgo.FiltersVpnConnection{
+		filter := osc.ReadVpnConnectionsRequest{
+			Filters: &osc.FiltersVpnConnection{
 				RouteDestinationIpRanges: &[]string{destinationIPRange},
-				VpnConnectionIds:         &[]string{vpnConnectionID},
+				VirtualGatewayIds:        &[]string{vpnclientectionID},
 			},
 		}
-		var resp oscgo.ReadVpnConnectionsResponse
-		var err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-			rp, httpResp, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(filter).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
+		resp, err := client.ReadVpnConnections(context.Background(), filter, options.WithRetryTimeout(DefaultTimeout))
 
-		vpnConnection := resp.GetVpnConnections()[0]
+		vpnConnection := ptr.From(resp.VpnConnections)[0]
 
 		var state string
-		for _, route := range vpnConnection.GetRoutes() {
-			if route.GetDestinationIpRange() == destinationIPRange {
-				state = route.GetState()
+		for _, route := range ptr.From(vpnConnection.Routes) {
+			if route.DestinationIpRange == destinationIPRange {
+				state = route.State
 			}
 		}
 
 		if err != nil || state == "available" {
-			return fmt.Errorf("outscale vpn connection route still exists (%s): %s", rs.Primary.ID, err)
+			return fmt.Errorf("outscale vpn clientection route still exists (%s): %s", rs.Primary.ID, err)
 		}
 
 	}
 	return nil
 }
 
-func testAccOutscaleVPNConnectionRouteConfig(bgpAsn int, publicIP, destinationIPRange string) string {
+func testAccOutscaleVPNclientectionRouteConfig(bgpAsn int, publicIP, destinationIPRange string) string {
 	return fmt.Sprintf(`
 		resource "outscale_virtual_gateway" "virtual_gateway" {
-			connection_type = "ipsec.1"
+			clientection_type = "ipsec.1"
 		}
 
 		resource "outscale_client_gateway" "customer_gateway" {
 			bgp_asn         = %d
 			public_ip       = "%s"
-			connection_type = "ipsec.1"
+			clientection_type = "ipsec.1"
 		}
 
-		resource "outscale_vpn_connection" "vpn_connection" {
+		resource "outscale_vpn_clientection" "vpn_clientection" {
 			client_gateway_id  = outscale_client_gateway.customer_gateway.id
 			virtual_gateway_id = outscale_virtual_gateway.virtual_gateway.id
-			connection_type    = "ipsec.1"
+			clientection_type    = "ipsec.1"
 			static_routes_only  = true
 		}
 
-		resource "outscale_vpn_connection_route" "foo" {
+		resource "outscale_vpn_clientection_route" "foo" {
 			destination_ip_range = "%s"
-			vpn_connection_id    = outscale_vpn_connection.vpn_connection.id
+			vpn_clientection_id    = outscale_vpn_clientection.vpn_clientection.id
 		}
 	`, bgpAsn, publicIP, destinationIPRange)
 }

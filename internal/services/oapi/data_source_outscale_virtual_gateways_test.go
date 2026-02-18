@@ -26,7 +26,7 @@ func TestAccOthers_DataSourceVpnGateways_unattached(t *testing.T) {
 func testAccDataSourceOutscaleVpnGatewaysUnattachedConfig() string {
 	return `
 		resource "outscale_virtual_gateway" "unattached" {
-			connection_type = "ipsec.1"
+			clientection_type = "ipsec.1"
 		}
 
 		data "outscale_virtual_gateways" "test_by_id" {

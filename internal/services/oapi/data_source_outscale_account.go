@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -87,13 +87,13 @@ func DataSourceAccount() *schema.Resource {
 }
 
 func DataSourceAccountRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
-	req := oscgo.ReadAccountsRequest{}
+	req := osc.ReadAccountsRequest{}
 
-	var resp oscgo.ReadAccountsResponse
+	var resp osc.ReadAccountsResponse
 	err := retry.Retry(30*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.AccountApi.ReadAccounts(context.Background()).ReadAccountsRequest(req).Execute()
+		rp, httpResp, err := client.AccountApi.ReadAccounts(ctx).ReadAccountsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}

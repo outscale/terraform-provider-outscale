@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -39,7 +39,7 @@ func DataSourceOutscaleClientGateways() *schema.Resource {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
-						"connection_type": {
+						"clientection_type": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -64,7 +64,7 @@ func DataSourceOutscaleClientGateways() *schema.Resource {
 }
 
 func DataSourceOutscaleClientGatewaysRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 	clientGatewayIDs, clientGatewayOk := d.GetOk("client_gateway_ids")
@@ -73,10 +73,10 @@ func DataSourceOutscaleClientGatewaysRead(d *schema.ResourceData, meta interface
 		return fmt.Errorf("one of filters, or client_gateway_id must be assigned")
 	}
 
-	params := oscgo.ReadClientGatewaysRequest{}
+	params := osc.ReadClientGatewaysRequest{}
 
 	if clientGatewayOk {
-		params.Filters = &oscgo.FiltersClientGateway{
+		params.Filters = &osc.FiltersClientGateway{
 			ClientGatewayIds: utils.InterfaceSliceToStringList(clientGatewayIDs.([]interface{})),
 		}
 	}
@@ -89,9 +89,9 @@ func DataSourceOutscaleClientGatewaysRead(d *schema.ResourceData, meta interface
 		}
 	}
 
-	var resp oscgo.ReadClientGatewaysResponse
+	var resp osc.ReadClientGatewaysResponse
 	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.ClientGatewayApi.ReadClientGateways(context.Background()).ReadClientGatewaysRequest(params).Execute()
+		rp, httpResp, err := client.ClientGatewayApi.ReadClientGateways(ctx).ReadClientGatewaysRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -114,17 +114,17 @@ func DataSourceOutscaleClientGatewaysRead(d *schema.ResourceData, meta interface
 	return nil
 }
 
-func flattenClientGateways(clientGateways []oscgo.ClientGateway) []map[string]interface{} {
+func flattenClientGateways(clientGateways []osc.ClientGateway) []map[string]interface{} {
 	clientGatewaysMap := make([]map[string]interface{}, len(clientGateways))
 
 	for i, clientGateway := range clientGateways {
 		clientGatewaysMap[i] = map[string]interface{}{
 			"bgp_asn":           clientGateway.GetBgpAsn(),
 			"client_gateway_id": clientGateway.GetClientGatewayId(),
-			"connection_type":   clientGateway.GetConnectionType(),
+			"clientection_type": clientGateway.GetclientectionType(),
 			"public_ip":         clientGateway.GetPublicIp(),
 			"state":             clientGateway.GetState(),
-			"tags":              FlattenOAPITagsSDK(clientGateway.GetTags()),
+			"tags":              FlattenOAPITagsSDK(clientGateway.Tags),
 		}
 	}
 	return clientGatewaysMap

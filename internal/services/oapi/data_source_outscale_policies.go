@@ -1,13 +1,12 @@
 package oapi
 
 import (
-	"context"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 	"github.com/spf13/cast"
@@ -71,21 +70,21 @@ func DataSourcePolicies() *schema.Resource {
 }
 
 func DataSourcePoliciesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 
 	var err error
-	req := oscgo.NewReadPoliciesRequest()
+	req := osc.NewReadPoliciesRequest()
 	if filtersOk {
 		req.Filters, err = buildPoliciesFilters(filters.(*schema.Set))
 		if err != nil {
 			return err
 		}
 	}
-	var resp oscgo.ReadPoliciesResponse
+	var resp osc.ReadPoliciesResponse
 	err = retry.Retry(2*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.PolicyApi.ReadPolicies(context.Background()).ReadPoliciesRequest(*req).Execute()
+		rp, httpResp, err := client.PolicyApi.ReadPolicies(ctx).ReadPoliciesRequest(*req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -120,8 +119,8 @@ func DataSourcePoliciesRead(d *schema.ResourceData, meta interface{}) error {
 	return d.Set("policies", policies)
 }
 
-func buildPoliciesFilters(set *schema.Set) (*oscgo.ReadPoliciesFilters, error) {
-	var filters oscgo.ReadPoliciesFilters
+func buildPoliciesFilters(set *schema.Set) (*osc.ReadPoliciesFilters, error) {
+	var filters osc.ReadPoliciesFilters
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -137,7 +136,7 @@ func buildPoliciesFilters(set *schema.Set) (*oscgo.ReadPoliciesFilters, error) {
 		case "scope":
 			filters.SetScope(filterValues[0])
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(ctx, name)
 		}
 	}
 	return &filters, nil

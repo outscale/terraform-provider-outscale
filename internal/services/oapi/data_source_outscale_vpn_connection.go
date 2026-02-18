@@ -1,11 +1,10 @@
 package oapi
 
 import (
-	"context"
 	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 	"github.com/spf13/cast"
@@ -19,7 +18,7 @@ func DataSourceOutscaleVPNConnection() *schema.Resource {
 		Read: DataSourceOutscaleVPNConnectionRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"vpn_connection_id": {
+			"vpn_clientection_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
@@ -31,7 +30,7 @@ func DataSourceOutscaleVPNConnection() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"connection_type": {
+			"clientection_type": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -104,35 +103,35 @@ func DataSourceOutscaleVPNConnection() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleVPNclientectionRead(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
-	vpnConnectionID, vpnConnectionOk := d.GetOk("vpn_connection_id")
+	vpnclientectionID, vpnclientectionOk := d.GetOk("vpn_clientection_id")
 
-	if !filtersOk && !vpnConnectionOk {
-		return fmt.Errorf("one of filters, or vpn_connection_id must be assigned")
+	if !filtersOk && !vpnclientectionOk {
+		return fmt.Errorf("one of filters, or vpn_clientection_id must be assigned")
 	}
 
-	params := oscgo.ReadVpnConnectionsRequest{}
+	params := osc.ReadVpnclientectionsRequest{}
 
-	if vpnConnectionOk {
-		params.Filters = &oscgo.FiltersVpnConnection{
-			VpnConnectionIds: &[]string{vpnConnectionID.(string)},
+	if vpnclientectionOk {
+		params.Filters = &osc.FiltersVpnclientection{
+			VpnclientectionIds: &[]string{vpnclientectionID.(string)},
 		}
 	}
 
 	var err error
 	if filtersOk {
-		params.Filters, err = buildOutscaleDataSourceVPNConnectionFilters(filters.(*schema.Set))
+		params.Filters, err = buildOutscaleDataSourceVPNclientectionFilters(filters.(*schema.Set))
 		if err != nil {
 			return err
 		}
 	}
 
-	var resp oscgo.ReadVpnConnectionsResponse
+	var resp osc.ReadVpnclientectionsResponse
 	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(params).Execute()
+		rp, httpResp, err := client.VpnclientectionApi.ReadVpnclientections(ctx).ReadVpnclientectionsRequest(params).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -143,52 +142,52 @@ func DataSourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{
 		return err
 	}
 
-	if len(resp.GetVpnConnections()) == 0 {
+	if len(resp.GetVpnclientections()) == 0 {
 		return ErrNoResults
 	}
-	if len(resp.GetVpnConnections()) > 1 {
+	if len(resp.GetVpnclientections()) > 1 {
 		return ErrMultipleResults
 	}
 
-	vpnConnection := resp.GetVpnConnections()[0]
+	vpnclientection := resp.GetVpnclientections()[0]
 
-	if err := d.Set("client_gateway_id", vpnConnection.GetClientGatewayId()); err != nil {
+	if err := d.Set("client_gateway_id", vpnclientection.GetClientGatewayId()); err != nil {
 		return err
 	}
-	if err := d.Set("virtual_gateway_id", vpnConnection.GetVirtualGatewayId()); err != nil {
+	if err := d.Set("virtual_gateway_id", vpnclientection.GetVirtualGatewayId()); err != nil {
 		return err
 	}
-	if err := d.Set("connection_type", vpnConnection.GetConnectionType()); err != nil {
+	if err := d.Set("clientection_type", vpnclientection.GetclientectionType()); err != nil {
 		return err
 	}
-	if err := d.Set("static_routes_only", vpnConnection.GetStaticRoutesOnly()); err != nil {
+	if err := d.Set("static_routes_only", vpnclientection.GetStaticRoutesOnly()); err != nil {
 		return err
 	}
-	if err := d.Set("client_gateway_configuration", vpnConnection.GetClientGatewayConfiguration()); err != nil {
+	if err := d.Set("client_gateway_configuration", vpnclientection.GetClientGatewayConfiguration()); err != nil {
 		return err
 	}
-	if err := d.Set("vpn_connection_id", vpnConnection.GetVpnConnectionId()); err != nil {
+	if err := d.Set("vpn_clientection_id", vpnclientection.GetVpnclientectionId()); err != nil {
 		return err
 	}
-	if err := d.Set("state", vpnConnection.GetState()); err != nil {
+	if err := d.Set("state", vpnclientection.GetState()); err != nil {
 		return err
 	}
-	if err := d.Set("routes", flattenVPNConnection(vpnConnection.GetRoutes())); err != nil {
+	if err := d.Set("routes", flattenVPNclientection(vpnclientection.GetRoutes())); err != nil {
 		return err
 	}
-	if err := d.Set("tags", FlattenOAPITagsSDK(vpnConnection.GetTags())); err != nil {
+	if err := d.Set("tags", FlattenOAPITagsSDK(vpnclientection.Tags)); err != nil {
 		return err
 	}
-	if err := d.Set("vgw_telemetries", flattenVgwTelemetries(vpnConnection.GetVgwTelemetries())); err != nil {
+	if err := d.Set("vgw_telemetries", flattenVgwTelemetries(vpnclientection.GetVgwTelemetries())); err != nil {
 		return err
 	}
-	d.SetId(vpnConnection.GetVpnConnectionId())
+	d.SetId(vpnclientection.GetVpnclientectionId())
 
 	return nil
 }
 
-func buildOutscaleDataSourceVPNConnectionFilters(set *schema.Set) (*oscgo.FiltersVpnConnection, error) {
-	var filters oscgo.FiltersVpnConnection
+func buildOutscaleDataSourceVPNclientectionFilters(set *schema.Set) (*osc.FiltersVpnclientection, error) {
+	var filters osc.FiltersVpnclientection
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -202,14 +201,14 @@ func buildOutscaleDataSourceVPNConnectionFilters(set *schema.Set) (*oscgo.Filter
 		}
 
 		switch name := m["name"].(string); name {
-		case "vpn_connection_ids":
-			filters.SetVpnConnectionIds(filterValues)
+		case "vpn_clientection_ids":
+			filters.SetVpnclientectionIds(filterValues)
 		case "virtual_gateway_ids":
 			filters.SetVirtualGatewayIds(filterValues)
 		case "client_gateway_ids":
 			filters.SetClientGatewayIds(filterValues)
-		case "connection_types":
-			filters.SetConnectionTypes(filterValues)
+		case "clientection_types":
+			filters.SetclientectionTypes(filterValues)
 		case "route_destination_ip_ranges":
 			filters.SetRouteDestinationIpRanges(filterValues)
 		case "states":
@@ -225,7 +224,7 @@ func buildOutscaleDataSourceVPNConnectionFilters(set *schema.Set) (*oscgo.Filter
 		case "tags":
 			filters.SetTags(filterValues)
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(ctx, name)
 		}
 	}
 	return &filters, nil

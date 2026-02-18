@@ -9,13 +9,13 @@ import (
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 )
 
-func TestAccNet_PeeringsConnectionDataSource_basic(t *testing.T) {
+func TestAccNet_PeeringsclientectionDataSource_basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleLinPeeringsConnectionConfig(oapihelpers.GetAccepterOwnerId()),
+				Config: testAccDataSourceOutscaleLinPeeringsclientectionConfig(oapihelpers.GetAccepterOwnerId()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.outscale_net_peerings.outscale_net_peerings", "net_peerings.#", "1"),
 				),
@@ -24,7 +24,7 @@ func TestAccNet_PeeringsConnectionDataSource_basic(t *testing.T) {
 	})
 }
 
-func testAccDataSourceOutscaleLinPeeringsConnectionConfig(accountId string) string {
+func testAccDataSourceOutscaleLinPeeringsclientectionConfig(accountId string) string {
 	return fmt.Sprintf(`
 	resource "outscale_net" "outscale_net" {
 		ip_range = "10.10.0.0/24"

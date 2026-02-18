@@ -10,7 +10,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
-func TestAccOthers_VPNConnectionDataSource_basic(t *testing.T) {
+func TestAccOthers_VPNclientectionDataSource_basic(t *testing.T) {
 	publicIP := fmt.Sprintf("172.0.0.%d", utils.RandIntRange(1, 255))
 	bgpAsn := oapihelpers.RandBgpAsn()
 
@@ -19,13 +19,13 @@ func TestAccOthers_VPNConnectionDataSource_basic(t *testing.T) {
 		Providers: testacc.SDKProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleVPNConnectionDataSourceConfigBasic(bgpAsn, publicIP),
+				Config: testAccOutscaleVPNclientectionDataSourceConfigBasic(bgpAsn, publicIP),
 			},
 		},
 	})
 }
 
-func TestAccOthers_VPNConnectionDataSource_withFilters(t *testing.T) {
+func TestAccOthers_VPNclientectionDataSource_withFilters(t *testing.T) {
 	publicIP := fmt.Sprintf("172.0.0.%d", utils.RandIntRange(1, 255))
 	bgpAsn := oapihelpers.RandBgpAsn()
 
@@ -34,28 +34,28 @@ func TestAccOthers_VPNConnectionDataSource_withFilters(t *testing.T) {
 		Providers: testacc.SDKProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleVPNConnectionDataSourceConfigWithFilters(bgpAsn, publicIP),
+				Config: testAccOutscaleVPNclientectionDataSourceConfigWithFilters(bgpAsn, publicIP),
 			},
 		},
 	})
 }
 
-func testAccOutscaleVPNConnectionDataSourceConfigBasic(bgpAsn int, publicIP string) string {
+func testAccOutscaleVPNclientectionDataSourceConfigBasic(bgpAsn int, publicIP string) string {
 	return fmt.Sprintf(`
 		resource "outscale_virtual_gateway" "virtual_gateway1" {
-			connection_type = "ipsec.1"
+			clientection_type = "ipsec.1"
 		}
 
 		resource "outscale_client_gateway" "customer_gateway1" {
 			bgp_asn         = %d
 			public_ip       = "%s"
-			connection_type = "ipsec.1"
+			clientection_type = "ipsec.1"
 		}
 
-		resource "outscale_vpn_connection" "foo1" {
+		resource "outscale_vpn_clientection" "foo1" {
 			client_gateway_id  = outscale_client_gateway.customer_gateway1.id
 			virtual_gateway_id = outscale_virtual_gateway.virtual_gateway1.id
-			connection_type    = "ipsec.1"
+			clientection_type    = "ipsec.1"
 			static_routes_only  = true
 
 			tags {
@@ -64,35 +64,35 @@ func testAccOutscaleVPNConnectionDataSourceConfigBasic(bgpAsn int, publicIP stri
 			}
 		}
 
-		data "outscale_vpn_connection" "test" {
-			vpn_connection_id = outscale_vpn_connection.foo1.id
+		data "outscale_vpn_clientection" "test" {
+			vpn_clientection_id = outscale_vpn_clientection.foo1.id
 		}
 	`, bgpAsn, publicIP)
 }
 
-func testAccOutscaleVPNConnectionDataSourceConfigWithFilters(bgpAsn int, publicIP string) string {
+func testAccOutscaleVPNclientectionDataSourceConfigWithFilters(bgpAsn int, publicIP string) string {
 	return fmt.Sprintf(`
 		resource "outscale_virtual_gateway" "virtual_gateway" {
-			connection_type = "ipsec.1"
+			clientection_type = "ipsec.1"
 		}
 
 		resource "outscale_client_gateway" "customer_gateway" {
 			bgp_asn         = %d
 			public_ip       = "%s"
-			connection_type = "ipsec.1"
+			clientection_type = "ipsec.1"
 		}
 
-		resource "outscale_vpn_connection" "foo" {
+		resource "outscale_vpn_clientection" "foo" {
 			client_gateway_id  = outscale_client_gateway.customer_gateway.id
 			virtual_gateway_id = outscale_virtual_gateway.virtual_gateway.id
-			connection_type    = "ipsec.1"
+			clientection_type    = "ipsec.1"
 			static_routes_only  = true
 		}
 
-		data "outscale_vpn_connection" "test" {
+		data "outscale_vpn_clientection" "test" {
 			filter {
-				name = "vpn_connection_ids"
-				values = [outscale_vpn_connection.foo.id]
+				name = "vpn_clientection_ids"
+				values = [outscale_vpn_clientection.foo.id]
 			}
 		}
 	`, bgpAsn, publicIP)

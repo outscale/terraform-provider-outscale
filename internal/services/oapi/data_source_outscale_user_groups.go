@@ -1,14 +1,13 @@
 package oapi
 
 import (
-	"context"
 	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
@@ -55,8 +54,9 @@ func DataSourceUserGroups() *schema.Resource {
 }
 
 func DataSourceUserGroupsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
-	req := oscgo.ReadUserGroupsRequest{}
+	client := meta.(*client.OutscaleClient).OSC
+
+	req := osc.ReadUserGroupsRequest{}
 
 	var err error
 	filters, filtersOk := d.GetOk("filter")
@@ -67,9 +67,9 @@ func DataSourceUserGroupsRead(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	var resp oscgo.ReadUserGroupsResponse
+	var resp osc.ReadUserGroupsResponse
 	err = retry.Retry(2*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.UserGroupApi.ReadUserGroups(context.Background()).ReadUserGroupsRequest(req).Execute()
+		rp, httpResp, err := client.UserGroupApi.ReadUserGroups(ctx).ReadUserGroupsRequest(req).Execute()
 		if err != nil {
 			return utils.CheckThrottling(httpResp, err)
 		}
@@ -100,8 +100,8 @@ func DataSourceUserGroupsRead(d *schema.ResourceData, meta interface{}) error {
 	return d.Set("user_groups", userGroups)
 }
 
-func buildUserGroupsFilters(set *schema.Set) (*oscgo.FiltersUserGroup, error) {
-	var filters oscgo.FiltersUserGroup
+func buildUserGroupsFilters(set *schema.Set) (*osc.FiltersUserGroup, error) {
+	var filters osc.FiltersUserGroup
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -115,7 +115,7 @@ func buildUserGroupsFilters(set *schema.Set) (*oscgo.FiltersUserGroup, error) {
 		case "user_group_ids":
 			filters.SetUserGroupIds(filterValues)
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(ctx, name)
 		}
 	}
 	return &filters, nil

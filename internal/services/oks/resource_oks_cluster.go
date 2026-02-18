@@ -26,6 +26,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/outscale/osc-sdk-go/v3/pkg/oks"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
@@ -455,6 +456,10 @@ func (r *oksClusterResource) Create(ctx context.Context, req resource.CreateRequ
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
+	timeout, diags := plan.Timeouts.Create(ctx, CreateDefaultTimeout)
+	if fwhelpers.CheckDiags(resp, diags) {
+		return
+	}
 
 	input := oks.ClusterInput{
 		Name:      plan.Name.ValueString(),
@@ -537,7 +542,7 @@ func (r *oksClusterResource) Create(ctx context.Context, req resource.CreateRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	createResp, err := r.Client.CreateCluster(ctx, input)
+	createResp, err := r.Client.CreateCluster(ctx, input, options.WithRetryTimeout(timeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Create Cluster",
@@ -552,7 +557,7 @@ func (r *oksClusterResource) Create(ctx context.Context, req resource.CreateRequ
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
-	data, err := r.setOKSClusterState(ctx, plan, to)
+	data, err := r.read(ctx, plan, to)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to set Cluster state",
@@ -570,12 +575,12 @@ func (r *oksClusterResource) Read(ctx context.Context, req resource.ReadRequest,
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
-
 	to, diag := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
-	data, err := r.setOKSClusterState(ctx, data, to)
+
+	data, err := r.read(ctx, data, to)
 	if err != nil {
 		if oks.IsNotFound(err) {
 			resp.State.RemoveResource(ctx)
@@ -601,6 +606,10 @@ func (r *oksClusterResource) Update(ctx context.Context, req resource.UpdateRequ
 	resp.Diagnostics.Append(diag...)
 
 	diag = req.State.Get(ctx, &state)
+	if fwhelpers.CheckDiags(resp, diag) {
+		return
+	}
+	timeout, diag := plan.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
@@ -719,7 +728,7 @@ func (r *oksClusterResource) Update(ctx context.Context, req resource.UpdateRequ
 		updateReq.Tags = &tags
 	}
 
-	updateResp, err := r.Client.UpdateCluster(ctx, state.Id.ValueString(), updateReq)
+	updateResp, err := r.Client.UpdateCluster(ctx, state.Id.ValueString(), updateReq, options.WithRetryTimeout(timeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Update Cluster",
@@ -729,10 +738,6 @@ func (r *oksClusterResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 	state.RequestId = to.String(updateResp.ResponseContext.RequestId)
 
-	timeout, diag := state.Timeouts.Update(ctx, UpdateDefaultTimeout)
-	if fwhelpers.CheckDiags(resp, diag) {
-		return
-	}
 	if doUpgrade {
 		_, err := r.waitForClusterState(ctx, state.Id.ValueString(), []string{"pending", "updating"}, []string{"ready"}, timeout)
 		if err != nil {
@@ -758,7 +763,7 @@ func (r *oksClusterResource) Update(ctx context.Context, req resource.UpdateRequ
 		tflog.Info(ctx, fmt.Sprintf("Cluster upgrading. Timeout is set at %s.", timeout.String()))
 	}
 
-	data, err := r.setOKSClusterState(ctx, state, timeout)
+	data, err := r.read(ctx, state, timeout)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to set Cluster state",
@@ -777,7 +782,12 @@ func (r *oksClusterResource) Delete(ctx context.Context, req resource.DeleteRequ
 	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
-	_, err := r.Client.DeleteCluster(ctx, data.Id.ValueString())
+	timeout, diags := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
+	if fwhelpers.CheckDiags(resp, diags) {
+		return
+	}
+
+	_, err := r.Client.DeleteCluster(ctx, data.Id.ValueString(), options.WithRetryTimeout(timeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Delete Cluster",
@@ -786,11 +796,7 @@ func (r *oksClusterResource) Delete(ctx context.Context, req resource.DeleteRequ
 		return
 	}
 
-	to, diags := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
-	if fwhelpers.CheckDiags(resp, diags) {
-		return
-	}
-	_, err = r.waitForClusterState(ctx, data.Id.ValueString(), []string{"pending", "deleting"}, []string{}, to)
+	_, err = r.waitForClusterState(ctx, data.Id.ValueString(), []string{"pending", "deleting"}, []string{}, timeout)
 	if err != nil {
 		if !oks.IsNotFound(err) {
 			resp.Diagnostics.AddError("Unable to wait for Cluster complete deletion.", "Error: "+err.Error())
@@ -803,7 +809,7 @@ func (r *oksClusterResource) waitForClusterState(ctx context.Context, id string,
 		Pending: pending,
 		Target:  target,
 		Refresh: func() (any, string, error) {
-			resp, err := r.Client.GetCluster(ctx, id)
+			resp, err := r.Client.GetCluster(ctx, id, options.WithRetryTimeout(timeout))
 			if err != nil {
 				return resp, "", err
 			}
@@ -812,7 +818,6 @@ func (r *oksClusterResource) waitForClusterState(ctx context.Context, id string,
 			}
 			return resp, *resp.Cluster.Statuses.Status, nil
 		},
-		Timeout: timeout,
 	})
 	if err != nil {
 		return nil, err
@@ -940,7 +945,7 @@ func (r *oksClusterResource) setOKSStatuses(ctx context.Context, data *ClusterMo
 	return nil
 }
 
-func (r *oksClusterResource) setOKSClusterState(ctx context.Context, data ClusterModel, timeout time.Duration) (ClusterModel, error) {
+func (r *oksClusterResource) read(ctx context.Context, data ClusterModel, timeout time.Duration) (ClusterModel, error) {
 	resp, err := r.waitForClusterState(ctx, data.Id.ValueString(), []string{"pending", "deploying", "updating", "upgrading"}, []string{"ready", "deleting"}, timeout)
 	if err != nil {
 		return data, err
@@ -985,7 +990,7 @@ func (r *oksClusterResource) setOKSClusterState(ctx context.Context, data Cluste
 	data.RequestId = to.String(resp.ResponseContext.RequestId)
 	data.Version = to.String(cluster.Version)
 
-	kubeconfigResp, err := r.Client.GetKubeconfig(ctx, cluster.Id, nil)
+	kubeconfigResp, err := r.Client.GetKubeconfig(ctx, cluster.Id, nil, options.WithRetryTimeout(timeout))
 	if err != nil {
 		return data, err
 	}
