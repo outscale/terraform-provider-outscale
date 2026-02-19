@@ -38,7 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### 🌱 Others
 - (nothing yet)
 
-## [1.4.0] - 2026-02-18
+## [1.4.0] - 2026-02-19
 
 ### ✨ Added
 * ✨ feat(vm): tpm support by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/655
