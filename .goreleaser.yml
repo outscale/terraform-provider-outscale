@@ -54,4 +54,5 @@ release:
           name_template: "{{ .ProjectName }}_{{ .Version }}_manifest.json"
     draft: true
 
-changelog: use:github
+changelog:
+    use: github
