@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
+	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -31,7 +32,7 @@ func WaitForResource[T any](ctx context.Context, conf *retry.StateChangeConf) (*
 	return resp, nil
 }
 
-func CheckDiags[T *resource.CreateResponse | *resource.UpdateResponse | *resource.DeleteResponse | *resource.ReadResponse | *resource.ModifyPlanResponse | *resource.ImportStateResponse | *datasource.ReadResponse | *resource.ValidateConfigResponse | *ephemeral.OpenResponse](resp T, diags diag.Diagnostics) bool {
+func CheckDiags[T *resource.CreateResponse | *resource.UpdateResponse | *resource.DeleteResponse | *resource.ReadResponse | *resource.ModifyPlanResponse | *resource.ImportStateResponse | *datasource.ReadResponse | *resource.ValidateConfigResponse | *ephemeral.OpenResponse | *provider.ConfigureResponse](resp T, diags diag.Diagnostics) bool {
 	switch r := any(resp).(type) {
 	case *resource.DeleteResponse:
 		r.Diagnostics.Append(diags...)
@@ -57,6 +58,9 @@ func CheckDiags[T *resource.CreateResponse | *resource.UpdateResponse | *resourc
 	case *datasource.ValidateConfigResponse:
 		r.Diagnostics.Append(diags...)
 		return r.Diagnostics.HasError()
+	case *provider.ConfigureResponse:
+		r.Diagnostics.Append(diags...)
+		return r.Diagnostics.HasError()
 	default:
 		return true
 	}
@@ -75,25 +79,24 @@ func GetAttrTypes(model any) map[string]attr.Type {
 
 	v := reflect.TypeOf(model)
 
-	for i := range v.NumField() {
-		field := v.Field(i)
+	for field := range v.Fields() {
 		tfsdkTag := field.Tag.Get("tfsdk")
 		if tfsdkTag == "" {
 			continue
 		}
 
 		switch field.Type {
-		case reflect.TypeOf(types.String{}):
+		case reflect.TypeFor[types.String]():
 			attrTypes[tfsdkTag] = types.StringType
-		case reflect.TypeOf(types.Bool{}):
+		case reflect.TypeFor[types.Bool]():
 			attrTypes[tfsdkTag] = types.BoolType
-		case reflect.TypeOf(types.Int64{}):
+		case reflect.TypeFor[types.Int64]():
 			attrTypes[tfsdkTag] = types.Int64Type
-		case reflect.TypeOf(types.Float64{}):
+		case reflect.TypeFor[types.Float64]():
 			attrTypes[tfsdkTag] = types.Float64Type
-		case reflect.TypeOf(types.Int32{}):
+		case reflect.TypeFor[types.Int32]():
 			attrTypes[tfsdkTag] = types.Int32Type
-		case reflect.TypeOf(fwtypes.CaseInsensitiveStringValue{}):
+		case reflect.TypeFor[fwtypes.CaseInsensitiveStringValue]():
 			attrTypes[tfsdkTag] = fwtypes.CaseInsensitiveStringType{}
 		default:
 			panic(fmt.Sprintf("unhandled field type: %v for field: %s", field.Type, field.Name))

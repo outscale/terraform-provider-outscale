@@ -10,7 +10,6 @@ import (
 func TestAccOKSQuotasDataSource_basic(t *testing.T) {
 	resourceName := "data.outscale_oks_quotas.quotas"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 
 		Steps: []resource.TestStep{

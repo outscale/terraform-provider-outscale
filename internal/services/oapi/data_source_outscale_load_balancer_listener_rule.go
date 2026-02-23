@@ -2,14 +2,13 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
-
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
@@ -59,32 +58,32 @@ func attrLBListenerRule() map[string]*schema.Schema {
 
 func DataSourceOutscaleLoadBalancerLDRule() *schema.Resource {
 	return &schema.Resource{
-		Read:   DataSourceOutscaleLoadBalancerLDRuleRead,
-		Schema: getDataSourceSchemas(attrLBListenerRule()),
+		ReadContext: DataSourceOutscaleLoadBalancerLDRuleRead,
+		Schema:      getDataSourceSchemas(attrLBListenerRule()),
 	}
 }
 
-func DataSourceOutscaleLoadBalancerLDRuleRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleLoadBalancerLDRuleRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	lrNamei, nameOk := d.GetOk("listener_rule_name")
 	filters, filtersOk := d.GetOk("filter")
-	filter := &oscgo.FiltersListenerRule{}
+	filter := &osc.FiltersListenerRule{}
 
 	if !nameOk && !filtersOk {
-		return fmt.Errorf("listener_rule_name must be assigned")
+		return diag.Errorf("listener_rule_name must be assigned")
 	}
 
 	if filtersOk {
 		set := filters.(*schema.Set)
 
 		if set.Len() < 1 {
-			return fmt.Errorf("filter can't be empty")
+			return diag.Errorf("filter can't be empty")
 		}
 		for _, v := range set.List() {
-			m := v.(map[string]interface{})
+			m := v.(map[string]any)
 			filterValues := make([]string, 0)
-			for _, e := range m["values"].([]interface{}) {
+			for _, e := range m["values"].([]any) {
 				filterValues = append(filterValues, e.(string))
 			}
 
@@ -94,37 +93,26 @@ func DataSourceOutscaleLoadBalancerLDRuleRead(d *schema.ResourceData, meta inter
 			case "listener_rule_names":
 				filter.ListenerRuleNames = &filterValues
 			default:
-				return utils.UnknownDataSourceFilterError(context.Background(), name)
+				return diag.FromErr(utils.UnknownDataSourceFilterError(name))
 			}
 		}
 	} else {
-		filter = &oscgo.FiltersListenerRule{
+		filter = &osc.FiltersListenerRule{
 			ListenerRuleNames: &[]string{lrNamei.(string)},
 		}
 	}
 
-	req := oscgo.ReadListenerRulesRequest{
+	req := osc.ReadListenerRulesRequest{
 		Filters: filter,
 	}
 
-	var resp oscgo.ReadListenerRulesResponse
-	var err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.ListenerApi.ReadListenerRules(
-			context.Background()).
-			ReadListenerRulesRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
-
+	resp, err := client.ReadListenerRules(ctx, req, options.WithRetryTimeout(5*time.Minute))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	if len(*resp.ListenerRules) < 1 {
-		return ErrNoResults
+	if resp.ListenerRules == nil || len(*resp.ListenerRules) < 1 {
+		return diag.FromErr(ErrNoResults)
 	}
 	lr := (*resp.ListenerRules)[0]
 	if lr.Action != nil {

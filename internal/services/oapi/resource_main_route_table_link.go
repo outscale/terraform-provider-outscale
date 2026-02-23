@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -11,10 +12,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 )
 
 var (
@@ -33,7 +36,7 @@ type MainRouteTableLinkModel struct {
 }
 
 type resourceMainRouteTableLink struct {
-	Client *oscgo.APIClient
+	Client *osc.Client
 }
 
 func NewResourceMainRouteTableLink() resource.Resource {
@@ -48,12 +51,12 @@ func (r *resourceMainRouteTableLink) Configure(_ context.Context, req resource.C
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected *osc.APIClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *osc.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
 	}
-	r.Client = client.OSCAPI
+	r.Client = client.OSC
 }
 
 func (r *resourceMainRouteTableLink) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -115,29 +118,16 @@ func (r *resourceMainRouteTableLink) Schema(ctx context.Context, _ resource.Sche
 	}
 }
 
-func (r *resourceMainRouteTableLink) GetAssociatedRouteTable(ctx context.Context, data MainRouteTableLinkModel) (oscgo.ReadRouteTablesResponse, error) {
-	var readResp oscgo.ReadRouteTablesResponse
-	routeTableFilters := oscgo.FiltersRouteTable{
+func (r *resourceMainRouteTableLink) GetAssociatedRouteTable(ctx context.Context, to time.Duration, data MainRouteTableLinkModel) (*osc.ReadRouteTablesResponse, error) {
+	routeTableFilters := osc.FiltersRouteTable{
 		NetIds:             &[]string{data.NetId.ValueString()},
-		LinkRouteTableMain: &[]bool{true}[0],
+		LinkRouteTableMain: new(true),
 	}
-	readReq := oscgo.ReadRouteTablesRequest{
+	readReq := osc.ReadRouteTablesRequest{
 		Filters: &routeTableFilters,
 	}
 
-	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
-	if diags.HasError() {
-		return readResp, fmt.Errorf("unable to parse 'route table' read timeout value: %v", diags.Errors())
-	}
-
-	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.RouteTableApi.ReadRouteTables(ctx).ReadRouteTablesRequest(readReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		readResp = rp
-		return nil
-	})
+	readResp, err := r.Client.ReadRouteTables(ctx, readReq, options.WithRetryTimeout(to))
 	if err != nil {
 		return readResp, err
 	}
@@ -154,33 +144,24 @@ func (r *resourceMainRouteTableLink) Create(ctx context.Context, req resource.Cr
 	}
 
 	createTimeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
-	routeTableResp, err := r.GetAssociatedRouteTable(ctx, data)
+	routeTableResp, err := r.GetAssociatedRouteTable(ctx, createTimeout, data)
 	if err != nil {
 		return
 	}
-	routeTable := routeTableResp.GetRouteTables()[0]
-	oldLinkRouteTableId := routeTable.GetLinkRouteTables()[0].GetLinkRouteTableId()
-	defaultRouteTableId := routeTable.GetLinkRouteTables()[0].GetRouteTableId()
+	routeTable := ptr.From(routeTableResp.RouteTables)[0]
+	oldLinkRouteTableId := routeTable.LinkRouteTables[0].LinkRouteTableId
+	defaultRouteTableId := routeTable.LinkRouteTables[0].RouteTableId
 
-	createReq := oscgo.UpdateRouteTableLinkRequest{
+	createReq := osc.UpdateRouteTableLinkRequest{
 		RouteTableId:     data.RouteTableId.ValueString(),
 		LinkRouteTableId: oldLinkRouteTableId,
 	}
 
-	var createResp oscgo.UpdateRouteTableLinkResponse
-	err = retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.RouteTableApi.UpdateRouteTableLink(ctx).UpdateRouteTableLinkRequest(createReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		createResp = rp
-		return nil
-	})
+	createResp, err := r.Client.UpdateRouteTableLink(ctx, createReq, options.WithRetryTimeout(createTimeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to set the Main Route Table.",
@@ -188,13 +169,14 @@ func (r *resourceMainRouteTableLink) Create(ctx context.Context, req resource.Cr
 		)
 		return
 	}
-	data.DefaultRouteTableId = types.StringValue(defaultRouteTableId)
-	linkRouteTableId := createResp.GetLinkRouteTableId()
-	data.RequestId = types.StringValue(createResp.ResponseContext.GetRequestId())
-	data.LinkRouteTableId = types.StringValue(linkRouteTableId)
-	data.Id = types.StringValue(linkRouteTableId)
+	data.DefaultRouteTableId = to.String(defaultRouteTableId)
 
-	data, err = setMainRouteTableLinkState(ctx, r, data)
+	linkRouteTableId := ptr.From(createResp.LinkRouteTableId)
+	data.RequestId = to.String(createResp.ResponseContext.RequestId)
+	data.LinkRouteTableId = to.String(linkRouteTableId)
+	data.Id = to.String(linkRouteTableId)
+
+	data, err = r.read(ctx, createTimeout, data)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to set Main Route Table Link state",
@@ -203,9 +185,6 @@ func (r *resourceMainRouteTableLink) Create(ctx context.Context, req resource.Cr
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceMainRouteTableLink) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -216,7 +195,12 @@ func (r *resourceMainRouteTableLink) Read(ctx context.Context, req resource.Read
 		return
 	}
 
-	data, err := setMainRouteTableLinkState(ctx, r, data)
+	timeout, diags := data.Timeouts.Read(ctx, DeleteDefaultTimeout)
+	if fwhelpers.CheckDiags(resp, diags) {
+		return
+	}
+
+	data, err := r.read(ctx, timeout, data)
 	if err != nil {
 		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
@@ -229,9 +213,6 @@ func (r *resourceMainRouteTableLink) Read(ctx context.Context, req resource.Read
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceMainRouteTableLink) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -246,55 +227,48 @@ func (r *resourceMainRouteTableLink) Delete(ctx context.Context, req resource.De
 	}
 
 	deleteTimeout, diags := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
-	delReq := oscgo.UpdateRouteTableLinkRequest{
+	delReq := osc.UpdateRouteTableLinkRequest{
 		LinkRouteTableId: data.LinkRouteTableId.ValueString(),
 		RouteTableId:     data.DefaultRouteTableId.ValueString(),
 	}
 
-	err := retry.RetryContext(ctx, deleteTimeout, func() *retry.RetryError {
-		_, httpResp, err := r.Client.RouteTableApi.UpdateRouteTableLink(ctx).UpdateRouteTableLinkRequest(delReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	_, err := r.Client.UpdateRouteTableLink(ctx, delReq, options.WithRetryTimeout(deleteTimeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to unlink the Main Route Table.",
 			err.Error(),
 		)
-		return
 	}
 }
 
-func setMainRouteTableLinkState(ctx context.Context, r *resourceMainRouteTableLink, data MainRouteTableLinkModel) (MainRouteTableLinkModel, error) {
-	routeTableResp, err := r.GetAssociatedRouteTable(ctx, data)
-	routeTable := routeTableResp.GetRouteTables()[0]
+func (r *resourceMainRouteTableLink) read(ctx context.Context, timeout time.Duration, data MainRouteTableLinkModel) (MainRouteTableLinkModel, error) {
+	routeTableResp, err := r.GetAssociatedRouteTable(ctx, timeout, data)
 	if err != nil {
 		return data, err
 	}
-	data.RequestId = types.StringValue(routeTableResp.ResponseContext.GetRequestId())
-	if len(routeTableResp.GetRouteTables()) == 0 {
+	if routeTableResp.RouteTables == nil || len(*routeTableResp.RouteTables) == 0 {
 		return data, ErrResourceEmpty
 	}
+	routeTable := (*routeTableResp.RouteTables)[0]
 
-	var mainRouteTableLink oscgo.LinkRouteTable
-	for _, elem := range routeTable.GetLinkRouteTables() {
-		if elem.GetLinkRouteTableId() == data.LinkRouteTableId.ValueString() {
+	data.RequestId = to.String(routeTableResp.ResponseContext.RequestId)
+
+	var mainRouteTableLink osc.LinkRouteTable
+	for _, elem := range routeTable.LinkRouteTables {
+		if elem.LinkRouteTableId == data.LinkRouteTableId.ValueString() {
 			mainRouteTableLink = elem
 		}
 	}
-	data.LinkRouteTableId = types.StringValue(mainRouteTableLink.GetLinkRouteTableId())
-	data.Main = types.BoolValue(mainRouteTableLink.GetMain())
-	data.NetId = types.StringValue(mainRouteTableLink.GetNetId())
-	data.RouteTableId = types.StringValue(mainRouteTableLink.GetRouteTableId())
-	data.SubnetId = types.StringValue(mainRouteTableLink.GetSubnetId())
-	data.Id = types.StringValue(mainRouteTableLink.GetLinkRouteTableId())
+	data.LinkRouteTableId = to.String(mainRouteTableLink.LinkRouteTableId)
+	data.Main = to.Bool(mainRouteTableLink.Main)
+	data.NetId = to.String(mainRouteTableLink.NetId)
+	data.RouteTableId = to.String(mainRouteTableLink.RouteTableId)
+	data.SubnetId = to.String(mainRouteTableLink.SubnetId)
+	data.Id = to.String(mainRouteTableLink.LinkRouteTableId)
 
 	return data, nil
 }

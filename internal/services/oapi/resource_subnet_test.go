@@ -13,7 +13,6 @@ func TestAccNet_WithSubNet_Basic(t *testing.T) {
 	resourceName := "outscale_subnet.subnet"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -34,8 +33,7 @@ func TestAccNet_WithSubNet_Basic(t *testing.T) {
 
 func TestAccNet_WithSubNet_Basic_Migration(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { testacc.PreCheck(t) },
-		Steps:    testacc.FrameworkMigrationTestSteps("1.1.0", testAccOutscaleSubnetConfig(utils.GetRegion(), false)),
+		Steps: testacc.FrameworkMigrationTestSteps("1.1.0", testAccOutscaleSubnetConfig(utils.GetRegion(), false)),
 	})
 }
 

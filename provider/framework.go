@@ -2,12 +2,14 @@ package provider
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/boolvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -16,6 +18,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 	"github.com/outscale/terraform-provider-outscale/internal/services/oapi"
 	"github.com/outscale/terraform-provider-outscale/internal/services/oks"
 )
@@ -44,13 +48,13 @@ func NewWithConfigure(version string, on func(*client.OutscaleClient)) provider.
 }
 
 type ProviderModel struct {
-	AccessKeyId types.String `tfsdk:"access_key_id"`
-	SecretKeyId types.String `tfsdk:"secret_key_id"`
-	Region      types.String `tfsdk:"region"`
-	API         types.List   `tfsdk:"api"`
-	OKS         types.List   `tfsdk:"oks"`
-	ConfigFile  types.String `tfsdk:"config_file"`
-	Profile     types.String `tfsdk:"profile"`
+	AccessKey  types.String `tfsdk:"access_key_id"`
+	SecretKey  types.String `tfsdk:"secret_key_id"`
+	Region     types.String `tfsdk:"region"`
+	API        types.List   `tfsdk:"api"`
+	OKS        types.List   `tfsdk:"oks"`
+	ConfigFile types.String `tfsdk:"config_file"`
+	Profile    types.String `tfsdk:"profile"`
 
 	// Deprecated
 	X509KeyPath  types.String `tfsdk:"x509_key_path"`
@@ -200,84 +204,17 @@ func (p *FrameworkProvider) Schema(ctx context.Context, req provider.SchemaReque
 
 func (p *FrameworkProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
 	var config ProviderModel
-
-	diags := req.Config.Get(ctx, &config)
-	resp.Diagnostics.Append(diags...)
-
-	if resp.Diagnostics.HasError() {
+	diag := req.Config.Get(ctx, &config)
+	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
 
-	if config.AccessKeyId.IsUnknown() {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("access_key_id"),
-			"Unknown Outscale API AccessKeyId",
-			"The provider cannot create the Outscale API client as there is an unknown configuration value for the Outscale API access_key_id. "+
-				"Either target apply the source Outscale of the value first, set the value statically in the configuration, or use the 'OSC_ACCESS_KEY or OUTSCALE_ACCESSKEYID' environment variable.",
-		)
-	}
-
-	if config.SecretKeyId.IsUnknown() {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("secret_key_id"),
-			"Unknown HashiCups API SecretKeyId",
-			"The provider cannot create the Outscale API client as there is an unknown configuration value for the Outscale API secret_key_id. "+
-				"Either target apply the source of the value first, set the value statically in the configuration, or use the 'OSC_SECRET_KEY or OUTSCALE_SECRETKEYID' environment variable.",
-		)
-	}
-
-	if config.Region.IsUnknown() {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("region"),
-			"Unknown Outscale API Region",
-			"The provider cannot create the Outscale API client as there is an unknown configuration value for the Outscale API region. "+
-				"Either target apply the source of the value first, set the value statically in the configuration, or use the 'OSC_REGION or OUTSCALE_REGION' environment variable.",
-		)
-	}
-	if config.X509CertPath.IsUnknown() {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("x509_cert_path"),
-			"Unknown Outscale API X509CertPath",
-			"The provider cannot create the Outscale API client as there is an unknown configuration value for the Outscale API x509_cert_path. "+
-				"Either target apply the source of the value first, set the value statically in the configuration, or use the 'OSC_X509_CLIENT_CERT or OUTSCALE_X509CERT' environment variable.",
-		)
-	}
-
-	if config.X509KeyPath.IsUnknown() {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("x509_key_path"),
-			"Unknown Outscale API X509KeyPath",
-			"The provider cannot create the Outscale API client as there is an unknown configuration value for the Outscale API x509_key_path. "+
-				"Either target apply the source of the value first, set the value statically in the configuration, or use the 'OSC_X509_CLIENT_KEY or OUTSCALE_X509KEY' environment variable.",
-		)
-	}
-	if config.ConfigFile.IsUnknown() {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("config_file"),
-			"Unknown Outscale API ConfigFilePath",
-			"The provider cannot create the Outscale API client as there is an unknown configuration value for the Outscale API profile. "+
-				"Either target apply the source of the value first, set the value statically in the configuration, or use the 'OSC_CONFIG_FILE' environment variable.",
-		)
-	}
-	if config.Profile.IsUnknown() {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("profile"),
-			"Unknown Outscale API profile",
-			"The provider cannot create the Outscale API client as there is an unknown configuration value for the Outscale API profile. "+
-				"Either target apply the source of the value first, set the value statically in the configuration, or use the 'OSC_PROFILE' environment variable.",
-		)
-	}
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	client, err := p.ClientFW(ctx, &config, &diags)
+	client, err := config.newClient(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to Create Outscale API Client",
-			"An unexpected error occurred when creating the Outscale API client. "+
-				"If the error is not clear, please contact the provider developers.\n\n"+
-				"Outscale Client Error: "+err.Error(),
+			"Unable to create Client",
+			"If the error is not clear, please contact the provider developers.\n\n"+
+				err.Error(),
 		)
 		return
 	}
@@ -338,4 +275,102 @@ func (p *FrameworkProvider) EphemeralResources(_ context.Context) []func() ephem
 	return []func() ephemeral.EphemeralResource{
 		oapi.NewKeypairEphemeralResource,
 	}
+}
+
+func (data *ProviderModel) newClient(ctx context.Context) (*client.OutscaleClient, error) {
+	oscConfig, diag := data.buildOSCConfig(ctx)
+	if diag.HasError() {
+		return nil, fmt.Errorf("failed to build osc config: %v", diag.Errors())
+	}
+	oksConfig, diag := data.buildOKSConfig(ctx)
+	if diag.HasError() {
+		return nil, fmt.Errorf("failed to build oks config: %v", diag.Errors())
+	}
+
+	if fwhelpers.IsSet(data.AccessKey) {
+		oscConfig.AccessKey = data.AccessKey.ValueString()
+		oksConfig.AccessKey = data.AccessKey.ValueString()
+	}
+	if fwhelpers.IsSet(data.SecretKey) {
+		oscConfig.SecretKey = data.SecretKey.ValueString()
+		oksConfig.SecretKey = data.SecretKey.ValueString()
+	}
+	oscConfig.UserAgent = UserAgent
+	oksConfig.UserAgent = UserAgent
+
+	osc, err := client.NewOSCClient(oscConfig)
+	if err != nil {
+		return nil, err
+	}
+	oks, err := client.NewOKSClient(oksConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	client := &client.OutscaleClient{
+		OKS: oks,
+		OSC: osc,
+	}
+
+	return client, nil
+}
+
+func (data *ProviderModel) buildOSCConfig(ctx context.Context) (config client.Config, diags diag.Diagnostics) {
+	if fwhelpers.IsSet(data.API) {
+		apiModel, diag := to.Slice[APIModel](ctx, data.API)
+		diags.Append(diag...)
+		if diags.HasError() {
+			return
+		}
+
+		if len(apiModel) > 0 {
+			config.APIEndpoint = apiModel[0].Endpoint.ValueString()
+			config.Region = apiModel[0].Region.ValueString()
+			config.X509CertPath = apiModel[0].X509CertPath.ValueString()
+			config.X509KeyPath = apiModel[0].X509KeyPath.ValueString()
+			config.Insecure = apiModel[0].Insecure.ValueBool()
+		}
+	}
+	// fallback to deprecated configuration
+	if config.APIEndpoint == "" && len(data.Endpoints) > 0 && fwhelpers.IsSet(data.Endpoints[0].API) {
+		config.APIEndpoint = data.Endpoints[0].API.ValueString()
+	}
+	if config.X509CertPath == "" && fwhelpers.IsSet(data.X509CertPath) {
+		config.X509CertPath = data.X509CertPath.ValueString()
+	}
+	if config.X509KeyPath == "" && fwhelpers.IsSet(data.X509KeyPath) {
+		config.X509KeyPath = data.X509KeyPath.ValueString()
+	}
+	if fwhelpers.IsSet(data.Insecure) {
+		config.Insecure = data.Insecure.ValueBool()
+	}
+	if config.Region == "" && fwhelpers.IsSet(data.Region) {
+		config.Region = data.Region.ValueString()
+	}
+
+	return
+}
+
+func (data *ProviderModel) buildOKSConfig(ctx context.Context) (config client.Config, diags diag.Diagnostics) {
+	if fwhelpers.IsSet(data.OKS) {
+		oksModel, diag := to.Slice[OKSModel](ctx, data.OKS)
+		diags.Append(diag...)
+		if diags.HasError() {
+			return
+		}
+
+		if len(oksModel) > 0 {
+			config.OKSEndpoint = oksModel[0].Endpoint.ValueString()
+			config.Region = oksModel[0].Region.ValueString()
+		}
+	}
+	// fallback to deprecated configuration
+	if config.OKSEndpoint == "" && len(data.Endpoints) > 0 && fwhelpers.IsSet(data.Endpoints[0].OKS) {
+		config.OKSEndpoint = data.Endpoints[0].OKS.ValueString()
+	}
+	if config.Region == "" && fwhelpers.IsSet(data.Region) {
+		config.Region = data.Region.ValueString()
+	}
+
+	return
 }

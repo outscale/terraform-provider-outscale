@@ -16,38 +16,38 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/outscale/goutils/sdk/ptr"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
-	"github.com/outscale/osc-sdk-go/v3/pkg/iso8601"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
-	"github.com/outscale/terraform-provider-outscale/internal/framework/modifyplans"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwtypes"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/validators/validatorstring"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 var (
-	_ resource.Resource               = &resourceAccessKey{}
-	_ resource.ResourceWithConfigure  = &resourceAccessKey{}
-	_ resource.ResourceWithModifyPlan = &resourceAccessKey{}
+	_ resource.Resource              = &resourceAccessKey{}
+	_ resource.ResourceWithConfigure = &resourceAccessKey{}
 )
 
 type AccessKeyModel struct {
-	AccessKeyId          types.String   `tfsdk:"access_key_id"`
-	SecretKey            types.String   `tfsdk:"secret_key"`
-	UserName             types.String   `tfsdk:"user_name"`
-	State                types.String   `tfsdk:"state"`
-	CreationDate         types.String   `tfsdk:"creation_date"`
-	ExpirationDate       types.String   `tfsdk:"expiration_date"`
-	LastModificationDate types.String   `tfsdk:"last_modification_date"`
-	Timeouts             timeouts.Value `tfsdk:"timeouts"`
-	RequestId            types.String   `tfsdk:"request_id"`
-	Id                   types.String   `tfsdk:"id"`
+	AccessKeyId          types.String         `tfsdk:"access_key_id"`
+	SecretKey            types.String         `tfsdk:"secret_key"`
+	UserName             types.String         `tfsdk:"user_name"`
+	State                types.String         `tfsdk:"state"`
+	CreationDate         types.String         `tfsdk:"creation_date"`
+	ExpirationDate       fwtypes.ISO8601Value `tfsdk:"expiration_date"`
+	LastModificationDate types.String         `tfsdk:"last_modification_date"`
+	Timeouts             timeouts.Value       `tfsdk:"timeouts"`
+	RequestId            types.String         `tfsdk:"request_id"`
+	Id                   types.String         `tfsdk:"id"`
+	Tag                  types.String         `tfsdk:"tag"`
 }
 
 type resourceAccessKey struct {
-	Client *oscgo.APIClient
+	Client *osc.Client
 }
 
 func NewResourceAccessKey() resource.Resource {
@@ -62,23 +62,12 @@ func (r *resourceAccessKey) Configure(_ context.Context, req resource.ConfigureR
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected *osc.APIClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *osc.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
 	}
-	r.Client = client.OSCAPI
-}
-
-func (r *resourceAccessKey) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	if req.Plan.Raw.IsNull() && req.Plan.Raw.IsFullyKnown() {
-		// Return warning diagnostic to practitioners.
-		resp.Diagnostics.AddWarning(
-			"Resource Destruction Considerations",
-			"Applying this resource destruction will fully destroy this resource. "+
-				"And users will not be able to use this credentials.",
-		)
-	}
+	r.Client = client.OSC
 }
 
 func (r *resourceAccessKey) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
@@ -94,8 +83,8 @@ func (r *resourceAccessKey) ImportState(ctx context.Context, req resource.Import
 
 	var data AccessKeyModel
 	var timeouts timeouts.Value
-	data.AccessKeyId = types.StringValue(accessKeyId)
-	data.Id = types.StringValue(accessKeyId)
+	data.AccessKeyId = to.String(accessKeyId)
+	data.Id = to.String(accessKeyId)
 	resp.Diagnostics.Append(resp.State.GetAttribute(ctx, path.Root("timeouts"), &timeouts)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -103,9 +92,6 @@ func (r *resourceAccessKey) ImportState(ctx context.Context, req resource.Import
 	data.Timeouts = timeouts
 	diags := resp.State.Set(ctx, &data)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceAccessKey) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -156,13 +142,14 @@ func (r *resourceAccessKey) Schema(ctx context.Context, _ resource.SchemaRequest
 				},
 			},
 			"expiration_date": schema.StringAttribute{
-				Computed: true,
-				Optional: true,
+				CustomType: fwtypes.ISO8601Type{},
+				Computed:   true,
+				Optional:   true,
+				PlanModifiers: []planmodifier.String{
+					fwtypes.EmptyStringAsNull(),
+				},
 				Validators: []validator.String{
 					validatorstring.DateValidator(),
-				},
-				PlanModifiers: []planmodifier.String{
-					modifyplans.CheckExpirationDate(),
 				},
 			},
 			"last_modification_date": schema.StringAttribute{
@@ -177,6 +164,9 @@ func (r *resourceAccessKey) Schema(ctx context.Context, _ resource.SchemaRequest
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
+			"tag": schema.StringAttribute{
+				Optional: true,
+			},
 		},
 	}
 }
@@ -190,28 +180,27 @@ func (r *resourceAccessKey) Create(ctx context.Context, req resource.CreateReque
 	}
 
 	createTimeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
-	createReq := oscgo.CreateAccessKeyRequest{}
-	if expirDate := data.ExpirationDate.ValueString(); expirDate != "" {
-		createReq.SetExpirationDate(data.ExpirationDate.ValueString())
+	createReq := osc.CreateAccessKeyRequest{}
+
+	if fwhelpers.IsSet(data.ExpirationDate) && data.ExpirationDate.ValueString() != "" {
+		time, diag := data.ExpirationDate.ValueISO8601Time()
+		if fwhelpers.CheckDiags(resp, diag) {
+			return
+		}
+		createReq.ExpirationDate = &time
 	}
 	if useName := data.UserName.ValueString(); useName != "" {
-		createReq.SetUserName(useName)
+		createReq.UserName = new(useName)
+	}
+	if fwhelpers.IsSet(data.Tag) {
+		createReq.Tag = new(data.Tag.ValueString())
 	}
 
-	var createResp oscgo.CreateAccessKeyResponse
-	err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.AccessKeyApi.CreateAccessKey(ctx).CreateAccessKeyRequest(createReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		createResp = rp
-		return nil
-	})
+	createResp, err := r.Client.CreateAccessKey(ctx, createReq, options.WithRetryTimeout(createTimeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to create access_key resource",
@@ -220,10 +209,10 @@ func (r *resourceAccessKey) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 
-	accessKey := createResp.GetAccessKey()
-	data.RequestId = types.StringValue(createResp.ResponseContext.GetRequestId())
-	data.Id = types.StringValue(accessKey.GetAccessKeyId())
-	data.SecretKey = types.StringValue(accessKey.GetSecretKey())
+	accessKey := ptr.From(createResp.AccessKey)
+	data.RequestId = to.String(createResp.ResponseContext.RequestId)
+	data.Id = to.String(ptr.From(accessKey.AccessKeyId))
+	data.SecretKey = to.String(ptr.From(accessKey.SecretKey))
 
 	if data.State.ValueString() != "ACTIVE" {
 		if err := inactiveAccessKey(ctx, createTimeout, r, data); err != nil {
@@ -243,10 +232,8 @@ func (r *resourceAccessKey) Create(ctx context.Context, req resource.CreateReque
 		)
 		return
 	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceAccessKey) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -270,9 +257,6 @@ func (r *resourceAccessKey) Read(ctx context.Context, req resource.ReadRequest, 
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceAccessKey) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -288,35 +272,39 @@ func (r *resourceAccessKey) Update(ctx context.Context, req resource.UpdateReque
 	}
 
 	updateTimeout, diags := planData.Timeouts.Update(ctx, UpdateDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
-	updateReq := oscgo.UpdateAccessKeyRequest{
+	updateReq := osc.UpdateAccessKeyRequest{
 		AccessKeyId: stateData.AccessKeyId.ValueString(),
-		State:       ptr.To(planData.State.ValueString()),
-	}
-	if fwhelpers.HasChange(planData.ExpirationDate, stateData.ExpirationDate) {
-		if planData.ExpirationDate.ValueString() == "" {
-			updateReq.ClearExpirationDate = ptr.To(true)
-		} else {
-			updateReq.SetExpirationDate(planData.ExpirationDate.ValueString())
-			stateData.ExpirationDate = planData.ExpirationDate
-		}
+		State:       planData.State.ValueStringPointer(),
 	}
 	if useName := stateData.UserName.ValueString(); useName != "" {
-		updateReq.SetUserName(useName)
+		updateReq.UserName = new(useName)
 	}
-	var updateResp oscgo.UpdateAccessKeyResponse
-	err := retry.RetryContext(ctx, updateTimeout, func() *retry.RetryError {
-		resp, httpResp, err := r.Client.AccessKeyApi.UpdateAccessKey(ctx).UpdateAccessKeyRequest(updateReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
+	if fwhelpers.HasChange(planData.ExpirationDate, stateData.ExpirationDate) {
+		if planData.ExpirationDate.ValueString() != "" {
+			time, diag := planData.ExpirationDate.ValueISO8601Time()
+			if fwhelpers.CheckDiags(resp, diag) {
+				return
+			}
+			updateReq.ExpirationDate = &time
+		} else {
+			updateReq.ClearExpirationDate = new(true)
+			stateData.ExpirationDate = fwtypes.ISO8601String("")
 		}
-		updateResp = resp
-		return nil
-	})
+	}
+	if !planData.Tag.Equal(stateData.Tag) {
+		if planData.Tag.IsNull() {
+			updateReq.ClearTag = new(true)
+		} else {
+			updateReq.Tag = new(planData.Tag.ValueString())
+		}
+		stateData.Tag = planData.Tag
+	}
+
+	_, err := r.Client.UpdateAccessKey(ctx, updateReq, options.WithRetryTimeout(updateTimeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to update access_key resource",
@@ -325,10 +313,6 @@ func (r *resourceAccessKey) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	accKey := updateResp.GetAccessKey()
-	if !accKey.HasExpirationDate() {
-		stateData.ExpirationDate = types.StringNull()
-	}
 	err = setAccessKeyState(ctx, r, &stateData)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -339,10 +323,6 @@ func (r *resourceAccessKey) Update(ctx context.Context, req resource.UpdateReque
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &stateData)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceAccessKey) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -354,16 +334,15 @@ func (r *resourceAccessKey) Delete(ctx context.Context, req resource.DeleteReque
 	}
 
 	to, diags := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
-	delReq := oscgo.DeleteAccessKeyRequest{
+	delReq := osc.DeleteAccessKeyRequest{
 		AccessKeyId: data.AccessKeyId.ValueString(),
 	}
 	if userName := data.UserName.ValueString(); userName != "" {
-		delReq.SetUserName(userName)
+		delReq.UserName = new(userName)
 		if data.State.ValueString() != "INACTIVE" {
 			err := inactiveAccessKey(ctx, to, r, data)
 			if err != nil {
@@ -376,24 +355,17 @@ func (r *resourceAccessKey) Delete(ctx context.Context, req resource.DeleteReque
 		}
 	}
 
-	err := retry.RetryContext(ctx, to, func() *retry.RetryError {
-		_, httpResp, err := r.Client.AccessKeyApi.DeleteAccessKey(ctx).DeleteAccessKeyRequest(delReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	_, err := r.Client.DeleteAccessKey(ctx, delReq, options.WithRetryTimeout(to))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Delete access_key",
 			err.Error(),
 		)
-		return
 	}
 }
 
 func setAccessKeyState(ctx context.Context, r *resourceAccessKey, data *AccessKeyModel) error {
-	accessKeyFilters := oscgo.FiltersAccessKeys{
+	accessKeyFilters := osc.FiltersAccessKeys{
 		AccessKeyIds: &[]string{data.Id.ValueString()},
 	}
 	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
@@ -401,79 +373,59 @@ func setAccessKeyState(ctx context.Context, r *resourceAccessKey, data *AccessKe
 		return fmt.Errorf("unable to parse 'access_key' read timeout value: %v", diags.Errors())
 	}
 
-	readReq := oscgo.ReadAccessKeysRequest{
+	readReq := osc.ReadAccessKeysRequest{
 		Filters: &accessKeyFilters,
 	}
 	if !data.UserName.IsNull() {
-		readReq.SetUserName(data.UserName.ValueString())
+		readReq.UserName = data.UserName.ValueStringPointer()
 	}
 
-	var readResp oscgo.ReadAccessKeysResponse
-	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.AccessKeyApi.ReadAccessKeys(ctx).ReadAccessKeysRequest(readReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		readResp = rp
-		return nil
-	})
+	readResp, err := r.Client.ReadAccessKeys(ctx, readReq, options.WithRetryTimeout(readTimeout))
 	if err != nil {
-		return utils.GetErrorResponse(err)
+		return err
 	}
-	if len(readResp.GetAccessKeys()) == 0 {
+	if readResp.AccessKeys == nil || len(*readResp.AccessKeys) == 0 {
 		return ErrResourceEmpty
 	}
 
-	data.RequestId = types.StringValue(readResp.ResponseContext.GetRequestId())
-	acckey := readResp.GetAccessKeys()[0]
+	data.RequestId = to.String(readResp.ResponseContext.RequestId)
+	acckey := (*readResp.AccessKeys)[0]
 
-	datesEqual := false
-	if stateExpirDate := data.ExpirationDate.ValueString(); stateExpirDate != "" {
-		if stateExpirDate != "" && acckey.GetExpirationDate() != "" {
-			stateDate, err := iso8601.Parse([]byte(stateExpirDate))
-			if err != nil {
-				return err
-			}
-			remoteDate, err := iso8601.Parse([]byte(acckey.GetExpirationDate()))
-			if err != nil {
-				return err
-			}
-			datesEqual = stateDate.Equal(remoteDate)
-		}
-	}
-	if !datesEqual {
-		data.ExpirationDate = types.StringValue(acckey.GetExpirationDate())
-	}
+	data.AccessKeyId = to.String(acckey.AccessKeyId)
+	data.State = to.String(ptr.From(acckey.State))
+	data.CreationDate = to.String(from.ISO8601(acckey.CreationDate))
+	data.LastModificationDate = to.String(from.ISO8601(acckey.LastModificationDate))
 
-	data.AccessKeyId = types.StringValue(acckey.GetAccessKeyId())
-	data.State = types.StringValue(acckey.GetState())
-	data.CreationDate = types.StringValue(acckey.GetCreationDate())
-	data.LastModificationDate = types.StringValue(acckey.GetLastModificationDate())
+	// When the expiration date was just cleared (state holds ""), keep "" so
+	// Terraform sees a consistent value matching the plan. In all other cases take the value directly from the API response
+	// (date set, never set / null, or still unknown from plan (which happens on create when api returns a null date))
+	apiExpiration := to.ISO8601Value(acckey.ExpirationDate)
+	if !apiExpiration.IsNull() || data.ExpirationDate.IsUnknown() || data.ExpirationDate.ValueString() != "" {
+		data.ExpirationDate = apiExpiration
+	}
 
 	return nil
 }
 
-func inactiveAccessKey(ctx context.Context, to time.Duration, r *resourceAccessKey, data AccessKeyModel) error {
-	req := oscgo.UpdateAccessKeyRequest{
+func inactiveAccessKey(ctx context.Context, timeout time.Duration, r *resourceAccessKey, data AccessKeyModel) error {
+	req := osc.UpdateAccessKeyRequest{
 		AccessKeyId: data.Id.ValueString(),
-		State:       ptr.To("INACTIVE"),
+		State:       new("INACTIVE"),
 	}
 	if data.UserName.ValueString() != "" {
-		req.SetUserName(data.UserName.ValueString())
+		req.UserName = data.UserName.ValueStringPointer()
 	}
-	if expireDate := data.ExpirationDate.ValueString(); expireDate != "" {
-		req.SetExpirationDate(expireDate)
+	if data.ExpirationDate.ValueString() != "" {
+		time, diag := data.ExpirationDate.ValueISO8601Time()
+		if diag.HasError() {
+			return fmt.Errorf("%v", diag.Errors())
+		}
+		req.ExpirationDate = &time
 	}
 
-	err := retry.RetryContext(ctx, to, func() *retry.RetryError {
-		_, httpResp, err := r.Client.AccessKeyApi.UpdateAccessKey(ctx).UpdateAccessKeyRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	_, err := r.Client.UpdateAccessKey(ctx, req, options.WithRetryTimeout(timeout))
 	if err != nil {
-		return utils.GetErrorResponse(err)
+		return err
 	}
 	return nil
 }
