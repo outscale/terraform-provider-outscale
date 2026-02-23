@@ -4,15 +4,14 @@ import (
 	"context"
 	"fmt"
 	"testing"
-	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/services/oapi/oapihelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -25,7 +24,6 @@ func TestAccOutscaleVPNConnection_basic(t *testing.T) {
 	bgpAsn := oapihelpers.RandBgpAsn()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:      func() { testacc.PreCheck(t) },
 		IDRefreshName: resourceName,
 		Providers:     testacc.SDKProviders,
 		CheckDestroy:  testAccOutscaleVPNConnectionDestroy,
@@ -33,7 +31,7 @@ func TestAccOutscaleVPNConnection_basic(t *testing.T) {
 			{
 				Config: testAccOutscaleVPNConnectionConfig(bgpAsn, publicIP, true),
 				Check: resource.ComposeTestCheckFunc(
-					testAccOutscaleVPNConnectionExists(resourceName),
+					testAccOutscaleVPNConnectionExists(t.Context(), resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "client_gateway_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "virtual_gateway_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "connection_type"),
@@ -47,7 +45,7 @@ func TestAccOutscaleVPNConnection_basic(t *testing.T) {
 			{
 				Config: testAccOutscaleVPNConnectionConfig(bgpAsn, publicIP, false),
 				Check: resource.ComposeTestCheckFunc(
-					testAccOutscaleVPNConnectionExists(resourceName),
+					testAccOutscaleVPNConnectionExists(t.Context(), resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "client_gateway_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "virtual_gateway_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "connection_type"),
@@ -68,7 +66,6 @@ func TestAccOutscaleVPNConnection_withoutStaticRoutes(t *testing.T) {
 	bgpAsn := oapihelpers.RandBgpAsn()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:      func() { testacc.PreCheck(t) },
 		IDRefreshName: "outscale_vpn_connection.foo",
 		Providers:     testacc.SDKProviders,
 		CheckDestroy:  testAccOutscaleVPNConnectionDestroy,
@@ -76,7 +73,7 @@ func TestAccOutscaleVPNConnection_withoutStaticRoutes(t *testing.T) {
 			{
 				Config: testAccOutscaleVPNConnectionConfigWithoutStaticRoutes(bgpAsn, publicIP),
 				Check: resource.ComposeTestCheckFunc(
-					testAccOutscaleVPNConnectionExists(resourceName),
+					testAccOutscaleVPNConnectionExists(t.Context(), resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "client_gateway_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "virtual_gateway_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "connection_type"),
@@ -96,7 +93,6 @@ func TestAccOutscaleVPNConnection_withTags(t *testing.T) {
 	bgpAsn := oapihelpers.RandBgpAsn()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:      func() { testacc.PreCheck(t) },
 		IDRefreshName: resourceName,
 		Providers:     testacc.SDKProviders,
 		CheckDestroy:  testAccOutscaleVPNConnectionDestroy,
@@ -104,7 +100,7 @@ func TestAccOutscaleVPNConnection_withTags(t *testing.T) {
 			{
 				Config: testAccOutscaleVPNConnectionConfigWithTags(bgpAsn, publicIP, value),
 				Check: resource.ComposeTestCheckFunc(
-					testAccOutscaleVPNConnectionExists(resourceName),
+					testAccOutscaleVPNConnectionExists(t.Context(), resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "client_gateway_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "virtual_gateway_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "connection_type"),
@@ -127,7 +123,6 @@ func TestAccOutscaleVPNConnection_importBasic(t *testing.T) {
 	bgpAsn := oapihelpers.RandBgpAsn()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:      func() { testacc.PreCheck(t) },
 		IDRefreshName: resourceName,
 		Providers:     testacc.SDKProviders,
 		CheckDestroy:  testAccOutscaleVPNConnectionDestroy,
@@ -135,7 +130,7 @@ func TestAccOutscaleVPNConnection_importBasic(t *testing.T) {
 			{
 				Config: testAccOutscaleVPNConnectionConfig(bgpAsn, publicIP, true),
 				Check: resource.ComposeTestCheckFunc(
-					testAccOutscaleVPNConnectionExists(resourceName),
+					testAccOutscaleVPNConnectionExists(t.Context(), resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "client_gateway_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "virtual_gateway_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "connection_type"),
@@ -149,36 +144,28 @@ func TestAccOutscaleVPNConnection_importBasic(t *testing.T) {
 	})
 }
 
-func testAccOutscaleVPNConnectionExists(resourceName string) resource.TestCheckFunc {
+func testAccOutscaleVPNConnectionExists(ctx context.Context, resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
 			return fmt.Errorf("not found: %s", resourceName)
 		}
 
-		conn := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSCAPI
+		client := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSC
 
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("no vpn connection id is set")
 		}
 
-		filter := oscgo.ReadVpnConnectionsRequest{
-			Filters: &oscgo.FiltersVpnConnection{
+		filter := osc.ReadVpnConnectionsRequest{
+			Filters: &osc.FiltersVpnConnection{
 				VpnConnectionIds: &[]string{rs.Primary.ID},
 			},
 		}
 
-		var resp oscgo.ReadVpnConnectionsResponse
-		var err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-			rp, httpResp, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(filter).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
+		resp, err := client.ReadVpnConnections(ctx, filter, options.WithRetryTimeout(DefaultTimeout))
 
-		if err != nil || len(resp.GetVpnConnections()) < 1 {
+		if err != nil || resp.VpnConnections == nil || len(*resp.VpnConnections) < 1 {
 			return fmt.Errorf("outscale vpn connection not found (%s)", rs.Primary.ID)
 		}
 		return nil
@@ -186,29 +173,20 @@ func testAccOutscaleVPNConnectionExists(resourceName string) resource.TestCheckF
 }
 
 func testAccOutscaleVPNConnectionDestroy(s *terraform.State) error {
-	conn := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSCAPI
+	client := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSC
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_vpn_connection" {
 			continue
 		}
 
-		filter := oscgo.ReadVpnConnectionsRequest{
-			Filters: &oscgo.FiltersVpnConnection{
+		filter := osc.ReadVpnConnectionsRequest{
+			Filters: &osc.FiltersVpnConnection{
 				VpnConnectionIds: &[]string{rs.Primary.ID},
 			},
 		}
-		var resp oscgo.ReadVpnConnectionsResponse
-		var err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-			rp, httpResp, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(filter).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
+		resp, err := client.ReadVpnConnections(context.Background(), filter, options.WithRetryTimeout(DefaultTimeout))
 
-		if err != nil ||
-			len(resp.GetVpnConnections()) > 0 && resp.GetVpnConnections()[0].GetState() != "deleted" {
+		if err != nil || resp.VpnConnections == nil || len(*resp.VpnConnections) > 0 && *(*resp.VpnConnections)[0].State != "deleted" {
 			return fmt.Errorf("outscale vpn connection still exists (%s): %s", rs.Primary.ID, err)
 		}
 	}

@@ -9,7 +9,6 @@ import (
 
 func TestAccOthers_DataSourceProductTypes(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testacc.PreCheck(t) },
 		Providers: testacc.SDKProviders,
 		Steps: []resource.TestStep{
 			{

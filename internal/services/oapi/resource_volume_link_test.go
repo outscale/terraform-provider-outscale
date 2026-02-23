@@ -19,7 +19,6 @@ func TestAccVM_WithVolumeAttachment_Basic(t *testing.T) {
 	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -41,7 +40,6 @@ func TestAccVM_ImportVolumeAttachment_Basic(t *testing.T) {
 	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(), CheckDestroy: testAccCheckOAPIVolumeAttachmentDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -58,7 +56,6 @@ func TestAccVM_WithVolumeAttachment_Migration(t *testing.T) {
 	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { testacc.PreCheck(t) },
 		Steps: testacc.FrameworkMigrationTestSteps("1.1.3",
 			testAccOAPIVolumeAttachmentConfig(omi, testAccVmType, utils.GetRegion(), keypair, sgName),
 		),

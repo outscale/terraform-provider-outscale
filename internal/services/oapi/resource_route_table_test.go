@@ -15,7 +15,6 @@ import (
 func TestAccNet_WithRouteTable_Basic(t *testing.T) {
 	resourceName := "outscale_route_table.rtbTest"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 
 		Steps: []resource.TestStep{
@@ -36,7 +35,6 @@ func TestAccNet_RouteTable_Instance(t *testing.T) {
 	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -69,7 +67,6 @@ func TestAccNet_WithRouteTable_tags(t *testing.T) {
 	resourceName := "outscale_route_table.rtbTest"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -93,7 +90,6 @@ func TestAccNet_RouteTable_importBasic(t *testing.T) {
 	resourceName := "outscale_route_table.rtbTest"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -109,7 +105,6 @@ func TestAccNet_WithRouteTable_Migration(t *testing.T) {
 	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { testacc.PreCheck(t) },
 		Steps: testacc.FrameworkMigrationTestSteps("1.1.3",
 			testAccOAPIRouteTableConfig,
 			testAccOAPIRouteTableConfigInstance(sgName, omi, testAccVmType, utils.GetRegion())),
@@ -119,14 +114,14 @@ func TestAccNet_WithRouteTable_Migration(t *testing.T) {
 // VPC Peering connections are prefixed with pcx
 // Right now there is no VPC Peering resource
 // func TestAccOutscaleRouteTable_vpcPeering(t *testing.T) {
-// 	var v oscgo.RouteTable
+// 	var v osc.RouteTable
 
 // 	testCheck := func(*terraform.State) error {
 // 		if len(v.Routes) != 2 {
 // 			return fmt.Errorf("bad routes: %#v", v.Routes)
 // 		}
 
-// 		routes := make(map[string]oscgo.Route)
+// 		routes := make(map[string]osc.Route)
 // 		for _, r := range v.Routes {
 // 			routes[r.DestinationIpRange] = r
 // 		}
@@ -141,7 +136,7 @@ func TestAccNet_WithRouteTable_Migration(t *testing.T) {
 // 		return nil
 // 	}
 // 	resource.ParallelTest(t, resource.TestCase{
-// 		PreCheck:     func() { testacc.PreCheck(t) },
+//
 // 		Providers:    testacc.SDKProviders,
 // 		CheckDestroy: testAccCheckOAPIRouteTableDestroy,
 // 		Steps: []resource.TestStep{
@@ -158,15 +153,15 @@ func TestAccNet_WithRouteTable_Migration(t *testing.T) {
 // }
 
 // func TestAccOutscaleRouteTable_vgwRoutePropagation(t *testing.T) {
-// 	var v oscgo.RouteTable
-// 	var vgw oscgo.VpnGateway
+// 	var v osc.RouteTable
+// 	var vgw osc.VpnGateway
 
 // 	testCheck := func(*terraform.State) error {
 // 		if len(v.PropagatingVgws) != 1 {
 // 			return fmt.Errorf("bad propagating vgws: %#v", v.PropagatingVgws)
 // 		}
 
-// 		propagatingVGWs := make(map[string]*oscgo.PropagatingVgw)
+// 		propagatingVGWs := make(map[string]*osc.PropagatingVgw)
 // 		for _, gw := range v.PropagatingVgws {
 // 			propagatingVGWs[*gw.GatewayId] = gw
 // 		}
@@ -179,7 +174,7 @@ func TestAccNet_WithRouteTable_Migration(t *testing.T) {
 
 // 	}
 // 	resource.ParallelTest(t, resource.TestCase{
-// 		PreCheck:  func() { testacc.PreCheck(t) },
+//
 // 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 // 		CheckDestroy: resource.ComposeTestCheckFunc(
 // 			testAccCheckVpnGatewayDestroy,

@@ -13,7 +13,6 @@ import (
 
 func TestAccOthers_SnapshotDataSource_basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -29,7 +28,6 @@ func TestAccOthers_SnapshotDataSource_basic(t *testing.T) {
 
 func TestAccOthers_SnapshotDataSource_multipleFilters(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{

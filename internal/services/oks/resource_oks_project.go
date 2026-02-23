@@ -338,6 +338,7 @@ func (r *oksProjectResource) waitForProjectState(ctx context.Context, id string,
 	resp, err := fwhelpers.WaitForResource[oks.ProjectResponse](ctx, &retry.StateChangeConf{
 		Pending: pending,
 		Target:  target,
+		Timeout: timeout,
 		Refresh: func() (any, string, error) {
 			resp, err := r.Client.GetProject(ctx, id)
 			if err != nil {
@@ -345,7 +346,6 @@ func (r *oksProjectResource) waitForProjectState(ctx context.Context, id string,
 			}
 			return resp, string(resp.Project.Status), nil
 		},
-		Timeout: timeout,
 	})
 	if err != nil {
 		return nil, err
