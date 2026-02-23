@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"strings"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
-
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -15,9 +13,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
+	"github.com/samber/lo"
 )
 
 var (
@@ -44,7 +46,7 @@ type RouteTableLinkModel struct {
 }
 
 type resourceRouteTableLink struct {
-	Client *oscgo.APIClient
+	Client *osc.Client
 }
 
 func NewResourceRouteTableLink() resource.Resource {
@@ -59,12 +61,12 @@ func (r *resourceRouteTableLink) Configure(_ context.Context, req resource.Confi
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected *osc.APIClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *osc.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
 	}
-	r.Client = client.OSCAPI
+	r.Client = client.OSC
 }
 
 func (r *resourceRouteTableLink) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
@@ -88,15 +90,12 @@ func (r *resourceRouteTableLink) ImportState(ctx context.Context, req resource.I
 		return
 	}
 	data.Timeouts = timeouts
-	data.RouteTableId = types.StringValue(routeTableId)
-	data.LinkRouteTableId = types.StringValue(linkRouteTableId)
-	data.Id = types.StringValue(routeTableId + "_" + linkRouteTableId)
+	data.RouteTableId = to.String(routeTableId)
+	data.LinkRouteTableId = to.String(linkRouteTableId)
+	data.Id = to.String(routeTableId + "_" + linkRouteTableId)
 
 	diags := resp.State.Set(ctx, &data)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceRouteTableLink) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -164,25 +163,16 @@ func (r *resourceRouteTableLink) Create(ctx context.Context, req resource.Create
 	}
 
 	createTimeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
-	createReq := oscgo.LinkRouteTableRequest{
+	createReq := osc.LinkRouteTableRequest{
 		RouteTableId: data.RouteTableId.ValueString(),
 		SubnetId:     data.SubnetId.ValueString(),
 	}
 
-	var createResp oscgo.LinkRouteTableResponse
-	err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.RouteTableApi.LinkRouteTable(ctx).LinkRouteTableRequest(createReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		createResp = rp
-		return nil
-	})
+	createResp, err := r.Client.LinkRouteTable(ctx, createReq, options.WithRetryTimeout(createTimeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to create Route Table Link.",
@@ -190,12 +180,12 @@ func (r *resourceRouteTableLink) Create(ctx context.Context, req resource.Create
 		)
 		return
 	}
-	linkRouteTableId := createResp.GetLinkRouteTableId()
-	data.RequestId = types.StringValue(createResp.ResponseContext.GetRequestId())
-	data.LinkRouteTableId = types.StringValue(linkRouteTableId)
-	data.Id = types.StringValue(linkRouteTableId)
+	linkRouteTableId := ptr.From(createResp.LinkRouteTableId)
+	data.RequestId = to.String(createResp.ResponseContext.RequestId)
+	data.LinkRouteTableId = to.String(linkRouteTableId)
+	data.Id = to.String(linkRouteTableId)
 
-	data, err = setRouteTableLinkState(ctx, r, data)
+	data, err = r.read(ctx, data)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to set Route Table Link state",
@@ -204,9 +194,6 @@ func (r *resourceRouteTableLink) Create(ctx context.Context, req resource.Create
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceRouteTableLink) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -217,7 +204,7 @@ func (r *resourceRouteTableLink) Read(ctx context.Context, req resource.ReadRequ
 		return
 	}
 
-	data, err := setRouteTableLinkState(ctx, r, data)
+	data, err := r.read(ctx, data)
 	if err != nil {
 		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
@@ -230,9 +217,6 @@ func (r *resourceRouteTableLink) Read(ctx context.Context, req resource.ReadRequ
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceRouteTableLink) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -247,36 +231,28 @@ func (r *resourceRouteTableLink) Delete(ctx context.Context, req resource.Delete
 	}
 
 	deleteTimeout, diags := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
-	delReq := oscgo.UnlinkRouteTableRequest{
+	delReq := osc.UnlinkRouteTableRequest{
 		LinkRouteTableId: data.LinkRouteTableId.ValueString(),
 	}
 
-	err := retry.RetryContext(ctx, deleteTimeout, func() *retry.RetryError {
-		_, httpResp, err := r.Client.RouteTableApi.UnlinkRouteTable(ctx).UnlinkRouteTableRequest(delReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	_, err := r.Client.UnlinkRouteTable(ctx, delReq, options.WithRetryTimeout(deleteTimeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to delete Route Table Link.",
 			err.Error(),
 		)
-		return
 	}
 }
 
-func setRouteTableLinkState(ctx context.Context, r *resourceRouteTableLink, data RouteTableLinkModel) (RouteTableLinkModel, error) {
-	routeTableLinkFilters := oscgo.FiltersRouteTable{
+func (r *resourceRouteTableLink) read(ctx context.Context, data RouteTableLinkModel) (RouteTableLinkModel, error) {
+	routeTableLinkFilters := osc.FiltersRouteTable{
 		RouteTableIds: &[]string{data.RouteTableId.ValueString()},
 	}
-	readReq := oscgo.ReadRouteTablesRequest{
+	readReq := osc.ReadRouteTablesRequest{
 		Filters: &routeTableLinkFilters,
 	}
 
@@ -285,35 +261,25 @@ func setRouteTableLinkState(ctx context.Context, r *resourceRouteTableLink, data
 		return data, fmt.Errorf("unable to parse 'route table link' read timeout value: %v", diags.Errors())
 	}
 
-	var readResp oscgo.ReadRouteTablesResponse
-	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.RouteTableApi.ReadRouteTables(ctx).ReadRouteTablesRequest(readReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		readResp = rp
-		return nil
-	})
+	readResp, err := r.Client.ReadRouteTables(ctx, readReq, options.WithRetryTimeout(readTimeout))
 	if err != nil {
 		return data, err
 	}
-	data.RequestId = types.StringValue(readResp.ResponseContext.GetRequestId())
-	if len(readResp.GetRouteTables()) == 0 {
+	data.RequestId = to.String(readResp.ResponseContext.RequestId)
+	if readResp.RouteTables == nil || len(*readResp.RouteTables) == 0 {
 		return data, ErrResourceEmpty
 	}
 
-	var routeTableLink oscgo.LinkRouteTable
-	for _, elem := range readResp.GetRouteTables()[0].GetLinkRouteTables() {
-		if elem.GetLinkRouteTableId() == data.LinkRouteTableId.ValueString() {
-			routeTableLink = elem
-		}
-	}
-	data.LinkRouteTableId = types.StringValue(routeTableLink.GetLinkRouteTableId())
-	data.Main = types.BoolValue(routeTableLink.GetMain())
-	data.NetId = types.StringValue(routeTableLink.GetNetId())
-	data.RouteTableId = types.StringValue(routeTableLink.GetRouteTableId())
-	data.SubnetId = types.StringValue(routeTableLink.GetSubnetId())
-	data.Id = types.StringValue(routeTableLink.GetLinkRouteTableId())
+	routeTableLink, _ := lo.Find((*readResp.RouteTables)[0].LinkRouteTables, func(elem osc.LinkRouteTable) bool {
+		return elem.LinkRouteTableId == data.LinkRouteTableId.ValueString()
+	})
+
+	data.LinkRouteTableId = to.String(routeTableLink.LinkRouteTableId)
+	data.Main = to.Bool(routeTableLink.Main)
+	data.NetId = to.String(routeTableLink.NetId)
+	data.RouteTableId = to.String(routeTableLink.RouteTableId)
+	data.SubnetId = to.String(routeTableLink.SubnetId)
+	data.Id = to.String(routeTableLink.LinkRouteTableId)
 
 	return data, nil
 }

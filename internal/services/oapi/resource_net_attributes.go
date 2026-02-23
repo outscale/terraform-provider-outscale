@@ -10,10 +10,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 )
 
 var (
@@ -36,7 +38,7 @@ type NetAttributesModel struct {
 }
 
 type resourceNetAttributes struct {
-	Client *oscgo.APIClient
+	Client *osc.Client
 }
 
 func NewResourceNetAttributes() resource.Resource {
@@ -51,12 +53,12 @@ func (r *resourceNetAttributes) Configure(_ context.Context, req resource.Config
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Data Source Configure Type",
-			fmt.Sprintf("Expected *osc.APIClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *osc.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
 	}
-	r.Client = client.OSCAPI
+	r.Client = client.OSC
 }
 
 func (r *resourceNetAttributes) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
@@ -73,7 +75,7 @@ func (r *resourceNetAttributes) ImportState(ctx context.Context, req resource.Im
 
 	var data NetAttributesModel
 	var timeouts timeouts.Value
-	data.NetId = types.StringValue(netId)
+	data.NetId = to.String(netId)
 	resp.Diagnostics.Append(resp.State.GetAttribute(ctx, path.Root("timeouts"), &timeouts)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -83,9 +85,6 @@ func (r *resourceNetAttributes) ImportState(ctx context.Context, req resource.Im
 
 	diags := resp.State.Set(ctx, &data)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceNetAttributes) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -147,25 +146,16 @@ func (r *resourceNetAttributes) Create(ctx context.Context, req resource.CreateR
 	}
 
 	createTimeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
-	createReq := oscgo.UpdateNetRequest{
+	createReq := osc.UpdateNetRequest{
 		NetId:            data.NetId.ValueString(),
 		DhcpOptionsSetId: data.DhcpOptionsSetId.ValueString(),
 	}
 
-	var createResp oscgo.UpdateNetResponse
-	err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.NetApi.UpdateNet(ctx).UpdateNetRequest(createReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		createResp = rp
-		return nil
-	})
+	createResp, err := r.Client.UpdateNet(ctx, createReq, options.WithRetryTimeout(createTimeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to create Net Attributes.",
@@ -173,12 +163,12 @@ func (r *resourceNetAttributes) Create(ctx context.Context, req resource.CreateR
 		)
 		return
 	}
-	data.RequestId = types.StringValue(createResp.ResponseContext.GetRequestId())
-	net := createResp.GetNet()
-	data.NetId = types.StringValue(net.GetNetId())
-	data.Id = types.StringValue(net.GetNetId())
+	data.RequestId = to.String(createResp.ResponseContext.RequestId)
+	net := ptr.From(createResp.Net)
+	data.NetId = to.String(net.NetId)
+	data.Id = to.String(net.NetId)
 
-	data, err = r.setNetAttributesState(ctx, data)
+	data, err = r.read(ctx, data)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to set Net Attributes state.",
@@ -187,9 +177,6 @@ func (r *resourceNetAttributes) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceNetAttributes) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -200,7 +187,7 @@ func (r *resourceNetAttributes) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	data, err := r.setNetAttributesState(ctx, data)
+	data, err := r.read(ctx, data)
 	if err != nil {
 		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
@@ -213,9 +200,6 @@ func (r *resourceNetAttributes) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceNetAttributes) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -226,26 +210,17 @@ func (r *resourceNetAttributes) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
-	to, diags := data.Timeouts.Update(ctx, UpdateDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	timeout, diags := data.Timeouts.Update(ctx, UpdateDefaultTimeout)
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
-	createReq := oscgo.UpdateNetRequest{
+	createReq := osc.UpdateNetRequest{
 		NetId:            data.NetId.ValueString(),
 		DhcpOptionsSetId: data.DhcpOptionsSetId.ValueString(),
 	}
 
-	var createResp oscgo.UpdateNetResponse
-	err := retry.RetryContext(ctx, to, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.NetApi.UpdateNet(ctx).UpdateNetRequest(createReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		createResp = rp
-		return nil
-	})
+	createResp, err := r.Client.UpdateNet(ctx, createReq, options.WithRetryTimeout(timeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to update Net Attributes.",
@@ -253,12 +228,12 @@ func (r *resourceNetAttributes) Update(ctx context.Context, req resource.UpdateR
 		)
 		return
 	}
-	data.RequestId = types.StringValue(createResp.ResponseContext.GetRequestId())
-	net := createResp.GetNet()
-	data.NetId = types.StringValue(net.GetNetId())
-	data.Id = types.StringValue(net.GetNetId())
+	data.RequestId = to.String(createResp.ResponseContext.RequestId)
+	net := ptr.From(createResp.Net)
+	data.NetId = to.String(net.NetId)
+	data.Id = to.String(net.NetId)
 
-	data, err = r.setNetAttributesState(ctx, data)
+	data, err = r.read(ctx, data)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to set Net Attributes state.",
@@ -267,20 +242,17 @@ func (r *resourceNetAttributes) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceNetAttributes) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	resp.State.RemoveResource(ctx)
 }
 
-func (r *resourceNetAttributes) setNetAttributesState(ctx context.Context, data NetAttributesModel) (NetAttributesModel, error) {
-	netFilters := oscgo.FiltersNet{
+func (r *resourceNetAttributes) read(ctx context.Context, data NetAttributesModel) (NetAttributesModel, error) {
+	netFilters := osc.FiltersNet{
 		NetIds: &[]string{data.NetId.ValueString()},
 	}
-	readReq := oscgo.ReadNetsRequest{
+	readReq := osc.ReadNetsRequest{
 		Filters: &netFilters,
 	}
 
@@ -288,37 +260,29 @@ func (r *resourceNetAttributes) setNetAttributesState(ctx context.Context, data 
 	if diags.HasError() {
 		return data, fmt.Errorf("unable to parse 'net' read timeout value: %v", diags.Errors())
 	}
-	var readResp oscgo.ReadNetsResponse
-	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.NetApi.ReadNets(ctx).ReadNetsRequest(readReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		readResp = rp
-		return nil
-	})
+	readResp, err := r.Client.ReadNets(ctx, readReq, options.WithRetryTimeout(readTimeout))
 	if err != nil {
 		return data, err
 	}
 
-	data.RequestId = types.StringValue(readResp.ResponseContext.GetRequestId())
-	if len(readResp.GetNets()) == 0 {
+	data.RequestId = to.String(readResp.ResponseContext.RequestId)
+	if readResp.Nets == nil || len(*readResp.Nets) == 0 {
 		return data, ErrResourceEmpty
 	}
 
-	net := readResp.GetNets()[0]
+	net := (*readResp.Nets)[0]
 
-	tags, diag := flattenOAPIComputedTagsFW(ctx, net.GetTags())
+	tags, diag := flattenOAPIComputedTagsFW(ctx, net.Tags)
 	if diag.HasError() {
 		return data, fmt.Errorf("unable to flatten tags: %v", diags.Errors())
 	}
 	data.Tags = tags
-	data.Id = types.StringValue(net.GetNetId())
-	data.NetId = types.StringValue(net.GetNetId())
-	data.DhcpOptionsSetId = types.StringValue(net.GetDhcpOptionsSetId())
-	data.IpRange = types.StringValue(net.GetIpRange())
-	data.State = types.StringValue(net.GetState())
-	data.Tenancy = types.StringValue(net.GetTenancy())
+	data.Id = to.String(net.NetId)
+	data.NetId = to.String(net.NetId)
+	data.DhcpOptionsSetId = to.String(net.DhcpOptionsSetId)
+	data.IpRange = to.String(net.IpRange)
+	data.State = to.String(net.State)
+	data.Tenancy = to.String(net.Tenancy)
 
 	return data, nil
 }

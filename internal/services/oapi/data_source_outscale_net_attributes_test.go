@@ -10,7 +10,6 @@ import (
 func TestAccNet_AttributesDataSource_basic(t *testing.T) {
 	resourceName := "data.outscale_net_attributes.test"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{

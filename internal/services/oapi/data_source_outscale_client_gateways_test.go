@@ -14,7 +14,6 @@ func TestAccOthers_ClientGatewaysDatasource_basic(t *testing.T) {
 	bgpAsn2 := oapihelpers.RandBgpAsn()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testacc.PreCheck(t) },
 		Providers: testacc.SDKProviders,
 		Steps: []resource.TestStep{
 			{
@@ -29,7 +28,6 @@ func TestAccOthers_ClientGatewaysDatasource_withFilters(t *testing.T) {
 	bgpAsn2 := oapihelpers.RandBgpAsn()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testacc.PreCheck(t) },
 		Providers: testacc.SDKProviders,
 		Steps: []resource.TestStep{
 			{

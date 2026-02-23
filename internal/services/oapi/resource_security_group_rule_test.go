@@ -17,7 +17,6 @@ func TestAccOthers_SecurityGroupRule_Basic(t *testing.T) {
 
 	rInt := acctest.RandInt()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -36,7 +35,6 @@ func TestAccOthers_SecurityGroupRule_Import(t *testing.T) {
 
 	rInt := acctest.RandInt()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -54,7 +52,6 @@ func TestAccOthers_SecurityGroupRule_WithSecurityGroupMember(t *testing.T) {
 	resourceName := "outscale_security_group_rule.outscale_security_group_rule-3"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -72,8 +69,7 @@ func TestAccOthers_SecurityGroupRule_Migration(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { testacc.PreCheck(t) },
-		Steps:    testacc.FrameworkMigrationTestSteps("1.2.1", testAccOutscaleSecurityGroupRuleEgressConfig(rInt)),
+		Steps: testacc.FrameworkMigrationTestSteps("1.2.1", testAccOutscaleSecurityGroupRuleEgressConfig(rInt)),
 	})
 }
 
@@ -82,7 +78,6 @@ func TestAccOthers_SecurityGroupRule_WithSecurityGroupMember_Migration(t *testin
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { testacc.PreCheck(t) },
 		Steps: testacc.FrameworkMigrationTestStepsWithExpectNonEmptyPlan("1.2.1",
 			testAccOutscaleSecurityGroupRuleWithGroupMembers(rInt, accountID),
 		),

@@ -15,7 +15,7 @@ func TestAccOthers_AccessKey_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
-		PreCheck:                 func() { testacc.PreCheck(t) },
+
 		Steps: []resource.TestStep{
 			{
 				Config: testAccAccessKeyBasicConfig,
@@ -40,7 +40,7 @@ func TestAccOthers_AccessKeyUpdatedToInactivedKey(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
-		PreCheck:                 func() { testacc.PreCheck(t) },
+
 		Steps: []resource.TestStep{
 			{
 				Config: testAccAccessKeyUpdateState(state),
@@ -78,7 +78,7 @@ func TestAccOthers_AccessKeyUpdatedToActivedKey(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
-		PreCheck:                 func() { testacc.PreCheck(t) },
+
 		Steps: []resource.TestStep{
 			{
 				Config: testAccAccessKeyUpdateState(state),
@@ -113,7 +113,7 @@ func TestAccOthers_AccessKeyUpdatedExpirationDate(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
-		PreCheck:                 func() { testacc.PreCheck(t) },
+
 		Steps: []resource.TestStep{
 			{
 				Config: testAccAccessKeyExpirationDateConfig(expirDate),
@@ -152,12 +152,70 @@ func TestAccOthers_AccessKeyUpdatedExpirationDate(t *testing.T) {
 	})
 }
 
+func TestAccOthers_AccessKey_ExpirationDate_AddRemoveCycle(t *testing.T) {
+	resourceName := "outscale_access_key.date_access_key"
+	expirDate := time.Now().AddDate(1, 1, 0).Format("2006-01-02")
+	expirDateAlt := expirDate + "T00:00:00Z"
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccAccessKeyExpirationDateConfig(expirDate),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "expiration_date", expirDate),
+					resource.TestCheckResourceAttr(resourceName, "state", "ACTIVE"),
+				),
+			},
+			{
+				Config: testAccAccessKeyExpirationDateConfig(expirDateAlt),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "expiration_date", expirDateAlt),
+					resource.TestCheckResourceAttr(resourceName, "state", "ACTIVE"),
+				),
+			},
+			{
+				Config: testAccAccessKeyExpirationAndStateConfig("", "ACTIVE"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "expiration_date", ""),
+					resource.TestCheckResourceAttr(resourceName, "state", "ACTIVE"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccOthers_AccessKey_ExpirationDate_CreateWithDateThenRemove(t *testing.T) {
+	resourceName := "outscale_access_key.date_access_key"
+	expirDate := time.Now().AddDate(1, 1, 0).Format("2006-01-02")
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccAccessKeyExpirationAndStateConfig(expirDate, "INACTIVE"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resourceName, "access_key_id"),
+					resource.TestCheckResourceAttrSet(resourceName, "expiration_date"),
+					resource.TestCheckResourceAttr(resourceName, "state", "INACTIVE"),
+				),
+			},
+			{
+				Config: testAccAccessKeyExpirationAndStateConfig("", "INACTIVE"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "expiration_date", ""),
+					resource.TestCheckResourceAttr(resourceName, "state", "INACTIVE"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccOthers_AccessKey_Migration(t *testing.T) {
 	state := "INACTIVE"
 	stateUpdated := "ACTIVE"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { testacc.PreCheck(t) },
 		Steps: testacc.FrameworkMigrationTestSteps("1.0.1",
 			testAccAccessKeyBasicConfig,
 			testAccAccessKeyUpdateState(state),
@@ -170,7 +228,6 @@ func TestAccOthers_AccessKey_ExpirationDate_Migration(t *testing.T) {
 	expirDate := time.Now().AddDate(1, 1, 0).Format("2006-01-02")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { testacc.PreCheck(t) },
 		Steps: testacc.FrameworkMigrationTestStepsWithConfigs("1.0.1",
 			testacc.MigrationTestConfig{
 				Config: testAccAccessKeyExpirationDateConfig(expirDate),
@@ -201,4 +258,14 @@ func testAccAccessKeyExpirationDateConfig(expirDate string) string {
 			expiration_date = "%s"
 		}
 	`, expirDate)
+}
+
+func testAccAccessKeyExpirationAndStateConfig(expirDate, state string) string {
+	return fmt.Sprintf(`
+		resource "outscale_access_key" "date_access_key" {
+			expiration_date = "%s"
+			state           = "%s"
+			tag             = "testacc-update"
+		}
+	`, expirDate, state)
 }

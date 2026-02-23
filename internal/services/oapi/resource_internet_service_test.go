@@ -10,7 +10,6 @@ import (
 func TestAccOthers_InternetService_Basic(t *testing.T) {
 	resourceName := "outscale_internet_service.internet_service"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -26,8 +25,7 @@ func TestAccOthers_InternetService_Basic(t *testing.T) {
 
 func TestAccOthers_InternetService_Migration(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { testacc.PreCheck(t) },
-		Steps:    testacc.FrameworkMigrationTestSteps("1.1.2", testAccOutscaleInternetServiceConfig()),
+		Steps: testacc.FrameworkMigrationTestSteps("1.1.2", testAccOutscaleInternetServiceConfig()),
 	})
 }
 

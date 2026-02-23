@@ -14,7 +14,6 @@ func TestAccOthers_PolicyVersion_Basic(t *testing.T) {
 	policyName := acctest.RandomWithPrefix("test-policy")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -33,8 +32,7 @@ func TestAccOthers_PolicyVersion_Migration(t *testing.T) {
 	policyName := acctest.RandomWithPrefix("test-policy")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { testacc.PreCheck(t) },
-		Steps:    testacc.FrameworkMigrationTestSteps("1.3.1", testAccPolicyVersionConfig(policyName)),
+		Steps: testacc.FrameworkMigrationTestSteps("1.3.1", testAccPolicyVersionConfig(policyName)),
 	})
 }
 

@@ -5,7 +5,7 @@ VERSION=$(shell git describe --exact-match 2> /dev/null || \
                  git describe --match=$(git rev-parse --short=8 HEAD) --always --dirty --abbrev=8)
 
 TF_ACC_OAPI_PARALLEL=10
-TF_ACC_OAPI_NETS_PARALLEL=4
+TF_ACC_OAPI_NETS_PARALLEL=3
 TF_ACC_OKS_PARALLEL=1
 
 PYTEST_OAPI_PARALLEL=10

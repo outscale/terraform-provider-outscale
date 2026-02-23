@@ -2,21 +2,22 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceOutscaleImageExportTask() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOAPISnapshotImageTaskRead,
+		ReadContext: dataSourceOAPISnapshotImageTaskRead,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -86,88 +87,80 @@ func DataSourceOutscaleImageExportTask() *schema.Resource {
 	}
 }
 
-func dataSourceOAPISnapshotImageTaskRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func dataSourceOAPISnapshotImageTaskRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 
 	var err error
-	filtersReq := &oscgo.FiltersReadImageExportTask{}
+	filtersReq := &osc.FiltersReadImageExportTask{}
 	if filtersOk {
 		filtersReq, err = buildOutscaleOSCAPIDataSourceImageExportTaskFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	var resp oscgo.ReadImageExportTasksResponse
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.ImageApi.ReadImageExportTasks(context.Background()).
-			ReadImageExportTasksRequest(oscgo.ReadImageExportTasksRequest{
-				Filters: filtersReq,
-			}).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadImageExportTasks(ctx, osc.ReadImageExportTasksRequest{
+		Filters: filtersReq,
+	}, options.WithRetryTimeout(5*time.Minute))
 	if err != nil {
-		return fmt.Errorf("error reading task image %s", err)
+		return diag.Errorf("error reading task image %s", err)
 	}
 
-	if len(resp.GetImageExportTasks()) == 0 {
-		return ErrNoResults
+	if resp.ImageExportTasks == nil || len(*resp.ImageExportTasks) == 0 {
+		return diag.FromErr(ErrNoResults)
 	}
-	v := resp.GetImageExportTasks()[0]
+	v := (*resp.ImageExportTasks)[0]
 
-	if err = d.Set("progress", v.GetProgress()); err != nil {
-		return err
+	if err = d.Set("progress", ptr.From(v.Progress)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err = d.Set("task_id", v.GetTaskId()); err != nil {
-		return err
+	if err = d.Set("task_id", ptr.From(v.TaskId)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err = d.Set("state", v.GetState()); err != nil {
-		return err
+	if err = d.Set("state", ptr.From(v.State)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err = d.Set("comment", v.GetComment()); err != nil {
-		return err
+	if err = d.Set("comment", ptr.From(v.Comment)); err != nil {
+		return diag.FromErr(err)
 	}
 
-	exp := make([]map[string]interface{}, 1)
-	exportToOsu := make(map[string]interface{})
-	exportToOsu["disk_image_format"] = v.OsuExport.GetDiskImageFormat()
-	exportToOsu["osu_bucket"] = v.OsuExport.GetOsuBucket()
-	osuPrefix := v.OsuExport.GetOsuPrefix()
+	exp := make([]map[string]any, 1)
+	exportToOsu := make(map[string]any)
+	export := ptr.From(v.OsuExport)
+	exportToOsu["disk_image_format"] = export.DiskImageFormat
+	exportToOsu["osu_bucket"] = export.OsuBucket
+	osuPrefix := ptr.From(export.OsuPrefix)
 	if strings.Contains(osuPrefix, "/") {
 		osuList := strings.Split(osuPrefix, "/")
 		osuPrefix = osuList[0]
 	}
 	exportToOsu["osu_prefix"] = osuPrefix
-	exportToOsu["osu_manifest_url"] = v.OsuExport.GetOsuManifestUrl()
+	exportToOsu["osu_manifest_url"] = ptr.From(export.OsuManifestUrl)
 
 	exp[0] = exportToOsu
 
-	if err = d.Set("image_id", v.GetImageId()); err != nil {
-		return err
+	if err = d.Set("image_id", ptr.From(v.ImageId)); err != nil {
+		return diag.FromErr(err)
 	}
 	if err = d.Set("osu_export", exp); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	if err = d.Set("tags", FlattenOAPITagsSDK(v.GetTags())); err != nil {
-		return err
+	if err = d.Set("tags", FlattenOAPITagsSDK(ptr.From(v.Tags))); err != nil {
+		return diag.FromErr(err)
 	}
-	d.SetId(v.GetTaskId())
+	d.SetId(ptr.From(v.TaskId))
 
 	return nil
 }
 
-func buildOutscaleOSCAPIDataSourceImageExportTaskFilters(set *schema.Set) (*oscgo.FiltersReadImageExportTask, error) {
-	var filters oscgo.FiltersReadImageExportTask
+func buildOutscaleOSCAPIDataSourceImageExportTaskFilters(set *schema.Set) (*osc.FiltersReadImageExportTask, error) {
+	var filters osc.FiltersReadImageExportTask
 	for _, v := range set.List() {
-		m := v.(map[string]interface{})
+		m := v.(map[string]any)
 		var filterValues []string
-		for _, e := range m["values"].([]interface{}) {
+		for _, e := range m["values"].([]any) {
 			filterValues = append(filterValues, e.(string))
 		}
 
@@ -175,7 +168,7 @@ func buildOutscaleOSCAPIDataSourceImageExportTaskFilters(set *schema.Set) (*oscg
 		case "task_ids":
 			filters.TaskIds = &filterValues
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(name)
 		}
 	}
 	return &filters, nil
