@@ -10,7 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 )
 
 func TestAccOthers_DhcpOptional_basic(t *testing.T) {
@@ -19,7 +19,6 @@ func TestAccOthers_DhcpOptional_basic(t *testing.T) {
 	updateValue := fmt.Sprintf("test-acc-value-%s", acctest.RandString(5))
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		IDRefreshName:            resourceName,
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
@@ -61,7 +60,6 @@ func TestAccOthers_DhcpOptional_withEmptyAttrs(t *testing.T) {
 	ntpServersUpdated := []string{"192.0.0.1", "192.0.0.3"}
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		IDRefreshName:            resourceName,
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
@@ -94,14 +92,13 @@ func TestAccNet_withDhcpOptional(t *testing.T) {
 	domainName := fmt.Sprintf("%s.compute%s.internal", utils.GetRegion(), acctest.RandString(3))
 	domainServers := []string{"192.168.12.12", "192.168.12.132"}
 
-	tags := &oscgo.Tag{}
-	tags.SetKey(acctest.RandomWithPrefix("name"))
-	tags.SetValue(acctest.RandomWithPrefix("test-MZI"))
+	tags := &osc.Tag{}
+	tags.Key = acctest.RandomWithPrefix("name")
+	tags.Value = acctest.RandomWithPrefix("test-MZI")
 
 	domainNameUpdated := fmt.Sprintf("%s.compute%s.internal", utils.GetRegion(), acctest.RandString(3))
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		IDRefreshName:            resourceName,
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
@@ -133,7 +130,6 @@ func TestAccOthers_DHCPOption_importBasic(t *testing.T) {
 	value := fmt.Sprintf("test-acc-value-%s", acctest.RandString(5))
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -189,7 +185,7 @@ func testAccOAPIDHCPOptionalBasicConfigWithEmptyAttrs(ntpServers []string, value
 	`, strings.ReplaceAll(fmt.Sprintf("%+q", ntpServers), " ", ","), value)
 }
 
-func testAccOAPIDHCPOptionalWithNet(domainName string, domainServers []string, tags *oscgo.Tag) string {
+func testAccOAPIDHCPOptionalWithNet(domainName string, domainServers []string, tags *osc.Tag) string {
 	var servers, dhcpTags string
 
 	if len(domainServers) > 0 {
@@ -205,7 +201,7 @@ func testAccOAPIDHCPOptionalWithNet(domainName string, domainServers []string, t
 				key   = "%s"
 				value = "%s"
 			}
-		`, tags.GetKey(), tags.GetValue())
+		`, tags.Key, tags.Value)
 	}
 
 	return fmt.Sprintf(`

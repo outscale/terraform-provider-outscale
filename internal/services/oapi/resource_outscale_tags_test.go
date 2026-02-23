@@ -6,33 +6,31 @@ import (
 	"log"
 	"os"
 	"testing"
-	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func TestAccVM_tags(t *testing.T) {
-	v := &oscgo.Vm{}
+	v := &osc.Vm{}
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 
 	if os.Getenv("TEST_QUOTA") == "true" {
 		resource.ParallelTest(t, resource.TestCase{
-			PreCheck:     func() { testacc.PreCheck(t) },
 			Providers:    testacc.SDKProviders,
 			CheckDestroy: testAccCheckOutscaleVMDestroy,
 			Steps: []resource.TestStep{
 				{
 					Config: testAccCheckOAPIInstanceConfigTags(omi, testAccVmType, utils.GetRegion(), "keyOriginal", "valueOriginal"),
 					Check: resource.ComposeTestCheckFunc(
-						oapiTestAccCheckOutscaleVMExists("outscale_vm.vm", v),
+						oapiTestAccCheckOutscaleVMExists(t.Context(), "outscale_vm.vm", v),
 						// Guard against regression of https://github.com/hashicorp/terraform/issues/914
 						resource.TestCheckResourceAttr(
 							"outscale_tag.foo", "tags.#", "1"),
@@ -41,7 +39,7 @@ func TestAccVM_tags(t *testing.T) {
 				{
 					Config: testAccCheckOAPIInstanceConfigTags(omi, testAccVmType, utils.GetRegion(), "keyUpdated", "valueUpdated"),
 					Check: resource.ComposeTestCheckFunc(
-						oapiTestAccCheckOutscaleVMExists("outscale_vm.vm", v),
+						oapiTestAccCheckOutscaleVMExists(t.Context(), "outscale_vm.vm", v),
 						// Guard against regression of https://github.com/hashicorp/terraform/issues/914
 						resource.TestCheckResourceAttr(
 							"outscale_tag.foo", "tags.#", "1"),
@@ -54,7 +52,7 @@ func TestAccVM_tags(t *testing.T) {
 	}
 }
 
-func oapiTestAccCheckOutscaleVMExists(n string, i *oscgo.Vm) resource.TestCheckFunc {
+func oapiTestAccCheckOutscaleVMExists(ctx context.Context, n string, i *osc.Vm) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -65,29 +63,21 @@ func oapiTestAccCheckOutscaleVMExists(n string, i *oscgo.Vm) resource.TestCheckF
 			return fmt.Errorf("no id is set")
 		}
 
-		conn := testacc.SDKProvider.Meta().(*client.OutscaleClient)
-		var resp oscgo.ReadVmsResponse
-		var err = retry.Retry(30*time.Second, func() *retry.RetryError {
-			rp, httpResp, err := conn.OSCAPI.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
-				Filters: &oscgo.FiltersVm{
-					VmIds: &[]string{rs.Primary.ID},
-				},
-			}).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
+		client := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSC
+		resp, err := client.ReadVms(ctx, osc.ReadVmsRequest{
+			Filters: &osc.FiltersVm{
+				VmIds: &[]string{rs.Primary.ID},
+			},
+		}, options.WithRetryTimeout(DefaultTimeout))
 		if err != nil {
 			return err
 		}
 
-		if len(resp.GetVms()) == 0 {
+		if resp.Vms == nil || len(*resp.Vms) == 0 {
 			return fmt.Errorf("vm not found")
 		}
 
-		*i = resp.GetVms()[0]
+		*i = (*resp.Vms)[0]
 		log.Printf("[DEBUG] VMS READ %+v", i)
 		return nil
 	}

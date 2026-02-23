@@ -14,9 +14,6 @@ func TestAccNet_AccessPointsDataSource_basic(t *testing.T) {
 	resourceName := "data.outscale_net_access_points.data_net_access_points"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() {
-			testacc.PreCheck(t)
-		},
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{

@@ -18,7 +18,6 @@ func TestAccNet_WithSecurityGroup(t *testing.T) {
 	resourceName := "outscale_security_group.web"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -35,7 +34,6 @@ func TestAccOthers_SecurityGroupWithoutName(t *testing.T) {
 	resourceName := "outscale_security_group.noname"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -56,7 +54,6 @@ func TestAccOthers_SecurityGroup_VM_CleanUp(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -97,7 +94,6 @@ func TestAccOthers_SecurityGroup_NIC_CleanUp(t *testing.T) {
 	sgName2 := acctest.RandomWithPrefix("testacc-sg")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -139,7 +135,6 @@ func TestAccOthers_SecurityGroup_LBU_CleanUp(t *testing.T) {
 	lbuName := acctest.RandomWithPrefix("testacc-lbu")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -177,8 +172,7 @@ func TestAccNet_WithSecurityGroup_Migration(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { testacc.PreCheck(t) },
-		Steps:    testacc.FrameworkMigrationTestSteps("1.2.1", testAccOutscaleSecurityGroupConfig(rInt), testAccOutscaleSecurityGroupWithoutNameConfig()),
+		Steps: testacc.FrameworkMigrationTestSteps("1.2.1", testAccOutscaleSecurityGroupConfig(rInt), testAccOutscaleSecurityGroupWithoutNameConfig()),
 	})
 }
 

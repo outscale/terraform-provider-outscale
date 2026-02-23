@@ -8,8 +8,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	sdkv3_oks "github.com/outscale/osc-sdk-go/v3/pkg/oks"
+	"github.com/outscale/osc-sdk-go/v3/pkg/oks"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 )
 
 var (
@@ -37,7 +38,7 @@ func (d *oksQuotasDataSource) Configure(_ context.Context, req datasource.Config
 }
 
 type oksQuotasDataSource struct {
-	Client *sdkv3_oks.Client
+	Client *oks.Client
 }
 
 type oksQuotasModel struct {
@@ -96,14 +97,14 @@ func (d *oksQuotasDataSource) Read(ctx context.Context, req datasource.ReadReque
 	resp.Diagnostics.Append(diags...)
 
 	data.CPSubregions = cpSubregions
-	data.ClustersPerProject = types.Int32Value(int32(quotas.Quotas.ClustersPerProject))
+	data.ClustersPerProject = to.Int32(int32(quotas.Quotas.ClustersPerProject))
 	kubeVer, diags := types.SetValueFrom(ctx, types.StringType, quotas.Quotas.KubeVersions)
 	resp.Diagnostics.Append(diags...)
 
 	data.KubeVersions = kubeVer
-	data.Projects = types.Int32Value(int32(quotas.Quotas.Projects))
-	data.RequestId = types.StringValue(quotas.ResponseContext.RequestId)
-	data.Id = types.StringValue(id.UniqueId())
+	data.Projects = to.Int32(int32(quotas.Quotas.Projects))
+	data.RequestId = to.String(quotas.ResponseContext.RequestId)
+	data.Id = to.String(id.UniqueId())
 
 	if resp.Diagnostics.HasError() {
 		return

@@ -15,7 +15,7 @@ const (
 	MaxPort     int   = 65535
 	MinIops     int32 = 100
 	MaxIops     int32 = 13000
-	DefaultIops int32 = 150
+	DefaultIops int   = 150
 	MaxSize     int32 = 14901
 
 	AwaitActiveStateDefaultValue          bool = true

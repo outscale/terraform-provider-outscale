@@ -15,9 +15,6 @@ func TestAccOutscaleDSLoadBalancerTags_basic(t *testing.T) {
 	r := acctest.RandString(4)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() {
-			testacc.PreCheck(t)
-		},
 		Providers: testacc.SDKProviders,
 		Steps: []resource.TestStep{
 			{
