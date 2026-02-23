@@ -2,23 +2,26 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"log"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
+	"github.com/samber/lo"
 	"github.com/spf13/cast"
 )
 
 func ResourceOutscaleServerCertificate() *schema.Resource {
 	return &schema.Resource{
-		Create: ResourceOutscaleServerCertificateCreate,
-		Read:   ResourceOutscaleServerCertificateRead,
-		Update: ResourceOutscaleServerCertificateUpdate,
-		Delete: ResourceOutscaleServerCertificateDelete,
+		CreateContext: ResourceOutscaleServerCertificateCreate,
+		ReadContext:   ResourceOutscaleServerCertificateRead,
+		UpdateContext: ResourceOutscaleServerCertificateUpdate,
+		DeleteContext: ResourceOutscaleServerCertificateDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -77,143 +80,120 @@ func ResourceOutscaleServerCertificate() *schema.Resource {
 	}
 }
 
-func ResourceOutscaleServerCertificateCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleServerCertificateCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
 	timeout := d.Timeout(schema.TimeoutCreate)
 
-	req := oscgo.CreateServerCertificateRequest{
+	req := osc.CreateServerCertificateRequest{
 		Body:       d.Get("body").(string),
 		Name:       d.Get("name").(string),
 		PrivateKey: d.Get("private_key").(string),
 	}
 
 	if _, ok := d.GetOk("body"); !ok {
-		return fmt.Errorf("error 'body' field is require for server certificate creation")
+		return diag.Errorf("error 'body' field is require for server certificate creation")
 	}
 
 	if _, ok := d.GetOk("private_key"); !ok {
-		return fmt.Errorf("error 'private_key' field is require for server certificate creation")
+		return diag.Errorf("error 'private_key' field is require for server certificate creation")
 	}
 
 	if _, ok := d.GetOk("chain"); ok {
-		req.SetChain(d.Get("chain").(string))
+		req.Chain = new(d.Get("chain").(string))
 	}
 	if _, ok := d.GetOk("dry_run"); ok {
-		req.SetDryRun(d.Get("dry_run").(bool))
+		req.DryRun = new(d.Get("dry_run").(bool))
 	}
 	if _, ok := d.GetOk("path"); ok {
-		req.SetPath(d.Get("path").(string))
+		req.Path = new(d.Get("path").(string))
 	}
-	var resp oscgo.CreateServerCertificateResponse
-	err := retry.Retry(timeout, func() *retry.RetryError {
-		rp, httpResp, err := conn.ServerCertificateApi.CreateServerCertificate(context.Background()).CreateServerCertificateRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.CreateServerCertificate(ctx, req, options.WithRetryTimeout(timeout))
 	if err != nil {
-		return fmt.Errorf("error reading server certificate: %s", utils.GetErrorResponse(err))
+		return diag.Errorf("error reading server certificate: %s", err)
 	}
 
 	d.SetId(cast.ToString(resp.ServerCertificate.Id))
 
-	return ResourceOutscaleServerCertificateRead(d, meta)
+	return ResourceOutscaleServerCertificateRead(ctx, d, meta)
 }
 
-func ResourceOutscaleServerCertificateRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleServerCertificateRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
 	timeout := d.Timeout(schema.TimeoutRead)
 
 	id := d.Id()
 
 	log.Printf("[DEBUG] Reading Server Certificate id (%s)", id)
 
-	var resp oscgo.ReadServerCertificatesResponse
-	err := retry.Retry(timeout, func() *retry.RetryError {
-		rp, httpResp, err := conn.ServerCertificateApi.ReadServerCertificates(context.Background()).ReadServerCertificatesRequest(oscgo.ReadServerCertificatesRequest{}).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadServerCertificates(ctx, osc.ReadServerCertificatesRequest{}, options.WithRetryTimeout(timeout))
 	if err != nil {
-		return fmt.Errorf("error reading server certificate id (%s)", utils.GetErrorResponse(err))
+		return diag.Errorf("error reading server certificate id (%s)", err)
 	}
-	if !resp.HasServerCertificates() {
-		return ErrNoResults
+	if resp.ServerCertificates == nil {
+		return diag.FromErr(ErrNoResults)
 	}
 
-	if len(resp.GetServerCertificates()) == 0 {
+	if len(*resp.ServerCertificates) == 0 {
 		utils.LogManuallyDeleted("ServerCertificate", d.Id())
 		d.SetId("")
 		return nil
 	}
 
-	var server oscgo.ServerCertificate
-
-	for _, serv := range resp.GetServerCertificates() {
-		if serv.GetId() == d.Id() {
-			server = serv
-		}
+	server, ok := lo.Find(*resp.ServerCertificates, func(s osc.ServerCertificate) bool {
+		return ptr.From(s.Id) == d.Id()
+	})
+	if !ok {
+		utils.LogManuallyDeleted("ServerCertificate", d.Id())
+		d.SetId("")
+		return nil
 	}
 
-	d.Set("expiration_date", server.ExpirationDate)
-	d.Set("name", server.Name)
-	d.Set("orn", server.Orn)
-	d.Set("path", server.Path)
-	d.Set("upload_date", server.UploadDate)
+	d.Set("expiration_date", from.ISO8601(server.ExpirationDate))
+	d.Set("name", ptr.From(server.Name))
+	d.Set("orn", ptr.From(server.Orn))
+	d.Set("path", ptr.From(server.Path))
+	d.Set("upload_date", from.ISO8601(server.UploadDate))
 
 	return nil
 }
 
-func ResourceOutscaleServerCertificateUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleServerCertificateUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
 	timeout := d.Timeout(schema.TimeoutUpdate)
 
 	oldName, _ := d.GetChange("name")
-	req := oscgo.UpdateServerCertificateRequest{
+	req := osc.UpdateServerCertificateRequest{
 		Name: oldName.(string),
 	}
 
 	if d.HasChange("name") {
-		req.SetNewName(d.Get("name").(string))
+		req.NewName = new(d.Get("name").(string))
 	}
 	if d.HasChange("path") {
-		req.SetNewPath(d.Get("path").(string))
+		req.NewPath = new(d.Get("path").(string))
 	}
 
-	err := retry.Retry(timeout, func() *retry.RetryError {
-		_, httpResp, err := conn.ServerCertificateApi.UpdateServerCertificate(context.Background()).UpdateServerCertificateRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	_, err := client.UpdateServerCertificate(ctx, req, options.WithRetryTimeout(timeout))
 	if err != nil {
-		return fmt.Errorf("error update server certificate: %s", utils.GetErrorResponse(err))
+		return diag.Errorf("error update server certificate: %s", err)
 	}
 
-	return ResourceOutscaleServerCertificateRead(d, meta)
+	return ResourceOutscaleServerCertificateRead(ctx, d, meta)
 }
 
-func ResourceOutscaleServerCertificateDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleServerCertificateDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
 	timeout := d.Timeout(schema.TimeoutDelete)
 
-	req := oscgo.DeleteServerCertificateRequest{
+	req := osc.DeleteServerCertificateRequest{
 		Name: d.Get("name").(string),
 	}
 
-	err := retry.Retry(timeout, func() *retry.RetryError {
-		_, httpResp, err := conn.ServerCertificateApi.DeleteServerCertificate(context.Background()).DeleteServerCertificateRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	_, err := client.DeleteServerCertificate(ctx, req, options.WithRetryTimeout(timeout))
 
-	return err
+	return diag.FromErr(err)
 }

@@ -4,19 +4,22 @@ import (
 	"context"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func DataSourceOutscaleAccessKeys() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleAccessKeysRead,
+		ReadContext: DataSourceOutscaleAccessKeysRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"access_key_ids": {
@@ -72,69 +75,61 @@ func DataSourceOutscaleAccessKeys() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleAccessKeysRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleAccessKeysRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 	accessKeyID, accessKeyOk := d.GetOk("access_key_ids")
 	state, stateOk := d.GetOk("states")
-	filterReq := &oscgo.FiltersAccessKeys{}
+	filterReq := &osc.FiltersAccessKeys{}
 
 	var err error
 	if filtersOk {
 		filterReq, err = buildOutscaleDataSourceAccessKeyFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 	if accessKeyOk {
-		filterReq.SetAccessKeyIds(utils.InterfaceSliceToStringSlice(accessKeyID.([]interface{})))
+		filterReq.AccessKeyIds = new(utils.InterfaceSliceToStringSlice(accessKeyID.([]interface{})))
 	}
 	if stateOk {
-		filterReq.SetStates(utils.InterfaceSliceToStringSlice(state.([]interface{})))
+		filterReq.States = new(utils.SliceToSuperStringSlice[osc.AccessKeyState](state.([]interface{})))
 	}
-	req := oscgo.ReadAccessKeysRequest{
+	req := osc.ReadAccessKeysRequest{
 		Filters: filterReq,
 	}
 
 	if userName := d.Get("user_name").(string); userName != "" {
-		req.SetUserName(userName)
+		req.UserName = &userName
 	}
-	var resp oscgo.ReadAccessKeysResponse
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.AccessKeyApi.ReadAccessKeys(context.Background()).ReadAccessKeysRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadAccessKeys(ctx, req, options.WithRetryTimeout(5*time.Minute))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	if len(resp.GetAccessKeys()) == 0 {
-		return ErrNoResults
+	if resp.AccessKeys == nil || len(*resp.AccessKeys) == 0 {
+		return diag.FromErr(ErrNoResults)
 	}
 
-	if err := d.Set("access_keys", flattenAccessKeys(resp.GetAccessKeys())); err != nil {
-		return err
+	if err := d.Set("access_keys", flattenAccessKeys(*resp.AccessKeys)); err != nil {
+		return diag.FromErr(err)
 	}
 
 	d.SetId(id.UniqueId())
 	return nil
 }
 
-func flattenAccessKeys(accessKeys []oscgo.AccessKey) []map[string]interface{} {
+func flattenAccessKeys(accessKeys []osc.AccessKey) []map[string]interface{} {
 	accessKeysMap := make([]map[string]interface{}, len(accessKeys))
 
 	for i, ak := range accessKeys {
 		accessKeysMap[i] = map[string]interface{}{
-			"access_key_id":          ak.GetAccessKeyId(),
-			"creation_date":          ak.GetCreationDate(),
-			"expiration_date":        ak.GetExpirationDate(),
-			"last_modification_date": ak.GetLastModificationDate(),
-			"state":                  ak.GetState(),
+			"access_key_id":          ak.AccessKeyId,
+			"creation_date":          from.ISO8601(ak.CreationDate),
+			"expiration_date":        from.ISO8601(ak.ExpirationDate),
+			"last_modification_date": from.ISO8601(ak.LastModificationDate),
+			"state":                  ptr.From(ak.State),
 		}
 	}
 	return accessKeysMap

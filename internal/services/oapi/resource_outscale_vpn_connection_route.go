@@ -5,13 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"net/http"
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/services/oapi/oapihelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
@@ -19,11 +20,11 @@ import (
 
 func ResourceOutscaleVPNConnectionRoute() *schema.Resource {
 	return &schema.Resource{
-		Create: ResourceOutscaleVPNConnectionRouteCreate,
-		Read:   ResourceOutscaleVPNConnectionRouteRead,
-		Delete: ResourceOutscaleVPNConnectionRouteDelete,
+		CreateContext: ResourceOutscaleVPNConnectionRouteCreate,
+		ReadContext:   ResourceOutscaleVPNConnectionRouteRead,
+		DeleteContext: ResourceOutscaleVPNConnectionRouteDelete,
 		Importer: &schema.ResourceImporter{
-			State: ResourceOutscaleVPNConnectionRouteImportState,
+			StateContext: ResourceOutscaleVPNConnectionRouteImportState,
 		},
 
 		Timeouts: &schema.ResourceTimeout{
@@ -51,129 +52,106 @@ func ResourceOutscaleVPNConnectionRoute() *schema.Resource {
 	}
 }
 
-func ResourceOutscaleVPNConnectionRouteCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleVPNConnectionRouteCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 	timeout := d.Timeout(schema.TimeoutCreate)
 
 	destinationIPRange := d.Get("destination_ip_range").(string)
-	vpnConnectionID := d.Get("vpn_connection_id").(string)
+	id := d.Get("vpn_connection_id").(string)
 
-	req := oscgo.CreateVpnConnectionRouteRequest{
+	req := osc.CreateVpnConnectionRouteRequest{
 		DestinationIpRange: destinationIPRange,
-		VpnConnectionId:    vpnConnectionID,
+		VpnConnectionId:    id,
 	}
-	err := retry.Retry(timeout, func() *retry.RetryError {
-		_, httpResp, err := conn.VpnConnectionApi.CreateVpnConnectionRoute(context.Background()).CreateVpnConnectionRouteRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	_, err := client.CreateVpnConnectionRoute(ctx, req, options.WithRetryTimeout(timeout))
 	if err != nil {
-		return fmt.Errorf("error creating outscale vpn conecction route: %s", err)
+		return diag.Errorf("error creating outscale vpn conecction route: %s", err)
 	}
 
-	d.SetId(fmt.Sprintf("%s:%s", destinationIPRange, vpnConnectionID))
+	d.SetId(fmt.Sprintf("%s:%s", destinationIPRange, id))
 
-	return ResourceOutscaleVPNConnectionRouteRead(d, meta)
+	return ResourceOutscaleVPNConnectionRouteRead(ctx, d, meta)
 }
 
-func ResourceOutscaleVPNConnectionRouteRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleVPNConnectionRouteRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 	timeout := d.Timeout(schema.TimeoutRead)
 
-	destinationIPRange, vpnConnectionID := oapihelpers.ParseVPNConnectionRouteID(d.Id())
+	destinationIPRange, vpnconnectionID := oapihelpers.ParseVPNConnectionRouteID(d.Id())
 
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{"pending"},
-		Target:     []string{"available", "failed"},
-		Refresh:    vpnConnectionRouteRefreshFunc(conn, &destinationIPRange, &vpnConnectionID),
-		Timeout:    timeout,
-		Delay:      5 * time.Second,
-		MinTimeout: 3 * time.Second,
+		Pending: []string{"pending"},
+		Target:  []string{"available", "failed"},
+		Timeout: timeout,
+		Refresh: vpnconnectionRouteRefreshFunc(ctx, client, timeout, &destinationIPRange, &vpnconnectionID),
 	}
 
-	val, err := stateConf.WaitForState()
+	val, err := stateConf.WaitForStateContext(ctx)
 	if err != nil {
-		return fmt.Errorf("error waiting for outscale vpn connection route(%s) to become ready: %s", d.Id(), err)
+		return diag.Errorf("error waiting for outscale vpn connection route(%s) to become ready: %s", d.Id(), err)
 	}
 	if val == nil {
-		utils.LogManuallyDeleted("VpnConnectionRoute", d.Id())
+		utils.LogManuallyDeleted("VpnconnectionRoute", d.Id())
 		d.SetId("")
 		return nil
 	}
+
 	return nil
 }
 
-func ResourceOutscaleVPNConnectionRouteDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleVPNConnectionRouteDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 	timeout := d.Timeout(schema.TimeoutDelete)
 
-	destinationIPRange, vpnConnectionID := oapihelpers.ParseVPNConnectionRouteID(d.Id())
+	destinationIPRange, id := oapihelpers.ParseVPNConnectionRouteID(d.Id())
 
-	req := oscgo.DeleteVpnConnectionRouteRequest{
+	req := osc.DeleteVpnConnectionRouteRequest{
 		DestinationIpRange: destinationIPRange,
-		VpnConnectionId:    vpnConnectionID,
+		VpnConnectionId:    id,
 	}
-	err := retry.Retry(timeout, func() *retry.RetryError {
-		_, httpResp, err := conn.VpnConnectionApi.DeleteVpnConnectionRoute(context.Background()).DeleteVpnConnectionRouteRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	_, err := client.DeleteVpnConnectionRoute(ctx, req, options.WithRetryTimeout(timeout))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{"deleting"},
-		Target:     []string{"deleted", "failed"},
-		Refresh:    vpnConnectionRouteRefreshFunc(conn, &destinationIPRange, &vpnConnectionID),
-		Timeout:    timeout,
-		Delay:      5 * time.Second,
-		MinTimeout: 3 * time.Second,
+		Pending: []string{"deleting"},
+		Target:  []string{"deleted", "failed"},
+		Timeout: timeout,
+		Refresh: vpnconnectionRouteRefreshFunc(ctx, client, timeout, &destinationIPRange, &id),
 	}
 
-	_, err = stateConf.WaitForState()
+	_, err = stateConf.WaitForStateContext(ctx)
 	if err != nil {
-		return fmt.Errorf("error waiting for outscale vpn connection route(%s) to become deleted: %s", vpnConnectionID, err)
+		return diag.Errorf("error waiting for outscale vpn connection route(%s) to become deleted: %s", id, err)
 	}
 
 	return nil
 }
 
-func vpnConnectionRouteRefreshFunc(conn *oscgo.APIClient, destinationIPRange, vpnConnectionID *string) retry.StateRefreshFunc {
+func vpnconnectionRouteRefreshFunc(ctx context.Context, client *osc.Client, timeout time.Duration, destinationIPRange, id *string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		filter := oscgo.ReadVpnConnectionsRequest{
-			Filters: &oscgo.FiltersVpnConnection{
+		filter := osc.ReadVpnConnectionsRequest{
+			Filters: &osc.FiltersVpnConnection{
 				RouteDestinationIpRanges: &[]string{*destinationIPRange},
-				VpnConnectionIds:         &[]string{*vpnConnectionID},
+				VpnConnectionIds:         &[]string{*id},
 			},
 		}
 
-		resp, httpResp, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(filter).Execute()
+		resp, err := client.ReadVpnConnections(ctx, filter, options.WithRetryTimeout(timeout))
 		if err != nil {
-			switch httpResp.StatusCode {
-			case http.StatusServiceUnavailable:
-				return nil, "pending", nil
-			case http.StatusNotFound:
-				return nil, "deleted", nil
-			default:
-				return nil, "failed", fmt.Errorf("error on vpnconnectionrouterefresh: %s", err)
-			}
+			return nil, "failed", fmt.Errorf("error on vpnconnectionrouterefresh: %s", err)
 		}
 
-		if len(resp.GetVpnConnections()) == 0 {
+		if resp.VpnConnections == nil || len(*resp.VpnConnections) == 0 {
 			return nil, "failed", nil
 		}
-		vpnConnection := resp.GetVpnConnections()[0]
+		vpnConnection := (*resp.VpnConnections)[0]
 
-		routes, ok := vpnConnection.GetRoutesOk()
-		if ok {
-			for _, route := range *routes {
-				if route.GetDestinationIpRange() == *destinationIPRange {
-					return resp, route.GetState(), nil
+		if vpnConnection.Routes != nil {
+			for _, route := range *vpnConnection.Routes {
+				if route.DestinationIpRange == *destinationIPRange {
+					return resp, route.State, nil
 				}
 			}
 		}
@@ -182,8 +160,8 @@ func vpnConnectionRouteRefreshFunc(conn *oscgo.APIClient, destinationIPRange, vp
 	}
 }
 
-func ResourceOutscaleVPNConnectionRouteImportState(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleVPNConnectionRouteImportState(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	client := meta.(*client.OutscaleClient).OSC
 	timeout := d.Timeout(schema.TimeoutRead)
 
 	parts := strings.SplitN(d.Id(), "_", 2)
@@ -191,35 +169,33 @@ func ResourceOutscaleVPNConnectionRouteImportState(d *schema.ResourceData, meta 
 		return nil, errors.New("import format error: to import a Outscale VPN connection Route, use the format {vpn_connection_id}_{destination_ip_range}")
 	}
 
-	vpnConnectionID := parts[0]
+	vpnconnectionID := parts[0]
 	destinationIPRange := parts[1]
 
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{"pending"},
-		Target:     []string{"available", "failed"},
-		Refresh:    vpnConnectionRouteRefreshFunc(conn, &destinationIPRange, &vpnConnectionID),
-		Timeout:    timeout,
-		Delay:      1 * time.Second,
-		MinTimeout: 3 * time.Second,
+		Pending: []string{"pending"},
+		Target:  []string{"available", "failed"},
+		Timeout: timeout,
+		Refresh: vpnconnectionRouteRefreshFunc(ctx, client, timeout, &destinationIPRange, &vpnconnectionID),
 	}
 
-	val, err := stateConf.WaitForState()
+	val, err := stateConf.WaitForStateContext(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error waiting for outscale vpn connection route import(%s) to become ready: %s", d.Id(), err)
 	}
 	if val == nil {
-		log.Printf("[WARN] VPN Connection route %q could not be found. Removing Route from state.", vpnConnectionID)
+		log.Printf("[WARN] VPN connection route %q could not be found. Removing Route from state.", vpnconnectionID)
 		return nil, err
 	}
 
-	if err := d.Set("vpn_connection_id", vpnConnectionID); err != nil {
-		return nil, fmt.Errorf("error setting `%s` for outscale vpn connection route(%s): %s", "vpn_connection_id", vpnConnectionID, err)
+	if err := d.Set("vpn_connection_id", vpnconnectionID); err != nil {
+		return nil, fmt.Errorf("error setting `%s` for outscale vpn connection route(%s): %s", "vpn_connection_id", vpnconnectionID, err)
 	}
 	if err := d.Set("destination_ip_range", destinationIPRange); err != nil {
 		return nil, fmt.Errorf("error setting `%s` for outscale vpn connection route(%s): %s", "destination_ip_range", destinationIPRange, err)
 	}
 
-	d.SetId(fmt.Sprintf("%s:%s", destinationIPRange, vpnConnectionID))
+	d.SetId(fmt.Sprintf("%s:%s", destinationIPRange, vpnconnectionID))
 
 	return []*schema.ResourceData{d}, nil
 }

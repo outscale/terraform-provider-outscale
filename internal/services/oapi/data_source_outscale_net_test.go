@@ -15,7 +15,6 @@ func TestAccNet_DataSource_basic(t *testing.T) {
 	tag := fmt.Sprintf("terraform-testacc-vpc-data-source-%s", ipRange)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{

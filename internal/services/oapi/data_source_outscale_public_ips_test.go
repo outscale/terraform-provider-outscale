@@ -10,7 +10,6 @@ import (
 
 func TestAccOthers_DataSourcePublicIPS(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testacc.PreCheck(t) },
 		Providers: testacc.SDKProviders,
 		Steps: []resource.TestStep{
 			{
@@ -31,7 +30,6 @@ func TestAccOthers_DataSourcePublicIPS(t *testing.T) {
 func TestAccOthers_DataSourcePublicIPS_withTags(t *testing.T) {
 	if os.Getenv("TEST_QUOTA") == "true" {
 		resource.ParallelTest(t, resource.TestCase{
-			PreCheck:  func() { testacc.PreCheck(t) },
 			Providers: testacc.SDKProviders,
 			Steps: []resource.TestStep{
 				{

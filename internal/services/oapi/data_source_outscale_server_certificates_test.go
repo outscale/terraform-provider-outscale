@@ -96,7 +96,6 @@ kbcI5Y2wveEgMqPSRya2OapYGiPeqYhg6JAGPRXtOfOq9IUDcPuc2emnihNpSa8y
 -----END PRIVATE KEY-----`
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testacc.PreCheck(t) },
 		Providers: testacc.SDKProviders,
 		Steps: []resource.TestStep{
 			{

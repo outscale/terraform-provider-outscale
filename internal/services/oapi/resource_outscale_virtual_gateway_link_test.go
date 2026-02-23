@@ -11,7 +11,6 @@ import (
 func TestAccNet_withpnGatewayAttachment_basic(t *testing.T) {
 	resourceName := "outscale_virtual_gateway_link.test"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		IDRefreshName:            resourceName,
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
@@ -30,7 +29,6 @@ func TestAccNet_VpnGatewayAttachment_importBasic(t *testing.T) {
 	resourceName := "outscale_virtual_gateway_link.test"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -46,7 +44,6 @@ func TestAccNet_WithVpnGatewayAttachment_deleted(t *testing.T) {
 	resourceName2 := "outscale_virtual_gateway.test"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{

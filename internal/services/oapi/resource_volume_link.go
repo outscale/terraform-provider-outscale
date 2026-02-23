@@ -15,9 +15,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 )
 
 var (
@@ -39,7 +41,7 @@ type VolumeLinkModel struct {
 	Id                 types.String   `tfsdk:"id"`
 }
 type resourceVolumeLink struct {
-	Client *oscgo.APIClient
+	Client *osc.Client
 }
 
 func NewResourceVolumeLink() resource.Resource {
@@ -54,12 +56,12 @@ func (r *resourceVolumeLink) Configure(_ context.Context, req resource.Configure
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected *osc.APIClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *osc.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
 	}
-	r.Client = client.OSCAPI
+	r.Client = client.OSC
 }
 
 func (r *resourceVolumeLink) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
@@ -85,8 +87,8 @@ func (r *resourceVolumeLink) ImportState(ctx context.Context, req resource.Impor
 
 	var data VolumeLinkModel
 	var timeouts timeouts.Value
-	data.VolumeId = types.StringValue(volumeId)
-	data.Id = types.StringValue(volumeId)
+	data.VolumeId = to.String(volumeId)
+	data.Id = to.String(volumeId)
 	resp.Diagnostics.Append(resp.State.GetAttribute(ctx, path.Root("timeouts"), &timeouts)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -94,9 +96,6 @@ func (r *resourceVolumeLink) ImportState(ctx context.Context, req resource.Impor
 	data.Timeouts = timeouts
 	diags := resp.State.Set(ctx, &data)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceVolumeLink) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -162,18 +161,15 @@ func (r *resourceVolumeLink) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	createTimeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
 	volStateConf := &retry.StateChangeConf{
-		Pending:      []string{"creating", "updating"},
-		Target:       []string{"available"},
-		Refresh:      getVolumeStateRefreshFunc(ctx, r.Client, createTimeout, data.VolumeId.ValueString()),
-		Timeout:      createTimeout,
-		Delay:        2 * time.Second,
-		PollInterval: 4 * time.Second,
+		Pending: []string{"creating", "updating"},
+		Target:  []string{"available"},
+		Timeout: createTimeout,
+		Refresh: getVolumeStateRefreshFunc(ctx, r.Client, createTimeout, data.VolumeId.ValueString()),
 	}
 	if _, err := volStateConf.WaitForStateContext(ctx); err != nil {
 		resp.Diagnostics.AddError(
@@ -184,12 +180,10 @@ func (r *resourceVolumeLink) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	vmStateConf := &retry.StateChangeConf{
-		Pending:      []string{"pending"},
-		Target:       []string{"running", "stopped"},
-		Refresh:      getVmStateRefreshFunc(ctx, r.Client, createTimeout, data.VmId.ValueString()),
-		Timeout:      createTimeout,
-		Delay:        2 * time.Second,
-		PollInterval: 3 * time.Second,
+		Pending: []string{"pending"},
+		Target:  []string{"running", "stopped"},
+		Timeout: createTimeout,
+		Refresh: getVmStateRefreshFunc(ctx, r.Client, createTimeout, data.VmId.ValueString()),
 	}
 	if _, err := vmStateConf.WaitForStateContext(ctx); err != nil {
 		resp.Diagnostics.AddError(
@@ -199,16 +193,12 @@ func (r *resourceVolumeLink) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	createReq := oscgo.NewLinkVolumeRequest(data.DeviceName.ValueString(), data.VmId.ValueString(), data.VolumeId.ValueString())
-	var linkResp oscgo.LinkVolumeResponse
-	err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.VolumeApi.LinkVolume(ctx).LinkVolumeRequest(*createReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		linkResp = rp
-		return nil
-	})
+	createReq := osc.LinkVolumeRequest{
+		DeviceName: data.DeviceName.ValueString(),
+		VmId:       data.VmId.ValueString(),
+		VolumeId:   data.VolumeId.ValueString(),
+	}
+	linkResp, err := r.Client.LinkVolume(ctx, createReq, options.WithRetryTimeout(createTimeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Link volume resource",
@@ -216,15 +206,13 @@ func (r *resourceVolumeLink) Create(ctx context.Context, req resource.CreateRequ
 		)
 		return
 	}
-	data.RequestId = types.StringValue(*linkResp.ResponseContext.RequestId)
+	data.RequestId = to.String(*linkResp.ResponseContext.RequestId)
 
 	linkedStateConf := &retry.StateChangeConf{
-		Pending:    []string{"attaching"},
-		Target:     []string{"attached"},
-		Refresh:    getvolumeAttachmentStateRefreshFunc(ctx, r.Client, createTimeout, data.VmId.ValueString(), data.VolumeId.ValueString()),
-		Timeout:    createTimeout,
-		Delay:      3 * time.Second,
-		MinTimeout: 4 * time.Second,
+		Pending: []string{"attaching"},
+		Target:  []string{"attached"},
+		Timeout: createTimeout,
+		Refresh: getvolumeAttachmentStateRefreshFunc(ctx, r.Client, createTimeout, data.VmId.ValueString(), data.VolumeId.ValueString()),
 	}
 	if _, err = linkedStateConf.WaitForStateContext(ctx); err != nil {
 		resp.Diagnostics.AddError(
@@ -243,9 +231,6 @@ func (r *resourceVolumeLink) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceVolumeLink) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -269,9 +254,6 @@ func (r *resourceVolumeLink) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceVolumeLink) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -294,9 +276,6 @@ func (r *resourceVolumeLink) Update(ctx context.Context, req resource.UpdateRequ
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &dataState)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceVolumeLink) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -308,23 +287,16 @@ func (r *resourceVolumeLink) Delete(ctx context.Context, req resource.DeleteRequ
 	}
 
 	deleteTimeout, diags := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
-	delReq := oscgo.UnlinkVolumeRequest{
+	delReq := osc.UnlinkVolumeRequest{
 		VolumeId:    data.VolumeId.ValueString(),
 		ForceUnlink: data.ForceUnlink.ValueBoolPointer(),
 	}
 
-	err := retry.RetryContext(ctx, deleteTimeout, func() *retry.RetryError {
-		_, httpResp, err := r.Client.VolumeApi.UnlinkVolume(ctx).UnlinkVolumeRequest(delReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	_, err := r.Client.UnlinkVolume(ctx, delReq, options.WithRetryTimeout(deleteTimeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to unlink volume",
@@ -333,12 +305,10 @@ func (r *resourceVolumeLink) Delete(ctx context.Context, req resource.DeleteRequ
 		return
 	}
 	unLinkedStateConf := &retry.StateChangeConf{
-		Pending:    []string{"detaching"},
-		Target:     []string{"detached"},
-		Refresh:    getvolumeAttachmentStateRefreshFunc(ctx, r.Client, deleteTimeout, data.VmId.ValueString(), data.VolumeId.ValueString()),
-		Timeout:    deleteTimeout,
-		Delay:      3 * time.Second,
-		MinTimeout: 3 * time.Second,
+		Pending: []string{"detaching"},
+		Target:  []string{"detached"},
+		Timeout: deleteTimeout,
+		Refresh: getvolumeAttachmentStateRefreshFunc(ctx, r.Client, deleteTimeout, data.VmId.ValueString(), data.VolumeId.ValueString()),
 	}
 	if _, err = unLinkedStateConf.WaitForStateContext(ctx); err != nil {
 		resp.Diagnostics.AddError(
@@ -351,7 +321,7 @@ func (r *resourceVolumeLink) Delete(ctx context.Context, req resource.DeleteRequ
 }
 
 func setLinkedVolumeState(ctx context.Context, r *resourceVolumeLink, data *VolumeLinkModel) error {
-	volumeFilters := oscgo.FiltersVolume{
+	volumeFilters := osc.FiltersVolume{
 		VolumeIds: &[]string{data.VolumeId.ValueString()},
 	}
 
@@ -360,94 +330,69 @@ func setLinkedVolumeState(ctx context.Context, r *resourceVolumeLink, data *Volu
 		return fmt.Errorf("unable to parse 'volume_link' read timeout value: %v", diags.Errors())
 	}
 
-	readReq := oscgo.ReadVolumesRequest{
+	readReq := osc.ReadVolumesRequest{
 		Filters: &volumeFilters,
 	}
-	var readResp oscgo.ReadVolumesResponse
-	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.VolumeApi.ReadVolumes(ctx).ReadVolumesRequest(readReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		readResp = rp
-		return nil
-	})
+	readResp, err := r.Client.ReadVolumes(ctx, readReq, options.WithRetryTimeout(readTimeout))
 	if err != nil {
 		return err
 	}
-	if len(readResp.GetVolumes()) == 0 || len(readResp.GetVolumes()[0].GetLinkedVolumes()) == 0 {
+	if readResp.Volumes == nil || len(*readResp.Volumes) == 0 || len((*readResp.Volumes)[0].LinkedVolumes) == 0 {
 		return ErrResourceEmpty
 	}
 
 	isForceUnlink := false
-	linkedVol := readResp.GetVolumes()[0].GetLinkedVolumes()[0]
+	linkedVol := (*readResp.Volumes)[0].LinkedVolumes[0]
 	if data.ForceUnlink.ValueBool() {
 		isForceUnlink = data.ForceUnlink.ValueBool()
 	}
-	data.ForceUnlink = types.BoolValue(isForceUnlink)
-	data.DeleteOnVmDeletion = types.BoolValue(linkedVol.GetDeleteOnVmDeletion())
-	data.VolumeId = types.StringValue(linkedVol.GetVolumeId())
-	data.DeviceName = types.StringValue(linkedVol.GetDeviceName())
-	data.State = types.StringValue(linkedVol.GetState())
-	data.VmId = types.StringValue(linkedVol.GetVmId())
-	data.Id = types.StringValue(linkedVol.GetVolumeId())
+	data.ForceUnlink = to.Bool(isForceUnlink)
+	data.DeleteOnVmDeletion = to.Bool(linkedVol.DeleteOnVmDeletion)
+	data.VolumeId = to.String(linkedVol.VolumeId)
+	data.DeviceName = to.String(linkedVol.DeviceName)
+	data.State = to.String(linkedVol.State)
+	data.VmId = to.String(linkedVol.VmId)
+	data.Id = to.String(linkedVol.VolumeId)
 
 	return nil
 }
 
-func getVmStateRefreshFunc(ctx context.Context, conn *oscgo.APIClient, timeout time.Duration, vmId string) retry.StateRefreshFunc {
+func getVmStateRefreshFunc(ctx context.Context, client *osc.Client, timeout time.Duration, vmId string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		var resp oscgo.ReadVmsStateResponse
-		var err error
-		req := oscgo.NewReadVmsStateRequest()
-		filters := oscgo.FiltersVmsState{
-			VmIds: &[]string{vmId},
+		req := osc.ReadVmsStateRequest{
+			AllVms: new(true),
+			Filters: &osc.FiltersVmsState{
+				VmIds: &[]string{vmId},
+			},
 		}
-		req.SetAllVms(true)
-		req.SetFilters(filters)
-		err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-			rp, httpResp, err := conn.VmApi.ReadVmsState(ctx).ReadVmsStateRequest(*req).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
+		resp, err := client.ReadVmsState(ctx, req)
 		if err != nil {
 			return nil, "", err
 		}
-		vmStatus := resp.GetVmStates()[0]
-		return vmStatus, vmStatus.GetVmState(), nil
+		vmStatus := (*resp.VmStates)[0]
+		return vmStatus, string(vmStatus.VmState), nil
 	}
 }
 
-func getvolumeAttachmentStateRefreshFunc(ctx context.Context, conn *oscgo.APIClient, timeOut time.Duration, vmId string, volumeId string) retry.StateRefreshFunc {
+func getvolumeAttachmentStateRefreshFunc(ctx context.Context, client *osc.Client, timeOut time.Duration, vmId string, volumeId string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		request := oscgo.ReadVolumesRequest{
-			Filters: &oscgo.FiltersVolume{
+		request := osc.ReadVolumesRequest{
+			Filters: &osc.FiltersVolume{
 				VolumeIds:       &[]string{volumeId},
 				LinkVolumeVmIds: &[]string{vmId},
 			},
 		}
 
-		var resp oscgo.ReadVolumesResponse
-		err := retry.RetryContext(ctx, timeOut, func() *retry.RetryError {
-			rp, httpResp, err := conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(request).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
+		resp, err := client.ReadVolumes(ctx, request)
 		if err != nil {
 			return nil, "failed", err
 		}
 
-		if len(resp.GetVolumes()) > 0 && len(resp.GetVolumes()[0].GetLinkedVolumes()) > 0 {
-			linkedVolume := resp.GetVolumes()[0].GetLinkedVolumes()[0]
-			return linkedVolume, linkedVolume.GetState(), nil
+		if len(*resp.Volumes) > 0 && len((*resp.Volumes)[0].LinkedVolumes) > 0 {
+			linkedVolume := (*resp.Volumes)[0].LinkedVolumes[0]
+			return linkedVolume, string(linkedVolume.State), nil
 		}
 
-		return resp.GetVolumes(), "detached", nil
+		return resp.Volumes, "detached", nil
 	}
 }

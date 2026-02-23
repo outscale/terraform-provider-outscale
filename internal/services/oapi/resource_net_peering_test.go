@@ -10,10 +10,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccNet_PeeringConnection_Basic(t *testing.T) {
+func TestAccNet_Peeringconnection_Basic(t *testing.T) {
 	resourceName := "outscale_net_peering.foo"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -27,11 +26,10 @@ func TestAccNet_PeeringConnection_Basic(t *testing.T) {
 	})
 }
 
-func TestAccNet_PeeringConnection_importBasic(t *testing.T) {
+func TestAccNet_Peeringconnection_importBasic(t *testing.T) {
 	resourceName := "outscale_net_peering.foo"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 
 		Steps: []resource.TestStep{
@@ -43,9 +41,8 @@ func TestAccNet_PeeringConnection_importBasic(t *testing.T) {
 	})
 }
 
-func TestAccNet_PeeringConnection_plan(t *testing.T) {
+func TestAccNet_Peeringconnection_plan(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -57,9 +54,8 @@ func TestAccNet_PeeringConnection_plan(t *testing.T) {
 	})
 }
 
-func TestAccNet_PeeringConnection_Migration(t *testing.T) {
+func TestAccNet_Peeringconnection_Migration(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { testacc.PreCheck(t) },
 		Steps: testacc.FrameworkMigrationTestSteps("1.1.1",
 			testAccOAPIVpcPeeringConfig2(),
 			testAccOAPIVpcPeeringConfig(oapihelpers.GetAccepterOwnerId()),

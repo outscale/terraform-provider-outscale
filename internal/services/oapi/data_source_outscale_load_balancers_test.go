@@ -14,9 +14,6 @@ func TestAccOthers_LBUs_basic(t *testing.T) {
 	numLbu := utils.RandIntRange(0, 50)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() {
-			testacc.PreCheck(t)
-		},
 		Providers:    testacc.SDKProviders,
 		CheckDestroy: testAccCheckOutscaleLBUDestroy,
 		Steps: []resource.TestStep{

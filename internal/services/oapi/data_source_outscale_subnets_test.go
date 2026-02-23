@@ -13,7 +13,6 @@ func TestAccNet_WithSubnetsDataSource(t *testing.T) {
 	rInt := utils.RandIntRange(16, 31)
 	resouceName := "data.outscale_subnets.by_filter"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -29,7 +28,6 @@ func TestAccNet_WithSubnetsDataSource(t *testing.T) {
 func TestAccNet_Subnets_withAvailableIpsCountsFilter(t *testing.T) {
 	resouceName := "data.outscale_subnets.by_filters"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{

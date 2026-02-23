@@ -2,22 +2,23 @@ package oapi
 
 import (
 	"context"
-	"errors"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceOutscaleVMStates() *schema.Resource {
 	return &schema.Resource{
-		Read:   DataSourceOutscaleVMStatesRead,
-		Schema: getOAPIVMStatesDataSourceSchema(),
+		ReadContext: DataSourceOutscaleVMStatesRead,
+		Schema:      getOAPIVMStatesDataSourceSchema(),
 	}
 }
 
@@ -50,55 +51,46 @@ func getOAPIVMStatesDataSourceSchema() map[string]*schema.Schema {
 	return wholeSchema
 }
 
-func DataSourceOutscaleVMStatesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleVMStatesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 	instanceIds, instanceIdsOk := d.GetOk("vm_ids")
 
 	if !instanceIdsOk && !filtersOk {
-		return errors.New("vm_id or filter must be set")
+		return diag.Errorf("vm_id or filter must be set")
 	}
 
 	var err error
-	params := oscgo.ReadVmsStateRequest{}
+	params := osc.ReadVmsStateRequest{}
 	if filtersOk {
 		params.Filters, err = buildOutscaleDataSourceVMStateFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
 	if instanceIdsOk {
-		filter := oscgo.FiltersVmsState{}
-		filter.SetVmIds(utils.InterfaceSliceToStringSlice(instanceIds.([]interface{})))
-		params.SetFilters(filter)
+		filter := osc.FiltersVmsState{}
+		filter.VmIds = new(utils.InterfaceSliceToStringSlice(instanceIds.([]interface{})))
+		params.Filters = &filter
 	}
-	params.SetAllVms(d.Get("all_vms").(bool))
-	var resp oscgo.ReadVmsStateResponse
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.VmApi.ReadVmsState(context.Background()).ReadVmsStateRequest(params).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
-
+	params.AllVms = new(d.Get("all_vms").(bool))
+	resp, err := client.ReadVmsState(ctx, params, options.WithRetryTimeout(5*time.Minute))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	filteredStates := resp.GetVmStates()[:]
+	filteredStates := ptr.From(resp.VmStates)[:]
 
 	if len(filteredStates) < 1 {
-		return ErrNoResults
+		return diag.FromErr(ErrNoResults)
 	}
 
-	return statusDescriptionOAPIVMStatesAttributes(d, filteredStates)
+	return diag.FromErr(statusDescriptionOAPIVMStatesAttributes(d, filteredStates))
 }
 
-func statusDescriptionOAPIVMStatesAttributes(d *schema.ResourceData, status []oscgo.VmStates) error {
+func statusDescriptionOAPIVMStatesAttributes(d *schema.ResourceData, status []osc.VmStates) error {
 	d.SetId(id.UniqueId())
 
 	states := make([]map[string]interface{}, len(status))

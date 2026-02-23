@@ -16,11 +16,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 )
 
 var (
@@ -39,7 +39,7 @@ type LbuBackendVmsModel struct {
 }
 
 type resourceLbuVms struct {
-	Client *oscgo.APIClient
+	Client *osc.Client
 }
 
 func NewResourceLBUVms() resource.Resource {
@@ -54,12 +54,12 @@ func (r *resourceLbuVms) Configure(_ context.Context, req resource.ConfigureRequ
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected *oscgo.APIClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *osc.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
 	}
-	r.Client = client.OSCAPI
+	r.Client = client.OSC
 }
 
 func (r *resourceLbuVms) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
@@ -74,7 +74,6 @@ func (r *resourceLbuVms) ValidateConfig(ctx context.Context, req resource.Valida
 			"Missing Attribute Configuration",
 			"You need to specify at least the 'backend_ips' or the 'backend_vm_ids' parameter.",
 		)
-		return
 	}
 }
 
@@ -94,7 +93,6 @@ func (r *resourceLbuVms) ModifyPlan(ctx context.Context, req resource.ModifyPlan
 			"You have to apply twice or run 'terraform refesh' after the fist apply to get"+
 				" the 'backend_ips' or 'backend_vm_ids' block values in load_balancer resource state",
 		)
-		return
 	}
 }
 
@@ -151,35 +149,27 @@ func (r *resourceLbuVms) Create(ctx context.Context, req resource.CreateRequest,
 	}
 
 	createTimeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
 	listVmsIds, listVmsIps, diags := getSlicesLbuBackendVms(ctx, &data)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 	lbuName := data.LoadBalancerName.ValueString()
-	createReq := oscgo.NewLinkLoadBalancerBackendMachinesRequest(lbuName)
+	createReq := osc.LinkLoadBalancerBackendMachinesRequest{
+		LoadBalancerName: lbuName,
+	}
 
 	if len(listVmsIds) > 0 {
-		createReq.SetBackendVmIds(listVmsIds)
+		createReq.BackendVmIds = &listVmsIds
 	}
 	if len(listVmsIps) > 0 {
-		createReq.SetBackendIps(listVmsIps)
+		createReq.BackendIps = &listVmsIps
 	}
 
-	var createResp oscgo.LinkLoadBalancerBackendMachinesResponse
-	err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.LoadBalancerApi.LinkLoadBalancerBackendMachines(ctx).LinkLoadBalancerBackendMachinesRequest(*createReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		createResp = rp
-		return nil
-	})
+	createResp, err := r.Client.LinkLoadBalancerBackendMachines(ctx, createReq, options.WithRetryTimeout(createTimeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to create LBU Backend_vms resource",
@@ -188,8 +178,8 @@ func (r *resourceLbuVms) Create(ctx context.Context, req resource.CreateRequest,
 		return
 
 	}
-	data.RequestId = types.StringValue(*createResp.ResponseContext.RequestId)
-	data.Id = types.StringValue(lbuName)
+	data.RequestId = to.String(*createResp.ResponseContext.RequestId)
+	data.Id = to.String(lbuName)
 
 	err = setLbuBackendState(ctx, r, &data)
 	if err != nil {
@@ -200,9 +190,6 @@ func (r *resourceLbuVms) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceLbuVms) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -225,9 +212,6 @@ func (r *resourceLbuVms) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceLbuVms) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -239,12 +223,11 @@ func (r *resourceLbuVms) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 	updateTimeout, diags := dataPlan.Timeouts.Update(ctx, UpdateDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
-	linkReq, unLinkReq, err := buildFwUpdateBackendsRequest(ctx, dataState.LoadBalancerName.ValueString(), &dataState, &dataPlan)
+	linkReq, unLinkReq, err := buildUpdateBackendsRequest(ctx, dataState.LoadBalancerName.ValueString(), &dataState, &dataPlan)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to update LBU backends.",
@@ -252,15 +235,8 @@ func (r *resourceLbuVms) Update(ctx context.Context, req resource.UpdateRequest,
 		)
 		return
 	}
-	if unLinkReq.HasBackendVmIds() || unLinkReq.HasBackendIps() {
-		err := retry.RetryContext(ctx, updateTimeout, func() *retry.RetryError {
-			_, httpResp, err := r.Client.LoadBalancerApi.
-				UnlinkLoadBalancerBackendMachines(ctx).UnlinkLoadBalancerBackendMachinesRequest(*unLinkReq).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			return nil
-		})
+	if (unLinkReq.BackendVmIds != nil && len(*unLinkReq.BackendVmIds) > 0) || (unLinkReq.BackendIps != nil && len(*unLinkReq.BackendIps) > 0) {
+		_, err := r.Client.UnlinkLoadBalancerBackendMachines(ctx, unLinkReq, options.WithRetryTimeout(updateTimeout))
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Unable to remove LBU backend vms.",
@@ -270,15 +246,8 @@ func (r *resourceLbuVms) Update(ctx context.Context, req resource.UpdateRequest,
 		}
 	}
 
-	if linkReq.HasBackendVmIds() || linkReq.HasBackendIps() {
-		err := retry.RetryContext(ctx, updateTimeout, func() *retry.RetryError {
-			_, httpResp, err := r.Client.LoadBalancerApi.
-				LinkLoadBalancerBackendMachines(ctx).LinkLoadBalancerBackendMachinesRequest(*linkReq).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			return nil
-		})
+	if (linkReq.BackendVmIds != nil && len(*linkReq.BackendVmIds) > 0) || (linkReq.BackendIps != nil && len(*linkReq.BackendIps) > 0) {
+		_, err := r.Client.LinkLoadBalancerBackendMachines(ctx, linkReq, options.WithRetryTimeout(updateTimeout))
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Unable to add LBU backend vms.",
@@ -296,9 +265,6 @@ func (r *resourceLbuVms) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &dataPlan)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceLbuVms) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -310,45 +276,37 @@ func (r *resourceLbuVms) Delete(ctx context.Context, req resource.DeleteRequest,
 	}
 
 	deleteTimeout, diags := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
 	listVmsIds, listVmsIps, diags := getSlicesLbuBackendVms(ctx, &data)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
 	lbuName := data.LoadBalancerName.ValueString()
-	unLinkReq := oscgo.NewUnlinkLoadBalancerBackendMachinesRequest(lbuName)
+	unLinkReq := osc.UnlinkLoadBalancerBackendMachinesRequest{
+		LoadBalancerName: lbuName,
+	}
 	if len(listVmsIds) > 0 {
-		unLinkReq.SetBackendVmIds(listVmsIds)
+		unLinkReq.BackendVmIds = &listVmsIds
 	}
 	if len(listVmsIps) > 0 {
-		unLinkReq.SetBackendIps(listVmsIps)
+		unLinkReq.BackendIps = &listVmsIps
 	}
 
-	err := retry.RetryContext(ctx, deleteTimeout, func() *retry.RetryError {
-		_, httpResp, err := r.Client.LoadBalancerApi.
-			UnlinkLoadBalancerBackendMachines(ctx).UnlinkLoadBalancerBackendMachinesRequest(*unLinkReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	_, err := r.Client.UnlinkLoadBalancerBackendMachines(ctx, unLinkReq, options.WithRetryTimeout(deleteTimeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to delete LBU backend vms.",
 			err.Error(),
 		)
-		return
 	}
 }
 
 func setLbuBackendState(ctx context.Context, r *resourceLbuVms, data *LbuBackendVmsModel) error {
-	lbuFilters := oscgo.FiltersLoadBalancer{
+	lbuFilters := osc.FiltersLoadBalancer{
 		LoadBalancerNames: &[]string{data.LoadBalancerName.ValueString()},
 	}
 
@@ -356,44 +314,35 @@ func setLbuBackendState(ctx context.Context, r *resourceLbuVms, data *LbuBackend
 	if diags.HasError() {
 		return fmt.Errorf("unable to parse read timeout value: %v", diags.Errors())
 	}
-	ctx, cancel := context.WithTimeout(ctx, readTimeout)
-	defer cancel()
 
-	readReq := oscgo.ReadLoadBalancersRequest{
+	readReq := osc.ReadLoadBalancersRequest{
 		Filters: &lbuFilters,
 	}
-	var readResp oscgo.ReadLoadBalancersResponse
-	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.LoadBalancerApi.ReadLoadBalancers(context.Background()).ReadLoadBalancersRequest(readReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		readResp = rp
-		return nil
-	})
+	readResp, err := r.Client.ReadLoadBalancers(ctx, readReq, options.WithRetryTimeout(readTimeout))
 	if err != nil {
 		return err
 	}
-	if len(readResp.GetLoadBalancers()) == 0 {
+	if readResp.LoadBalancers == nil || len(*readResp.LoadBalancers) == 0 {
 		return ErrResourceEmpty
 	}
 
-	data.RequestId = types.StringValue(*readResp.ResponseContext.RequestId)
-	lbu := readResp.GetLoadBalancers()[0]
-	if !data.BackendVmIds.IsUnknown() && !data.BackendVmIds.IsNull() {
-		data.BackendVmIds, diags = types.SetValueFrom(ctx, types.StringType, lbu.GetBackendVmIds())
+	data.RequestId = to.String(*readResp.ResponseContext.RequestId)
+	lbu := (*readResp.LoadBalancers)[0]
+	if fwhelpers.IsSet(data.BackendVmIds) {
+		data.BackendVmIds, diags = to.Set(ctx, lbu.BackendVmIds)
 		if diags.HasError() {
 			return fmt.Errorf("unable to set lbu backend_vm_ips: %v", diags.Errors())
 		}
 	}
 	if !data.BackendIps.IsUnknown() && !data.BackendIps.IsNull() {
-		data.BackendIps, diags = types.SetValueFrom(ctx, types.StringType, lbu.GetBackendIps())
+		data.BackendIps, diags = to.Set(ctx, lbu.BackendIps)
 		if diags.HasError() {
 			return fmt.Errorf("unable to set lbu backend_ips: %v", diags.Errors())
 		}
 	}
-	data.LoadBalancerName = types.StringValue(lbu.GetLoadBalancerName())
-	data.Id = types.StringValue(lbu.GetLoadBalancerName())
+	data.LoadBalancerName = to.String(lbu.LoadBalancerName)
+	data.Id = to.String(lbu.LoadBalancerName)
+
 	return nil
 }
 
@@ -411,15 +360,19 @@ func getSlicesLbuBackendVms(ctx context.Context, data *LbuBackendVmsModel) ([]st
 	return listVmsIds, listVmsIps, diags
 }
 
-func buildFwUpdateBackendsRequest(ctx context.Context, lbuName string, stateData, planData *LbuBackendVmsModel) (*oscgo.LinkLoadBalancerBackendMachinesRequest, *oscgo.UnlinkLoadBalancerBackendMachinesRequest, error) {
-	linkReq := oscgo.NewLinkLoadBalancerBackendMachinesRequest(lbuName)
-	unLinkReq := oscgo.NewUnlinkLoadBalancerBackendMachinesRequest(lbuName)
+func buildUpdateBackendsRequest(ctx context.Context, lbuName string, stateData, planData *LbuBackendVmsModel) (osc.LinkLoadBalancerBackendMachinesRequest, osc.UnlinkLoadBalancerBackendMachinesRequest, error) {
+	linkReq := osc.LinkLoadBalancerBackendMachinesRequest{
+		LoadBalancerName: lbuName,
+	}
+	unLinkReq := osc.UnlinkLoadBalancerBackendMachinesRequest{
+		LoadBalancerName: lbuName,
+	}
 	var (
 		ipsToAdd, ipsToRemove, vmIdsToAdd, vmIdsToRemove []string
 		diags                                            diag.Diagnostics
 	)
 
-	if !reflect.DeepEqual(planData.BackendIps, stateData.BackendIps) {
+	if !planData.BackendIps.Equal(stateData.BackendIps) {
 		ipsToAdd, ipsToRemove, diags = fwhelpers.GetSlicesFromTypesSetForUpdating(ctx, stateData.BackendIps, planData.BackendIps)
 		if diags.HasError() {
 			return linkReq, unLinkReq, fmt.Errorf("unable to get 'backend_ips' form typeset: %v", diags.Errors())
@@ -432,16 +385,16 @@ func buildFwUpdateBackendsRequest(ctx context.Context, lbuName string, stateData
 		}
 	}
 	if len(ipsToAdd) > 0 {
-		linkReq.SetBackendIps(ipsToAdd)
+		linkReq.BackendIps = &ipsToAdd
 	}
 	if len(vmIdsToAdd) > 0 {
-		linkReq.SetBackendVmIds(vmIdsToAdd)
+		linkReq.BackendVmIds = &vmIdsToAdd
 	}
 	if len(ipsToRemove) > 0 {
-		unLinkReq.SetBackendIps(ipsToRemove)
+		unLinkReq.BackendIps = &ipsToRemove
 	}
 	if len(vmIdsToRemove) > 0 {
-		unLinkReq.SetBackendVmIds(vmIdsToRemove)
+		unLinkReq.BackendVmIds = &vmIdsToRemove
 	}
 	return linkReq, unLinkReq, nil
 }

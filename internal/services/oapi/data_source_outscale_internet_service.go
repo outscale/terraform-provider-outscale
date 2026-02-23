@@ -2,21 +2,21 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceOutscaleInternetService() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleInternetServiceRead,
+		ReadContext: DataSourceOutscaleInternetServiceRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"state": {
@@ -40,22 +40,22 @@ func DataSourceOutscaleInternetService() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleInternetServiceRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleInternetServiceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 	internetID, insternetIDOk := d.GetOk("internet_service_id")
 
 	if !filtersOk && !insternetIDOk {
-		return fmt.Errorf("one of filters, or instance_id must be assigned")
+		return diag.Errorf("one of filters, or instance_id must be assigned")
 	}
 
 	// Build up search parameters
 	var err error
-	params := oscgo.ReadInternetServicesRequest{}
+	params := osc.ReadInternetServicesRequest{}
 
 	if insternetIDOk {
-		params.Filters = &oscgo.FiltersInternetService{
+		params.Filters = &osc.FiltersInternetService{
 			InternetServiceIds: &[]string{internetID.(string)},
 		}
 	}
@@ -63,52 +63,42 @@ func DataSourceOutscaleInternetServiceRead(d *schema.ResourceData, meta interfac
 	if filtersOk {
 		params.Filters, err = buildOutscaleOSCAPIDataSourceInternetServiceFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	var resp oscgo.ReadInternetServicesResponse
-
-	err = retry.Retry(120*time.Second, func() *retry.RetryError {
-		var err error
-		rp, httpResp, err := conn.InternetServiceApi.ReadInternetServices(context.Background()).ReadInternetServicesRequest(params).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadInternetServices(ctx, params, options.WithRetryTimeout(120*time.Second))
 	if err != nil {
-		return fmt.Errorf("error reading internet service id (%s)", utils.GetErrorResponse(err))
+		return diag.Errorf("error reading internet service id (%s)", err)
 	}
 
-	if !resp.HasInternetServices() || len(resp.GetInternetServices()) == 0 {
-		return ErrNoResults
+	if resp.InternetServices == nil || len(*resp.InternetServices) == 0 {
+		return diag.FromErr(ErrNoResults)
 	}
 
-	result := resp.GetInternetServices()[0]
+	result := (*resp.InternetServices)[0]
 
 	log.Printf("[DEBUG] Setting OAPI Internet Service id (%s)", err)
 
-	if err := d.Set("internet_service_id", result.GetInternetServiceId()); err != nil {
-		return err
+	if err := d.Set("internet_service_id", result.InternetServiceId); err != nil {
+		return diag.FromErr(err)
 	}
 
-	if err := d.Set("state", result.GetState()); err != nil {
-		return err
+	if err := d.Set("state", result.State); err != nil {
+		return diag.FromErr(err)
 	}
 
-	if err := d.Set("net_id", result.GetNetId()); err != nil {
-		return err
+	if err := d.Set("net_id", result.NetId); err != nil {
+		return diag.FromErr(err)
 	}
 
-	d.SetId(result.GetInternetServiceId())
+	d.SetId(result.InternetServiceId)
 
-	return d.Set("tags", FlattenOAPITagsSDK(result.GetTags()))
+	return diag.FromErr(d.Set("tags", FlattenOAPITagsSDK(result.Tags)))
 }
 
-func buildOutscaleOSCAPIDataSourceInternetServiceFilters(set *schema.Set) (*oscgo.FiltersInternetService, error) {
-	var filters oscgo.FiltersInternetService
+func buildOutscaleOSCAPIDataSourceInternetServiceFilters(set *schema.Set) (*osc.FiltersInternetService, error) {
+	var filters osc.FiltersInternetService
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -118,19 +108,19 @@ func buildOutscaleOSCAPIDataSourceInternetServiceFilters(set *schema.Set) (*oscg
 
 		switch name := m["name"].(string); name {
 		case "internet_service_ids":
-			filters.SetInternetServiceIds(filterValues)
+			filters.InternetServiceIds = &filterValues
 		case "link_net_ids":
-			filters.SetLinkNetIds(filterValues)
+			filters.LinkNetIds = &filterValues
 		case "link_states":
-			filters.SetLinkStates(filterValues)
+			filters.LinkStates = &filterValues
 		case "tags":
-			filters.SetTags(filterValues)
+			filters.Tags = &filterValues
 		case "tag_keys":
-			filters.SetTagKeys(filterValues)
+			filters.TagKeys = &filterValues
 		case "tag_values":
-			filters.SetTagValues(filterValues)
+			filters.TagValues = &filterValues
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(name)
 		}
 	}
 	return &filters, nil

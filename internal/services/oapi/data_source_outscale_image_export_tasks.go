@@ -2,22 +2,22 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceOutscaleImageExportTasks() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOAPIImageExportTasksRead,
+		ReadContext: dataSourceOAPIImageExportTasksRead,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -95,70 +95,62 @@ func DataSourceOutscaleImageExportTasks() *schema.Resource {
 	}
 }
 
-func dataSourceOAPIImageExportTasksRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func dataSourceOAPIImageExportTasksRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 
 	var err error
-	var req oscgo.ReadImageExportTasksRequest
+	var req osc.ReadImageExportTasksRequest
 	if filtersOk {
 		req.Filters, err = buildOutscaleOSCAPIDataSourceImageExportTaskFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	var resp oscgo.ReadImageExportTasksResponse
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.ImageApi.ReadImageExportTasks(context.Background()).
-			ReadImageExportTasksRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadImageExportTasks(ctx, req, options.WithRetryTimeout(5*time.Minute))
 	if err != nil {
-		return fmt.Errorf("error reading task image %s", err)
+		return diag.Errorf("error reading task image %s", err)
 	}
 
-	if len(resp.GetImageExportTasks()) == 0 {
-		return ErrNoResults
+	if resp.ImageExportTasks == nil || len(*resp.ImageExportTasks) == 0 {
+		return diag.FromErr(ErrNoResults)
 	}
 
-	snapshots := make([]map[string]interface{}, len(resp.GetImageExportTasks()))
-	for k, v := range resp.GetImageExportTasks() {
+	snapshots := make([]map[string]interface{}, len(*resp.ImageExportTasks))
+	for k, v := range *resp.ImageExportTasks {
 		snapshot := make(map[string]interface{})
 
-		snapshot["progress"] = v.GetProgress()
-		snapshot["task_id"] = v.GetTaskId()
-		snapshot["state"] = v.GetState()
-		snapshot["comment"] = v.GetComment()
+		snapshot["progress"] = v.Progress
+		snapshot["task_id"] = v.TaskId
+		snapshot["state"] = v.State
+		snapshot["comment"] = v.Comment
 
 		exp := make([]map[string]interface{}, 1)
 		exportToOsu := make(map[string]interface{})
-		exportToOsu["disk_image_format"] = v.OsuExport.GetDiskImageFormat()
-		exportToOsu["osu_bucket"] = v.OsuExport.GetOsuBucket()
-		osuPrefix := v.OsuExport.GetOsuPrefix()
+		export := ptr.From(v.OsuExport)
+		exportToOsu["disk_image_format"] = export.DiskImageFormat
+		exportToOsu["osu_bucket"] = export.OsuBucket
+		osuPrefix := ptr.From(export.OsuPrefix)
 		if strings.Contains(osuPrefix, "/") {
 			osuList := strings.Split(osuPrefix, "/")
 			osuPrefix = osuList[0]
 		}
 		exportToOsu["osu_prefix"] = osuPrefix
-		exportToOsu["osu_manifest_url"] = v.OsuExport.GetOsuManifestUrl()
+		exportToOsu["osu_manifest_url"] = export.OsuManifestUrl
 
 		exp[0] = exportToOsu
 
-		snapshot["image_id"] = v.GetImageId()
+		snapshot["image_id"] = v.ImageId
 		snapshot["osu_export"] = exp
 
-		snapshot["tags"] = FlattenOAPITagsSDK(v.GetTags())
+		snapshot["tags"] = FlattenOAPITagsSDK(ptr.From(v.Tags))
 
 		snapshots[k] = snapshot
 	}
 
 	d.SetId(id.UniqueId())
 
-	return d.Set("image_export_tasks", snapshots)
+	return diag.FromErr(d.Set("image_export_tasks", snapshots))
 }

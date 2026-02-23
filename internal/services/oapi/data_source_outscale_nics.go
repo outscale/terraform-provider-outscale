@@ -2,24 +2,24 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
-	"github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/services/oapi/oapihelpers"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 // Creates a network interface in the specified subnet
 func DataSourceOutscaleNics() *schema.Resource {
 	return &schema.Resource{
-		Read:   DataSourceOutscaleNicsRead,
-		Schema: getDSOAPINicsSchema(),
+		ReadContext: DataSourceOutscaleNicsRead,
+		Schema:      getDSOAPINicsSchema(),
 	}
 }
 
@@ -223,8 +223,8 @@ func getDSOAPINicsSchema() map[string]*schema.Schema {
 }
 
 // Read Nic
-func DataSourceOutscaleNicsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleNicsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 
@@ -233,65 +233,57 @@ func DataSourceOutscaleNicsRead(d *schema.ResourceData, meta interface{}) error 
 	if filtersOk {
 		params.Filters, err = buildOutscaleDataSourceNicFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	var resp osc.ReadNicsResponse
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(params).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadNics(ctx, params, options.WithRetryTimeout(5*time.Minute))
 	if err != nil {
-		return fmt.Errorf("error reading network interface cards : %s", err)
+		return diag.Errorf("error reading network interface cards : %s", err)
 	}
 
-	if resp.GetNics() == nil {
-		return ErrNoResults
+	if resp.Nics == nil {
+		return diag.FromErr(ErrNoResults)
 	}
 
-	if len(resp.GetNics()) == 0 {
-		return ErrNoResults
+	if resp.Nics == nil || len(*resp.Nics) == 0 {
+		return diag.FromErr(ErrNoResults)
 	}
-	nics := resp.GetNics()
+	nics := ptr.From(resp.Nics)
 
-	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
+	return diag.FromErr(resourceDataAttrSetter(d, func(set AttributeSetter) error {
 		d.SetId(id.UniqueId())
 
 		if err := set("nics", getVMNetworkInterfaceSet(nics)); err != nil {
 			return err
 		}
 		return nil
-	})
+	}))
 }
 
 func getVMNetworkInterfaceSet(nics []osc.Nic) (res []map[string]interface{}) {
 	for _, nic := range nics {
-		securityGroups, _ := oapihelpers.GetSecurityGroups(*nic.SecurityGroups)
+		securityGroups, _ := oapihelpers.GetSecurityGroups(nic.SecurityGroups)
 		r := map[string]interface{}{
-			"account_id":             nic.GetAccountId(),
-			"description":            nic.GetDescription(),
-			"is_source_dest_checked": nic.GetIsSourceDestChecked(),
-			"mac_address":            nic.GetMacAddress(),
-			"net_id":                 nic.GetNetId(),
-			"nic_id":                 nic.GetNicId(),
-			"private_dns_name":       nic.GetPrivateDnsName(),
-			"private_ips":            oapihelpers.GetPrivateIPsForNic(nic.GetPrivateIps()),
+			"account_id":             nic.AccountId,
+			"description":            nic.Description,
+			"is_source_dest_checked": nic.IsSourceDestChecked,
+			"mac_address":            nic.MacAddress,
+			"net_id":                 nic.NetId,
+			"nic_id":                 nic.NicId,
+			"private_dns_name":       nic.PrivateDnsName,
+			"private_ips":            oapihelpers.GetPrivateIPsForNic(nic.PrivateIps),
 			"security_groups":        securityGroups,
-			"state":                  nic.GetState(),
-			"subnet_id":              nic.GetSubnetId(),
-			"subregion_name":         nic.GetSubregionName(),
-			"tags":                   FlattenOAPITagsSDK(nic.GetTags()),
+			"state":                  nic.State,
+			"subnet_id":              nic.SubnetId,
+			"subregion_name":         nic.SubregionName,
+			"tags":                   FlattenOAPITagsSDK(nic.Tags),
 		}
-		if _, ok := nic.GetLinkNicOk(); ok {
-			r["link_nic"] = oapihelpers.GetOAPILinkNic(nic.GetLinkNic())
+		if nic.LinkNic != nil {
+			r["link_nic"] = oapihelpers.GetOAPILinkNic(*nic.LinkNic)
 		}
-		if _, ok := nic.GetLinkPublicIpOk(); ok {
-			r["link_public_ip"] = oapihelpers.GetOAPILinkPublicIPsForNic(nic.GetLinkPublicIp())
+		if nic.LinkPublicIp != nil {
+			r["link_public_ip"] = oapihelpers.GetOAPILinkPublicIPsForNic(*nic.LinkPublicIp)
 		}
 		res = append(res, r)
 	}

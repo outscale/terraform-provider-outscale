@@ -2,21 +2,21 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceOutscaleRouteTables() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleRouteTablesRead,
+		ReadContext: DataSourceOutscaleRouteTablesRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -142,16 +142,17 @@ func DataSourceOutscaleRouteTables() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleRouteTablesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleRouteTablesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
 	rtbID, rtbOk := d.GetOk("route_table_id")
 	filter, filterOk := d.GetOk("filter")
 	if !filterOk && !rtbOk {
-		return fmt.Errorf("one of route_table_id or filters must be assigned")
+		return diag.Errorf("one of route_table_id or filters must be assigned")
 	}
 
-	params := oscgo.ReadRouteTablesRequest{
-		Filters: &oscgo.FiltersRouteTable{},
+	params := osc.ReadRouteTablesRequest{
+		Filters: &osc.FiltersRouteTable{},
 	}
 
 	if rtbOk {
@@ -160,54 +161,46 @@ func DataSourceOutscaleRouteTablesRead(d *schema.ResourceData, meta interface{})
 		for k, v := range i {
 			in[k] = v.(string)
 		}
-		filter := oscgo.FiltersRouteTable{}
-		filter.SetRouteTableIds(in)
-		params.SetFilters(filter)
+		filter := osc.FiltersRouteTable{}
+		filter.RouteTableIds = &in
+		params.Filters = &filter
 	}
 
 	var err error
 	if filterOk {
 		params.Filters, err = buildOutscaleDataSourceRouteTableFilters(filter.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	var resp oscgo.ReadRouteTablesResponse
-	err = retry.Retry(60*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(params).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadRouteTables(ctx, params, options.WithRetryTimeout(60*time.Second))
 
 	var errString string
 	if err != nil {
 		errString = err.Error()
-		return fmt.Errorf("error reading internet services (%s)", errString)
+		return diag.Errorf("error reading internet services (%s)", errString)
 	}
 
-	rt := resp.GetRouteTables()
+	rt := ptr.From(resp.RouteTables)
 	if len(rt) == 0 {
-		return ErrNoResults
+		return diag.FromErr(ErrNoResults)
 	}
 
 	routeTables := make([]map[string]interface{}, len(rt))
 
 	for k, v := range rt {
 		routeTable := make(map[string]interface{})
-		routeTable["route_propagating_virtual_gateways"] = setOSCAPIPropagatingVirtualGateways(v.GetRoutePropagatingVirtualGateways())
-		routeTable["route_table_id"] = v.GetRouteTableId()
-		routeTable["net_id"] = v.GetNetId()
-		routeTable["tags"] = FlattenOAPITagsSDK(v.GetTags())
-		routeTable["routes"] = setOSCAPIRoutes(v.GetRoutes())
-		routeTable["link_route_tables"] = setOSCAPILinkRouteTables(v.GetLinkRouteTables())
+		routeTable["route_propagating_virtual_gateways"] = setOSCAPIPropagatingVirtualGateways(v.RoutePropagatingVirtualGateways)
+		routeTable["route_table_id"] = v.RouteTableId
+		routeTable["net_id"] = v.NetId
+		routeTable["tags"] = FlattenOAPITagsSDK(v.Tags)
+		routeTable["routes"] = setOSCAPIRoutes(v.Routes)
+		routeTable["link_route_tables"] = setOSCAPILinkRouteTables(v.LinkRouteTables)
 		routeTables[k] = routeTable
 	}
 
 	d.SetId(id.UniqueId())
 
-	return d.Set("route_tables", routeTables)
+	return diag.FromErr(d.Set("route_tables", routeTables))
 }

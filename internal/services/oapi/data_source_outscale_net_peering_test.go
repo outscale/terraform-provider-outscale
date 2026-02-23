@@ -10,22 +10,21 @@ import (
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 )
 
-func TestAccNet_PeeringConnectionDataSource_basic(t *testing.T) {
+func TestAccNet_PeeringconnectionDataSource_basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleLinPeeringConnectionConfig(oapihelpers.GetAccepterOwnerId()),
+				Config: testAccDataSourceOutscaleLinPeeringconnectionConfig(oapihelpers.GetAccepterOwnerId()),
 				Check: resource.ComposeTestCheckFunc(
-					testAccDataSourceOutscaleLinPeeringConnectionCheck("outscale_net_peering.net_peering"),
+					testAccDataSourceOutscaleLinPeeringconnectionCheck("outscale_net_peering.net_peering"),
 				),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleLinPeeringConnectionCheck(name string) resource.TestCheckFunc {
+func testAccDataSourceOutscaleLinPeeringconnectionCheck(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -51,7 +50,7 @@ func testAccDataSourceOutscaleLinPeeringConnectionCheck(name string) resource.Te
 	}
 }
 
-func testAccDataSourceOutscaleLinPeeringConnectionConfig(accountId string) string {
+func testAccDataSourceOutscaleLinPeeringconnectionConfig(accountId string) string {
 	return fmt.Sprintf(`
 	resource "outscale_net" "net" {
 		ip_range = "10.10.0.0/24"

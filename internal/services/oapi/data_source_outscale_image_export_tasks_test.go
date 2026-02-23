@@ -18,9 +18,6 @@ func TestAccVM_withImageExportTasksDataSource_basic(t *testing.T) {
 
 	if os.Getenv("TEST_QUOTA") == "true" {
 		resource.ParallelTest(t, resource.TestCase{
-			PreCheck: func() {
-				testacc.PreCheck(t)
-			},
 			Providers: testacc.SDKProviders,
 			Steps: []resource.TestStep{
 				{

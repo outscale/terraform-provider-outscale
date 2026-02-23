@@ -2,22 +2,22 @@ package oapi
 
 import (
 	"context"
-	"fmt"
-	"net/http"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func DataSourceOutscaleOAPiKeyPairsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
-	req := oscgo.ReadKeypairsRequest{
-		Filters: &oscgo.FiltersKeypair{},
+func DataSourceOutscaleOAPiKeyPairsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
+	req := osc.ReadKeypairsRequest{
+		Filters: &osc.FiltersKeypair{},
 	}
 
 	// filters, filtersOk := d.GetOk("filter")
@@ -28,9 +28,9 @@ func DataSourceOutscaleOAPiKeyPairsRead(d *schema.ResourceData, meta interface{}
 		for _, v := range KeyName.([]interface{}) {
 			names = append(names, v.(string))
 		}
-		filter := oscgo.FiltersKeypair{}
-		filter.SetKeypairNames(names)
-		req.SetFilters(filter)
+		filter := osc.FiltersKeypair{}
+		filter.KeypairNames = &names
+		req.Filters = &filter
 	}
 
 	filters, filtersOk := d.GetOk("filter")
@@ -39,63 +39,48 @@ func DataSourceOutscaleOAPiKeyPairsRead(d *schema.ResourceData, meta interface{}
 	if filtersOk {
 		req.Filters, err = buildOutscaleKeyPairsDataSourceFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	var resp oscgo.ReadKeypairsResponse
-	var statusCode int
-	err = retry.RetryContext(context.Background(), ReadDefaultTimeout, func() *retry.RetryError {
-		var err error
-		rp, httpResp, err := conn.KeypairApi.ReadKeypairs(context.Background()).ReadKeypairsRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		statusCode = httpResp.StatusCode
-		return nil
-	})
+	resp, err := client.ReadKeypairs(ctx, req, options.WithRetryTimeout(ReadDefaultTimeout))
 	if err != nil {
-		if statusCode == http.StatusNotFound {
-			d.SetId("")
-			return nil
-		}
-		return fmt.Errorf("error retrieving keypair: %w", err)
+		return diag.Errorf("error retrieving keypair: %v", err)
 	}
 
-	if len(resp.GetKeypairs()) < 1 {
-		return ErrNoResults
+	if resp.Keypairs == nil || len(*resp.Keypairs) < 1 {
+		return diag.FromErr(ErrNoResults)
 	}
 
 	d.SetId(id.UniqueId())
 
-	keypairs := make([]map[string]interface{}, len(resp.GetKeypairs()))
-	for k, v := range resp.GetKeypairs() {
+	keypairs := make([]map[string]interface{}, len(*resp.Keypairs))
+	for k, v := range *resp.Keypairs {
 		keypair := make(map[string]interface{})
-		if v.HasKeypairName() {
-			keypair["keypair_name"] = v.GetKeypairName()
+		if v.KeypairName != nil {
+			keypair["keypair_name"] = v.KeypairName
 		}
-		if v.HasKeypairFingerprint() {
-			keypair["keypair_fingerprint"] = v.GetKeypairFingerprint()
+		if v.KeypairFingerprint != nil {
+			keypair["keypair_fingerprint"] = v.KeypairFingerprint
 		}
-		if v.HasKeypairId() {
-			keypair["keypair_id"] = v.GetKeypairId()
+		if v.KeypairId != nil {
+			keypair["keypair_id"] = v.KeypairId
 		}
-		if v.HasKeypairType() {
-			keypair["keypair_type"] = v.GetKeypairType()
+		if v.KeypairType != nil {
+			keypair["keypair_type"] = v.KeypairType
 		}
-		if v.HasTags() {
-			keypair["tags"] = FlattenOAPITagsSDK(v.GetTags())
+		if v.Tags != nil {
+			keypair["tags"] = FlattenOAPITagsSDK(ptr.From(v.Tags))
 		}
 		keypairs[k] = keypair
 	}
 
-	return d.Set("keypairs", keypairs)
+	return diag.FromErr(d.Set("keypairs", keypairs))
 }
 
 func DataSourceOutscaleKeyPairs() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleOAPiKeyPairsRead,
+		ReadContext: DataSourceOutscaleOAPiKeyPairsRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),

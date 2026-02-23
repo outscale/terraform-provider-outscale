@@ -4,12 +4,15 @@ import (
 	"context"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
+	"github.com/samber/lo"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -55,14 +58,14 @@ func napSchema() map[string]*schema.Schema {
 
 func DataSourceOutscaleNetAccessPoints() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleNetAccessPointsRead,
+		ReadContext: DataSourceOutscaleNetAccessPointsRead,
 
 		Schema: getDataSourceSchemas(napSchema()),
 	}
 }
 
-func buildOutscaleDataSourcesNAPFilters(set *schema.Set) (*oscgo.FiltersNetAccessPoint, error) {
-	filters := oscgo.FiltersNetAccessPoint{}
+func buildOutscaleDataSourcesNAPFilters(set *schema.Set) (*osc.FiltersNetAccessPoint, error) {
+	filters := osc.FiltersNetAccessPoint{}
 
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -77,7 +80,7 @@ func buildOutscaleDataSourcesNAPFilters(set *schema.Set) (*oscgo.FiltersNetAcces
 		case "service_names":
 			filters.ServiceNames = &filterValues
 		case "states":
-			filters.States = &filterValues
+			filters.States = new(lo.Map(filterValues, func(s string, _ int) osc.NetAccessPointState { return osc.NetAccessPointState(s) }))
 		case "tag_keys":
 			filters.TagKeys = &filterValues
 		case "tag_values":
@@ -87,43 +90,33 @@ func buildOutscaleDataSourcesNAPFilters(set *schema.Set) (*oscgo.FiltersNetAcces
 		case "net_access_point_ids":
 			filters.NetAccessPointIds = &filterValues
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(name)
 		}
 	}
 	return &filters, nil
 }
 
-func DataSourceOutscaleNetAccessPointsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleNetAccessPointsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
-	req := oscgo.ReadNetAccessPointsRequest{}
-	var resp oscgo.ReadNetAccessPointsResponse
+	req := osc.ReadNetAccessPointsRequest{}
 	var err error
 
 	if filtersOk {
 		req.Filters, err = buildOutscaleDataSourcesNAPFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
-	err = retry.Retry(30*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.NetAccessPointApi.ReadNetAccessPoints(
-			context.Background()).
-			ReadNetAccessPointsRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadNetAccessPoints(ctx, req, options.WithRetryTimeout(30*time.Second))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	naps := resp.GetNetAccessPoints()[:]
+	naps := ptr.From(resp.NetAccessPoints)[:]
 	if len(naps) < 1 {
-		return ErrNoResults
+		return diag.FromErr(ErrNoResults)
 	}
 
 	nap_ret := make([]map[string]interface{}, len(naps))
@@ -134,14 +127,14 @@ func DataSourceOutscaleNetAccessPointsRead(d *schema.ResourceData, meta interfac
 		n["route_table_ids"] = utils.StringSlicePtrToInterfaceSlice(v.RouteTableIds)
 		n["net_id"] = v.NetId
 		n["service_name"] = v.ServiceName
-		n["state"] = v.State
-		n["tags"] = FlattenOAPITagsSDK(v.GetTags())
+		n["state"] = ptr.From(v.State)
+		n["tags"] = FlattenOAPITagsSDK(ptr.From(v.Tags))
 		nap_ret[k] = n
 	}
 
 	err = d.Set("net_access_points", nap_ret)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(id.UniqueId())

@@ -1,13 +1,9 @@
 package utils
 
 import (
-	"context"
-	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"math/rand/v2"
-	"net/http"
 	"os"
 	"strconv"
 	"time"
@@ -16,10 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/outscale/goutils/sdk/ptr"
-	"github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/osc-sdk-go/v3/pkg/iso8601"
 	"github.com/spf13/cast"
 )
@@ -27,53 +21,6 @@ import (
 const (
 	SuffixConfigFilePath string = "/.osc/config.json"
 )
-
-func GetHttpErrorResponse(httpBody io.ReadCloser, err error) error {
-	errBody, readErr := io.ReadAll(httpBody)
-	defer httpBody.Close()
-	if readErr != nil {
-		return fmt.Errorf("unable to read http response error: %w", err)
-	}
-	return fmt.Errorf("%w: %v", err, string(errBody))
-}
-
-func CheckThrottling(httpResp *http.Response, err error) *retry.RetryError {
-	if httpResp != nil {
-		randMin := 1.0
-		randMax := 20.0
-
-		errCode := httpResp.StatusCode
-		errBody := GetHttpErrorResponse(httpResp.Body, err)
-
-		if errCode == http.StatusServiceUnavailable || errCode == http.StatusTooManyRequests ||
-			errCode == http.StatusConflict || errCode == http.StatusFailedDependency ||
-			errCode == http.StatusGatewayTimeout {
-			randTime := (rand.Float64()*(randMax-randMin) + randMin) * 1000
-			time.Sleep(time.Duration(randTime) * time.Millisecond)
-			return retry.RetryableError(errBody)
-		}
-		return retry.NonRetryableError(errBody)
-	}
-	return retry.NonRetryableError(err)
-}
-
-func GetEnvVariableValue(envVariables []string) string {
-	for _, envVariable := range envVariables {
-		if value := os.Getenv(envVariable); value != "" {
-			return value
-		}
-	}
-	return ""
-}
-
-func IsEnvVariableSet(envVariables []string) bool {
-	for _, envVariable := range envVariables {
-		if value := os.Getenv(envVariable); value == "" {
-			return false
-		}
-	}
-	return true
-}
 
 func InterfaceSliceToStringSlicePtr(slice []interface{}) *[]string {
 	result := InterfaceSliceToStringSlice(slice)
@@ -86,6 +33,21 @@ func SetToStringSlice(set *schema.Set) []string {
 
 func SetToStringSlicePtr(set *schema.Set) *[]string {
 	return InterfaceSliceToStringSlicePtr(set.List())
+}
+
+func SetToSuperStringSlice[T ~string](set *schema.Set) []T {
+	return SliceToSuperStringSlice[T](set.List())
+}
+
+func SliceToSuperStringSlice[T ~string](slice []any) []T {
+	result := make([]T, 0, len(slice))
+	for _, v := range slice {
+		val, ok := v.(string)
+		if ok && val != "" {
+			result = append(result, T(val))
+		}
+	}
+	return result
 }
 
 func InterfaceSliceToStringSlice(slice []interface{}) []string {
@@ -115,35 +77,7 @@ func StringSlicePtrToInterfaceSlice(list *[]string) []interface{} {
 	return vs
 }
 
-func PrintToJSON(v interface{}, msg string) {
-	pretty, _ := json.MarshalIndent(v, "", "  ")
-	fmt.Print("\n\n[DEBUG] ", msg, string(pretty))
-}
-
-func ToJSONString(v interface{}) string {
-	pretty, _ := json.MarshalIndent(v, "", "  ")
-	return string(pretty)
-}
-
-func GetErrorResponse(err error) error {
-	if e, ok := err.(osc.GenericOpenAPIError); ok {
-		if errorResponse, oker := e.Model().(osc.ErrorResponse); oker {
-			return fmt.Errorf("%s %s", err, ToJSONString(errorResponse))
-		}
-	}
-	return err
-}
-
-func GetErrorResponseToString(err error) string {
-	if e, ok := err.(osc.GenericOpenAPIError); ok {
-		if errorResponse, oker := e.Model().(osc.ErrorResponse); oker {
-			return ToJSONString(errorResponse)
-		}
-	}
-	return err.Error()
-}
-
-func UnknownDataSourceFilterError(ctx context.Context, filterName string) error {
+func UnknownDataSourceFilterError(filterName string) error {
 	return fmt.Errorf("datasource filter '%s' is not implemented in the provider or not supported by the api", filterName)
 }
 
@@ -161,7 +95,7 @@ func StringSliceToPtrInt64Slice(src []*string) []*int64 {
 	for i := range src {
 		if src[i] != nil {
 			if n, err := strconv.Atoi(ptr.From(src[i])); err != nil {
-				dst[i] = ptr.To(int64(n))
+				dst[i] = new(int64(n))
 			}
 		}
 	}
@@ -196,6 +130,13 @@ func StringSliceToInt32Slice(src []string) (res []int32) {
 	return
 }
 
+func StringSliceToIntSlice(src []string) (res []int) {
+	for _, str := range src {
+		res = append(res, cast.ToInt(str))
+	}
+	return
+}
+
 // StringSliceToFloat32Slice converts []string to []float32 ...
 func StringSliceToFloat32Slice(src []string) (res []float32) {
 	for _, str := range src {
@@ -222,14 +163,14 @@ func RandIntRange(min, max int) int {
 
 func ParsingfilterToDateFormat(filterName, value string) (time.Time, error) {
 	var err error
-	var filterDate time.Time
+	var filterDate iso8601.Time
 
 	if value != "" {
-		if filterDate, err = iso8601.Parse([]byte(value)); err != nil {
-			return filterDate, fmt.Errorf("%s value should be 'ISO 8601' format ('2017-06-14' or '2017-06-14T00:00:00Z, ...) %s", filterName, err)
+		if filterDate, err = iso8601.ParseString(value); err != nil {
+			return filterDate.Time, fmt.Errorf("%s value should be 'ISO 8601' format ('2017-06-14' or '2017-06-14T00:00:00Z, ...) %s", filterName, err)
 		}
 	}
-	return filterDate, nil
+	return filterDate.Time, nil
 }
 
 func StringSliceToTimeSlice(filterValues []string, filterName string) ([]time.Time, error) {

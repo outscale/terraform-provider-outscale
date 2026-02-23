@@ -1,6 +1,9 @@
 package oapi
 
 import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
@@ -192,18 +195,18 @@ func attrLBSchema() map[string]*schema.Schema {
 
 func DataSourceOutscaleLoadBalancers() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleLoadBalancersRead,
+		ReadContext: DataSourceOutscaleLoadBalancersRead,
 
 		Schema: getDataSourceSchemas(attrLBSchema()),
 	}
 }
 
-func DataSourceOutscaleLoadBalancersRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleLoadBalancersRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
-	resp, _, err := readLbs_(conn, d, schema.TypeList)
+	resp, _, err := readLbs_(ctx, client, d, schema.TypeList)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	lbs_len := len(*resp.LoadBalancers)
@@ -215,21 +218,21 @@ func DataSourceOutscaleLoadBalancersRead(d *schema.ResourceData, meta interface{
 		l := make(map[string]interface{})
 
 		l["subregion_names"] = v.SubregionNames
-		l["dns_name"] = *v.DnsName
-		l["access_log"] = flattenOAPIAccessLog(v.AccessLog)
-		l["health_check"] = flattenOAPIHealthCheck(v.HealthCheck)
-		l["backend_vm_ids"] = utils.StringSlicePtrToInterfaceSlice(v.BackendVmIds)
-		l["backend_ips"] = utils.StringSlicePtrToInterfaceSlice(v.BackendIps)
+		l["dns_name"] = v.DnsName
+		l["access_log"] = flattenOAPIAccessLog(&v.AccessLog)
+		l["health_check"] = flattenOAPIHealthCheck(&v.HealthCheck)
+		l["backend_vm_ids"] = utils.StringSlicePtrToInterfaceSlice(&v.BackendVmIds)
+		l["backend_ips"] = utils.StringSlicePtrToInterfaceSlice(&v.BackendIps)
 		if v.Listeners != nil {
-			l["listeners"] = flattenOAPIListeners(v.Listeners)
+			l["listeners"] = flattenOAPIListeners(&v.Listeners)
 		} else {
 			l["listeners"] = make([]interface{}, 0)
 		}
 		l["load_balancer_name"] = v.LoadBalancerName
 
 		if v.ApplicationStickyCookiePolicies != nil {
-			app := make([]map[string]interface{}, len(*v.ApplicationStickyCookiePolicies))
-			for k, v := range *v.ApplicationStickyCookiePolicies {
+			app := make([]map[string]interface{}, len(v.ApplicationStickyCookiePolicies))
+			for k, v := range v.ApplicationStickyCookiePolicies {
 				a := make(map[string]interface{})
 				a["cookie_name"] = v.CookieName
 				a["policy_name"] = v.PolicyName
@@ -237,26 +240,24 @@ func DataSourceOutscaleLoadBalancersRead(d *schema.ResourceData, meta interface{
 			}
 			l["application_sticky_cookie_policies"] = app
 		} else {
-			l["application_sticky_cookie_policies"] =
-				make([]map[string]interface{}, 0)
+			l["application_sticky_cookie_policies"] = make([]map[string]interface{}, 0)
 		}
 
 		if v.LoadBalancerStickyCookiePolicies != nil {
 			vc := make([]map[string]interface{},
-				len(*v.LoadBalancerStickyCookiePolicies))
-			for k, v := range *v.LoadBalancerStickyCookiePolicies {
+				len(v.LoadBalancerStickyCookiePolicies))
+			for k, v := range v.LoadBalancerStickyCookiePolicies {
 				a := make(map[string]interface{})
 				a["policy_name"] = v.PolicyName
 				vc[k] = a
 			}
 			l["load_balancer_sticky_cookie_policies"] = vc
 		} else {
-			l["load_balancer_sticky_cookie_policies"] =
-				make([]map[string]interface{}, 0)
+			l["load_balancer_sticky_cookie_policies"] = make([]map[string]interface{}, 0)
 		}
 		if v.Tags != nil {
-			ta := make([]map[string]interface{}, len(*v.Tags))
-			for k1, v1 := range *v.Tags {
+			ta := make([]map[string]interface{}, len(v.Tags))
+			for k1, v1 := range v.Tags {
 				t := make(map[string]interface{})
 				t["key"] = v1.Key
 				t["value"] = v1.Value
@@ -266,16 +267,10 @@ func DataSourceOutscaleLoadBalancersRead(d *schema.ResourceData, meta interface{
 		}
 
 		l["load_balancer_type"] = v.LoadBalancerType
-		l["security_groups"] = utils.StringSlicePtrToInterfaceSlice(v.SecurityGroups)
+		l["security_groups"] = utils.StringSlicePtrToInterfaceSlice(&v.SecurityGroups)
 
-		ssg := make([]map[string]interface{}, 0)
-		if v.SourceSecurityGroup != nil {
-			l["source_security_group"] = flattenSource_sg(v.SourceSecurityGroup)
-		} else {
-			l["source_security_group"] = ssg
-
-		}
-		l["subnet_id"] = utils.StringSlicePtrToInterfaceSlice(v.Subnets)
+		l["source_security_group"] = flattenSource_sg(&v.SourceSecurityGroup)
+		l["subnet_id"] = utils.StringSlicePtrToInterfaceSlice(&v.Subnets)
 		l["public_ip"] = v.PublicIp
 		l["secured_cookies"] = v.SecuredCookies
 		l["net_id"] = v.NetId
@@ -285,7 +280,7 @@ func DataSourceOutscaleLoadBalancersRead(d *schema.ResourceData, meta interface{
 
 	err = d.Set("load_balancer", lbs_ret)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.SetId(id.UniqueId())
 

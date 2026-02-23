@@ -12,11 +12,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 )
 
 var (
@@ -48,50 +49,50 @@ var (
 	routeAttrTypes                          = fwhelpers.GetAttrTypes(RouteCoreModel{})
 )
 
-func RoutesToModel(routes []oscgo.Route) []RouteCoreModel {
+func RoutesToModel(routes []osc.Route) []RouteCoreModel {
 	routeModels := []RouteCoreModel{}
 
 	for _, r := range routes {
 		route := RouteCoreModel{
-			CreationMethod:       types.StringValue(r.GetCreationMethod()),
-			DestinationIpRange:   types.StringValue(r.GetDestinationIpRange()),
-			DestinationServiceId: types.StringValue(r.GetDestinationServiceId()),
-			GatewayId:            types.StringValue(r.GetGatewayId()),
-			NatServiceId:         types.StringValue(r.GetNatServiceId()),
-			NetAccessPointId:     types.StringValue(r.GetNetAccessPointId()),
-			NetPeeringId:         types.StringValue(r.GetNetPeeringId()),
-			NicId:                types.StringValue(r.GetNicId()),
-			State:                types.StringValue(r.GetState()),
-			VmAccountId:          types.StringValue(r.GetVmAccountId()),
-			VmId:                 types.StringValue(r.GetVmId()),
+			CreationMethod:       to.String(r.CreationMethod),
+			DestinationIpRange:   to.String(r.DestinationIpRange),
+			DestinationServiceId: to.String(r.DestinationServiceId),
+			GatewayId:            to.String(r.GatewayId),
+			NatServiceId:         to.String(r.NatServiceId),
+			NetAccessPointId:     to.String(r.NetAccessPointId),
+			NetPeeringId:         to.String(r.NetPeeringId),
+			NicId:                to.String(r.NicId),
+			State:                to.String(r.State),
+			VmAccountId:          to.String(r.VmAccountId),
+			VmId:                 to.String(r.VmId),
 		}
 		routeModels = append(routeModels, route)
 	}
 	return routeModels
 }
 
-func LinkRouteTablesToModel(linkRouteTables []oscgo.LinkRouteTable) []RouteTableLinkCoreModel {
+func LinkRouteTablesToModel(linkRouteTables []osc.LinkRouteTable) []RouteTableLinkCoreModel {
 	linkRouteTableModels := []RouteTableLinkCoreModel{}
 
 	for _, lrt := range linkRouteTables {
 		link := RouteTableLinkCoreModel{
-			LinkRouteTableId: types.StringValue(lrt.GetLinkRouteTableId()),
-			Main:             types.BoolValue(lrt.GetMain()),
-			NetId:            types.StringValue(lrt.GetNetId()),
-			RouteTableId:     types.StringValue(lrt.GetRouteTableId()),
-			SubnetId:         types.StringValue(lrt.GetSubnetId()),
+			LinkRouteTableId: to.String(lrt.LinkRouteTableId),
+			Main:             to.Bool(lrt.Main),
+			NetId:            to.String(lrt.NetId),
+			RouteTableId:     to.String(lrt.RouteTableId),
+			SubnetId:         to.String(lrt.SubnetId),
 		}
 		linkRouteTableModels = append(linkRouteTableModels, link)
 	}
 	return linkRouteTableModels
 }
 
-func RoutePropagatingVirtualGatewaysToModel(routePropagatingVirtualGateways []oscgo.RoutePropagatingVirtualGateway) []RoutePropagatingVirtualGatewayModel {
+func RoutePropagatingVirtualGatewaysToModel(routePropagatingVirtualGateways []osc.RoutePropagatingVirtualGateway) []RoutePropagatingVirtualGatewayModel {
 	virtualGatewaysModels := []RoutePropagatingVirtualGatewayModel{}
 
 	for _, vgw := range routePropagatingVirtualGateways {
 		virtualGateway := RoutePropagatingVirtualGatewayModel{
-			VirtualGatewayId: types.StringValue(vgw.GetVirtualGatewayId()),
+			VirtualGatewayId: to.String(vgw.VirtualGatewayId),
 		}
 		virtualGatewaysModels = append(virtualGatewaysModels, virtualGateway)
 	}
@@ -99,7 +100,7 @@ func RoutePropagatingVirtualGatewaysToModel(routePropagatingVirtualGateways []os
 }
 
 type resourceRouteTable struct {
-	Client *oscgo.APIClient
+	Client *osc.Client
 }
 
 func NewResourceRouteTable() resource.Resource {
@@ -114,12 +115,12 @@ func (r *resourceRouteTable) Configure(_ context.Context, req resource.Configure
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected *osc.APIClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *osc.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
 	}
-	r.Client = client.OSCAPI
+	r.Client = client.OSC
 }
 
 func (r *resourceRouteTable) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
@@ -136,8 +137,8 @@ func (r *resourceRouteTable) ImportState(ctx context.Context, req resource.Impor
 
 	var data RouteTableModel
 	var timeouts timeouts.Value
-	data.RouteTableId = types.StringValue(RouteTableId)
-	data.Id = types.StringValue(RouteTableId)
+	data.RouteTableId = to.String(RouteTableId)
+	data.Id = to.String(RouteTableId)
 	resp.Diagnostics.Append(resp.State.GetAttribute(ctx, path.Root("timeouts"), &timeouts)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -150,9 +151,6 @@ func (r *resourceRouteTable) ImportState(ctx context.Context, req resource.Impor
 
 	diags := resp.State.Set(ctx, &data)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceRouteTable) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -233,24 +231,15 @@ func (r *resourceRouteTable) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	createTimeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
-	createReq := oscgo.CreateRouteTableRequest{
+	createReq := osc.CreateRouteTableRequest{
 		NetId: data.NetId.ValueString(),
 	}
 
-	var createResp oscgo.CreateRouteTableResponse
-	err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.RouteTableApi.CreateRouteTable(ctx).CreateRouteTableRequest(createReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		createResp = rp
-		return nil
-	})
+	createResp, err := r.Client.CreateRouteTable(ctx, createReq, options.WithRetryTimeout(createTimeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to create Route Table resource.",
@@ -258,17 +247,17 @@ func (r *resourceRouteTable) Create(ctx context.Context, req resource.CreateRequ
 		)
 		return
 	}
-	data.RequestId = types.StringValue(createResp.ResponseContext.GetRequestId())
-	routeTable := createResp.GetRouteTable()
+	data.RequestId = to.String(createResp.ResponseContext.RequestId)
+	routeTable := ptr.From(createResp.RouteTable)
 
-	diag := createOAPITagsFW(ctx, r.Client, data.Tags, routeTable.GetRouteTableId())
+	diag := createOAPITagsFW(ctx, r.Client, createTimeout, data.Tags, routeTable.RouteTableId)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
 
-	data.RouteTableId = types.StringValue(routeTable.GetRouteTableId())
-	data.Id = types.StringValue(routeTable.GetRouteTableId())
-	data, err = setRouteTableState(ctx, r, data)
+	data.RouteTableId = to.String(routeTable.RouteTableId)
+	data.Id = to.String(routeTable.RouteTableId)
+	data, err = r.read(ctx, data)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to set Route Table state",
@@ -277,9 +266,6 @@ func (r *resourceRouteTable) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceRouteTable) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -290,7 +276,7 @@ func (r *resourceRouteTable) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	data, err := setRouteTableState(ctx, r, data)
+	data, err := r.read(ctx, data)
 	if err != nil {
 		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
@@ -303,9 +289,6 @@ func (r *resourceRouteTable) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceRouteTable) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -316,12 +299,17 @@ func (r *resourceRouteTable) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	diag := updateOAPITagsFW(ctx, r.Client, stateData.Tags, planData.Tags, stateData.RouteTableId.ValueString())
+	timeout, diags := planData.Timeouts.Update(ctx, UpdateDefaultTimeout)
+	if fwhelpers.CheckDiags(resp, diags) {
+		return
+	}
+
+	diag := updateOAPITagsFW(ctx, r.Client, timeout, stateData.Tags, planData.Tags, stateData.RouteTableId.ValueString())
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
 
-	data, err := setRouteTableState(ctx, r, stateData)
+	data, err := r.read(ctx, stateData)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to set Route Table state.",
@@ -331,9 +319,6 @@ func (r *resourceRouteTable) Update(ctx context.Context, req resource.UpdateRequ
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceRouteTable) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -345,36 +330,28 @@ func (r *resourceRouteTable) Delete(ctx context.Context, req resource.DeleteRequ
 	}
 
 	deleteTimeout, diags := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
-	delReq := oscgo.DeleteRouteTableRequest{
+	delReq := osc.DeleteRouteTableRequest{
 		RouteTableId: data.RouteTableId.ValueString(),
 	}
 
-	err := retry.RetryContext(ctx, deleteTimeout, func() *retry.RetryError {
-		_, httpResp, err := r.Client.RouteTableApi.DeleteRouteTable(ctx).DeleteRouteTableRequest(delReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	_, err := r.Client.DeleteRouteTable(ctx, delReq, options.WithRetryTimeout(deleteTimeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Delete Route Table.",
 			err.Error(),
 		)
-		return
 	}
 }
 
-func setRouteTableState(ctx context.Context, r *resourceRouteTable, data RouteTableModel) (RouteTableModel, error) {
-	routeTableFilters := oscgo.FiltersRouteTable{
+func (r *resourceRouteTable) read(ctx context.Context, data RouteTableModel) (RouteTableModel, error) {
+	routeTableFilters := osc.FiltersRouteTable{
 		RouteTableIds: &[]string{data.RouteTableId.ValueString()},
 	}
-	readReq := oscgo.ReadRouteTablesRequest{
+	readReq := osc.ReadRouteTablesRequest{
 		Filters: &routeTableFilters,
 	}
 
@@ -383,49 +360,41 @@ func setRouteTableState(ctx context.Context, r *resourceRouteTable, data RouteTa
 		return data, fmt.Errorf("unable to parse 'route table' read timeout value: %v", diags.Errors())
 	}
 
-	var readResp oscgo.ReadRouteTablesResponse
-	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.RouteTableApi.ReadRouteTables(ctx).ReadRouteTablesRequest(readReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		readResp = rp
-		return nil
-	})
+	readResp, err := r.Client.ReadRouteTables(ctx, readReq, options.WithRetryTimeout(readTimeout))
 	if err != nil {
 		return data, err
 	}
-	data.RequestId = types.StringValue(readResp.ResponseContext.GetRequestId())
-	if len(readResp.GetRouteTables()) == 0 {
+	if readResp.RouteTables == nil || len(*readResp.RouteTables) == 0 {
 		return data, ErrResourceEmpty
 	}
+	data.RequestId = to.String(readResp.ResponseContext.RequestId)
 
-	routeTable := readResp.GetRouteTables()[0]
-	tags, diag := flattenOAPITagsFW(ctx, routeTable.GetTags())
+	routeTable := (*readResp.RouteTables)[0]
+	tags, diag := flattenOAPITagsFW(ctx, routeTable.Tags)
 	if diag.HasError() {
 		return data, fmt.Errorf("unable to flatten tags: %v", diags.Errors())
 	}
 	data.Tags = tags
 
-	linkRouteTables, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: linkRouteTableAttrTypes}, LinkRouteTablesToModel(routeTable.GetLinkRouteTables()))
+	linkRouteTables, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: linkRouteTableAttrTypes}, LinkRouteTablesToModel(routeTable.LinkRouteTables))
 	if diags.HasError() {
 		return data, fmt.Errorf("unable to convert link route tables to the schema set: %v", diags.Errors())
 	}
-	routePropagatingVirtualGateways, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: routePropagatingVirtualGatewayAttrTypes}, RoutePropagatingVirtualGatewaysToModel(routeTable.GetRoutePropagatingVirtualGateways()))
+	routePropagatingVirtualGateways, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: routePropagatingVirtualGatewayAttrTypes}, RoutePropagatingVirtualGatewaysToModel(routeTable.RoutePropagatingVirtualGateways))
 	if diags.HasError() {
 		return data, fmt.Errorf("unable to convert route propagating virtual gateways to the schema set: %v", diags.Errors())
 	}
-	routes, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: routeAttrTypes}, RoutesToModel(routeTable.GetRoutes()))
+	routes, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: routeAttrTypes}, RoutesToModel(routeTable.Routes))
 	if diags.HasError() {
 		return data, fmt.Errorf("unable to convert routes to the schema set: %v", diags.Errors())
 	}
 
 	data.LinkRouteTables = linkRouteTables
-	data.NetId = types.StringValue(routeTable.GetNetId())
+	data.NetId = to.String(routeTable.NetId)
 	data.RoutePropagatingVirtualGateways = routePropagatingVirtualGateways
-	data.RouteTableId = types.StringValue(routeTable.GetRouteTableId())
+	data.RouteTableId = to.String(routeTable.RouteTableId)
 	data.Routes = routes
-	data.Id = types.StringValue(routeTable.GetRouteTableId())
+	data.Id = to.String(routeTable.RouteTableId)
 
 	return data, nil
 }

@@ -2,21 +2,20 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceOutscaleSubnets() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleSubnetsRead,
+		ReadContext: DataSourceOutscaleSubnetsRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -74,17 +73,17 @@ func DataSourceOutscaleSubnets() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleSubnetsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleSubnetsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
-	req := oscgo.ReadSubnetsRequest{}
+	req := osc.ReadSubnetsRequest{}
 
 	if id := d.Get("subnet_ids"); id != "" {
 		var ids []string
 		for _, v := range id.([]interface{}) {
 			ids = append(ids, v.(string))
 		}
-		req.SetFilters(oscgo.FiltersSubnet{SubnetIds: &ids})
+		req.Filters = &osc.FiltersSubnet{SubnetIds: &ids}
 	}
 
 	filters, filtersOk := d.GetOk("filter")
@@ -93,65 +92,57 @@ func DataSourceOutscaleSubnetsRead(d *schema.ResourceData, meta interface{}) err
 	if filtersOk {
 		req.Filters, err = buildOutscaleSubnetDataSourceFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	var resp oscgo.ReadSubnetsResponse
-	err = retry.Retry(120*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.SubnetApi.ReadSubnets(context.Background()).ReadSubnetsRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadSubnets(ctx, req, options.WithRetryTimeout(120*time.Second))
 
 	var errString string
 
 	if err != nil {
 		errString = err.Error()
 
-		return fmt.Errorf("error reading subnet (%s)", errString)
+		return diag.Errorf("error reading subnet (%s)", errString)
 	}
 
-	if len(resp.GetSubnets()) == 0 {
-		return ErrNoResults
+	if resp.Subnets == nil || len(*resp.Subnets) == 0 {
+		return diag.FromErr(ErrNoResults)
 	}
 
-	subnets := make([]map[string]interface{}, len(resp.GetSubnets()))
+	subnets := make([]map[string]interface{}, len(*resp.Subnets))
 
-	for k, v := range resp.GetSubnets() {
+	for k, v := range *resp.Subnets {
 		subnet := make(map[string]interface{})
 
-		if v.GetSubregionName() != "" {
-			subnet["subregion_name"] = v.GetSubregionName()
+		if v.SubregionName != "" {
+			subnet["subregion_name"] = v.SubregionName
 		}
-		//if v.AvailableIpsCount != 0 {
-		subnet["available_ips_count"] = v.GetAvailableIpsCount()
+		// if v.AvailableIpsCount != 0 {
+		subnet["available_ips_count"] = v.AvailableIpsCount
 		//}
-		if v.GetIpRange() != "" {
-			subnet["ip_range"] = v.GetIpRange()
+		if v.IpRange != "" {
+			subnet["ip_range"] = v.IpRange
 		}
-		if v.GetState() != "" {
-			subnet["state"] = v.GetState()
+		if v.State != "" {
+			subnet["state"] = v.State
 		}
-		if v.GetSubnetId() != "" {
-			subnet["subnet_id"] = v.GetSubnetId()
+		if v.SubnetId != "" {
+			subnet["subnet_id"] = v.SubnetId
 		}
-		if v.GetTags() != nil {
-			subnet["tags"] = FlattenOAPITagsSDK(v.GetTags())
+		if v.Tags != nil {
+			subnet["tags"] = FlattenOAPITagsSDK(v.Tags)
 		}
-		if v.GetNetId() != "" {
-			subnet["net_id"] = v.GetNetId()
+		if v.NetId != "" {
+			subnet["net_id"] = v.NetId
 		}
-		subnet["map_public_ip_on_launch"] = v.GetMapPublicIpOnLaunch()
+		subnet["map_public_ip_on_launch"] = v.MapPublicIpOnLaunch
 
 		subnets[k] = subnet
 	}
 
 	if err := d.Set("subnets", subnets); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.SetId(id.UniqueId())
 

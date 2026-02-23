@@ -2,21 +2,22 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceOutscaleDHCPOptions() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleDHCPOptionsRead,
+		ReadContext: DataSourceOutscaleDHCPOptionsRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -77,47 +78,39 @@ func DataSourceOutscaleDHCPOptions() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleDHCPOptionsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleDHCPOptionsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 	dhcpIDs, dhcpIDOk := d.GetOk("dhcp_options_set_ids")
 	if !dhcpIDOk && !filtersOk {
-		return fmt.Errorf("one of filters, or dhcp_options_set_id must be provided")
+		return diag.Errorf("one of filters, or dhcp_options_set_id must be provided")
 	}
 
 	var err error
-	params := oscgo.ReadDhcpOptionsRequest{}
+	params := osc.ReadDhcpOptionsRequest{}
 	if dhcpIDOk {
-		params.Filters = &oscgo.FiltersDhcpOptions{
+		params.Filters = &osc.FiltersDhcpOptions{
 			DhcpOptionsSetIds: utils.InterfaceSliceToStringList(dhcpIDs.([]interface{})),
 		}
 	}
 	if filtersOk {
 		params.Filters, err = buildOutscaleDataSourceDHCPOptionFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	var resp oscgo.ReadDhcpOptionsResponse
-	err = retry.Retry(120*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.DhcpOptionApi.ReadDhcpOptions(context.Background()).ReadDhcpOptionsRequest(params).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadDhcpOptions(ctx, params, options.WithRetryTimeout(120*time.Second))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	if len(resp.GetDhcpOptionsSets()) == 0 {
-		return ErrNoResults
+	if resp.DhcpOptionsSets == nil || len(*resp.DhcpOptionsSets) == 0 {
+		return diag.FromErr(ErrNoResults)
 	}
 
-	if err := d.Set("dhcp_options", flattenDHCPOption(resp.GetDhcpOptionsSets())); err != nil {
-		return err
+	if err := d.Set("dhcp_options", flattenDHCPOption(*resp.DhcpOptionsSets)); err != nil {
+		return diag.FromErr(err)
 	}
 
 	d.SetId(id.UniqueId())
@@ -125,18 +118,18 @@ func DataSourceOutscaleDHCPOptionsRead(d *schema.ResourceData, meta interface{})
 	return nil
 }
 
-func flattenDHCPOption(dhcpOptions []oscgo.DhcpOptionsSet) []map[string]interface{} {
+func flattenDHCPOption(dhcpOptions []osc.DhcpOptionsSet) []map[string]interface{} {
 	dhcpOptionsMap := make([]map[string]interface{}, len(dhcpOptions))
 
 	for i, dhcpOption := range dhcpOptions {
 		dhcpOptionsMap[i] = map[string]interface{}{
-			"domain_name":         dhcpOption.GetDomainName(),
-			"domain_name_servers": dhcpOption.GetDomainNameServers(),
-			"log_servers":         dhcpOption.GetLogServers(),
-			"ntp_servers":         dhcpOption.GetNtpServers(),
-			"default":             dhcpOption.GetDefault(),
-			"dhcp_options_set_id": dhcpOption.GetDhcpOptionsSetId(),
-			"tags":                FlattenOAPITagsSDK(dhcpOption.GetTags()),
+			"domain_name":         dhcpOption.DomainName,
+			"domain_name_servers": dhcpOption.DomainNameServers,
+			"log_servers":         dhcpOption.LogServers,
+			"ntp_servers":         dhcpOption.NtpServers,
+			"default":             dhcpOption.Default,
+			"dhcp_options_set_id": dhcpOption.DhcpOptionsSetId,
+			"tags":                FlattenOAPITagsSDK(ptr.From(dhcpOption.Tags)),
 		}
 	}
 	return dhcpOptionsMap

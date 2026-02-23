@@ -10,7 +10,6 @@ import (
 func TestAccNet_WithInternetServiceLink_Basic(t *testing.T) {
 	resourceName := "outscale_internet_service_link.outscale_internet_service_link"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -28,7 +27,6 @@ func TestAccNet_WithImportInternetServiceLink_Basic(t *testing.T) {
 	resourceName := "outscale_internet_service_link.outscale_internet_service_link"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -41,8 +39,7 @@ func TestAccNet_WithImportInternetServiceLink_Basic(t *testing.T) {
 
 func TestAccNet_WithInternetServiceLink_Migration(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { testacc.PreCheck(t) },
-		Steps:    testacc.FrameworkMigrationTestSteps("1.1.3", testAccOutscaleInternetServiceLinkConfig()),
+		Steps: testacc.FrameworkMigrationTestSteps("1.1.3", testAccOutscaleInternetServiceLinkConfig()),
 	})
 }
 

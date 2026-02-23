@@ -17,14 +17,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/outscale/goutils/sdk/ptr"
-	"github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
+
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwtypes"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 	"github.com/samber/lo"
 )
 
@@ -56,7 +57,7 @@ type UserPolicyModel struct {
 }
 
 type UserCommon struct {
-	Client *osc.APIClient
+	Client *osc.Client
 }
 
 type resourceUser struct {
@@ -75,12 +76,12 @@ func (r *resourceUser) Configure(_ context.Context, req resource.ConfigureReques
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected *osc.APIClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *osc.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
 	}
-	r.Client = client.OSCAPI
+	r.Client = client.OSC
 }
 
 func (r *resourceUser) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
@@ -183,22 +184,14 @@ func (r *resourceUser) Create(ctx context.Context, req resource.CreateRequest, r
 
 	createReq := osc.CreateUserRequest{
 		UserName: data.UserName.ValueString(),
-		Path:     ptr.To(data.Path.ValueString()),
+		Path:     new(data.Path.ValueString()),
 	}
 
 	if fwhelpers.IsSet(data.UserEmail) {
-		createReq.SetUserEmail(data.UserEmail.ValueString())
+		createReq.UserEmail = data.UserEmail.ValueStringPointer()
 	}
 
-	var createResp osc.CreateUserResponse
-	err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.UserApi.CreateUser(ctx).CreateUserRequest(createReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		createResp = rp
-		return nil
-	})
+	createResp, err := r.Client.CreateUser(ctx, createReq, options.WithRetryTimeout(createTimeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to create User",
@@ -206,7 +199,7 @@ func (r *resourceUser) Create(ctx context.Context, req resource.CreateRequest, r
 		)
 		return
 	}
-	data.Id = to.String(createResp.GetUser().UserId)
+	data.Id = to.String(createResp.User.UserId)
 
 	if fwhelpers.IsSet(data.Policies) {
 		policies, diag := to.Slice[UserPolicyModel](ctx, data.Policies)
@@ -232,17 +225,12 @@ func (r *resourceUser) Create(ctx context.Context, req resource.CreateRequest, r
 }
 
 func (r *UserCommon) setDefaultPolicyVersion(ctx context.Context, to time.Duration, orn, version string) error {
-	err := retry.RetryContext(ctx, to, func() *retry.RetryError {
-		_, httpResp, err := r.Client.PolicyApi.SetDefaultPolicyVersion(ctx).SetDefaultPolicyVersionRequest(
-			osc.SetDefaultPolicyVersionRequest{
-				PolicyOrn: orn,
-				VersionId: version,
-			}).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	req := osc.SetDefaultPolicyVersionRequest{
+		PolicyOrn: orn,
+		VersionId: version,
+	}
+	_, err := r.Client.SetDefaultPolicyVersion(ctx, req, options.WithRetryTimeout(to))
+
 	return err
 }
 
@@ -289,15 +277,15 @@ func (r *resourceUser) Update(ctx context.Context, req resource.UpdateRequest, r
 
 	updateUser := false
 	if fwhelpers.HasChange(planData.UserName, stateData.UserName) {
-		updateReq.SetNewUserName(planData.UserName.ValueString())
+		updateReq.NewUserName = planData.UserName.ValueStringPointer()
 		updateUser = true
 	}
 	if fwhelpers.HasChange(planData.Path, stateData.Path) {
-		updateReq.SetNewPath(planData.Path.ValueString())
+		updateReq.NewPath = planData.Path.ValueStringPointer()
 		updateUser = true
 	}
 	if fwhelpers.HasChange(planData.UserEmail, stateData.UserEmail) {
-		updateReq.SetNewUserEmail(planData.UserEmail.ValueString())
+		updateReq.NewUserEmail = planData.UserEmail.ValueStringPointer()
 		updateUser = true
 	}
 	if fwhelpers.HasChange(planData.Policies, stateData.Policies) {
@@ -308,13 +296,7 @@ func (r *resourceUser) Update(ctx context.Context, req resource.UpdateRequest, r
 	}
 
 	if updateUser {
-		err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-			_, httpResp, err := r.Client.UserApi.UpdateUser(ctx).UpdateUserRequest(updateReq).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			return nil
-		})
+		_, err := r.Client.UpdateUser(ctx, updateReq, options.WithRetryTimeout(timeout))
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Unable to update User",
@@ -371,13 +353,7 @@ func (r *resourceUser) unlinkPolicies(ctx context.Context, timeout time.Duration
 			PolicyOrn: policy.PolicyOrn.ValueString(),
 		}
 
-		err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-			_, httpResp, err := r.Client.PolicyApi.UnlinkPolicy(ctx).UnlinkPolicyRequest(req).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			return nil
-		})
+		_, err := r.Client.UnlinkPolicy(ctx, req, options.WithRetryTimeout(timeout))
 		if err != nil {
 			diags.AddError(
 				"Unable to unlink policy from User",
@@ -399,13 +375,7 @@ func (r *resourceUser) linkPolicies(ctx context.Context, timeout time.Duration, 
 			PolicyOrn: policy.PolicyOrn.ValueString(),
 		}
 
-		err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-			_, httpResp, err := r.Client.PolicyApi.LinkPolicy(ctx).LinkPolicyRequest(req).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			return nil
-		})
+		_, err := r.Client.LinkPolicy(ctx, req, options.WithRetryTimeout(timeout))
 		if err != nil {
 			diags.AddError(
 				"Unable to link policy to User",
@@ -454,13 +424,7 @@ func (r *resourceUser) Delete(ctx context.Context, req resource.DeleteRequest, r
 		UserName: data.UserName.ValueString(),
 	}
 
-	err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		_, httpResp, err := r.Client.UserApi.DeleteUser(ctx).DeleteUserRequest(deleteReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	_, err := r.Client.DeleteUser(ctx, deleteReq, options.WithRetryTimeout(timeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to delete User",
@@ -476,38 +440,24 @@ func (r *resourceUser) read(ctx context.Context, timeout time.Duration, data Use
 		},
 	}
 
-	var resp osc.ReadUsersResponse
-	err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.UserApi.ReadUsers(ctx).ReadUsersRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := r.Client.ReadUsers(ctx, req, options.WithRetryTimeout(timeout))
 	if err != nil {
 		return data, err
 	}
-	if len(resp.GetUsers()) == 0 {
+	if resp.Users == nil || len(*resp.Users) == 0 {
 		return data, ErrResourceEmpty
 	}
 
-	user := resp.GetUsers()[0]
-	linkReq := osc.NewReadLinkedPoliciesRequest(user.GetUserName())
-	var linkResp osc.ReadLinkedPoliciesResponse
-	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.PolicyApi.ReadLinkedPolicies(ctx).ReadLinkedPoliciesRequest(*linkReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		linkResp = rp
-		return nil
-	})
+	user := (*resp.Users)[0]
+	linkReq := osc.ReadLinkedPoliciesRequest{
+		UserName: *user.UserName,
+	}
+	linkResp, err := r.Client.ReadLinkedPolicies(ctx, linkReq, options.WithRetryTimeout(timeout))
 	if err != nil {
 		return data, err
 	}
 
-	policies, err := r.flattenPolicies(ctx, timeout, linkResp.GetPolicies())
+	policies, err := r.flattenPolicies(ctx, timeout, ptr.From(linkResp.Policies))
 	if err != nil {
 		return data, err
 	}
@@ -518,12 +468,12 @@ func (r *resourceUser) read(ctx context.Context, timeout time.Duration, data Use
 	}
 
 	data.Policies = policiesSet
-	data.CreationDate = to.String(user.CreationDate)
-	data.LastModificationDate = to.String(user.LastModificationDate)
-	data.Path = to.String(user.Path)
-	data.UserEmail = to.String(user.UserEmail)
-	data.UserId = to.String(user.UserId)
-	data.UserName = to.String(user.UserName)
+	data.CreationDate = to.String(from.ISO8601(user.CreationDate))
+	data.LastModificationDate = to.String(from.ISO8601(user.LastModificationDate))
+	data.Path = to.String(ptr.From(user.Path))
+	data.UserEmail = to.String(ptr.From(user.UserEmail))
+	data.UserId = to.String(ptr.From(user.UserId))
+	data.UserName = to.String(ptr.From(user.UserName))
 	data.Id = to.String(user.UserId)
 
 	return data, nil
@@ -532,7 +482,7 @@ func (r *resourceUser) read(ctx context.Context, timeout time.Duration, data Use
 func (r *UserCommon) flattenPolicies(ctx context.Context, timeout time.Duration, policies []osc.LinkedPolicy) ([]UserPolicyModel, error) {
 	flattenedPolicies := make([]UserPolicyModel, 0, len(policies))
 	for _, policy := range policies {
-		versionID, err := r.getPolicyVersion(ctx, timeout, policy.GetOrn())
+		versionID, err := r.getPolicyVersion(ctx, timeout, *policy.Orn)
 		if err != nil {
 			return nil, err
 		}
@@ -541,8 +491,8 @@ func (r *UserCommon) flattenPolicies(ctx context.Context, timeout time.Duration,
 			DefaultVersionId:     fwtypes.CaseInsensitiveString(versionID),
 			PolicyName:           to.String(policy.PolicyName),
 			PolicyId:             to.String(policy.PolicyId),
-			CreationDate:         to.String(policy.CreationDate),
-			LastModificationDate: to.String(policy.LastModificationDate),
+			CreationDate:         to.String(from.ISO8601(policy.CreationDate)),
+			LastModificationDate: to.String(from.ISO8601(policy.LastModificationDate)),
 		})
 	}
 	return flattenedPolicies, nil
@@ -550,17 +500,13 @@ func (r *UserCommon) flattenPolicies(ctx context.Context, timeout time.Duration,
 
 func (r *UserCommon) getPolicyVersion(ctx context.Context, timeout time.Duration, orn string) (string, error) {
 	var versionId string
-	err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		resp, httpResp, err := r.Client.PolicyApi.ReadPolicy(ctx).ReadPolicyRequest(
-			osc.ReadPolicyRequest{PolicyOrn: orn}).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		versionId = ptr.From(resp.GetPolicy().PolicyDefaultVersionId)
-		return nil
-	})
+
+	req := osc.ReadPolicyRequest{PolicyOrn: orn}
+	resp, err := r.Client.ReadPolicy(ctx, req, options.WithRetryTimeout(timeout))
 	if err != nil {
 		return versionId, err
 	}
-	return versionId, err
+	versionId = ptr.From(resp.Policy.PolicyDefaultVersionId)
+
+	return versionId, nil
 }

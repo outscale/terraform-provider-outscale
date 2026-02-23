@@ -2,21 +2,22 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
-	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
+	"github.com/outscale/goutils/sdk/ptr"
 
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
+	"github.com/outscale/terraform-provider-outscale/internal/client"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceOutscaleQuota() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleQuotaRead,
+		ReadContext: DataSourceOutscaleQuotaRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -60,9 +61,10 @@ func DataSourceOutscaleQuota() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleQuotaRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
-	req := oscgo.ReadQuotasRequest{}
+func DataSourceOutscaleQuotaRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
+	req := osc.ReadQuotasRequest{}
 
 	filters, filtersOk := d.GetOk("filter")
 
@@ -70,68 +72,59 @@ func DataSourceOutscaleQuotaRead(d *schema.ResourceData, meta interface{}) error
 	if filtersOk {
 		req.Filters, err = buildOutscaleQuotaDataSourceFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	var resp oscgo.ReadQuotasResponse
-	err = retry.Retry(120*time.Second, func() *retry.RetryError {
-		var err error
-		rp, httpResp, err := conn.QuotaApi.ReadQuotas(context.Background()).ReadQuotasRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadQuotas(ctx, req, options.WithRetryTimeout(120*time.Second))
 	if err != nil {
 		errString := err.Error()
-		return fmt.Errorf("error reading quotatype (%s)", errString)
+		return diag.Errorf("error reading quotatype (%s)", errString)
 	}
 
-	if len(resp.GetQuotaTypes()) == 0 {
-		return ErrNoResults
+	if resp.QuotaTypes == nil || len(*resp.QuotaTypes) == 0 {
+		return diag.FromErr(ErrNoResults)
 	}
-	if len(resp.GetQuotaTypes()) > 1 {
-		return ErrMultipleResults
+	if len(*resp.QuotaTypes) > 1 {
+		return diag.FromErr(ErrMultipleResults)
 	}
 
-	quotaType := resp.GetQuotaTypes()[0]
+	quotaType := (*resp.QuotaTypes)[0]
 
 	d.SetId(id.UniqueId())
-	if err := d.Set("quota_type", quotaType.GetQuotaType()); err != nil {
-		return err
+	if err := d.Set("quota_type", ptr.From(quotaType.QuotaType)); err != nil {
+		return diag.FromErr(err)
 	}
 
-	if len(quotaType.GetQuotas()) == 0 {
-		return ErrNoResults
+	if quotaType.Quotas == nil || len(*quotaType.Quotas) == 0 {
+		return diag.FromErr(ErrNoResults)
 	}
-	if len(quotaType.GetQuotas()) > 1 {
-		return ErrMultipleResults
+	if len(*quotaType.Quotas) > 1 {
+		return diag.FromErr(ErrMultipleResults)
 	}
 
-	quota := quotaType.GetQuotas()[0]
+	quota := (*quotaType.Quotas)[0]
 
-	if err := d.Set("name", quota.GetName()); err != nil {
-		return err
+	if err := d.Set("name", ptr.From(quota.Name)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("description", quota.GetDescription()); err != nil {
-		return err
+	if err := d.Set("description", ptr.From(quota.Description)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("max_value", quota.GetMaxValue()); err != nil {
-		return err
+	if err := d.Set("max_value", ptr.From(quota.MaxValue)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("used_value", quota.GetUsedValue()); err != nil {
-		return err
+	if err := d.Set("used_value", ptr.From(quota.UsedValue)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("quota_collection", quota.GetShortDescription()); err != nil {
-		return err
+	if err := d.Set("quota_collection", ptr.From(quota.ShortDescription)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("short_description", quota.GetShortDescription()); err != nil {
-		return err
+	if err := d.Set("short_description", ptr.From(quota.ShortDescription)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("account_id", quota.GetAccountId()); err != nil {
-		return err
+	if err := d.Set("account_id", ptr.From(quota.AccountId)); err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil

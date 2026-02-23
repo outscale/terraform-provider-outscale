@@ -43,11 +43,11 @@ func checkDateFormat(dateFormat string) error {
 	}
 	currentDate := time.Now()
 
-	settingDate, err := iso8601.Parse([]byte(dateFormat))
+	settingDate, err := iso8601.ParseString(dateFormat)
 	if err != nil {
 		return err
 	}
-	if currentDate.After(settingDate) {
+	if currentDate.After(settingDate.Time) {
 		return fmt.Errorf("expiration date: '%s' should be after current date '%s'", settingDate, currentDate)
 	}
 

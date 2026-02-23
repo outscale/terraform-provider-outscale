@@ -4,18 +4,19 @@ import (
 	"context"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceOutscaleTags() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleTagsRead,
+		ReadContext: DataSourceOutscaleTagsRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"tags": {
@@ -46,38 +47,30 @@ func DataSourceOutscaleTags() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleTagsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleTagsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	// Build up search parameters
-	params := oscgo.ReadTagsRequest{}
+	params := osc.ReadTagsRequest{}
 	filters, filtersOk := d.GetOk("filter")
 
 	var err error
 	if filtersOk {
 		params.Filters, err = oapiBuildOutscaleDataSourceFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	var resp oscgo.ReadTagsResponse
-	err = retry.Retry(60*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.TagApi.ReadTags(context.Background()).ReadTagsRequest(params).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadTags(ctx, params, options.WithRetryTimeout(60*time.Second))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	if err := d.Set("tags", flattenOAPITagsDescSDK(resp.GetTags())); err != nil {
-		return err
+	if err := d.Set("tags", flattenOAPITagsDescSDK(ptr.From(resp.Tags))); err != nil {
+		return diag.FromErr(err)
 	}
 	d.SetId(id.UniqueId())
 
-	return err
+	return diag.FromErr(err)
 }

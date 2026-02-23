@@ -11,17 +11,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/ephemeral/schema"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 )
 
 var _ ephemeral.EphemeralResource = &resourceEphemeralKeypair{}
 
 type resourceEphemeralKeypair struct {
-	Client *oscgo.APIClient
+	Client *osc.Client
 }
 type EphemeralKeypairModel struct {
 	KeypairFingerprint types.String   `tfsdk:"keypair_fingerprint"`
@@ -50,12 +51,12 @@ func (r *resourceEphemeralKeypair) Configure(_ context.Context, req ephemeral.Co
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected *osc.APIClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *osc.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
 	}
-	r.Client = client.OSCAPI
+	r.Client = client.OSC
 }
 
 func (d *resourceEphemeralKeypair) Metadata(ctx context.Context, req ephemeral.MetadataRequest, resp *ephemeral.MetadataResponse) {
@@ -130,17 +131,16 @@ func (e *resourceEphemeralKeypair) Open(ctx context.Context, req ephemeral.OpenR
 		return
 	}
 	createTimeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 	resp.RenewAt = time.Now().Add(createTimeout)
 
-	createReq := oscgo.CreateKeypairRequest{}
-	createReq.SetKeypairName(data.KeypairName.ValueString())
+	createReq := osc.CreateKeypairRequest{}
+	createReq.KeypairName = data.KeypairName.ValueString()
 
 	if !data.PublicKey.IsUnknown() && !data.PublicKey.IsNull() {
-		createReq.SetPublicKey(data.PublicKey.ValueString())
+		createReq.PublicKey = data.PublicKey.ValueStringPointer()
 	}
 
 	isExit, err := isResourceExist(ctx, &data, e)
@@ -152,15 +152,7 @@ func (e *resourceEphemeralKeypair) Open(ctx context.Context, req ephemeral.OpenR
 		return
 	}
 	if !isExit {
-		var createResp oscgo.CreateKeypairResponse
-		err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
-			rp, httpResp, err := e.Client.KeypairApi.CreateKeypair(ctx).CreateKeypairRequest(createReq).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			createResp = rp
-			return nil
-		})
+		createResp, err := e.Client.CreateKeypair(ctx, createReq, options.WithRetryTimeout(createTimeout))
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Unable to create ephemeral keypair resource",
@@ -169,21 +161,18 @@ func (e *resourceEphemeralKeypair) Open(ctx context.Context, req ephemeral.OpenR
 			return
 		}
 
-		data.RequestId = types.StringValue(*createResp.ResponseContext.RequestId)
-		keypair := createResp.GetKeypair()
-		data.Id = types.StringValue(keypair.GetKeypairId())
-		data.KeypairName = types.StringValue(keypair.GetKeypairName())
-		if createReq.HasPublicKey() {
-			data.PublicKey = types.StringValue(createReq.GetPublicKey())
+		data.RequestId = to.String(*createResp.ResponseContext.RequestId)
+		keypair := ptr.From(createResp.Keypair)
+		data.Id = to.String(keypair.KeypairId)
+		data.KeypairName = to.String(keypair.KeypairName)
+		if createReq.PublicKey != nil {
+			data.PublicKey = to.String(createReq.PublicKey)
 		}
-		diag := createOAPITagsFW(ctx, e.Client, data.Tags, keypair.GetKeypairId())
+		data.PrivateKey = to.String(keypair.PrivateKey)
+
+		diag := createOAPITagsFW(ctx, e.Client, createTimeout, data.Tags, *keypair.KeypairId)
 		if fwhelpers.CheckDiags(resp, diag) {
 			return
-		}
-
-		data.PrivateKey = types.StringValue(keypair.GetPrivateKey())
-		if createReq.HasPublicKey() {
-			data.PublicKey = types.StringValue(createReq.GetPublicKey())
 		}
 	}
 
@@ -208,13 +197,10 @@ func (e *resourceEphemeralKeypair) Open(ctx context.Context, req ephemeral.OpenR
 		return
 	}
 	resp.Diagnostics.Append(resp.Result.Set(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func setEphKeypairState(ctx context.Context, r *resourceEphemeralKeypair, data *EphemeralKeypairModel) error {
-	keypairFilters := oscgo.FiltersKeypair{
+	keypairFilters := osc.FiltersKeypair{
 		KeypairNames: &[]string{data.KeypairName.ValueString()},
 	}
 
@@ -223,61 +209,51 @@ func setEphKeypairState(ctx context.Context, r *resourceEphemeralKeypair, data *
 		return fmt.Errorf("unable to parse 'keypair' read timeout value: %v", diags.Errors())
 	}
 
-	readReq := oscgo.ReadKeypairsRequest{
+	readReq := osc.ReadKeypairsRequest{
 		Filters: &keypairFilters,
 	}
-	var readResp oscgo.ReadKeypairsResponse
-	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.KeypairApi.ReadKeypairs(ctx).ReadKeypairsRequest(readReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		readResp = rp
-		return nil
-	})
+	readResp, err := r.Client.ReadKeypairs(ctx, readReq, options.WithRetryTimeout(readTimeout))
 	if err != nil {
-		return utils.GetErrorResponse(err)
+		return err
 	}
-	if len(readResp.GetKeypairs()) == 0 {
+	if readResp.Keypairs == nil || len(*readResp.Keypairs) == 0 {
 		return ErrResourceEmpty
 	}
 
-	keypair := readResp.GetKeypairs()[0]
+	keypair := (*readResp.Keypairs)[0]
 
-	tags, diag := flattenOAPITagsFW(ctx, keypair.GetTags())
+	tags, diag := flattenOAPITagsFW(ctx, ptr.From(keypair.Tags))
 	if diag.HasError() {
 		return fmt.Errorf("unable to flatten tags: %v", diags.Errors())
 	}
 	data.Tags = tags
-	data.KeypairFingerprint = types.StringValue(keypair.GetKeypairFingerprint())
-	data.KeypairName = types.StringValue(keypair.GetKeypairName())
-	data.KeypairType = types.StringValue(keypair.GetKeypairType())
-	data.KeypairId = types.StringValue(keypair.GetKeypairId())
+	data.KeypairFingerprint = to.String(keypair.KeypairFingerprint)
+	data.KeypairName = to.String(keypair.KeypairName)
+	data.KeypairType = to.String(keypair.KeypairType)
+	data.KeypairId = to.String(keypair.KeypairId)
+
 	return nil
 }
 
 func isResourceExist(ctx context.Context, data *EphemeralKeypairModel, e *resourceEphemeralKeypair) (bool, error) {
-	keypairFilters := oscgo.FiltersKeypair{
+	keypairFilters := osc.FiltersKeypair{
 		KeypairNames: &[]string{data.KeypairName.ValueString()},
 	}
-	isKeypairExist := false
 	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if diags.HasError() {
-		return isKeypairExist, fmt.Errorf("unable to parse 'ephemeral keypair' read timeout value: %v", diags.Errors())
+		return false, fmt.Errorf("unable to parse 'ephemeral keypair' read timeout value: %v", diags.Errors())
 	}
 
-	readReq := oscgo.ReadKeypairsRequest{
+	readReq := osc.ReadKeypairsRequest{
 		Filters: &keypairFilters,
 	}
-	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
-		rp, httpResp, err := e.Client.KeypairApi.ReadKeypairs(ctx).ReadKeypairsRequest(readReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		if len(rp.GetKeypairs()) > 0 {
-			isKeypairExist = true
-		}
-		return nil
-	})
-	return isKeypairExist, err
+	rp, err := e.Client.ReadKeypairs(ctx, readReq, options.WithRetryTimeout(readTimeout))
+	if err != nil {
+		return false, err
+	}
+	if rp.Keypairs == nil {
+		return false, fmt.Errorf("keypair not found")
+	}
+
+	return len(*rp.Keypairs) > 0, err
 }

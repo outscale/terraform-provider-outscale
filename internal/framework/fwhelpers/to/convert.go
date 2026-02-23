@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/outscale/osc-sdk-go/v3/pkg/iso8601"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
 )
 
@@ -21,6 +22,99 @@ func String[T ~string | *string](v T) types.String {
 	}
 
 	return types.StringValue(reflect.Indirect(rv).String())
+}
+
+func ISO8601[T string | *string | time.Time | *time.Time](v T) (iso8601.Time, error) {
+	switch v := any(v).(type) {
+	case string:
+		time, err := iso8601.ParseString(v)
+		if err != nil {
+			return iso8601.Time{}, err
+		}
+		return time, nil
+	case *string:
+		if v == nil {
+			return iso8601.Time{}, nil
+		}
+		time, err := iso8601.ParseString(*v)
+		if err != nil {
+			return iso8601.Time{}, err
+		}
+		return time, nil
+	case time.Time:
+		return iso8601.Time{Time: v}, nil
+	case *time.Time:
+		if v == nil {
+			return iso8601.Time{}, nil
+		}
+		return iso8601.Time{Time: *v}, nil
+	default:
+		panic(fmt.Sprintf("unsupported type %T", v))
+	}
+}
+
+func ISO8601ToDate[T string | *string | time.Time | *time.Time](v T) (iso8601.Time, error) {
+	isoTime := iso8601.Time{}
+	switch v := any(v).(type) {
+	case string:
+		time, err := iso8601.ParseString(v)
+		if err != nil {
+			return iso8601.Time{}, err
+		}
+		isoTime = time
+	case *string:
+		if v == nil {
+			return iso8601.Time{}, nil
+		}
+		time, err := iso8601.ParseString(*v)
+		if err != nil {
+			return iso8601.Time{}, err
+		}
+		isoTime = time
+	case time.Time:
+		isoTime = iso8601.Time{Time: v}
+	case *time.Time:
+		if v == nil {
+			return iso8601.Time{}, nil
+		}
+		isoTime = iso8601.Time{Time: *v}
+	default:
+		panic(fmt.Sprintf("unsupported type %T", v))
+	}
+
+	return isoTime.AddDate(0, 0, 1).At(0, 0, 0, int(-time.Millisecond)), nil
+}
+
+func ISO8601FromDate[T string | *string | time.Time | *time.Time](v T) (iso8601.Time, error) {
+	isoTime := iso8601.Time{}
+	switch v := any(v).(type) {
+	case string:
+		time, err := iso8601.ParseString(v)
+		if err != nil {
+			return iso8601.Time{}, err
+		}
+		isoTime = time
+	case *string:
+		if v == nil {
+			return iso8601.Time{}, nil
+		}
+		time, err := iso8601.ParseString(*v)
+		if err != nil {
+			return iso8601.Time{}, err
+		}
+		isoTime = time
+	case time.Time:
+		isoTime = iso8601.Time{Time: v}
+	case *time.Time:
+		if v == nil {
+			return iso8601.Time{}, nil
+		}
+		isoTime = iso8601.Time{Time: *v}
+	default:
+		panic(fmt.Sprintf("unsupported type %T", v))
+	}
+
+	return isoTime.At(0, 0, 0, 0), nil
 }
 
 func Int32[T int32 | *int32](v T) types.Int32 {

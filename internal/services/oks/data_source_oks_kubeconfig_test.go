@@ -15,7 +15,6 @@ func TestAccOKSKubeconfigDataSource_basic(t *testing.T) {
 	clusterName := fmt.Sprintf("%s-%d", "cluster-kubeconfig", id)
 	resourceName := "data.outscale_oks_kubeconfig.config"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 
 		Steps: []resource.TestStep{

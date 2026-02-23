@@ -14,7 +14,6 @@ func TestAccOthers_data_user_basic(t *testing.T) {
 	userName := acctest.RandomWithPrefix("testacc-user")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{

@@ -2,20 +2,21 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
+	"github.com/outscale/goutils/sdk/ptr"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 func DataSourceOutscaleApiAccessPolicy() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleApiAccessPolicyRead,
+		ReadContext: DataSourceOutscaleApiAccessPolicyRead,
 		Schema: map[string]*schema.Schema{
 			"max_access_key_expiration_seconds": {
 				Type:     schema.TypeInt,
@@ -33,36 +34,27 @@ func DataSourceOutscaleApiAccessPolicy() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleApiAccessPolicyRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleApiAccessPolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
-	req := oscgo.ReadApiAccessPolicyRequest{}
+	req := osc.ReadApiAccessPolicyRequest{}
 
-	var resp oscgo.ReadApiAccessPolicyResponse
-	err := retry.Retry(120*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.ApiAccessPolicyApi.ReadApiAccessPolicy(context.Background()).ReadApiAccessPolicyRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
-
+	resp, err := client.ReadApiAccessPolicy(ctx, req, options.WithRetryTimeout(120*time.Second))
 	if err != nil {
-		return fmt.Errorf("error reading api access policy id (%s)", utils.GetErrorResponse(err))
+		return diag.Errorf("error reading api access policy id (%s)", err)
 	}
 
-	if !resp.HasApiAccessPolicy() {
+	if resp.ApiAccessPolicy == nil {
 		d.SetId("")
-		return ErrNoResults
+		return diag.FromErr(ErrNoResults)
 	}
 
-	policy := resp.GetApiAccessPolicy()
-	if err := d.Set("max_access_key_expiration_seconds", policy.GetMaxAccessKeyExpirationSeconds()); err != nil {
-		return err
+	policy := resp.ApiAccessPolicy
+	if err := d.Set("max_access_key_expiration_seconds", ptr.From(policy.MaxAccessKeyExpirationSeconds)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("require_trusted_env", policy.GetRequireTrustedEnv()); err != nil {
-		return err
+	if err := d.Set("require_trusted_env", ptr.From(policy.RequireTrustedEnv)); err != nil {
+		return diag.FromErr(err)
 	}
 	d.SetId(id.UniqueId())
 	return nil

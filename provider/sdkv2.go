@@ -1,20 +1,13 @@
 package provider
 
 import (
-	"errors"
 	"fmt"
-	"os"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/services/oapi"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
-	"github.com/tidwall/gjson"
+	"github.com/outscale/terraform-provider-outscale/version"
 )
-
-var endpointServiceNames = []string{
-	"api",
-	"oks",
-}
 
 func deprecatedMsg(attr string) string {
 	return fmt.Sprintf("'%s' is deprecated: use the 'api' or 'oks' block for per-service configuration. This will be removed in the next major version of the provider.", attr)
@@ -198,8 +191,8 @@ func Provider() *schema.Provider {
 			"outscale_route_tables":                  oapi.DataSourceOutscaleRouteTables(),
 			"outscale_snapshot":                      oapi.DataSourceOutscaleSnapshot(),
 			"outscale_snapshots":                     oapi.DataSourceOutscaleSnapshots(),
-			"outscale_net_peering":                   oapi.DataSourceOutscaleLinPeeringConnection(),
-			"outscale_net_peerings":                  oapi.DataSourceOutscaleLinPeeringsConnection(),
+			"outscale_net_peering":                   oapi.DataSourceOutscaleNetPeering(),
+			"outscale_net_peerings":                  oapi.DataSourceOutscaleNetPeerings(),
 			"outscale_nics":                          oapi.DataSourceOutscaleNics(),
 			"outscale_nic":                           oapi.DataSourceOutscaleNic(),
 			"outscale_client_gateway":                oapi.DataSourceOutscaleClientGateway(),
@@ -260,227 +253,132 @@ func Provider() *schema.Provider {
 	}
 }
 
-func providerConfigureClient(d *schema.ResourceData) (interface{}, error) {
-	config := Config{
-		AccessKeyID:  d.Get("access_key_id").(string),
-		SecretKeyID:  d.Get("secret_key_id").(string),
-		Region:       d.Get("region").(string),
-		Endpoints:    make(map[string]string),
-		X509CertPath: d.Get("x509_cert_path").(string),
-		X509KeyPath:  d.Get("x509_key_path").(string),
-		ConfigFile:   d.Get("config_file").(string),
-		Profile:      d.Get("profile").(string),
-		Insecure:     d.Get("insecure").(bool),
-	}
+var UserAgent = "terraform-provider-outscale/" + version.GetVersion()
 
-	endpointsSet := d.Get("endpoints").(*schema.Set)
-	for _, endpointsSetI := range endpointsSet.List() {
-		endpoints := make(map[string]string)
-		for key, value := range endpointsSetI.(map[string]interface{}) {
-			endpoints[key] = value.(string)
-		}
-		for _, endpointServiceName := range endpointServiceNames {
-			config.Endpoints[endpointServiceName] = endpoints[endpointServiceName]
-		}
-	}
-
-	ok, err := IsOldProfileSet(&config)
-	if err != nil {
-		return nil, err
-	}
-	if !ok {
-		setProviderDefaultEnv(&config)
-	}
+func buildOSCConfig(d *schema.ResourceData) client.Config {
+	var config client.Config
 
 	if apiList, ok := d.GetOk("api"); ok {
 		apiSlice, ok := apiList.([]any)
 		if ok && len(apiSlice) > 0 {
 			if api, ok := apiSlice[0].(map[string]any); ok {
-				if v, ok := api["endpoint"].(string); ok && v != "" {
+				if v, ok := api["endpoint"].(string); ok {
 					config.APIEndpoint = v
 				}
-				if v, ok := api["region"].(string); ok && v != "" {
-					config.APIRegion = v
+				if v, ok := api["region"].(string); ok {
+					config.Region = v
 				}
-				if v, ok := api["x509_cert_path"].(string); ok && v != "" {
-					config.APIX509Cert = v
+				if v, ok := api["x509_cert_path"].(string); ok {
+					config.X509CertPath = v
 				}
-				if v, ok := api["x509_key_path"].(string); ok && v != "" {
-					config.APIX509Key = v
+				if v, ok := api["x509_key_path"].(string); ok {
+					config.X509KeyPath = v
 				}
 				if v, ok := api["insecure"].(bool); ok {
-					config.APIInsecure = v
+					config.Insecure = v
 				}
 			}
 		}
 	}
+
 	// fallback to deprecated configuration
 	if config.APIEndpoint == "" {
-		config.APIEndpoint = config.Endpoints["api"]
+		endpointsSet := d.Get("endpoints").(*schema.Set)
+		for _, endpointsSetI := range endpointsSet.List() {
+			if endpoints, ok := endpointsSetI.(map[string]interface{}); ok {
+				if v, ok := endpoints["api"].(string); ok && v != "" {
+					config.APIEndpoint = v
+				}
+			}
+		}
 	}
-	if config.APIX509Cert == "" {
-		config.APIX509Cert = config.X509CertPath
+	if config.X509CertPath == "" {
+		if v, ok := d.GetOk("x509_cert_path"); ok {
+			config.X509CertPath = v.(string)
+		}
 	}
-	if config.APIX509Key == "" {
-		config.APIX509Key = config.X509KeyPath
+	if config.X509KeyPath == "" {
+		if v, ok := d.GetOk("x509_key_path"); ok {
+			config.X509KeyPath = v.(string)
+		}
 	}
-	if !config.APIInsecure {
-		config.APIInsecure = config.Insecure
+	if !config.Insecure {
+		if v, ok := d.GetOk("insecure"); ok {
+			config.Insecure = v.(bool)
+		}
 	}
-	if config.APIRegion == "" {
-		config.APIRegion = config.Region
+	if config.Region == "" {
+		if v, ok := d.GetOk("region"); ok {
+			config.Region = v.(string)
+		}
 	}
+
+	return config
+}
+
+func buildOKSConfig(d *schema.ResourceData) client.Config {
+	var config client.Config
 
 	if oksList, ok := d.GetOk("oks"); ok {
 		oksSlice, ok := oksList.([]any)
 		if ok && len(oksSlice) > 0 {
 			if oksBlock, ok := oksSlice[0].(map[string]any); ok {
-				if v, ok := oksBlock["endpoint"].(string); ok && v != "" {
+				if v, ok := oksBlock["endpoint"].(string); ok {
 					config.OKSEndpoint = v
 				}
-				if v, ok := oksBlock["region"].(string); ok && v != "" {
-					config.OKSRegion = v
+				if v, ok := oksBlock["region"].(string); ok {
+					config.Region = v
 				}
 			}
 		}
 	}
+
 	// fallback to deprecated configuration
 	if config.OKSEndpoint == "" {
-		config.OKSEndpoint = config.Endpoints["oks"]
+		endpointsSet := d.Get("endpoints").(*schema.Set)
+		for _, endpointsSetI := range endpointsSet.List() {
+			if endpoints, ok := endpointsSetI.(map[string]interface{}); ok {
+				if v, ok := endpoints["oks"].(string); ok && v != "" {
+					config.OKSEndpoint = v
+				}
+			}
+		}
 	}
-	if config.OKSRegion == "" {
-		config.OKSRegion = config.Region
+	if config.Region == "" {
+		if v, ok := d.GetOk("region"); ok {
+			config.Region = v.(string)
+		}
 	}
 
-	return config.Client()
+	return config
 }
 
-func IsOldProfileSet(conf *Config) (bool, error) {
-	isProfSet := false
-	if profileName, ok := os.LookupEnv("OSC_PROFILE"); ok || conf.Profile != "" {
-		if conf.Profile != "" {
-			profileName = conf.Profile
-		}
+func providerConfigureClient(d *schema.ResourceData) (interface{}, error) {
+	oscConfig := buildOSCConfig(d)
+	oksConfig := buildOKSConfig(d)
 
-		var configFilePath string
-		if envPath, ok := os.LookupEnv("OSC_CONFIG_FILE"); ok || conf.ConfigFile != "" {
-			if conf.ConfigFile != "" {
-				configFilePath = conf.ConfigFile
-			} else {
-				configFilePath = envPath
-			}
-		} else {
-			homePath, err := os.UserHomeDir()
-			if err != nil {
-				return isProfSet, err
-			}
-			configFilePath = homePath + utils.SuffixConfigFilePath
-		}
-		jsonFile, err := os.ReadFile(configFilePath)
-		if err != nil {
-			return isProfSet, fmt.Errorf("unable to read config file '%v', Error: %w", configFilePath, err)
-		}
-		profile := gjson.GetBytes(jsonFile, profileName)
-		if !gjson.Valid(profile.String()) {
-			return isProfSet, fmt.Errorf("invalid json profile file")
-		}
-		if !profile.Get("access_key").Exists() ||
-			!profile.Get("secret_key").Exists() {
-			return isProfSet, errors.New("profile 'access_key' or 'secret_key' are not defined! ")
-		}
-		setOldProfile(conf, profile)
-		isProfSet = true
+	if v, ok := d.GetOk("access_key_id"); ok {
+		oscConfig.AccessKey = v.(string)
+		oksConfig.AccessKey = v.(string)
 	}
-	return isProfSet, nil
-}
+	if v, ok := d.GetOk("secret_key_id"); ok {
+		oscConfig.SecretKey = v.(string)
+		oksConfig.SecretKey = v.(string)
+	}
+	oscConfig.UserAgent = UserAgent
+	oksConfig.UserAgent = UserAgent
 
-func setOldProfile(conf *Config, profile gjson.Result) {
-	if conf.AccessKeyID == "" {
-		if accessKeyId := profile.Get("access_key").String(); accessKeyId != "" {
-			conf.AccessKeyID = accessKeyId
-		}
+	oscClient, err := client.NewOSCClient(oscConfig)
+	if err != nil {
+		return nil, err
 	}
-	if conf.SecretKeyID == "" {
-		if secretKeyId := profile.Get("secret_key").String(); secretKeyId != "" {
-			conf.SecretKeyID = secretKeyId
-		}
-	}
-	if conf.Region == "" {
-		if profile.Get("region").Exists() {
-			if region := profile.Get("region").String(); region != "" {
-				conf.Region = region
-			}
-		}
-	}
-	if conf.X509CertPath == "" {
-		if profile.Get("x509_cert_path").Exists() {
-			if x509Cert := profile.Get("x509_cert_path").String(); x509Cert != "" {
-				conf.X509CertPath = x509Cert
-			}
-		}
-	}
-	if conf.X509KeyPath == "" {
-		if profile.Get("x509_key_path").Exists() {
-			if x509Key := profile.Get("x509_key_path").String(); x509Key != "" {
-				conf.X509KeyPath = x509Key
-			}
-		}
-	}
-	if len(conf.Endpoints) == 0 {
-		if profile.Get("endpoints").Exists() {
-			endpoints := profile.Get("endpoints").Value().(map[string]interface{})
-			if endpoint, ok := endpoints["api"].(string); ok && endpoint != "" {
-				conf.Endpoints["api"] = endpoint
-			}
-			if endpoint, ok := endpoints["oks"].(string); ok && endpoint != "" {
-				conf.Endpoints["oks"] = endpoint
-			}
-		}
-	}
-}
-
-func setProviderDefaultEnv(conf *Config) {
-	if conf.AccessKeyID == "" {
-		if accessKeyId := utils.GetEnvVariableValue([]string{"OSC_ACCESS_KEY", "OUTSCALE_ACCESSKEYID"}); accessKeyId != "" {
-			conf.AccessKeyID = accessKeyId
-		}
-	}
-	if conf.SecretKeyID == "" {
-		if secretKeyId := utils.GetEnvVariableValue([]string{"OSC_SECRET_KEY", "OUTSCALE_SECRETKEYID"}); secretKeyId != "" {
-			conf.SecretKeyID = secretKeyId
-		}
+	oksClient, err := client.NewOKSClient(oksConfig)
+	if err != nil {
+		return nil, err
 	}
 
-	if conf.Region == "" {
-		if region := utils.GetEnvVariableValue([]string{"OSC_REGION", "OUTSCALE_REGION"}); region != "" {
-			conf.Region = region
-		}
-	}
-
-	if conf.X509CertPath == "" {
-		if x509Cert := utils.GetEnvVariableValue([]string{"OSC_X509_CLIENT_CERT", "OUTSCALE_X509CERT"}); x509Cert != "" {
-			conf.X509CertPath = x509Cert
-		}
-	}
-
-	if conf.X509KeyPath == "" {
-		if x509Key := utils.GetEnvVariableValue([]string{"OSC_X509_CLIENT_KEY", "OUTSCALE_X509KEY"}); x509Key != "" {
-			conf.X509KeyPath = x509Key
-		}
-	}
-	if len(conf.Endpoints) == 0 {
-		endpointsAttributes := make(map[string]string)
-		hasEndpoint := false
-		if endpoint := utils.GetEnvVariableValue([]string{"OSC_ENDPOINT_API", "OUTSCALE_OAPI_URL"}); endpoint != "" {
-			endpointsAttributes["api"] = endpoint
-			hasEndpoint = true
-		}
-		if endpoint := utils.GetEnvVariableValue([]string{"OSC_ENDPOINT_OKS"}); endpoint != "" {
-			endpointsAttributes["oks"] = endpoint
-			hasEndpoint = true
-		}
-		if hasEndpoint {
-			conf.Endpoints = endpointsAttributes
-		}
-	}
+	return &client.OutscaleClient{
+		OSC: oscClient,
+		OKS: oksClient,
+	}, nil
 }

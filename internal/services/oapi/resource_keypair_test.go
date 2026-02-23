@@ -15,7 +15,7 @@ func TestAccOthers_keypair_basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
-		PreCheck:                 func() { testacc.PreCheck(t) },
+
 		Steps: []resource.TestStep{
 			{
 				Config: testAcckeypairBasicConfig(keypairName),
@@ -36,8 +36,7 @@ func TestAccOthers_keypair_Basic_Migration(t *testing.T) {
 	keypairName := acctest.RandomWithPrefix("testacc-keypair")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { testacc.PreCheck(t) },
-		Steps:    testacc.FrameworkMigrationTestSteps("1.0.1", testAcckeypairBasicConfig(keypairName)),
+		Steps: testacc.FrameworkMigrationTestSteps("1.0.1", testAcckeypairBasicConfig(keypairName)),
 	})
 }
 
@@ -49,7 +48,7 @@ func TestAccOthers_keypairUpdateTags(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
-		PreCheck:                 func() { testacc.PreCheck(t) },
+
 		Steps: []resource.TestStep{
 			{
 				Config: testAcckeypairUpdateTags(keypairName, tagValue1),

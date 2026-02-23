@@ -3,23 +3,23 @@ package oapi_test
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"os"
 	"testing"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func TestAccVM_Basic(t *testing.T) {
-	var server oscgo.Vm
+	var server osc.Vm
 
 	resourceName := "outscale_vm.basic"
 
@@ -29,7 +29,6 @@ func TestAccVM_Basic(t *testing.T) {
 	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		CheckDestroy:             testAccCheckOutscaleVMDestroy,
 		Steps: []resource.TestStep{
@@ -49,7 +48,7 @@ func TestAccVM_Basic(t *testing.T) {
 }
 
 func TestAccVM_uefi(t *testing.T) {
-	var server oscgo.Vm
+	var server osc.Vm
 
 	resourceName := "outscale_vm.uefi"
 
@@ -59,7 +58,6 @@ func TestAccVM_uefi(t *testing.T) {
 	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		CheckDestroy:             testAccCheckOutscaleVMDestroy,
 		Steps: []resource.TestStep{
@@ -80,14 +78,13 @@ func TestAccVM_uefi(t *testing.T) {
 }
 
 func TestAccVM_Behavior_Basic(t *testing.T) {
-	var server oscgo.Vm
+	var server osc.Vm
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	keypair := "terraform-basic"
 	region := fmt.Sprintf("%sa", utils.GetRegion())
 	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		CheckDestroy:             testAccCheckOutscaleVMDestroy,
 		Steps: []resource.TestStep{
@@ -119,7 +116,7 @@ func TestAccVM_Behavior_Basic(t *testing.T) {
 
 func TestAccVM_importBasic(t *testing.T) {
 	var (
-		server       oscgo.Vm
+		server       osc.Vm
 		resourceName = "outscale_vm.basic_import"
 		omi          = os.Getenv("OUTSCALE_IMAGEID")
 		keypair      = "terraform-basic"
@@ -128,7 +125,6 @@ func TestAccVM_importBasic(t *testing.T) {
 	)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		CheckDestroy:             testAccCheckOutscaleVMDestroy,
 		Steps: []resource.TestStep{
@@ -156,7 +152,6 @@ func TestAccNet_VM_withNicAttached(t *testing.T) {
 	sgName2 := acctest.RandomWithPrefix("testacc-sg")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -171,14 +166,13 @@ func TestAccNet_VM_withNicAttached(t *testing.T) {
 }
 
 func TestAccVM_withTags(t *testing.T) {
-	var server oscgo.Vm
+	var server osc.Vm
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	keypair := "terraform-basic"
 	tagsValue := "test_tags1"
 	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		CheckDestroy:             testAccCheckOutscaleVMDestroy,
 		Steps: []resource.TestStep{
@@ -204,7 +198,6 @@ func TestAccNet_VM_withNics(t *testing.T) {
 	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -227,11 +220,10 @@ func TestAccVM_UpdateKeypair(t *testing.T) {
 	existingKeypair := "terraform-basic"
 	generatedKeypair := acctest.RandomWithPrefix("testacc-keypair")
 
-	var before oscgo.Vm
-	var after oscgo.Vm
+	var before osc.Vm
+	var after osc.Vm
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -262,7 +254,6 @@ func TestAccNet_VM_WithSubnet(t *testing.T) {
 	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -283,7 +274,6 @@ func TestAccVM_UpdateDeletionProtection(t *testing.T) {
 	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		CheckDestroy:             testAccCheckOutscaleVMDestroy,
 		Steps: []resource.TestStep{
@@ -311,7 +301,6 @@ func TestAccVM_UpdateTags(t *testing.T) {
 
 	// TODO: check tags
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		CheckDestroy:             testAccCheckOutscaleVMDestroy,
 		Steps: []resource.TestStep{
@@ -335,7 +324,6 @@ func TestAccNet_WithVM_PublicIp_Link(t *testing.T) {
 	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -357,7 +345,6 @@ func TestAccVM_multiBlockDeviceMapping(t *testing.T) {
 	sgName := acctest.RandomWithPrefix("testacc-vm")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 
 		Steps: []resource.TestStep{
@@ -533,7 +520,7 @@ func testAccCheckOutscaleDeletionProtectionUpdateBasic(omi, keypair, vmType stri
 }
 
 // TODO: check if is needed
-// func testAccCheckOAPIVMSecurityGroupsUpdated(t *testing.T, before, after *oscgo.Vm) resource.TestCheckFunc {
+// func testAccCheckOAPIVMSecurityGroupsUpdated(t *testing.T, before, after *osc.Vm) resource.TestCheckFunc {
 // 	return func(s *terraform.State) error {
 // 		log.Printf("[DEBUG] ATTRS: %+v, %+v", before.GetSecurityGroups(), after.GetSecurityGroups())
 // 		if len(after.GetSecurityGroups()) > 0 && len(before.GetSecurityGroups()) > 0 {
@@ -547,51 +534,36 @@ func testAccCheckOutscaleDeletionProtectionUpdateBasic(omi, keypair, vmType stri
 // 	}
 // }
 
-func getVMsFilterByVMID(vmID string) *oscgo.FiltersVm {
-	return &oscgo.FiltersVm{
+func getVMsFilterByVMID(vmID string) *osc.FiltersVm {
+	return &osc.FiltersVm{
 		VmIds: &[]string{vmID},
 	}
 }
 
-func testAccCheckOAPIVMNotRecreated(t *testing.T, before, after *oscgo.Vm) resource.TestCheckFunc {
+func testAccCheckOAPIVMNotRecreated(t *testing.T, before, after *osc.Vm) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		assertNotEqual(t, before.VmId, after.VmId, "Outscale VM IDs have changed.")
+		assertEqual(t, before.VmId, after.VmId, "Outscale VM IDs have changed.")
 		return nil
 	}
 }
 
 func testAccCheckOutscaleVMDestroy(s *terraform.State) error {
-	client := testacc.ConfiguredClient.OSCAPI
+	client := testacc.ConfiguredClient.OSC
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_vm" {
 			continue
 		}
 
-		var resp oscgo.ReadVmsResponse
-		var err error
-		var statusCode int
-		// Try to find the resource
-		err = retry.Retry(120*time.Second, func() *retry.RetryError {
-			rp, httpResp, err := client.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
-				Filters: getVMsFilterByVMID(rs.Primary.ID),
-			}).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			statusCode = httpResp.StatusCode
-			return nil
-		})
+		resp, err := client.ReadVms(context.Background(), osc.ReadVmsRequest{
+			Filters: getVMsFilterByVMID(rs.Primary.ID),
+		}, options.WithRetryTimeout(120*time.Second))
 		if err != nil {
-			if statusCode == http.StatusNotFound {
-				continue
-			}
 			return err
 		}
-		for _, i := range resp.GetVms() {
-			if i.GetState() != "" && i.GetState() != "terminated" {
-				return fmt.Errorf("found running instance: %s", i.GetVmId())
+		for _, i := range ptr.From(resp.Vms) {
+			if i.State != "" && i.State != "terminated" {
+				return fmt.Errorf("found running instance: %s", i.VmId)
 			}
 		}
 
@@ -601,7 +573,7 @@ func testAccCheckOutscaleVMDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOutscaleVMExists(n string, i *oscgo.Vm) resource.TestCheckFunc {
+func testAccCheckOutscaleVMExists(n string, i *osc.Vm) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -611,18 +583,10 @@ func testAccCheckOutscaleVMExists(n string, i *oscgo.Vm) resource.TestCheckFunc 
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("no id is set")
 		}
-		client := testacc.ConfiguredClient.OSCAPI
-		var resp oscgo.ReadVmsResponse
-		err := retry.Retry(120*time.Second, func() *retry.RetryError {
-			rp, httpResp, err := client.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
-				Filters: getVMsFilterByVMID(rs.Primary.ID),
-			}).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
+		client := testacc.ConfiguredClient.OSC
+		resp, err := client.ReadVms(context.Background(), osc.ReadVmsRequest{
+			Filters: getVMsFilterByVMID(rs.Primary.ID),
+		}, options.WithRetryTimeout(120*time.Second))
 		if err != nil {
 			return err
 		}
@@ -631,17 +595,17 @@ func testAccCheckOutscaleVMExists(n string, i *oscgo.Vm) resource.TestCheckFunc 
 			return fmt.Errorf("vms not found")
 		}
 
-		if len(resp.GetVms()) > 0 {
-			*i = resp.GetVms()[0]
+		if len(ptr.From(resp.Vms)) > 0 {
+			*i = (*resp.Vms)[0]
 			return nil
 		}
 		return fmt.Errorf("vms not found")
 	}
 }
 
-func testAccCheckOutscaleVMAttributes(t *testing.T, server *oscgo.Vm, omi string) resource.TestCheckFunc {
+func testAccCheckOutscaleVMAttributes(t *testing.T, server *osc.Vm, omi string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		assertEqual(t, omi, server.GetImageId(), "Bad image_id.")
+		assertEqual(t, omi, server.ImageId, "Bad image_id.")
 		return nil
 	}
 }

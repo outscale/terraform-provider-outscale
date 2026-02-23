@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -15,11 +14,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/modifyplans"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
+	"github.com/outscale/terraform-provider-outscale/internal/services/oapi/oapihelpers"
 )
 
 var (
@@ -44,7 +46,7 @@ type SubnetModel struct {
 }
 
 type resourceSubnet struct {
-	Client *oscgo.APIClient
+	Client *osc.Client
 }
 
 func NewResourceSubnet() resource.Resource {
@@ -59,12 +61,12 @@ func (r *resourceSubnet) Configure(_ context.Context, req resource.ConfigureRequ
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected *osc.APIClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *osc.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
 	}
-	r.Client = client.OSCAPI
+	r.Client = client.OSC
 }
 
 func (r *resourceSubnet) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
@@ -81,8 +83,8 @@ func (r *resourceSubnet) ImportState(ctx context.Context, req resource.ImportSta
 
 	var data SubnetModel
 	var timeouts timeouts.Value
-	data.SubnetId = types.StringValue(subnedId)
-	data.Id = types.StringValue(subnedId)
+	data.SubnetId = to.String(subnedId)
+	data.Id = to.String(subnedId)
 	resp.Diagnostics.Append(resp.State.GetAttribute(ctx, path.Root("timeouts"), &timeouts)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -92,9 +94,6 @@ func (r *resourceSubnet) ImportState(ctx context.Context, req resource.ImportSta
 
 	diags := resp.State.Set(ctx, &data)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceSubnet) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -181,29 +180,20 @@ func (r *resourceSubnet) Create(ctx context.Context, req resource.CreateRequest,
 	}
 
 	createTimeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
-	createReq := oscgo.CreateSubnetRequest{
+	createReq := osc.CreateSubnetRequest{
 		IpRange: data.IpRange.ValueString(),
 		NetId:   data.NetId.ValueString(),
 	}
 
 	if !data.SubregionName.IsUnknown() && !data.SubregionName.IsNull() {
-		createReq.SetSubregionName(data.SubregionName.ValueString())
+		createReq.SubregionName = data.SubregionName.ValueStringPointer()
 	}
 
-	var createResp oscgo.CreateSubnetResponse
-	err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.SubnetApi.CreateSubnet(ctx).CreateSubnetRequest(createReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		createResp = rp
-		return nil
-	})
+	createResp, err := r.Client.CreateSubnet(ctx, createReq, options.WithRetryTimeout(createTimeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to create subnet resource.",
@@ -211,40 +201,29 @@ func (r *resourceSubnet) Create(ctx context.Context, req resource.CreateRequest,
 		)
 		return
 	}
-	data.RequestId = types.StringValue(*createResp.ResponseContext.RequestId)
-	subnet := createResp.GetSubnet()
+	data.RequestId = to.String(*createResp.ResponseContext.RequestId)
+	subnet := ptr.From(createResp.Subnet)
 
-	diag := createOAPITagsFW(ctx, r.Client, data.Tags, subnet.GetSubnetId())
+	diag := createOAPITagsFW(ctx, r.Client, createTimeout, data.Tags, subnet.SubnetId)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
 
-	readReq := oscgo.ReadSubnetsRequest{Filters: &oscgo.FiltersSubnet{SubnetIds: &[]string{subnet.GetSubnetId()}}}
+	readReq := osc.ReadSubnetsRequest{Filters: &osc.FiltersSubnet{SubnetIds: &[]string{subnet.SubnetId}}}
 
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{"pending"},
 		Target:  []string{"available"},
+		Timeout: createTimeout,
 		Refresh: func() (any, string, error) {
-			var resp oscgo.ReadSubnetsResponse
-
-			err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
-				rp, httpResp, err := r.Client.SubnetApi.ReadSubnets(ctx).ReadSubnetsRequest(readReq).Execute()
-				if err != nil {
-					return utils.CheckThrottling(httpResp, err)
-				}
-				resp = rp
-				return nil
-			})
-			if err != nil {
+			resp, err := r.Client.ReadSubnets(ctx, readReq, options.WithRetryTimeout(createTimeout))
+			if err != nil || resp.Subnets == nil {
 				return resp, "failed", nil
 			}
-			subnet := resp.GetSubnets()[0]
+			subnet := (*resp.Subnets)[0]
 
-			return resp, subnet.GetState(), nil
+			return resp, string(subnet.State), nil
 		},
-		Timeout:    createTimeout,
-		MinTimeout: 3 * time.Second,
-		Delay:      5 * time.Second,
 	}
 
 	if _, err = stateConf.WaitForStateContext(ctx); err != nil {
@@ -255,20 +234,14 @@ func (r *resourceSubnet) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	data.SubnetId = types.StringValue(subnet.GetSubnetId())
-	data.Id = types.StringValue(subnet.GetSubnetId())
-	if data.MapPublicIpOnLaunch.ValueBool() != subnet.GetMapPublicIpOnLaunch() {
-		updateReq := oscgo.UpdateSubnetRequest{
+	data.SubnetId = to.String(subnet.SubnetId)
+	data.Id = to.String(subnet.SubnetId)
+	if data.MapPublicIpOnLaunch.ValueBool() != subnet.MapPublicIpOnLaunch {
+		updateReq := osc.UpdateSubnetRequest{
 			SubnetId:            data.SubnetId.ValueString(),
 			MapPublicIpOnLaunch: data.MapPublicIpOnLaunch.ValueBool(),
 		}
-		err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
-			_, httpResp, err := r.Client.SubnetApi.UpdateSubnet(ctx).UpdateSubnetRequest(updateReq).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			return nil
-		})
+		_, err := r.Client.UpdateSubnet(ctx, updateReq, options.WithRetryTimeout(createTimeout))
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Unable to update MapPublicIpOnLaunch.",
@@ -278,7 +251,7 @@ func (r *resourceSubnet) Create(ctx context.Context, req resource.CreateRequest,
 		}
 	}
 
-	data, err = setSubnetState(ctx, r, data)
+	data, err = r.read(ctx, data)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to set subnet state.",
@@ -287,9 +260,6 @@ func (r *resourceSubnet) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceSubnet) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -300,7 +270,7 @@ func (r *resourceSubnet) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	data, err := setSubnetState(ctx, r, data)
+	data, err := r.read(ctx, data)
 	if err != nil {
 		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
@@ -313,9 +283,6 @@ func (r *resourceSubnet) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceSubnet) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -325,29 +292,26 @@ func (r *resourceSubnet) Update(ctx context.Context, req resource.UpdateRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	timeout, diags := planData.Timeouts.Update(ctx, UpdateDefaultTimeout)
+	if fwhelpers.CheckDiags(resp, diags) {
+		return
+	}
 
-	diag := updateOAPITagsFW(ctx, r.Client, stateData.Tags, planData.Tags, stateData.SubnetId.ValueString())
+	diag := updateOAPITagsFW(ctx, r.Client, timeout, stateData.Tags, planData.Tags, stateData.SubnetId.ValueString())
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
 
 	updateTimeout, diags := planData.Timeouts.Update(ctx, UpdateDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
-	updateReq := oscgo.UpdateSubnetRequest{
+	updateReq := osc.UpdateSubnetRequest{
 		SubnetId:            stateData.SubnetId.ValueString(),
 		MapPublicIpOnLaunch: planData.MapPublicIpOnLaunch.ValueBool(),
 	}
-	err := retry.RetryContext(ctx, updateTimeout, func() *retry.RetryError {
-		_, httpResp, err := r.Client.SubnetApi.UpdateSubnet(ctx).UpdateSubnetRequest(updateReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	_, err := r.Client.UpdateSubnet(ctx, updateReq, options.WithRetryTimeout(updateTimeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to update subnet resource",
@@ -356,7 +320,7 @@ func (r *resourceSubnet) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	data, err := setSubnetState(ctx, r, stateData)
+	data, err := r.read(ctx, stateData)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to set subnet state.",
@@ -365,9 +329,6 @@ func (r *resourceSubnet) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceSubnet) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -379,22 +340,18 @@ func (r *resourceSubnet) Delete(ctx context.Context, req resource.DeleteRequest,
 	}
 
 	deleteTimeout, diags := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
-	delReq := oscgo.DeleteSubnetRequest{
+	delReq := osc.DeleteSubnetRequest{
 		SubnetId: data.SubnetId.ValueString(),
 	}
 
-	err := retry.RetryContext(ctx, deleteTimeout, func() *retry.RetryError {
-		_, httpResp, err := r.Client.SubnetApi.DeleteSubnet(ctx).DeleteSubnetRequest(delReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	// Retry on 409 (subnet in-use) as API can take time to see a subnet as not in use anymore
+	err := oapihelpers.RetryOnCodes(ctx, []string{"9095"}, func() (resp any, err error) {
+		return r.Client.DeleteSubnet(ctx, delReq, options.WithRetryTimeout(deleteTimeout))
+	}, deleteTimeout)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Delete subnet.",
@@ -404,11 +361,11 @@ func (r *resourceSubnet) Delete(ctx context.Context, req resource.DeleteRequest,
 	}
 }
 
-func setSubnetState(ctx context.Context, r *resourceSubnet, data SubnetModel) (SubnetModel, error) {
-	subnetFilters := oscgo.FiltersSubnet{
+func (r *resourceSubnet) read(ctx context.Context, data SubnetModel) (SubnetModel, error) {
+	subnetFilters := osc.FiltersSubnet{
 		SubnetIds: &[]string{data.SubnetId.ValueString()},
 	}
-	readReq := oscgo.ReadSubnetsRequest{
+	readReq := osc.ReadSubnetsRequest{
 		Filters: &subnetFilters,
 	}
 
@@ -417,37 +374,29 @@ func setSubnetState(ctx context.Context, r *resourceSubnet, data SubnetModel) (S
 		return data, fmt.Errorf("unable to parse 'subnet' read timeout value: %v", diags.Errors())
 	}
 
-	var readResp oscgo.ReadSubnetsResponse
-	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.SubnetApi.ReadSubnets(ctx).ReadSubnetsRequest(readReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		readResp = rp
-		return nil
-	})
+	readResp, err := r.Client.ReadSubnets(ctx, readReq, options.WithRetryTimeout(readTimeout))
 	if err != nil {
 		return data, err
 	}
-	if len(readResp.GetSubnets()) == 0 {
+	if readResp.Subnets == nil || len(*readResp.Subnets) == 0 {
 		return data, ErrResourceEmpty
 	}
 
-	subnet := readResp.GetSubnets()[0]
-	tags, diags := flattenOAPITagsFW(ctx, subnet.GetTags())
+	subnet := (*readResp.Subnets)[0]
+	tags, diags := flattenOAPITagsFW(ctx, subnet.Tags)
 	if diags.HasError() {
 		return data, fmt.Errorf("unable to flatten tags: %v", diags.Errors())
 	}
 	data.Tags = tags
 
-	data.RequestId = types.StringValue(readResp.ResponseContext.GetRequestId())
-	data.AvailableIpsCount = types.Int32Value(subnet.GetAvailableIpsCount())
-	data.IpRange = types.StringValue(subnet.GetIpRange())
-	data.MapPublicIpOnLaunch = types.BoolValue(subnet.GetMapPublicIpOnLaunch())
-	data.NetId = types.StringValue(subnet.GetNetId())
-	data.State = types.StringValue(subnet.GetState())
-	data.SubnetId = types.StringValue(subnet.GetSubnetId())
-	data.SubregionName = types.StringValue(subnet.GetSubregionName())
-	data.Id = types.StringValue(subnet.GetSubnetId())
+	data.RequestId = to.String(readResp.ResponseContext.RequestId)
+	data.AvailableIpsCount = types.Int32Value(int32(subnet.AvailableIpsCount))
+	data.IpRange = to.String(subnet.IpRange)
+	data.MapPublicIpOnLaunch = to.Bool(subnet.MapPublicIpOnLaunch)
+	data.NetId = to.String(subnet.NetId)
+	data.State = to.String(subnet.State)
+	data.SubnetId = to.String(subnet.SubnetId)
+	data.SubregionName = to.String(subnet.SubregionName)
+	data.Id = to.String(subnet.SubnetId)
 	return data, nil
 }

@@ -14,7 +14,6 @@ func TestAccOthers_user_groups_basic(t *testing.T) {
 	groupName := acctest.RandomWithPrefix("testacc-usergroup")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{

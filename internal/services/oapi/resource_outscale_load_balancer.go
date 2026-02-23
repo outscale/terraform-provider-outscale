@@ -5,16 +5,19 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"net/http"
 	"slices"
 	"strings"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
+	"github.com/outscale/terraform-provider-outscale/internal/services/oapi/oapihelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
@@ -39,10 +42,10 @@ func lb_sg_schema() *schema.Schema {
 
 func ResourceOutscaleLoadBalancer() *schema.Resource {
 	return &schema.Resource{
-		Create: ResourceOutscaleLoadBalancerCreate,
-		Read:   ResourceOutscaleLoadBalancerRead,
-		Update: ResourceOutscaleLoadBalancerUpdate,
-		Delete: ResourceOutscaleLoadBalancerDelete,
+		CreateContext: ResourceOutscaleLoadBalancerCreate,
+		ReadContext:   ResourceOutscaleLoadBalancerRead,
+		UpdateContext: ResourceOutscaleLoadBalancerUpdate,
+		DeleteContext: ResourceOutscaleLoadBalancerDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -225,7 +228,7 @@ func ResourceOutscaleLoadBalancer() *schema.Resource {
 }
 
 // Flattens an array of Listeners into a []map[string]interface{}
-func flattenOAPIListeners(list *[]oscgo.Listener) []map[string]interface{} {
+func flattenOAPIListeners(list *[]osc.Listener) []map[string]interface{} {
 	if list == nil {
 		return make([]map[string]interface{}, 0)
 	}
@@ -234,61 +237,61 @@ func flattenOAPIListeners(list *[]oscgo.Listener) []map[string]interface{} {
 
 	for _, i := range *list {
 		listener := map[string]interface{}{
-			"backend_port":           int(*i.BackendPort),
-			"backend_protocol":       *i.BackendProtocol,
-			"load_balancer_port":     int(*i.LoadBalancerPort),
-			"load_balancer_protocol": *i.LoadBalancerProtocol,
+			"backend_port":           int(i.BackendPort),
+			"backend_protocol":       i.BackendProtocol,
+			"load_balancer_port":     int(i.LoadBalancerPort),
+			"load_balancer_protocol": i.LoadBalancerProtocol,
 		}
 		if i.ServerCertificateId != nil {
 			listener["server_certificate_id"] = *i.ServerCertificateId
 		}
-		listener["policy_names"] = utils.StringSlicePtrToInterfaceSlice(i.PolicyNames)
+		listener["policy_names"] = utils.StringSlicePtrToInterfaceSlice(&i.PolicyNames)
 		result = append(result, listener)
 	}
 	return result
 }
 
-func expandListeners(configured []interface{}) ([]*oscgo.Listener, error) {
-	listeners := make([]*oscgo.Listener, 0, len(configured))
+func expandListeners(configured []interface{}) ([]*osc.Listener, error) {
+	listeners := make([]*osc.Listener, 0, len(configured))
 
 	for _, lRaw := range configured {
 		data := lRaw.(map[string]interface{})
 
-		ip := int32(data["backend_port"].(int))
-		lp := int32(data["load_balancer_port"].(int))
+		ip := data["backend_port"].(int)
+		lp := data["load_balancer_port"].(int)
 		bproto := data["backend_protocol"].(string)
 		lproto := data["load_balancer_protocol"].(string)
-		l := &oscgo.Listener{
-			BackendPort:          &ip,
-			BackendProtocol:      &bproto,
-			LoadBalancerPort:     &lp,
-			LoadBalancerProtocol: &lproto,
+		l := &osc.Listener{
+			BackendPort:          ip,
+			BackendProtocol:      bproto,
+			LoadBalancerPort:     lp,
+			LoadBalancerProtocol: lproto,
 		}
 
 		if v, ok := data["server_certificate_id"]; ok && v != "" {
 			protocolNeedCerticate := []string{"https", "ssl"}
-			if !slices.Contains(protocolNeedCerticate, strings.ToLower(l.GetBackendProtocol())) &&
-				!slices.Contains(protocolNeedCerticate, strings.ToLower(l.GetLoadBalancerProtocol())) {
+			if !slices.Contains(protocolNeedCerticate, strings.ToLower(l.BackendProtocol)) &&
+				!slices.Contains(protocolNeedCerticate, strings.ToLower(l.LoadBalancerProtocol)) {
 				return nil, errors.New("LBU Listener: server_certificate_id may be set only when protocol is 'https' or 'ssl'")
 			}
-			l.SetServerCertificateId(v.(string))
+			l.ServerCertificateId = new(v.(string))
 		}
 		listeners = append(listeners, l)
 	}
 	return listeners, nil
 }
 
-func expandListenerForCreation(configured []interface{}) ([]oscgo.ListenerForCreation, error) {
-	listeners := make([]oscgo.ListenerForCreation, 0, len(configured))
+func expandListenerForCreation(configured []interface{}) ([]osc.ListenerForCreation, error) {
+	listeners := make([]osc.ListenerForCreation, 0, len(configured))
 
 	for _, lRaw := range configured {
 		data := lRaw.(map[string]interface{})
 
-		ip := int32(data["backend_port"].(int))
-		lp := int32(data["load_balancer_port"].(int))
+		ip := data["backend_port"].(int)
+		lp := data["load_balancer_port"].(int)
 		bproto := data["backend_protocol"].(string)
 		lproto := data["load_balancer_protocol"].(string)
-		l := oscgo.ListenerForCreation{
+		l := osc.ListenerForCreation{
 			BackendPort:          ip,
 			BackendProtocol:      &bproto,
 			LoadBalancerPort:     lp,
@@ -297,11 +300,11 @@ func expandListenerForCreation(configured []interface{}) ([]oscgo.ListenerForCre
 
 		if v, ok := data["server_certificate_id"]; ok && v != "" {
 			protocolNeedCerticate := []string{"https", "ssl"}
-			if !slices.Contains(protocolNeedCerticate, strings.ToLower(l.GetBackendProtocol())) &&
-				!slices.Contains(protocolNeedCerticate, strings.ToLower(l.GetLoadBalancerProtocol())) {
+			if !slices.Contains(protocolNeedCerticate, strings.ToLower(ptr.From(l.BackendProtocol))) &&
+				!slices.Contains(protocolNeedCerticate, strings.ToLower(l.LoadBalancerProtocol)) {
 				return nil, errors.New("LBU Listener: server_certificate_id may be set only when protocol is 'https' or 'ssl'")
 			}
-			l.SetServerCertificateId(v.(string))
+			l.ServerCertificateId = new(v.(string))
 		}
 		listeners = append(listeners, l)
 	}
@@ -350,19 +353,20 @@ func lb_listener_schema(computed bool) map[string]*schema.Schema {
 	}
 }
 
-func ResourceOutscaleLoadBalancerCreate(d *schema.ResourceData, meta interface{}) error {
-	return ResourceOutscaleLoadBalancerCreate_(d, meta, false)
+func ResourceOutscaleLoadBalancerCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return ResourceOutscaleLoadBalancerCreate_(ctx, d, meta, false)
 }
 
-func ResourceOutscaleLoadBalancerCreate_(d *schema.ResourceData, meta interface{}, isUpdate bool) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleLoadBalancerCreate_(ctx context.Context, d *schema.ResourceData, meta interface{}, isUpdate bool) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
 	timeout := d.Timeout(schema.TimeoutCreate)
 
-	req := &oscgo.CreateLoadBalancerRequest{}
+	req := &osc.CreateLoadBalancerRequest{}
 
 	listeners, err := expandListenerForCreation(d.Get("listeners").(*schema.Set).List())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	req.Listeners = listeners
@@ -397,7 +401,7 @@ func ResourceOutscaleLoadBalancerCreate_(d *schema.ResourceData, meta interface{
 
 	v_srn, srn_ok := d.GetOk("subregion_names")
 	if sb_ok && srn_ok {
-		return errors.New("can't use both 'subregion_names' and 'subnets'")
+		return diag.Errorf("can't use both 'subregion_names' and 'subnets'")
 	}
 
 	if srn_ok && !sb_ok {
@@ -405,21 +409,9 @@ func ResourceOutscaleLoadBalancerCreate_(d *schema.ResourceData, meta interface{
 	}
 
 	log.Printf("[DEBUG] Load Balancer request configuration: %#v", *req)
-	err = retry.Retry(timeout, func() *retry.RetryError {
-		_, httpResp, err := conn.LoadBalancerApi.CreateLoadBalancer(
-			context.Background()).
-			CreateLoadBalancerRequest(*req).Execute()
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "NoSuchCertificate") {
-				return retry.RetryableError(
-					fmt.Errorf("error creating load balancer listener with ssl cert, retrying: %w", err))
-			}
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	_, err = client.CreateLoadBalancer(ctx, *req, options.WithRetryTimeout(timeout))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	// Assign the lbu's unique identifier for use later
@@ -427,65 +419,49 @@ func ResourceOutscaleLoadBalancerCreate_(d *schema.ResourceData, meta interface{
 	log.Printf("[INFO] Load Balancer ID: %s", d.Id())
 
 	if scVal, scOk := d.GetOk("secured_cookies"); scOk {
-		req := oscgo.UpdateLoadBalancerRequest{
+		req := osc.UpdateLoadBalancerRequest{
 			LoadBalancerName: d.Id(),
 		}
-		req.SetSecuredCookies(scVal.(bool))
-		err = retry.Retry(timeout, func() *retry.RetryError {
-			_, httpResp, err := conn.LoadBalancerApi.UpdateLoadBalancer(
-				context.Background()).UpdateLoadBalancerRequest(req).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			return nil
-		})
+		req.SecuredCookies = new(scVal.(bool))
+		_, err := client.UpdateLoadBalancer(ctx, req, options.WithRetryTimeout(timeout))
 		if err != nil {
-			return fmt.Errorf("failure updating secruedcookies: %w", err)
+			return diag.Errorf("failure updating secruedcookies: %v", err)
 		}
 	}
 
-	return ResourceOutscaleLoadBalancerRead(d, meta)
+	return ResourceOutscaleLoadBalancerRead(ctx, d, meta)
 }
 
-func readResourceLb(conn *oscgo.APIClient, elbName string, timeout time.Duration) (*oscgo.LoadBalancer, *oscgo.ReadLoadBalancersResponse, error) {
-	filter := &oscgo.FiltersLoadBalancer{
+func readResourceLb(ctx context.Context, client *osc.Client, elbName string, timeout time.Duration) (*osc.LoadBalancer, *osc.ReadLoadBalancersResponse, error) {
+	filter := &osc.FiltersLoadBalancer{
 		LoadBalancerNames: &[]string{elbName},
 	}
 
-	req := oscgo.ReadLoadBalancersRequest{
+	req := osc.ReadLoadBalancersRequest{
 		Filters: filter,
 	}
 
-	var resp oscgo.ReadLoadBalancersResponse
-	err := retry.Retry(timeout, func() *retry.RetryError {
-		rp, httpResp, err := conn.LoadBalancerApi.ReadLoadBalancers(
-			context.Background()).
-			ReadLoadBalancersRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadLoadBalancers(ctx, req, options.WithRetryTimeout(timeout))
 	if err != nil {
 		return nil, nil, fmt.Errorf("error retrieving load balancer: %w", err)
 	}
-	if len(resp.GetLoadBalancers()) == 0 {
+	if resp == nil || len(*resp.LoadBalancers) == 0 {
 		return nil, nil, nil
 	}
 
 	lb := (*resp.LoadBalancers)[0]
-	return &lb, &resp, nil
+	return &lb, resp, nil
 }
 
-func ResourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleLoadBalancerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
 	timeout := d.Timeout(schema.TimeoutRead)
 	elbName := d.Id()
 
-	lb, _, err := readResourceLb(conn, elbName, timeout)
+	lb, _, err := readResourceLb(ctx, client, elbName, timeout)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	if lb == nil {
@@ -493,21 +469,21 @@ func ResourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}) 
 		d.SetId("")
 		return nil
 	}
-	d.Set("subregion_names", utils.StringSlicePtrToInterfaceSlice(lb.SubregionNames))
+	d.Set("subregion_names", utils.StringSlicePtrToInterfaceSlice(&lb.SubregionNames))
 	d.Set("dns_name", lb.DnsName)
-	d.Set("health_check", flattenOAPIHealthCheck(lb.HealthCheck))
-	d.Set("access_log", flattenOAPIAccessLog(lb.AccessLog))
+	d.Set("health_check", flattenOAPIHealthCheck(&lb.HealthCheck))
+	d.Set("access_log", flattenOAPIAccessLog(&lb.AccessLog))
 
-	d.Set("backend_vm_ids", utils.StringSlicePtrToInterfaceSlice(lb.BackendVmIds))
-	d.Set("backend_ips", utils.StringSlicePtrToInterfaceSlice(lb.BackendIps))
-	if err := d.Set("listeners", flattenOAPIListeners(lb.Listeners)); err != nil {
-		return err
+	d.Set("backend_vm_ids", utils.StringSlicePtrToInterfaceSlice(&lb.BackendVmIds))
+	d.Set("backend_ips", utils.StringSlicePtrToInterfaceSlice(&lb.BackendIps))
+	if err := d.Set("listeners", flattenOAPIListeners(&lb.Listeners)); err != nil {
+		return diag.FromErr(err)
 	}
 	d.Set("load_balancer_name", lb.LoadBalancerName)
 
 	if lb.Tags != nil {
-		ta := make([]map[string]interface{}, len(*lb.Tags))
-		for k1, v1 := range *lb.Tags {
+		ta := make([]map[string]interface{}, len(lb.Tags))
+		for k1, v1 := range lb.Tags {
 			t := make(map[string]interface{})
 			t["key"] = v1.Key
 			t["value"] = v1.Value
@@ -521,8 +497,8 @@ func ResourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}) 
 
 	if lb.ApplicationStickyCookiePolicies != nil {
 		app := make([]map[string]interface{},
-			len(*lb.ApplicationStickyCookiePolicies))
-		for k, v := range *lb.ApplicationStickyCookiePolicies {
+			len(lb.ApplicationStickyCookiePolicies))
+		for k, v := range lb.ApplicationStickyCookiePolicies {
 			a := make(map[string]interface{})
 			a["cookie_name"] = v.CookieName
 			a["policy_name"] = v.PolicyName
@@ -532,8 +508,8 @@ func ResourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}) 
 	}
 	if lb.LoadBalancerStickyCookiePolicies != nil {
 		lbc := make([]map[string]interface{},
-			len(*lb.LoadBalancerStickyCookiePolicies))
-		for k, v := range *lb.LoadBalancerStickyCookiePolicies {
+			len(lb.LoadBalancerStickyCookiePolicies))
+		for k, v := range lb.LoadBalancerStickyCookiePolicies {
 			a := make(map[string]interface{})
 			a["policy_name"] = v.PolicyName
 			lbc[k] = a
@@ -543,45 +519,39 @@ func ResourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}) 
 
 	d.Set("load_balancer_type", lb.LoadBalancerType)
 	if lb.SecurityGroups != nil {
-		d.Set("security_groups", utils.StringSlicePtrToInterfaceSlice(lb.SecurityGroups))
+		d.Set("security_groups", utils.StringSlicePtrToInterfaceSlice(&lb.SecurityGroups))
 	} else {
 		d.Set("security_groups", make([]map[string]interface{}, 0))
 	}
 
-	if lb.SourceSecurityGroup != nil {
-		d.Set("source_security_group", flattenSource_sg(lb.SourceSecurityGroup))
-	}
-	d.Set("subnets", utils.StringSlicePtrToInterfaceSlice(lb.Subnets))
-	d.Set("public_ip", lb.PublicIp)
+	d.Set("source_security_group", flattenSource_sg(&lb.SourceSecurityGroup))
+	d.Set("subnets", utils.StringSlicePtrToInterfaceSlice(&lb.Subnets))
+	d.Set("public_ip", ptr.From(lb.PublicIp))
 	d.Set("secured_cookies", lb.SecuredCookies)
 
-	d.Set("net_id", lb.NetId)
+	d.Set("net_id", ptr.From(lb.NetId))
 
 	return nil
 }
 
-func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
 	timeout := d.Timeout(schema.TimeoutUpdate)
 	var err error
 
 	if d.HasChange("security_groups") {
-		req := oscgo.UpdateLoadBalancerRequest{
+		req := osc.UpdateLoadBalancerRequest{
 			LoadBalancerName: d.Id(),
 		}
 		nSg, _ := d.GetOk("security_groups")
 		req.SecurityGroups = utils.SetToStringSlicePtr(nSg.(*schema.Set))
 
-		err = retry.Retry(timeout, func() *retry.RetryError {
-			_, httpResp, err := conn.LoadBalancerApi.UpdateLoadBalancer(
-				context.Background()).UpdateLoadBalancerRequest(req).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			return nil
-		})
+		err := oapihelpers.RetryOnCodes(ctx, []string{"6031"}, func() (resp any, err error) {
+			return client.UpdateLoadBalancer(ctx, req, options.WithRetryTimeout(timeout))
+		}, timeout)
 		if err != nil {
-			return fmt.Errorf("failure updating securitygroups: %w", err)
+			return diag.Errorf("failure updating securitygroups: %v", err)
 		}
 	}
 
@@ -590,12 +560,12 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 		o := oraw.(*schema.Set)
 		n := nraw.(*schema.Set)
 		create := expandOAPITagsSDK(n)
-		var remove []oscgo.ResourceLoadBalancerTag
+		var remove []osc.ResourceLoadBalancerTag
 		for _, t := range o.List() {
 			tag := t.(map[string]interface{})
 			s := tag["key"].(string)
 			remove = append(remove,
-				oscgo.ResourceLoadBalancerTag{
+				osc.ResourceLoadBalancerTag{
 					Key: s,
 				})
 		}
@@ -603,21 +573,13 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 			goto skip_delete
 		}
 
-		err = retry.Retry(timeout, func() *retry.RetryError {
-			_, httpResp, err := conn.LoadBalancerApi.DeleteLoadBalancerTags(
-				context.Background()).
-				DeleteLoadBalancerTagsRequest(
-					oscgo.DeleteLoadBalancerTagsRequest{
-						LoadBalancerNames: []string{d.Id()},
-						Tags:              remove,
-					}).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			return nil
-		})
+		_, err = client.DeleteLoadBalancerTags(ctx,
+			osc.DeleteLoadBalancerTagsRequest{
+				LoadBalancerNames: []string{d.Id()},
+				Tags:              remove,
+			}, options.WithRetryTimeout(timeout))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 
 	skip_delete:
@@ -625,24 +587,13 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 			goto skip_create
 		}
 
-		err = retry.Retry(timeout, func() *retry.RetryError {
-			_, httpResp, err := conn.LoadBalancerApi.CreateLoadBalancerTags(
-				context.Background()).
-				CreateLoadBalancerTagsRequest(
-					oscgo.CreateLoadBalancerTagsRequest{
-						LoadBalancerNames: []string{d.Id()},
-						Tags:              create,
-					}).Execute()
-			if err != nil {
-				if httpResp.StatusCode == http.StatusNotFound {
-					return retry.RetryableError(err) // retry
-				}
-				return utils.CheckThrottling(httpResp, err)
-			}
-			return nil
-		})
+		_, err = client.CreateLoadBalancerTags(ctx,
+			osc.CreateLoadBalancerTagsRequest{
+				LoadBalancerNames: []string{d.Id()},
+				Tags:              create,
+			}, options.WithRetryTimeout(timeout))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 
 	skip_create:
@@ -653,74 +604,51 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 		inter := oldListeners.(*schema.Set).Intersection(newListeners.(*schema.Set))
 		lCreate := newListeners.(*schema.Set).Difference(inter)
 		lRemoved := oldListeners.(*schema.Set).Difference(inter)
-		var toRemove []*oscgo.Listener
-		var toCreate []oscgo.ListenerForCreation
+		var toRemove []*osc.Listener
+		var toCreate []osc.ListenerForCreation
 		var err error
 
 		if lRemoved.Len() > 0 {
 			toRemove, err = expandListeners(lRemoved.List())
 			if err != nil {
-				return err
+				return diag.FromErr(err)
 			}
 		}
 		if lCreate.Len() > 0 {
 			toCreate, err = expandListenerForCreation(lCreate.List())
 			if err != nil {
-				return err
+				return diag.FromErr(err)
 			}
 		}
 		if len(toRemove) > 0 {
-			ports := make([]int32, 0, len(toRemove))
+			ports := make([]int, 0, len(toRemove))
 			for _, listener := range toRemove {
-				ports = append(ports, *listener.LoadBalancerPort)
+				ports = append(ports, listener.LoadBalancerPort)
 			}
 
-			req := oscgo.DeleteLoadBalancerListenersRequest{
+			req := osc.DeleteLoadBalancerListenersRequest{
 				LoadBalancerName:  d.Id(),
 				LoadBalancerPorts: ports,
 			}
 
 			log.Printf("[DEBUG] Load Balancer Delete Listeners")
-			err = retry.Retry(timeout, func() *retry.RetryError {
-				_, httpResp, err := conn.ListenerApi.DeleteLoadBalancerListeners(
-					context.Background()).
-					DeleteLoadBalancerListenersRequest(req).
-					Execute()
-				if err != nil {
-					return utils.CheckThrottling(httpResp, err)
-				}
-				return nil
-			})
+			_, err := client.DeleteLoadBalancerListeners(ctx, req, options.WithRetryTimeout(timeout))
 			if err != nil {
-				return fmt.Errorf("failure removing outdated load balancer listeners: %w", err)
+				return diag.Errorf("failure removing outdated load balancer listeners: %v", err)
 			}
 		}
 
 		if len(toCreate) > 0 {
-			req := oscgo.CreateLoadBalancerListenersRequest{
+			req := osc.CreateLoadBalancerListenersRequest{
 				LoadBalancerName: d.Id(),
 				Listeners:        toCreate,
 			}
 
 			// Occasionally AWS will error with a 'duplicate listener', without any
 			// other listeners on the Load Balancer. Retry here to eliminate that.
-			err = retry.Retry(timeout, func() *retry.RetryError {
-				_, httpResp, err := conn.ListenerApi.CreateLoadBalancerListeners(
-					context.Background()).CreateLoadBalancerListenersRequest(req).Execute()
-				if err != nil {
-					if strings.Contains(err.Error(), "DuplicateListener") {
-						return retry.RetryableError(err)
-					}
-					if strings.Contains(err.Error(), "NoSuchCertificate") {
-						return retry.RetryableError(err)
-					}
-					return utils.CheckThrottling(httpResp, err)
-				}
-				// Successful creation
-				return nil
-			})
+			_, err := client.CreateLoadBalancerListeners(ctx, req, options.WithRetryTimeout(timeout))
 			if err != nil {
-				return fmt.Errorf("failure adding new or updated load balancer listeners: %w", err)
+				return diag.Errorf("failure adding new or updated load balancer listeners: %v", err)
 			}
 		}
 	}
@@ -729,15 +657,15 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 		hc := d.Get("health_check").([]interface{})
 		if len(hc) > 0 {
 			check := hc[0].(map[string]interface{})
-			req := oscgo.UpdateLoadBalancerRequest{
+			req := osc.UpdateLoadBalancerRequest{
 				LoadBalancerName: d.Id(),
-				HealthCheck: &oscgo.HealthCheck{
-					HealthyThreshold:   check["healthy_threshold"].(int32),
-					UnhealthyThreshold: check["unhealthy_threshold"].(int32),
-					CheckInterval:      check["check_interval"].(int32),
+				HealthCheck: &osc.HealthCheck{
+					HealthyThreshold:   check["healthy_threshold"].(int),
+					UnhealthyThreshold: check["unhealthy_threshold"].(int),
+					CheckInterval:      check["check_interval"].(int),
 					Protocol:           check["protocol"].(string),
-					Port:               check["port"].(int32),
-					Timeout:            check["timeout"].(int32),
+					Port:               check["port"].(int),
+					Timeout:            check["timeout"].(int),
 				},
 			}
 			if check["path"] != nil {
@@ -745,17 +673,11 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 				req.HealthCheck.Path = &p
 			}
 
-			err = retry.Retry(timeout, func() *retry.RetryError {
-				_, httpResp, err := conn.LoadBalancerApi.UpdateLoadBalancer(
-					context.Background()).UpdateLoadBalancerRequest(req).
-					Execute()
-				if err != nil {
-					return utils.CheckThrottling(httpResp, err)
-				}
-				return nil
-			})
+			err := oapihelpers.RetryOnCodes(ctx, []string{"6031"}, func() (resp any, err error) {
+				return client.UpdateLoadBalancer(ctx, req, options.WithRetryTimeout(timeout))
+			}, timeout)
 			if err != nil {
-				return fmt.Errorf("failure configuring health check for load balancer: %w", err)
+				return diag.Errorf("failure configuring health check for load balancer: %v", err)
 			}
 		}
 	}
@@ -768,91 +690,71 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 			isEnabled := aclg["is_enabled"].(bool)
 			osuBucketName := aclg["osu_bucket_name"].(string)
 			osuBucketPrefix := aclg["osu_bucket_prefix"].(string)
-			publicationInterval := int32(aclg["publication_interval"].(int))
-			req := oscgo.UpdateLoadBalancerRequest{
+			publicationInterval := aclg["publication_interval"].(int)
+			req := osc.UpdateLoadBalancerRequest{
 				LoadBalancerName: d.Id(),
-				AccessLog: &oscgo.AccessLog{
-					IsEnabled:           &isEnabled,
+				AccessLog: &osc.AccessLog{
+					IsEnabled:           isEnabled,
 					OsuBucketName:       &osuBucketName,
 					OsuBucketPrefix:     &osuBucketPrefix,
 					PublicationInterval: &publicationInterval,
 				},
 			}
 
-			err = retry.Retry(timeout, func() *retry.RetryError {
-				_, httpResp, err := conn.LoadBalancerApi.UpdateLoadBalancer(
-					context.Background()).UpdateLoadBalancerRequest(req).Execute()
-				if err != nil {
-					return utils.CheckThrottling(httpResp, err)
-				}
-				return nil
-			})
+			err := oapihelpers.RetryOnCodes(ctx, []string{"6031"}, func() (resp any, err error) {
+				return client.UpdateLoadBalancer(ctx, req, options.WithRetryTimeout(timeout))
+			}, timeout)
 			if err != nil {
-				return fmt.Errorf("failure configuring access log for load balancer: %w", err)
+				return diag.Errorf("failure configuring access log for load balancer: %v", err)
 			}
 		}
 	}
 
 	if d.HasChange("secured_cookies") {
-		req := oscgo.UpdateLoadBalancerRequest{
+		req := osc.UpdateLoadBalancerRequest{
 			LoadBalancerName: d.Id(),
 		}
-		req.SetSecuredCookies(d.Get("secured_cookies").(bool))
+		req.SecuredCookies = new(d.Get("secured_cookies").(bool))
 
-		err = retry.Retry(timeout, func() *retry.RetryError {
-			_, httpResp, err := conn.LoadBalancerApi.UpdateLoadBalancer(
-				context.Background()).UpdateLoadBalancerRequest(req).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			return nil
-		})
+		_, err := client.UpdateLoadBalancer(ctx, req, options.WithRetryTimeout(timeout))
 		if err != nil {
-			return fmt.Errorf("failure updating secruedcookies: %w", err)
+			return diag.Errorf("failure updating secruedcookies: %v", err)
 		}
 	}
 
-	return ResourceOutscaleLoadBalancerRead(d, meta)
+	return ResourceOutscaleLoadBalancerRead(ctx, d, meta)
 }
 
-func ResourceOutscaleLoadBalancerDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleLoadBalancerDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 	timeout := d.Timeout(schema.TimeoutDelete)
 
 	log.Printf("[INFO] Deleting Load Balancer: %s", d.Id())
 
 	// Destroy the load balancer
-	req := oscgo.DeleteLoadBalancerRequest{
+	req := osc.DeleteLoadBalancerRequest{
 		LoadBalancerName: d.Id(),
 	}
 
-	err := retry.Retry(timeout, func() *retry.RetryError {
-		_, httpResp, err := conn.LoadBalancerApi.DeleteLoadBalancer(
-			context.Background()).DeleteLoadBalancerRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	_, err := client.DeleteLoadBalancer(ctx, req, options.WithRetryTimeout(timeout))
 	if err != nil {
-		return fmt.Errorf("error deleting load balancer: %w", err)
+		return diag.Errorf("error deleting load balancer: %v", err)
 	}
 
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{"ready"},
 		Target:  []string{},
+		Timeout: timeout,
 		Refresh: func() (interface{}, string, error) {
-			lb, _, _ := readResourceLb(conn, d.Id(), timeout)
+			lb, _, _ := readResourceLb(ctx, client, d.Id(), timeout)
 			if lb == nil {
 				return nil, "", nil
 			}
 			return lb, "ready", nil
 		},
-		Timeout:    timeout,
-		MinTimeout: 10 * time.Second,
 	}
-	if _, err := stateConf.WaitForState(); err != nil {
-		return fmt.Errorf("error waiting for load balancer (%s) to become null: %w", d.Id(), err)
+	if _, err := stateConf.WaitForStateContext(ctx); err != nil {
+		return diag.Errorf("error waiting for load balancer (%s) to become null: %v", d.Id(), err)
 	}
 
 	// Remove this when bug will be fix
@@ -863,30 +765,30 @@ func ResourceOutscaleLoadBalancerDelete(d *schema.ResourceData, meta interface{}
 	return nil
 }
 
-func flattenOAPIHealthCheck(check *oscgo.HealthCheck) []map[string]interface{} {
+func flattenOAPIHealthCheck(check *osc.HealthCheck) []map[string]interface{} {
 	return []map[string]interface{}{{
-		"healthy_threshold":   check.GetHealthyThreshold(),
-		"unhealthy_threshold": check.GetUnhealthyThreshold(),
-		"path":                check.GetPath(),
-		"check_interval":      check.GetCheckInterval(),
-		"port":                check.GetPort(),
-		"protocol":            check.GetProtocol(),
-		"timeout":             check.GetTimeout(),
+		"healthy_threshold":   check.HealthyThreshold,
+		"unhealthy_threshold": check.UnhealthyThreshold,
+		"path":                check.Path,
+		"check_interval":      check.CheckInterval,
+		"port":                check.Port,
+		"protocol":            check.Protocol,
+		"timeout":             check.Timeout,
 	}}
 }
 
-func flattenOAPIAccessLog(aclog *oscgo.AccessLog) []map[string]interface{} {
+func flattenOAPIAccessLog(aclog *osc.AccessLog) []map[string]interface{} {
 	return []map[string]interface{}{{
-		"is_enabled":           aclog.GetIsEnabled(),
-		"osu_bucket_name":      aclog.GetOsuBucketName(),
-		"osu_bucket_prefix":    aclog.GetOsuBucketPrefix(),
-		"publication_interval": aclog.GetPublicationInterval(),
+		"is_enabled":           aclog.IsEnabled,
+		"osu_bucket_name":      aclog.OsuBucketName,
+		"osu_bucket_prefix":    aclog.OsuBucketPrefix,
+		"publication_interval": aclog.PublicationInterval,
 	}}
 }
 
-func flattenSource_sg(ssg *oscgo.SourceSecurityGroup) []map[string]interface{} {
+func flattenSource_sg(ssg *osc.SourceSecurityGroup) []map[string]interface{} {
 	return []map[string]interface{}{{
-		"security_group_name":       ssg.GetSecurityGroupName(),
-		"security_group_account_id": ssg.GetSecurityGroupAccountId(),
+		"security_group_name":       ssg.SecurityGroupName,
+		"security_group_account_id": ssg.SecurityGroupAccountId,
 	}}
 }

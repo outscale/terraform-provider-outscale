@@ -4,18 +4,19 @@ import (
 	"context"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceOutscaleTag() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleTagRead,
+		ReadContext: DataSourceOutscaleTagRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"key": {
@@ -38,11 +39,11 @@ func DataSourceOutscaleTag() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleTagRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleTagRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	// Build up search parameters
-	params := oscgo.ReadTagsRequest{}
+	params := osc.ReadTagsRequest{}
 
 	filters, filtersOk := d.GetOk("filter")
 
@@ -50,55 +51,46 @@ func DataSourceOutscaleTagRead(d *schema.ResourceData, meta interface{}) error {
 	if filtersOk {
 		params.Filters, err = oapiBuildOutscaleDataSourceFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	var resp oscgo.ReadTagsResponse
-	err = retry.Retry(60*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.TagApi.ReadTags(context.Background()).ReadTagsRequest(params).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
-
+	resp, err := client.ReadTags(ctx, params, options.WithRetryTimeout(60*time.Second))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	if len(resp.GetTags()) < 1 {
-		return ErrNoResults
+	if resp.Tags == nil || len(*resp.Tags) < 1 {
+		return diag.FromErr(ErrNoResults)
 	}
 
-	if len(resp.GetTags()) > 1 {
-		return ErrMultipleResults
+	if len(*resp.Tags) > 1 {
+		return diag.FromErr(ErrMultipleResults)
 	}
 
-	tag := resp.GetTags()[0]
+	tag := (*resp.Tags)[0]
 
-	if err := d.Set("key", tag.GetKey()); err != nil {
-		return err
+	if err := d.Set("key", tag.Key); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("value", tag.GetValue()); err != nil {
-		return err
+	if err := d.Set("value", tag.Value); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("resource_id", tag.GetResourceId()); err != nil {
-		return err
+	if err := d.Set("resource_id", tag.ResourceId); err != nil {
+		return diag.FromErr(err)
 	}
 
-	if err := d.Set("resource_type", tag.GetResourceType()); err != nil {
-		return err
+	if err := d.Set("resource_type", tag.ResourceType); err != nil {
+		return diag.FromErr(err)
 	}
 
 	d.SetId(id.UniqueId())
 
-	return err
+	return diag.FromErr(err)
 }
 
-func oapiBuildOutscaleDataSourceFilters(set *schema.Set) (*oscgo.FiltersTag, error) {
-	filters := oscgo.FiltersTag{}
+func oapiBuildOutscaleDataSourceFilters(set *schema.Set) (*osc.FiltersTag, error) {
+	filters := osc.FiltersTag{}
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -109,15 +101,15 @@ func oapiBuildOutscaleDataSourceFilters(set *schema.Set) (*oscgo.FiltersTag, err
 
 		switch name := m["name"].(string); name {
 		case "keys":
-			filters.SetKeys(filterValues)
+			filters.Keys = &filterValues
 		case "resource_ids":
-			filters.SetResourceIds(filterValues)
+			filters.ResourceIds = &filterValues
 		case "resource_types":
-			filters.SetResourceTypes(filterValues)
+			filters.ResourceTypes = &filterValues
 		case "values":
-			filters.SetValues(filterValues)
+			filters.Values = &filterValues
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(name)
 		}
 	}
 

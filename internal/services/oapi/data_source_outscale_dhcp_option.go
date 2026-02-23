@@ -2,12 +2,13 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 	"github.com/spf13/cast"
@@ -15,7 +16,7 @@ import (
 
 func DataSourceOutscaleDHCPOption() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleDHCPOptionRead,
+		ReadContext: DataSourceOutscaleDHCPOptionRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -61,81 +62,73 @@ func DataSourceOutscaleDHCPOption() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleDHCPOptionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 	dhcpID, dhcpIDOk := d.GetOk("dhcp_options_set_id")
 	if !dhcpIDOk && !filtersOk {
-		return fmt.Errorf("one of filters, or dhcp_options_set_id must be provided")
+		return diag.Errorf("one of filters, or dhcp_options_set_id must be provided")
 	}
 
-	params := oscgo.ReadDhcpOptionsRequest{}
+	params := osc.ReadDhcpOptionsRequest{}
 	if dhcpIDOk {
-		params.Filters = &oscgo.FiltersDhcpOptions{
+		params.Filters = &osc.FiltersDhcpOptions{
 			DhcpOptionsSetIds: &[]string{dhcpID.(string)},
 		}
 	}
 	if filtersOk {
 		filterParams, err := buildOutscaleDataSourceDHCPOptionFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		params.Filters = filterParams
 	}
 
-	var resp oscgo.ReadDhcpOptionsResponse
-	err := retry.Retry(120*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.DhcpOptionApi.ReadDhcpOptions(context.Background()).ReadDhcpOptionsRequest(params).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadDhcpOptions(ctx, params, options.WithRetryTimeout(120*time.Second))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	if len(resp.GetDhcpOptionsSets()) == 0 {
-		return ErrNoResults
+	if resp.DhcpOptionsSets == nil || len(*resp.DhcpOptionsSets) == 0 {
+		return diag.FromErr(ErrNoResults)
 	}
 
-	if len(resp.GetDhcpOptionsSets()) > 1 {
-		return ErrMultipleResults
+	if len(*resp.DhcpOptionsSets) > 1 {
+		return diag.FromErr(ErrMultipleResults)
 	}
 
-	dhcpOption := resp.GetDhcpOptionsSets()[0]
+	dhcpOption := (*resp.DhcpOptionsSets)[0]
 
-	if err := d.Set("domain_name", dhcpOption.GetDomainName()); err != nil {
-		return err
+	if err := d.Set("domain_name", ptr.From(dhcpOption.DomainName)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("domain_name_servers", dhcpOption.GetDomainNameServers()); err != nil {
-		return err
+	if err := d.Set("domain_name_servers", ptr.From(dhcpOption.DomainNameServers)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("log_servers", dhcpOption.GetLogServers()); err != nil {
-		return err
+	if err := d.Set("log_servers", ptr.From(dhcpOption.LogServers)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("ntp_servers", dhcpOption.GetNtpServers()); err != nil {
-		return err
+	if err := d.Set("ntp_servers", ptr.From(dhcpOption.NtpServers)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("default", dhcpOption.GetDefault()); err != nil {
-		return err
+	if err := d.Set("default", ptr.From(dhcpOption.Default)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("dhcp_options_set_id", dhcpOption.GetDhcpOptionsSetId()); err != nil {
-		return err
+	if err := d.Set("dhcp_options_set_id", ptr.From(dhcpOption.DhcpOptionsSetId)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("tags", FlattenOAPITagsSDK(dhcpOption.GetTags())); err != nil {
-		return err
+	if err := d.Set("tags", FlattenOAPITagsSDK(ptr.From(dhcpOption.Tags))); err != nil {
+		return diag.FromErr(err)
 	}
 
-	d.SetId(dhcpOption.GetDhcpOptionsSetId())
+	d.SetId(ptr.From(dhcpOption.DhcpOptionsSetId))
 
 	return nil
 }
 
-func buildOutscaleDataSourceDHCPOptionFilters(set *schema.Set) (*oscgo.FiltersDhcpOptions, error) {
-	var filters oscgo.FiltersDhcpOptions
+func buildOutscaleDataSourceDHCPOptionFilters(set *schema.Set) (*osc.FiltersDhcpOptions, error) {
+	var filters osc.FiltersDhcpOptions
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -145,27 +138,27 @@ func buildOutscaleDataSourceDHCPOptionFilters(set *schema.Set) (*oscgo.FiltersDh
 
 		switch name := m["name"].(string); name {
 		case "dhcp_options_set_ids":
-			filters.SetDhcpOptionsSetIds(filterValues)
+			filters.DhcpOptionsSetIds = &filterValues
 		case "dhcp_options_set_id":
-			filters.SetDhcpOptionsSetIds(filterValues)
+			filters.DhcpOptionsSetIds = &filterValues
 		case "domain_name_servers":
-			filters.SetDomainNameServers(filterValues)
+			filters.DomainNameServers = &filterValues
 		case "domain_names":
-			filters.SetDomainNames(filterValues)
+			filters.DomainNames = &filterValues
 		case "log_servers":
-			filters.SetLogServers(filterValues)
+			filters.LogServers = &filterValues
 		case "ntp_servers":
-			filters.SetNtpServers(filterValues)
+			filters.NtpServers = &filterValues
 		case "tag_keys":
-			filters.SetTagKeys(filterValues)
+			filters.TagKeys = &filterValues
 		case "tag_values":
-			filters.SetTagValues(filterValues)
+			filters.TagValues = &filterValues
 		case "tags":
-			filters.SetTags(filterValues)
+			filters.Tags = &filterValues
 		case "default":
-			filters.SetDefault(cast.ToBool(filterValues[0]))
+			filters.Default = new(cast.ToBool(filterValues[0]))
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(name)
 		}
 	}
 	return &filters, nil

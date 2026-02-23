@@ -2,20 +2,20 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 func DataSourceOutscaleVirtualGateways() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleVirtualGatewaysRead,
+		ReadContext: DataSourceOutscaleVirtualGatewaysRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -70,59 +70,51 @@ func DataSourceOutscaleVirtualGateways() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleVirtualGatewaysRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleVirtualGatewaysRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	filter, filtersOk := d.GetOk("filter")
 	_, vpnOk := d.GetOk("virtual_gateway_id")
 
 	if !filtersOk && !vpnOk {
-		return fmt.Errorf("one of virtual_gateway_id or filter must be assigned")
+		return diag.Errorf("one of virtual_gateway_id or filter must be assigned")
 	}
 
 	var err error
-	params := oscgo.ReadVirtualGatewaysRequest{}
+	params := osc.ReadVirtualGatewaysRequest{}
 	if filtersOk {
 		params.Filters, err = buildOutscaleAPIVirtualGatewayFilters(filter.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	var resp oscgo.ReadVirtualGatewaysResponse
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(params).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadVirtualGateways(ctx, params, options.WithRetryTimeout(5*time.Minute))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	if resp.GetVirtualGateways() == nil || len(resp.GetVirtualGateways()) == 0 {
-		return ErrNoResults
+	if resp.VirtualGateways == nil || len(*resp.VirtualGateways) == 0 {
+		return diag.FromErr(ErrNoResults)
 	}
 
-	vpns := make([]map[string]interface{}, len(resp.GetVirtualGateways()))
+	vpns := make([]map[string]interface{}, len(*resp.VirtualGateways))
 
-	for k, v := range resp.GetVirtualGateways() {
+	for k, v := range *resp.VirtualGateways {
 		vpn := make(map[string]interface{})
-		vs := make([]map[string]interface{}, len(v.GetNetToVirtualGatewayLinks()))
+		vs := make([]map[string]interface{}, len(ptr.From(v.NetToVirtualGatewayLinks)))
 
-		for k, v1 := range v.GetNetToVirtualGatewayLinks() {
+		for k, v1 := range ptr.From(v.NetToVirtualGatewayLinks) {
 			vp := make(map[string]interface{})
-			vp["state"] = v1.GetState()
-			vp["net_id"] = v1.GetNetId()
+			vp["state"] = v1.State
+			vp["net_id"] = v1.NetId
 
 			vs[k] = vp
 		}
 		vpn["net_to_virtual_gateway_links"] = vs
-		vpn["state"] = v.GetState()
-		vpn["connection_type"] = v.GetConnectionType()
-		vpn["virtual_gateway_id"] = v.GetVirtualGatewayId()
-		vpn["tags"] = FlattenOAPITagsSDK(v.GetTags())
+		vpn["state"] = v.State
+		vpn["connection_type"] = v.ConnectionType
+		vpn["virtual_gateway_id"] = v.VirtualGatewayId
+		vpn["tags"] = FlattenOAPITagsSDK(ptr.From(v.Tags))
 
 		vpns[k] = vpn
 	}

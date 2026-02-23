@@ -2,23 +2,23 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 	"github.com/spf13/cast"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceOutscaleRouteTable() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleRouteTableRead,
+		ReadContext: DataSourceOutscaleRouteTableRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -132,45 +132,45 @@ func DataSourceOutscaleRouteTable() *schema.Resource {
 	}
 }
 
-func setOSCAPIRoutes(rt []oscgo.Route) []map[string]interface{} {
+func setOSCAPIRoutes(rt []osc.Route) []map[string]interface{} {
 	route := make([]map[string]interface{}, len(rt))
 	if len(rt) > 0 {
 		for k, r := range rt {
 			m := make(map[string]interface{})
 
-			if r.GetNatServiceId() != "" {
-				m["nat_service_id"] = r.GetNatServiceId()
+			if ptr.From(r.NatServiceId) != "" {
+				m["nat_service_id"] = r.NatServiceId
 			}
 
-			if r.GetCreationMethod() != "" {
-				m["creation_method"] = r.GetCreationMethod()
+			if r.CreationMethod != "" {
+				m["creation_method"] = r.CreationMethod
 			}
-			if r.GetDestinationIpRange() != "" {
-				m["destination_ip_range"] = r.GetDestinationIpRange()
+			if r.DestinationIpRange != "" {
+				m["destination_ip_range"] = r.DestinationIpRange
 			}
-			if r.GetDestinationServiceId() != "" {
-				m["destination_service_id"] = r.GetDestinationServiceId()
+			if ptr.From(r.DestinationServiceId) != "" {
+				m["destination_service_id"] = r.DestinationServiceId
 			}
-			if r.GetGatewayId() != "" {
-				m["gateway_id"] = r.GetGatewayId()
+			if ptr.From(r.GatewayId) != "" {
+				m["gateway_id"] = r.GatewayId
 			}
-			if r.GetNetAccessPointId() != "" {
-				m["net_access_point_id"] = r.GetNetAccessPointId()
+			if ptr.From(r.NetAccessPointId) != "" {
+				m["net_access_point_id"] = r.NetAccessPointId
 			}
-			if r.GetNetPeeringId() != "" {
-				m["net_peering_id"] = r.GetNetPeeringId()
+			if ptr.From(r.NetPeeringId) != "" {
+				m["net_peering_id"] = r.NetPeeringId
 			}
-			if r.GetVmId() != "" {
-				m["vm_id"] = r.GetVmId()
+			if ptr.From(r.VmId) != "" {
+				m["vm_id"] = r.VmId
 			}
-			if r.GetNicId() != "" {
-				m["nic_id"] = r.GetNicId()
+			if ptr.From(r.NicId) != "" {
+				m["nic_id"] = r.NicId
 			}
-			if r.GetState() != "" {
-				m["state"] = r.GetState()
+			if r.State != "" {
+				m["state"] = r.State
 			}
-			if r.GetVmAccountId() != "" {
-				m["vm_account_id"] = r.GetVmAccountId()
+			if ptr.From(r.VmAccountId) != "" {
+				m["vm_account_id"] = r.VmAccountId
 			}
 			route[k] = m
 		}
@@ -179,23 +179,23 @@ func setOSCAPIRoutes(rt []oscgo.Route) []map[string]interface{} {
 	return route
 }
 
-func setOSCAPILinkRouteTables(rt []oscgo.LinkRouteTable) []map[string]interface{} {
+func setOSCAPILinkRouteTables(rt []osc.LinkRouteTable) []map[string]interface{} {
 	linkRouteTables := make([]map[string]interface{}, len(rt))
 	log.Printf("[DEBUG] LinkRouteTable: %#v", rt)
 	if len(rt) > 0 {
 		for k, r := range rt {
 			m := make(map[string]interface{})
-			if r.GetMain() {
-				m["main"] = r.GetMain()
+			if r.Main {
+				m["main"] = r.Main
 			}
-			if r.GetRouteTableId() != "" {
-				m["route_table_id"] = r.GetRouteTableId()
+			if r.RouteTableId != "" {
+				m["route_table_id"] = r.RouteTableId
 			}
-			if r.GetLinkRouteTableId() != "" {
-				m["link_route_table_id"] = r.GetLinkRouteTableId()
+			if r.LinkRouteTableId != "" {
+				m["link_route_table_id"] = r.LinkRouteTableId
 			}
-			if r.GetSubnetId() != "" {
-				m["subnet_id"] = r.GetSubnetId()
+			if r.SubnetId != "" {
+				m["subnet_id"] = r.SubnetId
 			}
 			linkRouteTables[k] = m
 		}
@@ -204,14 +204,14 @@ func setOSCAPILinkRouteTables(rt []oscgo.LinkRouteTable) []map[string]interface{
 	return linkRouteTables
 }
 
-func setOSCAPIPropagatingVirtualGateways(vg []oscgo.RoutePropagatingVirtualGateway) (propagatingVGWs []map[string]interface{}) {
+func setOSCAPIPropagatingVirtualGateways(vg []osc.RoutePropagatingVirtualGateway) (propagatingVGWs []map[string]interface{}) {
 	propagatingVGWs = make([]map[string]interface{}, len(vg))
 
 	if len(vg) > 0 {
 		for k, vgw := range vg {
 			m := make(map[string]interface{})
-			if vgw.GetVirtualGatewayId() != "" {
-				m["virtual_gateway_id"] = vgw.GetVirtualGatewayId()
+			if ptr.From(vgw.VirtualGatewayId) != "" {
+				m["virtual_gateway_id"] = vgw.VirtualGatewayId
 			}
 			propagatingVGWs[k] = m
 		}
@@ -219,18 +219,19 @@ func setOSCAPIPropagatingVirtualGateways(vg []oscgo.RoutePropagatingVirtualGatew
 	return propagatingVGWs
 }
 
-func DataSourceOutscaleRouteTableRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleRouteTableRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
 	routeTableID, routeTableIDOk := d.GetOk("route_table_id")
 	filter, filterOk := d.GetOk("filter")
 
 	if !filterOk && !routeTableIDOk {
-		return fmt.Errorf("one of route_table_id or filters must be assigned")
+		return diag.Errorf("one of route_table_id or filters must be assigned")
 	}
 
-	params := oscgo.ReadRouteTablesRequest{}
+	params := osc.ReadRouteTablesRequest{}
 	if routeTableIDOk {
-		params.Filters = &oscgo.FiltersRouteTable{
+		params.Filters = &osc.FiltersRouteTable{
 			RouteTableIds: &[]string{routeTableID.(string)},
 		}
 	}
@@ -239,55 +240,47 @@ func DataSourceOutscaleRouteTableRead(d *schema.ResourceData, meta interface{}) 
 	if filterOk {
 		params.Filters, err = buildOutscaleDataSourceRouteTableFilters(filter.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	var resp oscgo.ReadRouteTablesResponse
-	err = retry.Retry(60*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(params).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadRouteTables(ctx, params, options.WithRetryTimeout(60*time.Second))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	numRouteTables := len(resp.GetRouteTables())
+	numRouteTables := len(ptr.From(resp.RouteTables))
 	if numRouteTables == 0 {
-		return ErrNoResults
+		return diag.FromErr(ErrNoResults)
 	}
 	if numRouteTables > 1 {
-		return ErrMultipleResults
+		return diag.FromErr(ErrMultipleResults)
 	}
 
-	rt := resp.GetRouteTables()[0]
-	if err := d.Set("route_propagating_virtual_gateways", setOSCAPIPropagatingVirtualGateways(rt.GetRoutePropagatingVirtualGateways())); err != nil {
-		return err
+	rt := ptr.From(resp.RouteTables)[0]
+	if err := d.Set("route_propagating_virtual_gateways", setOSCAPIPropagatingVirtualGateways(rt.RoutePropagatingVirtualGateways)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("route_table_id", rt.GetRouteTableId()); err != nil {
-		return err
+	if err := d.Set("route_table_id", rt.RouteTableId); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("net_id", rt.GetNetId()); err != nil {
-		return err
+	if err := d.Set("net_id", rt.NetId); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("tags", FlattenOAPITagsSDK(rt.GetTags())); err != nil {
-		return err
+	if err := d.Set("tags", FlattenOAPITagsSDK(rt.Tags)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("routes", setOSCAPIRoutes(rt.GetRoutes())); err != nil {
-		return err
+	if err := d.Set("routes", setOSCAPIRoutes(rt.Routes)); err != nil {
+		return diag.FromErr(err)
 	}
 
-	d.SetId(rt.GetRouteTableId())
+	d.SetId(rt.RouteTableId)
 
-	return d.Set("link_route_tables", setOSCAPILinkRouteTables(rt.GetLinkRouteTables()))
+	return diag.FromErr(d.Set("link_route_tables", setOSCAPILinkRouteTables(rt.LinkRouteTables)))
 }
 
-func buildOutscaleDataSourceRouteTableFilters(set *schema.Set) (*oscgo.FiltersRouteTable, error) {
-	var filters oscgo.FiltersRouteTable
+func buildOutscaleDataSourceRouteTableFilters(set *schema.Set) (*osc.FiltersRouteTable, error) {
+	var filters osc.FiltersRouteTable
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -296,41 +289,41 @@ func buildOutscaleDataSourceRouteTableFilters(set *schema.Set) (*oscgo.FiltersRo
 		}
 		switch name := m["name"].(string); name {
 		case "route_table_ids":
-			filters.SetRouteTableIds(filterValues)
+			filters.RouteTableIds = &filterValues
 		case "link_route_table_link_route_table_ids":
-			filters.SetLinkRouteTableLinkRouteTableIds(filterValues)
+			filters.LinkRouteTableLinkRouteTableIds = &filterValues
 		case "tag_keys":
-			filters.SetTagKeys(filterValues)
+			filters.TagKeys = &filterValues
 		case "tag_values":
-			filters.SetTagValues(filterValues)
+			filters.TagValues = &filterValues
 		case "tags":
-			filters.SetTags(filterValues)
+			filters.Tags = &filterValues
 		case "link_route_table_ids":
-			filters.SetLinkRouteTableIds(filterValues)
+			filters.LinkRouteTableIds = &filterValues
 		case "link_route_table_main":
-			filters.SetLinkRouteTableMain(cast.ToBool(filterValues[0]))
+			filters.LinkRouteTableMain = new(cast.ToBool(filterValues[0]))
 		case "link_subnet_ids":
-			filters.SetLinkSubnetIds(filterValues)
+			filters.LinkSubnetIds = &filterValues
 		case "net_ids":
-			filters.SetNetIds(filterValues)
+			filters.NetIds = &filterValues
 		case "route_creation_methods":
-			filters.SetRouteCreationMethods(filterValues)
+			filters.RouteCreationMethods = &filterValues
 		case "route_destination_ip_ranges":
-			filters.SetRouteDestinationIpRanges(filterValues)
+			filters.RouteDestinationIpRanges = &filterValues
 		case "route_destination_service_ids":
-			filters.SetRouteDestinationServiceIds(filterValues)
+			filters.RouteDestinationServiceIds = &filterValues
 		case "route_gateway_ids":
-			filters.SetRouteGatewayIds(filterValues)
+			filters.RouteGatewayIds = &filterValues
 		case "route_nat_service_ids":
-			filters.SetRouteNatServiceIds(filterValues)
+			filters.RouteNatServiceIds = &filterValues
 		case "route_net_peering_ids":
-			filters.SetRouteNetPeeringIds(filterValues)
+			filters.RouteNetPeeringIds = &filterValues
 		case "route_states":
-			filters.SetRouteStates(filterValues)
+			filters.RouteStates = &filterValues
 		case "route_vm_ids":
-			filters.SetRouteVmIds(filterValues)
+			filters.RouteVmIds = &filterValues
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(name)
 		}
 	}
 	return &filters, nil

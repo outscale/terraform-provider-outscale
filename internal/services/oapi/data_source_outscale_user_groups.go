@@ -2,20 +2,22 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 func DataSourceUserGroups() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceUserGroupsRead,
+		ReadContext: DataSourceUserGroupsRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"user_groups": {
@@ -54,54 +56,47 @@ func DataSourceUserGroups() *schema.Resource {
 	}
 }
 
-func DataSourceUserGroupsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
-	req := oscgo.ReadUserGroupsRequest{}
+func DataSourceUserGroupsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
+	req := osc.ReadUserGroupsRequest{}
 
 	var err error
 	filters, filtersOk := d.GetOk("filter")
 	if filtersOk {
 		req.Filters, err = buildUserGroupsFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	var resp oscgo.ReadUserGroupsResponse
-	err = retry.Retry(2*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.UserGroupApi.ReadUserGroups(context.Background()).ReadUserGroupsRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadUserGroups(ctx, req, options.WithRetryTimeout(2*time.Minute))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	if _, ok := resp.GetUserGroupsOk(); !ok {
-		return fmt.Errorf("unable to find user groups")
+	if resp.UserGroups == nil {
+		return diag.Errorf("unable to find user groups")
 	}
 	d.SetId(id.UniqueId())
-	userGps := resp.GetUserGroups()
+	userGps := ptr.From(resp.UserGroups)
 	userGroups := make([]map[string]interface{}, len(userGps))
 
 	for i, v := range userGps {
 		userGroup := make(map[string]interface{})
-		userGroup["user_group_name"] = v.GetName()
-		userGroup["user_group_id"] = v.GetUserGroupId()
-		userGroup["path"] = v.GetPath()
-		userGroup["orn"] = v.GetOrn()
-		userGroup["creation_date"] = v.GetCreationDate()
-		userGroup["last_modification_date"] = v.GetLastModificationDate()
+		userGroup["user_group_name"] = v.Name
+		userGroup["user_group_id"] = v.UserGroupId
+		userGroup["path"] = v.Path
+		userGroup["orn"] = v.Orn
+		userGroup["creation_date"] = from.ISO8601(v.CreationDate)
+		userGroup["last_modification_date"] = from.ISO8601(v.LastModificationDate)
 		userGroups[i] = userGroup
 	}
-	return d.Set("user_groups", userGroups)
+	return diag.FromErr(d.Set("user_groups", userGroups))
 }
 
-func buildUserGroupsFilters(set *schema.Set) (*oscgo.FiltersUserGroup, error) {
-	var filters oscgo.FiltersUserGroup
+func buildUserGroupsFilters(set *schema.Set) (*osc.FiltersUserGroup, error) {
+	var filters osc.FiltersUserGroup
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -111,11 +106,11 @@ func buildUserGroupsFilters(set *schema.Set) (*oscgo.FiltersUserGroup, error) {
 
 		switch name := m["name"].(string); name {
 		case "path_prefix":
-			filters.SetPathPrefix(filterValues[0])
+			filters.PathPrefix = &filterValues[0]
 		case "user_group_ids":
-			filters.SetUserGroupIds(filterValues)
+			filters.UserGroupIds = &filterValues
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(name)
 		}
 	}
 	return &filters, nil

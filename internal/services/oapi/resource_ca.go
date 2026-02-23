@@ -13,12 +13,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	"github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
+
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 var (
@@ -38,7 +39,7 @@ type caModel struct {
 }
 
 type resoureCa struct {
-	Client *osc.APIClient
+	Client *osc.Client
 }
 
 func NewResourceCa() resource.Resource {
@@ -53,12 +54,12 @@ func (r *resoureCa) Configure(_ context.Context, req resource.ConfigureRequest, 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected *osc.APIClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *osc.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
 	}
-	r.Client = client.OSCAPI
+	r.Client = client.OSC
 }
 
 func (r *resoureCa) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
@@ -126,18 +127,10 @@ func (r *resoureCa) Create(ctx context.Context, req resource.CreateRequest, resp
 	}
 
 	if fwhelpers.IsSet(data.Description) {
-		createReq.SetDescription(data.Description.ValueString())
+		createReq.Description = data.Description.ValueStringPointer()
 	}
 
-	var createResp osc.CreateCaResponse
-	err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.CaApi.CreateCa(ctx).CreateCaRequest(createReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		createResp = rp
-		return nil
-	})
+	createResp, err := r.Client.CreateCa(ctx, createReq, options.WithRetryTimeout(createTimeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to create Ca",
@@ -145,7 +138,7 @@ func (r *resoureCa) Create(ctx context.Context, req resource.CreateRequest, resp
 		)
 		return
 	}
-	data.Id = to.String(createResp.GetCa().CaId)
+	data.Id = to.String(createResp.Ca.CaId)
 
 	stateData, err := r.read(ctx, createTimeout, data)
 	if err != nil {
@@ -201,16 +194,10 @@ func (r *resoureCa) Update(ctx context.Context, req resource.UpdateRequest, resp
 	}
 
 	if fwhelpers.HasChange(planData.Description, stateData.Description) {
-		updateReq.SetDescription(planData.Description.ValueString())
+		updateReq.Description = planData.Description.ValueStringPointer()
 	}
 
-	err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		_, httpResp, err := r.Client.CaApi.UpdateCa(ctx).UpdateCaRequest(updateReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	_, err := r.Client.UpdateCa(ctx, updateReq, options.WithRetryTimeout(timeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to update Ca",
@@ -247,13 +234,7 @@ func (r *resoureCa) Delete(ctx context.Context, req resource.DeleteRequest, resp
 		CaId: data.Id.ValueString(),
 	}
 
-	err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		_, httpResp, err := r.Client.CaApi.DeleteCa(ctx).DeleteCaRequest(deleteReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	_, err := r.Client.DeleteCa(ctx, deleteReq, options.WithRetryTimeout(timeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to delete Ca",
@@ -269,29 +250,21 @@ func (r *resoureCa) read(ctx context.Context, timeout time.Duration, data caMode
 		},
 	}
 
-	var resp osc.ReadCasResponse
-	err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.CaApi.ReadCas(ctx).ReadCasRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := r.Client.ReadCas(ctx, req, options.WithRetryTimeout(timeout))
 	if err != nil {
 		return data, err
 	}
-	if len(resp.GetCas()) == 0 {
+	if resp.Cas == nil || len(*resp.Cas) == 0 {
 		return data, ErrResourceEmpty
 	}
 
 	data.RequestId = to.String(resp.ResponseContext.RequestId)
-	ca := resp.GetCas()[0]
+	ca := (*resp.Cas)[0]
 
 	data.Id = to.String(ca.CaId)
-	data.CaFingerprint = to.String(ca.CaFingerprint)
+	data.CaFingerprint = to.String(ptr.From(ca.CaFingerprint))
 	data.CaId = to.String(ca.CaId)
-	data.Description = to.String(ca.Description)
+	data.Description = to.String(ptr.From(ca.Description))
 
 	return data, nil
 }

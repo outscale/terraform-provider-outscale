@@ -14,7 +14,6 @@ func TestAccOthers_UserGroup_Basic(t *testing.T) {
 	groupName := acctest.RandomWithPrefix("testacc-ug")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -36,7 +35,6 @@ func TestAccOthers_UserGroup_WithUser(t *testing.T) {
 	userName2 := acctest.RandomWithPrefix("testacc-user")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -62,7 +60,6 @@ func TestAccOthers_UserGroup_Update(t *testing.T) {
 	userName4 := acctest.RandomWithPrefix("testacc-user")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -94,7 +91,6 @@ func TestAccOthers_UserGroup_WithPolicy(t *testing.T) {
 	policyName := acctest.RandomWithPrefix("testacc-policy")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -114,8 +110,7 @@ func TestAccOthers_UserGroup_Migration(t *testing.T) {
 	groupName := acctest.RandomWithPrefix("testacc-ug")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { testacc.PreCheck(t) },
-		Steps:    testacc.FrameworkMigrationTestSteps("1.3.1", testAccUserGroupBasicConfig(groupName)),
+		Steps: testacc.FrameworkMigrationTestSteps("1.3.1", testAccUserGroupBasicConfig(groupName)),
 	})
 }
 

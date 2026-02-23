@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net/http"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
@@ -114,70 +114,61 @@ func ResourceOutscaleSnapshotExportTask() *schema.Resource {
 }
 
 func resourceOAPISnapshotExportTaskCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
+
 	timeout := d.Timeout(schema.TimeoutCreate)
 
 	eto, etoOk := d.GetOk("osu_export")
 	v, ok := d.GetOk("snapshot_id")
-	request := oscgo.CreateSnapshotExportTaskRequest{}
+	request := osc.CreateSnapshotExportTaskRequest{}
 
 	if !etoOk && !ok {
 		return diag.Errorf("please provide the required attributes osu_export and snapshot_id")
 	}
 
-	request.SetSnapshotId(v.(string))
+	request.SnapshotId = v.(string)
 
 	if etoOk {
 		exp := eto.([]interface{})
 		e := exp[0].(map[string]interface{})
 
-		et := oscgo.OsuExportToCreate{}
+		et := osc.OsuExportToCreate{}
 
 		if v, ok := e["disk_image_format"]; ok {
-			et.SetDiskImageFormat(v.(string))
+			et.DiskImageFormat = v.(string)
 		}
 		/*if v, ok := e["osu_key"]; ok {
-			apikey := oscgo.OsuApiKey{ApiKeyId: v.(*string)}
+			apikey := osc.OsuApiKey{ApiKeyId: v.(*string)}
 			et.SetOsuApiKey(apikey)
 		}*/
 		if v, ok := e["osu_bucket"]; ok {
-			et.SetOsuBucket(v.(string))
+			et.OsuBucket = v.(string)
 		}
 		if v, ok := e["osu_prefix"]; ok {
-			et.SetOsuPrefix(v.(string))
+			et.OsuPrefix = new(v.(string))
 		}
 		if v, ok := e["osu_api_key"]; ok {
 			a := v.([]interface{})
 
 			if len(a) > 0 {
 				w := a[0].(map[string]interface{})
-				et.OsuApiKey.SetApiKeyId(w["api_key_id"].(string))
-				et.OsuApiKey.SetSecretKey(w["secret_key"].(string))
+				et.OsuApiKey.ApiKeyId = new(w["api_key_id"].(string))
+				et.OsuApiKey.SecretKey = new(w["secret_key"].(string))
 			}
 		}
-		request.SetOsuExport(et)
+		request.OsuExport = et
 	}
 
-	var resp oscgo.CreateSnapshotExportTaskResponse
-	err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		var err error
-		rp, httpResp, err := conn.SnapshotApi.CreateSnapshotExportTask(ctx).
-			CreateSnapshotExportTaskRequest(request).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.CreateSnapshotExportTask(ctx, request, options.WithRetryTimeout(timeout))
 	if err != nil {
 		return diag.Errorf("error snapshot export task %s", err)
 	}
 
-	id := resp.SnapshotExportTask.GetTaskId()
+	id := resp.SnapshotExportTask.TaskId
 
 	wait := d.Get("wait_for_completion").(bool)
 	if wait {
-		_, err = ResourceOutscaleSnapshotTaskWaitForAvailable(conn, ctx, id, timeout)
+		err = ResourceOutscaleSnapshotTaskWaitForAvailable(client, ctx, id, timeout)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -185,7 +176,7 @@ func resourceOAPISnapshotExportTaskCreate(ctx context.Context, d *schema.Resourc
 
 	d.SetId(id)
 	if d.IsNewResource() {
-		if err := updateOAPITagsSDK(conn, d); err != nil {
+		if err := updateOAPITagsSDK(ctx, client, timeout, d); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -194,66 +185,56 @@ func resourceOAPISnapshotExportTaskCreate(ctx context.Context, d *schema.Resourc
 }
 
 func resourceOAPISnapshotExportTaskRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 	timeout := d.Timeout(schema.TimeoutRead)
 
-	var resp oscgo.ReadSnapshotExportTasksResponse
-	filter := &oscgo.FiltersExportTask{TaskIds: &[]string{d.Id()}}
-	err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		var err error
-		rp, httpResp, err := conn.SnapshotApi.ReadSnapshotExportTasks(ctx).
-			ReadSnapshotExportTasksRequest(oscgo.ReadSnapshotExportTasksRequest{
-				Filters: filter,
-			}).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	filter := &osc.FiltersExportTask{TaskIds: &[]string{d.Id()}}
+	resp, err := client.ReadSnapshotExportTasks(ctx, osc.ReadSnapshotExportTasksRequest{
+		Filters: filter,
+	}, options.WithRetryTimeout(timeout))
 	if err != nil {
 		return diag.Errorf("error reading snapshot export task %s", err)
 	}
-	if utils.IsResponseEmpty(len(resp.GetSnapshotExportTasks()), "SnapshotExportTask", d.Id()) {
+	if resp.SnapshotExportTasks == nil || utils.IsResponseEmpty(len(*resp.SnapshotExportTasks), "SnapshotExportTask", d.Id()) {
 		d.SetId("")
 		return nil
 	}
-	v := resp.GetSnapshotExportTasks()[0]
+	v := (*resp.SnapshotExportTasks)[0]
 
-	if v.GetState() == "failed" || v.GetState() == "cancelled" {
+	if v.State == "failed" || v.State == "cancelled" {
 		taskId := d.Id()
 		d.SetId("")
 
-		errMsg := fmt.Sprintf("Snapshot export task (%s) did not succeed. Status: %s", taskId, v.GetState())
+		errMsg := fmt.Sprintf("Snapshot export task (%s) did not succeed. Status: %s", taskId, v.State)
 		errMsg += "\n" + `To remove it from state, run "terraform refresh" or recreate the resource.`
 
 		return diag.Diagnostics{
 			diag.Diagnostic{
 				Severity: diag.Warning,
-				Summary:  "Snapshot export task " + v.GetState(),
+				Summary:  "Snapshot export task " + string(v.State),
 				Detail:   errMsg,
 			},
 		}
 	}
 
-	if err = d.Set("progress", v.GetProgress()); err != nil {
+	if err = d.Set("progress", v.Progress); err != nil {
 		return diag.FromErr(err)
 	}
-	if err = d.Set("task_id", v.GetTaskId()); err != nil {
+	if err = d.Set("task_id", v.TaskId); err != nil {
 		return diag.FromErr(err)
 	}
-	if err = d.Set("state", v.GetState()); err != nil {
+	if err = d.Set("state", v.State); err != nil {
 		return diag.FromErr(err)
 	}
-	if err = d.Set("comment", v.GetComment()); err != nil {
+	if err = d.Set("comment", v.Comment); err != nil {
 		return diag.FromErr(err)
 	}
 
 	exp := make([]map[string]interface{}, 1)
 	exportToOsu := make(map[string]interface{})
-	exportToOsu["disk_image_format"] = v.OsuExport.GetDiskImageFormat()
-	exportToOsu["osu_bucket"] = v.OsuExport.GetOsuBucket()
-	exportToOsu["osu_prefix"] = v.OsuExport.GetOsuPrefix()
+	exportToOsu["disk_image_format"] = v.OsuExport.DiskImageFormat
+	exportToOsu["osu_bucket"] = v.OsuExport.OsuBucket
+	exportToOsu["osu_prefix"] = v.OsuExport.OsuPrefix
 
 	eto, etoOk := d.GetOk("osu_export")
 	if etoOk {
@@ -275,13 +256,13 @@ func resourceOAPISnapshotExportTaskRead(ctx context.Context, d *schema.ResourceD
 
 	exp[0] = exportToOsu
 
-	if err = d.Set("snapshot_id", v.GetSnapshotId()); err != nil {
+	if err = d.Set("snapshot_id", v.SnapshotId); err != nil {
 		return diag.FromErr(err)
 	}
 	if err = d.Set("osu_export", exp); err != nil {
 		return diag.FromErr(err)
 	}
-	if err = d.Set("tags", FlattenOAPITagsSDK(v.GetTags())); err != nil {
+	if err = d.Set("tags", FlattenOAPITagsSDK(v.Tags)); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -289,32 +270,26 @@ func resourceOAPISnapshotExportTaskRead(ctx context.Context, d *schema.ResourceD
 }
 
 func resourceOAPISnapshotExportTaskUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
+	timeout := d.Timeout(schema.TimeoutUpdate)
 
-	if err := updateOAPITagsSDK(conn, d); err != nil {
+	if err := updateOAPITagsSDK(ctx, client, timeout, d); err != nil {
 		return diag.FromErr(err)
 	}
 	return resourceOAPISnapshotExportTaskRead(ctx, d, meta)
 }
 
-func ResourceOutscaleSnapshotTaskWaitForAvailable(client *oscgo.APIClient, ctx context.Context, id string, timeout time.Duration) (oscgo.SnapshotExportTask, error) {
+func ResourceOutscaleSnapshotTaskWaitForAvailable(client *osc.Client, ctx context.Context, id string, timeout time.Duration) error {
 	log.Printf("Waiting for Snapshot Task %s to become available...", id)
-	var snap oscgo.SnapshotExportTask
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{"pending", "pending/queued", "queued"},
-		Target:     []string{"completed", "active"},
-		Refresh:    SnapshotTaskStateRefreshFunc(client, id, timeout),
-		Timeout:    timeout,
-		Delay:      OutscaleImageRetryDelay,
-		MinTimeout: OutscaleImageRetryMinTimeout,
+		Pending: []string{"pending", "pending/queued", "queued"},
+		Target:  []string{"completed", "active"},
+		Timeout: timeout,
+		Refresh: SnapshotTaskStateRefreshFunc(ctx, client, id, timeout),
 	}
 
-	info, err := stateConf.WaitForStateContext(ctx)
-	if err != nil {
-		return snap, fmt.Errorf("error waiting for snapshot export task (%s) to be ready: %s", id, err)
-	}
-	snap = info.(oscgo.SnapshotExportTask)
-	return snap, nil
+	_, err := stateConf.WaitForStateContext(ctx)
+	return err
 }
 
 func resourceOAPISnapshotExportTaskDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -326,46 +301,27 @@ func resourceOAPISnapshotExportTaskDelete(ctx context.Context, d *schema.Resourc
 }
 
 // SnapshotTaskStateRefreshFunc ...
-func SnapshotTaskStateRefreshFunc(client *oscgo.APIClient, id string, timeout time.Duration) retry.StateRefreshFunc {
+func SnapshotTaskStateRefreshFunc(ctx context.Context, client *osc.Client, id string, timeout time.Duration) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		var resp oscgo.ReadSnapshotExportTasksResponse
-		filter := &oscgo.FiltersExportTask{TaskIds: &[]string{id}}
-		var statusCode int
-		err := retry.Retry(timeout, func() *retry.RetryError {
-			var err error
-			rp, httpResp, err := client.SnapshotApi.ReadSnapshotExportTasks(context.Background()).
-				ReadSnapshotExportTasksRequest(oscgo.ReadSnapshotExportTasksRequest{
-					Filters: filter,
-				}).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			statusCode = httpResp.StatusCode
-			return nil
-		})
+		filter := &osc.FiltersExportTask{TaskIds: &[]string{id}}
+		resp, err := client.ReadSnapshotExportTasks(ctx, osc.ReadSnapshotExportTasksRequest{
+			Filters: filter,
+		}, options.WithRetryTimeout(timeout))
 		if err != nil {
-			if statusCode == http.StatusNotFound {
-				log.Printf("[INFO] Snapshot export task %s state %s", id, "destroyed")
-				return resp, "destroyed", nil
-			} else if resp.GetSnapshotExportTasks() != nil && len(resp.GetSnapshotExportTasks()) == 0 {
-				log.Printf("[INFO] Snapshot export task %s state %s", id, "destroyed")
-				return resp, "destroyed", nil
-			} else {
-				return resp, "", fmt.Errorf("error on refresh: %+v", err)
-			}
+			return resp, "", fmt.Errorf("error on refresh: %+v", err)
 		}
 
-		if resp.GetSnapshotExportTasks() == nil || len(resp.GetSnapshotExportTasks()) == 0 {
+		if resp.SnapshotExportTasks == nil || len(*resp.SnapshotExportTasks) == 0 {
 			return resp, "destroyed", nil
 		}
+		tasks := (*resp.SnapshotExportTasks)[0]
 
-		if resp.GetSnapshotExportTasks()[0].GetState() == "failed" || resp.GetSnapshotExportTasks()[0].GetState() == "cancelled" {
-			return resp.GetSnapshotExportTasks()[0], resp.GetSnapshotExportTasks()[0].GetState(),
-				fmt.Errorf("error: %v", resp.GetSnapshotExportTasks()[0].GetComment())
+		if tasks.State == osc.SnapshotExportTaskStateFailed || tasks.State == osc.SnapshotExportTaskStateCancelled {
+			return tasks, string(tasks.State),
+				fmt.Errorf("error: %v", tasks.Comment)
 		}
 
 		// Snapshot export task is valid, so return it's state
-		return resp.GetSnapshotExportTasks()[0], resp.GetSnapshotExportTasks()[0].GetState(), nil
+		return tasks, string(tasks.State), nil
 	}
 }

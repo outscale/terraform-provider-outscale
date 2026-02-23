@@ -4,17 +4,20 @@ import (
 	"context"
 	"time"
 
+	"github.com/outscale/goutils/sdk/ptr"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 )
 
 func DataSourcePolicy() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourcePolicyRead,
+		ReadContext: DataSourcePolicyRead,
 		Schema: map[string]*schema.Schema{
 			"policy_orn": {
 				Type:     schema.TypeString,
@@ -68,59 +71,53 @@ func DataSourcePolicy() *schema.Resource {
 	}
 }
 
-func DataSourcePolicyRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
-	req := oscgo.NewReadPolicyRequest(d.Get("policy_orn").(string))
+func DataSourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
-	var resp oscgo.ReadPolicyResponse
-	err := retry.Retry(2*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.PolicyApi.ReadPolicy(context.Background()).ReadPolicyRequest(*req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
-
-	if err != nil {
-		return err
+	req := osc.ReadPolicyRequest{
+		PolicyOrn: d.Get("policy_orn").(string),
 	}
 
-	if _, ok := resp.GetPolicyOk(); !ok {
+	resp, err := client.ReadPolicy(ctx, req, options.WithRetryTimeout(2*time.Minute))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if resp.Policy == nil {
 		d.SetId("")
 		return nil
 	}
-	policy := resp.GetPolicy()
+	policy := resp.Policy
 	d.SetId(id.UniqueId())
-	if err := d.Set("policy_name", policy.GetPolicyName()); err != nil {
-		return err
+	if err := d.Set("policy_name", ptr.From(policy.PolicyName)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("policy_id", policy.GetPolicyId()); err != nil {
-		return err
+	if err := d.Set("policy_id", ptr.From(policy.PolicyId)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("path", policy.GetPath()); err != nil {
-		return err
+	if err := d.Set("path", ptr.From(policy.Path)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("orn", policy.GetOrn()); err != nil {
-		return err
+	if err := d.Set("orn", ptr.From(policy.Orn)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("resources_count", policy.GetResourcesCount()); err != nil {
-		return err
+	if err := d.Set("resources_count", ptr.From(policy.ResourcesCount)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("is_linkable", policy.GetIsLinkable()); err != nil {
-		return err
+	if err := d.Set("is_linkable", ptr.From(policy.IsLinkable)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("policy_default_version_id", policy.GetPolicyDefaultVersionId()); err != nil {
-		return err
+	if err := d.Set("policy_default_version_id", ptr.From(policy.PolicyDefaultVersionId)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("description", policy.GetDescription()); err != nil {
-		return err
+	if err := d.Set("description", ptr.From(policy.Description)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("creation_date", (policy.GetCreationDate())); err != nil {
-		return err
+	if err := d.Set("creation_date", from.ISO8601(policy.CreationDate)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("last_modification_date", (policy.GetLastModificationDate())); err != nil {
-		return err
+	if err := d.Set("last_modification_date", from.ISO8601(policy.LastModificationDate)); err != nil {
+		return diag.FromErr(err)
 	}
 	return nil
 }

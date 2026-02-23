@@ -2,14 +2,13 @@ package oapi
 
 import (
 	"context"
-	"errors"
-	"fmt"
-	"net/http"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
+	"github.com/samber/lo"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/services/oapi/oapihelpers"
@@ -20,7 +19,7 @@ import (
 // Creates a network interface in the specified subnet
 func DataSourceOutscaleNic() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleNicRead,
+		ReadContext: DataSourceOutscaleNicRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -218,128 +217,110 @@ func DataSourceOutscaleNic() *schema.Resource {
 }
 
 // Read Nic
-func DataSourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleNicRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, okFilters := d.GetOk("filter")
 
 	if !okFilters {
-		return errors.New("filters must be assigned")
+		return diag.Errorf("filters must be assigned")
 	}
 
 	var err error
-	dnri := oscgo.ReadNicsRequest{}
+	dnri := osc.ReadNicsRequest{}
 	if okFilters {
 		dnri.Filters, err = buildOutscaleDataSourceNicFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	var resp oscgo.ReadNicsResponse
-	var statusCode int
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(dnri).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		statusCode = httpResp.StatusCode
-		return nil
-	})
+	resp, err := client.ReadNics(ctx, dnri, options.WithRetryTimeout(5*time.Minute))
 	if err != nil {
-		if statusCode == http.StatusNotFound {
-			// The ENI is gone now, so just remove it from the state
-			d.SetId("")
-			return nil
-		}
-		return fmt.Errorf("error describing network interfaces: %s", err)
+		return diag.Errorf("error describing network interfaces: %s", err)
+	}
+	if resp.Nics == nil || len(*resp.Nics) == 0 {
+		return diag.FromErr(ErrNoResults)
+	}
+	if len(*resp.Nics) > 1 {
+		return diag.FromErr(ErrMultipleResults)
 	}
 
-	if len(resp.GetNics()) == 0 {
-		return ErrNoResults
-	}
-	if len(resp.GetNics()) > 1 {
-		return ErrMultipleResults
-	}
+	eni := (*resp.Nics)[0]
 
-	eni := resp.GetNics()[0]
-
-	if err := d.Set("description", eni.GetDescription()); err != nil {
-		return err
+	if err := d.Set("description", eni.Description); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("nic_id", eni.GetNicId()); err != nil {
-		return err
+	if err := d.Set("nic_id", eni.NicId); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("subregion_name", eni.GetSubregionName()); err != nil {
-		return err
+	if err := d.Set("subregion_name", eni.SubregionName); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("subnet_id", eni.GetSubnetId()); err != nil {
-		return err
+	if err := d.Set("subnet_id", eni.SubnetId); err != nil {
+		return diag.FromErr(err)
 	}
-	if linkIp, ok := eni.GetLinkPublicIpOk(); ok {
-		if err := d.Set("link_public_ip", flattenLinkPublicIp(linkIp)); err != nil {
-			return err
+	if eni.LinkPublicIp != nil {
+		if err := d.Set("link_public_ip", flattenLinkPublicIp(eni.LinkPublicIp)); err != nil {
+			return diag.FromErr(err)
 		}
 	}
 
-	if linkNic, ok := eni.GetLinkNicOk(); ok {
-		if err := d.Set("link_nic", flattenLinkNic(linkNic)); err != nil {
-			return err
+	if eni.LinkNic != nil {
+		if err := d.Set("link_nic", flattenLinkNic(eni.LinkNic)); err != nil {
+			return diag.FromErr(err)
 		}
 	}
 
-	if err := d.Set("subregion_name", eni.GetSubregionName()); err != nil {
-		return err
+	if err := d.Set("subregion_name", eni.SubregionName); err != nil {
+		return diag.FromErr(err)
 	}
 
-	x := make([]map[string]interface{}, len(eni.GetSecurityGroups()))
-	for k, v := range eni.GetSecurityGroups() {
+	x := make([]map[string]interface{}, len(eni.SecurityGroups))
+	for k, v := range eni.SecurityGroups {
 		b := make(map[string]interface{})
-		b["security_group_id"] = v.GetSecurityGroupId()
-		b["security_group_name"] = v.GetSecurityGroupName()
+		b["security_group_id"] = v.SecurityGroupId
+		b["security_group_name"] = v.SecurityGroupName
 		x[k] = b
 	}
 	if err := d.Set("security_groups", x); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	if err := d.Set("mac_address", eni.GetMacAddress()); err != nil {
-		return err
+	if err := d.Set("mac_address", eni.MacAddress); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("nic_id", eni.GetNicId()); err != nil {
-		return err
+	if err := d.Set("nic_id", eni.NicId); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("account_id", eni.GetAccountId()); err != nil {
-		return err
+	if err := d.Set("account_id", eni.AccountId); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("private_dns_name", eni.GetPrivateDnsName()); err != nil {
-		return err
+	if err := d.Set("private_dns_name", eni.PrivateDnsName); err != nil {
+		return diag.FromErr(err)
 	}
-	if privIps, ok := eni.GetPrivateIpsOk(); ok {
-		if err := d.Set("private_ips", oapihelpers.GetPrivateIPsForNic(*privIps)); err != nil {
-			return err
-		}
+	if err := d.Set("private_ips", oapihelpers.GetPrivateIPsForNic(eni.PrivateIps)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("is_source_dest_checked", eni.GetIsSourceDestChecked()); err != nil {
-		return err
+	if err := d.Set("is_source_dest_checked", eni.IsSourceDestChecked); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("state", eni.GetState()); err != nil {
-		return err
+	if err := d.Set("state", eni.State); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("tags", FlattenOAPITagsSDK(eni.GetTags())); err != nil {
-		return err
+	if err := d.Set("tags", FlattenOAPITagsSDK(eni.Tags)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("net_id", eni.GetNetId()); err != nil {
-		return err
+	if err := d.Set("net_id", eni.NetId); err != nil {
+		return diag.FromErr(err)
 	}
 
-	d.SetId(eni.GetNicId())
+	d.SetId(eni.NicId)
 	return nil
 }
 
-func buildOutscaleDataSourceNicFilters(set *schema.Set) (*oscgo.FiltersNic, error) {
-	var filters oscgo.FiltersNic
+func buildOutscaleDataSourceNicFilters(set *schema.Set) (*osc.FiltersNic, error) {
+	var filters osc.FiltersNic
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -349,63 +330,63 @@ func buildOutscaleDataSourceNicFilters(set *schema.Set) (*oscgo.FiltersNic, erro
 
 		switch name := m["name"].(string); name {
 		case "descriptions":
-			filters.SetDescriptions(filterValues)
+			filters.Descriptions = &filterValues
 		case "is_source_dest_check":
-			filters.SetIsSourceDestCheck(cast.ToBool(filterValues[0]))
+			filters.IsSourceDestCheck = new(cast.ToBool(filterValues[0]))
 		case "link_nic_delete_on_vm_deletion":
-			filters.SetLinkNicDeleteOnVmDeletion(cast.ToBool(filterValues[0]))
+			filters.LinkNicDeleteOnVmDeletion = new(cast.ToBool(filterValues[0]))
 		case "link_nic_device_numbers":
-			filters.SetLinkNicDeviceNumbers(utils.StringSliceToInt32Slice(filterValues))
+			filters.LinkNicDeviceNumbers = new(utils.StringSliceToIntSlice(filterValues))
 		case "link_nic_link_nic_ids":
-			filters.SetLinkNicLinkNicIds(filterValues)
+			filters.LinkNicLinkNicIds = &filterValues
 		case "link_nic_states":
-			filters.SetLinkNicStates(filterValues)
+			filters.LinkNicStates = &filterValues
 		case "link_nic_vm_account_ids":
-			filters.SetLinkNicVmAccountIds(filterValues)
+			filters.LinkNicVmAccountIds = &filterValues
 		case "link_nic_vm_ids":
-			filters.SetLinkNicVmIds(filterValues)
+			filters.LinkNicVmIds = &filterValues
 		case "link_public_ip_account_ids":
-			filters.SetLinkPublicIpAccountIds(filterValues)
+			filters.LinkPublicIpAccountIds = &filterValues
 		case "link_public_ip_link_public_ip_ids":
-			filters.SetLinkPublicIpLinkPublicIpIds(filterValues)
+			filters.LinkPublicIpLinkPublicIpIds = &filterValues
 		case "link_public_ip_public_ip_ids":
-			filters.SetLinkPublicIpPublicIpIds(filterValues)
+			filters.LinkPublicIpPublicIpIds = &filterValues
 		case "link_public_ip_public_ips":
-			filters.SetLinkPublicIpPublicIps(filterValues)
+			filters.LinkPublicIpPublicIps = &filterValues
 		case "mac_addresses":
-			filters.SetMacAddresses(filterValues)
+			filters.MacAddresses = &filterValues
 		case "private_ips_primary_ip":
-			filters.SetPrivateIpsPrimaryIp(cast.ToBool(filterValues[0]))
+			filters.PrivateIpsPrimaryIp = new(cast.ToBool(filterValues[0]))
 		case "tag_keys":
-			filters.SetTagKeys(filterValues)
+			filters.TagKeys = &filterValues
 		case "tag_values":
-			filters.SetTagValues(filterValues)
+			filters.TagValues = &filterValues
 		case "tags":
-			filters.SetTags(filterValues)
+			filters.Tags = &filterValues
 		case "net_ids":
-			filters.SetNetIds(filterValues)
+			filters.NetIds = &filterValues
 		case "nic_ids":
-			filters.SetNicIds(filterValues)
+			filters.NicIds = &filterValues
 		case "private_dns_names":
-			filters.SetPrivateDnsNames(filterValues)
+			filters.PrivateDnsNames = &filterValues
 		case "private_ips_link_public_ip_account_ids":
-			filters.SetPrivateIpsLinkPublicIpAccountIds(filterValues)
+			filters.PrivateIpsLinkPublicIpAccountIds = &filterValues
 		case "private_ips_link_public_ip_public_ips":
-			filters.SetPrivateIpsLinkPublicIpPublicIps(filterValues)
+			filters.PrivateIpsLinkPublicIpPublicIps = &filterValues
 		case "private_ips_private_ips":
-			filters.SetPrivateIpsPrivateIps(filterValues)
+			filters.PrivateIpsPrivateIps = &filterValues
 		case "security_group_ids":
-			filters.SetSecurityGroupIds(filterValues)
+			filters.SecurityGroupIds = &filterValues
 		case "security_group_names":
-			filters.SetSecurityGroupNames(filterValues)
+			filters.SecurityGroupNames = &filterValues
 		case "states":
-			filters.SetStates(filterValues)
+			filters.States = new(lo.Map(filterValues, func(s string, _ int) osc.NicState { return osc.NicState(s) }))
 		case "subnet_ids":
-			filters.SetSubnetIds(filterValues)
+			filters.SubnetIds = &filterValues
 		case "subregion_names":
-			filters.SetSubregionNames(filterValues)
+			filters.SubregionNames = &filterValues
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(name)
 		}
 	}
 	return &filters, nil

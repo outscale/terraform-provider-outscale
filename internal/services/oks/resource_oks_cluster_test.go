@@ -15,7 +15,6 @@ func TestAccOKSCluster_basic(t *testing.T) {
 	clusterName := fmt.Sprintf("%s-%d", "cluster-basic", id)
 	resourceName := "outscale_oks_cluster.cluster"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 
 		Steps: []resource.TestStep{

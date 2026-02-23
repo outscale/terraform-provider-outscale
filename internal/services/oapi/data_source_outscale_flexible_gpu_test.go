@@ -12,7 +12,6 @@ import (
 func TestAccOthers_DataSourceFlexibleGpu_basic(t *testing.T) {
 	datasourceName := "data.outscale_flexible_gpu.data_fGPU"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{

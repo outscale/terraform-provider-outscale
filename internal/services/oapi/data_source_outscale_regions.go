@@ -4,17 +4,18 @@ import (
 	"context"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 func DataSourceOutscaleRegions() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleRegionsRead,
+		ReadContext: DataSourceOutscaleRegionsRead,
 		Schema: map[string]*schema.Schema{
 			"request_id": {
 				Type:     schema.TypeString,
@@ -40,38 +41,27 @@ func DataSourceOutscaleRegions() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleRegionsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleRegionsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
-	var resp oscgo.ReadRegionsResponse
-	var err error
-	var req oscgo.ReadRegionsRequest
-
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.RegionApi.ReadRegions(context.Background()).ReadRegionsRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadRegions(ctx, osc.ReadRegionsRequest{}, options.WithRetryTimeout(5*time.Minute))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	regions := resp.GetRegions()
+	regions := ptr.From(resp.Regions)
 
-	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
+	return diag.FromErr(resourceDataAttrSetter(d, func(set AttributeSetter) error {
 		d.SetId(id.UniqueId())
 
 		regs := make([]map[string]interface{}, len(regions))
 		for i, region := range regions {
 			regs[i] = map[string]interface{}{
-				"endpoint":    region.GetEndpoint(),
-				"region_name": region.GetRegionName(),
+				"endpoint":    region.Endpoint,
+				"region_name": region.RegionName,
 			}
 		}
 
 		return set("regions", regs)
-	})
+	}))
 }

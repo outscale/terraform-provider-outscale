@@ -12,10 +12,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 )
 
 var (
@@ -28,7 +30,7 @@ type GpuModel struct {
 	SubregionName      types.String   `tfsdk:"subregion_name"`
 	FlexibleGpuId      types.String   `tfsdk:"flexible_gpu_id"`
 	Generation         types.String   `tfsdk:"generation"`
-	ModeName           types.String   `tfsdk:"model_name"`
+	ModelName          types.String   `tfsdk:"model_name"`
 	Timeouts           timeouts.Value `tfsdk:"timeouts"`
 	VmId               types.String   `tfsdk:"vm_id"`
 	State              types.String   `tfsdk:"state"`
@@ -37,7 +39,7 @@ type GpuModel struct {
 }
 
 type fgpuResource struct {
-	Client *oscgo.APIClient
+	Client *osc.Client
 }
 
 func NewResourcefGPU() resource.Resource {
@@ -52,12 +54,12 @@ func (r *fgpuResource) Configure(_ context.Context, req resource.ConfigureReques
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Data Source Configure Type",
-			fmt.Sprintf("Expected *osc.APIClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *osc.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
 	}
-	r.Client = client.OSCAPI
+	r.Client = client.OSC
 }
 
 func (r *fgpuResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
@@ -73,7 +75,7 @@ func (r *fgpuResource) ImportState(ctx context.Context, req resource.ImportState
 
 	var data GpuModel
 	var timeouts timeouts.Value
-	data.FlexibleGpuId = types.StringValue(flexible_gpu_id)
+	data.FlexibleGpuId = to.String(flexible_gpu_id)
 	resp.Diagnostics.Append(resp.State.GetAttribute(ctx, path.Root("timeouts"), &timeouts)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -81,9 +83,6 @@ func (r *fgpuResource) ImportState(ctx context.Context, req resource.ImportState
 	data.Timeouts = timeouts
 	diags := resp.State.Set(ctx, &data)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *fgpuResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -154,41 +153,34 @@ func (r *fgpuResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
-	createReq := oscgo.NewCreateFlexibleGpuRequest(data.ModeName.ValueString(), data.SubregionName.ValueString())
+	createReq := osc.CreateFlexibleGpuRequest{
+		ModelName:     data.ModelName.ValueString(),
+		SubregionName: data.SubregionName.ValueString(),
+	}
 	if !data.DeleteOnVmDeletion.IsNull() {
-		createReq.SetDeleteOnVmDeletion(data.DeleteOnVmDeletion.ValueBool())
+		createReq.DeleteOnVmDeletion = data.DeleteOnVmDeletion.ValueBoolPointer()
 	}
 	if !data.Generation.IsNull() {
-		createReq.SetGeneration(data.Generation.ValueString())
+		createReq.Generation = data.Generation.ValueStringPointer()
 	}
 
 	createTimeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
-	var createResp oscgo.CreateFlexibleGpuResponse
-	err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.FlexibleGpuApi.CreateFlexibleGpu(ctx).CreateFlexibleGpuRequest(*createReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		createResp = rp
-		return nil
-	})
+	createResp, err := r.Client.CreateFlexibleGpu(ctx, createReq, options.WithRetryTimeout(createTimeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Create Resource Net",
-			"Error: "+utils.GetErrorResponse(err).Error(),
+			"Error: "+err.Error(),
 		)
 		return
 	}
+	fGpu := ptr.From(createResp.FlexibleGpu)
 
-	fGpu := createResp.GetFlexibleGpu()
-
-	data.FlexibleGpuId = types.StringValue(fGpu.GetFlexibleGpuId())
-	data, err = setFlexibleGpuState(ctx, r, data)
+	data.FlexibleGpuId = to.String(fGpu.FlexibleGpuId)
+	data, err = read(ctx, r, data)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to set net state",
@@ -197,9 +189,6 @@ func (r *fgpuResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *fgpuResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -211,7 +200,7 @@ func (r *fgpuResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		return
 	}
 
-	data, err = setFlexibleGpuState(ctx, r, data)
+	data, err = read(ctx, r, data)
 	if err != nil {
 		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
@@ -224,9 +213,6 @@ func (r *fgpuResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *fgpuResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -242,32 +228,25 @@ func (r *fgpuResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		return
 	}
 	updateTimeout, diags := planData.Timeouts.Update(ctx, UpdateDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
-	updateReq := oscgo.UpdateFlexibleGpuRequest{
+	updateReq := osc.UpdateFlexibleGpuRequest{
 		FlexibleGpuId:      resourceId.ValueString(),
 		DeleteOnVmDeletion: planData.DeleteOnVmDeletion.ValueBoolPointer(),
 	}
-	err = retry.RetryContext(ctx, updateTimeout, func() *retry.RetryError {
-		_, httpResp, err := r.Client.FlexibleGpuApi.UpdateFlexibleGpu(ctx).UpdateFlexibleGpuRequest(updateReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	_, err = r.Client.UpdateFlexibleGpu(ctx, updateReq, options.WithRetryTimeout(updateTimeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to update Flexible GPU resource",
-			"Error: "+utils.GetErrorResponseToString(err),
+			"Error: "+err.Error(),
 		)
 		return
 	}
 
 	planData.FlexibleGpuId = resourceId
-	data, err := setFlexibleGpuState(ctx, r, planData)
+	data, err := read(ctx, r, planData)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to set Flexible GPU state",
@@ -276,9 +255,6 @@ func (r *fgpuResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *fgpuResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -290,35 +266,27 @@ func (r *fgpuResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	}
 
 	deleteTimeout, diags := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
-	delReq := oscgo.DeleteFlexibleGpuRequest{
+	delReq := osc.DeleteFlexibleGpuRequest{
 		FlexibleGpuId: data.FlexibleGpuId.ValueString(),
 	}
-	err := retry.RetryContext(ctx, deleteTimeout, func() *retry.RetryError {
-		_, httpResp, err := r.Client.FlexibleGpuApi.DeleteFlexibleGpu(ctx).DeleteFlexibleGpuRequest(delReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	_, err := r.Client.DeleteFlexibleGpu(ctx, delReq, options.WithRetryTimeout(deleteTimeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Delete Flexible GPU resource",
 			"Error: "+err.Error(),
 		)
-		return
 	}
 }
 
-func setFlexibleGpuState(ctx context.Context, r *fgpuResource, data GpuModel) (GpuModel, error) {
-	netFilters := oscgo.FiltersFlexibleGpu{
+func read(ctx context.Context, r *fgpuResource, data GpuModel) (GpuModel, error) {
+	netFilters := osc.FiltersFlexibleGpu{
 		FlexibleGpuIds: &[]string{data.FlexibleGpuId.ValueString()},
 	}
-	readReq := oscgo.ReadFlexibleGpusRequest{
+	readReq := osc.ReadFlexibleGpusRequest{
 		Filters: &netFilters,
 	}
 
@@ -326,30 +294,23 @@ func setFlexibleGpuState(ctx context.Context, r *fgpuResource, data GpuModel) (G
 	if diags.HasError() {
 		return data, fmt.Errorf("unable to parse 'flexible_gpu' read timeout value: %v", diags.Errors())
 	}
-	var readResp oscgo.ReadFlexibleGpusResponse
-	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.FlexibleGpuApi.ReadFlexibleGpus(ctx).ReadFlexibleGpusRequest(readReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		readResp = rp
-		return nil
-	})
+	readResp, err := r.Client.ReadFlexibleGpus(ctx, readReq, options.WithRetryTimeout(readTimeout))
 	if err != nil {
 		return data, err
 	}
 
-	if len(readResp.GetFlexibleGpus()) == 0 {
+	if readResp.FlexibleGpus == nil || len(*readResp.FlexibleGpus) == 0 {
 		return data, ErrResourceEmpty
 	}
-	fgpu := readResp.GetFlexibleGpus()[0]
-	data.DeleteOnVmDeletion = types.BoolValue(fgpu.GetDeleteOnVmDeletion())
-	data.FlexibleGpuId = types.StringValue(fgpu.GetFlexibleGpuId())
-	data.SubregionName = types.StringValue(fgpu.GetSubregionName())
-	data.Generation = types.StringValue(fgpu.GetGeneration())
-	data.ModeName = types.StringValue(fgpu.GetModelName())
-	data.Id = types.StringValue(fgpu.GetFlexibleGpuId())
-	data.State = types.StringValue(fgpu.GetState())
-	data.VmId = types.StringValue(fgpu.GetVmId())
+	fgpu := (*readResp.FlexibleGpus)[0]
+	data.DeleteOnVmDeletion = to.Bool(fgpu.DeleteOnVmDeletion)
+	data.FlexibleGpuId = to.String(fgpu.FlexibleGpuId)
+	data.SubregionName = to.String(fgpu.SubregionName)
+	data.Generation = to.String(fgpu.Generation)
+	data.ModelName = to.String(fgpu.ModelName)
+	data.Id = to.String(fgpu.FlexibleGpuId)
+	data.State = to.String(*fgpu.State)
+	data.VmId = to.String(ptr.From(fgpu.VmId))
+
 	return data, nil
 }

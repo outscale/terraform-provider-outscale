@@ -4,18 +4,19 @@ import (
 	"context"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceOutscaleFlexibleGpuCatalog() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleFlexibleGpuCatalogRead,
+		ReadContext: DataSourceOutscaleFlexibleGpuCatalogRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"flexible_gpu_catalog": {
@@ -55,42 +56,31 @@ func DataSourceOutscaleFlexibleGpuCatalog() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleFlexibleGpuCatalogRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleFlexibleGpuCatalogRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
-	req := oscgo.ReadFlexibleGpuCatalogRequest{}
+	req := osc.ReadFlexibleGpuCatalogRequest{}
 
-	var resp oscgo.ReadFlexibleGpuCatalogResponse
-	var err = retry.Retry(20*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.FlexibleGpuApi.ReadFlexibleGpuCatalog(
-			context.Background()).
-			ReadFlexibleGpuCatalogRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
-
+	resp, err := client.ReadFlexibleGpuCatalog(ctx, req, options.WithRetryTimeout(20*time.Second))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	fgcs := resp.GetFlexibleGpuCatalog()[:]
+	fgcs := ptr.From(resp.FlexibleGpuCatalog)[:]
 	fgc_ret := make([]map[string]interface{}, len(fgcs))
 
 	for k, v := range fgcs {
 		n := make(map[string]interface{})
-		n["generations"] = v.GetGenerations()
-		n["model_name"] = v.GetModelName()
-		n["max_cpu"] = v.GetMaxCpu()
-		n["max_ram"] = v.GetMaxRam()
-		n["v_ram"] = v.GetVRam()
+		n["generations"] = v.Generations
+		n["model_name"] = v.ModelName
+		n["max_cpu"] = v.MaxCpu
+		n["max_ram"] = v.MaxRam
+		n["v_ram"] = v.VRam
 		fgc_ret[k] = n
 	}
 
 	if err := d.Set("flexible_gpu_catalog", fgc_ret); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(id.UniqueId())

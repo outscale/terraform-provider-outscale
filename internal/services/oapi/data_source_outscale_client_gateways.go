@@ -2,21 +2,22 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceOutscaleClientGateways() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleClientGatewaysRead,
+		ReadContext: DataSourceOutscaleClientGatewaysRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"client_gateway_ids": {
@@ -63,20 +64,20 @@ func DataSourceOutscaleClientGateways() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleClientGatewaysRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleClientGatewaysRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 	clientGatewayIDs, clientGatewayOk := d.GetOk("client_gateway_ids")
 
 	if !filtersOk && !clientGatewayOk {
-		return fmt.Errorf("one of filters, or client_gateway_id must be assigned")
+		return diag.Errorf("one of filters, or client_gateway_id must be assigned")
 	}
 
-	params := oscgo.ReadClientGatewaysRequest{}
+	params := osc.ReadClientGatewaysRequest{}
 
 	if clientGatewayOk {
-		params.Filters = &oscgo.FiltersClientGateway{
+		params.Filters = &osc.FiltersClientGateway{
 			ClientGatewayIds: utils.InterfaceSliceToStringList(clientGatewayIDs.([]interface{})),
 		}
 	}
@@ -85,46 +86,38 @@ func DataSourceOutscaleClientGatewaysRead(d *schema.ResourceData, meta interface
 		var err error
 		params.Filters, err = buildOutscaleDataSourceClientGatewayFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	var resp oscgo.ReadClientGatewaysResponse
-	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.ClientGatewayApi.ReadClientGateways(context.Background()).ReadClientGatewaysRequest(params).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadClientGateways(ctx, params, options.WithRetryTimeout(5*time.Minute))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	if len(resp.GetClientGateways()) == 0 {
-		return ErrNoResults
+	if resp.ClientGateways == nil || len(*resp.ClientGateways) == 0 {
+		return diag.FromErr(ErrNoResults)
 	}
 
-	if err := d.Set("client_gateways", flattenClientGateways(resp.GetClientGateways())); err != nil {
-		return err
+	if err := d.Set("client_gateways", flattenClientGateways(*resp.ClientGateways)); err != nil {
+		return diag.FromErr(err)
 	}
 
 	d.SetId(id.UniqueId())
 	return nil
 }
 
-func flattenClientGateways(clientGateways []oscgo.ClientGateway) []map[string]interface{} {
+func flattenClientGateways(clientGateways []osc.ClientGateway) []map[string]interface{} {
 	clientGatewaysMap := make([]map[string]interface{}, len(clientGateways))
 
 	for i, clientGateway := range clientGateways {
 		clientGatewaysMap[i] = map[string]interface{}{
-			"bgp_asn":           clientGateway.GetBgpAsn(),
-			"client_gateway_id": clientGateway.GetClientGatewayId(),
-			"connection_type":   clientGateway.GetConnectionType(),
-			"public_ip":         clientGateway.GetPublicIp(),
-			"state":             clientGateway.GetState(),
-			"tags":              FlattenOAPITagsSDK(clientGateway.GetTags()),
+			"bgp_asn":           clientGateway.BgpAsn,
+			"client_gateway_id": clientGateway.ClientGatewayId,
+			"connection_type":   clientGateway.ConnectionType,
+			"public_ip":         clientGateway.PublicIp,
+			"state":             clientGateway.State,
+			"tags":              FlattenOAPITagsSDK(ptr.From(clientGateway.Tags)),
 		}
 	}
 	return clientGatewaysMap

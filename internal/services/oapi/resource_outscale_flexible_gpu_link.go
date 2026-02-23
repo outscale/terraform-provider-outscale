@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
@@ -16,10 +18,10 @@ import (
 
 func ResourceOutscaleFlexibleGpuLink() *schema.Resource {
 	return &schema.Resource{
-		Create: ResourceOutscaleFlexibleGpuLinkCreate,
-		Read:   ResourceOutscaleFlexibleGpuLinkRead,
-		Update: resourceFlexibleGpuLinkUpdate,
-		Delete: ResourceOutscaleFlexibleGpuLinkDelete,
+		CreateContext: ResourceOutscaleFlexibleGpuLinkCreate,
+		ReadContext:   ResourceOutscaleFlexibleGpuLinkRead,
+		UpdateContext: resourceFlexibleGpuLinkUpdate,
+		DeleteContext: ResourceOutscaleFlexibleGpuLinkDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -52,146 +54,115 @@ func ResourceOutscaleFlexibleGpuLink() *schema.Resource {
 	}
 }
 
-func ResourceOutscaleFlexibleGpuLinkCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleFlexibleGpuLinkCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
 	timeout := d.Timeout(schema.TimeoutCreate)
 	vmId := d.Get("vm_id").(string)
 	GpuIdsList := utils.SetToStringSlice(d.Get("flexible_gpu_ids").(*schema.Set))
 
 	for _, flexGpuID := range GpuIdsList {
-		var resp oscgo.LinkFlexibleGpuResponse
-		reqLink := oscgo.LinkFlexibleGpuRequest{
+		var resp osc.LinkFlexibleGpuResponse
+		reqLink := osc.LinkFlexibleGpuRequest{
 			FlexibleGpuId: flexGpuID,
 			VmId:          vmId,
 		}
-		err := retry.Retry(timeout, func() *retry.RetryError {
-			var err error
-			rp, httpResp, err := conn.FlexibleGpuApi.LinkFlexibleGpu(
-				context.Background()).LinkFlexibleGpuRequest(reqLink).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
+		_, err := client.LinkFlexibleGpu(ctx, reqLink, options.WithRetryTimeout(timeout))
 		if err != nil {
-			return fmt.Errorf("error link flexibe gpu: %s", err.Error())
+			return diag.Errorf("error link flexibe gpu: %s", err.Error())
 		}
-		if !resp.HasResponseContext() {
-			return fmt.Errorf("error there is not link flexible gpu (%s)", err)
+		if resp.ResponseContext == nil {
+			return diag.Errorf("error there is not link flexible gpu (%s)", err)
 		}
 	}
 
-	if err := changeShutdownBehavior(conn, vmId, timeout); err != nil {
-		return fmt.Errorf("unable to change shutdownbehavior: %s", err)
+	if err := changeShutdownBehavior(ctx, client, vmId, timeout); err != nil {
+		return diag.Errorf("unable to change shutdownbehavior: %s", err)
 	}
 
-	return ResourceOutscaleFlexibleGpuLinkRead(d, meta)
+	return ResourceOutscaleFlexibleGpuLinkRead(ctx, d, meta)
 }
 
-func ResourceOutscaleFlexibleGpuLinkRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleFlexibleGpuLinkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 	timeout := d.Timeout(schema.TimeoutRead)
+
 	vmId := d.Get("vm_id").(string)
-	req := &oscgo.ReadFlexibleGpusRequest{
-		Filters: &oscgo.FiltersFlexibleGpu{
+
+	req := &osc.ReadFlexibleGpusRequest{
+		Filters: &osc.FiltersFlexibleGpu{
 			VmIds: &[]string{vmId},
 		},
 	}
-	var resp oscgo.ReadFlexibleGpusResponse
-	err := retry.Retry(timeout, func() *retry.RetryError {
-		rp, httpResp, err := conn.FlexibleGpuApi.ReadFlexibleGpus(
-			context.Background()).
-			ReadFlexibleGpusRequest(*req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadFlexibleGpus(ctx, *req, options.WithRetryTimeout(timeout))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	if utils.IsResponseEmpty(len(resp.GetFlexibleGpus()), "FlexibleGpuLink", d.Id()) {
+	if utils.IsResponseEmpty(len(ptr.From(resp.FlexibleGpus)), "FlexibleGpuLink", d.Id()) {
 		d.SetId("")
 		return nil
 	}
-	flexGpus := resp.GetFlexibleGpus()[:]
+	flexGpus := ptr.From(resp.FlexibleGpus)[:]
 	readGpuIdsLink := make([]string, len(flexGpus))
 	for k, flexGpu := range flexGpus {
-		readGpuIdsLink[k] = flexGpu.GetFlexibleGpuId()
+		readGpuIdsLink[k] = *flexGpu.FlexibleGpuId
 	}
 	if err := d.Set("flexible_gpu_ids", readGpuIdsLink); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err := d.Set("vm_id", vmId); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.SetId(id.UniqueId())
 	return nil
 }
 
-func ResourceOutscaleFlexibleGpuLinkDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleFlexibleGpuLinkDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
 	timeout := d.Timeout(schema.TimeoutDelete)
 	GpuIdsList := utils.SetToStringSlice(d.Get("flexible_gpu_ids").(*schema.Set))
 	vmId := d.Get("vm_id").(string)
-	var err error
 
 	for _, flexGpuID := range GpuIdsList {
-		req := &oscgo.UnlinkFlexibleGpuRequest{
+		req := &osc.UnlinkFlexibleGpuRequest{
 			FlexibleGpuId: flexGpuID,
 		}
-		err = retry.Retry(timeout, func() *retry.RetryError {
-			_, httpResp, err := conn.FlexibleGpuApi.UnlinkFlexibleGpu(
-				context.Background()).UnlinkFlexibleGpuRequest(*req).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			return nil
-		})
+		_, err := client.UnlinkFlexibleGpu(ctx, *req, options.WithRetryTimeout(timeout))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 
-		var resp oscgo.ReadFlexibleGpusResponse
-		reqFlex := &oscgo.ReadFlexibleGpusRequest{
-			Filters: &oscgo.FiltersFlexibleGpu{
+		reqFlex := osc.ReadFlexibleGpusRequest{
+			Filters: &osc.FiltersFlexibleGpu{
 				FlexibleGpuIds: &[]string{flexGpuID},
 			},
 		}
-		err = retry.Retry(timeout, func() *retry.RetryError {
-			rp, httpResp, err := conn.FlexibleGpuApi.ReadFlexibleGpus(context.Background()).
-				ReadFlexibleGpusRequest(*reqFlex).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
+		resp, err := client.ReadFlexibleGpus(ctx, reqFlex, options.WithRetryTimeout(timeout))
 		if err != nil {
-			return fmt.Errorf("error reading the flexiblegpu %s", err)
+			return diag.Errorf("error reading the flexiblegpu %s", err)
 		}
 
 		if len(*resp.FlexibleGpus) != 1 {
-			return fmt.Errorf("unable to find flexible gpu")
+			return diag.Errorf("unable to find flexible gpu")
 		}
-		if (*resp.FlexibleGpus)[0].GetState() != "detaching" &&
-			(*resp.FlexibleGpus)[0].GetState() != "allocated" {
-			return fmt.Errorf("unable to unlink flexible gpu")
+		if (*(*resp.FlexibleGpus)[0].State) != osc.FlexibleGpuStateDetaching &&
+			(*(*resp.FlexibleGpus)[0].State) != osc.FlexibleGpuStateAllocated {
+			return diag.Errorf("unable to unlink flexible gpu")
 		}
 	}
 
-	if err := changeShutdownBehavior(conn, vmId, timeout); err != nil {
-		return fmt.Errorf("unable to change shutdownbehavior: %s", err)
+	if err := changeShutdownBehavior(ctx, client, vmId, timeout); err != nil {
+		return diag.Errorf("unable to change shutdownbehavior: %s", err)
 	}
 
 	d.SetId("")
 	return nil
 }
 
-func resourceFlexibleGpuLinkUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func resourceFlexibleGpuLinkUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
 	timeout := d.Timeout(schema.TimeoutUpdate)
 	vmId := d.Get("vm_id").(string)
 	oldIds, newIds := d.GetChange("flexible_gpu_ids")
@@ -199,96 +170,73 @@ func resourceFlexibleGpuLinkUpdate(d *schema.ResourceData, meta interface{}) err
 	interIds := oldIds.(*schema.Set).Intersection(newIds.(*schema.Set))
 	toCreate := newIds.(*schema.Set).Difference(interIds)
 	toRemove := oldIds.(*schema.Set).Difference(interIds)
-	var err error
 
 	if toRemove.Len() > 0 {
 		for _, flexGpuID := range utils.SetToStringSlice(toRemove) {
-			req := &oscgo.UnlinkFlexibleGpuRequest{
+			req := &osc.UnlinkFlexibleGpuRequest{
 				FlexibleGpuId: flexGpuID,
 			}
-			err = retry.Retry(timeout, func() *retry.RetryError {
-				_, httpResp, err := conn.FlexibleGpuApi.UnlinkFlexibleGpu(
-					context.Background()).UnlinkFlexibleGpuRequest(*req).Execute()
-				if err != nil {
-					return utils.CheckThrottling(httpResp, err)
-				}
-				return nil
-			})
+			_, err := client.UnlinkFlexibleGpu(ctx, *req, options.WithRetryTimeout(timeout))
 			if err != nil {
-				return err
+				return diag.FromErr(err)
 			}
 		}
 	}
 	if toCreate.Len() > 0 {
 		for _, flexGpuID := range utils.SetToStringSlice(toCreate) {
-			req := &oscgo.LinkFlexibleGpuRequest{
+			req := &osc.LinkFlexibleGpuRequest{
 				FlexibleGpuId: flexGpuID,
 				VmId:          vmId,
 			}
-			err = retry.Retry(timeout, func() *retry.RetryError {
-				_, httpResp, err := conn.FlexibleGpuApi.LinkFlexibleGpu(
-					context.Background()).LinkFlexibleGpuRequest(*req).Execute()
-				if err != nil {
-					return utils.CheckThrottling(httpResp, err)
-				}
-				return nil
-			})
+			_, err := client.LinkFlexibleGpu(ctx, *req, options.WithRetryTimeout(timeout))
 			if err != nil {
-				return err
+				return diag.FromErr(err)
 			}
 		}
 	}
-	if err := changeShutdownBehavior(conn, vmId, timeout); err != nil {
-		return fmt.Errorf("unable to change shutdownbehavior: %s", err)
+	if err := changeShutdownBehavior(ctx, client, vmId, timeout); err != nil {
+		return diag.Errorf("unable to change shutdownbehavior: %s", err)
 	}
 
-	return ResourceOutscaleFlexibleGpuLinkRead(d, meta)
+	return ResourceOutscaleFlexibleGpuLinkRead(ctx, d, meta)
 }
 
-func changeShutdownBehavior(conn *oscgo.APIClient, vmId string, timeout time.Duration) error {
-	var resp oscgo.ReadVmsResponse
-	err := retry.Retry(timeout, func() *retry.RetryError {
-		rp, httpResp, err := conn.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
-			Filters: &oscgo.FiltersVm{
-				VmIds: &[]string{vmId},
-			},
-		}).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+func changeShutdownBehavior(ctx context.Context, client *osc.Client, vmId string, timeout time.Duration) error {
+	resp, err := client.ReadVms(ctx, osc.ReadVmsRequest{
+		Filters: &osc.FiltersVm{
+			VmIds: &[]string{vmId},
+		},
+	}, options.WithRetryTimeout(timeout))
 	if err != nil {
 		return fmt.Errorf("error reading the vm %s", err)
 	}
-	if len(resp.GetVms()) == 0 {
+	if len(ptr.From(resp.Vms)) == 0 {
 		return fmt.Errorf("error reading the vm %s err %s ", vmId, err)
 	}
-	vm := resp.GetVms()[0]
+	vm := ptr.From(resp.Vms)[0]
 
-	shutdownBehOpt := vm.GetVmInitiatedShutdownBehavior()
+	shutdownBehOpt := vm.VmInitiatedShutdownBehavior
 	if shutdownBehOpt != "stop" {
-		sbOpts := oscgo.UpdateVmRequest{VmId: vm.GetVmId()}
-		sbOpts.SetVmInitiatedShutdownBehavior("stop")
-		if err := updateVmAttr(conn, timeout, sbOpts); err != nil {
+		sbOpts := osc.UpdateVmRequest{VmId: vm.VmId}
+		sbOpts.VmInitiatedShutdownBehavior = new("stop")
+		if err := updateVmAttr(ctx, client, timeout, sbOpts); err != nil {
 			return err
 		}
 	}
 
-	if err := stopVM(vmId, conn, timeout); err != nil {
+	if err := stopVM(ctx, client, timeout, vmId); err != nil {
 		return err
 	}
 
 	if shutdownBehOpt != "stop" {
-		sbReq := oscgo.UpdateVmRequest{VmId: vmId}
-		sbReq.SetVmInitiatedShutdownBehavior(shutdownBehOpt)
-		if err = updateVmAttr(conn, timeout, sbReq); err != nil {
+		sbReq := osc.UpdateVmRequest{VmId: vmId}
+		sbReq.VmInitiatedShutdownBehavior = new(shutdownBehOpt)
+		if err = updateVmAttr(ctx, client, timeout, sbReq); err != nil {
 			return err
 		}
 	}
 
-	if err := startVM(vmId, conn, timeout); err != nil {
+	if err := startVM(ctx, client, timeout, vmId); err != nil {
 		return err
 	}
 	return nil

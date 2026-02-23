@@ -14,9 +14,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
@@ -34,12 +37,12 @@ func (d *dataSourceQuota) Configure(_ context.Context, req datasource.ConfigureR
 		return
 	}
 	client := req.ProviderData.(client.OutscaleClient)
-	d.Client = client.OSCAPI
+	d.Client = client.OSC
 }
 
 // ExampleDataSource defines the data source implementation.
 type dataSourceQuota struct {
-	Client *oscgo.APIClient
+	Client *osc.Client
 }
 
 // ExampleDataSourceModel describes the data source data model.
@@ -125,13 +128,13 @@ func (d *dataSourceQuota) Schema(ctx context.Context, req datasource.SchemaReque
 }
 
 func (d *dataSourceQuota) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	reqApi := oscgo.ReadQuotasRequest{}
+	reqApi := osc.ReadQuotasRequest{}
 	mapTftypes := map[string]tftypes.Value{}
-	var respApi oscgo.ReadQuotasResponse
-	var quota oscgo.Quota
-	var quotaType oscgo.QuotaTypes
+	var respApi *osc.ReadQuotasResponse
+	var quota osc.Quota
+	var quotaType osc.QuotaTypes
 	var dataState quotaModel
-	var filters *oscgo.FiltersQuota
+	var filters *osc.FiltersQuota
 	var listFilters []tftypes.Value
 	var diags diag.Diagnostics
 	var flatenFilters basetypes.SetValue
@@ -150,33 +153,25 @@ func (d *dataSourceQuota) Read(ctx context.Context, req datasource.ReadRequest, 
 	}
 	reqApi.Filters = filters
 
-	err = retry.Retry(120*time.Second, func() *retry.RetryError {
-		var err error
-		rp, httpResp, err := d.Client.QuotaApi.ReadQuotas(context.Background()).ReadQuotasRequest(reqApi).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		respApi = rp
-		return nil
-	})
+	respApi, err = d.Client.ReadQuotas(ctx, reqApi, options.WithRetryTimeout(120*time.Second))
 	if err != nil {
 		goto CHECK_ERR
 	}
-	if len(respApi.GetQuotaTypes()) == 0 {
+	if respApi.QuotaTypes == nil || len(*respApi.QuotaTypes) == 0 {
 		err = ErrNoResults
 		goto CHECK_ERR
 	}
-	if len(respApi.GetQuotaTypes()) > 1 {
+	if len(*respApi.QuotaTypes) > 1 {
 		err = ErrMultipleResults
 		goto CHECK_ERR
 	}
-	quotaType = respApi.GetQuotaTypes()[0]
-	if len(quotaType.GetQuotas()) == 0 {
+	quotaType = (*respApi.QuotaTypes)[0]
+	if quotaType.Quotas == nil || len(*quotaType.Quotas) == 0 {
 		err = ErrNoResults
 		goto CHECK_ERR
 	}
 
-	if len(quotaType.GetQuotas()) > 1 {
+	if len(*quotaType.Quotas) > 1 {
 		err = ErrMultipleResults
 		goto CHECK_ERR
 	}
@@ -188,26 +183,25 @@ func (d *dataSourceQuota) Read(ctx context.Context, req datasource.ReadRequest, 
 		return
 	}
 
-	quota = quotaType.GetQuotas()[0]
-	dataState.QuotaType = types.StringValue(quotaType.GetQuotaType())
-	dataState.Name = types.StringValue(quota.GetName())
-	dataState.Description = types.StringValue(quota.GetDescription())
-	dataState.MaxValue = types.Int64Value(int64(quota.GetMaxValue()))
-	dataState.UsedValue = types.Int64Value(int64(quota.GetUsedValue()))
-	dataState.QuotaCollection = types.StringValue(quota.GetQuotaCollection())
-	dataState.ShortDescription = types.StringValue(quota.GetShortDescription())
-	dataState.AccountId = types.StringValue(quota.GetAccountId())
+	quota = (*quotaType.Quotas)[0]
+	dataState.QuotaType = to.String(quotaType.QuotaType)
+	dataState.Name = to.String(quota.Name)
+	dataState.Description = to.String(quota.Description)
+	dataState.MaxValue = to.Int64(int64(ptr.From(quota.MaxValue)))
+	dataState.UsedValue = to.Int64(int64(ptr.From(quota.UsedValue)))
+	dataState.QuotaCollection = to.String(quota.QuotaCollection)
+	dataState.ShortDescription = to.String(quota.ShortDescription)
+	dataState.AccountId = to.String(quota.AccountId)
 	dataState.Filter = flatenFilters
-	dataState.Id = types.StringValue(id.UniqueId())
-	dataState.RequestId = types.StringValue(respApi.ResponseContext.GetRequestId())
+	dataState.Id = to.String(id.UniqueId())
+	dataState.RequestId = to.String(respApi.ResponseContext.RequestId)
 	diags = resp.State.Set(ctx, &dataState)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
 CHECK_ERR:
-	if err != nil { // resp.Diagnostics.HasError() {
+	if err != nil { // resp.Diagnostics.Error != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Outscale Quotas",
 			"If the error is not clear, please contact the provider developers.\n\n"+
@@ -221,8 +215,8 @@ CHECK_ERR:
 	}
 }
 
-func buildOutscaleQuotaDataSourceFrameworkFilters(ctx context.Context, listFilters []tftypes.Value) (*oscgo.FiltersQuota, error) {
-	var filters oscgo.FiltersQuota
+func buildOutscaleQuotaDataSourceFrameworkFilters(ctx context.Context, listFilters []tftypes.Value) (*osc.FiltersQuota, error) {
+	var filters osc.FiltersQuota
 
 	for _, val := range listFilters {
 		var mapFilters map[string]tftypes.Value
@@ -247,7 +241,7 @@ func buildOutscaleQuotaDataSourceFrameworkFilters(ctx context.Context, listFilte
 		case "short_descriptions":
 			filters.ShortDescriptions = &filterValues
 		default:
-			return nil, utils.UnknownDataSourceFilterError(ctx, name)
+			return nil, utils.UnknownDataSourceFilterError(name)
 		}
 	}
 	return &filters, nil
@@ -274,7 +268,7 @@ func flatenQuotaDataSourceFilters(listFilters []tftypes.Value) (basetypes.SetVal
 		mapObject := make(map[string]attr.Value)
 		var name string
 		mapFilters["name"].As(&name)
-		mapObject["name"] = types.StringValue(name)
+		mapObject["name"] = to.String(name)
 
 		var listValues []tftypes.Value
 		mapFilters["values"].As(&listValues)
@@ -283,7 +277,7 @@ func flatenQuotaDataSourceFilters(listFilters []tftypes.Value) (basetypes.SetVal
 			var value string
 			val.As(&value)
 
-			nSet = append(nSet, types.StringValue(value))
+			nSet = append(nSet, to.String(value))
 		}
 		filtersNameType := basetypes.StringType{}
 		obt, diag := types.SetValue(filtersNameType, nSet)

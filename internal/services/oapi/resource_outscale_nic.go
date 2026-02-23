@@ -4,13 +4,15 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net/http"
 	"reflect"
 	"strconv"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
@@ -21,10 +23,10 @@ import (
 // Creates a network interface in the specified subnet
 func ResourceOutscaleNic() *schema.Resource {
 	return &schema.Resource{
-		Create: ResourceOutscaleNicCreate,
-		Read:   ResourceOutscaleNicRead,
-		Update: ResourceOutscaleNicUpdate,
-		Delete: ResourceOutscaleNicDelete,
+		CreateContext: ResourceOutscaleNicCreate,
+		ReadContext:   ResourceOutscaleNicRead,
+		UpdateContext: ResourceOutscaleNicUpdate,
+		DeleteContext: ResourceOutscaleNicDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -236,220 +238,191 @@ func getOAPINicSchema() map[string]*schema.Schema {
 }
 
 // Create OAPINic
-func ResourceOutscaleNicCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleNicCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
 	timeout := d.Timeout(schema.TimeoutCreate)
 
-	request := oscgo.CreateNicRequest{
+	request := osc.CreateNicRequest{
 		SubnetId: d.Get("subnet_id").(string),
 	}
 
 	if v, ok := d.GetOk("description"); ok {
-		request.SetDescription(v.(string))
+		request.Description = new(v.(string))
 	}
 	if sgIDs := utils.SetToStringSlice(d.Get("security_group_ids").(*schema.Set)); len(sgIDs) > 0 {
-		request.SetSecurityGroupIds(sgIDs)
+		request.SecurityGroupIds = &sgIDs
 	}
 	if v, ok := d.GetOk("private_ips"); ok {
-		request.SetPrivateIps(expandPrivateIPLight(v.(*schema.Set).List()))
+		request.PrivateIps = new(expandPrivateIPLight(v.(*schema.Set).List()))
 	}
 
-	var resp oscgo.CreateNicResponse
-	err := retry.RetryContext(context.Background(), timeout, func() *retry.RetryError {
-		var err error
-		rp, httpResp, err := conn.NicApi.CreateNic(context.Background()).CreateNicRequest(request).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.CreateNic(ctx, request, options.WithRetryTimeout(timeout))
 	if err != nil {
-		return fmt.Errorf("error creating nic: %s", err)
+		return diag.Errorf("error creating nic: %s", err)
 	}
 
-	d.SetId(resp.Nic.GetNicId())
+	d.SetId(resp.Nic.NicId)
 
 	if d.IsNewResource() {
-		if err := updateOAPITagsSDK(conn, d); err != nil {
-			return err
+		if err := updateOAPITagsSDK(ctx, client, timeout, d); err != nil {
+			return diag.FromErr(err)
 		}
 	}
 
 	if err := d.Set("tags", make([]map[string]interface{}, 0)); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err := d.Set("private_ip", ""); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return ResourceOutscaleNicRead(d, meta)
+	return ResourceOutscaleNicRead(ctx, d, meta)
 }
 
 // Read OAPINic
-func ResourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleNicRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
 	timeout := d.Timeout(schema.TimeoutRead)
-	dnir := oscgo.ReadNicsRequest{
-		Filters: &oscgo.FiltersNic{
+	dnir := osc.ReadNicsRequest{
+		Filters: &osc.FiltersNic{
 			NicIds: &[]string{d.Id()},
 		},
 	}
 
-	var resp oscgo.ReadNicsResponse
-	err := retry.RetryContext(context.Background(), timeout, func() *retry.RetryError {
-		rp, httpResp, err := conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(dnir).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadNics(ctx, dnir, options.WithRetryTimeout(timeout))
 	if err != nil {
-		return fmt.Errorf("error describing network interfaces : %s", err)
+		return diag.Errorf("error describing network interfaces : %s", err)
 	}
 
-	if utils.IsResponseEmpty(len(resp.GetNics()), "Nic", d.Id()) {
+	if resp.Nics == nil || utils.IsResponseEmpty(len(*resp.Nics), "Nic", d.Id()) {
 		d.SetId("")
 		return nil
 	}
-	eni := resp.GetNics()[0]
-	if err := d.Set("description", eni.GetDescription()); err != nil {
-		return err
+	eni := (*resp.Nics)[0]
+	if err := d.Set("description", eni.Description); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("subnet_id", eni.GetSubnetId()); err != nil {
-		return err
+	if err := d.Set("subnet_id", eni.SubnetId); err != nil {
+		return diag.FromErr(err)
 	}
-	if linkIp, ok := eni.GetLinkPublicIpOk(); ok {
-		if err := d.Set("link_public_ip", flattenLinkPublicIp(linkIp)); err != nil {
-			return err
+	if eni.LinkPublicIp != nil {
+		if err := d.Set("link_public_ip", flattenLinkPublicIp(eni.LinkPublicIp)); err != nil {
+			return diag.FromErr(err)
 		}
 	}
 
-	if linkNic, ok := eni.GetLinkNicOk(); ok {
-		if err := d.Set("link_nic", flattenLinkNic(linkNic)); err != nil {
-			return err
+	if eni.LinkNic != nil {
+		if err := d.Set("link_nic", flattenLinkNic(eni.LinkNic)); err != nil {
+			return diag.FromErr(err)
 		}
 	}
 
-	if err := d.Set("subregion_name", eni.GetSubregionName()); err != nil {
-		return err
+	if err := d.Set("subregion_name", eni.SubregionName); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("security_groups", getSecurityGroups(eni.GetSecurityGroups())); err != nil {
-		return err
+	if err := d.Set("security_groups", getSecurityGroups(eni.SecurityGroups)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("security_group_ids", getSecurityGroupIds(eni.GetSecurityGroups())); err != nil {
-		return err
+	if err := d.Set("security_group_ids", getSecurityGroupIds(eni.SecurityGroups)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("mac_address", eni.GetMacAddress()); err != nil {
-		return err
+	if err := d.Set("mac_address", eni.MacAddress); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("nic_id", eni.GetNicId()); err != nil {
-		return err
+	if err := d.Set("nic_id", eni.NicId); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("account_id", eni.GetAccountId()); err != nil {
-		return err
+	if err := d.Set("account_id", eni.AccountId); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("private_dns_name", eni.GetPrivateDnsName()); err != nil {
-		return err
+	if err := d.Set("private_dns_name", eni.PrivateDnsName); err != nil {
+		return diag.FromErr(err)
 	}
-	if privIps, ok := eni.GetPrivateIpsOk(); ok {
-		if err := d.Set("private_ips", oapihelpers.GetPrivateIPsForNic(*privIps)); err != nil {
-			return err
+	if eni.PrivateIps != nil {
+		if err := d.Set("private_ips", oapihelpers.GetPrivateIPsForNic(eni.PrivateIps)); err != nil {
+			return diag.FromErr(err)
 		}
 	}
-	if err := d.Set("is_source_dest_checked", eni.GetIsSourceDestChecked()); err != nil {
-		return err
+	if err := d.Set("is_source_dest_checked", eni.IsSourceDestChecked); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("state", eni.GetState()); err != nil {
-		return err
+	if err := d.Set("state", eni.State); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("tags", FlattenOAPITagsSDK(eni.GetTags())); err != nil {
-		return err
+	if err := d.Set("tags", FlattenOAPITagsSDK(eni.Tags)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("net_id", eni.GetNetId()); err != nil {
-		return err
+	if err := d.Set("net_id", eni.NetId); err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil
 }
 
 // Delete OAPINic
-func ResourceOutscaleNicDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleNicDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
 	timeout := d.Timeout(schema.TimeoutDelete)
 
-	err := ResourceOutscaleNicDetach(meta, d.Id(), timeout)
+	err := ResourceOutscaleNicDetach(ctx, meta, d.Id(), timeout)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	deleteEniOpts := oscgo.DeleteNicRequest{
+	deleteEniOpts := osc.DeleteNicRequest{
 		NicId: d.Id(),
 	}
 
-	err = retry.RetryContext(context.Background(), timeout, func() *retry.RetryError {
-		_, httpResp, err := conn.NicApi.DeleteNic(context.Background()).DeleteNicRequest(deleteEniOpts).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	_, err = client.DeleteNic(ctx, deleteEniOpts, options.WithRetryTimeout(timeout))
 	if err != nil {
-		return fmt.Errorf("error deleting eni: %s", err)
+		return diag.Errorf("error deleting eni: %s", err)
 	}
 
 	return nil
 }
 
-func ResourceOutscaleNicDetach(meta interface{}, nicID string, timeout time.Duration) error {
+func ResourceOutscaleNicDetach(ctx context.Context, meta interface{}, nicID string, timeout time.Duration) error {
 	// if there was an old nic_link, remove it
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{"attaching", "detaching"},
 		Target:  []string{"attached", "detached", "failed"},
-		Refresh: nicLinkRefreshFunc(conn, nicID, timeout),
 		Timeout: timeout,
-		Delay:   1 * time.Second,
+		Refresh: nicLinkRefreshFunc(ctx, client, nicID, timeout),
 	}
-	resp, err := stateConf.WaitForStateContext(context.Background())
+	resp, err := stateConf.WaitForStateContext(ctx)
 	if err != nil {
 		return fmt.Errorf(
 			"error waiting for eni (%s) to become dettached: %s", nicID, err)
 	}
+	r := resp.(*osc.ReadNicsResponse)
+	if r == nil || r.Nics == nil {
+		return fmt.Errorf("nic (%s) not found", nicID)
+	}
 
-	r := resp.(oscgo.ReadNicsResponse)
-	linkNic := r.GetNics()[0].GetLinkNic()
+	linkNic := ptr.From((*r.Nics)[0].LinkNic)
 
-	if !reflect.DeepEqual(linkNic, oscgo.LinkNic{}) {
+	if !reflect.DeepEqual(linkNic, osc.LinkNic{}) {
 		log.Printf("[DEBUG] Waiting for ENI (%s) to become dettached", nicID)
 
-		req := oscgo.UnlinkNicRequest{
-			LinkNicId: linkNic.GetLinkNicId(),
+		req := osc.UnlinkNicRequest{
+			LinkNicId: linkNic.LinkNicId,
 		}
-		var statusCode int
-		err := retry.RetryContext(context.Background(), timeout, func() *retry.RetryError {
-			_, httpResp, err := conn.NicApi.UnlinkNic(context.Background()).UnlinkNicRequest(req).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			statusCode = httpResp.StatusCode
-			return nil
-		})
+		_, err := client.UnlinkNic(ctx, req, options.WithRetryTimeout(timeout))
 		if err != nil {
-			if statusCode == http.StatusNotFound {
-				return fmt.Errorf("error detaching eni: %s", err)
-			}
+			return err
 		}
 	}
 	return nil
 }
 
 // Update OAPINic
-func ResourceOutscaleNicUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleNicUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 	timeout := d.Timeout(schema.TimeoutUpdate)
-	var err error
 
 	if d.HasChange("private_ips") {
 		oldIps, newIps := d.GetChange("private_ips")
@@ -457,94 +430,69 @@ func ResourceOutscaleNicUpdate(d *schema.ResourceData, meta interface{}) error {
 
 		// Unassign old IP addresses
 		if listOldIps := removed.List(); len(listOldIps) != 0 {
-			input := oscgo.UnlinkPrivateIpsRequest{
+			input := osc.UnlinkPrivateIpsRequest{
 				NicId:      d.Id(),
 				PrivateIps: flattenPrivateIPLightToStringSlice(listOldIps),
 			}
 
-			err := retry.RetryContext(context.Background(), timeout, func() *retry.RetryError {
-				_, httpResp, err := conn.NicApi.UnlinkPrivateIps(context.Background()).UnlinkPrivateIpsRequest(input).Execute()
-				if err != nil {
-					return utils.CheckThrottling(httpResp, err)
-				}
-				return nil
-			})
+			_, err := client.UnlinkPrivateIps(ctx, input, options.WithRetryTimeout(timeout))
 			if err != nil {
-				return fmt.Errorf("failure to unassign private ips: %s", err)
+				return diag.Errorf("failure to unassign private ips: %s", err)
 			}
 		}
 
 		// Assign new IP addresses
 		if listNewIps := created.List(); len(listNewIps) != 0 {
 			stringSlice := flattenPrivateIPLightToStringSlice(listNewIps)
-			input := oscgo.LinkPrivateIpsRequest{
+			input := osc.LinkPrivateIpsRequest{
 				NicId:      d.Id(),
 				PrivateIps: &stringSlice,
 			}
 
-			err = retry.RetryContext(context.Background(), timeout, func() *retry.RetryError {
-				_, httpResp, err := conn.NicApi.LinkPrivateIps(context.Background()).LinkPrivateIpsRequest(input).Execute()
-				if err != nil {
-					return utils.CheckThrottling(httpResp, err)
-				}
-				return nil
-			})
+			_, err := client.LinkPrivateIps(ctx, input, options.WithRetryTimeout(timeout))
 			if err != nil {
-				return fmt.Errorf("failure to assign private ips: %s", err)
+				return diag.Errorf("failure to assign private ips: %s", err)
 			}
 		}
 	}
 
 	if d.HasChange("security_group_ids") {
-		request := oscgo.UpdateNicRequest{
+		request := osc.UpdateNicRequest{
 			NicId: d.Id(),
 		}
-		request.SetSecurityGroupIds(utils.SetToStringSlice(d.Get("security_group_ids").(*schema.Set)))
-
-		err = retry.RetryContext(context.Background(), timeout, func() *retry.RetryError {
-			_, httpResp, err := conn.NicApi.UpdateNic(context.Background()).UpdateNicRequest(request).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			return nil
-		})
+		request.SecurityGroupIds = new(utils.SetToStringSlice(d.Get("security_group_ids").(*schema.Set)))
+		_, err := client.UpdateNic(ctx, request, options.WithRetryTimeout(timeout))
 		if err != nil {
-			return fmt.Errorf("failure updating eni: %s", err)
+			return diag.Errorf("failure updating eni: %s", err)
 		}
 	}
 
 	if d.HasChange("description") {
-		request := oscgo.UpdateNicRequest{
+		request := osc.UpdateNicRequest{
 			NicId: d.Id(),
 		}
-		request.SetDescription(d.Get("description").(string))
-		err := retry.RetryContext(context.Background(), timeout, func() *retry.RetryError {
-			_, httpResp, err := conn.NicApi.UpdateNic(context.Background()).UpdateNicRequest(request).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			return nil
-		})
+		request.Description = new(d.Get("description").(string))
+		_, err := client.UpdateNic(ctx, request, options.WithRetryTimeout(timeout))
 		if err != nil {
-			return fmt.Errorf("failure updating eni: %s", err)
+			return diag.Errorf("failure updating eni: %s", err)
 		}
 	}
 
-	if err := updateOAPITagsSDK(conn, d); err != nil {
-		return err
+	if err := updateOAPITagsSDK(ctx, client, timeout, d); err != nil {
+		return diag.FromErr(err)
 	}
-	return ResourceOutscaleNicRead(d, meta)
+	return ResourceOutscaleNicRead(ctx, d, meta)
 }
 
-func expandPrivateIPLight(pIPs []interface{}) []oscgo.PrivateIpLight {
-	privateIPs := make([]oscgo.PrivateIpLight, 0)
+func expandPrivateIPLight(pIPs []interface{}) []osc.PrivateIpLight {
+	privateIPs := make([]osc.PrivateIpLight, 0)
 	for _, v := range pIPs {
 		privateIPMap := v.(map[string]interface{})
 		isPrimary := privateIPMap["is_primary"].(bool)
 		private := privateIPMap["private_ip"].(string)
-		privateIP := oscgo.PrivateIpLight{
-			IsPrimary: &isPrimary,
-			PrivateIp: &private,
+		privateIP := osc.PrivateIpLight{
+			IsPrimary: isPrimary,
+			PrivateIp: private,
 		}
 		privateIPs = append(privateIPs, privateIP)
 	}
@@ -560,23 +508,23 @@ func flattenPrivateIPLightToStringSlice(pIPs []interface{}) []string {
 	return privateIPs
 }
 
-func flattenLinkPublicIp(linkIp *oscgo.LinkPublicIp) []map[string]interface{} {
+func flattenLinkPublicIp(linkIp *osc.LinkPublicIp) []map[string]interface{} {
 	return []map[string]interface{}{{
-		"public_ip_id":         linkIp.GetPublicIpId(),
-		"link_public_ip_id":    linkIp.GetLinkPublicIpId(),
-		"public_ip_account_id": linkIp.GetPublicIpAccountId(),
-		"public_dns_name":      linkIp.GetPublicDnsName(),
-		"public_ip":            linkIp.GetPublicIp(),
+		"public_ip_id":         linkIp.PublicIpId,
+		"link_public_ip_id":    linkIp.LinkPublicIpId,
+		"public_ip_account_id": linkIp.PublicIpAccountId,
+		"public_dns_name":      linkIp.PublicDnsName,
+		"public_ip":            linkIp.PublicIp,
 	}}
 }
 
-func flattenLinkNic(linkNic *oscgo.LinkNic) []map[string]interface{} {
+func flattenLinkNic(linkNic *osc.LinkNic) []map[string]interface{} {
 	return []map[string]interface{}{{
-		"link_nic_id":           linkNic.GetLinkNicId(),
-		"delete_on_vm_deletion": strconv.FormatBool(linkNic.GetDeleteOnVmDeletion()),
-		"device_number":         linkNic.GetDeviceNumber(),
-		"vm_id":                 linkNic.GetVmId(),
-		"vm_account_id":         linkNic.GetVmAccountId(),
-		"state":                 linkNic.GetState(),
+		"link_nic_id":           linkNic.LinkNicId,
+		"delete_on_vm_deletion": strconv.FormatBool(linkNic.DeleteOnVmDeletion),
+		"device_number":         linkNic.DeviceNumber,
+		"vm_id":                 linkNic.VmId,
+		"vm_account_id":         linkNic.VmAccountId,
+		"state":                 linkNic.State,
 	}}
 }

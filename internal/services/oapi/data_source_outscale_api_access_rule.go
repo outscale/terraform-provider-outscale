@@ -2,20 +2,21 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceOutscaleApiAccessRule() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleApiAccessRuleRead,
+		ReadContext: DataSourceOutscaleApiAccessRuleRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"api_access_rule_id": {
@@ -49,74 +50,66 @@ func DataSourceOutscaleApiAccessRule() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleApiAccessRuleRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleApiAccessRuleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 	if !filtersOk {
-		return ErrFilterRequired
+		return diag.FromErr(ErrFilterRequired)
 	}
 
 	filterParams, err := buildOutscaleApiAccessRuleFilters(filters.(*schema.Set))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	req := oscgo.ReadApiAccessRulesRequest{
+	req := osc.ReadApiAccessRulesRequest{
 		Filters: filterParams,
 	}
 
-	var resp oscgo.ReadApiAccessRulesResponse
-	err = retry.Retry(120*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.ApiAccessRuleApi.ReadApiAccessRules(context.Background()).ReadApiAccessRulesRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadApiAccessRules(ctx, req, options.WithRetryTimeout(120*time.Second))
 	if err != nil {
-		return fmt.Errorf("error reading api access rule id (%s)", utils.GetErrorResponse(err))
+		return diag.Errorf("error reading api access rule id (%s)", err)
 	}
-	apiAccessRules := resp.GetApiAccessRules()[:]
+	apiAccessRules := ptr.From(resp.ApiAccessRules)[:]
 	if len(apiAccessRules) < 1 {
 		d.SetId("")
-		return ErrNoResults
+		return diag.FromErr(ErrNoResults)
 	}
 	if len(apiAccessRules) > 1 {
-		return ErrMultipleResults
+		return diag.FromErr(ErrMultipleResults)
 	}
 
 	accRule := apiAccessRules[0]
-	if err := d.Set("api_access_rule_id", accRule.GetApiAccessRuleId()); err != nil {
-		return err
+	if err := d.Set("api_access_rule_id", ptr.From(accRule.ApiAccessRuleId)); err != nil {
+		return diag.FromErr(err)
 	}
-	if accRule.HasCaIds() {
-		if err := d.Set("ca_ids", accRule.GetCaIds()); err != nil {
-			return err
+	if accRule.CaIds != nil {
+		if err := d.Set("ca_ids", ptr.From(accRule.CaIds)); err != nil {
+			return diag.FromErr(err)
 		}
 	}
 
-	if accRule.HasCns() {
-		if err := d.Set("cns", accRule.GetCns()); err != nil {
-			return err
+	if accRule.Cns != nil {
+		if err := d.Set("cns", ptr.From(accRule.Cns)); err != nil {
+			return diag.FromErr(err)
 		}
 	}
-	if accRule.HasIpRanges() {
-		if err := d.Set("ip_ranges", accRule.GetIpRanges()); err != nil {
-			return err
+	if accRule.IpRanges != nil {
+		if err := d.Set("ip_ranges", ptr.From(accRule.IpRanges)); err != nil {
+			return diag.FromErr(err)
 		}
 	}
-	if accRule.HasDescription() {
-		if err := d.Set("description", accRule.GetDescription()); err != nil {
-			return err
+	if accRule.Description != nil {
+		if err := d.Set("description", ptr.From(accRule.Description)); err != nil {
+			return diag.FromErr(err)
 		}
 	}
-	d.SetId(accRule.GetApiAccessRuleId())
+	d.SetId(ptr.From(accRule.ApiAccessRuleId))
 	return nil
 }
 
-func buildOutscaleApiAccessRuleFilters(set *schema.Set) (*oscgo.FiltersApiAccessRule, error) {
-	var filters oscgo.FiltersApiAccessRule
+func buildOutscaleApiAccessRuleFilters(set *schema.Set) (*osc.FiltersApiAccessRule, error) {
+	var filters osc.FiltersApiAccessRule
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -126,17 +119,17 @@ func buildOutscaleApiAccessRuleFilters(set *schema.Set) (*oscgo.FiltersApiAccess
 
 		switch name := m["name"].(string); name {
 		case "api_access_rule_ids":
-			filters.SetApiAccessRuleIds(filterValues)
+			filters.ApiAccessRuleIds = &filterValues
 		case "ca_ids":
-			filters.SetCaIds(filterValues)
+			filters.CaIds = &filterValues
 		case "cns":
-			filters.SetCns(filterValues)
+			filters.Cns = &filterValues
 		case "descriptions":
-			filters.SetDescriptions(filterValues)
+			filters.Descriptions = &filterValues
 		case "ip_ranges":
-			filters.SetIpRanges(filterValues)
+			filters.IpRanges = &filterValues
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(name)
 		}
 	}
 	return &filters, nil

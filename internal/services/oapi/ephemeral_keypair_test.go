@@ -14,7 +14,7 @@ func TestAccOthers_Ephemeral_keypair_basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
-		PreCheck:                 func() { testacc.PreCheck(t) },
+
 		Steps: []resource.TestStep{
 			{
 				Config:   testAccEphemeralKeypairBasicConfig(keypairName),

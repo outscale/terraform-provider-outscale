@@ -5,15 +5,15 @@ import (
 	"fmt"
 	"os"
 	"testing"
-	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/services/oapi/oapihelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
@@ -26,14 +26,13 @@ func TestAccOthers_VPNConnectionRoute_basic(t *testing.T) {
 	bgpAsn := oapihelpers.RandBgpAsn()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testacc.PreCheck(t) },
 		Providers:    testacc.SDKProviders,
 		CheckDestroy: testAccOutscaleVPNConnectionRouteDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleVPNConnectionRouteConfig(bgpAsn, publicIP, destinationIPRange),
 				Check: resource.ComposeTestCheckFunc(
-					testAccOutscaleVPNConnectionRouteExists(resourceName),
+					testAccOutscaleVPNConnectionRouteExists(t.Context(), resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "destination_ip_range"),
 					resource.TestCheckResourceAttrSet(resourceName, "vpn_connection_id"),
 				),
@@ -51,14 +50,13 @@ func TestAccOthers_ImportVPNConnectionRoute_basic(t *testing.T) {
 		bgpAsn := oapihelpers.RandBgpAsn()
 
 		resource.ParallelTest(t, resource.TestCase{
-			PreCheck:     func() { testacc.PreCheck(t) },
 			Providers:    testacc.SDKProviders,
 			CheckDestroy: testAccOutscaleVPNConnectionRouteDestroy,
 			Steps: []resource.TestStep{
 				{
 					Config: testAccOutscaleVPNConnectionRouteConfig(bgpAsn, publicIP, destinationIPRange),
 					Check: resource.ComposeTestCheckFunc(
-						testAccOutscaleVPNConnectionRouteExists(resourceName),
+						testAccOutscaleVPNConnectionRouteExists(t.Context(), resourceName),
 						resource.TestCheckResourceAttrSet(resourceName, "destination_ip_range"),
 						resource.TestCheckResourceAttrSet(resourceName, "vpn_connection_id"),
 					),
@@ -71,43 +69,35 @@ func TestAccOthers_ImportVPNConnectionRoute_basic(t *testing.T) {
 	}
 }
 
-func testAccOutscaleVPNConnectionRouteExists(resourceName string) resource.TestCheckFunc {
+func testAccOutscaleVPNConnectionRouteExists(ctx context.Context, resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
 			return fmt.Errorf("not found: %s", resourceName)
 		}
 
-		conn := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSCAPI
+		client := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSC
 
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("no vpn connection route id is set")
 		}
 
-		destinationIPRange, vpnConnectionID := oapihelpers.ParseVPNConnectionRouteID(rs.Primary.ID)
+		destinationIPRange, vpnconnectionID := oapihelpers.ParseVPNConnectionRouteID(rs.Primary.ID)
 
-		filter := oscgo.ReadVpnConnectionsRequest{
-			Filters: &oscgo.FiltersVpnConnection{
+		filter := osc.ReadVpnConnectionsRequest{
+			Filters: &osc.FiltersVpnConnection{
 				RouteDestinationIpRanges: &[]string{destinationIPRange},
-				VpnConnectionIds:         &[]string{vpnConnectionID},
+				VpnConnectionIds:         &[]string{vpnconnectionID},
 			},
 		}
-		var resp oscgo.ReadVpnConnectionsResponse
-		var err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-			rp, httpResp, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(filter).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
+		resp, err := client.ReadVpnConnections(ctx, filter, options.WithRetryTimeout(DefaultTimeout))
 
-		vpnConnection := resp.GetVpnConnections()[0]
+		vpnConnection := ptr.From(resp.VpnConnections)[0]
 
 		var state string
-		for _, route := range vpnConnection.GetRoutes() {
-			if route.GetDestinationIpRange() == destinationIPRange {
-				state = route.GetState()
+		for _, route := range ptr.From(vpnConnection.Routes) {
+			if route.DestinationIpRange == destinationIPRange {
+				state = route.State
 			}
 		}
 
@@ -119,7 +109,7 @@ func testAccOutscaleVPNConnectionRouteExists(resourceName string) resource.TestC
 }
 
 func testAccOutscaleVPNConnectionRouteDestroy(s *terraform.State) error {
-	conn := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSCAPI
+	client := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSC
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_vpn_connection_route" {
 			continue
@@ -127,28 +117,20 @@ func testAccOutscaleVPNConnectionRouteDestroy(s *terraform.State) error {
 
 		destinationIPRange, vpnConnectionID := oapihelpers.ParseVPNConnectionRouteID(rs.Primary.ID)
 
-		filter := oscgo.ReadVpnConnectionsRequest{
-			Filters: &oscgo.FiltersVpnConnection{
+		filter := osc.ReadVpnConnectionsRequest{
+			Filters: &osc.FiltersVpnConnection{
 				RouteDestinationIpRanges: &[]string{destinationIPRange},
 				VpnConnectionIds:         &[]string{vpnConnectionID},
 			},
 		}
-		var resp oscgo.ReadVpnConnectionsResponse
-		var err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-			rp, httpResp, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(filter).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
+		resp, err := client.ReadVpnConnections(context.Background(), filter, options.WithRetryTimeout(DefaultTimeout))
 
-		vpnConnection := resp.GetVpnConnections()[0]
+		vpnConnection := ptr.From(resp.VpnConnections)[0]
 
 		var state string
-		for _, route := range vpnConnection.GetRoutes() {
-			if route.GetDestinationIpRange() == destinationIPRange {
-				state = route.GetState()
+		for _, route := range ptr.From(vpnConnection.Routes) {
+			if route.DestinationIpRange == destinationIPRange {
+				state = route.State
 			}
 		}
 

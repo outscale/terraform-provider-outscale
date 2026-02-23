@@ -140,7 +140,7 @@ func (d *oksKubeconfigDataSource) Read(ctx context.Context, req datasource.ReadR
 
 	data.Kubeconfig = to.String(kubeconfigResp.Cluster.Data.Kubeconfig)
 	data.RequestId = to.String(kubeconfigResp.Cluster.RequestId)
-	data.Id = types.StringValue(id.UniqueId())
+	data.Id = to.String(id.UniqueId())
 
 	diags = resp.State.Set(ctx, &data)
 	resp.Diagnostics.Append(diags...)

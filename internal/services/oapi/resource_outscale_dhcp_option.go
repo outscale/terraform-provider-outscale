@@ -5,20 +5,22 @@ import (
 	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func ResourceOutscaleDHCPOption() *schema.Resource {
 	return &schema.Resource{
-		Create: ResourceOutscaleDHCPOptionCreate,
-		Read:   ResourceOutscaleDHCPOptionRead,
-		Update: ResourceOutscaleDHCPOptionUpdate,
-		Delete: ResourceOutscaleDHCPOptionDelete,
+		CreateContext: ResourceOutscaleDHCPOptionCreate,
+		ReadContext:   ResourceOutscaleDHCPOptionRead,
+		UpdateContext: ResourceOutscaleDHCPOptionUpdate,
+		DeleteContext: ResourceOutscaleDHCPOptionDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -80,11 +82,11 @@ func ResourceOutscaleDHCPOption() *schema.Resource {
 	}
 }
 
-func ResourceOutscaleDHCPOptionCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleDHCPOptionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 	timeout := d.Timeout(schema.TimeoutCreate)
 
-	createOpts := oscgo.CreateDhcpOptionsRequest{}
+	createReq := osc.CreateDhcpOptionsRequest{}
 
 	domainName, okDomainName := d.GetOk("domain_name")
 	domainNameServers, okDomainNameServers := d.GetOk("domain_name_servers")
@@ -92,202 +94,169 @@ func ResourceOutscaleDHCPOptionCreate(d *schema.ResourceData, meta interface{}) 
 	ntpServers, okNTPServers := d.GetOk("ntp_servers")
 
 	if !okDomainName && !okDomainNameServers && !okLogServers && !okNTPServers {
-		return fmt.Errorf("insufficient parameters provided out of: domainname, domainnameservers, logservers, ntpservers - expected at least: 1")
+		return diag.Errorf("insufficient parameters provided out of: domainname, domainnameservers, logservers, ntpservers - expected at least: 1")
 	}
 	if okDomainName {
-		createOpts.SetDomainName(domainName.(string))
+		createReq.DomainName = new(domainName.(string))
 	}
 	if okDomainNameServers {
-		createOpts.SetDomainNameServers(utils.InterfaceSliceToStringSlice(domainNameServers.([]interface{})))
+		createReq.DomainNameServers = new(utils.InterfaceSliceToStringSlice(domainNameServers.([]interface{})))
 	}
 	if okLogServers {
-		createOpts.SetLogServers(utils.InterfaceSliceToStringSlice(logServers.([]interface{})))
+		createReq.LogServers = new(utils.InterfaceSliceToStringSlice(logServers.([]interface{})))
 	}
 	if okNTPServers {
-		createOpts.SetNtpServers(utils.InterfaceSliceToStringSlice(ntpServers.([]interface{})))
+		createReq.NtpServers = new(utils.InterfaceSliceToStringSlice(ntpServers.([]interface{})))
 	}
 
-	dhcp, _, err := createDhcpOption(conn, timeout, createOpts)
+	dhcp, _, err := createDhcpOption(ctx, client, timeout, createReq)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	d.SetId(dhcp.GetDhcpOptionsSetId())
+	d.SetId(ptr.From(dhcp.DhcpOptionsSetId))
 
-	err = createOAPITagsSDK(conn, d)
+	err = createOAPITagsSDK(ctx, client, timeout, d)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	return ResourceOutscaleDHCPOptionRead(d, meta)
+	return ResourceOutscaleDHCPOptionRead(ctx, d, meta)
 }
 
-func ResourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleDHCPOptionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 	timeout := d.Timeout(schema.TimeoutRead)
+
 	dhcpID := d.Id()
 
-	_, resp, err := readDhcpOption(conn, timeout, dhcpID)
+	_, resp, err := readDhcpOption(ctx, client, timeout, dhcpID)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	dhcps := resp.GetDhcpOptionsSets()
+	dhcps := ptr.From(resp.DhcpOptionsSets)
 	if utils.IsResponseEmpty(len(dhcps), "DhcpOption", d.Id()) {
 		d.SetId("")
 		return nil
 	}
 	dhcp := dhcps[0]
 
-	if err := d.Set("domain_name", dhcp.GetDomainName()); err != nil {
-		return err
+	if err := d.Set("domain_name", ptr.From(dhcp.DomainName)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("domain_name_servers", dhcp.GetDomainNameServers()); err != nil {
-		return err
+	if err := d.Set("domain_name_servers", ptr.From(dhcp.DomainNameServers)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("log_servers", dhcp.GetLogServers()); err != nil {
-		return err
+	if err := d.Set("log_servers", ptr.From(dhcp.LogServers)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("ntp_servers", dhcp.GetNtpServers()); err != nil {
-		return err
+	if err := d.Set("ntp_servers", ptr.From(dhcp.NtpServers)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("default", dhcp.GetDefault()); err != nil {
-		return err
+	if err := d.Set("default", ptr.From(dhcp.Default)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("dhcp_options_set_id", dhcp.GetDhcpOptionsSetId()); err != nil {
-		return err
+	if err := d.Set("dhcp_options_set_id", ptr.From(dhcp.DhcpOptionsSetId)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("tags", FlattenOAPITagsSDK(dhcp.GetTags())); err != nil {
-		return err
+	if err := d.Set("tags", FlattenOAPITagsSDK(ptr.From(dhcp.Tags))); err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil
 }
 
-func ResourceOutscaleDHCPOptionUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleDHCPOptionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+	timeout := d.Timeout(schema.TimeoutUpdate)
 
-	if err := updateOAPITagsSDK(conn, d); err != nil {
-		return err
+	if err := updateOAPITagsSDK(ctx, client, timeout, d); err != nil {
+		return diag.FromErr(err)
 	}
-	return ResourceOutscaleDHCPOptionRead(d, meta)
+
+	return ResourceOutscaleDHCPOptionRead(ctx, d, meta)
 }
 
-func ResourceOutscaleDHCPOptionDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleDHCPOptionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 	timeout := d.Timeout(schema.TimeoutDelete)
 
 	dhcpID := d.Id()
 
-	nets, err := getAttachedDHCPs(conn, timeout, dhcpID)
+	nets, err := getAttachedDHCPs(ctx, client, timeout, dhcpID)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	if err := detachDHCPs(conn, timeout, nets); err != nil {
-		return err
+	if err := detachDHCPs(ctx, client, timeout, nets); err != nil {
+		return diag.FromErr(err)
 	}
 
 	// Deletes the dhcp option
-	if err := deleteDhcpOptions(conn, timeout, dhcpID); err != nil {
-		return err
+	if err := deleteDhcpOptions(ctx, client, timeout, dhcpID); err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil
 }
 
-func createDhcpOption(conn *oscgo.APIClient, timeout time.Duration, dhcp oscgo.CreateDhcpOptionsRequest) (*oscgo.DhcpOptionsSet, *oscgo.CreateDhcpOptionsResponse, error) {
-	var resp oscgo.CreateDhcpOptionsResponse
-	err := retry.Retry(timeout, func() *retry.RetryError {
-		rp, httpResp, err := conn.DhcpOptionApi.CreateDhcpOptions(context.Background()).CreateDhcpOptionsRequest(dhcp).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+func createDhcpOption(ctx context.Context, client *osc.Client, timeout time.Duration, dhcp osc.CreateDhcpOptionsRequest) (*osc.DhcpOptionsSet, *osc.CreateDhcpOptionsResponse, error) {
+	resp, err := client.CreateDhcpOptions(ctx, dhcp, options.WithRetryTimeout(timeout))
 	if err != nil {
 		return nil, nil, err
 	}
 
-	return resp.DhcpOptionsSet, &resp, err
+	return resp.DhcpOptionsSet, resp, err
 }
 
-func readDhcpOption(conn *oscgo.APIClient, timeout time.Duration, dhcpID string) (*oscgo.DhcpOptionsSet, *oscgo.ReadDhcpOptionsResponse, error) {
-	filterRequest := oscgo.ReadDhcpOptionsRequest{
-		Filters: &oscgo.FiltersDhcpOptions{DhcpOptionsSetIds: &[]string{dhcpID}},
+func readDhcpOption(ctx context.Context, client *osc.Client, timeout time.Duration, dhcpID string) (*osc.DhcpOptionsSet, *osc.ReadDhcpOptionsResponse, error) {
+	filterRequest := osc.ReadDhcpOptionsRequest{
+		Filters: &osc.FiltersDhcpOptions{DhcpOptionsSetIds: &[]string{dhcpID}},
 	}
 
-	var resp oscgo.ReadDhcpOptionsResponse
-	err := retry.Retry(timeout, func() *retry.RetryError {
-		rp, httpResp, err := conn.DhcpOptionApi.ReadDhcpOptions(context.Background()).ReadDhcpOptionsRequest(filterRequest).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadDhcpOptions(ctx, filterRequest, options.WithRetryTimeout(timeout))
 	if err != nil {
-		return nil, &resp, err
+		return nil, resp, err
 	}
 
-	dhcps := resp.GetDhcpOptionsSets()
+	dhcps := ptr.From(resp.DhcpOptionsSets)
 	if len(dhcps) == 0 {
-		return nil, &resp, fmt.Errorf("the outscale dhcp option is not found %s", dhcpID)
+		return nil, resp, fmt.Errorf("the outscale dhcp option is not found %s", dhcpID)
 	}
 
-	return &dhcps[0], &resp, err
+	return &dhcps[0], resp, err
 }
 
-func deleteDhcpOptions(conn *oscgo.APIClient, timeout time.Duration, dhcpID string) error {
-	err := retry.Retry(timeout, func() *retry.RetryError {
-		_, httpResp, err := conn.DhcpOptionApi.DeleteDhcpOptions(context.Background()).DeleteDhcpOptionsRequest(oscgo.DeleteDhcpOptionsRequest{
-			DhcpOptionsSetId: dhcpID,
-		}).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+func deleteDhcpOptions(ctx context.Context, client *osc.Client, timeout time.Duration, dhcpID string) error {
+	_, err := client.DeleteDhcpOptions(ctx, osc.DeleteDhcpOptionsRequest{
+		DhcpOptionsSetId: dhcpID,
+	}, options.WithRetryTimeout(timeout))
 	return err
 }
 
-func getAttachedDHCPs(conn *oscgo.APIClient, timeout time.Duration, dhcpID string) ([]oscgo.Net, error) {
+func getAttachedDHCPs(ctx context.Context, client *osc.Client, timeout time.Duration, dhcpID string) ([]osc.Net, error) {
 	// Validate if the DHCP  Option is attached to a Net
-	var resp oscgo.ReadNetsResponse
-	err := retry.Retry(timeout, func() *retry.RetryError {
-		rp, httpResp, err := conn.NetApi.ReadNets(context.Background()).ReadNetsRequest(oscgo.ReadNetsRequest{
-			Filters: &oscgo.FiltersNet{
-				DhcpOptionsSetIds: &[]string{dhcpID},
-			},
-		}).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadNets(ctx, osc.ReadNetsRequest{
+		Filters: &osc.FiltersNet{
+			DhcpOptionsSetIds: &[]string{dhcpID},
+		},
+	}, options.WithRetryTimeout(timeout))
 	if err != nil {
 		return nil, fmt.Errorf("error reading network (%s)", err)
 	}
 
-	return resp.GetNets(), nil
+	return ptr.From(resp.Nets), nil
 }
 
-func detachDHCPs(conn *oscgo.APIClient, timeout time.Duration, nets []oscgo.Net) error {
+func detachDHCPs(ctx context.Context, client *osc.Client, timeout time.Duration, nets []osc.Net) error {
 	// Detaching the dhcp of the nets
 	for _, net := range nets {
-		err := retry.Retry(timeout, func() *retry.RetryError {
-			_, httpResp, err := conn.NetApi.UpdateNet(context.Background()).UpdateNetRequest(oscgo.UpdateNetRequest{
-				DhcpOptionsSetId: "default",
-				NetId:            net.GetNetId(),
-			}).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			return nil
-		})
+		_, err := client.UpdateNet(ctx, osc.UpdateNetRequest{
+			DhcpOptionsSetId: "default",
+			NetId:            net.NetId,
+		}, options.WithRetryTimeout(timeout))
 		if err != nil {
-			return fmt.Errorf("error updating net(%s) in dhcp option resource: %s", net.GetNetId(), err)
+			return fmt.Errorf("error updating net(%s) in dhcp option resource: %s", net.NetId, err)
 		}
 	}
 	return nil

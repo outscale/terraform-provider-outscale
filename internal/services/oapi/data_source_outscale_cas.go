@@ -2,20 +2,20 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 func DataSourceOutscaleCas() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleCasRead,
+		ReadContext: DataSourceOutscaleCasRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"cas": {
@@ -46,54 +46,45 @@ func DataSourceOutscaleCas() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleCasRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleCasRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
-	params := oscgo.ReadCasRequest{}
+	params := osc.ReadCasRequest{}
 
 	var err error
 	if filtersOk {
 		params.Filters, err = buildOutscaleDataSourceCaFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	var resp oscgo.ReadCasResponse
-	err = retry.Retry(120*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.CaApi.ReadCas(context.Background()).ReadCasRequest(params).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
-
+	resp, err := client.ReadCas(ctx, params, options.WithRetryTimeout(120*time.Second))
 	if err != nil {
-		return fmt.Errorf("error reading certificate authority id (%s)", utils.GetErrorResponse(err))
+		return diag.Errorf("error reading certificate authority id (%s)", err)
 	}
-	respCas := resp.GetCas()[:]
+	respCas := ptr.From(resp.Cas)[:]
 	if len(respCas) < 1 {
 		d.SetId("")
-		return ErrNoResults
+		return diag.FromErr(ErrNoResults)
 	}
 
 	blockCas := make([]map[string]interface{}, len(respCas))
 	for k, v := range respCas {
 		ca := make(map[string]interface{})
-		if v.GetCaFingerprint() != "" {
-			ca["ca_fingerprint"] = v.GetCaFingerprint()
+		if ptr.From(v.CaFingerprint) != "" {
+			ca["ca_fingerprint"] = v.CaFingerprint
 		}
-		if v.GetCaId() != "" {
-			ca["ca_id"] = v.GetCaId()
+		if ptr.From(v.CaId) != "" {
+			ca["ca_id"] = v.CaId
 		}
-		if v.GetDescription() != "" {
-			ca["description"] = v.GetDescription()
+		if ptr.From(v.Description) != "" {
+			ca["description"] = v.Description
 		}
 		blockCas[k] = ca
 	}
 	d.SetId(id.UniqueId())
 
-	return d.Set("cas", blockCas)
+	return diag.FromErr(d.Set("cas", blockCas))
 }

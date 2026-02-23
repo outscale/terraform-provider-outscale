@@ -4,10 +4,12 @@ import (
 	"context"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 	"github.com/spf13/cast"
@@ -15,7 +17,7 @@ import (
 
 func DataSourceOutscaleVMTypes() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleVMTypesRead,
+		ReadContext: DataSourceOutscaleVMTypesRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -63,73 +65,61 @@ func DataSourceOutscaleVMTypes() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleVMTypesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleVMTypesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	filter, filterOk := d.GetOk("filter")
 
-	var req oscgo.ReadVmTypesRequest
+	var req osc.ReadVmTypesRequest
 	var err error
 	if filterOk {
 		req.Filters, err = buildOutscaleDataSourceVMTypesFilters(filter.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	var resp oscgo.ReadVmTypesResponse
-	err = retry.Retry(30*time.Second, func() *retry.RetryError {
-		var err error
-		rp, httpResp, err := conn.VmApi.ReadVmTypes(context.Background()).ReadVmTypesRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
-
+	resp, err := client.ReadVmTypes(ctx, req, options.WithRetryTimeout(30*time.Second))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	filteredTypes := resp.GetVmTypes()[:]
+	filteredTypes := ptr.From(resp.VmTypes)[:]
 
 	if len(filteredTypes) < 1 {
-		return ErrNoResults
+		return diag.FromErr(ErrNoResults)
 	}
 
-	return statusDescriptionOAPIVMTypesAttributes(d, filteredTypes)
-
+	return diag.FromErr(statusDescriptionOAPIVMTypesAttributes(d, filteredTypes))
 }
 
-func setOAPIVMTypeAttributes(set AttributeSetter, vType *oscgo.VmType) error {
-
-	if err := set("bsu_optimized", vType.GetBsuOptimized()); err != nil {
+func setOAPIVMTypeAttributes(set AttributeSetter, vType *osc.VmType) error {
+	if err := set("bsu_optimized", vType.BsuOptimized); err != nil {
 		return err
 	}
-	if err := set("max_private_ips", vType.GetMaxPrivateIps()); err != nil {
+	if err := set("max_private_ips", vType.MaxPrivateIps); err != nil {
 		return err
 	}
-	if err := set("memory_size", vType.GetMemorySize()); err != nil {
+	if err := set("memory_size", vType.MemorySize); err != nil {
 		return err
 	}
-	if err := set("vcore_count", vType.GetVcoreCount()); err != nil {
+	if err := set("vcore_count", vType.VcoreCount); err != nil {
 		return err
 	}
-	if err := set("vm_type_name", vType.GetVmTypeName()); err != nil {
+	if err := set("vm_type_name", vType.VmTypeName); err != nil {
 		return err
 	}
-	if err := set("volume_count", vType.GetVolumeCount()); err != nil {
+	if err := set("volume_count", vType.VolumeCount); err != nil {
 		return err
 	}
-	if err := set("volume_size", vType.GetVolumeSize()); err != nil {
+	if err := set("volume_size", vType.VolumeSize); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func statusDescriptionOAPIVMTypesAttributes(d *schema.ResourceData, fTypes []oscgo.VmType) error {
+func statusDescriptionOAPIVMTypesAttributes(d *schema.ResourceData, fTypes []osc.VmType) error {
 	d.SetId(id.UniqueId())
 
 	vTypes := make([]map[string]interface{}, len(fTypes))
@@ -150,11 +140,10 @@ func statusDescriptionOAPIVMTypesAttributes(d *schema.ResourceData, fTypes []osc
 	}
 
 	return d.Set("vm_types", vTypes)
-
 }
 
-func buildOutscaleDataSourceVMTypesFilters(set *schema.Set) (*oscgo.FiltersVmType, error) {
-	var filters oscgo.FiltersVmType
+func buildOutscaleDataSourceVMTypesFilters(set *schema.Set) (*osc.FiltersVmType, error) {
+	var filters osc.FiltersVmType
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -164,25 +153,25 @@ func buildOutscaleDataSourceVMTypesFilters(set *schema.Set) (*oscgo.FiltersVmTyp
 
 		switch name := m["name"].(string); name {
 		case "bsu_optimized":
-			filters.SetBsuOptimized(cast.ToBool(filterValues[0]))
+			filters.BsuOptimized = new(cast.ToBool(filterValues[0]))
 		case "ephemerals_types":
-			filters.SetEphemeralsTypes(filterValues)
+			filters.EphemeralsTypes = &filterValues
 		case "eths":
-			filters.SetEths(utils.StringSliceToInt32Slice(filterValues))
+			filters.Eths = new(utils.StringSliceToIntSlice(filterValues))
 		case "gpus":
-			filters.SetGpus(utils.StringSliceToInt32Slice(filterValues))
+			filters.Gpus = new(utils.StringSliceToIntSlice(filterValues))
 		case "memory_sizes":
-			filters.SetMemorySizes(utils.StringSliceToFloat32Slice(filterValues))
+			filters.MemorySizes = new(utils.StringSliceToFloat32Slice(filterValues))
 		case "vcore_counts":
-			filters.SetVcoreCounts(utils.StringSliceToInt32Slice(filterValues))
+			filters.VcoreCounts = new(utils.StringSliceToIntSlice(filterValues))
 		case "vm_type_names":
-			filters.SetVmTypeNames(filterValues)
+			filters.VmTypeNames = &filterValues
 		case "volume_counts":
-			filters.SetVolumeCounts(utils.StringSliceToInt32Slice(filterValues))
+			filters.VolumeCounts = new(utils.StringSliceToIntSlice(filterValues))
 		case "volume_sizes":
-			filters.SetVolumeSizes(utils.StringSliceToInt32Slice(filterValues))
+			filters.VolumeSizes = new(utils.StringSliceToIntSlice(filterValues))
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(name)
 		}
 	}
 	return &filters, nil

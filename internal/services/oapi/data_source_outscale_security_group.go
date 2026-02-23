@@ -6,9 +6,11 @@ import (
 	"strings"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
@@ -16,7 +18,7 @@ import (
 
 func DataSourceOutscaleSecurityGroup() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleSecurityGroupRead,
+		ReadContext: DataSourceOutscaleSecurityGroupRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -157,93 +159,86 @@ func DataSourceOutscaleSecurityGroup() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleSecurityGroupRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
-	req := oscgo.ReadSecurityGroupsRequest{}
+func DataSourceOutscaleSecurityGroupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
+	req := osc.ReadSecurityGroupsRequest{}
 
 	filters, filtersOk := d.GetOk("filter")
 	gn, gnOk := d.GetOk("security_group_name")
 	gid, gidOk := d.GetOk("security_group_id")
 
-	var filter oscgo.FiltersSecurityGroup
+	var filter osc.FiltersSecurityGroup
 	if gnOk {
-		filter.SetSecurityGroupNames([]string{gn.(string)})
-		req.SetFilters(filter)
+		filter.SecurityGroupNames = &[]string{gn.(string)}
+		req.Filters = &filter
 	}
 
 	if gidOk {
-		filter.SetSecurityGroupIds([]string{gid.(string)})
-		req.SetFilters(filter)
+		filter.SecurityGroupIds = &[]string{gid.(string)}
+		req.Filters = &filter
 	}
 
 	var err error
 	if filtersOk {
 		req.Filters, err = buildOutscaleDataSourceSecurityGroupFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	var resp oscgo.ReadSecurityGroupsResponse
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.SecurityGroupApi.ReadSecurityGroups(context.Background()).ReadSecurityGroupsRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadSecurityGroups(ctx, req, options.WithRetryTimeout(5*time.Minute))
 
 	var errString string
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "InvalidSecurityGroupID.NotFound") ||
 			strings.Contains(fmt.Sprint(err), "InvalidGroup.NotFound") {
-			resp.SetSecurityGroups(nil)
+			resp.SecurityGroups = nil
 			err = nil
 		} else {
 			// fmt.Printf("\n\nError on SGStateRefresh: %s", err)
 			errString = err.Error()
 		}
 
-		return fmt.Errorf("error on sgstaterefresh: %s", errString)
+		return diag.Errorf("error on sgstaterefresh: %s", errString)
 	}
 
-	if resp.GetSecurityGroups() == nil || len(resp.GetSecurityGroups()) == 0 {
-		return ErrNoResults
+	if resp.SecurityGroups == nil || len(*resp.SecurityGroups) == 0 {
+		return diag.FromErr(ErrNoResults)
 	}
-	if len(resp.GetSecurityGroups()) > 1 {
-		return ErrMultipleResults
+	if len(*resp.SecurityGroups) > 1 {
+		return diag.FromErr(ErrMultipleResults)
 	}
 
-	sg := resp.GetSecurityGroups()[0]
+	sg := (*resp.SecurityGroups)[0]
 
-	d.SetId(sg.GetSecurityGroupId())
-	if err := d.Set("security_group_id", sg.GetSecurityGroupId()); err != nil {
-		return err
+	d.SetId(sg.SecurityGroupId)
+	if err := d.Set("security_group_id", sg.SecurityGroupId); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("description", sg.GetDescription()); err != nil {
-		return err
+	if err := d.Set("description", sg.Description); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("security_group_name", sg.GetSecurityGroupName()); err != nil {
-		return err
+	if err := d.Set("security_group_name", sg.SecurityGroupName); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("net_id", sg.GetNetId()); err != nil {
-		return err
+	if err := d.Set("net_id", ptr.From(sg.NetId)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("account_id", sg.GetAccountId()); err != nil {
-		return err
+	if err := d.Set("account_id", sg.AccountId); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("tags", FlattenOAPITagsSDK(sg.GetTags())); err != nil {
-		return err
+	if err := d.Set("tags", FlattenOAPITagsSDK(sg.Tags)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("inbound_rules", flattenOAPISecurityGroupRule(sg.GetInboundRules())); err != nil {
-		return err
+	if err := d.Set("inbound_rules", flattenOAPISecurityGroupRule(sg.InboundRules)); err != nil {
+		return diag.FromErr(err)
 	}
-	return d.Set("outbound_rules", flattenOAPISecurityGroupRule(sg.GetOutboundRules()))
+	return diag.FromErr(d.Set("outbound_rules", flattenOAPISecurityGroupRule(sg.OutboundRules)))
 }
 
-func buildOutscaleDataSourceSecurityGroupFilters(set *schema.Set) (*oscgo.FiltersSecurityGroup, error) {
-	var filters oscgo.FiltersSecurityGroup
+func buildOutscaleDataSourceSecurityGroupFilters(set *schema.Set) (*osc.FiltersSecurityGroup, error) {
+	var filters osc.FiltersSecurityGroup
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -253,49 +248,49 @@ func buildOutscaleDataSourceSecurityGroupFilters(set *schema.Set) (*oscgo.Filter
 
 		switch name := m["name"].(string); name {
 		case "descriptions":
-			filters.SetDescriptions(filterValues)
+			filters.Descriptions = &filterValues
 		case "inbound_rule_account_ids":
-			filters.SetInboundRuleAccountIds(filterValues)
+			filters.InboundRuleAccountIds = &filterValues
 		case "inbound_rule_from_port_ranges":
-			filters.SetInboundRuleFromPortRanges(utils.StringSliceToInt32Slice(filterValues))
+			filters.InboundRuleFromPortRanges = new(utils.StringSliceToIntSlice(filterValues))
 		case "inbound_rule_ip_ranges":
-			filters.SetInboundRuleIpRanges(filterValues)
+			filters.InboundRuleIpRanges = &filterValues
 		case "inbound_rule_protocols":
-			filters.SetInboundRuleProtocols(filterValues)
+			filters.InboundRuleProtocols = &filterValues
 		case "inbound_rule_security_group_ids":
-			filters.SetInboundRuleSecurityGroupIds(filterValues)
+			filters.InboundRuleSecurityGroupIds = &filterValues
 		case "inbound_rule_security_group_names":
-			filters.SetInboundRuleSecurityGroupNames(filterValues)
+			filters.InboundRuleSecurityGroupNames = &filterValues
 		case "inbound_rule_to_port_ranges":
-			filters.SetInboundRuleToPortRanges(utils.StringSliceToInt32Slice(filterValues))
+			filters.InboundRuleToPortRanges = new(utils.StringSliceToIntSlice(filterValues))
 		case "net_ids":
-			filters.SetNetIds(filterValues)
+			filters.NetIds = &filterValues
 		case "outbound_rule_account_ids":
-			filters.SetOutboundRuleAccountIds(filterValues)
+			filters.OutboundRuleAccountIds = &filterValues
 		case "outbound_rule_from_port_ranges":
-			filters.SetOutboundRuleFromPortRanges(utils.StringSliceToInt32Slice(filterValues))
+			filters.OutboundRuleFromPortRanges = new(utils.StringSliceToIntSlice(filterValues))
 		case "outbound_rule_ip_ranges":
-			filters.SetOutboundRuleIpRanges(filterValues)
+			filters.OutboundRuleIpRanges = &filterValues
 		case "outbound_rule_protocols":
-			filters.SetOutboundRuleProtocols(filterValues)
+			filters.OutboundRuleProtocols = &filterValues
 		case "outbound_rule_security_group_ids":
-			filters.SetOutboundRuleSecurityGroupIds(filterValues)
+			filters.OutboundRuleSecurityGroupIds = &filterValues
 		case "outbound_rule_security_group_names":
-			filters.SetOutboundRuleSecurityGroupNames(filterValues)
+			filters.OutboundRuleSecurityGroupNames = &filterValues
 		case "outbound_rule_to_port_ranges":
-			filters.SetOutboundRuleToPortRanges(utils.StringSliceToInt32Slice(filterValues))
+			filters.OutboundRuleToPortRanges = new(utils.StringSliceToIntSlice(filterValues))
 		case "security_group_ids":
-			filters.SetSecurityGroupIds(filterValues)
+			filters.SecurityGroupIds = &filterValues
 		case "security_group_names":
-			filters.SetSecurityGroupNames(filterValues)
+			filters.SecurityGroupNames = &filterValues
 		case "tag_keys":
-			filters.SetTagKeys(filterValues)
+			filters.TagKeys = &filterValues
 		case "tag_values":
-			filters.SetTagValues(filterValues)
+			filters.TagValues = &filterValues
 		case "tags":
-			filters.SetTags(filterValues)
+			filters.Tags = &filterValues
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(name)
 		}
 	}
 	return &filters, nil

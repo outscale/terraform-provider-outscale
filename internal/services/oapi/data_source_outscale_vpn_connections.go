@@ -2,21 +2,22 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 func DataSourceOutscaleVPNConnections() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleVPNConnectionsRead,
+		ReadContext: DataSourceOutscaleVPNConnectionsRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -118,21 +119,21 @@ func DataSourceOutscaleVPNConnections() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleVPNConnectionsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleVPNConnectionsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 	vpnConnectionIDs, vpnConnectionOk := d.GetOk("vpn_connection_ids")
 
 	if !filtersOk && !vpnConnectionOk {
-		return fmt.Errorf("one of filters, or vpn_connection_ids must be assigned")
+		return diag.Errorf("one of filters, or vpn_connection_ids must be assigned")
 	}
 
-	log.Printf("vpnConnectionIDs: %#+v\n", vpnConnectionIDs)
-	params := oscgo.ReadVpnConnectionsRequest{}
+	log.Printf("vpnconnectionIDs: %#+v\n", vpnConnectionIDs)
+	params := osc.ReadVpnConnectionsRequest{}
 
 	if vpnConnectionOk {
-		params.Filters = &oscgo.FiltersVpnConnection{
+		params.Filters = &osc.FiltersVpnConnection{
 			VpnConnectionIds: utils.InterfaceSliceToStringSlicePtr(vpnConnectionIDs.([]interface{})),
 		}
 	}
@@ -141,49 +142,41 @@ func DataSourceOutscaleVPNConnectionsRead(d *schema.ResourceData, meta interface
 	if filtersOk {
 		params.Filters, err = buildOutscaleDataSourceVPNConnectionFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	var resp oscgo.ReadVpnConnectionsResponse
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(params).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadVpnConnections(ctx, params, options.WithRetryTimeout(5*time.Minute))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	if len(resp.GetVpnConnections()) == 0 {
-		return ErrNoResults
+	if resp.VpnConnections == nil || len(*resp.VpnConnections) == 0 {
+		return diag.FromErr(ErrNoResults)
 	}
-	if err := d.Set("vpn_connections", flattenVPNConnections(resp.GetVpnConnections())); err != nil {
-		return err
+	if err := d.Set("vpn_connections", flattenVPNConnections(*resp.VpnConnections)); err != nil {
+		return diag.FromErr(err)
 	}
 
 	d.SetId(id.UniqueId())
 	return nil
 }
 
-func flattenVPNConnections(vpnConnections []oscgo.VpnConnection) []map[string]interface{} {
+func flattenVPNConnections(vpnConnections []osc.VpnConnection) []map[string]interface{} {
 	vpnConnectionsMap := make([]map[string]interface{}, len(vpnConnections))
 
 	for i, vpnConnection := range vpnConnections {
 		vpnConnectionsMap[i] = map[string]interface{}{
-			"vpn_connection_id":            vpnConnection.GetVpnConnectionId(),
-			"client_gateway_id":            vpnConnection.GetClientGatewayId(),
-			"virtual_gateway_id":           vpnConnection.GetVirtualGatewayId(),
-			"connection_type":              vpnConnection.GetConnectionType(),
-			"static_routes_only":           vpnConnection.GetStaticRoutesOnly(),
-			"client_gateway_configuration": vpnConnection.GetClientGatewayConfiguration(),
-			"state":                        vpnConnection.GetState(),
-			"routes":                       flattenVPNConnection(vpnConnection.GetRoutes()),
-			"tags":                         FlattenOAPITagsSDK(vpnConnection.GetTags()),
-			"vgw_telemetries":              flattenVgwTelemetries(vpnConnection.GetVgwTelemetries()),
+			"vpn_connection_id":            vpnConnection.VpnConnectionId,
+			"client_gateway_id":            vpnConnection.ClientGatewayId,
+			"virtual_gateway_id":           vpnConnection.VirtualGatewayId,
+			"connection_type":              vpnConnection.ConnectionType,
+			"static_routes_only":           vpnConnection.StaticRoutesOnly,
+			"client_gateway_configuration": vpnConnection.ClientGatewayConfiguration,
+			"state":                        vpnConnection.State,
+			"routes":                       flattenVPNConnection(ptr.From(vpnConnection.Routes)),
+			"tags":                         FlattenOAPITagsSDK(ptr.From(vpnConnection.Tags)),
+			"vgw_telemetries":              flattenVgwTelemetries(ptr.From(vpnConnection.VgwTelemetries)),
 		}
 	}
 	return vpnConnectionsMap
