@@ -480,7 +480,7 @@ Log: {}
     def exec_test_step(self, tf_file_path, out_file_path, is_first_step=True):
         self.logger.debug("Exec step : {}".format(tf_file_path))
         self.log += "\nTerraform validate:\n{}".format(
-            self.run_cmd(["terraform validate -no-color"])[0]
+            self.run_cmd("terraform validate -no-color")[0]
         )
 
         plan_json_path = out_file_path.replace(".out", ".plan.json")
@@ -511,9 +511,9 @@ Log: {}
             self.run_cmd("terraform apply -auto-approve -lock=false -no-color")[0]
         )
         self.log += "\nTerraform show:\n{}".format(
-            self.run_cmd(["terraform show -no-color"])[0]
+            self.run_cmd("terraform show -no-color")[0]
         )
-        self.run_cmd(["terraform state pull > {}".format(out_file_path)])
+        self.run_cmd("terraform state pull > {}".format(out_file_path))
 
     def exec_test(self, test_name, test_path, tmp_path):
         self.work_dir = str(tmp_path)
@@ -540,8 +540,8 @@ Log: {}
         try:
             self.logger.debug("Start test: '%s' in %s", test_name, self.work_dir)
 
-            self.run_cmd(["terraform init -no-color"])
-            stdout, _ = self.run_cmd(["terraform version -no-color"])
+            self.run_cmd("terraform init -no-color")
+            stdout, _ = self.run_cmd("terraform version -no-color")
             self.log += "\nVERSION:{}\n".format("\n".join(stdout.splitlines()[:2]))
 
             tf_file_names = get_test_file_names(test_path, prefix="step", suffix=".tf")
