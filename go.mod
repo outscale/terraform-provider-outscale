@@ -18,7 +18,7 @@ require (
 	github.com/hashicorp/terraform-plugin-testing v1.14.0
 	github.com/outscale/goutils/sdk v0.0.0-20260127143749-d95db5597c97
 	github.com/outscale/osc-sdk-go/v2 v2.32.0
-	github.com/outscale/osc-sdk-go/v3 v3.0.0-beta.3
+	github.com/outscale/osc-sdk-go/v3 v3.0.0-beta.4
 	github.com/samber/lo v1.52.0
 	github.com/spf13/cast v1.10.0
 	github.com/tidwall/gjson v1.18.0
