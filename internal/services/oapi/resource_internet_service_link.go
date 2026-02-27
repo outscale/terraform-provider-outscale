@@ -13,11 +13,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/outscale/goutils/sdk/ptr"
 	"github.com/outscale/osc-sdk-go/v3/pkg/options"
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
+	"github.com/outscale/terraform-provider-outscale/internal/services/oapi/oapihelpers"
 )
 
 var (
@@ -227,10 +229,62 @@ func (r *resourceInternetServiceLink) Delete(ctx context.Context, req resource.D
 
 	_, err := r.Client.UnlinkInternetService(ctx, unlinkReq, options.WithRetryTimeout(deleteTimeout))
 	if err != nil {
+		oscErr := oapihelpers.GetError(err)
+		// 409 with code 1004 is returned when the Net of the Internet Service has mapped Public IPs
+		// In this case, we unlink them before unlinking the Internet Service
+		if oscErr.Code != "1004" {
+			resp.Diagnostics.AddError(
+				"Unable to unlink Internet Service resource.",
+				err.Error(),
+			)
+			return
+		}
+	}
+
+	var publicIps []osc.LinkPublicIp
+	respNics, err := r.Client.ReadNics(ctx, osc.ReadNicsRequest{
+		Filters: &osc.FiltersNic{
+			NetIds: &[]string{data.NetId.ValueString()},
+		},
+	})
+	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to unlink Internet Service resource.",
+			"Unable to get Nics linked to the net of the Internet Service.",
 			err.Error(),
 		)
+	}
+	if len(ptr.From(respNics.Nics)) > 0 {
+		for _, nic := range ptr.From(respNics.Nics) {
+			if nic.LinkPublicIp == nil {
+				continue
+			}
+			publicIps = append(publicIps, *nic.LinkPublicIp)
+		}
+	}
+	for _, ip := range publicIps {
+		_, err := r.Client.UnlinkPublicIp(ctx, osc.UnlinkPublicIpRequest{
+			LinkPublicIpId: &ip.LinkPublicIpId,
+		})
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable to unlink Public IP from the NICs linked to the Net of the Internet Service.",
+				err.Error(),
+			)
+		}
+	}
+
+	_, err = r.Client.UnlinkInternetService(ctx, unlinkReq, options.WithRetryTimeout(deleteTimeout))
+	if err != nil {
+		oscErr := oapihelpers.GetError(err)
+		// 424 with code 1007 is returned when Internet Service is already unlinked
+		// In this case, the link resource can be destroyed
+		if oscErr.Code != "1007" {
+			resp.Diagnostics.AddError(
+				"Unable to unlink Internet Service resource after unmapping Public IPs.",
+				err.Error(),
+			)
+			return
+		}
 	}
 }
 
