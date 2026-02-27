@@ -4,10 +4,11 @@ import (
 	"context"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
@@ -15,7 +16,7 @@ import (
 
 func DataSourceAccounts() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceAccountsRead,
+		ReadContext: DataSourceAccountsRead,
 		Schema: map[string]*schema.Schema{
 			"accounts": {
 				Type:     schema.TypeList,
@@ -94,56 +95,48 @@ func DataSourceAccounts() *schema.Resource {
 	}
 }
 
-func DataSourceAccountsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceAccountsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
-	req := oscgo.ReadAccountsRequest{}
+	req := osc.ReadAccountsRequest{}
 
-	var resp oscgo.ReadAccountsResponse
-	err := retry.Retry(30*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.AccountApi.ReadAccounts(context.Background()).ReadAccountsRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadAccounts(ctx, req, options.WithRetryTimeout(30*time.Second))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	if len(resp.GetAccounts()) == 0 {
-		return ErrNoResults
+	if resp.Accounts == nil || len(*resp.Accounts) == 0 {
+		return diag.FromErr(ErrNoResults)
 	}
 
-	if err := d.Set("accounts", flattenAccounts(resp.GetAccounts())); err != nil {
-		return err
+	if err := d.Set("accounts", flattenAccounts(*resp.Accounts)); err != nil {
+		return diag.FromErr(err)
 	}
 	d.SetId(id.UniqueId())
 
 	return nil
 }
 
-func flattenAccounts(accounts []oscgo.Account) []map[string]interface{} {
+func flattenAccounts(accounts []osc.Account) []map[string]interface{} {
 	accountsMap := make([]map[string]interface{}, len(accounts))
 
 	for i, account := range accounts {
 		accountsMap[i] = map[string]interface{}{
-			"account_id":        account.GetAccountId(),
+			"account_id":        account.AccountId,
 			"additional_emails": utils.StringSlicePtrToInterfaceSlice(account.AdditionalEmails),
-			"city":              account.GetCity(),
-			"company_name":      account.GetCompanyName(),
-			"country":           account.GetCountry(),
-			"customer_id":       account.GetCustomerId(),
-			"email":             account.GetEmail(),
-			"first_name":        account.GetFirstName(),
-			"job_title":         account.GetJobTitle(),
-			"last_name":         account.GetLastName(),
-			"mobile_number":     account.GetMobileNumber(),
-			"phone_number":      account.GetPhoneNumber(),
-			"state_province":    account.GetStateProvince(),
-			"vat_number":        account.GetVatNumber(),
-			"zip_code":          account.GetZipCode(),
+			"city":              account.City,
+			"company_name":      account.CompanyName,
+			"country":           account.Country,
+			"customer_id":       account.CustomerId,
+			"email":             account.Email,
+			"first_name":        account.FirstName,
+			"job_title":         account.JobTitle,
+			"last_name":         account.LastName,
+			"mobile_number":     account.MobileNumber,
+			"phone_number":      account.PhoneNumber,
+			"state_province":    account.StateProvince,
+			"vat_number":        account.VatNumber,
+			"zip_code":          account.ZipCode,
 		}
 	}
 	return accountsMap

@@ -2,20 +2,20 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 )
 
 func DataSourcePoliciesLinkedToUserGroup() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourcePoliciesLinkedToUserGroupRead,
+		ReadContext: DataSourcePoliciesLinkedToUserGroupRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"user_group_name": {
@@ -54,46 +54,39 @@ func DataSourcePoliciesLinkedToUserGroup() *schema.Resource {
 	}
 }
 
-func DataSourcePoliciesLinkedToUserGroupRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
-	req := oscgo.ReadManagedPoliciesLinkedToUserGroupRequest{}
-	req.SetUserGroupName(d.Get("user_group_name").(string))
+func DataSourcePoliciesLinkedToUserGroupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
+	req := osc.ReadManagedPoliciesLinkedToUserGroupRequest{}
+	req.UserGroupName = d.Get("user_group_name").(string)
 
 	var err error
 	if filters, filtersOk := d.GetOk("filter"); filtersOk {
 		req.Filters, err = buildUserGroupsFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	var resp oscgo.ReadManagedPoliciesLinkedToUserGroupResponse
-	err = retry.Retry(2*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.PolicyApi.ReadManagedPoliciesLinkedToUserGroup(context.Background()).ReadManagedPoliciesLinkedToUserGroupRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadManagedPoliciesLinkedToUserGroup(ctx, req, options.WithRetryTimeout(2*time.Minute))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	if _, ok := resp.GetPoliciesOk(); !ok {
-		return fmt.Errorf("unable to find policies linked to user group")
+	if resp.Policies == nil {
+		return diag.Errorf("unable to find policies linked to user group")
 	}
-	policiesResp := resp.GetPolicies()
+	policiesResp := resp.Policies
 	d.SetId(id.UniqueId())
-	policies := make([]map[string]interface{}, len(policiesResp))
-	for i, v := range policiesResp {
+	policies := make([]map[string]interface{}, len(*policiesResp))
+	for i, v := range *policiesResp {
 		policy := make(map[string]interface{})
-		policy["policy_name"] = v.GetPolicyName()
-		policy["policy_id"] = v.GetPolicyId()
-		policy["orn"] = v.GetOrn()
-		policy["creation_date"] = v.GetCreationDate()
-		policy["last_modification_date"] = v.GetLastModificationDate()
+		policy["policy_name"] = v.PolicyName
+		policy["policy_id"] = v.PolicyId
+		policy["orn"] = v.Orn
+		policy["creation_date"] = from.ISO8601(v.CreationDate)
+		policy["last_modification_date"] = from.ISO8601(v.LastModificationDate)
 		policies[i] = policy
 	}
 
-	return d.Set("policies", policies)
+	return diag.FromErr(d.Set("policies", policies))
 }

@@ -2,21 +2,20 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceOutscaleSnapshotExportTasks() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOAPISnapshotExportTasksRead,
+		ReadContext: dataSourceOAPISnapshotExportTasksRead,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -90,66 +89,57 @@ func DataSourceOutscaleSnapshotExportTasks() *schema.Resource {
 	}
 }
 
-func dataSourceOAPISnapshotExportTasksRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func dataSourceOAPISnapshotExportTasksRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 
 	var err error
-	var filtersReq *oscgo.FiltersExportTask
+	var filtersReq *osc.FiltersExportTask
 	if filtersOk {
 		filtersReq, err = buildOutscaleOSCAPIDataSourceSnapshotExportTaskFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	var resp oscgo.ReadSnapshotExportTasksResponse
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.SnapshotApi.ReadSnapshotExportTasks(context.Background()).
-			ReadSnapshotExportTasksRequest(oscgo.ReadSnapshotExportTasksRequest{
-				Filters: filtersReq,
-			}).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadSnapshotExportTasks(ctx, osc.ReadSnapshotExportTasksRequest{
+		Filters: filtersReq,
+	}, options.WithRetryTimeout(5*time.Minute))
 	if err != nil {
-		return fmt.Errorf("error reading task image %s", err)
+		return diag.Errorf("error reading task image %s", err)
 	}
 
-	if len(resp.GetSnapshotExportTasks()) == 0 {
-		return ErrNoResults
+	if resp.SnapshotExportTasks == nil || len(*resp.SnapshotExportTasks) == 0 {
+		return diag.FromErr(ErrNoResults)
 	}
 
-	snapshots := make([]map[string]interface{}, len(resp.GetSnapshotExportTasks()))
-	for k, v := range resp.GetSnapshotExportTasks() {
+	snapshots := make([]map[string]interface{}, len(*resp.SnapshotExportTasks))
+	for k, v := range *resp.SnapshotExportTasks {
 		snapshot := make(map[string]interface{})
 
-		snapshot["progress"] = v.GetProgress()
-		snapshot["task_id"] = v.GetTaskId()
-		snapshot["state"] = v.GetState()
-		snapshot["comment"] = v.GetComment()
+		snapshot["progress"] = v.Progress
+		snapshot["task_id"] = v.TaskId
+		snapshot["state"] = v.State
+		snapshot["comment"] = v.Comment
 
 		exp := make([]map[string]interface{}, 1)
 		exportToOsu := make(map[string]interface{})
-		exportToOsu["disk_image_format"] = v.OsuExport.GetDiskImageFormat()
-		exportToOsu["osu_bucket"] = v.OsuExport.GetOsuBucket()
-		exportToOsu["osu_prefix"] = v.OsuExport.GetOsuPrefix()
+		exportToOsu["disk_image_format"] = v.OsuExport.DiskImageFormat
+		exportToOsu["osu_bucket"] = v.OsuExport.OsuBucket
+		exportToOsu["osu_prefix"] = v.OsuExport.OsuPrefix
 
 		exp[0] = exportToOsu
 
-		snapshot["snapshot_id"] = v.GetSnapshotId()
+		snapshot["snapshot_id"] = v.SnapshotId
 		snapshot["osu_export"] = exp
 
-		snapshot["tags"] = FlattenOAPITagsSDK(v.GetTags())
+		snapshot["tags"] = FlattenOAPITagsSDK(v.Tags)
 
 		snapshots[k] = snapshot
 	}
 
 	d.SetId(id.UniqueId())
 
-	return d.Set("snapshot_export_tasks", snapshots)
+	return diag.FromErr(d.Set("snapshot_export_tasks", snapshots))
 }

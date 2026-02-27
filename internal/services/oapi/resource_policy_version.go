@@ -13,12 +13,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	"github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
+
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 var (
@@ -39,7 +41,7 @@ type PolicyVersionModel struct {
 }
 
 type resourcePolicyVersion struct {
-	Client *osc.APIClient
+	Client *osc.Client
 }
 
 func NewResourcePolicyVersion() resource.Resource {
@@ -54,12 +56,12 @@ func (r *resourcePolicyVersion) Configure(_ context.Context, req resource.Config
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected *osc.APIClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *osc.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
 	}
-	r.Client = client.OSCAPI
+	r.Client = client.OSC
 }
 
 func (r *resourcePolicyVersion) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -137,18 +139,10 @@ func (r *resourcePolicyVersion) Create(ctx context.Context, req resource.CreateR
 	}
 
 	if fwhelpers.IsSet(data.SetAsDefault) {
-		createReq.SetSetAsDefault(data.SetAsDefault.ValueBool())
+		createReq.SetAsDefault = data.SetAsDefault.ValueBoolPointer()
 	}
 
-	var createResp osc.CreatePolicyVersionResponse
-	err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.PolicyApi.CreatePolicyVersion(ctx).CreatePolicyVersionRequest(createReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		createResp = rp
-		return nil
-	})
+	createResp, err := r.Client.CreatePolicyVersion(ctx, createReq, options.WithRetryTimeout(createTimeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to create Policy Version",
@@ -156,7 +150,7 @@ func (r *resourcePolicyVersion) Create(ctx context.Context, req resource.CreateR
 		)
 		return
 	}
-	policyVersion := createResp.GetPolicyVersion()
+	policyVersion := ptr.From(createResp.PolicyVersion)
 	data.Id = to.String(id.UniqueId())
 	data.VersionId = to.String(policyVersion.VersionId)
 
@@ -226,14 +220,11 @@ func (r *resourcePolicyVersion) Delete(ctx context.Context, req resource.DeleteR
 
 	// If this version is currently the default, we need to set v1 as default first
 	if data.DefaultVersion.ValueBool() {
-		req := osc.NewSetDefaultPolicyVersionRequest(data.PolicyOrn.ValueString(), "v1")
-		err = retry.RetryContext(ctx, deleteTimeout, func() *retry.RetryError {
-			_, httpResp, err := r.Client.PolicyApi.SetDefaultPolicyVersion(ctx).SetDefaultPolicyVersionRequest(*req).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			return nil
-		})
+		req := osc.SetDefaultPolicyVersionRequest{
+			PolicyOrn: data.PolicyOrn.ValueString(),
+			VersionId: "v1",
+		}
+		_, err := r.Client.SetDefaultPolicyVersion(ctx, req, options.WithRetryTimeout(deleteTimeout))
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Unable to set Policy Version v1 as default before deletion",
@@ -243,15 +234,11 @@ func (r *resourcePolicyVersion) Delete(ctx context.Context, req resource.DeleteR
 		}
 	}
 
-	deleteReq := osc.NewDeletePolicyVersionRequest(data.PolicyOrn.ValueString(), data.VersionId.ValueString())
-
-	err = retry.RetryContext(ctx, deleteTimeout, func() *retry.RetryError {
-		_, httpResp, err := r.Client.PolicyApi.DeletePolicyVersion(ctx).DeletePolicyVersionRequest(*deleteReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	deleteReq := osc.DeletePolicyVersionRequest{
+		PolicyOrn: data.PolicyOrn.ValueString(),
+		VersionId: data.VersionId.ValueString(),
+	}
+	_, err = r.Client.DeletePolicyVersion(ctx, deleteReq, options.WithRetryTimeout(deleteTimeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to delete Policy Version",
@@ -261,17 +248,11 @@ func (r *resourcePolicyVersion) Delete(ctx context.Context, req resource.DeleteR
 }
 
 func (r *resourcePolicyVersion) read(ctx context.Context, timeout time.Duration, data PolicyVersionModel) (PolicyVersionModel, error) {
-	req := osc.NewReadPolicyVersionRequest(data.PolicyOrn.ValueString(), data.VersionId.ValueString())
-
-	var resp osc.ReadPolicyVersionResponse
-	err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.PolicyApi.ReadPolicyVersion(ctx).ReadPolicyVersionRequest(*req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	req := osc.ReadPolicyVersionRequest{
+		PolicyOrn: data.PolicyOrn.ValueString(),
+		VersionId: data.VersionId.ValueString(),
+	}
+	resp, err := r.Client.ReadPolicyVersion(ctx, req, options.WithRetryTimeout(timeout))
 	if err != nil {
 		return data, err
 	}
@@ -280,11 +261,11 @@ func (r *resourcePolicyVersion) read(ctx context.Context, timeout time.Duration,
 		return data, ErrResourceEmpty
 	}
 
-	policyVersion := resp.GetPolicyVersion()
+	policyVersion := ptr.From(resp.PolicyVersion)
 
-	data.DefaultVersion = to.Bool(policyVersion.DefaultVersion)
-	data.CreationDate = to.String(policyVersion.CreationDate)
-	data.Body = to.String(policyVersion.Body)
+	data.DefaultVersion = to.Bool(ptr.From(policyVersion.DefaultVersion))
+	data.CreationDate = to.String(from.ISO8601(policyVersion.CreationDate))
+	data.Body = to.String(ptr.From(policyVersion.Body))
 
 	return data, nil
 }

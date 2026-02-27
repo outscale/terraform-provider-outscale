@@ -2,22 +2,22 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceOutscaleInternetServices() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleInternetServicesRead,
+		ReadContext: DataSourceOutscaleInternetServicesRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"internet_service_ids": {
@@ -56,80 +56,66 @@ func DataSourceOutscaleInternetServices() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleInternetServicesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleInternetServicesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 	internetID, internetIDOk := d.GetOk("internet_service_ids")
 
 	if !filtersOk && !internetIDOk {
-		return fmt.Errorf("one of filters, or instance_id must be assigned")
+		return diag.Errorf("one of filters, or instance_id must be assigned")
 	}
 
 	// Build up search parameters
-	params := oscgo.ReadInternetServicesRequest{
-		Filters: &oscgo.FiltersInternetService{},
+	params := osc.ReadInternetServicesRequest{
+		Filters: &osc.FiltersInternetService{},
 	}
-	filter := oscgo.FiltersInternetService{}
+	filter := osc.FiltersInternetService{}
 	if internetIDOk {
 		i := internetID.([]string)
 		in := make([]string, len(i))
 		copy(in, i)
-		filter.SetInternetServiceIds(in)
-		params.SetFilters(filter)
+		filter.InternetServiceIds = &in
+		params.Filters = &filter
 	}
 
 	var err error
 	if filtersOk {
 		params.Filters, err = buildOutscaleOSCAPIDataSourceInternetServiceFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	var resp oscgo.ReadInternetServicesResponse
-	err = retry.Retry(120*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.InternetServiceApi.ReadInternetServices(context.Background()).ReadInternetServicesRequest(params).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
-
-	var errString string
-
+	resp, err := client.ReadInternetServices(ctx, params, options.WithRetryTimeout(120*time.Second))
 	if err != nil {
-		errString = err.Error()
-
-		return fmt.Errorf("error reading internet services (%s)", errString)
+		return diag.Errorf("error reading internet services (%s)", err)
 	}
 
 	log.Printf("[DEBUG] Setting OAPI LIN Internet Gateways id (%s)", err)
 
 	d.SetId(id.UniqueId())
 
-	result := resp.GetInternetServices()
-	return internetServicesOAPIDescriptionAttributes(d, result)
+	result := ptr.From(resp.InternetServices)
+	return diag.FromErr(internetServicesOAPIDescriptionAttributes(d, result))
 }
 
-func internetServicesOAPIDescriptionAttributes(d *schema.ResourceData, internetServices []oscgo.InternetService) error {
-
+func internetServicesOAPIDescriptionAttributes(d *schema.ResourceData, internetServices []osc.InternetService) error {
 	i := make([]map[string]interface{}, len(internetServices))
 	for k, v := range internetServices {
 		im := make(map[string]interface{})
-		if v.GetState() != "" {
-			im["state"] = v.GetState()
+		if v.State != "" {
+			im["state"] = v.State
 		}
 
-		if v.GetNetId() != "" {
-			im["net_id"] = v.GetNetId()
+		if v.NetId != "" {
+			im["net_id"] = v.NetId
 		}
-		if v.GetInternetServiceId() != "" {
-			im["internet_service_id"] = v.GetInternetServiceId()
+		if v.InternetServiceId != "" {
+			im["internet_service_id"] = v.InternetServiceId
 		}
 		if v.Tags != nil {
-			im["tags"] = FlattenOAPITagsSDK(v.GetTags())
+			im["tags"] = FlattenOAPITagsSDK(v.Tags)
 		}
 		i[k] = im
 	}

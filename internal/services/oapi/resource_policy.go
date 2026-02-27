@@ -13,12 +13,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	"github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 var (
@@ -45,7 +46,7 @@ type PolicyModel struct {
 }
 
 type resourcePolicy struct {
-	Client *osc.APIClient
+	Client *osc.Client
 }
 
 func NewResourcePolicy() resource.Resource {
@@ -60,12 +61,12 @@ func (r *resourcePolicy) Configure(_ context.Context, req resource.ConfigureRequ
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected *osc.APIClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *osc.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
 	}
-	r.Client = client.OSCAPI
+	r.Client = client.OSC
 }
 
 func (r *resourcePolicy) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
@@ -172,21 +173,13 @@ func (r *resourcePolicy) Create(ctx context.Context, req resource.CreateRequest,
 	}
 
 	if fwhelpers.IsSet(data.Path) {
-		createReq.SetPath(data.Path.ValueString())
+		createReq.Path = data.Path.ValueStringPointer()
 	}
 	if fwhelpers.IsSet(data.Description) {
-		createReq.SetDescription(data.Description.ValueString())
+		createReq.Description = data.Description.ValueStringPointer()
 	}
 
-	var createResp osc.CreatePolicyResponse
-	err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.PolicyApi.CreatePolicy(ctx).CreatePolicyRequest(createReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		createResp = rp
-		return nil
-	})
+	createResp, err := r.Client.CreatePolicy(ctx, createReq, options.WithRetryTimeout(createTimeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to create Policy",
@@ -194,7 +187,7 @@ func (r *resourcePolicy) Create(ctx context.Context, req resource.CreateRequest,
 		)
 		return
 	}
-	policy := createResp.GetPolicy()
+	policy := ptr.From(createResp.Policy)
 
 	data.Id = to.String(policy.Orn)
 
@@ -269,59 +262,34 @@ func (r *resourcePolicy) Delete(ctx context.Context, req resource.DeleteRequest,
 		PolicyOrn: data.Orn.ValueString(),
 	}
 
-	err = retry.RetryContext(ctx, deleteTimeout, func() *retry.RetryError {
-		_, httpResp, err := r.Client.PolicyApi.DeletePolicy(ctx).DeletePolicyRequest(delReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	_, err = r.Client.DeletePolicy(ctx, delReq, options.WithRetryTimeout(deleteTimeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to delete Policy",
 			err.Error(),
 		)
-		return
 	}
-}
-
-func (r *resourcePolicy) getPolicyVersions(ctx context.Context, timeout time.Duration, policyOrn string) ([]osc.PolicyVersion, error) {
-	req := osc.NewReadPolicyVersionsRequest(policyOrn)
-
-	var resp osc.ReadPolicyVersionsResponse
-	err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.PolicyApi.ReadPolicyVersions(ctx).ReadPolicyVersionsRequest(*req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
-
-	return resp.GetPolicyVersions(), err
 }
 
 func (r *resourcePolicy) deleteVersions(ctx context.Context, to time.Duration, orn string) error {
-	versions, err := r.getPolicyVersions(ctx, to, orn)
-	if err != nil {
+	req := osc.ReadPolicyVersionsRequest{
+		PolicyOrn: orn,
+	}
+
+	versions, err := r.Client.ReadPolicyVersions(ctx, req, options.WithRetryTimeout(to))
+	if err != nil || versions.PolicyVersions == nil {
 		return err
 	}
-	if len(versions) > 1 {
-		for _, version := range versions {
-			if version.GetDefaultVersion() {
+	if len(*versions.PolicyVersions) > 1 {
+		for _, version := range *versions.PolicyVersions {
+			if *version.DefaultVersion {
 				continue
 			}
 			delReq := osc.DeletePolicyVersionRequest{
 				PolicyOrn: orn,
-				VersionId: version.GetVersionId(),
+				VersionId: *version.VersionId,
 			}
-			err := retry.RetryContext(ctx, to, func() *retry.RetryError {
-				_, httpResp, err := r.Client.PolicyApi.DeletePolicyVersion(ctx).DeletePolicyVersionRequest(delReq).Execute()
-				if err != nil {
-					return utils.CheckThrottling(httpResp, err)
-				}
-				return nil
-			})
+			_, err := r.Client.DeletePolicyVersion(ctx, delReq, options.WithRetryTimeout(to))
 			if err != nil {
 				return err
 			}
@@ -335,19 +303,17 @@ func (r *resourcePolicy) unlinkEntities(ctx context.Context, to time.Duration, o
 	req := osc.ReadEntitiesLinkedToPolicyRequest{PolicyOrn: orn}
 
 	var users, groups []osc.MinimalPolicy
-	err := retry.RetryContext(ctx, to, func() *retry.RetryError {
-		resp, httpResp, err := r.Client.PolicyApi.ReadEntitiesLinkedToPolicy(ctx).ReadEntitiesLinkedToPolicyRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		if resp.HasPolicyEntities() {
-			users = *resp.GetPolicyEntities().Users
-			groups = *resp.GetPolicyEntities().Groups
-		}
-		return nil
-	})
+	resp, err := r.Client.ReadEntitiesLinkedToPolicy(ctx, req, options.WithRetryTimeout(to))
 	if err != nil {
 		return err
+	}
+	if resp.PolicyEntities != nil {
+		if resp.PolicyEntities.Users != nil {
+			users = *resp.PolicyEntities.Users
+		}
+		if resp.PolicyEntities.Groups != nil {
+			groups = *resp.PolicyEntities.Groups
+		}
 	}
 	if len(users) > 0 {
 		req := osc.UnlinkPolicyRequest{
@@ -355,14 +321,11 @@ func (r *resourcePolicy) unlinkEntities(ctx context.Context, to time.Duration, o
 		}
 
 		for _, user := range users {
-			req.SetUserName(user.GetName())
-			err := retry.RetryContext(ctx, to, func() *retry.RetryError {
-				_, httpResp, err := r.Client.PolicyApi.UnlinkPolicy(ctx).UnlinkPolicyRequest(req).Execute()
-				if err != nil {
-					return utils.CheckThrottling(httpResp, err)
-				}
-				return nil
-			})
+			if user.Name == nil {
+				continue
+			}
+			req.UserName = *user.Name
+			_, err := r.Client.UnlinkPolicy(ctx, req, options.WithRetryTimeout(to))
 			if err != nil {
 				return err
 			}
@@ -374,14 +337,11 @@ func (r *resourcePolicy) unlinkEntities(ctx context.Context, to time.Duration, o
 		}
 
 		for _, group := range groups {
-			req.SetUserGroupName(group.GetName())
-			err := retry.RetryContext(ctx, to, func() *retry.RetryError {
-				_, httpResp, err := r.Client.PolicyApi.UnlinkManagedPolicyFromUserGroup(ctx).UnlinkManagedPolicyFromUserGroupRequest(req).Execute()
-				if err != nil {
-					return utils.CheckThrottling(httpResp, err)
-				}
-				return nil
-			})
+			if group.Name == nil {
+				continue
+			}
+			req.UserGroupName = *group.Name
+			_, err := r.Client.UnlinkManagedPolicyFromUserGroup(ctx, req, options.WithRetryTimeout(to))
 			if err != nil {
 				return err
 			}
@@ -392,39 +352,28 @@ func (r *resourcePolicy) unlinkEntities(ctx context.Context, to time.Duration, o
 }
 
 func (r *resourcePolicy) getDocument(ctx context.Context, to time.Duration, orn, versionId string) (string, error) {
-	req := osc.NewReadPolicyVersionRequest(orn, versionId)
+	req := osc.ReadPolicyVersionRequest{
+		PolicyOrn: orn,
+		VersionId: versionId,
+	}
 
-	var resp osc.ReadPolicyVersionResponse
-	err := retry.RetryContext(ctx, to, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.PolicyApi.ReadPolicyVersion(ctx).ReadPolicyVersionRequest(*req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := r.Client.ReadPolicyVersion(ctx, req, options.WithRetryTimeout(to))
 	if err != nil {
 		return "", err
 	}
-	if _, ok := resp.GetPolicyVersionOk(); !ok {
+	if resp.PolicyVersion == nil {
 		return "", fmt.Errorf("cannot find policy version: %v", versionId)
 	}
 
-	return *resp.GetPolicyVersion().Body, err
+	return ptr.From(resp.PolicyVersion.Body), err
 }
 
 func (r *resourcePolicy) read(ctx context.Context, timeout time.Duration, data PolicyModel) (PolicyModel, error) {
-	req := osc.NewReadPolicyRequest(data.Id.ValueString())
+	req := osc.ReadPolicyRequest{
+		PolicyOrn: data.Id.ValueString(),
+	}
 
-	var resp osc.ReadPolicyResponse
-	err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.PolicyApi.ReadPolicy(ctx).ReadPolicyRequest(*req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := r.Client.ReadPolicy(ctx, req, options.WithRetryTimeout(timeout))
 	if err != nil {
 		return data, err
 	}
@@ -432,21 +381,21 @@ func (r *resourcePolicy) read(ctx context.Context, timeout time.Duration, data P
 		return data, ErrResourceEmpty
 	}
 
-	policy := resp.GetPolicy()
-	document, err := r.getDocument(ctx, timeout, policy.GetOrn(), "v1")
+	policy := ptr.From(resp.Policy)
+	document, err := r.getDocument(ctx, timeout, *policy.Orn, "v1")
 	if err != nil {
 		return data, err
 	}
 
-	data.CreationDate = to.String(policy.CreationDate)
-	data.Description = to.String(policy.Description)
-	data.IsLinkable = to.Bool(policy.IsLinkable)
-	data.LastModificationDate = to.String(policy.LastModificationDate)
-	data.Orn = to.String(policy.Orn)
-	data.Path = to.String(policy.Path)
-	data.PolicyDefaultVersionId = to.String(policy.PolicyDefaultVersionId)
-	data.PolicyName = to.String(policy.PolicyName)
-	data.ResourcesCount = to.Int32(policy.ResourcesCount)
+	data.CreationDate = to.String(from.ISO8601(policy.CreationDate))
+	data.Description = to.String(ptr.From(policy.Description))
+	data.IsLinkable = to.Bool(ptr.From(policy.IsLinkable))
+	data.LastModificationDate = to.String(from.ISO8601(policy.LastModificationDate))
+	data.Orn = to.String(*policy.Orn)
+	data.Path = to.String(ptr.From(policy.Path))
+	data.PolicyDefaultVersionId = to.String(ptr.From(policy.PolicyDefaultVersionId))
+	data.PolicyName = to.String(ptr.From(policy.PolicyName))
+	data.ResourcesCount = to.Int32(int32(ptr.From(policy.ResourcesCount)))
 	data.Document = to.String(document)
 	data.Id = to.String(policy.Orn)
 	data.PolicyId = to.String(policy.PolicyId)

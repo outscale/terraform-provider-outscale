@@ -4,18 +4,20 @@ import (
 	"context"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 	"github.com/spf13/cast"
 )
 
 func DataSourcePolicies() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourcePoliciesRead,
+		ReadContext: DataSourcePoliciesRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"policies": {
@@ -70,58 +72,50 @@ func DataSourcePolicies() *schema.Resource {
 	}
 }
 
-func DataSourcePoliciesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourcePoliciesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 
 	var err error
-	req := oscgo.NewReadPoliciesRequest()
+	req := osc.ReadPoliciesRequest{}
 	if filtersOk {
 		req.Filters, err = buildPoliciesFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
-	var resp oscgo.ReadPoliciesResponse
-	err = retry.Retry(2*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.PolicyApi.ReadPolicies(context.Background()).ReadPoliciesRequest(*req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadPolicies(ctx, req, options.WithRetryTimeout(2*time.Minute))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	policyResp := resp.GetPolicies()
-	if len(policyResp) == 0 {
-		return ErrNoResults
+	policyResp := resp.Policies
+	if policyResp == nil || len(*policyResp) == 0 {
+		return diag.FromErr(ErrNoResults)
 	}
 	d.SetId(id.UniqueId())
 
-	policies := make([]map[string]interface{}, len(policyResp))
+	policies := make([]map[string]interface{}, len(*policyResp))
 
-	for i, v := range policyResp {
+	for i, v := range *policyResp {
 		policy := make(map[string]interface{})
-		policy["policy_name"] = v.GetPolicyName()
-		policy["policy_id"] = v.GetPolicyId()
-		policy["path"] = v.GetPath()
-		policy["orn"] = v.GetOrn()
-		policy["resources_count"] = v.GetResourcesCount()
-		policy["is_linkable"] = v.GetIsLinkable()
-		policy["policy_default_version_id"] = v.GetPolicyDefaultVersionId()
-		policy["description"] = v.GetDescription()
-		policy["creation_date"] = v.GetCreationDate()
-		policy["last_modification_date"] = v.GetLastModificationDate()
+		policy["policy_name"] = v.PolicyName
+		policy["policy_id"] = v.PolicyId
+		policy["path"] = v.Path
+		policy["orn"] = v.Orn
+		policy["resources_count"] = v.ResourcesCount
+		policy["is_linkable"] = v.IsLinkable
+		policy["policy_default_version_id"] = v.PolicyDefaultVersionId
+		policy["description"] = v.Description
+		policy["creation_date"] = from.ISO8601(v.CreationDate)
+		policy["last_modification_date"] = from.ISO8601(v.LastModificationDate)
 		policies[i] = policy
 	}
-	return d.Set("policies", policies)
+	return diag.FromErr(d.Set("policies", policies))
 }
 
-func buildPoliciesFilters(set *schema.Set) (*oscgo.ReadPoliciesFilters, error) {
-	var filters oscgo.ReadPoliciesFilters
+func buildPoliciesFilters(set *schema.Set) (*osc.ReadPoliciesFilters, error) {
+	var filters osc.ReadPoliciesFilters
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -131,13 +125,13 @@ func buildPoliciesFilters(set *schema.Set) (*oscgo.ReadPoliciesFilters, error) {
 
 		switch name := m["name"].(string); name {
 		case "only_linked":
-			filters.SetOnlyLinked(cast.ToBool(filterValues[0]))
+			filters.OnlyLinked = new(cast.ToBool(filterValues[0]))
 		case "path_prefix":
-			filters.SetPathPrefix(filterValues[0])
+			filters.PathPrefix = &filterValues[0]
 		case "scope":
-			filters.SetScope(filterValues[0])
+			filters.Scope = new(osc.ReadPoliciesFiltersScope(filterValues[0]))
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(name)
 		}
 	}
 	return &filters, nil

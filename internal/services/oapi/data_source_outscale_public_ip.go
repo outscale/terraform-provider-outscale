@@ -2,23 +2,23 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"log"
-	"net/http"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 func DataSourceOutscalePublicIP() *schema.Resource {
 	return &schema.Resource{
-		Read:   DataSourceOutscalePublicIPRead,
-		Schema: getOAPIPublicIPDataSourceSchema(),
+		ReadContext: DataSourceOutscalePublicIPRead,
+		Schema:      getOAPIPublicIPDataSourceSchema(),
 	}
 }
 
@@ -64,19 +64,19 @@ func getOAPIPublicIPDataSourceSchema() map[string]*schema.Schema {
 	}
 }
 
-func DataSourceOutscalePublicIPRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscalePublicIPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
-	req := oscgo.ReadPublicIpsRequest{
-		Filters: &oscgo.FiltersPublicIp{},
+	req := osc.ReadPublicIpsRequest{
+		Filters: &osc.FiltersPublicIp{},
 	}
 
 	if p, ok := d.GetOk("public_ip_id"); ok {
-		req.Filters.SetPublicIpIds([]string{p.(string)})
+		req.Filters.PublicIpIds = &[]string{p.(string)}
 	}
 
 	if id, ok := d.GetOk("public_ip"); ok {
-		req.Filters.SetPublicIps([]string{id.(string)})
+		req.Filters.PublicIps = &[]string{id.(string)}
 	}
 
 	var err error
@@ -84,77 +84,62 @@ func DataSourceOutscalePublicIPRead(d *schema.ResourceData, meta interface{}) er
 	if filtersOk {
 		req.Filters, err = buildOutscaleDataSourcePublicIpsFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	var response oscgo.ReadPublicIpsResponse
-	var statusCode int
-	err = retry.Retry(60*time.Second, func() *retry.RetryError {
-		var err error
-		rp, httpResp, err := conn.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		response = rp
-		statusCode = httpResp.StatusCode
-		return nil
-	})
+	response, err := client.ReadPublicIps(ctx, req, options.WithRetryTimeout(60*time.Second))
 	if err != nil {
-		if statusCode == http.StatusNotFound {
-			d.SetId("")
-			return nil
-		}
-		return fmt.Errorf("error retrieving eip: %s", err)
+		return diag.Errorf("error retrieving eip: %s", err)
 	}
 
-	if len(response.GetPublicIps()) == 0 {
-		return ErrNoResults
+	if response.PublicIps == nil || len(*response.PublicIps) == 0 {
+		return diag.FromErr(ErrNoResults)
 	}
-	if len(response.GetPublicIps()) > 1 {
-		return ErrMultipleResults
+	if len(*response.PublicIps) > 1 {
+		return diag.FromErr(ErrMultipleResults)
 	}
 
-	address := response.GetPublicIps()[0]
+	address := (*response.PublicIps)[0]
 
 	log.Printf("[DEBUG] EIP read configuration: %+v", address)
 
-	if err := d.Set("link_public_ip_id", address.GetLinkPublicIpId()); err != nil {
-		return err
+	if err := d.Set("link_public_ip_id", ptr.From(address.LinkPublicIpId)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("vm_id", address.GetVmId()); err != nil {
-		return err
-	}
-
-	if err := d.Set("nic_id", address.GetNicId()); err != nil {
-		return err
+	if err := d.Set("vm_id", ptr.From(address.VmId)); err != nil {
+		return diag.FromErr(err)
 	}
 
-	if err := d.Set("nic_account_id", address.GetNicAccountId()); err != nil {
-		return err
+	if err := d.Set("nic_id", ptr.From(address.NicId)); err != nil {
+		return diag.FromErr(err)
 	}
 
-	if err := d.Set("private_ip", address.GetPrivateIp()); err != nil {
-		return err
+	if err := d.Set("nic_account_id", ptr.From(address.NicAccountId)); err != nil {
+		return diag.FromErr(err)
 	}
 
-	if err := d.Set("public_ip_id", address.GetPublicIpId()); err != nil {
-		return err
+	if err := d.Set("private_ip", ptr.From(address.PrivateIp)); err != nil {
+		return diag.FromErr(err)
 	}
 
-	if err := d.Set("tags", FlattenOAPITagsSDK(address.GetTags())); err != nil {
-		return fmt.Errorf("error setting publicip tags: %s", err)
+	if err := d.Set("public_ip_id", address.PublicIpId); err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err := d.Set("tags", FlattenOAPITagsSDK(address.Tags)); err != nil {
+		return diag.Errorf("error setting publicip tags: %s", err)
 	}
 
 	d.Set("public_ip", address.PublicIp)
 
-	d.SetId(address.GetPublicIp())
+	d.SetId(address.PublicIp)
 
 	return nil
 }
 
-func buildOutscaleDataSourcePublicIpsFilters(set *schema.Set) (*oscgo.FiltersPublicIp, error) {
-	var filters oscgo.FiltersPublicIp
+func buildOutscaleDataSourcePublicIpsFilters(set *schema.Set) (*osc.FiltersPublicIp, error) {
+	var filters osc.FiltersPublicIp
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -164,29 +149,29 @@ func buildOutscaleDataSourcePublicIpsFilters(set *schema.Set) (*oscgo.FiltersPub
 
 		switch name := m["name"].(string); name {
 		case "public_ip_ids":
-			filters.SetPublicIpIds(filterValues)
+			filters.PublicIpIds = &filterValues
 		case "link_public_ip_ids":
-			filters.SetLinkPublicIpIds(filterValues)
+			filters.LinkPublicIpIds = &filterValues
 		case "placements":
-			filters.SetPlacements(filterValues)
+			filters.Placements = &filterValues
 		case "vm_ids":
-			filters.SetVmIds(filterValues)
+			filters.VmIds = &filterValues
 		case "nic_ids":
-			filters.SetNicIds(filterValues)
+			filters.NicIds = &filterValues
 		case "nic_account_ids":
-			filters.SetNicAccountIds(filterValues)
+			filters.NicAccountIds = &filterValues
 		case "private_ips":
-			filters.SetPrivateIps(filterValues)
+			filters.PrivateIps = &filterValues
 		case "public_ips":
-			filters.SetPublicIps(filterValues)
+			filters.PublicIps = &filterValues
 		case "tag_keys":
-			filters.SetTagKeys(filterValues)
+			filters.TagKeys = &filterValues
 		case "tag_values":
-			filters.SetTagValues(filterValues)
+			filters.TagValues = &filterValues
 		case "tags":
-			filters.SetTags(filterValues)
+			filters.Tags = &filterValues
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(name)
 		}
 	}
 	return &filters, nil

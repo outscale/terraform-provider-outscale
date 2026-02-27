@@ -4,17 +4,18 @@ import (
 	"context"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 )
 
 func DataSourcePoliciesLinkedToUser() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourcePoliciesLinkedToUserRead,
+		ReadContext: DataSourcePoliciesLinkedToUserRead,
 		Schema: map[string]*schema.Schema{
 			"user_name": {
 				Type:     schema.TypeString,
@@ -52,38 +53,33 @@ func DataSourcePoliciesLinkedToUser() *schema.Resource {
 	}
 }
 
-func DataSourcePoliciesLinkedToUserRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
-	req := oscgo.NewReadLinkedPoliciesRequest(d.Get("user_name").(string))
-	var resp oscgo.ReadLinkedPoliciesResponse
+func DataSourcePoliciesLinkedToUserRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
-	err := retry.Retry(2*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.PolicyApi.ReadLinkedPolicies(context.Background()).ReadLinkedPoliciesRequest(*req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
-	if err != nil {
-		return err
+	req := osc.ReadLinkedPoliciesRequest{
+		UserName: d.Get("user_name").(string),
 	}
-	policiesList := resp.GetPolicies()
-	if len(policiesList) == 0 {
-		return ErrNoResults
+
+	resp, err := client.ReadLinkedPolicies(ctx, req, options.WithRetryTimeout(2*time.Minute))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	policiesList := resp.Policies
+	if policiesList == nil || len(*policiesList) == 0 {
+		return diag.FromErr(ErrNoResults)
 	}
 	d.SetId(id.UniqueId())
 
-	policies := make([]map[string]interface{}, len(policiesList))
+	policies := make([]map[string]interface{}, len(*policiesList))
 
-	for i, v := range policiesList {
+	for i, v := range *policiesList {
 		policy := make(map[string]interface{})
-		policy["policy_name"] = v.GetPolicyName()
-		policy["policy_id"] = v.GetPolicyId()
-		policy["orn"] = v.GetOrn()
-		policy["creation_date"] = v.GetCreationDate()
-		policy["last_modification_date"] = v.GetLastModificationDate()
+		policy["policy_name"] = v.PolicyName
+		policy["policy_id"] = v.PolicyId
+		policy["orn"] = v.Orn
+		policy["creation_date"] = from.ISO8601(v.CreationDate)
+		policy["last_modification_date"] = from.ISO8601(v.LastModificationDate)
 		policies[i] = policy
 	}
-	return d.Set("policies", policies)
+	return diag.FromErr(d.Set("policies", policies))
 }

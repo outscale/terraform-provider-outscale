@@ -7,18 +7,19 @@ import (
 	"strings"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 func DataSourceOutscaleSecurityGroups() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleSecurityGroupsRead,
+		ReadContext: DataSourceOutscaleSecurityGroupsRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -179,22 +180,22 @@ func DataSourceOutscaleSecurityGroups() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleSecurityGroupsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleSecurityGroupsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
-	req := oscgo.ReadSecurityGroupsRequest{}
+	req := osc.ReadSecurityGroupsRequest{}
 
 	filters, filtersOk := d.GetOk("filter")
 	gn, gnOk := d.GetOk("security_group_names")
 	gid, gidOk := d.GetOk("security_group_ids")
-	var filter oscgo.FiltersSecurityGroup
+	var filter osc.FiltersSecurityGroup
 	if gnOk {
 		var g []string
 		for _, v := range gn.([]interface{}) {
 			g = append(g, v.(string))
 		}
-		filter.SetSecurityGroupNames(g)
-		req.SetFilters(filter)
+		filter.SecurityGroupNames = &g
+		req.Filters = &filter
 	}
 
 	if gidOk {
@@ -202,60 +203,52 @@ func DataSourceOutscaleSecurityGroupsRead(d *schema.ResourceData, meta interface
 		for _, v := range gid.([]interface{}) {
 			g = append(g, v.(string))
 		}
-		filter.SetSecurityGroupIds(g)
-		req.SetFilters(filter)
+		filter.SecurityGroupIds = &g
+		req.Filters = &filter
 	}
 
 	var err error
 	if filtersOk {
 		req.Filters, err = buildOutscaleDataSourceSecurityGroupFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	var resp oscgo.ReadSecurityGroupsResponse
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.SecurityGroupApi.ReadSecurityGroups(context.Background()).ReadSecurityGroupsRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadSecurityGroups(ctx, req, options.WithRetryTimeout(5*time.Minute))
 
 	var errString string
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "InvalidSecurityGroupID.NotFound") ||
 			strings.Contains(fmt.Sprint(err), "InvalidGroup.NotFound") {
-			resp.SetSecurityGroups(nil)
+			resp.SecurityGroups = nil
 			err = nil
 		} else {
 			errString = err.Error()
 		}
 
-		return fmt.Errorf("error on sgstaterefresh: %s", errString)
+		return diag.Errorf("error on sgstaterefresh: %s", errString)
 	}
 
-	if resp.GetSecurityGroups() == nil || len(resp.GetSecurityGroups()) == 0 {
-		return ErrNoResults
+	if resp.SecurityGroups == nil || len(*resp.SecurityGroups) == 0 {
+		return diag.FromErr(ErrNoResults)
 	}
 
-	sg := make([]map[string]interface{}, len(resp.GetSecurityGroups()))
+	sg := make([]map[string]interface{}, len(*resp.SecurityGroups))
 
-	for k, v := range resp.GetSecurityGroups() {
+	for k, v := range *resp.SecurityGroups {
 		s := make(map[string]interface{})
 
-		s["security_group_id"] = v.GetSecurityGroupId()
-		s["security_group_name"] = v.GetSecurityGroupName()
-		s["description"] = v.GetDescription()
-		if v.GetNetId() != "" {
-			s["net_id"] = v.GetNetId()
+		s["security_group_id"] = v.SecurityGroupId
+		s["security_group_name"] = v.SecurityGroupName
+		s["description"] = v.Description
+		if ptr.From(v.NetId) != "" {
+			s["net_id"] = v.NetId
 		}
-		s["account_id"] = v.GetAccountId()
-		s["tags"] = FlattenOAPITagsSDK(v.GetTags())
-		s["inbound_rules"] = flattenOAPISecurityGroupRule(v.GetInboundRules())
-		s["outbound_rules"] = flattenOAPISecurityGroupRule(v.GetOutboundRules())
+		s["account_id"] = v.AccountId
+		s["tags"] = FlattenOAPITagsSDK(v.Tags)
+		s["inbound_rules"] = flattenOAPISecurityGroupRule(v.InboundRules)
+		s["outbound_rules"] = flattenOAPISecurityGroupRule(v.OutboundRules)
 		sg[k] = s
 	}
 
@@ -265,45 +258,45 @@ func DataSourceOutscaleSecurityGroupsRead(d *schema.ResourceData, meta interface
 
 	err = d.Set("security_groups", sg)
 
-	return err
+	return diag.FromErr(err)
 }
 
-func flattenOAPISecurityGroupRule(p []oscgo.SecurityGroupRule) []map[string]interface{} {
+func flattenOAPISecurityGroupRule(p []osc.SecurityGroupRule) []map[string]interface{} {
 	ips := make([]map[string]interface{}, len(p))
 
 	for k, v := range p {
 		ip := make(map[string]interface{})
-		if v.GetFromPortRange() != 0 {
-			ip["from_port_range"] = v.GetFromPortRange()
+		if v.FromPortRange != 0 {
+			ip["from_port_range"] = v.FromPortRange
 		}
-		if v.GetIpProtocol() != "" {
-			ip["ip_protocol"] = v.GetIpProtocol()
+		if v.IpProtocol != "" {
+			ip["ip_protocol"] = v.IpProtocol
 		}
-		if v.GetToPortRange() != 0 {
-			ip["to_port_range"] = v.GetToPortRange()
+		if v.ToPortRange != 0 {
+			ip["to_port_range"] = v.ToPortRange
 		}
 
-		if v.GetIpRanges() != nil && len(v.GetIpRanges()) > 0 {
-			ip["ip_ranges"] = v.GetIpRanges()
+		if len(v.IpRanges) > 0 {
+			ip["ip_ranges"] = v.IpRanges
 		}
 
 		/*if v.PrefixListIds != nil && len(v.PrefixListIds) > 0 {
 			ip["prefix_list_ids"] = v.PrefixListIds
 		}*/
 
-		if v.GetSecurityGroupsMembers() != nil && len(v.GetSecurityGroupsMembers()) > 0 {
-			grp := make([]map[string]interface{}, len(v.GetSecurityGroupsMembers()))
-			for i, v := range v.GetSecurityGroupsMembers() {
+		if len(v.SecurityGroupsMembers) > 0 {
+			grp := make([]map[string]interface{}, len(v.SecurityGroupsMembers))
+			for i, v := range v.SecurityGroupsMembers {
 				g := make(map[string]interface{})
 
-				if v.GetAccountId() != "" {
-					g["account_id"] = v.GetAccountId()
+				if ptr.From(v.AccountId) != "" {
+					g["account_id"] = v.AccountId
 				}
-				if v.GetSecurityGroupName() != "" {
-					g["security_group_name"] = v.GetSecurityGroupName()
+				if ptr.From(v.SecurityGroupName) != "" {
+					g["security_group_name"] = v.SecurityGroupName
 				}
-				if v.GetSecurityGroupId() != "" {
-					g["security_group_id"] = v.GetSecurityGroupId()
+				if v.SecurityGroupId != "" {
+					g["security_group_id"] = v.SecurityGroupId
 				}
 
 				grp[i] = g

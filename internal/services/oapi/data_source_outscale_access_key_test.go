@@ -11,7 +11,6 @@ func TestAccOthers_DatasourceAccessKey_basic(t *testing.T) {
 	dataSourceName := "data.outscale_access_key.dataKeyBasic"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -31,7 +30,6 @@ func TestAccOthers_AccessKey_withFilters(t *testing.T) {
 	dataSourceName := "data.outscale_access_key.access_key_filters"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{

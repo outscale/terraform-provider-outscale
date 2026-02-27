@@ -2,15 +2,17 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/oapi-codegen/runtime/types"
 	"github.com/outscale/goutils/sdk/ptr"
-	"github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/services/oapi/oapihelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 	"github.com/samber/lo"
@@ -19,26 +21,27 @@ import (
 
 func DataSourceOutscaleVM() *schema.Resource {
 	return &schema.Resource{
-		Read:   DataSourceOutscaleVMRead,
-		Schema: getDataSourceOAPIVMSchemas(),
+		ReadContext: DataSourceOutscaleVMRead,
+		Schema:      getDataSourceOAPIVMSchemas(),
 	}
 }
 
-func DataSourceOutscaleVMRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleVMRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+	timeout := d.Timeout(schema.TimeoutRead)
 
 	filters, filtersOk := d.GetOk("filter")
 	instanceID, instanceIDOk := d.GetOk("vm_id")
 	var err error
 	if !filtersOk && !instanceIDOk {
-		return fmt.Errorf("one of filters, or instance_id must be assigned")
+		return diag.Errorf("one of filters, or instance_id must be assigned")
 	}
 	// Build up search parameters
 	params := osc.ReadVmsRequest{}
 	if filtersOk {
 		params.Filters, err = buildOutscaleDataSourceVMFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 	if instanceIDOk {
@@ -47,182 +50,174 @@ func DataSourceOutscaleVMRead(d *schema.ResourceData, meta interface{}) error {
 
 	log.Printf("[DEBUG] ReadVmsRequest -> %+v\n", params)
 
-	var resp osc.ReadVmsResponse
-	err = retry.Retry(30*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := client.VmApi.ReadVms(context.Background()).ReadVmsRequest(params).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadVms(ctx, params, options.WithRetryTimeout(timeout))
 	if err != nil {
-		return fmt.Errorf("error reading the vm %s", err)
+		return diag.Errorf("error reading the vm %s", err)
 	}
 
-	if !resp.HasVms() {
-		return ErrNoResults
+	if resp.Vms == nil {
+		return diag.FromErr(ErrNoResults)
 	}
 
 	var filteredVms []osc.Vm
 
 	// loop through reservations, and remove terminated instances, populate vm slice
-	for _, res := range resp.GetVms() {
-		if res.GetState() != "terminated" {
+	for _, res := range ptr.From(resp.Vms) {
+		if res.State != "terminated" {
 			filteredVms = append(filteredVms, res)
 		}
 	}
 
 	var vm osc.Vm
 	if len(filteredVms) == 0 {
-		return ErrNoResults
+		return diag.FromErr(ErrNoResults)
 	}
 
 	if len(filteredVms) > 1 {
-		return ErrMultipleResults
+		return diag.FromErr(ErrMultipleResults)
 	}
 
 	vm = filteredVms[0]
 
 	// Populate vm attribute fields with the returned vm
-	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
-		d.SetId(vm.GetVmId())
+	return diag.FromErr(resourceDataAttrSetter(d, func(set AttributeSetter) error {
+		d.SetId(vm.VmId)
 
-		booTags, errTags := oapihelpers.GetBsuTagsMaps(vm, client)
+		booTags, errTags := oapihelpers.GetBsuTagsMaps(ctx, client, timeout, vm)
 		if errTags != nil {
 			return errTags
 		}
 		if err := d.Set("block_device_mappings_created", getOscAPIVMBlockDeviceMapping(
-			booTags, vm.GetBlockDeviceMappings())); err != nil {
+			booTags, vm.BlockDeviceMappings)); err != nil {
 			return err
 		}
 
 		return oapiVMDescriptionAttributes(set, &vm)
-	})
+	}))
 }
 
 // Populate instance attribute fields with the returned instance
 func oapiVMDescriptionAttributes(set AttributeSetter, vm *osc.Vm) error {
-	if err := set("actions_on_next_boot", getActionsOnNextBoot(vm.GetActionsOnNextBoot())); err != nil {
+	if err := set("actions_on_next_boot", getActionsOnNextBoot(vm.ActionsOnNextBoot)); err != nil {
 		return err
 	}
-	if err := set("boot_mode", vm.GetBootMode()); err != nil {
+	if err := set("boot_mode", vm.BootMode); err != nil {
 		return err
 	}
-	if err := set("tpm_enabled", vm.GetTpmEnabled()); err != nil {
+	if err := set("tpm_enabled", vm.TpmEnabled); err != nil {
 		return err
 	}
-	if err := set("architecture", vm.GetArchitecture()); err != nil {
+	if err := set("architecture", vm.Architecture); err != nil {
 		return err
 	}
-	if err := set("bsu_optimized", vm.GetBsuOptimized()); err != nil {
+	if err := set("bsu_optimized", vm.BsuOptimized); err != nil {
 		return err
 	}
-	if err := set("client_token", vm.GetClientToken()); err != nil {
+	if err := set("client_token", vm.ClientToken); err != nil {
 		return err
 	}
-	if err := set("creation_date", vm.GetCreationDate()); err != nil {
+	if err := set("creation_date", from.ISO8601(vm.CreationDate)); err != nil {
 		return err
 	}
-	if err := set("deletion_protection", vm.GetDeletionProtection()); err != nil {
+	if err := set("deletion_protection", vm.DeletionProtection); err != nil {
 		return err
 	}
-	if err := set("hypervisor", vm.GetHypervisor()); err != nil {
+	if err := set("hypervisor", vm.Hypervisor); err != nil {
 		return err
 	}
-	if err := set("image_id", vm.GetImageId()); err != nil {
+	if err := set("image_id", vm.ImageId); err != nil {
 		return err
 	}
-	if err := set("is_source_dest_checked", vm.GetIsSourceDestChecked()); err != nil {
+	if err := set("is_source_dest_checked", vm.IsSourceDestChecked); err != nil {
 		return err
 	}
-	if err := set("keypair_name", vm.GetKeypairName()); err != nil {
+	if err := set("keypair_name", vm.KeypairName); err != nil {
 		return err
 	}
-	if err := set("launch_number", vm.GetLaunchNumber()); err != nil {
+	if err := set("launch_number", vm.LaunchNumber); err != nil {
 		return err
 	}
-	if err := set("net_id", vm.GetNetId()); err != nil {
+	if err := set("net_id", vm.NetId); err != nil {
 		return err
 	}
-	if err := set("nested_virtualization", vm.GetNestedVirtualization()); err != nil {
+	if err := set("nested_virtualization", vm.NestedVirtualization); err != nil {
 		return err
 	}
-	prNic, secNic := oapihelpers.GetOAPIVMNetworkInterfaceLightSet(vm.GetNics())
+	prNic, secNic := oapihelpers.GetOAPIVMNetworkInterfaceLightSet(vm.Nics)
 	if err := set("primary_nic", prNic); err != nil {
 		return err
 	}
 	if err := set("nics", secNic); err != nil {
 		return err
 	}
-	if err := set("os_family", vm.GetOsFamily()); err != nil {
+	if err := set("os_family", vm.OsFamily); err != nil {
 		return err
 	}
-	if err := set("performance", vm.GetPerformance()); err != nil {
+	if err := set("performance", vm.Performance); err != nil {
 		return err
 	}
-	if err := set("placement_subregion_name", ptr.From(vm.GetPlacement().SubregionName)); err != nil {
+	if err := set("placement_subregion_name", vm.Placement.SubregionName); err != nil {
 		return err
 	}
-	if err := set("placement_tenancy", ptr.From(vm.GetPlacement().Tenancy)); err != nil {
+	if err := set("placement_tenancy", vm.Placement.Tenancy); err != nil {
 		return err
 	}
-	if err := set("private_dns_name", vm.GetPrivateDnsName()); err != nil {
+	if err := set("private_dns_name", vm.PrivateDnsName); err != nil {
 		return err
 	}
-	if err := set("private_ip", vm.GetPrivateIp()); err != nil {
+	if err := set("private_ip", vm.PrivateIp); err != nil {
 		return err
 	}
-	if err := set("product_codes", vm.GetProductCodes()); err != nil {
+	if err := set("product_codes", vm.ProductCodes); err != nil {
 		return err
 	}
-	if err := set("public_dns_name", vm.GetPublicDnsName()); err != nil {
+	if err := set("public_dns_name", vm.PublicDnsName); err != nil {
 		return err
 	}
-	if err := set("public_ip", vm.GetPublicIp()); err != nil {
+	if err := set("public_ip", vm.PublicIp); err != nil {
 		return err
 	}
-	if err := set("reservation_id", vm.GetReservationId()); err != nil {
+	if err := set("reservation_id", vm.ReservationId); err != nil {
 		return err
 	}
-	if err := set("root_device_name", vm.GetRootDeviceName()); err != nil {
+	if err := set("root_device_name", vm.RootDeviceName); err != nil {
 		return err
 	}
-	if err := set("root_device_type", vm.GetRootDeviceType()); err != nil {
+	if err := set("root_device_type", vm.RootDeviceType); err != nil {
 		return err
 	}
-	if err := set("security_groups", getSecurityGroups(vm.GetSecurityGroups())); err != nil {
+	if err := set("security_groups", getSecurityGroups(vm.SecurityGroups)); err != nil {
 		return err
 	}
-	if err := set("state", vm.GetState()); err != nil {
+	if err := set("state", vm.State); err != nil {
 		return err
 	}
-	if err := set("state_reason", vm.GetStateReason()); err != nil {
+	if err := set("state_reason", vm.StateReason); err != nil {
 		return err
 	}
-	if err := set("subnet_id", vm.GetSubnetId()); err != nil {
+	if err := set("subnet_id", vm.SubnetId); err != nil {
 		return err
 	}
-	if err := set("user_data", vm.GetUserData()); err != nil {
+	if err := set("user_data", vm.UserData); err != nil {
 		return err
 	}
-	if err := set("vm_id", vm.GetVmId()); err != nil {
+	if err := set("vm_id", vm.VmId); err != nil {
 		return err
 	}
-	if err := set("vm_initiated_shutdown_behavior", vm.GetVmInitiatedShutdownBehavior()); err != nil {
+	if err := set("vm_initiated_shutdown_behavior", vm.VmInitiatedShutdownBehavior); err != nil {
 		return err
 	}
-	if err := set("tags", FlattenOAPITagsSDK(vm.GetTags())); err != nil {
+	if err := set("tags", FlattenOAPITagsSDK(vm.Tags)); err != nil {
 		return err
 	}
-	return set("vm_type", vm.GetVmType())
+	return set("vm_type", vm.VmType)
 }
 
 func getOscAPIVMBlockDeviceMapping(busTagsMaps map[string]interface{}, blockDeviceMappings []osc.BlockDeviceMappingCreated) (blockDeviceMapping []map[string]interface{}) {
 	for _, v := range blockDeviceMappings {
 		blockDevice := map[string]interface{}{
-			"device_name": v.GetDeviceName(),
-			"bsu":         getbusToSet(v.GetBsu(), busTagsMaps, *v.DeviceName),
+			"device_name": v.DeviceName,
+			"bsu":         getbusToSet(v.Bsu, busTagsMaps, v.DeviceName),
 		}
 		blockDeviceMapping = append(blockDeviceMapping, blockDevice)
 	}
@@ -231,10 +226,10 @@ func getOscAPIVMBlockDeviceMapping(busTagsMaps map[string]interface{}, blockDevi
 
 func getbusToSet(bsu osc.BsuCreated, busTagsMaps map[string]interface{}, deviceName string) (res []map[string]interface{}) {
 	res = append(res, map[string]interface{}{
-		"delete_on_vm_deletion": bsu.GetDeleteOnVmDeletion(),
-		"volume_id":             bsu.GetVolumeId(),
-		"state":                 bsu.GetState(),
-		"link_date":             bsu.GetLinkDate(),
+		"delete_on_vm_deletion": bsu.DeleteOnVmDeletion,
+		"volume_id":             bsu.VolumeId,
+		"state":                 bsu.State,
+		"link_date":             from.ISO8601(bsu.LinkDate),
 		"tags":                  FlattenOAPITagsSDK(busTagsMaps[deviceName].([]osc.ResourceTag)),
 	})
 	return
@@ -244,8 +239,8 @@ func getSecurityGroups(groupSet []osc.SecurityGroupLight) []map[string]interface
 	res := []map[string]interface{}{}
 	for _, g := range groupSet {
 		r := map[string]interface{}{
-			"security_group_id":   g.GetSecurityGroupId(),
-			"security_group_name": g.GetSecurityGroupName(),
+			"security_group_id":   g.SecurityGroupId,
+			"security_group_name": g.SecurityGroupName,
 		}
 		res = append(res, r)
 	}
@@ -256,7 +251,7 @@ func getSecurityGroups(groupSet []osc.SecurityGroupLight) []map[string]interface
 func getActionsOnNextBoot(actionsOnNextBoot osc.ActionsOnNextBoot) []map[string]interface{} {
 	return []map[string]interface{}{
 		{
-			"secure_boot": string(actionsOnNextBoot.GetSecureBoot()),
+			"secure_boot": new(osc.SecureBootAction(ptr.From(actionsOnNextBoot.SecureBoot))),
 		},
 	}
 }
@@ -264,7 +259,7 @@ func getActionsOnNextBoot(actionsOnNextBoot osc.ActionsOnNextBoot) []map[string]
 func getSecurityGroupIds(sgIds []osc.SecurityGroupLight) []string {
 	res := make([]string, len(sgIds))
 	for k, ids := range sgIds {
-		res[k] = ids.GetSecurityGroupId()
+		res[k] = ids.SecurityGroupId
 	}
 	return res
 }
@@ -300,153 +295,150 @@ func buildOutscaleDataSourceVMFilters(set *schema.Set) (*osc.FiltersVm, error) {
 
 		switch name := m["name"].(string); name {
 		case "architectures":
-			filters.SetArchitectures(filterValues)
+			filters.Architectures = &filterValues
 		case "Block_device_mapping_delete_on_vm_deletion":
-			filters.SetBlockDeviceMappingDeleteOnVmDeletion(cast.ToBool(filterValues[0]))
+			filters.BlockDeviceMappingDeleteOnVmDeletion = new(cast.ToBool(filterValues[0]))
 		case "block_device_mapping_device_names":
-			filters.SetBlockDeviceMappingDeviceNames(filterValues)
+			filters.BlockDeviceMappingDeviceNames = &filterValues
 		case "block_device_mapping_states":
-			filters.SetBlockDeviceMappingStates(filterValues)
+			filters.BlockDeviceMappingStates = &filterValues
 		case "block_device_mapping_link_dates":
-			linkDates, err := utils.FiltersTimesToStringSlice(
+			linkDates, err := utils.StringSliceToTimeSlice(
 				filterValues, "block_device_mapping_link_dates")
 			if err != nil {
 				return filters, err
 			}
-			filters.SetBlockDeviceMappingLinkDates(linkDates)
+			filters.BlockDeviceMappingLinkDates = new(lo.Map(linkDates, func(t time.Time, _ int) types.Date { return types.Date{Time: t} }))
 		case "block_device_mapping_volume_ids":
-			filters.SetBlockDeviceMappingVolumeIds(filterValues)
+			filters.BlockDeviceMappingVolumeIds = &filterValues
 		case "boot_modes":
-			filters.SetBootModes(lo.Map(filterValues, func(s string, _ int) osc.BootMode { return (osc.BootMode)(s) }))
+			filters.BootModes = new(lo.Map(filterValues, func(s string, _ int) osc.BootMode { return (osc.BootMode)(s) }))
 		case "ClientTokens":
-			filters.SetClientTokens(filterValues)
+			filters.ClientTokens = &filterValues
 		case "creation_dates":
-			creationDates, err := utils.FiltersTimesToStringSlice(
+			creationDates, err := utils.StringSliceToTimeSlice(
 				filterValues, "creation_dates")
 			if err != nil {
 				return filters, err
 			}
-			filters.SetCreationDates(creationDates)
+			filters.CreationDates = new(lo.Map(creationDates, func(t time.Time, _ int) types.Date { return types.Date{Time: t} }))
 		case "image_ids":
-			filters.SetImageIds(filterValues)
+			filters.ImageIds = &filterValues
 		case "is_source_dest_checked":
-			filters.SetIsSourceDestChecked(cast.ToBool(filterValues[0]))
+			filters.IsSourceDestChecked = new(cast.ToBool(filterValues[0]))
 		case "keypair_names":
-			filters.SetKeypairNames(filterValues)
+			filters.KeypairNames = &filterValues
 		case "launch_numbers":
-			filters.SetLaunchNumbers(utils.StringSliceToInt32Slice(filterValues))
+			filters.LaunchNumbers = new(utils.StringSliceToIntSlice(filterValues))
 		case "lifecycles":
-			filters.SetLifecycles(filterValues)
+			filters.Lifecycles = &filterValues
 		case "net_ids":
-			filters.SetNetIds(filterValues)
+			filters.NetIds = &filterValues
 		case "nic_account_ids":
-			filters.SetNicAccountIds(filterValues)
+			filters.NicAccountIds = &filterValues
 		case "nic_descriptions":
-			filters.SetNicDescriptions(filterValues)
+			filters.NicDescriptions = &filterValues
 		case "nic_is_source_dest_checked":
-			filters.SetNicIsSourceDestChecked(cast.ToBool(filterValues[0]))
+			filters.NicIsSourceDestChecked = new(cast.ToBool(filterValues[0]))
 		case "nic_link_nic_delete_on_vm_deletion":
-			filters.SetNicLinkNicDeleteOnVmDeletion(cast.ToBool(filterValues[0]))
+			filters.NicLinkNicDeleteOnVmDeletion = new(cast.ToBool(filterValues[0]))
 		case "nic_link_nic_device_numbers":
-			filters.SetNicLinkNicDeviceNumbers(
-				utils.StringSliceToInt32Slice(filterValues))
+			filters.NicLinkNicDeviceNumbers = new(utils.StringSliceToIntSlice(filterValues))
 		case "nic_link_nic_link_nic_dates":
-			linkDates, err := utils.FiltersTimesToStringSlice(
+			linkDates, err := utils.StringSliceToTimeSlice(
 				filterValues, "nic_link_nic_link_nic_dates")
 			if err != nil {
 				return filters, err
 			}
-			filters.SetNicLinkNicLinkNicDates(linkDates)
+			filters.NicLinkNicLinkNicDates = new(lo.Map(linkDates, func(t time.Time, _ int) types.Date { return types.Date{Time: t} }))
 		case "nic_link_nic_link_nic_ids":
-			filters.SetNicLinkNicLinkNicIds(filterValues)
+			filters.NicLinkNicLinkNicIds = &filterValues
 		case "nic_link_nic_states":
-			filters.SetNicLinkNicStates(filterValues)
+			filters.NicLinkNicStates = &filterValues
 		case "nic_link_nic_vm_account_ids":
-			filters.SetNicLinkNicVmAccountIds(filterValues)
+			filters.NicLinkNicVmAccountIds = &filterValues
 		case "nic_link_nic_vm_ids":
-			filters.SetNicLinkNicVmIds(filterValues)
+			filters.NicLinkNicVmIds = &filterValues
 		case "nic_link_public_ip_account_ids":
-			filters.SetNicLinkPublicIpAccountIds(filterValues)
+			filters.NicLinkPublicIpAccountIds = &filterValues
 		case "nic_link_public_ip_link_public_ip_ids":
-			filters.SetNicLinkPublicIpLinkPublicIpIds(filterValues)
+			filters.NicLinkPublicIpLinkPublicIpIds = &filterValues
 		case "nic_link_public_ip_public_ip_ids":
-			filters.SetNicLinkPublicIpPublicIpIds(filterValues)
+			filters.NicLinkPublicIpPublicIpIds = &filterValues
 		case "nic_link_public_Ip_public_ips":
-			filters.SetNicLinkPublicIpPublicIps(filterValues)
+			filters.NicLinkPublicIpPublicIps = &filterValues
 		case "nic_mac_addresses":
-			filters.SetNicMacAddresses(filterValues)
+			filters.NicMacAddresses = &filterValues
 		case "nic_net_ids":
-			filters.SetNicNetIds(filterValues)
+			filters.NicNetIds = &filterValues
 		case "nic_nic_ids":
-			filters.SetNicNicIds(filterValues)
+			filters.NicNicIds = &filterValues
 		case "nic_private_ips_link_public_ip_account_ids":
-			filters.SetNicPrivateIpsLinkPublicIpAccountIds(filterValues)
+			filters.NicPrivateIpsLinkPublicIpAccountIds = &filterValues
 		case "nic_private_ips_primary_ip":
-			filters.SetNicPrivateIpsPrimaryIp(cast.ToBool(filterValues[0]))
+			filters.NicPrivateIpsPrimaryIp = new(cast.ToBool(filterValues[0]))
 		case "nic_private_ips_private_ips":
-			filters.SetNicPrivateIpsPrivateIps(filterValues)
+			filters.NicPrivateIpsPrivateIps = &filterValues
 		case "nic_security_group_ids":
-			filters.SetNicSecurityGroupIds(filterValues)
+			filters.NicSecurityGroupIds = &filterValues
 		case "nic_security_group_names":
-			filters.SetNicSecurityGroupNames(filterValues)
+			filters.NicSecurityGroupNames = &filterValues
 		case "nic_states":
-			filters.SetNicStates(filterValues)
+			filters.NicStates = &filterValues
 		case "nic_subnet_ids":
-			filters.SetNicSubnetIds(filterValues)
+			filters.NicSubnetIds = &filterValues
 		case "nic_subregion_names":
-			filters.SetNicSubregionNames(filterValues)
+			filters.NicSubregionNames = &filterValues
 		case "platforms":
-			filters.SetPlatforms(filterValues)
+			filters.Platforms = &filterValues
 		case "private_ips":
-			filters.SetPrivateIps(filterValues)
+			filters.PrivateIps = &filterValues
 		case "product_codes":
-			filters.SetProductCodes(filterValues)
+			filters.ProductCodes = &filterValues
 		case "public_ips":
-			filters.SetPublicIps(filterValues)
+			filters.PublicIps = &filterValues
 		case "reservation_ids":
-			filters.SetReservationIds(filterValues)
+			filters.ReservationIds = &filterValues
 		case "root_device_names":
-			filters.SetRootDeviceNames(filterValues)
+			filters.RootDeviceNames = &filterValues
 		case "root_tevice_types":
-			filters.SetRootDeviceTypes(filterValues)
+			filters.RootDeviceTypes = &filterValues
 		case "security_group_ids":
-			filters.SetSecurityGroupIds(filterValues)
+			filters.SecurityGroupIds = &filterValues
 		case "security_group_names":
-			filters.SetSecurityGroupNames(filterValues)
+			filters.SecurityGroupNames = &filterValues
 		case "state_reason_codes":
-			filters.SetStateReasonCodes(
-				utils.StringSliceToInt32Slice(filterValues))
+			filters.StateReasonCodes = new(utils.StringSliceToIntSlice(filterValues))
 		case "state_reason_messages":
-			filters.SetStateReasonMessages(filterValues)
+			filters.StateReasonMessages = &filterValues
 		case "state_reasons":
-			filters.SetStateReasons(filterValues)
+			filters.StateReasons = &filterValues
 		case "subnet_ids":
-			filters.SetSubnetIds(filterValues)
+			filters.SubnetIds = &filterValues
 		case "subregion_names":
-			filters.SetSubregionNames(filterValues)
+			filters.SubregionNames = &filterValues
 		case "tag_keys":
-			filters.SetTagKeys(filterValues)
+			filters.TagKeys = &filterValues
 		case "tag_values":
-			filters.SetTagValues(filterValues)
+			filters.TagValues = &filterValues
 		case "tags":
-			filters.SetTags(filterValues)
+			filters.Tags = &filterValues
 		case "vm_ids":
-			filters.SetVmIds(filterValues)
+			filters.VmIds = &filterValues
 		case "tenancies":
-			filters.SetTenancies(filterValues)
+			filters.Tenancies = &filterValues
 		case "vm_security_group_ids":
-			filters.SetVmSecurityGroupIds(filterValues)
+			filters.VmSecurityGroupIds = &filterValues
 		case "vm_security_group_names":
-			filters.SetVmSecurityGroupNames(filterValues)
+			filters.VmSecurityGroupNames = &filterValues
 		case "vm_state_codes":
-			filters.SetVmStateCodes(
-				utils.StringSliceToInt32Slice(filterValues))
+			filters.VmStateCodes = new(utils.StringSliceToIntSlice(filterValues))
 		case "vm_state_names":
-			filters.SetVmStateNames(filterValues)
+			filters.VmStateNames = new(lo.Map(filterValues, func(s string, _ int) osc.VmState { return osc.VmState(s) }))
 		case "VmTypes":
-			filters.SetVmTypes(filterValues)
+			filters.VmTypes = &filterValues
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(name)
 		}
 	}
 	return filters, nil

@@ -2,23 +2,21 @@ package oapi
 
 import (
 	"context"
-	"fmt"
-	"net/http"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceOutscalePublicIPS() *schema.Resource {
 	return &schema.Resource{
-		Read:   DataSourceOutscalePublicIPSRead,
-		Schema: oapiGetPublicIPSDataSourceSchema(),
+		ReadContext: DataSourceOutscalePublicIPSRead,
+		Schema:      oapiGetPublicIPSDataSourceSchema(),
 	}
 }
 
@@ -70,10 +68,10 @@ func oapiGetPublicIPSDataSourceSchema() map[string]*schema.Schema {
 	}
 }
 
-func DataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscalePublicIPSRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
-	req := oscgo.ReadPublicIpsRequest{}
+	req := osc.ReadPublicIpsRequest{}
 
 	filters, filtersOk := d.GetOk("filter")
 
@@ -81,38 +79,21 @@ func DataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{}) e
 	if filtersOk {
 		req.Filters, err = buildOutscaleDataSourcePublicIpsFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	var resp oscgo.ReadPublicIpsResponse
-	var statusCode int
-	err = retry.Retry(60*time.Second, func() *retry.RetryError {
-		var err error
-		rp, httpResp, err := conn.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		statusCode = httpResp.StatusCode
-		return nil
-	})
-
+	resp, err := client.ReadPublicIps(ctx, req, options.WithRetryTimeout(60*time.Second))
 	if err != nil {
-		if statusCode == http.StatusNotFound {
-			d.SetId("")
-			return nil
-		}
-
-		return fmt.Errorf("error retrieving eip: %s", err)
+		return diag.Errorf("error retrieving eip: %s", err)
 	}
 
 	// Verify Outscale returned our EIP
-	if len(resp.GetPublicIps()) == 0 {
-		return ErrNoResults
+	if resp.PublicIps == nil || len(*resp.PublicIps) == 0 {
+		return diag.FromErr(ErrNoResults)
 	}
 
-	addresses := resp.GetPublicIps()
+	addresses := *resp.PublicIps
 
 	address := make([]map[string]interface{}, len(addresses))
 
@@ -126,11 +107,11 @@ func DataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{}) e
 		add["nic_account_id"] = v.NicAccountId
 		add["private_ip"] = v.PrivateIp
 		add["public_ip"] = v.PublicIp
-		add["tags"] = FlattenOAPITagsSDK(v.GetTags())
+		add["tags"] = FlattenOAPITagsSDK(v.Tags)
 		address[k] = add
 	}
 
 	d.SetId(id.UniqueId())
 
-	return d.Set("public_ips", address)
+	return diag.FromErr(d.Set("public_ips", address))
 }

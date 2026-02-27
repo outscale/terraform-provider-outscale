@@ -11,9 +11,6 @@ func TestAccNet_WithVirtualRoutePropagation_basic(t *testing.T) {
 	resourceName := "outscale_virtual_gateway_route_propagation.outscale_virtual_gateway_route_propagation"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() {
-			testacc.PreCheck(t)
-		},
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{

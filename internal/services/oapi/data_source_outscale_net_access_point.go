@@ -4,9 +4,11 @@ import (
 	"context"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
@@ -46,58 +48,48 @@ func napdSchema() map[string]*schema.Schema {
 
 func DataSourceOutscaleNetAccessPoint() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleNetAccessPointRead,
+		ReadContext: DataSourceOutscaleNetAccessPointRead,
 
 		Schema: getDataSourceSchemas(napdSchema()),
 	}
 }
 
-func DataSourceOutscaleNetAccessPointRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleNetAccessPointRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 	if !filtersOk {
-		return ErrFilterRequired
+		return diag.FromErr(ErrFilterRequired)
 	}
 
-	var resp oscgo.ReadNetAccessPointsResponse
-	var err error
-	req := oscgo.ReadNetAccessPointsRequest{}
+	req := osc.ReadNetAccessPointsRequest{}
 
+	var err error
 	req.Filters, err = buildOutscaleDataSourcesNAPFilters(filters.(*schema.Set))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	err = retry.Retry(30*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.NetAccessPointApi.ReadNetAccessPoints(
-			context.Background()).
-			ReadNetAccessPointsRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadNetAccessPoints(ctx, req, options.WithRetryTimeout(30*time.Second))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	if len(resp.GetNetAccessPoints()) == 0 {
-		return ErrNoResults
+	if resp.NetAccessPoints == nil || len(*resp.NetAccessPoints) == 0 {
+		return diag.FromErr(ErrNoResults)
 	}
-	if len(resp.GetNetAccessPoints()) > 1 {
-		return ErrMultipleResults
+	if len(*resp.NetAccessPoints) > 1 {
+		return diag.FromErr(ErrMultipleResults)
 	}
 
-	nap := resp.GetNetAccessPoints()[0]
+	nap := (*resp.NetAccessPoints)[0]
 
-	d.Set("net_access_point_id", nap.NetAccessPointId)
+	d.Set("net_access_point_id", ptr.From(nap.NetAccessPointId))
 	d.Set("route_table_ids", utils.StringSlicePtrToInterfaceSlice(nap.RouteTableIds))
-	d.Set("net_id", nap.NetId)
-	d.Set("service_name", nap.ServiceName)
-	d.Set("state", nap.State)
-	d.Set("tags", FlattenOAPITagsSDK(nap.GetTags()))
+	d.Set("net_id", ptr.From(nap.NetId))
+	d.Set("service_name", ptr.From(nap.ServiceName))
+	d.Set("state", ptr.From(nap.State))
+	d.Set("tags", FlattenOAPITagsSDK(ptr.From(nap.Tags)))
 
 	id := *nap.NetAccessPointId
 	d.SetId(id)

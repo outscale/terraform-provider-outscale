@@ -5,17 +5,17 @@ import (
 	"log"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceOutscaleVpcAttr() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleVpcAttrRead,
+		ReadContext: DataSourceOutscaleVpcAttrRead,
 
 		Schema: map[string]*schema.Schema{
 			//"filter": dataSourceFiltersSchema(),
@@ -48,42 +48,35 @@ func DataSourceOutscaleVpcAttr() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleVpcAttrRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleVpcAttrRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
-	filters := oscgo.FiltersNet{
+	filters := osc.FiltersNet{
 		NetIds: &[]string{d.Get("net_id").(string)},
 	}
 
-	req := oscgo.ReadNetsRequest{
+	req := osc.ReadNetsRequest{
 		Filters: &filters,
 	}
 
-	var resp oscgo.ReadNetsResponse
-	err := retry.Retry(120*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.NetApi.ReadNets(context.Background()).ReadNetsRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadNets(ctx, req, options.WithRetryTimeout(120*time.Second))
 	if err != nil {
-		log.Printf("[DEBUG] Error reading lin (%s)", utils.GetErrorResponse(err))
+		log.Printf("[DEBUG] Error reading lin (%s)", err)
 	}
 
-	if len(resp.GetNets()) == 0 {
+	if resp.Nets == nil || len(*resp.Nets) == 0 {
 		d.SetId("")
-		return ErrNoResults
+		return diag.FromErr(ErrNoResults)
 	}
+	net := (*resp.Nets)[0]
 
-	d.SetId(resp.GetNets()[0].GetNetId())
+	d.SetId(net.NetId)
 
-	d.Set("ip_range", resp.GetNets()[0].GetIpRange())
-	d.Set("tenancy", resp.GetNets()[0].Tenancy)
-	d.Set("dhcp_options_set_id", resp.GetNets()[0].GetDhcpOptionsSetId())
-	d.Set("net_id", resp.GetNets()[0].GetNetId())
-	d.Set("state", resp.GetNets()[0].GetState())
+	d.Set("ip_range", net.IpRange)
+	d.Set("tenancy", net.Tenancy)
+	d.Set("dhcp_options_set_id", net.DhcpOptionsSetId)
+	d.Set("net_id", net.NetId)
+	d.Set("state", net.State)
 
-	return d.Set("tags", FlattenOAPITagsSDK(resp.GetNets()[0].GetTags()))
+	return diag.FromErr(d.Set("tags", FlattenOAPITagsSDK(net.Tags)))
 }

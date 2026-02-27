@@ -2,24 +2,23 @@ package oapi
 
 import (
 	"context"
-	"fmt"
-	"net/http"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func ResourceOutscaleTags() *schema.Resource {
 	return &schema.Resource{
-		Create: ResourceOutscaleTagsCreate,
-		Read:   ResourceOutscaleTagsRead,
-		Delete: ResourceOutscaleTagsDelete,
+		CreateContext: ResourceOutscaleTagsCreate,
+		ReadContext:   ResourceOutscaleTagsRead,
+		DeleteContext: ResourceOutscaleTagsDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -34,119 +33,15 @@ func ResourceOutscaleTags() *schema.Resource {
 	}
 }
 
-func ResourceOutscaleTagsCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleTagsCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
-	request := oscgo.CreateTagsRequest{}
+	request := osc.CreateTagsRequest{}
 
 	tag, tagsOk := d.GetOk("tag")
 	resourceIds, resourceIdsOk := d.GetOk("resource_ids")
 	if !tagsOk && !resourceIdsOk {
-		return fmt.Errorf("one tag and resource id, must be assigned")
-	}
-
-	if tagsOk {
-		request.SetTags(expandOAPITagsSDK(tag.(*schema.Set)))
-	}
-	if resourceIdsOk {
-		var rids []string
-		sgs := resourceIds.(*schema.Set).List()
-		for _, v := range sgs {
-			str := v.(string)
-			rids = append(rids, str)
-		}
-
-		request.SetResourceIds(rids)
-	}
-
-	err := retry.Retry(60*time.Second, func() *retry.RetryError {
-		_, httpResp, err := conn.TagApi.CreateTags(context.Background()).CreateTagsRequest(request).Execute()
-		if err != nil {
-			if httpResp.StatusCode == http.StatusNotFound {
-				return retry.RetryableError(err)
-			}
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
-	if err != nil {
-		return err
-	}
-
-	d.SetId(id.UniqueId())
-
-	return ResourceOutscaleTagsRead(d, meta)
-}
-
-func ResourceOutscaleTagsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
-
-	// Build up search parameters
-	params := oscgo.ReadTagsRequest{
-		Filters: &oscgo.FiltersTag{},
-	}
-
-	tag, tagsOk := d.GetOk("tag")
-	filter := oscgo.FiltersTag{}
-	if tagsOk {
-		tgs := expandOAPITagsSDK(tag.(*schema.Set))
-		keys := make([]string, 0, len(tgs))
-		values := make([]string, 0, len(tgs))
-		for _, t := range tgs {
-			keys = append(keys, t.Key)
-			values = append(values, t.Value)
-		}
-		filter.SetKeys(keys)
-		filter.SetValues(values)
-		params.SetFilters(filter)
-
-	}
-
-	resourceIds, resourceIdsOk := d.GetOk("resource_ids")
-	if resourceIdsOk {
-		var rids []string
-		sgs := resourceIds.(*schema.Set).List()
-		for _, v := range sgs {
-			str := v.(string)
-			rids = append(rids, str)
-		}
-
-		filter.SetResourceIds(rids)
-		params.SetFilters(filter)
-	}
-
-	var resp oscgo.ReadTagsResponse
-	err := retry.Retry(60*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.TagApi.ReadTags(context.Background()).ReadTagsRequest(params).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
-	if err != nil {
-		return err
-	}
-
-	tg := flattenOAPITagsDescSDK(resp.GetTags())
-	if err := d.Set("tags", tg); err != nil {
-		return err
-	}
-
-	return err
-}
-
-func ResourceOutscaleTagsDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
-
-	request := oscgo.DeleteTagsRequest{}
-
-	tag, tagsOk := d.GetOk("tag")
-
-	resourceIds, resourceIdsOk := d.GetOk("resource_ids")
-
-	if !tagsOk && !resourceIdsOk {
-		return fmt.Errorf("one tag and resource id, must be assigned")
+		return diag.Errorf("one tag and resource id, must be assigned")
 	}
 
 	if tagsOk {
@@ -160,21 +55,99 @@ func ResourceOutscaleTagsDelete(d *schema.ResourceData, meta interface{}) error 
 			rids = append(rids, str)
 		}
 
-		request.SetResourceIds(rids)
+		request.ResourceIds = rids
 	}
 
-	err := retry.Retry(60*time.Second, func() *retry.RetryError {
-		_, httpResp, err := conn.TagApi.DeleteTags(context.Background()).DeleteTagsRequest(request).Execute()
-		if err != nil {
-			if httpResp.StatusCode == http.StatusNotFound {
-				return retry.RetryableError(err) // retry
-			}
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	_, err := client.CreateTags(ctx, request, options.WithRetryTimeout(60*time.Second))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
+	}
+
+	d.SetId(id.UniqueId())
+
+	return ResourceOutscaleTagsRead(ctx, d, meta)
+}
+
+func ResourceOutscaleTagsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
+	// Build up search parameters
+	params := osc.ReadTagsRequest{
+		Filters: &osc.FiltersTag{},
+	}
+
+	tag, tagsOk := d.GetOk("tag")
+	filter := osc.FiltersTag{}
+	if tagsOk {
+		tgs := expandOAPITagsSDK(tag.(*schema.Set))
+		keys := make([]string, 0, len(tgs))
+		values := make([]string, 0, len(tgs))
+		for _, t := range tgs {
+			keys = append(keys, t.Key)
+			values = append(values, t.Value)
+		}
+		filter.Keys = &keys
+		filter.Values = &values
+		params.Filters = &filter
+
+	}
+
+	resourceIds, resourceIdsOk := d.GetOk("resource_ids")
+	if resourceIdsOk {
+		var rids []string
+		sgs := resourceIds.(*schema.Set).List()
+		for _, v := range sgs {
+			str := v.(string)
+			rids = append(rids, str)
+		}
+
+		filter.ResourceIds = &rids
+		params.Filters = &filter
+	}
+
+	resp, err := client.ReadTags(ctx, params, options.WithRetryTimeout(60*time.Second))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	tg := flattenOAPITagsDescSDK(ptr.From(resp.Tags))
+	if err := d.Set("tags", tg); err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diag.FromErr(err)
+}
+
+func ResourceOutscaleTagsDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
+	request := osc.DeleteTagsRequest{}
+
+	tag, tagsOk := d.GetOk("tag")
+
+	resourceIds, resourceIdsOk := d.GetOk("resource_ids")
+
+	if !tagsOk && !resourceIdsOk {
+		return diag.Errorf("one tag and resource id, must be assigned")
+	}
+
+	if tagsOk {
+		request.Tags = expandOAPITagsSDK(tag.(*schema.Set))
+	}
+	if resourceIdsOk {
+		var rids []string
+		sgs := resourceIds.(*schema.Set).List()
+		for _, v := range sgs {
+			str := v.(string)
+			rids = append(rids, str)
+		}
+
+		request.ResourceIds = rids
+	}
+
+	_, err := client.DeleteTags(ctx, request, options.WithRetryTimeout(60*time.Second))
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil

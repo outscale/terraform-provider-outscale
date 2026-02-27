@@ -4,23 +4,24 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net/http"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/outscale/goutils/sdk/ptr"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 func ResourceOutscaleVirtualGateway() *schema.Resource {
 	return &schema.Resource{
-		Create: ResourceOutscaleVirtualGatewayCreate,
-		Read:   ResourceOutscaleVirtualGatewayRead,
-		Update: ResourceOutscaleVirtualGatewayUpdate,
-		Delete: ResourceOutscaleVirtualGatewayDelete,
+		CreateContext: ResourceOutscaleVirtualGatewayCreate,
+		ReadContext:   ResourceOutscaleVirtualGatewayRead,
+		UpdateContext: ResourceOutscaleVirtualGatewayUpdate,
+		DeleteContext: ResourceOutscaleVirtualGatewayDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -75,217 +76,162 @@ func ResourceOutscaleVirtualGateway() *schema.Resource {
 	}
 }
 
-func ResourceOutscaleVirtualGatewayCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleVirtualGatewayCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
 	timeout := d.Timeout(schema.TimeoutCreate)
-	connectType, connecTypeOk := d.GetOk("connection_type")
-	createOpts := oscgo.CreateVirtualGatewayRequest{}
-	if connecTypeOk {
-		createOpts.SetConnectionType(connectType.(string))
+	clientType, clientecTypeOk := d.GetOk("connection_type")
+	createOpts := osc.CreateVirtualGatewayRequest{}
+	if clientecTypeOk {
+		createOpts.ConnectionType = clientType.(string)
 	}
 
-	var resp oscgo.CreateVirtualGatewayResponse
-	err := retry.Retry(timeout, func() *retry.RetryError {
-		var err error
-		rp, httpResp, err := conn.VirtualGatewayApi.CreateVirtualGateway(context.Background()).CreateVirtualGatewayRequest(createOpts).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.CreateVirtualGateway(ctx, createOpts, options.WithRetryTimeout(timeout))
 	if err != nil {
-		return fmt.Errorf("error creating vpn gateway: %s", err)
+		return diag.Errorf("error creating vpn gateway: %s", err)
 	}
 
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{"pending"},
-		Target:     []string{"available"},
-		Refresh:    virtualGatewayStateRefreshFunc(conn, resp.VirtualGateway.GetVirtualGatewayId(), "deleted", timeout),
-		Timeout:    timeout,
-		Delay:      5 * time.Second,
-		MinTimeout: 3 * time.Second,
+		Pending: []string{"pending"},
+		Target:  []string{"available"},
+		Timeout: timeout,
+		Refresh: virtualGatewayStateRefreshFunc(ctx, client, *resp.VirtualGateway.VirtualGatewayId, "deleted", timeout),
 	}
 
-	_, err = stateConf.WaitForState()
+	_, err = stateConf.WaitForStateContext(ctx)
 	if err != nil {
-		return fmt.Errorf(
+		return diag.Errorf(
 			"error waiting for instance (%s) to become created: %s", d.Id(), err)
 	}
 
-	virtualGateway := resp.GetVirtualGateway()
-	d.SetId(virtualGateway.GetVirtualGatewayId())
+	virtualGateway := resp.VirtualGateway
+	d.SetId(ptr.From(virtualGateway.VirtualGatewayId))
 
 	if d.IsNewResource() {
-		if err := updateOAPITagsSDK(conn, d); err != nil {
-			return err
+		if err := updateOAPITagsSDK(ctx, client, timeout, d); err != nil {
+			return diag.FromErr(err)
 		}
 	}
-	return ResourceOutscaleVirtualGatewayRead(d, meta)
+	return ResourceOutscaleVirtualGatewayRead(ctx, d, meta)
 }
 
-func ResourceOutscaleVirtualGatewayRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleVirtualGatewayRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 	timeout := d.Timeout(schema.TimeoutRead)
 
-	var resp oscgo.ReadVirtualGatewaysResponse
-	var err error
-	var statusCode int
-
-	err = retry.Retry(timeout, func() *retry.RetryError {
-		rp, httpResp, err := conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(oscgo.ReadVirtualGatewaysRequest{
-			Filters: &oscgo.FiltersVirtualGateway{VirtualGatewayIds: &[]string{d.Id()}},
-		}).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		statusCode = httpResp.StatusCode
-		return nil
-	})
+	resp, err := client.ReadVirtualGateways(ctx, osc.ReadVirtualGatewaysRequest{
+		Filters: &osc.FiltersVirtualGateway{VirtualGatewayIds: &[]string{d.Id()}},
+	}, options.WithRetryTimeout(timeout))
 	if err != nil {
-		if statusCode == http.StatusNotFound {
-			d.SetId("")
-			return nil
-		}
 		fmt.Printf("\n\n[ERROR] Error finding VpnGateway: %s", err)
-		return err
+		return diag.FromErr(err)
 	}
 
-	if utils.IsResponseEmpty(len(resp.GetVirtualGateways()), "VirtualGateway", d.Id()) {
+	if resp.VirtualGateways == nil || utils.IsResponseEmpty(len(*resp.VirtualGateways), "VirtualGateway", d.Id()) {
 		d.SetId("")
 		return nil
 	}
-	virtualGateway := resp.GetVirtualGateways()[0]
-	if virtualGateway.GetState() == "deleted" {
+	virtualGateway := (*resp.VirtualGateways)[0]
+	if ptr.From(virtualGateway.State) == "deleted" {
 		d.SetId("")
 		return nil
 	}
-	if virtualGateway.HasNetToVirtualGatewayLinks() {
-		vs := make([]map[string]interface{}, len(virtualGateway.GetNetToVirtualGatewayLinks()))
-		for k, v := range virtualGateway.GetNetToVirtualGatewayLinks() {
+	if virtualGateway.NetToVirtualGatewayLinks != nil {
+		vs := make([]map[string]interface{}, len(*virtualGateway.NetToVirtualGatewayLinks))
+		for k, v := range *virtualGateway.NetToVirtualGatewayLinks {
 			vp := make(map[string]interface{})
-			vp["state"] = v.GetState()
-			vp["net_id"] = v.GetNetId()
+			vp["state"] = v.State
+			vp["net_id"] = v.NetId
 			vs[k] = vp
 		}
 		d.Set("net_to_virtual_gateway_links", vs)
 	}
 
-	d.Set("connection_type", virtualGateway.GetConnectionType())
-	d.Set("virtual_gateway_id", virtualGateway.GetVirtualGatewayId())
+	d.Set("connection_type", ptr.From(virtualGateway.ConnectionType))
+	d.Set("virtual_gateway_id", ptr.From(virtualGateway.VirtualGatewayId))
 
-	d.Set("state", virtualGateway.State)
-	d.Set("tags", FlattenOAPITagsSDK(virtualGateway.GetTags()))
+	d.Set("state", ptr.From(virtualGateway.State))
+	d.Set("tags", FlattenOAPITagsSDK(ptr.From(virtualGateway.Tags)))
 
 	return nil
 }
 
-func ResourceOutscaleVirtualGatewayUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
-	if err := updateOAPITagsSDK(conn, d); err != nil {
-		return err
+func ResourceOutscaleVirtualGatewayUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+	timeout := d.Timeout(schema.TimeoutUpdate)
+
+	if err := updateOAPITagsSDK(ctx, client, timeout, d); err != nil {
+		return diag.FromErr(err)
 	}
 	return nil
 }
 
-func ResourceOutscaleVirtualGatewayDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleVirtualGatewayDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 	timeout := d.Timeout(schema.TimeoutDelete)
 
-	return retry.Retry(timeout, func() *retry.RetryError {
-		_, httpResp, err := conn.VirtualGatewayApi.DeleteVirtualGateway(context.Background()).DeleteVirtualGatewayRequest(
-			oscgo.DeleteVirtualGatewayRequest{VirtualGatewayId: d.Id()}).Execute()
-		if err != nil {
-			if httpResp.StatusCode == http.StatusNotFound {
-				d.SetId("")
-				return nil
-			}
-			return utils.CheckThrottling(httpResp, err)
-		}
-		d.SetId("")
-		return nil
-	})
+	_, err := client.DeleteVirtualGateway(ctx, osc.DeleteVirtualGatewayRequest{VirtualGatewayId: d.Id()}, options.WithRetryTimeout(timeout))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	d.SetId("")
+
+	return nil
 }
 
 // vpnGatewayAttachStateRefreshFunc returns a retry.StateRefreshFunc that is used to watch
 // the state of a VPN gateway's attachment
-func vpnGatewayAttachStateRefreshFunc(conn *oscgo.APIClient, id string, expected string, timeout time.Duration) retry.StateRefreshFunc {
+func vpnGatewayAttachStateRefreshFunc(ctx context.Context, client *osc.Client, id string, expected string, timeout time.Duration) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		var resp oscgo.ReadVirtualGatewaysResponse
-		var err error
-		var statusCode int
-
-		err = retry.Retry(timeout, func() *retry.RetryError {
-			rp, httpResp, err := conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(oscgo.ReadVirtualGatewaysRequest{
-				Filters: &oscgo.FiltersVirtualGateway{VirtualGatewayIds: &[]string{id}},
-			}).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			statusCode = httpResp.StatusCode
-			return nil
-		})
+		resp, err := client.ReadVirtualGateways(ctx, osc.ReadVirtualGatewaysRequest{
+			Filters: &osc.FiltersVirtualGateway{VirtualGatewayIds: &[]string{id}},
+		}, options.WithRetryTimeout(timeout))
 		if err != nil {
-			if statusCode == http.StatusNotFound {
-				resp.SetVirtualGateways(nil)
-			} else {
-				fmt.Printf("[ERROR] Error on VpnGatewayStateRefresh: %s", err)
-				return nil, "", err
-			}
+			fmt.Printf("[ERROR] Error on VpnGatewayStateRefresh: %s", err)
+			return nil, "", err
 		}
 
-		if resp.GetVirtualGateways() == nil {
+		if resp.VirtualGateways == nil {
 			return nil, "", nil
 		}
 
-		virtualGateway := resp.GetVirtualGateways()[0]
-		if len(virtualGateway.GetNetToVirtualGatewayLinks()) == 0 {
+		virtualGateway := (*resp.VirtualGateways)[0]
+		if virtualGateway.NetToVirtualGatewayLinks == nil || len(*virtualGateway.NetToVirtualGatewayLinks) == 0 {
 			return virtualGateway, "detached", nil
 		}
-
 		vpnAttachment := oapiVpnGatewayGetLink(virtualGateway)
-		return virtualGateway, vpnAttachment.GetState(), nil
+
+		return virtualGateway, *vpnAttachment.State, nil
 	}
 }
 
-func oapiVpnGatewayGetLink(vgw oscgo.VirtualGateway) *oscgo.NetToVirtualGatewayLink {
-	for _, v := range vgw.GetNetToVirtualGatewayLinks() {
-		if v.GetState() == "attached" {
+func oapiVpnGatewayGetLink(vgw osc.VirtualGateway) *osc.NetToVirtualGatewayLink {
+	for _, v := range ptr.From(vgw.NetToVirtualGatewayLinks) {
+		if ptr.From(v.State) == "attached" {
 			return &v
 		}
 	}
-	return &oscgo.NetToVirtualGatewayLink{State: ptr.To("detached")}
+	return &osc.NetToVirtualGatewayLink{State: new("detached")}
 }
 
-func virtualGatewayStateRefreshFunc(conn *oscgo.APIClient, instanceID, failState string, timeout time.Duration) retry.StateRefreshFunc {
+func virtualGatewayStateRefreshFunc(ctx context.Context, client *osc.Client, instanceID, failState string, timeout time.Duration) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		var resp oscgo.ReadVirtualGatewaysResponse
-		err := retry.Retry(timeout, func() *retry.RetryError {
-			var err error
-			rp, httpResp, err := conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(oscgo.ReadVirtualGatewaysRequest{
-				Filters: &oscgo.FiltersVirtualGateway{
-					VirtualGatewayIds: &[]string{instanceID},
-				},
-			}).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
+		resp, err := client.ReadVirtualGateways(ctx, osc.ReadVirtualGatewaysRequest{
+			Filters: &osc.FiltersVirtualGateway{
+				VirtualGatewayIds: &[]string{instanceID},
+			},
+		}, options.WithRetryTimeout(timeout))
 		if err != nil {
 			log.Printf("[ERROR] error on InstanceStateRefresh: %s", err)
 			return nil, "", err
 		}
 
-		if !resp.HasVirtualGateways() {
+		if resp.VirtualGateways == nil {
 			return nil, "", nil
 		}
 
-		virtualGateway := resp.GetVirtualGateways()[0]
-		state := virtualGateway.GetState()
+		virtualGateway := (*resp.VirtualGateways)[0]
+		state := *virtualGateway.State
 
 		if state == failState {
 			return virtualGateway, state, fmt.Errorf("failed to reach target state:: %v", *virtualGateway.State)

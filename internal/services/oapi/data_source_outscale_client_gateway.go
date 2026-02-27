@@ -2,13 +2,14 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
@@ -16,7 +17,7 @@ import (
 
 func DataSourceOutscaleClientGateway() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleClientGatewayRead,
+		ReadContext: DataSourceOutscaleClientGatewayRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"bgp_asn": {
@@ -48,20 +49,20 @@ func DataSourceOutscaleClientGateway() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleClientGatewayRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleClientGatewayRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 	clientGatewayID, clientGatewayOk := d.GetOk("client_gateway_id")
 
 	if !filtersOk && !clientGatewayOk {
-		return fmt.Errorf("one of filters, or client_gateway_id must be assigned")
+		return diag.Errorf("one of filters, or client_gateway_id must be assigned")
 	}
 
-	params := oscgo.ReadClientGatewaysRequest{}
+	params := osc.ReadClientGatewaysRequest{}
 
 	if clientGatewayOk {
-		params.Filters = &oscgo.FiltersClientGateway{
+		params.Filters = &osc.FiltersClientGateway{
 			ClientGatewayIds: &[]string{clientGatewayID.(string)},
 		}
 	}
@@ -69,60 +70,52 @@ func DataSourceOutscaleClientGatewayRead(d *schema.ResourceData, meta interface{
 	if filtersOk {
 		filterParams, err := buildOutscaleDataSourceClientGatewayFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		params.Filters = filterParams
 	}
 
-	var resp oscgo.ReadClientGatewaysResponse
-	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.ClientGatewayApi.ReadClientGateways(context.Background()).ReadClientGatewaysRequest(params).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadClientGateways(ctx, params, options.WithRetryTimeout(5*time.Minute))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	if len(resp.GetClientGateways()) == 0 {
-		return ErrNoResults
+	if resp.ClientGateways == nil || len(*resp.ClientGateways) == 0 {
+		return diag.FromErr(ErrNoResults)
 	}
 
-	if len(resp.GetClientGateways()) > 1 {
-		return ErrMultipleResults
+	if len(*resp.ClientGateways) > 1 {
+		return diag.FromErr(ErrMultipleResults)
 	}
 
-	clientGateway := resp.GetClientGateways()[0]
+	clientGateway := (*resp.ClientGateways)[0]
 
-	if err := d.Set("bgp_asn", clientGateway.GetBgpAsn()); err != nil {
-		return err
+	if err := d.Set("bgp_asn", ptr.From(clientGateway.BgpAsn)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("client_gateway_id", clientGateway.GetClientGatewayId()); err != nil {
-		return err
+	if err := d.Set("client_gateway_id", ptr.From(clientGateway.ClientGatewayId)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("connection_type", clientGateway.GetConnectionType()); err != nil {
-		return err
+	if err := d.Set("connection_type", ptr.From(clientGateway.ConnectionType)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("public_ip", clientGateway.GetPublicIp()); err != nil {
-		return err
+	if err := d.Set("public_ip", ptr.From(clientGateway.PublicIp)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("state", clientGateway.GetState()); err != nil {
-		return err
+	if err := d.Set("state", ptr.From(clientGateway.State)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("tags", FlattenOAPITagsSDK(clientGateway.GetTags())); err != nil {
-		return err
+	if err := d.Set("tags", FlattenOAPITagsSDK(ptr.From(clientGateway.Tags))); err != nil {
+		return diag.FromErr(err)
 	}
 
-	d.SetId(clientGateway.GetClientGatewayId())
+	d.SetId(ptr.From(clientGateway.ClientGatewayId))
 
 	return nil
 }
 
-func buildOutscaleDataSourceClientGatewayFilters(set *schema.Set) (*oscgo.FiltersClientGateway, error) {
-	var filters oscgo.FiltersClientGateway
+func buildOutscaleDataSourceClientGatewayFilters(set *schema.Set) (*osc.FiltersClientGateway, error) {
+	var filters osc.FiltersClientGateway
 	for _, v := range set.List() {
 		log.Printf("[DEBUG] gateway filters %+v", v)
 		m := v.(map[string]interface{})
@@ -133,23 +126,23 @@ func buildOutscaleDataSourceClientGatewayFilters(set *schema.Set) (*oscgo.Filter
 
 		switch name := m["name"].(string); name {
 		case "bgp_asns":
-			filters.SetBgpAsns(utils.StringSliceToInt32Slice(filterValues))
+			filters.BgpAsns = new(utils.StringSliceToIntSlice(filterValues))
 		case "client_gateway_ids":
-			filters.SetClientGatewayIds(filterValues)
+			filters.ClientGatewayIds = &filterValues
 		case "connection_types":
-			filters.SetConnectionTypes(filterValues)
+			filters.ConnectionTypes = &filterValues
 		case "public_ips":
-			filters.SetPublicIps(filterValues)
+			filters.PublicIps = &filterValues
 		case "states":
-			filters.SetStates(filterValues)
+			filters.States = &filterValues
 		case "tag_keys":
-			filters.SetTagKeys(filterValues)
+			filters.TagKeys = &filterValues
 		case "tag_values":
-			filters.SetTagValues(filterValues)
+			filters.TagValues = &filterValues
 		case "tags":
-			filters.SetTags(filterValues)
+			filters.Tags = &filterValues
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(name)
 		}
 	}
 	return &filters, nil

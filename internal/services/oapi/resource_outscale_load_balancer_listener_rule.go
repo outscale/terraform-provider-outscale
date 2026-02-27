@@ -2,24 +2,25 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"log"
-	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func ResourceOutscaleLoadBalancerListenerRule() *schema.Resource {
 	return &schema.Resource{
-		Create: ResourceOutscaleLoadBalancerListenerRuleCreate,
-		Read:   ResourceOutscaleLoadBalancerListenerRuleRead,
-		Update: ResourceOutscaleLoadBalancerListenerRuleUpdate,
-		Delete: ResourceOutscaleLoadBalancerListenerRuleDelete,
+		CreateContext: ResourceOutscaleLoadBalancerListenerRuleCreate,
+		ReadContext:   ResourceOutscaleLoadBalancerListenerRuleRead,
+		UpdateContext: ResourceOutscaleLoadBalancerListenerRuleUpdate,
+		DeleteContext: ResourceOutscaleLoadBalancerListenerRuleDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -105,109 +106,89 @@ func ResourceOutscaleLoadBalancerListenerRule() *schema.Resource {
 	}
 }
 
-func ResourceOutscaleLoadBalancerListenerRuleCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleLoadBalancerListenerRuleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 	timeout := d.Timeout(schema.TimeoutCreate)
-	req := &oscgo.CreateListenerRuleRequest{}
+
+	req := &osc.CreateListenerRuleRequest{}
 
 	if vids, ok := d.GetOk("vm_ids"); ok {
-		req.SetVmIds(utils.SetToStringSlice(vids.(*schema.Set)))
+		req.VmIds = utils.SetToStringSlice(vids.(*schema.Set))
 	} else {
-		return fmt.Errorf("expect vm_ids")
+		return diag.Errorf("expect vm_ids")
 	}
 
 	if li, lok := d.GetOk("listener"); lok {
 		ls := li.([]interface{})
 		l := ls[0].(map[string]interface{})
-		ll := oscgo.LoadBalancerLight{}
+		ll := osc.LoadBalancerLight{}
 		if l["load_balancer_name"] == nil || l["load_balancer_port"] == nil {
-			return fmt.Errorf("listener missing argument ")
+			return diag.Errorf("listener missing argument ")
 		}
 		lbpii := l["load_balancer_port"].(int)
-		lbpi := int32(lbpii)
-		ll.SetLoadBalancerName(l["load_balancer_name"].(string))
-		ll.SetLoadBalancerPort(lbpi)
-		req.SetListener(ll)
+		ll.LoadBalancerName = l["load_balancer_name"].(string)
+		ll.LoadBalancerPort = lbpii
+		req.Listener = ll
 	} else {
-		return fmt.Errorf("expect listener")
+		return diag.Errorf("expect listener")
 	}
 
 	if lri, lok := d.GetOk("listener_rule"); lok {
 		lrs := lri.([]interface{})
 		lr := lrs[0].(map[string]interface{})
 
-		lrfc := oscgo.ListenerRuleForCreation{}
+		lrfc := osc.ListenerRuleForCreation{}
 		if lr["priority"] == nil {
-			return fmt.Errorf("listener priority argument missing")
+			return diag.Errorf("listener priority argument missing")
 		}
 		if lr["action"] != nil {
-			lrfc.SetAction(lr["action"].(string))
+			lrfc.Action = new(lr["action"].(string))
 		}
 		if lr["path_pattern"] != nil {
-			lrfc.SetPathPattern(lr["path_pattern"].(string))
+			lrfc.PathPattern = new(lr["path_pattern"].(string))
 		}
 		if lr["host_name_pattern"] != nil {
-			lrfc.SetHostNamePattern(lr["host_name_pattern"].(string))
+			lrfc.HostNamePattern = new(lr["host_name_pattern"].(string))
 		}
 		if lr["listener_rule_name"] != nil {
-			lrfc.SetListenerRuleName(lr["listener_rule_name"].(string))
+			lrfc.ListenerRuleName = lr["listener_rule_name"].(string)
 		}
 		p := lr["priority"].(int)
-		lrfc.SetPriority(int32(p))
-		req.SetListenerRule(lrfc)
+		lrfc.Priority = p
+		req.ListenerRule = lrfc
 	} else {
-		return fmt.Errorf("expect listener rule")
+		return diag.Errorf("expect listener rule")
 	}
 
-	var err error
-	var resp oscgo.CreateListenerRuleResponse
-	err = retry.Retry(timeout, func() *retry.RetryError {
-		rp, httpResp, err := conn.ListenerApi.CreateListenerRule(
-			context.Background()).CreateListenerRuleRequest(*req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.CreateListenerRule(ctx, *req, options.WithRetryTimeout(timeout))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	d.SetId(*resp.ListenerRule.ListenerRuleName)
+	d.SetId(ptr.From(resp.ListenerRule.ListenerRuleName))
 
-	return ResourceOutscaleLoadBalancerListenerRuleRead(d, meta)
+	return ResourceOutscaleLoadBalancerListenerRuleRead(ctx, d, meta)
 }
 
-func ResourceOutscaleLoadBalancerListenerRuleRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleLoadBalancerListenerRuleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
 	timeout := d.Timeout(schema.TimeoutRead)
 	lrName := d.Id()
 
-	filter := &oscgo.FiltersListenerRule{
+	filter := &osc.FiltersListenerRule{
 		ListenerRuleNames: &[]string{lrName},
 	}
 
-	req := oscgo.ReadListenerRulesRequest{
+	req := osc.ReadListenerRulesRequest{
 		Filters: filter,
 	}
 
-	var resp oscgo.ReadListenerRulesResponse
-	var err error
-	err = retry.Retry(timeout, func() *retry.RetryError {
-		rp, httpResp, err := conn.ListenerApi.ReadListenerRules(
-			context.Background()).ReadListenerRulesRequest(req).
-			Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadListenerRules(ctx, req, options.WithRetryTimeout(timeout))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	if utils.IsResponseEmpty(len(resp.GetListenerRules()), "LoadBalancerListenerRule", d.Id()) {
+	if resp.ListenerRules == nil || utils.IsResponseEmpty(len(*resp.ListenerRules), "LoadBalancerListenerRule", d.Id()) {
 		d.SetId("")
 		return nil
 	}
@@ -239,7 +220,7 @@ func ResourceOutscaleLoadBalancerListenerRuleRead(d *schema.ResourceData, meta i
 	lrsl[0] = lrs
 	err = d.Set("listener_rule", lrsl)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if lr.VmIds != nil {
 		d.Set("vm_ids", utils.StringSlicePtrToInterfaceSlice(lr.VmIds))
@@ -247,98 +228,76 @@ func ResourceOutscaleLoadBalancerListenerRuleRead(d *schema.ResourceData, meta i
 	return nil
 }
 
-func ResourceOutscaleLoadBalancerListenerRuleUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleLoadBalancerListenerRuleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
 	timeout := d.Timeout(schema.TimeoutUpdate)
 
 	if d.HasChange("listener_rule") {
 		var err error
 		nw := d.Get("listener_rule").([]interface{})
 		if len(nw) != 1 {
-			return fmt.Errorf("error multiple listener_rule matched or empty: %s", err)
+			return diag.Errorf("error multiple listener_rule matched or empty: %s", err)
 		}
 		check := nw[0].(map[string]interface{})
-		req := oscgo.UpdateListenerRuleRequest{
+		req := osc.UpdateListenerRuleRequest{
 			ListenerRuleName: d.Id(),
 		}
 		if check["host_name_pattern"] != nil {
-			req.SetHostPattern(check["host_name_pattern"].(string))
+			req.HostPattern = new(check["host_name_pattern"].(string))
 		} else {
-			req.SetHostPattern("")
+			req.HostPattern = new("")
 		}
 		if check["listener_rule_name"] != nil {
-			req.SetListenerRuleName(check["listener_rule_name"].(string))
+			req.ListenerRuleName = check["listener_rule_name"].(string)
 		} else {
-			req.SetListenerRuleName("")
+			req.ListenerRuleName = ""
 		}
 		if check["path_pattern"] != nil {
-			req.SetPathPattern(check["path_pattern"].(string))
+			req.PathPattern = new(check["path_pattern"].(string))
 		} else {
-			req.SetPathPattern("")
+			req.PathPattern = new("")
 		}
 
-		err = retry.Retry(timeout, func() *retry.RetryError {
-			_, httpResp, err := conn.ListenerApi.UpdateListenerRule(
-				context.Background()).UpdateListenerRuleRequest(req).
-				Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			return nil
-		})
+		_, err = client.UpdateListenerRule(ctx, req, options.WithRetryTimeout(timeout))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
-	return ResourceOutscaleLoadBalancerListenerRuleRead(d, meta)
+	return ResourceOutscaleLoadBalancerListenerRuleRead(ctx, d, meta)
 }
 
-func ResourceOutscaleLoadBalancerListenerRuleDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleLoadBalancerListenerRuleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
 	timeout := d.Timeout(schema.TimeoutDelete)
 
 	log.Printf("[INFO] Deleting Listener Rule: %s", d.Id())
 
 	// Destroy the listener rule
-	req := oscgo.DeleteListenerRuleRequest{
+	req := osc.DeleteListenerRuleRequest{
 		ListenerRuleName: d.Id(),
 	}
 
-	err := retry.Retry(timeout, func() *retry.RetryError {
-		_, httpResp, err := conn.ListenerApi.DeleteListenerRule(
-			context.Background()).DeleteListenerRuleRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	_, err := client.DeleteListenerRule(ctx, req, options.WithRetryTimeout(timeout))
 	if err != nil {
-		return fmt.Errorf("error deleting listener rule: %s", err)
+		return diag.Errorf("error deleting listener rule: %s", err)
 	}
 
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{"ready"},
 		Target:  []string{},
+		Timeout: timeout,
 		Refresh: func() (interface{}, string, error) {
-			filter := &oscgo.FiltersListenerRule{
+			filter := &osc.FiltersListenerRule{
 				ListenerRuleNames: &[]string{d.Id()},
 			}
 
-			req := oscgo.ReadListenerRulesRequest{
+			req := osc.ReadListenerRulesRequest{
 				Filters: filter,
 			}
 
-			var resp oscgo.ReadListenerRulesResponse
-			err := retry.Retry(timeout, func() *retry.RetryError {
-				rp, httpResp, err := conn.ListenerApi.ReadListenerRules(
-					context.Background()).
-					ReadListenerRulesRequest(req).Execute()
-				if err != nil {
-					return utils.CheckThrottling(httpResp, err)
-				}
-				resp = rp
-				return nil
-			})
+			resp, err := client.ReadListenerRules(ctx, req, options.WithRetryTimeout(timeout))
 
 			if err != nil || len(*resp.ListenerRules) < 1 {
 				return nil, "", nil
@@ -346,11 +305,9 @@ func ResourceOutscaleLoadBalancerListenerRuleDelete(d *schema.ResourceData, meta
 
 			return &(*resp.ListenerRules)[0], "ready", nil
 		},
-		Timeout:    timeout,
-		MinTimeout: 10 * time.Second,
 	}
-	if _, err := stateConf.WaitForState(); err != nil {
-		return fmt.Errorf("error waiting for listener rule (%s) to become nil: %s", d.Id(), err)
+	if _, err := stateConf.WaitForStateContext(ctx); err != nil {
+		return diag.Errorf("error waiting for listener rule (%s) to become nil: %s", d.Id(), err)
 	}
 
 	return nil

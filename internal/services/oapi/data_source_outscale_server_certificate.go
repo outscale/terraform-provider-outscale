@@ -2,21 +2,23 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceOutscaleServerCertificate() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleServerCertificateRead,
+		ReadContext: DataSourceOutscaleServerCertificateRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"expiration_date": {
@@ -47,65 +49,56 @@ func DataSourceOutscaleServerCertificate() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleServerCertificateRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleServerCertificateRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 
 	if !filtersOk {
-		return ErrFilterRequired
+		return diag.FromErr(ErrFilterRequired)
 	}
 
 	// Build up search parameters
-	params := oscgo.ReadServerCertificatesRequest{}
+	params := osc.ReadServerCertificatesRequest{}
 
 	if filtersOk {
 		filterParams, err := buildOutscaleOSCAPIDataSourceServerCertificateFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		params.Filters = filterParams
 	}
 
-	var resp oscgo.ReadServerCertificatesResponse
-	err := retry.Retry(120*time.Second, func() *retry.RetryError {
-		var err error
-		rp, httpResp, err := conn.ServerCertificateApi.ReadServerCertificates(context.Background()).ReadServerCertificatesRequest(params).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadServerCertificates(ctx, params, options.WithRetryTimeout(120*time.Second))
 	if err != nil {
-		return fmt.Errorf("error reading server certificate id (%s)", utils.GetErrorResponse(err))
+		return diag.Errorf("error reading server certificate id (%s)", err)
 	}
 
-	if !resp.HasServerCertificates() || len(resp.GetServerCertificates()) == 0 {
-		return ErrNoResults
+	if resp.ServerCertificates == nil || len(*resp.ServerCertificates) == 0 {
+		return diag.FromErr(ErrNoResults)
 	}
 
-	if len(resp.GetServerCertificates()) > 1 {
-		return ErrMultipleResults
+	if len(*resp.ServerCertificates) > 1 {
+		return diag.FromErr(ErrMultipleResults)
 	}
 
-	result := resp.GetServerCertificates()[0]
+	result := (*resp.ServerCertificates)[0]
 
 	log.Printf("[DEBUG] Setting Server Certificate id (%s)", err)
 
-	d.Set("expiration_date", result.GetExpirationDate())
-	d.Set("name", result.GetName())
-	d.Set("orn", result.GetOrn())
-	d.Set("path", result.GetPath())
-	d.Set("upload_date", result.GetUploadDate())
+	d.Set("expiration_date", from.ISO8601(result.ExpirationDate))
+	d.Set("name", ptr.From(result.Name))
+	d.Set("orn", ptr.From(result.Orn))
+	d.Set("path", ptr.From(result.Path))
+	d.Set("upload_date", from.ISO8601(result.UploadDate))
 
-	d.SetId(result.GetId())
+	d.SetId(ptr.From(result.Id))
 
 	return nil
 }
 
-func buildOutscaleOSCAPIDataSourceServerCertificateFilters(set *schema.Set) (*oscgo.FiltersServerCertificate, error) {
-	var filters oscgo.FiltersServerCertificate
+func buildOutscaleOSCAPIDataSourceServerCertificateFilters(set *schema.Set) (*osc.FiltersServerCertificate, error) {
+	var filters osc.FiltersServerCertificate
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -115,9 +108,9 @@ func buildOutscaleOSCAPIDataSourceServerCertificateFilters(set *schema.Set) (*os
 
 		switch name := m["name"].(string); name {
 		case "paths":
-			filters.SetPaths(filterValues)
+			filters.Paths = &filterValues
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(name)
 		}
 	}
 	return &filters, nil

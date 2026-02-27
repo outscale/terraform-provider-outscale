@@ -26,14 +26,14 @@ func (m datePlanModify) PlanModifyString(ctx context.Context, req planmodifier.S
 		return
 	}
 
-	configDate, err := iso8601.Parse([]byte(req.ConfigValue.ValueString()))
+	configDate, err := iso8601.ParseString(req.ConfigValue.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			m.Description(ctx),
 			"Unable to parse configuration expiration date value: "+err.Error(),
 		)
 	}
-	stateDate, err := iso8601.Parse([]byte(req.StateValue.ValueString()))
+	stateDate, err := iso8601.ParseString(req.StateValue.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			m.Description(ctx),
@@ -44,7 +44,7 @@ func (m datePlanModify) PlanModifyString(ctx context.Context, req planmodifier.S
 		return
 	}
 
-	if configDate.Before(stateDate) {
+	if configDate.Before(stateDate.Time) {
 		resp.Diagnostics.AddError(
 			m.Description(ctx),
 			"The new expiration_date should be after the old one."+

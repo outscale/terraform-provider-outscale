@@ -4,18 +4,20 @@ import (
 	"context"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceUsers() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceUsersRead,
+		ReadContext: DataSourceUsersRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"users": {
@@ -54,49 +56,41 @@ func DataSourceUsers() *schema.Resource {
 	}
 }
 
-func DataSourceUsersRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceUsersRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
 	filters, filtersOk := d.GetOk("filter")
 
 	var err error
-	req := oscgo.NewReadUsersRequest()
+	req := osc.ReadUsersRequest{}
 	if filtersOk {
 		req.Filters, err = buildUsersFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	var resp oscgo.ReadUsersResponse
-	err = retry.Retry(2*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.UserApi.ReadUsers(context.Background()).ReadUsersRequest(*req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
-
+	resp, err := client.ReadUsers(ctx, req, options.WithRetryTimeout(2*time.Minute))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	users := resp.GetUsers()
+	users := ptr.From(resp.Users)
 	d.SetId(id.UniqueId())
 	if len(users) == 0 {
-		return ErrNoResults
+		return diag.FromErr(ErrNoResults)
 	}
 	d.SetId(id.UniqueId())
 	usersToSet := make([]map[string]interface{}, len(users))
 	for i, v := range users {
 		user := make(map[string]interface{})
 
-		user["user_id"] = v.GetUserId()
-		user["user_name"] = v.GetUserName()
-		user["user_email"] = v.GetUserEmail()
-		user["path"] = v.GetPath()
-		user["creation_date"] = v.GetCreationDate()
-		user["last_modification_date"] = v.GetLastModificationDate()
+		user["user_id"] = v.UserId
+		user["user_name"] = v.UserName
+		user["user_email"] = v.UserEmail
+		user["path"] = v.Path
+		user["creation_date"] = from.ISO8601(v.CreationDate)
+		user["last_modification_date"] = from.ISO8601(v.LastModificationDate)
 		usersToSet[i] = user
 	}
-	return d.Set("users", usersToSet)
+	return diag.FromErr(d.Set("users", usersToSet))
 }

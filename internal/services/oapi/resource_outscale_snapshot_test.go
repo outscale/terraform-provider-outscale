@@ -4,27 +4,25 @@ import (
 	"context"
 	"fmt"
 	"testing"
-	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func TestAccOthers_Snapshot_basic(t *testing.T) {
-	var v oscgo.Snapshot
+	var v osc.Snapshot
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleSnapshotConfig(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPISnapshotExists("outscale_snapshot.outscale_snapshot", &v),
+					testAccCheckOAPISnapshotExists(t.Context(), "outscale_snapshot.outscale_snapshot", &v),
 				),
 			},
 		},
@@ -32,15 +30,14 @@ func TestAccOthers_Snapshot_basic(t *testing.T) {
 }
 
 func TestAccOthers_Snapshot_withDescription(t *testing.T) {
-	var v oscgo.Snapshot
+	var v osc.Snapshot
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleSnapshotConfigWithDescription(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPISnapshotExists("outscale_snapshot.test", &v),
+					testAccCheckOAPISnapshotExists(t.Context(), "outscale_snapshot.test", &v),
 					resource.TestCheckResourceAttr("outscale_snapshot.test", "description", "Snapshot Acceptance Test"),
 				),
 			},
@@ -49,15 +46,14 @@ func TestAccOthers_Snapshot_withDescription(t *testing.T) {
 }
 
 func TestAccOthers_Snapshot_CopySnapshot(t *testing.T) {
-	var v oscgo.Snapshot
+	var v osc.Snapshot
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleSnapshotConfigCopySnapshot(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPISnapshotExists("outscale_snapshot.test", &v),
+					testAccCheckOAPISnapshotExists(t.Context(), "outscale_snapshot.test", &v),
 					resource.TestCheckResourceAttr("outscale_snapshot.test", "description", "Target Snapshot Acceptance Test"),
 				),
 			},
@@ -67,9 +63,8 @@ func TestAccOthers_Snapshot_CopySnapshot(t *testing.T) {
 
 func TestAccOthers_Snapshot_UpdateTags(t *testing.T) {
 	region := utils.GetRegion()
-	// var v oscgo.Snapshot
+	// var v osc.Snapshot
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -85,15 +80,14 @@ func TestAccOthers_Snapshot_UpdateTags(t *testing.T) {
 }
 
 func TestAccOthers_Snapshot_importBasic(t *testing.T) {
-	var v oscgo.Snapshot
+	var v osc.Snapshot
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleSnapshotConfig(utils.GetRegion()),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPISnapshotExists("outscale_snapshot.outscale_snapshot", &v),
+					testAccCheckOAPISnapshotExists(t.Context(), "outscale_snapshot.outscale_snapshot", &v),
 				),
 			},
 			testacc.ImportStep("outscale_snapshot.outscale_snapshot", "permissions_to_create_volume", "request_id"),
@@ -101,7 +95,7 @@ func TestAccOthers_Snapshot_importBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckOAPISnapshotExists(n string, v *oscgo.Snapshot) resource.TestCheckFunc {
+func testAccCheckOAPISnapshotExists(ctx context.Context, n string, v *osc.Snapshot) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -112,25 +106,16 @@ func testAccCheckOAPISnapshotExists(n string, v *oscgo.Snapshot) resource.TestCh
 			return fmt.Errorf("no id is set")
 		}
 
-		client := testacc.ConfiguredClient.OSCAPI
+		client := testacc.ConfiguredClient.OSC
 
-		request := oscgo.ReadSnapshotsRequest{
-			Filters: &oscgo.FiltersSnapshot{SnapshotIds: &[]string{rs.Primary.ID}},
+		request := osc.ReadSnapshotsRequest{
+			Filters: &osc.FiltersSnapshot{SnapshotIds: &[]string{rs.Primary.ID}},
 		}
 
-		var resp oscgo.ReadSnapshotsResponse
-
-		err := retry.Retry(5*time.Minute, func() *retry.RetryError {
-			rp, httpResp, err := client.SnapshotApi.ReadSnapshots(context.Background()).ReadSnapshotsRequest(request).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
+		resp, err := client.ReadSnapshots(ctx, request, options.WithRetryTimeout(DefaultTimeout))
 		if err == nil {
-			if resp.GetSnapshots() != nil && len(resp.GetSnapshots()) > 0 {
-				*v = resp.GetSnapshots()[0]
+			if resp.Snapshots != nil && len(*resp.Snapshots) > 0 {
+				*v = (*resp.Snapshots)[0]
 				return nil
 			}
 		}

@@ -7,23 +7,25 @@ import (
 	"strconv"
 	"strings"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/services/oapi/oapihelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
 	"github.com/spf13/cast"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func ResourceOutscaleImageLaunchPermission() *schema.Resource {
 	return &schema.Resource{
-		Exists: ResourceOutscaleImageLaunchPermissionExists,
-		Create: ResourceOutscaleImageLaunchPermissionCreate,
-		Read:   ResourceOutscaleImageLaunchPermissionRead,
-		Delete: ResourceOutscaleImageLaunchPermissionDelete,
+		Exists:        ResourceOutscaleImageLaunchPermissionExists,
+		CreateContext: ResourceOutscaleImageLaunchPermissionCreate,
+		ReadContext:   ResourceOutscaleImageLaunchPermissionRead,
+		DeleteContext: ResourceOutscaleImageLaunchPermissionDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -113,91 +115,77 @@ func ResourceOutscaleImageLaunchPermission() *schema.Resource {
 }
 
 func ResourceOutscaleImageLaunchPermissionExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+	client := meta.(*client.OutscaleClient).OSC
 
 	imageID := d.Get("image_id").(string)
-	return oapihelpers.ImageHasLaunchPermission(conn, imageID)
+	return oapihelpers.ImageHasLaunchPermission(context.Background(), client, ReadDefaultTimeout, imageID)
 }
 
-func expandOAPIImagePermission(permissionType interface{}) (res oscgo.PermissionsOnResource) {
+func expandOAPIImagePermission(permissionType interface{}) (res osc.PermissionsOnResource) {
 	if len(permissionType.([]interface{})) > 0 {
 		permission := permissionType.([]interface{})[0].(map[string]interface{})
 
 		if globalPermission, ok := permission["global_permission"]; ok {
-			res.SetGlobalPermission(cast.ToBool(globalPermission))
+			res.GlobalPermission = new(cast.ToBool(globalPermission))
 		}
 		if accountIDs, ok := permission["account_ids"]; ok {
 			for _, accountID := range accountIDs.([]interface{}) {
-				res.SetAccountIds(append(res.GetAccountIds(), accountID.(string)))
+				acc := append(ptr.From(res.AccountIds), accountID.(string))
+				res.AccountIds = &acc
 			}
 		}
 	}
 	return
 }
 
-func ResourceOutscaleImageLaunchPermissionCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleImageLaunchPermissionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 	timeout := d.Timeout(schema.TimeoutCreate)
 
 	imageID, ok := d.GetOk("image_id")
 
 	if !ok {
-		return fmt.Errorf("please provide the required attribute image_id")
+		return diag.Errorf("please provide the required attribute image_id")
 	}
 	log.Printf("Creating Outscale Image Launch Permission, image_id (%+v)", imageID.(string))
 
-	permissionLaunch := oscgo.PermissionsOnResourceCreation{}
+	permissionLaunch := osc.PermissionsOnResourceCreation{}
 	if permissionAdditions, ok := d.GetOk("permission_additions"); ok {
-		permissionLaunch.SetAdditions(expandOAPIImagePermission(permissionAdditions))
+		permissionLaunch.Additions = new(expandOAPIImagePermission(permissionAdditions))
 	}
 	if permissionRemovals, ok := d.GetOk("permission_removals"); ok {
-		permissionLaunch.SetRemovals(expandOAPIImagePermission(permissionRemovals))
+		permissionLaunch.Removals = new(expandOAPIImagePermission(permissionRemovals))
 	}
 
-	request := oscgo.UpdateImageRequest{
+	request := osc.UpdateImageRequest{
 		ImageId:             imageID.(string),
 		PermissionsToLaunch: &permissionLaunch,
 	}
 
-	err := retry.Retry(timeout, func() *retry.RetryError {
-		var err error
-		_, httpResp, err := conn.ImageApi.UpdateImage(context.Background()).UpdateImageRequest(request).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	_, err := client.UpdateImage(ctx, request, options.WithRetryTimeout(timeout))
 
 	var errString string
 	if err != nil {
 		errString = err.Error()
 
-		return fmt.Errorf("error creating omi launch permission: %s", errString)
+		return diag.Errorf("error creating omi launch permission: %s", errString)
 	}
 
 	d.SetId(imageID.(string))
 
-	return ResourceOutscaleImageLaunchPermissionRead(d, meta)
+	return ResourceOutscaleImageLaunchPermissionRead(ctx, d, meta)
 }
 
-func ResourceOutscaleImageLaunchPermissionRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleImageLaunchPermissionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
 	timeout := d.Timeout(schema.TimeoutRead)
 
-	var resp oscgo.ReadImagesResponse
-	err := retry.Retry(timeout, func() *retry.RetryError {
-		var err error
-		rp, httpResp, err := conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(oscgo.ReadImagesRequest{
-			Filters: &oscgo.FiltersImage{
-				ImageIds: &[]string{d.Id()},
-			},
-		}).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadImages(ctx, osc.ReadImagesRequest{
+		Filters: &osc.FiltersImage{
+			ImageIds: &[]string{d.Id()},
+		},
+	}, options.WithRetryTimeout(timeout))
 
 	var errString string
 	if err != nil {
@@ -209,55 +197,51 @@ func ResourceOutscaleImageLaunchPermissionRead(d *schema.ResourceData, meta inte
 		}
 		errString = err.Error()
 
-		return fmt.Errorf("error reading outscale image permission: %s", errString)
+		return diag.Errorf("error reading outscale image permission: %s", errString)
 	}
-	if utils.IsResponseEmpty(len(resp.GetImages()), "ImageLaunchPermission", d.Id()) {
+	if resp.Images == nil || utils.IsResponseEmpty(len(*resp.Images), "ImageLaunchPermission", d.Id()) {
 		d.SetId("")
 		return nil
 	}
-	result := resp.GetImages()[0]
+	result := (*resp.Images)[0]
 
-	if err := d.Set("description", result.Description); err != nil {
-		return err
+	if err := d.Set("description", ptr.From(result.Description)); err != nil {
+		return diag.FromErr(err)
 	}
 
 	lp := make(map[string]interface{})
-	lp["global_permission"] = strconv.FormatBool(result.PermissionsToLaunch.GetGlobalPermission())
-	lp["account_ids"] = result.PermissionsToLaunch.GetAccountIds()
+	perm := ptr.From(result.PermissionsToLaunch)
+	lp["global_permission"] = strconv.FormatBool(ptr.From(perm.GlobalPermission))
+	lp["account_ids"] = perm.AccountIds
 
-	return d.Set("permissions_to_launch", []map[string]interface{}{lp})
+	return diag.FromErr(d.Set("permissions_to_launch", []map[string]interface{}{lp}))
 }
 
-func ResourceOutscaleImageLaunchPermissionDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleImageLaunchPermissionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
 	timeout := d.Timeout(schema.TimeoutDelete)
 
 	imageID, ok := d.GetOk("image_id")
 	if !ok {
-		return fmt.Errorf("please provide the required attribute image_id")
+		return diag.Errorf("please provide the required attribute image_id")
 	}
 
 	if permissionAdditions, ok := d.GetOk("permission_additions"); ok {
-		permission := oscgo.PermissionsOnResourceCreation{}
-		request := oscgo.UpdateImageRequest{
+		permission := osc.PermissionsOnResourceCreation{}
+		request := osc.UpdateImageRequest{
 			ImageId: imageID.(string),
 		}
-		permission.SetRemovals(expandOAPIImagePermission(permissionAdditions))
-		request.SetPermissionsToLaunch(permission)
+		permission.Removals = new(expandOAPIImagePermission(permissionAdditions))
+		request.PermissionsToLaunch = &permission
 
-		err := retry.Retry(timeout, func() *retry.RetryError {
-			_, httpResp, err := conn.ImageApi.UpdateImage(context.Background()).UpdateImageRequest(request).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			return nil
-		})
+		_, err := client.UpdateImage(ctx, request, options.WithRetryTimeout(timeout))
 
 		var errString string
 		if err != nil {
 			errString = err.Error()
 
-			return fmt.Errorf("error removing omi launch permission: %s", errString)
+			return diag.Errorf("error removing omi launch permission: %s", errString)
 		}
 	}
 

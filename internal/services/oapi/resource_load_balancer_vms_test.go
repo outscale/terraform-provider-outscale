@@ -20,7 +20,6 @@ func TestAccVM_LbuBackends_Basic(t *testing.T) {
 	vmType := testAccVmType
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -56,7 +55,6 @@ func TestAccVM_LbuBackends_Migration(t *testing.T) {
 	lbName := acctest.RandomWithPrefix("testacc-lbu")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { testacc.PreCheck(t) },
 		Steps: testacc.FrameworkMigrationTestSteps("1.1.3",
 			testAccLBUAttachmentConfig1(lbName, omi, region, vmType, sgName),
 			testAccLBUAttachmentAddUpdate(lbName, omi, region, vmType, sgName),

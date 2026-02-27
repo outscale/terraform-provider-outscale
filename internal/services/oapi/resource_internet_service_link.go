@@ -13,9 +13,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
+	"github.com/outscale/terraform-provider-outscale/internal/services/oapi/oapihelpers"
 )
 
 var (
@@ -36,7 +40,7 @@ type InternetServiceLinkModel struct {
 }
 
 type resourceInternetServiceLink struct {
-	Client *oscgo.APIClient
+	Client *osc.Client
 }
 
 func NewResourceInternetServiceLink() resource.Resource {
@@ -51,12 +55,12 @@ func (r *resourceInternetServiceLink) Configure(_ context.Context, req resource.
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected *osc.APIClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *osc.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
 	}
-	r.Client = client.OSCAPI
+	r.Client = client.OSC
 }
 
 func (r *resourceInternetServiceLink) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
@@ -73,8 +77,8 @@ func (r *resourceInternetServiceLink) ImportState(ctx context.Context, req resou
 
 	var data InternetServiceLinkModel
 	var timeouts timeouts.Value
-	data.InternetServiceId = types.StringValue(internetServiceId)
-	data.Id = types.StringValue(internetServiceId)
+	data.InternetServiceId = to.String(internetServiceId)
+	data.Id = to.String(internetServiceId)
 	resp.Diagnostics.Append(resp.State.GetAttribute(ctx, path.Root("timeouts"), &timeouts)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -84,9 +88,6 @@ func (r *resourceInternetServiceLink) ImportState(ctx context.Context, req resou
 
 	diags := resp.State.Set(ctx, &data)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceInternetServiceLink) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -149,25 +150,16 @@ func (r *resourceInternetServiceLink) Create(ctx context.Context, req resource.C
 	}
 
 	createTimeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
-	createReq := oscgo.LinkInternetServiceRequest{
+	createReq := osc.LinkInternetServiceRequest{
 		InternetServiceId: data.InternetServiceId.ValueString(),
 		NetId:             data.NetId.ValueString(),
 	}
 
-	var createResp oscgo.LinkInternetServiceResponse
-	err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.InternetServiceApi.LinkInternetService(ctx).LinkInternetServiceRequest(createReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		createResp = rp
-		return nil
-	})
+	createResp, err := r.Client.LinkInternetService(ctx, createReq, options.WithRetryTimeout(createTimeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to link Internet Service resource.",
@@ -175,10 +167,10 @@ func (r *resourceInternetServiceLink) Create(ctx context.Context, req resource.C
 		)
 		return
 	}
-	data.RequestId = types.StringValue(createResp.ResponseContext.GetRequestId())
+	data.RequestId = to.String(createResp.ResponseContext.RequestId)
 
-	data.InternetServiceId = types.StringValue(data.InternetServiceId.ValueString())
-	data.Id = types.StringValue(data.InternetServiceId.ValueString())
+	data.InternetServiceId = to.String(data.InternetServiceId.ValueString())
+	data.Id = to.String(data.InternetServiceId.ValueString())
 
 	data, err = setInternetServiceLinkState(ctx, r, data)
 	if err != nil {
@@ -189,9 +181,6 @@ func (r *resourceInternetServiceLink) Create(ctx context.Context, req resource.C
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceInternetServiceLink) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -215,9 +204,6 @@ func (r *resourceInternetServiceLink) Read(ctx context.Context, req resource.Rea
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceInternetServiceLink) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -232,37 +218,81 @@ func (r *resourceInternetServiceLink) Delete(ctx context.Context, req resource.D
 	}
 
 	deleteTimeout, diags := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
-	unlinkReq := oscgo.UnlinkInternetServiceRequest{
+	unlinkReq := osc.UnlinkInternetServiceRequest{
 		InternetServiceId: data.InternetServiceId.ValueString(),
 		NetId:             data.NetId.ValueString(),
 	}
 
-	err := retry.RetryContext(ctx, deleteTimeout, func() *retry.RetryError {
-		_, httpResp, err := r.Client.InternetServiceApi.UnlinkInternetService(ctx).UnlinkInternetServiceRequest(unlinkReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
+	_, err := r.Client.UnlinkInternetService(ctx, unlinkReq, options.WithRetryTimeout(deleteTimeout))
+	if err != nil {
+		oscErr := oapihelpers.GetError(err)
+		// 409 with code 1004 is returned when the Net of the Internet Service has mapped Public IPs
+		// In this case, we unlink them before unlinking the Internet Service
+		if oscErr.Code != "1004" {
+			resp.Diagnostics.AddError(
+				"Unable to unlink Internet Service resource.",
+				err.Error(),
+			)
+			return
 		}
-		return nil
+	}
+
+	var publicIps []osc.LinkPublicIp
+	respNics, err := r.Client.ReadNics(ctx, osc.ReadNicsRequest{
+		Filters: &osc.FiltersNic{
+			NetIds: &[]string{data.NetId.ValueString()},
+		},
 	})
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to unlink Internet Service resource.",
+			"Unable to get Nics linked to the net of the Internet Service.",
 			err.Error(),
 		)
-		return
+	}
+	if len(ptr.From(respNics.Nics)) > 0 {
+		for _, nic := range ptr.From(respNics.Nics) {
+			if nic.LinkPublicIp == nil {
+				continue
+			}
+			publicIps = append(publicIps, *nic.LinkPublicIp)
+		}
+	}
+	for _, ip := range publicIps {
+		_, err := r.Client.UnlinkPublicIp(ctx, osc.UnlinkPublicIpRequest{
+			LinkPublicIpId: &ip.LinkPublicIpId,
+		})
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable to unlink Public IP from the NICs linked to the Net of the Internet Service.",
+				err.Error(),
+			)
+		}
+	}
+
+	_, err = r.Client.UnlinkInternetService(ctx, unlinkReq, options.WithRetryTimeout(deleteTimeout))
+	if err != nil {
+		oscErr := oapihelpers.GetError(err)
+		// 424 with code 1007 is returned when Internet Service is already unlinked
+		// In this case, the link resource can be destroyed
+		if oscErr.Code != "1007" {
+			resp.Diagnostics.AddError(
+				"Unable to unlink Internet Service resource after unmapping Public IPs.",
+				err.Error(),
+			)
+			return
+		}
 	}
 }
 
 func setInternetServiceLinkState(ctx context.Context, r *resourceInternetServiceLink, data InternetServiceLinkModel) (InternetServiceLinkModel, error) {
-	internetServiceFilters := oscgo.FiltersInternetService{
+	internetServiceFilters := osc.FiltersInternetService{
 		InternetServiceIds: &[]string{data.InternetServiceId.ValueString()},
 	}
-	readReq := oscgo.ReadInternetServicesRequest{
+	readReq := osc.ReadInternetServicesRequest{
 		Filters: &internetServiceFilters,
 	}
 
@@ -271,56 +301,40 @@ func setInternetServiceLinkState(ctx context.Context, r *resourceInternetService
 		return data, fmt.Errorf("unable to parse 'internet service' read timeout value: %v", diags.Errors())
 	}
 
-	var readResp oscgo.ReadInternetServicesResponse
-	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.InternetServiceApi.ReadInternetServices(ctx).ReadInternetServicesRequest(readReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		readResp = rp
-		return nil
-	})
+	readResp, err := r.Client.ReadInternetServices(ctx, readReq, options.WithRetryTimeout(readTimeout))
 	if err != nil {
 		return data, err
 	}
-	if len(readResp.GetInternetServices()) == 0 {
+	if readResp.InternetServices == nil || len(*readResp.InternetServices) == 0 {
 		return data, ErrResourceEmpty
 	}
 
-	internetService := readResp.GetInternetServices()[0]
+	internetService := (*readResp.InternetServices)[0]
 
-	tags, diag := flattenOAPIComputedTagsFW(ctx, internetService.GetTags())
+	tags, diag := flattenOAPIComputedTagsFW(ctx, internetService.Tags)
 	if diag.HasError() {
 		return data, fmt.Errorf("unable to convert flatten tags: %v", diags.Errors())
 	}
 	data.Tags = tags
 
-	data.RequestId = types.StringValue(readResp.ResponseContext.GetRequestId())
-	data.NetId = types.StringValue(internetService.GetNetId())
-	data.State = types.StringValue(internetService.GetState())
-	data.Id = types.StringValue(internetService.GetInternetServiceId())
-	data.InternetServiceId = types.StringValue(internetService.GetInternetServiceId())
+	data.RequestId = to.String(readResp.ResponseContext.RequestId)
+	data.NetId = to.String(internetService.NetId)
+	data.State = to.String(internetService.State)
+	data.Id = to.String(internetService.InternetServiceId)
+	data.InternetServiceId = to.String(internetService.InternetServiceId)
+
 	return data, nil
 }
 
 func ResourceInternetServiceLinkStateRefreshFunc(ctx context.Context, r *resourceInternetServiceLink, id string) retry.StateRefreshFunc {
 	return func() (any, string, error) {
-		readReq := oscgo.ReadInternetServicesRequest{Filters: &oscgo.FiltersInternetService{InternetServiceIds: &[]string{id}}}
-		var resp oscgo.ReadInternetServicesResponse
-
-		err := retry.RetryContext(ctx, ReadDefaultTimeout, func() *retry.RetryError {
-			rp, httpResp, err := r.Client.InternetServiceApi.ReadInternetServices(ctx).ReadInternetServicesRequest(readReq).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
+		readReq := osc.ReadInternetServicesRequest{Filters: &osc.FiltersInternetService{InternetServiceIds: &[]string{id}}}
+		resp, err := r.Client.ReadInternetServices(ctx, readReq, options.WithRetryTimeout(ReadDefaultTimeout))
 		if err != nil {
 			return resp, "error", err
 		}
-		internetService := resp.GetInternetServices()[0]
+		internetService := (*resp.InternetServices)[0]
 
-		return resp, internetService.GetState(), nil
+		return resp, internetService.State, nil
 	}
 }

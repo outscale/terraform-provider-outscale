@@ -2,22 +2,27 @@ package oapi
 
 import (
 	"context"
-	"errors"
 	"log"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/oapi-codegen/runtime/types"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/iso8601"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
+	"github.com/samber/lo"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceOutscaleVMState() *schema.Resource {
 	return &schema.Resource{
-		Read:   DataSourceOutscaleVMStateRead,
-		Schema: getOAPIVMStateDataSourceSchema(),
+		ReadContext: DataSourceOutscaleVMStateRead,
+		Schema:      getOAPIVMStateDataSourceSchema(),
 	}
 }
 
@@ -84,103 +89,95 @@ func getVMStateAttrsSchema() map[string]*schema.Schema {
 	}
 }
 
-func DataSourceOutscaleVMStateRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleVMStateRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 	instanceID, instanceIDOk := d.GetOk("vm_id")
 
 	if !instanceIDOk && !filtersOk {
-		return errors.New("vm_id or filter must be set")
+		return diag.Errorf("vm_id or filter must be set")
 	}
 
 	var err error
-	params := oscgo.ReadVmsStateRequest{}
+	params := osc.ReadVmsStateRequest{}
 	if filtersOk {
 		params.Filters, err = buildOutscaleDataSourceVMStateFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
 	if instanceIDOk {
-		filter := oscgo.FiltersVmsState{}
-		filter.SetVmIds([]string{instanceID.(string)})
-		params.SetFilters(filter)
+		filter := osc.FiltersVmsState{}
+		filter.VmIds = &[]string{instanceID.(string)}
+		params.Filters = &filter
 	}
-	params.SetAllVms(d.Get("all_vms").(bool))
+	params.AllVms = new(d.Get("all_vms").(bool))
 
-	var resp oscgo.ReadVmsStateResponse
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.VmApi.ReadVmsState(context.Background()).ReadVmsStateRequest(params).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadVmsState(ctx, params, options.WithRetryTimeout(5*time.Minute))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	filteredStates := resp.GetVmStates()[:]
+	filteredStates := ptr.From(resp.VmStates)[:]
 
-	var state oscgo.VmStates
+	var state osc.VmStates
 	if len(filteredStates) < 1 {
-		return ErrNoResults
+		return diag.FromErr(ErrNoResults)
 	}
 
 	if len(filteredStates) > 1 {
-		return ErrMultipleResults
+		return diag.FromErr(ErrMultipleResults)
 	}
 
 	state = filteredStates[0]
 
-	log.Printf("[DEBUG] outscale_oapi_vm_state - Single State found: %s", state.GetVmId())
-	return vmStateDataAttrSetter(d, &state)
+	log.Printf("[DEBUG] outscale_oapi_vm_state - Single State found: %s", state.VmId)
+	return diag.FromErr(vmStateDataAttrSetter(d, &state))
 }
 
-func vmStateDataAttrSetter(d *schema.ResourceData, status *oscgo.VmStates) error {
+func vmStateDataAttrSetter(d *schema.ResourceData, status *osc.VmStates) error {
 	setterFunc := func(key string, value interface{}) error {
 		return d.Set(key, value)
 	}
-	d.SetId(status.GetVmId())
+	d.SetId(status.VmId)
 	return statusDescriptionOAPIVMStateAttributes(setterFunc, status)
 }
 
-func statusDescriptionOAPIVMStateAttributes(set AttributeSetter, status *oscgo.VmStates) error {
-	if err := set("subregion_name", status.GetSubregionName()); err != nil {
+func statusDescriptionOAPIVMStateAttributes(set AttributeSetter, status *osc.VmStates) error {
+	if err := set("subregion_name", status.SubregionName); err != nil {
 		return err
 	}
-	if err := set("maintenance_events", statusSetOAPIVMState(status.GetMaintenanceEvents())); err != nil {
+	if err := set("maintenance_events", statusSetOAPIVMState(status.MaintenanceEvents)); err != nil {
 		return err
 	}
-	if err := set("vm_state", status.GetVmState()); err != nil {
+	if err := set("vm_state", status.VmState); err != nil {
 		return err
 	}
-	if err := set("vm_id", status.GetVmId()); err != nil {
+	if err := set("vm_id", status.VmId); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func statusSetOAPIVMState(status []oscgo.MaintenanceEvent) []map[string]interface{} {
+func statusSetOAPIVMState(status []osc.MaintenanceEvent) []map[string]interface{} {
 	s := make([]map[string]interface{}, len(status))
 	for k, v := range status {
 		s[k] = map[string]interface{}{
-			"code":        v.GetCode(),
-			"description": v.GetDescription(),
-			"not_after":   v.GetNotAfter(),
-			"not_before":  v.GetNotBefore(),
+			"code":        v.Code,
+			"description": v.Description,
+			"not_after":   from.ISO8601(v.NotAfter),
+			"not_before":  from.ISO8601(v.NotBefore),
 		}
 	}
 
 	return s
 }
 
-func buildOutscaleDataSourceVMStateFilters(set *schema.Set) (*oscgo.FiltersVmsState, error) {
-	var filters oscgo.FiltersVmsState
+func buildOutscaleDataSourceVMStateFilters(set *schema.Set) (*osc.FiltersVmsState, error) {
+	var filters osc.FiltersVmsState
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -190,22 +187,40 @@ func buildOutscaleDataSourceVMStateFilters(set *schema.Set) (*oscgo.FiltersVmsSt
 
 		switch name := m["name"].(string); name {
 		case "maintenance_event_codes":
-			filters.SetMaintenanceEventCodes(filterValues)
+			filters.MaintenanceEventCodes = &filterValues
 		case "maintenance_event_descriptions":
-			filters.SetMaintenanceEventDescriptions(filterValues)
+			filters.MaintenanceEventDescriptions = &filterValues
 		case "maintenance_events_not_after":
-			filters.SetMaintenanceEventsNotAfter(filterValues)
+			var events []types.Date
+			for _, s := range filterValues {
+				t, err := iso8601.ParseString(s)
+				if err != nil {
+					return nil, err
+				}
+				events = append(events, types.Date{Time: t.Time})
+			}
+			filters.MaintenanceEventsNotAfter = &events
 		case "maintenance_events_not_before":
-			filters.SetMaintenanceEventsNotBefore(filterValues)
+			var events []types.Date
+			for _, s := range filterValues {
+				t, err := iso8601.ParseString(s)
+				if err != nil {
+					return nil, err
+				}
+				events = append(events, types.Date{Time: t.Time})
+			}
+			filters.MaintenanceEventsNotBefore = &events
 		case "subregion_names":
-			filters.SetSubregionNames(filterValues)
+			filters.SubregionNames = &filterValues
 		case "vm_ids":
-			filters.SetVmIds(filterValues)
+			filters.VmIds = &filterValues
 		case "vm_states":
-			filters.SetVmStates(filterValues)
+			filters.VmStates = new(lo.Map(filterValues, func(s string, _ int) osc.VmState {
+				return osc.VmState(s)
+			}))
 
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(name)
 		}
 	}
 	return &filters, nil

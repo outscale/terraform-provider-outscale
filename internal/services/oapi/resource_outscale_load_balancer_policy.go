@@ -5,22 +5,24 @@ import (
 	"fmt"
 	"regexp"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 	"github.com/samber/lo"
 	"github.com/spf13/cast"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func ResourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
 	return &schema.Resource{
-		Create: ResourceOutscaleAppCookieStickinessPolicyCreate,
-		Read:   ResourceOutscaleAppCookieStickinessPolicyRead,
-		Delete: ResourceOutscaleAppCookieStickinessPolicyDelete,
+		CreateContext: ResourceOutscaleAppCookieStickinessPolicyCreate,
+		ReadContext:   ResourceOutscaleAppCookieStickinessPolicyRead,
+		DeleteContext: ResourceOutscaleAppCookieStickinessPolicyDelete,
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(CreateDefaultTimeout),
@@ -247,8 +249,9 @@ func ResourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
 	}
 }
 
-func ResourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleAppCookieStickinessPolicyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
 	timeout := d.Timeout(schema.TimeoutCreate)
 
 	l := d.Get("load_balancer_name")
@@ -259,14 +262,14 @@ func ResourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, met
 	v, cnok := d.GetOk("cookie_name")
 
 	if cepok && pt.(string) == "app" {
-		return fmt.Errorf("if you want define \"cookie_expiration_period\", use policy_type = \"load_balancer\"")
+		return diag.Errorf("if you want define \"cookie_expiration_period\", use policy_type = \"load_balancer\"")
 	}
 	if cnok && pt.(string) == "load_balancer" {
-		return fmt.Errorf("if you want define \"cookie_name\", use policy_type = \"app\"")
+		return diag.Errorf("if you want define \"cookie_name\", use policy_type = \"app\"")
 	}
 
 	vs := v.(string)
-	req := oscgo.CreateLoadBalancerPolicyRequest{
+	req := osc.CreateLoadBalancerPolicyRequest{
 		LoadBalancerName: l.(string),
 		PolicyName:       pn.(string),
 		PolicyType:       pt.(string),
@@ -275,71 +278,61 @@ func ResourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, met
 		req.CookieName = &vs
 	}
 	if cepok {
-		req.SetCookieExpirationPeriod(cast.ToInt32(cep))
+		req.CookieExpirationPeriod = new(cast.ToInt(cep))
 	}
-	var err error
-	err = retry.Retry(timeout, func() *retry.RetryError {
-		_, httpResp, err := conn.LoadBalancerPolicyApi.
-			CreateLoadBalancerPolicy(
-				context.Background()).
-			CreateLoadBalancerPolicyRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	_, err := client.CreateLoadBalancerPolicy(ctx, req, options.WithRetryTimeout(timeout))
 	if err != nil {
-		return fmt.Errorf("error creating appcookiestickinesspolicy: %s", err)
+		return diag.Errorf("error creating appcookiestickinesspolicy: %s", err)
 	}
 	d.SetId(id.UniqueId())
 	d.Set("load_balancer_name", l.(string))
 	d.Set("policy_name", pn.(string))
 	d.Set("policy_type", pt.(string))
 
-	return ResourceOutscaleAppCookieStickinessPolicyRead(d, meta)
+	return ResourceOutscaleAppCookieStickinessPolicyRead(ctx, d, meta)
 }
 
-func ResourceOutscaleAppCookieStickinessPolicyRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleAppCookieStickinessPolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 	timeout := d.Timeout(schema.TimeoutRead)
 
 	lbuName := d.Get("load_balancer_name").(string)
 	policyName := d.Get("policy_name").(string)
-	lb, _, err := readResourceLb(conn, lbuName, timeout)
+	lb, _, err := readResourceLb(ctx, client, lbuName, timeout)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if lb == nil || (lb.ApplicationStickyCookiePolicies == nil && lb.LoadBalancerStickyCookiePolicies == nil) {
 		d.SetId("")
 		return nil
 	}
-	_, foundAppPolicy := lo.Find(*lb.ApplicationStickyCookiePolicies, func(v oscgo.ApplicationStickyCookiePolicy) bool {
-		return v.GetPolicyName() == policyName
+	_, foundAppPolicy := lo.Find(lb.ApplicationStickyCookiePolicies, func(v osc.ApplicationStickyCookiePolicy) bool {
+		return ptr.From(v.PolicyName) == policyName
 	})
-	_, foundLbuPolicy := lo.Find(*lb.LoadBalancerStickyCookiePolicies, func(v oscgo.LoadBalancerStickyCookiePolicy) bool {
-		return v.GetPolicyName() == policyName
+	_, foundLbuPolicy := lo.Find(lb.LoadBalancerStickyCookiePolicies, func(v osc.LoadBalancerStickyCookiePolicy) bool {
+		return ptr.From(v.PolicyName) == policyName
 	})
 	if !foundAppPolicy && !foundLbuPolicy {
 		d.SetId("")
 		return nil
 	}
 
-	d.Set("access_log", flattenOAPIAccessLog(lb.AccessLog))
-	d.Set("listeners", flattenOAPIListeners(lb.Listeners))
-	d.Set("subregion_names", utils.StringSlicePtrToInterfaceSlice(lb.SubregionNames))
+	d.Set("access_log", flattenOAPIAccessLog(&lb.AccessLog))
+	d.Set("listeners", flattenOAPIListeners(&lb.Listeners))
+	d.Set("subregion_names", utils.StringSlicePtrToInterfaceSlice(&lb.SubregionNames))
 	d.Set("load_balancer_type", lb.LoadBalancerType)
 	if lb.SecurityGroups != nil {
-		d.Set("security_groups", utils.StringSlicePtrToInterfaceSlice(lb.SecurityGroups))
+		d.Set("security_groups", utils.StringSlicePtrToInterfaceSlice(&lb.SecurityGroups))
 	} else {
 		d.Set("security_groups", make([]map[string]interface{}, 0))
 	}
 	d.Set("dns_name", lb.DnsName)
-	d.Set("subnets", utils.StringSlicePtrToInterfaceSlice(lb.Subnets))
-	d.Set("health_check", flattenOAPIHealthCheck(lb.HealthCheck))
-	d.Set("backend_vm_ids", utils.StringSlicePtrToInterfaceSlice(lb.BackendVmIds))
+	d.Set("subnets", utils.StringSlicePtrToInterfaceSlice(&lb.Subnets))
+	d.Set("health_check", flattenOAPIHealthCheck(&lb.HealthCheck))
+	d.Set("backend_vm_ids", utils.StringSlicePtrToInterfaceSlice(&lb.BackendVmIds))
 	if lb.Tags != nil {
-		ta := make([]map[string]interface{}, len(*lb.Tags))
-		for k1, v1 := range *lb.Tags {
+		ta := make([]map[string]interface{}, len(lb.Tags))
+		for k1, v1 := range lb.Tags {
 			t := make(map[string]interface{})
 			t["key"] = v1.Key
 			t["value"] = v1.Value
@@ -351,13 +344,13 @@ func ResourceOutscaleAppCookieStickinessPolicyRead(d *schema.ResourceData, meta 
 	}
 	if lb.ApplicationStickyCookiePolicies != nil {
 		app := make([]map[string]interface{},
-			len(*lb.ApplicationStickyCookiePolicies))
-		for k, v := range *lb.ApplicationStickyCookiePolicies {
+			len(lb.ApplicationStickyCookiePolicies))
+		for k, v := range lb.ApplicationStickyCookiePolicies {
 			a := make(map[string]interface{})
 			a["cookie_name"] = v.CookieName
 			a["policy_name"] = v.PolicyName
-			if v.GetPolicyName() == policyName {
-				d.Set("cookie_name", v.GetCookieName())
+			if ptr.From(v.PolicyName) == policyName {
+				d.Set("cookie_name", ptr.From(v.CookieName))
 			}
 			app[k] = a
 		}
@@ -365,11 +358,11 @@ func ResourceOutscaleAppCookieStickinessPolicyRead(d *schema.ResourceData, meta 
 	}
 	if lb.LoadBalancerStickyCookiePolicies != nil {
 		lbc := make([]map[string]interface{},
-			len(*lb.LoadBalancerStickyCookiePolicies))
-		for k, v := range *lb.LoadBalancerStickyCookiePolicies {
+			len(lb.LoadBalancerStickyCookiePolicies))
+		for k, v := range lb.LoadBalancerStickyCookiePolicies {
 			a := make(map[string]interface{})
 			a["policy_name"] = v.PolicyName
-			if v.GetPolicyName() == policyName {
+			if ptr.From(v.PolicyName) == policyName {
 				d.Set("cookie_expiration_period", cast.ToInt32(v.CookieExpirationPeriod))
 			}
 			lbc[k] = a
@@ -377,40 +370,30 @@ func ResourceOutscaleAppCookieStickinessPolicyRead(d *schema.ResourceData, meta 
 		d.Set("load_balancer_sticky_cookie_policies", lbc)
 	}
 
-	if lb.SourceSecurityGroup != nil {
-		d.Set("source_security_group", flattenSource_sg(lb.SourceSecurityGroup))
-	}
-	d.Set("public_ip", lb.PublicIp)
+	d.Set("source_security_group", flattenSource_sg(&lb.SourceSecurityGroup))
+	d.Set("public_ip", ptr.From(lb.PublicIp))
 	d.Set("secured_cookies", lb.SecuredCookies)
-	d.Set("net_id", lb.NetId)
+	d.Set("net_id", ptr.From(lb.NetId))
 
 	return nil
 }
 
-func ResourceOutscaleAppCookieStickinessPolicyDelete(d *schema.ResourceData, meta interface{}) error {
-	elbconn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleAppCookieStickinessPolicyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	elbclient := meta.(*client.OutscaleClient).OSC
+
 	timeout := d.Timeout(schema.TimeoutDelete)
 
 	l := d.Get("load_balancer_name").(string)
 	p := d.Get("policy_name").(string)
 
-	request := oscgo.DeleteLoadBalancerPolicyRequest{
+	request := osc.DeleteLoadBalancerPolicyRequest{
 		LoadBalancerName: l,
 		PolicyName:       p,
 	}
 
-	err := retry.Retry(timeout, func() *retry.RetryError {
-		_, httpResp, err := elbconn.LoadBalancerPolicyApi.
-			DeleteLoadBalancerPolicy(
-				context.Background()).
-			DeleteLoadBalancerPolicyRequest(request).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	_, err := elbclient.DeleteLoadBalancerPolicy(ctx, request, options.WithRetryTimeout(timeout))
 	if err != nil {
-		return fmt.Errorf("error deleting app stickiness policy %s: %s", d.Id(), err)
+		return diag.Errorf("error deleting app stickiness policy %s: %s", d.Id(), err)
 	}
 	return nil
 }

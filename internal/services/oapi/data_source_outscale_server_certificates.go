@@ -2,21 +2,22 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 )
 
 func DataSourceOutscaleServerCertificates() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleServerCertificatesRead,
+		ReadContext: DataSourceOutscaleServerCertificatesRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"server_certificates": {
@@ -59,57 +60,48 @@ func DataSourceOutscaleServerCertificates() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleServerCertificatesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleServerCertificatesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 
 	// Build up search parameters
-	params := oscgo.ReadServerCertificatesRequest{}
+	params := osc.ReadServerCertificatesRequest{}
 
 	if filtersOk {
 		filters, err := buildOutscaleOSCAPIDataSourceServerCertificateFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		params.Filters = filters
 	}
 
-	var resp oscgo.ReadServerCertificatesResponse
-	var err = retry.Retry(120*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.ServerCertificateApi.ReadServerCertificates(context.Background()).ReadServerCertificatesRequest(params).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
-
+	resp, err := client.ReadServerCertificates(ctx, params, options.WithRetryTimeout(120*time.Second))
 	var errString string
 	if err != nil {
 		errString = err.Error()
-		return fmt.Errorf("error reading server certificates (%s)", errString)
+		return diag.Errorf("error reading server certificates (%s)", errString)
 	}
 
 	log.Printf("[DEBUG] Setting Server Certificates id (%s)", err)
-	d.Set("server_certificates", flattenServerCertificates(resp.GetServerCertificates()))
+	d.Set("server_certificates", flattenServerCertificates(ptr.From(resp.ServerCertificates)))
 	d.SetId(id.UniqueId())
 	return nil
 }
 
-func flattenServerCertificate(apiObject oscgo.ServerCertificate) map[string]interface{} {
+func flattenServerCertificate(apiObject osc.ServerCertificate) map[string]interface{} {
 	tfMap := map[string]interface{}{}
-	tfMap["expiration_date"] = apiObject.GetExpirationDate()
-	tfMap["id"] = apiObject.GetId()
-	tfMap["name"] = apiObject.GetName()
-	tfMap["orn"] = apiObject.GetOrn()
-	tfMap["path"] = apiObject.GetPath()
-	tfMap["upload_date"] = apiObject.GetUploadDate()
+	tfMap["expiration_date"] = from.ISO8601(apiObject.ExpirationDate)
+	tfMap["id"] = apiObject.Id
+	tfMap["name"] = apiObject.Name
+	tfMap["orn"] = apiObject.Orn
+	tfMap["path"] = apiObject.Path
+	tfMap["upload_date"] = from.ISO8601(apiObject.UploadDate)
 
 	return tfMap
 }
 
-func flattenServerCertificates(apiObjects []oscgo.ServerCertificate) []map[string]interface{} {
+func flattenServerCertificates(apiObjects []osc.ServerCertificate) []map[string]interface{} {
 	if len(apiObjects) == 0 {
 		return nil
 	}

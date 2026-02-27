@@ -4,17 +4,16 @@ import (
 	"context"
 	"fmt"
 	"testing"
-	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/services/oapi/oapihelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 	"github.com/spf13/cast"
 )
 
@@ -24,7 +23,6 @@ func TestAccOthers_ClientGateway_basic(t *testing.T) {
 	rBgpAsnUpdated := oapihelpers.RandBgpAsn()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:      func() { testacc.PreCheck(t) },
 		IDRefreshName: resourceName,
 		Providers:     testacc.SDKProviders,
 		CheckDestroy:  testAccCheckClientGatewayDestroy,
@@ -61,7 +59,6 @@ func TestAccOthers_ClientGateway_withTags(t *testing.T) {
 	valueUpdated := fmt.Sprintf("testacc-%s", acctest.RandString(5))
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:      func() { testacc.PreCheck(t) },
 		IDRefreshName: resourceName,
 		Providers:     testacc.SDKProviders,
 		CheckDestroy:  testAccCheckClientGatewayDestroy,
@@ -95,28 +92,20 @@ func testAccCheckClientGatewayExists(resourceName string) resource.TestCheckFunc
 			return fmt.Errorf("not found: %s", resourceName)
 		}
 
-		conn := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSCAPI
+		client := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSC
 
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("no client gateway id is set")
 		}
 
-		filter := oscgo.ReadClientGatewaysRequest{
-			Filters: &oscgo.FiltersClientGateway{
+		filter := osc.ReadClientGatewaysRequest{
+			Filters: &osc.FiltersClientGateway{
 				ClientGatewayIds: &[]string{rs.Primary.ID},
 			},
 		}
-		var resp oscgo.ReadClientGatewaysResponse
-		err := retry.Retry(120*time.Second, func() *retry.RetryError {
-			rp, httpResp, err := conn.ClientGatewayApi.ReadClientGateways(context.Background()).ReadClientGatewaysRequest(filter).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
+		resp, err := client.ReadClientGateways(context.Background(), filter, options.WithRetryTimeout(DefaultTimeout))
 
-		if err != nil || len(resp.GetClientGateways()) < 1 {
+		if err != nil || resp.ClientGateways == nil || len(*resp.ClientGateways) < 1 {
 			return fmt.Errorf("outscale client gateway not found (%s)", rs.Primary.ID)
 		}
 		return nil
@@ -124,30 +113,21 @@ func testAccCheckClientGatewayExists(resourceName string) resource.TestCheckFunc
 }
 
 func testAccCheckClientGatewayDestroy(s *terraform.State) error {
-	conn := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSCAPI
+	client := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSC
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_client_gateway" {
 			continue
 		}
 
-		filter := oscgo.ReadClientGatewaysRequest{
-			Filters: &oscgo.FiltersClientGateway{
+		filter := osc.ReadClientGatewaysRequest{
+			Filters: &osc.FiltersClientGateway{
 				ClientGatewayIds: &[]string{rs.Primary.ID},
 			},
 		}
-		var resp oscgo.ReadClientGatewaysResponse
-		err := retry.Retry(120*time.Second, func() *retry.RetryError {
-			rp, httpResp, err := conn.ClientGatewayApi.ReadClientGateways(context.Background()).ReadClientGatewaysRequest(filter).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
+		resp, err := client.ReadClientGateways(context.Background(), filter, options.WithRetryTimeout(DefaultTimeout))
 
-		if err != nil ||
-			len(resp.GetClientGateways()) > 0 && resp.GetClientGateways()[0].GetState() != "deleted" {
+		if err != nil || resp.ClientGateways == nil || len(*resp.ClientGateways) > 0 && *(ptr.From(resp.ClientGateways)[0]).State != "deleted" {
 			return fmt.Errorf("outscale client gateway still exists (%s): %s", rs.Primary.ID, err)
 		}
 	}

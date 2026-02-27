@@ -15,7 +15,6 @@ func TestAccOthers_VPNConnectionsDataSource_basic(t *testing.T) {
 	bgpAsn := oapihelpers.RandBgpAsn()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testacc.PreCheck(t) },
 		Providers: testacc.SDKProviders,
 		Steps: []resource.TestStep{
 			{
@@ -30,7 +29,6 @@ func TestAccOthers_VPNConnectionsDataSource_withFilters(t *testing.T) {
 	bgpAsn := oapihelpers.RandBgpAsn()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testacc.PreCheck(t) },
 		Providers: testacc.SDKProviders,
 		Steps: []resource.TestStep{
 			{

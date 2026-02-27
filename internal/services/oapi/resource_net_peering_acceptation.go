@@ -13,10 +13,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 )
 
 var (
@@ -43,7 +46,7 @@ type NetPeeringAcceptationModel struct {
 }
 
 type resourceNetPeeringAcceptation struct {
-	Client *oscgo.APIClient
+	Client *osc.Client
 }
 
 func NewResourceNetPeeringAcceptation() resource.Resource {
@@ -58,12 +61,12 @@ func (r *resourceNetPeeringAcceptation) Configure(_ context.Context, req resourc
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Data Source Configure Type",
-			fmt.Sprintf("Expected *osc.APIClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *osc.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
 	}
-	r.Client = client.OSCAPI
+	r.Client = client.OSC
 }
 
 func (r *resourceNetPeeringAcceptation) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
@@ -80,7 +83,7 @@ func (r *resourceNetPeeringAcceptation) ImportState(ctx context.Context, req res
 
 	var data NetPeeringAcceptationModel
 	var timeouts timeouts.Value
-	data.NetPeeringId = types.StringValue(netPeeringId)
+	data.NetPeeringId = to.String(netPeeringId)
 	resp.Diagnostics.Append(resp.State.GetAttribute(ctx, path.Root("timeouts"), &timeouts)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -94,9 +97,6 @@ func (r *resourceNetPeeringAcceptation) ImportState(ctx context.Context, req res
 
 	diags := resp.State.Set(ctx, &data)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceNetPeeringAcceptation) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -150,8 +150,8 @@ func (r *resourceNetPeeringAcceptation) Schema(ctx context.Context, _ resource.S
 			"id": schema.StringAttribute{
 				Computed: true,
 			},
-			"accepter_net": PeeringConnectionOptionsSchema(),
-			"source_net":   PeeringConnectionOptionsSchema(),
+			"accepter_net": PeeringconnectionOptionsSchema(),
+			"source_net":   PeeringconnectionOptionsSchema(),
 			"state": schema.ListAttribute{
 				Computed: true,
 				ElementType: types.ObjectType{
@@ -175,24 +175,15 @@ func (r *resourceNetPeeringAcceptation) Create(ctx context.Context, req resource
 	}
 
 	createTimeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
-	createReq := oscgo.AcceptNetPeeringRequest{
+	createReq := osc.AcceptNetPeeringRequest{
 		NetPeeringId: data.NetPeeringId.ValueString(),
 	}
 
-	var createResp oscgo.AcceptNetPeeringResponse
-	err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.NetPeeringApi.AcceptNetPeering(ctx).AcceptNetPeeringRequest(createReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		createResp = rp
-		return nil
-	})
+	createResp, err := r.Client.AcceptNetPeering(ctx, createReq, options.WithRetryTimeout(createTimeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to create Net Peering accepter.",
@@ -200,12 +191,12 @@ func (r *resourceNetPeeringAcceptation) Create(ctx context.Context, req resource
 		)
 		return
 	}
-	data.RequestId = types.StringValue(createResp.ResponseContext.GetRequestId())
-	netPeering := createResp.GetNetPeering()
-	data.NetPeeringId = types.StringValue(netPeering.GetNetPeeringId())
-	data.Id = types.StringValue(netPeering.GetNetPeeringId())
+	data.RequestId = to.String(createResp.ResponseContext.RequestId)
+	netPeering := ptr.From(createResp.NetPeering)
+	data.NetPeeringId = to.String(netPeering.NetPeeringId)
+	data.Id = to.String(netPeering.NetPeeringId)
 
-	data, err = r.setNetPeeringAcceptationState(ctx, data)
+	data, err = r.read(ctx, data)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to set Net Peering Acceptation state",
@@ -214,9 +205,6 @@ func (r *resourceNetPeeringAcceptation) Create(ctx context.Context, req resource
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceNetPeeringAcceptation) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -227,7 +215,7 @@ func (r *resourceNetPeeringAcceptation) Read(ctx context.Context, req resource.R
 		return
 	}
 
-	data, err := r.setNetPeeringAcceptationState(ctx, data)
+	data, err := r.read(ctx, data)
 	if err != nil {
 		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
@@ -240,9 +228,6 @@ func (r *resourceNetPeeringAcceptation) Read(ctx context.Context, req resource.R
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceNetPeeringAcceptation) Update(context.Context, resource.UpdateRequest, *resource.UpdateResponse) {
@@ -252,11 +237,11 @@ func (r *resourceNetPeeringAcceptation) Delete(ctx context.Context, req resource
 	resp.State.RemoveResource(ctx)
 }
 
-func (r *resourceNetPeeringAcceptation) setNetPeeringAcceptationState(ctx context.Context, data NetPeeringAcceptationModel) (NetPeeringAcceptationModel, error) {
-	netPeeringFilters := oscgo.FiltersNetPeering{
+func (r *resourceNetPeeringAcceptation) read(ctx context.Context, data NetPeeringAcceptationModel) (NetPeeringAcceptationModel, error) {
+	netPeeringFilters := osc.FiltersNetPeering{
 		NetPeeringIds: &[]string{data.NetPeeringId.ValueString()},
 	}
-	readReq := oscgo.ReadNetPeeringsRequest{
+	readReq := osc.ReadNetPeeringsRequest{
 		Filters: &netPeeringFilters,
 	}
 
@@ -265,53 +250,45 @@ func (r *resourceNetPeeringAcceptation) setNetPeeringAcceptationState(ctx contex
 		return data, fmt.Errorf("unable to parse 'net peering' read timeout value: %v", diags.Errors())
 	}
 
-	var readResp oscgo.ReadNetPeeringsResponse
-	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.NetPeeringApi.ReadNetPeerings(ctx).ReadNetPeeringsRequest(readReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		readResp = rp
-		return nil
-	})
-	if err != nil {
+	readResp, err := r.Client.ReadNetPeerings(ctx, readReq, options.WithRetryTimeout(readTimeout))
+	if err != nil || readResp.NetPeerings == nil {
 		return data, err
 	}
-	data.RequestId = types.StringValue(readResp.ResponseContext.GetRequestId())
-	if len(readResp.GetNetPeerings()) == 0 {
+	data.RequestId = to.String(readResp.ResponseContext.RequestId)
+	if len(*readResp.NetPeerings) == 0 {
 		return data, ErrResourceEmpty
 	}
 
-	netPeering := readResp.GetNetPeerings()[0]
+	netPeering := (*readResp.NetPeerings)[0]
 
-	tags, diag := flattenOAPIComputedTagsFW(ctx, netPeering.GetTags())
+	tags, diag := flattenOAPIComputedTagsFW(ctx, netPeering.Tags)
 	if diag.HasError() {
 		return data, fmt.Errorf("unable to convert tags to the schema list: %v", diags.Errors())
 	}
-	sourceNet, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: netAttrTypes}, SourceNetToList(netPeering.GetSourceNet()))
+	sourceNet, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: netAttrTypes}, SourceNetToList(netPeering.SourceNet))
 	if diags.HasError() {
 		return data, fmt.Errorf("unable to convert source net to the schema list: %v", diags.Errors())
 	}
-	accepterNet, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: netAttrTypes}, AccepterNetToList(netPeering.GetAccepterNet()))
+	accepterNet, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: netAttrTypes}, AccepterNetToList(netPeering.AccepterNet))
 	if diags.HasError() {
 		return data, fmt.Errorf("unable to convert accepter net to the schema list: %v", diags.Errors())
 	}
-	state, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: stateAttrTypes}, NetPeerStateToList(netPeering.GetState()))
+	state, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: stateAttrTypes}, NetPeerStateToList(netPeering.State))
 	if diags.HasError() {
 		return data, fmt.Errorf("unable to convert state to the schema list: %v", diags.Errors())
 	}
 
-	data.ExpirationDate = types.StringValue(netPeering.GetExpirationDate())
+	data.ExpirationDate = to.String(from.ISO8601(netPeering.ExpirationDate))
 	data.Tags = tags
 	data.AccepterNet = accepterNet
-	data.NetPeeringId = types.StringValue(netPeering.GetNetPeeringId())
-	data.Id = types.StringValue(netPeering.GetNetPeeringId())
+	data.NetPeeringId = to.String(netPeering.NetPeeringId)
+	data.Id = to.String(netPeering.NetPeeringId)
 	data.SourceNet = sourceNet
 	data.State = state
-	data.AccepterOwnerId = types.StringValue(netPeering.AccepterNet.GetAccountId())
-	data.SourceNetAccountId = types.StringValue(netPeering.SourceNet.GetAccountId())
-	data.AccepterNetId = types.StringValue(netPeering.AccepterNet.GetNetId())
-	data.SourceNetId = types.StringValue(netPeering.SourceNet.GetNetId())
+	data.AccepterOwnerId = to.String(ptr.From(netPeering.AccepterNet.AccountId))
+	data.SourceNetAccountId = to.String(ptr.From(netPeering.SourceNet.AccountId))
+	data.AccepterNetId = to.String(ptr.From(netPeering.AccepterNet.NetId))
+	data.SourceNetId = to.String(ptr.From(netPeering.SourceNet.NetId))
 
 	return data, nil
 }

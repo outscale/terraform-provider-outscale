@@ -5,25 +5,27 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"net/http"
 	"reflect"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func ResourceOutscaleNetworkInterfaceAttachment() *schema.Resource {
 	return &schema.Resource{
-		Create: ResourceOutscaleNetworkInterfaceAttachmentCreate,
-		Read:   ResourceOutscaleNetworkInterfaceAttachmentRead,
-		Delete: ResourceOutscaleNetworkInterfaceAttachmentDelete,
+		CreateContext: ResourceOutscaleNetworkInterfaceAttachmentCreate,
+		ReadContext:   ResourceOutscaleNetworkInterfaceAttachmentRead,
+		DeleteContext: ResourceOutscaleNetworkInterfaceAttachmentDelete,
 		Importer: &schema.ResourceImporter{
-			State: ResourceOutscaleNetworkInterfaceAttachmentImportState,
+			StateContext: ResourceOutscaleNetworkInterfaceAttachmentImportStateContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(CreateDefaultTimeout),
@@ -73,131 +75,109 @@ func ResourceOutscaleNetworkInterfaceAttachment() *schema.Resource {
 	}
 }
 
-func ResourceOutscaleNetworkInterfaceAttachmentCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleNetworkInterfaceAttachmentCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
 	timeout := d.Timeout(schema.TimeoutCreate)
 
 	di := d.Get("device_number").(int)
 	vmID := d.Get("vm_id").(string)
 	nicID := d.Get("nic_id").(string)
 
-	opts := oscgo.LinkNicRequest{
-		DeviceNumber: int32(di),
+	opts := osc.LinkNicRequest{
+		DeviceNumber: di,
 		VmId:         vmID,
 		NicId:        nicID,
 	}
 
 	log.Printf("[DEBUG] Attaching network interface (%s) to instance (%s)", nicID, vmID)
 
-	var resp oscgo.LinkNicResponse
-	err := retry.Retry(timeout, func() *retry.RetryError {
-		rp, httpResp, err := conn.NicApi.LinkNic(context.Background()).LinkNicRequest(opts).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.LinkNic(ctx, opts, options.WithRetryTimeout(timeout))
 	if err != nil {
-		return fmt.Errorf("error creating outscale linknic: %s", err)
+		return diag.Errorf("error creating outscale linknic: %s", err)
 	}
 
-	d.SetId(resp.GetLinkNicId())
-	return ResourceOutscaleNetworkInterfaceAttachmentRead(d, meta)
+	d.SetId(ptr.From(resp.LinkNicId))
+	return ResourceOutscaleNetworkInterfaceAttachmentRead(ctx, d, meta)
 }
 
-func ResourceOutscaleNetworkInterfaceAttachmentRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleNetworkInterfaceAttachmentRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 	timeout := d.Timeout(schema.TimeoutRead)
 
 	nicID := d.Get("nic_id").(string)
 
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{"attaching", "detaching"},
-		Target:     []string{"attached", "detached", "failed"},
-		Refresh:    nicLinkRefreshFunc(conn, nicID, timeout),
-		Timeout:    timeout,
-		Delay:      2 * time.Second,
-		MinTimeout: 3 * time.Second,
+		Pending: []string{"attaching", "detaching"},
+		Target:  []string{"attached", "detached", "failed"},
+		Timeout: timeout,
+		Refresh: nicLinkRefreshFunc(ctx, client, nicID, timeout),
 	}
 
-	resp, err := stateConf.WaitForState()
+	resp, err := stateConf.WaitForStateContext(ctx)
 	if err != nil {
-		return fmt.Errorf(
+		return diag.Errorf(
 			"error waiting for nic to attach to Instance: %s, error: %s", nicID, err)
 	}
 
-	r := resp.(oscgo.ReadNicsResponse)
-	if utils.IsResponseEmpty(len(r.GetNics()), "NicLink", d.Id()) {
+	r := resp.(*osc.ReadNicsResponse)
+	if r == nil || r.Nics == nil || utils.IsResponseEmpty(len(*r.Nics), "NicLink", d.Id()) {
 		d.SetId("")
 		return nil
 	}
-	linkNic := r.GetNics()[0].GetLinkNic()
-
-	if err := d.Set("device_number", linkNic.GetDeviceNumber()); err != nil {
-		return err
+	linkNic := (*r.Nics)[0].LinkNic
+	if err := d.Set("device_number", linkNic.DeviceNumber); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("vm_id", linkNic.GetVmId()); err != nil {
-		return err
+	if err := d.Set("vm_id", linkNic.VmId); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("delete_on_vm_deletion", linkNic.GetDeleteOnVmDeletion()); err != nil {
-		return err
+	if err := d.Set("delete_on_vm_deletion", linkNic.DeleteOnVmDeletion); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("link_nic_id", linkNic.GetLinkNicId()); err != nil {
-		return err
+	if err := d.Set("link_nic_id", linkNic.LinkNicId); err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil
 }
 
-func ResourceOutscaleNetworkInterfaceAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleNetworkInterfaceAttachmentDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
 	timeout := d.Timeout(schema.TimeoutDelete)
 
 	interfaceID := d.Id()
 
-	req := oscgo.UnlinkNicRequest{
+	req := osc.UnlinkNicRequest{
 		LinkNicId: interfaceID,
 	}
 
-	var err error
-	var statusCode int
-	err = retry.Retry(timeout, func() *retry.RetryError {
-		_, httpResp, err := conn.NicApi.UnlinkNic(context.Background()).UnlinkNicRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		statusCode = httpResp.StatusCode
-		return nil
-	})
+	_, err := client.UnlinkNic(ctx, req, options.WithRetryTimeout(timeout))
 	if err != nil {
-		if statusCode == http.StatusNotFound {
-			return fmt.Errorf("error detaching eni: %s", err)
-		}
+		return diag.FromErr(err)
 	}
 
 	nicID := d.Get("nic_id").(string)
 
 	// log.Printf("[DEBUG] Waiting for ENI (%s) to become dettached", interfaceID)
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{"detaching"},
-		Target:     []string{"detached", "failed"},
-		Refresh:    nicLinkRefreshFunc(conn, nicID, timeout),
-		Timeout:    timeout,
-		Delay:      5 * time.Second,
-		MinTimeout: 3 * time.Second,
+		Pending: []string{"detaching"},
+		Target:  []string{"detached", "failed"},
+		Timeout: timeout,
+		Refresh: nicLinkRefreshFunc(ctx, client, nicID, timeout),
 	}
 
-	_, err = stateConf.WaitForState()
+	_, err = stateConf.WaitForStateContext(ctx)
 	if err != nil {
-		return fmt.Errorf(
+		return diag.Errorf(
 			"error waiting for volume to dettached from instance: %s, error: %s", nicID, err)
 	}
 
 	return nil
 }
 
-func ResourceOutscaleNetworkInterfaceAttachmentImportState(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+func ResourceOutscaleNetworkInterfaceAttachmentImportStateContext(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	if d.Id() == "" {
 		return nil, errors.New("import error: to import a Nic Link, use the format {nic_id} it must not be empty")
 	}
@@ -205,65 +185,58 @@ func ResourceOutscaleNetworkInterfaceAttachmentImportState(d *schema.ResourceDat
 	timeout := d.Timeout(schema.TimeoutRead)
 
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{"attaching", "detaching"},
-		Target:     []string{"attached", "detached", "failed"},
-		Refresh:    nicLinkRefreshFunc(meta.(*client.OutscaleClient).OSCAPI, d.Id(), timeout),
-		Timeout:    timeout,
-		MinTimeout: 3 * time.Second,
+		Pending: []string{"attaching", "detaching"},
+		Target:  []string{"attached", "detached", "failed"},
+		Timeout: timeout,
+		Refresh: nicLinkRefreshFunc(ctx, meta.(*client.OutscaleClient).OSC, d.Id(), timeout),
 	}
 
-	resp, err := stateConf.WaitForState()
+	resp, err := stateConf.WaitForStateContext(ctx)
 	if err != nil {
-		return nil, fmt.Errorf(
-			"error waiting for nic to attach to instance: %s, error: %s", d.Id(), err)
+		return nil, fmt.Errorf("error waiting for nic to attach to instance: %s, error: %s", d.Id(), err)
 	}
-	r := resp.(oscgo.ReadNicsResponse)
-	linkNic := r.GetNics()[0].GetLinkNic()
-
-	if err := d.Set("device_number", linkNic.GetDeviceNumber()); err != nil {
-		return nil, err
-	}
-	if err := d.Set("vm_id", linkNic.GetVmId()); err != nil {
-		return nil, err
-	}
-	if err := d.Set("nic_id", r.GetNics()[0].GetNicId()); err != nil {
-		return nil, err
+	r := resp.(*osc.ReadNicsResponse)
+	if r == nil || r.Nics == nil || len(*r.Nics) == 0 {
+		return nil, fmt.Errorf("nic not found: %v", d.Id())
 	}
 
-	d.SetId(linkNic.GetLinkNicId())
+	linkNic := (*r.Nics)[0].LinkNic
+	if err := d.Set("device_number", linkNic.DeviceNumber); err != nil {
+		return nil, err
+	}
+	if err := d.Set("vm_id", linkNic.VmId); err != nil {
+		return nil, err
+	}
+	if err := d.Set("nic_id", (*r.Nics)[0].NicId); err != nil {
+		return nil, err
+	}
+
+	d.SetId(linkNic.LinkNicId)
 
 	return []*schema.ResourceData{d}, nil
 }
 
-func nicLinkRefreshFunc(conn *oscgo.APIClient, nicID string, timeout time.Duration) retry.StateRefreshFunc {
+func nicLinkRefreshFunc(ctx context.Context, client *osc.Client, nicID string, timeout time.Duration) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		req := oscgo.ReadNicsRequest{
-			Filters: &oscgo.FiltersNic{
+		req := osc.ReadNicsRequest{
+			Filters: &osc.FiltersNic{
 				NicIds: &[]string{nicID},
 			},
 		}
 
-		var resp oscgo.ReadNicsResponse
-		err := retry.Retry(timeout, func() *retry.RetryError {
-			rp, httpResp, err := conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(req).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
+		resp, err := client.ReadNics(ctx, req, options.WithRetryTimeout(timeout))
 		if err != nil {
 			return nil, "failed", err
 		}
-		if len(resp.GetNics()) < 1 {
-			return nil, "failed", fmt.Errorf("error to find the outscale nic(%s): %#v", nicID, resp.GetNics())
+		if resp.Nics == nil || len(*resp.Nics) < 1 {
+			return nil, "failed", fmt.Errorf("error to find the nic(%s): %#v", nicID, resp.Nics)
 		}
 
-		linkNic := resp.GetNics()[0].GetLinkNic()
-		if reflect.DeepEqual(linkNic, oscgo.LinkNic{}) {
+		linkNic := ptr.From((*resp.Nics)[0].LinkNic)
+		if reflect.DeepEqual(linkNic, osc.LinkNic{}) {
 			return resp, "detached", nil
 		}
 
-		return resp, linkNic.GetState(), nil
+		return resp, string(linkNic.State), nil
 	}
 }

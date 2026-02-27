@@ -16,13 +16,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	"github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
+
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/validators/validatorstring"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 var (
@@ -43,7 +44,7 @@ type apiAccessRuleModel struct {
 }
 
 type resourceApiAccessRule struct {
-	Client *osc.APIClient
+	Client *osc.Client
 }
 
 func NewResourceApiAccessRule() resource.Resource {
@@ -58,12 +59,12 @@ func (r *resourceApiAccessRule) Configure(_ context.Context, req resource.Config
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected *osc.APIClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *osc.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
 	}
-	r.Client = client.OSCAPI
+	r.Client = client.OSC
 }
 
 func (r *resourceApiAccessRule) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
@@ -147,35 +148,27 @@ func (r *resourceApiAccessRule) Create(ctx context.Context, req resource.CreateR
 		if fwhelpers.CheckDiags(resp, diag) {
 			return
 		}
-		createReq.SetCaIds(ids)
+		createReq.CaIds = &ids
 	}
 	if fwhelpers.IsSet(data.IpRanges) {
 		ips, diag := to.Slice[string](ctx, data.IpRanges)
 		if fwhelpers.CheckDiags(resp, diag) {
 			return
 		}
-		createReq.SetIpRanges(ips)
+		createReq.IpRanges = &ips
 	}
 	if fwhelpers.IsSet(data.Cns) {
 		cns, diag := to.Slice[string](ctx, data.Cns)
 		if fwhelpers.CheckDiags(resp, diag) {
 			return
 		}
-		createReq.SetCns(cns)
+		createReq.Cns = &cns
 	}
 	if fwhelpers.IsSet(data.Description) {
-		createReq.SetDescription(data.Description.ValueString())
+		createReq.Description = data.Description.ValueStringPointer()
 	}
 
-	var createResp osc.CreateApiAccessRuleResponse
-	err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.ApiAccessRuleApi.CreateApiAccessRule(ctx).CreateApiAccessRuleRequest(createReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		createResp = rp
-		return nil
-	})
+	createResp, err := r.Client.CreateApiAccessRule(ctx, createReq, options.WithRetryTimeout(createTimeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to create Api Access Rule",
@@ -183,7 +176,7 @@ func (r *resourceApiAccessRule) Create(ctx context.Context, req resource.CreateR
 		)
 		return
 	}
-	data.Id = to.String(createResp.GetApiAccessRule().ApiAccessRuleId)
+	data.Id = to.String(createResp.ApiAccessRule.ApiAccessRuleId)
 
 	stateData, err := r.read(ctx, createTimeout, data)
 	if err != nil {
@@ -244,33 +237,27 @@ func (r *resourceApiAccessRule) Update(ctx context.Context, req resource.UpdateR
 		if fwhelpers.CheckDiags(resp, diag) {
 			return
 		}
-		updateReq.SetCaIds(caIds)
+		updateReq.CaIds = &caIds
 	}
 	if fwhelpers.IsSet(planData.Cns) {
 		cns, diag := to.Slice[string](ctx, planData.Cns)
 		if fwhelpers.CheckDiags(resp, diag) {
 			return
 		}
-		updateReq.SetCns(cns)
+		updateReq.Cns = &cns
 	}
 	if fwhelpers.IsSet(planData.IpRanges) {
 		ipRanges, diag := to.Slice[string](ctx, planData.IpRanges)
 		if fwhelpers.CheckDiags(resp, diag) {
 			return
 		}
-		updateReq.SetIpRanges(ipRanges)
+		updateReq.IpRanges = &ipRanges
 	}
 	if fwhelpers.IsSet(planData.Description) {
-		updateReq.SetDescription(planData.Description.ValueString())
+		updateReq.Description = planData.Description.ValueStringPointer()
 	}
 
-	err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		_, httpResp, err := r.Client.ApiAccessRuleApi.UpdateApiAccessRule(ctx).UpdateApiAccessRuleRequest(updateReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	_, err := r.Client.UpdateApiAccessRule(ctx, updateReq, options.WithRetryTimeout(timeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to update Api Access Rule",
@@ -307,13 +294,7 @@ func (r *resourceApiAccessRule) Delete(ctx context.Context, req resource.DeleteR
 		ApiAccessRuleId: data.Id.ValueString(),
 	}
 
-	err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		_, httpResp, err := r.Client.ApiAccessRuleApi.DeleteApiAccessRule(ctx).DeleteApiAccessRuleRequest(deleteReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	_, err := r.Client.DeleteApiAccessRule(ctx, deleteReq, options.WithRetryTimeout(timeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to delete Api Access Rule",
@@ -329,34 +310,26 @@ func (r *resourceApiAccessRule) read(ctx context.Context, timeout time.Duration,
 		},
 	}
 
-	var resp osc.ReadApiAccessRulesResponse
-	err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.ApiAccessRuleApi.ReadApiAccessRules(ctx).ReadApiAccessRulesRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := r.Client.ReadApiAccessRules(ctx, req, options.WithRetryTimeout(timeout))
 	if err != nil {
 		return data, err
 	}
-	if len(resp.GetApiAccessRules()) == 0 {
+	if resp.ApiAccessRules == nil || len(*resp.ApiAccessRules) == 0 {
 		return data, ErrResourceEmpty
 	}
 
 	data.RequestId = to.String(resp.ResponseContext.RequestId)
-	rule := resp.GetApiAccessRules()[0]
+	rule := (*resp.ApiAccessRules)[0]
 
-	caIds, diag := to.Set(ctx, rule.GetCaIds())
+	caIds, diag := to.Set(ctx, ptr.From(rule.CaIds))
 	if diag.HasError() {
 		return data, fmt.Errorf("unable to convert ca_ids into a set: %v", diag.Errors())
 	}
-	cns, diag := to.Set(ctx, rule.GetCns())
+	cns, diag := to.Set(ctx, ptr.From(rule.Cns))
 	if diag.HasError() {
 		return data, fmt.Errorf("unable to convert cns into a set: %v", diag.Errors())
 	}
-	ipRanges, diag := to.Set(ctx, rule.GetIpRanges())
+	ipRanges, diag := to.Set(ctx, ptr.From(rule.IpRanges))
 	if diag.HasError() {
 		return data, fmt.Errorf("unable to convert ip_ranges into a set: %v", diag.Errors())
 	}
@@ -366,7 +339,7 @@ func (r *resourceApiAccessRule) read(ctx context.Context, timeout time.Duration,
 	data.IpRanges = ipRanges
 	data.Id = to.String(rule.ApiAccessRuleId)
 	data.ApiAccessRuleId = to.String(rule.ApiAccessRuleId)
-	data.Description = to.String(rule.Description)
+	data.Description = to.String(ptr.From(rule.Description))
 
 	return data, nil
 }

@@ -3,12 +3,12 @@ package oapihelpers
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"math/rand"
 	"os"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -18,66 +18,58 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/outscale/goutils/sdk/ptr"
-	"github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 func GetError(err error) osc.Errors {
-	if e, ok := err.(osc.GenericOpenAPIError); ok {
-		var errorResponse osc.ErrorResponse
-		if json.Unmarshal(e.Body(), &errorResponse) == nil {
-			errors := errorResponse.GetErrors()
-			if len(errors) > 0 {
-				return errors[0]
-			}
-		}
+	e := osc.AsErrorResponse(err)
+	if e != nil && len(e.Errors) > 0 {
+		return e.Errors[0]
 	}
 	return osc.Errors{}
 }
 
 func GetBsuId(vmResp osc.Vm, deviceName string) string {
 	diskID := ""
-	blocks := vmResp.GetBlockDeviceMappings()
+	blocks := vmResp.BlockDeviceMappings
 
 	for _, v := range blocks {
-		if v.GetDeviceName() == deviceName {
-			diskID = ptr.From(v.GetBsu().VolumeId)
+		if v.DeviceName == deviceName {
+			diskID = v.Bsu.VolumeId
 			break
 		}
 	}
 	return diskID
 }
 
-func getBsuTags(volumeId string, conn *osc.APIClient) ([]osc.ResourceTag, error) {
+func getBsuTags(ctx context.Context, client *osc.Client, timeout time.Duration, volumeId string) ([]osc.ResourceTag, error) {
 	request := osc.ReadVolumesRequest{
 		Filters: &osc.FiltersVolume{VolumeIds: &[]string{volumeId}},
 	}
-	var resp osc.ReadVolumesResponse
-	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
-		r, httpResp, err := conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(request).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = r
-		return nil
-	})
+	resp, err := client.ReadVolumes(ctx, request, options.WithRetryTimeout(timeout))
 	if err != nil {
 		return nil, err
 	}
-	return resp.GetVolumes()[0].GetTags(), nil
+	if resp.Volumes == nil || len(*resp.Volumes) == 0 {
+		return nil, fmt.Errorf("volume %s not found", volumeId)
+	}
+
+	return (*resp.Volumes)[0].Tags, nil
 }
 
-func GetBsuTagsMaps(vmResp osc.Vm, conn *osc.APIClient) (map[string]interface{}, error) {
-	blocks := vmResp.GetBlockDeviceMappings()
+func GetBsuTagsMaps(ctx context.Context, client *osc.Client, timeout time.Duration, vmResp osc.Vm) (map[string]interface{}, error) {
+	blocks := vmResp.BlockDeviceMappings
 	bsuTagsMaps := make(map[string]interface{})
 	for _, v := range blocks {
-		volumeId := ptr.From(v.GetBsu().VolumeId)
-		bsuTags, err := getBsuTags(volumeId, conn)
+		volumeId := v.Bsu.VolumeId
+		bsuTags, err := getBsuTags(ctx, client, timeout, volumeId)
 		if err != nil {
 			return nil, err
 		}
 		if bsuTags != nil {
-			bsuTagsMaps[v.GetDeviceName()] = bsuTags
+			bsuTagsMaps[v.DeviceName] = bsuTags
 		}
 	}
 
@@ -151,39 +143,39 @@ func RandBgpAsn() int {
 
 func getOAPILinkNicLight(l osc.LinkNicLight) []map[string]interface{} {
 	return []map[string]interface{}{{
-		"delete_on_vm_deletion": l.GetDeleteOnVmDeletion(),
-		"device_number":         strconv.Itoa(int(l.GetDeviceNumber())),
-		"link_nic_id":           l.GetLinkNicId(),
-		"state":                 l.GetState(),
+		"delete_on_vm_deletion": l.DeleteOnVmDeletion,
+		"device_number":         strconv.Itoa(int(l.DeviceNumber)),
+		"link_nic_id":           l.LinkNicId,
+		"state":                 l.State,
 	}}
 }
 
 func GetOAPILinkNic(l osc.LinkNic) []map[string]interface{} {
 	return []map[string]interface{}{{
-		"delete_on_vm_deletion": l.GetDeleteOnVmDeletion(),
-		"device_number":         l.GetDeviceNumber(),
-		"link_nic_id":           l.GetLinkNicId(),
-		"state":                 l.GetState(),
-		"vm_account_id":         l.GetVmAccountId(),
-		"vm_id":                 l.GetVmId(),
+		"delete_on_vm_deletion": l.DeleteOnVmDeletion,
+		"device_number":         l.DeviceNumber,
+		"link_nic_id":           l.LinkNicId,
+		"state":                 l.State,
+		"vm_account_id":         l.VmAccountId,
+		"vm_id":                 l.VmId,
 	}}
 }
 
 func GetOAPILinkPublicIPsForNic(l osc.LinkPublicIp) []map[string]interface{} {
 	return []map[string]interface{}{{
-		"link_public_ip_id":    l.GetLinkPublicIpId(),
-		"public_dns_name":      l.GetPublicDnsName(),
-		"public_ip":            l.GetPublicIp(),
-		"public_ip_account_id": l.GetPublicIpAccountId(),
-		"public_ip_id":         l.GetPublicIpId(),
+		"link_public_ip_id":    l.LinkPublicIpId,
+		"public_dns_name":      l.PublicDnsName,
+		"public_ip":            l.PublicIp,
+		"public_ip_account_id": l.PublicIpAccountId,
+		"public_ip_id":         l.PublicIpId,
 	}}
 }
 
 func getOAPILinkPublicIpsForVm(l osc.LinkPublicIpLightForVm) []map[string]interface{} {
 	return []map[string]interface{}{{
-		"public_dns_name":      l.GetPublicDnsName(),
-		"public_ip":            l.GetPublicIp(),
-		"public_ip_account_id": l.GetPublicIpAccountId(),
+		"public_dns_name":      l.PublicDnsName,
+		"public_ip":            l.PublicIp,
+		"public_ip_account_id": l.PublicIpAccountId,
 	}}
 }
 
@@ -199,9 +191,9 @@ func getOAPILinkPublicIPLight(l osc.LinkPublicIpLightForVm) *schema.Set {
 	}
 
 	res.Add(map[string]interface{}{
-		"public_dns_name":      l.GetPublicDnsName(),
-		"public_ip":            l.GetPublicIp(),
-		"public_ip_account_id": l.GetPublicIpAccountId(),
+		"public_dns_name":      l.PublicDnsName,
+		"public_ip":            l.PublicIp,
+		"public_ip_account_id": l.PublicIpAccountId,
 	})
 	return res
 }
@@ -219,13 +211,13 @@ func getOAPIPrivateIPsLight(privateIPs []osc.PrivateIpLightForVm) *schema.Set {
 
 	for _, p := range privateIPs {
 		r := map[string]interface{}{
-			"is_primary":       p.GetIsPrimary(),
-			"private_dns_name": p.GetPrivateDnsName(),
-			"private_ip":       p.GetPrivateIp(),
+			"is_primary":       p.IsPrimary,
+			"private_dns_name": p.PrivateDnsName,
+			"private_ip":       p.PrivateIp,
 		}
 
-		if p.HasLinkPublicIp() {
-			r["link_public_ip"] = getOAPILinkPublicIPLight(p.GetLinkPublicIp())
+		if p.LinkPublicIp != nil {
+			r["link_public_ip"] = getOAPILinkPublicIPLight(*p.LinkPublicIp)
 		}
 
 		res.Add(r)
@@ -236,12 +228,12 @@ func getOAPIPrivateIPsLight(privateIPs []osc.PrivateIpLightForVm) *schema.Set {
 func GetPrivateIPsForNic(privateIPs []osc.PrivateIp) (res []map[string]interface{}) {
 	for _, p := range privateIPs {
 		r := map[string]interface{}{
-			"is_primary":       p.GetIsPrimary(),
-			"private_dns_name": p.GetPrivateDnsName(),
-			"private_ip":       p.GetPrivateIp(),
+			"is_primary":       p.IsPrimary,
+			"private_dns_name": p.PrivateDnsName,
+			"private_ip":       p.PrivateIp,
 		}
-		if _, ok := p.GetLinkPublicIpOk(); ok {
-			r["link_public_ip"] = GetOAPILinkPublicIPsForNic(p.GetLinkPublicIp())
+		if p.LinkPublicIp != nil {
+			r["link_public_ip"] = GetOAPILinkPublicIPsForNic(*p.LinkPublicIp)
 		}
 		res = append(res, r)
 	}
@@ -253,41 +245,35 @@ func GetOAPIVMNetworkInterfaceLightSet(respNics []osc.NicLight) ([]map[string]in
 	nics := make([]map[string]interface{}, 0, len(respNics))
 
 	for _, nic := range respNics {
-		securityGroups, securityGroupIds := GetSecurityGroups(nic.GetSecurityGroups())
+		securityGroups, securityGroupIds := GetSecurityGroups(nic.SecurityGroups)
 
 		nicMap := map[string]interface{}{
-			"delete_on_vm_deletion":  nic.LinkNic.GetDeleteOnVmDeletion(), // Workaround.
-			"device_number":          nic.LinkNic.GetDeviceNumber(),
-			"account_id":             nic.GetAccountId(),
-			"is_source_dest_checked": nic.GetIsSourceDestChecked(),
-			"mac_address":            nic.GetMacAddress(),
-			"net_id":                 nic.GetNetId(),
-			"nic_id":                 nic.GetNicId(),
-			"private_dns_name":       nic.GetPrivateDnsName(),
+			"delete_on_vm_deletion":  ptr.From(nic.LinkNic).DeleteOnVmDeletion, // Workaround.
+			"device_number":          ptr.From(nic.LinkNic).DeviceNumber,
+			"account_id":             nic.AccountId,
+			"is_source_dest_checked": nic.IsSourceDestChecked,
+			"mac_address":            nic.MacAddress,
+			"net_id":                 nic.NetId,
+			"nic_id":                 nic.NicId,
+			"private_dns_name":       nic.PrivateDnsName,
 			"security_groups":        securityGroups,
 			"security_group_ids":     securityGroupIds,
-			"state":                  nic.GetState(),
-			"subnet_id":              nic.GetSubnetId(),
+			"state":                  nic.State,
+			"subnet_id":              nic.SubnetId,
 		}
+		nicMap["description"] = nic.Description
+		nicMap["private_ips"] = getOAPIPrivateIPsLight(nic.PrivateIps)
 
-		if nic.HasDescription() {
-			nicMap["description"] = nic.GetDescription()
+		if nic.LinkPublicIp != nil {
+			nicMap["link_public_ip"] = getOAPILinkPublicIpsForVm(*nic.LinkPublicIp)
 		}
-
-		if nic.HasLinkPublicIp() {
-			nicMap["link_public_ip"] = getOAPILinkPublicIpsForVm(nic.GetLinkPublicIp())
+		if nic.LinkNic != nil {
+			nicMap["link_nic"] = getOAPILinkNicLight(*nic.LinkNic)
 		}
-
-		if nic.HasPrivateIps() {
-			nicMap["private_ips"] = getOAPIPrivateIPsLight(nic.GetPrivateIps())
-		}
-
-		if nic.HasLinkNic() {
-			nicMap["link_nic"] = getOAPILinkNicLight(nic.GetLinkNic())
-		}
-		if nic.LinkNic.GetDeviceNumber() == 0 {
+		if nic.LinkNic.DeviceNumber == 0 {
 			primaryNic = append(primaryNic, nicMap)
 		}
+
 		nics = append(nics, nicMap)
 	}
 	return primaryNic, nics
@@ -296,29 +282,20 @@ func GetOAPIVMNetworkInterfaceLightSet(respNics []osc.NicLight) ([]map[string]in
 func GetSecurityGroups(groups []osc.SecurityGroupLight) (SecurityGroup []map[string]interface{}, SecurityGroupIds []string) {
 	for _, g := range groups {
 		SecurityGroup = append(SecurityGroup, map[string]interface{}{
-			"security_group_id":   g.GetSecurityGroupId(),
-			"security_group_name": g.GetSecurityGroupName(),
+			"security_group_id":   g.SecurityGroupId,
+			"security_group_name": g.SecurityGroupName,
 		})
-		SecurityGroupIds = append(SecurityGroupIds, g.GetSecurityGroupId())
+		SecurityGroupIds = append(SecurityGroupIds, g.SecurityGroupId)
 	}
 	return
 }
 
-func ImageHasLaunchPermission(conn *osc.APIClient, imageID string) (bool, error) {
-	var resp osc.ReadImagesResponse
-	err := retry.Retry(5*time.Minute, func() *retry.RetryError {
-		var err error
-		rp, httpResp, err := conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(osc.ReadImagesRequest{
-			Filters: &osc.FiltersImage{
-				ImageIds: &[]string{imageID},
-			},
-		}).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+func ImageHasLaunchPermission(ctx context.Context, client *osc.Client, timeout time.Duration, imageID string) (bool, error) {
+	resp, err := client.ReadImages(ctx, osc.ReadImagesRequest{
+		Filters: &osc.FiltersImage{
+			ImageIds: &[]string{imageID},
+		},
+	}, options.WithRetryTimeout(timeout))
 
 	var errString string
 	if err != nil {
@@ -333,20 +310,34 @@ func ImageHasLaunchPermission(conn *osc.APIClient, imageID string) (bool, error)
 		return false, fmt.Errorf("error creating outscale vm volume: %s", errString)
 	}
 
-	if len(resp.GetImages()) == 0 {
+	if resp.Images == nil || len(*resp.Images) == 0 {
 		log.Printf("[DEBUG] %s no longer exists, so we'll drop launch permission for the state", imageID)
 		return false, nil
 	}
 
-	result := resp.GetImages()[0]
+	result := (*resp.Images)[0]
 
-	if len(result.PermissionsToLaunch.GetAccountIds()) > 0 {
+	if len(ptr.From(result.PermissionsToLaunch.AccountIds)) > 0 {
 		return true, nil
 	}
 	return false, nil
 }
 
-func ParseVPNConnectionRouteID(ID string) (destinationIPRange, vpnConnectionID string) {
+func ParseVPNConnectionRouteID(ID string) (destinationIPRange, vpnconnectionID string) {
 	parts := strings.SplitN(ID, ":", 2)
 	return parts[0], parts[1]
+}
+
+func RetryOnCodes(ctx context.Context, codes []string, fun func() (resp any, err error), timeout time.Duration) error {
+	return retry.RetryContext(ctx, timeout, func() *retry.RetryError {
+		_, err := fun()
+		if err != nil {
+			oscErr := GetError(err)
+			if slices.Contains(codes, oscErr.Code) {
+				return retry.RetryableError(err)
+			}
+			return retry.NonRetryableError(err)
+		}
+		return nil
+	})
 }

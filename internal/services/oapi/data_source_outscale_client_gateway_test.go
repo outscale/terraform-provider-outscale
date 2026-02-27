@@ -15,7 +15,6 @@ func TestAccOthers_GatewayDatasource_basic(t *testing.T) {
 	value := fmt.Sprintf("testacc-%s", acctest.RandString(5))
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testacc.PreCheck(t) },
 		Providers: testacc.SDKProviders,
 		Steps: []resource.TestStep{
 			{
@@ -31,7 +30,6 @@ func TestAccOthers_GatewayDatasource_withFilters(t *testing.T) {
 	value := fmt.Sprintf("testacc-%s", acctest.RandString(5))
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testacc.PreCheck(t) },
 		Providers: testacc.SDKProviders,
 		Steps: []resource.TestStep{
 			{
@@ -44,7 +42,6 @@ func TestAccOthers_GatewayDatasource_withFilters(t *testing.T) {
 func TestAccOthers_GatewayDatasource_withFiltersNoLocalhost(t *testing.T) {
 	bgpAsn := oapihelpers.RandBgpAsn()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testacc.PreCheck(t) },
 		Providers: testacc.SDKProviders,
 		Steps: []resource.TestStep{
 			{

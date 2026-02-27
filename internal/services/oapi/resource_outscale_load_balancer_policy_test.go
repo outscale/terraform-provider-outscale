@@ -18,7 +18,6 @@ func TestAccOthers_CookieStickinessPolicy_basic(t *testing.T) {
 	zone := fmt.Sprintf("%sa", utils.GetRegion())
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testacc.PreCheck(t) },
 		Providers:    testacc.SDKProviders,
 		CheckDestroy: testAccCheckAppCookieStickinessPolicyDestroy,
 		Steps: []resource.TestStep{

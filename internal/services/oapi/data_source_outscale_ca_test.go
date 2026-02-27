@@ -6,12 +6,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 func TestAccOthers_DataOutscaleCa_basic(t *testing.T) {
@@ -19,7 +19,6 @@ func TestAccOthers_DataOutscaleCa_basic(t *testing.T) {
 	ca_path := testAccCertPath
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		CheckDestroy:             testAccDataCheckOutscaleCaDestroy,
 		Steps: []resource.TestStep{
@@ -34,34 +33,25 @@ func TestAccOthers_DataOutscaleCa_basic(t *testing.T) {
 }
 
 func testAccDataCheckOutscaleCaDestroy(s *terraform.State) error {
-	conn := testacc.ConfiguredClient.OSCAPI
+	client := testacc.ConfiguredClient.OSC
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_ca" {
 			continue
 		}
-		req := oscgo.ReadCasRequest{}
-		req.Filters = &oscgo.FiltersCa{
+		req := osc.ReadCasRequest{}
+		req.Filters = &osc.FiltersCa{
 			CaIds: &[]string{rs.Primary.ID},
 		}
 
-		var resp oscgo.ReadCasResponse
-		var err error
 		exists := false
-		err = retry.Retry(120*time.Second, func() *retry.RetryError {
-			rp, httpResp, err := conn.CaApi.ReadCas(context.Background()).ReadCasRequest(req).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
+		resp, err := client.ReadCas(context.Background(), req, options.WithRetryTimeout(120*time.Second))
 		if err != nil {
 			return fmt.Errorf("ca reading (%s)", rs.Primary.ID)
 		}
 
-		for _, ca := range resp.GetCas() {
-			if ca.GetCaId() == rs.Primary.ID {
+		for _, ca := range ptr.From(resp.Cas) {
+			if *ca.CaId == rs.Primary.ID {
 				exists = true
 			}
 		}

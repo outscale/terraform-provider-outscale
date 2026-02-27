@@ -2,21 +2,22 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceOutscaleQuotas() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleQuotasRead,
+		ReadContext: DataSourceOutscaleQuotasRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -68,10 +69,10 @@ func DataSourceOutscaleQuotas() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleQuotasRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleQuotasRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
-	req := oscgo.ReadQuotasRequest{}
+	req := osc.ReadQuotasRequest{}
 
 	filters, filtersOk := d.GetOk("filter")
 
@@ -79,76 +80,68 @@ func DataSourceOutscaleQuotasRead(d *schema.ResourceData, meta interface{}) erro
 	if filtersOk {
 		req.Filters, err = buildOutscaleQuotaDataSourceFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	var resp oscgo.ReadQuotasResponse
-	err = retry.Retry(120*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.QuotaApi.ReadQuotas(context.Background()).ReadQuotasRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadQuotas(ctx, req, options.WithRetryTimeout(120*time.Second))
 
 	var errString string
 	if err != nil {
 		errString = err.Error()
-		return fmt.Errorf("error reading quotas type (%s)", errString)
+		return diag.Errorf("error reading quotas type (%s)", errString)
 	}
 
-	if len(resp.GetQuotaTypes()) == 0 {
-		return ErrNoResults
+	if resp.QuotaTypes == nil || len(*resp.QuotaTypes) == 0 {
+		return diag.FromErr(ErrNoResults)
 	}
 
 	quotas := make([]map[string]interface{}, 0)
 
-	for _, quotaType := range resp.GetQuotaTypes() {
-		if len(quotaType.GetQuotas()) == 0 {
-			return fmt.Errorf("no matching quotas found")
+	for _, quotaType := range *resp.QuotaTypes {
+		if quotaType.Quotas == nil || len(*quotaType.Quotas) == 0 {
+			return diag.Errorf("no matching quotas found")
 		}
 
-		for _, quota := range quotaType.GetQuotas() {
+		for _, quota := range *quotaType.Quotas {
 			quotaMap := make(map[string]interface{})
-			if quota.GetName() != "" {
-				quotaMap["name"] = quota.GetName()
+			if ptr.From(quota.Name) != "" {
+				quotaMap["name"] = quota.Name
 			}
-			if quota.GetDescription() != "" {
-				quotaMap["description"] = quota.GetDescription()
+			if ptr.From(quota.Description) != "" {
+				quotaMap["description"] = quota.Description
 			}
 
-			quotaMap["max_value"] = quota.GetMaxValue()
+			quotaMap["max_value"] = quota.MaxValue
 
-			quotaMap["used_value"] = quota.GetUsedValue()
+			quotaMap["used_value"] = quota.UsedValue
 
-			if quotaType.GetQuotaType() != "" {
-				quotaMap["quota_type"] = quotaType.GetQuotaType()
+			if ptr.From(quotaType.QuotaType) != "" {
+				quotaMap["quota_type"] = quotaType.QuotaType
 			}
-			if quota.GetQuotaCollection() != "" {
-				quotaMap["quota_collection"] = quota.GetQuotaCollection()
+			if ptr.From(quota.QuotaCollection) != "" {
+				quotaMap["quota_collection"] = quota.QuotaCollection
 			}
-			if quota.GetShortDescription() != "" {
-				quotaMap["short_description"] = quota.GetShortDescription()
+			if ptr.From(quota.ShortDescription) != "" {
+				quotaMap["short_description"] = quota.ShortDescription
 			}
-			if quota.GetAccountId() != "" {
-				quotaMap["account_id"] = quota.GetAccountId()
+			if ptr.From(quota.AccountId) != "" {
+				quotaMap["account_id"] = quota.AccountId
 			}
 			quotas = append(quotas, quotaMap)
 		}
 	}
 
 	if err := d.Set("quotas", quotas); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.SetId(id.UniqueId())
 
 	return nil
 }
 
-func buildOutscaleQuotaDataSourceFilters(set *schema.Set) (*oscgo.FiltersQuota, error) {
-	var filters oscgo.FiltersQuota
+func buildOutscaleQuotaDataSourceFilters(set *schema.Set) (*osc.FiltersQuota, error) {
+	var filters osc.FiltersQuota
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -166,7 +159,7 @@ func buildOutscaleQuotaDataSourceFilters(set *schema.Set) (*oscgo.FiltersQuota, 
 		case "short_descriptions":
 			filters.ShortDescriptions = &filterValues
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(name)
 		}
 	}
 	return &filters, nil

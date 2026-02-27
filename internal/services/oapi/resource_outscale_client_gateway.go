@@ -3,25 +3,27 @@ package oapi
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"time"
 
+	"github.com/outscale/goutils/sdk/ptr"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 	"github.com/spf13/cast"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 )
 
 func ResourceOutscaleClientGateway() *schema.Resource {
 	return &schema.Resource{
-		Create: ResourceOutscaleClientGatewayCreate,
-		Read:   ResourceOutscaleClientGatewayRead,
-		Update: ResourceOutscaleClientGatewayUpdate,
-		Delete: ResourceOutscaleClientGatewayDelete,
+		CreateContext: ResourceOutscaleClientGatewayCreate,
+		ReadContext:   ResourceOutscaleClientGatewayRead,
+		UpdateContext: ResourceOutscaleClientGatewayUpdate,
+		DeleteContext: ResourceOutscaleClientGatewayDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -65,168 +67,137 @@ func ResourceOutscaleClientGateway() *schema.Resource {
 	}
 }
 
-func ResourceOutscaleClientGatewayCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleClientGatewayCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 	timeout := d.Timeout(schema.TimeoutCreate)
 
-	req := oscgo.CreateClientGatewayRequest{
-		BgpAsn:         cast.ToInt32(d.Get("bgp_asn")),
+	req := osc.CreateClientGatewayRequest{
+		BgpAsn:         cast.ToInt(d.Get("bgp_asn")),
 		ConnectionType: d.Get("connection_type").(string),
 		PublicIp:       d.Get("public_ip").(string),
 	}
 
-	var resp oscgo.CreateClientGatewayResponse
-	err := retry.Retry(timeout, func() *retry.RetryError {
-		var err error
-		rp, httpResp, err := conn.ClientGatewayApi.CreateClientGateway(context.Background()).CreateClientGatewayRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.CreateClientGateway(ctx, req, options.WithRetryTimeout(timeout))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	d.SetId(*resp.GetClientGateway().ClientGatewayId)
-
-	err = createOAPITagsSDK(conn, d)
+	d.SetId(*ptr.From(resp.ClientGateway).ClientGatewayId)
+	err = createOAPITagsSDK(ctx, client, timeout, d)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	return ResourceOutscaleClientGatewayRead(d, meta)
+	return ResourceOutscaleClientGatewayRead(ctx, d, meta)
 }
 
-func ResourceOutscaleClientGatewayRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleClientGatewayRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 	timeout := d.Timeout(schema.TimeoutRead)
 
 	clientGatewayID := d.Id()
 
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{"pending"},
-		Target:     []string{"available", "failed", "deleted"},
-		Refresh:    clientGatewayRefreshFunc(conn, timeout, &clientGatewayID),
-		Timeout:    timeout,
-		Delay:      5 * time.Second,
-		MinTimeout: 3 * time.Second,
+		Pending: []string{"pending"},
+		Target:  []string{"available", "failed", "deleted"},
+		Timeout: timeout,
+		Refresh: clientGatewayRefreshFunc(ctx, client, timeout, &clientGatewayID),
 	}
 
-	r, err := stateConf.WaitForState()
+	r, err := stateConf.WaitForStateContext(ctx)
 	if err != nil {
-		return fmt.Errorf("error waiting for outscale client gateway (%s) to become ready: %s", clientGatewayID, err)
+		return diag.Errorf("error waiting for outscale client gateway (%s) to become ready: %s", clientGatewayID, err)
 	}
 
-	resp := r.(oscgo.ReadClientGatewaysResponse)
-	if !resp.HasClientGateways() || utils.IsResponseEmpty(len(resp.GetClientGateways()), "ClientGateway", d.Id()) ||
-		resp.GetClientGateways()[0].GetState() == "deleted" {
+	resp := r.(*osc.ReadClientGatewaysResponse)
+	if resp.ClientGateways == nil || utils.IsResponseEmpty(len(*resp.ClientGateways), "ClientGateway", d.Id()) ||
+		ptr.From((*resp.ClientGateways)[0].State) == "deleted" {
 		d.SetId("")
 		return nil
 	}
 
-	clientGateway := resp.GetClientGateways()[0]
+	clientGateway := (*resp.ClientGateways)[0]
 
-	if err := d.Set("bgp_asn", clientGateway.GetBgpAsn()); err != nil {
-		return err
+	if err := d.Set("bgp_asn", ptr.From(clientGateway.BgpAsn)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("connection_type", clientGateway.GetConnectionType()); err != nil {
-		return err
+	if err := d.Set("connection_type", ptr.From(clientGateway.ConnectionType)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("public_ip", clientGateway.GetPublicIp()); err != nil {
-		return err
+	if err := d.Set("public_ip", ptr.From(clientGateway.PublicIp)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("client_gateway_id", clientGateway.GetClientGatewayId()); err != nil {
-		return err
+	if err := d.Set("client_gateway_id", ptr.From(clientGateway.ClientGatewayId)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("state", clientGateway.GetState()); err != nil {
-		return err
+	if err := d.Set("state", ptr.From(clientGateway.State)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("tags", FlattenOAPITagsSDK(clientGateway.GetTags())); err != nil {
-		return err
+	if err := d.Set("tags", FlattenOAPITagsSDK(ptr.From(clientGateway.Tags))); err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil
 }
 
-func ResourceOutscaleClientGatewayUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleClientGatewayUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+	timeout := d.Timeout(schema.TimeoutUpdate)
 
-	if err := updateOAPITagsSDK(conn, d); err != nil {
-		return err
+	if err := updateOAPITagsSDK(ctx, client, timeout, d); err != nil {
+		return diag.FromErr(err)
 	}
 
-	return ResourceOutscaleClientGatewayRead(d, meta)
+	return ResourceOutscaleClientGatewayRead(ctx, d, meta)
 }
 
-func ResourceOutscaleClientGatewayDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleClientGatewayDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 	timeout := d.Timeout(schema.TimeoutDelete)
 
 	gatewayID := d.Id()
-	req := oscgo.DeleteClientGatewayRequest{
+	req := osc.DeleteClientGatewayRequest{
 		ClientGatewayId: gatewayID,
 	}
 
-	err := retry.Retry(timeout, func() *retry.RetryError {
-		_, httpResp, err := conn.ClientGatewayApi.DeleteClientGateway(context.Background()).DeleteClientGatewayRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	_, err := client.DeleteClientGateway(ctx, req, options.WithRetryTimeout(timeout))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{"deleting"},
-		Target:     []string{"deleted", "failed"},
-		Refresh:    clientGatewayRefreshFunc(conn, timeout, &gatewayID),
-		Timeout:    timeout,
-		Delay:      5 * time.Second,
-		MinTimeout: 3 * time.Second,
+		Pending: []string{"deleting"},
+		Target:  []string{"deleted", "failed"},
+		Timeout: timeout,
+		Refresh: clientGatewayRefreshFunc(ctx, client, timeout, &gatewayID),
 	}
 
-	_, err = stateConf.WaitForState()
+	_, err = stateConf.WaitForStateContext(ctx)
 	if err != nil {
-		return fmt.Errorf("error waiting for outscale client gateway (%s) to become deleted: %s", gatewayID, err)
+		return diag.Errorf("error waiting for outscale client gateway (%s) to become deleted: %s", gatewayID, err)
 	}
 
 	return nil
 }
 
-func clientGatewayRefreshFunc(conn *oscgo.APIClient, timeout time.Duration, gatewayID *string) retry.StateRefreshFunc {
+func clientGatewayRefreshFunc(ctx context.Context, client *osc.Client, timeout time.Duration, gatewayID *string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		filter := oscgo.ReadClientGatewaysRequest{
-			Filters: &oscgo.FiltersClientGateway{
+		req := osc.ReadClientGatewaysRequest{
+			Filters: &osc.FiltersClientGateway{
 				ClientGatewayIds: &[]string{*gatewayID},
 			},
 		}
-		var resp oscgo.ReadClientGatewaysResponse
-		var statusCode int
-		err := retry.Retry(timeout, func() *retry.RetryError {
-			rp, httpResp, err := conn.ClientGatewayApi.ReadClientGateways(context.Background()).ReadClientGatewaysRequest(filter).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			statusCode = httpResp.StatusCode
-			return nil
-		})
-		if err != nil || len(resp.GetClientGateways()) == 0 {
+		resp, err := client.ReadClientGateways(ctx, req, options.WithRetryTimeout(timeout))
+		if err != nil || len(ptr.From(resp.ClientGateways)) == 0 {
 			switch {
-			case statusCode == http.StatusServiceUnavailable || statusCode == http.StatusConflict:
+			case osc.IsConflict(err):
 				return nil, "pending", nil
-			case statusCode == http.StatusNotFound || len(resp.GetClientGateways()) == 0:
-				return nil, "deleted", nil
 			default:
 				return nil, "failed", fmt.Errorf("error on clientgatewayrefresh: %s", err)
 			}
 		}
 
-		gateway := resp.GetClientGateways()[0]
+		gateway := (*resp.ClientGateways)[0]
 
-		return resp, gateway.GetState(), nil
+		return resp, *gateway.State, nil
 	}
 }

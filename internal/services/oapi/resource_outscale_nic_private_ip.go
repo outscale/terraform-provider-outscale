@@ -2,22 +2,21 @@ package oapi
 
 import (
 	"context"
-	"fmt"
-	"net/http"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func ResourceOutscaleNetworkInterfacePrivateIP() *schema.Resource {
 	return &schema.Resource{
-		Create: ResourceOutscaleNetworkInterfacePrivateIPCreate,
-		Read:   ResourceOutscaleNetworkInterfacePrivateIPRead,
-		Delete: ResourceOutscaleNetworkInterfacePrivateIPDelete,
+		CreateContext: ResourceOutscaleNetworkInterfacePrivateIPCreate,
+		ReadContext:   ResourceOutscaleNetworkInterfacePrivateIPRead,
+		DeleteContext: ResourceOutscaleNetworkInterfacePrivateIPDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -62,80 +61,58 @@ func ResourceOutscaleNetworkInterfacePrivateIP() *schema.Resource {
 	}
 }
 
-func ResourceOutscaleNetworkInterfacePrivateIPCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleNetworkInterfacePrivateIPCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
 	timeout := d.Timeout(schema.TimeoutCreate)
 
-	input := oscgo.LinkPrivateIpsRequest{
+	input := osc.LinkPrivateIpsRequest{
 		NicId: d.Get("nic_id").(string),
 	}
 
 	if v, ok := d.GetOk("allow_relink"); ok {
-		input.SetAllowRelink(v.(bool))
+		input.AllowRelink = new(v.(bool))
 	}
 
 	if v, ok := d.GetOk("secondary_private_ip_count"); ok {
-		input.SetSecondaryPrivateIpCount(int32(v.(int)))
+		input.SecondaryPrivateIpCount = new(v.(int))
 	}
 
 	if v, ok := d.GetOk("private_ips"); ok {
-		input.SetPrivateIps(utils.InterfaceSliceToStringSlice(v.([]interface{})))
+		input.PrivateIps = new(utils.InterfaceSliceToStringSlice(v.([]interface{})))
 	}
 
-	err := retry.Retry(timeout, func() *retry.RetryError {
-		_, httpResp, err := conn.NicApi.LinkPrivateIps(context.Background()).LinkPrivateIpsRequest(input).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	_, err := client.LinkPrivateIps(ctx, input, options.WithRetryTimeout(timeout))
 	if err != nil {
 		errString := err.Error()
-		return fmt.Errorf("failure to assign private ips: %s", errString)
+		return diag.Errorf("failure to assign private ips: %s", errString)
 	}
 
 	d.SetId(input.NicId)
 
-	return ResourceOutscaleNetworkInterfacePrivateIPRead(d, meta)
+	return ResourceOutscaleNetworkInterfacePrivateIPRead(ctx, d, meta)
 }
 
-func ResourceOutscaleNetworkInterfacePrivateIPRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleNetworkInterfacePrivateIPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
 	timeout := d.Timeout(schema.TimeoutRead)
 
-	req := oscgo.ReadNicsRequest{
-		Filters: &oscgo.FiltersNic{NicIds: &[]string{d.Id()}},
+	req := osc.ReadNicsRequest{
+		Filters: &osc.FiltersNic{NicIds: &[]string{d.Id()}},
 	}
 
-	var resp oscgo.ReadNicsResponse
-	var err error
-	var statusCode int
-	err = retry.Retry(timeout, func() *retry.RetryError {
-		rp, httpResp, err := conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		statusCode = httpResp.StatusCode
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadNics(ctx, req, options.WithRetryTimeout(timeout))
 	if err != nil {
-		if statusCode == http.StatusNotFound {
-			// The ENI is gone now, so just remove the attachment from the state
-			d.SetId("")
-			return nil
-		}
-		errString := err.Error()
-		return fmt.Errorf("could not find network interface: %s", errString)
-
+		return diag.Errorf("could not find network interface: %s", err)
 	}
-	if utils.IsResponseEmpty(len(resp.GetNics()), "NicPrivateIp", d.Id()) {
+	if resp.Nics == nil || utils.IsResponseEmpty(len(*resp.Nics), "NicPrivateIp", d.Id()) {
 		d.SetId("")
 		return nil
 	}
-	eni := resp.GetNics()[0]
+	eni := (*resp.Nics)[0]
 
-	if eni.GetNicId() == "" {
+	if eni.NicId == "" {
 		// Interface is no longer attached, remove from state
 		d.SetId("")
 		return nil
@@ -147,11 +124,11 @@ func ResourceOutscaleNetworkInterfacePrivateIPRead(d *schema.ResourceData, meta 
 	// because the primary can't remove.
 	var primaryPrivateID string
 	secondary_private_ip_count := 0
-	for _, v := range eni.GetPrivateIps() {
-		if v.GetIsPrimary() {
-			primaryPrivateID = v.GetPrivateIp()
+	for _, v := range eni.PrivateIps {
+		if v.IsPrimary {
+			primaryPrivateID = v.PrivateIp
 		} else {
-			ips = append(ips, v.GetPrivateIp())
+			ips = append(ips, v.PrivateIp)
 			secondary_private_ip_count += 1
 		}
 	}
@@ -159,46 +136,41 @@ func ResourceOutscaleNetworkInterfacePrivateIPRead(d *schema.ResourceData, meta 
 	_, ok := d.GetOk("allow_relink")
 
 	if err := d.Set("allow_relink", ok); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err := d.Set("private_ips", ips); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err := d.Set("secondary_private_ip_count", secondary_private_ip_count); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	if err := d.Set("nic_id", eni.GetNicId()); err != nil {
-		return err
+	if err := d.Set("nic_id", eni.NicId); err != nil {
+		return diag.FromErr(err)
 	}
 	if err := d.Set("primary_private_ip", primaryPrivateID); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil
 }
 
-func ResourceOutscaleNetworkInterfacePrivateIPDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleNetworkInterfacePrivateIPDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
 	timeout := d.Timeout(schema.TimeoutDelete)
 
-	input := oscgo.UnlinkPrivateIpsRequest{
+	input := osc.UnlinkPrivateIpsRequest{
 		NicId: d.Id(),
 	}
 
 	if v, ok := d.GetOk("private_ips"); ok {
-		input.SetPrivateIps(utils.InterfaceSliceToStringSlice(v.([]interface{})))
+		input.PrivateIps = utils.InterfaceSliceToStringSlice(v.([]interface{}))
 	}
 
-	err := retry.Retry(timeout, func() *retry.RetryError {
-		_, httpResp, err := conn.NicApi.UnlinkPrivateIps(context.Background()).UnlinkPrivateIpsRequest(input).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	_, err := client.UnlinkPrivateIps(ctx, input, options.WithRetryTimeout(timeout))
 	if err != nil {
 		errString := err.Error()
-		return fmt.Errorf("failure to unassign private ips: %s", errString)
+		return diag.Errorf("failure to unassign private ips: %s", errString)
 	}
 	d.SetId("")
 	return nil

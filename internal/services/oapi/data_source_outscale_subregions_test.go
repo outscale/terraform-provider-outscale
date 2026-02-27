@@ -12,9 +12,6 @@ import (
 
 func TestAccOthers_SubregionsDataSource_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() {
-			testacc.PreCheck(t)
-		},
 		Providers: testacc.SDKProviders,
 		Steps: []resource.TestStep{
 			{
@@ -29,9 +26,6 @@ func TestAccOthers_SubregionsDataSource_Basic(t *testing.T) {
 
 func TestAccOthers_SubregionsDataSource_All(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() {
-			testacc.PreCheck(t)
-		},
 		Providers: testacc.SDKProviders,
 		Steps: []resource.TestStep{
 			{

@@ -2,21 +2,24 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
+	"github.com/samber/lo"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func DataSourceOutscaleAccessKey() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleAccessKeyRead,
+		ReadContext: DataSourceOutscaleAccessKeyRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"user_name": {
@@ -52,8 +55,8 @@ func DataSourceOutscaleAccessKey() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleAccessKeyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 	accessKeyID, accessKeyOk := d.GetOk("access_key_id")
@@ -61,76 +64,68 @@ func DataSourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) e
 	userName, userNameOk := d.GetOk("user_name")
 
 	if !filtersOk && !accessKeyOk && !stateOk && !userNameOk {
-		return fmt.Errorf("one of filters: access_key_id, state or user_name must be assigned")
+		return diag.Errorf("one of filters: access_key_id, state or user_name must be assigned")
 	}
 
-	filterReq := &oscgo.FiltersAccessKeys{}
+	filterReq := &osc.FiltersAccessKeys{}
 
 	var err error
 	if filtersOk {
 		filterReq, err = buildOutscaleDataSourceAccessKeyFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 	if accessKeyOk {
-		filterReq.SetAccessKeyIds([]string{accessKeyID.(string)})
+		filterReq.AccessKeyIds = &[]string{accessKeyID.(string)}
 	}
 	if stateOk {
-		filterReq.SetStates([]string{state.(string)})
+		filterReq.States = &[]osc.AccessKeyState{osc.AccessKeyState(state.(string))}
 	}
-	req := oscgo.ReadAccessKeysRequest{}
-	req.SetFilters(*filterReq)
+	req := osc.ReadAccessKeysRequest{}
+	req.Filters = filterReq
 	if userNameOk {
-		req.SetUserName(userName.(string))
+		req.UserName = new(userName.(string))
 	}
-	var resp oscgo.ReadAccessKeysResponse
 
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.AccessKeyApi.ReadAccessKeys(context.Background()).ReadAccessKeysRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadAccessKeys(ctx, req, options.WithRetryTimeout(5*time.Minute))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	if len(resp.GetAccessKeys()) == 0 {
-		return ErrNoResults
+	if resp.AccessKeys == nil || len(*resp.AccessKeys) == 0 {
+		return diag.FromErr(ErrNoResults)
 	}
 
-	if len(resp.GetAccessKeys()) > 1 {
-		return ErrMultipleResults
+	if len(*resp.AccessKeys) > 1 {
+		return diag.FromErr(ErrMultipleResults)
 	}
 
-	accessKey := resp.GetAccessKeys()[0]
+	accessKey := (*resp.AccessKeys)[0]
 
-	if err := d.Set("access_key_id", accessKey.GetAccessKeyId()); err != nil {
-		return err
+	if err := d.Set("access_key_id", ptr.From(accessKey.AccessKeyId)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("creation_date", accessKey.GetCreationDate()); err != nil {
-		return err
+	if err := d.Set("creation_date", from.ISO8601(accessKey.CreationDate)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("expiration_date", accessKey.GetExpirationDate()); err != nil {
-		return err
+	if err := d.Set("expiration_date", from.ISO8601(accessKey.ExpirationDate)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("last_modification_date", accessKey.GetLastModificationDate()); err != nil {
-		return err
+	if err := d.Set("last_modification_date", from.ISO8601(accessKey.LastModificationDate)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("state", accessKey.GetState()); err != nil {
-		return err
+	if err := d.Set("state", ptr.From(accessKey.State)); err != nil {
+		return diag.FromErr(err)
 	}
 
-	d.SetId(accessKey.GetAccessKeyId())
+	d.SetId(ptr.From(accessKey.AccessKeyId))
 
 	return nil
 }
 
-func buildOutscaleDataSourceAccessKeyFilters(set *schema.Set) (*oscgo.FiltersAccessKeys, error) {
-	var filters oscgo.FiltersAccessKeys
+func buildOutscaleDataSourceAccessKeyFilters(set *schema.Set) (*osc.FiltersAccessKeys, error) {
+	var filters osc.FiltersAccessKeys
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -140,11 +135,13 @@ func buildOutscaleDataSourceAccessKeyFilters(set *schema.Set) (*oscgo.FiltersAcc
 
 		switch name := m["name"].(string); name {
 		case "access_key_ids":
-			filters.SetAccessKeyIds(filterValues)
+			filters.AccessKeyIds = &filterValues
 		case "states":
-			filters.SetStates(filterValues)
+			filters.States = new(lo.Map(filterValues, func(s string, _ int) osc.AccessKeyState {
+				return osc.AccessKeyState(s)
+			}))
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(name)
 		}
 	}
 	return &filters, nil

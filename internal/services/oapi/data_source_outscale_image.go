@@ -2,21 +2,23 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/samber/lo"
 )
 
 func DataSourceOutscaleImage() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleImageRead,
+		ReadContext: DataSourceOutscaleImageRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -209,77 +211,69 @@ func DataSourceOutscaleImage() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleImageRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleImageRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 	executableUsers, executableUsersOk := d.GetOk("permission")
 	ai, aisOk := d.GetOk("account_id")
 	imageID, imageIDOk := d.GetOk("image_id")
 	if !executableUsersOk && !filtersOk && !aisOk && !imageIDOk {
-		return fmt.Errorf("one of executable_users, filters, or account_id must be assigned, or image_id must be provided")
+		return diag.Errorf("one of executable_users, filters, or account_id must be assigned, or image_id must be provided")
 	}
 
 	var err error
-	filtersReq := &oscgo.FiltersImage{}
+	filtersReq := &osc.FiltersImage{}
 	if filtersOk {
 		filtersReq, err = buildOutscaleDataSourceImagesFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 	if imageIDOk {
-		filtersReq.SetImageIds([]string{imageID.(string)})
+		filtersReq.ImageIds = &[]string{imageID.(string)}
 	}
 	if aisOk {
-		filtersReq.SetAccountIds([]string{ai.(string)})
+		filtersReq.AccountIds = &[]string{ai.(string)}
 	}
 	if executableUsersOk {
-		filtersReq.SetPermissionsToLaunchAccountIds(utils.InterfaceSliceToStringSlice(executableUsers.([]interface{})))
+		filtersReq.PermissionsToLaunchAccountIds = utils.InterfaceSliceToStringSlicePtr(executableUsers.([]interface{}))
 	}
 
-	req := oscgo.ReadImagesRequest{Filters: filtersReq}
+	req := osc.ReadImagesRequest{Filters: filtersReq}
 
-	var resp oscgo.ReadImagesResponse
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadImages(ctx, req, options.WithRetryTimeout(5*time.Minute))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	images := resp.GetImages()
+	images := resp.Images
 
-	if len(images) < 1 {
-		return ErrNoResults
+	if images == nil || len(*images) < 1 {
+		return diag.FromErr(ErrNoResults)
 	}
-	if len(images) > 1 {
-		return ErrMultipleResults
+	if len(*images) > 1 {
+		return diag.FromErr(ErrMultipleResults)
 	}
 
-	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
-		image := images[0]
-		d.SetId(*image.ImageId)
+	return diag.FromErr(resourceDataAttrSetter(d, func(set AttributeSetter) error {
+		image := (*images)[0]
+		d.SetId(image.ImageId)
 
 		if err := set("architecture", image.Architecture); err != nil {
 			return err
 		}
 
-		if err := set("boot_modes", lo.Map(image.GetBootModes(), func(b oscgo.BootMode, _ int) string { return string(b) })); err != nil {
+		if err := set("boot_modes", lo.Map(image.BootModes, func(b osc.BootMode, _ int) string { return string(b) })); err != nil {
 			return err
 		}
-		if err := set("secure_boot", image.GetSecureBoot()); err != nil {
+		if err := set("secure_boot", image.SecureBoot); err != nil {
 			return err
 		}
-		if err := set("tpm_mandatory", image.GetTpmMandatory()); err != nil {
+		if err := set("tpm_mandatory", image.TpmMandatory); err != nil {
 			return err
 		}
-		if err := set("creation_date", image.CreationDate); err != nil {
+		if err := set("creation_date", from.ISO8601(image.CreationDate)); err != nil {
 			return err
 		}
 
@@ -310,7 +304,7 @@ func DataSourceOutscaleImageRead(d *schema.ResourceData, meta interface{}) error
 		if err := set("state", image.State); err != nil {
 			return err
 		}
-		if err := set("block_device_mappings", omiOAPIBlockDeviceMappings(*image.BlockDeviceMappings)); err != nil {
+		if err := set("block_device_mappings", omiOAPIBlockDeviceMappings(ptr.From(image.BlockDeviceMappings))); err != nil {
 			return err
 		}
 		if err := set("product_codes", image.ProductCodes); err != nil {
@@ -322,19 +316,19 @@ func DataSourceOutscaleImageRead(d *schema.ResourceData, meta interface{}) error
 		if err := set("permissions_to_launch", omiOAPIPermissionToLuch(image.PermissionsToLaunch)); err != nil {
 			return err
 		}
-		if err := set("tags", FlattenOAPITagsSDK(image.GetTags())); err != nil {
+		if err := set("tags", FlattenOAPITagsSDK(image.Tags)); err != nil {
 			return err
 		}
 
 		return nil
-	})
+	}))
 }
 
-func omiOAPIPermissionToLuch(p *oscgo.PermissionsOnResource) (res []map[string]interface{}) {
+func omiOAPIPermissionToLuch(p *osc.PermissionsOnResource) (res []map[string]interface{}) {
 	for _, v := range *p.AccountIds {
 		res = append(res, map[string]interface{}{
 			"account_id":        v,
-			"global_permission": p.GetGlobalPermission(),
+			"global_permission": p.GlobalPermission,
 		})
 	}
 	return

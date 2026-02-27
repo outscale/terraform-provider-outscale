@@ -2,28 +2,29 @@ package oapi
 
 import (
 	"context"
-	"fmt"
-	"net/http"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func DataSourceOutscaleKeyPairRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
-	req := oscgo.ReadKeypairsRequest{
-		Filters: &oscgo.FiltersKeypair{KeypairNames: &[]string{d.Id()}},
+func DataSourceOutscaleKeyPairRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
+	req := osc.ReadKeypairsRequest{
+		Filters: &osc.FiltersKeypair{KeypairNames: &[]string{d.Id()}},
 	}
 
 	KeyName, KeyNameisOk := d.GetOk("keypair_name")
 	if KeyNameisOk {
-		filter := oscgo.FiltersKeypair{}
-		filter.SetKeypairNames([]string{KeyName.(string)})
-		req.SetFilters(filter)
+		filter := osc.FiltersKeypair{}
+		filter.KeypairNames = &[]string{KeyName.(string)}
+		req.Filters = &filter
 	}
 
 	filters, filtersOk := d.GetOk("filter")
@@ -32,59 +33,45 @@ func DataSourceOutscaleKeyPairRead(d *schema.ResourceData, meta interface{}) err
 	if filtersOk {
 		req.Filters, err = buildOutscaleKeyPairsDataSourceFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	var resp oscgo.ReadKeypairsResponse
-	var statusCode int
-	err = retry.RetryContext(context.Background(), ReadDefaultTimeout, func() *retry.RetryError {
-		rp, httpResp, err := conn.KeypairApi.ReadKeypairs(context.Background()).ReadKeypairsRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		statusCode = httpResp.StatusCode
-		return nil
-	})
+	resp, err := client.ReadKeypairs(ctx, req, options.WithRetryTimeout(ReadDefaultTimeout))
 	if err != nil {
-		if statusCode == http.StatusNotFound {
-			d.SetId("")
-			return nil
-		}
-		return fmt.Errorf("error retrieving keypair: %w", err)
+		return diag.Errorf("error retrieving keypair: %v", err)
 	}
 
-	if len(resp.GetKeypairs()) == 0 {
-		return ErrNoResults
+	if resp.Keypairs == nil || len(*resp.Keypairs) == 0 {
+		return diag.FromErr(ErrNoResults)
 	}
-	if len(resp.GetKeypairs()) > 1 {
-		return ErrMultipleResults
+	if len(*resp.Keypairs) > 1 {
+		return diag.FromErr(ErrMultipleResults)
 	}
 
-	keypair := resp.GetKeypairs()[0]
-	if err := d.Set("keypair_name", keypair.GetKeypairName()); err != nil {
-		return err
+	keypair := (*resp.Keypairs)[0]
+	if err := d.Set("keypair_name", ptr.From(keypair.KeypairName)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("keypair_fingerprint", keypair.GetKeypairFingerprint()); err != nil {
-		return err
+	if err := d.Set("keypair_fingerprint", ptr.From(keypair.KeypairFingerprint)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("keypair_type", keypair.GetKeypairType()); err != nil {
-		return err
+	if err := d.Set("keypair_type", ptr.From(keypair.KeypairType)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("keypair_id", keypair.GetKeypairId()); err != nil {
-		return err
+	if err := d.Set("keypair_id", ptr.From(keypair.KeypairId)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("tags", FlattenOAPITagsSDK(keypair.GetTags())); err != nil {
-		return err
+	if err := d.Set("tags", FlattenOAPITagsSDK(ptr.From(keypair.Tags))); err != nil {
+		return diag.FromErr(err)
 	}
-	d.SetId(keypair.GetKeypairId())
+	d.SetId(ptr.From(keypair.KeypairId))
 	return nil
 }
 
 func DataSourceOutscaleKeyPair() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleKeyPairRead,
+		ReadContext: DataSourceOutscaleKeyPairRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -115,8 +102,8 @@ func DataSourceOutscaleKeyPair() *schema.Resource {
 	}
 }
 
-func buildOutscaleKeyPairsDataSourceFilters(set *schema.Set) (*oscgo.FiltersKeypair, error) {
-	var filters oscgo.FiltersKeypair
+func buildOutscaleKeyPairsDataSourceFilters(set *schema.Set) (*osc.FiltersKeypair, error) {
+	var filters osc.FiltersKeypair
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -126,21 +113,21 @@ func buildOutscaleKeyPairsDataSourceFilters(set *schema.Set) (*oscgo.FiltersKeyp
 
 		switch name := m["name"].(string); name {
 		case "keypair_fingerprints":
-			filters.SetKeypairFingerprints(filterValues)
+			filters.KeypairFingerprints = &filterValues
 		case "keypair_names":
-			filters.SetKeypairNames(filterValues)
+			filters.KeypairNames = &filterValues
 		case "keypair_ids":
-			filters.SetKeypairIds(filterValues)
+			filters.KeypairIds = &filterValues
 		case "keypair_types":
-			filters.SetKeypairTypes(filterValues)
+			filters.KeypairTypes = &filterValues
 		case "tag_keys":
-			filters.SetTagKeys(filterValues)
+			filters.TagKeys = &filterValues
 		case "tag_values":
-			filters.SetTagValues(filterValues)
+			filters.TagValues = &filterValues
 		case "tags":
-			filters.SetTags(filterValues)
+			filters.Tags = &filterValues
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(name)
 		}
 	}
 	return &filters, nil

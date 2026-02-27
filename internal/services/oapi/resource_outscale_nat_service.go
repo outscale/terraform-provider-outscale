@@ -6,20 +6,22 @@ import (
 	"log"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func ResourceOutscaleNatService() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOAPINatServiceCreate,
-		Read:   resourceOAPINatServiceRead,
-		Delete: resourceOAPINatServiceDelete,
-		Update: ResourceOutscaleNatServiceUpdate,
+		CreateContext: resourceOAPINatServiceCreate,
+		ReadContext:   resourceOAPINatServiceRead,
+		DeleteContext: resourceOAPINatServiceDelete,
+		UpdateContext: ResourceOutscaleNatServiceUpdate,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -79,93 +81,77 @@ func ResourceOutscaleNatService() *schema.Resource {
 	}
 }
 
-func resourceOAPINatServiceCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func resourceOAPINatServiceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
 	timeout := d.Timeout(schema.TimeoutCreate)
 
-	req := oscgo.CreateNatServiceRequest{
+	req := osc.CreateNatServiceRequest{
 		PublicIpId: d.Get("public_ip_id").(string),
 		SubnetId:   d.Get("subnet_id").(string),
 	}
 
-	var resp oscgo.CreateNatServiceResponse
-	var err error
-	err = retry.Retry(timeout, func() *retry.RetryError {
-		rp, httpResp, err := conn.NatServiceApi.CreateNatService(context.Background()).CreateNatServiceRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.CreateNatService(ctx, req, options.WithRetryTimeout(timeout))
 	if err != nil {
-		return fmt.Errorf("error creating nat service: %s", err.Error())
+		return diag.Errorf("error creating nat service: %s", err.Error())
 	}
 
-	if !resp.HasNatService() {
-		return fmt.Errorf("error there is not nat service (%s)", err)
+	if resp.NatService == nil {
+		return diag.Errorf("error there is not nat service (%s)", err)
 	}
 
-	natService := resp.GetNatService()
+	natService := resp.NatService
 
 	// Get the ID and store it
-	log.Printf("\n\n[INFO] NAT Service ID: %s", natService.GetNatServiceId())
+	log.Printf("\n\n[INFO] NAT Service ID: %s", natService.NatServiceId)
 
 	// Wait for the NAT Service to become available
-	log.Printf("\n\n[DEBUG] Waiting for NAT Service (%s) to become available", natService.GetNatServiceId())
+	log.Printf("\n\n[DEBUG] Waiting for NAT Service (%s) to become available", natService.NatServiceId)
 
-	filterReq := oscgo.ReadNatServicesRequest{
-		Filters: &oscgo.FiltersNatService{NatServiceIds: &[]string{natService.GetNatServiceId()}},
+	filterReq := osc.ReadNatServicesRequest{
+		Filters: &osc.FiltersNatService{NatServiceIds: &[]string{natService.NatServiceId}},
 	}
 
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{"pending"},
 		Target:  []string{"available"},
-		Refresh: NGOAPIStateRefreshFunc(conn, filterReq, "failed", timeout),
 		Timeout: timeout,
+		Refresh: NGOAPIStateRefreshFunc(ctx, client, filterReq, timeout),
 	}
 
-	if _, err := stateConf.WaitForState(); err != nil {
-		return fmt.Errorf("error waiting for nat service (%s) to become available: %s", natService.GetNatServiceId(), err)
+	if _, err := stateConf.WaitForStateContext(ctx); err != nil {
+		return diag.Errorf("error waiting for nat service (%s) to become available: %s", natService.NatServiceId, err)
 	}
-	d.SetId(natService.GetNatServiceId())
+	d.SetId(natService.NatServiceId)
 
-	err = createOAPITagsSDK(conn, d)
+	err = createOAPITagsSDK(ctx, client, timeout, d)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	return resourceOAPINatServiceRead(d, meta)
+	return resourceOAPINatServiceRead(ctx, d, meta)
 }
 
-func resourceOAPINatServiceRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func resourceOAPINatServiceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 	timeout := d.Timeout(schema.TimeoutRead)
 
-	filterReq := oscgo.ReadNatServicesRequest{
-		Filters: &oscgo.FiltersNatService{NatServiceIds: &[]string{d.Id()}},
+	filterReq := osc.ReadNatServicesRequest{
+		Filters: &osc.FiltersNatService{NatServiceIds: &[]string{d.Id()}},
 	}
 
-	var resp oscgo.ReadNatServicesResponse
-	err := retry.Retry(timeout, func() *retry.RetryError {
-		rp, httpResp, err := conn.NatServiceApi.ReadNatServices(context.Background()).ReadNatServicesRequest(filterReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadNatServices(ctx, filterReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		return fmt.Errorf("error waiting for nat service (%s) to become available: %s", d.Id(), err)
+		return diag.Errorf("error waiting for nat service (%s) to become available: %s", d.Id(), err)
 	}
-	if utils.IsResponseEmpty(len(resp.GetNatServices()), "NatService", d.Id()) {
+	if resp.NatServices == nil || utils.IsResponseEmpty(len(*resp.NatServices), "NatService", d.Id()) {
 		d.SetId("")
 		return nil
 	}
-	natService := resp.GetNatServices()[0]
+	natService := (*resp.NatServices)[0]
 
-	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
-		d.SetId(natService.GetNatServiceId())
+	return diag.FromErr(resourceDataAttrSetter(d, func(set AttributeSetter) error {
+		d.SetId(natService.NatServiceId)
 
 		if err := set("nat_service_id", natService.NatServiceId); err != nil {
 			return err
@@ -180,13 +166,13 @@ func resourceOAPINatServiceRead(d *schema.ResourceData, meta interface{}) error 
 			return err
 		}
 
-		public_ips := natService.GetPublicIps()
+		public_ips := natService.PublicIps
 		if err := set("public_ips", getOSCPublicIPs(public_ips)); err != nil {
 			return err
 		}
 
 		if len(public_ips) > 0 {
-			if err := set("public_ip_id", public_ips[0].GetPublicIpId()); err != nil {
+			if err := set("public_ip_id", public_ips[0].PublicIpId); err != nil {
 				return err
 			}
 		} else {
@@ -195,98 +181,76 @@ func resourceOAPINatServiceRead(d *schema.ResourceData, meta interface{}) error 
 			}
 		}
 
-		if err := d.Set("tags", FlattenOAPITagsSDK(natService.GetTags())); err != nil {
+		if err := d.Set("tags", FlattenOAPITagsSDK(natService.Tags)); err != nil {
 			fmt.Printf("[WARN] ERROR TAGS PROBLEME (%s)", err)
 		}
 
 		return nil
-	})
+	}))
 }
 
-func ResourceOutscaleNatServiceUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func ResourceOutscaleNatServiceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+	timeout := d.Timeout(schema.TimeoutUpdate)
 
-	if err := updateOAPITagsSDK(conn, d); err != nil {
-		return err
+	if err := updateOAPITagsSDK(ctx, client, timeout, d); err != nil {
+		return diag.FromErr(err)
 	}
-	return resourceOAPINatServiceRead(d, meta)
+	return resourceOAPINatServiceRead(ctx, d, meta)
 }
 
-func resourceOAPINatServiceDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func resourceOAPINatServiceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
 	timeout := d.Timeout(schema.TimeoutDelete)
 
 	log.Printf("[INFO] Deleting NAT Service: %s\n", d.Id())
-	err := retry.Retry(timeout, func() *retry.RetryError {
-		_, httpResp, err := conn.NatServiceApi.DeleteNatService(context.Background()).DeleteNatServiceRequest(oscgo.DeleteNatServiceRequest{
-			NatServiceId: d.Id(),
-		}).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	_, err := client.DeleteNatService(ctx, osc.DeleteNatServiceRequest{
+		NatServiceId: d.Id(),
+	}, options.WithRetryTimeout(timeout))
 	if err != nil {
-		return fmt.Errorf("error deleting nat service: %s", err)
+		return diag.Errorf("error deleting nat service: %s", err)
 	}
 
-	filterReq := oscgo.ReadNatServicesRequest{
-		Filters: &oscgo.FiltersNatService{NatServiceIds: &[]string{d.Id()}},
+	filterReq := osc.ReadNatServicesRequest{
+		Filters: &osc.FiltersNatService{NatServiceIds: &[]string{d.Id()}},
 	}
 
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{"deleting"},
-		Target:     []string{"deleted", "available"},
-		Refresh:    NGOAPIStateRefreshFunc(conn, filterReq, "failed", timeout),
-		Timeout:    timeout,
-		Delay:      5 * time.Second,
-		MinTimeout: 10 * time.Second,
+		Pending: []string{"deleting"},
+		Target:  []string{"deleted", "available"},
+		Timeout: timeout,
+		Refresh: NGOAPIStateRefreshFunc(ctx, client, filterReq, timeout),
 	}
 
-	_, stateErr := stateConf.WaitForState()
+	_, stateErr := stateConf.WaitForStateContext(ctx)
 	if stateErr != nil {
-		return fmt.Errorf("error waiting for nat service (%s) to delete: %s", d.Id(), stateErr)
+		return diag.Errorf("error waiting for nat service (%s) to delete: %s", d.Id(), stateErr)
 	}
 	return nil
 }
 
 // NGOAPIStateRefreshFunc returns a retry.StateRefreshFunc that is used to watch
 // a NAT Service.
-func NGOAPIStateRefreshFunc(client *oscgo.APIClient, req oscgo.ReadNatServicesRequest, failState string, timeout time.Duration) retry.StateRefreshFunc {
+func NGOAPIStateRefreshFunc(ctx context.Context, client *osc.Client, req osc.ReadNatServicesRequest, timeout time.Duration) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		var resp oscgo.ReadNatServicesResponse
-		err := retry.Retry(timeout, func() *retry.RetryError {
-			var err error
-			rp, httpResp, err := client.NatServiceApi.ReadNatServices(context.Background()).ReadNatServicesRequest(req).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
+		resp, err := client.ReadNatServices(ctx, req, options.WithRetryTimeout(timeout))
 		if err != nil {
-			return nil, "failed", err
+			return nil, "", err
+		}
+		if resp.NatServices == nil {
+			return nil, "", fmt.Errorf("nat service not found")
 		}
 
-		state := "deleted"
-		if resp.HasNatServices() && len(resp.GetNatServices()) > 0 {
-			natServices := resp.GetNatServices()
-			state = natServices[0].GetState()
-
-			if state == failState {
-				return natServices[0], state, fmt.Errorf("failed to reach target state:: %v", state)
-			}
-		}
-
-		return resp, state, nil
+		return resp, string((*resp.NatServices)[0].State), nil
 	}
 }
 
-func getOSCPublicIPs(publicIps []oscgo.PublicIpLight) (res []map[string]interface{}) {
+func getOSCPublicIPs(publicIps []osc.PublicIpLight) (res []map[string]interface{}) {
 	for _, p := range publicIps {
 		res = append(res, map[string]interface{}{
-			"public_ip_id": p.GetPublicIpId(),
-			"public_ip":    p.GetPublicIp(),
+			"public_ip_id": p.PublicIpId,
+			"public_ip":    p.PublicIp,
 		})
 	}
 	return

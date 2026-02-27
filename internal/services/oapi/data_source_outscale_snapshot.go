@@ -2,24 +2,28 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
+	"github.com/samber/lo"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 func DataSourceOutscaleSnapshot() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleSnapshotRead,
+		ReadContext: DataSourceOutscaleSnapshotRead,
 
 		Schema: map[string]*schema.Schema{
-			//selection criteria
+			// selection criteria
 			"filter": dataSourceFiltersSchema(),
 			"permissions_to_create_volume": {
 				Type:     schema.TypeList,
@@ -39,7 +43,7 @@ func DataSourceOutscaleSnapshot() *schema.Resource {
 				},
 			},
 
-			//Computed values returned
+			// Computed values returned
 			"progress": {
 				Type:     schema.TypeInt,
 				Computed: true,
@@ -87,8 +91,8 @@ func DataSourceOutscaleSnapshot() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleSnapshotRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleSnapshotRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	restorableUsers, restorableUsersOk := d.GetOk("permission_to_create_volume")
 	filters, filtersOk := d.GetOk("filter")
@@ -96,102 +100,95 @@ func DataSourceOutscaleSnapshotRead(d *schema.ResourceData, meta interface{}) er
 	owners, ownersOk := d.GetOk("account_id")
 
 	if restorableUsers == false && !filtersOk && snapshotIds == false && !ownersOk {
-		return fmt.Errorf("one of snapshot_ids, filters, restorable_by_user_ids, or owners must be assigned")
+		return diag.Errorf("one of snapshot_ids, filters, restorable_by_user_ids, or owners must be assigned")
 	}
 
-	params := oscgo.ReadSnapshotsRequest{
-		Filters: &oscgo.FiltersSnapshot{},
+	params := osc.ReadSnapshotsRequest{
+		Filters: &osc.FiltersSnapshot{},
 	}
 
 	var err error
-	filter := oscgo.FiltersSnapshot{}
+	filter := osc.FiltersSnapshot{}
 	if restorableUsersOk {
-		filter.SetPermissionsToCreateVolumeAccountIds(utils.InterfaceSliceToStringSlice(restorableUsers.([]interface{})))
-		params.SetFilters(filter)
+		filter.PermissionsToCreateVolumeAccountIds = utils.InterfaceSliceToStringSlicePtr(restorableUsers.([]interface{}))
+		params.Filters = &filter
 	}
 	if filtersOk {
 		params.Filters, err = buildOutscaleOapiSnapshootDataSourceFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 	if ownersOk {
-		params.Filters.SetAccountIds([]string{owners.(string)})
+		params.Filters.AccountIds = &[]string{owners.(string)}
 	}
 	if snapshotIdsOk {
-		params.Filters.SetSnapshotIds([]string{snapshotIds.(string)})
+		params.Filters.SnapshotIds = &[]string{snapshotIds.(string)}
 	}
 
-	var resp oscgo.ReadSnapshotsResponse
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.SnapshotApi.ReadSnapshots(context.Background()).ReadSnapshotsRequest(params).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadSnapshots(ctx, params, options.WithRetryTimeout(5*time.Minute))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	if len(resp.GetSnapshots()) < 1 {
-		return ErrNoResults
+	if resp.Snapshots == nil || len(*resp.Snapshots) < 1 {
+		return diag.FromErr(ErrNoResults)
 	}
-	if len(resp.GetSnapshots()) > 1 {
-		return ErrMultipleResults
+	if len(*resp.Snapshots) > 1 {
+		return diag.FromErr(ErrMultipleResults)
 	}
 
-	snapshot := resp.GetSnapshots()[0]
+	snapshot := (*resp.Snapshots)[0]
 
-	//Single Snapshot found so set to state
-	return snapshotOAPIDescriptionAttributes(d, &snapshot)
+	// Single Snapshot found so set to state
+	return diag.FromErr(snapshotOAPIDescriptionAttributes(d, &snapshot))
 }
 
-func snapshotOAPIDescriptionAttributes(d *schema.ResourceData, snapshot *oscgo.Snapshot) error {
-	d.SetId(snapshot.GetSnapshotId())
-	if err := d.Set("description", snapshot.GetDescription()); err != nil {
+func snapshotOAPIDescriptionAttributes(d *schema.ResourceData, snapshot *osc.Snapshot) error {
+	d.SetId(snapshot.SnapshotId)
+	if err := d.Set("description", ptr.From(snapshot.Description)); err != nil {
 		return err
 	}
-	if err := d.Set("account_alias", snapshot.GetAccountAlias()); err != nil {
+	if err := d.Set("account_alias", ptr.From(snapshot.AccountAlias)); err != nil {
 		return err
 	}
-	if err := d.Set("account_id", snapshot.GetAccountId()); err != nil {
+	if err := d.Set("account_id", snapshot.AccountId); err != nil {
 		return err
 	}
-	if err := d.Set("creation_date", snapshot.GetCreationDate()); err != nil {
+	if err := d.Set("creation_date", from.ISO8601(snapshot.CreationDate)); err != nil {
 		return err
 	}
-	if err := d.Set("progress", snapshot.GetProgress()); err != nil {
+	if err := d.Set("progress", ptr.From(snapshot.Progress)); err != nil {
 		return err
 	}
-	if err := d.Set("snapshot_id", snapshot.GetSnapshotId()); err != nil {
+	if err := d.Set("snapshot_id", snapshot.SnapshotId); err != nil {
 		return err
 	}
-	if err := d.Set("state", snapshot.GetState()); err != nil {
+	if err := d.Set("state", snapshot.State); err != nil {
 		return err
 	}
-	if err := d.Set("volume_id", snapshot.GetVolumeId()); err != nil {
+	if err := d.Set("volume_id", snapshot.VolumeId); err != nil {
 		return err
 	}
-	if err := d.Set("volume_size", snapshot.GetVolumeSize()); err != nil {
+	if err := d.Set("volume_size", snapshot.VolumeSize); err != nil {
 		return err
 	}
 
 	lp := make([]map[string]interface{}, 1)
 	lp[0] = make(map[string]interface{})
-	lp[0]["global_permission"] = snapshot.PermissionsToCreateVolume.GetGlobalPermission()
-	lp[0]["account_ids"] = snapshot.PermissionsToCreateVolume.GetAccountIds()
+	perm := ptr.From(snapshot.PermissionsToCreateVolume)
+	lp[0]["global_permission"] = perm.GlobalPermission
+	lp[0]["account_ids"] = perm.AccountIds
 
 	if err := d.Set("permissions_to_create_volume", lp); err != nil {
 		return err
 	}
 
-	return d.Set("tags", FlattenOAPITagsSDK(snapshot.GetTags()))
+	return d.Set("tags", FlattenOAPITagsSDK(ptr.From(snapshot.Tags)))
 }
 
-func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set) (*oscgo.FiltersSnapshot, error) {
-	var filter oscgo.FiltersSnapshot
+func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set) (*osc.FiltersSnapshot, error) {
+	var filter osc.FiltersSnapshot
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var values []string
@@ -202,63 +199,65 @@ func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set) (*oscgo.Filter
 
 		switch name := m["name"].(string); name {
 		case "account_aliases":
-			filter.SetAccountAliases(values)
+			filter.AccountAliases = &values
 
 		case "account_ids":
-			filter.SetAccountIds(values)
+			filter.AccountIds = &values
 
 		case "descriptions":
-			filter.SetDescriptions(values)
+			filter.Descriptions = &values
 		case "to_creation_date":
-			valDate, err := utils.ParsingfilterToDateFormat("to_creation_date", values[0])
-			if err != nil {
-				return nil, err
+			if values[0] != "" {
+				valDate, err := to.ISO8601ToDate(values[0])
+				if err != nil {
+					return nil, err
+				}
+				filter.ToCreationDate = &valDate
 			}
-			filter.SetToCreationDate(valDate.UTC().Format("2006-01-02T15:04:05.999Z"))
-
 		case "from_creation_date":
-			valDate, err := utils.ParsingfilterToDateFormat("from_creation_date", values[0])
-			if err != nil {
-				return nil, err
+			if values[0] != "" {
+				valDate, err := to.ISO8601FromDate(values[0])
+				if err != nil {
+					return nil, err
+				}
+				filter.FromCreationDate = &valDate
 			}
-			filter.SetFromCreationDate(valDate.UTC().Format("2006-01-02T15:04:05.999Z"))
-
 		case "permissions_to_create_volume_account_ids":
-			filter.SetPermissionsToCreateVolumeAccountIds(values)
+			filter.PermissionsToCreateVolumeAccountIds = &values
 
 		case "permissions_to_create_volume_global_permission":
 			boolean, err := strconv.ParseBool(values[0])
 			if err != nil {
 				return nil, err
 			}
-			filter.SetPermissionsToCreateVolumeGlobalPermission(boolean)
+			filter.PermissionsToCreateVolumeGlobalPermission = &boolean
 
 		case "progresses":
-			filter.SetProgresses(utils.StringSliceToInt32Slice(values))
+			filter.Progresses = new(utils.StringSliceToIntSlice(values))
 
 		case "snapshot_ids":
-			filter.SetSnapshotIds(values)
+			filter.SnapshotIds = &values
 
 		case "states":
-			filter.SetStates(values)
+			filter.States = new(lo.Map(values, func(s string, _ int) osc.SnapshotState { return osc.SnapshotState(s) }))
 
 		case "tag_keys":
-			filter.SetTagKeys(values)
+			filter.TagKeys = &values
 
 		case "tag_values":
-			filter.SetTagValues(values)
+			filter.TagValues = &values
 
 		case "tags":
-			filter.SetTags(values)
+			filter.Tags = &values
 
 		case "volume_ids":
-			filter.SetVolumeIds(values)
+			filter.VolumeIds = &values
 
 		case "volume_sizes":
-			filter.SetVolumeSizes(utils.StringSliceToInt32Slice(values))
+			filter.VolumeSizes = new(utils.StringSliceToIntSlice(values))
 
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(name)
 		}
 	}
 	return &filter, nil

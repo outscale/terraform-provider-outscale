@@ -2,22 +2,21 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/services/oapi/oapihelpers"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 func DataSourceOutscaleVMS() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleVMSRead,
+		ReadContext: DataSourceOutscaleVMSRead,
 
 		Schema: DataSourceOutscaleVMSSchema(),
 	}
@@ -64,64 +63,58 @@ func DataSourceOutscaleVMSSchema() map[string]*schema.Schema {
 	return wholeSchema
 }
 
-func DataSourceOutscaleVMSRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleVMSRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+	timeout := d.Timeout(schema.TimeoutRead)
 
 	filters, filtersOk := d.GetOk("filter")
 	vmID, vmIDOk := d.GetOk("vm_id")
 	var err error
 	if !filtersOk && !vmIDOk {
-		return fmt.Errorf("one of filters, and vm id must be assigned")
+		return diag.Errorf("one of filters, and vm id must be assigned")
 	}
 
 	// Build up search parameters
-	params := oscgo.ReadVmsRequest{}
+	params := osc.ReadVmsRequest{}
 	if filtersOk {
 		params.Filters, err = buildOutscaleDataSourceVMFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 	if vmIDOk {
 		params.Filters.VmIds = &[]string{vmID.(string)}
 	}
 
-	var resp oscgo.ReadVmsResponse
-	err = retry.Retry(30*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := client.VmApi.ReadVms(context.Background()).ReadVmsRequest(params).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadVms(ctx, params, options.WithRetryTimeout(timeout))
 	if err != nil {
-		return fmt.Errorf("error reading the vms %s", err)
+		return diag.Errorf("error reading the vms %s", err)
 	}
 
 	// If no instances were returned, return
-	if !resp.HasVms() {
-		return ErrNoResults
+	if resp.Vms == nil {
+		return diag.FromErr(ErrNoResults)
 	}
 
-	var filteredVms []oscgo.Vm
+	var filteredVms []osc.Vm
 
 	// loop through reservations, and remove terminated instances, populate vm slice
-	for _, res := range resp.GetVms() {
-		if res.GetState() != "terminated" {
+	for _, res := range *resp.Vms {
+		if res.State != "terminated" {
 			filteredVms = append(filteredVms, res)
 		}
 	}
 
 	if len(filteredVms) == 0 {
-		return ErrNoResults
+		return diag.FromErr(ErrNoResults)
 	}
 
 	d.SetId(id.UniqueId())
-	return d.Set("vms", dataSourceOAPIVMS(filteredVms, client))
+
+	return diag.FromErr(d.Set("vms", dataSourceOAPIVMS(ctx, client, timeout, filteredVms)))
 }
 
-func dataSourceOAPIVMS(i []oscgo.Vm, conn *oscgo.APIClient) []map[string]interface{} {
+func dataSourceOAPIVMS(ctx context.Context, client *osc.Client, timeout time.Duration, i []osc.Vm) []map[string]interface{} {
 	vms := make([]map[string]interface{}, len(i))
 	for index, v := range i {
 		vm := make(map[string]interface{})
@@ -134,10 +127,10 @@ func dataSourceOAPIVMS(i []oscgo.Vm, conn *oscgo.APIClient) []map[string]interfa
 		if err := oapiVMDescriptionAttributes(setterFunc, &v); err != nil {
 			log.Fatalf("[DEBUG] oapiVMDescriptionAttributes ERROR %+v", err)
 		}
-		mapsTags, _ := oapihelpers.GetBsuTagsMaps(v, conn)
-		vm["block_device_mappings_created"] = getOscAPIVMBlockDeviceMapping(mapsTags, v.GetBlockDeviceMappings())
+		mapsTags, _ := oapihelpers.GetBsuTagsMaps(ctx, client, timeout, v)
+		vm["block_device_mappings_created"] = getOscAPIVMBlockDeviceMapping(mapsTags, v.BlockDeviceMappings)
 
-		vm["tags"] = FlattenOAPITagsSDK(v.GetTags())
+		vm["tags"] = FlattenOAPITagsSDK(v.Tags)
 		vms[index] = vm
 	}
 	return vms

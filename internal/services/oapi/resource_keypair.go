@@ -12,11 +12,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 )
 
 var (
@@ -39,7 +40,7 @@ type KeypairModel struct {
 }
 
 type resourceKeypair struct {
-	Client *oscgo.APIClient
+	Client *osc.Client
 }
 
 func NewResourceKeypair() resource.Resource {
@@ -54,12 +55,12 @@ func (r *resourceKeypair) Configure(_ context.Context, req resource.ConfigureReq
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected *osc.APIClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *osc.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
 	}
-	r.Client = client.OSCAPI
+	r.Client = client.OSC
 }
 
 func (r *resourceKeypair) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
@@ -86,8 +87,8 @@ func (r *resourceKeypair) ImportState(ctx context.Context, req resource.ImportSt
 
 	var data KeypairModel
 	var timeouts timeouts.Value
-	data.KeypairId = types.StringValue(keypairId)
-	data.Id = types.StringValue(keypairId)
+	data.KeypairId = to.String(keypairId)
+	data.Id = to.String(keypairId)
 	resp.Diagnostics.Append(resp.State.GetAttribute(ctx, path.Root("timeouts"), &timeouts)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -97,9 +98,6 @@ func (r *resourceKeypair) ImportState(ctx context.Context, req resource.ImportSt
 
 	diags := resp.State.Set(ctx, &data)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceKeypair) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -161,27 +159,18 @@ func (r *resourceKeypair) Create(ctx context.Context, req resource.CreateRequest
 	}
 
 	createTimeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
-	createReq := oscgo.CreateKeypairRequest{}
-	createReq.SetKeypairName(data.KeypairName.ValueString())
+	createReq := osc.CreateKeypairRequest{}
+	createReq.KeypairName = data.KeypairName.ValueString()
 
 	if !data.PublicKey.IsUnknown() && !data.PublicKey.IsNull() {
-		createReq.SetPublicKey(data.PublicKey.ValueString())
+		createReq.PublicKey = data.PublicKey.ValueStringPointer()
 	}
 
-	var createResp oscgo.CreateKeypairResponse
-	err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.KeypairApi.CreateKeypair(ctx).CreateKeypairRequest(createReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		createResp = rp
-		return nil
-	})
+	createResp, err := r.Client.CreateKeypair(ctx, createReq, options.WithRetryTimeout(createTimeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to create keypair resource",
@@ -189,24 +178,20 @@ func (r *resourceKeypair) Create(ctx context.Context, req resource.CreateRequest
 		)
 		return
 	}
-	data.RequestId = types.StringValue(*createResp.ResponseContext.RequestId)
-	keypair := createResp.GetKeypair()
+	data.RequestId = to.String(createResp.ResponseContext.RequestId)
+	keypair := *createResp.Keypair
 
-	data.Id = types.StringValue(keypair.GetKeypairId())
-	data.KeypairName = types.StringValue(keypair.GetKeypairName())
-	if createReq.HasPublicKey() {
-		data.PublicKey = types.StringValue(createReq.GetPublicKey())
-	}
+	data.Id = to.String(keypair.KeypairId)
+	data.KeypairName = to.String(keypair.KeypairName)
+	data.PublicKey = to.String(createReq.PublicKey)
 
-	diag := createOAPITagsFW(ctx, r.Client, data.Tags, keypair.GetKeypairId())
+	diag := createOAPITagsFW(ctx, r.Client, createTimeout, data.Tags, *keypair.KeypairId)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
 
-	data.PrivateKey = types.StringValue(keypair.GetPrivateKey())
-	if createReq.HasPublicKey() {
-		data.PublicKey = types.StringValue(createReq.GetPublicKey())
-	}
+	data.PrivateKey = to.String(keypair.PrivateKey)
+
 	err = setKeypairState(ctx, r, &data)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -216,9 +201,6 @@ func (r *resourceKeypair) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceKeypair) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -242,9 +224,6 @@ func (r *resourceKeypair) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceKeypair) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -255,7 +234,12 @@ func (r *resourceKeypair) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	diag := updateOAPITagsFW(ctx, r.Client, stateData.Tags, planData.Tags, stateData.KeypairId.ValueString())
+	timeout, diags := planData.Timeouts.Update(ctx, UpdateDefaultTimeout)
+	if fwhelpers.CheckDiags(resp, diags) {
+		return
+	}
+
+	diag := updateOAPITagsFW(ctx, r.Client, timeout, stateData.Tags, planData.Tags, stateData.KeypairId.ValueString())
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
@@ -270,9 +254,6 @@ func (r *resourceKeypair) Update(ctx context.Context, req resource.UpdateRequest
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &stateData)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceKeypair) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -284,33 +265,25 @@ func (r *resourceKeypair) Delete(ctx context.Context, req resource.DeleteRequest
 	}
 
 	deleteTimeout, diags := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
-	delReq := oscgo.DeleteKeypairRequest{
+	delReq := osc.DeleteKeypairRequest{
 		KeypairId: data.KeypairId.ValueStringPointer(),
 	}
 
-	err := retry.RetryContext(ctx, deleteTimeout, func() *retry.RetryError {
-		_, httpResp, err := r.Client.KeypairApi.DeleteKeypair(ctx).DeleteKeypairRequest(delReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	_, err := r.Client.DeleteKeypair(ctx, delReq, options.WithRetryTimeout(deleteTimeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Delete keypair",
 			"Error: "+err.Error(),
 		)
-		return
 	}
 }
 
 func setKeypairState(ctx context.Context, r *resourceKeypair, data *KeypairModel) error {
-	keypairFilters := oscgo.FiltersKeypair{
+	keypairFilters := osc.FiltersKeypair{
 		KeypairNames: &[]string{data.KeypairName.ValueString()},
 	}
 
@@ -319,34 +292,29 @@ func setKeypairState(ctx context.Context, r *resourceKeypair, data *KeypairModel
 		return fmt.Errorf("unable to parse 'keypair' read timeout value: %v", diags.Errors())
 	}
 
-	readReq := oscgo.ReadKeypairsRequest{
+	readReq := osc.ReadKeypairsRequest{
 		Filters: &keypairFilters,
 	}
-	var readResp oscgo.ReadKeypairsResponse
-	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.KeypairApi.ReadKeypairs(ctx).ReadKeypairsRequest(readReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		readResp = rp
-		return nil
-	})
+	readResp, err := r.Client.ReadKeypairs(ctx, readReq, options.WithRetryTimeout(readTimeout))
 	if err != nil {
 		return err
 	}
-	if len(readResp.GetKeypairs()) == 0 {
+	if readResp.Keypairs == nil || len(*readResp.Keypairs) == 0 {
 		return ErrResourceEmpty
 	}
 
-	keypair := readResp.GetKeypairs()[0]
-	tags, diag := flattenOAPITagsFW(ctx, keypair.GetTags())
-	if diag.HasError() {
-		return fmt.Errorf("unable to flatten tags: %v", diags.Errors())
+	keypair := (*readResp.Keypairs)[0]
+	if keypair.Tags != nil {
+		tags, diag := flattenOAPITagsFW(ctx, *keypair.Tags)
+		if diag.HasError() {
+			return fmt.Errorf("unable to flatten tags: %v", diags.Errors())
+		}
+		data.Tags = tags
 	}
-	data.Tags = tags
-	data.KeypairFingerprint = types.StringValue(keypair.GetKeypairFingerprint())
-	data.KeypairName = types.StringValue(keypair.GetKeypairName())
-	data.KeypairType = types.StringValue(keypair.GetKeypairType())
-	data.KeypairId = types.StringValue(keypair.GetKeypairId())
+	data.KeypairFingerprint = to.String(ptr.From(keypair.KeypairFingerprint))
+	data.KeypairName = to.String(ptr.From(keypair.KeypairName))
+	data.KeypairType = to.String(ptr.From(keypair.KeypairType))
+	data.KeypairId = to.String(keypair.KeypairId)
+
 	return nil
 }

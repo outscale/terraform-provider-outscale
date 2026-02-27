@@ -5,19 +5,23 @@ import (
 	"log"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
+	"github.com/samber/lo"
 	"github.com/spf13/cast"
 
 	"github.com/davecgh/go-spew/spew"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 func DataSourceOutscaleVolume() *schema.Resource {
 	return &schema.Resource{
-		Read: datasourceOAPIVolumeRead,
+		ReadContext: datasourceOAPIVolumeRead,
 
 		Schema: map[string]*schema.Schema{
 			// Arguments
@@ -92,92 +96,82 @@ func DataSourceOutscaleVolume() *schema.Resource {
 	}
 }
 
-func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func datasourceOAPIVolumeRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 	volumeIds, VolumeIdsOk := d.GetOk("volume_id")
 
-	params := oscgo.ReadVolumesRequest{
-		Filters: &oscgo.FiltersVolume{},
+	params := osc.ReadVolumesRequest{
+		Filters: &osc.FiltersVolume{},
 	}
 	if VolumeIdsOk {
-		params.Filters.SetVolumeIds([]string{volumeIds.(string)})
+		params.Filters.VolumeIds = &[]string{volumeIds.(string)}
 	}
 
 	var err error
 	if filtersOk {
 		params.Filters, err = buildOutscaleOSCAPIDataSourceVolumesFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	var resp oscgo.ReadVolumesResponse
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(params).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
-
+	resp, err := client.ReadVolumes(ctx, params, options.WithRetryTimeout(5*time.Minute))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	log.Printf("Found These Volumes %s", spew.Sdump(resp.Volumes))
 
-	filteredVolumes := resp.GetVolumes()[:]
+	filteredVolumes := ptr.From(resp.Volumes)[:]
 
-	var volume oscgo.Volume
+	var volume osc.Volume
 	if len(filteredVolumes) < 1 {
-		return ErrNoResults
+		return diag.FromErr(ErrNoResults)
 	}
 
 	if len(filteredVolumes) > 1 {
-		return ErrMultipleResults
+		return diag.FromErr(ErrMultipleResults)
 	}
 
 	// Query returned single result.
 	volume = filteredVolumes[0]
-	log.Printf("[DEBUG] outscale_volume - Single Volume found: %s", volume.GetVolumeId())
-	return volumeOAPIDescriptionAttributes(d, &volume)
-
+	log.Printf("[DEBUG] outscale_volume - Single Volume found: %s", volume.VolumeId)
+	return diag.FromErr(volumeOAPIDescriptionAttributes(d, &volume))
 }
 
-func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oscgo.Volume) error {
-	if err := d.Set("volume_id", volume.GetVolumeId()); err != nil {
+func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *osc.Volume) error {
+	if err := d.Set("volume_id", volume.VolumeId); err != nil {
 		return err
 	}
-	if err := d.Set("creation_date", volume.GetCreationDate()); err != nil {
+	if err := d.Set("creation_date", from.ISO8601(volume.CreationDate)); err != nil {
 		return err
 	}
-	if err := d.Set("subregion_name", volume.GetSubregionName()); err != nil {
+	if err := d.Set("subregion_name", volume.SubregionName); err != nil {
 		return err
 	}
-	if err := d.Set("size", volume.GetSize()); err != nil {
+	if err := d.Set("size", volume.Size); err != nil {
 		return err
 	}
-	if err := d.Set("snapshot_id", volume.GetSnapshotId()); err != nil {
+	if err := d.Set("snapshot_id", ptr.From(volume.SnapshotId)); err != nil {
 		return err
 	}
-	if err := d.Set("volume_type", volume.GetVolumeType()); err != nil {
+	if err := d.Set("volume_type", volume.VolumeType); err != nil {
 		return err
 	}
-	if err := d.Set("state", volume.GetState()); err != nil {
+	if err := d.Set("state", volume.State); err != nil {
 		return err
 	}
-	if err := d.Set("volume_id", volume.GetVolumeId()); err != nil {
+	if err := d.Set("volume_id", volume.VolumeId); err != nil {
 		return err
 	}
-	if err := d.Set("iops", getIops(volume.GetVolumeType(), volume.GetIops())); err != nil {
+	if err := d.Set("iops", getIops(volume.VolumeType, volume.Iops)); err != nil {
 		return err
 	}
 
 	if volume.LinkedVolumes != nil {
-		if err := d.Set("linked_volumes", getLinkedVolumes(volume.GetLinkedVolumes())); err != nil {
+		if err := d.Set("linked_volumes", getLinkedVolumes(volume.LinkedVolumes)); err != nil {
 			return err
 		}
 	} else {
@@ -194,8 +188,8 @@ func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oscgo.Volum
 		}
 	}
 
-	if volume.GetTags() != nil {
-		if err := d.Set("tags", FlattenOAPITagsSDK(volume.GetTags())); err != nil {
+	if volume.Tags != nil {
+		if err := d.Set("tags", FlattenOAPITagsSDK(volume.Tags)); err != nil {
 			return err
 		}
 	} else {
@@ -209,12 +203,12 @@ func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oscgo.Volum
 		}
 	}
 
-	d.SetId(volume.GetVolumeId())
+	d.SetId(volume.VolumeId)
 	return nil
 }
 
-func buildOutscaleOSCAPIDataSourceVolumesFilters(set *schema.Set) (*oscgo.FiltersVolume, error) {
-	var filters oscgo.FiltersVolume
+func buildOutscaleOSCAPIDataSourceVolumesFilters(set *schema.Set) (*osc.FiltersVolume, error) {
+	var filters osc.FiltersVolume
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -224,37 +218,45 @@ func buildOutscaleOSCAPIDataSourceVolumesFilters(set *schema.Set) (*oscgo.Filter
 
 		switch name := m["name"].(string); name {
 		case "creation_dates":
-			filters.SetCreationDates(filterValues)
+			dates, err := utils.StringSliceToTimeSlice(filterValues, "creation_dates")
+			if err != nil {
+				return nil, err
+			}
+			filters.CreationDates = &dates
 		case "snapshot_ids":
-			filters.SetSnapshotIds(filterValues)
+			filters.SnapshotIds = &filterValues
 		case "subregion_names":
-			filters.SetSubregionNames(filterValues)
+			filters.SubregionNames = &filterValues
 		case "tags":
-			filters.SetTags(filterValues)
+			filters.Tags = &filterValues
 		case "tag_keys":
-			filters.SetTagKeys(filterValues)
+			filters.TagKeys = &filterValues
 		case "tag_values":
-			filters.SetTagValues(filterValues)
+			filters.TagValues = &filterValues
 		case "volume_ids":
-			filters.SetVolumeIds(filterValues)
+			filters.VolumeIds = &filterValues
 		case "volume_sizes":
-			filters.SetVolumeSizes(utils.StringSliceToInt32Slice(filterValues))
+			filters.VolumeSizes = new(utils.StringSliceToIntSlice(filterValues))
 		case "volume_types":
-			filters.SetVolumeTypes(filterValues)
+			filters.VolumeTypes = new(lo.Map(filterValues, func(s string, _ int) osc.VolumeType { return osc.VolumeType(s) }))
 		case "link_volume_vm_ids":
-			filters.SetLinkVolumeVmIds(filterValues)
+			filters.LinkVolumeVmIds = &filterValues
 		case "volume_states":
-			filters.SetVolumeStates(filterValues)
+			filters.VolumeStates = new(lo.Map(filterValues, func(s string, _ int) osc.VolumeState { return osc.VolumeState(s) }))
 		case "link_volume_link_states":
-			filters.SetLinkVolumeLinkStates(filterValues)
+			filters.LinkVolumeLinkStates = new(lo.Map(filterValues, func(s string, _ int) osc.LinkedVolumeState { return osc.LinkedVolumeState(s) }))
 		case "link_volume_delete_on_vm_deletion":
-			filters.SetLinkVolumeDeleteOnVmDeletion(cast.ToBool(filterValues))
+			filters.LinkVolumeDeleteOnVmDeletion = new(cast.ToBool(filterValues))
 		case "link_volume_link_dates":
-			filters.SetLinkVolumeLinkDates(filterValues)
+			dates, err := utils.StringSliceToTimeSlice(filterValues, "link_volume_link_dates")
+			if err != nil {
+				return nil, err
+			}
+			filters.LinkVolumeLinkDates = &dates
 		case "link_volume_device_names":
-			filters.SetLinkVolumeDeviceNames(filterValues)
+			filters.LinkVolumeDeviceNames = &filterValues
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(name)
 		}
 	}
 	return &filters, nil

@@ -2,20 +2,22 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
+	"github.com/samber/lo"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceOutscaleNatService() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleNatServiceRead,
+		ReadContext: DataSourceOutscaleNatServiceRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -61,89 +63,81 @@ func DataSourceOutscaleNatService() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleNatServiceRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleNatServiceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 	natGatewayID, natGatewayIDOK := d.GetOk("nat_service_id")
 
 	if !filtersOk && !natGatewayIDOK {
-		return fmt.Errorf("filters, or owner must be assigned, or nat_service_id must be provided")
+		return diag.Errorf("filters, or owner must be assigned, or nat_service_id must be provided")
 	}
 
 	var err error
-	params := oscgo.ReadNatServicesRequest{}
+	params := osc.ReadNatServicesRequest{}
 
 	if filtersOk {
 		params.Filters, err = buildOutscaleNatServiceDataSourceFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 	if natGatewayIDOK && natGatewayID.(string) != "" {
-		filter := oscgo.FiltersNatService{}
-		filter.SetNatServiceIds([]string{natGatewayID.(string)})
-		params.SetFilters(filter)
+		filter := osc.FiltersNatService{}
+		filter.NatServiceIds = &[]string{natGatewayID.(string)}
+		params.Filters = &filter
 	}
 
-	var resp oscgo.ReadNatServicesResponse
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.NatServiceApi.ReadNatServices(context.Background()).ReadNatServicesRequest(params).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadNatServices(ctx, params, options.WithRetryTimeout(5*time.Minute))
 	if err != nil {
 		errString := err.Error()
 
-		return fmt.Errorf("error reading nat service (%s)", errString)
+		return diag.Errorf("error reading nat service (%s)", errString)
 	}
 
-	if len(resp.GetNatServices()) < 1 {
-		return ErrNoResults
+	if resp.NatServices == nil || len(*resp.NatServices) < 1 {
+		return diag.FromErr(ErrNoResults)
 	}
 
-	if len(resp.GetNatServices()) > 1 {
-		return ErrMultipleResults
+	if len(*resp.NatServices) > 1 {
+		return diag.FromErr(ErrMultipleResults)
 	}
 
-	return ngOAPIDescriptionAttributes(d, resp.GetNatServices()[0])
+	return diag.FromErr(ngOAPIDescriptionAttributes(d, (*resp.NatServices)[0]))
 }
 
 // populate the numerous fields that the image description returns.
-func ngOAPIDescriptionAttributes(d *schema.ResourceData, ng oscgo.NatService) error {
-	d.SetId(ng.GetNatServiceId())
+func ngOAPIDescriptionAttributes(d *schema.ResourceData, ng osc.NatService) error {
+	d.SetId(ng.NatServiceId)
 
-	if err := d.Set("nat_service_id", ng.GetNatServiceId()); err != nil {
+	if err := d.Set("nat_service_id", ng.NatServiceId); err != nil {
 		return err
 	}
 
-	if ng.GetState() != "" {
+	if ng.State != "" {
 		if err := d.Set("state", ng.State); err != nil {
 			return err
 		}
 	}
-	if ng.GetSubnetId() != "" {
-		if err := d.Set("subnet_id", ng.GetSubnetId()); err != nil {
+	if ng.SubnetId != "" {
+		if err := d.Set("subnet_id", ng.SubnetId); err != nil {
 			return err
 		}
 	}
-	if ng.GetNetId() != "" {
-		if err := d.Set("net_id", ng.GetNetId()); err != nil {
+	if ng.NetId != "" {
+		if err := d.Set("net_id", ng.NetId); err != nil {
 			return err
 		}
 	}
 
-	addresses := make([]map[string]interface{}, len(ng.GetPublicIps()))
+	addresses := make([]map[string]interface{}, len(ng.PublicIps))
 
-	for k, v := range ng.GetPublicIps() {
+	for k, v := range ng.PublicIps {
 		address := make(map[string]interface{})
-		if v.GetPublicIpId() != "" {
+		if ptr.From(v.PublicIpId) != "" {
 			address["public_ip_id"] = v.PublicIpId
 		}
-		if v.GetPublicIp() != "" {
+		if ptr.From(v.PublicIp) != "" {
 			address["public_ip"] = v.PublicIp
 		}
 		addresses[k] = address
@@ -151,15 +145,15 @@ func ngOAPIDescriptionAttributes(d *schema.ResourceData, ng oscgo.NatService) er
 	if err := d.Set("public_ips", addresses); err != nil {
 		return err
 	}
-	if err := d.Set("tags", FlattenOAPITagsSDK(ng.GetTags())); err != nil {
+	if err := d.Set("tags", FlattenOAPITagsSDK(ng.Tags)); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func buildOutscaleNatServiceDataSourceFilters(set *schema.Set) (*oscgo.FiltersNatService, error) {
-	var filters oscgo.FiltersNatService
+func buildOutscaleNatServiceDataSourceFilters(set *schema.Set) (*osc.FiltersNatService, error) {
+	var filters osc.FiltersNatService
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -169,21 +163,21 @@ func buildOutscaleNatServiceDataSourceFilters(set *schema.Set) (*oscgo.FiltersNa
 
 		switch name := m["name"].(string); name {
 		case "nat_service_ids":
-			filters.SetNatServiceIds(filterValues)
+			filters.NatServiceIds = &filterValues
 		case "net_ids":
-			filters.SetNetIds(filterValues)
+			filters.NetIds = &filterValues
 		case "states":
-			filters.SetStates(filterValues)
+			filters.States = new(lo.Map(filterValues, func(s string, _ int) osc.NatServiceState { return osc.NatServiceState(s) }))
 		case "subnet_ids":
-			filters.SetSubnetIds(filterValues)
+			filters.SubnetIds = &filterValues
 		case "tag_keys":
-			filters.SetTagKeys(filterValues)
+			filters.TagKeys = &filterValues
 		case "tag_values":
-			filters.SetTagValues(filterValues)
+			filters.TagValues = &filterValues
 		case "tags":
-			filters.SetTags(filterValues)
+			filters.Tags = &filterValues
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(name)
 		}
 	}
 	return &filters, nil

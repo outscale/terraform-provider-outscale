@@ -2,20 +2,20 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 func DataSourceOutscaleApiAccessRules() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleApiAccessRulesRead,
+		ReadContext: DataSourceOutscaleApiAccessRulesRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"api_access_rules": {
@@ -57,56 +57,48 @@ func DataSourceOutscaleApiAccessRules() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleApiAccessRulesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleApiAccessRulesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
-	req := oscgo.ReadApiAccessRulesRequest{}
+	req := osc.ReadApiAccessRulesRequest{}
 	if filtersOk {
 		filterParams, err := buildOutscaleApiAccessRuleFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		req.Filters = filterParams
 	}
 
-	var resp oscgo.ReadApiAccessRulesResponse
-	err := retry.Retry(120*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.ApiAccessRuleApi.ReadApiAccessRules(context.Background()).ReadApiAccessRulesRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
-
+	resp, err := client.ReadApiAccessRules(ctx, req, options.WithRetryTimeout(120*time.Second))
 	if err != nil {
-		return fmt.Errorf("error reading api access rule id (%s)", utils.GetErrorResponse(err))
+		return diag.Errorf("error reading api access rule id (%s)", err)
 	}
-	apiAccessRules := resp.GetApiAccessRules()[:]
+	apiAccessRules := ptr.From(resp.ApiAccessRules)[:]
 	if len(apiAccessRules) < 1 {
 		d.SetId("")
-		return ErrNoResults
+		return diag.FromErr(ErrNoResults)
 	}
 	blockRules := make([]map[string]interface{}, len(apiAccessRules))
 	for key, val := range apiAccessRules {
 		rule := make(map[string]interface{})
 
-		rule["api_access_rule_id"] = val.GetApiAccessRuleId()
-		if val.HasCaIds() {
-			rule["ca_ids"] = val.GetCaIds()
+		rule["api_access_rule_id"] = val.ApiAccessRuleId
+		if val.CaIds != nil {
+			rule["ca_ids"] = val.CaIds
 		}
-		if val.HasCns() {
-			rule["cns"] = val.GetCns()
+		if val.Cns != nil {
+			rule["cns"] = val.Cns
 		}
-		if val.HasIpRanges() {
-			rule["ip_ranges"] = val.GetIpRanges()
+		if val.IpRanges != nil {
+			rule["ip_ranges"] = val.IpRanges
 		}
-		if val.HasDescription() {
-			rule["description"] = val.GetDescription()
+		if val.Description != nil {
+			rule["description"] = val.Description
 		}
 		blockRules[key] = rule
 	}
 	d.SetId(id.UniqueId())
-	return d.Set("api_access_rules", blockRules)
+
+	return diag.FromErr(d.Set("api_access_rules", blockRules))
 }

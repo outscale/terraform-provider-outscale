@@ -2,20 +2,21 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 )
 
 func DataSourceUserGroupsPerUser() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceUserGroupsPerUserRead,
+		ReadContext: DataSourceUserGroupsPerUserRead,
 		Schema: map[string]*schema.Schema{
 			"user_name": {
 				Type:     schema.TypeString,
@@ -62,43 +63,36 @@ func DataSourceUserGroupsPerUser() *schema.Resource {
 	}
 }
 
-func DataSourceUserGroupsPerUserRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceUserGroupsPerUserRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
-	req := oscgo.NewReadUserGroupsPerUserRequest(d.Get("user_name").(string))
+	req := osc.ReadUserGroupsPerUserRequest{
+		UserName: d.Get("user_name").(string),
+	}
 	if userPath := d.Get("user_path").(string); userPath != "" {
-		req.SetUserPath(userPath)
+		req.UserPath = &userPath
 	}
-	var resp oscgo.ReadUserGroupsPerUserResponse
-	err := retry.Retry(2*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.UserGroupApi.ReadUserGroupsPerUser(context.Background()).ReadUserGroupsPerUserRequest(*req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
-
+	resp, err := client.ReadUserGroupsPerUser(ctx, req, options.WithRetryTimeout(2*time.Minute))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	if _, ok := resp.GetUserGroupsOk(); !ok {
-		return fmt.Errorf("unable to find user groups")
+	if resp.UserGroups == nil {
+		return diag.Errorf("unable to find user groups")
 	}
 	d.SetId(id.UniqueId())
-	userGps := resp.GetUserGroups()
+	userGps := ptr.From(resp.UserGroups)
 	userGroups := make([]map[string]interface{}, len(userGps))
 
 	for i, v := range userGps {
 		userGroup := make(map[string]interface{})
-		userGroup["user_group_name"] = v.GetName()
-		userGroup["user_group_id"] = v.GetUserGroupId()
-		userGroup["path"] = v.GetPath()
-		userGroup["orn"] = v.GetOrn()
-		userGroup["creation_date"] = v.GetCreationDate()
-		userGroup["last_modification_date"] = v.GetLastModificationDate()
+		userGroup["user_group_name"] = v.Name
+		userGroup["user_group_id"] = v.UserGroupId
+		userGroup["path"] = v.Path
+		userGroup["orn"] = v.Orn
+		userGroup["creation_date"] = from.ISO8601(v.CreationDate)
+		userGroup["last_modification_date"] = from.ISO8601(v.LastModificationDate)
 		userGroups[i] = userGroup
 	}
-	return d.Set("user_groups", userGroups)
+	return diag.FromErr(d.Set("user_groups", userGroups))
 }

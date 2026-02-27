@@ -12,9 +12,6 @@ func TestAccNet_WithVirtualGateway_basic(t *testing.T) {
 	resourceName := "outscale_virtual_gateway.foo"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() {
-			testacc.PreCheck(t)
-		},
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -38,9 +35,6 @@ func TestAccNet_WithVirtualGateway_basic(t *testing.T) {
 func TestAccOthers_VirtualGatewayChangeTags(t *testing.T) {
 	resourceName := "outscale_virtual_gateway.outscale_virtual_gateway"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() {
-			testacc.PreCheck(t)
-		},
 		Providers: testacc.SDKProviders,
 		Steps: []resource.TestStep{
 			{
@@ -65,7 +59,6 @@ func TestAccOthres_ImportVirtualGateway_Basic(t *testing.T) {
 	resourceName := "outscale_virtual_gateway.foo"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{

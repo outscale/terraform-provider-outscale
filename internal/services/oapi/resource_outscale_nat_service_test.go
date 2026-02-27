@@ -10,7 +10,6 @@ import (
 func TestAccNet_WithNatService_basic(t *testing.T) {
 	resourceName := "outscale_nat_service.nat_service"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{

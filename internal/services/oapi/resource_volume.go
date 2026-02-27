@@ -19,11 +19,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	"github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
+
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/modifyplans"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 	"github.com/samber/lo"
 )
 
@@ -60,7 +64,7 @@ type BlockLinkedVolumes struct {
 }
 
 type resourceVolume struct {
-	Client *osc.APIClient
+	Client *osc.Client
 }
 
 func NewResourceVolume() resource.Resource {
@@ -75,12 +79,12 @@ func (r *resourceVolume) Configure(_ context.Context, req resource.ConfigureRequ
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected *osc.APIClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *osc.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
 	}
-	r.Client = client.OSCAPI
+	r.Client = client.OSC
 }
 
 func (r *resourceVolume) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
@@ -138,8 +142,8 @@ func (r *resourceVolume) ImportState(ctx context.Context, req resource.ImportSta
 
 	var data VolumeModel
 	var timeouts timeouts.Value
-	data.VolumeId = types.StringValue(volumeId)
-	data.Id = types.StringValue(volumeId)
+	data.VolumeId = to.String(volumeId)
+	data.Id = to.String(volumeId)
 	resp.Diagnostics.Append(resp.State.GetAttribute(ctx, path.Root("timeouts"), &timeouts)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -150,9 +154,6 @@ func (r *resourceVolume) ImportState(ctx context.Context, req resource.ImportSta
 
 	diags := resp.State.Set(ctx, &data)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceVolume) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -257,32 +258,25 @@ func (r *resourceVolume) Create(ctx context.Context, req resource.CreateRequest,
 	}
 
 	createTimeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
-	createReq := osc.NewCreateVolumeRequest(data.SubregionName.ValueString())
-	createReq.SetVolumeType(data.VolumeType.ValueString())
+	createReq := osc.CreateVolumeRequest{
+		SubregionName: data.SubregionName.ValueString(),
+	}
+	createReq.VolumeType = new(osc.VolumeType(data.VolumeType.ValueString()))
 	if !data.Size.IsUnknown() && !data.Size.IsNull() {
-		createReq.SetSize(data.Size.ValueInt32())
+		createReq.Size = new(int(data.Size.ValueInt32()))
 	}
 	if !data.Iops.IsUnknown() && !data.Iops.IsNull() {
-		createReq.SetIops(data.Iops.ValueInt32())
+		createReq.Iops = new(int(data.Iops.ValueInt32()))
 	}
 	if !data.SnapshotId.IsUnknown() && !data.SnapshotId.IsNull() {
-		createReq.SetSnapshotId(data.SnapshotId.ValueString())
+		createReq.SnapshotId = data.SnapshotId.ValueStringPointer()
 	}
 
-	var createResp osc.CreateVolumeResponse
-	err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.VolumeApi.CreateVolume(ctx).CreateVolumeRequest(*createReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		createResp = rp
-		return nil
-	})
+	createResp, err := r.Client.CreateVolume(ctx, createReq, options.WithRetryTimeout(createTimeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to create volume resource",
@@ -290,23 +284,21 @@ func (r *resourceVolume) Create(ctx context.Context, req resource.CreateRequest,
 		)
 		return
 	}
-	data.RequestId = types.StringValue(*createResp.ResponseContext.RequestId)
-	volumeId := createResp.Volume.GetVolumeId()
-	data.VolumeId = types.StringValue(volumeId)
-	data.Id = types.StringValue(volumeId)
+	data.RequestId = to.String(*createResp.ResponseContext.RequestId)
+	volumeId := createResp.Volume.VolumeId
+	data.VolumeId = to.String(volumeId)
+	data.Id = to.String(volumeId)
 
-	diag := createOAPITagsFW(ctx, r.Client, data.Tags, volumeId)
+	diag := createOAPITagsFW(ctx, r.Client, createTimeout, data.Tags, volumeId)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
 
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{"creating"},
-		Target:     []string{"available"},
-		Refresh:    getVolumeStateRefreshFunc(ctx, r.Client, createTimeout, volumeId),
-		Timeout:    createTimeout,
-		Delay:      2 * time.Second,
-		MinTimeout: 3 * time.Second,
+		Pending: []string{"creating"},
+		Target:  []string{"available"},
+		Timeout: createTimeout,
+		Refresh: getVolumeStateRefreshFunc(ctx, r.Client, createTimeout, volumeId),
 	}
 	if _, err = stateConf.WaitForStateContext(ctx); err != nil {
 		resp.Diagnostics.AddError(
@@ -325,9 +317,6 @@ func (r *resourceVolume) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceVolume) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -351,9 +340,6 @@ func (r *resourceVolume) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *resourceVolume) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -365,50 +351,42 @@ func (r *resourceVolume) Update(ctx context.Context, req resource.UpdateRequest,
 	}
 
 	updateTimeout, diags := planData.Timeouts.Update(ctx, UpdateDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
 	volumeId := stateData.VolumeId.ValueString()
 	stateData.TerminationSnapshotName = planData.TerminationSnapshotName
 
-	diag := updateOAPITagsFW(ctx, r.Client, stateData.Tags, planData.Tags, volumeId)
+	diag := updateOAPITagsFW(ctx, r.Client, updateTimeout, stateData.Tags, planData.Tags, volumeId)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
 
-	updateReq := osc.NewUpdateVolumeRequest(volumeId)
+	updateReq := osc.UpdateVolumeRequest{
+		VolumeId: volumeId,
+	}
 	shouldUpdate := false
 
 	if fwhelpers.IsSet(planData.Size) && !planData.Size.Equal(stateData.Size) {
-		updateReq.Size = planData.Size.ValueInt32Pointer()
+		updateReq.Size = new(int(planData.Size.ValueInt32()))
 		shouldUpdate = true
 	}
 
 	// When updating a gp2 volume to io1 while keeping the iops value at 100 (default gp2 iops value),
 	// Terraform will not detect the change between config and state
 	if fwhelpers.IsSet(planData.Iops) && (!planData.Iops.Equal(stateData.Iops) || (planData.VolumeType.ValueString() == "io1" && stateData.VolumeType.ValueString() != "io1")) {
-		updateReq.Iops = planData.Iops.ValueInt32Pointer()
+		updateReq.Iops = new(int(planData.Iops.ValueInt32()))
 		shouldUpdate = true
 	}
 
 	if fwhelpers.IsSet(planData.VolumeType) && !planData.VolumeType.Equal(stateData.VolumeType) {
-		updateReq.VolumeType = planData.VolumeType.ValueStringPointer()
+		updateReq.VolumeType = new(osc.VolumeType(planData.VolumeType.ValueString()))
 		shouldUpdate = true
 	}
 
 	if shouldUpdate {
-		var volume osc.UpdateVolumeResponse
-		err := retry.RetryContext(ctx, updateTimeout, func() *retry.RetryError {
-			rp, httpResp, err := r.Client.VolumeApi.UpdateVolume(ctx).UpdateVolumeRequest(*updateReq).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			volume = rp
-			stateData.RequestId = types.StringValue(*rp.ResponseContext.RequestId)
-			return nil
-		})
+		volume, err := r.Client.UpdateVolume(ctx, updateReq, options.WithRetryTimeout(updateTimeout))
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Unable to update volume resource",
@@ -417,8 +395,8 @@ func (r *resourceVolume) Update(ctx context.Context, req resource.UpdateRequest,
 			return
 		}
 
-		if volume.GetVolume().TaskId.IsSet() {
-			err := WaitForVolumeTasks(ctx, updateTimeout, []string{*volume.GetVolume().TaskId.Get()}, r.Client)
+		if volume.Volume.TaskId != nil {
+			err := WaitForVolumeTasks(ctx, updateTimeout, []string{*volume.Volume.TaskId}, r.Client)
 			if err != nil {
 				resp.Diagnostics.AddError(
 					"Error waiting for volume update task to complete",
@@ -439,54 +417,43 @@ func (r *resourceVolume) Update(ctx context.Context, req resource.UpdateRequest,
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &stateData)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
-func WaitForVolumeTasks(ctx context.Context, timeout time.Duration, tasksIds []string, client *osc.APIClient) error {
+func WaitForVolumeTasks(ctx context.Context, timeout time.Duration, tasksIds []string, client *osc.Client) error {
 	failed := []string{"failed", "canceled"}
 	running := []string{"pending", "active"}
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{"running"},
 		Target:  []string{"finished"},
+		Timeout: timeout,
 		Refresh: func() (any, string, error) {
-			var resp osc.ReadVolumeUpdateTasksResponse
-
-			err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-				rp, httpResp, err := client.VolumeApi.ReadVolumeUpdateTasks(ctx).ReadVolumeUpdateTasksRequest(osc.ReadVolumeUpdateTasksRequest{
-					Filters: &osc.FiltersUpdateVolumeTask{
-						TaskIds: &tasksIds,
-					},
-				}).Execute()
-				if err != nil {
-					return utils.CheckThrottling(httpResp, err)
-				}
-				resp = rp
-				return nil
-			})
+			req := osc.ReadVolumeUpdateTasksRequest{
+				Filters: &osc.FiltersUpdateVolumeTask{
+					TaskIds: &tasksIds,
+				},
+			}
+			resp, err := client.ReadVolumeUpdateTasks(ctx, req)
 			if err != nil {
 				return nil, "", err
 			}
-			if len(resp.GetVolumeUpdateTasks()) == 0 {
+			if resp.VolumeUpdateTasks == nil || len(*resp.VolumeUpdateTasks) == 0 {
 				return nil, "", fmt.Errorf("tasks %v not found", tasksIds)
 			}
 
-			if lo.ContainsBy(resp.GetVolumeUpdateTasks(), func(task osc.VolumeUpdateTask) bool {
-				return lo.Contains(running, task.GetState())
+			if lo.ContainsBy(*resp.VolumeUpdateTasks, func(task osc.VolumeUpdateTask) bool {
+				return lo.Contains(running, *task.State)
 			}) {
 				return resp, "running", nil
 			}
 
-			failedTasks := lo.FilterMap(resp.GetVolumeUpdateTasks(), func(task osc.VolumeUpdateTask, _ int) (error, bool) {
-				return fmt.Errorf("task (%s) did not complete and ended with state: %s - comment: %s", task.GetTaskId(), task.GetState(), task.GetComment()), lo.Contains(failed, task.GetState())
+			failedTasks := lo.FilterMap(*resp.VolumeUpdateTasks, func(task osc.VolumeUpdateTask, _ int) (error, bool) {
+				return fmt.Errorf("task (%s) did not complete and ended with state: %s - comment: %s", ptr.From(task.TaskId), ptr.From(task.State), ptr.From(task.Comment)), lo.Contains(failed, *task.State)
 			})
 			if len(failedTasks) > 0 {
 				return resp, "failed", fmt.Errorf("volume update tasks failed: %w", errors.Join(failedTasks...))
 			}
 			return resp, "finished", nil
 		},
-		Timeout: timeout,
 	}
 	_, err := stateConf.WaitForStateContext(ctx)
 	return err
@@ -501,8 +468,7 @@ func (r *resourceVolume) Delete(ctx context.Context, req resource.DeleteRequest,
 	}
 
 	deleteTimeout, diags := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 	volumeId := data.VolumeId.ValueString()
@@ -513,15 +479,7 @@ func (r *resourceVolume) Delete(ctx context.Context, req resource.DeleteRequest,
 			Description: &description,
 			VolumeId:    &volumeId,
 		}
-		err := retry.RetryContext(ctx, deleteTimeout, func() *retry.RetryError {
-			var err error
-			r, httpResp, err := r.Client.SnapshotApi.CreateSnapshot(ctx).CreateSnapshotRequest(request).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			snapshotId = *r.GetSnapshot().SnapshotId
-			return nil
-		})
+		_, err := r.Client.CreateSnapshot(ctx, request, options.WithRetryTimeout(deleteTimeout))
 		if err != nil {
 			resp.Diagnostics.AddError(
 				fmt.Sprintf("Unable to create snapshot from volume '%s' ", volumeId),
@@ -534,7 +492,7 @@ func (r *resourceVolume) Delete(ctx context.Context, req resource.DeleteRequest,
 			Key:   "Name",
 			Value: data.TerminationSnapshotName.String(),
 		}
-		err = createOAPITags(ctx, r.Client, []osc.ResourceTag{tags}, snapshotId)
+		err = createOAPITags(ctx, r.Client, deleteTimeout, []osc.ResourceTag{tags}, snapshotId)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				fmt.Sprintf("Unable to create tags for snapshot '%s' ", snapshotId),
@@ -547,19 +505,12 @@ func (r *resourceVolume) Delete(ctx context.Context, req resource.DeleteRequest,
 	delReq := osc.DeleteVolumeRequest{
 		VolumeId: data.VolumeId.ValueString(),
 	}
-	err := retry.RetryContext(ctx, deleteTimeout, func() *retry.RetryError {
-		_, httpResp, err := r.Client.VolumeApi.DeleteVolume(ctx).DeleteVolumeRequest(delReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		return nil
-	})
+	_, err := r.Client.DeleteVolume(ctx, delReq, options.WithRetryTimeout(deleteTimeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Delete volume",
 			err.Error(),
 		)
-		return
 	}
 }
 
@@ -576,76 +527,56 @@ func setVolumeState(ctx context.Context, r *resourceVolume, data *VolumeModel) e
 	readReq := osc.ReadVolumesRequest{
 		Filters: &volumeFilters,
 	}
-	var readResp osc.ReadVolumesResponse
-	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.VolumeApi.ReadVolumes(ctx).ReadVolumesRequest(readReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		readResp = rp
-		return nil
-	})
+	readResp, err := r.Client.ReadVolumes(ctx, readReq, options.WithRetryTimeout(readTimeout))
 	if err != nil {
 		return err
 	}
-	if len(readResp.GetVolumes()) == 0 {
+	if readResp.Volumes == nil || len(*readResp.Volumes) == 0 {
 		return ErrResourceEmpty
 	}
 
-	volume := readResp.GetVolumes()[0]
-	tags, diag := flattenOAPITagsFW(ctx, volume.GetTags())
+	volume := (*readResp.Volumes)[0]
+	tags, diag := flattenOAPITagsFW(ctx, volume.Tags)
 	if diag.HasError() {
 		return fmt.Errorf("unable to flatten tags: %v", diags.Errors())
 	}
 	data.Tags = tags
 
-	data.LinkedVolumes, diags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: fwhelpers.GetAttrTypes(BlockLinkedVolumes{})}, getLinkedVolumesFromApiResponse(volume.GetLinkedVolumes())) // volume.GetLinkedVolumes()) //fwhelpers.GetAttrTypes(BlockLinkedVolumes{})}, volume.GetLinkedVolumes())
+	data.LinkedVolumes, diags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: fwhelpers.GetAttrTypes(BlockLinkedVolumes{})}, getLinkedVolumesFromApiResponse(volume.LinkedVolumes)) // volume.GetLinkedVolumes()) //fwhelpers.GetAttrTypes(BlockLinkedVolumes{})}, volume.GetLinkedVolumes())
 	if diags.HasError() {
 		return fmt.Errorf("unable to set linkedvolumes block: %v", diags.Errors())
 	}
-	data.CreationDate = types.StringValue(volume.GetCreationDate())
+	data.CreationDate = to.String(from.ISO8601(volume.CreationDate))
 	if data.TerminationSnapshotName.IsNull() {
 		data.TerminationSnapshotName = types.StringNull()
 	}
-	if data.SnapshotId.IsNull() {
-		data.SnapshotId = types.StringNull()
-	}
-	data.SubregionName = types.StringValue(volume.GetSubregionName())
-	data.VolumeType = types.StringValue(volume.GetVolumeType())
-	data.VolumeId = types.StringValue(volume.GetVolumeId())
-	data.SnapshotId = types.StringValue(volume.GetSnapshotId())
-	data.State = types.StringValue(volume.GetState())
+	data.SubregionName = to.String(volume.SubregionName)
+	data.VolumeType = to.String(volume.VolumeType)
+	data.VolumeId = to.String(volume.VolumeId)
+	data.SnapshotId = to.String(ptr.From(volume.SnapshotId))
+	data.State = to.String(volume.State)
 	if data.VolumeType.ValueString() != "standard" {
-		data.Iops = types.Int32Value(volume.GetIops())
+		data.Iops = types.Int32Value(int32(volume.Iops))
 	} else {
 		data.Iops = types.Int32Null()
 	}
-	data.Size = types.Int32Value(volume.GetSize())
-	data.Id = types.StringValue(volume.GetVolumeId())
+	data.Size = types.Int32Value(int32(volume.Size))
+	data.Id = to.String(volume.VolumeId)
 	return nil
 }
 
-func getVolumeStateRefreshFunc(ctx context.Context, conn *osc.APIClient, timeout time.Duration, volumeID string) retry.StateRefreshFunc {
+func getVolumeStateRefreshFunc(ctx context.Context, client *osc.Client, timeout time.Duration, volumeID string) retry.StateRefreshFunc {
 	return func() (any, string, error) {
-		var resp osc.ReadVolumesResponse
-
-		err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-			rp, httpResp, err := conn.VolumeApi.ReadVolumes(ctx).ReadVolumesRequest(osc.ReadVolumesRequest{
-				Filters: &osc.FiltersVolume{
-					VolumeIds: &[]string{volumeID},
-				},
-			}).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
+		resp, err := client.ReadVolumes(ctx, osc.ReadVolumesRequest{
+			Filters: &osc.FiltersVolume{
+				VolumeIds: &[]string{volumeID},
+			},
 		})
 		if err != nil {
 			return nil, "", err
 		}
-		v := resp.GetVolumes()[0]
-		return v, v.GetState(), nil
+		v := ptr.From(resp.Volumes)[0]
+		return v, string(v.State), nil
 	}
 }
 
@@ -654,11 +585,11 @@ func getLinkedVolumesFromApiResponse(linkedVols []osc.LinkedVolume) []BlockLinke
 
 	for _, linkedVol := range linkedVols {
 		linkedVolume := BlockLinkedVolumes{}
-		linkedVolume.DeleteOnVmDeletion = types.BoolValue(linkedVol.GetDeleteOnVmDeletion())
-		linkedVolume.DeviceName = types.StringValue(linkedVol.GetDeviceName())
-		linkedVolume.VmId = types.StringValue(linkedVol.GetVmId())
-		linkedVolume.State = types.StringValue(linkedVol.GetState())
-		linkedVolume.VolumeId = types.StringValue(linkedVol.GetVolumeId())
+		linkedVolume.DeleteOnVmDeletion = to.Bool(linkedVol.DeleteOnVmDeletion)
+		linkedVolume.DeviceName = to.String(linkedVol.DeviceName)
+		linkedVolume.VmId = to.String(linkedVol.VmId)
+		linkedVolume.State = to.String(linkedVol.State)
+		linkedVolume.VolumeId = to.String(linkedVol.VolumeId)
 		linkedVolumes = append(linkedVolumes, linkedVolume)
 	}
 	return linkedVolumes

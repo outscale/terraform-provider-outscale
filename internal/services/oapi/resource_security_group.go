@@ -21,14 +21,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/modifyplans"
 	"github.com/outscale/terraform-provider-outscale/internal/services/oapi/oapihelpers"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 	"github.com/samber/lo"
 )
 
@@ -55,7 +55,7 @@ type SecurityGroupModel struct {
 }
 
 type resourceSecurityGroup struct {
-	Client *oscgo.APIClient
+	Client *osc.Client
 }
 
 func NewResourceSecurityGroup() resource.Resource {
@@ -70,12 +70,12 @@ func (r *resourceSecurityGroup) Configure(_ context.Context, req resource.Config
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected *osc.APIClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *osc.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
 	}
-	r.Client = client.OSCAPI
+	r.Client = client.OSC
 }
 
 func (r *resourceSecurityGroup) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
@@ -98,8 +98,8 @@ func (r *resourceSecurityGroup) ImportState(ctx context.Context, req resource.Im
 	}
 	data.Timeouts = timeouts
 
-	data.SecurityGroupId = types.StringValue(securityGroupId)
-	data.Id = types.StringValue(securityGroupId)
+	data.SecurityGroupId = to.String(securityGroupId)
+	data.Id = to.String(securityGroupId)
 	data.InboundRules = types.ListNull(securityGroupRulesModelAttrTypes)
 	data.OutboundRules = types.ListNull(securityGroupRulesModelAttrTypes)
 	data.Tags = TagsNull()
@@ -157,19 +157,19 @@ func (r *resourceSecurityGroup) ModifyPlan(ctx context.Context, req resource.Mod
 
 	resources := []string{}
 	for _, vm := range vms {
-		if vm.SecurityGroups != nil && len(*vm.SecurityGroups) == 1 {
-			resources = append(resources, *vm.VmId)
+		if len(vm.SecurityGroups) == 1 {
+			resources = append(resources, vm.VmId)
 		}
 	}
 	for _, nic := range nics {
-		if nic.SecurityGroups != nil && len(*nic.SecurityGroups) == 1 {
-			resources = append(resources, *nic.NicId)
+		if len(nic.SecurityGroups) == 1 {
+			resources = append(resources, nic.NicId)
 		}
 	}
 	targetSG := []string{stateData.Id.ValueString()}
 	for _, lbu := range lbus {
-		if lbu.SecurityGroups != nil && slices.Equal(*lbu.SecurityGroups, targetSG) {
-			resources = append(resources, *lbu.LoadBalancerName)
+		if lbu.SecurityGroups != nil && slices.Equal(lbu.SecurityGroups, targetSG) {
+			resources = append(resources, lbu.LoadBalancerName)
 		}
 	}
 
@@ -298,33 +298,19 @@ func (r *resourceSecurityGroup) Create(ctx context.Context, req resource.CreateR
 	defer cancel()
 
 	if !fwhelpers.IsSet(data.SecurityGroupName) {
-		data.SecurityGroupName = types.StringValue(id.UniqueId())
+		data.SecurityGroupName = to.String(id.UniqueId())
 	}
 
-	createReq := oscgo.CreateSecurityGroupRequest{
+	createReq := osc.CreateSecurityGroupRequest{
 		Description:       data.Description.ValueString(),
 		SecurityGroupName: data.SecurityGroupName.ValueString(),
 	}
 
 	if !data.NetId.IsUnknown() && !data.NetId.IsNull() {
-		createReq.SetNetId(data.NetId.ValueString())
+		createReq.NetId = data.NetId.ValueStringPointer()
 	}
 
-	var createResp oscgo.CreateSecurityGroupResponse
-	err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.SecurityGroupApi.CreateSecurityGroup(ctx).CreateSecurityGroupRequest(createReq).Execute()
-		if err != nil {
-			apiErr := oapihelpers.GetError(err)
-			// Fail fast when the security group name already exists
-			if apiErr.GetCode() == "9008" {
-				errBody := utils.GetHttpErrorResponse(httpResp.Body, err)
-				return retry.NonRetryableError(errBody)
-			}
-			return utils.CheckThrottling(httpResp, err)
-		}
-		createResp = rp
-		return nil
-	})
+	createResp, err := r.Client.CreateSecurityGroup(ctx, createReq, options.WithRetryTimeout(createTimeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to create Security Group.",
@@ -332,28 +318,22 @@ func (r *resourceSecurityGroup) Create(ctx context.Context, req resource.CreateR
 		)
 		return
 	}
-	sg := createResp.GetSecurityGroup()
-	data.RequestId = types.StringValue(createResp.ResponseContext.GetRequestId())
-	data.Id = types.StringValue(sg.GetSecurityGroupId())
-	data.SecurityGroupId = types.StringValue(sg.GetSecurityGroupId())
+	sg := ptr.From(createResp.SecurityGroup)
+	data.RequestId = to.String(createResp.ResponseContext.RequestId)
+	data.Id = to.String(sg.SecurityGroupId)
+	data.SecurityGroupId = to.String(sg.SecurityGroupId)
 
 	if data.RemoveDefaultOutboundRule.ValueBool() {
 		ipRange := "0.0.0.0/0"
 		ipProtocol := "-1"
-		emptySGReq := oscgo.DeleteSecurityGroupRuleRequest{
+		emptySGReq := osc.DeleteSecurityGroupRuleRequest{
 			Flow:            "Outbound",
-			SecurityGroupId: sg.GetSecurityGroupId(),
+			SecurityGroupId: sg.SecurityGroupId,
 			IpRange:         &ipRange,
 			IpProtocol:      &ipProtocol,
 		}
 
-		err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
-			_, httpResp, err := r.Client.SecurityGroupRuleApi.DeleteSecurityGroupRule(ctx).DeleteSecurityGroupRuleRequest(emptySGReq).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			return nil
-		})
+		_, err := r.Client.DeleteSecurityGroupRule(ctx, emptySGReq, options.WithRetryTimeout(createTimeout))
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Unable to empty the Security Group rules.",
@@ -363,7 +343,7 @@ func (r *resourceSecurityGroup) Create(ctx context.Context, req resource.CreateR
 		}
 	}
 
-	diag = createOAPITagsFW(ctx, r.Client, data.Tags, sg.GetSecurityGroupId())
+	diag = createOAPITagsFW(ctx, r.Client, createTimeout, data.Tags, sg.SecurityGroupId)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
@@ -411,7 +391,12 @@ func (r *resourceSecurityGroup) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
-	diag := updateOAPITagsFW(ctx, r.Client, stateData.Tags, planData.Tags, stateData.SecurityGroupId.ValueString())
+	timeout, diags := planData.Timeouts.Update(ctx, UpdateDefaultTimeout)
+	if fwhelpers.CheckDiags(resp, diags) {
+		return
+	}
+
+	diag := updateOAPITagsFW(ctx, r.Client, timeout, stateData.Tags, planData.Tags, stateData.SecurityGroupId.ValueString())
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
@@ -441,30 +426,23 @@ func (r *resourceSecurityGroup) Delete(ctx context.Context, req resource.DeleteR
 	defer cancel()
 
 	sgId := data.Id.ValueString()
-	delReq := oscgo.DeleteSecurityGroupRequest{
+	delReq := osc.DeleteSecurityGroupRequest{
 		SecurityGroupId: &sgId,
 	}
 
 	sgLinked := false
-	err := retry.RetryContext(ctx, deleteTimeout, func() *retry.RetryError {
-		_, httpResp, err := r.Client.SecurityGroupApi.DeleteSecurityGroup(ctx).DeleteSecurityGroupRequest(delReq).Execute()
-		if err != nil {
-			oscErr := oapihelpers.GetError(err)
-			if oscErr.GetCode() == "9085" {
-				sgLinked = true
-				return nil
-			}
-			return utils.CheckThrottling(httpResp, err)
-
-		}
-		return nil
-	})
+	_, err := r.Client.DeleteSecurityGroup(ctx, delReq, options.WithRetryTimeout(deleteTimeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to delete Security Group.",
-			err.Error(),
-		)
-		return
+		oscErr := oapihelpers.GetError(err)
+		if oscErr.Code == "9085" {
+			sgLinked = true
+		} else {
+			resp.Diagnostics.AddError(
+				"Unable to delete Security Group.",
+				err.Error(),
+			)
+			return
+		}
 	}
 
 	if sgLinked {
@@ -474,13 +452,23 @@ func (r *resourceSecurityGroup) Delete(ctx context.Context, req resource.DeleteR
 			return
 		}
 
-		err := retry.RetryContext(ctx, deleteTimeout, func() *retry.RetryError {
-			_, httpResp, err := r.Client.SecurityGroupApi.DeleteSecurityGroup(ctx).DeleteSecurityGroupRequest(delReq).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			return nil
-		})
+		// // Retry on 409 as API can take time to see a security group as not in use anymore
+		// err := oapihelpers.RetryOnCode(ctx, "9085", func() (resp interface{}, err error) {
+		// 	return r.Client.DeleteSecurityGroup(ctx, delReq, options.WithRetryTimeout(deleteTimeout))
+		// }, deleteTimeout)
+		err := oapihelpers.RetryOnCodes(ctx, []string{"9085"}, func() (resp any, err error) {
+			return r.Client.DeleteSecurityGroup(ctx, delReq, options.WithRetryTimeout(deleteTimeout))
+		}, deleteTimeout)
+		// err := retry.RetryContext(ctx, deleteTimeout, func() *retry.RetryError {
+		// 	_, err := r.Client.DeleteSecurityGroup(ctx, delReq, options.WithRetryTimeout(deleteTimeout))
+		// 	if err != nil {
+		// 		if osc.IsConflict(err) {
+		// 			return retry.RetryableError(err)
+		// 		}
+		// 		return retry.NonRetryableError(err)
+		// 	}
+		// 	return nil
+		// })
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Unable to delete Security Group after unlinking from resources.",
@@ -491,25 +479,17 @@ func (r *resourceSecurityGroup) Delete(ctx context.Context, req resource.DeleteR
 	}
 }
 
-func (r *resourceSecurityGroup) getLinkedResources(ctx context.Context, to time.Duration, sgId string) ([]oscgo.Vm, []oscgo.Nic, []oscgo.LoadBalancer, diag.Diagnostics) {
+func (r *resourceSecurityGroup) getLinkedResources(ctx context.Context, to time.Duration, sgId string) ([]osc.Vm, []osc.Nic, []osc.LoadBalancer, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Get VMs linked to Security Group
-	readVmReq := oscgo.ReadVmsRequest{
-		Filters: &oscgo.FiltersVm{
+	readVmReq := osc.ReadVmsRequest{
+		Filters: &osc.FiltersVm{
 			SecurityGroupIds: &[]string{sgId},
 		},
 	}
 
-	var vms []oscgo.Vm
-	err := retry.RetryContext(ctx, to, func() *retry.RetryError {
-		resp, httpResp, err := r.Client.VmApi.ReadVms(ctx).ReadVmsRequest(readVmReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		vms = *resp.Vms
-		return nil
-	})
+	vms, err := r.Client.ReadVms(ctx, readVmReq, options.WithRetryTimeout(to))
 	if err != nil {
 		diags.AddError(
 			"Unable to find VMs linked to Security Group.",
@@ -519,21 +499,13 @@ func (r *resourceSecurityGroup) getLinkedResources(ctx context.Context, to time.
 	}
 
 	// Get NICs linked to Security Group
-	readNicsReq := oscgo.ReadNicsRequest{
-		Filters: &oscgo.FiltersNic{
+	readNicsReq := osc.ReadNicsRequest{
+		Filters: &osc.FiltersNic{
 			SecurityGroupIds: &[]string{sgId},
 		},
 	}
 
-	var nics []oscgo.Nic
-	err = retry.RetryContext(ctx, to, func() *retry.RetryError {
-		resp, httpResp, err := r.Client.NicApi.ReadNics(ctx).ReadNicsRequest(readNicsReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		nics = *resp.Nics
-		return nil
-	})
+	nics, err := r.Client.ReadNics(ctx, readNicsReq, options.WithRetryTimeout(to))
 	if err != nil {
 		diags.AddError(
 			"Unable to find NICs linked to Security Group.",
@@ -543,15 +515,7 @@ func (r *resourceSecurityGroup) getLinkedResources(ctx context.Context, to time.
 	}
 
 	// Get LBUs linked to Security Group
-	var lbus []oscgo.LoadBalancer
-	err = retry.RetryContext(ctx, to, func() *retry.RetryError {
-		resp, httpResp, err := r.Client.LoadBalancerApi.ReadLoadBalancers(ctx).ReadLoadBalancersRequest(oscgo.ReadLoadBalancersRequest{}).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		lbus = *resp.LoadBalancers
-		return nil
-	})
+	lbus, err := r.Client.ReadLoadBalancers(ctx, osc.ReadLoadBalancersRequest{}, options.WithRetryTimeout(to))
 	if err != nil {
 		diags.AddError(
 			"Unable to find Load Balancers linked to Security Group.",
@@ -560,7 +524,7 @@ func (r *resourceSecurityGroup) getLinkedResources(ctx context.Context, to time.
 		return nil, nil, nil, diags
 	}
 
-	return vms, nics, lbus, nil
+	return *vms.Vms, *nics.Nics, *lbus.LoadBalancers, nil
 }
 
 func (r *resourceSecurityGroup) unlink(ctx context.Context, to time.Duration, data SecurityGroupModel) (diags diag.Diagnostics) {
@@ -571,17 +535,17 @@ func (r *resourceSecurityGroup) unlink(ctx context.Context, to time.Duration, da
 	}
 
 	// Check if the Security Group is the unique Security Group of any VM
-	vmsUniqueSG := lo.FilterMap(vms, func(vm oscgo.Vm, _ int) (string, bool) {
-		return *vm.VmId, (vm.SecurityGroups != nil && len(*vm.SecurityGroups) == 1)
+	vmsUniqueSG := lo.FilterMap(vms, func(vm osc.Vm, _ int) (string, bool) {
+		return vm.VmId, (len(vm.SecurityGroups) == 1)
 	})
 	// Check if the Security Group is the unique Security Group of any NIC
-	nicsUniqueSG := lo.FilterMap(nics, func(nic oscgo.Nic, _ int) (string, bool) {
-		return *nic.NicId, (nic.SecurityGroups != nil && len(*nic.SecurityGroups) == 1)
+	nicsUniqueSG := lo.FilterMap(nics, func(nic osc.Nic, _ int) (string, bool) {
+		return nic.NicId, (len(nic.SecurityGroups) == 1)
 	})
 	targetSG := []string{data.Id.ValueString()}
 	// Check if the Security Group is the unique Security Group of any LBU
-	lbusUniqueSG := lo.FilterMap(lbus, func(lbu oscgo.LoadBalancer, _ int) (string, bool) {
-		return *lbu.LoadBalancerName, (lbu.SecurityGroups != nil && slices.Equal(*lbu.SecurityGroups, targetSG))
+	lbusUniqueSG := lo.FilterMap(lbus, func(lbu osc.LoadBalancer, _ int) (string, bool) {
+		return lbu.LoadBalancerName, (lbu.SecurityGroups != nil && slices.Equal(lbu.SecurityGroups, targetSG))
 	})
 
 	if len(vmsUniqueSG) > 0 {
@@ -609,24 +573,18 @@ func (r *resourceSecurityGroup) unlink(ctx context.Context, to time.Duration, da
 
 	for _, vm := range vms {
 		// Get the Security Group IDs of the VM without the current Security Group
-		sgIds := lo.FilterMap(*vm.SecurityGroups, func(sg oscgo.SecurityGroupLight, _ int) (string, bool) {
-			return *sg.SecurityGroupId, (*sg.SecurityGroupId != data.Id.ValueString())
+		sgIds := lo.FilterMap(vm.SecurityGroups, func(sg osc.SecurityGroupLight, _ int) (string, bool) {
+			return sg.SecurityGroupId, (sg.SecurityGroupId != data.Id.ValueString())
 		})
-		updateReq := oscgo.UpdateVmRequest{
-			VmId:             *vm.VmId,
-			SecurityGroupIds: &sgIds,
+		updateReq := osc.UpdateVmRequest{
+			VmId:             vm.VmId,
+			SecurityGroupIds: sgIds,
 		}
 
-		err := retry.RetryContext(ctx, to, func() *retry.RetryError {
-			_, httpResp, err := r.Client.VmApi.UpdateVm(ctx).UpdateVmRequest(updateReq).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			return nil
-		})
+		_, err := r.Client.UpdateVm(ctx, updateReq, options.WithRetryTimeout(to))
 		if err != nil {
 			diags.AddError(
-				fmt.Sprintf("Unable to remove Security Group (%s) from VM (%s)", data.Id.ValueString(), *vm.VmId),
+				fmt.Sprintf("Unable to remove Security Group (%s) from VM (%s)", data.Id.ValueString(), vm.VmId),
 				err.Error(),
 			)
 			return
@@ -635,24 +593,18 @@ func (r *resourceSecurityGroup) unlink(ctx context.Context, to time.Duration, da
 
 	for _, nic := range nics {
 		// Get the Security Group IDs of the NIC without the current Security Group
-		sgIds := lo.FilterMap(*nic.SecurityGroups, func(sg oscgo.SecurityGroupLight, _ int) (string, bool) {
-			return *sg.SecurityGroupId, (*sg.SecurityGroupId != data.Id.ValueString())
+		sgIds := lo.FilterMap(nic.SecurityGroups, func(sg osc.SecurityGroupLight, _ int) (string, bool) {
+			return sg.SecurityGroupId, (sg.SecurityGroupId != data.Id.ValueString())
 		})
-		updateReq := oscgo.UpdateNicRequest{
-			NicId:            *nic.NicId,
+		updateReq := osc.UpdateNicRequest{
+			NicId:            nic.NicId,
 			SecurityGroupIds: &sgIds,
 		}
 
-		err := retry.RetryContext(ctx, to, func() *retry.RetryError {
-			_, httpResp, err := r.Client.NicApi.UpdateNic(ctx).UpdateNicRequest(updateReq).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			return nil
-		})
+		_, err := r.Client.UpdateNic(ctx, updateReq, options.WithRetryTimeout(to))
 		if err != nil {
 			diags.AddError(
-				fmt.Sprintf("Unable to remove Security Group (%s) from NIC (%s)", data.Id.ValueString(), *nic.NicId),
+				fmt.Sprintf("Unable to remove Security Group (%s) from NIC (%s)", data.Id.ValueString(), nic.NicId),
 				err.Error(),
 			)
 			return
@@ -664,24 +616,21 @@ func (r *resourceSecurityGroup) unlink(ctx context.Context, to time.Duration, da
 			continue
 		}
 		// Get the Security Group IDs of the LBU without the current Security Group
-		sgIds := lo.FilterMap(*lbu.SecurityGroups, func(sg string, _ int) (string, bool) {
+		sgIds := lo.FilterMap(lbu.SecurityGroups, func(sg string, _ int) (string, bool) {
 			return sg, (sg != data.Id.ValueString())
 		})
-		updateReq := oscgo.UpdateLoadBalancerRequest{
-			LoadBalancerName: *lbu.LoadBalancerName,
+		updateReq := osc.UpdateLoadBalancerRequest{
+			LoadBalancerName: lbu.LoadBalancerName,
 			SecurityGroups:   &sgIds,
 		}
 
-		err := retry.RetryContext(ctx, to, func() *retry.RetryError {
-			_, httpResp, err := r.Client.LoadBalancerApi.UpdateLoadBalancer(ctx).UpdateLoadBalancerRequest(updateReq).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			return nil
-		})
+		// Retry on 6031 has it can happen if the LBU is not in an available state
+		err := oapihelpers.RetryOnCodes(ctx, []string{"6031"}, func() (resp any, err error) {
+			return r.Client.UpdateLoadBalancer(ctx, updateReq, options.WithRetryTimeout(to))
+		}, to)
 		if err != nil {
 			diags.AddError(
-				fmt.Sprintf("Unable to remove Security Group (%s) from Load Balancer (%s)", data.Id.ValueString(), *lbu.LoadBalancerName),
+				fmt.Sprintf("Unable to remove Security Group (%s) from Load Balancer (%s)", data.Id.ValueString(), lbu.LoadBalancerName),
 				err.Error(),
 			)
 			return
@@ -692,8 +641,8 @@ func (r *resourceSecurityGroup) unlink(ctx context.Context, to time.Duration, da
 }
 
 func setSecurityGroupState(ctx context.Context, r *resourceSecurityGroup, data SecurityGroupModel) (SecurityGroupModel, error) {
-	readReq := oscgo.ReadSecurityGroupsRequest{
-		Filters: &oscgo.FiltersSecurityGroup{
+	readReq := osc.ReadSecurityGroupsRequest{
+		Filters: &osc.FiltersSecurityGroup{
 			SecurityGroupIds: &[]string{data.Id.ValueString()},
 		},
 	}
@@ -705,31 +654,23 @@ func setSecurityGroupState(ctx context.Context, r *resourceSecurityGroup, data S
 	ctx, cancel := context.WithTimeout(ctx, readTimeout)
 	defer cancel()
 
-	var readResp oscgo.ReadSecurityGroupsResponse
-	err := retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
-		rp, httpResp, err := r.Client.SecurityGroupApi.ReadSecurityGroups(ctx).ReadSecurityGroupsRequest(readReq).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		readResp = rp
-		return nil
-	})
+	readResp, err := r.Client.ReadSecurityGroups(ctx, readReq, options.WithRetryTimeout(readTimeout))
 	if err != nil {
 		return data, err
 	}
-	data.RequestId = types.StringValue(readResp.ResponseContext.GetRequestId())
-	if len(readResp.GetSecurityGroups()) == 0 {
+	data.RequestId = to.String(readResp.ResponseContext.RequestId)
+	if readResp.SecurityGroups == nil || len(*readResp.SecurityGroups) == 0 {
 		return data, ErrResourceEmpty
 	}
 
-	securityGroup := readResp.GetSecurityGroups()[0]
-	tags, diags := flattenOAPITagsFW(ctx, securityGroup.GetTags())
+	securityGroup := (*readResp.SecurityGroups)[0]
+	tags, diags := flattenOAPITagsFW(ctx, securityGroup.Tags)
 	if diags.HasError() {
 		return data, fmt.Errorf("unable to flatten tags: %v", diags.Errors())
 	}
 	data.Tags = tags
 
-	inboundRulesModels, diag := flattenSecurityGroupRules(ctx, securityGroup.GetInboundRules())
+	inboundRulesModels, diag := flattenSecurityGroupRules(ctx, securityGroup.InboundRules)
 	if diag.HasError() {
 		return data, fmt.Errorf("unable to convert inbound rules to the model: %v", diag.Errors())
 	}
@@ -737,7 +678,7 @@ func setSecurityGroupState(ctx context.Context, r *resourceSecurityGroup, data S
 	if diag.HasError() {
 		return data, fmt.Errorf("unable to convert inbound rules to the schema list: %v", diag.Errors())
 	}
-	outboundRulesModels, diag := flattenSecurityGroupRules(ctx, securityGroup.GetOutboundRules())
+	outboundRulesModels, diag := flattenSecurityGroupRules(ctx, securityGroup.OutboundRules)
 	if diag.HasError() {
 		return data, fmt.Errorf("unable to convert outbound rules to the model: %v", diag.Errors())
 	}
@@ -746,51 +687,51 @@ func setSecurityGroupState(ctx context.Context, r *resourceSecurityGroup, data S
 		return data, fmt.Errorf("unable to convert outbound rules to the schema list: %v", diag.Errors())
 	}
 
-	data.AccountId = types.StringValue(securityGroup.GetAccountId())
-	data.Description = types.StringValue(securityGroup.GetDescription())
+	data.AccountId = to.String(securityGroup.AccountId)
+	data.Description = to.String(securityGroup.Description)
 	data.InboundRules = inboundRules
-	data.NetId = types.StringValue(securityGroup.GetNetId())
+	data.NetId = to.String(ptr.From(securityGroup.NetId))
 	data.OutboundRules = outboundRules
-	data.SecurityGroupId = types.StringValue(securityGroup.GetSecurityGroupId())
-	data.Id = types.StringValue(securityGroup.GetSecurityGroupId())
-	data.SecurityGroupName = types.StringValue(securityGroup.GetSecurityGroupName())
+	data.SecurityGroupId = to.String(securityGroup.SecurityGroupId)
+	data.Id = to.String(securityGroup.SecurityGroupId)
+	data.SecurityGroupName = to.String(securityGroup.SecurityGroupName)
 
 	return data, nil
 }
 
-func flattenSecurityGroupsMembers(sgMembers []oscgo.SecurityGroupsMember) []SecurityGroupsMembersModel {
+func flattenSecurityGroupsMembers(sgMembers []osc.SecurityGroupsMember) []SecurityGroupsMembersModel {
 	sgMembersModels := []SecurityGroupsMembersModel{}
 
 	for _, sgMember := range sgMembers {
 		member := SecurityGroupsMembersModel{
-			AccountId:         types.StringValue(sgMember.GetAccountId()),
-			SecurityGroupId:   types.StringValue(sgMember.GetSecurityGroupId()),
-			SecurityGroupName: types.StringValue(sgMember.GetSecurityGroupName()),
+			AccountId:         to.String(sgMember.AccountId),
+			SecurityGroupId:   to.String(sgMember.SecurityGroupId),
+			SecurityGroupName: to.String(sgMember.SecurityGroupName),
 		}
 		sgMembersModels = append(sgMembersModels, member)
 	}
 	return sgMembersModels
 }
 
-func flattenSecurityGroupRules(ctx context.Context, sgRules []oscgo.SecurityGroupRule) ([]SecurityGroupRulesModel, diag.Diagnostics) {
+func flattenSecurityGroupRules(ctx context.Context, sgRules []osc.SecurityGroupRule) ([]SecurityGroupRulesModel, diag.Diagnostics) {
 	sgRulesModels := []SecurityGroupRulesModel{}
 	diags := diag.Diagnostics{}
 
 	for _, sgRule := range sgRules {
-		ipRanges, diag := types.ListValueFrom(ctx, types.StringType, sgRule.GetIpRanges())
+		ipRanges, diag := types.ListValueFrom(ctx, types.StringType, sgRule.IpRanges)
 		diags.Append(diag...)
-		serviceIds, diag := types.ListValueFrom(ctx, types.StringType, sgRule.GetServiceIds())
+		serviceIds, diag := types.ListValueFrom(ctx, types.StringType, sgRule.ServiceIds)
 		diags.Append(diag...)
-		sgMembers, diag := types.ListValueFrom(ctx, securityGroupsMemberModelAttrTypes, flattenSecurityGroupsMembers(sgRule.GetSecurityGroupsMembers()))
+		sgMembers, diag := types.ListValueFrom(ctx, securityGroupsMemberModelAttrTypes, flattenSecurityGroupsMembers(sgRule.SecurityGroupsMembers))
 		diags.Append(diag...)
 
 		rule := SecurityGroupRulesModel{
-			FromPortRange:         types.Int32Value(sgRule.GetFromPortRange()),
-			IpProtocol:            types.StringValue(sgRule.GetIpProtocol()),
+			FromPortRange:         types.Int32Value(int32(sgRule.FromPortRange)),
+			IpProtocol:            to.String(sgRule.IpProtocol),
 			IpRanges:              ipRanges,
 			SecurityGroupsMembers: sgMembers,
 			ServiceIds:            serviceIds,
-			ToPortRange:           types.Int32Value(sgRule.GetToPortRange()),
+			ToPortRange:           types.Int32Value(int32(sgRule.ToPortRange)),
 		}
 		sgRulesModels = append(sgRulesModels, rule)
 	}
@@ -801,28 +742,28 @@ func flattenSecurityGroupRules(ctx context.Context, sgRules []oscgo.SecurityGrou
 	return sgRulesModels, nil
 }
 
-func expandSecurityGroupRules(ctx context.Context, sgRulesModels []SecurityGroupRulesModel) ([]oscgo.SecurityGroupRule, diag.Diagnostics) {
-	sgRules := []oscgo.SecurityGroupRule{}
+func expandSecurityGroupRules(ctx context.Context, sgRulesModels []SecurityGroupRulesModel) ([]osc.SecurityGroupRule, diag.Diagnostics) {
+	sgRules := []osc.SecurityGroupRule{}
 	diags := diag.Diagnostics{}
 
 	for _, sgRuleModel := range sgRulesModels {
-		rule := oscgo.SecurityGroupRule{}
+		rule := osc.SecurityGroupRule{}
 
 		if fwhelpers.IsSet(sgRuleModel.IpRanges) && len(sgRuleModel.IpRanges.Elements()) > 0 {
 			ipRanges, diag := to.Slice[string](ctx, sgRuleModel.IpRanges)
 			diags.Append(diag...)
-			rule.SetIpRanges(ipRanges)
+			rule.IpRanges = ipRanges
 		}
 		if fwhelpers.IsSet(sgRuleModel.ServiceIds) && len(sgRuleModel.ServiceIds.Elements()) > 0 {
 			serviceIds, diag := to.Slice[string](ctx, sgRuleModel.ServiceIds)
 			diags.Append(diag...)
-			rule.SetServiceIds(serviceIds)
+			rule.ServiceIds = serviceIds
 		}
 		if fwhelpers.IsSet(sgRuleModel.FromPortRange) {
-			rule.SetFromPortRange(sgRuleModel.FromPortRange.ValueInt32())
+			rule.FromPortRange = int(sgRuleModel.FromPortRange.ValueInt32())
 		}
 		if fwhelpers.IsSet(sgRuleModel.IpProtocol) {
-			rule.SetIpProtocol(sgRuleModel.IpProtocol.ValueString())
+			rule.IpProtocol = sgRuleModel.IpProtocol.ValueString()
 		}
 		if fwhelpers.IsSet(sgRuleModel.SecurityGroupsMembers) {
 			sgMembers, diag := to.Slice[SecurityGroupsMembersModel](ctx, sgRuleModel.SecurityGroupsMembers)
@@ -831,10 +772,10 @@ func expandSecurityGroupRules(ctx context.Context, sgRulesModels []SecurityGroup
 				return nil, diags
 			}
 
-			rule.SetSecurityGroupsMembers(expandSecurityGroupsMembers(sgMembers))
+			rule.SecurityGroupsMembers = expandSecurityGroupsMembers(sgMembers)
 		}
 		if fwhelpers.IsSet(sgRuleModel.ToPortRange) {
-			rule.SetToPortRange(sgRuleModel.ToPortRange.ValueInt32())
+			rule.ToPortRange = int(sgRuleModel.ToPortRange.ValueInt32())
 		}
 		if diags.HasError() {
 			return nil, diags
@@ -846,20 +787,20 @@ func expandSecurityGroupRules(ctx context.Context, sgRulesModels []SecurityGroup
 	return sgRules, nil
 }
 
-func expandSecurityGroupsMembers(sgMembersModels []SecurityGroupsMembersModel) []oscgo.SecurityGroupsMember {
-	sgMembers := []oscgo.SecurityGroupsMember{}
+func expandSecurityGroupsMembers(sgMembersModels []SecurityGroupsMembersModel) []osc.SecurityGroupsMember {
+	sgMembers := []osc.SecurityGroupsMember{}
 
 	for _, sgMemberModel := range sgMembersModels {
-		member := oscgo.SecurityGroupsMember{}
+		member := osc.SecurityGroupsMember{}
 
 		if !sgMemberModel.AccountId.IsUnknown() && !sgMemberModel.AccountId.IsNull() && sgMemberModel.AccountId.ValueString() != "" {
-			member.SetAccountId(sgMemberModel.AccountId.ValueString())
+			member.AccountId = sgMemberModel.AccountId.ValueStringPointer()
 		}
 		if !sgMemberModel.SecurityGroupId.IsUnknown() && !sgMemberModel.SecurityGroupId.IsNull() && sgMemberModel.SecurityGroupId.ValueString() != "" {
-			member.SetSecurityGroupId(sgMemberModel.SecurityGroupId.ValueString())
+			member.SecurityGroupId = sgMemberModel.SecurityGroupId.ValueString()
 		}
 		if !sgMemberModel.SecurityGroupName.IsUnknown() && !sgMemberModel.SecurityGroupName.IsNull() && sgMemberModel.SecurityGroupName.ValueString() != "" {
-			member.SetSecurityGroupName(sgMemberModel.SecurityGroupName.ValueString())
+			member.SecurityGroupName = sgMemberModel.SecurityGroupName.ValueStringPointer()
 		}
 
 		sgMembers = append(sgMembers, member)

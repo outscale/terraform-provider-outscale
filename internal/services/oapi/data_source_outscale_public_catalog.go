@@ -4,18 +4,19 @@ import (
 	"context"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 func DataSourceOutscalePublicCatalog() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscalePublicCatalogRead,
+		ReadContext: DataSourceOutscalePublicCatalogRead,
 		Schema: map[string]*schema.Schema{
 			"catalog": {
 				Type:     schema.TypeSet,
@@ -73,41 +74,32 @@ func DataSourceOutscalePublicCatalog() *schema.Resource {
 	}
 }
 
-func DataSourceOutscalePublicCatalogRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscalePublicCatalogRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
-	req := oscgo.ReadPublicCatalogRequest{}
+	req := osc.ReadPublicCatalogRequest{}
 
-	var resp oscgo.ReadPublicCatalogResponse
-	var err = retry.Retry(20*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.PublicCatalogApi.ReadPublicCatalog(context.Background()).ReadPublicCatalogRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
-
+	resp, err := client.ReadPublicCatalog(ctx, req, options.WithRetryTimeout(20*time.Second))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	cs := resp.GetCatalog()
-	entries := cs.GetEntries()[:]
+	cs := resp.Catalog
+	entries := ptr.From(cs.Entries)[:]
 	e_ret := make([]map[string]interface{}, len(entries))
 
 	for k, v := range entries {
 		m := make(map[string]interface{})
-		m["category"] = v.GetCategory()
-		if v.HasFlags() {
-			m["flags"] = v.GetFlags()
+		m["category"] = v.Category
+		if v.Flags != nil {
+			m["flags"] = v.Flags
 		}
-		m["operation"] = v.GetOperation()
-		m["service"] = v.GetService()
-		m["subregion_name"] = v.GetSubregionName()
-		m["title"] = v.GetTitle()
-		m["type"] = v.GetType()
-		m["unit_price"] = v.GetUnitPrice()
+		m["operation"] = v.Operation
+		m["service"] = v.Service
+		m["subregion_name"] = v.SubregionName
+		m["title"] = v.Title
+		m["type"] = v.Type
+		m["unit_price"] = v.UnitPrice
 		e_ret[k] = m
 	}
 
@@ -118,7 +110,7 @@ func DataSourceOutscalePublicCatalogRead(d *schema.ResourceData, meta interface{
 	c_ret[0] = c_set
 
 	if err := d.Set("catalog", c_ret); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(id.UniqueId())

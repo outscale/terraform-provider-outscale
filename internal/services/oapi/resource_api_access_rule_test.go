@@ -4,14 +4,12 @@ import (
 	"context"
 	"fmt"
 	"testing"
-	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 func TestAccOthers_AccessRule_Basic(t *testing.T) {
@@ -19,14 +17,13 @@ func TestAccOthers_AccessRule_Basic(t *testing.T) {
 	ca_path := testAccCertPath
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		CheckDestroy:             testAccCheckOutscaleApiAccessRuleDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleApiAccessRuleConfig(ca_path),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleApiAccessRuleExists(resourceName),
+					testAccCheckOutscaleApiAccessRuleExists(t.Context(), resourceName),
 				),
 			},
 			testacc.ImportStep(resourceName, testacc.DefaultIgnores()...),
@@ -38,46 +35,35 @@ func TestAccOthers_AccessRule_Migration(t *testing.T) {
 	ca_path := testAccCertPath
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { testacc.PreCheck(t) },
 		Steps: testacc.FrameworkMigrationTestSteps("1.3.1",
 			testAccOutscaleApiAccessRuleConfig(ca_path),
 		),
 	})
 }
 
-func testAccCheckOutscaleApiAccessRuleExists(n string) resource.TestCheckFunc {
+func testAccCheckOutscaleApiAccessRuleExists(ctx context.Context, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("not found: %s", n)
 		}
-
-		conn := testacc.ConfiguredClient.OSCAPI
+		client := testacc.ConfiguredClient.OSC
 
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("no id is set")
 		}
-		req := oscgo.ReadApiAccessRulesRequest{
-			Filters: &oscgo.FiltersApiAccessRule{ApiAccessRuleIds: &[]string{rs.Primary.ID}},
+		req := osc.ReadApiAccessRulesRequest{
+			Filters: &osc.FiltersApiAccessRule{ApiAccessRuleIds: &[]string{rs.Primary.ID}},
 		}
-		var resp oscgo.ReadApiAccessRulesResponse
-		var err error
 		exists := false
-		err = retry.Retry(120*time.Second, func() *retry.RetryError {
-			rp, httpResp, err := conn.ApiAccessRuleApi.ReadApiAccessRules(context.Background()).ReadApiAccessRulesRequest(req).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
 
-		if err != nil || len(resp.GetApiAccessRules()) == 0 {
+		resp, err := client.ReadApiAccessRules(ctx, req, options.WithRetryTimeout(DefaultTimeout))
+		if err != nil || resp.ApiAccessRules == nil || len(*resp.ApiAccessRules) == 0 {
 			return fmt.Errorf("api access rule not found (%s)", rs.Primary.ID)
 		}
 
-		for _, rule := range resp.GetApiAccessRules() {
-			if rule.GetApiAccessRuleId() == rs.Primary.ID {
+		for _, rule := range *resp.ApiAccessRules {
+			if *rule.ApiAccessRuleId == rs.Primary.ID {
 				exists = true
 			}
 		}
@@ -91,33 +77,24 @@ func testAccCheckOutscaleApiAccessRuleExists(n string) resource.TestCheckFunc {
 }
 
 func testAccCheckOutscaleApiAccessRuleDestroy(s *terraform.State) error {
-	conn := testacc.ConfiguredClient.OSCAPI
+	client := testacc.ConfiguredClient.OSC
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_api_access_rule" {
 			continue
 		}
-		req := oscgo.ReadApiAccessRulesRequest{
-			Filters: &oscgo.FiltersApiAccessRule{ApiAccessRuleIds: &[]string{rs.Primary.ID}},
+		req := osc.ReadApiAccessRulesRequest{
+			Filters: &osc.FiltersApiAccessRule{ApiAccessRuleIds: &[]string{rs.Primary.ID}},
 		}
 
-		var resp oscgo.ReadApiAccessRulesResponse
-		var err error
 		exists := false
-		err = retry.Retry(120*time.Second, func() *retry.RetryError {
-			rp, httpResp, err := conn.ApiAccessRuleApi.ReadApiAccessRules(context.Background()).ReadApiAccessRulesRequest(req).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
-		if err != nil {
+		resp, err := client.ReadApiAccessRules(context.Background(), req, options.WithRetryTimeout(DefaultTimeout))
+		if err != nil || resp.ApiAccessRules == nil || len(*resp.ApiAccessRules) == 0 {
 			return fmt.Errorf("api access rule reading (%s)", rs.Primary.ID)
 		}
 
-		for _, r := range resp.GetApiAccessRules() {
-			if r.GetApiAccessRuleId() == rs.Primary.ID {
+		for _, r := range *resp.ApiAccessRules {
+			if *r.ApiAccessRuleId == rs.Primary.ID {
 				exists = true
 			}
 		}

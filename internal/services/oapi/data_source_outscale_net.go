@@ -4,17 +4,19 @@ import (
 	"context"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
+	"github.com/samber/lo"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceOutscaleVpc() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleVpcRead,
+		ReadContext: DataSourceOutscaleVpcRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -53,68 +55,60 @@ func DataSourceOutscaleVpc() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleVpcRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleVpcRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	var err error
-	req := oscgo.ReadNetsRequest{}
+	req := osc.ReadNetsRequest{}
 
 	if v, ok := d.GetOk("filter"); ok {
 		req.Filters, err = buildOutscaleDataSourceNetFilters(v.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
 	if id := d.Get("net_id"); id != "" {
-		req.Filters.SetNetIds([]string{id.(string)})
+		req.Filters.NetIds = &[]string{id.(string)}
 	}
 
-	var resp oscgo.ReadNetsResponse
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.NetApi.ReadNets(context.Background()).ReadNetsRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadNets(ctx, req, options.WithRetryTimeout(5*time.Minute))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	if len(resp.GetNets()) == 0 {
-		return ErrNoResults
+	if resp.Nets == nil || len(*resp.Nets) == 0 {
+		return diag.FromErr(ErrNoResults)
 	}
-	if len(resp.GetNets()) > 1 {
-		return ErrMultipleResults
-	}
-
-	net := resp.GetNets()[0]
-
-	d.SetId(net.GetNetId())
-
-	if err := d.Set("net_id", net.GetNetId()); err != nil {
-		return err
+	if len(*resp.Nets) > 1 {
+		return diag.FromErr(ErrMultipleResults)
 	}
 
-	if err := d.Set("ip_range", net.GetIpRange()); err != nil {
-		return err
-	}
-	if err := d.Set("dhcp_options_set_id", net.GetDhcpOptionsSetId()); err != nil {
-		return err
-	}
-	if err := d.Set("tenancy", net.GetTenancy()); err != nil {
-		return err
-	}
-	if err := d.Set("state", net.GetState()); err != nil {
-		return err
+	net := (*resp.Nets)[0]
+
+	d.SetId(net.NetId)
+
+	if err := d.Set("net_id", net.NetId); err != nil {
+		return diag.FromErr(err)
 	}
 
-	return d.Set("tags", FlattenOAPITagsSDK(net.GetTags()))
+	if err := d.Set("ip_range", net.IpRange); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("dhcp_options_set_id", net.DhcpOptionsSetId); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("tenancy", net.Tenancy); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("state", net.State); err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diag.FromErr(d.Set("tags", FlattenOAPITagsSDK(net.Tags)))
 }
 
-func buildOutscaleDataSourceNetFilters(set *schema.Set) (*oscgo.FiltersNet, error) {
-	var filters oscgo.FiltersNet
+func buildOutscaleDataSourceNetFilters(set *schema.Set) (*osc.FiltersNet, error) {
+	var filters osc.FiltersNet
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -124,21 +118,21 @@ func buildOutscaleDataSourceNetFilters(set *schema.Set) (*oscgo.FiltersNet, erro
 
 		switch name := m["name"].(string); name {
 		case "dhcp_options_set_ids":
-			filters.SetDhcpOptionsSetIds(filterValues)
+			filters.DhcpOptionsSetIds = &filterValues
 		case "ip_ranges":
-			filters.SetIpRanges(filterValues)
+			filters.IpRanges = &filterValues
 		case "net_ids":
-			filters.SetNetIds(filterValues)
+			filters.NetIds = &filterValues
 		case "states":
-			filters.SetStates(filterValues)
+			filters.States = new(lo.Map(filterValues, func(s string, _ int) osc.NetState { return osc.NetState(s) }))
 		case "tag_keys":
-			filters.SetTagKeys(filterValues)
+			filters.TagKeys = &filterValues
 		case "tag_values":
-			filters.SetTagValues(filterValues)
+			filters.TagValues = &filterValues
 		case "tags":
-			filters.SetTags(filterValues)
+			filters.Tags = &filterValues
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(name)
 		}
 	}
 	return &filters, nil

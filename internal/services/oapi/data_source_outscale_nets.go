@@ -2,21 +2,20 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceOutscaleVpcs() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleVpcsRead,
+		ReadContext: DataSourceOutscaleVpcsRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -66,23 +65,23 @@ func DataSourceOutscaleVpcs() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleVpcsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleVpcsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	var err error
-	req := oscgo.ReadNetsRequest{}
+	req := osc.ReadNetsRequest{}
 
 	filters, filtersOk := d.GetOk("filter")
 	netIds, netIdsOk := d.GetOk("net_id")
 
 	if !filtersOk && !netIdsOk {
-		return fmt.Errorf("filters or net_id(s) must be provided")
+		return diag.Errorf("filters or net_id(s) must be provided")
 	}
 
 	if filtersOk {
 		req.Filters, err = buildOutscaleDataSourceNetFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
@@ -92,49 +91,41 @@ func DataSourceOutscaleVpcsRead(d *schema.ResourceData, meta interface{}) error 
 		for k, v := range netIds.([]interface{}) {
 			ids[k] = v.(string)
 		}
-		var filters oscgo.FiltersNet
-		filters.SetNetIds(ids)
-		req.SetFilters(filters)
+		var filters osc.FiltersNet
+		filters.NetIds = &ids
+		req.Filters = &filters
 
 	}
 
-	var resp oscgo.ReadNetsResponse
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.NetApi.ReadNets(context.Background()).ReadNetsRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadNets(ctx, req, options.WithRetryTimeout(5*time.Minute))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	if len(resp.GetNets()) == 0 {
-		return ErrNoResults
+	if resp.Nets == nil || len(*resp.Nets) == 0 {
+		return diag.FromErr(ErrNoResults)
 	}
 
 	d.SetId(id.UniqueId())
 
-	nets := make([]map[string]interface{}, len(resp.GetNets()))
+	nets := make([]map[string]interface{}, len(*resp.Nets))
 
-	for i, v := range resp.GetNets() {
+	for i, v := range *resp.Nets {
 		net := make(map[string]interface{})
 
-		net["net_id"] = v.GetNetId()
-		net["ip_range"] = v.GetIpRange()
-		net["dhcp_options_set_id"] = v.GetDhcpOptionsSetId()
-		net["tenancy"] = v.GetTenancy()
-		net["state"] = v.GetState()
+		net["net_id"] = v.NetId
+		net["ip_range"] = v.IpRange
+		net["dhcp_options_set_id"] = v.DhcpOptionsSetId
+		net["tenancy"] = v.Tenancy
+		net["state"] = v.State
 		if v.Tags != nil {
-			net["tags"] = FlattenOAPITagsSDK(v.GetTags())
+			net["tags"] = FlattenOAPITagsSDK(v.Tags)
 		}
 
 		nets[i] = net
 	}
 
 	if err := d.Set("nets", nets); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil

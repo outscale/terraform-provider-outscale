@@ -48,6 +48,9 @@ jobs:
                   OUTSCALE_REGION: ${{ secrets.OSC_REGION }}
                   OUTSCALE_ACCOUNT: ${{ secrets.OSC_ACCOUNT_ID }}
                   OUTSCALE_IMAGEID: ${{ secrets.OUTSCALE_IMAGEID }}
+                  OSC_ACCESS_KEY: ${{ secrets.OSC_ACCESS_KEY }}
+                  OSC_SECRET_KEY: ${{ secrets.OSC_SECRET_KEY }}
+                  OSC_REGION: ${{ secrets.OSC_REGION }}
                   TF_VAR_image_id: ${{ secrets.OUTSCALE_IMAGEID }}
                   TF_VAR_region: ${{ secrets.OSC_REGION }}
                   TF_VAR_service_name: ${{ secrets.SERVICE_NAME }}

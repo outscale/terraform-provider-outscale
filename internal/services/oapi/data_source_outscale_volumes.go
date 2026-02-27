@@ -5,19 +5,22 @@ import (
 	"log"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
 	"github.com/davecgh/go-spew/spew"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceOutscaleVolumes() *schema.Resource {
 	return &schema.Resource{
-		Read: datasourceOAPIVolumesRead,
+		ReadContext: datasourceOAPIVolumesRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -102,53 +105,45 @@ func DataSourceOutscaleVolumes() *schema.Resource {
 	}
 }
 
-func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func datasourceOAPIVolumesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	filters, filtersOk := d.GetOk("filter")
 	volumeIds, volumeIdsOk := d.GetOk("volume_id")
-	params := oscgo.ReadVolumesRequest{
-		Filters: &oscgo.FiltersVolume{},
+	params := osc.ReadVolumesRequest{
+		Filters: &osc.FiltersVolume{},
 	}
 
 	if volumeIdsOk {
 		volIDs := utils.InterfaceSliceToStringSlice(volumeIds.([]interface{}))
-		filter := oscgo.FiltersVolume{}
-		filter.SetVolumeIds(volIDs)
-		params.SetFilters(filter)
+		filter := osc.FiltersVolume{}
+		filter.VolumeIds = &volIDs
+		params.Filters = &filter
 	}
 
 	var err error
 	if filtersOk {
 		params.Filters, err = buildOutscaleOSCAPIDataSourceVolumesFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	var resp oscgo.ReadVolumesResponse
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(params).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadVolumes(ctx, params, options.WithRetryTimeout(5*time.Minute))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	log.Printf("Found These Volumes %s", spew.Sdump(resp.GetVolumes()))
+	log.Printf("Found These Volumes %s", spew.Sdump(resp.Volumes))
 
-	volumes := resp.GetVolumes()
+	volumes := ptr.From(resp.Volumes)
 
 	if len(volumes) < 1 {
-		return ErrNoResults
+		return diag.FromErr(ErrNoResults)
 	}
 
 	if err := d.Set("volumes", getOAPIVolumes(volumes)); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(id.UniqueId())
@@ -156,17 +151,17 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func getOAPIVolumes(volumes []oscgo.Volume) (res []map[string]interface{}) {
+func getOAPIVolumes(volumes []osc.Volume) (res []map[string]interface{}) {
 	for _, v := range volumes {
 		res = append(res, map[string]interface{}{
-			"creation_date":  v.CreationDate,
-			"iops":           getIops(v.GetVolumeType(), v.GetIops()),
-			"linked_volumes": getLinkedVolumes(v.GetLinkedVolumes()),
+			"creation_date":  from.ISO8601(v.CreationDate),
+			"iops":           getIops(v.VolumeType, v.Iops),
+			"linked_volumes": getLinkedVolumes(v.LinkedVolumes),
 			"size":           v.Size,
 			"snapshot_id":    v.SnapshotId,
 			"state":          v.State,
 			"subregion_name": v.SubregionName,
-			"tags":           FlattenOAPITagsSDK(v.GetTags()),
+			"tags":           FlattenOAPITagsSDK(v.Tags),
 			"volume_id":      v.VolumeId,
 			"volume_type":    v.VolumeType,
 		})
@@ -174,7 +169,7 @@ func getOAPIVolumes(volumes []oscgo.Volume) (res []map[string]interface{}) {
 	return
 }
 
-func getLinkedVolumes(linkedVolumes []oscgo.LinkedVolume) (res []map[string]interface{}) {
+func getLinkedVolumes(linkedVolumes []osc.LinkedVolume) (res []map[string]interface{}) {
 	for _, l := range linkedVolumes {
 		res = append(res, map[string]interface{}{
 			"delete_on_vm_deletion": l.DeleteOnVmDeletion,
@@ -187,8 +182,8 @@ func getLinkedVolumes(linkedVolumes []oscgo.LinkedVolume) (res []map[string]inte
 	return
 }
 
-func getIops(volumeType string, iops int32) int32 {
-	if volumeType != "standard" {
+func getIops(volumeType osc.VolumeType, iops int) int {
+	if volumeType != osc.VolumeTypeStandard {
 		return iops
 	}
 	return DefaultIops

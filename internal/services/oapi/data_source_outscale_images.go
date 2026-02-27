@@ -2,23 +2,24 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/spf13/cast"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 	"github.com/samber/lo"
 )
 
 func DataSourceOutscaleImages() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleImagesRead,
+		ReadContext: DataSourceOutscaleImagesRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -226,86 +227,78 @@ func DataSourceOutscaleImages() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleImagesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleImagesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	executableUsers, executableUsersOk := d.GetOk("permissions")
 	filters, filtersOk := d.GetOk("filter")
 	aids, ownersOk := d.GetOk("account_ids")
 	if !executableUsersOk && !filtersOk && !ownersOk {
-		return fmt.Errorf("one of executable_users, filters, or account_ids must be assigned")
+		return diag.Errorf("one of executable_users, filters, or account_ids must be assigned")
 	}
 
 	var err error
-	filtersReq := &oscgo.FiltersImage{}
+	filtersReq := &osc.FiltersImage{}
 	if filtersOk {
 		filtersReq, err = buildOutscaleDataSourceImagesFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 	if ownersOk {
-		filtersReq.SetAccountIds([]string{aids.(string)})
+		filtersReq.AccountIds = &[]string{aids.(string)}
 	}
 	if executableUsersOk {
-		filtersReq.SetPermissionsToLaunchAccountIds(utils.InterfaceSliceToStringSlice(executableUsers.([]interface{})))
+		filtersReq.PermissionsToLaunchAccountIds = utils.InterfaceSliceToStringSlicePtr(executableUsers.([]interface{}))
 	}
 
-	req := oscgo.ReadImagesRequest{Filters: filtersReq}
+	req := osc.ReadImagesRequest{Filters: filtersReq}
 
-	var resp oscgo.ReadImagesResponse
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadImages(ctx, req, options.WithRetryTimeout(5*time.Minute))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	images := resp.GetImages()
-	if len(images) == 0 {
-		return ErrNoResults
+	images := resp.Images
+	if images == nil || len(*images) == 0 {
+		return diag.FromErr(ErrNoResults)
 	}
 
-	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
+	return diag.FromErr(resourceDataAttrSetter(d, func(set AttributeSetter) error {
 		d.SetId(id.UniqueId())
 
-		imgs := make([]map[string]interface{}, len(images))
-		for i, image := range images {
+		imgs := make([]map[string]interface{}, len(*images))
+		for i, image := range *images {
 			imgs[i] = map[string]interface{}{
-				"architecture":          image.GetArchitecture(),
-				"boot_modes":            lo.Map(image.GetBootModes(), func(b oscgo.BootMode, _ int) string { return string(b) }),
-				"secure_boot":           image.GetSecureBoot(),
-				"tpm_mandatory":         image.GetTpmMandatory(),
-				"creation_date":         image.GetCreationDate(),
-				"description":           image.GetDescription(),
-				"image_id":              image.GetImageId(),
-				"file_location":         image.GetFileLocation(),
-				"account_alias":         image.GetAccountAlias(),
-				"account_id":            image.GetAccountId(),
-				"image_type":            image.GetImageType(),
-				"image_name":            image.GetImageName(),
-				"root_device_name":      image.GetRootDeviceName(),
-				"root_device_type":      image.GetRootDeviceType(),
-				"state":                 image.GetState(),
+				"architecture":          image.Architecture,
+				"boot_modes":            lo.Map(image.BootModes, func(b osc.BootMode, _ int) string { return string(b) }),
+				"secure_boot":           image.SecureBoot,
+				"tpm_mandatory":         image.TpmMandatory,
+				"creation_date":         from.ISO8601(image.CreationDate),
+				"description":           image.Description,
+				"image_id":              image.ImageId,
+				"file_location":         image.FileLocation,
+				"account_alias":         image.AccountAlias,
+				"account_id":            image.AccountId,
+				"image_type":            image.ImageType,
+				"image_name":            image.ImageName,
+				"root_device_name":      image.RootDeviceName,
+				"root_device_type":      image.RootDeviceType,
+				"state":                 image.State,
 				"block_device_mappings": omiOAPIBlockDeviceMappings(*image.BlockDeviceMappings),
-				"product_codes":         image.GetProductCodes(),
+				"product_codes":         image.ProductCodes,
 				"state_comment":         omiOAPIStateReason(image.StateComment),
 				"permissions_to_launch": omiOAPIPermissionToLuch(image.PermissionsToLaunch),
-				"tags":                  FlattenOAPITagsSDK(image.GetTags()),
+				"tags":                  FlattenOAPITagsSDK(image.Tags),
 			}
 		}
 
 		return set("images", imgs)
-	})
+	}))
 }
 
-func buildOutscaleDataSourceImagesFilters(set *schema.Set) (*oscgo.FiltersImage, error) {
-	filters := oscgo.FiltersImage{}
+func buildOutscaleDataSourceImagesFilters(set *schema.Set) (*osc.FiltersImage, error) {
+	filters := osc.FiltersImage{}
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -316,59 +309,59 @@ func buildOutscaleDataSourceImagesFilters(set *schema.Set) (*oscgo.FiltersImage,
 
 		switch name := m["name"].(string); name {
 		case "account_aliases":
-			filters.SetAccountAliases(filterValues)
+			filters.AccountAliases = &filterValues
 		case "account_ids":
-			filters.SetAccountIds(filterValues)
+			filters.AccountIds = &filterValues
 		case "architectures":
-			filters.SetArchitectures(filterValues)
+			filters.Architectures = &filterValues
 		case "boot_modes":
-			filters.SetBootModes(lo.Map(filterValues, func(s string, _ int) oscgo.BootMode { return (oscgo.BootMode)(s) }))
+			filters.BootModes = new(lo.Map(filterValues, func(s string, _ int) osc.BootMode { return (osc.BootMode)(s) }))
 		case "secure_boot":
-			filters.SetSecureBoot(cast.ToBool(filterValues[0]))
+			filters.SecureBoot = new(cast.ToBool(filterValues[0]))
 		case "block_device_mapping_delete_on_vm_deletion":
-			filters.SetBlockDeviceMappingDeleteOnVmDeletion(cast.ToBool(filterValues[0]))
+			filters.BlockDeviceMappingDeleteOnVmDeletion = new(cast.ToBool(filterValues[0]))
 		case "block_device_mapping_device_names":
-			filters.SetBlockDeviceMappingDeviceNames(filterValues)
+			filters.BlockDeviceMappingDeviceNames = &filterValues
 		case "block_device_mapping_snapshot_ids":
-			filters.SetBlockDeviceMappingSnapshotIds(filterValues)
+			filters.BlockDeviceMappingSnapshotIds = &filterValues
 		case "block_device_mapping_volume_sizes":
-			filters.SetBlockDeviceMappingVolumeSizes(utils.StringSliceToInt32Slice(filterValues))
+			filters.BlockDeviceMappingVolumeSizes = new(utils.StringSliceToIntSlice(filterValues))
 		case "block_device_mapping_volume_types":
-			filters.SetBlockDeviceMappingVolumeTypes(filterValues)
+			filters.BlockDeviceMappingVolumeTypes = new(lo.Map(filterValues, func(s string, _ int) osc.VolumeType { return (osc.VolumeType)(s) }))
 		case "descriptions":
-			filters.SetDescriptions(filterValues)
+			filters.Descriptions = &filterValues
 		case "file_locations":
-			filters.SetFileLocations(filterValues)
+			filters.FileLocations = &filterValues
 		case "hypervisors":
-			filters.SetHypervisors(filterValues)
+			filters.Hypervisors = &filterValues
 		case "image_ids":
-			filters.SetImageIds(filterValues)
+			filters.ImageIds = &filterValues
 		case "image_names":
-			filters.SetImageNames(filterValues)
+			filters.ImageNames = &filterValues
 		case "permissions_to_launch_account_ids":
-			filters.SetPermissionsToLaunchAccountIds(filterValues)
+			filters.PermissionsToLaunchAccountIds = &filterValues
 		case "permissions_to_launch_global_permission":
-			filters.SetPermissionsToLaunchGlobalPermission(cast.ToBool(filterValues[0]))
+			filters.PermissionsToLaunchGlobalPermission = new(cast.ToBool(filterValues[0]))
 		case "product_codes":
-			filters.SetProductCodes(filterValues)
+			filters.ProductCodes = &filterValues
 		case "product_code_names":
-			filters.SetProductCodeNames(filterValues)
+			filters.ProductCodeNames = &filterValues
 		case "root_device_names":
-			filters.SetRootDeviceNames(filterValues)
+			filters.RootDeviceNames = &filterValues
 		case "root_device_types":
-			filters.SetRootDeviceTypes(filterValues)
+			filters.RootDeviceTypes = &filterValues
 		case "states":
-			filters.SetStates(filterValues)
+			filters.States = new(lo.Map(filterValues, func(s string, _ int) osc.ImageState { return (osc.ImageState)(s) }))
 		case "tag_keys":
-			filters.SetTagKeys(filterValues)
+			filters.TagKeys = &filterValues
 		case "tag_values":
-			filters.SetTagValues(filterValues)
+			filters.TagValues = &filterValues
 		case "tags":
-			filters.SetTags(filterValues)
+			filters.Tags = &filterValues
 		case "virtualization_types":
-			filters.SetVirtualizationTypes(filterValues)
+			filters.VirtualizationTypes = &filterValues
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(name)
 		}
 	}
 	return &filters, nil

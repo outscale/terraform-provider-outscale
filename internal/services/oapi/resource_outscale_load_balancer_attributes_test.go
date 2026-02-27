@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -13,7 +13,7 @@ import (
 )
 
 func TestAccOthers_LBUAttr_basic(t *testing.T) {
-	var conf oscgo.AccessLog
+	var conf osc.AccessLog
 	const (
 		MIN_LB_NAME_SUFFIX int = 1
 		MAX_LB_NAME_SUFFIX int = 1000
@@ -21,9 +21,6 @@ func TestAccOthers_LBUAttr_basic(t *testing.T) {
 	suffix := utils.RandIntRange(MIN_LB_NAME_SUFFIX, MAX_LB_NAME_SUFFIX)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() {
-			testacc.PreCheck(t)
-		},
 		IDRefreshName: "outscale_load_balancer_attributes.bar2",
 		Providers:     testacc.SDKProviders,
 		Steps: []resource.TestStep{
@@ -37,7 +34,7 @@ func TestAccOthers_LBUAttr_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleLBUAttrExists(n string, res *oscgo.AccessLog) resource.TestCheckFunc {
+func testAccCheckOutscaleLBUAttrExists(n string, res *osc.AccessLog) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {

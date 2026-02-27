@@ -4,10 +4,13 @@ import (
 	"context"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
 
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
@@ -15,7 +18,7 @@ import (
 
 func DataSourceAccount() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceAccountRead,
+		ReadContext: DataSourceAccountRead,
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Type:     schema.TypeString,
@@ -86,80 +89,72 @@ func DataSourceAccount() *schema.Resource {
 	}
 }
 
-func DataSourceAccountRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceAccountRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
-	req := oscgo.ReadAccountsRequest{}
+	req := osc.ReadAccountsRequest{}
 
-	var resp oscgo.ReadAccountsResponse
-	err := retry.Retry(30*time.Second, func() *retry.RetryError {
-		rp, httpResp, err := conn.AccountApi.ReadAccounts(context.Background()).ReadAccountsRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.ReadAccounts(ctx, req, options.WithRetryTimeout(30*time.Second))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	if len(resp.GetAccounts()) == 0 {
-		return ErrNoResults
+	if resp.Accounts == nil || len(*resp.Accounts) == 0 {
+		return diag.FromErr(ErrNoResults)
 	}
 
-	if len(resp.GetAccounts()) > 1 {
-		return ErrMultipleResults
+	if len(*resp.Accounts) > 1 {
+		return diag.FromErr(ErrMultipleResults)
 	}
 
-	account := resp.GetAccounts()[0]
+	account := (*resp.Accounts)[0]
 
 	d.SetId(id.UniqueId())
 
-	if err := d.Set("account_id", account.GetAccountId()); err != nil {
-		return err
+	if err := d.Set("account_id", ptr.From(account.AccountId)); err != nil {
+		return diag.FromErr(err)
 	}
 	if err := d.Set("additional_emails", utils.StringSlicePtrToInterfaceSlice(account.AdditionalEmails)); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	if err := d.Set("city", account.GetCity()); err != nil {
-		return err
+	if err := d.Set("city", ptr.From(account.City)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("company_name", account.GetCompanyName()); err != nil {
-		return err
+	if err := d.Set("company_name", ptr.From(account.CompanyName)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("country", account.GetCountry()); err != nil {
-		return err
+	if err := d.Set("country", ptr.From(account.Country)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("customer_id", account.GetCustomerId()); err != nil {
-		return err
+	if err := d.Set("customer_id", ptr.From(account.CustomerId)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("email", account.GetEmail()); err != nil {
-		return err
+	if err := d.Set("email", ptr.From(account.Email)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("first_name", account.GetFirstName()); err != nil {
-		return err
+	if err := d.Set("first_name", ptr.From(account.FirstName)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("job_title", account.GetJobTitle()); err != nil {
-		return err
+	if err := d.Set("job_title", ptr.From(account.JobTitle)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("last_name", account.GetLastName()); err != nil {
-		return err
+	if err := d.Set("last_name", ptr.From(account.LastName)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("mobile_number", account.GetMobileNumber()); err != nil {
-		return err
+	if err := d.Set("mobile_number", ptr.From(account.MobileNumber)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("phone_number", account.GetPhoneNumber()); err != nil {
-		return err
+	if err := d.Set("phone_number", ptr.From(account.PhoneNumber)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("state_province", account.GetStateProvince()); err != nil {
-		return err
+	if err := d.Set("state_province", ptr.From(account.StateProvince)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("vat_number", account.GetVatNumber()); err != nil {
-		return err
+	if err := d.Set("vat_number", ptr.From(account.VatNumber)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("zip_code", account.GetZipCode()); err != nil {
-		return err
+	if err := d.Set("zip_code", ptr.From(account.ZipCode)); err != nil {
+		return diag.FromErr(err)
 	}
 	return nil
 }

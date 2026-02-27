@@ -2,20 +2,22 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceOutscaleProductType() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleProductTypeRead,
+		ReadContext: DataSourceOutscaleProductTypeRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -39,10 +41,10 @@ func DataSourceOutscaleProductType() *schema.Resource {
 	}
 }
 
-func DataSourceOutscaleProductTypeRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleProductTypeRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
-	req := oscgo.ReadProductTypesRequest{}
+	req := osc.ReadProductTypesRequest{}
 
 	filters, filtersOk := d.GetOk("filter")
 
@@ -50,52 +52,42 @@ func DataSourceOutscaleProductTypeRead(d *schema.ResourceData, meta interface{})
 	if filtersOk {
 		req.Filters, err = buildOutscaleProductTypeDataSourceFilters(filters.(*schema.Set))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	var resp oscgo.ReadProductTypesResponse
-	err = retry.Retry(120*time.Second, func() *retry.RetryError {
-		var err error
-		rp, httpResp, err := conn.ProductTypeApi.ReadProductTypes(context.Background()).ReadProductTypesRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
-
+	resp, err := client.ReadProductTypes(ctx, req, options.WithRetryTimeout(120*time.Second))
 	if err != nil {
 		errString := err.Error()
-		return fmt.Errorf("error reading producttype (%s)", errString)
+		return diag.Errorf("error reading producttype (%s)", errString)
 	}
 
-	if len(resp.GetProductTypes()) == 0 {
-		return ErrNoResults
+	if resp.ProductTypes == nil || len(*resp.ProductTypes) == 0 {
+		return diag.FromErr(ErrNoResults)
 	}
 
-	if len(resp.GetProductTypes()) > 1 {
-		return ErrMultipleResults
+	if len(*resp.ProductTypes) > 1 {
+		return diag.FromErr(ErrMultipleResults)
 	}
 
-	productType := resp.GetProductTypes()[0]
+	productType := (*resp.ProductTypes)[0]
 
-	d.SetId(productType.GetProductTypeId())
-	if err := d.Set("product_type_id", productType.GetProductTypeId()); err != nil {
-		return err
+	d.SetId(ptr.From(productType.ProductTypeId))
+	if err := d.Set("product_type_id", ptr.From(productType.ProductTypeId)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("description", productType.GetDescription()); err != nil {
-		return err
+	if err := d.Set("description", ptr.From(productType.Description)); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := d.Set("vendor", productType.GetVendor()); err != nil {
-		return err
+	if err := d.Set("vendor", ptr.From(productType.Vendor)); err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil
 }
 
-func buildOutscaleProductTypeDataSourceFilters(set *schema.Set) (*oscgo.FiltersProductType, error) {
-	var filters oscgo.FiltersProductType
+func buildOutscaleProductTypeDataSourceFilters(set *schema.Set) (*osc.FiltersProductType, error) {
+	var filters osc.FiltersProductType
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -107,7 +99,7 @@ func buildOutscaleProductTypeDataSourceFilters(set *schema.Set) (*oscgo.FiltersP
 		case "product_type_ids":
 			filters.ProductTypeIds = &filterValues
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(name)
 		}
 	}
 	return &filters, nil
