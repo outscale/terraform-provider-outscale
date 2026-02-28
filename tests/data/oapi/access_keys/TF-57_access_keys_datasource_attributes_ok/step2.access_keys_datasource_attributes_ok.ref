@@ -19,14 +19,14 @@
                             {
                                 "access_key_id": "##id-0##",
                                 "creation_date": "########",
-                                "expiration_date": "########",
+                                "expiration_date": "",
                                 "last_modification_date": "########",
                                 "state": "ACTIVE"
                             },
                             {
                                 "access_key_id": "##id-1##",
                                 "creation_date": "########",
-                                "expiration_date": "########",
+                                "expiration_date": "",
                                 "last_modification_date": "########",
                                 "state": "ACTIVE"
                             }
@@ -53,7 +53,7 @@
                     "attributes": {
                         "access_key_id": "##id-0##",
                         "creation_date": "########",
-                        "expiration_date": "########",
+                        "expiration_date": "",
                         "id": "##id-0##",
                         "last_modification_date": "########",
                         "request_id": "########",
@@ -78,7 +78,7 @@
                     "attributes": {
                         "access_key_id": "##id-1##",
                         "creation_date": "########",
-                        "expiration_date": "########",
+                        "expiration_date": "",
                         "id": "##id-1##",
                         "last_modification_date": "########",
                         "request_id": "########",
