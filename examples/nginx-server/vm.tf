@@ -1,7 +1,7 @@
 # Create the virtual machine and initialize it with cloud-init.
 resource "outscale_vm" "my-vm" {
-  vm_type            = var.vm_type
-  image_id           = var.image_id
+  vm_type  = var.vm_type
+  image_id = var.image_id
   # keypair_name_wo is the write-only version of keypair_name.
   # It avoids storing the value in Terraform state.
   keypair_name_wo    = outscale_keypair.my-keypair.keypair_name

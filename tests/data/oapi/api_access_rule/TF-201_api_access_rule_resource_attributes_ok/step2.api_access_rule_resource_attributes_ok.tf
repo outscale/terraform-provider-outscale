@@ -1,9 +1,9 @@
 resource "outscale_ca" "ca_for_aar" {
-  ca_pem      = file("certs/certificate.pem")
+  ca_pem = file("certs/certificate.pem")
 }
 
 resource "outscale_ca" "ca_for_aar_2" {
-  ca_pem      = file("certs/certificate.pem")
+  ca_pem = file("certs/certificate.pem")
 }
 
 

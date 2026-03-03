@@ -11,12 +11,12 @@ resource "outscale_security_group" "security_group_TF178" {
 
 resource "outscale_vm" "outscale_vm-TF178" {
   block_device_mappings {
-    device_name                  = "/dev/sdb"
-      bsu {
-        volume_size              = 20
-        volume_type              = "standard"
-      }
+    device_name = "/dev/sdb"
+    bsu {
+      volume_size = 20
+      volume_type = "standard"
     }
+  }
   image_id                       = var.image_id
   vm_type                        = "tinav5.c2r2"
   performance                    = "medium"

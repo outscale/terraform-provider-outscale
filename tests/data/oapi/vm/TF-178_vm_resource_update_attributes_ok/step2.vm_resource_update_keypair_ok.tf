@@ -11,17 +11,17 @@ resource "outscale_security_group" "security_group_TF178" {
 
 resource "outscale_vm" "outscale_vm-TF178" {
   block_device_mappings {
-    device_name                   = "/dev/sdb"
-      bsu {
-        volume_size               = 20
-        volume_type               = "standard"
-      }
+    device_name = "/dev/sdb"
+    bsu {
+      volume_size = 20
+      volume_type = "standard"
     }
-  image_id                        = var.image_id
-  vm_type                         = "tinav5.c2r2"
-  performance                     = "medium"
-  deletion_protection             = true
-  vm_initiated_shutdown_behavior  = "stop"
-  security_group_ids              = [outscale_security_group.security_group_TF178[0].security_group_id]
-  keypair_name                    = outscale_keypair.keypair-TF178[1].keypair_name
+  }
+  image_id                       = var.image_id
+  vm_type                        = "tinav5.c2r2"
+  performance                    = "medium"
+  deletion_protection            = true
+  vm_initiated_shutdown_behavior = "stop"
+  security_group_ids             = [outscale_security_group.security_group_TF178[0].security_group_id]
+  keypair_name                   = outscale_keypair.keypair-TF178[1].keypair_name
 }

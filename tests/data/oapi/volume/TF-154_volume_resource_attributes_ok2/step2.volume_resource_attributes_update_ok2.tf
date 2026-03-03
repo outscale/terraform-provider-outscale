@@ -1,10 +1,10 @@
 resource "outscale_volume" "outscale_volume" {
-    subregion_name = "${var.region}a"
-    size            = 11
-    iops            = 200
-    volume_type     = "io1"
-    tags {
-      key = "name"
-      value = "volume-io1"
-    }
+  subregion_name = "${var.region}a"
+  size           = 11
+  iops           = 200
+  volume_type    = "io1"
+  tags {
+    key   = "name"
+    value = "volume-io1"
+  }
 }

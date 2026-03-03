@@ -19,6 +19,6 @@ provider "outscale" {
   access_key_id = var.access_key
   secret_key_id = var.secret_key
   api {
-    region        = var.region
+    region = var.region
   }
 }

@@ -10,5 +10,5 @@ resource "outscale_vm" "outscale_vm_TF206" {
   vm_type             = var.vm_type
   deletion_protection = false
   boot_mode           = "uefi"
-  tpm_enabled = true
+  tpm_enabled         = true
 }
