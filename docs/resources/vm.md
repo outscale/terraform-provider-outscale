@@ -335,7 +335,7 @@ The following arguments are supported:
     * `nic_id` - (Optional) The ID of the NIC, if you are attaching an existing NIC when creating a VM.
     * `private_ips` - (Optional) One or more private IPs to assign to the NIC, if you create a NIC when creating a VM. Only one private IP can be the primary private IP.
         * `is_primary` - (Optional) If true, the IP is the primary private IP of the NIC.
-        * `private_ip` - (Optional) The private IP of the NIC.
+        * `private_ip` - (Optional) A private IP for the NIC. This IP must be within the IP range of the Subnet that you specify with the `subnet_id` attribute. However, it cannot be one of the first four IPs (ending in `.0`, `.1`, `.2`, `.3`) or the last IP (ending in `.255`) of the Subnet, as these are reserved by 3DS OUTSCALE. For more information, see [About Nets](https://docs.outscale.com/en/userguide/About-Nets.html).
     * `secondary_private_ip_count` - (Optional) The number of secondary private IPs, if you create a NIC when creating a VM. This parameter cannot be specified if you specified more than one private IP in the `private_ips` parameter.
     * `security_group_ids` - (Optional) One or more IDs of security groups for the NIC, if you create a NIC when creating a VM.
     * `subnet_id` - (Optional) The ID of the Subnet for the NIC, if you create a NIC when creating a VM. This parameter is required if you create a NIC when creating the VM.
@@ -350,12 +350,12 @@ The following arguments are supported:
     * `nic_id` - (Optional) The ID of the NIC, if you are attaching an existing NIC when creating a VM.
     * `private_ips` - (Optional) One or more private IPs to assign to the NIC, if you create a NIC when creating a VM. Only one private IP can be the primary private IP.
         * `is_primary` - (Optional) If true, the IP is the primary private IP of the NIC.
-        * `private_ip` - (Optional) The private IP of the NIC.
+        * `private_ip` - (Optional) A private IP for the NIC. This IP must be within the IP range of the Subnet that you specify with the `subnet_id` attribute. However, it cannot be one of the first four IPs (ending in `.0`, `.1`, `.2`, `.3`) or the last IP (ending in `.255`) of the Subnet, as these are reserved by 3DS OUTSCALE. For more information, see [About Nets](https://docs.outscale.com/en/userguide/About-Nets.html).
     * `secondary_private_ip_count` - (Optional) The number of secondary private IPs, if you create a NIC when creating a VM. This parameter cannot be specified if you specified more than one private IP in the `private_ips` parameter.
     * `security_group_ids` - (Optional) One or more IDs of security groups for the NIC, if you create a NIC when creating a VM.
     * `subnet_id` - (Optional) The ID of the Subnet for the NIC, if you create a NIC when creating a VM. This parameter is required if you create a NIC when creating the VM.
 
-* `private_ips` - (Optional) One or more private IPs of the VM.
+* `private_ips` - (Optional) One or more private IPs of the VM. These IPs must be within the IP range of the Subnet that you specify with the `subnet_id` attribute. However, they cannot be one of the first four IPs (ending in `.0`, `.1`, `.2`, `.3`) or the last IP (ending in `.255`) of the Subnet, as these are reserved by 3DS OUTSCALE. For more information, see [About Nets](https://docs.outscale.com/en/userguide/About-Nets.html).
 * `secure_boot_action` - (Optional) One action to perform on the next boot of the VM (`enable` | `disable` | `setup-mode` |`none`).<br /> For more information, see [About Secure Boot](https://docs.outscale.com/en/userguide/About-Secure-Boot.html#_secure_boot_actions).
 * `security_group_ids` - (Optional) One or more IDs of security group for the VMs. You must specify at least one of the following parameters: `security_group_ids` or `security_group_names`.
 * `security_group_names` - (Optional) One or more names of security groups for the VMs. You must specify at least one of the following parameters: `security_group_ids` or `security_group_names`.
