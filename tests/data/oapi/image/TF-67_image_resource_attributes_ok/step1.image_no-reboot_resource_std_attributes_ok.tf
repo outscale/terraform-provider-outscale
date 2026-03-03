@@ -27,7 +27,7 @@ resource "outscale_image" "outscale_image" {
 
 resource "outscale_image" "outscale_image_2" {
   description        = "Test-copy-image"
-  image_name = "test-image-${random_string.suffix[1].result}"
+  image_name         = "test-image-${random_string.suffix[1].result}"
   source_image_id    = outscale_image.outscale_image.image_id
   source_region_name = var.region
   boot_modes         = ["uefi", "legacy"]

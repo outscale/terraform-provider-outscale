@@ -1,15 +1,15 @@
 resource "outscale_ca" "ca_for_api_access_rule" {
-  ca_pem      = file("certs/certificate.pem")
+  ca_pem = file("certs/certificate.pem")
 }
 
 resource "outscale_ca" "ca_for_api_access_rule_2" {
-  ca_pem      = file("certs/certificate.pem")
+  ca_pem = file("certs/certificate.pem")
 }
 
 
 resource "outscale_api_access_rule" "api_access_rule_1" {
 
-  ca_ids = [outscale_ca.ca_for_api_access_rule.ca_id,outscale_ca.ca_for_api_access_rule_2.ca_id]
+  ca_ids = [outscale_ca.ca_for_api_access_rule.ca_id, outscale_ca.ca_for_api_access_rule_2.ca_id]
 
   ip_ranges = ["192.168.2.34", "192.14.0.0/16"]
 
@@ -37,7 +37,7 @@ data "outscale_api_access_rule" "data_api_access_rule_2" {
     values = [outscale_ca.ca_for_api_access_rule_2.ca_id]
   }
 
-depends_on =[outscale_api_access_rule.api_access_rule_1]
+  depends_on = [outscale_api_access_rule.api_access_rule_1]
 }
 
 
@@ -48,7 +48,7 @@ data "outscale_api_access_rule" "data_api_access_rule_3" {
     values = ["192.14.0.0/16"]
   }
 
-depends_on =[outscale_api_access_rule.api_access_rule_1]
+  depends_on = [outscale_api_access_rule.api_access_rule_1]
 
 }
 
@@ -59,7 +59,7 @@ data "outscale_api_access_rule" "data_api_access_rule_4" {
     values = ["test-TF200-2"]
   }
 
-depends_on =[outscale_api_access_rule.api_access_rule_1]
+  depends_on = [outscale_api_access_rule.api_access_rule_1]
 }
 
 data "outscale_api_access_rule" "data_api_access_rule_5" {
@@ -69,5 +69,5 @@ data "outscale_api_access_rule" "data_api_access_rule_5" {
     values = ["API Access rules-TF-200"]
   }
 
-depends_on =[outscale_api_access_rule.api_access_rule_1]
+  depends_on = [outscale_api_access_rule.api_access_rule_1]
 }

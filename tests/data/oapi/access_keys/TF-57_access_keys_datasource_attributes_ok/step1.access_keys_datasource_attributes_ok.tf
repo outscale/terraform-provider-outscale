@@ -1,3 +1,3 @@
-resource "outscale_access_key" "my_access_key_1"{
- }
+resource "outscale_access_key" "my_access_key_1" {
+}
 
