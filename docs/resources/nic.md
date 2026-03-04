@@ -69,10 +69,9 @@ resource "outscale_nic" "nic02" {
 The following arguments are supported:
 
 * `description` - (Optional) A description for the NIC.
-* `private_ips` - (Optional) Information about the private IP or IPs of the NIC.
+* `private_ips` - (Optional) Information about the private IP or IPs of the NIC. If you do not specify a primary private IP, one is still created, with an IP randomly selected within the IP range of the Subnet.
     * `is_primary` - (Optional) If true, the IP is the primary private IP of the NIC.
-    * `private_ip` - (Optional) A private IP for the NIC. This IP must be within the IP range of the Subnet that you specify with the `subnet_id` attribute. However, it cannot be one of the first four IPs (ending in `.0`, `.1`, `.2`, `.3`) or the last IP (ending in `.255`) of the Subnet, as these are reserved by 3DS OUTSCALE. For more information, see [About Nets](https://docs.outscale.com/en/userguide/About-Nets.html).<br />
-If you do not specify this argument, a random private IP is selected within the IP range of the Subnet.
+    * `private_ip` - (Optional) A private IP for the NIC. This IP must be within the IP range of the Subnet that you specify with the `subnet_id` attribute. However, it cannot be one of the first four IPs (ending in `.0`, `.1`, `.2`, `.3`) or the last IP (ending in `.255`) of the Subnet, as these are reserved by 3DS OUTSCALE. For more information, see [About Nets](https://docs.outscale.com/en/userguide/About-Nets.html).
 * `security_group_ids` - (Optional) One or more IDs of security groups for the NIC.
 * `subnet_id` - (Required) The ID of the Subnet in which you want to create the NIC.
 * `tags` - (Optional) A tag to add to this resource. You can specify this argument several times.
