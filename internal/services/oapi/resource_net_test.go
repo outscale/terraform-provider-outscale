@@ -11,7 +11,7 @@ import (
 func TestAccNet_Bacic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
-		PreCheck:                 func() { testacc.PreCheck(t) },
+
 		Steps: []resource.TestStep{
 			{
 				Config: configNetBasic,
@@ -25,8 +25,7 @@ func TestAccNet_Bacic(t *testing.T) {
 
 func TestAccNet_Migration(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { testacc.PreCheck(t) },
-		Steps:    testacc.FrameworkMigrationTestSteps("1.0.1", configNetBasic),
+		Steps: testacc.FrameworkMigrationTestSteps("1.0.1", configNetBasic),
 	})
 }
 
@@ -34,7 +33,7 @@ func TestAccNet_UpdateTags(t *testing.T) {
 	netName := "outscale_net.basic_net"
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
-		PreCheck:                 func() { testacc.PreCheck(t) },
+
 		Steps: []resource.TestStep{
 			{
 				Config: configNetUpdateTags("NetTags"),

@@ -2,20 +2,21 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 func DataSourceEntitiesLinkedToPolicy() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceEntitiesLinkedToPoliciesRead,
+		ReadContext: DataSourceEntitiesLinkedToPoliciesRead,
 		Schema: map[string]*schema.Schema{
 			"policy_orn": {
 				Type:     schema.TypeString,
@@ -100,67 +101,60 @@ func DataSourceEntitiesLinkedToPolicy() *schema.Resource {
 	}
 }
 
-func DataSourceEntitiesLinkedToPoliciesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceEntitiesLinkedToPoliciesRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
 	orn := d.Get("policy_orn").(string)
-	req := oscgo.ReadEntitiesLinkedToPolicyRequest{PolicyOrn: orn}
-	if entities := utils.SetToStringSlice(d.Get("entities_type").(*schema.Set)); len(entities) > 0 {
-		req.SetEntitiesType(entities)
+	req := osc.ReadEntitiesLinkedToPolicyRequest{PolicyOrn: orn}
+	if entities := utils.SetToSuperStringSlice[osc.ReadEntitiesLinkedToPolicyRequestEntitiesType](d.Get("entities_type").(*schema.Set)); len(entities) > 0 {
+		req.EntitiesType = &entities
 	}
 
-	var resp oscgo.ReadEntitiesLinkedToPolicyResponse
-	err := retry.Retry(2*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.PolicyApi.ReadEntitiesLinkedToPolicy(context.Background()).ReadEntitiesLinkedToPolicyRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
-
+	resp, err := client.ReadEntitiesLinkedToPolicy(ctx, req, options.WithRetryTimeout(2*time.Minute))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	entities, ok := resp.GetPolicyEntitiesOk()
-	if !ok {
-		return fmt.Errorf("unable to find entities linked to policy")
+	if resp.PolicyEntities == nil {
+		return diag.Errorf("unable to find entities linked to policy")
 	}
 	d.SetId(id.UniqueId())
 
-	users := make([]map[string]interface{}, len(entities.GetUsers()))
-	groups := make([]map[string]interface{}, len(entities.GetGroups()))
-	accounts := make([]map[string]interface{}, len(entities.GetAccounts()))
-	if respUsers, ok := entities.GetUsersOk(); ok {
-		for i, v := range *respUsers {
-			user := make(map[string]interface{})
-			user["id"] = v.GetId()
-			user["name"] = v.GetName()
-			user["orn"] = v.GetOrn()
+	entities := *resp.PolicyEntities
+
+	users := make([]map[string]any, len(ptr.From(entities.Users)))
+	groups := make([]map[string]any, len(ptr.From(entities.Groups)))
+	accounts := make([]map[string]any, len(ptr.From(entities.Accounts)))
+	if entities.Users != nil {
+		for i, v := range *entities.Users {
+			user := make(map[string]any)
+			user["id"] = ptr.From(v.Id)
+			user["name"] = ptr.From(v.Name)
+			user["orn"] = ptr.From(v.Orn)
 			users[i] = user
 		}
 	}
-	if respGroups, ok := entities.GetGroupsOk(); ok {
-		for i, v := range *respGroups {
-			group := make(map[string]interface{})
-			group["name"] = v.GetName()
-			group["id"] = v.GetId()
-			group["orn"] = v.GetOrn()
+	if entities.Groups != nil {
+		for i, v := range *entities.Groups {
+			group := make(map[string]any)
+			group["name"] = ptr.From(v.Name)
+			group["id"] = ptr.From(v.Id)
+			group["orn"] = ptr.From(v.Orn)
 			groups[i] = group
 		}
 	}
-	if respAccounts, ok := entities.GetAccountsOk(); ok {
-		for i, v := range *respAccounts {
-			account := make(map[string]interface{})
-			account["name"] = v.GetName()
-			account["id"] = v.GetId()
-			account["orn"] = v.GetOrn()
+	if entities.Accounts != nil {
+		for i, v := range *entities.Accounts {
+			account := make(map[string]any)
+			account["name"] = ptr.From(v.Name)
+			account["id"] = ptr.From(v.Id)
+			account["orn"] = ptr.From(v.Orn)
 			accounts[i] = account
 		}
 	}
 
-	return d.Set("policy_entities", []map[string]interface{}{{
+	return diag.FromErr(d.Set("policy_entities", []map[string]any{{
 		"users":    users,
 		"groups":   groups,
 		"accounts": accounts,
-	}})
+	}}))
 }

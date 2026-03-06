@@ -10,12 +10,12 @@ resource "outscale_subnet" "subnet" {
 
 resource "outscale_security_group" "group1" {
   security_group_name = "test-sg-${random_string.suffix[0].result}"
-  description = "first security group linked resources"
-  net_id = outscale_net.net.id
+  description         = "first security group linked resources"
+  net_id              = outscale_net.net.id
 }
 
 resource "outscale_nic" "nic" {
-  subnet_id = outscale_subnet.subnet.subnet_id
+  subnet_id          = outscale_subnet.subnet.subnet_id
   security_group_ids = [outscale_security_group.group1.security_group_id]
 }
 

@@ -10,7 +10,6 @@ import (
 func TestAccNet_WithLinkMainRouteTable_Basic(t *testing.T) {
 	resourceName := "outscale_main_route_table_link.main"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -27,8 +26,7 @@ func TestAccNet_WithLinkMainRouteTable_Basic(t *testing.T) {
 
 func TestAccNet_WithLinkMainRouteTable_Migration(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { testacc.PreCheck(t) },
-		Steps:    testacc.FrameworkMigrationTestSteps("1.1.3", testAccLinkMainRouteTableConfig),
+		Steps: testacc.FrameworkMigrationTestSteps("1.1.3", testAccLinkMainRouteTableConfig),
 	})
 }
 

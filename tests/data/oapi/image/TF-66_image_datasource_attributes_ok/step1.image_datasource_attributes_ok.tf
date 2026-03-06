@@ -10,7 +10,7 @@ resource "outscale_vm" "my-vm" {
 }
 
 resource "outscale_image" "outscale_image" {
-  image_name = "test-image-${random_string.suffix[0].result}"
+  image_name  = "test-image-${random_string.suffix[0].result}"
   vm_id       = outscale_vm.my-vm.vm_id
   description = "TF-66"
   no_reboot   = "true"

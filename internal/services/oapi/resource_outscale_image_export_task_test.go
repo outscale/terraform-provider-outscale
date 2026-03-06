@@ -28,9 +28,6 @@ func TestAccVM_withImageExportTask_basic(t *testing.T) {
 		}`
 	if os.Getenv("TEST_QUOTA") == "true" {
 		resource.ParallelTest(t, resource.TestCase{
-			PreCheck: func() {
-				testacc.PreCheck(t)
-			},
 			ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 			Steps: []resource.TestStep{
 				{

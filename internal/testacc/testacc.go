@@ -3,7 +3,6 @@ package testacc
 import (
 	"context"
 	"fmt"
-	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
@@ -14,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 	"github.com/outscale/terraform-provider-outscale/provider"
 	"github.com/outscale/terraform-provider-outscale/version"
 	"github.com/samber/lo"
@@ -30,16 +28,6 @@ var (
 		"outscale": SDKProvider,
 	}
 )
-
-func PreCheck(t *testing.T) {
-	if utils.GetEnvVariableValue([]string{"OSC_ACCESS_KEY", "OUTSCALE_ACCESSKEYID"}) == "" ||
-		utils.GetEnvVariableValue([]string{"OSC_SECRET_KEY", "OUTSCALE_SECRETKEYID"}) == "" ||
-		utils.GetEnvVariableValue([]string{"OSC_REGION", "OUTSCALE_REGION"}) == "" ||
-		utils.GetEnvVariableValue([]string{"OSC_ACCOUNT_ID", "OUTSCALE_ACCOUNT"}) == "" ||
-		utils.GetEnvVariableValue([]string{"OSC_IMAGE_ID", "OUTSCALE_IMAGEID"}) == "" {
-		t.Fatal("`OSC_ACCESS_KEY`, `OSC_SECRET_KEY`, `OSC_REGION`, `OSC_ACCOUNT_ID` and `OUTSCALE_IMAGEID` must be set for acceptance testing")
-	}
-}
 
 // Returns a map of provider factories for testing with protocol v6
 // This includes both the SDK v2 provider (upgraded to v6) and the Framework provider
