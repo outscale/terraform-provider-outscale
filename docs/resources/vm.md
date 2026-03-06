@@ -18,96 +18,79 @@ For more information on this resource actions, see the [API documentation](https
 
 ## Example Usage
 
-### Optional resource
-
-```hcl
-resource "outscale_keypair" "keypair01" {
-	keypair_name = "terraform-keypair-for-vm"
-}
-```
-
 ### Create a VM in the public Cloud
 
 ```hcl
+resource "outscale_keypair" "keypair01" {
+    keypair_name = "terraform-keypair-for-vm"
+}
+
 resource "outscale_security_group" "security_group01" {
   description         = "vm security group"
-  security_group_name = "vm_security_group1"
+  security_group_name = "vm_security_group"
 }
 
 resource "outscale_vm" "vm01" {
-	image_id                 = var.image_id
-	vm_type                  = var.vm_type
-	keypair_name             = var.keypair_name
-	security_group_ids       = [outscale_security_group.security_group01.security_group_id]
-	placement_subregion_name = "eu-west-2a"
-	placement_tenancy        = "default"
-	tags {
-		key   = "name"
-		value = "terraform-public-vm"
-	}
-	user_data                = base64encode(<<EOF
-	<CONFIGURATION>
-	EOF
-	)
+    image_id                 = var.image_id
+    vm_type                  = "tinav5.c1r1p2"
+    keypair_name             = outscale_keypair.keypair01.keypair_name
+    security_group_ids       = [outscale_security_group.security_group01.security_group_id]
+    placement_subregion_name = "eu-west-2a"
+    placement_tenancy        = "default"
+    tags {
+        key   = "name"
+        value = "terraform-public-vm"
+    }
+    user_data                = base64encode(<<EOF
+    <CONFIGURATION>
+    EOF
+    )
 }
 ```
 
 ### Create a VM with block device mappings
 
 ```hcl
-resource "outscale_security_group" "security_group01" {
-  description         = "vm security group"
-  security_group_name = "vm_security_group1"
+resource "outscale_volume" "volume01" {
+    subregion_name = "eu-west-2a"
+    size           = 10
 }
 
-resource "outscale_vm" "vm02" {
-	image_id                = var.image_id
-	vm_type                 = var.vm_type
-	keypair_name            = var.keypair_name
-	security_group_ids  	= [outscale_security_group.security_group01.security_group_id]
-	block_device_mappings {
-		device_name = "/dev/sdb" # /dev/sdb
-		bsu {
-			volume_size = 15
-			volume_type = "gp2"
-			snapshot_id = var.snapshot_id
-		}
-	}
-	block_device_mappings {
-		device_name = "/dev/sdc"
-		bsu {
-			volume_size           = 22
-			volume_type           = "io1"
-			iops                  = 150
-			delete_on_vm_deletion = true
-		}
-	}
+resource "outscale_snapshot" "snapshot01" {
+    volume_id = outscale_volume.volume01.volume_id
 }
 
+resource "outscale_keypair" "keypair01" {
+    keypair_name = "terraform-keypair-for-vm"
+}
 
 resource "outscale_security_group" "security_group01" {
   description         = "vm security group"
-  security_group_name = "vm_security_group1"
+  security_group_name = "vm_security_group"
 }
 
-resource "outscale_vm" "vm02" {
-	image_id 				= var.image_id
- 	vm_type 				= var.vm_type
- 	keypair_name 			= var.keypair_name
-	security_group_ids 		= [outscale_security_group.security_group01.security_group_id]
- 	block_device_mappings {
-		device_name = "/dev/sdb"
-		bsu {
-			volume_size           = 30
-			volume_type           = "gp2"
-			snapshot_id           = outscale_snapshot.snapshot.id
-			delete_on_vm_deletion = false
-			tags {
-				key                   = "Name"
-				value                 = "bsu-tags-gp2"
-			}
-		}
-	}
+resource "outscale_vm" "vm01" {
+    image_id           = var.image_id
+    vm_type            = "tinav5.c1r1p2"
+    keypair_name       = outscale_keypair.keypair01.keypair_name
+    security_group_ids = [outscale_security_group.security_group01.security_group_id]
+    block_device_mappings {
+        device_name = "/dev/sdb"
+        bsu {
+            volume_size = 15
+            volume_type = "gp2"
+            snapshot_id = outscale_snapshot.snapshot01.snapshot_id
+        }
+    }
+    block_device_mappings {
+        device_name = "/dev/sdc"
+        bsu {
+            volume_size           = 22
+            volume_type           = "io1"
+            iops                  = 150
+            delete_on_vm_deletion = true
+        }
+    }
 }
 ```
 
@@ -115,62 +98,64 @@ resource "outscale_vm" "vm02" {
 
 ```hcl
 resource "outscale_net" "net01" {
-	ip_range = "10.0.0.0/16"
-	tags {
-		key   = "name"
-		value = "terraform-net-for-vm"
-	}
+    ip_range = "10.0.0.0/16"
+    tags {
+        key   = "name"
+        value = "terraform-net-for-vm"
+    }
 }
 
 resource "outscale_subnet" "subnet01" {
-	net_id         = outscale_net.net01.net_id
-	ip_range       = "10.0.0.0/24"
-	subregion_name = "eu-west-2b"
-	tags {
-		key   = "name"
-		value = "terraform-subnet-for-vm"
-	}
-}
-
-resource "outscale_security_group" "security_group01" {
-	description          = "Terraform security group for VM"
-	security_group_name = "terraform-security-group-for-vm"
-	net_id               = outscale_net.net01.net_id
+    net_id         = outscale_net.net01.net_id
+    ip_range       = "10.0.0.0/24"
+    subregion_name = "eu-west-2b"
+    tags {
+        key   = "name"
+        value = "terraform-subnet-for-vm"
+    }
 }
 
 resource "outscale_internet_service" "internet_service01" {
 }
+resource "outscale_internet_service_link" "internet_service_link01" {
+    internet_service_id = outscale_internet_service.internet_service01.internet_service_id
+    net_id              = outscale_net.net01.net_id
+}
 
 resource "outscale_route_table" "route_table01" {
-	net_id = outscale_net.net01.net_id
-	tags {
-		key   = "name"
-		value = "terraform-route-table-for-vm"
-	}
+    net_id = outscale_net.net01.net_id
+    tags {
+        key   = "name"
+        value = "terraform-route-table-for-vm"
+    }
 }
-
 resource "outscale_route_table_link" "route_table_link01" {
-	route_table_id = outscale_route_table.route_table01.route_table_id
-	subnet_id      = outscale_subnet.subnet01.subnet_id
-}
-
-resource "outscale_internet_service_link" "internet_service_link01" {
-	internet_service_id = outscale_internet_service.internet_service01.internet_service_id
-	net_id              = outscale_net.net01.net_id
+    route_table_id = outscale_route_table.route_table01.route_table_id
+    subnet_id      = outscale_subnet.subnet01.subnet_id
 }
 
 resource "outscale_route" "route01" {
-	gateway_id           = outscale_internet_service.internet_service01.internet_service_id
-	destination_ip_range = "0.0.0.0/0"
-	route_table_id       = outscale_route_table.route_table01.route_table_id
+    gateway_id           = outscale_internet_service.internet_service01.internet_service_id
+    destination_ip_range = "0.0.0.0/0"
+    route_table_id       = outscale_route_table.route_table01.route_table_id
 }
 
-resource "outscale_vm" "vm03" {
-	image_id           = var.image_id
-	vm_type            = var.vm_type
-	keypair_name       = var.keypair_name
-	security_group_ids = [outscale_security_group.security_group01.security_group_id]
-	subnet_id          = outscale_subnet.subnet01.subnet_id
+resource "outscale_keypair" "keypair01" {
+    keypair_name = "terraform-keypair-for-vm"
+}
+
+resource "outscale_security_group" "security_group01" {
+    description         = "Terraform security group for VM"
+    security_group_name = "terraform-security-group-for-vm"
+    net_id              = outscale_net.net01.net_id
+}
+
+resource "outscale_vm" "vm01" {
+    image_id           = var.image_id
+    vm_type            = "tinav5.c1r1p2"
+    keypair_name       = outscale_keypair.keypair01.keypair_name
+    security_group_ids = [outscale_security_group.security_group01.security_group_id]
+    subnet_id          = outscale_subnet.subnet01.subnet_id
 }
 ```
 
@@ -179,51 +164,46 @@ resource "outscale_vm" "vm03" {
 ~> **Note:** If you plan to use the `outscale_nic_link`resource, it is recommended to specify the `primary_nic` argument to define the primary network interface of a VM.
 
 ```hcl
-resource "outscale_security_group" "security_group01" {
-  description         = "vm security group"
-  security_group_name = "vm_security_group1"
+resource "outscale_net" "net01" {
+    ip_range = "10.0.0.0/16"
+    tags {
+        key   = "name"
+        value = "terraform-net-for-vm-with-nic"
+    }
 }
 
-resource "outscale_net" "net02" {
-	ip_range = "10.0.0.0/16"
-	tags {
-		key   = "name"
-		value = "terraform-net-for-vm-with-nic"
-	}
+resource "outscale_subnet" "subnet01" {
+    net_id         = outscale_net.net01.net_id
+    ip_range       = "10.0.0.0/24"
+    subregion_name = "eu-west-2a"
+    tags {
+        key   = "name"
+        value = "terraform-subnet-for-vm-with-nic"
+    }
 }
 
-resource "outscale_subnet" "subnet02" {
-	net_id         = outscale_net.net02.net_id
-	ip_range       = "10.0.0.0/24"
-	subregion_name = "eu-west-2a"
-	tags {
-		key   = "name"
-		value = "terraform-subnet-for-vm-with-nic"
-	}
-}
 resource "outscale_nic" "nic01" {
-	subnet_id = outscale_subnet.subnet02.subnet_id
+    subnet_id = outscale_subnet.subnet01.subnet_id
 }
 
-resource "outscale_vm" "vm04" {
-	image_id     		= var.image_id
-	vm_type      		= "tinav5.c1r1p2"
-	keypair_name 		= var.keypair_name
-	security_group_ids  = [outscale_security_group.security_group01.security_group_id]
-	primary_nic {
-		nic_id        = outscale_nic.nic01.nic_id
-		device_number = "0"
-	}
+resource "outscale_keypair" "keypair01" {
+    keypair_name = "terraform-keypair-for-vm"
+}
+
+resource "outscale_vm" "vm01" {
+    image_id     = var.image_id
+    vm_type      = "tinav5.c1r1p2"
+    keypair_name = outscale_keypair.keypair01.keypair_name
+    primary_nic {
+        nic_id        = outscale_nic.nic01.nic_id
+        device_number = "0"
+    }
 }
 ```
 
 ### Create a VM with secondary NICs
 
 ```hcl
-resource "outscale_keypair" "keypair01" {
-    keypair_name = "terraform-keypair-for-vm"
-}
-
 resource "outscale_net" "net01" {
     ip_range = "10.0.0.0/16"
     tags {
@@ -261,12 +241,16 @@ resource "outscale_nic" "nic03" {
     subnet_id = outscale_subnet.subnet02.subnet_id
 }
 
+resource "outscale_keypair" "keypair01" {
+    keypair_name = "terraform-keypair-for-vm"
+}
+
 resource "outscale_vm" "vm01" {
-    image_id             = var.image_id
-    vm_type              = "tinav5.c1r1p2"
-    keypair_name         = outscale_keypair.keypair01.keypair_name
+    image_id     = var.image_id
+    vm_type      = "tinav5.c1r1p2"
+    keypair_name = outscale_keypair.keypair01.keypair_name
     primary_nic {
-       nic_id = outscale_nic.nic01.nic_id
+       nic_id        = outscale_nic.nic01.nic_id
        device_number = "0"
     }
     nics {
@@ -285,20 +269,24 @@ resource "outscale_vm" "vm01" {
 ~> **Important** Secure Boot is only available with VMs booting in Unified Extensible Firmware Interface (UEFI).
 
 ```hcl
-resource "outscale_security_group" "security_group01" {
-  description         = "vm security group"
-  security_group_name = "vm_security_group1"
+resource "outscale_keypair" "keypair01" {
+    keypair_name = "terraform-keypair-for-vm"
 }
 
-resource "outscale_vm" "outscale_vm_TF206" {
-  image_id            = var.image_id
-  vm_type             = "tinav5.c3r3"
-  keypair_name 		= var.keypair_name
-  security_group_ids       = [outscale_security_group.security_group01.security_group_id]
-  deletion_protection = false
-  state               = "stopped"
-  boot_mode           = "uefi"
-  secure_boot_action  = "enable"
+resource "outscale_security_group" "security_group01" {
+    description         = "vm security group"
+    security_group_name = "vm_security_group"
+}
+
+resource "outscale_vm" "vm01" {
+    image_id            = var.image_id
+    vm_type             = "tinav5.c1r1p2"
+    keypair_name        = outscale_keypair.keypair01.keypair_name
+    security_group_ids  = [outscale_security_group.security_group01.security_group_id]
+    deletion_protection = false
+    state               = "stopped"
+    boot_mode           = "uefi"
+    secure_boot_action  = "enable"
 }
 ```
 
@@ -308,19 +296,19 @@ resource "outscale_vm" "outscale_vm_TF206" {
 
 ```hcl
 ephemeral "outscale_keypair" "ephemeral_keypair" {
-  keypair_name = "ephemeral-keypair"
-  }
-
-resource "outscale_security_group" "security_group01" {
-  description         = "vm security group"
-  security_group_name = "vm_security_group12"
+    keypair_name = "ephemeral-keypair"
 }
 
-resource "outscale_vm" "outscale_vm_TF206" {
-  image_id            = var.image_id
-  vm_type             = var.vm_type
-  keypair_name_wo     = ephemeral.outscale_keypair.ephemeral_keypair.keypair_name
-  security_group_ids  = [outscale_security_group.security_group01.security_group_id] 
+resource "outscale_security_group" "security_group01" {
+    description         = "vm security group"
+    security_group_name = "vm_security_group"
+}
+
+resource "outscale_vm" "vm01" {
+    image_id           = var.image_id
+    vm_type            = "tinav5.c1r1p2"
+    keypair_name_wo    = ephemeral.outscale_keypair.ephemeral_keypair.keypair_name
+    security_group_ids = [outscale_security_group.security_group01.security_group_id] 
 }
 ```
 
