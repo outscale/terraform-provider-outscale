@@ -1,0 +1,11 @@
+access_key      = "YOUR_ACCESS_KEY"
+secret_key      = "YOUR_SECRET_KEY"
+region          = "eu-west-2"
+image_id        = "ami-xxxxxxxx"
+
+project_name    = "terraform-nginx-demo"
+instance_name   = "nginx-server"
+vm_type         = "tinav5.c2r2p2"
+root_volume_size = 20
+
+private_key_filename = "id_rsa_nginx_example"
