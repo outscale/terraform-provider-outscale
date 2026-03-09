@@ -21,6 +21,7 @@ jobs:
         with:
             test-command: test-integration-oapi-nets
             runner: us-east-2
+            providers: outscale_oapi,outscale_oos
         secrets: inherit
 
     oapi-integration-tests:
@@ -28,6 +29,7 @@ jobs:
         with:
             test-command: test-integration-oapi
             runner: eu-west-2
+            providers: outscale_oapi,outscale_oos
         secrets: inherit
 
     oks-integration-tests:
@@ -35,4 +37,5 @@ jobs:
         with:
             test-command: test-integration-oks
             runner: eu-west-2
+            providers: outscale_oks
         secrets: inherit

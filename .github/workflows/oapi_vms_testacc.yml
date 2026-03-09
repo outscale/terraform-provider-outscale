@@ -30,4 +30,5 @@ jobs:
         with:
             test-command: testacc-oapi-vm
             runner: eu-west-2
+            providers: outscale_oapi,outscale_oos
         secrets: inherit
