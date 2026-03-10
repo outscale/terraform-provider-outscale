@@ -3,6 +3,7 @@ package oapihelpers
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"math/rand"
@@ -17,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/outscale/goutils/sdk/batch"
 	"github.com/outscale/goutils/sdk/ptr"
 	"github.com/outscale/osc-sdk-go/v3/pkg/options"
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
@@ -44,31 +46,23 @@ func GetBsuId(vmResp osc.Vm, deviceName string) string {
 	return diskID
 }
 
-func getBsuTags(ctx context.Context, client *osc.Client, timeout time.Duration, volumeId string) ([]osc.ResourceTag, error) {
-	request := osc.ReadVolumesRequest{
-		Filters: &osc.FiltersVolume{VolumeIds: &[]string{volumeId}},
-	}
-	resp, err := client.ReadVolumes(ctx, request, options.WithRetryTimeout(timeout))
-	if err != nil {
-		return nil, err
-	}
-	if resp.Volumes == nil || len(*resp.Volumes) == 0 {
-		return nil, fmt.Errorf("volume %s not found", volumeId)
-	}
-
-	return (*resp.Volumes)[0].Tags, nil
-}
-
-func GetBsuTagsMaps(ctx context.Context, client *osc.Client, timeout time.Duration, vmResp osc.Vm) (map[string]any, error) {
+func GetBsuTagsMaps(ctx context.Context, client *osc.Client, batcher *batch.BatcherByID[osc.Volume], timeout time.Duration, vmResp osc.Vm) (map[string]any, error) {
 	blocks := vmResp.BlockDeviceMappings
 	bsuTagsMaps := make(map[string]any)
 	for _, v := range blocks {
-		volumeId := v.Bsu.VolumeId
-		bsuTags, err := getBsuTags(ctx, client, timeout, volumeId)
+		ctxWithTimeout, cancel := context.WithTimeout(ctx, timeout)
+		defer cancel()
+
+		vol, err := batcher.Read(ctxWithTimeout, v.Bsu.VolumeId)
 		if err != nil {
+			if errors.Is(err, batch.ErrNotFound) {
+				return nil, fmt.Errorf("volume %s not found", v.Bsu.VolumeId)
+			}
 			return nil, err
 		}
-		if bsuTags != nil {
+		bsuTags := vol.Tags
+
+		if vol.Tags != nil {
 			bsuTagsMaps[v.DeviceName] = bsuTags
 		}
 	}

@@ -154,8 +154,8 @@ github.com/oapi-codegen/runtime v1.2.0 h1:RvKc1CVS1QeKSNzO97FBQbSMZyQ8s6rZd+Lpmz
 github.com/oapi-codegen/runtime v1.2.0/go.mod h1:Y7ZhmmlE8ikZOmuHRRndiIm7nf3xcVv+YMweKgG1DT0=
 github.com/oklog/run v1.2.0 h1:O8x3yXwah4A73hJdlrwo/2X6J62gE5qTMusH0dvz60E=
 github.com/oklog/run v1.2.0/go.mod h1:mgDbKRSwPhJfesJ4PntqFUbKQRZ50NgmZTSPlFA0YFk=
-github.com/outscale/goutils/sdk v0.0.2-0.20260312154119-8deaec0ce35a h1:ZveB1tZAi3nwcVVMpCP5u78484aqEAwpMwK4lwQLxOc=
-github.com/outscale/goutils/sdk v0.0.2-0.20260312154119-8deaec0ce35a/go.mod h1:+SZ4q2ZE49X9YPUnL2yqGqldPoDzt01tsxwYiM96aMU=
+github.com/outscale/goutils/sdk v0.0.2 h1:btnhPmo2Sitm3PDtE4bBeuFpF0B4YEHUc91NT7rsVPM=
+github.com/outscale/goutils/sdk v0.0.2/go.mod h1:2Ae3lIQmdOC+n/VnOABrzS+kpjq/Hm0PJQhABpiFW8M=
 github.com/outscale/osc-sdk-go/v3 v3.0.0-rc.1 h1:6/JP3i0HRV4BYuVfyVWowA0sX2HnrIqyi3YhaKe6PoI=
 github.com/outscale/osc-sdk-go/v3 v3.0.0-rc.1/go.mod h1:907IGb1sqHsDhXMDB8lkEqsOH5kK7/VTJ74+ZHqSLx0=
 github.com/pjbgf/sha1cd v0.3.2 h1:a9wb0bp1oC2TGwStyn0Umc/IGKQnEgF0vVaZ8QF8eo4=
@@ -207,6 +207,8 @@ go.opentelemetry.io/otel/trace v1.38.0 h1:Fxk5bKrDZJUH+AMyyIXGcFAPah0oRcT+LuNtJr
 go.opentelemetry.io/otel/trace v1.38.0/go.mod h1:j1P9ivuFsTceSWe1oY+EeW3sc+Pp42sO++GHkg4wwhs=
 go.uber.org/atomic v1.7.0 h1:ADUqmZGgLDDfbSL9ZmPxKTybcoEYHgpYfELNoN+7hsw=
 go.uber.org/atomic v1.7.0/go.mod h1:fEN4uk6kAWBTFdckzkM89CLk9XfWZrxpCo0nPH17wJc=
+go.uber.org/mock v0.6.0 h1:hyF9dfmbgIX5EfOdasqLsWD6xqpNZlXblLB/Dbnwv3Y=
+go.uber.org/mock v0.6.0/go.mod h1:KiVJ4BqZJaMj4svdfmHM0AUx4NJYO8ZNpPnZn1Z+BBU=
 go.uber.org/ratelimit v0.3.1 h1:K4qVE+byfv/B3tC+4nYWP7v/6SimcO7HzHekoMNBma0=
 go.uber.org/ratelimit v0.3.1/go.mod h1:6euWsTB6U/Nb3X++xEUXA8ciPJvr19Q/0h1+oDcJhRk=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=

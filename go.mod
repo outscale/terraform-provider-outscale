@@ -4,6 +4,7 @@ go 1.26
 
 require (
 	github.com/deckarep/golang-set/v2 v2.8.0
+	github.com/hashicorp/go-cty v1.5.0
 	github.com/hashicorp/terraform-plugin-framework v1.17.0
 	github.com/hashicorp/terraform-plugin-framework-timeouts v0.7.0
 	github.com/hashicorp/terraform-plugin-framework-timetypes v0.5.0
@@ -14,7 +15,7 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.38.1
 	github.com/hashicorp/terraform-plugin-testing v1.14.0
 	github.com/oapi-codegen/runtime v1.2.0
-	github.com/outscale/goutils/sdk v0.0.2-0.20260312154119-8deaec0ce35a
+	github.com/outscale/goutils/sdk v0.0.2
 	github.com/outscale/osc-sdk-go/v3 v3.0.0-rc.1
 	github.com/samber/lo v1.52.0
 	github.com/spf13/cast v1.10.0
@@ -38,7 +39,6 @@ require (
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-checkpoint v0.5.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
-	github.com/hashicorp/go-cty v1.5.0 // indirect
 	github.com/hashicorp/go-hclog v1.6.3 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-plugin v1.7.0 // indirect

@@ -1,6 +1,7 @@
 package client
 
 import (
+	"github.com/outscale/goutils/sdk/batch"
 	"github.com/outscale/osc-sdk-go/v3/pkg/oks"
 	"github.com/outscale/osc-sdk-go/v3/pkg/options"
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
@@ -11,6 +12,13 @@ import (
 type OutscaleClient struct {
 	OKS *oks.Client
 	OSC *osc.Client
+
+	// OSC API Batchers
+	VmBatcher            *batch.BatcherByID[osc.Vm]
+	VolumeBatcher        *batch.BatcherByID[osc.Volume]
+	SecurityGroupBatcher *batch.BatcherByID[osc.SecurityGroup]
+	NetBatcher           *batch.BatcherByID[osc.Net]
+	SubnetBatcher        *batch.BatcherByID[osc.Subnet]
 }
 
 type Config struct {

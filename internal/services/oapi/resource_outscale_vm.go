@@ -14,7 +14,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/samber/lo"
 
+	"github.com/outscale/goutils/sdk/batch"
 	"github.com/outscale/goutils/sdk/ptr"
 	"github.com/outscale/osc-sdk-go/v3/pkg/options"
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
@@ -837,7 +839,7 @@ func resourceOAPIVMCreate(ctx context.Context, d *schema.ResourceData, meta any)
 
 	if wait_for_pwd := d.Get("get_admin_password").(bool); wait_for_pwd {
 		err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-			pwd, err := getOAPIVMAdminPassword(ctx, client, vm.VmId, timeout)
+			pwd, err := getOAPIVMAdminPassword(ctx, client, &vm, timeout)
 			if err != nil {
 				return retry.NonRetryableError(err)
 			}
@@ -903,30 +905,31 @@ func updateBsuTags(ctx context.Context, client *osc.Client, timeout time.Duratio
 
 func resourceOAPIVMRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var diags diag.Diagnostics
+	vmBatcher := meta.(*client.OutscaleClient).VmBatcher
+	volumeBatcher := meta.(*client.OutscaleClient).VolumeBatcher
 	client := meta.(*client.OutscaleClient).OSC
 	timeout := d.Timeout(schema.TimeoutRead)
 
-	resp, err := client.ReadVms(ctx, osc.ReadVmsRequest{
-		Filters: &osc.FiltersVm{
-			VmIds: &[]string{d.Id()},
-		},
-	}, options.WithRetryTimeout(timeout))
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	vm, err := vmBatcher.Read(ctxWithTimeout, d.Id())
 	if err != nil {
+		if errors.Is(err, batch.ErrNotFound) {
+			d.SetId("")
+			return nil
+		}
 		diags = append(diags, diag.Errorf("error reading the vm (%s): %s", d.Id(), err)...)
+
 		return diags
 	}
-	if resp.Vms == nil || utils.IsResponseEmpty(len(*resp.Vms), "Snapshot", d.Id()) {
-		d.SetId("")
-		return nil
-	}
 
-	vm := (*resp.Vms)[0]
 	if vm.State == "terminated" {
 		utils.LogManuallyDeleted("Vm", d.Id())
 		d.SetId("")
 		return nil
 	}
-	adminPassword, err := getOAPIVMAdminPassword(ctx, client, vm.VmId, timeout)
+	adminPassword, err := getOAPIVMAdminPassword(ctx, client, vm, timeout)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -965,7 +968,7 @@ To get a running VM, you can:
 		}
 		d.SetId(vm.VmId)
 
-		bsuTagsMaps, errTags := oapihelpers.GetBsuTagsMaps(ctx, client, timeout, vm)
+		bsuTagsMaps, errTags := oapihelpers.GetBsuTagsMaps(ctx, client, volumeBatcher, timeout, *vm)
 		if errTags != nil {
 			return errTags
 		}
@@ -975,7 +978,7 @@ To get a running VM, you can:
 			return err
 		}
 
-		return oapiVMDescriptionAttributes(set, &vm)
+		return oapiVMDescriptionAttributes(set, vm)
 	}); err != nil {
 		diags = append(diags, diag.FromErr(err)...)
 		return diags
@@ -985,8 +988,12 @@ To get a running VM, you can:
 	return diags
 }
 
-func getOAPIVMAdminPassword(ctx context.Context, client *osc.Client, VMID string, timeout time.Duration) (string, error) {
-	resp, err := client.ReadAdminPassword(ctx, osc.ReadAdminPasswordRequest{VmId: VMID}, options.WithRetryTimeout(timeout))
+func getOAPIVMAdminPassword(ctx context.Context, client *osc.Client, vm *osc.Vm, timeout time.Duration) (string, error) {
+	// Do not fetch admin password for non-Windows VMs
+	if lo.Some(vm.ProductCodes, []string{"0001", "0004", "0006"}) {
+		return "", nil
+	}
+	resp, err := client.ReadAdminPassword(ctx, osc.ReadAdminPasswordRequest{VmId: vm.VmId}, options.WithRetryTimeout(timeout))
 	if err != nil {
 		return "", err
 	}

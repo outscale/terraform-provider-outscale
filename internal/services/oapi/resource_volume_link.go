@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/outscale/goutils/sdk/batch"
 	"github.com/outscale/goutils/sdk/ptr"
 	"github.com/outscale/osc-sdk-go/v3/pkg/options"
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
@@ -42,7 +43,8 @@ type VolumeLinkModel struct {
 	Id                 types.String   `tfsdk:"id"`
 }
 type resourceVolumeLink struct {
-	Client *osc.Client
+	Client  *osc.Client
+	Batcher *batch.BatcherByID[osc.Volume]
 }
 
 func NewResourceVolumeLink() resource.Resource {
@@ -63,6 +65,7 @@ func (r *resourceVolumeLink) Configure(_ context.Context, req resource.Configure
 		return
 	}
 	r.Client = client.OSC
+	r.Batcher = client.VolumeBatcher
 }
 
 func (r *resourceVolumeLink) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
@@ -322,28 +325,23 @@ func (r *resourceVolumeLink) Delete(ctx context.Context, req resource.DeleteRequ
 }
 
 func setLinkedVolumeState(ctx context.Context, r *resourceVolumeLink, data *VolumeLinkModel) error {
-	volumeFilters := osc.FiltersVolume{
-		VolumeIds: &[]string{data.VolumeId.ValueString()},
-	}
-
 	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if diags.HasError() {
 		return fmt.Errorf("unable to parse 'volume_link' read timeout value: %v", diags.Errors())
 	}
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, readTimeout)
+	defer cancel()
 
-	readReq := osc.ReadVolumesRequest{
-		Filters: &volumeFilters,
-	}
-	readResp, err := r.Client.ReadVolumes(ctx, readReq, options.WithRetryTimeout(readTimeout))
+	vol, err := r.Batcher.Read(ctxWithTimeout, data.VolumeId.ValueString())
 	if err != nil {
+		if errors.Is(err, batch.ErrNotFound) {
+			return ErrResourceEmpty
+		}
 		return err
-	}
-	if readResp.Volumes == nil || len(*readResp.Volumes) == 0 || len((*readResp.Volumes)[0].LinkedVolumes) == 0 {
-		return ErrResourceEmpty
 	}
 
 	isForceUnlink := false
-	linkedVol := (*readResp.Volumes)[0].LinkedVolumes[0]
+	linkedVol := vol.LinkedVolumes[0]
 	if data.ForceUnlink.ValueBool() {
 		isForceUnlink = data.ForceUnlink.ValueBool()
 	}
