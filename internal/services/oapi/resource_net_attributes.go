@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/outscale/goutils/sdk/batch"
 	"github.com/outscale/goutils/sdk/ptr"
 	"github.com/outscale/osc-sdk-go/v3/pkg/options"
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
@@ -38,7 +39,8 @@ type NetAttributesModel struct {
 }
 
 type resourceNetAttributes struct {
-	Client *osc.Client
+	Client  *osc.Client
+	Batcher *batch.BatcherByID[osc.Net]
 }
 
 func NewResourceNetAttributes() resource.Resource {
@@ -59,6 +61,7 @@ func (r *resourceNetAttributes) Configure(_ context.Context, req resource.Config
 		return
 	}
 	r.Client = client.OSC
+	r.Batcher = client.NetBatcher
 }
 
 func (r *resourceNetAttributes) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
@@ -249,28 +252,20 @@ func (r *resourceNetAttributes) Delete(ctx context.Context, req resource.DeleteR
 }
 
 func (r *resourceNetAttributes) read(ctx context.Context, data NetAttributesModel) (NetAttributesModel, error) {
-	netFilters := osc.FiltersNet{
-		NetIds: &[]string{data.NetId.ValueString()},
-	}
-	readReq := osc.ReadNetsRequest{
-		Filters: &netFilters,
-	}
-
 	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if diags.HasError() {
 		return data, fmt.Errorf("unable to parse 'net' read timeout value: %v", diags.Errors())
 	}
-	readResp, err := r.Client.ReadNets(ctx, readReq, options.WithRetryTimeout(readTimeout))
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, readTimeout)
+	defer cancel()
+
+	net, err := r.Batcher.Read(ctxWithTimeout, data.NetId.ValueString())
 	if err != nil {
+		if errors.Is(err, batch.ErrNotFound) {
+			return data, ErrResourceEmpty
+		}
 		return data, err
 	}
-
-	data.RequestId = to.String(readResp.ResponseContext.RequestId)
-	if readResp.Nets == nil || len(*readResp.Nets) == 0 {
-		return data, ErrResourceEmpty
-	}
-
-	net := (*readResp.Nets)[0]
 
 	tags, diag := flattenOAPIComputedTagsFW(ctx, net.Tags)
 	if diag.HasError() {

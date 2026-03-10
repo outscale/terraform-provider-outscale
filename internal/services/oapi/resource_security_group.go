@@ -21,6 +21,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
+	"github.com/outscale/goutils/sdk/batch"
 	"github.com/outscale/goutils/sdk/ptr"
 	"github.com/outscale/osc-sdk-go/v3/pkg/options"
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
@@ -55,7 +56,8 @@ type SecurityGroupModel struct {
 }
 
 type resourceSecurityGroup struct {
-	Client *osc.Client
+	Client  *osc.Client
+	Batcher *batch.BatcherByID[osc.SecurityGroup]
 }
 
 func NewResourceSecurityGroup() resource.Resource {
@@ -76,6 +78,7 @@ func (r *resourceSecurityGroup) Configure(_ context.Context, req resource.Config
 		return
 	}
 	r.Client = client.OSC
+	r.Batcher = client.SecurityGroupBatcher
 }
 
 func (r *resourceSecurityGroup) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
@@ -628,29 +631,21 @@ func (r *resourceSecurityGroup) unlink(ctx context.Context, to time.Duration, da
 }
 
 func setSecurityGroupState(ctx context.Context, r *resourceSecurityGroup, data SecurityGroupModel) (SecurityGroupModel, error) {
-	readReq := osc.ReadSecurityGroupsRequest{
-		Filters: &osc.FiltersSecurityGroup{
-			SecurityGroupIds: &[]string{data.Id.ValueString()},
-		},
-	}
-
 	readTimeout, diag := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if diag.HasError() {
 		return data, fmt.Errorf("unable to parse 'security_group' read timeout value: %v", diag.Errors())
 	}
-	ctx, cancel := context.WithTimeout(ctx, readTimeout)
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, readTimeout)
 	defer cancel()
 
-	readResp, err := r.Client.ReadSecurityGroups(ctx, readReq, options.WithRetryTimeout(readTimeout))
+	securityGroup, err := r.Batcher.Read(ctxWithTimeout, data.Id.ValueString())
 	if err != nil {
+		if errors.Is(err, batch.ErrNotFound) {
+			return data, ErrResourceEmpty
+		}
 		return data, err
 	}
-	data.RequestId = to.String(readResp.ResponseContext.RequestId)
-	if readResp.SecurityGroups == nil || len(*readResp.SecurityGroups) == 0 {
-		return data, ErrResourceEmpty
-	}
 
-	securityGroup := (*readResp.SecurityGroups)[0]
 	tags, diags := flattenOAPITagsFW(ctx, securityGroup.Tags)
 	if diags.HasError() {
 		return data, fmt.Errorf("unable to flatten tags: %v", diags.Errors())

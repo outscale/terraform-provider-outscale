@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/outscale/goutils/sdk/batch"
 	"github.com/outscale/goutils/sdk/ptr"
 	"github.com/outscale/osc-sdk-go/v3/pkg/options"
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
@@ -46,7 +47,8 @@ type SubnetModel struct {
 }
 
 type resourceSubnet struct {
-	Client *osc.Client
+	Client  *osc.Client
+	Batcher *batch.BatcherByID[osc.Subnet]
 }
 
 func NewResourceSubnet() resource.Resource {
@@ -67,6 +69,7 @@ func (r *resourceSubnet) Configure(_ context.Context, req resource.ConfigureRequ
 		return
 	}
 	r.Client = client.OSC
+	r.Batcher = client.SubnetBatcher
 }
 
 func (r *resourceSubnet) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
@@ -362,34 +365,27 @@ func (r *resourceSubnet) Delete(ctx context.Context, req resource.DeleteRequest,
 }
 
 func (r *resourceSubnet) read(ctx context.Context, data SubnetModel) (SubnetModel, error) {
-	subnetFilters := osc.FiltersSubnet{
-		SubnetIds: &[]string{data.SubnetId.ValueString()},
-	}
-	readReq := osc.ReadSubnetsRequest{
-		Filters: &subnetFilters,
-	}
-
 	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if diags.HasError() {
 		return data, fmt.Errorf("unable to parse 'subnet' read timeout value: %v", diags.Errors())
 	}
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, readTimeout)
+	defer cancel()
 
-	readResp, err := r.Client.ReadSubnets(ctx, readReq, options.WithRetryTimeout(readTimeout))
+	subnet, err := r.Batcher.Read(ctxWithTimeout, data.SubnetId.ValueString())
 	if err != nil {
+		if errors.Is(err, batch.ErrNotFound) {
+			return data, ErrResourceEmpty
+		}
 		return data, err
 	}
-	if readResp.Subnets == nil || len(*readResp.Subnets) == 0 {
-		return data, ErrResourceEmpty
-	}
 
-	subnet := (*readResp.Subnets)[0]
 	tags, diags := flattenOAPITagsFW(ctx, subnet.Tags)
 	if diags.HasError() {
 		return data, fmt.Errorf("unable to flatten tags: %v", diags.Errors())
 	}
 	data.Tags = tags
 
-	data.RequestId = to.String(readResp.ResponseContext.RequestId)
 	data.AvailableIpsCount = to.Int32(int32(subnet.AvailableIpsCount))
 	data.IpRange = to.String(subnet.IpRange)
 	data.MapPublicIpOnLaunch = to.Bool(subnet.MapPublicIpOnLaunch)
