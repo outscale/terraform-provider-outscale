@@ -1,9 +1,12 @@
 package provider
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/outscale/goutils/sdk/batch"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/services/oapi"
 	"github.com/outscale/terraform-provider-outscale/version"
@@ -249,7 +252,7 @@ func Provider() *schema.Provider {
 			"outscale_policies_linked_to_user_group": oapi.DataSourcePoliciesLinkedToUserGroup(),
 		},
 
-		ConfigureFunc: providerConfigureClient,
+		ConfigureContextFunc: providerConfigureClient,
 	}
 }
 
@@ -353,7 +356,7 @@ func buildOKSConfig(d *schema.ResourceData) client.Config {
 	return config
 }
 
-func providerConfigureClient(d *schema.ResourceData) (any, error) {
+func providerConfigureClient(ctx context.Context, d *schema.ResourceData) (any, diag.Diagnostics) {
 	oscConfig := buildOSCConfig(d)
 	oksConfig := buildOKSConfig(d)
 
@@ -370,15 +373,27 @@ func providerConfigureClient(d *schema.ResourceData) (any, error) {
 
 	oscClient, err := client.NewOSCClient(oscConfig)
 	if err != nil {
-		return nil, err
+		return nil, diag.FromErr(err)
 	}
 	oksClient, err := client.NewOKSClient(oksConfig)
 	if err != nil {
-		return nil, err
+		return nil, diag.FromErr(err)
 	}
-
-	return &client.OutscaleClient{
+	outscaleClient := &client.OutscaleClient{
 		OSC: oscClient,
 		OKS: oksClient,
-	}, nil
+	}
+
+	// Create a long-lived context for batchers with tflog subsystem configured
+	// Each provider call uses a new context from the provider's global context
+	// Configure's ctx does not work as it gets cancelled after Configure completes
+	batcherCtx := context.WithoutCancel(ctx)
+
+	outscaleClient.VmBatcher = batch.NewVmBatcherByID(oapi.BatcherInterval, outscaleClient.OSC)
+	go outscaleClient.VmBatcher.Run(batcherCtx)
+
+	outscaleClient.VolumeBatcher = batch.NewVolumeBatcherByID(oapi.BatcherInterval, outscaleClient.OSC)
+	go outscaleClient.VolumeBatcher.Run(batcherCtx)
+
+	return outscaleClient, nil
 }

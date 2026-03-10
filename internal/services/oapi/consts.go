@@ -11,6 +11,8 @@ const (
 	UpdateDefaultTimeout time.Duration = 10 * time.Minute
 	DeleteDefaultTimeout time.Duration = 5 * time.Minute
 
+	BatcherInterval time.Duration = 100 * time.Millisecond
+
 	MinPort     int   = 1
 	MaxPort     int   = 65535
 	MinIops     int32 = 100

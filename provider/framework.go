@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/outscale/goutils/sdk/batch"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
@@ -218,6 +219,24 @@ func (p *FrameworkProvider) Configure(ctx context.Context, req provider.Configur
 		)
 		return
 	}
+
+	// Create a long-lived context for batchers with tflog subsystem configured
+	// Each provider call uses a new context from the provider's global context
+	// Configure's ctx does not work as it gets cancelled after Configure completes
+	batcherCtx := context.WithoutCancel(ctx)
+
+	client.VolumeBatcher = batch.NewVolumeBatcherByID(oapi.BatcherInterval, client.OSC)
+	go client.VolumeBatcher.Run(batcherCtx)
+
+	client.SecurityGroupBatcher = batch.NewSecurityGroupBatcherByID(oapi.BatcherInterval, client.OSC)
+	go client.SecurityGroupBatcher.Run(batcherCtx)
+
+	client.NetBatcher = batch.NewNetBatcherByID(oapi.BatcherInterval, client.OSC)
+	go client.NetBatcher.Run(batcherCtx)
+
+	client.SubnetBatcher = batch.NewSubnetBatcherByID(oapi.BatcherInterval, client.OSC)
+	go client.SubnetBatcher.Run(batcherCtx)
+
 	resp.DataSourceData = *client
 	resp.ResourceData = *client
 	resp.EphemeralResourceData = *client

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
@@ -23,6 +24,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/outscale/goutils/sdk/batch"
 	"github.com/outscale/goutils/sdk/ptr"
 	"github.com/outscale/osc-sdk-go/v3/pkg/options"
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
@@ -88,7 +90,8 @@ var securityGroupRulesModelAttrTypes = types.ObjectType{
 }
 
 type resourceSecurityGroupRule struct {
-	Client *osc.Client
+	Client  *osc.Client
+	Batcher *batch.BatcherByID[osc.SecurityGroup]
 }
 
 func NewResourceSecurityGroupRule() resource.Resource {
@@ -109,6 +112,7 @@ func (r *resourceSecurityGroupRule) Configure(_ context.Context, req resource.Co
 		return
 	}
 	r.Client = client.OSC
+	r.Batcher = client.SecurityGroupBatcher
 }
 
 func (r *resourceSecurityGroupRule) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
@@ -527,7 +531,7 @@ func (r *resourceSecurityGroupRule) Create(ctx context.Context, req resource.Cre
 	data.RequestId = to.String(createResp.ResponseContext.RequestId)
 	data.Id = to.String(sg.SecurityGroupId)
 
-	stateData, err := r.read(ctx, data)
+	stateData, err := r.read(ctx, data, createTimeout)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to set Security Group Rule state.",
@@ -541,13 +545,17 @@ func (r *resourceSecurityGroupRule) Create(ctx context.Context, req resource.Cre
 
 func (r *resourceSecurityGroupRule) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data SecurityGroupRuleModel
-
-	diag := req.State.Get(ctx, &data)
+	readTimeout, diag := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
 
-	data, err := r.read(ctx, data)
+	diag = req.State.Get(ctx, &data)
+	if fwhelpers.CheckDiags(resp, diag) {
+		return
+	}
+
+	data, err := r.read(ctx, data, readTimeout)
 	if err != nil {
 		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
@@ -641,17 +649,17 @@ func (r *resourceSecurityGroupRule) readSecurityGroupsWithFilters(ctx context.Co
 	return readResp, nil
 }
 
-func (r *resourceSecurityGroupRule) read(ctx context.Context, data SecurityGroupRuleModel) (SecurityGroupRuleModel, error) {
-	filters := &osc.FiltersSecurityGroup{SecurityGroupIds: &[]string{data.Id.ValueString()}}
-	readResp, err := r.readSecurityGroupsWithFilters(ctx, data, filters)
+func (r *resourceSecurityGroupRule) read(ctx context.Context, data SecurityGroupRuleModel, timeout time.Duration) (SecurityGroupRuleModel, error) {
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	securityGroup, err := r.Batcher.Read(ctxWithTimeout, data.Id.ValueString())
 	if err != nil {
+		if errors.Is(err, batch.ErrNotFound) {
+			return data, ErrResourceEmpty
+		}
 		return data, err
 	}
-	data.RequestId = to.String(readResp.ResponseContext.RequestId)
-	if readResp.SecurityGroups == nil || len(*readResp.SecurityGroups) == 0 {
-		return data, ErrResourceEmpty
-	}
-	securityGroup := (*readResp.SecurityGroups)[0]
 
 	data.SecurityGroupName = to.String(securityGroup.SecurityGroupName)
 	data.NetId = to.String(ptr.From(securityGroup.NetId))

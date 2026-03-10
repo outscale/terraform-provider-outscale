@@ -19,6 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/outscale/goutils/sdk/batch"
 	"github.com/outscale/goutils/sdk/ptr"
 	"github.com/outscale/osc-sdk-go/v3/pkg/options"
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
@@ -64,7 +65,8 @@ type BlockLinkedVolumes struct {
 }
 
 type resourceVolume struct {
-	Client *osc.Client
+	Client  *osc.Client
+	Batcher *batch.BatcherByID[osc.Volume]
 }
 
 func NewResourceVolume() resource.Resource {
@@ -85,6 +87,7 @@ func (r *resourceVolume) Configure(_ context.Context, req resource.ConfigureRequ
 		return
 	}
 	r.Client = client.OSC
+	r.Batcher = client.VolumeBatcher
 }
 
 func (r *resourceVolume) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
@@ -515,27 +518,21 @@ func (r *resourceVolume) Delete(ctx context.Context, req resource.DeleteRequest,
 }
 
 func setVolumeState(ctx context.Context, r *resourceVolume, data *VolumeModel) error {
-	volumeFilters := osc.FiltersVolume{
-		VolumeIds: &[]string{data.VolumeId.ValueString()},
-	}
-
 	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if diags.HasError() {
 		return fmt.Errorf("unable to parse 'volume' read timeout value: %v", diags.Errors())
 	}
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, readTimeout)
+	defer cancel()
 
-	readReq := osc.ReadVolumesRequest{
-		Filters: &volumeFilters,
-	}
-	readResp, err := r.Client.ReadVolumes(ctx, readReq, options.WithRetryTimeout(readTimeout))
+	volume, err := r.Batcher.Read(ctxWithTimeout, data.VolumeId.ValueString())
 	if err != nil {
+		if errors.Is(err, batch.ErrNotFound) {
+			return ErrResourceEmpty
+		}
 		return err
 	}
-	if readResp.Volumes == nil || len(*readResp.Volumes) == 0 {
-		return ErrResourceEmpty
-	}
 
-	volume := (*readResp.Volumes)[0]
 	tags, diag := flattenOAPITagsFW(ctx, volume.Tags)
 	if diag.HasError() {
 		return fmt.Errorf("unable to flatten tags: %v", diags.Errors())
@@ -562,6 +559,7 @@ func setVolumeState(ctx context.Context, r *resourceVolume, data *VolumeModel) e
 	}
 	data.Size = to.Int32(int32(volume.Size))
 	data.Id = to.String(volume.VolumeId)
+
 	return nil
 }
 

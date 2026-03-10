@@ -28,6 +28,7 @@ func DataSourceOutscaleVM() *schema.Resource {
 }
 
 func DataSourceOutscaleVMRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	volumeBatcher := meta.(*client.OutscaleClient).VolumeBatcher
 	client := meta.(*client.OutscaleClient).OSC
 	timeout := d.Timeout(schema.TimeoutRead)
 
@@ -84,7 +85,7 @@ func DataSourceOutscaleVMRead(ctx context.Context, d *schema.ResourceData, meta 
 	return diag.FromErr(resourceDataAttrSetter(d, func(set AttributeSetter) error {
 		d.SetId(vm.VmId)
 
-		booTags, errTags := oapihelpers.GetBsuTagsMaps(ctx, client, timeout, vm)
+		booTags, errTags := oapihelpers.GetBsuTagsMaps(ctx, client, volumeBatcher, timeout, vm)
 		if errTags != nil {
 			return errTags
 		}

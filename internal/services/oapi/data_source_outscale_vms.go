@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/outscale/goutils/sdk/batch"
 	"github.com/outscale/osc-sdk-go/v3/pkg/options"
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
@@ -64,6 +65,7 @@ func DataSourceOutscaleVMSSchema() map[string]*schema.Schema {
 }
 
 func DataSourceOutscaleVMSRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	volumeBatcher := meta.(*client.OutscaleClient).VolumeBatcher
 	client := meta.(*client.OutscaleClient).OSC
 	timeout := d.Timeout(schema.TimeoutRead)
 
@@ -111,10 +113,10 @@ func DataSourceOutscaleVMSRead(ctx context.Context, d *schema.ResourceData, meta
 
 	d.SetId(id.UniqueId())
 
-	return diag.FromErr(d.Set("vms", dataSourceOAPIVMS(ctx, client, timeout, filteredVms)))
+	return diag.FromErr(d.Set("vms", dataSourceOAPIVMS(ctx, client, volumeBatcher, timeout, filteredVms)))
 }
 
-func dataSourceOAPIVMS(ctx context.Context, client *osc.Client, timeout time.Duration, i []osc.Vm) []map[string]any {
+func dataSourceOAPIVMS(ctx context.Context, client *osc.Client, batcher *batch.BatcherByID[osc.Volume], timeout time.Duration, i []osc.Vm) []map[string]any {
 	vms := make([]map[string]any, len(i))
 	for index, v := range i {
 		vm := make(map[string]any)
@@ -127,7 +129,7 @@ func dataSourceOAPIVMS(ctx context.Context, client *osc.Client, timeout time.Dur
 		if err := oapiVMDescriptionAttributes(setterFunc, &v); err != nil {
 			log.Fatalf("[DEBUG] oapiVMDescriptionAttributes ERROR %+v", err)
 		}
-		mapsTags, _ := oapihelpers.GetBsuTagsMaps(ctx, client, timeout, v)
+		mapsTags, _ := oapihelpers.GetBsuTagsMaps(ctx, client, batcher, timeout, v)
 		vm["block_device_mappings_created"] = getOscAPIVMBlockDeviceMapping(mapsTags, v.BlockDeviceMappings)
 
 		vm["tags"] = FlattenOAPITagsSDK(v.Tags)
