@@ -107,11 +107,11 @@ test-locally:
 
 .PHONY: terraform-examples
 terraform-examples:
-	@sh -c "'$(CURDIR)/scripts/terraform-examples.sh'"
+	@sh -c "'$(CURDIR)/scripts/verify-examples.sh' terraform"
 
 .PHONY: tofu-examples
 tofu-examples:
-	@sh -c "'$(CURDIR)/scripts/tofu-examples.sh'"
+	@sh -c "'$(CURDIR)/scripts/verify-examples.sh' tofu"
 
 .PHONY: test-integration
 test-integration: test-integration-oapi-nets test-integration-oapi test-integration-oks

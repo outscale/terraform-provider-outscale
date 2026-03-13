@@ -1,0 +1,51 @@
+#cloud-config
+
+package_update: true
+package_upgrade: true
+
+packages:
+  - nginx
+
+write_files:
+  - path: /var/www/html/index.html
+    permissions: "0644"
+    owner: root:root
+    content: |
+      <!doctype html>
+      <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>${project_name} - ${instance_name}</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            line-height: 1.5;
+          }
+          .container {
+            max-width: 800px;
+          }
+          code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h1>Nginx is running</h1>
+          <p>This server was provisioned with Terraform and initialized with cloud-init.</p>
+          <ul>
+            <li><strong>Project:</strong> ${project_name}</li>
+            <li><strong>Instance:</strong> ${instance_name}</li>
+            <li><strong>Region:</strong> ${region}</li>
+          </ul>
+          <p>You can use this example as a starting point for a public Linux VM deployment.</p>
+        </div>
+      </body>
+      </html>
+
+runcmd:
+  - systemctl enable nginx
+  - systemctl restart nginx
