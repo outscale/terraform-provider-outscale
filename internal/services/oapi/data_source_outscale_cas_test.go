@@ -29,6 +29,9 @@ func TestAccOthers_DataOutscaleCas_basic(t *testing.T) {
 					testAccCheckOutscaleCaExists(resName),
 				),
 			},
+			{
+				Config: testAccDataOutscaleCasConfigUpdate(ca_path),
+			},
 		},
 	})
 }
@@ -74,6 +77,20 @@ func testAccDataCheckOutscaleCasDestroy(s *terraform.State) error {
 }
 
 func testAccDataOutscaleCasConfig(path string) string {
+	return fmt.Sprintf(`
+resource "outscale_ca" "ca_test" {
+   ca_pem        =  file(%[1]q)
+   description   = "Ca testacc create"
+}
+
+resource "outscale_ca" "ca_test2" {
+   ca_pem        = file(%[1]q)
+   description   = "Ca testacc create2"
+}
+`, path)
+}
+
+func testAccDataOutscaleCasConfigUpdate(path string) string {
 	return fmt.Sprintf(`
 resource "outscale_ca" "ca_test" {
    ca_pem        =  file(%[1]q)
