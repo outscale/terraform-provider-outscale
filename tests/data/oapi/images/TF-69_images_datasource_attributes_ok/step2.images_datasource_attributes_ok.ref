@@ -30,8 +30,8 @@
                                                 "delete_on_vm_deletion": true,
                                                 "iops": 0,
                                                 "snapshot_id": "##id-2##",
-                                                "volume_size": 50,
-                                                "volume_type": "gp2"
+                                                "volume_size": 10,
+                                                "volume_type": "standard"
                                             }
                                         ],
                                         "device_name": "/dev/sda1",
@@ -84,8 +84,8 @@
                                                 "delete_on_vm_deletion": true,
                                                 "iops": 0,
                                                 "snapshot_id": "##id-4##",
-                                                "volume_size": 50,
-                                                "volume_type": "gp2"
+                                                "volume_size": 10,
+                                                "volume_type": "standard"
                                             }
                                         ],
                                         "device_name": "/dev/sda1",
@@ -161,8 +161,8 @@
                                                 "delete_on_vm_deletion": true,
                                                 "iops": 0,
                                                 "snapshot_id": "##id-2##",
-                                                "volume_size": 50,
-                                                "volume_type": "gp2"
+                                                "volume_size": 10,
+                                                "volume_type": "standard"
                                             }
                                         ],
                                         "device_name": "/dev/sda1",
@@ -215,8 +215,8 @@
                                                 "delete_on_vm_deletion": true,
                                                 "iops": 0,
                                                 "snapshot_id": "##id-4##",
-                                                "volume_size": 50,
-                                                "volume_type": "gp2"
+                                                "volume_size": 10,
+                                                "volume_type": "standard"
                                             }
                                         ],
                                         "device_name": "/dev/sda1",
@@ -292,8 +292,8 @@
                                                 "delete_on_vm_deletion": true,
                                                 "iops": 0,
                                                 "snapshot_id": "##id-2##",
-                                                "volume_size": 50,
-                                                "volume_type": "gp2"
+                                                "volume_size": 10,
+                                                "volume_type": "standard"
                                             }
                                         ],
                                         "device_name": "/dev/sda1",
@@ -346,8 +346,8 @@
                                                 "delete_on_vm_deletion": true,
                                                 "iops": 0,
                                                 "snapshot_id": "##id-4##",
-                                                "volume_size": 50,
-                                                "volume_type": "gp2"
+                                                "volume_size": 10,
+                                                "volume_type": "standard"
                                             }
                                         ],
                                         "device_name": "/dev/sda1",
@@ -423,8 +423,8 @@
                                                 "delete_on_vm_deletion": true,
                                                 "iops": 0,
                                                 "snapshot_id": "##id-2##",
-                                                "volume_size": 50,
-                                                "volume_type": "gp2"
+                                                "volume_size": 10,
+                                                "volume_type": "standard"
                                             }
                                         ],
                                         "device_name": "/dev/sda1",
@@ -477,8 +477,8 @@
                                                 "delete_on_vm_deletion": true,
                                                 "iops": 0,
                                                 "snapshot_id": "##id-4##",
-                                                "volume_size": 50,
-                                                "volume_type": "gp2"
+                                                "volume_size": 10,
+                                                "volume_type": "standard"
                                             }
                                         ],
                                         "device_name": "/dev/sda1",
@@ -554,8 +554,8 @@
                                                 "delete_on_vm_deletion": true,
                                                 "iops": 0,
                                                 "snapshot_id": "##id-4##",
-                                                "volume_size": 50,
-                                                "volume_type": "gp2"
+                                                "volume_size": 10,
+                                                "volume_type": "standard"
                                             }
                                         ],
                                         "device_name": "/dev/sda1",
@@ -631,8 +631,8 @@
                                                 "delete_on_vm_deletion": true,
                                                 "iops": 0,
                                                 "snapshot_id": "##id-4##",
-                                                "volume_size": 50,
-                                                "volume_type": "gp2"
+                                                "volume_size": 10,
+                                                "volume_type": "standard"
                                             }
                                         ],
                                         "device_name": "/dev/sda1",
@@ -702,8 +702,8 @@
                                         "delete_on_vm_deletion": true,
                                         "iops": 0,
                                         "snapshot_id": "##id-2##",
-                                        "volume_size": 50,
-                                        "volume_type": "gp2"
+                                        "volume_size": 10,
+                                        "volume_type": "standard"
                                     }
                                 ],
                                 "device_name": "/dev/sda1",
@@ -787,8 +787,8 @@
                                         "delete_on_vm_deletion": true,
                                         "iops": 0,
                                         "snapshot_id": "##id-4##",
-                                        "volume_size": 50,
-                                        "volume_type": "gp2"
+                                        "volume_size": 10,
+                                        "volume_type": "standard"
                                     }
                                 ],
                                 "device_name": "/dev/sda1",
