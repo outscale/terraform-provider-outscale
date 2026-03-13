@@ -21,7 +21,7 @@ variable "fgpu_vm_type" {
 
 variable "image_id_uefi_tpm" {
   type    = string
-  default = "ami-cdd42a02"
+  default = "ami-e41d8b11"
 }
 
 variable "keypair_name" {

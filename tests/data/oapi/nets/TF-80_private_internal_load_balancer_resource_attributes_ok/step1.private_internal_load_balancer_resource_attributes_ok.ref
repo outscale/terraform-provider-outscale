@@ -84,7 +84,12 @@
                                 "value": "lbu-internal"
                             }
                         ],
-                        "timeouts": null
+                        "timeouts": {
+                            "create": null,
+                            "delete": "15m",
+                            "read": null,
+                            "update": null
+                        }
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
