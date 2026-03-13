@@ -455,26 +455,37 @@ Log: {}
     def run_cmd(self, cmd, exp_ret_code=0):
         self.logger.debug("Exec: %s", cmd)
 
+        # If TF_LOG is set, passthrough stdout/stderr for debugging
+        tf_log = os.environ.get("TF_LOG", "").upper()
+        capture_output = tf_log not in ["TRACE", "DEBUG", "INFO", "WARN", "ERROR"]
+
         proc = subprocess.Popen(
             cmd,
             shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            stdout=subprocess.PIPE if capture_output else None,
+            stderr=subprocess.PIPE if capture_output else None,
             cwd=self.work_dir,
         )
-        stdout, stderr = proc.communicate()
-        stdout = stdout.decode("utf-8")
-        stderr = stderr.decode("utf-8")
+        stdout_bytes, stderr_bytes = proc.communicate()
+
+        stdout = stdout_bytes.decode("utf-8") if stdout_bytes else ""
+        stderr = stderr_bytes.decode("utf-8") if stderr_bytes else ""
+
         if proc.returncode != exp_ret_code:
             self.error = True
-            self.log += "\nERROR:\nCMD '{}' failed\nStdout: {}\nStderr: {}".format(
-                cmd, stdout, stderr
-            )
+            if capture_output:
+                self.log += "\nERROR:\nCMD '{}' failed\nStdout: {}\nStderr: {}".format(
+                    cmd, stdout, stderr
+                )
+            else:
+                self.log += "\nERROR:\nCMD '{}' failed with return code {}".format(
+                    cmd, proc.returncode
+                )
             print(self.log)
-
             assert False, "Incorrect return code {}, expected {}".format(
                 proc.returncode, exp_ret_code
             )
+
         return stdout, stderr
 
     def exec_test_step(self, tf_file_path, out_file_path, is_first_step=True):

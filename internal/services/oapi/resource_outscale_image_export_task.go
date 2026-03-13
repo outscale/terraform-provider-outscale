@@ -4,17 +4,18 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net/http"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/outscale/goutils/sdk/ptr"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 )
 
 func ResourceOutscaleImageExportTask() *schema.Resource {
@@ -117,74 +118,64 @@ func ResourceOutscaleImageExportTask() *schema.Resource {
 	}
 }
 
-func resourceOAPIImageExportTaskCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func resourceOAPIImageExportTaskCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+
 	timeout := d.Timeout(schema.TimeoutCreate)
 
 	eto, etoOk := d.GetOk("osu_export")
 	v, ok := d.GetOk("image_id")
-	request := oscgo.CreateImageExportTaskRequest{}
+	request := osc.CreateImageExportTaskRequest{}
 
 	if !etoOk && !ok {
 		return diag.Errorf("please provide the required attributes osu_export and image_id")
 	}
 
-	request.SetImageId(v.(string))
+	request.ImageId = v.(string)
 
 	if etoOk {
-		exp := eto.([]interface{})
-		e := exp[0].(map[string]interface{})
+		exp := eto.([]any)
+		e := exp[0].(map[string]any)
 
-		et := oscgo.OsuExportToCreate{}
+		et := osc.OsuExportToCreate{}
 
 		if v, ok := e["disk_image_format"]; ok {
-			et.SetDiskImageFormat(v.(string))
+			et.DiskImageFormat = v.(string)
 		}
 		/*if v, ok := e["osu_key"]; ok {
-			apikey := oscgo.OsuApiKey{ApiKeyId: v.(*string)}
+			apikey := osc.OsuApiKey{ApiKeyId: v.(*string)}
 			et.SetOsuApiKey(apikey)
 		}*/
 		if v, ok := e["osu_bucket"]; ok {
-			et.SetOsuBucket(v.(string))
+			et.OsuBucket = v.(string)
 		}
 		if v, ok := e["osu_prefix"]; ok {
-			et.SetOsuPrefix(v.(string))
+			et.OsuPrefix = new(v.(string))
 		}
 		if v, ok := e["osu_api_key"]; ok {
-			a := v.([]interface{})
+			a := v.([]any)
 			if len(a) > 0 {
-				w := a[0].(map[string]interface{})
-				et.OsuApiKey.SetApiKeyId(w["api_key_id"].(string))
-				et.OsuApiKey.SetSecretKey(w["secret_key"].(string))
+				w := a[0].(map[string]any)
+				et.OsuApiKey.ApiKeyId = new(w["api_key_id"].(string))
+				et.OsuApiKey.SecretKey = new(w["secret_key"].(string))
 			}
 		}
 		if v, ok := e["osu_manifest_url"]; ok {
-			et.SetOsuManifestUrl(v.(string))
+			et.OsuManifestUrl = new(v.(string))
 		}
-		request.SetOsuExport(et)
+		request.OsuExport = et
 	}
 
-	var resp oscgo.CreateImageExportTaskResponse
-	var err error
-
-	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		rp, httpResp, err := conn.ImageApi.CreateImageExportTask(ctx).
-			CreateImageExportTaskRequest(request).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	resp, err := client.CreateImageExportTask(ctx, request, options.WithRetryTimeout(timeout))
 	if err != nil {
 		return diag.Errorf("error image task %s", err)
 	}
 
-	id := resp.ImageExportTask.GetTaskId()
+	id := *resp.ImageExportTask.TaskId
 
 	wait := d.Get("wait_for_completion").(bool)
 	if wait {
-		_, err = ResourceOutscaleImageTaskWaitForAvailable(ctx, id, conn, timeout)
+		err = ResourceOutscaleImageTaskWaitForAvailable(ctx, id, client, timeout)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -192,7 +183,7 @@ func resourceOAPIImageExportTaskCreate(ctx context.Context, d *schema.ResourceDa
 
 	d.SetId(id)
 	if d.IsNewResource() {
-		if err := updateOAPITagsSDK(conn, d); err != nil {
+		if err := updateOAPITagsSDK(ctx, client, timeout, d); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -200,84 +191,75 @@ func resourceOAPIImageExportTaskCreate(ctx context.Context, d *schema.ResourceDa
 	return resourceOAPIImageExportTaskRead(ctx, d, meta)
 }
 
-func resourceOAPIImageExportTaskRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func resourceOAPIImageExportTaskRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 	timeout := d.Timeout(schema.TimeoutRead)
 
-	var resp oscgo.ReadImageExportTasksResponse
-	var err error
-	filter := &oscgo.FiltersExportTask{TaskIds: &[]string{d.Id()}}
-	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		rp, httpResp, err := conn.ImageApi.ReadImageExportTasks(ctx).
-			ReadImageExportTasksRequest(oscgo.ReadImageExportTasksRequest{
-				Filters: filter,
-			}).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
+	filter := &osc.FiltersExportTask{TaskIds: &[]string{d.Id()}}
+	resp, err := client.ReadImageExportTasks(ctx, osc.ReadImageExportTasksRequest{
+		Filters: filter,
+	}, options.WithRetryTimeout(timeout))
 	if err != nil {
 		return diag.Errorf("error reading task image %s", err)
 	}
-	if utils.IsResponseEmpty(len(resp.GetImageExportTasks()), "ImageExportTask", d.Id()) {
+	if resp.ImageExportTasks == nil || utils.IsResponseEmpty(len(*resp.ImageExportTasks), "ImageExportTask", d.Id()) {
 		d.SetId("")
 		return nil
 	}
-	v := resp.GetImageExportTasks()[0]
+	v := (*resp.ImageExportTasks)[0]
 
-	if v.GetState() == "failed" || v.GetState() == "cancelled" {
+	if ptr.From(v.State) == "failed" || *v.State == "cancelled" {
 		taskId := d.Id()
 		d.SetId("")
 
-		errMsg := fmt.Sprintf("Image export task (%s) did not succeed. Status: %s", taskId, v.GetState())
+		errMsg := fmt.Sprintf("Image export task (%s) did not succeed. Status: %s", taskId, ptr.From(v.State))
 		errMsg += "\n" + `To remove it from state, run "terraform refresh" or recreate the resource.`
 
 		return diag.Diagnostics{
 			diag.Diagnostic{
 				Severity: diag.Warning,
-				Summary:  "Image export task " + v.GetState(),
+				Summary:  "Image export task " + *v.State,
 				Detail:   errMsg,
 			},
 		}
 	}
 
-	if err = d.Set("progress", v.GetProgress()); err != nil {
+	if err = d.Set("progress", ptr.From(v.Progress)); err != nil {
 		return diag.FromErr(err)
 	}
-	if err = d.Set("task_id", v.GetTaskId()); err != nil {
+	if err = d.Set("task_id", ptr.From(v.TaskId)); err != nil {
 		return diag.FromErr(err)
 	}
-	if err = d.Set("state", v.GetState()); err != nil {
+	if err = d.Set("state", ptr.From(v.State)); err != nil {
 		return diag.FromErr(err)
 	}
-	if err = d.Set("comment", v.GetComment()); err != nil {
+	if err = d.Set("comment", ptr.From(v.Comment)); err != nil {
 		return diag.FromErr(err)
 	}
 
-	exp := make([]map[string]interface{}, 1)
-	exportToOsu := make(map[string]interface{})
-	exportToOsu["disk_image_format"] = v.OsuExport.GetDiskImageFormat()
-	exportToOsu["osu_bucket"] = v.OsuExport.GetOsuBucket()
-	osuPrefix := v.OsuExport.GetOsuPrefix()
+	exp := make([]map[string]any, 1)
+	export := ptr.From(v.OsuExport)
+	exportToOsu := make(map[string]any)
+	exportToOsu["disk_image_format"] = export.DiskImageFormat
+	exportToOsu["osu_bucket"] = export.OsuBucket
+	osuPrefix := ptr.From(export.OsuPrefix)
 	if strings.Contains(osuPrefix, "/") {
 		osuList := strings.Split(osuPrefix, "/")
 		osuPrefix = osuList[0]
 	}
 	exportToOsu["osu_prefix"] = osuPrefix
-	exportToOsu["osu_manifest_url"] = v.OsuExport.GetOsuManifestUrl()
+	exportToOsu["osu_manifest_url"] = export.OsuManifestUrl
 
 	eto, etoOk := d.GetOk("osu_export")
 	if etoOk {
-		exp2 := eto.([]interface{})
-		e := exp2[0].(map[string]interface{})
+		exp2 := eto.([]any)
+		e := exp2[0].(map[string]any)
 		if v, ok := e["osu_api_key"]; ok {
-			a := v.([]interface{})
+			a := v.([]any)
 			if len(a) > 0 {
-				w := a[0].(map[string]interface{})
-				apk := make([]map[string]interface{}, 1)
-				osuAkSk := make(map[string]interface{})
+				w := a[0].(map[string]any)
+				apk := make([]map[string]any, 1)
+				osuAkSk := make(map[string]any)
 				osuAkSk["api_key_id"] = w["api_key_id"].(string)
 				osuAkSk["secret_key"] = w["secret_key"].(string)
 				apk[0] = osuAkSk
@@ -288,49 +270,43 @@ func resourceOAPIImageExportTaskRead(ctx context.Context, d *schema.ResourceData
 
 	exp[0] = exportToOsu
 
-	if err = d.Set("image_id", v.GetImageId()); err != nil {
+	if err = d.Set("image_id", ptr.From(v.ImageId)); err != nil {
 		return diag.FromErr(err)
 	}
 	if err = d.Set("osu_export", exp); err != nil {
 		return diag.FromErr(err)
 	}
-	if err = d.Set("tags", FlattenOAPITagsSDK(v.GetTags())); err != nil {
+	if err = d.Set("tags", FlattenOAPITagsSDK(ptr.From(v.Tags))); err != nil {
 		return diag.FromErr(err)
 	}
 
 	return nil
 }
 
-func resourceOAPIImageExportTaskUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func resourceOAPIImageExportTaskUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
+	timeout := d.Timeout(schema.TimeoutUpdate)
 
-	if err := updateOAPITagsSDK(conn, d); err != nil {
+	if err := updateOAPITagsSDK(ctx, client, timeout, d); err != nil {
 		return diag.FromErr(err)
 	}
 	return resourceOAPIImageExportTaskRead(ctx, d, meta)
 }
 
-func ResourceOutscaleImageTaskWaitForAvailable(ctx context.Context, id string, client *oscgo.APIClient, timeout time.Duration) (oscgo.ImageExportTask, error) {
+func ResourceOutscaleImageTaskWaitForAvailable(ctx context.Context, id string, client *osc.Client, timeout time.Duration) error {
 	log.Printf("Waiting for Image Task %s to become available...", id)
-	var image oscgo.ImageExportTask
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{"pending", "pending/queued", "queued"},
-		Target:     []string{"completed"},
-		Refresh:    ImageTaskStateRefreshFunc(client, ctx, id, timeout),
-		Timeout:    timeout,
-		Delay:      OutscaleImageRetryDelay,
-		MinTimeout: OutscaleImageRetryMinTimeout,
+		Pending: []string{string(osc.ImageStatePending)},
+		Target:  []string{string(osc.ImageStateAvailable)},
+		Timeout: timeout,
+		Refresh: ImageTaskStateRefreshFunc(client, ctx, id, timeout),
 	}
 
-	info, err := stateConf.WaitForStateContext(ctx)
-	if err != nil {
-		return image, fmt.Errorf("error waiting for image export task (%s) to be ready: %s", id, err)
-	}
-	image = info.(oscgo.ImageExportTask)
-	return image, nil
+	_, err := stateConf.WaitForStateContext(ctx)
+	return err
 }
 
-func resourceOAPIImageExportTaskDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceOAPIImageExportTaskDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	d.SetId("")
 	if err := d.Set("osu_export", nil); err != nil {
 		return diag.FromErr(err)
@@ -340,46 +316,25 @@ func resourceOAPIImageExportTaskDelete(ctx context.Context, d *schema.ResourceDa
 }
 
 // ImageTaskStateRefreshFunc ...
-func ImageTaskStateRefreshFunc(client *oscgo.APIClient, ctx context.Context, id string, timeout time.Duration) retry.StateRefreshFunc {
-	return func() (interface{}, string, error) {
-		var resp oscgo.ReadImageExportTasksResponse
-		var err error
-		var statusCode int
-
-		err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-			filter := &oscgo.FiltersExportTask{TaskIds: &[]string{id}}
-			rp, httpResp, err := client.ImageApi.ReadImageExportTasks(context.Background()).
-				ReadImageExportTasksRequest(oscgo.ReadImageExportTasksRequest{
-					Filters: filter,
-				}).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			statusCode = httpResp.StatusCode
-			return nil
-		})
+func ImageTaskStateRefreshFunc(client *osc.Client, ctx context.Context, id string, timeout time.Duration) retry.StateRefreshFunc {
+	return func() (any, string, error) {
+		resp, err := client.ReadImageExportTasks(ctx, osc.ReadImageExportTasksRequest{
+			Filters: &osc.FiltersExportTask{TaskIds: &[]string{id}},
+		}, options.WithRetryTimeout(timeout))
 		if err != nil {
-			if statusCode == http.StatusNotFound {
-				log.Printf("[INFO] Image export task %s state %s", id, "destroyed")
-				return resp, "destroyed", nil
-			} else if resp.GetImageExportTasks() != nil && len(resp.GetImageExportTasks()) == 0 {
-				log.Printf("[INFO] Image export task %s state %s", id, "destroyed")
-				return resp, "destroyed", nil
-			} else {
-				return resp, "", fmt.Errorf("error on refresh: %w", err)
-			}
+			return resp, "", fmt.Errorf("error on refresh: %w", err)
 		}
 
-		if resp.GetImageExportTasks() == nil || len(resp.GetImageExportTasks()) == 0 {
+		if resp.ImageExportTasks == nil || len(*resp.ImageExportTasks) == 0 {
 			return resp, "destroyed", nil
 		}
+		task := (*resp.ImageExportTasks)[0]
 
-		if resp.GetImageExportTasks()[0].GetState() == "failed" || resp.GetImageExportTasks()[0].GetState() == "cancelled" {
-			return resp.GetImageExportTasks()[0], resp.GetImageExportTasks()[0].GetState(), fmt.Errorf("error: %v", resp.GetImageExportTasks()[0].GetComment())
+		if ptr.From(task.State) == "failed" || *task.State == "cancelled" {
+			return task, *task.State, fmt.Errorf("error: %v", *task.Comment)
 		}
 
 		// Image export task is valid, so return it's state
-		return resp.GetImageExportTasks()[0], resp.GetImageExportTasks()[0].GetState(), nil
+		return task, ptr.From(task.State), nil
 	}
 }

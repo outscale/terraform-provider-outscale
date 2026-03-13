@@ -12,14 +12,13 @@ func TestAccDataOutscaleApiAccessRules_basic(t *testing.T) {
 	resourceName := "outscale_api_access_rule.rule_data"
 	ca_path := testAccCertPath
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testacc.PreCheck(t) },
 		Providers:    testacc.SDKProviders,
 		CheckDestroy: testAccDataCheckOutscaleApiAccessRuleDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataOutscaleApiAccessRulesConfig(ca_path),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleApiAccessRuleExists(resourceName),
+					testAccCheckOutscaleApiAccessRuleExists(t.Context(), resourceName),
 				),
 			},
 		},

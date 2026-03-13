@@ -13,7 +13,6 @@ import (
 func TestAccOthers_Volume_Basic(t *testing.T) {
 	resourceName := "outscale_volume.accvolume"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -34,7 +33,6 @@ func TestAccOthers_Volume_UpdateSize(t *testing.T) {
 	resourceName := "outscale_volume.accvolume"
 	var volumeID string
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -69,7 +67,6 @@ func TestAccOthers_Volume_IO1Type(t *testing.T) {
 	region := utils.GetRegion()
 	resourceName := "outscale_volume.test-io1"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -96,7 +93,6 @@ func TestAccOthers_Volume_Type_Change(t *testing.T) {
 	region := utils.GetRegion()
 	resourceName := "outscale_volume.test-type-change"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -125,7 +121,6 @@ func TestAccOthers_Volume_Type_Change(t *testing.T) {
 func TestAccOthers_Volume_Migration(t *testing.T) {
 	region := utils.GetRegion()
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { testacc.PreCheck(t) },
 		Steps: testacc.FrameworkMigrationTestSteps("1.1.3",
 			testAccOutscaleVolumeConfig(utils.GetRegion()),
 			test_IO1VolumeTypeConfig(region),

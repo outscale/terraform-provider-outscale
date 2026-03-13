@@ -4,16 +4,15 @@ import (
 	"context"
 	"fmt"
 	"testing"
-	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 func TestAccOthers_ServerCertificate_basic(t *testing.T) {
@@ -105,20 +104,19 @@ kbcI5Y2wveEgMqPSRya2OapYGiPeqYhg6JAGPRXtOfOq9IUDcPuc2emnihNpSa8y
 -----END PRIVATE KEY-----`
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testacc.PreCheck(t) },
 		Providers:    testacc.SDKProviders,
 		CheckDestroy: testAccCheckOutscaleServerCertificateDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleServerCertificateConfig(rName, body, private),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleServerCertificateExists(resourceName),
+					testAccCheckOutscaleServerCertificateExists(t.Context(), resourceName),
 				),
 			},
 			{
 				Config: testAccOutscaleServerCertificateConfig(rNameUpdated, body, private),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleServerCertificateExists(resourceName),
+					testAccCheckOutscaleServerCertificateExists(t.Context(), resourceName),
 				),
 			},
 			testacc.ImportStep(resourceName, "request_id", "body", "private_key"),
@@ -126,35 +124,27 @@ kbcI5Y2wveEgMqPSRya2OapYGiPeqYhg6JAGPRXtOfOq9IUDcPuc2emnihNpSa8y
 	})
 }
 
-func testAccCheckOutscaleServerCertificateExists(n string) resource.TestCheckFunc {
+func testAccCheckOutscaleServerCertificateExists(ctx context.Context, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("not found: %s", n)
 		}
 
-		conn := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSCAPI
+		client := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSC
 
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("no id is set")
 		}
 		exists := false
-		var resp oscgo.ReadServerCertificatesResponse
-		err := retry.Retry(3*time.Minute, func() *retry.RetryError {
-			rp, httpResp, err := conn.ServerCertificateApi.ReadServerCertificates(context.Background()).ReadServerCertificatesRequest(oscgo.ReadServerCertificatesRequest{}).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
+		resp, err := client.ReadServerCertificates(ctx, osc.ReadServerCertificatesRequest{}, options.WithRetryTimeout(DefaultTimeout))
 
-		if err != nil || len(resp.GetServerCertificates()) == 0 {
+		if err != nil || resp.ServerCertificates == nil || len(*resp.ServerCertificates) == 0 {
 			return fmt.Errorf("server certificate not found (%s)", rs.Primary.ID)
 		}
 
-		for _, server := range resp.GetServerCertificates() {
-			if server.GetId() == rs.Primary.ID {
+		for _, server := range *resp.ServerCertificates {
+			if ptr.From(server.Id) == rs.Primary.ID {
 				exists = true
 			}
 		}
@@ -168,7 +158,7 @@ func testAccCheckOutscaleServerCertificateExists(n string) resource.TestCheckFun
 }
 
 func testAccCheckOutscaleServerCertificateDestroy(s *terraform.State) error {
-	conn := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSCAPI
+	client := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSC
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_server_certificate_link" {
@@ -177,21 +167,13 @@ func testAccCheckOutscaleServerCertificateDestroy(s *terraform.State) error {
 
 		exists := false
 
-		var resp oscgo.ReadServerCertificatesResponse
-		var err = retry.Retry(3*time.Minute, func() *retry.RetryError {
-			rp, httpResp, err := conn.ServerCertificateApi.ReadServerCertificates(context.Background()).ReadServerCertificatesRequest(oscgo.ReadServerCertificatesRequest{}).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
+		resp, err := client.ReadServerCertificates(context.Background(), osc.ReadServerCertificatesRequest{}, options.WithRetryTimeout(DefaultTimeout))
 		if err != nil {
 			return fmt.Errorf("server certificate reading (%s)", rs.Primary.ID)
 		}
 
-		for _, server := range resp.GetServerCertificates() {
-			if server.GetId() == rs.Primary.ID {
+		for _, server := range ptr.From(resp.ServerCertificates) {
+			if ptr.From(server.Id) == rs.Primary.ID {
 				exists = true
 			}
 		}

@@ -1,7 +1,6 @@
 package validatorstring
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -18,20 +17,19 @@ func TestFwDateValidators(t *testing.T) {
 	if err != nil {
 		t.Errorf("unable to parse date: %v", err.Error())
 	}
-	newDate, err := iso8601.Parse([]byte(oldDate.AddDate(0, 1, 10).Format(time.RFC3339)))
+	newDate, err := iso8601.ParseString(oldDate.AddDate(0, 1, 10).Format(time.RFC3339))
 	if err != nil {
 		t.Errorf("unable to parse date: %v", err.Error())
 	}
 
 	currentDate := oldDate.Format(time.RFC3339)
-	updatetime := newDate.Format(time.RFC3339)
 	cases := map[string]struct {
 		ConfigValue   types.String
 		StateValue    types.String
 		ExpectedError bool
 	}{
 		"valide_date_updating": {
-			ConfigValue:   types.StringValue(updatetime),
+			ConfigValue:   types.StringValue(newDate.String()),
 			ExpectedError: false,
 		},
 		"invalid_date_current_date": {
@@ -43,7 +41,7 @@ func TestFwDateValidators(t *testing.T) {
 			ExpectedError: false,
 		},
 		"valid_date_configValue": {
-			ConfigValue:   types.StringValue(updatetime),
+			ConfigValue:   types.StringValue(newDate.String()),
 			ExpectedError: false,
 		},
 		"valid_date_unset_Values": {
@@ -61,7 +59,7 @@ func TestFwDateValidators(t *testing.T) {
 			resp := validator.StringResponse{
 				Diagnostics: diag.Diagnostics{},
 			}
-			DateValidator().ValidateString(context.Background(), req, &resp)
+			DateValidator().ValidateString(t.Context(), req, &resp)
 			if !tc.ExpectedError && resp.Diagnostics.HasError() {
 				t.Errorf("got unexpected error: %s", resp.Diagnostics.Errors())
 			}

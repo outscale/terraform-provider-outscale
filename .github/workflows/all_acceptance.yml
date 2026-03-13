@@ -21,6 +21,7 @@ jobs:
         with:
             test-command: testacc-oapi-net
             runner: us-east-2
+            providers: outscale_oapi,outscale_oos
         secrets: inherit
 
     oapi-vms-tests:
@@ -28,6 +29,7 @@ jobs:
         with:
             test-command: testacc-oapi-vm
             runner: eu-west-2
+            providers: outscale_oapi,outscale_oos
         secrets: inherit
 
     oapi-others-tests:
@@ -35,6 +37,7 @@ jobs:
         with:
             test-command: testacc-oapi-others
             runner: eu-west-2
+            providers: outscale_oapi,outscale_oos
         secrets: inherit
 
     oks-tests:
@@ -42,6 +45,7 @@ jobs:
         with:
             test-command: testacc-oks
             runner: eu-west-2
+            providers: outscale_oks
         secrets: inherit
 
     provider-tests:
@@ -49,4 +53,5 @@ jobs:
         with:
             test-command: testacc-provider
             runner: eu-west-2
+            providers: outscale_oapi
         secrets: inherit

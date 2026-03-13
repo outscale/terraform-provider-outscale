@@ -7,7 +7,7 @@ resource "outscale_policy" "policy_user01" {
 
 resource "outscale_user" "userInteg" {
   user_name = "test-user-${random_string.suffix[0].result}"
-  path = "/Integ/"
+  path      = "/Integ/"
   policy {
     policy_orn = outscale_policy.policy_user01.orn
   }

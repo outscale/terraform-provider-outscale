@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -17,14 +17,11 @@ func TestAccOthers_LBU_basic(t *testing.T) {
 		MAX_LB_NAME_SUFFIX int = 5000
 	)
 
-	var conf oscgo.LoadBalancer
+	var conf osc.LoadBalancer
 
 	zone := fmt.Sprintf("%sa", utils.GetRegion())
 	suffix := utils.RandIntRange(MIN_LB_NAME_SUFFIX, MAX_LB_NAME_SUFFIX)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() {
-			testacc.PreCheck(t)
-		},
 		IDRefreshName: "outscale_load_balancer.bar",
 		Providers:     testacc.SDKProviders,
 		CheckDestroy:  testAccCheckOutscaleLBUDestroy,

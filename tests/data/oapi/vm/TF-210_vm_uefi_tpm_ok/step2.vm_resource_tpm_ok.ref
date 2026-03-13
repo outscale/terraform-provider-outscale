@@ -36,7 +36,7 @@
                             "uefi"
                         ],
                         "creation_date": "########",
-                        "description": "Copy OMI for Terraform CI (Do not delete)",
+                        "description": "Terraform CI tests",
                         "file_location": "########",
                         "id": "##id-2##",
                         "image_id": "##id-2##",

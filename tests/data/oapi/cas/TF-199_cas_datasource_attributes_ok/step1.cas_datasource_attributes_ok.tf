@@ -12,7 +12,7 @@ data "outscale_cas" "data_cas_1" {
 
   filter {
     name   = "ca_ids"
-    values = [outscale_ca.new_ca_for_data.ca_id,outscale_ca.new_ca_for_data_2.ca_id]
+    values = [outscale_ca.new_ca_for_data.ca_id, outscale_ca.new_ca_for_data_2.ca_id]
   }
 
 }
