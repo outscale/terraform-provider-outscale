@@ -1,15 +1,15 @@
 resource "outscale_server_certificate" "my_server_certificate2" {
-  name          = "certificate-${random_string.suffix[0].result}"
-  body          =  file("certs/certificate.pem")
-  chain         =  file("certs/certificate.pem")
-  private_key   =  file("certs/certificate.key")
-  path          =  "/terraform/test/"
+  name        = "certificate-${random_string.suffix[0].result}"
+  body        = file("certs/certificate.pem")
+  chain       = file("certs/certificate.pem")
+  private_key = file("certs/certificate.key")
+  path        = "/terraform/test/"
 }
 
 data "outscale_server_certificate" "my_server_certificate" {
-      filter {
-        name     = "paths"
-        values   = [outscale_server_certificate.my_server_certificate2.path]
-    }
-depends_on = [outscale_server_certificate.my_server_certificate2]
+  filter {
+    name   = "paths"
+    values = [outscale_server_certificate.my_server_certificate2.path]
+  }
+  depends_on = [outscale_server_certificate.my_server_certificate2]
 }

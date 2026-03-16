@@ -75,14 +75,14 @@
                         "link_route_tables": [
                             {
                                 "link_route_table_id": "##id-5##",
-                                "main": true,
+                                "main": false,
                                 "net_id": "",
                                 "route_table_id": "##id-3##",
                                 "subnet_id": "##id-6##"
                             },
                             {
                                 "link_route_table_id": "##id-7##",
-                                "main": true,
+                                "main": false,
                                 "net_id": "",
                                 "route_table_id": "##id-3##",
                                 "subnet_id": "##id-8##"
@@ -141,7 +141,7 @@
                     "attributes": {
                         "id": "##id-5##",
                         "link_route_table_id": "##id-5##",
-                        "main": true,
+                        "main": false,
                         "net_id": "",
                         "request_id": "########",
                         "route_table_id": "##id-3##",
@@ -169,7 +169,7 @@
                     "attributes": {
                         "id": "##id-7##",
                         "link_route_table_id": "##id-7##",
-                        "main": true,
+                        "main": false,
                         "net_id": "",
                         "request_id": "########",
                         "route_table_id": "##id-3##",

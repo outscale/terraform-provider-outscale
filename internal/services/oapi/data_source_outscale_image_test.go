@@ -18,9 +18,6 @@ func TestAccVM_WithImageDataSource_basic(t *testing.T) {
 	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() {
-			testacc.PreCheck(t)
-		},
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{

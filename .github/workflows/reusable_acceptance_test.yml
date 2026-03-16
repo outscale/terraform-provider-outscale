@@ -9,6 +9,9 @@ on:
             runner:
                 required: true
                 type: string
+            providers:
+                required: true
+                type: string
 
 jobs:
     acceptance-test:
@@ -24,6 +27,7 @@ jobs:
                   access_key: ${{ secrets.OSC_ACCESS_KEY }}
                   secret_key: ${{ secrets.OSC_SECRET_KEY }}
                   region: ${{ secrets.OSC_REGION }}
+                  providers: ${{ inputs.providers }}
             - name: Set up Go
               uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6
               with:
@@ -41,6 +45,9 @@ jobs:
                   OUTSCALE_REGION: ${{ secrets.OSC_REGION }}
                   OUTSCALE_ACCOUNT: ${{ secrets.OSC_ACCOUNT_ID }}
                   OUTSCALE_IMAGEID: ${{ secrets.OUTSCALE_IMAGEID }}
+                  OSC_ACCESS_KEY: ${{ secrets.OSC_ACCESS_KEY }}
+                  OSC_SECRET_KEY: ${{ secrets.OSC_SECRET_KEY }}
+                  OSC_REGION: ${{ secrets.OSC_REGION }}
             - name: Run acceptance tests
               run: make ${{ inputs.test-command }}
               env:
@@ -49,3 +56,6 @@ jobs:
                   OUTSCALE_REGION: ${{ secrets.OSC_REGION }}
                   OUTSCALE_ACCOUNT: ${{ secrets.OSC_ACCOUNT_ID }}
                   OUTSCALE_IMAGEID: ${{ secrets.OUTSCALE_IMAGEID }}
+                  OSC_ACCESS_KEY: ${{ secrets.OSC_ACCESS_KEY }}
+                  OSC_SECRET_KEY: ${{ secrets.OSC_SECRET_KEY }}
+                  OSC_REGION: ${{ secrets.OSC_REGION }}

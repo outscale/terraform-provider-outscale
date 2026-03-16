@@ -5,13 +5,12 @@ import (
 	"fmt"
 	"os"
 	"testing"
-	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -22,18 +21,17 @@ func TestAccOthers_Image_basic(t *testing.T) {
 	region := utils.GetRegion()
 	sgName := acctest.RandomWithPrefix("testacc-sg")
 
-	var ami oscgo.Image
+	var ami osc.Image
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		CheckDestroy:             testAccCheckOAPIImageDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOAPIImageConfigBasic(omi, testAccVmType, region, rInt, sgName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPIImageExists("outscale_image.foo", &ami),
+					testAccCheckOAPIImageExists(t.Context(), "outscale_image.foo", &ami),
 					resource.TestCheckResourceAttr(
 						"outscale_image.foo", "image_name", fmt.Sprintf("tf-testing-%d", rInt)),
 					resource.TestCheckResourceAttr(
@@ -49,34 +47,26 @@ func TestAccOthers_Image_basic(t *testing.T) {
 }
 
 func testAccCheckOAPIImageDestroy(s *terraform.State) error {
-	client := testacc.ConfiguredClient.OSCAPI
+	client := testacc.ConfiguredClient.OSC
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_image" {
 			continue
 		}
 
-		filterReq := oscgo.ReadImagesRequest{
-			Filters: &oscgo.FiltersImage{ImageIds: &[]string{rs.Primary.ID}},
+		filterReq := osc.ReadImagesRequest{
+			Filters: &osc.FiltersImage{ImageIds: &[]string{rs.Primary.ID}},
 		}
-		var resp oscgo.ReadImagesResponse
-		err := retry.Retry(120*time.Second, func() *retry.RetryError {
-			rp, httpResp, err := client.ImageApi.ReadImages(context.Background()).ReadImagesRequest(filterReq).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
+		resp, err := client.ReadImages(context.Background(), filterReq, options.WithRetryTimeout(DefaultTimeout))
 
-		if err != nil || len(resp.GetImages()) > 0 {
+		if err != nil || resp.Images == nil || len(*resp.Images) > 0 {
 			return fmt.Errorf("image still exists (%s)", rs.Primary.ID)
 		}
 	}
 	return nil
 }
 
-func testAccCheckOAPIImageExists(n string, ami *oscgo.Image) resource.TestCheckFunc {
+func testAccCheckOAPIImageExists(ctx context.Context, n string, ami *osc.Image) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -87,26 +77,18 @@ func testAccCheckOAPIImageExists(n string, ami *oscgo.Image) resource.TestCheckF
 			return fmt.Errorf("no omi id is set")
 		}
 
-		client := testacc.ConfiguredClient.OSCAPI
+		client := testacc.ConfiguredClient.OSC
 
-		filterReq := oscgo.ReadImagesRequest{
-			Filters: &oscgo.FiltersImage{ImageIds: &[]string{rs.Primary.ID}},
+		filterReq := osc.ReadImagesRequest{
+			Filters: &osc.FiltersImage{ImageIds: &[]string{rs.Primary.ID}},
 		}
-		var resp oscgo.ReadImagesResponse
-		err := retry.Retry(120*time.Second, func() *retry.RetryError {
-			rp, httpResp, err := client.ImageApi.ReadImages(context.Background()).ReadImagesRequest(filterReq).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
+		resp, err := client.ReadImages(ctx, filterReq, options.WithRetryTimeout(DefaultTimeout))
 
-		if err != nil || len(resp.GetImages()) < 1 {
+		if err != nil || resp.Images == nil || len(*resp.Images) < 1 {
 			return fmt.Errorf("image not found (%s)", rs.Primary.ID)
 		}
 
-		ami = &resp.GetImages()[0]
+		ami = &(*resp.Images)[0]
 
 		return nil
 	}

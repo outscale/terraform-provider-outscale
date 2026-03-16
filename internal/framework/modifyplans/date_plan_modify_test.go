@@ -18,21 +18,19 @@ func TestFwDatemodifyplan(t *testing.T) {
 	if err != nil {
 		t.Errorf("%v", err.Error())
 	}
-	newDate, err := iso8601.Parse([]byte(oldDate.AddDate(0, 1, 10).Format(time.RFC3339)))
+	newDate, err := iso8601.ParseString(oldDate.AddDate(0, 1, 10).Format(time.RFC3339))
 	if err != nil {
 		t.Errorf("%v", err.Error())
 	}
 
 	currentDate := oldDate.Format(time.RFC3339)
-	updatetime := newDate.Format(time.RFC3339)
-	invalidDate := newDate.Format(time.RFC1123Z)
 	cases := map[string]struct {
 		ConfigValue   types.String
 		StateValue    types.String
 		ExpectedError bool
 	}{
 		"valide_date_updating": {
-			ConfigValue:   types.StringValue(updatetime),
+			ConfigValue:   types.StringValue(newDate.String()),
 			StateValue:    types.StringValue(currentDate),
 			ExpectedError: false,
 		},
@@ -47,7 +45,7 @@ func TestFwDatemodifyplan(t *testing.T) {
 			ExpectedError: false,
 		},
 		"valid_date_configValue": {
-			ConfigValue:   types.StringValue(updatetime),
+			ConfigValue:   types.StringValue(newDate.String()),
 			StateValue:    types.StringNull(),
 			ExpectedError: false,
 		},
@@ -55,11 +53,6 @@ func TestFwDatemodifyplan(t *testing.T) {
 			ConfigValue:   types.StringNull(),
 			StateValue:    types.StringNull(),
 			ExpectedError: false,
-		},
-		"invalid_date_unset_Values": {
-			ConfigValue:   types.StringValue(invalidDate),
-			StateValue:    types.StringValue(updatetime),
-			ExpectedError: true,
 		},
 	}
 

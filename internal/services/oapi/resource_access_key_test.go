@@ -15,7 +15,7 @@ func TestAccOthers_AccessKey_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
-		PreCheck:                 func() { testacc.PreCheck(t) },
+
 		Steps: []resource.TestStep{
 			{
 				Config: testAccAccessKeyBasicConfig,
@@ -40,7 +40,7 @@ func TestAccOthers_AccessKeyUpdatedToInactivedKey(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
-		PreCheck:                 func() { testacc.PreCheck(t) },
+
 		Steps: []resource.TestStep{
 			{
 				Config: testAccAccessKeyUpdateState(state),
@@ -78,7 +78,7 @@ func TestAccOthers_AccessKeyUpdatedToActivedKey(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
-		PreCheck:                 func() { testacc.PreCheck(t) },
+
 		Steps: []resource.TestStep{
 			{
 				Config: testAccAccessKeyUpdateState(state),
@@ -113,7 +113,7 @@ func TestAccOthers_AccessKeyUpdatedExpirationDate(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
-		PreCheck:                 func() { testacc.PreCheck(t) },
+
 		Steps: []resource.TestStep{
 			{
 				Config: testAccAccessKeyExpirationDateConfig(expirDate),
@@ -146,7 +146,6 @@ func TestAccOthers_AccessKey_Migration(t *testing.T) {
 	stateUpdated := "ACTIVE"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { testacc.PreCheck(t) },
 		Steps: testacc.FrameworkMigrationTestSteps("1.0.1",
 			testAccAccessKeyBasicConfig,
 			testAccAccessKeyUpdateState(state),
@@ -159,7 +158,6 @@ func TestAccOthers_AccessKey_ExpirationDate_Migration(t *testing.T) {
 	expirDate := time.Now().AddDate(1, 1, 0).Format("2006-01-02")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { testacc.PreCheck(t) },
 		Steps: testacc.FrameworkMigrationTestStepsWithConfigs("1.0.1",
 			testacc.MigrationTestConfig{
 				Config: testAccAccessKeyExpirationDateConfig(expirDate),
