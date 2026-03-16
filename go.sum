@@ -16,6 +16,8 @@ github.com/aws/aws-sdk-go v1.55.8 h1:JRmEUbU52aJQZ2AjX4q4Wu7t4uZjOu71uyNmaWlUkJQ
 github.com/aws/aws-sdk-go v1.55.8/go.mod h1:ZkViS9AqA6otK+JBBNH2++sx1sgxrPKcSzPPvQkUtXk=
 github.com/aws/smithy-go/aws-http-auth v1.1.1 h1:xQ7oOn+T0+5Pnsqhb9t7YA2JZDevKZKWuz10yFrFj2w=
 github.com/aws/smithy-go/aws-http-auth v1.1.1/go.mod h1:VuNQchCzFzzAchHl9tgHtgwNK1N2MJC8To7YOPt02Zw=
+github.com/aws/smithy-go/aws-http-auth v1.1.2 h1:GxlpOPjxAtktWUGK3QPoIiIa+qq5WNiqpewt3s/+pVo=
+github.com/aws/smithy-go/aws-http-auth v1.1.2/go.mod h1:KL46VTjVK9De3jurMqDLBkXCP9vrAvD03zQrmyzyrQ0=
 github.com/benbjohnson/clock v1.3.0 h1:ip6w0uFQkncKQ979AypyG0ER7mqUSBdKLOgAle/AT8A=
 github.com/benbjohnson/clock v1.3.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
 github.com/bmatcuk/doublestar v1.1.1/go.mod h1:UD6OnuiIn0yFxxA2le/rnRU1G4RaI4UvFv1sNto9p6w=
