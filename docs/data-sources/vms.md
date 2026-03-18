@@ -57,16 +57,16 @@ The following arguments are supported:
     * `nic_link_nic_link_nic_dates` - (Optional) The dates and times (UTC) when the NICs were attached to the VMs.
     * `nic_link_nic_link_nic_ids` - (Optional) The IDs of the NIC attachments.
     * `nic_link_nic_states` - (Optional) The states of the attachments.
-    * `nic_link_nic_vm_account_ids` - (Optional) The account IDs of the owners of the VMs the NICs are attached to.
+    * `nic_link_nic_vm_account_ids` - (Optional) The OUTSCALE account IDs of the owners of the VMs the NICs are attached to.
     * `nic_link_nic_vm_ids` - (Optional) The IDs of the VMs the NICs are attached to.
-    * `nic_link_public_ip_account_ids` - (Optional) The account IDs of the owners of the public IPs associated with the NICs.
+    * `nic_link_public_ip_account_ids` - (Optional) The OUTSCALE account IDs of the owners of the public IPs associated with the NICs.
     * `nic_link_public_ip_link_public_ip_ids` - (Optional) The association IDs returned when the public IPs were associated with the NICs.
     * `nic_link_public_ip_public_ip_ids` - (Optional) The allocation IDs returned when the public IPs were allocated to their accounts.
     * `nic_link_public_ip_public_ips` - (Optional) The public IPs associated with the NICs.
     * `nic_mac_addresses` - (Optional) The Media Access Control (MAC) addresses of the NICs.
     * `nic_net_ids` - (Optional) The IDs of the Nets where the NICs are located.
     * `nic_nic_ids` - (Optional) The IDs of the NICs.
-    * `nic_private_ips_link_public_ip_account_ids` - (Optional) The account IDs of the owner of the public IPs associated with the private IPs.
+    * `nic_private_ips_link_public_ip_account_ids` - (Optional) The OUTSCALE account IDs of the owner of the public IPs associated with the private IPs.
     * `nic_private_ips_link_public_ip_ids` - (Optional) The public IPs associated with the private IPs.
     * `nic_private_ips_primary_ip` - (Optional) Whether the private IPs are the primary IPs associated with the NICs.
     * `nic_private_ips_private_ips` - (Optional) The private IPs of the NICs.
@@ -127,7 +127,7 @@ The following attributes are exported:
     * `nested_virtualization` - If true, nested virtualization is enabled. If false, it is disabled.
     * `net_id` - The ID of the Net in which the VM is running.
     * `nics` - (Net only) The network interface cards (NICs) the VMs are attached to.
-        * `account_id` - The account ID of the owner of the NIC.
+        * `account_id` - The OUTSCALE account ID of the owner of the NIC.
         * `description` - The description of the NIC.
         * `is_source_dest_checked` - (Net only) If true, the source/destination check is enabled. If false, it is disabled.
         * `link_nic` - Information about the network interface card (NIC).
@@ -138,7 +138,7 @@ The following attributes are exported:
         * `link_public_ip` - Information about the public IP associated with the NIC.
             * `public_dns_name` - The name of the public DNS.
             * `public_ip` - The public IP associated with the NIC.
-            * `public_ip_account_id` - The account ID of the owner of the public IP.
+            * `public_ip_account_id` - The OUTSCALE account ID of the owner of the public IP.
         * `mac_address` - The Media Access Control (MAC) address of the NIC.
         * `net_id` - The ID of the Net for the NIC.
         * `nic_id` - The ID of the NIC.
@@ -148,7 +148,7 @@ The following attributes are exported:
             * `link_public_ip` - Information about the public IP associated with the NIC.
                 * `public_dns_name` - The name of the public DNS.
                 * `public_ip` - The public IP associated with the NIC.
-                * `public_ip_account_id` - The account ID of the owner of the public IP.
+                * `public_ip_account_id` - The OUTSCALE account ID of the owner of the public IP.
             * `private_dns_name` - The name of the private DNS.
             * `private_ip` - The private IP.
         * `security_groups` - One or more IDs of security groups for the NIC.

@@ -4,12 +4,12 @@ page_title: "OUTSCALE: outscale_internet_services"
 subcategory: "OUTSCALE API"
 sidebar_current: "outscale-internet-services"
 description: |-
-  [Provides information about Internet services.]
+  [Provides information about internet services.]
 ---
 
 # outscale_internet_services Data Source
 
-Provides information about Internet services.
+Provides information about internet services.
 
 For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Internet-Services.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-internetservice).
@@ -39,7 +39,7 @@ The following arguments are supported:
     * `link_states` - (Optional) The current states of the attachments between the internet services and the Nets (only `available`, if the internet gateway is attached to a Net).
     * `tag_keys` - (Optional) The keys of the tags associated with the internet services.
     * `tag_values` - (Optional) The values of the tags associated with the internet services.
-    * `tags` - (Optional) The key/value combinations of the tags associated with the Internet services, in the following format: `TAGKEY=TAGVALUE`.
+    * `tags` - (Optional) The key/value combinations of the tags associated with the internet services, in the following format: `TAGKEY=TAGVALUE`.
 
 ## Attribute Reference
 

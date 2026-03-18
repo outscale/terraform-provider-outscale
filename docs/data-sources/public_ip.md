@@ -31,7 +31,7 @@ The following arguments are supported:
 
 * `filter` - (Optional) A combination of a filter name and one or more filter values. You can specify this argument for as many filter names as you need. The filter name can be any of the following:
     * `link_public_ip_ids` - (Optional) The IDs representing the associations of public IPs with VMs or NICs.
-    * `nic_account_ids` - (Optional) The account IDs of the owners of the NICs.
+    * `nic_account_ids` - (Optional) The OUTSCALE account IDs of the owners of the NICs.
     * `nic_ids` - (Optional) The IDs of the NICs.
     * `placements` - (Optional) Whether the public IPs are for use in the public Cloud or in a Net.
     * `private_ips` - (Optional) The private IPs associated with the public IPs.
@@ -47,7 +47,7 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `link_public_ip_id` - (Required in a Net) The ID representing the association of the public IP with the VM or the NIC.
-* `nic_account_id` - The account ID of the owner of the NIC.
+* `nic_account_id` - The OUTSCALE account ID of the owner of the NIC.
 * `nic_id` - The ID of the NIC the public IP is associated with (if any).
 * `private_ip` - The private IP associated with the public IP.
 * `public_ip_id` - The allocation ID of the public IP.

@@ -66,14 +66,14 @@ If not specified, the security group name is randomly generated.
 
 The following attributes are exported:
 
-* `account_id` - The account ID that has been granted permission.
+* `account_id` - The OUTSCALE account ID that has been granted permission.
 * `description` - The description of the security group.
 * `inbound_rules` - The inbound rules associated with the security group.
     * `from_port_range` - The beginning of the port range for the TCP and UDP protocols, or an ICMP type number.
     * `ip_protocol` - The IP protocol name (`tcp`, `udp`, `icmp`, or `-1` for all protocols). By default, `-1`. In a Net, this can also be an IP protocol number. For more information, see the [IANA.org website](https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml).
     * `ip_ranges` - One or more IP ranges for the security group rules, in CIDR notation (for example, `10.0.0.0/16`).
     * `security_groups_members` - Information about one or more source or destination security groups.
-        * `account_id` - The account ID that owns the source or destination security group.
+        * `account_id` - The OUTSCALE account ID that owns the source or destination security group.
         * `security_group_id` - The ID of a source or destination security group that you want to link to the security group of the rule.
         * `security_group_name` - (Public Cloud only) The name of a source or destination security group that you want to link to the security group of the rule.
     * `service_ids` - One or more service IDs to allow traffic from a Net to access the corresponding OUTSCALE services. For more information, see [ReadNetAccessPointServices](https://docs.outscale.com/api#readnetaccesspointservices).
@@ -84,7 +84,7 @@ The following attributes are exported:
     * `ip_protocol` - The IP protocol name (`tcp`, `udp`, `icmp`, or `-1` for all protocols). By default, `-1`. In a Net, this can also be an IP protocol number. For more information, see the [IANA.org website](https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml).
     * `ip_ranges` - One or more IP ranges for the security group rules, in CIDR notation (for example, `10.0.0.0/16`).
     * `security_groups_members` - Information about one or more source or destination security groups.
-        * `account_id` - The account ID that owns the source or destination security group.
+        * `account_id` - The OUTSCALE account ID that owns the source or destination security group.
         * `security_group_id` - The ID of a source or destination security group that you want to link to the security group of the rule.
         * `security_group_name` - (Public Cloud only) The name of a source or destination security group that you want to link to the security group of the rule.
     * `service_ids` - One or more service IDs to allow traffic from a Net to access the corresponding OUTSCALE services. For more information, see [ReadNetAccessPointServices](https://docs.outscale.com/api#readnetaccesspointservices).

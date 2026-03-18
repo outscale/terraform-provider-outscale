@@ -73,7 +73,7 @@ If `load_balancer_type` is `internal`, the load balancer has a public DNS name t
 * `security_groups` - One or more IDs of security groups for the load balancers. Valid only for load balancers in a Net.
 * `source_security_group` - Information about the source security group of the load balancer, which you can use as part of your inbound rules for your registered VMs.<br />
 To only allow traffic from load balancers, add a security group rule that specifies this source security group as the inbound source.
-    * `security_group_account_id` - The account ID of the owner of the security group.
+    * `security_group_account_id` - The OUTSCALE account ID of the owner of the security group.
     * `security_group_name` - The name of the security group.
 * `subnets` - The ID of the Subnet in which the load balancer was created.
 * `subregion_names` - The ID of the Subregion in which the load balancer was created.

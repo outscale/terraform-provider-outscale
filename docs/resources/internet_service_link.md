@@ -4,12 +4,12 @@ page_title: "OUTSCALE: outscale_internet_service_link"
 subcategory: "OUTSCALE API"
 sidebar_current: "outscale-internet-service-link"
 description: |-
-  [Manages an Internet service link.]
+  [Manages an internet service link.]
 ---
 
 # outscale_internet_service_link Resource
 
-Manages an Internet service link.
+Manages an internet service link.
 
 For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Internet-Services.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-internetservice).
@@ -28,7 +28,7 @@ resource "outscale_internet_service" "internet_service01" {
 ```
 
 
-### Link an Internet service to a Net
+### Link an internet service to a Net
 
 ```hcl
 resource "outscale_internet_service_link" "internet_service_link01" {
@@ -48,9 +48,9 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `internet_service_id` - The ID of the Internet service.
-* `state` - The state of the attachment of the Internet service to the Net (always `available`).
-* `tags` - One or more tags associated with the Internet service.
+* `internet_service_id` - The ID of the internet service.
+* `state` - The state of the attachment of the internet service to the Net (always `available`).
+* `tags` - One or more tags associated with the internet service.
     * `key` - The key of the tag, with a minimum of 1 character.
     * `value` - The value of the tag, between 0 and 255 characters.
 

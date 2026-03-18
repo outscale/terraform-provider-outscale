@@ -62,11 +62,11 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `account_alias` - The account alias of the owner of the snapshot.
-* `account_id` - The account ID of the owner of the snapshot.
+* `account_id` - The OUTSCALE account ID of the owner of the snapshot.
 * `creation_date` - The date and time (UTC) at which the snapshot was created.
 * `description` - The description of the snapshot.
 * `permissions_to_create_volume` - Permissions for the resource.
-    * `account_ids` - One or more account IDs that the permission is associated with.
+    * `account_ids` - One or more OUTSCALE account IDs that the permission is associated with.
     * `global_permission` - A global permission for all accounts.<br />
 (Request) Set this parameter to true to make the resource public (if the parent parameter is `Additions`) or to make the resource private (if the parent parameter is `Removals`).<br />
 (Response) If true, the resource is public. If false, the resource is private.

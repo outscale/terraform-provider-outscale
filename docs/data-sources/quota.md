@@ -11,7 +11,7 @@ description: |-
 
 Provides information about a quota.
 
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Your-Account.html).  
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Your-OUTSCALE-Account.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#readquotas).
 
 ## Example Usage
@@ -51,7 +51,7 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `account_id` - The account ID of the owner of the quotas.
+* `account_id` - The OUTSCALE account ID of the owner of the quotas.
 * `description` - The description of the quota.
 * `max_value` - The maximum value of the quota for the OUTSCALE user account (if there is no limit, `0`).
 * `name` - The unique name of the quota.
