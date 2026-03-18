@@ -455,7 +455,7 @@ func WaitForVolumeTasks(ctx context.Context, timeout time.Duration, tasksIds []s
 
 			err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
 				rp, httpResp, err := client.VolumeApi.ReadVolumeUpdateTasks(ctx).ReadVolumeUpdateTasksRequest(osc.ReadVolumeUpdateTasksRequest{
-					Filters: &osc.FiltersUpdateVolumeTask{
+					Filters: &osc.FiltersReadVolumeUpdateTask{
 						TaskIds: &tasksIds,
 					},
 				}).Execute()
