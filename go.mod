@@ -17,7 +17,7 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.38.1
 	github.com/hashicorp/terraform-plugin-testing v1.14.0
 	github.com/outscale/goutils/sdk v0.0.0-20260127143749-d95db5597c97
-	github.com/outscale/osc-sdk-go/v2 v2.32.0
+	github.com/outscale/osc-sdk-go/v2 v2.33.0
 	github.com/outscale/osc-sdk-go/v3 v3.0.0-beta.3
 	github.com/samber/lo v1.52.0
 	github.com/spf13/cast v1.10.0
@@ -76,7 +76,7 @@ require (
 	golang.org/x/crypto v0.46.0 // indirect
 	golang.org/x/mod v0.31.0 // indirect
 	golang.org/x/net v0.48.0 // indirect
-	golang.org/x/oauth2 v0.34.0 // indirect
+	golang.org/x/oauth2 v0.36.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect
 	golang.org/x/sys v0.39.0 // indirect
 	golang.org/x/text v0.32.0 // indirect
