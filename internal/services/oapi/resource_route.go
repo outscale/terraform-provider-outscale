@@ -542,6 +542,9 @@ func (r *resourceRoute) setRouteState(ctx context.Context, data RouteModel) (Rou
 	if err != nil {
 		return data, err
 	}
+	if readResp.GetRouteTables() == nil || len(readResp.GetRouteTables()) == 0 {
+		return data, ErrResourceEmpty
+	}
 	data.RequestId = types.StringValue(readResp.ResponseContext.GetRequestId())
 
 	routeTable := readResp.GetRouteTables()[0]

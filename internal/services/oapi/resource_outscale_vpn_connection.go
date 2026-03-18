@@ -166,7 +166,7 @@ func ResourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{})
 
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"pending"},
-		Target:     []string{"available", "failed"},
+		Target:     []string{"available", "failed", "deleted"},
 		Refresh:    vpnConnectionRefreshFunc(conn, &vpnConnectionID),
 		Timeout:    timeout,
 		Delay:      5 * time.Second,
@@ -179,7 +179,7 @@ func ResourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{})
 	}
 
 	resp := r.(oscgo.ReadVpnConnectionsResponse)
-	if utils.IsResponseEmpty(len(resp.GetVpnConnections()), "VpnConnection", d.Id()) {
+	if utils.IsResponseEmpty(len(resp.GetVpnConnections()), "VpnConnection", d.Id()) || resp.GetVpnConnections()[0].GetState() == "deleted" {
 		d.SetId("")
 		return nil
 	}
