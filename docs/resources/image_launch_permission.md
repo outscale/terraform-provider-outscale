@@ -44,10 +44,10 @@ The following arguments are supported:
 
 * `image_id` - (Required) The ID of the OMI you want to modify.
 * `permission_additions` - (Optional) Information about the users to whom you want to give permissions for the resource.
-    * `account_ids` - (Optional) The account ID of one or more users to whom you want to give permissions.
+    * `account_ids` - (Optional) The OUTSCALE account ID of one or more users to whom you want to give permissions.
     * `global_permission` - (Optional) If true, the resource is public. If false, the resource is private.
 * `permission_removals` - (Optional) Information about the users from whom you want to remove permissions for the resource.
-    * `account_ids` - (Optional) The account ID of one or more users from whom you want to remove permissions.
+    * `account_ids` - (Optional) The OUTSCALE account ID of one or more users from whom you want to remove permissions.
     * `global_permission` - (Optional) If true, the resource is public. If false, the resource is private.
 
 ## Attribute Reference
@@ -57,7 +57,7 @@ The following attributes are exported:
 * `description` - The description of the OMI.
 * `image_id` - The ID of the OMI.
 * `permissions_to_launch` - Permissions for the resource.
-    * `account_ids` - One or more account IDs that the permission is associated with.
+    * `account_ids` - One or more OUTSCALE account IDs that the permission is associated with.
     * `global_permission` - A global permission for all accounts.<br />
 (Request) Set this parameter to true to make the resource public (if the parent parameter is `additions`) or to make the resource private (if the parent parameter is `removals`).<br />
 (Response) If true, the resource is public. If false, the resource is private.

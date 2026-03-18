@@ -106,7 +106,7 @@ Constraints: 3-128 alphanumeric characters, underscores (`_`), spaces (` `), par
 The following attributes are exported:
 
 * `account_alias` - The account alias of the owner of the OMI.
-* `account_id` - The account ID of the owner of the OMI.
+* `account_id` - The OUTSCALE account ID of the owner of the OMI.
 * `architecture` - The architecture of the OMI.
 * `block_device_mappings` - One or more block device mappings.
     * `bsu` - Information about the BSU volume to create.
@@ -128,7 +128,7 @@ For more information about volume types, see [About Volumes > Volume Types and I
 * `image_name` - The name of the OMI.
 * `image_type` - The type of the OMI.
 * `permissions_to_launch` - Permissions for the resource.
-    * `account_ids` - One or more account IDs that the permission is associated with.
+    * `account_ids` - One or more OUTSCALE account IDs that the permission is associated with.
     * `global_permission` - A global permission for all accounts.<br />
 (Request) Set this parameter to true to make the resource public (if the parent parameter is `Additions`) or to make the resource private (if the parent parameter is `Removals`).<br />
 (Response) If true, the resource is public. If false, the resource is private.
