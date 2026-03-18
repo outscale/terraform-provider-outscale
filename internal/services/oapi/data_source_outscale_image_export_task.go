@@ -92,7 +92,7 @@ func dataSourceOAPISnapshotImageTaskRead(d *schema.ResourceData, meta interface{
 	filters, filtersOk := d.GetOk("filter")
 
 	var err error
-	filtersReq := &oscgo.FiltersExportTask{}
+	filtersReq := &oscgo.FiltersReadImageExportTask{}
 	if filtersOk {
 		filtersReq, err = buildOutscaleOSCAPIDataSourceImageExportTaskFilters(filters.(*schema.Set))
 		if err != nil {
@@ -162,8 +162,8 @@ func dataSourceOAPISnapshotImageTaskRead(d *schema.ResourceData, meta interface{
 	return nil
 }
 
-func buildOutscaleOSCAPIDataSourceImageExportTaskFilters(set *schema.Set) (*oscgo.FiltersExportTask, error) {
-	var filters oscgo.FiltersExportTask
+func buildOutscaleOSCAPIDataSourceImageExportTaskFilters(set *schema.Set) (*oscgo.FiltersReadImageExportTask, error) {
+	var filters oscgo.FiltersReadImageExportTask
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string

@@ -96,7 +96,7 @@ func dataSourceOAPISnapshotExportTasksRead(d *schema.ResourceData, meta interfac
 	filters, filtersOk := d.GetOk("filter")
 
 	var err error
-	var filtersReq *oscgo.FiltersExportTask
+	var filtersReq *oscgo.FiltersSnapshotExportTask
 	if filtersOk {
 		filtersReq, err = buildOutscaleOSCAPIDataSourceSnapshotExportTaskFilters(filters.(*schema.Set))
 		if err != nil {
