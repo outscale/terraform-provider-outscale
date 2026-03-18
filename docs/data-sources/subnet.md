@@ -52,5 +52,5 @@ The following attributes are exported:
 * `subnet_id` - The ID of the Subnet.
 * `subregion_name` - The name of the Subregion in which the Subnet is located.
 * `tags` - One or more tags associated with the Subnet.
-    * `key` - The key of the tag, with a minimum of 1 character.
+    * `key` - The key of the tag, between 1 and 255 characters.
     * `value` - The value of the tag, between 0 and 255 characters.

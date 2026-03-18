@@ -75,5 +75,5 @@ The following attributes are exported:
     * `vm_account_id` - The OUTSCALE account ID of the owner of the VM.
     * `vm_id` - The ID of a VM specified in a route in the table.
 * `tags` - One or more tags associated with the route table.
-    * `key` - The key of the tag, with a minimum of 1 character.
+    * `key` - The key of the tag, between 1 and 255 characters.
     * `value` - The value of the tag, between 0 and 255 characters.

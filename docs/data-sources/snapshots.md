@@ -68,7 +68,7 @@ The following attributes are exported:
     * `snapshot_id` - The ID of the snapshot.
     * `state` - The state of the snapshot (`in-queue` \| `pending` \| `completed` \| `error` \| `deleting`).
     * `tags` - One or more tags associated with the snapshot.
-        * `key` - The key of the tag, with a minimum of 1 character.
+        * `key` - The key of the tag, between 1 and 255 characters.
         * `value` - The value of the tag, between 0 and 255 characters.
     * `volume_id` - The ID of the volume used to create the snapshot.
     * `volume_size` - The size of the volume used to create the snapshot, in gibibytes (GiB).

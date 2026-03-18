@@ -159,7 +159,7 @@ The following attributes are exported:
     * `os_family` - Indicates the operating system (OS) of the VM.
     * `performance` - The performance of the VM (`medium` \| `high` \|  `highest`).
     * `placement` - Information about the placement of the VM.
-        * `subregion_name` - The name of the Subregion. If you specify this parameter, you must not specify the `nics` parameter.
+        * `subregion_name` - The name of the Subregion.
         * `tenancy` - The tenancy of the VM (`default`, `dedicated`, or a dedicated group ID).
     * `private_dns_name` - The name of the private DNS.
     * `private_ip` - The primary private IP of the VM.
@@ -176,7 +176,7 @@ The following attributes are exported:
     * `state_reason` - The reason explaining the current state of the VM.
     * `subnet_id` - The ID of the Subnet for the VM.
     * `tags` - One or more tags associated with the VM.
-        * `key` - The key of the tag, with a minimum of 1 character.
+        * `key` - The key of the tag, between 1 and 255 characters.
         * `value` - The value of the tag, between 0 and 255 characters.
     * `tpm_enabled` - If true, a virtual Trusted Platform Module (vTPM) is enabled on the VM. If false, it is not.<br />The default behavior for `tpm_enabled` varies depending on the source OMI of the VM.<br />If the `tpm_mandatory` attribute of the source OMI is true, a vTPM has to be attached to the VM and it will be created by default. Setting `tpm_enabled` to false will cause the creation request to fail.<br />If the `tpm_mandatory` attribute of the source OMI is false, only setting `tpm_enabled` to true will create and attach a vTPM to the VM.
     * `user_data` - The Base64-encoded MIME user data.

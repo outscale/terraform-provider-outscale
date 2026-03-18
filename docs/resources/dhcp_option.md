@@ -47,7 +47,7 @@ The following arguments are supported:
 * `log_servers` - (Optional) The IPs of the log servers. You must specify at least one of the following parameters: `domain_name`, `domain_name_servers`, `log_servers`, or `ntp_servers`.
 * `ntp_servers` - (Optional) The IPs of the Network Time Protocol (NTP) servers. You must specify at least one of the following parameters: `DomainName`, `DomainNameServers`, or `NtpServers`.
 * `tags` - (Optional) A tag to add to this resource. You can specify this argument several times.
-    * `key` - (Required) The key of the tag, with a minimum of 1 character.
+    * `key` - (Required) The key of the tag, between 1 and 255 characters.
     * `value` - (Required) The value of the tag, between 0 and 255 characters.
 
 ## Attribute Reference
@@ -61,7 +61,7 @@ The following attributes are exported:
 * `log_servers` - One or more IPs for the log servers.
 * `ntp_servers` - One or more IPs for the NTP servers.
 * `tags` - One or more tags associated with the DHCP options set.
-    * `key` - The key of the tag, with a minimum of 1 character.
+    * `key` - The key of the tag, between 1 and 255 characters.
     * `value` - The value of the tag, between 0 and 255 characters.
 
 ## Timeouts

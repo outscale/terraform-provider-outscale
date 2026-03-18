@@ -61,7 +61,7 @@ The following arguments are supported:
     * `osu_manifest_url` - (Optional) The URL of the manifest file.
     * `osu_prefix` - (Optional) The prefix for the key of the OOS object.
 * `tags` - (Optional) A tag to add to this resource. You can specify this argument several times.
-    * `key` - (Required) The key of the tag, with a minimum of 1 character.
+    * `key` - (Required) The key of the tag, between 1 and 255 characters.
     * `value` - (Required) The value of the tag, between 0 and 255 characters.
 * `wait_for_completion` (Optional) - By default or if set to true, the resource is returned only after the export task is completed. If false, the resource returns immediately without waiting for the export task to complete.
 
@@ -79,7 +79,7 @@ The following attributes are exported:
 * `progress` - The progress of the OMI export task, as a percentage.
 * `state` - The state of the OMI export task (`pending/queued` \| `pending` \| `completed` \| `failed` \| `cancelled`).
 * `tags` - One or more tags associated with the image export task.
-    * `key` - The key of the tag, with a minimum of 1 character.
+    * `key` - The key of the tag, between 1 and 255 characters.
     * `value` - The value of the tag, between 0 and 255 characters.
 * `task_id` - The ID of the OMI export task.
 * `wait_for_completion` - By default or if set to true, the resource is returned only after the export task is completed. If false, the resource returns immediately without waiting for the export task to complete.

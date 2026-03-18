@@ -75,7 +75,7 @@ The following arguments are supported:
 
 * `ip_range` - (Required) The IP range for the Net, in CIDR notation (for example, `10.0.0.0/16`).
 * `tags` - (Optional) A tag to add to this resource. You can specify this argument several times.
-    * `key` - (Required) The key of the tag, with a minimum of 1 character.
+    * `key` - (Required) The key of the tag, between 1 and 255 characters.
     * `value` - (Required) The value of the tag, between 0 and 255 characters.
 * `tenancy` - (Optional) The tenancy options for the VMs:<br />- `default` if a VM created in a Net can be launched with any tenancy.<br />- `dedicated` if it can be launched with dedicated tenancy VMs running on single-tenant hardware.<br />- `dedicated group ID` if it can be launched in a dedicated group on single-tenant hardware.
 
@@ -88,7 +88,7 @@ The following attributes are exported:
 * `net_id` - The ID of the Net.
 * `state` - The state of the Net (`pending` \| `available` \| `deleting`).
 * `tags` - One or more tags associated with the Net.
-    * `key` - The key of the tag, with a minimum of 1 character.
+    * `key` - The key of the tag, between 1 and 255 characters.
     * `value` - The value of the tag, between 0 and 255 characters.
 * `tenancy` - The VM tenancy in a Net.
 

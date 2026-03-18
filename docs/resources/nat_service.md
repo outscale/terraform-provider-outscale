@@ -74,7 +74,7 @@ The following arguments are supported:
 If the public IP is already associated with another resource, you must first disassociate it.
 * `subnet_id` - (Required) The ID of the Subnet in which you want to create the NAT service.
 * `tags` - (Optional) A tag to add to this resource. You can specify this argument several times.
-    * `key` - (Required) The key of the tag, with a minimum of 1 character.
+    * `key` - (Required) The key of the tag, between 1 and 255 characters.
     * `value` - (Required) The value of the tag, between 0 and 255 characters.
 
 ## Attribute Reference
@@ -89,7 +89,7 @@ The following attributes are exported:
 * `state` - The state of the NAT service (`pending` \| `available` \| `deleting` \| `deleted`).
 * `subnet_id` - The ID of the Subnet in which the NAT service is.
 * `tags` - One or more tags associated with the NAT service.
-    * `key` - The key of the tag, with a minimum of 1 character.
+    * `key` - The key of the tag, between 1 and 255 characters.
     * `value` - The value of the tag, between 0 and 255 characters.
 
 ## Timeouts

@@ -46,6 +46,6 @@ The following attributes are exported:
 * `progress` - The progress of the OMI export task, as a percentage.
 * `state` - The state of the OMI export task (`pending/queued` \| `pending` \| `completed` \| `failed` \| `cancelled`).
 * `tags` - One or more tags associated with the image export task.
-    * `key` - The key of the tag, with a minimum of 1 character.
+    * `key` - The key of the tag, between 1 and 255 characters.
     * `value` - The value of the tag, between 0 and 255 characters.
 * `task_id` - The ID of the OMI export task.

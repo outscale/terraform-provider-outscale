@@ -75,7 +75,7 @@ The following arguments are supported:
 * `security_group_ids` - (Optional) One or more IDs of security groups for the NIC.
 * `subnet_id` - (Required) The ID of the Subnet in which you want to create the NIC.
 * `tags` - (Optional) A tag to add to this resource. You can specify this argument several times.
-    * `key` - (Required) The key of the tag, with a minimum of 1 character.
+    * `key` - (Required) The key of the tag, between 1 and 255 characters.
     * `value` - (Required) The value of the tag, between 0 and 255 characters.
 
 ## Attribute Reference
@@ -119,7 +119,7 @@ The following attributes are exported:
 * `subnet_id` - The ID of the Subnet.
 * `subregion_name` - The Subregion in which the NIC is located.
 * `tags` - One or more tags associated with the NIC.
-    * `key` - The key of the tag, with a minimum of 1 character.
+    * `key` - The key of the tag, between 1 and 255 characters.
     * `value` - The value of the tag, between 0 and 255 characters.
 
 ## Timeouts

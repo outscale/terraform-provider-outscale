@@ -38,7 +38,7 @@ The following arguments are supported:
 
 * `net_id` - (Required) The ID of the Net for which you want to create a route table.
 * `tags` - (Optional) A tag to add to this resource. You can specify this argument several times.
-    * `key` - (Required) The key of the tag, with a minimum of 1 character.
+    * `key` - (Required) The key of the tag, between 1 and 255 characters.
     * `value` - (Required) The value of the tag, between 0 and 255 characters.
 
 ## Attribute Reference
@@ -68,7 +68,7 @@ The following attributes are exported:
     * `vm_account_id` - The OUTSCALE account ID of the owner of the VM.
     * `vm_id` - The ID of a VM specified in a route in the table.
 * `tags` - One or more tags associated with the route table.
-    * `key` - The key of the tag, with a minimum of 1 character.
+    * `key` - The key of the tag, between 1 and 255 characters.
     * `value` - The value of the tag, between 0 and 255 characters.
 
 ## Timeouts

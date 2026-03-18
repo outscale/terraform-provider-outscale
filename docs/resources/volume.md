@@ -46,7 +46,7 @@ The following arguments are supported:
 * `snapshot_id` - (Optional) The ID of the snapshot from which you want to create the volume.
 * `subregion_name` - (Required) The Subregion in which you want to create the volume.
 * `tags` - (Optional) A tag to add to this resource. You can specify this argument several times.
-    * `key` - (Required) The key of the tag, with a minimum of 1 character.
+    * `key` - (Required) The key of the tag, between 1 and 255 characters.
     * `value` - (Required) The value of the tag, between 0 and 255 characters.
 * `termination_snapshot_name` - (Optional) Whether you want to create a snapshot before the volume deletion.
 * `volume_type` - (Optional) The type of volume you want to create (`io1` \| `gp2` \| `standard`). If not specified, a `standard` volume is created.<br />
@@ -69,7 +69,7 @@ The following attributes are exported:
 * `state` - The state of the volume (`creating` \| `available` \| `in-use` \| `deleting` \| `error`).
 * `subregion_name` - The Subregion in which the volume was created.
 * `tags` - One or more tags associated with the volume.
-    * `key` - The key of the tag, with a minimum of 1 character.
+    * `key` - The key of the tag, between 1 and 255 characters.
     * `value` - The value of the tag, between 0 and 255 characters.
 * `volume_id` - The ID of the volume.
 * `volume_type` - The type of the volume (`standard` \| `gp2` \| `io1`).

@@ -102,6 +102,6 @@ For more information about volume types, see [About Volumes > Volume Types and I
         * `state_code` - The code of the change of state.
         * `state_message` - A message explaining the change of state.
     * `tags` - One or more tags associated with the OMI.
-        * `key` - The key of the tag, with a minimum of 1 character.
+        * `key` - The key of the tag, between 1 and 255 characters.
         * `value` - The value of the tag, between 0 and 255 characters.
     * `tpm_mandatory` - If true, a virtual Trusted Platform Module (vTPM) is mandatory for VMs created from this OMI. If false, a vTPM is not mandatory.
