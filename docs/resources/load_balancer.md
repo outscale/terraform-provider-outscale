@@ -167,7 +167,7 @@ This parameter is required for `HTTPS` and `SSL` protocols.
 * `subnets` - (Optional) (Net only) The ID of the Subnet in which you want to create the load balancer. Regardless of this Subnet, the load balancer can distribute traffic to all Subnets. This parameter is required in a Net.
 * `subregion_names` - (Optional) (public Cloud only) The Subregion in which you want to create the load balancer. Regardless of this Subregion, the load balancer can distribute traffic to all Subregions. This parameter is required in the public Cloud.
 * `tags` - (Optional) A tag to add to this resource. You can specify this argument several times.
-    * `key` - (Required) The key of the tag, with a minimum of 1 character.
+    * `key` - (Required) The key of the tag, between 1 and 128 characters.
     * `value` - (Required) The value of the tag, between 0 and 255 characters.
 
 ## Attribute Reference
@@ -180,7 +180,7 @@ The following attributes are exported:
     * `osu_bucket_prefix` - The path to the folder of the access logs in your OOS bucket (by default, the `root` level of your bucket).
     * `publication_interval` - The time interval for the publication of access logs in the OOS bucket, in minutes. This value can be either `5` or `60` (by default, `60`).
 * `application_sticky_cookie_policies` - The stickiness policies defined for the load balancer.
-    * `cookie_name` - The name of the application cookie used for stickiness.
+    * `cookie_name` - The name of the application cookie used for stickiness, between 1 and 255 characters.
     * `policy_name` - The mnemonic name for the policy being created. The name must be unique within a set of policies for this load balancer.
 * `backend_ips` - One or more public IPs of backend VMs.
 * `backend_vm_ids` - One or more IDs of backend VMs for the load balancer.
@@ -218,7 +218,7 @@ To only allow traffic from load balancers, add a security group rule that specif
 * `subnets` - The ID of the Subnet in which the load balancer was created.
 * `subregion_names` - The ID of the Subregion in which the load balancer was created.
 * `tags` - One or more tags associated with the load balancer.
-    * `key` - The key of the tag, with a minimum of 1 character.
+    * `key` - The key of the tag, between 1 and 128 characters.
     * `value` - The value of the tag, between 0 and 255 characters.
 
 ## Timeouts

@@ -53,7 +53,7 @@ The following arguments are supported:
 * `connection_type` - (Required) The type of VPN connection (always `ipsec.1`).
 * `static_routes_only` - (Optional) By default or if false, the VPN connection uses dynamic routing with Border Gateway Protocol (BGP). If true, routing is controlled using static routes. For more information about how to create and delete static routes, see [CreateVpnConnectionRoute](https://docs.outscale.com/api#createvpnconnectionroute) and [DeleteVpnConnectionRoute](https://docs.outscale.com/api#deletevpnconnectionroute).
 * `tags` - (Optional) A tag to add to this resource. You can specify this argument several times.
-    * `key` - (Required) The key of the tag, with a minimum of 1 character.
+    * `key` - (Required) The key of the tag, between 1 and 255 characters.
     * `value` - (Required) The value of the tag, between 0 and 255 characters.
 * `virtual_gateway_id` - (Required) The ID of the virtual gateway.
 
@@ -71,7 +71,7 @@ The following attributes are exported:
 * `state` - The state of the VPN connection (`pending` \| `available` \| `deleting` \| `deleted`).
 * `static_routes_only` - If false, the VPN connection uses dynamic routing with Border Gateway Protocol (BGP). If true, routing is controlled using static routes. For more information about how to create and delete static routes, see [CreateVpnConnectionRoute](https://docs.outscale.com/api#createvpnconnectionroute) and [DeleteVpnConnectionRoute](https://docs.outscale.com/api#deletevpnconnectionroute).
 * `tags` - One or more tags associated with the VPN connection.
-    * `key` - The key of the tag, with a minimum of 1 character.
+    * `key` - The key of the tag, between 1 and 255 characters.
     * `value` - The value of the tag, between 0 and 255 characters.
 * `vgw_telemetries` - Information about the current state of one or more of the VPN tunnels.
     * `accepted_route_count` - The number of routes accepted through BGP (Border Gateway Protocol) route exchanges.

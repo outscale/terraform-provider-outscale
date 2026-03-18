@@ -50,7 +50,7 @@ The following arguments are supported:
 * `route_table_ids` - (Optional) One or more IDs of route tables to use for the connection.
 * `service_name` - (Required) The name of the service (in the format `com.outscale.region.service`).
 * `tags` - (Optional) A tag to add to this resource. You can specify this argument several times.
-    * `key` - (Required) The key of the tag, with a minimum of 1 character.
+    * `key` - (Required) The key of the tag, between 1 and 255 characters.
     * `value` - (Required) The value of the tag, between 0 and 255 characters.
 
 ## Attribute Reference
@@ -63,7 +63,7 @@ The following attributes are exported:
 * `service_name` - The name of the service with which the Net access point is associated.
 * `state` - The state of the Net access point (`pending` \| `available` \| `deleting` \| `deleted`).
 * `tags` - One or more tags associated with the Net access point.
-    * `key` - The key of the tag, with a minimum of 1 character.
+    * `key` - The key of the tag, between 1 and 255 characters.
     * `value` - The value of the tag, between 0 and 255 characters.
 
 ## Timeouts

@@ -53,6 +53,6 @@ The following attributes are exported:
 * `public_ip_id` - The allocation ID of the public IP.
 * `public_ip` - The public IP.
 * `tags` - One or more tags associated with the public IP.
-    * `key` - The key of the tag, with a minimum of 1 character.
+    * `key` - The key of the tag, between 1 and 255 characters.
     * `value` - The value of the tag, between 0 and 255 characters.
 * `vm_id` - The ID of the VM the public IP is associated with (if any).

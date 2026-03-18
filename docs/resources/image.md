@@ -72,8 +72,8 @@ resource "outscale_image" "image04" {
 
 The following arguments are supported:
 
-* `architecture` - (Optional) **When registering from a snapshot:** The architecture of the OMI (`i386` or `x86_64`).
-* `block_device_mappings` - (Optional) **(required) When registering from a snapshot:** One or more block device mappings.
+* `architecture` - (Optional) **(when registering from a snapshot)** The architecture of the OMI (`i386` or `x86_64`). By default, set to `x86_64`.
+* `block_device_mappings` - (Optional) **(required when registering from a snapshot)** One or more block device mappings.
     * `bsu` - Information about the BSU volume to create.
         * `delete_on_vm_deletion` - (Optional) By default or if set to true, the volume is deleted when terminating the VM. If false, the volume is not deleted when terminating the VM.
         * `iops` - (Optional) The number of I/O operations per second (IOPS). This parameter must be specified only if you create an `io1` volume. The maximum number of IOPS allowed for `io1` volumes is `13000` with a maximum performance ratio of 300 IOPS per gibibyte.
@@ -87,19 +87,19 @@ For more information about volume types, see [About Volumes > Volume Types and I
     * `virtual_device_name` - (Optional) The name of the virtual device (`ephemeralN`).
 * `boot_modes` - (Optional) The boot modes compatible with the OMI. Possible values: `uefi` | `legacy`.
 * `description` - (Optional) A description for the new OMI.
-* `file_location` - (Optional) **(required) When registering from a bucket by using a manifest file:** The pre-signed URL of the manifest file for the OMI you want to register. For more information, see [Creating a Pre-signed URL](https://docs.outscale.com/en/userguide/Creating-a-Pre-Signed-URL.html).
+* `file_location` - (Optional) **(required when registering from a bucket by using a manifest file)** The pre-signed URL of the manifest file for the OMI you want to register. For more information, see [Creating a Pre-signed URL](https://docs.outscale.com/en/userguide/Creating-a-Pre-Signed-URL.html).
 * `image_name` - (Optional) A unique name for the new OMI.<br />
 Constraints: 3-128 alphanumeric characters, underscores (`_`), spaces (` `), parentheses (`()`), slashes (`/`), periods (`.`), or dashes (`-`).
-* `no_reboot` - (Optional) **When creating from a VM:** If false, the VM shuts down before creating the OMI and then reboots. If true, the VM does not.
+* `no_reboot` - (Optional) **(when creating from a VM)** If false, the VM shuts down before creating the OMI and then reboots. If true, the VM does not.
 * `product_codes` - (Optional) The product codes associated with the OMI.
-* `root_device_name` - (Optional) **(required) When registering from a snapshot:** The name of the root device for the new OMI.
-* `source_image_id` - (Optional) **(required) When copying an OMI:** The ID of the OMI you want to copy.
-* `source_region_name` - (Optional) **(required) When copying an OMI:** The name of the source Region (always the same as the Region of your account).
+* `root_device_name` - (Optional) **(required when registering from a snapshot)** The name of the root device for the new OMI.
+* `source_image_id` - (Optional) **(required when copying an OMI)** The ID of the OMI you want to copy.
+* `source_region_name` - (Optional) **(required when copying an OMI)** The name of the source Region (always the same as the Region of your account).
 * `tags` - (Optional) A tag to add to this resource. You can specify this argument several times.
-    * `key` - (Required) The key of the tag, with a minimum of 1 character.
+    * `key` - (Required) The key of the tag, between 1 and 255 characters.
     * `value` - (Required) The value of the tag, between 0 and 255 characters.
 * `tpm_mandatory` - (Optional) By default or if set to false, a virtual Trusted Platform Module (vTPM) is not mandatory on VMs created from this OMI. If true, VMs created from this OMI must have a vTPM enabled.
-* `vm_id` - (Optional) **(required) When creating from a VM:** The ID of the VM from which you want to create the OMI.
+* `vm_id` - (Optional) **(required when creating from a VM)** The ID of the VM from which you want to create the OMI.
 
 ## Attribute Reference
 
@@ -141,7 +141,7 @@ For more information about volume types, see [About Volumes > Volume Types and I
     * `state_message` - A message explaining the change of state.
 * `state` - The state of the OMI (`pending` \| `available` \| `failed`).
 * `tags` - One or more tags associated with the OMI.
-    * `key` - The key of the tag, with a minimum of 1 character.
+    * `key` - The key of the tag, between 1 and 255 characters.
     * `value` - The value of the tag, between 0 and 255 characters.
 * `tpm_mandatory` - If true, a virtual Trusted Platform Module (vTPM) is mandatory for VMs created from this OMI. If false, a vTPM is not mandatory.
 

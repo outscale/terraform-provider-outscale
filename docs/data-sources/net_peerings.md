@@ -67,5 +67,5 @@ The following attributes are exported:
         * `message` - Additional information about the state of the Net peering.
         * `name` - The state of the Net peering (`pending-acceptance` \| `active` \| `rejected` \| `failed` \| `expired` \| `deleted`).
     * `tags` - One or more tags associated with the Net peering.
-        * `key` - The key of the tag, with a minimum of 1 character.
+        * `key` - The key of the tag, between 1 and 255 characters.
         * `value` - The value of the tag, between 0 and 255 characters.
