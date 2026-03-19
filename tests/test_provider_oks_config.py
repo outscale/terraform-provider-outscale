@@ -10,8 +10,8 @@ OKS_IGNORE_END_ELEMENTS = [
 ]
 
 OKS_IGNORE_TYPE_ELEMENTS = {
-    "outscale_oks_project": "name",
-    "outscale_oks_cluster": "name",
+    "outscale_oks_project": {"name"},
+    "outscale_oks_cluster": {"name"},
 }
 
 OKS_ID_PREFIXES = []
