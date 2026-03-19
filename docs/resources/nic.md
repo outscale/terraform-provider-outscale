@@ -75,14 +75,14 @@ The following arguments are supported:
 * `security_group_ids` - (Optional) One or more IDs of security groups for the NIC.
 * `subnet_id` - (Required) The ID of the Subnet in which you want to create the NIC.
 * `tags` - (Optional) A tag to add to this resource. You can specify this argument several times.
-    * `key` - (Required) The key of the tag, with a minimum of 1 character.
+    * `key` - (Required) The key of the tag, between 1 and 255 characters.
     * `value` - (Required) The value of the tag, between 0 and 255 characters.
 
 ## Attribute Reference
 
 The following attributes are exported:
 
-* `account_id` - The account ID of the owner of the NIC.
+* `account_id` - The OUTSCALE account ID of the owner of the NIC.
 * `description` - The description of the NIC.
 * `is_source_dest_checked` - (Net only) If true, the source/destination check is enabled. If false, it is disabled.
 * `link_nic` - Information about the NIC attachment.
@@ -90,13 +90,13 @@ The following attributes are exported:
     * `device_number` - The device index for the NIC attachment (between `1` and `7`, both included).
     * `link_nic_id` - The ID of the NIC to attach.
     * `state` - The state of the attachment (`attaching` \| `attached` \| `detaching` \| `detached`).
-    * `vm_account_id` - The account ID of the owner of the VM.
+    * `vm_account_id` - The OUTSCALE account ID of the owner of the VM.
     * `vm_id` - The ID of the VM.
 * `link_public_ip` - Information about the public IP association.
     * `link_public_ip_id` - (Required in a Net) The ID representing the association of the public IP with the VM or the NIC.
     * `public_dns_name` - The name of the public DNS.
     * `public_ip` - The public IP associated with the NIC.
-    * `public_ip_account_id` - The account ID of the owner of the public IP.
+    * `public_ip_account_id` - The OUTSCALE account ID of the owner of the public IP.
     * `public_ip_id` - The allocation ID of the public IP.
 * `mac_address` - The Media Access Control (MAC) address of the NIC.
 * `net_id` - The ID of the Net for the NIC.
@@ -108,7 +108,7 @@ The following attributes are exported:
         * `link_public_ip_id` - (Required in a Net) The ID representing the association of the public IP with the VM or the NIC.
         * `public_dns_name` - The name of the public DNS.
         * `public_ip` - The public IP associated with the NIC.
-        * `public_ip_account_id` - The account ID of the owner of the public IP.
+        * `public_ip_account_id` - The OUTSCALE account ID of the owner of the public IP.
         * `public_ip_id` - The allocation ID of the public IP.
     * `private_dns_name` - The name of the private DNS.
     * `private_ip` - The private IP of the NIC.
@@ -119,7 +119,7 @@ The following attributes are exported:
 * `subnet_id` - The ID of the Subnet.
 * `subregion_name` - The Subregion in which the NIC is located.
 * `tags` - One or more tags associated with the NIC.
-    * `key` - The key of the tag, with a minimum of 1 character.
+    * `key` - The key of the tag, between 1 and 255 characters.
     * `value` - The value of the tag, between 0 and 255 characters.
 
 ## Timeouts

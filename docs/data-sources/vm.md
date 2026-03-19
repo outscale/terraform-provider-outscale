@@ -53,16 +53,16 @@ The following arguments are supported:
     * `nic_link_nic_link_nic_dates` - (Optional) The dates and times (UTC) when the NICs were attached to the VMs.
     * `nic_link_nic_link_nic_ids` - (Optional) The IDs of the NIC attachments.
     * `nic_link_nic_states` - (Optional) The states of the attachments.
-    * `nic_link_nic_vm_account_ids` - (Optional) The account IDs of the owners of the VMs the NICs are attached to.
+    * `nic_link_nic_vm_account_ids` - (Optional) The OUTSCALE account IDs of the owners of the VMs the NICs are attached to.
     * `nic_link_nic_vm_ids` - (Optional) The IDs of the VMs the NICs are attached to.
-    * `nic_link_public_ip_account_ids` - (Optional) The account IDs of the owners of the public IPs associated with the NICs.
+    * `nic_link_public_ip_account_ids` - (Optional) The OUTSCALE account IDs of the owners of the public IPs associated with the NICs.
     * `nic_link_public_ip_link_public_ip_ids` - (Optional) The association IDs returned when the public IPs were associated with the NICs.
     * `nic_link_public_ip_public_ip_ids` - (Optional) The allocation IDs returned when the public IPs were allocated to their accounts.
     * `nic_link_public_ip_public_ips` - (Optional) The public IPs associated with the NICs.
     * `nic_mac_addresses` - (Optional) The Media Access Control (MAC) addresses of the NICs.
     * `nic_net_ids` - (Optional) The IDs of the Nets where the NICs are located.
     * `nic_nic_ids` - (Optional) The IDs of the NICs.
-    * `nic_private_ips_link_public_ip_account_ids` - (Optional) The account IDs of the owner of the public IPs associated with the private IPs.
+    * `nic_private_ips_link_public_ip_account_ids` - (Optional) The OUTSCALE account IDs of the owner of the public IPs associated with the private IPs.
     * `nic_private_ips_link_public_ip_ids` - (Optional) The public IPs associated with the private IPs.
     * `nic_private_ips_primary_ip` - (Optional) Whether the private IPs are the primary IPs associated with the NICs.
     * `nic_private_ips_private_ips` - (Optional) The private IPs of the NICs.
@@ -122,7 +122,7 @@ The following attributes are exported:
 * `nested_virtualization` - If true, nested virtualization is enabled. If false, it is disabled.
 * `net_id` - The ID of the Net in which the VM is running.
 * `nics` - (Net only) The network interface cards (NICs) the VMs are attached to.
-    * `account_id` - The account ID of the owner of the NIC.
+    * `account_id` - The OUTSCALE account ID of the owner of the NIC.
     * `description` - The description of the NIC.
     * `is_source_dest_checked` - (Net only) If true, the source/destination check is enabled. If false, it is disabled.
     * `link_nic` - Information about the network interface card (NIC).
@@ -133,7 +133,7 @@ The following attributes are exported:
     * `link_public_ip` - Information about the public IP associated with the NIC.
         * `public_dns_name` - The name of the public DNS.
         * `public_ip` - The public IP associated with the NIC.
-        * `public_ip_account_id` - The account ID of the owner of the public IP.
+        * `public_ip_account_id` - The OUTSCALE account ID of the owner of the public IP.
     * `mac_address` - The Media Access Control (MAC) address of the NIC.
     * `net_id` - The ID of the Net for the NIC.
     * `nic_id` - The ID of the NIC.
@@ -143,7 +143,7 @@ The following attributes are exported:
         * `link_public_ip` - Information about the public IP associated with the NIC.
             * `public_dns_name` - The name of the public DNS.
             * `public_ip` - The public IP associated with the NIC.
-            * `public_ip_account_id` - The account ID of the owner of the public IP.
+            * `public_ip_account_id` - The OUTSCALE account ID of the owner of the public IP.
         * `private_dns_name` - The name of the private DNS.
         * `private_ip` - The private IP.
     * `security_groups` - One or more IDs of security groups for the NIC.
@@ -154,7 +154,7 @@ The following attributes are exported:
 * `os_family` - Indicates the operating system (OS) of the VM.
 * `performance` - The performance of the VM (`medium` \| `high` \|  `highest`).
 * `placement` - Information about the placement of the VM.
-    * `subregion_name` - The name of the Subregion. If you specify this parameter, you must not specify the `nics` parameter.
+    * `subregion_name` - The name of the Subregion.
     * `tenancy` - The tenancy of the VM (`default`, `dedicated`, or a dedicated group ID).
 * `private_dns_name` - The name of the private DNS.
 * `private_ip` - The primary private IP of the VM.
@@ -171,7 +171,7 @@ The following attributes are exported:
 * `state` - The state of the VM (`pending` \| `running` \| `stopping` \| `stopped` \| `shutting-down` \| `terminated` \| `quarantine`).
 * `subnet_id` - The ID of the Subnet for the VM.
 * `tags` - One or more tags associated with the VM.
-    * `key` - The key of the tag, with a minimum of 1 character.
+    * `key` - The key of the tag, between 1 and 255 characters.
     * `value` - The value of the tag, between 0 and 255 characters.
 * `tpm_enabled` - If true, a virtual Trusted Platform Module (vTPM) is enabled on the VM. If false, it is not.<br />The default behavior for `tpm_enabled` varies depending on the source OMI of the VM.<br />If the `tpm_mandatory` attribute of the source OMI is true, a vTPM has to be attached to the VM and it will be created by default. Setting `tpm_enabled` to false will cause the creation request to fail.<br />If the `tpm_mandatory` attribute of the source OMI is false, only setting `tpm_enabled` to true will create and attach a vTPM to the VM.
 * `user_data` - The Base64-encoded MIME user data.

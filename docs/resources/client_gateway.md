@@ -38,7 +38,7 @@ If you do not have an ASN, you can choose one between `64512` and `65534` (both 
 * `connection_type` - (Required) The communication protocol used to establish tunnel with your client gateway (always `ipsec.1`).
 * `public_ip` - (Required) The public fixed IPv4 address of your client gateway.
 * `tags` - (Optional) A tag to add to this resource. You can specify this argument several times.
-    * `key` - (Required) The key of the tag, with a minimum of 1 character.
+    * `key` - (Required) The key of the tag, between 1 and 255 characters.
     * `value` - (Required) The value of the tag, between 0 and 255 characters.
 
 ## Attribute Reference
@@ -51,7 +51,7 @@ The following attributes are exported:
 * `public_ip` - The public IPv4 address of the client gateway (must be a fixed address into a NATed network).
 * `state` - The state of the client gateway (`pending` \| `available` \| `deleting` \| `deleted`).
 * `tags` - One or more tags associated with the client gateway.
-    * `key` - The key of the tag, with a minimum of 1 character.
+    * `key` - The key of the tag, between 1 and 255 characters.
     * `value` - The value of the tag, between 0 and 255 characters.
 
 ## Timeouts

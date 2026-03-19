@@ -41,12 +41,13 @@ resource "outscale_net_peering" "net_peering01" {
 
 The following arguments are supported:
 
-* `accepter_net_id` - (Required) The ID of the Net you want to connect with.
-* `accepter_owner_id` - (Optional) The account ID of the owner of the Net you want to connect with. By default, the account ID of the owner of the Net from which the peering request is sent. <br /><br/ >
+* `accepter_net_id` - (Required) The ID of the Net you want to connect with.<br />
+If the Net does not belong to you, you must also specify the `AccepterOwnerId` parameter with the OUTSCALE account ID owning the Net you want to connect with.
+* `accepter_owner_id` - (Optional) The OUTSCALE account ID of the owner of the Net you want to connect with. By default, the account ID of the owner of the Net from which the peering request is sent.<br />
 This parameter is required if the Net you want to connect with does not belong to you.
 * `source_net_id` - (Required) The ID of the Net you send the peering request from.
 * `tags` - (Optional) A tag to add to this resource. You can specify this argument several times.
-    * `key` - (Required) The key of the tag, with a minimum of 1 character.
+    * `key` - (Required) The key of the tag, between 1 and 255 characters.
     * `value` - (Required) The value of the tag, between 0 and 255 characters.
 
 ## Attribute Reference
@@ -54,20 +55,20 @@ This parameter is required if the Net you want to connect with does not belong t
 The following attributes are exported:
 
 * `accepter_net` - Information about the accepter Net.
-    * `account_id` - The account ID of the owner of the accepter Net.
+    * `account_id` - The OUTSCALE account ID of the owner of the accepter Net.
     * `ip_range` - The IP range for the accepter Net, in CIDR notation (for example, `10.0.0.0/16`).
     * `net_id` - The ID of the accepter Net.
 * `expiration_date` - The date and time (UTC) at which the Net peerings expire.
 * `net_peering_id` - The ID of the Net peering.
 * `source_net` - Information about the source Net.
-    * `account_id` - The account ID of the owner of the source Net.
+    * `account_id` - The OUTSCALE account ID of the owner of the source Net.
     * `ip_range` - The IP range for the source Net, in CIDR notation (for example, `10.0.0.0/16`).
     * `net_id` - The ID of the source Net.
 * `state` - Information about the state of the Net peering.
     * `message` - Additional information about the state of the Net peering.
     * `name` - The state of the Net peering (`pending-acceptance` \| `active` \| `rejected` \| `failed` \| `expired` \| `deleted`).
 * `tags` - One or more tags associated with the Net peering.
-    * `key` - The key of the tag, with a minimum of 1 character.
+    * `key` - The key of the tag, between 1 and 255 characters.
     * `value` - The value of the tag, between 0 and 255 characters.
 
 ## Timeouts

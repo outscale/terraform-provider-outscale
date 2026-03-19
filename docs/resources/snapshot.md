@@ -53,7 +53,7 @@ The following arguments are supported:
 * `source_region_name` - (Optional) **(when copying a snapshot)** The name of the source Region, which must be the same as the Region of your account.
 * `source_snapshot_id` - (Optional) **(when copying a snapshot)** The ID of the snapshot you want to copy.
 * `tags` - (Optional) A tag to add to this resource. You can specify this argument several times.
-    * `key` - (Required) The key of the tag, with a minimum of 1 character.
+    * `key` - (Required) The key of the tag, between 1 and 255 characters.
     * `value` - (Required) The value of the tag, between 0 and 255 characters.
 * `volume_id` - (Optional) **(when creating from a volume)** The ID of the volume you want to create a snapshot of.
 
@@ -62,11 +62,11 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `account_alias` - The account alias of the owner of the snapshot.
-* `account_id` - The account ID of the owner of the snapshot.
+* `account_id` - The OUTSCALE account ID of the owner of the snapshot.
 * `creation_date` - The date and time (UTC) at which the snapshot was created.
 * `description` - The description of the snapshot.
 * `permissions_to_create_volume` - Permissions for the resource.
-    * `account_ids` - One or more account IDs that the permission is associated with.
+    * `account_ids` - One or more OUTSCALE account IDs that the permission is associated with.
     * `global_permission` - A global permission for all accounts.<br />
 (Request) Set this parameter to true to make the resource public (if the parent parameter is `Additions`) or to make the resource private (if the parent parameter is `Removals`).<br />
 (Response) If true, the resource is public. If false, the resource is private.
@@ -74,7 +74,7 @@ The following attributes are exported:
 * `snapshot_id` - The ID of the snapshot.
 * `state` - The state of the snapshot (`in-queue` \| `pending` \| `completed` \| `error` \| `deleting`).
 * `tags` - One or more tags associated with the snapshot.
-    * `key` - The key of the tag, with a minimum of 1 character.
+    * `key` - The key of the tag, between 1 and 255 characters.
     * `value` - The value of the tag, between 0 and 255 characters.
 * `volume_id` - The ID of the volume used to create the snapshot.
 * `volume_size` - The size of the volume used to create the snapshot, in gibibytes (GiB).

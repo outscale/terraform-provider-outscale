@@ -35,7 +35,7 @@ The following arguments are supported:
 
 * `filter` - (Optional) A combination of a filter name and one or more filter values. You can specify this argument for as many filter names as you need. The filter name can be any of the following:
     * `account_aliases` - (Optional) The account aliases of the owners of the OMIs.
-    * `account_ids` - (Optional) The account IDs of the owners of the OMIs. By default, all the OMIs for which you have launch permissions are described.
+    * `account_ids` - (Optional) The OUTSCALE account IDs of the owners of the OMIs. By default, all the OMIs for which you have launch permissions are described.
     * `architectures` - (Optional) The architectures of the OMIs (`i386` \| `x86_64`).
     * `block_device_mapping_delete_on_vm_deletion` - (Optional) Whether the volumes are deleted or not when terminating the VM.
     * `block_device_mapping_device_names` - (Optional) The device names for the volumes.
@@ -48,7 +48,7 @@ The following arguments are supported:
     * `hypervisors` - (Optional) The hypervisor type of the OMI (always `xen`).
     * `image_ids` - (Optional) The IDs of the OMIs.
     * `image_names` - (Optional) The names of the OMIs, provided when they were created.
-    * `permissions_to_launch_account_ids` - (Optional) The account IDs which have launch permissions for the OMIs.
+    * `permissions_to_launch_account_ids` - (Optional) The OUTSCALE account IDs which have launch permissions for the OMIs.
     * `permissions_to_launch_global_permission` - (Optional) If true, lists all public OMIs. If false, lists all private OMIs.
     * `product_code_names` - (Optional) The names of the product codes associated with the OMI.
     * `product_codes` - (Optional) The product codes associated with the OMI.
@@ -67,7 +67,7 @@ The following attributes are exported:
 
 * `images` - Information about one or more OMIs.
     * `account_alias` - The account alias of the owner of the OMI.
-    * `account_id` - The account ID of the owner of the OMI.
+    * `account_id` - The OUTSCALE account ID of the owner of the OMI.
     * `architecture` - The architecture of the OMI.
     * `block_device_mappings` - One or more block device mappings.
         * `bsu` - Information about the BSU volume to create.
@@ -89,7 +89,7 @@ For more information about volume types, see [About Volumes > Volume Types and I
     * `image_name` - The name of the OMI.
     * `image_type` - The type of the OMI.
     * `permissions_to_launch` - Permissions for the resource.
-        * `account_ids` - One or more account IDs that the permission is associated with.
+        * `account_ids` - One or more OUTSCALE account IDs that the permission is associated with.
         * `global_permission` - A global permission for all accounts.<br />
 (Request) Set this parameter to true to make the resource public (if the parent parameter is `Additions`) or to make the resource private (if the parent parameter is `Removals`).<br />
 (Response) If true, the resource is public. If false, the resource is private.
@@ -102,6 +102,6 @@ For more information about volume types, see [About Volumes > Volume Types and I
         * `state_code` - The code of the change of state.
         * `state_message` - A message explaining the change of state.
     * `tags` - One or more tags associated with the OMI.
-        * `key` - The key of the tag, with a minimum of 1 character.
+        * `key` - The key of the tag, between 1 and 255 characters.
         * `value` - The value of the tag, between 0 and 255 characters.
     * `tpm_mandatory` - If true, a virtual Trusted Platform Module (vTPM) is mandatory for VMs created from this OMI. If false, a vTPM is not mandatory.

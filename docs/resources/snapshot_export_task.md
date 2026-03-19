@@ -65,7 +65,7 @@ The following arguments are supported:
     * `osu_prefix` - (Optional) The prefix for the key of the OOS object.
 * `snapshot_id` - (Required) The ID of the snapshot to export.
 * `tags` - (Optional) A tag to add to this resource. You can specify this argument several times.
-    * `key` - (Required) The key of the tag, with a minimum of 1 character.
+    * `key` - (Required) The key of the tag, between 1 and 255 characters.
     * `value` - (Required) The value of the tag, between 0 and 255 characters.
 * `wait_for_completion` (Optional) - By default or if set to true, the resource is returned only after the export task is completed. If false, the resource returns immediately without waiting for the export task to complete.
 
@@ -82,7 +82,7 @@ The following attributes are exported:
 * `snapshot_id` - The ID of the snapshot to be exported.
 * `state` - The state of the snapshot export task (`pending` \| `active` \| `completed` \| `cancelled` \| `failed`).
 * `tags` - One or more tags associated with the snapshot export task.
-    * `key` - The key of the tag, with a minimum of 1 character.
+    * `key` - The key of the tag, between 1 and 255 characters.
     * `value` - The value of the tag, between 0 and 255 characters.
 * `task_id` - The ID of the snapshot export task.
 * `wait_for_completion` - By default or if set to true, the resource is returned only after the export task is completed. If false, the resource returns immediately without waiting for the export task to complete.

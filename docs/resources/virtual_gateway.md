@@ -32,7 +32,7 @@ The following arguments are supported:
 
 * `connection_type` - (Required) The type of VPN connection supported by the virtual gateway (always `ipsec.1`).
 * `tags` - (Optional) A tag to add to this resource. You can specify this argument several times.
-    * `key` - (Required) The key of the tag, with a minimum of 1 character.
+    * `key` - (Required) The key of the tag, between 1 and 255 characters.
     * `value` - (Required) The value of the tag, between 0 and 255 characters.
 
 ## Attribute Reference
@@ -45,7 +45,7 @@ The following attributes are exported:
     * `state` - The state of the attachment (`attaching` \| `attached` \| `detaching` \| `detached`).
 * `state` - The state of the virtual gateway (`pending` \| `available` \| `deleting` \| `deleted`).
 * `tags` - One or more tags associated with the virtual gateway.
-    * `key` - The key of the tag, with a minimum of 1 character.
+    * `key` - The key of the tag, between 1 and 255 characters.
     * `value` - The value of the tag, between 0 and 255 characters.
 * `virtual_gateway_id` - The ID of the virtual gateway.
 

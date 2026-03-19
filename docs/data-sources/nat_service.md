@@ -50,5 +50,5 @@ The following attributes are exported:
 * `state` - The state of the NAT service (`pending` \| `available` \| `deleting` \| `deleted`).
 * `subnet_id` - The ID of the Subnet in which the NAT service is.
 * `tags` - One or more tags associated with the NAT service.
-    * `key` - The key of the tag, with a minimum of 1 character.
+    * `key` - The key of the tag, between 1 and 255 characters.
     * `value` - The value of the tag, between 0 and 255 characters.
