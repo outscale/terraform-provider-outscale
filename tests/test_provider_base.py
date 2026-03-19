@@ -145,12 +145,14 @@ def validate_ref(path, parent, value, ids, service_config):
         ]
 
     if path_end == "type" and value in ignore_type_elements:
-        ignored_key = ignore_type_elements[value]
+        ignored_keys = ignore_type_elements[value]
 
         if parent and "instances" in parent:
             for instance in parent["instances"]:
-                if "attributes" in instance and ignored_key in instance["attributes"]:
-                    instance["attributes"][ignored_key] = NO_TEST_VALUE
+                if "attributes" in instance:
+                    for ignored_key in ignored_keys:
+                        if ignored_key in instance["attributes"]:
+                            instance["attributes"][ignored_key] = NO_TEST_VALUE
 
     if type(value) is dict:
         validate_dict_ref(path, value, ids, service_config)
