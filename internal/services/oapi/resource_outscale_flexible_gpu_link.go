@@ -82,7 +82,7 @@ func ResourceOutscaleFlexibleGpuLinkCreate(d *schema.ResourceData, meta interfac
 		}
 	}
 
-	if err := changeShutdownBehavior(conn, vmId, timeout); err != nil {
+	if err := changeShutdownBehavior(context.Background(), conn, vmId, timeout); err != nil {
 		return fmt.Errorf("unable to change shutdownbehavior: %s", err)
 	}
 
@@ -182,7 +182,7 @@ func ResourceOutscaleFlexibleGpuLinkDelete(d *schema.ResourceData, meta interfac
 		}
 	}
 
-	if err := changeShutdownBehavior(conn, vmId, timeout); err != nil {
+	if err := changeShutdownBehavior(context.Background(), conn, vmId, timeout); err != nil {
 		return fmt.Errorf("unable to change shutdownbehavior: %s", err)
 	}
 
@@ -238,14 +238,14 @@ func resourceFlexibleGpuLinkUpdate(d *schema.ResourceData, meta interface{}) err
 			}
 		}
 	}
-	if err := changeShutdownBehavior(conn, vmId, timeout); err != nil {
+	if err := changeShutdownBehavior(context.Background(), conn, vmId, timeout); err != nil {
 		return fmt.Errorf("unable to change shutdownbehavior: %s", err)
 	}
 
 	return ResourceOutscaleFlexibleGpuLinkRead(d, meta)
 }
 
-func changeShutdownBehavior(conn *oscgo.APIClient, vmId string, timeout time.Duration) error {
+func changeShutdownBehavior(ctx context.Context, conn *oscgo.APIClient, vmId string, timeout time.Duration) error {
 	var resp oscgo.ReadVmsResponse
 	err := retry.Retry(timeout, func() *retry.RetryError {
 		rp, httpResp, err := conn.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
@@ -271,24 +271,24 @@ func changeShutdownBehavior(conn *oscgo.APIClient, vmId string, timeout time.Dur
 	if shutdownBehOpt != "stop" {
 		sbOpts := oscgo.UpdateVmRequest{VmId: vm.GetVmId()}
 		sbOpts.SetVmInitiatedShutdownBehavior("stop")
-		if err := updateVmAttr(conn, timeout, sbOpts); err != nil {
+		if err := updateVmAttr(ctx, conn, timeout, sbOpts); err != nil {
 			return err
 		}
 	}
 
-	if err := stopVM(vmId, conn, timeout); err != nil {
+	if err := stopVM(context.Background(), vmId, conn, timeout); err != nil {
 		return err
 	}
 
 	if shutdownBehOpt != "stop" {
 		sbReq := oscgo.UpdateVmRequest{VmId: vmId}
 		sbReq.SetVmInitiatedShutdownBehavior(shutdownBehOpt)
-		if err = updateVmAttr(conn, timeout, sbReq); err != nil {
+		if err = updateVmAttr(ctx, conn, timeout, sbReq); err != nil {
 			return err
 		}
 	}
 
-	if err := startVM(vmId, conn, timeout); err != nil {
+	if err := startVM(context.Background(), vmId, conn, timeout); err != nil {
 		return err
 	}
 	return nil
