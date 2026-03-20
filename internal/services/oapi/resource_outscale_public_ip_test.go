@@ -9,14 +9,14 @@ import (
 	"testing"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
-	"github.com/outscale/terraform-provider-outscale/internal/testacc"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/terraform-provider-outscale/internal/testacc"
+	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 func TestAccOthers_PublicIP_basic(t *testing.T) {
@@ -56,6 +56,11 @@ func TestAccVM_PublicIP_instance(t *testing.T) {
 					testAccCheckOutscalePublicIPExists("outscale_public_ip.bar1", &conf),
 					testAccCheckOutscalePublicIPAttributes(&conf),
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.basic", "state"),
+					},
+				},
 			},
 			// Ignore attributes related to the Public IP Link, that gets populated after a refresh
 			testacc.ImportStep("outscale_public_ip.bar1", "link_public_ip_id", "nic_account_id", "nic_id", "private_ip", "vm_id", "request_id"),
@@ -84,6 +89,12 @@ func TestAccNet_PublicIP_associated_user_private_ip(t *testing.T) {
 					testAccCheckOutscalePublicIPExists("outscale_public_ip.bar", &one),
 					testAccCheckOutscalePublicIPAttributes(&one),
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.basic", "state"),
+						testacc.ExpectEmptyPlanExcept("outscale_vm.basic2", "state"),
+					},
+				},
 			},
 			{
 				Config: testAccOutscalePublicIPInstanceConfigAssociatedSwitch(omi, testAccVmType, region, keypair, sgName),
@@ -91,6 +102,12 @@ func TestAccNet_PublicIP_associated_user_private_ip(t *testing.T) {
 					testAccCheckOutscalePublicIPExists("outscale_public_ip.bar", &one),
 					testAccCheckOutscalePublicIPAttributes(&one),
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.basic", "state"),
+						testacc.ExpectEmptyPlanExcept("outscale_vm.basic2", "state"),
+					},
+				},
 			},
 		},
 	})

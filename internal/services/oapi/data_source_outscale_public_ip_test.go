@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
@@ -38,6 +39,11 @@ func TestAccVM_WithPublicIP(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceOutscalePublicIPConfigwithVM(omi, utils.GetRegion(), testAccVmType, sgName),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.outscale_vm", "state"),
+					},
+				},
 			},
 		},
 	})

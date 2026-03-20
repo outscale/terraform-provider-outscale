@@ -8,14 +8,14 @@ import (
 	"testing"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
-	"github.com/outscale/terraform-provider-outscale/internal/testacc"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/terraform-provider-outscale/internal/testacc"
+	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 func TestAccVM_Basic(t *testing.T) {
@@ -43,6 +43,11 @@ func TestAccVM_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "vm_type", testAccVmType),
 					resource.TestCheckResourceAttr(resourceName, "nested_virtualization", "false"),
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.basic", "state"),
+					},
+				},
 			},
 		},
 	})
@@ -74,6 +79,11 @@ func TestAccVM_uefi(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "vm_type", testAccVmType),
 					resource.TestCheckResourceAttr(resourceName, "nested_virtualization", "false"),
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.uefi", "state"),
+					},
+				},
 			},
 		},
 	})
@@ -101,6 +111,11 @@ func TestAccVM_Behavior_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basicr1", "vm_type", testAccVmType),
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.basicr1", "state"),
+					},
+				},
 			},
 			{
 				Config: testAccCheckOutscaleVMBehaviorConfigBasic(omi, testAccVmType, region, keypair, "highest", "restart", sgName),
@@ -112,6 +127,11 @@ func TestAccVM_Behavior_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basicr1", "vm_type", testAccVmType),
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.basicr1", "state"),
+					},
+				},
 			},
 		},
 	})
@@ -142,6 +162,11 @@ func TestAccVM_importBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "placement_subregion_name", region),
 					resource.TestCheckResourceAttr(resourceName, "tags.#", "1"),
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.basic_import", "state"),
+					},
+				},
 			},
 			testacc.ImportStep(resourceName, "private_ips", "request_id"),
 		},
@@ -165,6 +190,11 @@ func TestAccNet_VM_withNicAttached(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "image_id", omi),
 					resource.TestCheckResourceAttr(resourceName, "vm_type", testAccVmType),
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.basicNicAt", "state"),
+					},
+				},
 			},
 		},
 	})
@@ -192,6 +222,11 @@ func TestAccVM_withTags(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic_tags", "vm_type", testAccVmType),
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.basic_tags", "state"),
+					},
+				},
 			},
 		},
 	})
@@ -213,6 +248,11 @@ func TestAccNet_VM_withNics(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "image_id", omi),
 					resource.TestCheckResourceAttr(resourceName, "vm_type", testAccVmType),
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.basic_with_nic", "state"),
+					},
+				},
 			},
 		},
 	})
@@ -242,6 +282,11 @@ func TestAccVM_UpdateKeypair(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "image_id", omi),
 					resource.TestCheckResourceAttr(resourceName, "vm_type", testAccVmType),
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.basic", "state"),
+					},
+				},
 			},
 			{
 				Config: testAccVmsConfigUpdateOAPIVMKey2(omi, testAccVmType, region, generatedKeypair, existingKeypair, sgName),
@@ -250,6 +295,11 @@ func TestAccVM_UpdateKeypair(t *testing.T) {
 					testAccCheckOAPIVMNotRecreated(t, &before, &after),
 					resource.TestCheckResourceAttr(resourceName, "vm_type", testAccVmType),
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.basic", "state"),
+					},
+				},
 			},
 		},
 	})
@@ -271,6 +321,11 @@ func TestAccNet_VM_WithSubnet(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "image_id", omi),
 					resource.TestCheckResourceAttr(resourceName, "vm_type", testAccVmType),
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.basic", "state"),
+					},
+				},
 			},
 		},
 	})
@@ -292,12 +347,22 @@ func TestAccVM_UpdateDeletionProtection(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("outscale_vm.outscale_vm1", "deletion_protection", "true"),
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.outscale_vm1", "state"),
+					},
+				},
 			},
 			{
 				Config: testAccCheckOutscaleDeletionProtectionUpdateBasic(omi, keypair, vmType, false, sgName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("outscale_vm.outscale_vm1", "deletion_protection", "false"),
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.outscale_vm1", "state"),
+					},
+				},
 			},
 		},
 	})
@@ -318,10 +383,20 @@ func TestAccVM_UpdateTags(t *testing.T) {
 			{
 				Config: testAccVmsConfigUpdateOAPIVMTags(omi, testAccVmType, utils.GetRegion(), tagsValue, keypair, sgName),
 				// Check:  resource.ComposeTestCheckFunc(),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.basic_tags", "state"),
+					},
+				},
 			},
 			{
 				Config: testAccVmsConfigUpdateOAPIVMTags(omi, testAccVmType, utils.GetRegion(), "Terraform-VM2", keypair, sgName),
 				// Check:  resource.ComposeTestCheckFunc(),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.basic_tags", "state"),
+					},
+				},
 			},
 		},
 	})
@@ -344,6 +419,11 @@ func TestAccNet_WithVM_PublicIp_Link(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "image_id", omi),
 					resource.TestCheckResourceAttr(resourceName, "vm_type", vmType),
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.outscale_vmnet", "state"),
+					},
+				},
 			},
 		},
 	})
@@ -371,6 +451,11 @@ func TestAccVM_multiBlockDeviceMapping(t *testing.T) {
 						return nil
 					}),
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.outscale_vm", "state"),
+					},
+				},
 			},
 			{
 				Config: testAccCheckOutscaleVMWithMultiBlockDeviceMappingUpdate(utils.GetRegion(), omi, keypair, testAccVmType, sgName),
@@ -382,6 +467,11 @@ func TestAccVM_multiBlockDeviceMapping(t *testing.T) {
 						return nil
 					}),
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.outscale_vm", "state"),
+					},
+				},
 			},
 		},
 	})

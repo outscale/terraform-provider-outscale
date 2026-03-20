@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
@@ -38,12 +39,22 @@ func TestAccVM_withImageExportTask_basic(t *testing.T) {
 					Check: resource.ComposeTestCheckFunc(
 						testAccCheckOutscalemageExportTaskExists("outscale_image_export_task.outscale_image_export_task"),
 					),
+					ConfigPlanChecks: resource.ConfigPlanChecks{
+						PostApplyPostRefresh: []plancheck.PlanCheck{
+							testacc.ExpectEmptyPlanExcept("outscale_vm.basic", "state"),
+						},
+					},
 				},
 				{
 					Config: testAccOAPIImageExportTaskConfigBasic(omi, testAccVmType, region, imageName, tags, sgName),
 					Check: resource.ComposeTestCheckFunc(
 						testAccCheckOutscalemageExportTaskExists("outscale_image_export_task.outscale_image_export_task"),
 					),
+					ConfigPlanChecks: resource.ConfigPlanChecks{
+						PostApplyPostRefresh: []plancheck.PlanCheck{
+							testacc.ExpectEmptyPlanExcept("outscale_vm.basic", "state"),
+						},
+					},
 				},
 			},
 		})

@@ -1031,8 +1031,8 @@
                                 "security_group_name": "########"
                             }
                         ],
-                        "state": "running",
-                        "state_reason": "",
+                        "state": "########",
+                        "state_reason": "########",
                         "subnet_id": "##id-4##",
                         "tags": [
                             {
@@ -1209,8 +1209,8 @@
                                 "security_group_name": "########"
                             }
                         ],
-                        "state": "running",
-                        "state_reason": "",
+                        "state": "########",
+                        "state_reason": "########",
                         "subnet_id": "##id-4##",
                         "tags": [
                             {
@@ -1387,8 +1387,8 @@
                                 "security_group_name": "########"
                             }
                         ],
-                        "state": "running",
-                        "state_reason": "",
+                        "state": "########",
+                        "state_reason": "########",
                         "subnet_id": "##id-4##",
                         "tags": [
                             {
@@ -1573,8 +1573,8 @@
                                 "security_group_name": "########"
                             }
                         ],
-                        "state": "running",
-                        "state_reason": "",
+                        "state": "########",
+                        "state_reason": "########",
                         "subnet_id": "##id-22##",
                         "tags": [
                             {
@@ -1751,8 +1751,8 @@
                                 "security_group_name": "########"
                             }
                         ],
-                        "state": "running",
-                        "state_reason": "",
+                        "state": "########",
+                        "state_reason": "########",
                         "subnet_id": "##id-22##",
                         "tags": [
                             {
@@ -1929,8 +1929,8 @@
                                 "security_group_name": "########"
                             }
                         ],
-                        "state": "running",
-                        "state_reason": "",
+                        "state": "########",
+                        "state_reason": "########",
                         "subnet_id": "##id-22##",
                         "tags": [
                             {

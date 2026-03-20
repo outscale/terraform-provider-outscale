@@ -10,14 +10,14 @@ import (
 	"testing"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
-	"github.com/outscale/terraform-provider-outscale/internal/testacc"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/terraform-provider-outscale/internal/testacc"
+	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 func TestAccVM_WithPublicIPLink_basic(t *testing.T) {
@@ -39,6 +39,11 @@ func TestAccVM_WithPublicIPLink_basic(t *testing.T) {
 					testAccCheckOutscalePublicIPLinkExists(
 						"outscale_public_ip_link.by_public_ip", &a),
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.vm_link", "state"),
+					},
+				},
 			},
 		},
 	})

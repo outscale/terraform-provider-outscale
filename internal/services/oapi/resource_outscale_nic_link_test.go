@@ -7,11 +7,11 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
-
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func TestAccNet_withNicLink_Basic(t *testing.T) {
@@ -32,6 +32,12 @@ func TestAccNet_withNicLink_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "vm_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "nic_id"),
 				),
+				// Allow plan changes only for the VM "state" attribute
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.vm", "state"),
+					},
+				},
 			},
 		},
 	})
@@ -54,6 +60,12 @@ func TestAccNet_ImportNicLink_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "vm_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "nic_id"),
 				),
+				// Allow plan changes only for the VM "state" attribute
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.vm", "state"),
+					},
+				},
 			},
 			testacc.ImportStepWithStateIdFunc(resourceName, testAccCheckOutscaleNicLinkStateIDFunc(resourceName)),
 		},

@@ -5,12 +5,12 @@ import (
 	"os"
 	"testing"
 
-	"github.com/outscale/terraform-provider-outscale/internal/testacc"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/outscale/terraform-provider-outscale/internal/testacc"
+	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 func TestAccVM_WithVolumeAttachment_Basic(t *testing.T) {
@@ -28,6 +28,11 @@ func TestAccVM_WithVolumeAttachment_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"outscale_volume_link.ebs_att", "device_name", "/dev/sdh"),
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.web", "state"),
+					},
+				},
 			},
 		},
 	})
@@ -46,6 +51,11 @@ func TestAccVM_ImportVolumeAttachment_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOAPIVolumeAttachmentConfig(omi, testAccVmType, utils.GetRegion(), keypair, sgName),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.web", "state"),
+					},
+				},
 			},
 			testacc.ImportStep(resourceName, testacc.DefaultIgnores()...),
 		},
