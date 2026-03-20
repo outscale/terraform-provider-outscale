@@ -8,15 +8,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
-
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func TestAccVM_tags(t *testing.T) {
@@ -37,6 +36,11 @@ func TestAccVM_tags(t *testing.T) {
 						resource.TestCheckResourceAttr(
 							"outscale_tag.foo", "tags.#", "1"),
 					),
+					ConfigPlanChecks: resource.ConfigPlanChecks{
+						PostApplyPostRefresh: []plancheck.PlanCheck{
+							testacc.ExpectEmptyPlanExcept("outscale_vm.vm", "state"),
+						},
+					},
 				},
 				{
 					Config: testAccCheckOAPIInstanceConfigTags(omi, testAccVmType, utils.GetRegion(), "keyUpdated", "valueUpdated"),
@@ -46,6 +50,11 @@ func TestAccVM_tags(t *testing.T) {
 						resource.TestCheckResourceAttr(
 							"outscale_tag.foo", "tags.#", "1"),
 					),
+					ConfigPlanChecks: resource.ConfigPlanChecks{
+						PostApplyPostRefresh: []plancheck.PlanCheck{
+							testacc.ExpectEmptyPlanExcept("outscale_vm.vm", "state"),
+						},
+					},
 				},
 			},
 		})
@@ -67,7 +76,7 @@ func oapiTestAccCheckOutscaleVMExists(n string, i *oscgo.Vm) resource.TestCheckF
 
 		conn := testacc.SDKProvider.Meta().(*client.OutscaleClient)
 		var resp oscgo.ReadVmsResponse
-		var err = retry.Retry(30*time.Second, func() *retry.RetryError {
+		err := retry.Retry(30*time.Second, func() *retry.RetryError {
 			rp, httpResp, err := conn.OSCAPI.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
 				Filters: &oscgo.FiltersVm{
 					VmIds: &[]string{rs.Primary.ID},

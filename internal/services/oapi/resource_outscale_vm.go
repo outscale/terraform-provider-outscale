@@ -714,6 +714,7 @@ func ResourceOutscaleVM() *schema.Resource {
 			"state": {
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
 				Default:  "running",
 			},
 			"state_reason": {

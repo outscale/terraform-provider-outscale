@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/outscale/terraform-provider-outscale/internal/services/oapi/oapihelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
@@ -34,6 +35,11 @@ func TestAccVM_WithImageLaunchPermission_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.outscale_instance", "state"),
+					},
+				},
 			},
 			// Drop just launch permission to test destruction
 			{
@@ -41,6 +47,11 @@ func TestAccVM_WithImageLaunchPermission_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccOutscaleImageLaunchPermissionDestroyed(accountID, &imageID),
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.outscale_instance", "state"),
+					},
+				},
 			},
 			// Re-add everything so we can test when AMI disappears
 			{
@@ -48,6 +59,11 @@ func TestAccVM_WithImageLaunchPermission_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.outscale_instance", "state"),
+					},
+				},
 			},
 		},
 	})
@@ -74,12 +90,22 @@ func TestAccVM_ImageLaunchPermissionDestruction_Basic(t *testing.T) {
 					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
 					testAccOutscaleImageLaunchPermissionExists(accountID, &imageID),
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.outscale_instance", "state"),
+					},
+				},
 			},
 			{
 				Config: testAccOutscaleImageLaunchPermissionCreateConfig(omi, testAccVmType, region, keypair, rInt, true, true, sgName),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.outscale_instance", "state"),
+					},
+				},
 			},
 		},
 	})

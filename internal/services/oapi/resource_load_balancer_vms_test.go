@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
@@ -29,6 +30,12 @@ func TestAccVM_LbuBackends_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "backend_vm_ids.#"),
 					resource.TestCheckResourceAttr(resourceName, "backend_vm_ids.#", "2"),
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.foo1[0]", "state"),
+						testacc.ExpectEmptyPlanExcept("outscale_vm.foo1[1]", "state"),
+					},
+				},
 			},
 			{
 				Config: testAccLBUAttachmentAddUpdate(lbName, omi, region, vmType, sgName),
@@ -36,6 +43,12 @@ func TestAccVM_LbuBackends_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "backend_vm_ids.#"),
 					resource.TestCheckResourceAttr(resourceName, "backend_vm_ids.#", "1"),
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.foo1[0]", "state"),
+						testacc.ExpectEmptyPlanExcept("outscale_vm.foo1[1]", "state"),
+					},
+				},
 			},
 			{
 				Config: testAccLBUAttachmentBackendIps(lbName, omi, region, vmType, sgName),
@@ -43,6 +56,12 @@ func TestAccVM_LbuBackends_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "backend_ips.#"),
 					resource.TestCheckResourceAttr(resourceName, "backend_ips.#", "2"),
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.foo1[0]", "state"),
+						testacc.ExpectEmptyPlanExcept("outscale_vm.foo1[1]", "state"),
+					},
+				},
 			},
 		},
 	})

@@ -5,11 +5,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/outscale/terraform-provider-outscale/internal/testacc"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/outscale/terraform-provider-outscale/internal/testacc"
+	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 func TestAccNet_WithRouteTable_Basic(t *testing.T) {
@@ -45,6 +45,11 @@ func TestAccNet_RouteTable_Instance(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "net_id"),
 					resource.TestCheckResourceAttr(resourceName, "routes.0.state", "active"),
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.foo", "state"),
+					},
+				},
 			},
 		},
 	})

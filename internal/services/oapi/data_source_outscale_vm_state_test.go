@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 )
@@ -24,6 +25,11 @@ func TestAccVM_StateDataSource(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccDataSourceOutscaleVMStateCheck("data.outscale_vm_state.state"),
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.basic_state", "state"),
+					},
+				},
 			},
 		},
 	})

@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 )
 
@@ -65,6 +66,11 @@ func TestAccOthers_SecurityGroup_VM_CleanUp(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "security_group_name"),
 					resource.TestCheckResourceAttrSet(resourceName2, "security_group_name"),
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.vm01", "state"),
+					},
+				},
 			},
 			{
 				// Changing the SG name to unlink it from the VM and recreate it
@@ -73,6 +79,11 @@ func TestAccOthers_SecurityGroup_VM_CleanUp(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "security_group_name"),
 					resource.TestCheckResourceAttrSet(resourceName2, "security_group_name"),
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.vm01", "state"),
+					},
+				},
 			},
 			{
 				// Removing one SG from the VM
@@ -80,6 +91,11 @@ func TestAccOthers_SecurityGroup_VM_CleanUp(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "security_group_name"),
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						testacc.ExpectEmptyPlanExcept("outscale_vm.vm01", "state"),
+					},
+				},
 			},
 			{
 				// Removing the default SG fails

@@ -3,6 +3,7 @@ package testacc
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -182,5 +183,57 @@ func importStep(resourceName string, importStateIdFunc resource.ImportStateIdFun
 func DefaultIgnores() []string {
 	return []string{
 		"request_id",
+	}
+}
+
+// ExpectEmptyPlanExcept returns a plan check that expects an empty plan,
+// but allows updates to specific attributes on a given resource
+func ExpectEmptyPlanExcept(resourceAddress string, allowedAttributes ...string) plancheck.PlanCheck {
+	return &expectEmptyPlanExcept{
+		resourceAddress:   resourceAddress,
+		allowedAttributes: allowedAttributes,
+	}
+}
+
+type expectEmptyPlanExcept struct {
+	resourceAddress   string
+	allowedAttributes []string
+}
+
+func (e *expectEmptyPlanExcept) CheckPlan(ctx context.Context, req plancheck.CheckPlanRequest, resp *plancheck.CheckPlanResponse) {
+	for _, rc := range req.Plan.ResourceChanges {
+		// If all actions are no-op, skip this resource
+		if rc.Change == nil || rc.Change.Actions.NoOp() {
+			continue
+		}
+
+		// If changes exist on a resource that is not the target, fail
+		if rc.Address != e.resourceAddress {
+			resp.Error = fmt.Errorf("expected no changes for %s, but got actions: %v", rc.Address, rc.Change.Actions)
+			return
+		}
+
+		// Only allow update actions on the target resource
+		if !rc.Change.Actions.Update() {
+			resp.Error = fmt.Errorf("expected only update action for %s, but got: %v", rc.Address, rc.Change.Actions)
+			return
+		}
+
+		before, beforeOk := rc.Change.Before.(map[string]any)
+		after, afterOk := rc.Change.After.(map[string]any)
+		if !beforeOk || !afterOk {
+			resp.Error = fmt.Errorf("cannot determine attribute changes for %s", rc.Address)
+			return
+		}
+
+		// Before and After contain the full resource state values
+		// We must compare values to find actual changes and verify they're all in allowedAttributes
+		for key, afterVal := range after {
+			if !lo.Contains(e.allowedAttributes, key) && !reflect.DeepEqual(before[key], afterVal) {
+				resp.Error = fmt.Errorf("expected no changes for %s.%s, but got: %v -> %v",
+					rc.Address, key, before[key], afterVal)
+				return
+			}
+		}
 	}
 }
