@@ -12,22 +12,18 @@ import (
 )
 
 func TestAccVM_withFlexibleGpuLink_basic(t *testing.T) {
-	if os.Getenv("TEST_QUOTA") == "true" {
-		omi := os.Getenv("OUTSCALE_IMAGEID")
-		sgName := acctest.RandomWithPrefix("testacc-sg")
+	omi := os.Getenv("OUTSCALE_IMAGEID")
+	sgName := acctest.RandomWithPrefix("testacc-sg")
 
-		resource.ParallelTest(t, resource.TestCase{
-			PreCheck:                 func() { testacc.PreCheck(t) },
-			ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
-			Steps: []resource.TestStep{
-				{
-					Config: testAccOutscaleFlexibleGpuLinkConfig(omi, testAccVmType, utils.GetRegion(), sgName),
-				},
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 func() { testacc.PreCheck(t) },
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccOutscaleFlexibleGpuLinkConfig(omi, testAccVmType, utils.GetRegion(), sgName),
 			},
-		})
-	} else {
-		t.Skip("will be done soon")
-	}
+		},
+	})
 }
 
 func testAccOutscaleFlexibleGpuLinkConfig(omi, vmType, region, sgName string) string {
