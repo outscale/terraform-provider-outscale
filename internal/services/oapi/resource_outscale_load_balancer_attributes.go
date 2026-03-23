@@ -293,6 +293,7 @@ func loadBalancerAttributesDoRequest(d *schema.ResourceData, meta interface{}, r
 }
 
 func ResourceOutscaleLoadBalancerAttributesCreate_(d *schema.ResourceData, meta interface{}, isUpdate bool) error {
+	conn := meta.(*client.OutscaleClient).OSCAPI
 	timeout := d.Timeout(schema.TimeoutCreate)
 	if isUpdate {
 		timeout = d.Timeout(schema.TimeoutUpdate)
@@ -325,7 +326,11 @@ func ResourceOutscaleLoadBalancerAttributesCreate_(d *schema.ResourceData, meta 
 		req.PolicyNames = &a
 	}
 	if isUpdate {
-		return loadBalancerAttributesDoRequest(d, meta, req, timeout)
+		err := loadBalancerAttributesDoRequest(d, meta, req, timeout)
+		if err != nil {
+			return err
+		}
+		return waitForLbuActive(context.Background(), conn, ename.(string), timeout)
 	}
 
 	if ssl, sok := d.GetOk("server_certificate_id"); sok {
@@ -384,7 +389,12 @@ func ResourceOutscaleLoadBalancerAttributesCreate_(d *schema.ResourceData, meta 
 		req.SetHealthCheck(healthCheck)
 	}
 
-	return loadBalancerAttributesDoRequest(d, meta, req, timeout)
+	err := loadBalancerAttributesDoRequest(d, meta, req, timeout)
+	if err != nil {
+		return err
+	}
+
+	return waitForLbuActive(context.Background(), conn, ename.(string), timeout)
 }
 
 func ResourceOutscaleLoadBalancerAttributesRead(d *schema.ResourceData, meta interface{}) error {

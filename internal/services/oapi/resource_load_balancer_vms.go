@@ -191,6 +191,14 @@ func (r *resourceLbuVms) Create(ctx context.Context, req resource.CreateRequest,
 	data.RequestId = types.StringValue(*createResp.ResponseContext.RequestId)
 	data.Id = types.StringValue(lbuName)
 
+	if err = waitForLbuActive(ctx, r.Client, lbuName, createTimeout); err != nil {
+		resp.Diagnostics.AddError(
+			"Error waiting for load balancer to become active after linking backends",
+			err.Error(),
+		)
+		return
+	}
+
 	err = setLbuBackendState(ctx, r, &data)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -287,6 +295,14 @@ func (r *resourceLbuVms) Update(ctx context.Context, req resource.UpdateRequest,
 			return
 		}
 	}
+	if err = waitForLbuActive(ctx, r.Client, dataState.LoadBalancerName.ValueString(), updateTimeout); err != nil {
+		resp.Diagnostics.AddError(
+			"Error waiting for load balancer to become active after updating backends",
+			err.Error(),
+		)
+		return
+	}
+
 	err = setLbuBackendState(ctx, r, &dataPlan)
 	if err != nil {
 		resp.Diagnostics.AddError(

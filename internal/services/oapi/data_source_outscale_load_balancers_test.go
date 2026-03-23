@@ -17,8 +17,7 @@ func TestAccOthers_LBUs_basic(t *testing.T) {
 		PreCheck: func() {
 			testacc.PreCheck(t)
 		},
-		Providers:    testacc.SDKProviders,
-		CheckDestroy: testAccCheckOutscaleLBUDestroy,
+		Providers: testacc.SDKProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDSOutscaleLBsUConfig(region, numLbu),

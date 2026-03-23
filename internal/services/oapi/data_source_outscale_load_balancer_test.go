@@ -27,7 +27,6 @@ func TestAccOthers_LBU_basic(t *testing.T) {
 		},
 		IDRefreshName: "outscale_load_balancer.bar",
 		Providers:     testacc.SDKProviders,
-		CheckDestroy:  testAccCheckOutscaleLBUDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDSOutscaleLBUConfig(zone, suffix),

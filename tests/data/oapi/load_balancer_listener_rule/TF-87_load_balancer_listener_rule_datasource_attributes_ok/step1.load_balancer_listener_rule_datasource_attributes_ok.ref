@@ -118,6 +118,7 @@
                                 "security_group_name": "########"
                             }
                         ],
+                        "state": "active",
                         "subnets": [],
                         "subregion_names": [
                             "eu-west-2a"
