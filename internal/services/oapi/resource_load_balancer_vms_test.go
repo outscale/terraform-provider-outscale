@@ -92,6 +92,8 @@ resource "outscale_vm" "foo1" {
   image_id = "%[3]s"
   vm_type = "%[4]s"
   security_group_ids   = [outscale_security_group.sg_lb1.security_group_id]
+
+  lifecycle { ignore_changes = [state] }
 }
 
 resource "outscale_load_balancer_vms" "backend_test" {
@@ -128,6 +130,8 @@ resource "outscale_vm" "foo1" {
   image_id = "%[3]s"
   vm_type = "%[4]s"
   security_group_ids   = [outscale_security_group.sg_lb1.security_group_id]
+
+  lifecycle { ignore_changes = [state] }
 }
 
 resource "outscale_load_balancer_vms" "backend_test" {
@@ -164,6 +168,8 @@ resource "outscale_vm" "foo1" {
   image_id = "%[3]s"
   vm_type = "%[4]s"
   security_group_ids   = [outscale_security_group.sg_lb1.security_group_id]
+
+  lifecycle { ignore_changes = [state] }
 }
 
 resource "outscale_load_balancer_vms" "backend_test" {

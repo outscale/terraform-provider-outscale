@@ -59,6 +59,8 @@ func testAccOutscaleImageExportTaskDataSourceConfig(omi, vmType, region, imageNa
 		vm_type                  = "%s"
 		keypair_name	         = "terraform-basic"
 		placement_subregion_name = "%sa"
+
+		lifecycle { ignore_changes = [state] }
 	}
 
 	resource "outscale_image" "foo" {

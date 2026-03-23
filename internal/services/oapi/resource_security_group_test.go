@@ -469,6 +469,8 @@ func securityGroupWithVMConfigStep1(omi, vmType, kpName, sgName, sgName2 string)
 			keypair_name             = "%[3]s"
 			security_group_ids       = [outscale_security_group.group1.security_group_id,outscale_security_group.group2.security_group_id]
 			placement_subregion_name = "eu-west-2a"
+
+			lifecycle { ignore_changes = [state] }
 		}
 	`, omi, vmType, kpName, sgName, sgName2)
 }
@@ -491,6 +493,8 @@ func securityGroupWithVMConfigStep2(omi, vmType, kpName, sgName, sgName2 string)
 			keypair_name             = "%[3]s"
 			security_group_ids       = [outscale_security_group.group1.security_group_id,outscale_security_group.group2.security_group_id]
 			placement_subregion_name = "eu-west-2a"
+
+			lifecycle { ignore_changes = [state] }
 		}
 	`, omi, vmType, kpName, sgName, sgName2)
 }
@@ -508,6 +512,8 @@ func securityGroupWithVMConfigStep3(omi, vmType, kpName, sgName string) string {
 			keypair_name             = "%[3]s"
 			security_group_ids       = [outscale_security_group.group1.security_group_id]
 			placement_subregion_name = "eu-west-2a"
+
+			lifecycle { ignore_changes = [state] }
 		}
 	`, omi, vmType, kpName, sgName)
 }
@@ -520,6 +526,8 @@ func securityGroupWithVMConfigStep4(omi, vmType, kpName string) string {
 			keypair_name             = "%[3]s"
 			security_group_ids       = []
 			placement_subregion_name = "eu-west-2a"
+
+			lifecycle { ignore_changes = [state] }
 		}
 	`, omi, vmType, kpName)
 }

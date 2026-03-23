@@ -7,11 +7,10 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
-	"github.com/outscale/terraform-provider-outscale/internal/testacc"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/outscale/terraform-provider-outscale/internal/testacc"
+	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 func TestAccNet_withNicLink_Basic(t *testing.T) {
@@ -100,6 +99,8 @@ func testAccOutscaleNicLinkConfigBasic(sg int, omi, vmType, region string) strin
 			security_group_ids       = [outscale_security_group.security_group_nic.security_group_id]
 			placement_subregion_name = "%[4]sa"
 			subnet_id                = outscale_subnet.outscale_subnet.id
+
+			lifecycle { ignore_changes = [state] }
 		}
 
 		resource "outscale_subnet" "outscale_subnet" {

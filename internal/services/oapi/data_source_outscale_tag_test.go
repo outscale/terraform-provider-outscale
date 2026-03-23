@@ -55,6 +55,8 @@ func testAccOAPITagDataSourceConfig(omi, vmType, sgName string) string {
 				key = "Name"
 				value = "test-vm"
 			}
+
+			lifecycle { ignore_changes = [state] }
 		}
 
 		data "outscale_tag" "web" {

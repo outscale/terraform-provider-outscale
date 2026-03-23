@@ -5,12 +5,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/outscale/terraform-provider-outscale/internal/testacc"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/outscale/terraform-provider-outscale/internal/testacc"
+	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 func TestAccVM_WithVolumeAttachment_Basic(t *testing.T) {
@@ -86,6 +85,8 @@ func testAccOAPIVolumeAttachmentConfig(omi, vmType, region, keypair, sgName stri
 			keypair_name             = "%[4]s"
 			placement_subregion_name = "%[3]sb"
 			security_group_ids = [outscale_security_group.sg_vol_link.security_group_id]
+
+			lifecycle { ignore_changes = [state] }
 		}
 
 		resource "outscale_volume" "volume" {

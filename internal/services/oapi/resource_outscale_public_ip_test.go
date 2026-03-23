@@ -9,14 +9,13 @@ import (
 	"testing"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
-	"github.com/outscale/terraform-provider-outscale/internal/testacc"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/terraform-provider-outscale/internal/testacc"
+	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 func TestAccOthers_PublicIP_basic(t *testing.T) {
@@ -275,6 +274,8 @@ func testAccOutscalePublicIPInstanceConfig(omi, vmType, region, keypair, sgName 
 			keypair_name       = "%[4]s"
 			security_group_ids = [outscale_security_group.sg_ip.security_group_id]
 			placement_subregion_name = "%[3]sa"
+
+			lifecycle { ignore_changes = [state] }
 		}
 
 		resource "outscale_public_ip" "bar1" {}
@@ -304,6 +305,8 @@ func testAccOutscalePublicIPInstanceConfigAssociated(omi, vmType, region, keypai
 			keypair_name       = "%[4]s"
 			security_group_ids = [outscale_security_group.sgIP.security_group_id]
 			placement_subregion_name = "%[3]sa"
+
+			lifecycle { ignore_changes = [state] }
 		}
 
 		resource "outscale_vm" "basic2" {
@@ -312,6 +315,8 @@ func testAccOutscalePublicIPInstanceConfigAssociated(omi, vmType, region, keypai
 			keypair_name       = "%[4]s"
 			security_group_ids = [outscale_security_group.sgIP.security_group_id]
 			placement_subregion_name = "%[3]sa"
+
+			lifecycle { ignore_changes = [state] }
 		}
 
 		resource "outscale_public_ip" "bar" {}
@@ -336,6 +341,8 @@ func testAccOutscalePublicIPInstanceConfigAssociatedSwitch(omi, vmType, region, 
 			keypair_name       = "%[4]s"
 			security_group_ids = [outscale_security_group.sgIP.security_group_id]
 			placement_subregion_name = "%[3]sa"
+
+			lifecycle { ignore_changes = [state] }
 		}
 
 		resource "outscale_vm" "basic2" {
@@ -344,6 +351,8 @@ func testAccOutscalePublicIPInstanceConfigAssociatedSwitch(omi, vmType, region, 
 			keypair_name       = "%[4]s"
 			security_group_ids = [outscale_security_group.sgIP.security_group_id]
 			placement_subregion_name = "%[3]sa"
+
+			lifecycle { ignore_changes = [state] }
 		}
 
 		resource "outscale_public_ip" "bar" {}

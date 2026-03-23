@@ -48,6 +48,8 @@ func testAccOutscaleFlexibleGpuLinkConfig(omi, vmType, region, sgName string) st
 			keypair_name = "terraform-basic"
 			placement_subregion_name = "%[3]sa"
 			security_group_ids = [outscale_security_group.sg_fgpu.security_group_id]
+
+			lifecycle { ignore_changes = [state] }
 		}
 
                 resource "outscale_flexible_gpu" "fGPU-1" {

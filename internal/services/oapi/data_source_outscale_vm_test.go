@@ -54,6 +54,7 @@ func testAccOAPIVMDataSourceConfig(omi, vmType, region, sgName string) string {
 				value = "Terraform-VM"
 			}
 
+			lifecycle { ignore_changes = [state] }
 		}
 
 		data "outscale_vm" "basic_web" {

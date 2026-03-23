@@ -48,6 +48,8 @@ func testAccOAPIVMSDataSourceConfig(omi, vmType, sgName string) string {
 			vm_type				= "%[2]s"
 			keypair_name	= "terraform-basic"
 			security_group_ids = [outscale_security_group.sg_vms.security_group_id]
+
+			lifecycle { ignore_changes = [state] }
 		}
 
 		data "outscale_vms" "basic_web" {

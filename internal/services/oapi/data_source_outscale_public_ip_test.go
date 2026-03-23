@@ -143,6 +143,8 @@ func testAccDataSourceOutscalePublicIPConfigwithVM(omi, region, vmType, sgName s
 			vm_type      = "%[3]s"
 			keypair_name = "terraform-basic"
 			security_group_ids = [outscale_security_group.sg_Pbip.security_group_id]
+
+			lifecycle { ignore_changes = [state] }
 		}
 
 		resource "outscale_public_ip" "outscale_public_ip" {

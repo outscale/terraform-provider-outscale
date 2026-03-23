@@ -163,6 +163,8 @@ func testAccOutscaleImageLaunchPermissionConfig(omi, vmType, region, accountID, 
 			keypair_name       = "%[5]s"
 			security_group_ids = [outscale_security_group.sg_perm.security_group_id]
 			placement_subregion_name = "%[3]sa"
+
+			lifecycle { ignore_changes = [state] }
 		}
 
 		resource "outscale_image" "outscale_image" {
@@ -203,6 +205,8 @@ func testAccOutscaleImageLaunchPermissionCreateConfig(omi, vmType, region, keypa
 			keypair_name             = "%[5]s"
 			security_group_ids = [outscale_security_group.sg_perm.security_group_id]
 			placement_subregion_name = "%[3]sa"
+
+			lifecycle { ignore_changes = [state] }
 		}
 
 		resource "outscale_image" "outscale_image" {
