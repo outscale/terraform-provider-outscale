@@ -206,7 +206,7 @@ func resourceOAPIImageExportTaskRead(ctx context.Context, d *schema.ResourceData
 
 	var resp oscgo.ReadImageExportTasksResponse
 	var err error
-	filter := &oscgo.FiltersExportTask{TaskIds: &[]string{d.Id()}}
+	filter := &oscgo.FiltersReadImageExportTask{TaskIds: &[]string{d.Id()}}
 	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
 		rp, httpResp, err := conn.ImageApi.ReadImageExportTasks(ctx).
 			ReadImageExportTasksRequest(oscgo.ReadImageExportTasksRequest{
@@ -347,7 +347,7 @@ func ImageTaskStateRefreshFunc(client *oscgo.APIClient, ctx context.Context, id 
 		var statusCode int
 
 		err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-			filter := &oscgo.FiltersExportTask{TaskIds: &[]string{id}}
+			filter := &oscgo.FiltersReadImageExportTask{TaskIds: &[]string{id}}
 			rp, httpResp, err := client.ImageApi.ReadImageExportTasks(context.Background()).
 				ReadImageExportTasksRequest(oscgo.ReadImageExportTasksRequest{
 					Filters: filter,

@@ -198,7 +198,7 @@ func resourceOAPISnapshotExportTaskRead(ctx context.Context, d *schema.ResourceD
 	timeout := d.Timeout(schema.TimeoutRead)
 
 	var resp oscgo.ReadSnapshotExportTasksResponse
-	filter := &oscgo.FiltersExportTask{TaskIds: &[]string{d.Id()}}
+	filter := &oscgo.FiltersSnapshotExportTask{TaskIds: &[]string{d.Id()}}
 	err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
 		var err error
 		rp, httpResp, err := conn.SnapshotApi.ReadSnapshotExportTasks(ctx).
@@ -329,7 +329,7 @@ func resourceOAPISnapshotExportTaskDelete(ctx context.Context, d *schema.Resourc
 func SnapshotTaskStateRefreshFunc(client *oscgo.APIClient, id string, timeout time.Duration) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		var resp oscgo.ReadSnapshotExportTasksResponse
-		filter := &oscgo.FiltersExportTask{TaskIds: &[]string{id}}
+		filter := &oscgo.FiltersSnapshotExportTask{TaskIds: &[]string{id}}
 		var statusCode int
 		err := retry.Retry(timeout, func() *retry.RetryError {
 			var err error

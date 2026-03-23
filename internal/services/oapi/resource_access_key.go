@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/outscale/goutils/sdk/ptr"
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/osc-sdk-go/v3/pkg/iso8601"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
@@ -281,7 +282,7 @@ func (r *resourceAccessKey) Update(ctx context.Context, req resource.UpdateReque
 
 	updateReq := oscgo.UpdateAccessKeyRequest{
 		AccessKeyId: stateData.AccessKeyId.ValueString(),
-		State:       planData.State.ValueString(),
+		State:       ptr.To(planData.State.ValueString()),
 	}
 	if expireDate := planData.ExpirationDate.ValueString(); expireDate != "" {
 		updateReq.SetExpirationDate(expireDate)
@@ -438,7 +439,7 @@ func setAccessKeyState(ctx context.Context, r *resourceAccessKey, data *AccessKe
 func inactiveAccessKey(ctx context.Context, to time.Duration, r *resourceAccessKey, data AccessKeyModel) error {
 	req := oscgo.UpdateAccessKeyRequest{
 		AccessKeyId: data.Id.ValueString(),
-		State:       "INACTIVE",
+		State:       ptr.To("INACTIVE"),
 	}
 	if data.UserName.ValueString() != "" {
 		req.SetUserName(data.UserName.ValueString())
