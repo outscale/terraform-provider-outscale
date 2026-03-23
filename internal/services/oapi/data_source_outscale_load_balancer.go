@@ -172,6 +172,10 @@ func attrLBchema() map[string]*schema.Schema {
 				},
 			},
 		},
+		"state": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
 		"request_id": {
 			Type:     schema.TypeString,
 			Computed: true,
@@ -366,6 +370,7 @@ func DataSourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}
 	d.Set("secured_cookies", lb.SecuredCookies)
 	d.Set("net_id", lb.NetId)
 	d.Set("subnets", utils.StringSlicePtrToInterfaceSlice(lb.Subnets))
+	d.Set("state", lb.State)
 	d.SetId(*lb.LoadBalancerName)
 
 	return nil

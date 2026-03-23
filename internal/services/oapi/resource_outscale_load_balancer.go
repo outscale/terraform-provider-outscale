@@ -216,6 +216,10 @@ func ResourceOutscaleLoadBalancer() *schema.Resource {
 					},
 				},
 			},
+			"state": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -351,10 +355,6 @@ func lb_listener_schema(computed bool) map[string]*schema.Schema {
 }
 
 func ResourceOutscaleLoadBalancerCreate(d *schema.ResourceData, meta interface{}) error {
-	return ResourceOutscaleLoadBalancerCreate_(d, meta, false)
-}
-
-func ResourceOutscaleLoadBalancerCreate_(d *schema.ResourceData, meta interface{}, isUpdate bool) error {
 	conn := meta.(*client.OutscaleClient).OSCAPI
 	timeout := d.Timeout(schema.TimeoutCreate)
 
@@ -444,7 +444,32 @@ func ResourceOutscaleLoadBalancerCreate_(d *schema.ResourceData, meta interface{
 		}
 	}
 
+	err = waitForLbuActive(context.Background(), conn, d.Id(), timeout)
+	if err != nil {
+		return fmt.Errorf("error waiting for load balancer (%s) to be ready: %w", d.Id(), err)
+	}
+
 	return ResourceOutscaleLoadBalancerRead(d, meta)
+}
+
+func waitForLbuActive(ctx context.Context, apiClient *oscgo.APIClient, lbuName string, timeout time.Duration) error {
+	stateConf := &retry.StateChangeConf{
+		Pending: []string{"starting", "provisioning", "reloading", "reconfiguring"},
+		Target:  []string{"active"},
+		Refresh: func() (any, string, error) {
+			lb, _, err := readResourceLb(apiClient, lbuName, timeout)
+			if err != nil {
+				return nil, "", err
+			}
+			if lb == nil {
+				return nil, "", nil
+			}
+			return lb, lb.GetState(), nil
+		},
+		Timeout: timeout,
+	}
+	_, err := stateConf.WaitForStateContext(ctx)
+	return err
 }
 
 func readResourceLb(conn *oscgo.APIClient, elbName string, timeout time.Duration) (*oscgo.LoadBalancer, *oscgo.ReadLoadBalancersResponse, error) {
@@ -554,8 +579,8 @@ func ResourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}) 
 	d.Set("subnets", utils.StringSlicePtrToInterfaceSlice(lb.Subnets))
 	d.Set("public_ip", lb.PublicIp)
 	d.Set("secured_cookies", lb.SecuredCookies)
-
 	d.Set("net_id", lb.NetId)
+	d.Set("state", lb.State)
 
 	return nil
 }
@@ -812,6 +837,11 @@ func ResourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 		}
 	}
 
+	err = waitForLbuActive(context.Background(), conn, d.Id(), timeout)
+	if err != nil {
+		return fmt.Errorf("error waiting for load balancer (%s) to be updated: %w", d.Id(), err)
+	}
+
 	return ResourceOutscaleLoadBalancerRead(d, meta)
 }
 
@@ -839,25 +869,20 @@ func ResourceOutscaleLoadBalancerDelete(d *schema.ResourceData, meta interface{}
 	}
 
 	stateConf := &retry.StateChangeConf{
-		Pending: []string{"ready"},
-		Target:  []string{},
+		Pending: []string{"deleting", "starting", "provisioning", "reloading", "reconfiguring"},
+		Target:  []string{"deleted"},
 		Refresh: func() (interface{}, string, error) {
 			lb, _, _ := readResourceLb(conn, d.Id(), timeout)
 			if lb == nil {
 				return nil, "", nil
 			}
-			return lb, "ready", nil
+			return lb, lb.GetState(), nil
 		},
 		Timeout:    timeout,
 		MinTimeout: 10 * time.Second,
 	}
 	if _, err := stateConf.WaitForState(); err != nil {
-		return fmt.Errorf("error waiting for load balancer (%s) to become null: %w", d.Id(), err)
-	}
-
-	// Remove this when bug will be fix
-	if _, ok := d.GetOk("public_ip"); ok {
-		time.Sleep(5 * time.Second)
+		return fmt.Errorf("error waiting for load balancer (%s) to be deleted: %w", d.Id(), err)
 	}
 
 	return nil

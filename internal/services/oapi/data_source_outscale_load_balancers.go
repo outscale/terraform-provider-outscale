@@ -180,6 +180,10 @@ func attrLBSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
+					"state": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
 				},
 			},
 		},
@@ -237,8 +241,7 @@ func DataSourceOutscaleLoadBalancersRead(d *schema.ResourceData, meta interface{
 			}
 			l["application_sticky_cookie_policies"] = app
 		} else {
-			l["application_sticky_cookie_policies"] =
-				make([]map[string]interface{}, 0)
+			l["application_sticky_cookie_policies"] = make([]map[string]interface{}, 0)
 		}
 
 		if v.LoadBalancerStickyCookiePolicies != nil {
@@ -251,8 +254,7 @@ func DataSourceOutscaleLoadBalancersRead(d *schema.ResourceData, meta interface{
 			}
 			l["load_balancer_sticky_cookie_policies"] = vc
 		} else {
-			l["load_balancer_sticky_cookie_policies"] =
-				make([]map[string]interface{}, 0)
+			l["load_balancer_sticky_cookie_policies"] = make([]map[string]interface{}, 0)
 		}
 		if v.Tags != nil {
 			ta := make([]map[string]interface{}, len(*v.Tags))
@@ -273,12 +275,12 @@ func DataSourceOutscaleLoadBalancersRead(d *schema.ResourceData, meta interface{
 			l["source_security_group"] = flattenSource_sg(v.SourceSecurityGroup)
 		} else {
 			l["source_security_group"] = ssg
-
 		}
 		l["subnet_id"] = utils.StringSlicePtrToInterfaceSlice(v.Subnets)
 		l["public_ip"] = v.PublicIp
 		l["secured_cookies"] = v.SecuredCookies
 		l["net_id"] = v.NetId
+		l["state"] = v.State
 
 		lbs_ret[k] = l
 	}

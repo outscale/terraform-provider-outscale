@@ -72,6 +72,7 @@
                                 "security_group_name": "########"
                             }
                         ],
+                        "state": "active",
                         "subnets": [
                             "##id-4##"
                         ],

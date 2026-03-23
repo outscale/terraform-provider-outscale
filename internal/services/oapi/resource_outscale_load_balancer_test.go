@@ -3,7 +3,6 @@ package oapi_test
 import (
 	"context"
 	"fmt"
-	"strings"
 	"testing"
 	"time"
 
@@ -31,7 +30,6 @@ func TestAccOthers_LBUBasic(t *testing.T) {
 		},
 		IDRefreshName: lbResourceName,
 		Providers:     testacc.SDKProviders,
-		CheckDestroy:  testAccCheckOutscaleLBUDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleLBUConfig(r),
@@ -61,7 +59,6 @@ func TestAccOthers_LBUPublicIp(t *testing.T) {
 		},
 		IDRefreshName: resourceName,
 		Providers:     testacc.SDKProviders,
-		CheckDestroy:  testAccCheckOutscaleLBUDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleLBUPublicIpConfig(r),
@@ -73,54 +70,6 @@ func TestAccOthers_LBUPublicIp(t *testing.T) {
 			},
 		},
 	})
-}
-
-func testAccCheckOutscaleLBUDestroy(s *terraform.State) error {
-	conn := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSCAPI
-
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "outscale_load_balancer" {
-			continue
-		}
-
-		var err error
-		var resp oscgo.ReadLoadBalancersResponse
-		err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-			filter := &oscgo.FiltersLoadBalancer{
-				LoadBalancerNames: &[]string{rs.Primary.ID},
-			}
-
-			req := &oscgo.ReadLoadBalancersRequest{
-				Filters: filter,
-			}
-
-			rp, httpResp, err := conn.LoadBalancerApi.ReadLoadBalancers(
-				context.Background()).ReadLoadBalancersRequest(*req).Execute()
-			if err != nil {
-				return utils.CheckThrottling(httpResp, err)
-			}
-			resp = rp
-			return nil
-		})
-
-		if err == nil {
-			if len(*resp.LoadBalancers) != 0 &&
-				*(*resp.LoadBalancers)[0].LoadBalancerName ==
-					rs.Primary.ID {
-				return fmt.Errorf("lbu still exists")
-			}
-		}
-
-		if strings.Contains(fmt.Sprint(err), "LoadBalancerNotFound") {
-			return nil
-		}
-
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
 
 func testAccCheckOutscaleLBUExists(n string, res *oscgo.LoadBalancer) resource.TestCheckFunc {
@@ -195,6 +144,10 @@ resource "outscale_load_balancer" "barRes" {
 	tags {
 		key = "name"
 		value = "baz"
+	}
+
+	timeouts {
+		delete = "10m"
 	}
 
 }

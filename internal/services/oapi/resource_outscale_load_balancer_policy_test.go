@@ -113,6 +113,10 @@ resource "outscale_load_balancer" "lb" {
     load_balancer_port = 80
     load_balancer_protocol = "HTTP"
   }
+
+  timeouts {
+    delete = "10m"
+  }
 }
 
 resource "outscale_load_balancer_policy" "app-policy" {
