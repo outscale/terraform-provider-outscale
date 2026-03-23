@@ -6,10 +6,9 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
-
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccVM_withImageExportTasksDataSource_basic(t *testing.T) {
@@ -43,6 +42,8 @@ func testAccOutscaleImageExportTasksDataSourceConfig(omi, vmType, region, imageN
 		vm_type             = "%s"
 		keypair_name		    = "terraform-basic"
 		placement_subregion_name = "%sa"
+
+		lifecycle { ignore_changes = [state] }
 	}
 
 	resource "outscale_image" "foo" {

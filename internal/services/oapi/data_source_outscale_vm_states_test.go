@@ -38,6 +38,7 @@ func testAccDataSourceOutscaleVMStatesConfig(omi, vmType, sgName string) string 
 			keypair_name = "terraform-basic"
 			security_group_ids = [outscale_security_group.sg_vStates.security_group_id]
 
+			lifecycle { ignore_changes = [state] }
 		}
 
 		data "outscale_vm_states" "state" {

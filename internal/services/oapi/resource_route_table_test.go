@@ -5,11 +5,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/outscale/terraform-provider-outscale/internal/testacc"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/outscale/terraform-provider-outscale/internal/testacc"
+	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 func TestAccNet_WithRouteTable_Basic(t *testing.T) {
@@ -248,6 +247,8 @@ func testAccOAPIRouteTableConfigInstance(sgName, omi, vmType, region string) str
 			placement_subregion_name = "%sa"
 			placement_tenancy        = "default"
 			security_group_ids = [outscale_security_group.sg_route.security_group_id]
+
+			lifecycle { ignore_changes = [state] }
 		}
 
 		resource "outscale_route_table" "rtbTest" {

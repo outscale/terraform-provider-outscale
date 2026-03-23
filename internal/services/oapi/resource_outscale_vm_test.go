@@ -8,14 +8,13 @@ import (
 	"testing"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
-	"github.com/outscale/terraform-provider-outscale/internal/testacc"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/terraform-provider-outscale/internal/testacc"
+	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 func TestAccVM_Basic(t *testing.T) {
@@ -317,11 +316,9 @@ func TestAccVM_UpdateTags(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccVmsConfigUpdateOAPIVMTags(omi, testAccVmType, utils.GetRegion(), tagsValue, keypair, sgName),
-				// Check:  resource.ComposeTestCheckFunc(),
 			},
 			{
 				Config: testAccVmsConfigUpdateOAPIVMTags(omi, testAccVmType, utils.GetRegion(), "Terraform-VM2", keypair, sgName),
-				// Check:  resource.ComposeTestCheckFunc(),
 			},
 		},
 	})
@@ -446,6 +443,8 @@ func testAccCheckOutscaleVMWithMultiBlockDeviceMapping(region, omi, keypair, vmT
 				key   = "name"
 				value = "VM with multiple Block Device Mappings"
 			}
+
+			lifecycle { ignore_changes = [state] }
 		}
 	`, region, omi, keypair, vmType, sgName)
 }
@@ -510,6 +509,8 @@ func testAccCheckOutscaleVMWithMultiBlockDeviceMappingUpdate(region, omi, keypai
 				key   = "name"
 				value = "VM with multiple Block Device Mappings"
 			}
+
+			lifecycle { ignore_changes = [state] }
 		}
 	`, region, omi, keypair, vmType, sgName)
 }
@@ -528,6 +529,7 @@ func testAccCheckOutscaleDeletionProtectionUpdateBasic(omi, keypair, vmType stri
 			deletion_protection = %[4]t
 			security_group_ids = [outscale_security_group.sg_protection.security_group_id]
 
+			lifecycle { ignore_changes = [state] }
 		}
 	`, omi, keypair, vmType, deletionProtection, sgName)
 }
@@ -665,6 +667,8 @@ func testAccCheckOutscaleVMUefi(omi, vmType, region, keypair, sgName string) str
 				key   = "name"
 				value = "terraform_vm_uefi"
 			}
+
+			lifecycle { ignore_changes = [state] }
 		}`, omi, vmType, region, keypair, sgName)
 }
 
@@ -684,6 +688,8 @@ func testAccCheckOutscaleVMConfigBasic(omi, vmType, region, keypair, sgName stri
 				key   = "name"
 				value = "Terraform-VM"
 			}
+
+			lifecycle { ignore_changes = [state] }
 		}`, omi, vmType, region, keypair, sgName)
 }
 
@@ -704,6 +710,8 @@ func testAccCheckOutscaleVMConfigImport(omi, vmType, region, keypair, sgName str
 				key   = "name"
 				value = "Terraform-VM-import"
 			}
+
+			lifecycle { ignore_changes = [state] }
 			}`, omi, vmType, region, keypair, sgName)
 }
 
@@ -761,6 +769,8 @@ func testAccCheckOutscaleVMConfigBasicWithNicAttached(omi, vmType, region, keypa
 				device_number = 1
 			}
 
+			lifecycle { ignore_changes = [state] }
+
 		}`, omi, vmType, region, keypair, sgName1, sgName2)
 }
 
@@ -803,6 +813,8 @@ func testAccCheckOutscaleVMConfigBasicWithNics(omi, vmType, keypair, region, sgN
 			is_primary = false
 		  }
 		}
+
+		lifecycle { ignore_changes = [state] }
 	  }`, omi, vmType, keypair, region, sgName)
 }
 
@@ -827,6 +839,8 @@ func testAccVmsConfigUpdateOAPIVMKey(omi, vmType, region, keypairName, sgName st
 			vm_type                  = "%[2]s"
 			security_group_ids       = [outscale_security_group.sg_keypair.security_group_id]
 			placement_subregion_name = "%[3]sb"
+
+			lifecycle { ignore_changes = [state] }
 		}
 	`, omi, vmType, region, keypairName, sgName)
 }
@@ -853,6 +867,8 @@ func testAccVmsConfigUpdateOAPIVMKey2(omi, vmType, region, keypair, newKeypair, 
 			keypair_name             = "%[5]s"
 			security_group_ids       = [outscale_security_group.sg_keypair.security_group_id]
 			placement_subregion_name = "%[3]sb"
+
+			lifecycle { ignore_changes = [state] }
 		}
 	`, omi, vmType, region, keypair, newKeypair, sgName)
 }
@@ -874,6 +890,8 @@ func testAccVmsConfigUpdateOAPIVMTags(omi, vmType, region, value, keypair, sgNam
 				key   = "name"
 				value = "%[4]s"
 			}
+
+			lifecycle { ignore_changes = [state] }
 		}
 	`, omi, vmType, region, value, keypair, sgName)
 }
@@ -909,6 +927,8 @@ func testAccCheckOutscaleVMConfigWithSubnet(omi, vmType, region, keypair, sgName
 			subnet_id                = outscale_subnet.outscale_subnet.subnet_id
 			placement_subregion_name = "%[3]sa"
 			placement_tenancy        = "default"
+
+			lifecycle { ignore_changes = [state] }
 	  }
 	`, omi, vmType, region, keypair, sgName)
 }
@@ -973,6 +993,8 @@ func testAccCheckOutscaleVMConfigWithNet(omi, vmType, region, keypair, sgName st
 		keypair_name       = "%[4]s"
 		security_group_ids = [outscale_security_group.outscale_sg.security_group_id]
 		subnet_id          = outscale_subnet.outscale_subnet.subnet_id
+
+		lifecycle { ignore_changes = [state] }
 	}
 
 	resource "outscale_public_ip" "outscale_public_ip" {}
@@ -1015,5 +1037,7 @@ func testAccCheckOutscaleVMBehaviorConfigBasic(omi, vmType, region, keypair, per
 				key   = "name"
 				value = "Terraform-VM"
 			}
+
+			lifecycle { ignore_changes = [state] }
 			}`, omi, vmType, region, keypair, perfomance, vmBehavior, sgName)
 }

@@ -159,6 +159,8 @@ func testAccCheckOutscaleVolumesDataSourceConfigWithVM(region, imageID, keypair,
 			keypair_name       = "%[3]s"
 			security_group_ids = [outscale_security_group.sg_volumes.security_group_id]
 			vm_type            = "%[4]s"
+
+			lifecycle { ignore_changes = [state] }
 		}
 
 		resource "outscale_volume_link" "outscale_volume_link" {

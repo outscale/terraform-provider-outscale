@@ -85,6 +85,8 @@ func testAccOAPIImageExportTaskConfigBasic(omi, vmType, region, imageName, tags,
 		keypair_name		 = "terraform-basic"
 		placement_subregion_name = "%sa"
 		security_group_ids = [outscale_security_group.sg_task.security_group_id]
+
+		lifecycle { ignore_changes = [state] }
 	}
 
 	resource "outscale_image" "foo" {

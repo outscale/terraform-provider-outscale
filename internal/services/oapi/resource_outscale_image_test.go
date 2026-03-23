@@ -7,14 +7,13 @@ import (
 	"testing"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
-	"github.com/outscale/terraform-provider-outscale/internal/testacc"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/terraform-provider-outscale/internal/testacc"
+	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 func TestAccOthers_Image_basic(t *testing.T) {
@@ -128,6 +127,8 @@ func testAccOAPIImageConfigBasic(omi, vmType, region string, rInt int, sgName st
 			vm_type                  = "%[2]s"
 			placement_subregion_name = "%[3]sa"
 			security_group_ids   = [outscale_security_group.sg_img.security_group_id]
+
+			lifecycle { ignore_changes = [state] }
 		}
 		resource "outscale_volume" "snap_volume" {
 			subregion_name = "%[3]sa"

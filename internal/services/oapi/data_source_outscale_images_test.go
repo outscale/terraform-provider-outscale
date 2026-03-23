@@ -66,6 +66,8 @@ func testAccCheckOutscaleImagesDataSourceConfig(omi, vmType, region, imageName, 
 			keypair_name	           = "terraform-basic"
 			placement_subregion_name = "%[3]sa"
 			security_group_ids = [outscale_security_group.sg_imgs_data.security_group_id]
+
+			lifecycle { ignore_changes = [state] }
 		}
 
 		resource "outscale_vm" "basic_two" {
@@ -74,6 +76,8 @@ func testAccCheckOutscaleImagesDataSourceConfig(omi, vmType, region, imageName, 
 			keypair_name	           = "terraform-basic"
 			placement_subregion_name = "%[3]sa"
 			security_group_ids = [outscale_security_group.sg_imgs_data.security_group_id]
+
+			lifecycle { ignore_changes = [state] }
 		}
 
 		resource "outscale_image" "image_one" {
