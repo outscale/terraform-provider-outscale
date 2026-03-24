@@ -137,6 +137,17 @@ func TestAccOthers_AccessKeyUpdatedExpirationDate(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "state"),
 				),
 			},
+			{
+				Config: testAccAccessKeyExpirationDateConfig(""),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resourceName, "access_key_id"),
+					resource.TestCheckResourceAttrSet(resourceName, "creation_date"),
+					resource.TestCheckResourceAttrSet(resourceName, "last_modification_date"),
+					resource.TestCheckResourceAttrSet(resourceName, "secret_key"),
+					resource.TestCheckResourceAttrSet(resourceName, "state"),
+					resource.TestCheckResourceAttr(resourceName, "expiration_date", ""),
+				),
+			},
 		},
 	})
 }
