@@ -21,6 +21,7 @@ import (
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/outscale/osc-sdk-go/v3/pkg/iso8601"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/modifyplans"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/validators/validatorstring"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
@@ -124,9 +125,15 @@ func (r *resourceAccessKey) Schema(ctx context.Context, _ resource.SchemaRequest
 		Attributes: map[string]schema.Attribute{
 			"access_key_id": schema.StringAttribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"secret_key": schema.StringAttribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"user_name": schema.StringAttribute{
 				Optional: true,
@@ -144,6 +151,9 @@ func (r *resourceAccessKey) Schema(ctx context.Context, _ resource.SchemaRequest
 			},
 			"creation_date": schema.StringAttribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"expiration_date": schema.StringAttribute{
 				Computed: true,
@@ -163,6 +173,9 @@ func (r *resourceAccessKey) Schema(ctx context.Context, _ resource.SchemaRequest
 			},
 			"id": schema.StringAttribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 		},
 	}
@@ -284,9 +297,13 @@ func (r *resourceAccessKey) Update(ctx context.Context, req resource.UpdateReque
 		AccessKeyId: stateData.AccessKeyId.ValueString(),
 		State:       ptr.To(planData.State.ValueString()),
 	}
-	if expireDate := planData.ExpirationDate.ValueString(); expireDate != "" {
-		updateReq.SetExpirationDate(expireDate)
-		stateData.ExpirationDate = planData.ExpirationDate
+	if fwhelpers.HasChange(planData.ExpirationDate, stateData.ExpirationDate) {
+		if planData.ExpirationDate.ValueString() == "" {
+			updateReq.ClearExpirationDate = ptr.To(true)
+		} else {
+			updateReq.SetExpirationDate(planData.ExpirationDate.ValueString())
+			stateData.ExpirationDate = planData.ExpirationDate
+		}
 	}
 	if useName := stateData.UserName.ValueString(); useName != "" {
 		updateReq.SetUserName(useName)
