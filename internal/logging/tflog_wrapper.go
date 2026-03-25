@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -43,50 +44,48 @@ func removeNulls(f any) any {
 }
 
 func (t *tflogWrapper) RequestHttp(ctx context.Context, req *http.Request) {
-	fields := map[string]any{
-		"method": req.Method,
-		"url":    req.URL.String(),
-	}
+	reqStr := req.Method + " " + req.URL.String()
 
 	if req.GetBody != nil {
 		bodyReader, err := req.GetBody()
 		if err == nil {
 			bodyBytes, _ := io.ReadAll(bodyReader)
 			if len(bodyBytes) > 0 {
-				fields["body"] = string(bodyBytes)
+				bodyStr := string(bodyBytes)
 				var jsonData any
 				if json.Unmarshal(bodyBytes, &jsonData) == nil {
 					if indentJSON, err := json.MarshalIndent(jsonData, "", "  "); err == nil {
-						fields["body"] = string(indentJSON)
+						bodyStr = string(indentJSON)
 					}
 				}
+				reqStr += "\n\n" + bodyStr
 			}
 		}
 	}
 
-	tflog.Debug(ctx, "SDK HTTP request", fields)
+	tflog.Debug(ctx, "SDK HTTP request", map[string]any{"req": reqStr})
 }
 
 func (t *tflogWrapper) ResponseHttp(ctx context.Context, resp *http.Response, d time.Duration) {
 	bodyBytes, _ := io.ReadAll(resp.Body)
 	resp.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 
-	fields := map[string]any{
-		"status_code": resp.StatusCode,
-		"duration":    d.String(),
-	}
+	respStr := resp.Request.Method + " " + resp.Request.URL.String() +
+		"\nStatus: " + strconv.Itoa(resp.StatusCode) + " (" + d.String() + ")"
 
 	if len(bodyBytes) > 0 {
-		fields["body"] = string(bodyBytes)
+		bodyStr := string(bodyBytes)
 		var jsonData any
 		if json.Unmarshal(bodyBytes, &jsonData) == nil {
 			jsonData = maskSensitiveValues(jsonData)
 			if prettyJSON, err := json.MarshalIndent(jsonData, "", "  "); err == nil {
-				fields["body"] = string(prettyJSON)
+				bodyStr = string(prettyJSON)
 			}
 		}
+		respStr += "\n\n" + bodyStr
 	}
 
+	fields := map[string]any{"resp": respStr}
 	if resp.StatusCode != http.StatusOK {
 		tflog.Error(ctx, "SDK HTTP response error", fields)
 	} else {
