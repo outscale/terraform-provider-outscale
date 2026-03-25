@@ -22,6 +22,7 @@
                         "request_id": "########",
                         "secret_key": "########",
                         "state": "INACTIVE",
+                        "tag": null,
                         "timeouts": null,
                         "user_name": "########"
                     },
