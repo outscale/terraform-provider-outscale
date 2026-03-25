@@ -47,6 +47,64 @@ func TestAccVM_Basic(t *testing.T) {
 	})
 }
 
+func TestAccVM_DefaultSecurityGroup(t *testing.T) {
+	var server oscgo.Vm
+
+	resourceName := "outscale_vm.default_sg"
+	omi := os.Getenv("OUTSCALE_IMAGEID")
+	sgName := acctest.RandomWithPrefix("testacc-sg")
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
+		CheckDestroy:             testAccCheckOutscaleVMDestroy,
+		Steps: []resource.TestStep{
+			// create without security_group_ids: assigns default sg
+			{
+				Config: testAccCheckOutscaleVMConfigNoSecurityGroup(omi, testAccVmType),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleVMExists(resourceName, &server),
+					resource.TestCheckResourceAttrSet(resourceName, "security_group_ids.#"),
+				),
+			},
+			// set an explicit SG replacing the computed default
+			{
+				Config: testAccCheckOutscaleVMConfigWithExplicitSecurityGroup(omi, testAccVmType, sgName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "security_group_ids.#", "1"),
+					resource.TestCheckResourceAttrPair(resourceName, "security_group_ids.0",
+						"outscale_security_group.sg_default_sg_test", "security_group_id"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckOutscaleVMConfigNoSecurityGroup(omi, vmType string) string {
+	return fmt.Sprintf(`
+		resource "outscale_vm" "default_sg" {
+			image_id = "%[1]s"
+			vm_type  = "%[2]s"
+
+			lifecycle { ignore_changes = [state] }
+		}`, omi, vmType)
+}
+
+func testAccCheckOutscaleVMConfigWithExplicitSecurityGroup(omi, vmType, sgName string) string {
+	return fmt.Sprintf(`
+		resource "outscale_security_group" "sg_default_sg_test" {
+			description         = "testacc explicit sg"
+			security_group_name = "%[3]s"
+		}
+
+		resource "outscale_vm" "default_sg" {
+			image_id           = "%[1]s"
+			vm_type            = "%[2]s"
+			security_group_ids = [outscale_security_group.sg_default_sg_test.security_group_id]
+
+			lifecycle { ignore_changes = [state] }
+		}`, omi, vmType, sgName)
+}
+
 func TestAccVM_uefi(t *testing.T) {
 	var server oscgo.Vm
 
