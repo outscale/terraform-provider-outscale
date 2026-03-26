@@ -135,7 +135,7 @@ The following attributes are exported:
     * `osu_bucket_prefix` - The path to the folder of the access logs in your OOS bucket (by default, the `root` level of your bucket).
     * `publication_interval` - The time interval for the publication of access logs in the OOS bucket, in minutes. This value can be either `5` or `60` (by default, `60`).
 * `application_sticky_cookie_policies` - The stickiness policies defined for the load balancer.
-    * `cookie_name` - The name of the application cookie used for stickiness.
+    * `cookie_name` - The name of the application cookie used for stickiness, between 1 and 255 characters.
     * `policy_name` - The mnemonic name for the policy being created. The name must be unique within a set of policies for this load balancer.
 * `backend_vm_ids` - One or more IDs of backend VMs for the load balancer.
 * `dns_name` - The DNS name of the load balancer.
@@ -164,12 +164,12 @@ If `load_balancer_type` is `internal`, the load balancer has a public DNS name t
 * `security_groups` - One or more IDs of security groups for the load balancers. Valid only for load balancers in a Net.
 * `source_security_group` - Information about the source security group of the load balancer, which you can use as part of your inbound rules for your registered VMs.<br />
 To only allow traffic from load balancers, add a security group rule that specifies this source security group as the inbound source.
-    * `security_group_account_id` - The account ID of the owner of the security group.
+    * `security_group_account_id` - The OUTSCALE account ID of the owner of the security group.
     * `security_group_name` - The name of the security group.
 * `subnets` - The ID of the Subnet in which the load balancer was created.
 * `subregion_names` - The ID of the Subregion in which the load balancer was created.
 * `tags` - One or more tags associated with the load balancer.
-    * `key` - The key of the tag, with a minimum of 1 character.
+    * `key` - The key of the tag, between 1 and 128 characters.
     * `value` - The value of the tag, between 0 and 255 characters.
 
 ## Timeouts

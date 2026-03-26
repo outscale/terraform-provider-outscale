@@ -36,9 +36,9 @@ The following arguments are supported:
     * `link_nic_device_numbers` - (Optional) The device numbers the NICs are attached to.
     * `link_nic_link_nic_ids` - (Optional) The attachment IDs of the NICs.
     * `link_nic_states` - (Optional) The states of the attachments.
-    * `link_nic_vm_account_ids` - (Optional) The account IDs of the owners of the VMs the NICs are attached to.
+    * `link_nic_vm_account_ids` - (Optional) The OUTSCALE account IDs of the owners of the VMs the NICs are attached to.
     * `link_nic_vm_ids` - (Optional) The IDs of the VMs the NICs are attached to.
-    * `link_public_ip_account_ids` - (Optional) The account IDs of the owners of the public IPs associated with the NICs.
+    * `link_public_ip_account_ids` - (Optional) The OUTSCALE account IDs of the owners of the public IPs associated with the NICs.
     * `link_public_ip_link_public_ip_ids` - (Optional) The association IDs returned when the public IPs were associated with the NICs.
     * `link_public_ip_public_dns_names` - (Optional) The public DNS names associated with the public IPs.
     * `link_public_ip_public_ip_ids` - (Optional) The allocation IDs returned when the public IPs were allocated to their accounts.
@@ -47,7 +47,7 @@ The following arguments are supported:
     * `net_ids` - (Optional) The IDs of the Nets where the NICs are located.
     * `nic_ids` - (Optional) The IDs of the NICs.
     * `private_dns_names` - (Optional) The private DNS names associated with the primary private IPs.
-    * `private_ips_link_public_ip_account_ids` - (Optional) The account IDs of the owner of the public IPs associated with the private IPs.
+    * `private_ips_link_public_ip_account_ids` - (Optional) The OUTSCALE account IDs of the owner of the public IPs associated with the private IPs.
     * `private_ips_link_public_ip_public_ips` - (Optional) The public IPs associated with the private IPs.
     * `private_ips_primary_ip` - (Optional) Whether the private IP is the primary IP associated with the NIC.
     * `private_ips_private_ips` - (Optional) The private IPs of the NICs.
@@ -64,7 +64,7 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `account_id` - The account ID of the owner of the NIC.
+* `account_id` - The OUTSCALE account ID of the owner of the NIC.
 * `description` - The description of the NIC.
 * `is_source_dest_checked` - (Net only) If true, the source/destination check is enabled. If false, it is disabled.
 * `link_nic` - Information about the NIC attachment.
@@ -72,13 +72,13 @@ The following attributes are exported:
     * `device_number` - The device index for the NIC attachment (between `1` and `7`, both included).
     * `link_nic_id` - The ID of the NIC to attach.
     * `state` - The state of the attachment (`attaching` \| `attached` \| `detaching` \| `detached`).
-    * `vm_account_id` - The account ID of the owner of the VM.
+    * `vm_account_id` - The OUTSCALE account ID of the owner of the VM.
     * `vm_id` - The ID of the VM.
 * `link_public_ip` - Information about the public IP association.
     * `link_public_ip_id` - (Required in a Net) The ID representing the association of the public IP with the VM or the NIC.
     * `public_dns_name` - The name of the public DNS.
     * `public_ip` - The public IP associated with the NIC.
-    * `public_ip_account_id` - The account ID of the owner of the public IP.
+    * `public_ip_account_id` - The OUTSCALE account ID of the owner of the public IP.
     * `public_ip_id` - The allocation ID of the public IP.
 * `mac_address` - The Media Access Control (MAC) address of the NIC.
 * `net_id` - The ID of the Net for the NIC.
@@ -90,7 +90,7 @@ The following attributes are exported:
         * `link_public_ip_id` - (Required in a Net) The ID representing the association of the public IP with the VM or the NIC.
         * `public_dns_name` - The name of the public DNS.
         * `public_ip` - The public IP associated with the NIC.
-        * `public_ip_account_id` - The account ID of the owner of the public IP.
+        * `public_ip_account_id` - The OUTSCALE account ID of the owner of the public IP.
         * `public_ip_id` - The allocation ID of the public IP.
     * `private_dns_name` - The name of the private DNS.
     * `private_ip` - The private IP of the NIC.
@@ -101,5 +101,5 @@ The following attributes are exported:
 * `subnet_id` - The ID of the Subnet.
 * `subregion_name` - The Subregion in which the NIC is located.
 * `tags` - One or more tags associated with the NIC.
-    * `key` - The key of the tag, with a minimum of 1 character.
+    * `key` - The key of the tag, between 1 and 255 characters.
     * `value` - The value of the tag, between 0 and 255 characters.

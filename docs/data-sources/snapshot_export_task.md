@@ -45,6 +45,6 @@ The following attributes are exported:
 * `snapshot_id` - The ID of the snapshot to be exported.
 * `state` - The state of the snapshot export task (`pending` \| `active` \| `completed` \| `cancelled` \| `failed`).
 * `tags` - One or more tags associated with the snapshot export task.
-    * `key` - The key of the tag, with a minimum of 1 character.
+    * `key` - The key of the tag, between 1 and 255 characters.
     * `value` - The value of the tag, between 0 and 255 characters.
 * `task_id` - The ID of the snapshot export task.

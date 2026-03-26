@@ -47,5 +47,5 @@ The following attributes are exported:
 * `keypair_name` - The name of the keypair.
 * `keypair_type` - The type of the keypair (`ssh-rsa`, `ssh-ed25519`, `ecdsa-sha2-nistp256`, `ecdsa-sha2-nistp384`, or `ecdsa-sha2-nistp521`).
 * `tags` - One or more tags associated with the keypair.
-    * `key` - The key of the tag, with a minimum of 1 character.
+    * `key` - The key of the tag, between 1 and 255 characters.
     * `value` - The value of the tag, between 0 and 255 characters.

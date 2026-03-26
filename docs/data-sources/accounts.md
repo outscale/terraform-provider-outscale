@@ -11,7 +11,7 @@ description: |-
 
 Provides information about accounts.
 
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Your-Account.html).  
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Your-OUTSCALE-Account.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-account).
 
 ## Example Usage

@@ -366,9 +366,9 @@ The following arguments are supported:
 * `security_group_ids` - (Optional) One or more IDs of security group for the VMs. You must specify at least one of the following parameters: `security_group_ids` or `security_group_names`.
 * `security_group_names` - (Optional) One or more names of security groups for the VMs. You must specify at least one of the following parameters: `security_group_ids` or `security_group_names`.
 * `state` - The state of the VM (`running` | `stopped`). If set to `stopped`, the VM is stopped regardless of the value of the `vm_initiated_shutdown_behavior` argument.
-* `subnet_id` - (Optional) The ID of the Subnet in which you want to create the VM. If you specify this parameter, you must not specify the `nics` parameter.
+* `subnet_id` - (Optional) The ID of the Subnet in which you want to create the VM.
 * `tags` - (Optional) A tag to add to this resource. You can specify this argument several times.
-    * `key` - (Required) The key of the tag, with a minimum of 1 character.
+    * `key` - (Required) The key of the tag, between 1 and 255 characters.
     * `value` - (Required) The value of the tag, between 0 and 255 characters.
 * `tpm_enabled` - (Optional) If true, a virtual Trusted Platform Module (vTPM) is enabled on the VM. If false, it is not.<br />The default behavior for `tpm_enabled` varies depending on the source OMI of the VM.<br />If the `tpm_mandatory` attribute of the source OMI is true, a vTPM has to be attached to the VM and it will be created by default. Setting `tpm_enabled` to false will cause the creation request to fail.<br />If the `tpm_mandatory` attribute of the source OMI is false, only setting `tpm_enabled` to true will create and attach a vTPM to the VM.
 * `user_data` - (Optional) Data or script used to add a specific configuration to the VM. It must be Base64-encoded, either directly or using the [base64encode](https://www.terraform.io/docs/configuration/functions/base64encode.html) Terraform function. For multiline strings, use [heredoc syntax](https://www.terraform.io/docs/configuration/expressions.html#string-literals). Updating this parameter will trigger a stop/start of the VM.
@@ -402,7 +402,7 @@ The following attributes are exported:
 * `nested_virtualization` - If true, nested virtualization is enabled. If false, it is disabled.
 * `net_id` - The ID of the Net in which the VM is running.
 * `nics` - (Net only) The network interface cards (NICs) the VMs are attached to.
-    * `account_id` - The account ID of the owner of the NIC.
+    * `account_id` - The OUTSCALE account ID of the owner of the NIC.
     * `description` - The description of the NIC.
     * `is_source_dest_checked` - (Net only) If true, the source/destination check is enabled. If false, it is disabled.
     * `link_nic` - Information about the network interface card (NIC).
@@ -413,7 +413,7 @@ The following attributes are exported:
     * `link_public_ip` - Information about the public IP associated with the NIC.
         * `public_dns_name` - The name of the public DNS.
         * `public_ip` - The public IP associated with the NIC.
-        * `public_ip_account_id` - The account ID of the owner of the public IP.
+        * `public_ip_account_id` - The OUTSCALE account ID of the owner of the public IP.
     * `mac_address` - The Media Access Control (MAC) address of the NIC.
     * `net_id` - The ID of the Net for the NIC.
     * `nic_id` - The ID of the NIC.
@@ -423,7 +423,7 @@ The following attributes are exported:
         * `link_public_ip` - Information about the public IP associated with the NIC.
             * `public_dns_name` - The name of the public DNS.
             * `public_ip` - The public IP associated with the NIC.
-            * `public_ip_account_id` - The account ID of the owner of the public IP.
+            * `public_ip_account_id` - The OUTSCALE account ID of the owner of the public IP.
         * `private_dns_name` - The name of the private DNS.
         * `private_ip` - The private IP.
     * `security_groups` - One or more IDs of security groups for the NIC.
@@ -451,7 +451,7 @@ The following attributes are exported:
 * `state` - The state of the VM (`pending` \| `running` \| `stopping` \| `stopped` \| `shutting-down` \| `terminated` \| `quarantine`).
 * `subnet_id` - The ID of the Subnet for the VM.
 * `tags` - One or more tags associated with the VM.
-    * `key` - The key of the tag, with a minimum of 1 character.
+    * `key` - The key of the tag, between 1 and 255 characters.
     * `value` - The value of the tag, between 0 and 255 characters.
 * `tpm_enabled` - If true, a virtual Trusted Platform Module (vTPM) is enabled on the VM. If false, it is not.<br />The default behavior for `tpm_enabled` varies depending on the source OMI of the VM.<br />If the `tpm_mandatory` attribute of the source OMI is true, a vTPM has to be attached to the VM and it will be created by default. Setting `tpm_enabled` to false will cause the creation request to fail.<br />If the `tpm_mandatory` attribute of the source OMI is false, only setting `tpm_enabled` to true will create and attach a vTPM to the VM.
 * `user_data` - The Base64-encoded MIME user data.

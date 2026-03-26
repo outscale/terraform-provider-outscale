@@ -63,7 +63,7 @@ The following attributes are exported:
 * `state` - The state of the volume (`creating` \| `available` \| `in-use` \| `deleting` \| `error`).
 * `subregion_name` - The Subregion in which the volume was created.
 * `tags` - One or more tags associated with the volume.
-    * `key` - The key of the tag, with a minimum of 1 character.
+    * `key` - The key of the tag, between 1 and 255 characters.
     * `value` - The value of the tag, between 0 and 255 characters.
 * `volume_id` - The ID of the volume.
 * `volume_type` - The type of the volume (`standard` \| `gp2` \| `io1`).

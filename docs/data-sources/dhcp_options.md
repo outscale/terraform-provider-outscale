@@ -56,5 +56,5 @@ The following attributes are exported:
     * `log_servers` - One or more IPs for the log servers.
     * `ntp_servers` - One or more IPs for the NTP servers.
     * `tags` - One or more tags associated with the DHCP options set.
-        * `key` - The key of the tag, with a minimum of 1 character.
+        * `key` - The key of the tag, between 1 and 255 characters.
         * `value` - The value of the tag, between 0 and 255 characters.
