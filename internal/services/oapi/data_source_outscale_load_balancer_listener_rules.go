@@ -159,7 +159,9 @@ func DataSourceOutscaleLoadBalancerLDRulesRead(ctx context.Context, d *schema.Re
 		lrs_ret[k] = l
 	}
 
-	d.Set("listener_rules", lrs_ret)
+	if err := d.Set("listener_rules", lrs_ret); err != nil {
+		return diag.FromErr(err)
+	}
 	d.SetId(id.UniqueId())
 
 	return nil

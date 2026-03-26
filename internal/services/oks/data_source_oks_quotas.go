@@ -97,12 +97,12 @@ func (d *oksQuotasDataSource) Read(ctx context.Context, req datasource.ReadReque
 	resp.Diagnostics.Append(diags...)
 
 	data.CPSubregions = cpSubregions
-	data.ClustersPerProject = to.Int32(int32(quotas.Quotas.ClustersPerProject))
+	data.ClustersPerProject = to.Int32(int32(quotas.Quotas.ClustersPerProject)) //nolint:gosec
 	kubeVer, diags := types.SetValueFrom(ctx, types.StringType, quotas.Quotas.KubeVersions)
 	resp.Diagnostics.Append(diags...)
 
 	data.KubeVersions = kubeVer
-	data.Projects = to.Int32(int32(quotas.Quotas.Projects))
+	data.Projects = to.Int32(int32(quotas.Quotas.Projects)) //nolint:gosec
 	data.RequestId = to.String(quotas.ResponseContext.RequestId)
 	data.Id = to.String(id.UniqueId())
 

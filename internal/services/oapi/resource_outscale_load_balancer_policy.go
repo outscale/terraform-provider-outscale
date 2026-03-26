@@ -285,9 +285,15 @@ func ResourceOutscaleAppCookieStickinessPolicyCreate(ctx context.Context, d *sch
 		return diag.Errorf("error creating appcookiestickinesspolicy: %s", err)
 	}
 	d.SetId(id.UniqueId())
-	d.Set("load_balancer_name", l.(string))
-	d.Set("policy_name", pn.(string))
-	d.Set("policy_type", pt.(string))
+	if err := d.Set("load_balancer_name", l.(string)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("policy_name", pn.(string)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("policy_type", pt.(string)); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceOutscaleAppCookieStickinessPolicyRead(ctx, d, meta)
 }
@@ -317,19 +323,39 @@ func ResourceOutscaleAppCookieStickinessPolicyRead(ctx context.Context, d *schem
 		return nil
 	}
 
-	d.Set("access_log", flattenOAPIAccessLog(&lb.AccessLog))
-	d.Set("listeners", flattenOAPIListeners(&lb.Listeners))
-	d.Set("subregion_names", utils.StringSlicePtrToInterfaceSlice(&lb.SubregionNames))
-	d.Set("load_balancer_type", lb.LoadBalancerType)
-	if lb.SecurityGroups != nil {
-		d.Set("security_groups", utils.StringSlicePtrToInterfaceSlice(&lb.SecurityGroups))
-	} else {
-		d.Set("security_groups", make([]map[string]any, 0))
+	if err := d.Set("access_log", flattenOAPIAccessLog(&lb.AccessLog)); err != nil {
+		return diag.FromErr(err)
 	}
-	d.Set("dns_name", lb.DnsName)
-	d.Set("subnets", utils.StringSlicePtrToInterfaceSlice(&lb.Subnets))
-	d.Set("health_check", flattenOAPIHealthCheck(&lb.HealthCheck))
-	d.Set("backend_vm_ids", utils.StringSlicePtrToInterfaceSlice(&lb.BackendVmIds))
+	if err := d.Set("listeners", flattenOAPIListeners(&lb.Listeners)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("subregion_names", utils.StringSlicePtrToInterfaceSlice(&lb.SubregionNames)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("load_balancer_type", lb.LoadBalancerType); err != nil {
+		return diag.FromErr(err)
+	}
+	if lb.SecurityGroups != nil {
+		if err := d.Set("security_groups", utils.StringSlicePtrToInterfaceSlice(&lb.SecurityGroups)); err != nil {
+			return diag.FromErr(err)
+		}
+	} else {
+		if err := d.Set("security_groups", make([]map[string]any, 0)); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+	if err := d.Set("dns_name", lb.DnsName); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("subnets", utils.StringSlicePtrToInterfaceSlice(&lb.Subnets)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("health_check", flattenOAPIHealthCheck(&lb.HealthCheck)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("backend_vm_ids", utils.StringSlicePtrToInterfaceSlice(&lb.BackendVmIds)); err != nil {
+		return diag.FromErr(err)
+	}
 	if lb.Tags != nil {
 		ta := make([]map[string]any, len(lb.Tags))
 		for k1, v1 := range lb.Tags {
@@ -338,9 +364,13 @@ func ResourceOutscaleAppCookieStickinessPolicyRead(ctx context.Context, d *schem
 			t["value"] = v1.Value
 			ta[k1] = t
 		}
-		d.Set("tags", ta)
+		if err := d.Set("tags", ta); err != nil {
+			return diag.FromErr(err)
+		}
 	} else {
-		d.Set("tags", make([]map[string]any, 0))
+		if err := d.Set("tags", make([]map[string]any, 0)); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 	if lb.ApplicationStickyCookiePolicies != nil {
 		app := make([]map[string]any,
@@ -350,11 +380,15 @@ func ResourceOutscaleAppCookieStickinessPolicyRead(ctx context.Context, d *schem
 			a["cookie_name"] = v.CookieName
 			a["policy_name"] = v.PolicyName
 			if ptr.From(v.PolicyName) == policyName {
-				d.Set("cookie_name", ptr.From(v.CookieName))
+				if err := d.Set("cookie_name", ptr.From(v.CookieName)); err != nil {
+					return diag.FromErr(err)
+				}
 			}
 			app[k] = a
 		}
-		d.Set("application_sticky_cookie_policies", app)
+		if err := d.Set("application_sticky_cookie_policies", app); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 	if lb.LoadBalancerStickyCookiePolicies != nil {
 		lbc := make([]map[string]any,
@@ -363,17 +397,29 @@ func ResourceOutscaleAppCookieStickinessPolicyRead(ctx context.Context, d *schem
 			a := make(map[string]any)
 			a["policy_name"] = v.PolicyName
 			if ptr.From(v.PolicyName) == policyName {
-				d.Set("cookie_expiration_period", cast.ToInt32(v.CookieExpirationPeriod))
+				if err := d.Set("cookie_expiration_period", cast.ToInt32(v.CookieExpirationPeriod)); err != nil {
+					return diag.FromErr(err)
+				}
 			}
 			lbc[k] = a
 		}
-		d.Set("load_balancer_sticky_cookie_policies", lbc)
+		if err := d.Set("load_balancer_sticky_cookie_policies", lbc); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
-	d.Set("source_security_group", flattenSource_sg(&lb.SourceSecurityGroup))
-	d.Set("public_ip", ptr.From(lb.PublicIp))
-	d.Set("secured_cookies", lb.SecuredCookies)
-	d.Set("net_id", ptr.From(lb.NetId))
+	if err := d.Set("source_security_group", flattenSource_sg(&lb.SourceSecurityGroup)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("public_ip", ptr.From(lb.PublicIp)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("secured_cookies", lb.SecuredCookies); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("net_id", ptr.From(lb.NetId)); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
+	"github.com/samber/lo"
 	"github.com/spf13/cast"
 )
 
@@ -84,7 +85,7 @@ func DataSourceOutscaleVMTypesRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	filteredTypes := ptr.From(resp.VmTypes)[:]
+	filteredTypes := ptr.From(resp.VmTypes)
 
 	if len(filteredTypes) < 1 {
 		return diag.FromErr(ErrNoResults)
@@ -146,10 +147,9 @@ func buildOutscaleDataSourceVMTypesFilters(set *schema.Set) (*osc.FiltersVmType,
 	var filters osc.FiltersVmType
 	for _, v := range set.List() {
 		m := v.(map[string]any)
-		var filterValues []string
-		for _, e := range m["values"].([]any) {
-			filterValues = append(filterValues, e.(string))
-		}
+		filterValues := lo.Map(m["values"].([]any), func(e any, _ int) string {
+			return e.(string)
+		})
 
 		switch name := m["name"].(string); name {
 		case "bsu_optimized":

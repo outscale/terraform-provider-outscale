@@ -119,7 +119,7 @@ func DataSourceOutscaleVMStateRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	filteredStates := ptr.From(resp.VmStates)[:]
+	filteredStates := ptr.From(resp.VmStates)
 
 	var state osc.VmStates
 	if len(filteredStates) < 1 {
@@ -179,10 +179,9 @@ func buildOutscaleDataSourceVMStateFilters(set *schema.Set) (*osc.FiltersVmsStat
 	var filters osc.FiltersVmsState
 	for _, v := range set.List() {
 		m := v.(map[string]any)
-		var filterValues []string
-		for _, e := range m["values"].([]any) {
-			filterValues = append(filterValues, e.(string))
-		}
+		filterValues := lo.Map(m["values"].([]any), func(e any, _ int) string {
+			return e.(string)
+		})
 
 		switch name := m["name"].(string); name {
 		case "maintenance_event_codes":

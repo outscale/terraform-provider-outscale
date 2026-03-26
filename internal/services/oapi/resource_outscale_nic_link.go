@@ -193,7 +193,7 @@ func ResourceOutscaleNetworkInterfaceAttachmentImportStateContext(ctx context.Co
 
 	resp, err := stateConf.WaitForStateContext(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("error waiting for nic to attach to instance: %s, error: %s", d.Id(), err)
+		return nil, fmt.Errorf("error waiting for nic to attach to instance: %s, error: %w", d.Id(), err)
 	}
 	r := resp.(*osc.ReadNicsResponse)
 	if r == nil || r.Nics == nil || len(*r.Nics) == 0 {

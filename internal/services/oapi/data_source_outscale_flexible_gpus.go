@@ -89,7 +89,7 @@ func DataSourceOutscaleFlexibleGpusRead(ctx context.Context, d *schema.ResourceD
 		return diag.Errorf("error reading flexible gpu (%s)", errString)
 	}
 
-	flexgps := ptr.From(resp.FlexibleGpus)[:]
+	flexgps := ptr.From(resp.FlexibleGpus)
 
 	if len(flexgps) < 1 {
 		return diag.FromErr(ErrNoResults)

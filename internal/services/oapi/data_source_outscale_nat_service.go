@@ -155,10 +155,9 @@ func buildOutscaleNatServiceDataSourceFilters(set *schema.Set) (*osc.FiltersNatS
 	var filters osc.FiltersNatService
 	for _, v := range set.List() {
 		m := v.(map[string]any)
-		var filterValues []string
-		for _, e := range m["values"].([]any) {
-			filterValues = append(filterValues, e.(string))
-		}
+		filterValues := lo.Map(m["values"].([]any), func(e any, _ int) string {
+			return e.(string)
+		})
 
 		switch name := m["name"].(string); name {
 		case "nat_service_ids":

@@ -1,4 +1,4 @@
-package validatorstring
+package validatorstring_test
 
 import (
 	"testing"
@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/outscale/osc-sdk-go/v3/pkg/iso8601"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/validators/validatorstring"
 )
 
 func TestFwDateValidators(t *testing.T) {
@@ -59,7 +60,7 @@ func TestFwDateValidators(t *testing.T) {
 			resp := validator.StringResponse{
 				Diagnostics: diag.Diagnostics{},
 			}
-			DateValidator().ValidateString(t.Context(), req, &resp)
+			validatorstring.DateValidator().ValidateString(t.Context(), req, &resp)
 			if !tc.ExpectedError && resp.Diagnostics.HasError() {
 				t.Errorf("got unexpected error: %s", resp.Diagnostics.Errors())
 			}
