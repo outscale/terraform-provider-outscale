@@ -55,7 +55,7 @@ func ISO8601[T string | *string | time.Time | *time.Time](v T) (iso8601.Time, er
 }
 
 func ISO8601ToDate[T string | *string | time.Time | *time.Time](v T) (iso8601.Time, error) {
-	isoTime := iso8601.Time{}
+	var isoTime iso8601.Time
 	switch v := any(v).(type) {
 	case string:
 		time, err := iso8601.ParseString(v)
@@ -87,7 +87,7 @@ func ISO8601ToDate[T string | *string | time.Time | *time.Time](v T) (iso8601.Ti
 }
 
 func ISO8601FromDate[T string | *string | time.Time | *time.Time](v T) (iso8601.Time, error) {
-	isoTime := iso8601.Time{}
+	var isoTime iso8601.Time
 	switch v := any(v).(type) {
 	case string:
 		time, err := iso8601.ParseString(v)

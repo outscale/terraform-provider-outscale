@@ -7,6 +7,7 @@ import (
 
 	"github.com/outscale/osc-sdk-go/v3/pkg/options"
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
+	"github.com/samber/lo"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -118,10 +119,9 @@ func buildOutscaleDataSourceClientGatewayFilters(set *schema.Set) (*osc.FiltersC
 	for _, v := range set.List() {
 		log.Printf("[DEBUG] gateway filters %+v", v)
 		m := v.(map[string]any)
-		var filterValues []string
-		for _, e := range m["values"].([]any) {
-			filterValues = append(filterValues, e.(string))
-		}
+		filterValues := lo.Map(m["values"].([]any), func(e any, _ int) string {
+			return e.(string)
+		})
 
 		switch name := m["name"].(string); name {
 		case "bgp_asns":

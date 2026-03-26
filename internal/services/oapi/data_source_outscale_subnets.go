@@ -7,6 +7,7 @@ import (
 	"github.com/outscale/osc-sdk-go/v3/pkg/options"
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
+	"github.com/samber/lo"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
@@ -79,10 +80,9 @@ func DataSourceOutscaleSubnetsRead(ctx context.Context, d *schema.ResourceData, 
 	req := osc.ReadSubnetsRequest{}
 
 	if id := d.Get("subnet_ids"); id != "" {
-		var ids []string
-		for _, v := range id.([]any) {
-			ids = append(ids, v.(string))
-		}
+		ids := lo.Map(id.([]any), func(v any, _ int) string {
+			return v.(string)
+		})
 		req.Filters = &osc.FiltersSubnet{SubnetIds: &ids}
 	}
 

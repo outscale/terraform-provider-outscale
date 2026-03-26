@@ -66,7 +66,7 @@ func DataSourceOutscaleFlexibleGpuCatalogRead(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	fgcs := ptr.From(resp.FlexibleGpuCatalog)[:]
+	fgcs := ptr.From(resp.FlexibleGpuCatalog)
 	fgc_ret := make([]map[string]any, len(fgcs))
 
 	for k, v := range fgcs {

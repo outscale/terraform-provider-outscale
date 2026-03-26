@@ -18,7 +18,7 @@ func DataSourceOutscaleVpcAttr() *schema.Resource {
 		ReadContext: DataSourceOutscaleVpcAttrRead,
 
 		Schema: map[string]*schema.Schema{
-			//"filter": dataSourceFiltersSchema(),
+			// "filter": dataSourceFiltersSchema(),
 			"dhcp_options_set_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -72,11 +72,21 @@ func DataSourceOutscaleVpcAttrRead(ctx context.Context, d *schema.ResourceData, 
 
 	d.SetId(net.NetId)
 
-	d.Set("ip_range", net.IpRange)
-	d.Set("tenancy", net.Tenancy)
-	d.Set("dhcp_options_set_id", net.DhcpOptionsSetId)
-	d.Set("net_id", net.NetId)
-	d.Set("state", net.State)
+	if err := d.Set("ip_range", net.IpRange); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("tenancy", net.Tenancy); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("dhcp_options_set_id", net.DhcpOptionsSetId); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("net_id", net.NetId); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("state", net.State); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return diag.FromErr(d.Set("tags", FlattenOAPITagsSDK(net.Tags)))
 }

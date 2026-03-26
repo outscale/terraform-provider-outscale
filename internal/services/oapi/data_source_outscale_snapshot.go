@@ -191,11 +191,9 @@ func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set) (*osc.FiltersS
 	var filter osc.FiltersSnapshot
 	for _, v := range set.List() {
 		m := v.(map[string]any)
-		var values []string
-
-		for _, e := range m["values"].([]any) {
-			values = append(values, e.(string))
-		}
+		values := lo.Map(m["values"].([]any), func(e any, _ int) string {
+			return e.(string)
+		})
 
 		switch name := m["name"].(string); name {
 		case "account_aliases":

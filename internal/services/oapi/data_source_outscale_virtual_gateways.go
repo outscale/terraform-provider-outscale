@@ -118,7 +118,9 @@ func DataSourceOutscaleVirtualGatewaysRead(ctx context.Context, d *schema.Resour
 
 		vpns[k] = vpn
 	}
-	d.Set("virtual_gateways", vpns)
+	if err := d.Set("virtual_gateways", vpns); err != nil {
+		return diag.FromErr(err)
+	}
 	d.SetId(id.UniqueId())
 
 	return nil

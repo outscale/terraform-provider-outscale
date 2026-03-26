@@ -141,7 +141,6 @@ func testAccCheckOutscalePublicIPLExists(n string, res *osc.PublicIp) resource.T
 				return fmt.Errorf("publicip not found")
 			}
 			*res = (*resp.PublicIps)[0]
-
 		} else {
 			req := osc.ReadPublicIpsRequest{
 				Filters: &osc.FiltersPublicIp{

@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/outscale/goutils/sdk/ptr"
 	"github.com/outscale/osc-sdk-go/v3/pkg/iso8601"
+	"github.com/samber/lo"
 	"github.com/spf13/cast"
 )
 
@@ -111,10 +112,9 @@ func StringSliceToInt64Slice(src []string) (res []int64) {
 }
 
 func SliceToTftypesValueSlice(src []string) (basetypes.SetValue, diag.Diagnostics) {
-	nSet := []attr.Value{}
-	for _, str := range src {
-		nSet = append(nSet, types.StringValue(str))
-	}
+	nSet := lo.Map(src, func(str string, _ int) attr.Value {
+		return types.StringValue(str)
+	})
 	setValue, diags := types.SetValue(basetypes.StringType{}, nSet)
 	if diags != nil {
 		return setValue, diags
@@ -158,7 +158,7 @@ func IsResponseEmpty(len int, name, id string) bool {
 }
 
 func RandIntRange(min, max int) int {
-	return min + rand.IntN(max-min)
+	return min + rand.IntN(max-min) //nolint:gosec
 }
 
 func ParsingfilterToDateFormat(filterName, value string) (time.Time, error) {
@@ -167,7 +167,7 @@ func ParsingfilterToDateFormat(filterName, value string) (time.Time, error) {
 
 	if value != "" {
 		if filterDate, err = iso8601.ParseString(value); err != nil {
-			return filterDate.Time, fmt.Errorf("%s value should be 'ISO 8601' format ('2017-06-14' or '2017-06-14T00:00:00Z, ...) %s", filterName, err)
+			return filterDate.Time, fmt.Errorf("%s value should be 'ISO 8601' format ('2017-06-14' or '2017-06-14T00:00:00Z, ...) %w", filterName, err)
 		}
 	}
 	return filterDate.Time, nil

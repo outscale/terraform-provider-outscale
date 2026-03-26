@@ -176,7 +176,6 @@ func (r *resourceLbuVms) Create(ctx context.Context, req resource.CreateRequest,
 			err.Error(),
 		)
 		return
-
 	}
 	data.RequestId = to.String(*createResp.ResponseContext.RequestId)
 	data.Id = to.String(lbuName)

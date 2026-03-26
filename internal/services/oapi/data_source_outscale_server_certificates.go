@@ -84,7 +84,9 @@ func DataSourceOutscaleServerCertificatesRead(ctx context.Context, d *schema.Res
 	}
 
 	log.Printf("[DEBUG] Setting Server Certificates id (%s)", err)
-	d.Set("server_certificates", flattenServerCertificates(ptr.From(resp.ServerCertificates)))
+	if err := d.Set("server_certificates", flattenServerCertificates(ptr.From(resp.ServerCertificates))); err != nil {
+		return diag.FromErr(err)
+	}
 	d.SetId(id.UniqueId())
 	return nil
 }

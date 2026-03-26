@@ -74,7 +74,7 @@ func DataSourceOutscaleApiAccessRulesRead(ctx context.Context, d *schema.Resourc
 	if err != nil {
 		return diag.Errorf("error reading api access rule id (%s)", err)
 	}
-	apiAccessRules := ptr.From(resp.ApiAccessRules)[:]
+	apiAccessRules := ptr.From(resp.ApiAccessRules)
 	if len(apiAccessRules) < 1 {
 		d.SetId("")
 		return diag.FromErr(ErrNoResults)

@@ -140,7 +140,7 @@ func vpnconnectionRouteRefreshFunc(ctx context.Context, client *osc.Client, time
 
 		resp, err := client.ReadVpnConnections(ctx, filter, options.WithRetryTimeout(timeout))
 		if err != nil {
-			return nil, "failed", fmt.Errorf("error on vpnconnectionrouterefresh: %s", err)
+			return nil, "failed", fmt.Errorf("error on vpnconnectionrouterefresh: %w", err)
 		}
 
 		if resp.VpnConnections == nil || len(*resp.VpnConnections) == 0 {
@@ -181,7 +181,7 @@ func ResourceOutscaleVPNConnectionRouteImportState(ctx context.Context, d *schem
 
 	val, err := stateConf.WaitForStateContext(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("error waiting for outscale vpn connection route import(%s) to become ready: %s", d.Id(), err)
+		return nil, fmt.Errorf("error waiting for outscale vpn connection route import(%s) to become ready: %w", d.Id(), err)
 	}
 	if val == nil {
 		log.Printf("[WARN] VPN Connection route %q could not be found. Removing Route from state.", vpnConnectionID)
@@ -189,10 +189,10 @@ func ResourceOutscaleVPNConnectionRouteImportState(ctx context.Context, d *schem
 	}
 
 	if err := d.Set("vpn_connection_id", vpnConnectionID); err != nil {
-		return nil, fmt.Errorf("error setting `%s` for outscale vpn connection route(%s): %s", "vpn_connection_id", vpnConnectionID, err)
+		return nil, fmt.Errorf("error setting `%s` for outscale vpn connection route(%s): %w", "vpn_connection_id", vpnConnectionID, err)
 	}
 	if err := d.Set("destination_ip_range", destinationIPRange); err != nil {
-		return nil, fmt.Errorf("error setting `%s` for outscale vpn connection route(%s): %s", "destination_ip_range", destinationIPRange, err)
+		return nil, fmt.Errorf("error setting `%s` for outscale vpn connection route(%s): %w", "destination_ip_range", destinationIPRange, err)
 	}
 
 	d.SetId(fmt.Sprintf("%s:%s", destinationIPRange, vpnConnectionID))

@@ -85,7 +85,7 @@ func DataSourceOutscalePublicCatalogRead(ctx context.Context, d *schema.Resource
 	}
 
 	cs := resp.Catalog
-	entries := ptr.From(cs.Entries)[:]
+	entries := ptr.From(cs.Entries)
 	e_ret := make([]map[string]any, len(entries))
 
 	for k, v := range entries {

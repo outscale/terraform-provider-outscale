@@ -2,6 +2,7 @@ package oapi
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -244,7 +245,7 @@ func NGOAPIStateRefreshFunc(ctx context.Context, client *osc.Client, req osc.Rea
 			return nil, "", err
 		}
 		if resp.NatServices == nil {
-			return nil, "", fmt.Errorf("nat service not found")
+			return nil, "", errors.New("nat service not found")
 		}
 
 		return resp, string((*resp.NatServices)[0].State), nil

@@ -12,6 +12,7 @@ import (
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
+	"github.com/samber/lo"
 	"github.com/spf13/cast"
 )
 
@@ -98,11 +99,9 @@ func buildOutscaleDataSourceSubregionsFilters(set *schema.Set) (*osc.FiltersSubr
 	filters := &osc.FiltersSubregion{}
 	for _, v := range set.List() {
 		m := v.(map[string]any)
-		var filterValues []string
-
-		for _, e := range m["values"].([]any) {
-			filterValues = append(filterValues, cast.ToString(e))
-		}
+		filterValues := lo.Map(m["values"].([]any), func(e any, _ int) string {
+			return cast.ToString(e)
+		})
 
 		switch name := m["name"].(string); name {
 		case "subregion_names":

@@ -121,7 +121,7 @@ func datasourceOAPIVolumeRead(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
-	filteredVolumes := ptr.From(resp.Volumes)[:]
+	filteredVolumes := ptr.From(resp.Volumes)
 
 	var volume osc.Volume
 	if len(filteredVolumes) < 1 {
@@ -208,10 +208,9 @@ func buildOutscaleOSCAPIDataSourceVolumesFilters(set *schema.Set) (*osc.FiltersV
 	var filters osc.FiltersVolume
 	for _, v := range set.List() {
 		m := v.(map[string]any)
-		var filterValues []string
-		for _, e := range m["values"].([]any) {
-			filterValues = append(filterValues, e.(string))
-		}
+		filterValues := lo.Map(m["values"].([]any), func(e any, _ int) string {
+			return e.(string)
+		})
 
 		switch name := m["name"].(string); name {
 		case "creation_dates":

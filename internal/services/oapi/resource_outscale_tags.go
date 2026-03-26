@@ -8,6 +8,7 @@ import (
 	"github.com/outscale/osc-sdk-go/v3/pkg/options"
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
+	"github.com/samber/lo"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
@@ -89,17 +90,14 @@ func ResourceOutscaleTagsRead(ctx context.Context, d *schema.ResourceData, meta 
 		filter.Keys = &keys
 		filter.Values = &values
 		params.Filters = &filter
-
 	}
 
 	resourceIds, resourceIdsOk := d.GetOk("resource_ids")
 	if resourceIdsOk {
-		var rids []string
 		sgs := resourceIds.(*schema.Set).List()
-		for _, v := range sgs {
-			str := v.(string)
-			rids = append(rids, str)
-		}
+		rids := lo.Map(sgs, func(v any, _ int) string {
+			return v.(string)
+		})
 
 		filter.ResourceIds = &rids
 		params.Filters = &filter
