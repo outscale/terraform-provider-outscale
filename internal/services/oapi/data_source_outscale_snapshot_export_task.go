@@ -10,6 +10,7 @@ import (
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
+	"github.com/samber/lo"
 )
 
 func DataSourceOutscaleSnapshotExportTask() *schema.Resource {
@@ -146,10 +147,9 @@ func buildOutscaleOSCAPIDataSourceSnapshotExportTaskFilters(set *schema.Set) (*o
 	var filters osc.FiltersSnapshotExportTask
 	for _, v := range set.List() {
 		m := v.(map[string]any)
-		var filterValues []string
-		for _, e := range m["values"].([]any) {
-			filterValues = append(filterValues, e.(string))
-		}
+		filterValues := lo.Map(m["values"].([]any), func(e any, _ int) string {
+			return e.(string)
+		})
 
 		switch name := m["name"].(string); name {
 		case "task_ids":

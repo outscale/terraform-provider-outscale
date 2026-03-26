@@ -127,7 +127,7 @@ func testAccCheckClientGatewayDestroy(s *terraform.State) error {
 		resp, err := client.ReadClientGateways(context.Background(), filter, options.WithRetryTimeout(DefaultTimeout))
 
 		if err != nil || resp.ClientGateways == nil || len(*resp.ClientGateways) > 0 && (*resp.ClientGateways)[0].State != "deleted" {
-			return fmt.Errorf("outscale client gateway still exists (%s): %s", rs.Primary.ID, err)
+			return fmt.Errorf("outscale client gateway still exists (%s): %w", rs.Primary.ID, err)
 		}
 	}
 	return nil

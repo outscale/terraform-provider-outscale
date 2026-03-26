@@ -553,11 +553,11 @@ func setVolumeState(ctx context.Context, r *resourceVolume, data *VolumeModel) e
 	data.SnapshotId = to.String(ptr.From(volume.SnapshotId))
 	data.State = to.String(volume.State)
 	if data.VolumeType.ValueString() != "standard" {
-		data.Iops = to.Int32(int32(volume.Iops))
+		data.Iops = to.Int32(int32(volume.Iops)) //nolint:gosec
 	} else {
 		data.Iops = types.Int32Null()
 	}
-	data.Size = to.Int32(int32(volume.Size))
+	data.Size = to.Int32(int32(volume.Size)) //nolint:gosec
 	data.Id = to.String(volume.VolumeId)
 
 	return nil

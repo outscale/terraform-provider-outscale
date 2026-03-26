@@ -9,6 +9,7 @@ import (
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
+	"github.com/samber/lo"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -109,10 +110,18 @@ func DataSourceOutscaleVirtualGatewayRead(ctx context.Context, d *schema.Resourc
 		vs[k] = vp
 	}
 
-	d.Set("net_to_virtual_gateway_links", vs)
-	d.Set("state", vgw.State)
-	d.Set("connection_type", vgw.ConnectionType)
-	d.Set("tags", FlattenOAPITagsSDK(vgw.Tags))
+	if err := d.Set("net_to_virtual_gateway_links", vs); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("state", vgw.State); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("connection_type", vgw.ConnectionType); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("tags", FlattenOAPITagsSDK(vgw.Tags)); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }
@@ -121,10 +130,9 @@ func buildOutscaleAPIVirtualGatewayFilters(set *schema.Set) (*osc.FiltersVirtual
 	var filters osc.FiltersVirtualGateway
 	for _, v := range set.List() {
 		m := v.(map[string]any)
-		var filterValues []string
-		for _, e := range m["values"].([]any) {
-			filterValues = append(filterValues, e.(string))
-		}
+		filterValues := lo.Map(m["values"].([]any), func(e any, _ int) string {
+			return e.(string)
+		})
 		switch name := m["name"].(string); name {
 		// case "available_ips_counts":
 		// 	filters.AvailableIpsCounts = filterValues

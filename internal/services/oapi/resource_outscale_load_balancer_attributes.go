@@ -423,8 +423,12 @@ func ResourceOutscaleLoadBalancerAttributesRead(ctx context.Context, d *schema.R
 		return diag.FromErr(err)
 	}
 
-	d.Set("source_security_group", flattenSource_sg(&lb.SourceSecurityGroup))
-	d.Set("security_groups", utils.StringSlicePtrToInterfaceSlice(&lb.SecurityGroups))
+	if err := d.Set("source_security_group", flattenSource_sg(&lb.SourceSecurityGroup)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("security_groups", utils.StringSlicePtrToInterfaceSlice(&lb.SecurityGroups)); err != nil {
+		return diag.FromErr(err)
+	}
 
 	ta := make([]map[string]any, len(lb.Tags))
 	for k1, v1 := range lb.Tags {
@@ -434,13 +438,21 @@ func ResourceOutscaleLoadBalancerAttributesRead(ctx context.Context, d *schema.R
 		ta[k1] = t
 	}
 
-	d.Set("tags", ta)
+	if err := d.Set("tags", ta); err != nil {
+		return diag.FromErr(err)
+	}
 
-	d.Set("backend_vm_ids", utils.StringSlicePtrToInterfaceSlice(&lb.BackendVmIds))
+	if err := d.Set("backend_vm_ids", utils.StringSlicePtrToInterfaceSlice(&lb.BackendVmIds)); err != nil {
+		return diag.FromErr(err)
+	}
 
-	d.Set("subnets", utils.StringSlicePtrToInterfaceSlice(&lb.Subnets))
+	if err := d.Set("subnets", utils.StringSlicePtrToInterfaceSlice(&lb.Subnets)); err != nil {
+		return diag.FromErr(err)
+	}
 
-	d.Set("subregion_names", utils.StringSlicePtrToInterfaceSlice(&lb.SubregionNames))
+	if err := d.Set("subregion_names", utils.StringSlicePtrToInterfaceSlice(&lb.SubregionNames)); err != nil {
+		return diag.FromErr(err)
+	}
 
 	app := make([]map[string]any,
 		len(lb.ApplicationStickyCookiePolicies))
@@ -450,7 +462,9 @@ func ResourceOutscaleLoadBalancerAttributesRead(ctx context.Context, d *schema.R
 		a["policy_name"] = v.PolicyName
 		app[k] = a
 	}
-	d.Set("application_sticky_cookie_policies", app)
+	if err := d.Set("application_sticky_cookie_policies", app); err != nil {
+		return diag.FromErr(err)
+	}
 
 	lbc := make([]map[string]any,
 		len(lb.LoadBalancerStickyCookiePolicies))
@@ -459,11 +473,19 @@ func ResourceOutscaleLoadBalancerAttributesRead(ctx context.Context, d *schema.R
 		a["policy_name"] = v.PolicyName
 		lbc[k] = a
 	}
-	d.Set("load_balancer_sticky_cookie_policies", lbc)
+	if err := d.Set("load_balancer_sticky_cookie_policies", lbc); err != nil {
+		return diag.FromErr(err)
+	}
 
-	d.Set("health_check", flattenOAPIHealthCheck(&lb.HealthCheck))
-	d.Set("listeners", flattenOAPIListeners(&lb.Listeners))
-	d.Set("dns_name", lb.DnsName)
+	if err := d.Set("health_check", flattenOAPIHealthCheck(&lb.HealthCheck)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("listeners", flattenOAPIListeners(&lb.Listeners)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("dns_name", lb.DnsName); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

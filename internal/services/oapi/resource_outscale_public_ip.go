@@ -154,7 +154,6 @@ func ResourceOutscalePublicIPUpdate(ctx context.Context, d *schema.ResourceData,
 			}
 			return diag.Errorf("failure associating eip: %s", err)
 		}
-
 	}
 
 	if err := updateOAPITagsSDK(ctx, client, timeout, d); err != nil {

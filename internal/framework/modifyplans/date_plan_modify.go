@@ -49,7 +49,7 @@ func (m datePlanModify) PlanModifyString(ctx context.Context, req planmodifier.S
 			m.Description(ctx),
 			"The new expiration_date should be after the old one."+
 				" If the new expiration_date has been update outside of terraform plugin,"+
-				" copy the expiration_date state value in your terraform configration file.",
+				" copy the expiration_date state value in your terraform configuration file.",
 		)
 	}
 }

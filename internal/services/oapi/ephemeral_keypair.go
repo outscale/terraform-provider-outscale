@@ -2,7 +2,6 @@ package oapi
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -185,18 +184,23 @@ func (e *resourceEphemeralKeypair) Open(ctx context.Context, req ephemeral.OpenR
 		)
 		return
 	}
-	privateData, err := json.Marshal(data)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to convert EphemeralKeypairModel to private state",
-			err.Error(),
-		)
-		return
-	}
-	resp.Private.SetKey(ctx, "ephemKeypairData", privateData)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	// Private state is not needed here: ephemeral resources are not persisted to state or plan files,
+	// and private state only flows in-memory between Open → Renew → Close lifecycle methods.
+	// Since neither Renew nor Close are implemented, private state would be immediately discarded.
+	// See: https://developer.hashicorp.com/terraform/plugin/framework/ephemeral-resources/renew
+	//
+	// privateData, err := json.Marshal(data)
+	// if err != nil {
+	// 	resp.Diagnostics.AddError(
+	// 		"Unable to convert EphemeralKeypairModel to private state",
+	// 		err.Error(),
+	// 	)
+	// 	return
+	// }
+	// resp.Private.SetKey(ctx, "ephemKeypairData", privateData)
+	// if resp.Diagnostics.HasError() {
+	// 	return
+	// }
 	resp.Diagnostics.Append(resp.Result.Set(ctx, &data)...)
 }
 

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/samber/lo"
 
 	"github.com/outscale/osc-sdk-go/v3/pkg/options"
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
@@ -90,10 +91,9 @@ func buildOutscaleProductTypeDataSourceFilters(set *schema.Set) (*osc.FiltersPro
 	var filters osc.FiltersProductType
 	for _, v := range set.List() {
 		m := v.(map[string]any)
-		var filterValues []string
-		for _, e := range m["values"].([]any) {
-			filterValues = append(filterValues, e.(string))
-		}
+		filterValues := lo.Map(m["values"].([]any), func(e any, _ int) string {
+			return e.(string)
+		})
 
 		switch name := m["name"].(string); name {
 		case "product_type_ids":

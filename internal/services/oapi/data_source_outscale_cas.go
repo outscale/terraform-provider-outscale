@@ -64,7 +64,7 @@ func DataSourceOutscaleCasRead(ctx context.Context, d *schema.ResourceData, meta
 	if err != nil {
 		return diag.Errorf("error reading certificate authority id (%s)", err)
 	}
-	respCas := ptr.From(resp.Cas)[:]
+	respCas := ptr.From(resp.Cas)
 	if len(respCas) < 1 {
 		d.SetId("")
 		return diag.FromErr(ErrNoResults)

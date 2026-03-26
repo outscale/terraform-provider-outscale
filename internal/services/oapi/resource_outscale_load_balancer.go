@@ -318,17 +318,18 @@ func expandListenerForCreation(configured []any) ([]osc.ListenerForCreation, err
 func mk_elem(computed bool, required bool,
 	t schema.ValueType,
 ) *schema.Schema {
-	if computed {
+	switch {
+	case computed:
 		return &schema.Schema{
 			Type:     t,
 			Computed: true,
 		}
-	} else if required {
+	case required:
 		return &schema.Schema{
 			Type:     t,
 			Required: true,
 		}
-	} else {
+	default:
 		return &schema.Schema{
 			Type:     t,
 			Optional: true,
@@ -518,17 +519,31 @@ func ResourceOutscaleLoadBalancerRead(ctx context.Context, d *schema.ResourceDat
 		d.SetId("")
 		return nil
 	}
-	d.Set("subregion_names", utils.StringSlicePtrToInterfaceSlice(&lb.SubregionNames))
-	d.Set("dns_name", lb.DnsName)
-	d.Set("health_check", flattenOAPIHealthCheck(&lb.HealthCheck))
-	d.Set("access_log", flattenOAPIAccessLog(&lb.AccessLog))
+	if err := d.Set("subregion_names", utils.StringSlicePtrToInterfaceSlice(&lb.SubregionNames)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("dns_name", lb.DnsName); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("health_check", flattenOAPIHealthCheck(&lb.HealthCheck)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("access_log", flattenOAPIAccessLog(&lb.AccessLog)); err != nil {
+		return diag.FromErr(err)
+	}
 
-	d.Set("backend_vm_ids", utils.StringSlicePtrToInterfaceSlice(&lb.BackendVmIds))
-	d.Set("backend_ips", utils.StringSlicePtrToInterfaceSlice(&lb.BackendIps))
+	if err := d.Set("backend_vm_ids", utils.StringSlicePtrToInterfaceSlice(&lb.BackendVmIds)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("backend_ips", utils.StringSlicePtrToInterfaceSlice(&lb.BackendIps)); err != nil {
+		return diag.FromErr(err)
+	}
 	if err := d.Set("listeners", flattenOAPIListeners(&lb.Listeners)); err != nil {
 		return diag.FromErr(err)
 	}
-	d.Set("load_balancer_name", lb.LoadBalancerName)
+	if err := d.Set("load_balancer_name", lb.LoadBalancerName); err != nil {
+		return diag.FromErr(err)
+	}
 
 	if lb.Tags != nil {
 		ta := make([]map[string]any, len(lb.Tags))
@@ -539,9 +554,13 @@ func ResourceOutscaleLoadBalancerRead(ctx context.Context, d *schema.ResourceDat
 			ta[k1] = t
 		}
 
-		d.Set("tags", ta)
+		if err := d.Set("tags", ta); err != nil {
+			return diag.FromErr(err)
+		}
 	} else {
-		d.Set("tags", make([]map[string]any, 0))
+		if err := d.Set("tags", make([]map[string]any, 0)); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	if lb.ApplicationStickyCookiePolicies != nil {
@@ -553,7 +572,9 @@ func ResourceOutscaleLoadBalancerRead(ctx context.Context, d *schema.ResourceDat
 			a["policy_name"] = v.PolicyName
 			app[k] = a
 		}
-		d.Set("application_sticky_cookie_policies", app)
+		if err := d.Set("application_sticky_cookie_policies", app); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 	if lb.LoadBalancerStickyCookiePolicies != nil {
 		lbc := make([]map[string]any,
@@ -563,22 +584,42 @@ func ResourceOutscaleLoadBalancerRead(ctx context.Context, d *schema.ResourceDat
 			a["policy_name"] = v.PolicyName
 			lbc[k] = a
 		}
-		d.Set("load_balancer_sticky_cookie_policies", lbc)
+		if err := d.Set("load_balancer_sticky_cookie_policies", lbc); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
-	d.Set("load_balancer_type", lb.LoadBalancerType)
+	if err := d.Set("load_balancer_type", lb.LoadBalancerType); err != nil {
+		return diag.FromErr(err)
+	}
 	if lb.SecurityGroups != nil {
-		d.Set("security_groups", utils.StringSlicePtrToInterfaceSlice(&lb.SecurityGroups))
+		if err := d.Set("security_groups", utils.StringSlicePtrToInterfaceSlice(&lb.SecurityGroups)); err != nil {
+			return diag.FromErr(err)
+		}
 	} else {
-		d.Set("security_groups", make([]map[string]any, 0))
+		if err := d.Set("security_groups", make([]map[string]any, 0)); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
-	d.Set("source_security_group", flattenSource_sg(&lb.SourceSecurityGroup))
-	d.Set("subnets", utils.StringSlicePtrToInterfaceSlice(&lb.Subnets))
-	d.Set("public_ip", ptr.From(lb.PublicIp))
-	d.Set("secured_cookies", lb.SecuredCookies)
-	d.Set("state", lb.State)
-	d.Set("net_id", ptr.From(lb.NetId))
+	if err := d.Set("source_security_group", flattenSource_sg(&lb.SourceSecurityGroup)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("subnets", utils.StringSlicePtrToInterfaceSlice(&lb.Subnets)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("public_ip", ptr.From(lb.PublicIp)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("secured_cookies", lb.SecuredCookies); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("state", lb.State); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("net_id", ptr.From(lb.NetId)); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }
@@ -734,7 +775,6 @@ func ResourceOutscaleLoadBalancerUpdate(ctx context.Context, d *schema.ResourceD
 	if d.HasChange("access_log") {
 		acg := d.Get("access_log").([]any)
 		if len(acg) > 0 {
-
 			aclg := acg[0].(map[string]any)
 			isEnabled := aclg["is_enabled"].(bool)
 			osuBucketName := aclg["osu_bucket_name"].(string)

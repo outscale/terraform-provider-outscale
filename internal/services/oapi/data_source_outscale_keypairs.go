@@ -7,6 +7,7 @@ import (
 	"github.com/outscale/osc-sdk-go/v3/pkg/options"
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
+	"github.com/samber/lo"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
@@ -24,10 +25,9 @@ func DataSourceOutscaleOAPiKeyPairsRead(ctx context.Context, d *schema.ResourceD
 	KeyName, KeyNameisOk := d.GetOk("keypair_names")
 
 	if KeyNameisOk {
-		var names []string
-		for _, v := range KeyName.([]any) {
-			names = append(names, v.(string))
-		}
+		names := lo.Map(KeyName.([]any), func(v any, _ int) string {
+			return v.(string)
+		})
 		filter := osc.FiltersKeypair{}
 		filter.KeypairNames = &names
 		req.Filters = &filter

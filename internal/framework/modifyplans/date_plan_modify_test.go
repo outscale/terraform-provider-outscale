@@ -1,7 +1,6 @@
-package modifyplans
+package modifyplans_test
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -9,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/outscale/osc-sdk-go/v3/pkg/iso8601"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/modifyplans"
 )
 
 func TestFwDatemodifyplan(t *testing.T) {
@@ -66,7 +66,7 @@ func TestFwDatemodifyplan(t *testing.T) {
 				Diagnostics: diag.Diagnostics{},
 			}
 
-			CheckExpirationDate().PlanModifyString(context.Background(), req, &resp)
+			modifyplans.CheckExpirationDate().PlanModifyString(t.Context(), req, &resp)
 			if !tc.ExpectedError && resp.Diagnostics.HasError() {
 				t.Errorf("got unexpected error: %s", resp.Diagnostics.Errors())
 			}

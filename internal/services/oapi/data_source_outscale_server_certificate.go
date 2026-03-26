@@ -11,6 +11,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
+	"github.com/samber/lo"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -86,11 +87,21 @@ func DataSourceOutscaleServerCertificateRead(ctx context.Context, d *schema.Reso
 
 	log.Printf("[DEBUG] Setting Server Certificate id (%s)", err)
 
-	d.Set("expiration_date", from.ISO8601(result.ExpirationDate))
-	d.Set("name", ptr.From(result.Name))
-	d.Set("orn", ptr.From(result.Orn))
-	d.Set("path", ptr.From(result.Path))
-	d.Set("upload_date", from.ISO8601(result.UploadDate))
+	if err := d.Set("expiration_date", from.ISO8601(result.ExpirationDate)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("name", ptr.From(result.Name)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("orn", ptr.From(result.Orn)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("path", ptr.From(result.Path)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("upload_date", from.ISO8601(result.UploadDate)); err != nil {
+		return diag.FromErr(err)
+	}
 
 	d.SetId(ptr.From(result.Id))
 
@@ -101,10 +112,9 @@ func buildOutscaleOSCAPIDataSourceServerCertificateFilters(set *schema.Set) (*os
 	var filters osc.FiltersServerCertificate
 	for _, v := range set.List() {
 		m := v.(map[string]any)
-		var filterValues []string
-		for _, e := range m["values"].([]any) {
-			filterValues = append(filterValues, e.(string))
-		}
+		filterValues := lo.Map(m["values"].([]any), func(e any, _ int) string {
+			return e.(string)
+		})
 
 		switch name := m["name"].(string); name {
 		case "paths":

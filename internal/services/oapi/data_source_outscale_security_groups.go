@@ -10,6 +10,7 @@ import (
 	"github.com/outscale/goutils/sdk/ptr"
 	"github.com/outscale/osc-sdk-go/v3/pkg/options"
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
+	"github.com/samber/lo"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
@@ -190,19 +191,17 @@ func DataSourceOutscaleSecurityGroupsRead(ctx context.Context, d *schema.Resourc
 	gid, gidOk := d.GetOk("security_group_ids")
 	var filter osc.FiltersSecurityGroup
 	if gnOk {
-		var g []string
-		for _, v := range gn.([]any) {
-			g = append(g, v.(string))
-		}
+		g := lo.Map(gn.([]any), func(v any, _ int) string {
+			return v.(string)
+		})
 		filter.SecurityGroupNames = &g
 		req.Filters = &filter
 	}
 
 	if gidOk {
-		var g []string
-		for _, v := range gid.([]any) {
-			g = append(g, v.(string))
-		}
+		g := lo.Map(gid.([]any), func(v any, _ int) string {
+			return v.(string)
+		})
 		filter.SecurityGroupIds = &g
 		req.Filters = &filter
 	}

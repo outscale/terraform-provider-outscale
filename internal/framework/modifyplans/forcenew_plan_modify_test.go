@@ -1,11 +1,11 @@
-package modifyplans
+package modifyplans_test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/modifyplans"
 )
 
 // This test covers possible cases with Computed,
@@ -50,7 +50,7 @@ func TestFwForceNewmodifyplan(t *testing.T) {
 			}
 			resp := planmodifier.StringResponse{}
 
-			ForceNewFramework().PlanModifyString(context.Background(), req, &resp)
+			modifyplans.ForceNewFramework().PlanModifyString(t.Context(), req, &resp)
 			if !tc.RequiresReplace && resp.RequiresReplace {
 				t.Errorf("got unexpected error: %s", resp.Diagnostics.Errors())
 			}
