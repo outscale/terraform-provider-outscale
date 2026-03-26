@@ -682,7 +682,7 @@ func setSecurityGroupState(ctx context.Context, r *resourceSecurityGroup, data S
 }
 
 func flattenSecurityGroupsMembers(sgMembers []osc.SecurityGroupsMember) []SecurityGroupsMembersModel {
-	sgMembersModels := []SecurityGroupsMembersModel{}
+	sgMembersModels := make([]SecurityGroupsMembersModel, 0, len(sgMembers))
 
 	for _, sgMember := range sgMembers {
 		member := SecurityGroupsMembersModel{
@@ -696,7 +696,7 @@ func flattenSecurityGroupsMembers(sgMembers []osc.SecurityGroupsMember) []Securi
 }
 
 func flattenSecurityGroupRules(ctx context.Context, sgRules []osc.SecurityGroupRule) ([]SecurityGroupRulesModel, diag.Diagnostics) {
-	sgRulesModels := []SecurityGroupRulesModel{}
+	sgRulesModels := make([]SecurityGroupRulesModel, 0, len(sgRules))
 	diags := diag.Diagnostics{}
 
 	for _, sgRule := range sgRules {
@@ -708,12 +708,12 @@ func flattenSecurityGroupRules(ctx context.Context, sgRules []osc.SecurityGroupR
 		diags.Append(diag...)
 
 		rule := SecurityGroupRulesModel{
-			FromPortRange:         to.Int32(int32(sgRule.FromPortRange)),
+			FromPortRange:         to.Int32(int32(sgRule.FromPortRange)), //nolint:gosec
 			IpProtocol:            to.String(sgRule.IpProtocol),
 			IpRanges:              ipRanges,
 			SecurityGroupsMembers: sgMembers,
 			ServiceIds:            serviceIds,
-			ToPortRange:           to.Int32(int32(sgRule.ToPortRange)),
+			ToPortRange:           to.Int32(int32(sgRule.ToPortRange)), //nolint:gosec
 		}
 		sgRulesModels = append(sgRulesModels, rule)
 	}
@@ -770,9 +770,7 @@ func expandSecurityGroupRules(ctx context.Context, sgRulesModels []SecurityGroup
 }
 
 func expandSecurityGroupsMembers(sgMembersModels []SecurityGroupsMembersModel) []osc.SecurityGroupsMember {
-	sgMembers := []osc.SecurityGroupsMember{}
-
-	for _, sgMemberModel := range sgMembersModels {
+	return lo.Map(sgMembersModels, func(sgMemberModel SecurityGroupsMembersModel, _ int) osc.SecurityGroupsMember {
 		member := osc.SecurityGroupsMember{}
 
 		if !sgMemberModel.AccountId.IsUnknown() && !sgMemberModel.AccountId.IsNull() && sgMemberModel.AccountId.ValueString() != "" {
@@ -785,8 +783,6 @@ func expandSecurityGroupsMembers(sgMembersModels []SecurityGroupsMembersModel) [
 			member.SecurityGroupName = sgMemberModel.SecurityGroupName.ValueStringPointer()
 		}
 
-		sgMembers = append(sgMembers, member)
-	}
-
-	return sgMembers
+		return member
+	})
 }

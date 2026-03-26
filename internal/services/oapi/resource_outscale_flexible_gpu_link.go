@@ -98,7 +98,7 @@ func ResourceOutscaleFlexibleGpuLinkRead(ctx context.Context, d *schema.Resource
 		d.SetId("")
 		return nil
 	}
-	flexGpus := ptr.From(resp.FlexibleGpus)[:]
+	flexGpus := ptr.From(resp.FlexibleGpus)
 	readGpuIdsLink := make([]string, len(flexGpus))
 	for k, flexGpu := range flexGpus {
 		readGpuIdsLink[k] = *flexGpu.FlexibleGpuId
@@ -204,10 +204,10 @@ func changeShutdownBehavior(ctx context.Context, client *osc.Client, vmId string
 		},
 	}, options.WithRetryTimeout(timeout))
 	if err != nil {
-		return fmt.Errorf("error reading the vm %s", err)
+		return fmt.Errorf("error reading the vm %w", err)
 	}
 	if len(ptr.From(resp.Vms)) == 0 {
-		return fmt.Errorf("error reading the vm %s err %s ", vmId, err)
+		return fmt.Errorf("error reading the vm %s err %w ", vmId, err)
 	}
 	vm := ptr.From(resp.Vms)[0]
 

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/samber/lo"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -92,10 +93,9 @@ func buildOutscaleDataSourceCaFilters(set *schema.Set) (*osc.FiltersCa, error) {
 	var filters osc.FiltersCa
 	for _, v := range set.List() {
 		m := v.(map[string]any)
-		var filterValues []string
-		for _, e := range m["values"].([]any) {
-			filterValues = append(filterValues, e.(string))
-		}
+		filterValues := lo.Map(m["values"].([]any), func(e any, _ int) string {
+			return e.(string)
+		})
 
 		switch name := m["name"].(string); name {
 		case "ca_fingerprints":

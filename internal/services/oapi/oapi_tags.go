@@ -150,7 +150,7 @@ func createOAPITagsSDK(ctx context.Context, client *osc.Client, timeout time.Dur
 
 		err := createOAPITags(ctx, client, timeout, tags, resourceId)
 		if err != nil {
-			return fmt.Errorf("unable to create tags: %s", err)
+			return fmt.Errorf("unable to create tags: %w", err)
 		}
 	}
 

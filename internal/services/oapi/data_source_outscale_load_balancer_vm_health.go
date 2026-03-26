@@ -11,6 +11,7 @@ import (
 	"github.com/outscale/osc-sdk-go/v3/pkg/options"
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
+	"github.com/samber/lo"
 )
 
 func DataSourceOutscaleLoadBalancerVmsHeals() *schema.Resource {
@@ -76,10 +77,9 @@ func DataSourceOutscaleLoadBalancerVmsHealRead(ctx context.Context, d *schema.Re
 	vm_ids, ok := d.GetOk("backend_vm_ids")
 	if ok {
 		vm_ids_i := vm_ids.([]any)
-		vm_ids_s := make([]string, 0, len(vm_ids_i))
-		for _, v := range vm_ids_i {
-			vm_ids_s = append(vm_ids_s, v.(string))
-		}
+		vm_ids_s := lo.Map(vm_ids_i, func(v any, _ int) string {
+			return v.(string)
+		})
 
 		req.BackendVmIds = &vm_ids_s
 	}
@@ -101,7 +101,9 @@ func DataSourceOutscaleLoadBalancerVmsHealRead(ctx context.Context, d *schema.Re
 		a["vm_id"] = v.VmId
 		lbvh[k] = a
 	}
-	d.Set("backend_vm_health", lbvh)
+	if err := d.Set("backend_vm_health", lbvh); err != nil {
+		return diag.FromErr(err)
+	}
 	id := ename.(string) + "-heal-"
 	d.SetId(sdkid.PrefixedUniqueId(id))
 	return nil

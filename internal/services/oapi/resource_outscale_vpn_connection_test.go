@@ -187,7 +187,7 @@ func testAccOutscaleVPNConnectionDestroy(s *terraform.State) error {
 		resp, err := client.ReadVpnConnections(context.Background(), filter, options.WithRetryTimeout(DefaultTimeout))
 
 		if err != nil || resp.VpnConnections == nil || len(*resp.VpnConnections) > 0 && (*resp.VpnConnections)[0].State != "deleted" {
-			return fmt.Errorf("outscale vpn connection still exists (%s): %s", rs.Primary.ID, err)
+			return fmt.Errorf("outscale vpn connection still exists (%s): %w", rs.Primary.ID, err)
 		}
 	}
 	return nil

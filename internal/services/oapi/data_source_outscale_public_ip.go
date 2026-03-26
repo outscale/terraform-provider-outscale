@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/samber/lo"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -131,7 +132,9 @@ func DataSourceOutscalePublicIPRead(ctx context.Context, d *schema.ResourceData,
 		return diag.Errorf("error setting publicip tags: %s", err)
 	}
 
-	d.Set("public_ip", address.PublicIp)
+	if err := d.Set("public_ip", address.PublicIp); err != nil {
+		return diag.FromErr(err)
+	}
 
 	d.SetId(address.PublicIp)
 
@@ -142,10 +145,9 @@ func buildOutscaleDataSourcePublicIpsFilters(set *schema.Set) (*osc.FiltersPubli
 	var filters osc.FiltersPublicIp
 	for _, v := range set.List() {
 		m := v.(map[string]any)
-		var filterValues []string
-		for _, e := range m["values"].([]any) {
-			filterValues = append(filterValues, e.(string))
-		}
+		filterValues := lo.Map(m["values"].([]any), func(e any, _ int) string {
+			return e.(string)
+		})
 
 		switch name := m["name"].(string); name {
 		case "public_ip_ids":
