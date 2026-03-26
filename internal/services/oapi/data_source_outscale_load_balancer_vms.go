@@ -41,6 +41,8 @@ func DataSourceOutscaleLoadBalancerVmsRead(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	d.Set("backend_vm_ids", utils.StringSlicePtrToInterfaceSlice(&lb.BackendVmIds))
+	if err := d.Set("backend_vm_ids", utils.StringSlicePtrToInterfaceSlice(&lb.BackendVmIds)); err != nil {
+		return diag.FromErr(err)
+	}
 	return nil
 }

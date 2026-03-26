@@ -91,7 +91,7 @@ func ResourceOutscaleVM() *schema.Resource {
 										Optional: true,
 										ValidateFunc: func(val any, key string) (warns []string, errs []error) {
 											iopsVal := val.(int)
-											if int32(iopsVal) < MinIops || int32(iopsVal) > MaxIops {
+											if iopsVal < int(MinIops) || iopsVal > int(MaxIops) {
 												errs = append(errs, fmt.Errorf("%q must be between %d and %d inclusive, got: %d", key, MinIops, MaxIops, iopsVal))
 											}
 											return
@@ -107,7 +107,7 @@ func ResourceOutscaleVM() *schema.Resource {
 										Optional: true,
 										ValidateFunc: func(val any, key string) (warns []string, errs []error) {
 											vSize, _ := val.(int)
-											if int32(vSize) < 1 || int32(vSize) > MaxSize {
+											if vSize < 1 || vSize > int(MaxSize) {
 												errs = append(errs, fmt.Errorf("%q must be between 1 and %d gibibytes inclusive, got: %d", key, MaxSize, vSize))
 											}
 											return
@@ -827,7 +827,7 @@ func resourceOAPIVMCreate(ctx context.Context, d *schema.ResourceData, meta any)
 		})
 	}
 
-	if v, exist := d.GetOkExists("is_source_dest_checked"); exist {
+	if v, exist := d.GetOkExists("is_source_dest_checked"); exist { //nolint:staticcheck // SA1019: no replacement for bool zero-value distinction
 		opts := osc.UpdateVmRequest{
 			VmId: vm.VmId,
 		}
@@ -865,7 +865,7 @@ func createBsuTags(ctx context.Context, client *osc.Client, timeout time.Duratio
 
 			err := createOAPITags(ctx, client, timeout, tags, id)
 			if err != nil {
-				return fmt.Errorf("unable to create tags: %s", err)
+				return fmt.Errorf("unable to create tags: %w", err)
 			}
 		}
 	}
@@ -1058,7 +1058,6 @@ func resourceOAPIVMUpdate(ctx context.Context, d *schema.ResourceData, meta any)
 	if !d.IsNewResource() &&
 		(d.HasChange("vm_type") || d.HasChange("user_data") ||
 			d.HasChange("performance") || d.HasChange("nested_virtualization")) {
-
 		if err := stopVM(ctx, client, timeout, id); err != nil {
 			return diag.FromErr(err)
 		}
@@ -1352,7 +1351,7 @@ func buildCreateVmsRequest(d *schema.ResourceData) (osc.CreateVmsRequest, []map[
 
 	if nics := buildNetworkOApiInterfaceOpts(d); len(nics) > 0 {
 		if subNet != "" || placement != nil {
-			return request, nil, fmt.Errorf("if you specify nics parameter, you must not specify subnet_id and placement parameters")
+			return request, nil, errors.New("if you specify nics parameter, you must not specify subnet_id and placement parameters")
 		}
 		request.Nics = nics
 	}
@@ -1371,7 +1370,7 @@ func buildCreateVmsRequest(d *schema.ResourceData) (osc.CreateVmsRequest, []map[
 
 	nestedVirtualization := d.Get("nested_virtualization").(bool)
 	if tenacy := d.Get("placement_tenancy").(string); nestedVirtualization && tenacy != "dedicated" {
-		return request, nil, fmt.Errorf("the field nested_virtualization can be true only if placement_tenancy is \"dedicated\"")
+		return request, nil, errors.New("the field nested_virtualization can be true only if placement_tenancy is \"dedicated\"")
 	}
 	request.NestedVirtualization = &nestedVirtualization
 
@@ -1416,7 +1415,7 @@ func buildCreateVmsRequest(d *schema.ResourceData) (osc.CreateVmsRequest, []map[
 		return request, bsuMapsTags, fmt.Errorf("error retrieving write-only argument: keypair_name_wo: %v", diags)
 	}
 	if !kpName.Type().Equals(cty.String) {
-		return request, bsuMapsTags, fmt.Errorf("error retrieving write-only argument: password_wo, retrieved config value is not a string")
+		return request, bsuMapsTags, errors.New("error retrieving write-only argument: password_wo, retrieved config value is not a string")
 	}
 	if !kpName.IsNull() {
 		request.KeypairName = new(kpName.AsString())
@@ -1462,7 +1461,7 @@ func expandBlockDeviceBSU(bsu map[string]any, deviceName string) (osc.BsuToCreat
 	volumeSize := bsu["volume_size"].(int)
 
 	if snapshotID == "" && volumeSize == 0 {
-		return bsuToCreate, nil, fmt.Errorf("error: 'volume_size' parameter is required if the volume is not created from a snapshot (snapshotid unspecified)")
+		return bsuToCreate, nil, errors.New("error: 'volume_size' parameter is required if the volume is not created from a snapshot (snapshotid unspecified)")
 	}
 	if iops := bsu["iops"]; iops.(int) > 0 {
 		if volumeType != "io1" {
@@ -1553,7 +1552,7 @@ func expandPlacement(d *schema.ResourceData) (*osc.Placement, error) {
 		if v := tenancy.(string); v == "default" || v == "dedicated" {
 			placement.Tenancy = v
 		} else {
-			return nil, fmt.Errorf("the value of field placement_tenancy can be only \"default\" or \"dedicated\"")
+			return nil, errors.New("the value of field placement_tenancy can be only \"default\" or \"dedicated\"")
 		}
 	}
 	if sOK || tOK {
@@ -1617,7 +1616,7 @@ func stopVM(ctx context.Context, client *osc.Client, timeout time.Duration, id s
 		VmIds: []string{id},
 	}, options.WithRetryTimeout(timeout))
 	if err != nil {
-		return fmt.Errorf("error stopping vms %s", err)
+		return fmt.Errorf("error stopping vms %w", err)
 	}
 
 	stateConf := &retry.StateChangeConf{
@@ -1629,7 +1628,7 @@ func stopVM(ctx context.Context, client *osc.Client, timeout time.Duration, id s
 
 	_, err = stateConf.WaitForStateContext(ctx)
 	if err != nil {
-		return fmt.Errorf("error waiting for instance (%s) to stop: %s", id, err)
+		return fmt.Errorf("error waiting for instance (%s) to stop: %w", id, err)
 	}
 
 	if shutdownBehaviorOriginal != "" {
@@ -1648,7 +1647,7 @@ func startVM(ctx context.Context, client *osc.Client, timeout time.Duration, id 
 		VmIds: []string{id},
 	}, options.WithRetryTimeout(timeout))
 	if err != nil {
-		return fmt.Errorf("error starting vm %s", err)
+		return fmt.Errorf("error starting vm %w", err)
 	}
 
 	stateConf := &retry.StateChangeConf{
@@ -1659,7 +1658,7 @@ func startVM(ctx context.Context, client *osc.Client, timeout time.Duration, id 
 	}
 
 	if _, err := stateConf.WaitForStateContext(ctx); err != nil {
-		return fmt.Errorf("error waiting for instance (%s) to become ready: %s", id, err)
+		return fmt.Errorf("error waiting for instance (%s) to become ready: %w", id, err)
 	}
 
 	return nil

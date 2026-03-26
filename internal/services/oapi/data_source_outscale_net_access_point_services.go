@@ -9,6 +9,7 @@ import (
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
+	"github.com/samber/lo"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
@@ -68,7 +69,7 @@ func DataSourceOutscaleNetAccessPointServicesRead(ctx context.Context, d *schema
 		return diag.FromErr(err)
 	}
 
-	naps := ptr.From(resp.Services)[:]
+	naps := ptr.From(resp.Services)
 	nap_ret := make([]map[string]any, len(naps))
 
 	for k, v := range naps {
@@ -93,10 +94,9 @@ func buildOutscaleDataSourcesNAPSFilters(set *schema.Set) (*osc.FiltersService, 
 
 	for _, v := range set.List() {
 		m := v.(map[string]any)
-		filterValues := make([]string, 0)
-		for _, e := range m["values"].([]any) {
-			filterValues = append(filterValues, e.(string))
-		}
+		filterValues := lo.Map(m["values"].([]any), func(e any, _ int) string {
+			return e.(string)
+		})
 
 		switch name := m["name"].(string); name {
 		case "service_ids":

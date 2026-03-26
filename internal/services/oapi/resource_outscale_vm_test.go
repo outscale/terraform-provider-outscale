@@ -600,6 +600,7 @@ func getVMsFilterByVMID(vmID string) *osc.FiltersVm {
 }
 
 func testAccCheckOAPIVMNotRecreated(t *testing.T, before, after *osc.Vm) resource.TestCheckFunc {
+	t.Helper()
 	return func(s *terraform.State) error {
 		assertEqual(t, before.VmId, after.VmId, "Outscale VM IDs have changed.")
 		return nil
@@ -663,6 +664,7 @@ func testAccCheckOutscaleVMExists(n string, i *osc.Vm) resource.TestCheckFunc {
 }
 
 func testAccCheckOutscaleVMAttributes(t *testing.T, server *osc.Vm, omi string) resource.TestCheckFunc {
+	t.Helper()
 	return func(s *terraform.State) error {
 		assertEqual(t, omi, server.ImageId, "Bad image_id.")
 		return nil
@@ -1027,19 +1029,14 @@ func testAccCheckOutscaleVMConfigWithNet(omi, vmType, region, keypair, sgName st
 	`, omi, vmType, region, keypair, sgName)
 }
 
-func assertNotEqual(t *testing.T, a any, b any, message string) {
-	if a == b {
-		t.Fatalf(message+" Expected: %s and %s to differ.", a, b)
-	}
-}
-
 func assertEqual(t *testing.T, a any, b any, message string) {
+	t.Helper()
 	if a != b {
 		t.Fatalf(message+"Expected: %s, actual: %s", a, b)
 	}
 }
 
-func testAccCheckOutscaleVMBehaviorConfigBasic(omi, vmType, region, keypair, perfomance, vmBehavior, sgName string) string {
+func testAccCheckOutscaleVMBehaviorConfigBasic(omi, vmType, region, keypair, performance, vmBehavior, sgName string) string {
 	return fmt.Sprintf(`
 		resource "outscale_security_group" "sg_behavior_vm" {
 			description                  = "testAcc Terraform security group"
@@ -1060,5 +1057,5 @@ func testAccCheckOutscaleVMBehaviorConfigBasic(omi, vmType, region, keypair, per
 			}
 
 			lifecycle { ignore_changes = [state] }
-			}`, omi, vmType, region, keypair, perfomance, vmBehavior, sgName)
+			}`, omi, vmType, region, keypair, performance, vmBehavior, sgName)
 }

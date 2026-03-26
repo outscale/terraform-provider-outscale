@@ -389,7 +389,7 @@ func (r *resourcePolicy) read(ctx context.Context, timeout time.Duration, data P
 	data.Path = to.String(policy.Path)
 	data.PolicyDefaultVersionId = to.String(policy.PolicyDefaultVersionId)
 	data.PolicyName = to.String(policy.PolicyName)
-	data.ResourcesCount = to.Int32(int32(ptr.From(policy.ResourcesCount)))
+	data.ResourcesCount = to.Int32(int32(ptr.From(policy.ResourcesCount))) //nolint:gosec
 	data.Document = to.String(document)
 	data.Id = to.String(policy.Orn)
 	data.PolicyId = to.String(policy.PolicyId)

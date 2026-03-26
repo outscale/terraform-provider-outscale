@@ -220,15 +220,23 @@ func buildOutscaleQuotaDataSourceFrameworkFilters(ctx context.Context, listFilte
 
 	for _, val := range listFilters {
 		var mapFilters map[string]tftypes.Value
-		val.As(&mapFilters)
+		if err := val.As(&mapFilters); err != nil {
+			return nil, err
+		}
 		var name string
-		mapFilters["name"].As(&name)
+		if err := mapFilters["name"].As(&name); err != nil {
+			return nil, err
+		}
 		var listValues []tftypes.Value
-		mapFilters["values"].As(&listValues)
-		var filterValues []string
+		if err := mapFilters["values"].As(&listValues); err != nil {
+			return nil, err
+		}
+		filterValues := make([]string, 0, len(listValues))
 		for _, val := range listValues {
 			var value string
-			val.As(&value)
+			if err := val.As(&value); err != nil {
+				return nil, err
+			}
 			filterValues = append(filterValues, value)
 		}
 		switch name {
@@ -264,18 +272,30 @@ func flatenQuotaDataSourceFilters(listFilters []tftypes.Value) (basetypes.SetVal
 
 	for _, val := range listFilters {
 		var mapFilters map[string]tftypes.Value
-		val.As(&mapFilters)
+		if err := val.As(&mapFilters); err != nil {
+			diags.AddError("Failed to parse filter", err.Error())
+			return setValue, diags
+		}
 		mapObject := make(map[string]attr.Value)
 		var name string
-		mapFilters["name"].As(&name)
+		if err := mapFilters["name"].As(&name); err != nil {
+			diags.AddError("Failed to parse filter name", err.Error())
+			return setValue, diags
+		}
 		mapObject["name"] = to.String(name)
 
 		var listValues []tftypes.Value
-		mapFilters["values"].As(&listValues)
-		var nSet []attr.Value
+		if err := mapFilters["values"].As(&listValues); err != nil {
+			diags.AddError("Failed to parse filter values", err.Error())
+			return setValue, diags
+		}
+		nSet := make([]attr.Value, 0, len(listValues))
 		for _, val := range listValues {
 			var value string
-			val.As(&value)
+			if err := val.As(&value); err != nil {
+				diags.AddError("Failed to parse filter value", err.Error())
+				return setValue, diags
+			}
 
 			nSet = append(nSet, to.String(value))
 		}

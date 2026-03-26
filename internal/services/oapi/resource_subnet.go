@@ -220,7 +220,10 @@ func (r *resourceSubnet) Create(ctx context.Context, req resource.CreateRequest,
 		Timeout: createTimeout,
 		Refresh: func() (any, string, error) {
 			resp, err := r.Client.ReadSubnets(ctx, readReq, options.WithRetryTimeout(createTimeout))
-			if err != nil || resp.Subnets == nil {
+			if err != nil {
+				return nil, "", err
+			}
+			if resp.Subnets == nil {
 				return resp, "failed", nil
 			}
 			subnet := (*resp.Subnets)[0]
@@ -386,7 +389,7 @@ func (r *resourceSubnet) read(ctx context.Context, data SubnetModel) (SubnetMode
 	}
 	data.Tags = tags
 
-	data.AvailableIpsCount = to.Int32(int32(subnet.AvailableIpsCount))
+	data.AvailableIpsCount = to.Int32(int32(subnet.AvailableIpsCount)) //nolint:gosec
 	data.IpRange = to.String(subnet.IpRange)
 	data.MapPublicIpOnLaunch = to.Bool(subnet.MapPublicIpOnLaunch)
 	data.NetId = to.String(subnet.NetId)

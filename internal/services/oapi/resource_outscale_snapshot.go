@@ -211,7 +211,7 @@ func ResourceOutscaleSnapshotRead(ctx context.Context, d *schema.ResourceData, m
 
 	snapshot := (*resp.Snapshots)[0]
 	return diag.FromErr(resourceDataAttrSetter(d, func(set AttributeSetter) error {
-		permisions := snapshot.PermissionsToCreateVolume
+		permission := snapshot.PermissionsToCreateVolume
 		if err := set("description", ptr.From(snapshot.Description)); err != nil {
 			return err
 		}
@@ -227,7 +227,7 @@ func ResourceOutscaleSnapshotRead(ctx context.Context, d *schema.ResourceData, m
 		if err := set("creation_date", from.ISO8601(snapshot.CreationDate)); err != nil {
 			return err
 		}
-		if err := set("permissions_to_create_volume", omiOAPIPermissionToLuch(permisions)); err != nil {
+		if err := set("permissions_to_create_volume", omiOAPIPermissionToLuch(permission)); err != nil {
 			return err
 		}
 		if err := set("progress", ptr.From(snapshot.Progress)); err != nil {

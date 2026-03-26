@@ -2,6 +2,7 @@ package oapi
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"slices"
@@ -499,7 +500,7 @@ func ImageOAPIStateRefreshFunc(ctx context.Context, client *osc.Client, req osc.
 			return nil, "", err
 		}
 		if resp.Images == nil || len(*resp.Images) == 0 {
-			return nil, "", fmt.Errorf("failed to get image")
+			return nil, "", errors.New("failed to get image")
 		}
 
 		images := ptr.From(resp.Images)
@@ -540,9 +541,7 @@ func getOAPIBsuToCreate(bsu osc.BsuToCreate) []map[string]any {
 }
 
 func expandOmiBlockDeviceOApiMappings(blocks []any) []osc.BlockDeviceMappingImage {
-	var blockDevices []osc.BlockDeviceMappingImage
-
-	for _, v := range blocks {
+	return lo.Map(blocks, func(v any, _ int) osc.BlockDeviceMappingImage {
 		blockDevice := osc.BlockDeviceMappingImage{}
 
 		value := v.(map[string]any)
@@ -557,9 +556,8 @@ func expandOmiBlockDeviceOApiMappings(blocks []any) []osc.BlockDeviceMappingImag
 			blockDevice.VirtualDeviceName = &virtualDeviceName
 		}
 
-		blockDevices = append(blockDevices, blockDevice)
-	}
-	return blockDevices
+		return blockDevice
+	})
 }
 
 func expandOmiBlockDeviceBSU(bsu []any) osc.BsuToCreate {

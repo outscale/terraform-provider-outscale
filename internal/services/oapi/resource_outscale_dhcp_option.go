@@ -242,7 +242,7 @@ func getAttachedDHCPs(ctx context.Context, client *osc.Client, timeout time.Dura
 		},
 	}, options.WithRetryTimeout(timeout))
 	if err != nil {
-		return nil, fmt.Errorf("error reading network (%s)", err)
+		return nil, fmt.Errorf("error reading network (%w)", err)
 	}
 
 	return ptr.From(resp.Nets), nil
@@ -256,7 +256,7 @@ func detachDHCPs(ctx context.Context, client *osc.Client, timeout time.Duration,
 			NetId:            net.NetId,
 		}, options.WithRetryTimeout(timeout))
 		if err != nil {
-			return fmt.Errorf("error updating net(%s) in dhcp option resource: %s", net.NetId, err)
+			return fmt.Errorf("error updating net(%s) in dhcp option resource: %w", net.NetId, err)
 		}
 	}
 	return nil

@@ -15,32 +15,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
-type tflogWrapper struct {
-}
+type tflogWrapper struct{}
 
 func NewTflogWrapper() *tflogWrapper {
 	return &tflogWrapper{}
-}
-
-func removeNulls(f any) any {
-	switch fields := f.(type) {
-	case map[string]any:
-		cleaned := make(map[string]any)
-		for k, v := range fields {
-			if v == nil {
-				continue
-			}
-			cleaned[k] = removeNulls(v)
-		}
-		return cleaned
-	case []any:
-		for i, v := range fields {
-			fields[i] = removeNulls(v)
-		}
-		return fields
-	default:
-		return fields
-	}
 }
 
 func (t *tflogWrapper) RequestHttp(ctx context.Context, req *http.Request) {
