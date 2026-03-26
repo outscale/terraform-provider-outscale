@@ -13,7 +13,6 @@ func TestAccNet_WithLinkRouteTable_Basic(t *testing.T) {
 	resourceName := "outscale_route_table_link.foo"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -31,7 +30,6 @@ func TestAccNet_ImportLinkRouteTable_Basic(t *testing.T) {
 	resourceName := "outscale_route_table_link.foo"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -54,8 +52,7 @@ func testAccCheckOAPILinkRouteTableImportStateIDFunc(resourceName string) resour
 
 func TestAccNet_WithLinkRouteTable_Migration(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { testacc.PreCheck(t) },
-		Steps:    testacc.FrameworkMigrationTestSteps("1.1.3", testAccOAPILinkRouteTableConfig),
+		Steps: testacc.FrameworkMigrationTestSteps("1.1.3", testAccOAPILinkRouteTableConfig),
 	})
 }
 

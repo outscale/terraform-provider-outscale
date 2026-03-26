@@ -3,12 +3,15 @@ package oapi
 import (
 	"context"
 	"fmt"
-	"net/http"
+	"maps"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/goutils/sdk/ptr"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
@@ -188,27 +191,25 @@ func getDataSourceSchemas(attrsSchema map[string]*schema.Schema) map[string]*sch
 		"filter": dataSourceFiltersSchema(),
 	}
 
-	for k, v := range attrsSchema {
-		wholeSchema[k] = v
-	}
+	maps.Copy(wholeSchema, attrsSchema)
 
 	return wholeSchema
 }
 
 func DataSourceOutscaleLoadBalancer() *schema.Resource {
 	return &schema.Resource{
-		Read:   DataSourceOutscaleLoadBalancerRead,
-		Schema: getDataSourceSchemas(attrLBchema()),
+		ReadContext: DataSourceOutscaleLoadBalancerRead,
+		Schema:      getDataSourceSchemas(attrLBchema()),
 	}
 }
 
-func buildOutscaleDataSourceLBFilters(set *schema.Set) (*oscgo.FiltersLoadBalancer, error) {
-	filters := oscgo.FiltersLoadBalancer{}
+func buildOutscaleDataSourceLBFilters(set *schema.Set) (*osc.FiltersLoadBalancer, error) {
+	filters := osc.FiltersLoadBalancer{}
 
 	for _, v := range set.List() {
-		m := v.(map[string]interface{})
+		m := v.(map[string]any)
 		filterValues := make([]string, 0)
-		for _, e := range m["values"].([]interface{}) {
+		for _, e := range m["values"].([]any) {
 			filterValues = append(filterValues, e.(string))
 		}
 
@@ -218,21 +219,21 @@ func buildOutscaleDataSourceLBFilters(set *schema.Set) (*oscgo.FiltersLoadBalanc
 		case "load_balancer_names":
 			filters.LoadBalancerNames = &filterValues
 		default:
-			return nil, utils.UnknownDataSourceFilterError(context.Background(), name)
+			return nil, utils.UnknownDataSourceFilterError(name)
 		}
 	}
 	return &filters, nil
 }
 
-func readLbs(conn *oscgo.APIClient, d *schema.ResourceData) (*oscgo.ReadLoadBalancersResponse, *string, error) {
-	return readLbs_(conn, d, schema.TypeString)
+func readLbs(ctx context.Context, client *osc.Client, d *schema.ResourceData) (*osc.ReadLoadBalancersResponse, *string, error) {
+	return readLbs_(ctx, client, d, schema.TypeString)
 }
 
-func readLbs_(conn *oscgo.APIClient, d *schema.ResourceData, t schema.ValueType) (*oscgo.ReadLoadBalancersResponse, *string, error) {
+func readLbs_(ctx context.Context, client *osc.Client, d *schema.ResourceData, t schema.ValueType) (*osc.ReadLoadBalancersResponse, *string, error) {
 	ename, nameOk := d.GetOk("load_balancer_name")
 	filters, filtersOk := d.GetOk("filter")
-	req := oscgo.ReadLoadBalancersRequest{
-		Filters: &oscgo.FiltersLoadBalancer{},
+	req := osc.ReadLoadBalancersRequest{
+		Filters: &osc.FiltersLoadBalancer{},
 	}
 
 	if !nameOk && !filtersOk {
@@ -246,48 +247,31 @@ func readLbs_(conn *oscgo.APIClient, d *schema.ResourceData, t schema.ValueType)
 			return nil, nil, err
 		}
 	} else if t == schema.TypeString {
-		req.Filters.SetLoadBalancerNames([]string{ename.(string)})
+		req.Filters.LoadBalancerNames = &[]string{ename.(string)}
 	} else { /* assuming typelist */
-		req.Filters = &oscgo.FiltersLoadBalancer{
-			LoadBalancerNames: utils.InterfaceSliceToStringSlicePtr(ename.([]interface{})),
+		req.Filters = &osc.FiltersLoadBalancer{
+			LoadBalancerNames: utils.InterfaceSliceToStringSlicePtr(ename.([]any)),
 		}
 	}
 	elbName := (*req.Filters.LoadBalancerNames)[0]
 
-	var resp oscgo.ReadLoadBalancersResponse
-	var statusCode int
-	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.LoadBalancerApi.
-			ReadLoadBalancers(context.Background()).
-			ReadLoadBalancersRequest(req).Execute()
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		statusCode = httpResp.StatusCode
-		return nil
-	})
+	resp, err := client.ReadLoadBalancers(ctx, req, options.WithRetryTimeout(5*time.Minute))
 	if err != nil {
-		if statusCode == http.StatusNotFound {
-			d.SetId("")
-			return nil, nil, fmt.Errorf("loadbalancer not found")
-		}
-
 		return nil, nil, fmt.Errorf("error retrieving elb: %s", err)
 	}
-	return &resp, &elbName, nil
+	return resp, &elbName, nil
 }
 
-func readLbs0(conn *oscgo.APIClient, d *schema.ResourceData) (*oscgo.LoadBalancer, *oscgo.ReadLoadBalancersResponse, error) {
-	resp, _, err := readLbs(conn, d)
+func readLbs0(ctx context.Context, client *osc.Client, d *schema.ResourceData) (*osc.LoadBalancer, *osc.ReadLoadBalancersResponse, error) {
+	resp, _, err := readLbs(ctx, client, d)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	if len(resp.GetLoadBalancers()) == 0 {
+	if resp.LoadBalancers == nil || len(*resp.LoadBalancers) == 0 {
 		return nil, nil, ErrNoResults
 	}
-	if len(resp.GetLoadBalancers()) > 1 {
+	if len(*resp.LoadBalancers) > 1 {
 		return nil, nil, ErrMultipleResults
 	}
 
@@ -295,83 +279,74 @@ func readLbs0(conn *oscgo.APIClient, d *schema.ResourceData) (*oscgo.LoadBalance
 	return &lbs[0], resp, nil
 }
 
-func DataSourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleLoadBalancerRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
-	lb, _, err := readLbs0(conn, d)
+	lb, _, err := readLbs0(ctx, client, d)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	d.Set("subregion_names", utils.StringSlicePtrToInterfaceSlice(lb.SubregionNames))
+	d.Set("subregion_names", utils.StringSlicePtrToInterfaceSlice(&lb.SubregionNames))
 	d.Set("dns_name", lb.DnsName)
-	d.Set("health_check", flattenOAPIHealthCheck(lb.HealthCheck))
-	d.Set("access_log", flattenOAPIAccessLog(lb.AccessLog))
-	d.Set("backend_vm_ids", utils.StringSlicePtrToInterfaceSlice(lb.BackendVmIds))
-	d.Set("backend_ips", utils.StringSlicePtrToInterfaceSlice(lb.BackendIps))
+	d.Set("health_check", flattenOAPIHealthCheck(&lb.HealthCheck))
+	d.Set("access_log", flattenOAPIAccessLog(&lb.AccessLog))
+	d.Set("backend_vm_ids", utils.StringSlicePtrToInterfaceSlice(&lb.BackendVmIds))
+	d.Set("backend_ips", utils.StringSlicePtrToInterfaceSlice(&lb.BackendIps))
 
-	if err := d.Set("listeners", flattenOAPIListeners(lb.Listeners)); err != nil {
-		return err
+	if err := d.Set("listeners", flattenOAPIListeners(&lb.Listeners)); err != nil {
+		return diag.FromErr(err)
 	}
 	d.Set("load_balancer_name", lb.LoadBalancerName)
 
 	if lb.ApplicationStickyCookiePolicies != nil {
-		app := make([]map[string]interface{}, len(*lb.ApplicationStickyCookiePolicies))
-		for k, v := range *lb.ApplicationStickyCookiePolicies {
-			a := make(map[string]interface{})
+		app := make([]map[string]any, len(lb.ApplicationStickyCookiePolicies))
+		for k, v := range lb.ApplicationStickyCookiePolicies {
+			a := make(map[string]any)
 			a["cookie_name"] = v.CookieName
 			a["policy_name"] = v.PolicyName
 			app[k] = a
 		}
 		d.Set("application_sticky_cookie_policies", app)
 	} else {
-		app := make([]map[string]interface{}, 0)
+		app := make([]map[string]any, 0)
 		d.Set("application_sticky_cookie_policies", app)
 	}
 	if lb.LoadBalancerStickyCookiePolicies != nil {
-		lbc := make([]map[string]interface{}, len(*lb.LoadBalancerStickyCookiePolicies))
-		for k, v := range *lb.LoadBalancerStickyCookiePolicies {
-			a := make(map[string]interface{})
+		lbc := make([]map[string]any, len(lb.LoadBalancerStickyCookiePolicies))
+		for k, v := range lb.LoadBalancerStickyCookiePolicies {
+			a := make(map[string]any)
 			a["policy_name"] = v.PolicyName
 			lbc[k] = a
 		}
 		d.Set("load_balancer_sticky_cookie_policies", lbc)
 	} else {
-		lbc := make([]map[string]interface{}, 0)
+		lbc := make([]map[string]any, 0)
 		d.Set("load_balancer_sticky_cookie_policies", lbc)
 	}
 
 	if lb.Tags != nil {
-		ta := make([]map[string]interface{}, len(*lb.Tags))
-		for k1, v1 := range *lb.Tags {
-			t := make(map[string]interface{})
+		ta := make([]map[string]any, len(lb.Tags))
+		for k1, v1 := range lb.Tags {
+			t := make(map[string]any)
 			t["key"] = v1.Key
 			t["value"] = v1.Value
 			ta[k1] = t
 		}
 		d.Set("tags", ta)
 	} else {
-		d.Set("tags", make([]map[string]interface{}, 0))
+		d.Set("tags", make([]map[string]any, 0))
 	}
 	d.Set("load_balancer_type", lb.LoadBalancerType)
-	if lb.SecurityGroups != nil {
-		d.Set("security_groups", utils.StringSlicePtrToInterfaceSlice(lb.SecurityGroups))
-	} else {
-		d.Set("security_groups", make([]map[string]interface{}, 0))
-	}
+	d.Set("security_groups", utils.StringSlicePtrToInterfaceSlice(&lb.SecurityGroups))
 
-	if lb.SourceSecurityGroup != nil {
-		d.Set("source_security_group", flattenSource_sg(lb.SourceSecurityGroup))
-	} else {
-		d.Set("source_security_group", make([]map[string]interface{}, 0))
-	}
-
-	d.Set("public_ip", lb.PublicIp)
+	d.Set("source_security_group", flattenSource_sg(&lb.SourceSecurityGroup))
+	d.Set("public_ip", ptr.From(lb.PublicIp))
 	d.Set("secured_cookies", lb.SecuredCookies)
-	d.Set("net_id", lb.NetId)
-	d.Set("subnets", utils.StringSlicePtrToInterfaceSlice(lb.Subnets))
+	d.Set("net_id", ptr.From(lb.NetId))
+	d.Set("subnets", utils.StringSlicePtrToInterfaceSlice(&lb.Subnets))
 	d.Set("state", lb.State)
-	d.SetId(*lb.LoadBalancerName)
+	d.SetId(lb.LoadBalancerName)
 
 	return nil
 }

@@ -12,7 +12,6 @@ import (
 func TestAccOthers_FlexibleGpu_Basic(t *testing.T) {
 	resourceName := "outscale_flexible_gpu.fGPU-1"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -39,8 +38,7 @@ func TestAccOthers_FlexibleGpu_Basic(t *testing.T) {
 
 func TestAccOthers_FlexibleGpu_Migration(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { testacc.PreCheck(t) },
-		Steps:    testacc.FrameworkMigrationTestSteps("1.0.1", testAccFlexibleGpuConfig(utils.GetRegion(), false)),
+		Steps: testacc.FrameworkMigrationTestSteps("1.0.1", testAccFlexibleGpuConfig(utils.GetRegion(), false)),
 	})
 }
 

@@ -11,7 +11,6 @@ func TestAccNet_Attributes_Basic(t *testing.T) {
 	resourceName := "outscale_net_attributes.outscale_net_attributes"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -27,8 +26,7 @@ func TestAccNet_Attributes_Basic(t *testing.T) {
 
 func TestAccNet_Attributes_Migration(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { testacc.PreCheck(t) },
-		Steps:    testacc.FrameworkMigrationTestSteps("1.1.2", testAccOutscaleLinAttrConfig),
+		Steps: testacc.FrameworkMigrationTestSteps("1.1.2", testAccOutscaleLinAttrConfig),
 	})
 }
 
@@ -36,7 +34,6 @@ func TestAccNet_Attr_import(t *testing.T) {
 	resourceName := "outscale_net_attributes.outscale_net_attributes"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{

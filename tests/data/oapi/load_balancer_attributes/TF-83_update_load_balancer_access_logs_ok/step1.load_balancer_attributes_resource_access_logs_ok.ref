@@ -23,6 +23,7 @@
                             }
                         ],
                         "application_sticky_cookie_policies": [],
+                        "backend_ips": "########",
                         "backend_vm_ids": [],
                         "dns_name": "########",
                         "health_check": [
@@ -43,7 +44,7 @@
                                 "backend_protocol": "TCP",
                                 "load_balancer_port": 1024,
                                 "load_balancer_protocol": "TCP",
-                                "policy_names": [],
+                                "policy_names": "########",
                                 "server_certificate_id": ""
                             },
                             {
@@ -51,7 +52,7 @@
                                 "backend_protocol": "HTTP",
                                 "load_balancer_port": 80,
                                 "load_balancer_protocol": "HTTP",
-                                "policy_names": [],
+                                "policy_names": "########",
                                 "server_certificate_id": ""
                             }
                         ],
@@ -66,9 +67,10 @@
                         "source_security_group": [
                             {
                                 "security_group_account_id": "##id-1##",
-                                "security_group_name": "outscale-elb-sg"
+                                "security_group_name": "########"
                             }
                         ],
+                        "state": "active",
                         "subnets": [],
                         "subregion_names": [
                             "eu-west-2a"
@@ -82,10 +84,15 @@
                                 "key": "platform",
                                 "value": "eu-west-2a"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA=="
+                    "identity_schema_version": 0,
+                    "private": "########",
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -101,7 +108,7 @@
                         "access_log": [
                             {
                                 "is_enabled": true,
-                                "osu_bucket_name": "bucket-name",
+                                "osu_bucket_name": "###osu_bucket_name###",
                                 "osu_bucket_prefix": "access-logs-test",
                                 "publication_interval": 5
                             }
@@ -127,7 +134,7 @@
                                 "backend_protocol": "HTTP",
                                 "load_balancer_port": 80,
                                 "load_balancer_protocol": "HTTP",
-                                "policy_names": [],
+                                "policy_names": "########",
                                 "server_certificate_id": ""
                             },
                             {
@@ -135,7 +142,7 @@
                                 "backend_protocol": "TCP",
                                 "load_balancer_port": 1024,
                                 "load_balancer_protocol": "TCP",
-                                "policy_names": [],
+                                "policy_names": "########",
                                 "server_certificate_id": ""
                             }
                         ],
@@ -143,14 +150,14 @@
                         "load_balancer_port": null,
                         "load_balancer_sticky_cookie_policies": [],
                         "load_balancer_type": null,
-                        "policy_names": null,
+                        "policy_names": "########",
                         "request_id": "########",
                         "security_groups": [],
                         "server_certificate_id": null,
                         "source_security_group": [
                             {
                                 "security_group_account_id": "##id-1##",
-                                "security_group_name": "outscale-elb-sg"
+                                "security_group_name": "########"
                             }
                         ],
                         "subnets": [],
@@ -166,12 +173,15 @@
                                 "key": "platform",
                                 "value": "eu-west-2a"
                             }
-                        ]
+                        ],
+                        "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "private": "bnVsbA==",
+                    "identity_schema_version": 0,
+                    "private": "########",
                     "dependencies": [
-                        "outscale_load_balancer.public_lbu1"
+                        "outscale_load_balancer.public_lbu1",
+                        "random_string.suffix"
                     ]
                 }
             ]

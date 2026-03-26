@@ -2,63 +2,54 @@ package oapi
 
 import (
 	"context"
-	"fmt"
 	"time"
 
-	oscgo "github.com/outscale/osc-sdk-go/v2"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceOutscaleLBUTags() *schema.Resource {
 	return &schema.Resource{
-		Read: DataSourceOutscaleLBUTagsRead,
+		ReadContext: DataSourceOutscaleLBUTagsRead,
 
 		Schema: getDataSourceSchemas(getDSOAPILBUTagsSchema()),
 	}
 }
 
-func DataSourceOutscaleLBUTagsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*client.OutscaleClient).OSCAPI
+func DataSourceOutscaleLBUTagsRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	client := meta.(*client.OutscaleClient).OSC
 
 	ename, nameOk := d.GetOk("load_balancer_names")
 	if !nameOk {
-		return fmt.Errorf("load_balancer_names is required")
+		return diag.Errorf("load_balancer_names is required")
 	}
 
-	names := ename.([]interface{})
+	names := ename.([]any)
 
-	req := oscgo.ReadLoadBalancerTagsRequest{
+	req := osc.ReadLoadBalancerTagsRequest{
 		LoadBalancerNames: utils.InterfaceSliceToStringSlice(names),
 	}
 
-	var resp oscgo.ReadLoadBalancerTagsResponse
-	var err = retry.Retry(5*time.Minute, func() *retry.RetryError {
-		rp, httpResp, err := conn.LoadBalancerApi.ReadLoadBalancerTags(
-			context.Background()).
-			ReadLoadBalancerTagsRequest(req).Execute()
-
-		if err != nil {
-			return utils.CheckThrottling(httpResp, err)
-		}
-		resp = rp
-		return nil
-	})
-
+	resp, err := client.ReadLoadBalancerTags(ctx, req, options.WithRetryTimeout(5*time.Minute))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
+	}
+	if resp.Tags == nil {
+		return diag.Errorf("tags of lbus (%v) not found", req.LoadBalancerNames)
 	}
 
 	tags := *resp.Tags
 	l := len(*resp.Tags)
 
-	ta := make([]map[string]interface{}, l)
+	ta := make([]map[string]any, l)
 	for k1, v1 := range tags {
-		t := make(map[string]interface{})
+		t := make(map[string]any)
 		t["key"] = v1.Key
 		t["value"] = v1.Value
 		t["load_balancer_name"] = v1.LoadBalancerName

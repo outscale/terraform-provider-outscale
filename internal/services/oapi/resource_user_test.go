@@ -14,7 +14,6 @@ func TestAccOthers_User_Basic(t *testing.T) {
 	userName := acctest.RandomWithPrefix("testacc-user")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -35,7 +34,6 @@ func TestAccOthers_User_Policy(t *testing.T) {
 	policyName := acctest.RandomWithPrefix("testacc-policy")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -57,7 +55,6 @@ func TestAccOthers_User_Update(t *testing.T) {
 	userName2 := acctest.RandomWithPrefix("testacc-user")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -88,7 +85,6 @@ func TestAccOthers_User_UppercaseVersionID(t *testing.T) {
 	policyName := acctest.RandomWithPrefix("testacc-policy")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
@@ -109,8 +105,7 @@ func TestAccOthers_User_Migration(t *testing.T) {
 	policyName := acctest.RandomWithPrefix("testacc-policy")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { testacc.PreCheck(t) },
-		Steps:    testacc.FrameworkMigrationTestSteps("1.3.1", testAccOutscaleUserBasicConfig(userName), testAccUserWithPolicy(policyName, userName)),
+		Steps: testacc.FrameworkMigrationTestSteps("1.3.1", testAccOutscaleUserBasicConfig(userName), testAccUserWithPolicy(policyName, userName)),
 	})
 }
 

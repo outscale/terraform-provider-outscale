@@ -36,4 +36,5 @@ jobs:
         with:
             test-command: test-integration-oapi-nets
             runner: us-east-2
+            providers: outscale_oapi,outscale_oos
         secrets: inherit

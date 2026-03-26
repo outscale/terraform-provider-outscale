@@ -13,7 +13,6 @@ func TestAccOKSProject_basic(t *testing.T) {
 	name := acctest.RandomWithPrefix("project-basic")
 	resourceName := "outscale_oks_project.project"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 
 		Steps: []resource.TestStep{

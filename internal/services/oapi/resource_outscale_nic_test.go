@@ -17,7 +17,6 @@ func TestAccNet_WithNic_basic(t *testing.T) {
 	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testacc.PreCheck(t) },
 		IDRefreshName:            resourceName,
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 

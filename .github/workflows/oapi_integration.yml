@@ -36,4 +36,5 @@ jobs:
         with:
             test-command: test-integration-oapi
             runner: eu-west-2
+            providers: outscale_oapi,outscale_oos
         secrets: inherit
