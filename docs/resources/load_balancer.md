@@ -214,6 +214,7 @@ If `load_balancer_type` is `internal`, the load balancer has a public DNS name t
 To only allow traffic from load balancers, add a security group rule that specifies this source security group as the inbound source.
     * `security_group_account_id` - The account ID of the owner of the security group.
     * `security_group_name` - The name of the security group.
+* `state` - The state of the load balancer (`provisioning` \| `starting` \| `reloading` \| `active` \| `reconfiguring` \| `deleting` \| `deleted`).
 * `subnets` - The ID of the Subnet in which the load balancer was created.
 * `subregion_names` - The ID of the Subregion in which the load balancer was created.
 * `tags` - One or more tags associated with the load balancer.
