@@ -4,6 +4,7 @@ on:
     pull_request:
         branches:
             - master
+            - feat/sdkv3
         paths:
             - ".github/workflows/generate_binaries_on_pr.yml"
             - "**.go"

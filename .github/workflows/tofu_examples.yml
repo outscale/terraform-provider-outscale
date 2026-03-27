@@ -4,6 +4,7 @@ on:
     pull_request:
         branches:
             - master
+            - feat/sdkv3
         paths:
             - "examples/**.tfvars"
             - "examples/**.tf"
