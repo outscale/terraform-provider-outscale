@@ -11,6 +11,7 @@ import (
 	"github.com/outscale/goutils/sdk/ptr"
 	"github.com/outscale/osc-sdk-go/v3/pkg/options"
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
+	"github.com/samber/lo"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -396,7 +397,7 @@ func ResourceOutscaleNicDetach(ctx context.Context, meta any, nicID string, time
 	resp, err := stateConf.WaitForStateContext(ctx)
 	if err != nil {
 		return fmt.Errorf(
-			"error waiting for eni (%s) to become dettached: %s", nicID, err)
+			"error waiting for eni (%s) to become dettached: %w", nicID, err)
 	}
 	r := resp.(*osc.ReadNicsResponse)
 	if r == nil || r.Nics == nil {
@@ -485,7 +486,7 @@ func ResourceOutscaleNicUpdate(ctx context.Context, d *schema.ResourceData, meta
 }
 
 func expandPrivateIPLight(pIPs []any) []osc.PrivateIpLight {
-	privateIPs := make([]osc.PrivateIpLight, 0)
+	privateIPs := make([]osc.PrivateIpLight, 0, len(pIPs))
 	for _, v := range pIPs {
 		privateIPMap := v.(map[string]any)
 		isPrimary := privateIPMap["is_primary"].(bool)
@@ -500,11 +501,9 @@ func expandPrivateIPLight(pIPs []any) []osc.PrivateIpLight {
 }
 
 func flattenPrivateIPLightToStringSlice(pIPs []any) []string {
-	privateIPs := make([]string, 0)
-	for _, v := range pIPs {
-		privateIPMap := v.(map[string]any)
-		privateIPs = append(privateIPs, privateIPMap["private_ip"].(string))
-	}
+	privateIPs := lo.Map(pIPs, func(v any, _ int) string {
+		return v.(map[string]any)["private_ip"].(string)
+	})
 	return privateIPs
 }
 

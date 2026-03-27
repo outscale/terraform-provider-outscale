@@ -83,12 +83,24 @@ func DataSourceOutscaleNetAccessPointRead(ctx context.Context, d *schema.Resourc
 
 	nap := (*resp.NetAccessPoints)[0]
 
-	d.Set("net_access_point_id", nap.NetAccessPointId)
-	d.Set("route_table_ids", utils.StringSlicePtrToInterfaceSlice(&nap.RouteTableIds))
-	d.Set("net_id", nap.NetId)
-	d.Set("service_name", nap.ServiceName)
-	d.Set("state", nap.State)
-	d.Set("tags", FlattenOAPITagsSDK(nap.Tags))
+	if err := d.Set("net_access_point_id", nap.NetAccessPointId); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("route_table_ids", utils.StringSlicePtrToInterfaceSlice(&nap.RouteTableIds)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("net_id", nap.NetId); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("service_name", nap.ServiceName); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("state", nap.State); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("tags", FlattenOAPITagsSDK(nap.Tags)); err != nil {
+		return diag.FromErr(err)
+	}
 
 	id := nap.NetAccessPointId
 	d.SetId(id)

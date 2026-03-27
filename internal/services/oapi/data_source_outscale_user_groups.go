@@ -13,6 +13,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
+	"github.com/samber/lo"
 )
 
 func DataSourceUserGroups() *schema.Resource {
@@ -99,10 +100,9 @@ func buildUserGroupsFilters(set *schema.Set) (*osc.FiltersUserGroup, error) {
 	var filters osc.FiltersUserGroup
 	for _, v := range set.List() {
 		m := v.(map[string]any)
-		var filterValues []string
-		for _, e := range m["values"].([]any) {
-			filterValues = append(filterValues, e.(string))
-		}
+		filterValues := lo.Map(m["values"].([]any), func(e any, _ int) string {
+			return e.(string)
+		})
 
 		switch name := m["name"].(string); name {
 		case "path_prefix":

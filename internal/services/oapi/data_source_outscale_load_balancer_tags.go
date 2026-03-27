@@ -56,7 +56,9 @@ func DataSourceOutscaleLBUTagsRead(ctx context.Context, d *schema.ResourceData, 
 		ta[k1] = t
 	}
 
-	d.Set("tags", ta)
+	if err := d.Set("tags", ta); err != nil {
+		return diag.FromErr(err)
+	}
 	d.SetId(id.UniqueId())
 	return nil
 }

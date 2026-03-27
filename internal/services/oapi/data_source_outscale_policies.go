@@ -13,6 +13,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
+	"github.com/samber/lo"
 	"github.com/spf13/cast"
 )
 
@@ -119,10 +120,9 @@ func buildPoliciesFilters(set *schema.Set) (*osc.ReadPoliciesFilters, error) {
 	var filters osc.ReadPoliciesFilters
 	for _, v := range set.List() {
 		m := v.(map[string]any)
-		var filterValues []string
-		for _, e := range m["values"].([]any) {
-			filterValues = append(filterValues, e.(string))
-		}
+		filterValues := lo.Map(m["values"].([]any), func(e any, _ int) string {
+			return e.(string)
+		})
 
 		switch name := m["name"].(string); name {
 		case "only_linked":

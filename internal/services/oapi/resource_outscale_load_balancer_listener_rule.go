@@ -223,7 +223,9 @@ func ResourceOutscaleLoadBalancerListenerRuleRead(ctx context.Context, d *schema
 		return diag.FromErr(err)
 	}
 	if lr.VmIds != nil {
-		d.Set("vm_ids", utils.StringSlicePtrToInterfaceSlice(lr.VmIds))
+		if err := d.Set("vm_ids", utils.StringSlicePtrToInterfaceSlice(lr.VmIds)); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 	return nil
 }
@@ -292,14 +294,15 @@ func ResourceOutscaleLoadBalancerListenerRuleDelete(ctx context.Context, d *sche
 			filter := &osc.FiltersListenerRule{
 				ListenerRuleNames: &[]string{d.Id()},
 			}
-
 			req := osc.ReadListenerRulesRequest{
 				Filters: filter,
 			}
 
 			resp, err := client.ReadListenerRules(ctx, req, options.WithRetryTimeout(timeout))
-
-			if err != nil || resp.ListenerRules == nil || len(*resp.ListenerRules) < 1 {
+			if err != nil {
+				return nil, "", err
+			}
+			if resp.ListenerRules == nil || len(*resp.ListenerRules) < 1 {
 				return nil, "", nil
 			}
 

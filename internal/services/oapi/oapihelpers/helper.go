@@ -73,10 +73,10 @@ func GetBsuTagsMaps(ctx context.Context, client *osc.Client, batcher *batch.Batc
 func RandVpcCidr() string {
 	var result string
 	prefix := utils.RandIntRange(16, 29)
-	switch rand.Intn(3) {
+	switch rand.Intn(3) { //nolint:gosec
 	case 0:
 		// 10.0.0.0 - 10.255.255.255 (10/8 prefix)
-		result = fmt.Sprintf("10.%d.0.0/%d", rand.Intn(256), prefix)
+		result = fmt.Sprintf("10.%d.0.0/%d", rand.Intn(256), prefix) //nolint:gosec
 	case 1:
 		// 172.16.0.0 - 172.31.255.255 (172.16/12 prefix)
 		result = fmt.Sprintf("172.%d.0.0/%d", utils.RandIntRange(16, 32), prefix)
@@ -273,13 +273,13 @@ func GetOAPIVMNetworkInterfaceLightSet(respNics []osc.NicLight) ([]map[string]an
 	return primaryNic, nics
 }
 
-func GetSecurityGroups(groups []osc.SecurityGroupLight) (SecurityGroup []map[string]any, SecurityGroupIds []string) {
+func GetSecurityGroups(groups []osc.SecurityGroupLight) (securityGroup []map[string]any, securityGroupIds []string) {
 	for _, g := range groups {
-		SecurityGroup = append(SecurityGroup, map[string]any{
+		securityGroup = append(securityGroup, map[string]any{
 			"security_group_id":   g.SecurityGroupId,
 			"security_group_name": g.SecurityGroupName,
 		})
-		SecurityGroupIds = append(SecurityGroupIds, g.SecurityGroupId)
+		securityGroupIds = append(securityGroupIds, g.SecurityGroupId)
 	}
 	return
 }
@@ -317,8 +317,8 @@ func ImageHasLaunchPermission(ctx context.Context, client *osc.Client, timeout t
 	return false, nil
 }
 
-func ParseVPNConnectionRouteID(ID string) (destinationIPRange, vpnconnectionID string) {
-	parts := strings.SplitN(ID, ":", 2)
+func ParseVPNConnectionRouteID(id string) (destinationIPRange, vpnconnectionID string) {
+	parts := strings.SplitN(id, ":", 2)
 	return parts[0], parts[1]
 }
 

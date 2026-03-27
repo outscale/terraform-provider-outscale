@@ -2,11 +2,13 @@ package oapi
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"maps"
 	"time"
 
 	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/samber/lo"
 
 	"github.com/outscale/osc-sdk-go/v3/pkg/options"
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
@@ -208,10 +210,9 @@ func buildOutscaleDataSourceLBFilters(set *schema.Set) (*osc.FiltersLoadBalancer
 
 	for _, v := range set.List() {
 		m := v.(map[string]any)
-		filterValues := make([]string, 0)
-		for _, e := range m["values"].([]any) {
-			filterValues = append(filterValues, e.(string))
-		}
+		filterValues := lo.Map(m["values"].([]any), func(e any, _ int) string {
+			return e.(string)
+		})
 
 		switch name := m["name"].(string); name {
 		case "load_balancer_name":
@@ -237,18 +238,19 @@ func readLbs_(ctx context.Context, client *osc.Client, d *schema.ResourceData, t
 	}
 
 	if !nameOk && !filtersOk {
-		return nil, nil, fmt.Errorf("one of filters, or load_balancer_name must be assigned")
+		return nil, nil, errors.New("one of filters, or load_balancer_name must be assigned")
 	}
 
 	var err error
-	if filtersOk {
+	switch {
+	case filtersOk:
 		req.Filters, err = buildOutscaleDataSourceLBFilters(filters.(*schema.Set))
 		if err != nil {
 			return nil, nil, err
 		}
-	} else if t == schema.TypeString {
+	case t == schema.TypeString:
 		req.Filters.LoadBalancerNames = &[]string{ename.(string)}
-	} else { /* assuming typelist */
+	default: /* assuming typelist */
 		req.Filters = &osc.FiltersLoadBalancer{
 			LoadBalancerNames: utils.InterfaceSliceToStringSlicePtr(ename.([]any)),
 		}
@@ -257,7 +259,7 @@ func readLbs_(ctx context.Context, client *osc.Client, d *schema.ResourceData, t
 
 	resp, err := client.ReadLoadBalancers(ctx, req, options.WithRetryTimeout(5*time.Minute))
 	if err != nil {
-		return nil, nil, fmt.Errorf("error retrieving elb: %s", err)
+		return nil, nil, fmt.Errorf("error retrieving elb: %w", err)
 	}
 	return resp, &elbName, nil
 }
@@ -287,17 +289,31 @@ func DataSourceOutscaleLoadBalancerRead(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	d.Set("subregion_names", utils.StringSlicePtrToInterfaceSlice(&lb.SubregionNames))
-	d.Set("dns_name", lb.DnsName)
-	d.Set("health_check", flattenOAPIHealthCheck(&lb.HealthCheck))
-	d.Set("access_log", flattenOAPIAccessLog(&lb.AccessLog))
-	d.Set("backend_vm_ids", utils.StringSlicePtrToInterfaceSlice(&lb.BackendVmIds))
-	d.Set("backend_ips", utils.StringSlicePtrToInterfaceSlice(&lb.BackendIps))
+	if err := d.Set("subregion_names", utils.StringSlicePtrToInterfaceSlice(&lb.SubregionNames)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("dns_name", lb.DnsName); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("health_check", flattenOAPIHealthCheck(&lb.HealthCheck)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("access_log", flattenOAPIAccessLog(&lb.AccessLog)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("backend_vm_ids", utils.StringSlicePtrToInterfaceSlice(&lb.BackendVmIds)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("backend_ips", utils.StringSlicePtrToInterfaceSlice(&lb.BackendIps)); err != nil {
+		return diag.FromErr(err)
+	}
 
 	if err := d.Set("listeners", flattenOAPIListeners(&lb.Listeners)); err != nil {
 		return diag.FromErr(err)
 	}
-	d.Set("load_balancer_name", lb.LoadBalancerName)
+	if err := d.Set("load_balancer_name", lb.LoadBalancerName); err != nil {
+		return diag.FromErr(err)
+	}
 
 	if lb.ApplicationStickyCookiePolicies != nil {
 		app := make([]map[string]any, len(lb.ApplicationStickyCookiePolicies))
@@ -307,10 +323,14 @@ func DataSourceOutscaleLoadBalancerRead(ctx context.Context, d *schema.ResourceD
 			a["policy_name"] = v.PolicyName
 			app[k] = a
 		}
-		d.Set("application_sticky_cookie_policies", app)
+		if err := d.Set("application_sticky_cookie_policies", app); err != nil {
+			return diag.FromErr(err)
+		}
 	} else {
 		app := make([]map[string]any, 0)
-		d.Set("application_sticky_cookie_policies", app)
+		if err := d.Set("application_sticky_cookie_policies", app); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 	if lb.LoadBalancerStickyCookiePolicies != nil {
 		lbc := make([]map[string]any, len(lb.LoadBalancerStickyCookiePolicies))
@@ -319,10 +339,14 @@ func DataSourceOutscaleLoadBalancerRead(ctx context.Context, d *schema.ResourceD
 			a["policy_name"] = v.PolicyName
 			lbc[k] = a
 		}
-		d.Set("load_balancer_sticky_cookie_policies", lbc)
+		if err := d.Set("load_balancer_sticky_cookie_policies", lbc); err != nil {
+			return diag.FromErr(err)
+		}
 	} else {
 		lbc := make([]map[string]any, 0)
-		d.Set("load_balancer_sticky_cookie_policies", lbc)
+		if err := d.Set("load_balancer_sticky_cookie_policies", lbc); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	if lb.Tags != nil {
@@ -333,19 +357,39 @@ func DataSourceOutscaleLoadBalancerRead(ctx context.Context, d *schema.ResourceD
 			t["value"] = v1.Value
 			ta[k1] = t
 		}
-		d.Set("tags", ta)
+		if err := d.Set("tags", ta); err != nil {
+			return diag.FromErr(err)
+		}
 	} else {
-		d.Set("tags", make([]map[string]any, 0))
+		if err := d.Set("tags", make([]map[string]any, 0)); err != nil {
+			return diag.FromErr(err)
+		}
 	}
-	d.Set("load_balancer_type", lb.LoadBalancerType)
-	d.Set("security_groups", utils.StringSlicePtrToInterfaceSlice(&lb.SecurityGroups))
+	if err := d.Set("load_balancer_type", lb.LoadBalancerType); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("security_groups", utils.StringSlicePtrToInterfaceSlice(&lb.SecurityGroups)); err != nil {
+		return diag.FromErr(err)
+	}
 
-	d.Set("source_security_group", flattenSource_sg(&lb.SourceSecurityGroup))
-	d.Set("public_ip", ptr.From(lb.PublicIp))
-	d.Set("secured_cookies", lb.SecuredCookies)
-	d.Set("net_id", ptr.From(lb.NetId))
-	d.Set("subnets", utils.StringSlicePtrToInterfaceSlice(&lb.Subnets))
-	d.Set("state", lb.State)
+	if err := d.Set("source_security_group", flattenSource_sg(&lb.SourceSecurityGroup)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("public_ip", ptr.From(lb.PublicIp)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("secured_cookies", lb.SecuredCookies); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("net_id", ptr.From(lb.NetId)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("subnets", utils.StringSlicePtrToInterfaceSlice(&lb.Subnets)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("state", lb.State); err != nil {
+		return diag.FromErr(err)
+	}
 	d.SetId(lb.LoadBalancerName)
 
 	return nil

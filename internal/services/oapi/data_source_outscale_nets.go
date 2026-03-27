@@ -94,7 +94,6 @@ func DataSourceOutscaleVpcsRead(ctx context.Context, d *schema.ResourceData, met
 		var filters osc.FiltersNet
 		filters.NetIds = &ids
 		req.Filters = &filters
-
 	}
 
 	resp, err := client.ReadNets(ctx, req, options.WithRetryTimeout(5*time.Minute))

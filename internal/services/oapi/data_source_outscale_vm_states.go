@@ -81,7 +81,7 @@ func DataSourceOutscaleVMStatesRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	filteredStates := ptr.From(resp.VmStates)[:]
+	filteredStates := ptr.From(resp.VmStates)
 
 	if len(filteredStates) < 1 {
 		return diag.FromErr(ErrNoResults)
