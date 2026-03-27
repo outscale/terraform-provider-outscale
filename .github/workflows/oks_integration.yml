@@ -4,6 +4,7 @@ on:
     pull_request:
         branches:
             - master
+            - feat/sdkv3
         paths:
             - ".github/workflows/oks_integration.yml"
             - ".github/workflows/reusable-integration-test.yml"

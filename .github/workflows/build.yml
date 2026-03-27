@@ -2,7 +2,7 @@ name: Check build & lint
 
 on:
   pull_request:
-    branches: [master]
+    branches: [master, feat/sdkv3]
     paths:
       - "**.go"
       - "go.*"

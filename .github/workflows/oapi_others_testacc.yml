@@ -4,6 +4,7 @@ on:
     pull_request:
         branches:
             - master
+            - feat/sdkv3
         paths:
             - ".github/workflows/oapi_others_testacc.yml"
             - ".github/workflows/reusable-acceptance-test.yml"
