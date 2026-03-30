@@ -48,7 +48,6 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "outscale_flexible_gpu.fGPU-1",
                         "outscale_keypair.my_keypair",

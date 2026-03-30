@@ -141,6 +141,15 @@ func ImportStepWithStateIdFunc(resourceName string, importStateIdFunc resource.I
 	return importStep(resourceName, importStateIdFunc, ignore...)
 }
 
+// ImportStepWithIdentifierAttribute is useful for resources whose id is non-deterministic (e.g. using id.UniqueId()).
+// On import a new id is assigned, making it impossible to match pre- and post-import state by the default "id" attribute.
+func ImportStepWithIdentifierAttribute(resourceName string, identifierAttribute string, importStateIdFunc resource.ImportStateIdFunc, ignore ...string) resource.TestStep {
+	step := importStep(resourceName, importStateIdFunc, ignore...)
+	step.ImportStateVerifyIdentifierAttribute = identifierAttribute
+
+	return step
+}
+
 func ImportStep(resourceName string, ignore ...string) resource.TestStep {
 	idFunc := func(s *terraform.State) (string, error) {
 		rs, ok := s.RootModule().Resources[resourceName]

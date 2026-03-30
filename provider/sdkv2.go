@@ -159,7 +159,6 @@ func Provider() *schema.Provider {
 			"outscale_load_balancer_policy":              oapi.ResourceOutscaleAppCookieStickinessPolicy(),
 			"outscale_load_balancer_attributes":          oapi.ResourceOutscaleLoadBalancerAttributes(),
 			"outscale_load_balancer_listener_rule":       oapi.ResourceOutscaleLoadBalancerListenerRule(),
-			"outscale_flexible_gpu_link":                 oapi.ResourceOutscaleFlexibleGpuLink(),
 			"outscale_image_export_task":                 oapi.ResourceOutscaleImageExportTask(),
 			"outscale_server_certificate":                oapi.ResourceOutscaleServerCertificate(),
 			"outscale_snapshot_export_task":              oapi.ResourceOutscaleSnapshotExportTask(),
