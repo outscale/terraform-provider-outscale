@@ -260,6 +260,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		oapi.NewResourceNet,
 		oapi.NewResourceAccessKey,
 		oapi.NewResourcefGPU,
+		oapi.NewResourcefGPULink,
 		oapi.NewResourceKeypair,
 		oapi.NewResourceSubnet,
 		oapi.NewResourceNetPeering,
