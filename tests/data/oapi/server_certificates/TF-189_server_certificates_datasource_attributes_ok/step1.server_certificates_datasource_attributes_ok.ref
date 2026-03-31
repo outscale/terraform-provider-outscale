@@ -21,17 +21,17 @@
                             {
                                 "expiration_date": "########",
                                 "id": "##id-1##",
-                                "name": "Certificate-TF189-1",
+                                "name": "Certificate-TF189-2",
                                 "orn": "########",
-                                "path": "/terraform/test1/",
+                                "path": "/terraform/test2/",
                                 "upload_date": "########"
                             },
                             {
                                 "expiration_date": "########",
                                 "id": "##id-2##",
-                                "name": "Certificate-TF189-2",
+                                "name": "Certificate-TF189-1",
                                 "orn": "########",
-                                "path": "/terraform/test2/",
+                                "path": "/terraform/test1/",
                                 "upload_date": "########"
                             }
                         ]
@@ -52,9 +52,8 @@
                     "attributes": {
                         "body": "########",
                         "chain": "########",
-                        "dry_run": null,
                         "expiration_date": "########",
-                        "id": "##id-1##",
+                        "id": "##id-2##",
                         "name": "########",
                         "orn": "########",
                         "path": "/terraform/test1/",
@@ -64,8 +63,7 @@
                         "upload_date": "########"
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0,
-                    "private": "########"
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -80,9 +78,8 @@
                     "attributes": {
                         "body": "########",
                         "chain": "########",
-                        "dry_run": null,
                         "expiration_date": "########",
-                        "id": "##id-2##",
+                        "id": "##id-1##",
                         "name": "########",
                         "orn": "########",
                         "path": "/terraform/test2/",
@@ -92,8 +89,7 @@
                         "upload_date": "########"
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0,
-                    "private": "########"
+                    "identity_schema_version": 0
                 }
             ]
         }

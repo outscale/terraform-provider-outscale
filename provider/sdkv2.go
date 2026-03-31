@@ -158,7 +158,6 @@ func Provider() *schema.Provider {
 			"outscale_load_balancer_attributes":          oapi.ResourceOutscaleLoadBalancerAttributes(),
 			"outscale_load_balancer_listener_rule":       oapi.ResourceOutscaleLoadBalancerListenerRule(),
 			"outscale_image_export_task":                 oapi.ResourceOutscaleImageExportTask(),
-			"outscale_server_certificate":                oapi.ResourceOutscaleServerCertificate(),
 			"outscale_snapshot_export_task":              oapi.ResourceOutscaleSnapshotExportTask(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{

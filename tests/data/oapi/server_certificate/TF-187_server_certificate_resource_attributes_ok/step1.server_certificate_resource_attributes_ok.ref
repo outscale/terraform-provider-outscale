@@ -16,7 +16,6 @@
                     "attributes": {
                         "body": "########",
                         "chain": "########",
-                        "dry_run": null,
                         "expiration_date": "########",
                         "id": "##id-0##",
                         "name": "########",
@@ -29,7 +28,6 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "random_string.suffix"
                     ]

@@ -176,7 +176,6 @@
                     "attributes": {
                         "body": "########",
                         "chain": "########",
-                        "dry_run": null,
                         "expiration_date": "########",
                         "id": "##id-4##",
                         "name": "########",
@@ -189,7 +188,6 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "random_string.suffix"
                     ]
@@ -207,7 +205,6 @@
                     "attributes": {
                         "body": "########",
                         "chain": "########",
-                        "dry_run": null,
                         "expiration_date": "########",
                         "id": "##id-5##",
                         "name": "########",
@@ -220,7 +217,6 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "random_string.suffix"
                     ]

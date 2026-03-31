@@ -1,25 +1,62 @@
 package oapi_test
 
 import (
-	"context"
 	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/outscale/goutils/sdk/ptr"
-	"github.com/outscale/osc-sdk-go/v3/pkg/options"
-	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
-	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 )
 
-func TestAccOthers_ServerCertificate_basic(t *testing.T) {
+func TestAccOthers_ServerCertificate_Basic(t *testing.T) {
 	resourceName := "outscale_server_certificate.test"
-	rName := acctest.RandomWithPrefix("acc-test")
-	rNameUpdated := acctest.RandomWithPrefix("acc-test")
-	body := `-----BEGIN CERTIFICATE-----
+	rName := acctest.RandomWithPrefix("testacc-server-cert")
+	rNameUpdated := acctest.RandomWithPrefix("testacc-server-cert")
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccServerCertificateConfig(rName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
+					resource.TestCheckResourceAttr(resourceName, "name", rName),
+				),
+			},
+			{
+				Config: testAccServerCertificateConfig(rNameUpdated),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
+					resource.TestCheckResourceAttr(resourceName, "name", rNameUpdated),
+				),
+			},
+			testacc.ImportStep(resourceName, "request_id", "body", "private_key"),
+		},
+	})
+}
+
+func TestAccOthers_ServerCertificate_Migration(t *testing.T) {
+	rName := acctest.RandomWithPrefix("testacc-server-cert")
+
+	resource.Test(t, resource.TestCase{
+		Steps: testacc.FrameworkMigrationTestSteps("1.4.0",
+			testAccServerCertificateConfig(rName),
+		),
+	})
+}
+
+func testAccServerCertificateConfig(name string) string {
+	return fmt.Sprintf(`
+resource "outscale_server_certificate" "test" {
+   name        =  %[1]q
+   body        =  %[2]q
+   private_key =  %[3]q
+}
+	`, name, testAccServerCertBody, testAccServerCertPrivateKey)
+}
+
+const testAccServerCertBody = `-----BEGIN CERTIFICATE-----
 MIIFETCCAvkCFE1QlISgW8h5/akhNlZzb+or8HgYMA0GCSqGSIb3DQEBCwUAMEUx
 CzAJBgNVBAYTAkFVMRMwEQYDVQQIDApTb21lLVN0YXRlMSEwHwYDVQQKDBhJbnRl
 cm5ldCBXaWRnaXRzIFB0eSBMdGQwHhcNMjEwOTA5MDAyNDQzWhcNMzEwOTA3MDAy
@@ -50,7 +87,8 @@ zz2wyUFLztD3nO3US8tPSz/I5kXWGpOrPt+UcUPQEGzu5WQ+ZOeD+mQQMCVv0wiz
 nmS35ug=
 -----END CERTIFICATE-----
 `
-	private := `-----BEGIN PRIVATE KEY-----
+
+const testAccServerCertPrivateKey = `-----BEGIN PRIVATE KEY-----
 MIIJQwIBADANBgkqhkiG9w0BAQEFAASCCS0wggkpAgEAAoICAQDThPt5Q3OR20wO
 VxanOC7/FKD3xm+GcMHvmznbw5eDDTxQUz0amoZi7XbFu3TbPQ8mYEEk/LuqbcOn
 Y60u4NwBMvpAlOLQpfnG+4tOYGe5Kgd7kRxsw7HZgdHoeL2FS2XozgTbLgvFzlNC
@@ -102,95 +140,3 @@ mUsRJKg0Iz5dk/1xIAWlhOdcx8tKIXrOY9tv7470XVZcVWXzzcKhOSzZwDNkiAn7
 kbcI5Y2wveEgMqPSRya2OapYGiPeqYhg6JAGPRXtOfOq9IUDcPuc2emnihNpSa8y
 0UFH3oBALPqPwDIt0F+wjSaY2bcmCjo=
 -----END PRIVATE KEY-----`
-
-	resource.ParallelTest(t, resource.TestCase{
-		Providers:    testacc.SDKProviders,
-		CheckDestroy: testAccCheckOutscaleServerCertificateDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccOutscaleServerCertificateConfig(rName, body, private),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleServerCertificateExists(t.Context(), resourceName),
-				),
-			},
-			{
-				Config: testAccOutscaleServerCertificateConfig(rNameUpdated, body, private),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleServerCertificateExists(t.Context(), resourceName),
-				),
-			},
-			testacc.ImportStep(resourceName, "request_id", "body", "private_key"),
-		},
-	})
-}
-
-func testAccCheckOutscaleServerCertificateExists(ctx context.Context, n string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("not found: %s", n)
-		}
-
-		client := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSC
-
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("no id is set")
-		}
-		exists := false
-		resp, err := client.ReadServerCertificates(ctx, osc.ReadServerCertificatesRequest{}, options.WithRetryTimeout(DefaultTimeout))
-
-		if err != nil || resp.ServerCertificates == nil || len(*resp.ServerCertificates) == 0 {
-			return fmt.Errorf("server certificate not found (%s)", rs.Primary.ID)
-		}
-
-		for _, server := range *resp.ServerCertificates {
-			if ptr.From(server.Id) == rs.Primary.ID {
-				exists = true
-			}
-		}
-
-		if !exists {
-			return fmt.Errorf("server certificate not found (%s)", rs.Primary.ID)
-		}
-
-		return nil
-	}
-}
-
-func testAccCheckOutscaleServerCertificateDestroy(s *terraform.State) error {
-	client := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSC
-
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "outscale_server_certificate_link" {
-			continue
-		}
-
-		exists := false
-
-		resp, err := client.ReadServerCertificates(context.Background(), osc.ReadServerCertificatesRequest{}, options.WithRetryTimeout(DefaultTimeout))
-		if err != nil {
-			return fmt.Errorf("server certificate reading (%s)", rs.Primary.ID)
-		}
-
-		for _, server := range ptr.From(resp.ServerCertificates) {
-			if ptr.From(server.Id) == rs.Primary.ID {
-				exists = true
-			}
-		}
-
-		if exists {
-			return fmt.Errorf("server certificate still exists (%s)", rs.Primary.ID)
-		}
-	}
-	return nil
-}
-
-func testAccOutscaleServerCertificateConfig(name, body, privateKey string) string {
-	return fmt.Sprintf(`
-resource "outscale_server_certificate" "test" {
-   name        =  %[1]q
-   body        =  %[2]q
-   private_key =  %[3]q
-}
-	`, name, body, privateKey)
-}
