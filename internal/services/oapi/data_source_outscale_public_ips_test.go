@@ -10,7 +10,7 @@ import (
 
 func TestAccOthers_DataSourcePublicIPS(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testacc.SDKProviders,
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceOutscalePublicIPSConfig,
@@ -30,7 +30,7 @@ func TestAccOthers_DataSourcePublicIPS(t *testing.T) {
 func TestAccOthers_DataSourcePublicIPS_withTags(t *testing.T) {
 	if os.Getenv("TEST_QUOTA") == "true" {
 		resource.ParallelTest(t, resource.TestCase{
-			Providers: testacc.SDKProviders,
+			ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 			Steps: []resource.TestStep{
 				{
 					Config: testAccDataSourceOutscalePublicIPSConfigWithTags,
