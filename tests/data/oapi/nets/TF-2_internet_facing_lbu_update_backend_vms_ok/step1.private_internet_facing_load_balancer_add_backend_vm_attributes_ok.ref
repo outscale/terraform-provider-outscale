@@ -329,8 +329,7 @@
                         "vm_id": ""
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0,
-                    "private": "########"
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -363,7 +362,6 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "outscale_net.outscale_net",
                         "outscale_public_ip.public_ip02",

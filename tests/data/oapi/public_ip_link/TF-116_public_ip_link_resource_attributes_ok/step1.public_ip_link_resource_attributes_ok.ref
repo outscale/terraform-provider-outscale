@@ -60,8 +60,7 @@
                         "vm_id": ""
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0,
-                    "private": "########"
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -94,7 +93,6 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "outscale_keypair.my_keypair",
                         "outscale_public_ip.outscale_public_ip",

@@ -139,8 +139,6 @@ func Provider() *schema.Provider {
 			"outscale_vm":                                oapi.ResourceOutscaleVM(),
 			"outscale_image":                             oapi.ResourceOutscaleImage(),
 			"outscale_tag":                               oapi.ResourceOutscaleTags(),
-			"outscale_public_ip":                         oapi.ResourceOutscalePublicIP(),
-			"outscale_public_ip_link":                    oapi.ResourceOutscalePublicIPLink(),
 			"outscale_nat_service":                       oapi.ResourceOutscaleNatService(),
 			"outscale_nic":                               oapi.ResourceOutscaleNic(),
 			"outscale_snapshot":                          oapi.ResourceOutscaleSnapshot(),
