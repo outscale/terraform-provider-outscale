@@ -46,7 +46,7 @@ The following attributes are exported:
 * `name` - The name of the server certificate.
 * `orn` - The OUTSCALE Resource Name (ORN) of the server certificate. For more information, see [Resource Identifiers > OUTSCALE Resource Names (ORNs)](https://docs.outscale.com/en/userguide/Resource-Identifiers.html#_outscale_resource_names_orns).
 * `path` - The path to the server certificate.
-* `upload_date` - TThe date and time (UTC) on which the server certificate has been uploaded.
+* `upload_date` - The date and time (UTC) on which the server certificate has been uploaded.
 
 ## Timeouts
 
