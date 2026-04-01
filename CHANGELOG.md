@@ -38,6 +38,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### 🌱 Others
 - (nothing yet)
 
+## [1.5.0] - 2026-04-01
+
+### ✨ Added
+* ✨ feat(lbu): add state attribute by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/711
+
+### 🛠️ Changed / Refactoring
+* Docs/updated example by @outscale-rce in https://github.com/outscale/terraform-provider-outscale/pull/701
+
+### 📝 Documentation
+* 📝 docs: Mention reserved private IPs and fix example in nic resource by @andrepasteur in https://github.com/outscale/terraform-provider-outscale/pull/696
+* 📝 docs: Fix "Create a VM with secondary NICs" example by @andrepasteur in https://github.com/outscale/terraform-provider-outscale/pull/698
+* 📝 docs: Rework the VM resource examples by @andrepasteur in https://github.com/outscale/terraform-provider-outscale/pull/700
+* 📝 docs: Create guide about OOS Backend by @outscale-rce in https://github.com/outscale/terraform-provider-outscale/pull/702
+* 📝 docs: Add 'state' attribute to 'load_balancer' by @andrepasteur in https://github.com/outscale/terraform-provider-outscale/pull/714
+* 📝 docs: Add oks_quotas data source by @andrepasteur in https://github.com/outscale/terraform-provider-outscale/pull/715
+
+### 🐛 Fixed
+* 🐛 Ensure subprocess commands use string for Windows compatibility by @YashGaykar0309 in https://github.com/outscale/terraform-provider-outscale/pull/691
+* 🐛 fix(vm): do not error on unexpected state by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/710
+* 🐛 fix: clean state on empty read by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/709
+* 🐛 fix(ak): remove expiration_date by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/712
+* 🐛 fix(vm): security_group_ids causes perpetual diff when unset by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/713
+
+### 📦 Dependency updates
+* ⬆️ deps(gomod): update github.com/outscale/goutils/sdk digest to d95db55 by @Open-Source-Bot in https://github.com/outscale/terraform-provider-outscale/pull/659
+* ⬆️ deps(gomod): update module github.com/spf13/cast to v1.10.0 by @Open-Source-Bot in https://github.com/outscale/terraform-provider-outscale/pull/644
+
 ## [1.4.0] - 2026-02-19
 
 ### ✨ Added
