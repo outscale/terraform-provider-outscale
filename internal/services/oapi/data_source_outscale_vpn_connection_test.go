@@ -29,7 +29,7 @@ func TestAccOthers_VPNConnectionDataSource_withFilters(t *testing.T) {
 	bgpAsn := oapihelpers.RandBgpAsn()
 
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testacc.SDKProviders,
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleVPNConnectionDataSourceConfigWithFilters(bgpAsn, publicIP),

@@ -147,7 +147,6 @@ func Provider() *schema.Provider {
 			"outscale_nic_private_ip":                    oapi.ResourceOutscaleNetworkInterfacePrivateIP(),
 			"outscale_snapshot_attributes":               oapi.ResourceOutscaleSnapshotAttributes(),
 			"outscale_dhcp_option":                       oapi.ResourceOutscaleDHCPOption(),
-			"outscale_client_gateway":                    oapi.ResourceOutscaleClientGateway(),
 			"outscale_virtual_gateway":                   oapi.ResourceOutscaleVirtualGateway(),
 			"outscale_virtual_gateway_link":              oapi.ResourceOutscaleVirtualGatewayLink(),
 			"outscale_virtual_gateway_route_propagation": oapi.ResourceOutscaleVirtualGatewayRoutePropagation(),

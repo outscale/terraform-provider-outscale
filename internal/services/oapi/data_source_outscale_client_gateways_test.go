@@ -28,7 +28,7 @@ func TestAccOthers_ClientGatewaysDatasource_withFilters(t *testing.T) {
 	bgpAsn2 := oapihelpers.RandBgpAsn()
 
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testacc.SDKProviders,
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleClientGatewaysDatasourceConfigWithFilters(bgpAsn1, bgpAsn2),

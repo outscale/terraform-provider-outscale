@@ -30,7 +30,7 @@ func TestAccOthers_GatewayDatasource_withFilters(t *testing.T) {
 	value := fmt.Sprintf("testacc-%s", acctest.RandString(5))
 
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testacc.SDKProviders,
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccClientGatewayDatasourceWithFilters(rBgpAsn, value),
@@ -42,7 +42,7 @@ func TestAccOthers_GatewayDatasource_withFilters(t *testing.T) {
 func TestAccOthers_GatewayDatasource_withFiltersNoLocalhost(t *testing.T) {
 	bgpAsn := oapihelpers.RandBgpAsn()
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testacc.SDKProviders,
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccClientGatewayDatasourceWithFiltersNoLocalhost(bgpAsn),

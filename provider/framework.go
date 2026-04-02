@@ -288,6 +288,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		oapi.NewResourcePublicIp,
 		oapi.NewResourcePublicIpLink,
 		oapi.NewResourceServerCertificate,
+		oapi.NewResourceClientGateway,
 
 		oks.NewResourceProject,
 		oks.NewResourceCluster,
