@@ -66,11 +66,10 @@ export AWS_SECRET_ACCESS_KEY="<OOS_SECRET_KEY>"
 
 Create or update `~/.osc/credential`:
 
-```ini
-[<PROFILE>]
+<pre><code>[<PROFILE>]
 aws_access_key_id = <OOS_ACCESS_KEY>
 aws_secret_access_key = <OOS_SECRET_KEY>
-```
+</code></pre>
 
 ## 3. Required: Set AWS checksum compatibility env vars
 
