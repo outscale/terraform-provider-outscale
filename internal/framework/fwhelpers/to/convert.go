@@ -277,3 +277,27 @@ func Set[T any](ctx context.Context, slice []T) (types.Set, diag.Diagnostics) {
 
 	return set, diags
 }
+
+func List[T any](ctx context.Context, slice []T) (types.List, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	var zero T
+
+	var elemType attr.Type
+	switch any(zero).(type) {
+	case string:
+		elemType = types.StringType
+	case int32:
+		elemType = types.Int32Type
+	case int64:
+		elemType = types.Int64Type
+	default:
+		panic(fmt.Sprintf("unsupported type %T", zero))
+	}
+	if len(slice) == 0 {
+		return types.ListValueMust(elemType, []attr.Value{}), diags
+	}
+	list, d := types.ListValueFrom(ctx, elemType, slice)
+	diags.Append(d...)
+
+	return list, diags
+}
