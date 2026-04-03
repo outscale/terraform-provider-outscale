@@ -83,7 +83,6 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "outscale_internet_service.nomad",
                         "outscale_net.nomad",

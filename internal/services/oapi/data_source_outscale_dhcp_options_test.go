@@ -13,7 +13,7 @@ func TestAccOthers_DHCPOptionsDatasource_basic(t *testing.T) {
 	value := fmt.Sprintf("test-acc-value-%s", acctest.RandString(5))
 
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testacc.SDKProviders,
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleDHCPOptionsDatasourceConfigBasic(value),
@@ -26,7 +26,7 @@ func TestAccOthers_DHCPOptionsDatasource_withFilters(t *testing.T) {
 	value := fmt.Sprintf("test-acc-value-%s", acctest.RandString(5))
 
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testacc.SDKProviders,
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleDHCPOptionsDatasourceConfigWithFilters(value),
