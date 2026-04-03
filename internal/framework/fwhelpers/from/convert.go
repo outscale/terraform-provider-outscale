@@ -1,10 +1,13 @@
 package from
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/outscale/osc-sdk-go/v3/pkg/iso8601"
+	"github.com/samber/lo"
 )
 
 func ISO8601[T iso8601.Time | *iso8601.Time | time.Time | *time.Time](v T) string {
@@ -26,4 +29,15 @@ func ISO8601[T iso8601.Time | *iso8601.Time | time.Time | *time.Time](v T) strin
 	default:
 		panic(fmt.Sprintf("unsupported type %T", v))
 	}
+}
+
+func Diag(diags diag.Diagnostics) error {
+	errs := lo.Map(diags.Errors(), func(d diag.Diagnostic, _ int) error {
+		if d.Detail() != "" {
+			return fmt.Errorf("%s: %s", d.Summary(), d.Detail())
+		}
+		return fmt.Errorf("%s", d.Summary())
+	})
+
+	return errors.Join(errs...)
 }
