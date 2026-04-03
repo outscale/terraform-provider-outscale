@@ -238,16 +238,12 @@ func getbusToSet(bsu osc.BsuCreated, busTagsMaps map[string]any, deviceName stri
 }
 
 func getSecurityGroups(groupSet []osc.SecurityGroupLight) []map[string]any {
-	res := []map[string]any{}
-	for _, g := range groupSet {
-		r := map[string]any{
+	return lo.Map(groupSet, func(g osc.SecurityGroupLight, _ int) map[string]any {
+		return map[string]any{
 			"security_group_id":   g.SecurityGroupId,
 			"security_group_name": g.SecurityGroupName,
 		}
-		res = append(res, r)
-	}
-
-	return res
+	})
 }
 
 func getActionsOnNextBoot(actionsOnNextBoot osc.ActionsOnNextBoot) []map[string]any {
@@ -288,10 +284,9 @@ func buildOutscaleDataSourceVMFilters(set *schema.Set) (*osc.FiltersVm, error) {
 
 	for _, v := range set.List() {
 		m := v.(map[string]any)
-		filterValues := make([]string, 0)
-		for _, e := range m["values"].([]any) {
-			filterValues = append(filterValues, e.(string))
-		}
+		filterValues := lo.Map(m["values"].([]any), func(e any, _ int) string {
+			return e.(string)
+		})
 
 		switch name := m["name"].(string); name {
 		case "architectures":

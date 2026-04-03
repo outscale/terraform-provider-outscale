@@ -69,10 +69,9 @@ func buildOutscaleDataSourcesNAPFilters(set *schema.Set) (*osc.FiltersNetAccessP
 
 	for _, v := range set.List() {
 		m := v.(map[string]any)
-		filterValues := make([]string, 0)
-		for _, e := range m["values"].([]any) {
-			filterValues = append(filterValues, e.(string))
-		}
+		filterValues := lo.Map(m["values"].([]any), func(e any, _ int) string {
+			return e.(string)
+		})
 
 		switch name := m["name"].(string); name {
 		case "net_ids":
@@ -114,7 +113,7 @@ func DataSourceOutscaleNetAccessPointsRead(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	naps := ptr.From(resp.NetAccessPoints)[:]
+	naps := ptr.From(resp.NetAccessPoints)
 	if len(naps) < 1 {
 		return diag.FromErr(ErrNoResults)
 	}

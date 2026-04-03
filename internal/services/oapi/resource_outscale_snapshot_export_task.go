@@ -308,7 +308,7 @@ func SnapshotTaskStateRefreshFunc(ctx context.Context, client *osc.Client, id st
 			Filters: filter,
 		}, options.WithRetryTimeout(timeout))
 		if err != nil {
-			return resp, "", fmt.Errorf("error on refresh: %+v", err)
+			return resp, "", fmt.Errorf("error on refresh: %+w", err)
 		}
 
 		if resp.SnapshotExportTasks == nil || len(*resp.SnapshotExportTasks) == 0 {

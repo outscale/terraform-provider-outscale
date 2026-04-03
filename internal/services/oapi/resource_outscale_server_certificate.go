@@ -150,11 +150,21 @@ func ResourceOutscaleServerCertificateRead(ctx context.Context, d *schema.Resour
 		return nil
 	}
 
-	d.Set("expiration_date", from.ISO8601(server.ExpirationDate))
-	d.Set("name", server.Name)
-	d.Set("orn", server.Orn)
-	d.Set("path", server.Path)
-	d.Set("upload_date", from.ISO8601(server.UploadDate))
+	if err := d.Set("expiration_date", from.ISO8601(server.ExpirationDate)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("name", server.Name); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("orn", server.Orn); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("path", server.Path); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("upload_date", from.ISO8601(server.UploadDate)); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

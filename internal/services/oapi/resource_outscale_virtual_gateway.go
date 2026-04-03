@@ -144,14 +144,24 @@ func ResourceOutscaleVirtualGatewayRead(ctx context.Context, d *schema.ResourceD
 			vp["net_id"] = ptr.From(v.NetId)
 			vs[k] = vp
 		}
-		d.Set("net_to_virtual_gateway_links", vs)
+		if err := d.Set("net_to_virtual_gateway_links", vs); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
-	d.Set("connection_type", virtualGateway.ConnectionType)
-	d.Set("virtual_gateway_id", virtualGateway.VirtualGatewayId)
+	if err := d.Set("connection_type", virtualGateway.ConnectionType); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("virtual_gateway_id", virtualGateway.VirtualGatewayId); err != nil {
+		return diag.FromErr(err)
+	}
 
-	d.Set("state", virtualGateway.State)
-	d.Set("tags", FlattenOAPITagsSDK(virtualGateway.Tags))
+	if err := d.Set("state", virtualGateway.State); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("tags", FlattenOAPITagsSDK(virtualGateway.Tags)); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

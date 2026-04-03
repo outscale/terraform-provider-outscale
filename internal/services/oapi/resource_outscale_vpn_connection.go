@@ -134,7 +134,7 @@ func ResourceOutscaleVPNConnectionCreate(ctx context.Context, d *schema.Resource
 		ConnectionType:   d.Get("connection_type").(string),
 	}
 
-	if staticRoutesOnly, ok := d.GetOkExists("static_routes_only"); ok {
+	if staticRoutesOnly, ok := d.GetOkExists("static_routes_only"); ok { //nolint:staticcheck
 		req.StaticRoutesOnly = new(cast.ToBool(staticRoutesOnly))
 	}
 	resp, err := client.CreateVpnConnection(ctx, req, options.WithRetryTimeout(timeout))
@@ -260,7 +260,7 @@ func vpnconnectionRefreshFunc(ctx context.Context, client *osc.Client, timeout t
 		}
 		resp, err := client.ReadVpnConnections(ctx, filter, options.WithRetryTimeout(timeout))
 		if err != nil {
-			return nil, "failed", fmt.Errorf("error on vpnconnectionrefresh: %s", err)
+			return nil, "failed", fmt.Errorf("error on vpnconnectionrefresh: %w", err)
 		}
 		if resp.VpnConnections == nil || len(*resp.VpnConnections) == 0 {
 			return nil, "failed", fmt.Errorf("error on vpnconnectionrefresh: there are not vpn connections(%s)", *id)

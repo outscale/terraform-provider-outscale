@@ -135,9 +135,8 @@ func testAccOutscaleVPNConnectionRouteDestroy(s *terraform.State) error {
 		}
 
 		if err != nil || state == "available" {
-			return fmt.Errorf("outscale vpn connection route still exists (%s): %s", rs.Primary.ID, err)
+			return fmt.Errorf("outscale vpn connection route still exists (%s): %w", rs.Primary.ID, err)
 		}
-
 	}
 	return nil
 }

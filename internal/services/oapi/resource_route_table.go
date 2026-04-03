@@ -18,6 +18,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
+	"github.com/samber/lo"
 )
 
 var (
@@ -50,10 +51,8 @@ var (
 )
 
 func RoutesToModel(routes []osc.Route) []RouteCoreModel {
-	routeModels := []RouteCoreModel{}
-
-	for _, r := range routes {
-		route := RouteCoreModel{
+	return lo.Map(routes, func(r osc.Route, _ int) RouteCoreModel {
+		return RouteCoreModel{
 			CreationMethod:       to.String(r.CreationMethod),
 			DestinationIpRange:   to.String(r.DestinationIpRange),
 			DestinationServiceId: to.String(ptr.From(r.DestinationServiceId)),
@@ -66,37 +65,27 @@ func RoutesToModel(routes []osc.Route) []RouteCoreModel {
 			VmAccountId:          to.String(ptr.From(r.VmAccountId)),
 			VmId:                 to.String(ptr.From(r.VmId)),
 		}
-		routeModels = append(routeModels, route)
-	}
-	return routeModels
+	})
 }
 
 func LinkRouteTablesToModel(linkRouteTables []osc.LinkRouteTable) []RouteTableLinkCoreModel {
-	linkRouteTableModels := []RouteTableLinkCoreModel{}
-
-	for _, lrt := range linkRouteTables {
-		link := RouteTableLinkCoreModel{
+	return lo.Map(linkRouteTables, func(lrt osc.LinkRouteTable, _ int) RouteTableLinkCoreModel {
+		return RouteTableLinkCoreModel{
 			LinkRouteTableId: to.String(lrt.LinkRouteTableId),
 			Main:             to.Bool(lrt.Main),
 			NetId:            to.String(lrt.NetId),
 			RouteTableId:     to.String(lrt.RouteTableId),
 			SubnetId:         to.String(lrt.SubnetId),
 		}
-		linkRouteTableModels = append(linkRouteTableModels, link)
-	}
-	return linkRouteTableModels
+	})
 }
 
 func RoutePropagatingVirtualGatewaysToModel(routePropagatingVirtualGateways []osc.RoutePropagatingVirtualGateway) []RoutePropagatingVirtualGatewayModel {
-	virtualGatewaysModels := []RoutePropagatingVirtualGatewayModel{}
-
-	for _, vgw := range routePropagatingVirtualGateways {
-		virtualGateway := RoutePropagatingVirtualGatewayModel{
+	return lo.Map(routePropagatingVirtualGateways, func(vgw osc.RoutePropagatingVirtualGateway, _ int) RoutePropagatingVirtualGatewayModel {
+		return RoutePropagatingVirtualGatewayModel{
 			VirtualGatewayId: to.String(ptr.From(vgw.VirtualGatewayId)),
 		}
-		virtualGatewaysModels = append(virtualGatewaysModels, virtualGateway)
-	}
-	return virtualGatewaysModels
+	})
 }
 
 type resourceRouteTable struct {

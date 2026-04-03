@@ -116,31 +116,47 @@ func DataSourceOutscaleLoadBalancerLDRuleRead(ctx context.Context, d *schema.Res
 	}
 	lr := (*resp.ListenerRules)[0]
 	if lr.Action != nil {
-		d.Set("action", lr.Action)
+		if err := d.Set("action", lr.Action); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 	if lr.HostNamePattern != nil {
-		d.Set("host_name_pattern", lr.HostNamePattern)
+		if err := d.Set("host_name_pattern", lr.HostNamePattern); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 	if lr.ListenerRuleName != nil {
-		d.Set("listener_rule_name", lr.ListenerRuleName)
+		if err := d.Set("listener_rule_name", lr.ListenerRuleName); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 	if lr.PathPattern != nil {
-		d.Set("path_pattern", lr.PathPattern)
+		if err := d.Set("path_pattern", lr.PathPattern); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	if lr.ListenerRuleId != nil {
-		d.Set("listener_rule_id", lr.ListenerRuleId)
+		if err := d.Set("listener_rule_id", lr.ListenerRuleId); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 	if lr.ListenerId != nil {
-		d.Set("listener_id", lr.ListenerId)
+		if err := d.Set("listener_id", lr.ListenerId); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	if lr.Priority != nil {
-		d.Set("priority", lr.Priority)
+		if err := d.Set("priority", lr.Priority); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	if lr.VmIds != nil {
-		d.Set("vm_ids", utils.StringSlicePtrToInterfaceSlice(lr.VmIds))
+		if err := d.Set("vm_ids", utils.StringSlicePtrToInterfaceSlice(lr.VmIds)); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	d.SetId(id.UniqueId())

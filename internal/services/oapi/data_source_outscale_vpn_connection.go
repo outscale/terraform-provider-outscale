@@ -9,6 +9,7 @@ import (
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
+	"github.com/samber/lo"
 	"github.com/spf13/cast"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -184,15 +185,12 @@ func buildOutscaleDataSourceVPNConnectionFilters(set *schema.Set) (*osc.FiltersV
 	var filters osc.FiltersVpnConnection
 	for _, v := range set.List() {
 		m := v.(map[string]any)
-		var filterValues []string
-		for _, e := range m["values"].([]any) {
-			filterValues = append(filterValues, e.(string))
-		}
-
-		var filteBgpAsnsValues []int
-		for _, e := range m["values"].([]any) {
-			filteBgpAsnsValues = append(filteBgpAsnsValues, cast.ToInt(e))
-		}
+		filterValues := lo.Map(m["values"].([]any), func(e any, _ int) string {
+			return e.(string)
+		})
+		filteBgpAsnsValues := lo.Map(m["values"].([]any), func(e any, _ int) int {
+			return cast.ToInt(e)
+		})
 
 		switch name := m["name"].(string); name {
 		case "vpn_connection_ids":

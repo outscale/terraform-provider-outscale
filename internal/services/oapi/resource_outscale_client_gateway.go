@@ -192,7 +192,7 @@ func clientGatewayRefreshFunc(ctx context.Context, client *osc.Client, timeout t
 			case osc.IsConflict(err):
 				return nil, "pending", nil
 			default:
-				return nil, "failed", fmt.Errorf("error on clientgatewayrefresh: %s", err)
+				return nil, "failed", fmt.Errorf("error on clientgatewayrefresh: %w", err)
 			}
 		}
 
