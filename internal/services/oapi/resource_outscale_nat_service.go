@@ -119,8 +119,8 @@ func resourceOAPINatServiceCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	stateConf := &retry.StateChangeConf{
-		Pending: []string{"pending"},
-		Target:  []string{"available"},
+		Pending: []string{string(osc.NatServiceStatePending)},
+		Target:  []string{string(osc.NatServiceStateAvailable)},
 		Timeout: timeout,
 		Refresh: NGOAPIStateRefreshFunc(ctx, client, filterReq, timeout),
 	}
@@ -223,14 +223,17 @@ func resourceOAPINatServiceDelete(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	stateConf := &retry.StateChangeConf{
-		Pending: []string{"deleting"},
-		Target:  []string{"deleted", "available"},
+		Pending: []string{string(osc.NatServiceStateDeleting)},
+		Target:  []string{string(osc.NatServiceStateDeleted), string(osc.NatServiceStateAvailable)},
 		Timeout: timeout,
 		Refresh: NGOAPIStateRefreshFunc(ctx, client, filterReq, timeout),
 	}
 
 	_, stateErr := stateConf.WaitForStateContext(ctx)
 	if stateErr != nil {
+		if errors.Is(stateErr, ErrResourceEmpty) {
+			return nil
+		}
 		return diag.Errorf("error waiting for nat service (%s) to delete: %s", d.Id(), stateErr)
 	}
 	return nil
@@ -244,8 +247,8 @@ func NGOAPIStateRefreshFunc(ctx context.Context, client *osc.Client, req osc.Rea
 		if err != nil {
 			return nil, "", err
 		}
-		if resp.NatServices == nil {
-			return nil, "", errors.New("nat service not found")
+		if resp.NatServices == nil || len(*resp.NatServices) == 0 {
+			return nil, "", ErrResourceEmpty
 		}
 
 		return resp, string((*resp.NatServices)[0].State), nil

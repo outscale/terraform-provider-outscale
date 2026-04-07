@@ -198,6 +198,6 @@ func clientGatewayRefreshFunc(ctx context.Context, client *osc.Client, timeout t
 
 		gateway := (*resp.ClientGateways)[0]
 
-		return resp, gateway.State, nil
+		return resp, string(gateway.State), nil
 	}
 }

@@ -14,9 +14,9 @@ require (
 	github.com/hashicorp/terraform-plugin-mux v0.21.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.38.1
 	github.com/hashicorp/terraform-plugin-testing v1.14.0
-	github.com/oapi-codegen/runtime v1.2.0
+	github.com/oapi-codegen/runtime v1.3.1
 	github.com/outscale/goutils/sdk v0.0.2
-	github.com/outscale/osc-sdk-go/v3 v3.0.0-rc.1
+	github.com/outscale/osc-sdk-go/v3 v3.0.0-rc.1.0.20260407094453-983af567f5a5
 	github.com/samber/lo v1.52.0
 	github.com/spf13/cast v1.10.0
 )

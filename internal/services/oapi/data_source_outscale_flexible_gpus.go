@@ -105,22 +105,12 @@ func setOAPIFlexibleGpuAttributes(d *schema.ResourceData, fg []osc.FlexibleGpu) 
 	for k, v := range fg {
 		fgpu := make(map[string]any)
 
-		fgpu["delete_on_vm_deletion"] = ptr.From(v.DeleteOnVmDeletion)
-		if ptr.From(v.FlexibleGpuId) != "" {
-			fgpu["flexible_gpu_id"] = v.FlexibleGpuId
-		}
-		if ptr.From(v.Generation) != "" {
-			fgpu["generation"] = v.Generation
-		}
-		if ptr.From(v.ModelName) != "" {
-			fgpu["model_name"] = v.ModelName
-		}
-		if ptr.From(v.State) != "" {
-			fgpu["state"] = *v.State
-		}
-		if ptr.From(v.SubregionName) != "" {
-			fgpu["subregion_name"] = v.SubregionName
-		}
+		fgpu["delete_on_vm_deletion"] = v.DeleteOnVmDeletion
+		fgpu["flexible_gpu_id"] = v.FlexibleGpuId
+		fgpu["generation"] = v.Generation
+		fgpu["model_name"] = v.ModelName
+		fgpu["state"] = string(v.State)
+		fgpu["subregion_name"] = v.SubregionName
 		if ptr.From(v.VmId) != "" {
 			fgpu["vm_id"] = v.VmId
 		}

@@ -2,6 +2,7 @@ package oapi
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -401,9 +402,14 @@ func ResourceOutscaleLoadBalancerAttributesRead(ctx context.Context, d *schema.R
 
 	lb, _, err := readResourceLb(ctx, client, elbName, timeout)
 	if err != nil {
+		if errors.Is(err, ErrResourceEmpty) {
+			utils.LogManuallyDeleted("LoadBalancerAttributes", elbName)
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
-	if lb == nil {
+	if lb.State == osc.LoadBalancerStateDeleted {
 		utils.LogManuallyDeleted("LoadBalancerAttributes", elbName)
 		d.SetId("")
 		return nil

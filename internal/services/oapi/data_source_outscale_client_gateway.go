@@ -133,7 +133,7 @@ func buildOutscaleDataSourceClientGatewayFilters(set *schema.Set) (*osc.FiltersC
 		case "public_ips":
 			filters.PublicIps = &filterValues
 		case "states":
-			filters.States = &filterValues
+			filters.States = new(lo.Map(filterValues, func(e string, _ int) osc.ClientGatewayState { return osc.ClientGatewayState(e) }))
 		case "tag_keys":
 			filters.TagKeys = &filterValues
 		case "tag_values":

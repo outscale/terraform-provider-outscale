@@ -2,6 +2,7 @@ package oapi
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"regexp"
 
@@ -306,9 +307,13 @@ func ResourceOutscaleAppCookieStickinessPolicyRead(ctx context.Context, d *schem
 	policyName := d.Get("policy_name").(string)
 	lb, _, err := readResourceLb(ctx, client, lbuName, timeout)
 	if err != nil {
+		if errors.Is(err, ErrResourceEmpty) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
-	if lb == nil || (lb.ApplicationStickyCookiePolicies == nil && lb.LoadBalancerStickyCookiePolicies == nil) {
+	if lb.State == osc.LoadBalancerStateDeleted || (lb.ApplicationStickyCookiePolicies == nil && lb.LoadBalancerStickyCookiePolicies == nil) {
 		d.SetId("")
 		return nil
 	}

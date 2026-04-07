@@ -152,12 +152,16 @@ github.com/mitchellh/reflectwalk v1.0.2 h1:G2LzWKi524PWgd3mLHV8Y5k7s6XUvT0Gef6zx
 github.com/mitchellh/reflectwalk v1.0.2/go.mod h1:mSTlrgnPZtwu0c4WaC2kGObEpuNDbx0jmZXqmk4esnw=
 github.com/oapi-codegen/runtime v1.2.0 h1:RvKc1CVS1QeKSNzO97FBQbSMZyQ8s6rZd+LpmzwHMP4=
 github.com/oapi-codegen/runtime v1.2.0/go.mod h1:Y7ZhmmlE8ikZOmuHRRndiIm7nf3xcVv+YMweKgG1DT0=
+github.com/oapi-codegen/runtime v1.3.1 h1:RgDY6J4OGQLbRXhG/Xpt3vSVqYpHQS7hN4m85+5xB9g=
+github.com/oapi-codegen/runtime v1.3.1/go.mod h1:kOdeacKy7t40Rclb1je37ZLFboFxh+YLy0zaPCMibPY=
 github.com/oklog/run v1.2.0 h1:O8x3yXwah4A73hJdlrwo/2X6J62gE5qTMusH0dvz60E=
 github.com/oklog/run v1.2.0/go.mod h1:mgDbKRSwPhJfesJ4PntqFUbKQRZ50NgmZTSPlFA0YFk=
 github.com/outscale/goutils/sdk v0.0.2 h1:btnhPmo2Sitm3PDtE4bBeuFpF0B4YEHUc91NT7rsVPM=
 github.com/outscale/goutils/sdk v0.0.2/go.mod h1:2Ae3lIQmdOC+n/VnOABrzS+kpjq/Hm0PJQhABpiFW8M=
 github.com/outscale/osc-sdk-go/v3 v3.0.0-rc.1 h1:6/JP3i0HRV4BYuVfyVWowA0sX2HnrIqyi3YhaKe6PoI=
 github.com/outscale/osc-sdk-go/v3 v3.0.0-rc.1/go.mod h1:907IGb1sqHsDhXMDB8lkEqsOH5kK7/VTJ74+ZHqSLx0=
+github.com/outscale/osc-sdk-go/v3 v3.0.0-rc.1.0.20260407094453-983af567f5a5 h1:3Vy3e777Hbrm3Vy+fGW34f8DJPKDuK1/42o8BbZDs5o=
+github.com/outscale/osc-sdk-go/v3 v3.0.0-rc.1.0.20260407094453-983af567f5a5/go.mod h1:azqgUBI+bsF59TSvDegb7HEyLWGtKKt+R6c/b1XuV2U=
 github.com/pjbgf/sha1cd v0.3.2 h1:a9wb0bp1oC2TGwStyn0Umc/IGKQnEgF0vVaZ8QF8eo4=
 github.com/pjbgf/sha1cd v0.3.2/go.mod h1:zQWigSxVmsHEZow5qaLtPYxpcKMMQpa09ixqBxuCS6A=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=

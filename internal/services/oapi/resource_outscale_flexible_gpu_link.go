@@ -101,7 +101,7 @@ func ResourceOutscaleFlexibleGpuLinkRead(ctx context.Context, d *schema.Resource
 	flexGpus := ptr.From(resp.FlexibleGpus)
 	readGpuIdsLink := make([]string, len(flexGpus))
 	for k, flexGpu := range flexGpus {
-		readGpuIdsLink[k] = *flexGpu.FlexibleGpuId
+		readGpuIdsLink[k] = flexGpu.FlexibleGpuId
 	}
 	if err := d.Set("flexible_gpu_ids", readGpuIdsLink); err != nil {
 		return diag.FromErr(err)
@@ -142,8 +142,8 @@ func ResourceOutscaleFlexibleGpuLinkDelete(ctx context.Context, d *schema.Resour
 		if resp.FlexibleGpus == nil || len(*resp.FlexibleGpus) != 1 {
 			return diag.Errorf("unable to find flexible gpu")
 		}
-		if (*(*resp.FlexibleGpus)[0].State) != osc.FlexibleGpuStateDetaching &&
-			(*(*resp.FlexibleGpus)[0].State) != osc.FlexibleGpuStateAllocated {
+		if (*resp.FlexibleGpus)[0].State != osc.FlexibleGpuStateDetaching &&
+			(*resp.FlexibleGpus)[0].State != osc.FlexibleGpuStateAllocated {
 			return diag.Errorf("unable to unlink flexible gpu")
 		}
 	}

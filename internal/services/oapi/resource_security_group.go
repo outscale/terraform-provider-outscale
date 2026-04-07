@@ -533,9 +533,13 @@ func (r *resourceSecurityGroup) unlink(ctx context.Context, to time.Duration, da
 		return nic.NicId, (len(nic.SecurityGroups) == 1)
 	})
 	targetSG := []string{data.Id.ValueString()}
+
+	isDeletedLBUState := func(lbu osc.LoadBalancer) bool {
+		return lbu.State == osc.LoadBalancerStateDeleted || lbu.State == osc.LoadBalancerStateDeleting
+	}
 	// Check if the Security Group is the unique Security Group of any LBU
 	lbusUniqueSG := lo.FilterMap(lbus, func(lbu osc.LoadBalancer, _ int) (string, bool) {
-		return lbu.LoadBalancerName, (lbu.SecurityGroups != nil && slices.Equal(lbu.SecurityGroups, targetSG))
+		return lbu.LoadBalancerName, (!isDeletedLBUState(lbu) && lbu.SecurityGroups != nil && slices.Equal(lbu.SecurityGroups, targetSG))
 	})
 
 	if len(vmsUniqueSG) > 0 {
@@ -614,16 +618,49 @@ func (r *resourceSecurityGroup) unlink(ctx context.Context, to time.Duration, da
 			SecurityGroups:   &sgIds,
 		}
 
-		// Retry on 6031 has it can happen if the LBU is not in an available state
-		_, err := oapihelpers.RetryOnCodes(ctx, []string{"6031"}, func() (resp any, err error) {
-			return r.Client.UpdateLoadBalancer(ctx, updateReq, options.WithRetryTimeout(to))
-		}, to)
+		var invalidLBUState bool
+		_, err := r.Client.UpdateLoadBalancer(ctx, updateReq, options.WithRetryTimeout(to))
 		if err != nil {
-			diags.AddError(
-				fmt.Sprintf("Unable to remove Security Group (%s) from Load Balancer (%s)", data.Id.ValueString(), lbu.LoadBalancerName),
-				err.Error(),
-			)
-			return
+			// 409 with code 6031 happen when the LBU is not in a state that allows modification
+			if osc.HasErrorCode(err, []string{"6031"}) {
+				invalidLBUState = true
+			} else {
+				diags.AddError(
+					fmt.Sprintf("Unable to remove Security Group (%s) from Load Balancer (%s)", data.Id.ValueString(), lbu.LoadBalancerName),
+					err.Error(),
+				)
+				return
+			}
+		}
+
+		if invalidLBUState {
+			resp, err := r.Client.ReadLoadBalancers(ctx, osc.ReadLoadBalancersRequest{
+				Filters: &osc.FiltersLoadBalancer{
+					LoadBalancerNames: new([]string{lbu.LoadBalancerName}),
+				},
+			})
+			if err != nil {
+				diags.AddError(
+					fmt.Sprintf("Unable to read Load Balancer (%s)", lbu.LoadBalancerName),
+					err.Error(),
+				)
+				return
+			}
+			if len(ptr.From(resp.LoadBalancers)) == 0 || isDeletedLBUState((*resp.LoadBalancers)[0]) {
+				continue
+			}
+
+			// If the LBU is not deleted, we can retry on the update
+			_, err = oapihelpers.RetryOnCodes(ctx, []string{"6031"}, func() (resp any, err error) {
+				return r.Client.UpdateLoadBalancer(ctx, updateReq, options.WithRetryTimeout(to))
+			}, to)
+			if err != nil {
+				diags.AddError(
+					fmt.Sprintf("Unable to remove Security Group (%s) from Load Balancer (%s)", data.Id.ValueString(), lbu.LoadBalancerName),
+					err.Error(),
+				)
+				return
+			}
 		}
 	}
 

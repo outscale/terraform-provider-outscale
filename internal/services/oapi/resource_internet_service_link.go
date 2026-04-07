@@ -237,9 +237,7 @@ func (r *resourceInternetServiceLink) Delete(ctx context.Context, req resource.D
 			// In this case, we unlink them before unlinking the Internet Service
 			hasIPs = true
 		case "1005":
-			// This case is returned when the Net of the Internet Service has a Load Balancer
-			// Currently, we have no information about if the LBU is getting deleted or not. To not fail when destroying a
-			// complete infrastructure, we retry on this error.
+			// 409 with code 1005 is returned when the Net of the Internet Service has a Load Balancer
 			hasLBU = true
 		default:
 			resp.Diagnostics.AddError(
@@ -299,6 +297,11 @@ func (r *resourceInternetServiceLink) Delete(ctx context.Context, req resource.D
 	}
 
 	if hasLBU {
+		// We retry on the 1005 error rather than reading the LBU state to decide.
+		// During a terraform destroy, resources are deleted in parallel, so the LBU on this Net
+		// can be in any transient state (reloading, reconfiguring, deleting, etc.).
+		// Checking only for specific states would miss cases like a concurrent
+		// backend vms unlink putting the LBU in "reloading" state (like in TF-2 integration test)
 		_, err := oapihelpers.RetryOnCodes(ctx, []string{"1005"}, func() (resp any, err error) {
 			return r.Client.UnlinkInternetService(ctx, unlinkReq, options.WithRetryTimeout(deleteTimeout))
 		}, deleteTimeout)

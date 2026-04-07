@@ -412,30 +412,40 @@ func ResourceOutscaleLoadBalancerCreate(ctx context.Context, d *schema.ResourceD
 	var hasNameConflict bool
 	_, errCreate := client.CreateLoadBalancer(ctx, *req, options.WithRetryTimeout(timeout))
 	if errCreate != nil {
-		if oapihelpers.GetError(errCreate).Code == "9013" {
-			resp, err := client.ReadLoadBalancers(ctx, osc.ReadLoadBalancersRequest{
-				Filters: &osc.FiltersLoadBalancer{
-					LoadBalancerNames: &[]string{req.LoadBalancerName},
-				},
-			}, options.WithRetryTimeout(timeout))
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			if resp.LoadBalancers != nil && len(*resp.LoadBalancers) > 0 {
-				return diag.FromErr(errCreate)
-			}
+		switch {
+		case osc.HasErrorCode(errCreate, []string{"9013"}):
 			hasNameConflict = true
-		} else {
+		default:
 			return diag.FromErr(errCreate)
 		}
 	}
 
 	if hasNameConflict {
-		_, err := oapihelpers.RetryOnCodes(ctx, []string{"9013"}, func() (resp any, err error) {
-			return client.CreateLoadBalancer(ctx, *req, options.WithRetryTimeout(timeout))
-		}, timeout)
+		resp, err := client.ReadLoadBalancers(ctx, osc.ReadLoadBalancersRequest{
+			Filters: &osc.FiltersLoadBalancer{
+				LoadBalancerNames: &[]string{req.LoadBalancerName},
+			},
+		}, options.WithRetryTimeout(timeout))
 		if err != nil {
 			return diag.FromErr(err)
+		}
+		// This case should not happen since a name conflict on load balancer creation was returned
+		if len(ptr.From(resp.LoadBalancers)) == 0 {
+			return diag.FromErr(errCreate)
+		}
+		state := (*resp.LoadBalancers)[0].State
+
+		switch {
+		case state != osc.LoadBalancerStateDeleting && state != osc.LoadBalancerStateDeleted:
+			return diag.FromErr(errCreate)
+		default:
+			// The Load Balancer is either deleted or being deleted, so we retry on the conflict at LBU creation
+			_, err := oapihelpers.RetryOnCodes(ctx, []string{"9013"}, func() (resp any, err error) {
+				return client.CreateLoadBalancer(ctx, *req, options.WithRetryTimeout(timeout))
+			}, timeout)
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 
@@ -464,15 +474,12 @@ func ResourceOutscaleLoadBalancerCreate(ctx context.Context, d *schema.ResourceD
 
 func waitForLbuActive(ctx context.Context, client *osc.Client, lbuName string, timeout time.Duration) error {
 	stateConf := &retry.StateChangeConf{
-		Pending: []string{"starting", "provisioning", "reloading", "reconfiguring"},
-		Target:  []string{"active"},
+		Pending: []string{string(osc.LoadBalancerStateStarting), string(osc.LoadBalancerStateProvisioning), string(osc.LoadBalancerStateReloading), string(osc.LoadBalancerStateReconfiguring)},
+		Target:  []string{string(osc.LoadBalancerStateActive)},
 		Refresh: func() (any, string, error) {
 			lb, _, err := readResourceLb(ctx, client, lbuName, timeout)
 			if err != nil {
 				return nil, "", err
-			}
-			if lb == nil {
-				return nil, "", nil
 			}
 			return lb, string(lb.State), nil
 		},
@@ -496,7 +503,7 @@ func readResourceLb(ctx context.Context, client *osc.Client, elbName string, tim
 		return nil, nil, fmt.Errorf("error retrieving load balancer: %w", err)
 	}
 	if resp == nil || len(*resp.LoadBalancers) == 0 {
-		return nil, nil, nil
+		return nil, nil, ErrResourceEmpty
 	}
 
 	lb := (*resp.LoadBalancers)[0]
@@ -511,10 +518,14 @@ func ResourceOutscaleLoadBalancerRead(ctx context.Context, d *schema.ResourceDat
 
 	lb, _, err := readResourceLb(ctx, client, elbName, timeout)
 	if err != nil {
+		if errors.Is(err, ErrResourceEmpty) {
+			utils.LogManuallyDeleted("LoadBalancer", d.Id())
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
-
-	if lb == nil {
+	if lb.State == osc.LoadBalancerStateDeleted {
 		utils.LogManuallyDeleted("LoadBalancer", d.Id())
 		d.SetId("")
 		return nil
@@ -637,11 +648,13 @@ func ResourceOutscaleLoadBalancerUpdate(ctx context.Context, d *schema.ResourceD
 		nSg, _ := d.GetOk("security_groups")
 		req.SecurityGroups = utils.SetToStringSlicePtr(nSg.(*schema.Set))
 
-		_, err := oapihelpers.RetryOnCodes(ctx, []string{"6031"}, func() (resp any, err error) {
-			return client.UpdateLoadBalancer(ctx, req, options.WithRetryTimeout(timeout))
-		}, timeout)
+		_, err := client.UpdateLoadBalancer(ctx, req, options.WithRetryTimeout(timeout))
 		if err != nil {
 			return diag.Errorf("failure updating securitygroups: %v", err)
+		}
+		err = waitForLbuActive(ctx, client, d.Id(), timeout)
+		if err != nil {
+			return diag.FromErr(err)
 		}
 	}
 
@@ -741,6 +754,10 @@ func ResourceOutscaleLoadBalancerUpdate(ctx context.Context, d *schema.ResourceD
 				return diag.Errorf("failure adding new or updated load balancer listeners: %v", err)
 			}
 		}
+		err = waitForLbuActive(ctx, client, d.Id(), timeout)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	if d.HasChange("health_check") {
@@ -763,11 +780,13 @@ func ResourceOutscaleLoadBalancerUpdate(ctx context.Context, d *schema.ResourceD
 				req.HealthCheck.Path = &p
 			}
 
-			_, err := oapihelpers.RetryOnCodes(ctx, []string{"6031"}, func() (resp any, err error) {
-				return client.UpdateLoadBalancer(ctx, req, options.WithRetryTimeout(timeout))
-			}, timeout)
+			_, err := client.UpdateLoadBalancer(ctx, req, options.WithRetryTimeout(timeout))
 			if err != nil {
 				return diag.Errorf("failure configuring health check for load balancer: %v", err)
+			}
+			err = waitForLbuActive(ctx, client, d.Id(), timeout)
+			if err != nil {
+				return diag.FromErr(err)
 			}
 		}
 	}
@@ -790,11 +809,13 @@ func ResourceOutscaleLoadBalancerUpdate(ctx context.Context, d *schema.ResourceD
 				},
 			}
 
-			_, err := oapihelpers.RetryOnCodes(ctx, []string{"6031"}, func() (resp any, err error) {
-				return client.UpdateLoadBalancer(ctx, req, options.WithRetryTimeout(timeout))
-			}, timeout)
+			_, err := client.UpdateLoadBalancer(ctx, req, options.WithRetryTimeout(timeout))
 			if err != nil {
 				return diag.Errorf("failure configuring access log for load balancer: %v", err)
+			}
+			err = waitForLbuActive(ctx, client, d.Id(), timeout)
+			if err != nil {
+				return diag.FromErr(err)
 			}
 		}
 	}
@@ -809,11 +830,10 @@ func ResourceOutscaleLoadBalancerUpdate(ctx context.Context, d *schema.ResourceD
 		if err != nil {
 			return diag.Errorf("failure updating secruedcookies: %v", err)
 		}
-	}
-
-	err = waitForLbuActive(ctx, client, d.Id(), timeout)
-	if err != nil {
-		return diag.Errorf("error waiting for load balancer (%s) to be updated: %s", d.Id(), err)
+		err = waitForLbuActive(ctx, client, d.Id(), timeout)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return ResourceOutscaleLoadBalancerRead(ctx, d, meta)
@@ -836,18 +856,21 @@ func ResourceOutscaleLoadBalancerDelete(ctx context.Context, d *schema.ResourceD
 	}
 
 	stateConf := &retry.StateChangeConf{
-		Pending: []string{"deleting", "starting", "provisioning", "reloading", "reconfiguring"},
-		Target:  []string{"deleted"},
+		Pending: []string{string(osc.LoadBalancerStateDeleting), string(osc.LoadBalancerStateStarting), string(osc.LoadBalancerStateProvisioning), string(osc.LoadBalancerStateReloading), string(osc.LoadBalancerStateReconfiguring)},
+		Target:  []string{string(osc.LoadBalancerStateDeleted)},
 		Timeout: timeout,
 		Refresh: func() (any, string, error) {
-			lb, _, _ := readResourceLb(ctx, client, d.Id(), timeout)
-			if lb == nil {
-				return nil, "", nil
+			lb, _, err := readResourceLb(ctx, client, d.Id(), timeout)
+			if err != nil {
+				return nil, "", err
 			}
 			return lb, string(lb.State), nil
 		},
 	}
 	if _, err := stateConf.WaitForStateContext(ctx); err != nil {
+		if errors.Is(err, ErrResourceEmpty) {
+			return nil
+		}
 		return diag.Errorf("error waiting for load balancer (%s) to be deleted: %v", d.Id(), err)
 	}
 
