@@ -95,28 +95,28 @@ func DataSourceOutscaleFlexibleGpuRead(ctx context.Context, d *schema.ResourceDa
 
 	fg := (*resp.FlexibleGpus)[0]
 
-	if err := d.Set("delete_on_vm_deletion", ptr.From(fg.DeleteOnVmDeletion)); err != nil {
+	if err := d.Set("delete_on_vm_deletion", fg.DeleteOnVmDeletion); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("subregion_name", ptr.From(fg.SubregionName)); err != nil {
+	if err := d.Set("subregion_name", fg.SubregionName); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("generation", ptr.From(fg.Generation)); err != nil {
+	if err := d.Set("generation", fg.Generation); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("flexible_gpu_id", ptr.From(fg.FlexibleGpuId)); err != nil {
+	if err := d.Set("flexible_gpu_id", fg.FlexibleGpuId); err != nil {
 		return diag.FromErr(err)
 	}
 	if err := d.Set("vm_id", ptr.From(fg.VmId)); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("model_name", ptr.From(fg.ModelName)); err != nil {
+	if err := d.Set("model_name", fg.ModelName); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("state", ptr.From(fg.State)); err != nil {
+	if err := d.Set("state", fg.State); err != nil {
 		return diag.FromErr(err)
 	}
-	d.SetId(ptr.From(fg.FlexibleGpuId))
+	d.SetId(fg.FlexibleGpuId)
 	return nil
 }
 

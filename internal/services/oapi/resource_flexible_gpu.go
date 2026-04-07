@@ -303,13 +303,13 @@ func read(ctx context.Context, r *fgpuResource, data GpuModel) (GpuModel, error)
 		return data, ErrResourceEmpty
 	}
 	fgpu := (*readResp.FlexibleGpus)[0]
-	data.DeleteOnVmDeletion = to.Bool(ptr.From(fgpu.DeleteOnVmDeletion))
-	data.FlexibleGpuId = to.String(ptr.From(fgpu.FlexibleGpuId))
-	data.SubregionName = to.String(ptr.From(fgpu.SubregionName))
-	data.Generation = to.String(ptr.From(fgpu.Generation))
-	data.ModelName = to.String(ptr.From(fgpu.ModelName))
-	data.Id = to.String(ptr.From(fgpu.FlexibleGpuId))
-	data.State = to.String(ptr.From(fgpu.State))
+	data.DeleteOnVmDeletion = to.Bool(fgpu.DeleteOnVmDeletion)
+	data.FlexibleGpuId = to.String(fgpu.FlexibleGpuId)
+	data.SubregionName = to.String(fgpu.SubregionName)
+	data.Generation = to.String(fgpu.Generation)
+	data.ModelName = to.String(fgpu.ModelName)
+	data.Id = to.String(fgpu.FlexibleGpuId)
+	data.State = to.String(fgpu.State)
 	data.VmId = to.String(ptr.From(fgpu.VmId))
 
 	return data, nil
