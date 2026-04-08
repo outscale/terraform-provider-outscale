@@ -7,7 +7,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 )
 
-func TestAccNet_WithNatService_basic(t *testing.T) {
+func TestAccNet_WithNatService_Basic(t *testing.T) {
 	resourceName := "outscale_nat_service.nat_service"
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
@@ -19,7 +19,16 @@ func TestAccNet_WithNatService_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "state", "available"),
 				),
 			},
+			testacc.ImportStep(resourceName, testacc.DefaultIgnores()...),
 		},
+	})
+}
+
+func TestAccNet_WithNatService_Migration(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		Steps: testacc.FrameworkMigrationTestSteps("1.5.0",
+			testAccOAPINatGatewayConfig,
+		),
 	})
 }
 

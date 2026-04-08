@@ -278,6 +278,23 @@ func Set[T any](ctx context.Context, slice []T) (types.Set, diag.Diagnostics) {
 	return set, diags
 }
 
+func ListObject[T any](ctx context.Context, slice []T) (types.List, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	var zeroVal T
+	attrTypes := fwhelpers.GetAttrTypes(zeroVal)
+	objType := types.ObjectType{AttrTypes: attrTypes}
+
+	if len(slice) == 0 {
+		return types.ListNull(objType), diags
+	}
+
+	list, d := types.ListValueFrom(ctx, objType, slice)
+	diags.Append(d...)
+
+	return list, diags
+}
+
 func List[T any](ctx context.Context, slice []T) (types.List, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	var zero T
