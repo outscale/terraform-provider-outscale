@@ -139,7 +139,6 @@ func Provider() *schema.Provider {
 			"outscale_vm":                                oapi.ResourceOutscaleVM(),
 			"outscale_image":                             oapi.ResourceOutscaleImage(),
 			"outscale_tag":                               oapi.ResourceOutscaleTags(),
-			"outscale_nat_service":                       oapi.ResourceOutscaleNatService(),
 			"outscale_nic":                               oapi.ResourceOutscaleNic(),
 			"outscale_snapshot":                          oapi.ResourceOutscaleSnapshot(),
 			"outscale_image_launch_permission":           oapi.ResourceOutscaleImageLaunchPermission(),
