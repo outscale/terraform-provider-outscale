@@ -38,6 +38,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### 🌱 Others
 - (nothing yet)
 
+## [1.6.0-rc.1] - 2026-04-09
+
+### ✨ Added
+* :sparkles: feat: sdkv2 -> sdkv3 by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/689
+
+### 🛠️ Changed / Refactoring
+* ♻️ refactor: code cleanup & better logic on LBU state usage by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/720
+
+### 📝 Documentation
+* 📝 docs: Align docs with oAPI 1.40.1 changes by @andrepasteur in https://github.com/outscale/terraform-provider-outscale/pull/707
+* 📝 docs: Fix incorrectly displayed chevrons in Markdown code block by @andrepasteur in https://github.com/outscale/terraform-provider-outscale/pull/718
+
 ## [1.5.0] - 2026-04-01
 
 ### ✨ Added
