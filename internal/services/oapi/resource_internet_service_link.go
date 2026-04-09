@@ -274,10 +274,16 @@ func (r *resourceInternetServiceLink) Delete(ctx context.Context, req resource.D
 				LinkPublicIpId: &ip.LinkPublicIpId,
 			}, options.WithRetryTimeout(deleteTimeout))
 			if err != nil {
-				resp.Diagnostics.AddError(
-					"Unable to unlink Public IP from the NICs linked to the Net of the Internet Service.",
-					err.Error(),
-				)
+				switch {
+				case osc.HasErrorCode(err, []string{"5026"}):
+					// 400 with code 5026 is returned when Public IP is already destroyed
+					// In this case, we can skip it
+				default:
+					resp.Diagnostics.AddError(
+						"Unable to unlink Public IP from the NICs linked to the Net of the Internet Service.",
+						err.Error(),
+					)
+				}
 			}
 		}
 
