@@ -35,6 +35,7 @@ jobs:
         uses: ./.github/workflows/reusable_integration_test.yml
         with:
             test-command: test-integration-oapi
-            runner: eu-west-2
+            region: eu-west-2
+            service: oapi
             providers: outscale_oapi,outscale_oos
         secrets: inherit

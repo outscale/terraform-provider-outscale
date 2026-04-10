@@ -20,7 +20,8 @@ jobs:
         uses: ./.github/workflows/reusable_integration_test.yml
         with:
             test-command: test-integration-oapi-nets
-            runner: us-east-2
+            region: us-east-2
+            service: oapi
             providers: outscale_oapi,outscale_oos
         secrets: inherit
 
@@ -28,7 +29,8 @@ jobs:
         uses: ./.github/workflows/reusable_integration_test.yml
         with:
             test-command: test-integration-oapi
-            runner: eu-west-2
+            region: eu-west-2
+            service: oapi
             providers: outscale_oapi,outscale_oos
         secrets: inherit
 
@@ -36,6 +38,7 @@ jobs:
         uses: ./.github/workflows/reusable_integration_test.yml
         with:
             test-command: test-integration-oks
-            runner: eu-west-2
+            region: eu-west-2
+            service: oks
             providers: outscale_oks
         secrets: inherit
