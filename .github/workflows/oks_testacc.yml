@@ -29,6 +29,7 @@ jobs:
         uses: ./.github/workflows/reusable_acceptance_test.yml
         with:
             test-command: testacc-oks
-            runner: eu-west-2
+            region: eu-west-2
+            service: oks
             providers: outscale_oks
         secrets: inherit

@@ -20,7 +20,8 @@ jobs:
         uses: ./.github/workflows/reusable_acceptance_test.yml
         with:
             test-command: testacc-oapi-net
-            runner: us-east-2
+            region: us-east-2
+            service: oapi
             providers: outscale_oapi,outscale_oos
         secrets: inherit
 
@@ -28,7 +29,8 @@ jobs:
         uses: ./.github/workflows/reusable_acceptance_test.yml
         with:
             test-command: testacc-oapi-vm
-            runner: eu-west-2
+            region: eu-west-2
+            service: oapi
             providers: outscale_oapi,outscale_oos
         secrets: inherit
 
@@ -36,7 +38,8 @@ jobs:
         uses: ./.github/workflows/reusable_acceptance_test.yml
         with:
             test-command: testacc-oapi-others
-            runner: eu-west-2
+            region: eu-west-2
+            service: oapi
             providers: outscale_oapi,outscale_oos
         secrets: inherit
 
@@ -44,7 +47,8 @@ jobs:
         uses: ./.github/workflows/reusable_acceptance_test.yml
         with:
             test-command: testacc-oks
-            runner: eu-west-2
+            region: eu-west-2
+            service: oks
             providers: outscale_oks
         secrets: inherit
 
@@ -52,6 +56,7 @@ jobs:
         uses: ./.github/workflows/reusable_acceptance_test.yml
         with:
             test-command: testacc-provider
-            runner: eu-west-2
+            region: eu-west-2
+            service: oapi
             providers: outscale_oapi
         secrets: inherit

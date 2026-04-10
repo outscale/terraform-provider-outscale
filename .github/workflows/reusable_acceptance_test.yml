@@ -6,7 +6,10 @@ on:
             test-command:
                 required: true
                 type: string
-            runner:
+            region:
+                required: true
+                type: string
+            service:
                 required: true
                 type: string
             providers:
@@ -15,11 +18,12 @@ on:
 
 jobs:
     acceptance-test:
-        environment: test-${{ inputs.runner }}
+        environment: test-${{ inputs.region }}
         runs-on:
             - self-hosted
             - linux
-            - ${{ inputs.runner }}
+            - ${{ inputs.region }}
+            - ${{ inputs.service }}
         steps:
             - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
             - uses: outscale/frieza-github-actions/frieza-clean@master

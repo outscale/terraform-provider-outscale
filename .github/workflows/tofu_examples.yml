@@ -20,7 +20,7 @@ concurrency:
 jobs:
     Examples_tofu_tests:
         environment: test-eu-west-2
-        runs-on: [self-hosted, linux, eu-west-2]
+        runs-on: [self-hosted, linux, eu-west-2, oapi]
         steps:
             - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
               with:
