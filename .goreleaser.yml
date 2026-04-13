@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
 # Visit https://goreleaser.com for documentation on how to customize this
 # behavior.
 version: 2
@@ -58,7 +59,7 @@ changelog:
     use: github
 
 sboms:
-  cmd: syft
-  args: ["$artifact", "--output", "cyclonedx-json=$document"]
-  artifacts: archive
-  disable: false
+  - cmd: syft
+    args: ["$artifact", "--output", "cyclonedx-json=$document"]
+    artifacts: archive
+    disable: false
