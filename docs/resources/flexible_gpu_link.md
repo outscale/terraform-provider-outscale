@@ -66,10 +66,12 @@ The `timeouts` block enables you to configure [timeouts](https://developer.hashi
 
 ## Import
 
-A flexible GPU link can be imported using the flexible GPU ID. For example:
+A flexible GPU link can be imported using the ID of the related VM. For example:
 
 ```console
 
-$ terraform import outscale_flexible_gpu_link.imported_link_fgpu fgpu-12345678
+$ terraform import outscale_flexible_gpu_link.imported_link_fgpu <vm_id>
 
 ```
+
+This will import all the flexible GPUs that are linked to that VM.
