@@ -14,13 +14,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/outscale/goutils/sdk/ptr"
 	"github.com/outscale/osc-sdk-go/v3/pkg/options"
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/stateconf"
 )
 
 var (
@@ -186,11 +186,11 @@ func (r *clientGatewayResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	stateConf := &retry.StateChangeConf{
-		Pending: []string{"pending"},
-		Target:  []string{"available"},
+	stateConf := &stateconf.StateChangeConf[osc.ClientGatewayState]{
+		Pending: stateconf.States(osc.ClientGatewayStatePending),
+		Target:  stateconf.States(osc.ClientGatewayStateAvailable),
 		Timeout: timeout,
-		Refresh: r.stateRefreshFunc(ctx, timeout, createResp.ClientGateway.ClientGatewayId),
+		Refresh: r.stateRefreshFunc(createResp.ClientGateway.ClientGatewayId),
 	}
 	_, err = stateConf.WaitForStateContext(ctx)
 	if err != nil {
@@ -282,19 +282,17 @@ func (r *clientGatewayResource) Delete(ctx context.Context, req resource.DeleteR
 		return
 	}
 
-	stateConf := &retry.StateChangeConf{
-		Pending: []string{"deleting"},
-		Target:  []string{"deleted", "failed"},
+	stateConf := &stateconf.StateChangeConf[osc.ClientGatewayState]{
+		Pending: stateconf.States(osc.ClientGatewayStateDeleting),
+		Target:  stateconf.States(osc.ClientGatewayStateDeleted),
 		Timeout: timeout,
-		Refresh: r.stateRefreshFunc(ctx, timeout, data.Id.ValueString()),
+		Refresh: r.stateRefreshFunc(data.Id.ValueString()),
 	}
 	_, err = stateConf.WaitForStateContext(ctx)
-	if err != nil {
-		switch {
-		case errors.Is(err, ErrResourceEmpty):
-		default:
-			resp.Diagnostics.AddError(clientGwErrDelete, err.Error())
-		}
+	switch {
+	case errors.Is(err, ErrResourceEmpty):
+	case err != nil:
+		resp.Diagnostics.AddError(clientGwErrDelete, err.Error())
 	}
 }
 
@@ -310,7 +308,7 @@ func (r *clientGatewayResource) read(ctx context.Context, timeout time.Duration,
 		return data, err
 	}
 
-	if resp.ClientGateways == nil || len(*resp.ClientGateways) == 0 || (*resp.ClientGateways)[0].State == "deleted" {
+	if resp.ClientGateways == nil || len(*resp.ClientGateways) == 0 || (*resp.ClientGateways)[0].State == osc.ClientGatewayStateDeleted {
 		return data, ErrResourceEmpty
 	}
 
@@ -333,14 +331,14 @@ func (r *clientGatewayResource) read(ctx context.Context, timeout time.Duration,
 	return data, nil
 }
 
-func (r *clientGatewayResource) stateRefreshFunc(ctx context.Context, timeout time.Duration, id string) retry.StateRefreshFunc {
-	return func() (any, string, error) {
+func (r *clientGatewayResource) stateRefreshFunc(id string) stateconf.StateRefreshFunc[osc.ClientGatewayState] {
+	return func(ctx context.Context) (any, osc.ClientGatewayState, error) {
 		req := osc.ReadClientGatewaysRequest{
 			Filters: &osc.FiltersClientGateway{
 				ClientGatewayIds: &[]string{id},
 			},
 		}
-		resp, err := r.Client.ReadClientGateways(ctx, req, options.WithRetryTimeout(timeout))
+		resp, err := r.Client.ReadClientGateways(ctx, req)
 		if err != nil {
 			return nil, "", err
 		}
@@ -351,6 +349,6 @@ func (r *clientGatewayResource) stateRefreshFunc(ctx context.Context, timeout ti
 
 		gw := (*resp.ClientGateways)[0]
 
-		return resp, string(gw.State), nil
+		return resp, gw.State, nil
 	}
 }

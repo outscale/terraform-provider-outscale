@@ -29,6 +29,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/modifyplans"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/stateconf"
 	"github.com/samber/lo"
 )
 
@@ -64,9 +65,13 @@ type BlockLinkedVolumes struct {
 	VmId               types.String `tfsdk:"vm_id"`
 }
 
-type resourceVolume struct {
+type volumeCommon struct {
 	Client  *osc.Client
 	Batcher *batch.BatcherByID[osc.Volume]
+}
+
+type resourceVolume struct {
+	volumeCommon
 }
 
 func NewResourceVolume() resource.Resource {
@@ -297,11 +302,11 @@ func (r *resourceVolume) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	stateConf := &retry.StateChangeConf{
-		Pending: []string{"creating"},
-		Target:  []string{"available"},
+	stateConf := &stateconf.StateChangeConf[osc.VolumeState]{
+		Pending: stateconf.States(osc.VolumeStateCreating),
+		Target:  stateconf.States(osc.VolumeStateAvailable),
 		Timeout: createTimeout,
-		Refresh: getVolumeStateRefreshFunc(ctx, r.Client, createTimeout, volumeId),
+		Refresh: r.stateRefreshFunc(volumeId),
 	}
 	if _, err = stateConf.WaitForStateContext(ctx); err != nil {
 		resp.Diagnostics.AddError(
@@ -563,18 +568,18 @@ func setVolumeState(ctx context.Context, r *resourceVolume, data *VolumeModel) e
 	return nil
 }
 
-func getVolumeStateRefreshFunc(ctx context.Context, client *osc.Client, timeout time.Duration, volumeID string) retry.StateRefreshFunc {
-	return func() (any, string, error) {
-		resp, err := client.ReadVolumes(ctx, osc.ReadVolumesRequest{
+func (r *volumeCommon) stateRefreshFunc(volumeID string) stateconf.StateRefreshFunc[osc.VolumeState] {
+	return func(ctx context.Context) (any, osc.VolumeState, error) {
+		resp, err := r.Client.ReadVolumes(ctx, osc.ReadVolumesRequest{
 			Filters: &osc.FiltersVolume{
 				VolumeIds: &[]string{volumeID},
 			},
-		}, options.WithRetryTimeout(timeout))
+		})
 		if err != nil {
 			return nil, "", err
 		}
 		v := ptr.From(resp.Volumes)[0]
-		return v, string(v.State), nil
+		return v, v.State, nil
 	}
 }
 

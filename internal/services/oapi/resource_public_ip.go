@@ -263,13 +263,9 @@ func (r *publicIpResource) Delete(ctx context.Context, req resource.DeleteReques
 	}
 
 	// Unlink if associated to a VM or NIC
-	if currentData.LinkPublicIpId.ValueString() != "" || currentData.VmId.ValueString() != "" {
-		unlinkReq := osc.UnlinkPublicIpRequest{}
-		switch {
-		case currentData.LinkPublicIpId.ValueString() != "":
-			unlinkReq.LinkPublicIpId = currentData.LinkPublicIpId.ValueStringPointer()
-		case currentData.VmId.ValueString() != "":
-			unlinkReq.PublicIp = currentData.PublicIp.ValueStringPointer()
+	if currentData.LinkPublicIpId.ValueString() != "" {
+		unlinkReq := osc.UnlinkPublicIpRequest{
+			LinkPublicIpId: currentData.LinkPublicIpId.ValueStringPointer(),
 		}
 
 		_, err := r.Client.UnlinkPublicIp(ctx, unlinkReq, options.WithRetryTimeout(timeout))

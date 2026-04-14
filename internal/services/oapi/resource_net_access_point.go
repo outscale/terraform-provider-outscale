@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	set "github.com/deckarep/golang-set/v2"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
@@ -15,12 +14,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/outscale/osc-sdk-go/v3/pkg/options"
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/stateconf"
 )
 
 var (
@@ -197,11 +196,11 @@ func (r *resourceNetAccessPoint) Create(ctx context.Context, req resource.Create
 		return
 	}
 
-	stateConf := &retry.StateChangeConf{
-		Pending: []string{string(osc.NetAccessPointStatePending)},
-		Target:  []string{string(osc.NetAccessPointStateAvailable)},
+	stateConf := &stateconf.StateChangeConf[osc.NetAccessPointState]{
+		Pending: stateconf.States(osc.NetAccessPointStatePending),
+		Target:  stateconf.States(osc.NetAccessPointStateAvailable),
 		Timeout: createTimeout,
-		Refresh: ResourceNetAccessPointStateRefreshFunc(ctx, createTimeout, r, netAccessPoint.NetAccessPointId),
+		Refresh: r.stateRefreshFunc(netAccessPoint.NetAccessPointId),
 	}
 
 	if _, err = stateConf.WaitForStateContext(ctx); err != nil {
@@ -393,16 +392,19 @@ func setNetAccessPointState(ctx context.Context, r *resourceNetAccessPoint, data
 	return data, nil
 }
 
-func ResourceNetAccessPointStateRefreshFunc(ctx context.Context, to time.Duration, r *resourceNetAccessPoint, id string) retry.StateRefreshFunc {
-	return func() (any, string, error) {
+func (r *resourceNetAccessPoint) stateRefreshFunc(id string) func(ctx context.Context) (any, osc.NetAccessPointState, error) {
+	return func(ctx context.Context) (any, osc.NetAccessPointState, error) {
 		readReq := osc.ReadNetAccessPointsRequest{Filters: &osc.FiltersNetAccessPoint{NetAccessPointIds: &[]string{id}}}
 
-		resp, err := r.Client.ReadNetAccessPoints(ctx, readReq, options.WithRetryTimeout(to))
+		resp, err := r.Client.ReadNetAccessPoints(ctx, readReq)
 		if err != nil {
-			return resp, "error", err
+			return resp, "", err
 		}
-		nap := (*resp.NetAccessPoints)[0]
+		if resp.NetAccessPoints == nil || len(*resp.NetAccessPoints) == 0 {
+			return resp, "", ErrResourceEmpty
+		}
 
-		return resp, string(nap.State), nil
+		nap := (*resp.NetAccessPoints)[0]
+		return resp, nap.State, nil
 	}
 }

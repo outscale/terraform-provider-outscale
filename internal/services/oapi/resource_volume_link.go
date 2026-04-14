@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -14,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/outscale/goutils/sdk/batch"
 	"github.com/outscale/goutils/sdk/ptr"
 	"github.com/outscale/osc-sdk-go/v3/pkg/options"
@@ -22,6 +20,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/stateconf"
 )
 
 var (
@@ -42,9 +41,9 @@ type VolumeLinkModel struct {
 	VmId               types.String   `tfsdk:"vm_id"`
 	Id                 types.String   `tfsdk:"id"`
 }
+
 type resourceVolumeLink struct {
-	Client  *osc.Client
-	Batcher *batch.BatcherByID[osc.Volume]
+	volumeCommon
 }
 
 func NewResourceVolumeLink() resource.Resource {
@@ -169,11 +168,11 @@ func (r *resourceVolumeLink) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	volStateConf := &retry.StateChangeConf{
-		Pending: []string{"creating", "updating"},
-		Target:  []string{"available"},
+	volStateConf := &stateconf.StateChangeConf[osc.VolumeState]{
+		Pending: stateconf.States(osc.VolumeStateCreating),
+		Target:  stateconf.States(osc.VolumeStateAvailable),
 		Timeout: createTimeout,
-		Refresh: getVolumeStateRefreshFunc(ctx, r.Client, createTimeout, data.VolumeId.ValueString()),
+		Refresh: r.stateRefreshFunc(data.VolumeId.ValueString()),
 	}
 	if _, err := volStateConf.WaitForStateContext(ctx); err != nil {
 		resp.Diagnostics.AddError(
@@ -183,11 +182,11 @@ func (r *resourceVolumeLink) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	vmStateConf := &retry.StateChangeConf{
-		Pending: []string{"pending"},
-		Target:  []string{"running", "stopped"},
+	vmStateConf := &stateconf.StateChangeConf[osc.VmState]{
+		Pending: stateconf.States(osc.VmStatePending),
+		Target:  stateconf.States(osc.VmStateRunning, osc.VmStateStopped),
 		Timeout: createTimeout,
-		Refresh: getVmStateRefreshFunc(ctx, r.Client, createTimeout, data.VmId.ValueString()),
+		Refresh: r.vmStateRefreshFunc(data.VmId.ValueString()),
 	}
 	if _, err := vmStateConf.WaitForStateContext(ctx); err != nil {
 		resp.Diagnostics.AddError(
@@ -212,11 +211,11 @@ func (r *resourceVolumeLink) Create(ctx context.Context, req resource.CreateRequ
 	}
 	data.RequestId = to.String(*linkResp.ResponseContext.RequestId)
 
-	linkedStateConf := &retry.StateChangeConf{
-		Pending: []string{"attaching"},
-		Target:  []string{"attached"},
+	linkedStateConf := &stateconf.StateChangeConf[osc.LinkedVolumeState]{
+		Pending: stateconf.States(osc.LinkedVolumeStateAttaching),
+		Target:  stateconf.States(osc.LinkedVolumeStateAttached),
 		Timeout: createTimeout,
-		Refresh: getvolumeAttachmentStateRefreshFunc(ctx, r.Client, createTimeout, data.VmId.ValueString(), data.VolumeId.ValueString()),
+		Refresh: getvolumeAttachmentStateRefreshFunc(r.Client, data.VmId.ValueString(), data.VolumeId.ValueString()),
 	}
 	if _, err = linkedStateConf.WaitForStateContext(ctx); err != nil {
 		resp.Diagnostics.AddError(
@@ -308,11 +307,11 @@ func (r *resourceVolumeLink) Delete(ctx context.Context, req resource.DeleteRequ
 		)
 		return
 	}
-	unLinkedStateConf := &retry.StateChangeConf{
-		Pending: []string{"detaching"},
-		Target:  []string{"detached"},
+	unLinkedStateConf := &stateconf.StateChangeConf[osc.LinkedVolumeState]{
+		Pending: stateconf.States(osc.LinkedVolumeStateDetaching),
+		Target:  stateconf.States(osc.LinkedVolumeStateDetached),
 		Timeout: deleteTimeout,
-		Refresh: getvolumeAttachmentStateRefreshFunc(ctx, r.Client, deleteTimeout, data.VmId.ValueString(), data.VolumeId.ValueString()),
+		Refresh: getvolumeAttachmentStateRefreshFunc(r.Client, data.VmId.ValueString(), data.VolumeId.ValueString()),
 	}
 	if _, err = unLinkedStateConf.WaitForStateContext(ctx); err != nil {
 		resp.Diagnostics.AddError(
@@ -356,25 +355,25 @@ func setLinkedVolumeState(ctx context.Context, r *resourceVolumeLink, data *Volu
 	return nil
 }
 
-func getVmStateRefreshFunc(ctx context.Context, client *osc.Client, timeout time.Duration, vmId string) retry.StateRefreshFunc {
-	return func() (any, string, error) {
+func (r *resourceVolumeLink) vmStateRefreshFunc(vmId string) stateconf.StateRefreshFunc[osc.VmState] {
+	return func(ctx context.Context) (any, osc.VmState, error) {
 		req := osc.ReadVmsStateRequest{
 			AllVms: new(true),
 			Filters: &osc.FiltersVmsState{
 				VmIds: &[]string{vmId},
 			},
 		}
-		resp, err := client.ReadVmsState(ctx, req, options.WithRetryTimeout(timeout))
+		resp, err := r.Client.ReadVmsState(ctx, req)
 		if err != nil {
 			return nil, "", err
 		}
 		vmStatus := (*resp.VmStates)[0]
-		return vmStatus, string(vmStatus.VmState), nil
+		return vmStatus, vmStatus.VmState, nil
 	}
 }
 
-func getvolumeAttachmentStateRefreshFunc(ctx context.Context, client *osc.Client, timeOut time.Duration, vmId string, volumeId string) retry.StateRefreshFunc {
-	return func() (any, string, error) {
+func getvolumeAttachmentStateRefreshFunc(client *osc.Client, vmId string, volumeId string) stateconf.StateRefreshFunc[osc.LinkedVolumeState] {
+	return func(ctx context.Context) (any, osc.LinkedVolumeState, error) {
 		request := osc.ReadVolumesRequest{
 			Filters: &osc.FiltersVolume{
 				VolumeIds:       &[]string{volumeId},
@@ -382,16 +381,16 @@ func getvolumeAttachmentStateRefreshFunc(ctx context.Context, client *osc.Client
 			},
 		}
 
-		resp, err := client.ReadVolumes(ctx, request, options.WithRetryTimeout(timeOut))
+		resp, err := client.ReadVolumes(ctx, request)
 		if err != nil {
-			return nil, "failed", err
+			return nil, "", err
 		}
 
 		if len(ptr.From(resp.Volumes)) > 0 && len((*resp.Volumes)[0].LinkedVolumes) > 0 {
 			linkedVolume := (*resp.Volumes)[0].LinkedVolumes[0]
-			return linkedVolume, string(linkedVolume.State), nil
+			return linkedVolume, linkedVolume.State, nil
 		}
 
-		return resp.Volumes, "detached", nil
+		return resp.Volumes, osc.LinkedVolumeStateDetached, nil
 	}
 }
