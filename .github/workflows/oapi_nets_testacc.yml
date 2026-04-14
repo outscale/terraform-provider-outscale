@@ -6,7 +6,7 @@ on:
             - master
         paths:
             - ".github/workflows/oapi_nets_testacc.yml"
-            - ".github/workflows/reusable-acceptance-test.yml"
+            - ".github/workflows/reusable_acceptance_test.yml"
             - "internal/services/oapi/**"
             - "internal/client/**"
             - "internal/testacc/**"

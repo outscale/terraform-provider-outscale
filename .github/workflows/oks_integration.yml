@@ -6,7 +6,7 @@ on:
             - master
         paths:
             - ".github/workflows/oks_integration.yml"
-            - ".github/workflows/reusable-integration-test.yml"
+            - ".github/workflows/reusable_integration_test.yml"
             - "internal/services/oks/**"
             - "internal/client/**"
             - "internal/testacc/**"
