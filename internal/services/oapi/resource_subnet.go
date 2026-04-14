@@ -13,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/outscale/goutils/sdk/batch"
 	"github.com/outscale/goutils/sdk/ptr"
 	"github.com/outscale/osc-sdk-go/v3/pkg/options"
@@ -22,6 +21,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/modifyplans"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/stateconf"
 	"github.com/outscale/terraform-provider-outscale/internal/services/oapi/oapihelpers"
 )
 
@@ -214,21 +214,21 @@ func (r *resourceSubnet) Create(ctx context.Context, req resource.CreateRequest,
 
 	readReq := osc.ReadSubnetsRequest{Filters: &osc.FiltersSubnet{SubnetIds: &[]string{subnet.SubnetId}}}
 
-	stateConf := &retry.StateChangeConf{
-		Pending: []string{"pending"},
-		Target:  []string{"available"},
+	stateConf := &stateconf.StateChangeConf[osc.SubnetState]{
+		Pending: stateconf.States(osc.SubnetStatePending),
+		Target:  stateconf.States(osc.SubnetStateAvailable),
 		Timeout: createTimeout,
-		Refresh: func() (any, string, error) {
-			resp, err := r.Client.ReadSubnets(ctx, readReq, options.WithRetryTimeout(createTimeout))
+		Refresh: func(ctx context.Context) (any, osc.SubnetState, error) {
+			resp, err := r.Client.ReadSubnets(ctx, readReq)
 			if err != nil {
 				return nil, "", err
 			}
-			if resp.Subnets == nil {
-				return resp, "failed", nil
+			if resp.Subnets == nil || len(*resp.Subnets) == 0 {
+				return resp, "", fmt.Errorf("subnet %s not found", subnet.SubnetId)
 			}
 			subnet := (*resp.Subnets)[0]
 
-			return resp, string(subnet.State), nil
+			return resp, subnet.State, nil
 		},
 	}
 

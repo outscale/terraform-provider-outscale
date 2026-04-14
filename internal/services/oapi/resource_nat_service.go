@@ -13,13 +13,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/outscale/osc-sdk-go/v3/pkg/options"
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/stateconf"
 	"github.com/outscale/terraform-provider-outscale/internal/services/oapi/oapihelpers"
 	"github.com/samber/lo"
 )
@@ -202,11 +202,11 @@ func (r *natServiceResource) Create(ctx context.Context, req resource.CreateRequ
 	data.Id = to.String(natServiceId)
 	data.NatServiceId = to.String(natServiceId)
 
-	stateConf := &retry.StateChangeConf{
-		Pending: []string{string(osc.NatServiceStatePending)},
-		Target:  []string{string(osc.NatServiceStateAvailable)},
+	stateConf := &stateconf.StateChangeConf[osc.NatServiceState]{
+		Pending: stateconf.States(osc.NatServiceStatePending),
+		Target:  stateconf.States(osc.NatServiceStateAvailable),
 		Timeout: timeout,
-		Refresh: r.stateRefreshFunc(ctx, timeout, natServiceId),
+		Refresh: r.stateRefreshFunc(natServiceId),
 	}
 	if _, err := stateConf.WaitForStateContext(ctx); err != nil {
 		resp.Diagnostics.AddError(natSvcErrNotAvailable, err.Error())
@@ -300,13 +300,16 @@ func (r *natServiceResource) Delete(ctx context.Context, req resource.DeleteRequ
 		return
 	}
 
-	stateConf := &retry.StateChangeConf{
-		Pending: []string{string(osc.NatServiceStateDeleting)},
-		Target:  []string{string(osc.NatServiceStateDeleted), string(osc.NatServiceStateAvailable)},
+	stateConf := &stateconf.StateChangeConf[osc.NatServiceState]{
+		Pending: stateconf.States(osc.NatServiceStateDeleting),
+		Target:  stateconf.States(osc.NatServiceStateDeleted, osc.NatServiceStateAvailable),
 		Timeout: timeout,
-		Refresh: r.stateRefreshFunc(ctx, timeout, data.Id.ValueString()),
+		Refresh: r.stateRefreshFunc(data.Id.ValueString()),
 	}
-	if _, err := stateConf.WaitForStateContext(ctx); err != nil {
+	_, err = stateConf.WaitForStateContext(ctx)
+	switch {
+	case errors.Is(err, ErrResourceEmpty):
+	case err != nil:
 		resp.Diagnostics.AddError(natSvcErrDelete, err.Error())
 	}
 }
@@ -369,20 +372,20 @@ func (r *natServiceResource) flattenPublicIpModel(ips []osc.PublicIpLight) []nat
 	})
 }
 
-func (r *natServiceResource) stateRefreshFunc(ctx context.Context, timeout time.Duration, id string) retry.StateRefreshFunc {
-	return func() (any, string, error) {
+func (r *natServiceResource) stateRefreshFunc(id string) func(context.Context) (any, osc.NatServiceState, error) {
+	return func(ctx context.Context) (any, osc.NatServiceState, error) {
 		req := osc.ReadNatServicesRequest{
 			Filters: &osc.FiltersNatService{NatServiceIds: &[]string{id}},
 		}
-		resp, err := r.Client.ReadNatServices(ctx, req, options.WithRetryTimeout(timeout))
+		resp, err := r.Client.ReadNatServices(ctx, req)
 		if err != nil {
 			return nil, "", err
 		}
 		if resp.NatServices == nil || len(*resp.NatServices) == 0 {
-			return nil, "", fmt.Errorf("nat service %s not found", id)
+			return nil, "", ErrResourceEmpty
 		}
 
 		natService := (*resp.NatServices)[0]
-		return resp, string(natService.State), nil
+		return resp, natService.State, nil
 	}
 }

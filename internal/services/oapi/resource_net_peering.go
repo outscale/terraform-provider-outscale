@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -14,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/outscale/goutils/sdk/ptr"
 	"github.com/outscale/osc-sdk-go/v3/pkg/options"
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
@@ -23,6 +20,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/modifyplans"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/stateconf"
 )
 
 var (
@@ -300,11 +298,11 @@ func (r *resourceNetPeering) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	stateConf := &retry.StateChangeConf{
-		Pending: []string{},
-		Target:  []string{string(osc.NetPeeringStateNamePendingAcceptance), string(osc.NetPeeringStateNameActive)},
+	stateConf := &stateconf.StateChangeConf[osc.NetPeeringStateName]{
+		Pending: stateconf.States[osc.NetPeeringStateName](),
+		Target:  stateconf.States(osc.NetPeeringStateNamePendingAcceptance, osc.NetPeeringStateNameActive),
 		Timeout: createTimeout,
-		Refresh: ResourceNetPeeringconnectionStateRefreshFunc(ctx, createTimeout, r, netPeering.NetPeeringId),
+		Refresh: r.stateRefreshFunc(netPeering.NetPeeringId),
 	}
 
 	if _, err = stateConf.WaitForStateContext(ctx); err != nil {
@@ -465,23 +463,23 @@ func (r *resourceNetPeering) read(ctx context.Context, data NetPeeringModel) (Ne
 	return data, nil
 }
 
-func ResourceNetPeeringconnectionStateRefreshFunc(ctx context.Context, to time.Duration, r *resourceNetPeering, id string) retry.StateRefreshFunc {
-	return func() (any, string, error) {
+func (r *resourceNetPeering) stateRefreshFunc(id string) stateconf.StateRefreshFunc[osc.NetPeeringStateName] {
+	return func(ctx context.Context) (any, osc.NetPeeringStateName, error) {
 		readReq := osc.ReadNetPeeringsRequest{Filters: &osc.FiltersNetPeering{NetPeeringIds: &[]string{id}}}
 
-		resp, err := r.Client.ReadNetPeerings(ctx, readReq, options.WithRetryTimeout(to))
-		if err != nil || resp.NetPeerings == nil || len(*resp.NetPeerings) == 0 {
-			if strings.Contains(fmt.Sprint(err), "InvalidVpcPeeringconnectionID.NotFound") {
-				return nil, "", nil
-			}
-			return resp, "error", err
+		resp, err := r.Client.ReadNetPeerings(ctx, readReq)
+		if err != nil {
+			return resp, "", err
+		}
+		if resp.NetPeerings == nil || len(*resp.NetPeerings) == 0 {
+			return resp, "", ErrResourceEmpty
 		}
 		netPeering := (*resp.NetPeerings)[0]
 
-		if netPeering.State.Name == "failed" {
-			return nil, "failed", errors.New(netPeering.State.Message)
+		if netPeering.State.Name == osc.NetPeeringStateNameFailed {
+			return nil, netPeering.State.Name, errors.New(netPeering.State.Message)
 		}
 
-		return resp, string(netPeering.State.Name), nil
+		return resp, netPeering.State.Name, nil
 	}
 }
