@@ -38,6 +38,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### 🌱 Others
 - (nothing yet)
 
+## [1.6.0-rc.2] - 2026-04-15
+
+### 🛠️ Changed / Refactoring
+* ♻️ refactor: multiple sdkv2 -> plugin framework migrations by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/721
+
+### 📝 Documentation
+* 📝 docs: Fix flexible_gpu_link import by @andrepasteur in https://github.com/outscale/terraform-provider-outscale/pull/733
+
 ## [1.6.0-rc.1] - 2026-04-09
 
 ### ✨ Added
