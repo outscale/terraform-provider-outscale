@@ -38,6 +38,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### 🌱 Others
 - (nothing yet)
 
+## [1.6.0-rc.3] - 2026-04-15
+
+### 🌱 Others
+* 💚 fix: remove sbom from artifacts by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/736
+
 ## [1.6.0-rc.2] - 2026-04-15
 
 ### 🛠️ Changed / Refactoring
