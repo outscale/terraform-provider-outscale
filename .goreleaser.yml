@@ -57,9 +57,3 @@ release:
 
 changelog:
     use: github
-
-sboms:
-  - cmd: syft
-    args: ["$artifact", "--output", "cyclonedx-json=$document"]
-    artifacts: archive
-    disable: false
