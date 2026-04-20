@@ -16,6 +16,8 @@ import (
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwtypes"
 )
 
+const ZeroValueAsEmpty = true
+
 func String[T ~string | *string](v T) types.String {
 	rv := reflect.ValueOf(v)
 	if rv.Kind() == reflect.Pointer && rv.IsNil() {
@@ -278,7 +280,9 @@ func Set[T any](ctx context.Context, slice []T) (types.Set, diag.Diagnostics) {
 	return set, diags
 }
 
-func ListObject[T any](ctx context.Context, slice []T) (types.List, diag.Diagnostics) {
+// The asEmpty parameter works as an optional argument that allows to specify whether an nil slice should be treated as an empty list or a null list.
+// This is useful for SDKv2 migration compatibility where TypeList defaults to [] and not null.
+func ListObject[T any](ctx context.Context, slice []T, asEmpty ...bool) (types.List, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	var zeroVal T
@@ -286,6 +290,10 @@ func ListObject[T any](ctx context.Context, slice []T) (types.List, diag.Diagnos
 	objType := types.ObjectType{AttrTypes: attrTypes}
 
 	if len(slice) == 0 {
+		if len(asEmpty) > 0 && asEmpty[0] {
+			return types.ListValueMust(objType, []attr.Value{}), diags
+		}
+
 		return types.ListNull(objType), diags
 	}
 

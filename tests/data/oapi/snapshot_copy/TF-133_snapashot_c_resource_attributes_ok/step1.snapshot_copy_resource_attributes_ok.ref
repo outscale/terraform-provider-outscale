@@ -35,7 +35,6 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "outscale_volume.outscale_volume_snap"
                     ]
@@ -77,7 +76,6 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "outscale_snapshot.outscale_snapshot",
                         "outscale_volume.outscale_volume_snap"
