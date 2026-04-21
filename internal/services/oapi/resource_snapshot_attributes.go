@@ -33,7 +33,6 @@ var (
 	_ resource.Resource                     = &snapshotAttributesResource{}
 	_ resource.ResourceWithConfigure        = &snapshotAttributesResource{}
 	_ resource.ResourceWithConfigValidators = &snapshotAttributesResource{}
-	_ resource.ResourceWithModifyPlan       = &snapshotAttributesResource{}
 )
 
 const (
@@ -270,78 +269,11 @@ func (r *snapshotAttributesResource) Read(ctx context.Context, req resource.Read
 	resp.Diagnostics.Append(resp.State.Set(ctx, &stateData)...)
 }
 
-func (r *snapshotAttributesResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	if req.Plan.Raw.IsNull() {
-		return
-	}
-
-	if req.State.Raw.IsNull() {
-		return
-	}
-
-	var stateData snapshotAttributesModel
-	resp.Diagnostics.Append(req.State.Get(ctx, &stateData)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	var planData snapshotAttributesModel
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &planData)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	if fwhelpers.IsSet(stateData.Additions) && fwhelpers.IsSet(stateData.Removals) {
-		if planData.Additions.IsNull() || planData.Additions.IsUnknown() {
-			planData.Additions = stateData.Additions
-		}
-		if planData.Removals.IsNull() || planData.Removals.IsUnknown() {
-			planData.Removals = stateData.Removals
-		}
-	}
-
-	additions, diags := normalizeSnapshotAttributesPermissionsList(ctx, planData.Additions)
-	if fwhelpers.CheckDiags(resp, diags) {
-		return
-	}
-	planData.Additions = additions
-
-	removals, diags := normalizeSnapshotAttributesPermissionsList(ctx, planData.Removals)
-	if fwhelpers.CheckDiags(resp, diags) {
-		return
-	}
-	planData.Removals = removals
-
-	resp.Diagnostics.Append(resp.Plan.Set(ctx, &planData)...)
-}
-
 func (r *snapshotAttributesResource) Update(_ context.Context, _ resource.UpdateRequest, _ *resource.UpdateResponse) {
 	// Every attribute is RequiresReplace, Update is never called
 }
 
 func (r *snapshotAttributesResource) Delete(_ context.Context, _ resource.DeleteRequest, _ *resource.DeleteResponse) {
-}
-
-func normalizeSnapshotAttributesPermissionsList(ctx context.Context, list types.List) (types.List, diag.Diagnostics) {
-	if list.IsNull() || list.IsUnknown() {
-		return list, nil
-	}
-
-	perms, diags := to.Slice[snapshotAttributesPermModel](ctx, list)
-	if diags.HasError() {
-		return list, diags
-	}
-
-	for i := range perms {
-		if perms[i].AccountIds.IsNull() || perms[i].AccountIds.IsUnknown() {
-			perms[i].AccountIds = types.ListValueMust(types.StringType, []attr.Value{})
-		}
-		if perms[i].GlobalPermission.IsNull() || perms[i].GlobalPermission.IsUnknown() {
-			perms[i].GlobalPermission = types.BoolValue(false)
-		}
-	}
-
-	return types.ListValueFrom(ctx, snapshotAttributesPermAttrTypes, perms)
 }
 
 func (r *snapshotAttributesResource) read(ctx context.Context, timeout time.Duration, data snapshotAttributesModel) (snapshotAttributesModel, error) {
