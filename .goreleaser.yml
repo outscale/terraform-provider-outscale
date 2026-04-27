@@ -30,10 +30,13 @@ builds:
             goarch: arm
       binary: "{{ .ProjectName }}_v{{ .Version }}"
 archives:
-    - formats:
+    - id: archives
+      formats:
           - zip
       name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 checksum:
+    ids:
+        - archives # includes archives but not sbom files
     extra_files:
         - glob: "terraform-registry-manifest.json"
           name_template: "{{ .ProjectName }}_{{ .Version }}_manifest.json"
@@ -57,3 +60,9 @@ release:
 
 changelog:
     use: github
+
+sboms:
+  - cmd: syft
+    args: ["$artifact", "--output", "cyclonedx-json=$document"]
+    artifacts: archive
+    disable: false
