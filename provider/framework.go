@@ -293,6 +293,9 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		oapi.NewResourceNatService,
 		oapi.NewResourceSnapshot,
 		oapi.NewResourceSnapshotAttributes,
+		oapi.NewResourceNic,
+		oapi.NewResourceNicLink,
+		oapi.NewResourceNicPrivateIp,
 
 		oks.NewResourceProject,
 		oks.NewResourceCluster,

@@ -16,7 +16,7 @@ require (
 	github.com/hashicorp/terraform-plugin-testing v1.15.0
 	github.com/oapi-codegen/runtime v1.4.0
 	github.com/outscale/goutils/sdk v0.0.2
-	github.com/outscale/osc-sdk-go/v3 v3.0.0-rc.1.0.20260407094453-983af567f5a5
+	github.com/outscale/osc-sdk-go/v3 v3.0.0-rc.1.0.20260423135956-cbc3c1d3e20d
 	github.com/samber/lo v1.53.0
 	github.com/spf13/cast v1.10.0
 )
@@ -31,7 +31,6 @@ require (
 	github.com/benbjohnson/clock v1.3.0 // indirect
 	github.com/cloudflare/circl v1.6.1 // indirect
 	github.com/fatih/color v1.18.0 // indirect
-	github.com/go-git/go-git/v5 v5.16.5 // indirect
 	github.com/go-test/deep v1.0.8 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect

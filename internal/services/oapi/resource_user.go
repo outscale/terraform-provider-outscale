@@ -26,6 +26,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwtypes"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/modifyplans"
 	"github.com/samber/lo"
 )
 
@@ -33,6 +34,7 @@ var (
 	_ resource.Resource                = &resourceUser{}
 	_ resource.ResourceWithConfigure   = &resourceUser{}
 	_ resource.ResourceWithImportState = &resourceUser{}
+	_ resource.ResourceWithModifyPlan  = &resourceUser{}
 )
 
 type UserModel struct {
@@ -55,6 +57,8 @@ type UserPolicyModel struct {
 	CreationDate         types.String                       `tfsdk:"creation_date"`
 	LastModificationDate types.String                       `tfsdk:"last_modification_date"`
 }
+
+var userPolicyAttrTypes = fwhelpers.GetAttrTypes(UserPolicyModel{})
 
 type UserCommon struct {
 	Client *osc.Client
@@ -102,6 +106,12 @@ func (r *resourceUser) Schema(ctx context.Context, _ resource.SchemaRequest, res
 				Delete: true,
 			}),
 			"policy": schema.SetNestedBlock{
+				PlanModifiers: []planmodifier.Set{
+					modifyplans.SetNestedBlockMergeEmptyOnCreate(modifyplans.SetNestedBlockMergeOptions{
+						ObjectType: to.Object(userPolicyAttrTypes),
+						Fields:     []string{"policy_orn"},
+					}),
+				},
 				NestedObject: schema.NestedBlockObject{
 					Attributes: map[string]schema.Attribute{
 						"policy_orn": schema.StringAttribute{
@@ -170,6 +180,30 @@ func (r *resourceUser) Schema(ctx context.Context, _ resource.SchemaRequest, res
 				},
 			},
 		},
+	}
+}
+
+func (r *resourceUser) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || req.State.Raw.IsNull() {
+		return
+	}
+
+	var stateData, planData, configData UserModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &stateData)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &planData)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &configData)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	noRealInputChange := planData.UserName.Equal(stateData.UserName) &&
+		planData.Path.Equal(stateData.Path) &&
+		planData.UserEmail.Equal(stateData.UserEmail) &&
+		planData.Policies.Equal(stateData.Policies)
+
+	if noRealInputChange {
+		planData.LastModificationDate = stateData.LastModificationDate
+		resp.Diagnostics.Append(resp.Plan.Set(ctx, &planData)...)
 	}
 }
 

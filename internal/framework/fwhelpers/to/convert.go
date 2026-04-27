@@ -240,27 +240,34 @@ func Slice[T any, C types.List | types.Set](ctx context.Context, v C) ([]T, diag
 	}
 }
 
-func SetObject[T any](ctx context.Context, slice []T) (types.Set, diag.Diagnostics) {
+func SetFromAttrType[T any](ctx context.Context, slice []T, attrType attr.Type, asEmpty ...bool) (types.Set, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	var zeroVal T
-	attrTypes := fwhelpers.GetAttrTypes(zeroVal)
-	objType := types.ObjectType{AttrTypes: attrTypes}
-
 	if len(slice) == 0 {
-		return types.SetNull(objType), diags
+		if len(asEmpty) > 0 && asEmpty[0] {
+			return types.SetValueMust(attrType, []attr.Value{}), diags
+		}
+
+		return types.SetNull(attrType), diags
 	}
 
-	set, d := types.SetValueFrom(ctx, objType, slice)
+	set, d := types.SetValueFrom(ctx, attrType, slice)
 	diags.Append(d...)
+
 	return set, diags
 }
 
-func Set[T any](ctx context.Context, slice []T) (types.Set, diag.Diagnostics) {
-	var diags diag.Diagnostics
-	var zero T
+func SetObject[T any](ctx context.Context, slice []T, asEmpty ...bool) (types.Set, diag.Diagnostics) {
+	var zeroVal T
+	attrTypes := fwhelpers.GetAttrTypes(zeroVal)
 
+	return SetFromAttrType(ctx, slice, Object(attrTypes), asEmpty...)
+}
+
+func Set[T any](ctx context.Context, slice []T, asEmpty ...bool) (types.Set, diag.Diagnostics) {
+	var zero T
 	var elemType attr.Type
+
 	switch any(zero).(type) {
 	case string:
 		elemType = types.StringType
@@ -271,13 +278,8 @@ func Set[T any](ctx context.Context, slice []T) (types.Set, diag.Diagnostics) {
 	default:
 		panic(fmt.Sprintf("unsupported type %T", zero))
 	}
-	if len(slice) == 0 {
-		return types.SetNull(elemType), diags
-	}
-	set, d := types.SetValueFrom(ctx, elemType, slice)
-	diags.Append(d...)
 
-	return set, diags
+	return SetFromAttrType(ctx, slice, elemType, asEmpty...)
 }
 
 // The asEmpty parameter works as an optional argument that allows to specify whether an nil slice should be treated as an empty list or a null list.
@@ -325,4 +327,8 @@ func List[T any](ctx context.Context, slice []T) (types.List, diag.Diagnostics) 
 	diags.Append(d...)
 
 	return list, diags
+}
+
+func Object(attrTypes map[string]attr.Type) types.ObjectType {
+	return types.ObjectType{AttrTypes: attrTypes}
 }

@@ -2,7 +2,6 @@ package oapi_test
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"testing"
 
@@ -13,81 +12,58 @@ import (
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
-func TestAccNet_withNicLink_Basic(t *testing.T) {
+func TestAccNet_NicLink_Basic(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	region := utils.GetRegion()
-	rInt := acctest.RandInt()
+	sgName := acctest.RandomWithPrefix("testacc-sg")
 	resourceName := "outscale_nic_link.outscale_nic_link"
 
 	resource.ParallelTest(t, resource.TestCase{
-		IDRefreshName:            resourceName,
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleNicLinkConfigBasic(rInt, omi, testAccVmType, region),
+				Config: testAccOutscaleNicLinkConfigBasic(omi, sgName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "device_number", "1"),
 					resource.TestCheckResourceAttrSet(resourceName, "vm_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "nic_id"),
 				),
 			},
+			testacc.ImportStepWithStateIdFunc(resourceName, nicLinkStateIDFunc(resourceName), testacc.DefaultIgnores()...),
 		},
 	})
 }
 
-func TestAccNet_ImportNicLink_Basic(t *testing.T) {
-	resourceName := "outscale_nic_link.outscale_nic_link"
+func TestAccNet_NicLink_Migration(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	region := utils.GetRegion()
-	rInt := acctest.RandInt()
+	sgName := acctest.RandomWithPrefix("testacc-sg")
 
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
-		Steps: []resource.TestStep{
-			{
-				Config: testAccOutscaleNicLinkConfigBasic(rInt, omi, testAccVmType, region),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "device_number", "1"),
-					resource.TestCheckResourceAttrSet(resourceName, "vm_id"),
-					resource.TestCheckResourceAttrSet(resourceName, "nic_id"),
-				),
-			},
-			testacc.ImportStepWithStateIdFunc(resourceName, testAccCheckOutscaleNicLinkStateIDFunc(resourceName)),
-		},
+	resource.Test(t, resource.TestCase{
+		Steps: testacc.FrameworkMigrationTestSteps("1.5.0",
+			testAccOutscaleNicLinkConfigBasic(omi, sgName),
+		),
 	})
 }
 
-func testAccCheckOutscaleNicLinkStateIDFunc(resourceName string) resource.ImportStateIdFunc {
+func nicLinkStateIDFunc(name string) resource.ImportStateIdFunc {
 	return func(s *terraform.State) (string, error) {
-		rs, ok := s.RootModule().Resources[resourceName]
+		rs, ok := s.RootModule().Resources[name]
 		if !ok {
-			return "", fmt.Errorf("not found: %s", resourceName)
+			return "", fmt.Errorf("not found: %s", name)
 		}
-		log.Printf("LOG_ : %#+v\n", rs.Primary.Attributes["nic_id"])
 		return rs.Primary.Attributes["nic_id"], nil
 	}
 }
 
-func testAccOutscaleNicLinkConfigBasic(sg int, omi, vmType, region string) string {
+func testAccOutscaleNicLinkConfigBasic(omi, sgName string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "net" {
 			ip_range = "10.0.0.0/16"
-
-			tags {
-				key   = "Name"
-				value = "testacc-nic-link"
-			}
 		}
 
 		resource "outscale_security_group" "security_group_nic" {
-			security_group_name = "terraform_test_%d"
-			description         = "Used in the terraform acceptance tests"
 			net_id              = outscale_net.net.id
-
-			tags {
-				key   = "Name"
-				value = "tf-acc-test"
-			}
+			security_group_name = "%s"
+			description         = "testacc-nic-link"
 		}
 
 		resource "outscale_vm" "vm" {
@@ -117,5 +93,5 @@ func testAccOutscaleNicLinkConfigBasic(sg int, omi, vmType, region string) strin
 			vm_id         = outscale_vm.vm.id
 			nic_id        = outscale_nic.outscale_nic.id
 		}
-	`, sg, omi, vmType, region)
+	`, sgName, omi, testAccVmType, utils.GetRegion())
 }

@@ -58,11 +58,14 @@ func CheckDiags[T *resource.CreateResponse | *resource.UpdateResponse | *resourc
 	case *datasource.ValidateConfigResponse:
 		r.Diagnostics.Append(diags...)
 		return r.Diagnostics.HasError()
+	case *resource.ValidateConfigResponse:
+		r.Diagnostics.Append(diags...)
+		return r.Diagnostics.HasError()
 	case *provider.ConfigureResponse:
 		r.Diagnostics.Append(diags...)
 		return r.Diagnostics.HasError()
 	default:
-		return true
+		panic(fmt.Sprintf("CheckDiags: unhandled response type %T", resp))
 	}
 }
 

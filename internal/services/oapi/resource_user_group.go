@@ -25,6 +25,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwtypes"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/modifyplans"
 	"github.com/outscale/terraform-provider-outscale/internal/services/oapi/oapihelpers"
 	"github.com/samber/lo"
 )
@@ -33,6 +34,7 @@ var (
 	_ resource.Resource                = &resourceUserGroup{}
 	_ resource.ResourceWithConfigure   = &resourceUserGroup{}
 	_ resource.ResourceWithImportState = &resourceUserGroup{}
+	_ resource.ResourceWithModifyPlan  = &resourceUserGroup{}
 )
 
 type UserGroupModel struct {
@@ -55,6 +57,11 @@ type UserGroupUserModel struct {
 	CreationDate         types.String `tfsdk:"creation_date"`
 	LastModificationDate types.String `tfsdk:"last_modification_date"`
 }
+
+var (
+	userGroupPolicyAttrTypes = fwhelpers.GetAttrTypes(UserPolicyModel{})
+	userGroupUserAttrTypes   = fwhelpers.GetAttrTypes(UserGroupUserModel{})
+)
 
 type resourceUserGroup struct {
 	UserCommon
@@ -98,6 +105,12 @@ func (r *resourceUserGroup) Schema(ctx context.Context, _ resource.SchemaRequest
 				Delete: true,
 			}),
 			"policy": schema.SetNestedBlock{
+				PlanModifiers: []planmodifier.Set{
+					modifyplans.SetNestedBlockMergeEmptyOnCreate(modifyplans.SetNestedBlockMergeOptions{
+						ObjectType: to.Object(userGroupPolicyAttrTypes),
+						Fields:     []string{"policy_orn"},
+					}),
+				},
 				NestedObject: schema.NestedBlockObject{
 					Attributes: map[string]schema.Attribute{
 						"policy_orn": schema.StringAttribute{
@@ -124,6 +137,12 @@ func (r *resourceUserGroup) Schema(ctx context.Context, _ resource.SchemaRequest
 				},
 			},
 			"user": schema.SetNestedBlock{
+				PlanModifiers: []planmodifier.Set{
+					modifyplans.SetNestedBlockMergeEmptyOnCreate(modifyplans.SetNestedBlockMergeOptions{
+						ObjectType: to.Object(userGroupUserAttrTypes),
+						Fields:     []string{"user_name"},
+					}),
+				},
 				NestedObject: schema.NestedBlockObject{
 					Attributes: map[string]schema.Attribute{
 						"user_name": schema.StringAttribute{
@@ -194,6 +213,31 @@ func (r *resourceUserGroup) Schema(ctx context.Context, _ resource.SchemaRequest
 				},
 			},
 		},
+	}
+}
+
+func (r *resourceUserGroup) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || req.State.Raw.IsNull() {
+		return
+	}
+
+	var stateData, planData, configData UserGroupModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &stateData)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &planData)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &configData)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	noRealInputChange := planData.UserGroupName.Equal(stateData.UserGroupName) &&
+		planData.Path.Equal(stateData.Path) &&
+		planData.Policies.Equal(stateData.Policies) &&
+		planData.Users.Equal(stateData.Users)
+
+	if noRealInputChange {
+		planData.LastModificationDate = stateData.LastModificationDate
+		planData.Orn = stateData.Orn
+		resp.Diagnostics.Append(resp.Plan.Set(ctx, &planData)...)
 	}
 }
 
