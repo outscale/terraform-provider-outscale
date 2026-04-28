@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"reflect"
 
-	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwtypes"
+
+	"github.com/samber/lo"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -126,11 +127,6 @@ func GetSlicesFromTypesSetForUpdating(ctx context.Context, stateTypeSet, planTyp
 		return toAdd, toRemove, diags
 	}
 
-	setIdsToAdd := mapset.NewSet[string]()
-	setIdsToRemove := mapset.NewSet[string]()
-	setIdsToAdd.Append(toAdd...)
-	setIdsToRemove.Append(toRemove...)
-	toAdd = setIdsToAdd.Difference(setIdsToRemove).ToSlice()
-	toRemove = setIdsToRemove.Difference(setIdsToAdd).ToSlice()
+	toAdd, toRemove = lo.Difference(toAdd, toRemove)
 	return toAdd, toRemove, diags
 }
