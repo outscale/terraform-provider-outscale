@@ -372,15 +372,15 @@ func (r *dhcpOptionResource) read(ctx context.Context, timeout time.Duration, da
 		return data, from.Diag(diag)
 	}
 
-	domainNameServers, diag := to.List(ctx, ptr.From(dhcp.DomainNameServers))
+	domainNameServers, diag := to.List(ctx, ptr.From(dhcp.DomainNameServers), to.ZeroValueAsEmpty)
 	if diag.HasError() {
 		return data, from.Diag(diag)
 	}
-	logServers, diag := to.List(ctx, ptr.From(dhcp.LogServers))
+	logServers, diag := to.List(ctx, ptr.From(dhcp.LogServers), to.ZeroValueAsEmpty)
 	if diag.HasError() {
 		return data, from.Diag(diag)
 	}
-	ntpServers, diag := to.List(ctx, ptr.From(dhcp.NtpServers))
+	ntpServers, diag := to.List(ctx, ptr.From(dhcp.NtpServers), to.ZeroValueAsEmpty)
 	if diag.HasError() {
 		return data, from.Diag(diag)
 	}

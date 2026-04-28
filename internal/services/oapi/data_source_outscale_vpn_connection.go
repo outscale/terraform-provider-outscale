@@ -8,6 +8,7 @@ import (
 	"github.com/outscale/osc-sdk-go/v3/pkg/options"
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 	"github.com/samber/lo"
 	"github.com/spf13/cast"
@@ -204,7 +205,9 @@ func buildOutscaleDataSourceVPNConnectionFilters(set *schema.Set) (*osc.FiltersV
 		case "route_destination_ip_ranges":
 			filters.RouteDestinationIpRanges = &filterValues
 		case "states":
-			filters.States = &filterValues
+			filters.States = new(lo.Map(filterValues, func(s string, _ int) osc.VpnConnectionState {
+				return osc.VpnConnectionState(s)
+			}))
 		case "static_routes_only":
 			filters.StaticRoutesOnly = new(cast.ToBool(filterValues[0]))
 		case "bgp_asns":
@@ -220,4 +223,26 @@ func buildOutscaleDataSourceVPNConnectionFilters(set *schema.Set) (*osc.FiltersV
 		}
 	}
 	return &filters, nil
+}
+
+func flattenVPNConnection(routes []osc.RouteLight) []map[string]any {
+	return lo.Map(routes, func(route osc.RouteLight, _ int) map[string]any {
+		return map[string]any{
+			"destination_ip_range": route.DestinationIpRange,
+			"route_type":           route.RouteType,
+			"state":                route.State,
+		}
+	})
+}
+
+func flattenVgwTelemetries(vgwTelemetries []osc.VgwTelemetry) []map[string]any {
+	return lo.Map(vgwTelemetries, func(vgwTelemetry osc.VgwTelemetry, _ int) map[string]any {
+		return map[string]any{
+			"accepted_route_count":   ptr.From(vgwTelemetry.AcceptedRouteCount),
+			"last_state_change_date": from.ISO8601(vgwTelemetry.LastStateChangeDate),
+			"outside_ip_address":     ptr.From(vgwTelemetry.OutsideIpAddress),
+			"state":                  ptr.From(vgwTelemetry.State),
+			"state_description":      ptr.From(vgwTelemetry.StateDescription),
+		}
+	})
 }
