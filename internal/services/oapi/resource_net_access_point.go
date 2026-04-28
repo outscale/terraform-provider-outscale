@@ -5,9 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	set "github.com/deckarep/golang-set/v2"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
+
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -20,6 +19,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/stateconf"
+	"github.com/samber/lo"
 )
 
 var (
@@ -271,27 +271,15 @@ func (r *resourceNetAccessPoint) Update(ctx context.Context, req resource.Update
 	}
 
 	if !planData.RouteTableIds.IsUnknown() && !planData.RouteTableIds.IsNull() {
-		extractSet := func(ctx context.Context, ids types.Set) (set.Set[string], diag.Diagnostics) {
-			rtIds, diag := to.Slice[string](ctx, ids)
-			if diag.HasError() {
-				return nil, diag
-			}
-			setIds := set.NewSet[string]()
-			setIds.Append(rtIds...)
-			return setIds, nil
-		}
-
-		planSet, diags := extractSet(ctx, planData.RouteTableIds)
-		if diags.HasError() {
+		planSlice, diags := to.Slice[string](ctx, planData.RouteTableIds)
+		if fwhelpers.CheckDiags(resp, diags) {
 			return
 		}
-		stateSet, diags := extractSet(ctx, stateData.RouteTableIds)
-		if diags.HasError() {
+		stateSlice, diags := to.Slice[string](ctx, stateData.RouteTableIds)
+		if fwhelpers.CheckDiags(resp, diags) {
 			return
 		}
-
-		addIds := planSet.Difference(stateSet).ToSlice()
-		removeIds := stateSet.Difference(planSet).ToSlice()
+		addIds, removeIds := lo.Difference(planSlice, stateSlice)
 
 		updateReq := osc.UpdateNetAccessPointRequest{
 			NetAccessPointId: stateData.NetAccessPointId.ValueString(),
