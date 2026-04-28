@@ -317,11 +317,6 @@ func ImageHasLaunchPermission(ctx context.Context, client *osc.Client, timeout t
 	return false, nil
 }
 
-func ParseVPNConnectionRouteID(id string) (destinationIPRange, vpnconnectionID string) {
-	parts := strings.SplitN(id, ":", 2)
-	return parts[0], parts[1]
-}
-
 func RetryOnCodes(ctx context.Context, codes []string, fun func() (resp any, err error), timeout time.Duration) (any, error) {
 	var resp any
 	err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {

@@ -141,7 +141,6 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "outscale_client_gateway.My_CGW",
                         "outscale_virtual_gateway.My_VGW",
@@ -167,7 +166,6 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "outscale_client_gateway.My_CGW",
                         "outscale_virtual_gateway.My_VGW",

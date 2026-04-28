@@ -240,89 +240,79 @@ func Slice[T any, C types.List | types.Set](ctx context.Context, v C) ([]T, diag
 	}
 }
 
-func SetObject[T any](ctx context.Context, slice []T) (types.Set, diag.Diagnostics) {
+func SetFromAttrType[T any](ctx context.Context, slice []T, attrType attr.Type, asEmpty ...bool) (types.Set, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	var zeroVal T
-	attrTypes := fwhelpers.GetAttrTypes(zeroVal)
-	objType := types.ObjectType{AttrTypes: attrTypes}
-
 	if len(slice) == 0 {
-		return types.SetNull(objType), diags
+		if len(asEmpty) > 0 && asEmpty[0] {
+			return types.SetValueMust(attrType, []attr.Value{}), diags
+		}
+
+		return types.SetNull(attrType), diags
 	}
 
-	set, d := types.SetValueFrom(ctx, objType, slice)
+	set, d := types.SetValueFrom(ctx, attrType, slice)
 	diags.Append(d...)
+
 	return set, diags
 }
 
-func Set[T any](ctx context.Context, slice []T) (types.Set, diag.Diagnostics) {
-	var diags diag.Diagnostics
+func SetObject[T any](ctx context.Context, slice []T, asEmpty ...bool) (types.Set, diag.Diagnostics) {
+	var zeroVal T
+	attrTypes := fwhelpers.GetAttrTypes(zeroVal)
+
+	return SetFromAttrType(ctx, slice, Object(attrTypes), asEmpty...)
+}
+
+func attrType[T any]() attr.Type {
 	var zero T
 
-	var elemType attr.Type
 	switch any(zero).(type) {
 	case string:
-		elemType = types.StringType
+		return types.StringType
 	case int32:
-		elemType = types.Int32Type
+		return types.Int32Type
 	case int64:
-		elemType = types.Int64Type
+		return types.Int64Type
 	default:
 		panic(fmt.Sprintf("unsupported type %T", zero))
 	}
+}
+
+func Set[T any](ctx context.Context, slice []T, asEmpty ...bool) (types.Set, diag.Diagnostics) {
+	return SetFromAttrType(ctx, slice, attrType[T](), asEmpty...)
+}
+
+func ListFromAttrType[T any](ctx context.Context, slice []T, attrType attr.Type, asEmpty ...bool) (types.List, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
 	if len(slice) == 0 {
-		return types.SetNull(elemType), diags
+		if len(asEmpty) > 0 && asEmpty[0] {
+			return types.ListValueMust(attrType, []attr.Value{}), diags
+		}
+
+		return types.ListNull(attrType), diags
 	}
-	set, d := types.SetValueFrom(ctx, elemType, slice)
+
+	list, d := types.ListValueFrom(ctx, attrType, slice)
 	diags.Append(d...)
 
-	return set, diags
+	return list, diags
 }
 
 // The asEmpty parameter works as an optional argument that allows to specify whether an nil slice should be treated as an empty list or a null list.
 // This is useful for SDKv2 migration compatibility where TypeList defaults to [] and not null.
 func ListObject[T any](ctx context.Context, slice []T, asEmpty ...bool) (types.List, diag.Diagnostics) {
-	var diags diag.Diagnostics
-
 	var zeroVal T
 	attrTypes := fwhelpers.GetAttrTypes(zeroVal)
-	objType := types.ObjectType{AttrTypes: attrTypes}
 
-	if len(slice) == 0 {
-		if len(asEmpty) > 0 && asEmpty[0] {
-			return types.ListValueMust(objType, []attr.Value{}), diags
-		}
-
-		return types.ListNull(objType), diags
-	}
-
-	list, d := types.ListValueFrom(ctx, objType, slice)
-	diags.Append(d...)
-
-	return list, diags
+	return ListFromAttrType(ctx, slice, Object(attrTypes), asEmpty...)
 }
 
-func List[T any](ctx context.Context, slice []T) (types.List, diag.Diagnostics) {
-	var diags diag.Diagnostics
-	var zero T
+func List[T any](ctx context.Context, slice []T, asEmpty ...bool) (types.List, diag.Diagnostics) {
+	return ListFromAttrType(ctx, slice, attrType[T](), asEmpty...)
+}
 
-	var elemType attr.Type
-	switch any(zero).(type) {
-	case string:
-		elemType = types.StringType
-	case int32:
-		elemType = types.Int32Type
-	case int64:
-		elemType = types.Int64Type
-	default:
-		panic(fmt.Sprintf("unsupported type %T", zero))
-	}
-	if len(slice) == 0 {
-		return types.ListValueMust(elemType, []attr.Value{}), diags
-	}
-	list, d := types.ListValueFrom(ctx, elemType, slice)
-	diags.Append(d...)
-
-	return list, diags
+func Object(attrTypes map[string]attr.Type) types.ObjectType {
+	return types.ObjectType{AttrTypes: attrTypes}
 }

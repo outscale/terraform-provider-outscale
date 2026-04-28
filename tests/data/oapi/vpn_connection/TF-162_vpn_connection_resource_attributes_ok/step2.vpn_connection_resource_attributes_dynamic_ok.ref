@@ -125,7 +125,6 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "outscale_client_gateway.My_CGW_2",
                         "outscale_virtual_gateway.My_VGW",

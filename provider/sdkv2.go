@@ -146,8 +146,6 @@ func Provider() *schema.Provider {
 			"outscale_virtual_gateway":                   oapi.ResourceOutscaleVirtualGateway(),
 			"outscale_virtual_gateway_link":              oapi.ResourceOutscaleVirtualGatewayLink(),
 			"outscale_virtual_gateway_route_propagation": oapi.ResourceOutscaleVirtualGatewayRoutePropagation(),
-			"outscale_vpn_connection":                    oapi.ResourceOutscaleVPNConnection(),
-			"outscale_vpn_connection_route":              oapi.ResourceOutscaleVPNConnectionRoute(),
 			"outscale_load_balancer":                     oapi.ResourceOutscaleLoadBalancer(),
 			"outscale_load_balancer_policy":              oapi.ResourceOutscaleAppCookieStickinessPolicy(),
 			"outscale_load_balancer_attributes":          oapi.ResourceOutscaleLoadBalancerAttributes(),
