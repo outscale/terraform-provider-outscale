@@ -38,6 +38,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### 🌱 Others
 - (nothing yet)
 
+## [1.6.0-rc.4] - 2026-04-29
+
+### 🛠️ Changed / Refactoring
+
+* ♻️ refactor: snapshot resource migrate by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/739
+* ♻️ refactor: vpn_connection & vpn_connection_route resource migrate by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/742
+
 ## [1.6.0-rc.3] - 2026-04-15
 
 ### 🌱 Others
