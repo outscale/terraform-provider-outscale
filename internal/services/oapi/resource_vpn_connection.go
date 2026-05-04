@@ -375,11 +375,11 @@ func (r *vpnConnectionResource) read(ctx context.Context, timeout time.Duration,
 		Refresh: r.refreshFunc(data.Id.ValueString()),
 	}
 	respAny, err := conf.WaitForStateContext(ctx)
-	resp := respAny.(*osc.ReadVpnConnectionsResponse)
 	if err != nil {
 		return data, err
 	}
 
+	resp := respAny.(*osc.ReadVpnConnectionsResponse)
 	vpn := (*resp.VpnConnections)[0]
 
 	if vpn.State == osc.VpnConnectionStateDeleted {
