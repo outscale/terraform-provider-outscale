@@ -125,8 +125,8 @@ func (r *vpnConnectionResource) ImportState(ctx context.Context, req resource.Im
 	}
 	data.Timeouts = timeoutsVal
 	data.Tags = TagsNull()
-	data.Routes = types.ListNull(to.Object(vpnConnectionRouteLightAttrTypes))
-	data.VgwTelemetries = types.ListNull(to.Object(vpnConnectionVgwTelemetryAttrTypes))
+	data.Routes = types.ListNull(to.ObjType(vpnConnectionRouteLightAttrTypes))
+	data.VgwTelemetries = types.ListNull(to.ObjType(vpnConnectionVgwTelemetryAttrTypes))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -391,12 +391,12 @@ func (r *vpnConnectionResource) read(ctx context.Context, timeout time.Duration,
 		return data, from.Diag(diag)
 	}
 
-	routes, diag := to.ListFromAttrType(ctx, r.flattenRoutes(vpn.Routes), to.Object(vpnConnectionRouteLightAttrTypes), to.ZeroValueAsEmpty)
+	routes, diag := to.ListFromAttrType(ctx, r.flattenRoutes(vpn.Routes), to.ObjType(vpnConnectionRouteLightAttrTypes), to.ZeroValueAsEmpty)
 	if diag.HasError() {
 		return data, from.Diag(diag)
 	}
 
-	vgwTelemetries, diag := to.ListFromAttrType(ctx, r.flattenVgwTelemetries(vpn.VgwTelemetries), to.Object(vpnConnectionVgwTelemetryAttrTypes), to.ZeroValueAsEmpty)
+	vgwTelemetries, diag := to.ListFromAttrType(ctx, r.flattenVgwTelemetries(vpn.VgwTelemetries), to.ObjType(vpnConnectionVgwTelemetryAttrTypes), to.ZeroValueAsEmpty)
 	if diag.HasError() {
 		return data, from.Diag(diag)
 	}

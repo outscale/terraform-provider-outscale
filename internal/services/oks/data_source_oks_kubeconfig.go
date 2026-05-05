@@ -43,14 +43,15 @@ type oksKubeconfigDataSource struct {
 }
 
 type oksKubeconfigModel struct {
-	ClusterId    types.String `tfsdk:"cluster_id"`
-	User         types.String `tfsdk:"user"`
-	Group        types.String `tfsdk:"group"`
-	Ttl          types.String `tfsdk:"ttl"`
-	XEncryptNacl types.String `tfsdk:"x_encrypt_nacl"`
-	Kubeconfig   types.String `tfsdk:"kubeconfig"`
-	RequestId    types.String `tfsdk:"request_id"`
-	Id           types.String `tfsdk:"id"`
+	ClusterId      types.String `tfsdk:"cluster_id"`
+	User           types.String `tfsdk:"user"`
+	Group          types.String `tfsdk:"group"`
+	Ttl            types.String `tfsdk:"ttl"`
+	XEncryptNacl   types.String `tfsdk:"x_encrypt_nacl"`
+	Kubeconfig     types.String `tfsdk:"kubeconfig"`
+	KubeconfigAttr types.Object `tfsdk:"kubeconfig_attributes"`
+	RequestId      types.String `tfsdk:"request_id"`
+	Id             types.String `tfsdk:"id"`
 }
 
 func (d *oksKubeconfigDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -79,6 +80,24 @@ func (d *oksKubeconfigDataSource) Schema(ctx context.Context, req datasource.Sch
 			"kubeconfig": schema.StringAttribute{
 				Computed:  true,
 				Sensitive: true,
+			},
+			"kubeconfig_attributes": schema.SingleNestedAttribute{
+				Computed:  true,
+				Sensitive: true,
+				Attributes: map[string]schema.Attribute{
+					"cluster_ca_certificate": schema.StringAttribute{
+						Computed: true,
+					},
+					"host": schema.StringAttribute{
+						Computed: true,
+					},
+					"client_certificate": schema.StringAttribute{
+						Computed: true,
+					},
+					"client_key": schema.StringAttribute{
+						Computed: true,
+					},
+				},
 			},
 			"request_id": schema.StringAttribute{
 				Computed: true,
@@ -139,6 +158,14 @@ func (d *oksKubeconfigDataSource) Read(ctx context.Context, req datasource.ReadR
 	}
 
 	data.Kubeconfig = to.String(kubeconfigResp.Cluster.Data.Kubeconfig)
+
+	kubeconfigAttr, err := parseKubeconfigAttr(ctx, kubeconfigResp.Cluster.Data.Kubeconfig)
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to parse OKS Kubeconfig attributes", "Error: "+err.Error())
+		return
+	}
+	data.KubeconfigAttr = kubeconfigAttr
+
 	data.RequestId = to.String(kubeconfigResp.Cluster.RequestId)
 	data.Id = to.String(id.UniqueId())
 

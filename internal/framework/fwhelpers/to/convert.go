@@ -261,7 +261,7 @@ func SetObject[T any](ctx context.Context, slice []T, asEmpty ...bool) (types.Se
 	var zeroVal T
 	attrTypes := fwhelpers.GetAttrTypes(zeroVal)
 
-	return SetFromAttrType(ctx, slice, Object(attrTypes), asEmpty...)
+	return SetFromAttrType(ctx, slice, ObjType(attrTypes), asEmpty...)
 }
 
 func attrType[T any]() attr.Type {
@@ -306,13 +306,17 @@ func ListObject[T any](ctx context.Context, slice []T, asEmpty ...bool) (types.L
 	var zeroVal T
 	attrTypes := fwhelpers.GetAttrTypes(zeroVal)
 
-	return ListFromAttrType(ctx, slice, Object(attrTypes), asEmpty...)
+	return ListFromAttrType(ctx, slice, ObjType(attrTypes), asEmpty...)
 }
 
 func List[T any](ctx context.Context, slice []T, asEmpty ...bool) (types.List, diag.Diagnostics) {
 	return ListFromAttrType(ctx, slice, attrType[T](), asEmpty...)
 }
 
-func Object(attrTypes map[string]attr.Type) types.ObjectType {
+func ObjType(attrTypes map[string]attr.Type) types.ObjectType {
 	return types.ObjectType{AttrTypes: attrTypes}
+}
+
+func Object[T any](ctx context.Context, model T) (types.Object, diag.Diagnostics) {
+	return types.ObjectValueFrom(ctx, fwhelpers.GetAttrTypes(model), model)
 }
