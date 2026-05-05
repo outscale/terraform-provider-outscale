@@ -2,6 +2,7 @@ package oks
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"regexp"
 	"time"
@@ -109,8 +110,6 @@ type KubeconfigAttributesModel struct {
 	ClientCertificate    types.String `tfsdk:"client_certificate"`
 	ClientKey            types.String `tfsdk:"client_key"`
 }
-
-var kubeconfigAttributesAttrTypes = fwhelpers.GetAttrTypes(KubeconfigAttributesModel{})
 
 type oksClusterResource struct {
 	Client *oks.Client
@@ -986,7 +985,7 @@ func parseKubeconfigAttr(ctx context.Context, kubeconfig string) (types.Object, 
 	}
 
 	if cfg.CurrentContext == "" {
-		return obj, fmt.Errorf("kubeconfig has no current context")
+		return obj, errors.New("kubeconfig has no current context")
 	}
 
 	currentContext, ok := cfg.Contexts[cfg.CurrentContext]
