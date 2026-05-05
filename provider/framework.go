@@ -252,6 +252,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 
 		oks.NewDataSourceOKSQuotas,
 		oks.NewDataSourceOKSKubeconfig,
+		oks.NewDataSourceCRDTemplates,
 	}
 }
 
@@ -298,6 +299,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 
 		oks.NewResourceProject,
 		oks.NewResourceCluster,
+		oks.NewResourceManifest,
 	}
 }
 
