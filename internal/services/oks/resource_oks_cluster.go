@@ -30,8 +30,10 @@ import (
 	"github.com/outscale/osc-sdk-go/v3/pkg/options"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/validators/validatorstring"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 var (
@@ -62,6 +64,7 @@ type ClusterModel struct {
 	Statuses              types.Object   `tfsdk:"statuses"`
 	Version               types.String   `tfsdk:"version"`
 	Kubeconfig            types.String   `tfsdk:"kubeconfig"`
+	KubeconfigAttr        types.Object   `tfsdk:"kubeconfig_attributes"`
 	Timeouts              timeouts.Value `tfsdk:"timeouts"`
 	RequestId             types.String   `tfsdk:"request_id"`
 	OKSTagsModel
@@ -99,6 +102,15 @@ type StatusesModel struct {
 	Status           types.String      `tfsdk:"status"`
 	UpdatedAt        timetypes.RFC3339 `tfsdk:"updated_at"`
 }
+
+type KubeconfigAttributesModel struct {
+	ClusterCACertificate types.String `tfsdk:"cluster_ca_certificate"`
+	Host                 types.String `tfsdk:"host"`
+	ClientCertificate    types.String `tfsdk:"client_certificate"`
+	ClientKey            types.String `tfsdk:"client_key"`
+}
+
+var kubeconfigAttributesAttrTypes = fwhelpers.GetAttrTypes(KubeconfigAttributesModel{})
 
 type oksClusterResource struct {
 	Client *oks.Client
@@ -357,6 +369,24 @@ func (r *oksClusterResource) Schema(ctx context.Context, _ resource.SchemaReques
 			"kubeconfig": schema.StringAttribute{
 				Computed:  true,
 				Sensitive: true,
+			},
+			"kubeconfig_attributes": schema.SingleNestedAttribute{
+				Computed:  true,
+				Sensitive: true,
+				Attributes: map[string]schema.Attribute{
+					"cluster_ca_certificate": schema.StringAttribute{
+						Computed: true,
+					},
+					"host": schema.StringAttribute{
+						Computed: true,
+					},
+					"client_certificate": schema.StringAttribute{
+						Computed: true,
+					},
+					"client_key": schema.StringAttribute{
+						Computed: true,
+					},
+				},
 			},
 			"tags": OKSTagsSchema(),
 			"request_id": schema.StringAttribute{
@@ -947,6 +977,45 @@ func (r *oksClusterResource) setOKSStatuses(ctx context.Context, data *ClusterMo
 	return nil
 }
 
+func parseKubeconfigAttr(ctx context.Context, kubeconfig string) (types.Object, error) {
+	var obj types.Object
+	var model KubeconfigAttributesModel
+	cfg, err := clientcmd.Load([]byte(kubeconfig))
+	if err != nil {
+		return obj, fmt.Errorf("unable to load kubeconfig: %w", err)
+	}
+
+	if cfg.CurrentContext == "" {
+		return obj, fmt.Errorf("kubeconfig has no current context")
+	}
+
+	currentContext, ok := cfg.Contexts[cfg.CurrentContext]
+	if !ok {
+		return obj, fmt.Errorf("kubeconfig current context %q not found", cfg.CurrentContext)
+	}
+
+	cluster, ok := cfg.Clusters[currentContext.Cluster]
+	if !ok {
+		return obj, fmt.Errorf("kubeconfig cluster %q not found", currentContext.Cluster)
+	}
+	model.ClusterCACertificate = to.String(string(cluster.CertificateAuthorityData))
+	model.Host = to.String(cluster.Server)
+
+	authInfo, ok := cfg.AuthInfos[currentContext.AuthInfo]
+	if !ok {
+		return obj, fmt.Errorf("kubeconfig auth info %q not found", currentContext.AuthInfo)
+	}
+	model.ClientCertificate = to.String(string(authInfo.ClientCertificateData))
+	model.ClientKey = to.String(string(authInfo.ClientKeyData))
+
+	obj, diag := to.Object(ctx, model)
+	if diag.HasError() {
+		return obj, from.Diag(diag)
+	}
+
+	return obj, nil
+}
+
 func (r *oksClusterResource) read(ctx context.Context, data ClusterModel, timeout time.Duration) (ClusterModel, error) {
 	resp, err := r.waitForClusterState(ctx, data.Id.ValueString(), []string{"pending", "deploying", "updating", "upgrading"}, []string{"ready", "deleting"}, timeout)
 	if err != nil {
@@ -997,6 +1066,12 @@ func (r *oksClusterResource) read(ctx context.Context, data ClusterModel, timeou
 		return data, err
 	}
 	data.Kubeconfig = to.String(kubeconfigResp.Cluster.Data.Kubeconfig)
+
+	kubeconfigAttr, err := parseKubeconfigAttr(ctx, kubeconfigResp.Cluster.Data.Kubeconfig)
+	if err != nil {
+		return data, fmt.Errorf("unable to parse kubeconfig attributes: %w", err)
+	}
+	data.KubeconfigAttr = kubeconfigAttr
 
 	tags, diags := flattenOKSTags(ctx, cluster.Tags)
 	if diags.HasError() {
