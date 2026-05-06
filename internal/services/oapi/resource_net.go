@@ -254,6 +254,7 @@ func (r *resourceNet) Update(ctx context.Context, req resource.UpdateRequest, re
 		return
 	}
 
+	stateData.Timeouts = planData.Timeouts
 	data, err := setNetState(ctx, r, stateData)
 	if err != nil {
 		resp.Diagnostics.AddError(

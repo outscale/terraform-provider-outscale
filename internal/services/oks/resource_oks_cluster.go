@@ -554,11 +554,7 @@ func (r *oksClusterResource) Create(ctx context.Context, req resource.CreateRequ
 	plan.RequestId = to.String(createResp.ResponseContext.RequestId)
 	plan.Id = to.String(createResp.Cluster.Id)
 
-	to, diag := plan.Timeouts.Create(ctx, CreateDefaultTimeout)
-	if fwhelpers.CheckDiags(resp, diag) {
-		return
-	}
-	data, err := r.read(ctx, plan, to)
+	data, err := r.read(ctx, plan, timeout)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to set Cluster state",
@@ -610,7 +606,7 @@ func (r *oksClusterResource) Update(ctx context.Context, req resource.UpdateRequ
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
-	timeout, diag := plan.Timeouts.Read(ctx, ReadDefaultTimeout)
+	timeout, diag := plan.Timeouts.Update(ctx, UpdateDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
@@ -729,15 +725,17 @@ func (r *oksClusterResource) Update(ctx context.Context, req resource.UpdateRequ
 		updateReq.Tags = &tags
 	}
 
-	updateResp, err := r.Client.UpdateCluster(ctx, state.Id.ValueString(), updateReq, options.WithRetryTimeout(timeout))
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to Update Cluster",
-			"Error: "+err.Error(),
-		)
-		return
+	if updateReq != (oks.ClusterUpdate{}) {
+		updateResp, err := r.Client.UpdateCluster(ctx, state.Id.ValueString(), updateReq, options.WithRetryTimeout(timeout))
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable to Update Cluster",
+				"Error: "+err.Error(),
+			)
+			return
+		}
+		state.RequestId = to.String(updateResp.ResponseContext.RequestId)
 	}
-	state.RequestId = to.String(updateResp.ResponseContext.RequestId)
 
 	if doUpgrade {
 		_, err := r.waitForClusterState(ctx, state.Id.ValueString(), []string{"pending", "updating"}, []string{"ready"}, timeout)
@@ -747,7 +745,15 @@ func (r *oksClusterResource) Update(ctx context.Context, req resource.UpdateRequ
 			)
 			return
 		}
-		upgradeResp, err := r.Client.UpgradeCluster(ctx, state.Id.ValueString(), options.WithRetryTimeout(timeout))
+
+		// We either take the user-defined Update timeout, or the default upgrade timeout if not set
+		upgradeTimeout, diag := plan.Timeouts.Update(ctx, UpgradeDefaultTimeout)
+		if fwhelpers.CheckDiags(resp, diag) {
+			return
+		}
+		tflog.Info(ctx, fmt.Sprintf("Cluster upgrading. Timeout changed to %s.", upgradeTimeout.String()))
+
+		upgradeResp, err := r.Client.UpgradeCluster(ctx, state.Id.ValueString(), options.WithRetryTimeout(upgradeTimeout))
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Unable to Upgrade Cluster",
@@ -756,13 +762,8 @@ func (r *oksClusterResource) Update(ctx context.Context, req resource.UpdateRequ
 			return
 		}
 		state.RequestId = to.String(upgradeResp.ResponseContext.RequestId)
-
-		timeout, diag = state.Timeouts.Update(ctx, UpgradeDefaultTimeout)
-		if fwhelpers.CheckDiags(resp, diag) {
-			return
-		}
-		tflog.Info(ctx, fmt.Sprintf("Cluster upgrading. Timeout is set at %s.", timeout.String()))
 	}
+	state.Timeouts = plan.Timeouts
 
 	data, err := r.read(ctx, state, timeout)
 	if err != nil {

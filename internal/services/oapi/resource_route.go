@@ -433,6 +433,7 @@ func (r *resourceRoute) Update(ctx context.Context, req resource.UpdateRequest, 
 		}
 	}
 
+	stateData.Timeouts = planData.Timeouts
 	data, err := r.read(ctx, stateData)
 	if err != nil {
 		resp.Diagnostics.AddError(

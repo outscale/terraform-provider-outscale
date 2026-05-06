@@ -269,6 +269,7 @@ func (r *resourceVolumeLink) Update(ctx context.Context, req resource.UpdateRequ
 	}
 	dataState.ForceUnlink = dataPlan.ForceUnlink
 
+	dataState.Timeouts = dataPlan.Timeouts
 	err := setLinkedVolumeState(ctx, r, &dataState)
 	if err != nil {
 		resp.Diagnostics.AddError(

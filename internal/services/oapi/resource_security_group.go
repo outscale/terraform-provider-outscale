@@ -404,6 +404,7 @@ func (r *resourceSecurityGroup) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
+	stateData.Timeouts = planData.Timeouts
 	data, err := setSecurityGroupState(ctx, r, stateData)
 	if err != nil {
 		resp.Diagnostics.AddError(

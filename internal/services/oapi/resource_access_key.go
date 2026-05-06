@@ -313,6 +313,7 @@ func (r *resourceAccessKey) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
+	stateData.Timeouts = planData.Timeouts
 	err = setAccessKeyState(ctx, r, &stateData)
 	if err != nil {
 		resp.Diagnostics.AddError(

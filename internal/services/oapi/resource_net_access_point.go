@@ -300,6 +300,7 @@ func (r *resourceNetAccessPoint) Update(ctx context.Context, req resource.Update
 		}
 	}
 
+	stateData.Timeouts = planData.Timeouts
 	data, err := setNetAccessPointState(ctx, r, stateData)
 	if err != nil {
 		resp.Diagnostics.AddError(

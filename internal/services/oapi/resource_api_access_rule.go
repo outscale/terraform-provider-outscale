@@ -265,6 +265,7 @@ func (r *resourceApiAccessRule) Update(ctx context.Context, req resource.UpdateR
 		)
 	}
 
+	stateData.Timeouts = planData.Timeouts
 	newStateData, err := r.read(ctx, timeout, stateData)
 	if err != nil {
 		if errors.Is(err, ErrResourceEmpty) {

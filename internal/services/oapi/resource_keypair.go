@@ -246,6 +246,7 @@ func (r *resourceKeypair) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
+	stateData.Timeouts = planData.Timeouts
 	err := setKeypairState(ctx, r, &stateData)
 	if err != nil {
 		resp.Diagnostics.AddError(

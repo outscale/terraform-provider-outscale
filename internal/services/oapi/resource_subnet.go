@@ -326,6 +326,7 @@ func (r *resourceSubnet) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
+	stateData.Timeouts = planData.Timeouts
 	data, err := r.read(ctx, stateData)
 	if err != nil {
 		resp.Diagnostics.AddError(
