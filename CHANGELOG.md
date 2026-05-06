@@ -38,6 +38,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### 🌱 Others
 - (nothing yet)
 
+## [1.6.0] - 2026-05-06
+
+### 🐛 Fixed
+* 🐛 fix(vpn_connection): check err before conversion by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/745
+* 🐛 fix(timeouts): inconsistent apply after import by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/749
+
 ## [1.6.0-rc.4] - 2026-04-29
 
 ### 🛠️ Changed / Refactoring
