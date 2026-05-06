@@ -16,11 +16,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/outscale/osc-sdk-go/v3/pkg/oks"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/stateconf"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/validators/validatorstring"
 )
 
@@ -165,6 +167,11 @@ func (r *oksProjectResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
+	timeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
+	if fwhelpers.CheckDiags(resp, diags) {
+		return
+	}
+
 	input := oks.ProjectInput{
 		Cidr:   data.Cidr.ValueString(),
 		Name:   data.Name.ValueString(),
@@ -189,7 +196,7 @@ func (r *oksProjectResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 	input.Tags = &tags
 
-	createResp, err := r.Client.CreateProject(ctx, input)
+	createResp, err := r.Client.CreateProject(ctx, input, options.WithRetryTimeout(timeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Create Resource Project",
@@ -200,12 +207,7 @@ func (r *oksProjectResource) Create(ctx context.Context, req resource.CreateRequ
 	data.RequestId = to.String(createResp.ResponseContext.RequestId)
 	data.Id = to.String(createResp.Project.Id)
 
-	to, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
-	if fwhelpers.CheckDiags(resp, diags) {
-		return
-	}
-
-	data, err = r.setOKSProjectState(ctx, data, to)
+	data, err = r.read(ctx, data, timeout)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to set Project state",
@@ -213,6 +215,7 @@ func (r *oksProjectResource) Create(ctx context.Context, req resource.CreateRequ
 		)
 		return
 	}
+
 	diags = resp.State.Set(ctx, &data)
 	resp.Diagnostics.Append(diags...)
 }
@@ -229,7 +232,7 @@ func (r *oksProjectResource) Read(ctx context.Context, req resource.ReadRequest,
 	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
-	data, err := r.setOKSProjectState(ctx, data, to)
+	data, err := r.read(ctx, data, to)
 	if err != nil {
 		if oks.IsNotFound(err) {
 			resp.State.RemoveResource(ctx)
@@ -253,6 +256,11 @@ func (r *oksProjectResource) Update(ctx context.Context, req resource.UpdateRequ
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	diags = req.State.Get(ctx, &state)
+	if fwhelpers.CheckDiags(resp, diags) {
+		return
+	}
+
+	timeout, diags := plan.Timeouts.Update(ctx, UpdateDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
@@ -284,17 +292,19 @@ func (r *oksProjectResource) Update(ctx context.Context, req resource.UpdateRequ
 		update.Tags = &tags
 	}
 
-	updateResp, err := r.Client.UpdateProject(ctx, state.Id.ValueString(), update)
-	if err != nil {
-		return
-	}
-	state.RequestId = to.String(updateResp.ResponseContext.RequestId)
+	if update != (oks.ProjectUpdate{}) {
+		updateResp, err := r.Client.UpdateProject(ctx, state.Id.ValueString(), update, options.WithRetryTimeout(timeout))
+		if err != nil {
+			return
+		}
 
-	to, diags := state.Timeouts.Update(ctx, UpdateDefaultTimeout)
-	if fwhelpers.CheckDiags(resp, diags) {
-		return
+		state.RequestId = to.String(updateResp.ResponseContext.RequestId)
 	}
-	data, err := r.setOKSProjectState(ctx, state, to)
+
+	state.Timeouts = plan.Timeouts
+	state.Quirks = plan.Quirks
+
+	data, err := r.read(ctx, state, timeout)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to set Project state",
@@ -302,6 +312,7 @@ func (r *oksProjectResource) Update(ctx context.Context, req resource.UpdateRequ
 		)
 		return
 	}
+
 	diags = resp.State.Set(ctx, &data)
 	resp.Diagnostics.Append(diags...)
 }
@@ -313,7 +324,13 @@ func (r *oksProjectResource) Delete(ctx context.Context, req resource.DeleteRequ
 	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
-	_, err := r.Client.DeleteProject(ctx, data.Id.ValueString())
+
+	timeout, diags := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
+	if fwhelpers.CheckDiags(resp, diags) {
+		return
+	}
+
+	_, err := r.Client.DeleteProject(ctx, data.Id.ValueString(), options.WithRetryTimeout(timeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Delete Resource Project",
@@ -322,11 +339,7 @@ func (r *oksProjectResource) Delete(ctx context.Context, req resource.DeleteRequ
 		return
 	}
 
-	to, diags := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
-	if fwhelpers.CheckDiags(resp, diags) {
-		return
-	}
-	_, err = r.waitForProjectState(ctx, data.Id.ValueString(), []string{"deleting"}, []string{}, to)
+	_, err = r.waitForProjectState(ctx, data.Id.ValueString(), stateconf.States(oks.ProjectStatusDeleting), []oks.ProjectStatus{}, timeout)
 	if err != nil {
 		if !oks.IsNotFound(err) {
 			resp.Diagnostics.AddError("Unable to wait for Project complete deletion.", "Error: "+err.Error())
@@ -334,28 +347,29 @@ func (r *oksProjectResource) Delete(ctx context.Context, req resource.DeleteRequ
 	}
 }
 
-func (r *oksProjectResource) waitForProjectState(ctx context.Context, id string, pending []string, target []string, timeout time.Duration) (*oks.ProjectResponse, error) {
-	resp, err := fwhelpers.WaitForResource[oks.ProjectResponse](ctx, &retry.StateChangeConf{
+func (r *oksProjectResource) waitForProjectState(ctx context.Context, id string, pending []oks.ProjectStatus, target []oks.ProjectStatus, timeout time.Duration) (*oks.ProjectResponse, error) {
+	conf := stateconf.StateChangeConf[oks.ProjectStatus]{
 		Pending: pending,
 		Target:  target,
 		Timeout: timeout,
-		Refresh: func() (any, string, error) {
+		Refresh: func(ctx context.Context) (any, oks.ProjectStatus, error) {
 			resp, err := r.Client.GetProject(ctx, id)
 			if err != nil {
-				return resp, "", err
+				return nil, "", err
 			}
-			return resp, string(resp.Project.Status), nil
+			return resp, resp.Project.Status, nil
 		},
-	})
+	}
+	respAny, err := conf.WaitForStateContext(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return resp, nil
+	return respAny.(*oks.ProjectResponse), nil
 }
 
-func (r *oksProjectResource) setOKSProjectState(ctx context.Context, data ProjectModel, timeout time.Duration) (ProjectModel, error) {
-	resp, err := r.waitForProjectState(ctx, data.Id.ValueString(), []string{"pending", "updating"}, []string{"ready", "deleting"}, timeout)
+func (r *oksProjectResource) read(ctx context.Context, data ProjectModel, timeout time.Duration) (ProjectModel, error) {
+	resp, err := r.waitForProjectState(ctx, data.Id.ValueString(), stateconf.States(oks.ProjectStatusPending, oks.ProjectStatusUpdating), stateconf.States(oks.ProjectStatusReady, oks.ProjectStatusDeleting), timeout)
 	if err != nil {
 		return data, err
 	}
@@ -374,7 +388,7 @@ func (r *oksProjectResource) setOKSProjectState(ctx context.Context, data Projec
 
 	tags, diags := flattenOKSTags(ctx, project.Tags)
 	if diags.HasError() {
-		return data, fmt.Errorf("%v", diags.Errors())
+		return data, from.Diag(diags)
 	}
 	data.Tags = tags
 

@@ -331,6 +331,7 @@ func (r *resourceUserGroup) Update(ctx context.Context, req resource.UpdateReque
 		}
 	}
 
+	stateData.Timeouts = planData.Timeouts
 	newStateData, err := r.read(ctx, timeout, stateData)
 	if err != nil {
 		if errors.Is(err, ErrResourceEmpty) {

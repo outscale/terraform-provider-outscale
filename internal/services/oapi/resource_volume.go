@@ -415,6 +415,7 @@ func (r *resourceVolume) Update(ctx context.Context, req resource.UpdateRequest,
 		}
 	}
 
+	stateData.Timeouts = planData.Timeouts
 	err := setVolumeState(ctx, r, &stateData)
 	if err != nil {
 		resp.Diagnostics.AddError(
