@@ -77,6 +77,7 @@
                         "disable_api_termination": false,
                         "id": "##id-0##",
                         "kubeconfig": "########",
+                        "kubeconfig_attributes": "########",
                         "name": "########",
                         "project_id": "##id-1##",
                         "quirks": null,
@@ -99,6 +100,12 @@
                             {
                                 "type": "get_attr",
                                 "value": "kubeconfig"
+                            }
+                        ],
+                        [
+                            {
+                                "type": "get_attr",
+                                "value": "kubeconfig_attributes"
                             }
                         ]
                     ],
