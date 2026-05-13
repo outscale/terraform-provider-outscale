@@ -212,7 +212,7 @@ test-integration-single: install-test-provider test-gen-cert
 		echo "Usage: make test-integration-single TEST=TF-10"; \
 		exit 1; \
 	fi
-	@cd tests && TF_LOG=DEBUG python3 -m pytest -s -v test_provider_oapi.py -k "$(TEST)_"
+	@cd tests && (TF_LOG=DEBUG python3 -m pytest -s -v test_provider_oapi.py -k "$(TEST)_" || TF_LOG=DEBUG python3 -m pytest -s -v test_provider_oks.py -k "$(TEST)_")
 
 .PHONY: testacc-single-frieza
 testacc-single-frieza:

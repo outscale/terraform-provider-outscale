@@ -6,6 +6,7 @@ OKS_IGNORE_END_ELEMENTS = [
     "created_at",
     "updated_at",
     "kubeconfig",
+    "kubeconfig_attributes",
     "expiration_date",
 ]
 
