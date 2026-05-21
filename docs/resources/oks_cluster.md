@@ -83,7 +83,12 @@ The following attributes are exported:
     * `applied_admission_plugins` - The list of admission plugins that are currently applied to the cluster.
     * `disable_admission_plugins_actual` - The list of Kubernetes admission plugins that are disabled.
     * `enable_admission_plugins_actual` - The list of Kubernetes admission plugins that are enabled.
-* `kubeconfig` - A file containing access configuration to the cluster.
+* `kubeconfig` - (Sensitive value) A file containing access configuration to the cluster.
+* `kubeconfig_attributes` - (Sensitive value) Access configuration to the cluster.
+    * `client_certificate` - The client certificate for accessing the cluster.
+    * `client_key` - The private key matching the client certificate.
+    * `cluster_ca_certificate` - The Certificate Authority (CA) associated with the cluster.
+    * `host` - The URL of the Kubernetes API server of the cluster.
 * `request_id` - The ID of the API request.
 * `statuses` - The status information of the cluster.
     * `available_upgrade` - Any available version of Kubernetes for upgrade (if applicable). For more information, see [GetKubernetesVersions](https://docs.outscale.com/oks.html#getkubenetesversions).
