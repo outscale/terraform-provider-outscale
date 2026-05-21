@@ -34,6 +34,11 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attribute is exported:
+The following attributes are exported:
 
-* `kubeconfig` - A file containing access configuration to the cluster.
+* `kubeconfig`  - (Sensitive value) A file containing access configuration to the cluster.
+* `kubeconfig_attributes` - (Sensitive value) Access configuration to the cluster.
+    * `client_certificate` - The client certificate for accessing the cluster.
+    * `client_key` - The private key matching the client certificate.
+    * `cluster_ca_certificate` - The Certificate Authority (CA) associated with the cluster.
+    * `host` - The URL of the Kubernetes API server of the cluster.
