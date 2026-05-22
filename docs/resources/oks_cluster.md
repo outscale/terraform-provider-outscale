@@ -16,6 +16,8 @@ For more information on this resource actions, see the [API documentation](https
 
 ## Example Usage
 
+### Create a cluster
+
 ```hcl
 resource "outscale_oks_project" "project01" {
   name   = "project01"
@@ -28,7 +30,7 @@ resource "outscale_oks_cluster" "cluster01" {
   admin_whitelist = ["0.0.0.0/0"]
   cidr_pods       = "10.91.0.0/16"
   cidr_service    = "10.92.0.0/16"
-  version         = "1.32"
+  version         = "1.35"
   name            = "cluster01"
   control_planes  = "cp.mono.master"
   tags            = {
@@ -36,6 +38,40 @@ resource "outscale_oks_cluster" "cluster01" {
   }
 }
 ```
+
+### Use the Kubernetes provider to deploy CRDs
+
+To use the [Kubernetes provider](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs), you first need to create an OKS project and OKS cluster as in the above example. Then, with the cluster's [`kubeconfig_attributes`](https://registry.terraform.io/providers/outscale/outscale/latest/docs/resources/oks_cluster#kubeconfig_attributes), you can initialize the provider as follows:
+
+```hcl
+provider "kubernetes" {
+  host                   = outscale_oks_cluster.cluster01.kubeconfig_attributes.host
+  cluster_ca_certificate = outscale_oks_cluster.cluster01.kubeconfig_attributes.cluster_ca_certificate
+  client_certificate     = outscale_oks_cluster.cluster01.kubeconfig_attributes.client_certificate
+  client_key             = outscale_oks_cluster.cluster01.kubeconfig_attributes.client_key
+}
+```
+
+If you want to deploy a Custom Resource Definition (CRD), you can then use a [`kubernetes_manifest`](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/manifest) resource:
+
+```hcl
+resource "kubernetes_manifest" "example" {
+  manifest = {
+    "apiVersion" = "example.com/v1"
+    "kind"       = "ExampleResource"
+    "metadata"   = {
+      "name" = "example"
+    },
+    "spec"       = {
+      "value" = "example"
+    }
+  }
+}
+```
+
+~> **Important:** Note that the `kubernetes_manifest` resource builds a client during `terraform plan` to validate the manifest, and will fail if the cluster does not already exist. Therefore, you need to either deploy your configuration in multiple steps, or deploy the cluster first before you can create this resource.<br /><br />
+Alternatively, you can deploy CRDs in a single step without the need of another Terraform provider by using the native `outscale_oks_manifest` resource, which retrieves the kubeconfig dynamically from the cluster. See the [`outscale_oks_manifest`](https://registry.terraform.io/providers/outscale/outscale/latest/docs/resources/oks_manifest) page for an example.
+
 
 ## Argument Reference
 
