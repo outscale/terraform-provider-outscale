@@ -208,6 +208,7 @@ func (r *resourceUser) Create(ctx context.Context, req resource.CreateRequest, r
 		}
 		diag = r.linkPolicies(ctx, createTimeout, data.UserName.ValueString(), policies)
 		if fwhelpers.CheckDiags(resp, diag) {
+			resp.Diagnostics.Append(r.delete(ctx, data, createTimeout)...)
 			return
 		}
 	}
@@ -409,15 +410,23 @@ func (r *resourceUser) Delete(ctx context.Context, req resource.DeleteRequest, r
 		return
 	}
 
+	resp.Diagnostics.Append(r.delete(ctx, data, timeout)...)
+}
+
+func (r *resourceUser) delete(ctx context.Context, data UserModel, timeout time.Duration) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	if fwhelpers.IsSet(data.Policies) {
 		policies, diag := to.Slice[UserPolicyModel](ctx, data.Policies)
-		if fwhelpers.CheckDiags(resp, diag) {
-			return
+		diags.Append(diag...)
+		if diags.HasError() {
+			return diags
 		}
 
 		diag = r.unlinkPolicies(ctx, timeout, data.UserName.ValueString(), policies)
-		if fwhelpers.CheckDiags(resp, diag) {
-			return
+		diags.Append(diag...)
+		if diags.HasError() {
+			return diags
 		}
 	}
 
@@ -427,11 +436,13 @@ func (r *resourceUser) Delete(ctx context.Context, req resource.DeleteRequest, r
 
 	_, err := r.Client.DeleteUser(ctx, deleteReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
+		diags.AddError(
 			"Unable to delete User",
 			err.Error(),
 		)
 	}
+
+	return diags
 }
 
 func (r *resourceUser) read(ctx context.Context, timeout time.Duration, data UserModel) (UserModel, error) {

@@ -1,11 +1,17 @@
 package oapi_test
 
 import (
+	"context"
 	"fmt"
+	"regexp"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 )
 
@@ -45,6 +51,24 @@ func TestAccOthers_User_Policy(t *testing.T) {
 				),
 			},
 			testacc.ImportStep(resourceName, testacc.DefaultIgnores()...),
+		},
+	})
+}
+
+func TestAccOthers_User_CleanupAfterInvalidPolicy(t *testing.T) {
+	userName := acctest.RandomWithPrefix("testacc-user")
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccUserWithInvalidPolicy(userName),
+				ExpectError: regexp.MustCompile("Unable to link policy to User"),
+			},
+			{
+				RefreshState: true,
+				Check:        testAccCheckOutscaleUserDoesNotExist(userName),
+			},
 		},
 	})
 }
@@ -148,6 +172,44 @@ func testAccUserWithPolicy(policyName, userName string) string {
 			}
 		}
 	`, policyName, userName)
+}
+
+func testAccCheckOutscaleUserDoesNotExist(userName string) resource.TestCheckFunc {
+	return func(_ *terraform.State) error {
+		client := testacc.ConfiguredClient.OSC
+		resp, err := client.ReadUsers(context.Background(), osc.ReadUsersRequest{}, options.WithRetryTimeout(time.Minute))
+		if err != nil {
+			return err
+		}
+		for _, user := range *resp.Users {
+			if user.UserName != nil && *user.UserName == userName {
+				return fmt.Errorf("user %q still exists", userName)
+			}
+		}
+
+		return nil
+	}
+}
+
+func testAccUserCleanupConfig(userName string) string {
+	return fmt.Sprintf(`
+		resource "outscale_user" "cleanup_user" {
+			user_name = "%s"
+			path = "/"
+		}
+	`, userName)
+}
+
+func testAccUserWithInvalidPolicy(userName string) string {
+	return fmt.Sprintf(`
+		resource "outscale_user" "cleanup_user" {
+			user_name = "%s"
+			path = "/"
+			policy {
+				policy_orn = "orn:ows:idauth::012345678910:policy/testacc-missing-policy"
+			}
+		}
+	`, userName)
 }
 
 func testAccUserWithPolicyVersionUpper(policyName, userName string) string {

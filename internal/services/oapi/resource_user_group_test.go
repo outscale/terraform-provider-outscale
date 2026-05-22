@@ -1,11 +1,17 @@
 package oapi_test
 
 import (
+	"context"
 	"fmt"
+	"regexp"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/outscale/osc-sdk-go/v3/pkg/options"
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 )
 
@@ -46,6 +52,25 @@ func TestAccOthers_UserGroup_WithUser(t *testing.T) {
 				),
 			},
 			testacc.ImportStep(resourceName, testacc.DefaultIgnores()...),
+		},
+	})
+}
+
+func TestAccOthers_UserGroup_CleanupAfterInvalidUser(t *testing.T) {
+	groupName := acctest.RandomWithPrefix("testacc-ug")
+	invalidUserName := acctest.RandomWithPrefix("testacc-missing-user")
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccUserGroupWithInvalidUser(groupName, invalidUserName),
+				ExpectError: regexp.MustCompile("Unable to add user to User Group"),
+			},
+			{
+				RefreshState: true,
+				Check:        testAccCheckOutscaleUserGroupDoesNotExist(groupName),
+			},
 		},
 	})
 }
@@ -106,6 +131,24 @@ func TestAccOthers_UserGroup_WithPolicy(t *testing.T) {
 	})
 }
 
+func TestAccOthers_UserGroup_CleanupAfterInvalidPolicy(t *testing.T) {
+	groupName := acctest.RandomWithPrefix("testacc-ug")
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccUserGroupWithInvalidPolicy(groupName),
+				ExpectError: regexp.MustCompile("Unable to link policy to User Group"),
+			},
+			{
+				RefreshState: true,
+				Check:        testAccCheckOutscaleUserGroupDoesNotExist(groupName),
+			},
+		},
+	})
+}
+
 func TestAccOthers_UserGroup_Migration(t *testing.T) {
 	groupName := acctest.RandomWithPrefix("testacc-ug")
 
@@ -114,12 +157,53 @@ func TestAccOthers_UserGroup_Migration(t *testing.T) {
 	})
 }
 
+func testAccCheckOutscaleUserGroupDoesNotExist(groupName string) resource.TestCheckFunc {
+	return func(_ *terraform.State) error {
+		client := testacc.ConfiguredClient.OSC
+		resp, err := client.ReadUserGroups(context.Background(), osc.ReadUserGroupsRequest{}, options.WithRetryTimeout(time.Minute))
+		if err != nil {
+			return err
+		}
+		if resp.UserGroups == nil {
+			return nil
+		}
+		for _, group := range *resp.UserGroups {
+			if group.Name != nil && *group.Name == groupName {
+				return fmt.Errorf("user group %q still exists", groupName)
+			}
+		}
+		return nil
+	}
+}
+
 func testAccUserGroupBasicConfig(name string) string {
 	return fmt.Sprintf(`
 	resource "outscale_user_group" "basic_group" {
 	  user_group_name = "%s"
 	  path = "/"
 	}`, name)
+}
+
+func testAccUserGroupWithInvalidUser(groupName, userName string) string {
+	return fmt.Sprintf(`
+	resource "outscale_user_group" "cleanup_group" {
+	  user_group_name = "%s"
+	  path = "/"
+	  user {
+	    user_name = "%s"
+	  }
+	}`, groupName, userName)
+}
+
+func testAccUserGroupWithInvalidPolicy(groupName string) string {
+	return fmt.Sprintf(`
+	resource "outscale_user_group" "cleanup_group" {
+	  user_group_name = "%s"
+	  path = "/"
+	  policy {
+	    policy_orn = "orn:ows:idauth::012345678910:policy/testacc-missing-policy"
+	  }
+	}`, groupName)
 }
 
 func testAccUserGroupWithUsers(groupName, userName1, userName2 string) string {

@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -220,6 +221,7 @@ func (r *resourceAccessKey) Create(ctx context.Context, req resource.CreateReque
 				"Unable to update access_key state",
 				err.Error(),
 			)
+			resp.Diagnostics.Append(r.delete(ctx, createTimeout, data, false)...)
 			return
 		}
 	}
@@ -230,6 +232,7 @@ func (r *resourceAccessKey) Create(ctx context.Context, req resource.CreateReque
 			"Unable to set access_key state",
 			err.Error(),
 		)
+		resp.Diagnostics.Append(r.delete(ctx, createTimeout, data, false)...)
 		return
 	}
 
@@ -339,30 +342,43 @@ func (r *resourceAccessKey) Delete(ctx context.Context, req resource.DeleteReque
 		return
 	}
 
+	resp.Diagnostics.Append(r.delete(ctx, to, data, true)...)
+}
+
+func (r *resourceAccessKey) delete(ctx context.Context, timeout time.Duration, data AccessKeyModel, deactivate bool) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	accessKeyId := data.AccessKeyId.ValueString()
+	if accessKeyId == "" {
+		accessKeyId = data.Id.ValueString()
+	}
+
 	delReq := osc.DeleteAccessKeyRequest{
-		AccessKeyId: data.AccessKeyId.ValueString(),
+		AccessKeyId: accessKeyId,
 	}
 	if userName := data.UserName.ValueString(); userName != "" {
 		delReq.UserName = new(userName)
-		if data.State.ValueString() != "INACTIVE" {
-			err := inactiveAccessKey(ctx, to, r, data)
+		if deactivate && data.State.ValueString() != "INACTIVE" {
+			err := inactiveAccessKey(ctx, timeout, r, data)
 			if err != nil {
-				resp.Diagnostics.AddError(
+				diags.AddError(
 					"Unable to INACTIVE access_key state",
 					err.Error(),
 				)
-				return
+				return diags
 			}
 		}
 	}
 
-	_, err := r.Client.DeleteAccessKey(ctx, delReq, options.WithRetryTimeout(to))
+	_, err := r.Client.DeleteAccessKey(ctx, delReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
+		diags.AddError(
 			"Unable to Delete access_key",
 			err.Error(),
 		)
 	}
+
+	return diags
 }
 
 func setAccessKeyState(ctx context.Context, r *resourceAccessKey, data *AccessKeyModel) error {

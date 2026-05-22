@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -237,11 +239,10 @@ func (r *resourceSubnet) Create(ctx context.Context, req resource.CreateRequest,
 			"Error waiting for Subnet to be ready.",
 			err.Error(),
 		)
+		resp.Diagnostics.Append(r.deleteSubnet(ctx, createTimeout, data)...)
 		return
 	}
 
-	data.SubnetId = to.String(subnet.SubnetId)
-	data.Id = to.String(subnet.SubnetId)
 	if data.MapPublicIpOnLaunch.ValueBool() != subnet.MapPublicIpOnLaunch {
 		updateReq := osc.UpdateSubnetRequest{
 			SubnetId:            data.SubnetId.ValueString(),
@@ -253,6 +254,7 @@ func (r *resourceSubnet) Create(ctx context.Context, req resource.CreateRequest,
 				"Unable to update MapPublicIpOnLaunch.",
 				err.Error(),
 			)
+			resp.Diagnostics.Append(r.deleteSubnet(ctx, createTimeout, data)...)
 			return
 		}
 	}
@@ -263,6 +265,7 @@ func (r *resourceSubnet) Create(ctx context.Context, req resource.CreateRequest,
 			"Unable to set subnet state.",
 			err.Error(),
 		)
+		resp.Diagnostics.Append(r.deleteSubnet(ctx, createTimeout, data)...)
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -351,21 +354,33 @@ func (r *resourceSubnet) Delete(ctx context.Context, req resource.DeleteRequest,
 		return
 	}
 
+	resp.Diagnostics.Append(r.deleteSubnet(ctx, deleteTimeout, data)...)
+}
+
+func (r *resourceSubnet) deleteSubnet(ctx context.Context, timeout time.Duration, data SubnetModel) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	subnetId := data.SubnetId.ValueString()
+	if subnetId == "" {
+		subnetId = data.Id.ValueString()
+	}
+
 	delReq := osc.DeleteSubnetRequest{
-		SubnetId: data.SubnetId.ValueString(),
+		SubnetId: subnetId,
 	}
 
 	// Retry on 409 (subnet in-use) as API can take time to see a subnet as not in use anymore
 	_, err := oapihelpers.RetryOnCodes(ctx, []string{"9095"}, func() (resp any, err error) {
-		return r.Client.DeleteSubnet(ctx, delReq, options.WithRetryTimeout(deleteTimeout))
-	}, deleteTimeout)
+		return r.Client.DeleteSubnet(ctx, delReq, options.WithRetryTimeout(timeout))
+	}, timeout)
 	if err != nil {
-		resp.Diagnostics.AddError(
+		diags.AddError(
 			"Unable to Delete subnet.",
 			err.Error(),
 		)
-		return
 	}
+
+	return diags
 }
 
 func (r *resourceSubnet) read(ctx context.Context, data SubnetModel) (SubnetModel, error) {

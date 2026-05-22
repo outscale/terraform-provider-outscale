@@ -342,6 +342,7 @@ func (r *resourceSecurityGroup) Create(ctx context.Context, req resource.CreateR
 				"Unable to empty the Security Group rules.",
 				err.Error(),
 			)
+			resp.Diagnostics.Append(r.delete(ctx, createTimeout, data, false)...)
 			return
 		}
 	}
@@ -357,6 +358,7 @@ func (r *resourceSecurityGroup) Create(ctx context.Context, req resource.CreateR
 			"Unable to set Security Group state.",
 			err.Error(),
 		)
+		resp.Diagnostics.Append(r.delete(ctx, createTimeout, data, false)...)
 		return
 	}
 
@@ -426,8 +428,11 @@ func (r *resourceSecurityGroup) Delete(ctx context.Context, req resource.DeleteR
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
-	defer cancel()
+	resp.Diagnostics.Append(r.delete(ctx, deleteTimeout, data, true)...)
+}
+
+func (r *resourceSecurityGroup) delete(ctx context.Context, timeout time.Duration, data SecurityGroupModel, unlinkLinked bool) diag.Diagnostics {
+	var diags diag.Diagnostics
 
 	sgId := data.Id.ValueString()
 	delReq := osc.DeleteSecurityGroupRequest{
@@ -435,39 +440,41 @@ func (r *resourceSecurityGroup) Delete(ctx context.Context, req resource.DeleteR
 	}
 
 	sgLinked := false
-	_, err := r.Client.DeleteSecurityGroup(ctx, delReq, options.WithRetryTimeout(deleteTimeout))
+	_, err := r.Client.DeleteSecurityGroup(ctx, delReq, options.WithRetryTimeout(timeout))
 	if err != nil {
 		oscErr := oapihelpers.GetError(err)
-		if oscErr.Code == "9085" {
+		if unlinkLinked && oscErr.Code == "9085" {
 			sgLinked = true
 		} else {
-			resp.Diagnostics.AddError(
+			diags.AddError(
 				"Unable to delete Security Group.",
 				err.Error(),
 			)
-			return
+			return diags
 		}
 	}
 
 	if sgLinked {
-		diag = r.unlink(ctx, deleteTimeout, data)
+		diag := r.unlink(ctx, timeout, data)
 		if diag.HasError() {
-			resp.Diagnostics.Append(diag...)
-			return
+			diags.Append(diag...)
+			return diags
 		}
 
 		// // Retry on 409 as API can take time to return a security group as not in use anymore
 		_, err := oapihelpers.RetryOnCodes(ctx, []string{"9085"}, func() (resp any, err error) {
-			return r.Client.DeleteSecurityGroup(ctx, delReq, options.WithRetryTimeout(deleteTimeout))
-		}, deleteTimeout)
+			return r.Client.DeleteSecurityGroup(ctx, delReq, options.WithRetryTimeout(timeout))
+		}, timeout)
 		if err != nil {
-			resp.Diagnostics.AddError(
+			diags.AddError(
 				"Unable to delete Security Group after unlinking from resources.",
 				err.Error(),
 			)
-			return
+			return diags
 		}
 	}
+
+	return diags
 }
 
 func (r *resourceSecurityGroup) getLinkedResources(ctx context.Context, to time.Duration, sgId string) ([]osc.Vm, []osc.Nic, []osc.LoadBalancer, diag.Diagnostics) {

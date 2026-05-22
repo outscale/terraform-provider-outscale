@@ -230,6 +230,7 @@ func (r *resourceUserGroup) Create(ctx context.Context, req resource.CreateReque
 
 		diag = r.addUsers(ctx, createTimeout, data.UserGroupName.ValueString(), data.Path.ValueString(), users)
 		if fwhelpers.CheckDiags(resp, diag) {
+			resp.Diagnostics.Append(r.delete(ctx, data, createTimeout)...)
 			return
 		}
 	}
@@ -241,6 +242,7 @@ func (r *resourceUserGroup) Create(ctx context.Context, req resource.CreateReque
 
 		diag = r.linkPolicies(ctx, createTimeout, data.UserGroupName.ValueString(), policies)
 		if fwhelpers.CheckDiags(resp, diag) {
+			resp.Diagnostics.Append(r.delete(ctx, data, createTimeout)...)
 			return
 		}
 	}
@@ -357,6 +359,12 @@ func (r *resourceUserGroup) Delete(ctx context.Context, req resource.DeleteReque
 		return
 	}
 
+	resp.Diagnostics.Append(r.delete(ctx, data, timeout)...)
+}
+
+func (r *resourceUserGroup) delete(ctx context.Context, data UserGroupModel, timeout time.Duration) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	deleteReq := osc.DeleteUserGroupRequest{
 		UserGroupName: data.UserGroupName.ValueString(),
 		Force:         new(true),
@@ -364,11 +372,13 @@ func (r *resourceUserGroup) Delete(ctx context.Context, req resource.DeleteReque
 
 	_, err := r.Client.DeleteUserGroup(ctx, deleteReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
+		diags.AddError(
 			"Unable to delete User Group",
 			err.Error(),
 		)
 	}
+
+	return diags
 }
 
 func (r *resourceUserGroup) read(ctx context.Context, timeout time.Duration, data UserGroupModel) (UserGroupModel, error) {
