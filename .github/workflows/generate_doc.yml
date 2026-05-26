@@ -6,6 +6,9 @@ on:
                 description: "doc template tag repository"
                 required: true
 
+permissions:
+    contents: read
+
 jobs:
     doc-release:
         environment: auto-build

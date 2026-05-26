@@ -16,6 +16,9 @@ on:
                 required: true
                 type: string
 
+permissions:
+    contents: read
+
 jobs:
     acceptance-test:
         environment: test-${{ inputs.region }}
