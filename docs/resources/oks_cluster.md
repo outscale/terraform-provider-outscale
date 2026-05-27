@@ -41,7 +41,7 @@ resource "outscale_oks_cluster" "cluster01" {
 
 ### Use the Kubernetes provider to deploy CRDs
 
-To use the [Kubernetes provider](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs), you first need to create an OKS project and OKS cluster as in the above example. Then, with the cluster's [`kubeconfig_attributes`](https://registry.terraform.io/providers/outscale/outscale/latest/docs/resources/oks_cluster#kubeconfig_attributes), you can initialize the provider as follows:
+To use the [Kubernetes provider](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs), you first need to create an OKS project and OKS cluster as in the above example. Then, with the cluster's [`kubeconfig_attributes`](https://registry.terraform.io/providers/outscale/outscale/latest/docs/resources/oks_cluster#kubeconfig_attributes-1), you can initialize the provider as follows:
 
 ```hcl
 provider "kubernetes" {
