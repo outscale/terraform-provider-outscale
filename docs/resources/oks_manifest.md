@@ -81,17 +81,17 @@ YAML
 
 The following arguments are supported:
 
-* `cluster_id` - (Required) The cluster ID on which the manifest is applied.
+* `cluster_id` - (Required) The ID of the cluster on which you want to apply the manifest.
 * `manifest` - (Required) The Kubernetes YAML manifest.
-* `skip_delete` (Optional, default: false) If set to true, Terraform removes only the manifest resource from the state during delete, without deleting the Kubernetes object from the cluster.
-* `wait` - (Optional, default: false): If set to true, Terraform waits for the Kubernetes object to be deleted during destroy.
+* `skip_delete` - (Optional) If set to true, Terraform removes only the manifest resource from the state during delete, without deleting the Kubernetes object from the cluster. By default, false.
+* `wait` - (Optional): If set to true, Terraform waits for the Kubernetes object to be deleted during destroy. By default, false.
 * `wait_for` - (Optional) Wait until the fields in the Kubernetes object match the expected values after apply:
-    * `fields` - (Required) Maps of key-value pairs (field path => expected pattern).
+    * `fields` - (Required) Maps of key/value pairs (field path => expected pattern).
         * Each key must be a [JSONPath](https://kubernetes.io/docs/reference/kubectl/jsonpath/) field path, but a simple field path such as `status.progress.ready` is accepted and converted internally to a JSONPath expression (that is, the enclosing `{` `}` and the first `.` can be omitted).
         * Each value is a regex pattern.
         * All configured fields must match for the wait to complete.
         * Examples: `"status.progress.ready" = "1"`, `"{.status.progress.ready}" = "1"`, `"{.status.state.name}" = "idle|reconciliation"`.
-    * `timeout` - (Optional) Custom timeout for the `wait_for` checks. If not specified, falls back to the CRUD operation default timeout.
+    * `timeout` - (Optional) A custom timeout for the `wait_for` checks. If not specified, falls back to the CRUD operation default timeout.
 
 ## Attribute Reference
 
