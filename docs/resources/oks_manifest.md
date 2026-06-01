@@ -86,11 +86,9 @@ The following arguments are supported:
 * `skip_delete` - (Optional) If set to true, Terraform removes only the manifest resource from the state during delete, without deleting the Kubernetes object from the cluster. By default, false.
 * `wait` - (Optional): If set to true, Terraform waits for the Kubernetes object to be deleted during destroy. By default, false.
 * `wait_for` - (Optional) Wait until the fields in the Kubernetes object match the expected values after apply:
-    * `fields` - (Required) Maps of key/value pairs (field path => expected pattern).
-        * Each key must be a [JSONPath](https://kubernetes.io/docs/reference/kubectl/jsonpath/) field path, but a simple field path such as `status.progress.ready` is accepted and converted internally to a JSONPath expression (that is, the enclosing `{` `}` and the first `.` can be omitted).
-        * Each value is a regex pattern.
-        * All configured fields must match for the wait to complete.
-        * Examples: `"status.progress.ready" = "1"`, `"{.status.progress.ready}" = "1"`, `"{.status.state.name}" = "idle|reconciliation"`.
+    * `fields` - (Required) Maps of key/value pairs in the `"{.field_path}" = "expected_value"` format.<br />
+Each key must be a [JSONPath](https://kubernetes.io/docs/reference/kubectl/jsonpath/) field path, but the enclosing characters (`{` `}`) and the first `.` are optional, and each value must be a regex pattern. All the configured fields must match for the wait to complete.<br />
+Examples: `"{.status.progress.ready}" = "1"`, `"status.progress.ready" = "1"`, `"status.state.name" = "idle|reconciliation"`.
     * `timeout` - (Optional) A custom timeout for the `wait_for` checks. If not specified, falls back to the CRUD operation default timeout.
 
 ## Attribute Reference
