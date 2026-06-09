@@ -22,7 +22,7 @@ provider "outscale" {
   access_key_id = var.access_key_id
   secret_key_id = var.secret_key_id
   api {
-    endpoint       = "https://api.eu-west-2.outscale.com"
+    endpoint       = "https://api.eu-west-2.outscale.com/api/v1"
     region         = "eu-west-2"
     x509_cert_path = "/path/to/cert.pem"
     x509_key_path  = "/path/to/key.pem"
