@@ -302,11 +302,8 @@ func resourceOAPIImageCreate(ctx context.Context, d *schema.ResourceData, meta a
 		return diag.FromErr(err)
 	}
 
-	if resp.Image == nil {
-		return nil
-	}
-
 	image := ptr.From(resp.Image)
+	d.SetId(image.ImageId)
 
 	log.Printf("[DEBUG] Waiting for OMI %s to become available...", image.ImageId)
 
@@ -322,7 +319,6 @@ func resourceOAPIImageCreate(ctx context.Context, d *schema.ResourceData, meta a
 	if _, err = stateConf.WaitForStateContext(ctx); err != nil {
 		return diag.Errorf("error waiting for omi (%s) to be ready: %v", image.ImageId, err)
 	}
-	d.SetId(image.ImageId)
 
 	err = createOAPITagsSDK(ctx, client, timeout, d)
 	if err != nil {

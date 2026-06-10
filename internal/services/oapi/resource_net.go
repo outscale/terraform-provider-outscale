@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -21,6 +22,7 @@ import (
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/modifyplans"
 )
@@ -28,6 +30,12 @@ import (
 var (
 	_ resource.Resource              = &resourceNet{}
 	_ resource.ResourceWithConfigure = &resourceNet{}
+)
+
+const (
+	netErrCreate  = "Unable to create Net"
+	netErrDelete  = "Unable to delete Net"
+	netErrIPRange = "Unable to validate Net ip_range"
 )
 
 type NetModel struct {
@@ -157,21 +165,18 @@ func (r *resourceNet) Create(ctx context.Context, req resource.CreateRequest, re
 
 	_, valideIpRange, err := net.ParseCIDR(data.IpRange.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to parse ip_range value: "+data.IpRange.ValueString(),
-			"Error: "+err.Error(),
-		)
+		resp.Diagnostics.AddError(netErrIPRange, err.Error())
 		return
 	}
 	if data.IpRange.ValueString() != valideIpRange.String() {
 		resp.Diagnostics.AddError(
-			"Invalide net ip_range value: "+data.IpRange.ValueString(),
+			"Invalid net ip_range value: "+data.IpRange.ValueString(),
 			"Error: ip_range value should be: "+valideIpRange.String(),
 		)
 		return
 	}
 
-	createTimeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
+	timeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
@@ -184,29 +189,35 @@ func (r *resourceNet) Create(ctx context.Context, req resource.CreateRequest, re
 		createReq.Tenancy = data.Tenancy.ValueStringPointer()
 	}
 
-	createResp, err := r.Client.CreateNet(ctx, createReq, options.WithRetryTimeout(createTimeout))
+	createResp, err := r.Client.CreateNet(ctx, createReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to Create Resource Net",
-			"Error: "+err.Error(),
-		)
+		resp.Diagnostics.AddError(netErrCreate, err.Error())
 		return
 	}
 
 	data.RequestId = to.String(createResp.ResponseContext.RequestId)
 	net := ptr.From(createResp.Net)
+	data.NetId = to.String(net.NetId)
+	data.Id = to.String(net.NetId)
 
-	diag := createOAPITagsFW(ctx, r.Client, createTimeout, data.Tags, net.NetId)
+	stateData, err := r.flatten(ctx, data, net)
+	if err != nil {
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
+		return
+	}
+	diags = resp.State.Set(ctx, &stateData)
+	if fwhelpers.CheckDiags(resp, diags) {
+		return
+	}
+
+	diag := createOAPITagsFW(ctx, r.Client, timeout, data.Tags, net.NetId)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
-	data.NetId = to.String(net.NetId)
-	data, err = setNetState(ctx, r, data)
+
+	data, err = r.read(ctx, timeout, data)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to set net state",
-			"Error: "+err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -221,16 +232,18 @@ func (r *resourceNet) Read(ctx context.Context, req resource.ReadRequest, resp *
 		return
 	}
 
-	data, err = setNetState(ctx, r, data)
+	timeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
+	if fwhelpers.CheckDiags(resp, diags) {
+		return
+	}
+
+	data, err = r.read(ctx, timeout, data)
 	if err != nil {
 		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(
-			"Unable to set net state",
-			"Error: "+err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -255,12 +268,9 @@ func (r *resourceNet) Update(ctx context.Context, req resource.UpdateRequest, re
 	}
 
 	stateData.Timeouts = planData.Timeouts
-	data, err := setNetState(ctx, r, stateData)
+	data, err := r.read(ctx, timeout, stateData)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to set net state",
-			"Error: "+err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -274,7 +284,7 @@ func (r *resourceNet) Delete(ctx context.Context, req resource.DeleteRequest, re
 		return
 	}
 
-	deleteTimeout, diags := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
+	timeout, diags := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
@@ -282,21 +292,14 @@ func (r *resourceNet) Delete(ctx context.Context, req resource.DeleteRequest, re
 	delReq := osc.DeleteNetRequest{
 		NetId: data.NetId.ValueString(),
 	}
-	_, err := r.Client.DeleteNet(ctx, delReq, options.WithRetryTimeout(deleteTimeout))
+	_, err := r.Client.DeleteNet(ctx, delReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to Delete net",
-			"Error: "+err.Error(),
-		)
+		resp.Diagnostics.AddError(netErrDelete, err.Error())
 	}
 }
 
-func setNetState(ctx context.Context, r *resourceNet, data NetModel) (NetModel, error) {
-	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
-	if diags.HasError() {
-		return data, fmt.Errorf("unable to parse 'net' read timeout value: %v", diags.Errors())
-	}
-	ctxWithTimeout, cancel := context.WithTimeout(ctx, readTimeout)
+func (r *resourceNet) read(ctx context.Context, timeout time.Duration, data NetModel) (NetModel, error) {
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	net, err := r.Batcher.Read(ctxWithTimeout, data.NetId.ValueString())
@@ -307,9 +310,13 @@ func setNetState(ctx context.Context, r *resourceNet, data NetModel) (NetModel, 
 		return data, err
 	}
 
+	return r.flatten(ctx, data, *net)
+}
+
+func (r *resourceNet) flatten(ctx context.Context, data NetModel, net osc.Net) (NetModel, error) {
 	tags, diag := flattenOAPITagsFW(ctx, net.Tags)
 	if diag.HasError() {
-		return data, fmt.Errorf("unable to flatten tags: %v", diags.Errors())
+		return data, from.Diag(diag)
 	}
 	data.Tags = tags
 

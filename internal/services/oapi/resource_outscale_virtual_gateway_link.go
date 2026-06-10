@@ -92,6 +92,8 @@ func ResourceOutscaleVirtualGatewayLinkCreate(ctx context.Context, d *schema.Res
 			vgwID, netID, err)
 	}
 
+	d.SetId(vgwID)
+
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{"detached", "attaching"},
 		Target:  []string{"attached"},
@@ -105,8 +107,6 @@ func ResourceOutscaleVirtualGatewayLinkCreate(ctx context.Context, d *schema.Res
 			vgwID, netID, err)
 	}
 	log.Printf("[DEBUG] Virtual Gateway %q attached to VPC %q.", vgwID, netID)
-
-	d.SetId(vgwID)
 
 	return ResourceOutscaleVirtualGatewayLinkRead(ctx, d, meta)
 }

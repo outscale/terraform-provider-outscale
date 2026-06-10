@@ -2,6 +2,7 @@ package oapi_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
@@ -62,6 +63,25 @@ func TestAccOthers_Snapshot_Migration(t *testing.T) {
 	})
 }
 
+func TestAccOthers_Snapshot_CreateFailureKeepsState(t *testing.T) {
+	resourceName := "outscale_snapshot.outscale_snapshot"
+	invalidTagKey := strings.Repeat("a", 256)
+	tagValue := "testacc-resource-snapshot"
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
+		Steps: testacc.CreateFailureReplacementSteps(
+			resourceName,
+			snapshotConfigWithTag(invalidTagKey, tagValue),
+			snapshotConfigWithTag("Name", tagValue),
+			resource.ComposeTestCheckFunc(
+				resource.TestCheckResourceAttrSet(resourceName, "snapshot_id"),
+				resource.TestCheckResourceAttr(resourceName, "tags.0.value", tagValue),
+			),
+		),
+	})
+}
+
 func snapshotConfig(addPermissions bool) string {
 	config := fmt.Sprintf(`
 resource "outscale_volume" "outscale_volume" {
@@ -86,6 +106,24 @@ resource "outscale_snapshot_attributes" "outscale_snapshot_attributes" {
 `
 	}
 	return config
+}
+
+func snapshotConfigWithTag(tagKey, tagValue string) string {
+	return fmt.Sprintf(`
+resource "outscale_volume" "outscale_volume" {
+    subregion_name = "%sa"
+    size           = 40
+}
+
+resource "outscale_snapshot" "outscale_snapshot" {
+    volume_id   = outscale_volume.outscale_volume.volume_id
+    description = "testacc-snapshot"
+    tags {
+        key   = %q
+        value = %q
+    }
+}
+`, utils.GetRegion(), tagKey, tagValue)
 }
 
 func snapshotConfigCopySnapshot() string {

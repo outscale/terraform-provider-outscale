@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -27,6 +28,10 @@ var (
 	_ resource.ResourceWithConfigure   = &resourceNetPeeringAcceptation{}
 	_ resource.ResourceWithImportState = &resourceNetPeeringAcceptation{}
 	_ resource.ResourceWithModifyPlan  = &resourceNetPeeringAcceptation{}
+)
+
+const (
+	netPeeringAcceptationErrCreate = "Unable to create Net Peering Acceptation"
 )
 
 type NetPeeringAcceptationModel struct {
@@ -174,7 +179,7 @@ func (r *resourceNetPeeringAcceptation) Create(ctx context.Context, req resource
 		return
 	}
 
-	createTimeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
+	timeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
@@ -183,12 +188,9 @@ func (r *resourceNetPeeringAcceptation) Create(ctx context.Context, req resource
 		NetPeeringId: data.NetPeeringId.ValueString(),
 	}
 
-	createResp, err := r.Client.AcceptNetPeering(ctx, createReq, options.WithRetryTimeout(createTimeout))
+	createResp, err := r.Client.AcceptNetPeering(ctx, createReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to create Net Peering accepter.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(netPeeringAcceptationErrCreate, err.Error())
 		return
 	}
 	data.RequestId = to.String(createResp.ResponseContext.RequestId)
@@ -196,15 +198,15 @@ func (r *resourceNetPeeringAcceptation) Create(ctx context.Context, req resource
 	data.NetPeeringId = to.String(netPeering.NetPeeringId)
 	data.Id = to.String(netPeering.NetPeeringId)
 
-	data, err = r.read(ctx, data)
+	// AcceptNetPeering reponse object seems incoherent with ReadNetPeering response.
+	// A read call is necessary to get the right object
+	stateData, err := r.read(ctx, timeout, data)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to set Net Peering Acceptation state",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &stateData)...)
 }
 
 func (r *resourceNetPeeringAcceptation) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -215,19 +217,21 @@ func (r *resourceNetPeeringAcceptation) Read(ctx context.Context, req resource.R
 		return
 	}
 
-	data, err := r.read(ctx, data)
+	timeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
+	if fwhelpers.CheckDiags(resp, diags) {
+		return
+	}
+
+	stateData, err := r.read(ctx, timeout, data)
 	if err != nil {
 		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(
-			"Unable to set subnet API response values.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &stateData)...)
 }
 
 func (r *resourceNetPeeringAcceptation) Update(context.Context, resource.UpdateRequest, *resource.UpdateResponse) {
@@ -237,7 +241,7 @@ func (r *resourceNetPeeringAcceptation) Delete(ctx context.Context, req resource
 	resp.State.RemoveResource(ctx)
 }
 
-func (r *resourceNetPeeringAcceptation) read(ctx context.Context, data NetPeeringAcceptationModel) (NetPeeringAcceptationModel, error) {
+func (r *resourceNetPeeringAcceptation) read(ctx context.Context, timeout time.Duration, data NetPeeringAcceptationModel) (NetPeeringAcceptationModel, error) {
 	netPeeringFilters := osc.FiltersNetPeering{
 		NetPeeringIds: &[]string{data.NetPeeringId.ValueString()},
 	}
@@ -245,12 +249,7 @@ func (r *resourceNetPeeringAcceptation) read(ctx context.Context, data NetPeerin
 		Filters: &netPeeringFilters,
 	}
 
-	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
-	if diags.HasError() {
-		return data, fmt.Errorf("unable to parse 'net peering' read timeout value: %v", diags.Errors())
-	}
-
-	readResp, err := r.Client.ReadNetPeerings(ctx, readReq, options.WithRetryTimeout(readTimeout))
+	readResp, err := r.Client.ReadNetPeerings(ctx, readReq, options.WithRetryTimeout(timeout))
 	if err != nil || readResp.NetPeerings == nil {
 		return data, err
 	}
@@ -261,21 +260,25 @@ func (r *resourceNetPeeringAcceptation) read(ctx context.Context, data NetPeerin
 
 	netPeering := (*readResp.NetPeerings)[0]
 
+	return r.flatten(ctx, data, netPeering)
+}
+
+func (r *resourceNetPeeringAcceptation) flatten(ctx context.Context, data NetPeeringAcceptationModel, netPeering osc.NetPeering) (NetPeeringAcceptationModel, error) {
 	tags, diag := flattenOAPIComputedTagsFW(ctx, netPeering.Tags)
 	if diag.HasError() {
-		return data, fmt.Errorf("unable to convert tags to the schema list: %v", diags.Errors())
+		return data, from.Diag(diag)
 	}
 	sourceNet, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: netAttrTypes}, SourceNetToList(netPeering.SourceNet))
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to convert source net to the schema list: %v", diags.Errors())
+		return data, from.Diag(diags)
 	}
 	accepterNet, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: netAttrTypes}, AccepterNetToList(netPeering.AccepterNet))
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to convert accepter net to the schema list: %v", diags.Errors())
+		return data, from.Diag(diags)
 	}
 	state, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: stateAttrTypes}, NetPeerStateToList(netPeering.State))
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to convert state to the schema list: %v", diags.Errors())
+		return data, from.Diag(diags)
 	}
 
 	data.ExpirationDate = to.String(from.ISO8601(netPeering.ExpirationDate))

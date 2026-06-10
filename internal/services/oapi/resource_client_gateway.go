@@ -19,6 +19,7 @@ import (
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/stateconf"
 )
@@ -31,9 +32,7 @@ var (
 
 const (
 	clientGwErrCreate = "Unable to create Client Gateway"
-	clientGwErrRead   = "Unable to read Client Gateway"
 	clientGwErrDelete = "Unable to delete Client Gateway"
-	clientGwErrState  = "Unable to set Client Gateway state"
 )
 
 type clientGatewayModel struct {
@@ -178,8 +177,19 @@ func (r *clientGatewayResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
+	data.RequestId = to.String(createResp.ResponseContext.RequestId)
 	data.Id = to.String(createResp.ClientGateway.ClientGatewayId)
 	data.ClientGatewayId = to.String(createResp.ClientGateway.ClientGatewayId)
+
+	stateData, err := r.flatten(ctx, data, *createResp.ClientGateway)
+	if err != nil {
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
+		return
+	}
+	diags = resp.State.Set(ctx, &stateData)
+	if fwhelpers.CheckDiags(resp, diags) {
+		return
+	}
 
 	diag := createOAPITagsFW(ctx, r.Client, timeout, data.Tags, createResp.ClientGateway.ClientGatewayId)
 	if fwhelpers.CheckDiags(resp, diag) {
@@ -190,17 +200,17 @@ func (r *clientGatewayResource) Create(ctx context.Context, req resource.CreateR
 		Pending: stateconf.States(osc.ClientGatewayStatePending),
 		Target:  stateconf.States(osc.ClientGatewayStateAvailable),
 		Timeout: timeout,
-		Refresh: r.stateRefreshFunc(createResp.ClientGateway.ClientGatewayId),
+		Refresh: r.refreshFunc(createResp.ClientGateway.ClientGatewayId),
 	}
-	_, err = stateConf.WaitForStateContext(ctx)
+	gatewayAny, err := stateConf.WaitForStateContext(ctx)
 	if err != nil {
-		resp.Diagnostics.AddError(clientGwErrState, err.Error())
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
-	stateData, err := r.read(ctx, timeout, data)
+	stateData, err = r.flatten(ctx, data, gatewayAny.(osc.ClientGateway))
 	if err != nil {
-		resp.Diagnostics.AddError(clientGwErrState, err.Error())
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -222,7 +232,7 @@ func (r *clientGatewayResource) Read(ctx context.Context, req resource.ReadReque
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(clientGwErrRead, err.Error())
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -253,7 +263,7 @@ func (r *clientGatewayResource) Update(ctx context.Context, req resource.UpdateR
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(clientGwErrState, err.Error())
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -286,7 +296,7 @@ func (r *clientGatewayResource) Delete(ctx context.Context, req resource.DeleteR
 		Pending: stateconf.States(osc.ClientGatewayStateDeleting),
 		Target:  stateconf.States(osc.ClientGatewayStateDeleted),
 		Timeout: timeout,
-		Refresh: r.stateRefreshFunc(data.Id.ValueString()),
+		Refresh: r.refreshFunc(data.Id.ValueString()),
 	}
 	_, err = stateConf.WaitForStateContext(ctx)
 	switch {
@@ -313,14 +323,18 @@ func (r *clientGatewayResource) read(ctx context.Context, timeout time.Duration,
 	}
 
 	gw := (*resp.ClientGateways)[0]
+	data.RequestId = to.String(resp.ResponseContext.RequestId)
 
+	return r.flatten(ctx, data, gw)
+}
+
+func (r *clientGatewayResource) flatten(ctx context.Context, data clientGatewayModel, gw osc.ClientGateway) (clientGatewayModel, error) {
 	tags, diag := flattenOAPITagsFW(ctx, gw.Tags)
 	if diag.HasError() {
-		return data, fmt.Errorf("%v", diag.Errors())
+		return data, from.Diag(diag)
 	}
 
 	data.Tags = tags
-	data.RequestId = to.String(resp.ResponseContext.RequestId)
 	data.Id = to.String(gw.ClientGatewayId)
 	data.ClientGatewayId = to.String(gw.ClientGatewayId)
 	data.BgpAsn = to.Int64(gw.BgpAsn)
@@ -331,7 +345,7 @@ func (r *clientGatewayResource) read(ctx context.Context, timeout time.Duration,
 	return data, nil
 }
 
-func (r *clientGatewayResource) stateRefreshFunc(id string) stateconf.StateRefreshFunc[osc.ClientGatewayState] {
+func (r *clientGatewayResource) refreshFunc(id string) stateconf.StateRefreshFunc[osc.ClientGatewayState] {
 	return func(ctx context.Context) (any, osc.ClientGatewayState, error) {
 		req := osc.ReadClientGatewaysRequest{
 			Filters: &osc.FiltersClientGateway{
@@ -349,6 +363,6 @@ func (r *clientGatewayResource) stateRefreshFunc(id string) stateconf.StateRefre
 
 		gw := (*resp.ClientGateways)[0]
 
-		return resp, gw.State, nil
+		return gw, gw.State, nil
 	}
 }

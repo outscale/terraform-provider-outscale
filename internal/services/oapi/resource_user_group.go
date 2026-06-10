@@ -35,6 +35,17 @@ var (
 	_ resource.ResourceWithImportState = &resourceUserGroup{}
 )
 
+const (
+	userGroupErrCreate  = "Unable to create User Group"
+	userGroupErrUpdate  = "Unable to update User Group"
+	userGroupErrDelete  = "Unable to delete User Group"
+	userGroupErrAddUser = "Unable to add user to User Group"
+	userGroupErrRmUser  = "Unable to remove user from User Group"
+	userGroupErrUnlink  = "Unable to unlink policy from User Group"
+	userGroupErrLink    = "Unable to link policy to User Group"
+	userGroupErrDefault = "Unable to set default policy version for User Group policy"
+)
+
 type UserGroupModel struct {
 	CreationDate         types.String   `tfsdk:"creation_date"`
 	LastModificationDate types.String   `tfsdk:"last_modification_date"`
@@ -201,7 +212,7 @@ func (r *resourceUserGroup) Create(ctx context.Context, req resource.CreateReque
 	var data UserGroupModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
-	createTimeout, diag := data.Timeouts.Create(ctx, CreateDefaultTimeout)
+	timeout, diag := data.Timeouts.Create(ctx, CreateDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
@@ -211,16 +222,22 @@ func (r *resourceUserGroup) Create(ctx context.Context, req resource.CreateReque
 		Path:          new(data.Path.ValueString()),
 	}
 
-	createResp, err := r.Client.CreateUserGroup(ctx, createReq, options.WithRetryTimeout(createTimeout))
+	createResp, err := r.Client.CreateUserGroup(ctx, createReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to create User Group",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(userGroupErrCreate, err.Error())
 		return
 	}
-
 	data.Id = to.String(createResp.UserGroup.UserGroupId)
+
+	stateData, err := r.flatten(ctx, timeout, data, *createResp.UserGroup, nil, nil)
+	if err != nil {
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
+		return
+	}
+	diag = resp.State.Set(ctx, &stateData)
+	if fwhelpers.CheckDiags(resp, diag) {
+		return
+	}
 
 	if fwhelpers.IsSet(data.Users) {
 		users, diag := to.Slice[UserGroupUserModel](ctx, data.Users)
@@ -228,7 +245,7 @@ func (r *resourceUserGroup) Create(ctx context.Context, req resource.CreateReque
 			return
 		}
 
-		diag = r.addUsers(ctx, createTimeout, data.UserGroupName.ValueString(), data.Path.ValueString(), users)
+		diag = r.addUsers(ctx, timeout, data.UserGroupName.ValueString(), data.Path.ValueString(), users)
 		if fwhelpers.CheckDiags(resp, diag) {
 			return
 		}
@@ -239,18 +256,15 @@ func (r *resourceUserGroup) Create(ctx context.Context, req resource.CreateReque
 			return
 		}
 
-		diag = r.linkPolicies(ctx, createTimeout, data.UserGroupName.ValueString(), policies)
+		diag = r.linkPolicies(ctx, timeout, data.UserGroupName.ValueString(), policies)
 		if fwhelpers.CheckDiags(resp, diag) {
 			return
 		}
 	}
 
-	stateData, err := r.read(ctx, createTimeout, data)
+	stateData, err = r.read(ctx, timeout, data)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to set User state",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -272,10 +286,7 @@ func (r *resourceUserGroup) Read(ctx context.Context, req resource.ReadRequest, 
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(
-			"Unable to set User API response values",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -324,10 +335,7 @@ func (r *resourceUserGroup) Update(ctx context.Context, req resource.UpdateReque
 	if updateGroup {
 		_, err := r.Client.UpdateUserGroup(ctx, updateReq, options.WithRetryTimeout(timeout))
 		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable to update User Group",
-				err.Error(),
-			)
+			resp.Diagnostics.AddError(userGroupErrUpdate, err.Error())
 		}
 	}
 
@@ -338,10 +346,7 @@ func (r *resourceUserGroup) Update(ctx context.Context, req resource.UpdateReque
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(
-			"Unable to set User Group API response values",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -364,10 +369,7 @@ func (r *resourceUserGroup) Delete(ctx context.Context, req resource.DeleteReque
 
 	_, err := r.Client.DeleteUserGroup(ctx, deleteReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to delete User Group",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(userGroupErrDelete, err.Error())
 	}
 }
 
@@ -405,6 +407,10 @@ func (r *resourceUserGroup) read(ctx context.Context, timeout time.Duration, dat
 		return data, err
 	}
 
+	return r.flatten(ctx, timeout, data, userGroup, ptr.From(respLink.Policies), ptr.From(respUsers.Users))
+}
+
+func (r *resourceUserGroup) flatten(ctx context.Context, timeout time.Duration, data UserGroupModel, userGroup osc.UserGroup, policies []osc.LinkedPolicy, users []osc.User) (UserGroupModel, error) {
 	data.UserGroupName = to.String(userGroup.Name)
 	data.Path = to.String(userGroup.Path)
 	data.UserGroupId = to.String(userGroup.UserGroupId)
@@ -413,20 +419,20 @@ func (r *resourceUserGroup) read(ctx context.Context, timeout time.Duration, dat
 	data.CreationDate = to.String(from.ISO8601(ptr.From(userGroup.CreationDate)))
 	data.LastModificationDate = to.String(from.ISO8601(userGroup.LastModificationDate))
 
-	policies, err := r.flattenPolicies(ctx, timeout, ptr.From(respLink.Policies))
+	policiesModel, err := r.flattenPolicies(ctx, timeout, policies)
 	if err != nil {
 		return data, err
 	}
-	policiesSet, diag := to.SetObject(ctx, policies)
+	policiesSet, diag := to.SetObject(ctx, policiesModel)
 	if diag.HasError() {
-		return data, fmt.Errorf("unable to convert policies to a set: %v", diag.Errors())
+		return data, from.Diag(diag)
 	}
 	data.Policies = policiesSet
 
-	users := r.flattenUsers(ptr.From(respUsers.Users))
-	usersSet, diag := to.SetObject(ctx, users)
+	usersModel := r.flattenUsers(users)
+	usersSet, diag := to.SetObject(ctx, usersModel)
 	if diag.HasError() {
-		return data, fmt.Errorf("unable to convert users to a set: %v", diag.Errors())
+		return data, from.Diag(diag)
 	}
 	data.Users = usersSet
 
@@ -451,10 +457,7 @@ func (r *resourceUserGroup) addUsers(ctx context.Context, timeout time.Duration,
 
 		_, err := r.Client.AddUserToUserGroup(ctx, req, options.WithRetryTimeout(timeout))
 		if err != nil {
-			diags.AddError(
-				"Unable to add user to User Group",
-				err.Error(),
-			)
+			diags.AddError(userGroupErrAddUser, err.Error())
 			return diags
 		}
 	}
@@ -487,10 +490,7 @@ func (r *resourceUserGroup) removeUsers(ctx context.Context, timeout time.Durati
 			if errCode.Code == "5098" {
 				continue
 			}
-			diags.AddError(
-				"Unable to remove user from User Group",
-				err.Error(),
-			)
+			diags.AddError(userGroupErrRmUser, err.Error())
 			return diags
 		}
 	}
@@ -554,10 +554,7 @@ func (r *resourceUserGroup) unlinkPolicies(ctx context.Context, timeout time.Dur
 
 		_, err := r.Client.UnlinkManagedPolicyFromUserGroup(ctx, req, options.WithRetryTimeout(timeout))
 		if err != nil {
-			diags.AddError(
-				"Unable to unlink policy from User Group",
-				err.Error(),
-			)
+			diags.AddError(userGroupErrUnlink, err.Error())
 			return diags
 		}
 	}
@@ -576,20 +573,14 @@ func (r *resourceUserGroup) linkPolicies(ctx context.Context, timeout time.Durat
 
 		_, err := r.Client.LinkManagedPolicyToUserGroup(ctx, req, options.WithRetryTimeout(timeout))
 		if err != nil {
-			diags.AddError(
-				"Unable to link policy to User Group",
-				err.Error(),
-			)
+			diags.AddError(userGroupErrLink, err.Error())
 			return diags
 		}
 
 		if fwhelpers.IsSet(policy.DefaultVersionId) {
 			err := r.setDefaultPolicyVersion(ctx, timeout, policy.PolicyOrn.ValueString(), policy.DefaultVersionId.ValueString())
 			if err != nil {
-				diags.AddError(
-					"Unable to set default policy version for policy linked to User Group",
-					err.Error(),
-				)
+				diags.AddError(userGroupErrDefault, err.Error())
 				return diags
 			}
 		}

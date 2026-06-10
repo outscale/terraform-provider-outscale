@@ -27,6 +27,12 @@ var (
 	_ resource.ResourceWithImportState = &resoureCa{}
 )
 
+const (
+	caErrCreate = "Unable to create CA"
+	caErrUpdate = "Unable to update CA"
+	caErrDelete = "Unable to delete CA"
+)
+
 type caModel struct {
 	CaPem         types.String   `tfsdk:"ca_pem"`
 	CaFingerprint types.String   `tfsdk:"ca_fingerprint"`
@@ -116,7 +122,7 @@ func (r *resoureCa) Create(ctx context.Context, req resource.CreateRequest, resp
 	var data caModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
-	createTimeout, diag := data.Timeouts.Create(ctx, CreateDefaultTimeout)
+	timeout, diag := data.Timeouts.Create(ctx, CreateDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
@@ -129,24 +135,15 @@ func (r *resoureCa) Create(ctx context.Context, req resource.CreateRequest, resp
 		createReq.Description = data.Description.ValueStringPointer()
 	}
 
-	createResp, err := r.Client.CreateCa(ctx, createReq, options.WithRetryTimeout(createTimeout))
+	createResp, err := r.Client.CreateCa(ctx, createReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to create Ca",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(caErrCreate, err.Error())
 		return
 	}
+	data.RequestId = to.String(createResp.ResponseContext.RequestId)
 	data.Id = to.String(createResp.Ca.CaId)
 
-	stateData, err := r.read(ctx, createTimeout, data)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to set Ca state",
-			err.Error(),
-		)
-		return
-	}
+	stateData := r.flatten(data, *createResp.Ca)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &stateData)...)
 }
@@ -166,10 +163,7 @@ func (r *resoureCa) Read(ctx context.Context, req resource.ReadRequest, resp *re
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(
-			"Unable to set Ca API response values",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -198,10 +192,8 @@ func (r *resoureCa) Update(ctx context.Context, req resource.UpdateRequest, resp
 
 	_, err := r.Client.UpdateCa(ctx, updateReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to update Ca",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(caErrUpdate, err.Error())
+		return
 	}
 
 	stateData.Timeouts = planData.Timeouts
@@ -211,10 +203,7 @@ func (r *resoureCa) Update(ctx context.Context, req resource.UpdateRequest, resp
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(
-			"Unable to set Ca API response values",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -236,10 +225,7 @@ func (r *resoureCa) Delete(ctx context.Context, req resource.DeleteRequest, resp
 
 	_, err := r.Client.DeleteCa(ctx, deleteReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to delete Ca",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(caErrDelete, err.Error())
 	}
 }
 
@@ -261,10 +247,14 @@ func (r *resoureCa) read(ctx context.Context, timeout time.Duration, data caMode
 	data.RequestId = to.String(resp.ResponseContext.RequestId)
 	ca := (*resp.Cas)[0]
 
+	return r.flatten(data, ca), nil
+}
+
+func (r *resoureCa) flatten(data caModel, ca osc.Ca) caModel {
 	data.Id = to.String(ca.CaId)
 	data.CaFingerprint = to.String(ca.CaFingerprint)
 	data.CaId = to.String(ca.CaId)
 	data.Description = to.String(ca.Description)
 
-	return data, nil
+	return data
 }

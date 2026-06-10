@@ -31,6 +31,13 @@ var (
 	_ resource.ResourceWithConfigure = &oksProjectResource{}
 )
 
+const (
+	projectErrCreate = "Unable to create OKS Project"
+	projectErrUpdate = "Unable to update OKS Project"
+	projectErrDelete = "Unable to delete OKS Project"
+	projectErrWait   = "Unable to wait for OKS Project state"
+)
+
 type ProjectModel struct {
 	Cidr                  types.String      `tfsdk:"cidr"`
 	CreatedAt             timetypes.RFC3339 `tfsdk:"created_at"`
@@ -198,21 +205,26 @@ func (r *oksProjectResource) Create(ctx context.Context, req resource.CreateRequ
 
 	createResp, err := r.Client.CreateProject(ctx, input, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to Create Resource Project",
-			"Error: "+err.Error(),
-		)
+		resp.Diagnostics.AddError(projectErrCreate, err.Error())
 		return
 	}
 	data.RequestId = to.String(createResp.ResponseContext.RequestId)
 	data.Id = to.String(createResp.Project.Id)
 
+	stateData, err := r.flatten(ctx, data, createResp.Project)
+	if err != nil {
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
+		return
+	}
+	diags = resp.State.Set(ctx, &stateData)
+	if fwhelpers.CheckDiags(resp, diags) {
+		return
+	}
+
+	// A read call is necessary after the flatten as it waits for the project to be ready
 	data, err = r.read(ctx, data, timeout)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to set Project state",
-			"Error: "+err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -238,10 +250,7 @@ func (r *oksProjectResource) Read(ctx context.Context, req resource.ReadRequest,
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(
-			"Unable to set Project state",
-			"Error: "+err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 	diags = resp.State.Set(ctx, &data)
@@ -267,7 +276,7 @@ func (r *oksProjectResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	if state.Status.ValueString() == "deleting" {
 		resp.Diagnostics.AddError(
-			"Unable to Update Project",
+			projectErrUpdate,
 			"Project is currently being deleted and cannot be updated. The resource will be removed from the state once deleted.",
 		)
 		return
@@ -295,6 +304,7 @@ func (r *oksProjectResource) Update(ctx context.Context, req resource.UpdateRequ
 	if update != (oks.ProjectUpdate{}) {
 		updateResp, err := r.Client.UpdateProject(ctx, state.Id.ValueString(), update, options.WithRetryTimeout(timeout))
 		if err != nil {
+			resp.Diagnostics.AddError(projectErrUpdate, err.Error())
 			return
 		}
 
@@ -306,10 +316,7 @@ func (r *oksProjectResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	data, err := r.read(ctx, state, timeout)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to set Project state",
-			"Error: "+err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -332,17 +339,14 @@ func (r *oksProjectResource) Delete(ctx context.Context, req resource.DeleteRequ
 
 	_, err := r.Client.DeleteProject(ctx, data.Id.ValueString(), options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to Delete Resource Project",
-			"Error: "+err.Error(),
-		)
+		resp.Diagnostics.AddError(projectErrDelete, err.Error())
 		return
 	}
 
 	_, err = r.waitForProjectState(ctx, data.Id.ValueString(), stateconf.States(oks.ProjectStatusDeleting), []oks.ProjectStatus{}, timeout)
 	if err != nil {
 		if !oks.IsNotFound(err) {
-			resp.Diagnostics.AddError("Unable to wait for Project complete deletion.", "Error: "+err.Error())
+			resp.Diagnostics.AddError(projectErrWait, err.Error())
 		}
 	}
 }
@@ -373,8 +377,13 @@ func (r *oksProjectResource) read(ctx context.Context, data ProjectModel, timeou
 	if err != nil {
 		return data, err
 	}
-	project := resp.Project
 
+	data.RequestId = to.String(resp.ResponseContext.RequestId)
+
+	return r.flatten(ctx, data, resp.Project)
+}
+
+func (r *oksProjectResource) flatten(ctx context.Context, data ProjectModel, project oks.Project) (ProjectModel, error) {
 	data.Cidr = to.String(project.Cidr)
 	data.CreatedAt = to.RFC3339(project.CreatedAt)
 	data.Description = to.String(project.Description)
@@ -384,7 +393,6 @@ func (r *oksProjectResource) read(ctx context.Context, data ProjectModel, timeou
 	data.Status = to.String(project.Status)
 	data.UpdatedAt = to.RFC3339(project.UpdatedAt)
 	data.Id = to.String(project.Id)
-	data.RequestId = to.String(resp.ResponseContext.RequestId)
 
 	tags, diags := flattenOKSTags(ctx, project.Tags)
 	if diags.HasError() {

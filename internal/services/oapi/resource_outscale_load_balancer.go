@@ -464,7 +464,7 @@ func ResourceOutscaleLoadBalancerCreate(ctx context.Context, d *schema.ResourceD
 		}
 	}
 
-	err = waitForLbuActive(ctx, client, d.Id(), timeout)
+	_, err = waitForLbuActive(ctx, client, d.Id(), timeout)
 	if err != nil {
 		return diag.Errorf("error waiting for load balancer (%s) to be ready: %s", d.Id(), err)
 	}
@@ -472,7 +472,7 @@ func ResourceOutscaleLoadBalancerCreate(ctx context.Context, d *schema.ResourceD
 	return ResourceOutscaleLoadBalancerRead(ctx, d, meta)
 }
 
-func waitForLbuActive(ctx context.Context, client *osc.Client, lbuName string, timeout time.Duration) error {
+func waitForLbuActive(ctx context.Context, client *osc.Client, lbuName string, timeout time.Duration) (*osc.LoadBalancer, error) {
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{string(osc.LoadBalancerStateStarting), string(osc.LoadBalancerStateProvisioning), string(osc.LoadBalancerStateReloading), string(osc.LoadBalancerStateReconfiguring)},
 		Target:  []string{string(osc.LoadBalancerStateActive)},
@@ -485,8 +485,12 @@ func waitForLbuActive(ctx context.Context, client *osc.Client, lbuName string, t
 		},
 		Timeout: timeout,
 	}
-	_, err := stateConf.WaitForStateContext(ctx)
-	return err
+	lbuAny, err := stateConf.WaitForStateContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return lbuAny.(*osc.LoadBalancer), nil
 }
 
 func readResourceLb(ctx context.Context, client *osc.Client, elbName string, timeout time.Duration) (*osc.LoadBalancer, *osc.ReadLoadBalancersResponse, error) {
@@ -652,7 +656,7 @@ func ResourceOutscaleLoadBalancerUpdate(ctx context.Context, d *schema.ResourceD
 		if err != nil {
 			return diag.Errorf("failure updating securitygroups: %v", err)
 		}
-		err = waitForLbuActive(ctx, client, d.Id(), timeout)
+		_, err = waitForLbuActive(ctx, client, d.Id(), timeout)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -754,7 +758,7 @@ func ResourceOutscaleLoadBalancerUpdate(ctx context.Context, d *schema.ResourceD
 				return diag.Errorf("failure adding new or updated load balancer listeners: %v", err)
 			}
 		}
-		err = waitForLbuActive(ctx, client, d.Id(), timeout)
+		_, err = waitForLbuActive(ctx, client, d.Id(), timeout)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -784,7 +788,7 @@ func ResourceOutscaleLoadBalancerUpdate(ctx context.Context, d *schema.ResourceD
 			if err != nil {
 				return diag.Errorf("failure configuring health check for load balancer: %v", err)
 			}
-			err = waitForLbuActive(ctx, client, d.Id(), timeout)
+			_, err = waitForLbuActive(ctx, client, d.Id(), timeout)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -813,7 +817,7 @@ func ResourceOutscaleLoadBalancerUpdate(ctx context.Context, d *schema.ResourceD
 			if err != nil {
 				return diag.Errorf("failure configuring access log for load balancer: %v", err)
 			}
-			err = waitForLbuActive(ctx, client, d.Id(), timeout)
+			_, err = waitForLbuActive(ctx, client, d.Id(), timeout)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -830,7 +834,7 @@ func ResourceOutscaleLoadBalancerUpdate(ctx context.Context, d *schema.ResourceD
 		if err != nil {
 			return diag.Errorf("failure updating secruedcookies: %v", err)
 		}
-		err = waitForLbuActive(ctx, client, d.Id(), timeout)
+		_, err = waitForLbuActive(ctx, client, d.Id(), timeout)
 		if err != nil {
 			return diag.FromErr(err)
 		}

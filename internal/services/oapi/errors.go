@@ -21,3 +21,6 @@ var (
 
 	ErrFilterRequired = errors.New("filters must be assigned")
 )
+
+// Global errors
+const errSetTerraformState = "Unable to reconcile Terraform state from API response"

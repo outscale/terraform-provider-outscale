@@ -28,6 +28,12 @@ var (
 	_ resource.ResourceWithConfigure = &resourcePolicyVersion{}
 )
 
+const (
+	policyVersionErrCreate     = "Unable to create Policy Version"
+	policyVersionErrDelete     = "Unable to delete Policy Version"
+	policyVersionErrSetDefault = "Unable to set Policy Version v1 as default before deletion"
+)
+
 type PolicyVersionModel struct {
 	Body           types.String   `tfsdk:"body"`
 	CreationDate   types.String   `tfsdk:"creation_date"`
@@ -128,7 +134,7 @@ func (r *resourcePolicyVersion) Create(ctx context.Context, req resource.CreateR
 	var data PolicyVersionModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
-	createTimeout, diag := data.Timeouts.Create(ctx, CreateDefaultTimeout)
+	timeout, diag := data.Timeouts.Create(ctx, CreateDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
@@ -142,26 +148,16 @@ func (r *resourcePolicyVersion) Create(ctx context.Context, req resource.CreateR
 		createReq.SetAsDefault = data.SetAsDefault.ValueBoolPointer()
 	}
 
-	createResp, err := r.Client.CreatePolicyVersion(ctx, createReq, options.WithRetryTimeout(createTimeout))
+	createResp, err := r.Client.CreatePolicyVersion(ctx, createReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to create Policy Version",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(policyVersionErrCreate, err.Error())
 		return
 	}
 	policyVersion := ptr.From(createResp.PolicyVersion)
 	data.Id = to.String(id.UniqueId())
 	data.VersionId = to.String(policyVersion.VersionId)
 
-	stateData, err := r.read(ctx, createTimeout, data)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to set Policy Version state",
-			err.Error(),
-		)
-		return
-	}
+	stateData := r.flatten(data, policyVersion)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &stateData)...)
 }
@@ -181,10 +177,7 @@ func (r *resourcePolicyVersion) Read(ctx context.Context, req resource.ReadReque
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(
-			"Unable to set Policy Version state",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -198,22 +191,19 @@ func (r *resourcePolicyVersion) Delete(ctx context.Context, req resource.DeleteR
 	var data PolicyVersionModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
-	deleteTimeout, diag := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
+	timeout, diag := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
 
 	// Refresh state to check current default version status
 	// This is necessary because user/user_group resources can change the default version
-	stateData, err := r.read(ctx, deleteTimeout, data)
+	stateData, err := r.read(ctx, timeout, data)
 	if err != nil {
 		if errors.Is(err, ErrResourceEmpty) {
 			return
 		}
-		resp.Diagnostics.AddError(
-			"Unable to refresh Policy Version state before deletion",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 	data = stateData
@@ -224,12 +214,9 @@ func (r *resourcePolicyVersion) Delete(ctx context.Context, req resource.DeleteR
 			PolicyOrn: data.PolicyOrn.ValueString(),
 			VersionId: "v1",
 		}
-		_, err := r.Client.SetDefaultPolicyVersion(ctx, req, options.WithRetryTimeout(deleteTimeout))
+		_, err := r.Client.SetDefaultPolicyVersion(ctx, req, options.WithRetryTimeout(timeout))
 		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable to set Policy Version v1 as default before deletion",
-				err.Error(),
-			)
+			resp.Diagnostics.AddError(policyVersionErrSetDefault, err.Error())
 			return
 		}
 	}
@@ -238,12 +225,9 @@ func (r *resourcePolicyVersion) Delete(ctx context.Context, req resource.DeleteR
 		PolicyOrn: data.PolicyOrn.ValueString(),
 		VersionId: data.VersionId.ValueString(),
 	}
-	_, err = r.Client.DeletePolicyVersion(ctx, deleteReq, options.WithRetryTimeout(deleteTimeout))
+	_, err = r.Client.DeletePolicyVersion(ctx, deleteReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to delete Policy Version",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(policyVersionErrDelete, err.Error())
 	}
 }
 
@@ -263,9 +247,13 @@ func (r *resourcePolicyVersion) read(ctx context.Context, timeout time.Duration,
 
 	policyVersion := ptr.From(resp.PolicyVersion)
 
+	return r.flatten(data, policyVersion), nil
+}
+
+func (r *resourcePolicyVersion) flatten(data PolicyVersionModel, policyVersion osc.PolicyVersion) PolicyVersionModel {
 	data.DefaultVersion = to.Bool(policyVersion.DefaultVersion)
 	data.CreationDate = to.String(from.ISO8601(policyVersion.CreationDate))
 	data.Body = to.String(policyVersion.Body)
 
-	return data, nil
+	return data
 }

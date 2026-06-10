@@ -27,6 +27,11 @@ var (
 	_ resource.ResourceWithValidateConfig = &resourceApiAccessPolicy{}
 )
 
+const (
+	apiAccessPolicyErrCreate = "Unable to create Api Access Policy"
+	apiAccessPolicyErrUpdate = "Unable to update Api Access Policy"
+)
+
 type apiAccessPolicyModel struct {
 	MaxAccessKeyExpirationSeconds types.Int64    `tfsdk:"max_access_key_expiration_seconds"`
 	RequireTrustedEnv             types.Bool     `tfsdk:"require_trusted_env"`
@@ -113,7 +118,7 @@ func (r *resourceApiAccessPolicy) Create(ctx context.Context, req resource.Creat
 	var data apiAccessPolicyModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
-	createTimeout, diag := data.Timeouts.Create(ctx, CreateDefaultTimeout)
+	timeout, diag := data.Timeouts.Create(ctx, CreateDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
@@ -123,24 +128,15 @@ func (r *resourceApiAccessPolicy) Create(ctx context.Context, req resource.Creat
 		RequireTrustedEnv:             data.RequireTrustedEnv.ValueBool(),
 	}
 
-	_, err := r.Client.UpdateApiAccessPolicy(ctx, createReq, options.WithRetryTimeout(createTimeout))
+	createResp, err := r.Client.UpdateApiAccessPolicy(ctx, createReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to modify Api Access Policy",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(apiAccessPolicyErrCreate, err.Error())
 		return
 	}
 	data.Id = to.String(id.UniqueId())
+	data.RequestId = to.String(createResp.ResponseContext.RequestId)
 
-	stateData, err := r.read(ctx, createTimeout, data)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to get Api Access Policy response values",
-			err.Error(),
-		)
-		return
-	}
+	stateData := r.flatten(data, *createResp.ApiAccessPolicy)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &stateData)...)
 }
@@ -160,10 +156,7 @@ func (r *resourceApiAccessPolicy) Read(ctx context.Context, req resource.ReadReq
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(
-			"Unable to get Api Access Policy response values",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -194,10 +187,8 @@ func (r *resourceApiAccessPolicy) Update(ctx context.Context, req resource.Updat
 
 	_, err := r.Client.UpdateApiAccessPolicy(ctx, updateReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to update Api Access Policy",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(apiAccessPolicyErrUpdate, err.Error())
+		return
 	}
 
 	stateData.Timeouts = planData.Timeouts
@@ -207,10 +198,7 @@ func (r *resourceApiAccessPolicy) Update(ctx context.Context, req resource.Updat
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(
-			"Unable to get Api Access Policy response values",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -231,8 +219,12 @@ func (r *resourceApiAccessPolicy) read(ctx context.Context, timeout time.Duratio
 	data.RequestId = to.String(resp.ResponseContext.RequestId)
 	policy := ptr.From(resp.ApiAccessPolicy)
 
+	return r.flatten(data, policy), nil
+}
+
+func (r *resourceApiAccessPolicy) flatten(data apiAccessPolicyModel, policy osc.ApiAccessPolicy) apiAccessPolicyModel {
 	data.MaxAccessKeyExpirationSeconds = to.Int64(ptr.From(policy.MaxAccessKeyExpirationSeconds))
 	data.RequireTrustedEnv = to.Bool(ptr.From(policy.RequireTrustedEnv))
 
-	return data, nil
+	return data
 }

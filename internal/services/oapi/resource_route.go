@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -29,6 +30,13 @@ var (
 	_ resource.ResourceWithImportState    = &resourceRoute{}
 	_ resource.ResourceWithModifyPlan     = &resourceRoute{}
 	_ resource.ResourceWithValidateConfig = &resourceRoute{}
+)
+
+const (
+	routeErrCreate = "Unable to create Route"
+	routeErrUpdate = "Unable to update Route"
+	routeErrDelete = "Unable to delete Route"
+	routeErrWait   = "Unable to wait for Route state"
 )
 
 type RouteCoreModel struct {
@@ -232,7 +240,7 @@ func (r *resourceRoute) Create(ctx context.Context, req resource.CreateRequest, 
 		return
 	}
 
-	createTimeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
+	timeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
@@ -258,46 +266,46 @@ func (r *resourceRoute) Create(ctx context.Context, req resource.CreateRequest, 
 		createReq.NetPeeringId = data.NetPeeringId.ValueStringPointer()
 	}
 
-	createResp, err := r.Client.CreateRoute(ctx, createReq, options.WithRetryTimeout(createTimeout))
+	createResp, err := r.Client.CreateRoute(ctx, createReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to create Route.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(routeErrCreate, err.Error())
 		return
 	}
 	rt := ptr.From(createResp.RouteTable)
 	data.RequestId = to.String(createResp.ResponseContext.RequestId)
 	data.Id = to.String(rt.RouteTableId + "_" + data.DestinationIpRange.ValueString())
 
-	if data.AwaitActiveState.ValueBool() {
-		stateConf := &retry.StateChangeConf{
-			Target:  []string{"active"},
-			Refresh: ResourceRouteStateRefreshFunc(ctx, r, "blackhole", rt.RouteTableId, data.DestinationIpRange.ValueString()),
-			Timeout: createTimeout,
-		}
-
-		if _, err = stateConf.WaitForStateContext(ctx); err != nil {
-			resp.Diagnostics.AddError(
-				fmt.Sprintf("Error waiting for Route (%s) to become active.",
-					data.Id.ValueString(),
-				),
-				err.Error(),
-			)
-			return
-		}
-	}
-
-	stateData, err := r.read(ctx, data)
+	stateData, err := r.flatten(data, rt)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to set Route state.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
+		return
+	}
+	diags = resp.State.Set(ctx, &stateData)
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &stateData)...)
+	if data.AwaitActiveState.ValueBool() {
+		stateConf := &retry.StateChangeConf{
+			Target:  []string{"active"},
+			Refresh: r.refreshFunc(ctx, "blackhole", rt.RouteTableId, data.DestinationIpRange.ValueString()),
+			Timeout: timeout,
+		}
+
+		routeTableAny, err := stateConf.WaitForStateContext(ctx)
+		if err != nil {
+			resp.Diagnostics.AddError(routeErrWait, err.Error())
+			return
+		}
+
+		stateData, err = r.flatten(data, routeTableAny.(osc.RouteTable))
+		if err != nil {
+			resp.Diagnostics.AddError(errSetTerraformState, err.Error())
+			return
+		}
+
+		resp.Diagnostics.Append(resp.State.Set(ctx, &stateData)...)
+	}
 }
 
 func getRouteFromRouteTable(routeTable osc.RouteTable, destinationIpRange string) (osc.Route, error) {
@@ -310,7 +318,7 @@ func getRouteFromRouteTable(routeTable osc.RouteTable, destinationIpRange string
 		"and destination CIDR block (%s)", routeTable.RouteTableId, destinationIpRange)
 }
 
-func ResourceRouteStateRefreshFunc(ctx context.Context, r *resourceRoute, failState string, routeTableId string, destinationIpRange string) retry.StateRefreshFunc {
+func (r *resourceRoute) refreshFunc(ctx context.Context, failState string, routeTableId string, destinationIpRange string) retry.StateRefreshFunc {
 	return func() (any, string, error) {
 		readReq := osc.ReadRouteTablesRequest{Filters: &osc.FiltersRouteTable{
 			RouteDestinationIpRanges: &[]string{destinationIpRange},
@@ -319,17 +327,22 @@ func ResourceRouteStateRefreshFunc(ctx context.Context, r *resourceRoute, failSt
 
 		resp, err := r.Client.ReadRouteTables(ctx, readReq, options.WithRetryTimeout(ReadDefaultTimeout))
 		if err != nil {
-			return resp, "error", err
+			return nil, "", err
 		}
-		route, err := getRouteFromRouteTable((ptr.From(resp.RouteTables))[0], destinationIpRange)
+		if len(ptr.From(resp.RouteTables)) == 0 {
+			return nil, "", ErrResourceEmpty
+		}
+		rt := (*resp.RouteTables)[0]
+
+		route, err := getRouteFromRouteTable(rt, destinationIpRange)
 		if err != nil {
-			return resp, "error", err
+			return nil, "", err
 		}
 		if route.State == failState {
-			return resp, failState, fmt.Errorf("failed to reach target state: route is in '%v' failing state", failState)
+			return nil, "", fmt.Errorf("failed to reach target state: route is in '%v' failing state", failState)
 		}
 
-		return resp, route.State, nil
+		return rt, route.State, nil
 	}
 }
 
@@ -341,16 +354,18 @@ func (r *resourceRoute) Read(ctx context.Context, req resource.ReadRequest, resp
 		return
 	}
 
-	data, err := r.read(ctx, data)
+	timeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
+	if fwhelpers.CheckDiags(resp, diags) {
+		return
+	}
+
+	data, err := r.read(ctx, timeout, data)
 	if err != nil {
 		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(
-			"Unable to set Route API response values.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -364,6 +379,11 @@ func (r *resourceRoute) Update(ctx context.Context, req resource.UpdateRequest, 
 	}
 	resp.Diagnostics.Append(req.State.Get(ctx, &stateData)...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	timeout, diags := planData.Timeouts.Update(ctx, UpdateDefaultTimeout)
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
@@ -398,18 +418,15 @@ func (r *resourceRoute) Update(ctx context.Context, req resource.UpdateRequest, 
 	}
 
 	if updateCall {
-		updateTimeout, diags := planData.Timeouts.Update(ctx, UpdateDefaultTimeout)
+		timeout, diags := planData.Timeouts.Update(ctx, UpdateDefaultTimeout)
 		resp.Diagnostics.Append(diags...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 
-		createResp, err := r.Client.UpdateRoute(ctx, updateReq, options.WithRetryTimeout(updateTimeout))
+		createResp, err := r.Client.UpdateRoute(ctx, updateReq, options.WithRetryTimeout(timeout))
 		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable to update Route resource.",
-				err.Error(),
-			)
+			resp.Diagnostics.AddError(routeErrUpdate, err.Error())
 			return
 		}
 		stateData.RequestId = to.String(createResp.ResponseContext.RequestId)
@@ -417,29 +434,21 @@ func (r *resourceRoute) Update(ctx context.Context, req resource.UpdateRequest, 
 		if stateData.AwaitActiveState.ValueBool() {
 			stateConf := &retry.StateChangeConf{
 				Target:  []string{"active"},
-				Timeout: updateTimeout,
-				Refresh: ResourceRouteStateRefreshFunc(ctx, r, "blackhole", stateData.RouteTableId.ValueString(), stateData.DestinationIpRange.ValueString()),
+				Timeout: timeout,
+				Refresh: r.refreshFunc(ctx, "blackhole", stateData.RouteTableId.ValueString(), stateData.DestinationIpRange.ValueString()),
 			}
 
 			if _, err = stateConf.WaitForStateContext(ctx); err != nil {
-				resp.Diagnostics.AddError(
-					fmt.Sprintf("Error waiting for Route (%s) to become active.",
-						stateData.Id.ValueString(),
-					),
-					err.Error(),
-				)
+				resp.Diagnostics.AddError(routeErrWait, err.Error())
 				return
 			}
 		}
 	}
 
 	stateData.Timeouts = planData.Timeouts
-	data, err := r.read(ctx, stateData)
+	data, err := r.read(ctx, timeout, stateData)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to set Route state.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -454,7 +463,7 @@ func (r *resourceRoute) Delete(ctx context.Context, req resource.DeleteRequest, 
 		return
 	}
 
-	deleteTimeout, diags := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
+	timeout, diags := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
@@ -464,27 +473,19 @@ func (r *resourceRoute) Delete(ctx context.Context, req resource.DeleteRequest, 
 		RouteTableId:       data.RouteTableId.ValueString(),
 	}
 
-	_, err := r.Client.DeleteRoute(ctx, delReq, options.WithRetryTimeout(deleteTimeout))
+	_, err := r.Client.DeleteRoute(ctx, delReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to Delete Route.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(routeErrDelete, err.Error())
 	}
 }
 
-func (r *resourceRoute) read(ctx context.Context, data RouteModel) (RouteModel, error) {
+func (r *resourceRoute) read(ctx context.Context, timeout time.Duration, data RouteModel) (RouteModel, error) {
 	readReq := osc.ReadRouteTablesRequest{Filters: &osc.FiltersRouteTable{
 		RouteDestinationIpRanges: &[]string{data.DestinationIpRange.ValueString()},
 		RouteTableIds:            &[]string{data.RouteTableId.ValueString()},
 	}}
 
-	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
-	if diags.HasError() {
-		return data, fmt.Errorf("unable to parse 'route' read timeout value: %v", diags.Errors())
-	}
-
-	readResp, err := r.Client.ReadRouteTables(ctx, readReq, options.WithRetryTimeout(readTimeout))
+	readResp, err := r.Client.ReadRouteTables(ctx, readReq, options.WithRetryTimeout(timeout))
 	if err != nil {
 		return data, err
 	}
@@ -494,6 +495,11 @@ func (r *resourceRoute) read(ctx context.Context, data RouteModel) (RouteModel, 
 	data.RequestId = to.String(readResp.ResponseContext.RequestId)
 
 	routeTable := (ptr.From(readResp.RouteTables))[0]
+
+	return r.flatten(data, routeTable)
+}
+
+func (r *resourceRoute) flatten(data RouteModel, routeTable osc.RouteTable) (RouteModel, error) {
 	route, err := getRouteFromRouteTable(routeTable, data.DestinationIpRange.ValueString())
 	if err != nil {
 		return data, ErrResourceEmpty

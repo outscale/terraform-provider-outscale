@@ -45,12 +45,12 @@ var (
 )
 
 const (
-	manifestErrCreate    = "Unable to create manifest resource"
-	manifestErrRead      = "Unable to read manifest resource"
-	manifestErrUpdate    = "Unable to update manifest resource"
-	manifestErrDelete    = "Unable to delete manifest resource"
-	manifestErrWait      = "Unable to wait for resource deletion"
-	manifestErrWaitFor   = "Unable to wait for resource wait_for condition to be met"
+	manifestErrCreate  = "Unable to create manifest resource"
+	manifestErrUpdate  = "Unable to update manifest resource"
+	manifestErrDelete  = "Unable to delete manifest resource"
+	manifestErrWait    = "Unable to wait for resource deletion"
+	manifestErrWaitFor = "Unable to wait for resource wait_for condition to be met"
+
 	manifestFieldManager = "terraform-provider-outscale"
 
 	manifestDeleteBlockedWarning = `Terraform is planning to delete this Kubernetes object. The Kubernetes API may reject the deletion if the object is still required by the cluster, for example when deleting the last remaining NodePool.
@@ -289,19 +289,30 @@ func (r *manifestResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
-	err = r.applyManifest(ctx, &data, obj, dri)
+	respObj, err := r.applyManifest(ctx, &data, obj, dri)
 	if err != nil {
 		resp.Diagnostics.AddError(manifestErrCreate, err.Error())
 		return
 	}
+
+	stateData, err := r.flatten(data, respObj)
+	if err != nil {
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
+		return
+	}
+	diag = resp.State.Set(ctx, &stateData)
+	if fwhelpers.CheckDiags(resp, diag) {
+		return
+	}
+
 	diag = r.waitForFields(ctx, data, obj, dri, timeout)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
 
-	stateData, err := r.read(ctx, data, obj, dri)
+	stateData, err = r.read(ctx, data, obj, dri)
 	if err != nil {
-		resp.Diagnostics.AddError(manifestErrRead, err.Error())
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -322,7 +333,7 @@ func (r *manifestResource) Read(ctx context.Context, req resource.ReadRequest, r
 
 	obj, dri, err := okshelpers.GetResourceInterfaceFromManifest(ctx, r.Client, data.ClusterId.ValueString(), data.Manifest.ValueString(), timeout)
 	if err != nil {
-		resp.Diagnostics.AddError(manifestErrRead, err.Error())
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -332,7 +343,7 @@ func (r *manifestResource) Read(ctx context.Context, req resource.ReadRequest, r
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(manifestErrRead, err.Error())
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -359,7 +370,7 @@ func (r *manifestResource) Update(ctx context.Context, req resource.UpdateReques
 	}
 
 	if fwhelpers.HasChange(plan.Manifest, state.Manifest) {
-		err := r.applyManifest(ctx, &plan, obj, dri)
+		_, err := r.applyManifest(ctx, &plan, obj, dri)
 		if err != nil {
 			resp.Diagnostics.AddError(manifestErrUpdate, err.Error())
 			return
@@ -373,7 +384,7 @@ func (r *manifestResource) Update(ctx context.Context, req resource.UpdateReques
 
 	stateData, err := r.read(ctx, plan, obj, dri)
 	if err != nil {
-		resp.Diagnostics.AddError(manifestErrRead, err.Error())
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -433,32 +444,36 @@ func (r *manifestResource) read(ctx context.Context, data manifestModel, obj *un
 		return data, fmt.Errorf("get manifest: %w", err)
 	}
 
-	yamlObj, err := okshelpers.ToYAML(respManifest.Object)
+	return r.flatten(data, respManifest)
+}
+
+func (r *manifestResource) flatten(data manifestModel, obj *unstructured.Unstructured) (manifestModel, error) {
+	yamlObj, err := okshelpers.ToYAML(obj.Object)
 	if err != nil {
 		return data, err
 	}
 
-	data.Id = to.String(respManifest.GetUID())
+	data.Id = to.String(obj.GetUID())
 	data.Object = to.String(yamlObj)
 
 	return data, nil
 }
 
-func (r *manifestResource) applyManifest(ctx context.Context, data *manifestModel, obj *unstructured.Unstructured, dri dynamic.ResourceInterface) error {
+func (r *manifestResource) applyManifest(ctx context.Context, data *manifestModel, obj *unstructured.Unstructured, dri dynamic.ResourceInterface) (*unstructured.Unstructured, error) {
 	jsonBytes, err := obj.MarshalJSON()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	patchOptions := metav1.PatchOptions{FieldManager: manifestFieldManager}
 	resp, err := dri.Patch(ctx, obj.GetName(), k8stypes.ApplyPatchType, jsonBytes, patchOptions)
 	if err != nil {
-		return fmt.Errorf("apply manifest: %w", err)
+		return nil, fmt.Errorf("apply manifest: %w", err)
 	}
 
 	data.Id = to.String(resp.GetUID())
 
-	return nil
+	return resp, nil
 }
 
 type fieldMatcher struct {

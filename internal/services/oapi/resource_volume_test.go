@@ -2,6 +2,7 @@ package oapi_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
@@ -128,6 +129,25 @@ func TestAccOthers_Volume_Migration(t *testing.T) {
 	})
 }
 
+func TestAccOthers_Volume_CreateFailureKeepsState(t *testing.T) {
+	resourceName := "outscale_volume.accvolume"
+	region := utils.GetRegion()
+	invalidTagKey := strings.Repeat("a", 256)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
+		Steps: testacc.CreateFailureReplacementSteps(
+			resourceName,
+			testAccOutscaleVolumeConfigWithTag(region, invalidTagKey, "testacc-volume"),
+			testAccOutscaleVolumeConfigWithTag(region, "Name", "testacc-volume"),
+			resource.ComposeTestCheckFunc(
+				resource.TestCheckResourceAttrSet(resourceName, "volume_id"),
+				resource.TestCheckResourceAttr(resourceName, "tags.0.value", "testacc-volume"),
+			),
+		),
+	})
+}
+
 func testAccOutscaleVolumeConfig(region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_volume" "accvolume" {
@@ -136,6 +156,20 @@ func testAccOutscaleVolumeConfig(region string) string {
 			size           = 1
 		}
 	`, region)
+}
+
+func testAccOutscaleVolumeConfigWithTag(region, tagKey, tagValue string) string {
+	return fmt.Sprintf(`
+		resource "outscale_volume" "accvolume" {
+			subregion_name = "%sa"
+			volume_type    = "standard"
+			size           = 1
+			tags {
+				key   = %q
+				value = %q
+			}
+		}
+	`, region, tagKey, tagValue)
 }
 
 func testOutscaleVolumeConfigUpdate(region string) string {

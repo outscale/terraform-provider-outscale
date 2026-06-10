@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -16,6 +17,7 @@ import (
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 )
 
@@ -24,6 +26,11 @@ var (
 	_ resource.ResourceWithConfigure   = &resourceNetAttributes{}
 	_ resource.ResourceWithImportState = &resourceNetAttributes{}
 	_ resource.ResourceWithModifyPlan  = &resourceNetAttributes{}
+)
+
+const (
+	netAttributesErrCreate = "Unable to create Net Attributes"
+	netAttributesErrUpdate = "Unable to update Net Attributes"
 )
 
 type NetAttributesModel struct {
@@ -148,7 +155,7 @@ func (r *resourceNetAttributes) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	createTimeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
+	timeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
@@ -158,12 +165,9 @@ func (r *resourceNetAttributes) Create(ctx context.Context, req resource.CreateR
 		DhcpOptionsSetId: data.DhcpOptionsSetId.ValueString(),
 	}
 
-	createResp, err := r.Client.UpdateNet(ctx, createReq, options.WithRetryTimeout(createTimeout))
+	createResp, err := r.Client.UpdateNet(ctx, createReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to create Net Attributes.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(netAttributesErrCreate, err.Error())
 		return
 	}
 	data.RequestId = to.String(createResp.ResponseContext.RequestId)
@@ -171,15 +175,13 @@ func (r *resourceNetAttributes) Create(ctx context.Context, req resource.CreateR
 	data.NetId = to.String(net.NetId)
 	data.Id = to.String(net.NetId)
 
-	data, err = r.read(ctx, data)
+	stateData, err := r.flatten(ctx, data, net)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to set Net Attributes state.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &stateData)...)
 }
 
 func (r *resourceNetAttributes) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -190,18 +192,21 @@ func (r *resourceNetAttributes) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	data, err := r.read(ctx, data)
+	timeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
+	if fwhelpers.CheckDiags(resp, diags) {
+		return
+	}
+
+	data, err := r.read(ctx, timeout, data)
 	if err != nil {
 		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(
-			"Unable to set Net Attributes API response values.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -225,25 +230,21 @@ func (r *resourceNetAttributes) Update(ctx context.Context, req resource.UpdateR
 
 	createResp, err := r.Client.UpdateNet(ctx, createReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to update Net Attributes.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(netAttributesErrUpdate, err.Error())
 		return
 	}
-	data.RequestId = to.String(createResp.ResponseContext.RequestId)
+
 	net := ptr.From(createResp.Net)
+	data.RequestId = to.String(createResp.ResponseContext.RequestId)
 	data.NetId = to.String(net.NetId)
 	data.Id = to.String(net.NetId)
 
-	data, err = r.read(ctx, data)
+	data, err = r.read(ctx, timeout, data)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to set Net Attributes state.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -251,12 +252,8 @@ func (r *resourceNetAttributes) Delete(ctx context.Context, req resource.DeleteR
 	resp.State.RemoveResource(ctx)
 }
 
-func (r *resourceNetAttributes) read(ctx context.Context, data NetAttributesModel) (NetAttributesModel, error) {
-	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
-	if diags.HasError() {
-		return data, fmt.Errorf("unable to parse 'net' read timeout value: %v", diags.Errors())
-	}
-	ctxWithTimeout, cancel := context.WithTimeout(ctx, readTimeout)
+func (r *resourceNetAttributes) read(ctx context.Context, timeout time.Duration, data NetAttributesModel) (NetAttributesModel, error) {
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	net, err := r.Batcher.Read(ctxWithTimeout, data.NetId.ValueString())
@@ -267,9 +264,13 @@ func (r *resourceNetAttributes) read(ctx context.Context, data NetAttributesMode
 		return data, err
 	}
 
+	return r.flatten(ctx, data, *net)
+}
+
+func (r *resourceNetAttributes) flatten(ctx context.Context, data NetAttributesModel, net osc.Net) (NetAttributesModel, error) {
 	tags, diag := flattenOAPIComputedTagsFW(ctx, net.Tags)
 	if diag.HasError() {
-		return data, fmt.Errorf("unable to flatten tags: %v", diags.Errors())
+		return data, from.Diag(diag)
 	}
 	data.Tags = tags
 	data.Id = to.String(net.NetId)

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/outscale/terraform-provider-outscale/internal/services/oapi/oapihelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -176,6 +177,25 @@ func TestAccNet_Route_Migration(t *testing.T) {
 	})
 }
 
+func TestAccNet_Route_CreateFailureKeepsState(t *testing.T) {
+	resourceName := "outscale_route.blackhole"
+	accountID := oapihelpers.GetAccepterOwnerId()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
+		Steps: testacc.CreateFailureReplacementSteps(
+			resourceName,
+			testAccOutscaleRouteBlackholeConfig(accountID, false),
+			testAccOutscaleRouteBlackholeConfig(accountID, true),
+			resource.ComposeTestCheckFunc(
+				resource.TestCheckResourceAttrSet(resourceName, "id"),
+				resource.TestCheckResourceAttrSet(resourceName, "net_peering_id"),
+				resource.TestCheckResourceAttr(resourceName, "state", "active"),
+			),
+		),
+	})
+}
+
 var testAccOutscaleRouteNoopChange = `
 	resource "outscale_net" "test" {
 		ip_range = "10.0.0.0/24"
@@ -271,6 +291,46 @@ var testAccOutscaleRouteWithNatService = `
 		route_table_id       = outscale_route_table.outscale_route_table.route_table_id
 	}
 `
+
+func testAccOutscaleRouteBlackholeConfig(accountID string, acceptPeering bool) string {
+	acceptation := ""
+	if acceptPeering {
+		acceptation = `
+	resource "outscale_net_peering_acceptation" "accept" {
+		net_peering_id = outscale_net_peering.peer.id
+	}
+`
+	}
+
+	return fmt.Sprintf(`
+	resource "outscale_net" "test" {
+		ip_range = "10.10.0.0/24"
+	}
+
+	resource "outscale_net" "peer" {
+		ip_range = "10.20.0.0/24"
+	}
+
+	resource "outscale_route_table" "test" {
+		net_id = outscale_net.test.net_id
+	}
+
+	resource "outscale_net_peering" "peer" {
+		source_net_id     = outscale_net.test.net_id
+		accepter_net_id   = outscale_net.peer.net_id
+		accepter_owner_id = %q
+	}
+
+	%s
+
+	resource "outscale_route" "blackhole" {
+		net_peering_id       = outscale_net_peering.peer.net_peering_id
+		destination_ip_range = "0.0.0.0/0"
+		route_table_id       = outscale_route_table.test.route_table_id
+		await_active_state   = true
+	}
+	`, accountID, acceptation)
+}
 
 func computeConfigTestChangeTarget(targets []string) string {
 	var extra_configs []string

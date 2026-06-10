@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -42,6 +43,30 @@ func TestAccVM_Basic(t *testing.T) {
 				),
 			},
 		},
+	})
+}
+
+func TestAccVM_CreateFailureKeepsState(t *testing.T) {
+	resourceName := "outscale_vm.basic_tags"
+	omi := os.Getenv("OUTSCALE_IMAGEID")
+	keypair := "terraform-basic"
+	region := utils.GetRegion()
+	sgName := acctest.RandomWithPrefix("testacc-sg")
+	invalidTagKey := strings.Repeat("a", 256)
+	tagValue := "testacc-resource-vm"
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
+		CheckDestroy:             testAccCheckOutscaleVMDestroy,
+		Steps: testacc.CreateFailureReplacementSteps(
+			resourceName,
+			testAccVmsConfigWithTag(omi, testAccVmType, region, invalidTagKey, tagValue, keypair, sgName),
+			testAccVmsConfigWithTag(omi, testAccVmType, region, "name", tagValue, keypair, sgName),
+			resource.ComposeTestCheckFunc(
+				resource.TestCheckResourceAttrSet(resourceName, "id"),
+				resource.TestCheckResourceAttr(resourceName, "tags.0.value", tagValue),
+			),
+		),
 	})
 }
 
@@ -897,26 +922,30 @@ func testAccVmsConfigUpdateOAPIVMKey2(omi, vmType, region, keypair, newKeypair, 
 }
 
 func testAccVmsConfigUpdateOAPIVMTags(omi, vmType, region, value, keypair, sgName string) string {
+	return testAccVmsConfigWithTag(omi, vmType, region, "name", value, keypair, sgName)
+}
+
+func testAccVmsConfigWithTag(omi, vmType, region, tagKey, tagValue, keypair, sgName string) string {
 	return fmt.Sprintf(`
 		resource "outscale_security_group" "sg_tags_vm" {
 			description                  = "testAcc Terraform security group"
-			security_group_name          = "%[6]s"
+			security_group_name          = %q
 		}
 		resource "outscale_vm" "basic_tags" {
-			image_id                 = "%[1]s"
-			vm_type                  = "%[2]s"
-			keypair_name             = "%[5]s"
-			placement_subregion_name = "%[3]sb"
+			image_id                 = %q
+			vm_type                  = %q
+			keypair_name             = %q
+			placement_subregion_name = %q
 			security_group_ids = [outscale_security_group.sg_tags_vm.security_group_id]
 
 			tags {
-				key   = "name"
-				value = "%[4]s"
+				key   = %q
+				value = %q
 			}
 
 			lifecycle { ignore_changes = [state] }
 		}
-	`, omi, vmType, region, value, keypair, sgName)
+	`, sgName, omi, vmType, keypair, region+"a", tagKey, tagValue)
 }
 
 func testAccCheckOutscaleVMConfigWithSubnet(omi, vmType, region, keypair, sgName string) string {

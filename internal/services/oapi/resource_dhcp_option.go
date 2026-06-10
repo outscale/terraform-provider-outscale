@@ -33,9 +33,7 @@ var (
 
 const (
 	dhcpErrCreate  = "Unable to create DHCP Option"
-	dhcpErrRead    = "Unable to read DHCP Option"
 	dhcpErrDelete  = "Unable to delete DHCP Option"
-	dhcpErrState   = "Unable to set DHCP Option state"
 	dhcpErrDetach  = "Unable to detach DHCP Option from Nets"
 	dhcpErrGetNets = "Unable to get attached Nets of DHCP Option"
 )
@@ -236,17 +234,28 @@ func (r *dhcpOptionResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	dhcpId := ptr.From(createResp.DhcpOptionsSet.DhcpOptionsSetId)
+	data.RequestId = to.String(createResp.ResponseContext.RequestId)
 	data.Id = to.String(dhcpId)
 	data.DhcpOptionsSetId = to.String(dhcpId)
+
+	stateData, err := r.flatten(ctx, data, *createResp.DhcpOptionsSet)
+	if err != nil {
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
+		return
+	}
+	diags = resp.State.Set(ctx, &stateData)
+	if fwhelpers.CheckDiags(resp, diags) {
+		return
+	}
 
 	diag := createOAPITagsFW(ctx, r.Client, timeout, data.Tags, dhcpId)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
 
-	stateData, err := r.read(ctx, timeout, data)
+	stateData, err = r.read(ctx, timeout, data)
 	if err != nil {
-		resp.Diagnostics.AddError(dhcpErrState, err.Error())
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -268,7 +277,7 @@ func (r *dhcpOptionResource) Read(ctx context.Context, req resource.ReadRequest,
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(dhcpErrRead, err.Error())
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -299,7 +308,7 @@ func (r *dhcpOptionResource) Update(ctx context.Context, req resource.UpdateRequ
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(dhcpErrState, err.Error())
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -366,7 +375,12 @@ func (r *dhcpOptionResource) read(ctx context.Context, timeout time.Duration, da
 	}
 
 	dhcp := (*resp.DhcpOptionsSets)[0]
+	data.RequestId = to.String(resp.ResponseContext.RequestId)
 
+	return r.flatten(ctx, data, dhcp)
+}
+
+func (r *dhcpOptionResource) flatten(ctx context.Context, data dhcpOptionModel, dhcp osc.DhcpOptionsSet) (dhcpOptionModel, error) {
 	tags, diag := flattenOAPITagsFW(ctx, ptr.From(dhcp.Tags))
 	if diag.HasError() {
 		return data, from.Diag(diag)
@@ -386,7 +400,6 @@ func (r *dhcpOptionResource) read(ctx context.Context, timeout time.Duration, da
 	}
 
 	data.Tags = tags
-	data.RequestId = to.String(resp.ResponseContext.RequestId)
 	data.Id = to.String(dhcp.DhcpOptionsSetId)
 	data.DhcpOptionsSetId = to.String(dhcp.DhcpOptionsSetId)
 	data.DomainName = to.String(ptr.From(dhcp.DomainName))

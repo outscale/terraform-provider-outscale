@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -27,6 +28,11 @@ var (
 	_ resource.ResourceWithConfigure   = &resourceRouteTableLink{}
 	_ resource.ResourceWithImportState = &resourceRouteTableLink{}
 	_ resource.ResourceWithModifyPlan  = &resourceRouteTableLink{}
+)
+
+const (
+	routeTableLinkErrCreate = "Unable to create Route Table Link"
+	routeTableLinkErrDelete = "Unable to delete Route Table Link"
 )
 
 type RouteTableLinkCoreModel struct {
@@ -162,7 +168,7 @@ func (r *resourceRouteTableLink) Create(ctx context.Context, req resource.Create
 		return
 	}
 
-	createTimeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
+	timeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
@@ -172,25 +178,21 @@ func (r *resourceRouteTableLink) Create(ctx context.Context, req resource.Create
 		SubnetId:     data.SubnetId.ValueString(),
 	}
 
-	createResp, err := r.Client.LinkRouteTable(ctx, createReq, options.WithRetryTimeout(createTimeout))
+	createResp, err := r.Client.LinkRouteTable(ctx, createReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to create Route Table Link.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(routeTableLinkErrCreate, err.Error())
 		return
 	}
 	linkRouteTableId := ptr.From(createResp.LinkRouteTableId)
 	data.RequestId = to.String(createResp.ResponseContext.RequestId)
 	data.LinkRouteTableId = to.String(linkRouteTableId)
 	data.Id = to.String(linkRouteTableId)
+	// The API response does not contain enough information to set the state directly, which would cause an error.
+	// The next read will fill the state
 
-	data, err = r.read(ctx, data)
+	data, err = r.read(ctx, timeout, data)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to set Route Table Link state",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -204,16 +206,18 @@ func (r *resourceRouteTableLink) Read(ctx context.Context, req resource.ReadRequ
 		return
 	}
 
-	data, err := r.read(ctx, data)
+	timeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
+	if fwhelpers.CheckDiags(resp, diags) {
+		return
+	}
+
+	data, err := r.read(ctx, timeout, data)
 	if err != nil {
 		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(
-			"Unable to set Route Table Link API response values.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -230,7 +234,7 @@ func (r *resourceRouteTableLink) Delete(ctx context.Context, req resource.Delete
 		return
 	}
 
-	deleteTimeout, diags := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
+	timeout, diags := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
@@ -239,16 +243,13 @@ func (r *resourceRouteTableLink) Delete(ctx context.Context, req resource.Delete
 		LinkRouteTableId: data.LinkRouteTableId.ValueString(),
 	}
 
-	_, err := r.Client.UnlinkRouteTable(ctx, delReq, options.WithRetryTimeout(deleteTimeout))
+	_, err := r.Client.UnlinkRouteTable(ctx, delReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to delete Route Table Link.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(routeTableLinkErrDelete, err.Error())
 	}
 }
 
-func (r *resourceRouteTableLink) read(ctx context.Context, data RouteTableLinkModel) (RouteTableLinkModel, error) {
+func (r *resourceRouteTableLink) read(ctx context.Context, timeout time.Duration, data RouteTableLinkModel) (RouteTableLinkModel, error) {
 	routeTableLinkFilters := osc.FiltersRouteTable{
 		RouteTableIds: &[]string{data.RouteTableId.ValueString()},
 	}
@@ -256,12 +257,7 @@ func (r *resourceRouteTableLink) read(ctx context.Context, data RouteTableLinkMo
 		Filters: &routeTableLinkFilters,
 	}
 
-	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
-	if diags.HasError() {
-		return data, fmt.Errorf("unable to parse 'route table link' read timeout value: %v", diags.Errors())
-	}
-
-	readResp, err := r.Client.ReadRouteTables(ctx, readReq, options.WithRetryTimeout(readTimeout))
+	readResp, err := r.Client.ReadRouteTables(ctx, readReq, options.WithRetryTimeout(timeout))
 	if err != nil {
 		return data, err
 	}

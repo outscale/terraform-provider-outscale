@@ -1288,10 +1288,13 @@ func resourceOAPIVMDelete(ctx context.Context, d *schema.ResourceData, meta any)
 	timeout := d.Timeout(schema.TimeoutDelete)
 	id := d.Id()
 
-	_, err := client.StopVms(ctx, osc.StopVmsRequest{
-		VmIds:     []string{id},
-		ForceStop: new(true),
-	}, options.WithRetryTimeout(timeout))
+	// The API returns a 409 with code "9039" when the VM is still pending from creation
+	_, err := oapihelpers.RetryOnCodes(ctx, []string{"9039"}, func() (resp any, err error) {
+		return client.StopVms(ctx, osc.StopVmsRequest{
+			VmIds:     []string{id},
+			ForceStop: new(true),
+		}, options.WithRetryTimeout(timeout))
+	}, timeout)
 	if err != nil {
 		return diag.Errorf("error force stopping vms before destroy %s", err)
 	}
@@ -1647,7 +1650,7 @@ func startVM(ctx context.Context, client *osc.Client, timeout time.Duration, id 
 		VmIds: []string{id},
 	}, options.WithRetryTimeout(timeout))
 	if err != nil {
-		return fmt.Errorf("error starting vm %w", err)
+		return fmt.Errorf("error starting vm: %w", err)
 	}
 
 	stateConf := &retry.StateChangeConf{

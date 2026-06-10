@@ -2,6 +2,7 @@ package oapi_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -50,7 +51,31 @@ func TestAccNet_AccessPoint_Migration(t *testing.T) {
 	})
 }
 
+func TestAccNet_AccessPoint_CreateFailureKeepsState(t *testing.T) {
+	serviceName := fmt.Sprintf("com.outscale.%s.api", utils.GetRegion())
+	resourceName := "outscale_net_access_point.net_access_point_1"
+	invalidTagKey := strings.Repeat("a", 256)
+	tagValue := "testacc-nap"
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
+		Steps: testacc.CreateFailureReplacementSteps(
+			resourceName,
+			testAccOutscaleNetAccessPointConfigWithTag(serviceName, invalidTagKey, tagValue),
+			testAccOutscaleNetAccessPointConfigWithTag(serviceName, "name", tagValue),
+			resource.ComposeTestCheckFunc(
+				resource.TestCheckResourceAttrSet(resourceName, "net_access_point_id"),
+				resource.TestCheckResourceAttr(resourceName, "tags.0.value", tagValue),
+			),
+		),
+	})
+}
+
 func testAccOutscaleNetAccessPointConfig(sName string) string {
+	return testAccOutscaleNetAccessPointConfigWithTag(sName, "name", "terraform-Net-Access-Point")
+}
+
+func testAccOutscaleNetAccessPointConfigWithTag(sName, tagKey, tagValue string) string {
 	return fmt.Sprintf(`
                 resource "outscale_net" "outscale_net" {
                         ip_range = "10.0.0.0/16"
@@ -65,10 +90,10 @@ func testAccOutscaleNetAccessPointConfig(sName string) string {
                         route_table_ids = [outscale_route_table.route_table-1.route_table_id]
                         service_name    = "%s"
                         tags {
-                              key       = "name"
-                              value     = "terraform-Net-Access-Point"
+				      key       = %q
+				      value     = %q
                         }
 
                 }
-	`, sName)
+	`, sName, tagKey, tagValue)
 }

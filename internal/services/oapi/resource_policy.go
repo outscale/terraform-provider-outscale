@@ -29,6 +29,13 @@ var (
 	_ resource.ResourceWithModifyPlan  = &resourcePolicy{}
 )
 
+const (
+	policyErrCreate         = "Unable to create Policy"
+	policyErrDelete         = "Unable to delete Policy"
+	policyErrUnlink         = "Unable to unlink entities from Policy"
+	policyErrDeleteVersions = "Unable to delete versions linked to Policy"
+)
+
 type PolicyModel struct {
 	CreationDate           types.String   `tfsdk:"creation_date"`
 	Description            types.String   `tfsdk:"description"`
@@ -162,7 +169,7 @@ func (r *resourcePolicy) Create(ctx context.Context, req resource.CreateRequest,
 	var data PolicyModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
-	createTimeout, diag := data.Timeouts.Create(ctx, CreateDefaultTimeout)
+	timeout, diag := data.Timeouts.Create(ctx, CreateDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
@@ -179,24 +186,19 @@ func (r *resourcePolicy) Create(ctx context.Context, req resource.CreateRequest,
 		createReq.Description = data.Description.ValueStringPointer()
 	}
 
-	createResp, err := r.Client.CreatePolicy(ctx, createReq, options.WithRetryTimeout(createTimeout))
+	createResp, err := r.Client.CreatePolicy(ctx, createReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to create Policy",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(policyErrCreate, err.Error())
 		return
 	}
 	policy := ptr.From(createResp.Policy)
-
 	data.Id = to.String(policy.Orn)
+	// The API response contains the policy object, but the flatten operation would need to make another API call to get the full state,
+	// which seems counter-productive. The next read call will get the full state
 
-	stateData, err := r.read(ctx, createTimeout, data)
+	stateData, err := r.read(ctx, timeout, data)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to set Policy state",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -207,21 +209,18 @@ func (r *resourcePolicy) Read(ctx context.Context, req resource.ReadRequest, res
 	var data PolicyModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
-	readTimeout, diag := data.Timeouts.Read(ctx, ReadDefaultTimeout)
+	timeout, diag := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
 
-	stateData, err := r.read(ctx, readTimeout, data)
+	stateData, err := r.read(ctx, timeout, data)
 	if err != nil {
 		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(
-			"Unable to set Policy API response values",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -235,26 +234,20 @@ func (r *resourcePolicy) Delete(ctx context.Context, req resource.DeleteRequest,
 	var data PolicyModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
-	deleteTimeout, diag := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
+	timeout, diag := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
 
-	err := r.unlinkEntities(ctx, deleteTimeout, data.Orn.ValueString())
+	err := r.unlinkEntities(ctx, timeout, data.Orn.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to unlink entities from Policy",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(policyErrUnlink, err.Error())
 		return
 	}
 
-	err = r.deleteVersions(ctx, deleteTimeout, data.Orn.ValueString())
+	err = r.deleteVersions(ctx, timeout, data.Orn.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to delete versions linked to Policy",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(policyErrDeleteVersions, err.Error())
 		return
 	}
 
@@ -262,12 +255,9 @@ func (r *resourcePolicy) Delete(ctx context.Context, req resource.DeleteRequest,
 		PolicyOrn: data.Orn.ValueString(),
 	}
 
-	_, err = r.Client.DeletePolicy(ctx, delReq, options.WithRetryTimeout(deleteTimeout))
+	_, err = r.Client.DeletePolicy(ctx, delReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to delete Policy",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(policyErrDelete, err.Error())
 	}
 }
 

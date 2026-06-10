@@ -27,6 +27,7 @@ import (
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/modifyplans"
 	"github.com/outscale/terraform-provider-outscale/internal/services/oapi/oapihelpers"
@@ -38,6 +39,16 @@ var (
 	_ resource.ResourceWithConfigure   = &resourceSecurityGroup{}
 	_ resource.ResourceWithImportState = &resourceSecurityGroup{}
 	_ resource.ResourceWithModifyPlan  = &resourceSecurityGroup{}
+)
+
+const (
+	securityGroupErrCreate      = "Unable to create Security Group"
+	securityGroupErrDelete      = "Unable to delete Security Group"
+	securityGroupErrRules       = "Unable to empty Security Group rules"
+	securityGroupErrDeleteRetry = "Unable to delete Security Group after unlinking resources"
+	securityGroupErrReadVMs     = "Unable to read VMs linked to Security Group"
+	securityGroupErrReadNICs    = "Unable to read NICs linked to Security Group"
+	securityGroupErrReadLBUs    = "Unable to read Load Balancers linked to Security Group"
 )
 
 type SecurityGroupModel struct {
@@ -292,13 +303,10 @@ func (r *resourceSecurityGroup) Create(ctx context.Context, req resource.CreateR
 	var data SecurityGroupModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
-	createTimeout, diag := data.Timeouts.Create(ctx, CreateDefaultTimeout)
+	timeout, diag := data.Timeouts.Create(ctx, CreateDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
-
-	ctx, cancel := context.WithTimeout(ctx, createTimeout)
-	defer cancel()
 
 	if !fwhelpers.IsSet(data.SecurityGroupName) {
 		data.SecurityGroupName = to.String(id.UniqueId())
@@ -313,18 +321,25 @@ func (r *resourceSecurityGroup) Create(ctx context.Context, req resource.CreateR
 		createReq.NetId = data.NetId.ValueStringPointer()
 	}
 
-	createResp, err := r.Client.CreateSecurityGroup(ctx, createReq, options.WithRetryTimeout(createTimeout))
+	createResp, err := r.Client.CreateSecurityGroup(ctx, createReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to create Security Group.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(securityGroupErrCreate, err.Error())
 		return
 	}
 	sg := ptr.From(createResp.SecurityGroup)
 	data.RequestId = to.String(createResp.ResponseContext.RequestId)
 	data.Id = to.String(sg.SecurityGroupId)
 	data.SecurityGroupId = to.String(sg.SecurityGroupId)
+
+	stateData, err := r.flatten(ctx, data, sg)
+	if err != nil {
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
+		return
+	}
+	diag = resp.State.Set(ctx, &stateData)
+	if fwhelpers.CheckDiags(resp, diag) {
+		return
+	}
 
 	if data.RemoveDefaultOutboundRule.ValueBool() {
 		ipRange := "0.0.0.0/0"
@@ -336,27 +351,21 @@ func (r *resourceSecurityGroup) Create(ctx context.Context, req resource.CreateR
 			IpProtocol:      &ipProtocol,
 		}
 
-		_, err := r.Client.DeleteSecurityGroupRule(ctx, emptySGReq, options.WithRetryTimeout(createTimeout))
+		_, err := r.Client.DeleteSecurityGroupRule(ctx, emptySGReq, options.WithRetryTimeout(timeout))
 		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable to empty the Security Group rules.",
-				err.Error(),
-			)
+			resp.Diagnostics.AddError(securityGroupErrRules, err.Error())
 			return
 		}
 	}
 
-	diag = createOAPITagsFW(ctx, r.Client, createTimeout, data.Tags, sg.SecurityGroupId)
+	diag = createOAPITagsFW(ctx, r.Client, timeout, data.Tags, sg.SecurityGroupId)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
 
-	stateData, err := setSecurityGroupState(ctx, r, data)
+	stateData, err = r.read(ctx, timeout, data)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to set Security Group state.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -370,16 +379,18 @@ func (r *resourceSecurityGroup) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	data, err := setSecurityGroupState(ctx, r, data)
+	timeout, diag := data.Timeouts.Read(ctx, ReadDefaultTimeout)
+	if fwhelpers.CheckDiags(resp, diag) {
+		return
+	}
+
+	data, err := r.read(ctx, timeout, data)
 	if err != nil {
 		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(
-			"Unable to set Security Group API response values.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -405,12 +416,9 @@ func (r *resourceSecurityGroup) Update(ctx context.Context, req resource.UpdateR
 	}
 
 	stateData.Timeouts = planData.Timeouts
-	data, err := setSecurityGroupState(ctx, r, stateData)
+	data, err := r.read(ctx, timeout, stateData)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to set Security Group state.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -421,13 +429,10 @@ func (r *resourceSecurityGroup) Delete(ctx context.Context, req resource.DeleteR
 	var data SecurityGroupModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
-	deleteTimeout, diag := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
+	timeout, diag := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
-
-	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
-	defer cancel()
 
 	sgId := data.Id.ValueString()
 	delReq := osc.DeleteSecurityGroupRequest{
@@ -435,22 +440,19 @@ func (r *resourceSecurityGroup) Delete(ctx context.Context, req resource.DeleteR
 	}
 
 	sgLinked := false
-	_, err := r.Client.DeleteSecurityGroup(ctx, delReq, options.WithRetryTimeout(deleteTimeout))
+	_, err := r.Client.DeleteSecurityGroup(ctx, delReq, options.WithRetryTimeout(timeout))
 	if err != nil {
 		oscErr := oapihelpers.GetError(err)
 		if oscErr.Code == "9085" {
 			sgLinked = true
 		} else {
-			resp.Diagnostics.AddError(
-				"Unable to delete Security Group.",
-				err.Error(),
-			)
+			resp.Diagnostics.AddError(securityGroupErrDelete, err.Error())
 			return
 		}
 	}
 
 	if sgLinked {
-		diag = r.unlink(ctx, deleteTimeout, data)
+		diag = r.unlink(ctx, timeout, data)
 		if diag.HasError() {
 			resp.Diagnostics.Append(diag...)
 			return
@@ -458,13 +460,10 @@ func (r *resourceSecurityGroup) Delete(ctx context.Context, req resource.DeleteR
 
 		// // Retry on 409 as API can take time to return a security group as not in use anymore
 		_, err := oapihelpers.RetryOnCodes(ctx, []string{"9085"}, func() (resp any, err error) {
-			return r.Client.DeleteSecurityGroup(ctx, delReq, options.WithRetryTimeout(deleteTimeout))
-		}, deleteTimeout)
+			return r.Client.DeleteSecurityGroup(ctx, delReq, options.WithRetryTimeout(timeout))
+		}, timeout)
 		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable to delete Security Group after unlinking from resources.",
-				err.Error(),
-			)
+			resp.Diagnostics.AddError(securityGroupErrDeleteRetry, err.Error())
 			return
 		}
 	}
@@ -482,10 +481,7 @@ func (r *resourceSecurityGroup) getLinkedResources(ctx context.Context, to time.
 
 	vms, err := r.Client.ReadVms(ctx, readVmReq, options.WithRetryTimeout(to))
 	if err != nil {
-		diags.AddError(
-			"Unable to find VMs linked to Security Group.",
-			err.Error(),
-		)
+		diags.AddError(securityGroupErrReadVMs, err.Error())
 		return nil, nil, nil, diags
 	}
 
@@ -498,20 +494,14 @@ func (r *resourceSecurityGroup) getLinkedResources(ctx context.Context, to time.
 
 	nics, err := r.Client.ReadNics(ctx, readNicsReq, options.WithRetryTimeout(to))
 	if err != nil {
-		diags.AddError(
-			"Unable to find NICs linked to Security Group.",
-			err.Error(),
-		)
+		diags.AddError(securityGroupErrReadNICs, err.Error())
 		return nil, nil, nil, diags
 	}
 
 	// Get LBUs linked to Security Group
 	lbus, err := r.Client.ReadLoadBalancers(ctx, osc.ReadLoadBalancersRequest{}, options.WithRetryTimeout(to))
 	if err != nil {
-		diags.AddError(
-			"Unable to find Load Balancers linked to Security Group.",
-			err.Error(),
-		)
+		diags.AddError(securityGroupErrReadLBUs, err.Error())
 		return nil, nil, nil, diags
 	}
 
@@ -668,12 +658,8 @@ func (r *resourceSecurityGroup) unlink(ctx context.Context, to time.Duration, da
 	return
 }
 
-func setSecurityGroupState(ctx context.Context, r *resourceSecurityGroup, data SecurityGroupModel) (SecurityGroupModel, error) {
-	readTimeout, diag := data.Timeouts.Read(ctx, ReadDefaultTimeout)
-	if diag.HasError() {
-		return data, fmt.Errorf("unable to parse 'security_group' read timeout value: %v", diag.Errors())
-	}
-	ctxWithTimeout, cancel := context.WithTimeout(ctx, readTimeout)
+func (r *resourceSecurityGroup) read(ctx context.Context, timeout time.Duration, data SecurityGroupModel) (SecurityGroupModel, error) {
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	securityGroup, err := r.Batcher.Read(ctxWithTimeout, data.Id.ValueString())
@@ -684,27 +670,31 @@ func setSecurityGroupState(ctx context.Context, r *resourceSecurityGroup, data S
 		return data, err
 	}
 
+	return r.flatten(ctx, data, *securityGroup)
+}
+
+func (r *resourceSecurityGroup) flatten(ctx context.Context, data SecurityGroupModel, securityGroup osc.SecurityGroup) (SecurityGroupModel, error) {
 	tags, diags := flattenOAPITagsFW(ctx, securityGroup.Tags)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to flatten tags: %v", diags.Errors())
+		return data, from.Diag(diags)
 	}
 	data.Tags = tags
 
 	inboundRulesModels, diag := flattenSecurityGroupRules(ctx, securityGroup.InboundRules)
 	if diag.HasError() {
-		return data, fmt.Errorf("unable to convert inbound rules to the model: %v", diag.Errors())
+		return data, from.Diag(diag)
 	}
 	inboundRules, diag := types.ListValueFrom(ctx, securityGroupRulesModelAttrTypes, inboundRulesModels)
 	if diag.HasError() {
-		return data, fmt.Errorf("unable to convert inbound rules to the schema list: %v", diag.Errors())
+		return data, from.Diag(diag)
 	}
 	outboundRulesModels, diag := flattenSecurityGroupRules(ctx, securityGroup.OutboundRules)
 	if diag.HasError() {
-		return data, fmt.Errorf("unable to convert outbound rules to the model: %v", diag.Errors())
+		return data, from.Diag(diag)
 	}
 	outboundRules, diag := types.ListValueFrom(ctx, securityGroupRulesModelAttrTypes, outboundRulesModels)
 	if diag.HasError() {
-		return data, fmt.Errorf("unable to convert outbound rules to the schema list: %v", diag.Errors())
+		return data, from.Diag(diag)
 	}
 
 	data.AccountId = to.String(securityGroup.AccountId)

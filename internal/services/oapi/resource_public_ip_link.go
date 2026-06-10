@@ -20,6 +20,7 @@ import (
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 )
 
@@ -31,9 +32,7 @@ var (
 
 const (
 	publicIpLinkErrLink   = "Unable to link Public IP"
-	publicIpLinkErrRead   = "Unable to read Public IP Link"
 	publicIpLinkErrUnlink = "Unable to unlink Public IP"
-	publicIpLinkErrState  = "Unable to set Public IP Link state"
 )
 
 type publicIpLinkModel struct {
@@ -223,10 +222,12 @@ func (r *publicIpLinkResource) Create(ctx context.Context, req resource.CreateRe
 	} else {
 		data.Id = data.PublicIp
 	}
+	// The API response does not contain enough information to set the state directly, which would cause an error.
+	// The next read will fill the state
 
 	stateData, err := r.read(ctx, timeout, data)
 	if err != nil {
-		resp.Diagnostics.AddError(publicIpLinkErrState, err.Error())
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -248,7 +249,7 @@ func (r *publicIpLinkResource) Read(ctx context.Context, req resource.ReadReques
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(publicIpLinkErrRead, err.Error())
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -307,7 +308,7 @@ func (r *publicIpLinkResource) read(ctx context.Context, timeout time.Duration, 
 
 	tags, diag := flattenOAPIComputedTagsFW(ctx, publicIp.Tags)
 	if diag.HasError() {
-		return data, fmt.Errorf("%v", diag.Errors())
+		return data, from.Diag(diag)
 	}
 
 	data.Tags = tags

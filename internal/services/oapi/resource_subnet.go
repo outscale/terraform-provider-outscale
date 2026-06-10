@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -19,6 +20,7 @@ import (
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/modifyplans"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/stateconf"
@@ -30,6 +32,13 @@ var (
 	_ resource.ResourceWithConfigure   = &resourceSubnet{}
 	_ resource.ResourceWithImportState = &resourceSubnet{}
 	_ resource.ResourceWithModifyPlan  = &resourceSubnet{}
+)
+
+const (
+	subnetErrCreate = "Unable to create Subnet"
+	subnetErrUpdate = "Unable to update Subnet"
+	subnetErrDelete = "Unable to delete Subnet"
+	subnetErrWait   = "Unable to wait for Subnet state"
 )
 
 type SubnetModel struct {
@@ -182,7 +191,7 @@ func (r *resourceSubnet) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	createTimeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
+	timeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
@@ -196,18 +205,27 @@ func (r *resourceSubnet) Create(ctx context.Context, req resource.CreateRequest,
 		createReq.SubregionName = data.SubregionName.ValueStringPointer()
 	}
 
-	createResp, err := r.Client.CreateSubnet(ctx, createReq, options.WithRetryTimeout(createTimeout))
+	createResp, err := r.Client.CreateSubnet(ctx, createReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to create subnet resource.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(subnetErrCreate, err.Error())
 		return
 	}
 	data.RequestId = to.String(*createResp.ResponseContext.RequestId)
 	subnet := ptr.From(createResp.Subnet)
+	data.SubnetId = to.String(subnet.SubnetId)
+	data.Id = to.String(subnet.SubnetId)
 
-	diag := createOAPITagsFW(ctx, r.Client, createTimeout, data.Tags, subnet.SubnetId)
+	stateData, err := r.flatten(ctx, data, subnet)
+	if err != nil {
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
+		return
+	}
+	diags = resp.State.Set(ctx, &stateData)
+	if fwhelpers.CheckDiags(resp, diags) {
+		return
+	}
+
+	diag := createOAPITagsFW(ctx, r.Client, timeout, data.Tags, subnet.SubnetId)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
@@ -217,7 +235,7 @@ func (r *resourceSubnet) Create(ctx context.Context, req resource.CreateRequest,
 	stateConf := &stateconf.StateChangeConf[osc.SubnetState]{
 		Pending: stateconf.States(osc.SubnetStatePending),
 		Target:  stateconf.States(osc.SubnetStateAvailable),
-		Timeout: createTimeout,
+		Timeout: timeout,
 		Refresh: func(ctx context.Context) (any, osc.SubnetState, error) {
 			resp, err := r.Client.ReadSubnets(ctx, readReq)
 			if err != nil {
@@ -233,10 +251,7 @@ func (r *resourceSubnet) Create(ctx context.Context, req resource.CreateRequest,
 	}
 
 	if _, err = stateConf.WaitForStateContext(ctx); err != nil {
-		resp.Diagnostics.AddError(
-			"Error waiting for Subnet to be ready.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(subnetErrWait, err.Error())
 		return
 	}
 
@@ -247,22 +262,16 @@ func (r *resourceSubnet) Create(ctx context.Context, req resource.CreateRequest,
 			SubnetId:            data.SubnetId.ValueString(),
 			MapPublicIpOnLaunch: data.MapPublicIpOnLaunch.ValueBool(),
 		}
-		_, err := r.Client.UpdateSubnet(ctx, updateReq, options.WithRetryTimeout(createTimeout))
+		_, err := r.Client.UpdateSubnet(ctx, updateReq, options.WithRetryTimeout(timeout))
 		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable to update MapPublicIpOnLaunch.",
-				err.Error(),
-			)
+			resp.Diagnostics.AddError(subnetErrUpdate, err.Error())
 			return
 		}
 	}
 
-	data, err = r.read(ctx, data)
+	data, err = r.read(ctx, timeout, data)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to set subnet state.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -276,16 +285,18 @@ func (r *resourceSubnet) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	data, err := r.read(ctx, data)
+	timeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
+	if fwhelpers.CheckDiags(resp, diags) {
+		return
+	}
+
+	data, err := r.read(ctx, timeout, data)
 	if err != nil {
 		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(
-			"Unable to set subnet API response values.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -308,31 +319,20 @@ func (r *resourceSubnet) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	updateTimeout, diags := planData.Timeouts.Update(ctx, UpdateDefaultTimeout)
-	if fwhelpers.CheckDiags(resp, diags) {
-		return
-	}
-
 	updateReq := osc.UpdateSubnetRequest{
 		SubnetId:            stateData.SubnetId.ValueString(),
 		MapPublicIpOnLaunch: planData.MapPublicIpOnLaunch.ValueBool(),
 	}
-	_, err := r.Client.UpdateSubnet(ctx, updateReq, options.WithRetryTimeout(updateTimeout))
+	_, err := r.Client.UpdateSubnet(ctx, updateReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to update subnet resource",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(subnetErrUpdate, err.Error())
 		return
 	}
 
 	stateData.Timeouts = planData.Timeouts
-	data, err := r.read(ctx, stateData)
+	data, err := r.read(ctx, timeout, stateData)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to set subnet state.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, data)...)
@@ -346,7 +346,7 @@ func (r *resourceSubnet) Delete(ctx context.Context, req resource.DeleteRequest,
 		return
 	}
 
-	deleteTimeout, diags := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
+	timeout, diags := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
@@ -357,23 +357,16 @@ func (r *resourceSubnet) Delete(ctx context.Context, req resource.DeleteRequest,
 
 	// Retry on 409 (subnet in-use) as API can take time to see a subnet as not in use anymore
 	_, err := oapihelpers.RetryOnCodes(ctx, []string{"9095"}, func() (resp any, err error) {
-		return r.Client.DeleteSubnet(ctx, delReq, options.WithRetryTimeout(deleteTimeout))
-	}, deleteTimeout)
+		return r.Client.DeleteSubnet(ctx, delReq, options.WithRetryTimeout(timeout))
+	}, timeout)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to Delete subnet.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(subnetErrDelete, err.Error())
 		return
 	}
 }
 
-func (r *resourceSubnet) read(ctx context.Context, data SubnetModel) (SubnetModel, error) {
-	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
-	if diags.HasError() {
-		return data, fmt.Errorf("unable to parse 'subnet' read timeout value: %v", diags.Errors())
-	}
-	ctxWithTimeout, cancel := context.WithTimeout(ctx, readTimeout)
+func (r *resourceSubnet) read(ctx context.Context, timeout time.Duration, data SubnetModel) (SubnetModel, error) {
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	subnet, err := r.Batcher.Read(ctxWithTimeout, data.SubnetId.ValueString())
@@ -384,9 +377,13 @@ func (r *resourceSubnet) read(ctx context.Context, data SubnetModel) (SubnetMode
 		return data, err
 	}
 
+	return r.flatten(ctx, data, *subnet)
+}
+
+func (r *resourceSubnet) flatten(ctx context.Context, data SubnetModel, subnet osc.Subnet) (SubnetModel, error) {
 	tags, diags := flattenOAPITagsFW(ctx, subnet.Tags)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to flatten tags: %v", diags.Errors())
+		return data, from.Diag(diags)
 	}
 	data.Tags = tags
 

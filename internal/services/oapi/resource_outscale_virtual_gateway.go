@@ -91,11 +91,14 @@ func ResourceOutscaleVirtualGatewayCreate(ctx context.Context, d *schema.Resourc
 		return diag.Errorf("error creating vpn gateway: %s", err)
 	}
 
+	virtualGatewayID := ptr.From(resp.VirtualGateway).VirtualGatewayId
+	d.SetId(virtualGatewayID)
+
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{"pending"},
 		Target:  []string{"available"},
 		Timeout: timeout,
-		Refresh: virtualGatewayStateRefreshFunc(ctx, client, resp.VirtualGateway.VirtualGatewayId, "deleted", timeout),
+		Refresh: virtualGatewayStateRefreshFunc(ctx, client, virtualGatewayID, "deleted", timeout),
 	}
 
 	_, err = stateConf.WaitForStateContext(ctx)
@@ -103,9 +106,6 @@ func ResourceOutscaleVirtualGatewayCreate(ctx context.Context, d *schema.Resourc
 		return diag.Errorf(
 			"error waiting for instance (%s) to become created: %s", d.Id(), err)
 	}
-
-	virtualGateway := resp.VirtualGateway
-	d.SetId(virtualGateway.VirtualGatewayId)
 
 	if d.IsNewResource() {
 		if err := updateOAPITagsSDK(ctx, client, timeout, d); err != nil {

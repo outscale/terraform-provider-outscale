@@ -2,6 +2,7 @@ package oapi_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/outscale/terraform-provider-outscale/internal/services/oapi/oapihelpers"
@@ -74,7 +75,41 @@ func TestAccOthers_VPNConnection_Migration(t *testing.T) {
 	})
 }
 
+func TestAccOthers_VPNConnection_CreateFailureKeepsState(t *testing.T) {
+	resourceName := "outscale_vpn_connection.vpn_basic"
+	publicIP := fmt.Sprintf("172.0.0.%d", utils.RandIntRange(1, 255))
+	bgpAsn := oapihelpers.RandBgpAsn()
+	invalidTagKey := strings.Repeat("a", 256)
+	tagValue := "testacc-vpn-create-failure"
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
+		Steps: testacc.CreateFailureReplacementSteps(
+			resourceName,
+			vpnConnectionConfigWithTag(bgpAsn, publicIP, true, invalidTagKey, tagValue),
+			vpnConnectionConfigWithTag(bgpAsn, publicIP, true, "Name", tagValue),
+			resource.ComposeTestCheckFunc(
+				resource.TestCheckResourceAttrSet(resourceName, "vpn_connection_id"),
+				resource.TestCheckResourceAttr(resourceName, "tags.0.value", tagValue),
+			),
+		),
+	})
+}
+
 func vpnConnectionConfig(bgpAsn int, publicIP string, staticRoutesOnly bool) string {
+	return vpnConnectionConfigWithTag(bgpAsn, publicIP, staticRoutesOnly, "", "")
+}
+
+func vpnConnectionConfigWithTag(bgpAsn int, publicIP string, staticRoutesOnly bool, tagKey, tagValue string) string {
+	tags := ""
+	if tagKey != "" {
+		tags = fmt.Sprintf(`
+			tags {
+				key   = %q
+				value = %q
+			}
+		`, tagKey, tagValue)
+	}
 	return fmt.Sprintf(`
 		resource "outscale_virtual_gateway" "virtual_gateway" {
 			connection_type = "ipsec.1"
@@ -91,8 +126,9 @@ func vpnConnectionConfig(bgpAsn int, publicIP string, staticRoutesOnly bool) str
 			virtual_gateway_id = outscale_virtual_gateway.virtual_gateway.id
 			connection_type    = "ipsec.1"
 			static_routes_only = "%t"
+			%s
 		}
-	`, bgpAsn, publicIP, staticRoutesOnly)
+	`, bgpAsn, publicIP, staticRoutesOnly, tags)
 }
 
 func vpnConnectionConfigWithoutStaticRoutes(bgpAsn int, publicIP string) string {

@@ -179,7 +179,7 @@ func (r *resourceAccessKey) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 
-	createTimeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
+	timeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
@@ -200,7 +200,7 @@ func (r *resourceAccessKey) Create(ctx context.Context, req resource.CreateReque
 		createReq.Tag = new(data.Tag.ValueString())
 	}
 
-	createResp, err := r.Client.CreateAccessKey(ctx, createReq, options.WithRetryTimeout(createTimeout))
+	createResp, err := r.Client.CreateAccessKey(ctx, createReq, options.WithRetryTimeout(timeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to create access_key resource",
@@ -214,8 +214,14 @@ func (r *resourceAccessKey) Create(ctx context.Context, req resource.CreateReque
 	data.Id = to.String(ptr.From(accessKey.AccessKeyId))
 	data.SecretKey = to.String(ptr.From(accessKey.SecretKey))
 
+	stateData := r.flattenCreate(data, accessKey)
+	diag := resp.State.Set(ctx, &stateData)
+	if fwhelpers.CheckDiags(resp, diag) {
+		return
+	}
+
 	if data.State.ValueString() != "ACTIVE" {
-		if err := inactiveAccessKey(ctx, createTimeout, r, data); err != nil {
+		if err := inactiveAccessKey(ctx, timeout, r, data); err != nil {
 			resp.Diagnostics.AddError(
 				"Unable to update access_key state",
 				err.Error(),
@@ -224,16 +230,13 @@ func (r *resourceAccessKey) Create(ctx context.Context, req resource.CreateReque
 		}
 	}
 
-	err = setAccessKeyState(ctx, r, &data)
+	stateData, err = r.read(ctx, timeout, data)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to set access_key state",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &stateData)...)
 }
 
 func (r *resourceAccessKey) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -244,19 +247,22 @@ func (r *resourceAccessKey) Read(ctx context.Context, req resource.ReadRequest, 
 		return
 	}
 
-	err := setAccessKeyState(ctx, r, &data)
+	timeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
+	if fwhelpers.CheckDiags(resp, diags) {
+		return
+	}
+
+	stateData, err := r.read(ctx, timeout, data)
 	if err != nil {
 		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(
-			"Unable to set access_key API response values.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &stateData)...)
 }
 
 func (r *resourceAccessKey) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -271,7 +277,7 @@ func (r *resourceAccessKey) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	updateTimeout, diags := planData.Timeouts.Update(ctx, UpdateDefaultTimeout)
+	timeout, diags := planData.Timeouts.Update(ctx, UpdateDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
@@ -304,7 +310,7 @@ func (r *resourceAccessKey) Update(ctx context.Context, req resource.UpdateReque
 		stateData.Tag = planData.Tag
 	}
 
-	_, err := r.Client.UpdateAccessKey(ctx, updateReq, options.WithRetryTimeout(updateTimeout))
+	_, err := r.Client.UpdateAccessKey(ctx, updateReq, options.WithRetryTimeout(timeout))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to update access_key resource",
@@ -314,16 +320,13 @@ func (r *resourceAccessKey) Update(ctx context.Context, req resource.UpdateReque
 	}
 
 	stateData.Timeouts = planData.Timeouts
-	err = setAccessKeyState(ctx, r, &stateData)
+	newData, err := r.read(ctx, timeout, stateData)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to update access_key API response values.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &stateData)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &newData)...)
 }
 
 func (r *resourceAccessKey) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -365,13 +368,9 @@ func (r *resourceAccessKey) Delete(ctx context.Context, req resource.DeleteReque
 	}
 }
 
-func setAccessKeyState(ctx context.Context, r *resourceAccessKey, data *AccessKeyModel) error {
+func (r *resourceAccessKey) read(ctx context.Context, timeout time.Duration, data AccessKeyModel) (AccessKeyModel, error) {
 	accessKeyFilters := osc.FiltersAccessKeys{
 		AccessKeyIds: &[]string{data.Id.ValueString()},
-	}
-	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
-	if diags.HasError() {
-		return fmt.Errorf("unable to parse 'access_key' read timeout value: %v", diags.Errors())
 	}
 
 	readReq := osc.ReadAccessKeysRequest{
@@ -381,12 +380,12 @@ func setAccessKeyState(ctx context.Context, r *resourceAccessKey, data *AccessKe
 		readReq.UserName = data.UserName.ValueStringPointer()
 	}
 
-	readResp, err := r.Client.ReadAccessKeys(ctx, readReq, options.WithRetryTimeout(readTimeout))
+	readResp, err := r.Client.ReadAccessKeys(ctx, readReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		return err
+		return data, err
 	}
 	if readResp.AccessKeys == nil || len(*readResp.AccessKeys) == 0 {
-		return ErrResourceEmpty
+		return data, ErrResourceEmpty
 	}
 
 	data.RequestId = to.String(readResp.ResponseContext.RequestId)
@@ -405,7 +404,23 @@ func setAccessKeyState(ctx context.Context, r *resourceAccessKey, data *AccessKe
 		data.ExpirationDate = apiExpiration
 	}
 
-	return nil
+	return data, nil
+}
+
+func (r *resourceAccessKey) flattenCreate(data AccessKeyModel, key osc.AccessKeySecretKey) AccessKeyModel {
+	data.Id = to.String(key.AccessKeyId)
+	data.SecretKey = to.String(key.SecretKey)
+	data.AccessKeyId = to.String(key.AccessKeyId)
+	data.State = to.String(ptr.From(key.State))
+	data.CreationDate = to.String(from.ISO8601(key.CreationDate))
+	data.LastModificationDate = to.String(from.ISO8601(key.LastModificationDate))
+
+	apiExpiration := to.ISO8601Value(key.ExpirationDate)
+	if !apiExpiration.IsNull() || data.ExpirationDate.IsUnknown() || data.ExpirationDate.ValueString() != "" {
+		data.ExpirationDate = apiExpiration
+	}
+
+	return data
 }
 
 func inactiveAccessKey(ctx context.Context, timeout time.Duration, r *resourceAccessKey, data AccessKeyModel) error {

@@ -18,6 +18,10 @@ var (
 	_ datasource.DataSourceWithConfigure = &oksQuotasDataSource{}
 )
 
+const (
+	quotasErrRead = "Unable to get OKS Quotas"
+)
+
 func NewDataSourceOKSQuotas() datasource.DataSource {
 	return &oksQuotasDataSource{}
 }
@@ -86,10 +90,7 @@ func (d *oksQuotasDataSource) Read(ctx context.Context, req datasource.ReadReque
 
 	quotas, err := d.Client.GetQuotas(ctx)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to get OKS Quotas",
-			"Error: "+err.Error(),
-		)
+		resp.Diagnostics.AddError(quotasErrRead, err.Error())
 		return
 	}
 

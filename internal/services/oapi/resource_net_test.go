@@ -2,6 +2,7 @@ package oapi_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -51,6 +52,25 @@ func TestAccNet_UpdateTags(t *testing.T) {
 	})
 }
 
+func TestAccNet_CreateFailureKeepsState(t *testing.T) {
+	resourceName := "outscale_net.basic_net"
+	invalidTagKey := strings.Repeat("a", 256)
+	tagValue := "testacc-net"
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
+		Steps: testacc.CreateFailureReplacementSteps(
+			resourceName,
+			configNetUpdateTagsWithKey(invalidTagKey, tagValue),
+			configNetUpdateTags(tagValue),
+			resource.ComposeTestCheckFunc(
+				resource.TestCheckResourceAttrSet(resourceName, "net_id"),
+				resource.TestCheckResourceAttr(resourceName, "tags.0.value", tagValue),
+			),
+		),
+	})
+}
+
 const configNetBasic = `
 	resource "outscale_net" "basic_net" {
 		ip_range = "10.0.0.0/16"
@@ -62,13 +82,17 @@ const configNetBasic = `
 `
 
 func configNetUpdateTags(tagValue string) string {
+	return configNetUpdateTagsWithKey("name", tagValue)
+}
+
+func configNetUpdateTagsWithKey(tagKey, tagValue string) string {
 	return fmt.Sprintf(`
 	resource "outscale_net" "basic_net" {
 		ip_range = "10.0.0.0/16"
 		tags {
-			key = "name"
+			key = "%s"
 			value = "%s"
 		}
 	   }
-`, tagValue)
+`, tagKey, tagValue)
 }

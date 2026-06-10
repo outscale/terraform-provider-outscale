@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -176,6 +177,28 @@ func TestAccNet_WithSecurityGroup_Migration(t *testing.T) {
 	})
 }
 
+func TestAccOthers_SecurityGroup_CreateFailureKeepsState(t *testing.T) {
+	resourceName := "outscale_security_group.recovery"
+	sgName := acctest.RandomWithPrefix("testacc-sg")
+	invalidTagKey := strings.Repeat("a", 256)
+	tagValue := "testacc-resource-security-group"
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
+		Steps: testacc.CreateFailureReplacementSteps(
+			resourceName,
+			securityGroupCreateFailureConfig(sgName, invalidTagKey, tagValue),
+			securityGroupCreateFailureConfig(sgName, "Name", tagValue),
+			resource.ComposeTestCheckFunc(
+				resource.TestCheckResourceAttrSet(resourceName, "security_group_id"),
+				resource.TestCheckResourceAttr(resourceName, "remove_default_outbound_rule", "true"),
+				resource.TestCheckResourceAttr(resourceName, "outbound_rules.#", "0"),
+				resource.TestCheckResourceAttr(resourceName, "tags.0.value", tagValue),
+			),
+		),
+	})
+}
+
 func testAccOutscaleSecurityGroupConfig(rInt int) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "net" {
@@ -199,6 +222,26 @@ func testAccOutscaleSecurityGroupConfig(rInt int) string {
 			net_id = outscale_net.net.id
 		}
 	`, rInt)
+}
+
+func securityGroupCreateFailureConfig(sgName, tagKey, tagValue string) string {
+	return fmt.Sprintf(`
+		resource "outscale_net" "net" {
+			ip_range = "10.0.0.0/16"
+		}
+
+		resource "outscale_security_group" "recovery" {
+			description                  = "security group create failure"
+			security_group_name          = %q
+			net_id                       = outscale_net.net.net_id
+			remove_default_outbound_rule = true
+
+			tags {
+				key   = %q
+				value = %q
+			}
+		}
+	`, sgName, tagKey, tagValue)
 }
 
 func securityGroupWithLBUConfigStep1(sgName, sgName2, lbuName string) string {

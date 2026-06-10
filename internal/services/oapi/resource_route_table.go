@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -17,6 +18,7 @@ import (
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 	"github.com/samber/lo"
 )
@@ -26,6 +28,11 @@ var (
 	_ resource.ResourceWithConfigure   = &resourceRouteTable{}
 	_ resource.ResourceWithImportState = &resourceRouteTable{}
 	_ resource.ResourceWithModifyPlan  = &resourceRouteTable{}
+)
+
+const (
+	routeTableErrCreate = "Unable to create Route Table"
+	routeTableErrDelete = "Unable to delete Route Table"
 )
 
 type RouteTableModel struct {
@@ -219,7 +226,7 @@ func (r *resourceRouteTable) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	createTimeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
+	timeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
@@ -228,33 +235,37 @@ func (r *resourceRouteTable) Create(ctx context.Context, req resource.CreateRequ
 		NetId: data.NetId.ValueString(),
 	}
 
-	createResp, err := r.Client.CreateRouteTable(ctx, createReq, options.WithRetryTimeout(createTimeout))
+	createResp, err := r.Client.CreateRouteTable(ctx, createReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to create Route Table resource.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(routeTableErrCreate, err.Error())
 		return
 	}
 	data.RequestId = to.String(createResp.ResponseContext.RequestId)
 	routeTable := ptr.From(createResp.RouteTable)
+	data.RouteTableId = to.String(routeTable.RouteTableId)
+	data.Id = to.String(routeTable.RouteTableId)
 
-	diag := createOAPITagsFW(ctx, r.Client, createTimeout, data.Tags, routeTable.RouteTableId)
+	stateData, err := r.flatten(ctx, data, routeTable)
+	if err != nil {
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
+		return
+	}
+	diags = resp.State.Set(ctx, &stateData)
+	if fwhelpers.CheckDiags(resp, diags) {
+		return
+	}
+
+	diag := createOAPITagsFW(ctx, r.Client, timeout, data.Tags, routeTable.RouteTableId)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
 
-	data.RouteTableId = to.String(routeTable.RouteTableId)
-	data.Id = to.String(routeTable.RouteTableId)
-	data, err = r.read(ctx, data)
+	stateData, err = r.read(ctx, timeout, data)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to set Route Table state",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &stateData)...)
 }
 
 func (r *resourceRouteTable) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -265,16 +276,18 @@ func (r *resourceRouteTable) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	data, err := r.read(ctx, data)
+	timeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
+	if fwhelpers.CheckDiags(resp, diags) {
+		return
+	}
+
+	data, err := r.read(ctx, timeout, data)
 	if err != nil {
 		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(
-			"Unable to set Route Table API response values.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -299,12 +312,9 @@ func (r *resourceRouteTable) Update(ctx context.Context, req resource.UpdateRequ
 	}
 
 	stateData.Timeouts = planData.Timeouts
-	data, err := r.read(ctx, stateData)
+	data, err := r.read(ctx, timeout, stateData)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to set Route Table state.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -319,7 +329,7 @@ func (r *resourceRouteTable) Delete(ctx context.Context, req resource.DeleteRequ
 		return
 	}
 
-	deleteTimeout, diags := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
+	timeout, diags := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
@@ -328,16 +338,13 @@ func (r *resourceRouteTable) Delete(ctx context.Context, req resource.DeleteRequ
 		RouteTableId: data.RouteTableId.ValueString(),
 	}
 
-	_, err := r.Client.DeleteRouteTable(ctx, delReq, options.WithRetryTimeout(deleteTimeout))
+	_, err := r.Client.DeleteRouteTable(ctx, delReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to Delete Route Table.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(routeTableErrDelete, err.Error())
 	}
 }
 
-func (r *resourceRouteTable) read(ctx context.Context, data RouteTableModel) (RouteTableModel, error) {
+func (r *resourceRouteTable) read(ctx context.Context, timeout time.Duration, data RouteTableModel) (RouteTableModel, error) {
 	routeTableFilters := osc.FiltersRouteTable{
 		RouteTableIds: &[]string{data.RouteTableId.ValueString()},
 	}
@@ -345,12 +352,7 @@ func (r *resourceRouteTable) read(ctx context.Context, data RouteTableModel) (Ro
 		Filters: &routeTableFilters,
 	}
 
-	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
-	if diags.HasError() {
-		return data, fmt.Errorf("unable to parse 'route table' read timeout value: %v", diags.Errors())
-	}
-
-	readResp, err := r.Client.ReadRouteTables(ctx, readReq, options.WithRetryTimeout(readTimeout))
+	readResp, err := r.Client.ReadRouteTables(ctx, readReq, options.WithRetryTimeout(timeout))
 	if err != nil {
 		return data, err
 	}
@@ -360,23 +362,28 @@ func (r *resourceRouteTable) read(ctx context.Context, data RouteTableModel) (Ro
 	data.RequestId = to.String(readResp.ResponseContext.RequestId)
 
 	routeTable := (*readResp.RouteTables)[0]
+
+	return r.flatten(ctx, data, routeTable)
+}
+
+func (r *resourceRouteTable) flatten(ctx context.Context, data RouteTableModel, routeTable osc.RouteTable) (RouteTableModel, error) {
 	tags, diag := flattenOAPITagsFW(ctx, routeTable.Tags)
 	if diag.HasError() {
-		return data, fmt.Errorf("unable to flatten tags: %v", diags.Errors())
+		return data, from.Diag(diag)
 	}
 	data.Tags = tags
 
 	linkRouteTables, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: linkRouteTableAttrTypes}, LinkRouteTablesToModel(routeTable.LinkRouteTables))
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to convert link route tables to the schema set: %v", diags.Errors())
+		return data, from.Diag(diags)
 	}
 	routePropagatingVirtualGateways, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: routePropagatingVirtualGatewayAttrTypes}, RoutePropagatingVirtualGatewaysToModel(routeTable.RoutePropagatingVirtualGateways))
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to convert route propagating virtual gateways to the schema set: %v", diags.Errors())
+		return data, from.Diag(diags)
 	}
 	routes, diags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: routeAttrTypes}, RoutesToModel(routeTable.Routes))
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to convert routes to the schema set: %v", diags.Errors())
+		return data, from.Diag(diags)
 	}
 
 	data.LinkRouteTables = linkRouteTables
