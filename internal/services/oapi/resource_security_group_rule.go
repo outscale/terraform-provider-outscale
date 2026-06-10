@@ -44,6 +44,11 @@ var (
 	_ resource.ResourceWithValidateConfig = &resourceRoute{}
 )
 
+const (
+	securityGroupRuleErrCreate = "Unable to create Security Group Rule"
+	securityGroupRuleErrDelete = "Unable to delete Security Group Rule"
+)
+
 type SecurityGroupRuleModel struct {
 	Flow                         types.String   `tfsdk:"flow"`
 	FromPortRange                types.Int32    `tfsdk:"from_port_range"`
@@ -149,8 +154,18 @@ func (r *resourceSecurityGroupRule) ImportState(ctx context.Context, req resourc
 		filters.OutboundRuleIpRanges = &[]string{ipRange}
 	}
 
+	var timeouts timeouts.Value
+	diag := resp.State.GetAttribute(ctx, path.Root("timeouts"), &timeouts)
+	if fwhelpers.CheckDiags(resp, diag) {
+		return
+	}
+	timeout, diag := timeouts.Read(ctx, ReadDefaultTimeout)
+	if fwhelpers.CheckDiags(resp, diag) {
+		return
+	}
+
 	var data SecurityGroupRuleModel
-	readResp, err := r.readSecurityGroupsWithFilters(ctx, data, filters)
+	readResp, err := r.readSecurityGroupsWithFilters(ctx, timeout, data, filters)
 	if err != nil || readResp.SecurityGroups == nil || len(*readResp.SecurityGroups) != 1 {
 		resp.Diagnostics.AddError(
 			"Unable to find the Security Group Rule with the requested attributes",
@@ -160,11 +175,6 @@ func (r *resourceSecurityGroupRule) ImportState(ctx context.Context, req resourc
 	}
 	securityGroup := (*readResp.SecurityGroups)[0]
 
-	var timeouts timeouts.Value
-	diag := resp.State.GetAttribute(ctx, path.Root("timeouts"), &timeouts)
-	if fwhelpers.CheckDiags(resp, diag) {
-		return
-	}
 	data.Timeouts = timeouts
 	data.RequestId = to.String(readResp.ResponseContext.RequestId)
 	data.Id = to.String(securityGroup.SecurityGroupId)
@@ -473,13 +483,10 @@ func (r *resourceSecurityGroupRule) Create(ctx context.Context, req resource.Cre
 	var data SecurityGroupRuleModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
-	createTimeout, diag := data.Timeouts.Create(ctx, CreateDefaultTimeout)
+	timeout, diag := data.Timeouts.Create(ctx, CreateDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
-
-	ctx, cancel := context.WithTimeout(ctx, createTimeout)
-	defer cancel()
 
 	createReq := osc.CreateSecurityGroupRuleRequest{
 		Flow:            data.Flow.ValueString(),
@@ -519,33 +526,23 @@ func (r *resourceSecurityGroupRule) Create(ctx context.Context, req resource.Cre
 		return
 	}
 
-	createResp, err := r.Client.CreateSecurityGroupRule(ctx, createReq, options.WithRetryTimeout(createTimeout))
+	createResp, err := r.Client.CreateSecurityGroupRule(ctx, createReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to create Security Group Rule.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(securityGroupRuleErrCreate, err.Error())
 		return
 	}
 	sg := ptr.From(createResp.SecurityGroup)
 	data.RequestId = to.String(createResp.ResponseContext.RequestId)
 	data.Id = to.String(sg.SecurityGroupId)
 
-	stateData, err := r.read(ctx, data, createTimeout)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to set Security Group Rule state.",
-			err.Error(),
-		)
-		return
-	}
+	stateData := r.flatten(data, sg)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &stateData)...)
 }
 
 func (r *resourceSecurityGroupRule) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data SecurityGroupRuleModel
-	readTimeout, diag := data.Timeouts.Read(ctx, ReadDefaultTimeout)
+	timeout, diag := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
@@ -555,16 +552,13 @@ func (r *resourceSecurityGroupRule) Read(ctx context.Context, req resource.ReadR
 		return
 	}
 
-	data, err := r.read(ctx, data, readTimeout)
+	data, err := r.read(ctx, data, timeout)
 	if err != nil {
 		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(
-			"Unable to set Security Group Rule API response values.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -578,12 +572,10 @@ func (r *resourceSecurityGroupRule) Delete(ctx context.Context, req resource.Del
 	var data SecurityGroupRuleModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
-	deleteTimeout, diag := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
+	timeout, diag := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
-	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
-	defer cancel()
 
 	delReq := osc.DeleteSecurityGroupRuleRequest{
 		Flow:            data.Flow.ValueString(),
@@ -621,27 +613,17 @@ func (r *resourceSecurityGroupRule) Delete(ctx context.Context, req resource.Del
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	_, err := r.Client.DeleteSecurityGroupRule(ctx, delReq, options.WithRetryTimeout(deleteTimeout))
+	_, err := r.Client.DeleteSecurityGroupRule(ctx, delReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to delete Security Group Rule.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(securityGroupRuleErrDelete, err.Error())
 	}
 }
 
-func (r *resourceSecurityGroupRule) readSecurityGroupsWithFilters(ctx context.Context, data SecurityGroupRuleModel, filter *osc.FiltersSecurityGroup) (*osc.ReadSecurityGroupsResponse, error) {
-	readTimeout, diag := data.Timeouts.Read(ctx, ReadDefaultTimeout)
-	if diag.HasError() {
-		return nil, fmt.Errorf("unable to parse 'security_group_rule' read timeout value: %v", diag.Errors())
-	}
-	ctx, cancel := context.WithTimeout(ctx, readTimeout)
-	defer cancel()
-
+func (r *resourceSecurityGroupRule) readSecurityGroupsWithFilters(ctx context.Context, timeout time.Duration, data SecurityGroupRuleModel, filter *osc.FiltersSecurityGroup) (*osc.ReadSecurityGroupsResponse, error) {
 	readReq := osc.ReadSecurityGroupsRequest{
 		Filters: filter,
 	}
-	readResp, err := r.Client.ReadSecurityGroups(ctx, readReq, options.WithRetryTimeout(readTimeout))
+	readResp, err := r.Client.ReadSecurityGroups(ctx, readReq, options.WithRetryTimeout(timeout))
 	if err != nil {
 		return nil, err
 	}
@@ -661,8 +643,12 @@ func (r *resourceSecurityGroupRule) read(ctx context.Context, data SecurityGroup
 		return data, err
 	}
 
+	return r.flatten(data, *securityGroup), nil
+}
+
+func (r *resourceSecurityGroupRule) flatten(data SecurityGroupRuleModel, securityGroup osc.SecurityGroup) SecurityGroupRuleModel {
 	data.SecurityGroupName = to.String(securityGroup.SecurityGroupName)
 	data.NetId = to.String(ptr.From(securityGroup.NetId))
 
-	return data, nil
+	return data
 }

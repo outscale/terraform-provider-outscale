@@ -2,6 +2,7 @@ package oapi_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/outscale/terraform-provider-outscale/internal/services/oapi/oapihelpers"
@@ -63,6 +64,25 @@ func TestAccNet_Peeringconnection_Migration(t *testing.T) {
 	})
 }
 
+func TestAccNet_PeeringConnection_CreateFailureKeepsState(t *testing.T) {
+	resourceName := "outscale_net_peering.foo"
+	invalidTagKey := strings.Repeat("a", 256)
+	tagValue := "testacc-net-peering"
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
+		Steps: testacc.CreateFailureReplacementSteps(
+			resourceName,
+			testAccOAPIVpcPeeringConfigWithTag(invalidTagKey, tagValue),
+			testAccOAPIVpcPeeringConfigWithTag("Name", tagValue),
+			resource.ComposeTestCheckFunc(
+				resource.TestCheckResourceAttrSet(resourceName, "net_peering_id"),
+				resource.TestCheckResourceAttr(resourceName, "tags.0.value", tagValue),
+			),
+		),
+	})
+}
+
 func testAccOAPIVpcPeeringConfig(accountid string) string {
 	return fmt.Sprintf(`
 	resource "outscale_net" "foo" {
@@ -116,4 +136,25 @@ func testAccOAPIVpcPeeringConfig2() string {
 		accepter_net_id = outscale_net.bar.id
 	}
 `
+}
+
+func testAccOAPIVpcPeeringConfigWithTag(tagKey, tagValue string) string {
+	return fmt.Sprintf(`
+	resource "outscale_net" "foo" {
+		ip_range = "10.0.0.0/16"
+	}
+
+	resource "outscale_net" "bar" {
+		ip_range = "10.1.0.0/16"
+	}
+
+	resource "outscale_net_peering" "foo" {
+		source_net_id   = outscale_net.foo.id
+		accepter_net_id = outscale_net.bar.id
+		tags {
+			key   = %q
+			value = %q
+		}
+	}
+`, tagKey, tagValue)
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 
@@ -17,6 +18,7 @@ import (
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/stateconf"
 	"github.com/samber/lo"
@@ -27,6 +29,13 @@ var (
 	_ resource.ResourceWithConfigure   = &resourceNetAccessPoint{}
 	_ resource.ResourceWithImportState = &resourceNetAccessPoint{}
 	_ resource.ResourceWithModifyPlan  = &resourceNetAccessPoint{}
+)
+
+const (
+	netAccessPointErrCreate = "Unable to create Net Access Point"
+	netAccessPointErrUpdate = "Unable to update Net Access Point"
+	netAccessPointErrDelete = "Unable to delete Net Access Point"
+	netAccessPointErrWait   = "Unable to wait for Net Access Point state"
 )
 
 type NetAccessPointModel struct {
@@ -160,7 +169,7 @@ func (r *resourceNetAccessPoint) Create(ctx context.Context, req resource.Create
 		return
 	}
 
-	createTimeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
+	timeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
@@ -180,18 +189,28 @@ func (r *resourceNetAccessPoint) Create(ctx context.Context, req resource.Create
 		createReq.RouteTableIds = &rtIds
 	}
 
-	createResp, err := r.Client.CreateNetAccessPoint(ctx, createReq, options.WithRetryTimeout(createTimeout))
+	createResp, err := r.Client.CreateNetAccessPoint(ctx, createReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to create Net Access Point resource.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(netAccessPointErrCreate, err.Error())
 		return
 	}
-	data.RequestId = to.String(createResp.ResponseContext.RequestId)
-	netAccessPoint := createResp.NetAccessPoint
 
-	diag := createOAPITagsFW(ctx, r.Client, createTimeout, data.Tags, netAccessPoint.NetAccessPointId)
+	netAccessPoint := *createResp.NetAccessPoint
+	data.RequestId = to.String(createResp.ResponseContext.RequestId)
+	data.NetAccessPointId = to.String(netAccessPoint.NetAccessPointId)
+	data.Id = to.String(netAccessPoint.NetAccessPointId)
+
+	stateData, err := r.flatten(ctx, data, netAccessPoint)
+	if err != nil {
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
+		return
+	}
+	diags = resp.State.Set(ctx, &stateData)
+	if fwhelpers.CheckDiags(resp, diags) {
+		return
+	}
+
+	diag := createOAPITagsFW(ctx, r.Client, timeout, data.Tags, netAccessPoint.NetAccessPointId)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
@@ -199,31 +218,24 @@ func (r *resourceNetAccessPoint) Create(ctx context.Context, req resource.Create
 	stateConf := &stateconf.StateChangeConf[osc.NetAccessPointState]{
 		Pending: stateconf.States(osc.NetAccessPointStatePending),
 		Target:  stateconf.States(osc.NetAccessPointStateAvailable),
-		Timeout: createTimeout,
-		Refresh: r.stateRefreshFunc(netAccessPoint.NetAccessPointId),
+		Timeout: timeout,
+		Refresh: r.refreshFunc(netAccessPoint.NetAccessPointId),
 	}
 
-	if _, err = stateConf.WaitForStateContext(ctx); err != nil {
-		resp.Diagnostics.AddError(
-			fmt.Sprintf(
-				"Error waiting for Net Access Point (%s) to become available.",
-				netAccessPoint.NetAccessPointId),
-			err.Error(),
-		)
-		return
-	}
-
-	data.NetAccessPointId = to.String(netAccessPoint.NetAccessPointId)
-	data.Id = to.String(netAccessPoint.NetAccessPointId)
-	data, err = setNetAccessPointState(ctx, r, data)
+	napAny, err := stateConf.WaitForStateContext(ctx)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to set Net Access Point state",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(netAccessPointErrWait, err.Error())
 		return
 	}
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+
+	// We set the last read response to the state
+	stateData, err = r.flatten(ctx, data, napAny.(osc.NetAccessPoint))
+	if err != nil {
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &stateData)...)
 }
 
 func (r *resourceNetAccessPoint) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -234,16 +246,18 @@ func (r *resourceNetAccessPoint) Read(ctx context.Context, req resource.ReadRequ
 		return
 	}
 
-	data, err := setNetAccessPointState(ctx, r, data)
+	timeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
+	if fwhelpers.CheckDiags(resp, diags) {
+		return
+	}
+
+	data, err := r.read(ctx, timeout, data)
 	if err != nil {
 		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(
-			"Unable to set Net Access Point API response values.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -260,12 +274,12 @@ func (r *resourceNetAccessPoint) Update(ctx context.Context, req resource.Update
 		return
 	}
 
-	updateTimeout, diags := planData.Timeouts.Update(ctx, UpdateDefaultTimeout)
+	timeout, diags := planData.Timeouts.Update(ctx, UpdateDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
-	diags = updateOAPITagsFW(ctx, r.Client, updateTimeout, stateData.Tags, planData.Tags, stateData.NetAccessPointId.ValueString())
+	diags = updateOAPITagsFW(ctx, r.Client, timeout, stateData.Tags, planData.Tags, stateData.NetAccessPointId.ValueString())
 	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
@@ -290,25 +304,20 @@ func (r *resourceNetAccessPoint) Update(ctx context.Context, req resource.Update
 		if len(removeIds) > 0 {
 			updateReq.RemoveRouteTableIds = &removeIds
 		}
-		_, err := r.Client.UpdateNetAccessPoint(ctx, updateReq, options.WithRetryTimeout(updateTimeout))
+		_, err := r.Client.UpdateNetAccessPoint(ctx, updateReq, options.WithRetryTimeout(timeout))
 		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable to update Net Access Point resource.",
-				err.Error(),
-			)
+			resp.Diagnostics.AddError(netAccessPointErrUpdate, err.Error())
 			return
 		}
 	}
 
 	stateData.Timeouts = planData.Timeouts
-	data, err := setNetAccessPointState(ctx, r, stateData)
+	data, err := r.read(ctx, timeout, stateData)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to set Net Access Point state.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, data)...)
 }
 
@@ -320,7 +329,7 @@ func (r *resourceNetAccessPoint) Delete(ctx context.Context, req resource.Delete
 		return
 	}
 
-	deleteTimeout, diags := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
+	timeout, diags := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
@@ -329,28 +338,20 @@ func (r *resourceNetAccessPoint) Delete(ctx context.Context, req resource.Delete
 		NetAccessPointId: data.NetAccessPointId.ValueString(),
 	}
 
-	_, err := r.Client.DeleteNetAccessPoint(ctx, delReq, options.WithRetryTimeout(deleteTimeout))
+	_, err := r.Client.DeleteNetAccessPoint(ctx, delReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to Delete Net Access Point.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(netAccessPointErrDelete, err.Error())
 	}
 }
 
-func setNetAccessPointState(ctx context.Context, r *resourceNetAccessPoint, data NetAccessPointModel) (NetAccessPointModel, error) {
+func (r *resourceNetAccessPoint) read(ctx context.Context, timeout time.Duration, data NetAccessPointModel) (NetAccessPointModel, error) {
 	readReq := osc.ReadNetAccessPointsRequest{
 		Filters: &osc.FiltersNetAccessPoint{
 			NetAccessPointIds: &[]string{data.NetAccessPointId.ValueString()},
 		},
 	}
 
-	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
-	if diags.HasError() {
-		return data, fmt.Errorf("unable to parse 'net access point' read timeout value: %v", diags.Errors())
-	}
-
-	readResp, err := r.Client.ReadNetAccessPoints(ctx, readReq, options.WithRetryTimeout(readTimeout))
+	readResp, err := r.Client.ReadNetAccessPoints(ctx, readReq, options.WithRetryTimeout(timeout))
 	if err != nil {
 		return data, err
 	}
@@ -361,13 +362,17 @@ func setNetAccessPointState(ctx context.Context, r *resourceNetAccessPoint, data
 	}
 	netAccessPoint := (*readResp.NetAccessPoints)[0]
 
+	return r.flatten(ctx, data, netAccessPoint)
+}
+
+func (r *resourceNetAccessPoint) flatten(ctx context.Context, data NetAccessPointModel, netAccessPoint osc.NetAccessPoint) (NetAccessPointModel, error) {
 	routeTablesIds, diags := types.SetValueFrom(ctx, types.StringType, netAccessPoint.RouteTableIds)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to convert route tables ids into a set: %v", diags.Errors())
+		return data, from.Diag(diags)
 	}
 	tags, diag := flattenOAPITagsFW(ctx, netAccessPoint.Tags)
 	if diag.HasError() {
-		return data, fmt.Errorf("unable to flatten tags: %v", diags.Errors())
+		return data, from.Diag(diag)
 	}
 	data.Tags = tags
 
@@ -381,7 +386,7 @@ func setNetAccessPointState(ctx context.Context, r *resourceNetAccessPoint, data
 	return data, nil
 }
 
-func (r *resourceNetAccessPoint) stateRefreshFunc(id string) func(ctx context.Context) (any, osc.NetAccessPointState, error) {
+func (r *resourceNetAccessPoint) refreshFunc(id string) func(ctx context.Context) (any, osc.NetAccessPointState, error) {
 	return func(ctx context.Context) (any, osc.NetAccessPointState, error) {
 		readReq := osc.ReadNetAccessPointsRequest{Filters: &osc.FiltersNetAccessPoint{NetAccessPointIds: &[]string{id}}}
 
@@ -394,6 +399,6 @@ func (r *resourceNetAccessPoint) stateRefreshFunc(id string) func(ctx context.Co
 		}
 
 		nap := (*resp.NetAccessPoints)[0]
-		return resp, nap.State, nil
+		return nap, nap.State, nil
 	}
 }

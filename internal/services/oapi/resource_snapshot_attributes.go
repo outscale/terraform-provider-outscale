@@ -37,8 +37,6 @@ var (
 
 const (
 	snapAttrErrCreate = "Unable to create Snapshot Attributes"
-	snapAttrErrRead   = "Unable to read Snapshot Attributes"
-	snapAttrErrState  = "Unable to set Snapshot Attributes state"
 )
 
 type snapshotAttributesModel struct {
@@ -237,10 +235,12 @@ func (r *snapshotAttributesResource) Create(ctx context.Context, req resource.Cr
 	}
 
 	data.Id = to.String(snapshotId)
+	// The API response does not contain enough information to set the state directly, which would cause an error.
+	// The next read will fill the state
 
 	stateData, err := r.read(ctx, timeout, data)
 	if err != nil {
-		resp.Diagnostics.AddError(snapAttrErrState, err.Error())
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -262,7 +262,7 @@ func (r *snapshotAttributesResource) Read(ctx context.Context, req resource.Read
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(snapAttrErrRead, err.Error())
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 

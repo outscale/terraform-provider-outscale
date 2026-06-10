@@ -165,6 +165,7 @@ func resourceOAPISnapshotExportTaskCreate(ctx context.Context, d *schema.Resourc
 	}
 
 	id := resp.SnapshotExportTask.TaskId
+	d.SetId(id)
 
 	wait := d.Get("wait_for_completion").(bool)
 	if wait {
@@ -174,7 +175,6 @@ func resourceOAPISnapshotExportTaskCreate(ctx context.Context, d *schema.Resourc
 		}
 	}
 
-	d.SetId(id)
 	if d.IsNewResource() {
 		if err := updateOAPITagsSDK(ctx, client, timeout, d); err != nil {
 			return diag.FromErr(err)

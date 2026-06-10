@@ -31,11 +31,9 @@ var (
 )
 
 const (
-	natSvcErrCreate       = "Unable to create NAT Service"
-	natSvcErrRead         = "Unable to read NAT Service"
-	natSvcErrDelete       = "Unable to delete NAT Service"
-	natSvcErrState        = "Unable to set NAT Service state"
-	natSvcErrNotAvailable = "Unable to wait for NAT Service to be available"
+	natSvcErrCreate = "Unable to create NAT Service"
+	natSvcErrDelete = "Unable to delete NAT Service"
+	natSvcErrState  = "Unable to wait for NAT Service state"
 )
 
 type natServiceModel struct {
@@ -199,17 +197,17 @@ func (r *natServiceResource) Create(ctx context.Context, req resource.CreateRequ
 	createResp := respAny.(*osc.CreateNatServiceResponse)
 
 	natServiceId := createResp.NatService.NatServiceId
+	data.RequestId = to.String(createResp.ResponseContext.RequestId)
 	data.Id = to.String(natServiceId)
 	data.NatServiceId = to.String(natServiceId)
 
-	stateConf := &stateconf.StateChangeConf[osc.NatServiceState]{
-		Pending: stateconf.States(osc.NatServiceStatePending),
-		Target:  stateconf.States(osc.NatServiceStateAvailable),
-		Timeout: timeout,
-		Refresh: r.stateRefreshFunc(natServiceId),
+	stateData, err := r.flatten(ctx, data, *createResp.NatService)
+	if err != nil {
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
+		return
 	}
-	if _, err := stateConf.WaitForStateContext(ctx); err != nil {
-		resp.Diagnostics.AddError(natSvcErrNotAvailable, err.Error())
+	diags = resp.State.Set(ctx, &stateData)
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
@@ -218,9 +216,22 @@ func (r *natServiceResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	stateData, err := r.read(ctx, timeout, data)
+	stateConf := &stateconf.StateChangeConf[osc.NatServiceState]{
+		Pending: stateconf.States(osc.NatServiceStatePending),
+		Target:  stateconf.States(osc.NatServiceStateAvailable),
+		Timeout: timeout,
+		Refresh: r.stateRefreshFunc(natServiceId),
+	}
+	natAny, err := stateConf.WaitForStateContext(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(natSvcErrState, err.Error())
+		return
+	}
+
+	// We set the last read response to the state
+	stateData, err = r.flatten(ctx, data, natAny.(osc.NatService))
+	if err != nil {
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -242,7 +253,7 @@ func (r *natServiceResource) Read(ctx context.Context, req resource.ReadRequest,
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(natSvcErrRead, err.Error())
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -273,7 +284,7 @@ func (r *natServiceResource) Update(ctx context.Context, req resource.UpdateRequ
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(natSvcErrState, err.Error())
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -332,6 +343,12 @@ func (r *natServiceResource) read(ctx context.Context, timeout time.Duration, da
 		return data, ErrResourceEmpty
 	}
 
+	data.RequestId = to.String(resp.ResponseContext.RequestId)
+
+	return r.flatten(ctx, data, natService)
+}
+
+func (r *natServiceResource) flatten(ctx context.Context, data natServiceModel, natService osc.NatService) (natServiceModel, error) {
 	tags, diag := flattenOAPITagsFW(ctx, natService.Tags)
 	if diag.HasError() {
 		return data, from.Diag(diag)
@@ -343,7 +360,6 @@ func (r *natServiceResource) read(ctx context.Context, timeout time.Duration, da
 	}
 
 	data.Tags = tags
-	data.RequestId = to.String(resp.ResponseContext.RequestId)
 	data.Id = to.String(natService.NatServiceId)
 	data.NatServiceId = to.String(natService.NatServiceId)
 	data.NetId = to.String(natService.NetId)
@@ -386,6 +402,7 @@ func (r *natServiceResource) stateRefreshFunc(id string) func(context.Context) (
 		}
 
 		natService := (*resp.NatServices)[0]
-		return resp, natService.State, nil
+
+		return natService, natService.State, nil
 	}
 }

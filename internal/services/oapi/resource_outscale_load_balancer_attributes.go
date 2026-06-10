@@ -323,11 +323,12 @@ func ResourceOutscaleLoadBalancerAttributesCreate_(ctx context.Context, d *schem
 		req.PolicyNames = &a
 	}
 	if isUpdate {
-		err := loadBalancerAttributesDoRequest(ctx, d, meta, req, timeout)
-		if err != nil {
-			return err
+		diags := loadBalancerAttributesDoRequest(ctx, d, meta, req, timeout)
+		if diags != nil {
+			return diags
 		}
-		return diag.FromErr(waitForLbuActive(ctx, conn, ename.(string), timeout))
+		_, err := waitForLbuActive(ctx, conn, ename.(string), timeout)
+		return diag.FromErr(err)
 	}
 
 	if ssl, sok := d.GetOk("server_certificate_id"); sok {
@@ -386,12 +387,13 @@ func ResourceOutscaleLoadBalancerAttributesCreate_(ctx context.Context, d *schem
 		req.HealthCheck = &healthCheck
 	}
 
-	err := loadBalancerAttributesDoRequest(ctx, d, meta, req, timeout)
-	if err != nil {
-		return err
+	diags := loadBalancerAttributesDoRequest(ctx, d, meta, req, timeout)
+	if diags != nil {
+		return diags
 	}
 
-	return diag.FromErr(waitForLbuActive(ctx, conn, ename.(string), timeout))
+	_, err := waitForLbuActive(ctx, conn, ename.(string), timeout)
+	return diag.FromErr(err)
 }
 
 func ResourceOutscaleLoadBalancerAttributesRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {

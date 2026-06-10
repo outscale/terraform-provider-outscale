@@ -35,12 +35,10 @@ var (
 
 const (
 	snapshotErrCreate = "Unable to create Snapshot"
-	snapshotErrRead   = "Unable to read Snapshot"
 	snapshotErrDelete = "Unable to delete Snapshot"
-	snapshotErrState  = "Unable to set Snapshot state"
 	snapshotErrWait   = "Unable to wait for Snapshot to be available"
 
-	snapshotCreateTimeout = 40 * time.Minute
+	snapshottimeout = 40 * time.Minute
 )
 
 type snapshotModel struct {
@@ -251,7 +249,7 @@ func (r *snapshotResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
-	timeout, diag := data.Timeouts.Create(ctx, snapshotCreateTimeout)
+	timeout, diag := data.Timeouts.Create(ctx, snapshottimeout)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
@@ -284,8 +282,24 @@ func (r *snapshotResource) Create(ctx context.Context, req resource.CreateReques
 	}
 
 	snapshotId := createResp.Snapshot.SnapshotId
+	data.RequestId = to.String(createResp.ResponseContext.RequestId)
 	data.Id = to.String(snapshotId)
 	data.SnapshotId = to.String(snapshotId)
+
+	stateData, err := r.flatten(ctx, data, *createResp.Snapshot)
+	if err != nil {
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
+		return
+	}
+	diag = resp.State.Set(ctx, &stateData)
+	if fwhelpers.CheckDiags(resp, diag) {
+		return
+	}
+
+	diag = createOAPITagsFW(ctx, r.Client, timeout, data.Tags, snapshotId)
+	if fwhelpers.CheckDiags(resp, diag) {
+		return
+	}
 
 	stateConf := &stateconf.StateChangeConf[osc.SnapshotState]{
 		Pending: stateconf.States(
@@ -296,19 +310,15 @@ func (r *snapshotResource) Create(ctx context.Context, req resource.CreateReques
 		Timeout: timeout,
 		Refresh: r.stateRefreshFunc(snapshotId),
 	}
-	if _, err := stateConf.WaitForStateContext(ctx); err != nil {
+	snapshotAny, err := stateConf.WaitForStateContext(ctx)
+	if err != nil {
 		resp.Diagnostics.AddError(snapshotErrWait, err.Error())
 		return
 	}
 
-	diag = createOAPITagsFW(ctx, r.Client, timeout, data.Tags, snapshotId)
-	if fwhelpers.CheckDiags(resp, diag) {
-		return
-	}
-
-	stateData, err := r.read(ctx, timeout, data)
+	stateData, err = r.flatten(ctx, data, snapshotAny.(osc.Snapshot))
 	if err != nil {
-		resp.Diagnostics.AddError(snapshotErrState, err.Error())
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -330,7 +340,7 @@ func (r *snapshotResource) Read(ctx context.Context, req resource.ReadRequest, r
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(snapshotErrRead, err.Error())
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -361,7 +371,7 @@ func (r *snapshotResource) Update(ctx context.Context, req resource.UpdateReques
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(snapshotErrState, err.Error())
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -402,7 +412,12 @@ func (r *snapshotResource) read(ctx context.Context, timeout time.Duration, data
 	}
 
 	snapshot := (*resp.Snapshots)[0]
+	data.RequestId = to.String(resp.ResponseContext.RequestId)
 
+	return r.flatten(ctx, data, snapshot)
+}
+
+func (r *snapshotResource) flatten(ctx context.Context, data snapshotModel, snapshot osc.Snapshot) (snapshotModel, error) {
 	tags, diag := flattenOAPITagsFW(ctx, ptr.From(snapshot.Tags))
 	if diag.HasError() {
 		return data, from.Diag(diag)
@@ -423,7 +438,6 @@ func (r *snapshotResource) read(ctx context.Context, timeout time.Duration, data
 	data.Progress = to.Int64(ptr.From(snapshot.Progress))
 	data.State = to.String(snapshot.State)
 	data.VolumeSize = to.Int64(snapshot.VolumeSize)
-	data.RequestId = to.String(resp.ResponseContext.RequestId)
 	data.Id = to.String(snapshot.SnapshotId)
 	data.Tags = tags
 
@@ -457,6 +471,6 @@ func (r *snapshotResource) stateRefreshFunc(id string) func(context.Context) (an
 		}
 
 		snapshot := (*resp.Snapshots)[0]
-		return resp, snapshot.State, nil
+		return snapshot, snapshot.State, nil
 	}
 }

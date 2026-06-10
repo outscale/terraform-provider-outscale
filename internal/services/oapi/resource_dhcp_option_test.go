@@ -91,6 +91,25 @@ func TestAccOthers_DHCPOption_Migration(t *testing.T) {
 	})
 }
 
+func TestAccOthers_DHCPOption_CreateFailureKeepsState(t *testing.T) {
+	resourceName := "outscale_dhcp_option.foo"
+	invalidTagKey := strings.Repeat("a", 256)
+	tagValue := "testacc-dhcp-option"
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
+		Steps: testacc.CreateFailureReplacementSteps(
+			resourceName,
+			testAccDHCPOptionConfigWithTag("foo", invalidTagKey, tagValue),
+			testAccDHCPOptionConfigWithTag("foo", "name", tagValue),
+			resource.ComposeTestCheckFunc(
+				resource.TestCheckResourceAttrSet(resourceName, "dhcp_options_set_id"),
+				resource.TestCheckResourceAttr(resourceName, "tags.0.value", tagValue),
+			),
+		),
+	})
+}
+
 func testAccDHCPOptionalBasicConfig(ntpServers bool, logServers bool) string {
 	var ntp string
 	var log string
@@ -113,6 +132,20 @@ func testAccDHCPOptionalBasicConfig(ntpServers bool, logServers bool) string {
 		%s
 	}
 	`, ntp, log)
+}
+
+func testAccDHCPOptionConfigWithTag(resourceName, tagKey, tagValue string) string {
+	return fmt.Sprintf(`
+	resource "outscale_dhcp_option" %q {
+		domain_name         = "test.fr"
+		domain_name_servers = ["192.168.12.1"]
+
+		tags {
+			key   = %q
+			value = %q
+		}
+	}
+	`, resourceName, tagKey, tagValue)
 }
 
 func testAccOAPIDHCPOptionalWithNet(domainName string, domainServers []string) string {

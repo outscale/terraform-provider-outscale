@@ -3,6 +3,7 @@ package testacc
 import (
 	"context"
 	"fmt"
+	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
@@ -27,6 +28,8 @@ var (
 	SDKProviders = map[string]*schema.Provider{
 		"outscale": SDKProvider,
 	}
+
+	anyRegexp = regexp.MustCompile(`(?s).+`)
 )
 
 // Returns a map of provider factories for testing with protocol v6
@@ -179,5 +182,29 @@ func importStep(resourceName string, importStateIdFunc resource.ImportStateIdFun
 func DefaultIgnores() []string {
 	return []string{
 		"request_id",
+	}
+}
+
+// CreateFailureReplacementSteps verifies that a create operation failure leaves a tainted resource in state, which Terraform then plans to replace on the next apply
+func CreateFailureReplacementSteps(resourceName, failingConfig string, workingConfig string, check resource.TestCheckFunc) []resource.TestStep {
+	return []resource.TestStep{
+		{
+			Config:      failingConfig,
+			ExpectError: anyRegexp, // expect any error during the failing create
+		},
+		{
+			RefreshState:       true,
+			ExpectNonEmptyPlan: true,
+			RefreshPlanChecks: resource.RefreshPlanChecks{
+				PostRefresh: []plancheck.PlanCheck{
+					// a tainted resource is planned for replacement on the next plan
+					plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionReplace),
+				},
+			},
+		},
+		{
+			Config: workingConfig,
+			Check:  check,
+		},
 	}
 }

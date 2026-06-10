@@ -106,6 +106,51 @@ func TestAccOthers_UserGroup_WithPolicy(t *testing.T) {
 	})
 }
 
+func TestAccOthers_UserGroup_CreateFailureKeepsState(t *testing.T) {
+	resourceName := "outscale_user_group.userGroupAcc"
+	groupName := acctest.RandomWithPrefix("testacc-ug")
+	invalidUserName := acctest.RandomWithPrefix("testacc-missing-user")
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
+		Steps: testacc.CreateFailureReplacementSteps(
+			resourceName,
+			testAccUserGroupWithInvalidUser(groupName, invalidUserName),
+			testAccUserGroupBasicConfigWithResourceName("userGroupAcc", groupName),
+			resource.ComposeTestCheckFunc(
+				resource.TestCheckResourceAttrSet(resourceName, "user_group_name"),
+				resource.TestCheckResourceAttr(resourceName, "user_group_name", groupName),
+				resource.TestCheckResourceAttr(resourceName, "path", "/"),
+				resource.TestCheckResourceAttr(resourceName, "user.#", "0"),
+				resource.TestCheckResourceAttr(resourceName, "policy.#", "0"),
+			),
+		),
+	})
+}
+
+func TestAccOthers_UserGroup_CreatePolicyFailureKeepsState(t *testing.T) {
+	resourceName := "outscale_user_group.userGroupAccPolicyFailure"
+	groupName := acctest.RandomWithPrefix("testacc-ug")
+	userName := acctest.RandomWithPrefix("testacc-user")
+	invalidPolicyOrn := fmt.Sprintf("orn:ows:iam::000000000000:policy/%s", acctest.RandomWithPrefix("testacc-missing-policy"))
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
+		Steps: testacc.CreateFailureReplacementSteps(
+			resourceName,
+			testAccUserGroupWithInvalidPolicy(groupName, userName, invalidPolicyOrn),
+			testAccUserGroupWithUsersConfigAndResourceName("userGroupAccPolicyFailure", groupName, userName),
+			resource.ComposeTestCheckFunc(
+				resource.TestCheckResourceAttrSet(resourceName, "user_group_name"),
+				resource.TestCheckResourceAttr(resourceName, "user_group_name", groupName),
+				resource.TestCheckResourceAttr(resourceName, "path", "/"),
+				resource.TestCheckResourceAttr(resourceName, "user.#", "1"),
+				resource.TestCheckResourceAttr(resourceName, "policy.#", "0"),
+			),
+		),
+	})
+}
+
 func TestAccOthers_UserGroup_Migration(t *testing.T) {
 	groupName := acctest.RandomWithPrefix("testacc-ug")
 
@@ -115,11 +160,15 @@ func TestAccOthers_UserGroup_Migration(t *testing.T) {
 }
 
 func testAccUserGroupBasicConfig(name string) string {
+	return testAccUserGroupBasicConfigWithResourceName("basic_group", name)
+}
+
+func testAccUserGroupBasicConfigWithResourceName(resourceName, name string) string {
 	return fmt.Sprintf(`
-	resource "outscale_user_group" "basic_group" {
+	resource "outscale_user_group" %q {
 	  user_group_name = "%s"
 	  path = "/"
-	}`, name)
+	}`, resourceName, name)
 }
 
 func testAccUserGroupWithUsers(groupName, userName1, userName2 string) string {
@@ -145,6 +194,23 @@ func testAccUserGroupWithUsers(groupName, userName1, userName2 string) string {
 			}
 		}
 	`, userName1, userName2, groupName)
+}
+
+func testAccUserGroupWithUsersConfigAndResourceName(resourceName, groupName, userName string) string {
+	return fmt.Sprintf(`
+		resource "outscale_user" "userToAdd1" {
+			user_name = %q
+			path = "/"
+		}
+
+		resource "outscale_user_group" %q {
+			user_group_name = %q
+			path = "/"
+			user {
+				user_name = outscale_user.userToAdd1.user_name
+			}
+		}
+	`, userName, resourceName, groupName)
 }
 
 func testAccUserGroupWithPolicy(groupName, userName1, userName2, policyName string) string {
@@ -206,4 +272,36 @@ func testAccUserGroupUpdate(groupName, userName1, userName2 string) string {
 			depends_on = [outscale_user.userUpToAdd01]
 		}
 	`, userName1, userName2, groupName, userName1)
+}
+
+func testAccUserGroupWithInvalidUser(groupName, userName string) string {
+	return fmt.Sprintf(`
+		resource "outscale_user_group" "userGroupAcc" {
+			user_group_name = "%s"
+			path = "/"
+			user {
+				user_name = "%s"
+			}
+		}
+	`, groupName, userName)
+}
+
+func testAccUserGroupWithInvalidPolicy(groupName, userName, policyOrn string) string {
+	return fmt.Sprintf(`
+		resource "outscale_user" "userToAdd1" {
+			user_name = %q
+			path = "/"
+		}
+
+		resource "outscale_user_group" "userGroupAccPolicyFailure" {
+			user_group_name = %q
+			path = "/"
+			user {
+				user_name = outscale_user.userToAdd1.user_name
+			}
+			policy {
+				policy_orn = %q
+			}
+		}
+	`, userName, groupName, policyOrn)
 }

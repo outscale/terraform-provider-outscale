@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -17,6 +18,7 @@ import (
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 )
 
@@ -25,6 +27,11 @@ var (
 	_ resource.ResourceWithConfigure   = &resourceInternetService{}
 	_ resource.ResourceWithImportState = &resourceInternetService{}
 	_ resource.ResourceWithModifyPlan  = &resourceInternetService{}
+)
+
+const (
+	internetServiceErrCreate = "Unable to create Internet Service"
+	internetServiceErrDelete = "Unable to delete Internet Service"
 )
 
 type InternetServiceModel struct {
@@ -147,41 +154,44 @@ func (r *resourceInternetService) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
-	createTimeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
+	timeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
 	createReq := osc.CreateInternetServiceRequest{}
 
-	createResp, err := r.Client.CreateInternetService(ctx, createReq, options.WithRetryTimeout(createTimeout))
+	createResp, err := r.Client.CreateInternetService(ctx, createReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to create Internet Service resource.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(internetServiceErrCreate, err.Error())
 		return
 	}
-	data.RequestId = to.String(createResp.ResponseContext.RequestId)
 	internetService := ptr.From(createResp.InternetService)
+	data.RequestId = to.String(createResp.ResponseContext.RequestId)
+	data.InternetServiceId = to.String(internetService.InternetServiceId)
+	data.Id = to.String(internetService.InternetServiceId)
 
-	diag := createOAPITagsFW(ctx, r.Client, createTimeout, data.Tags, internetService.InternetServiceId)
+	stateData, err := r.flatten(ctx, data, internetService)
+	if err != nil {
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
+		return
+	}
+	diags = resp.State.Set(ctx, &stateData)
+	if fwhelpers.CheckDiags(resp, diags) {
+		return
+	}
+
+	diag := createOAPITagsFW(ctx, r.Client, timeout, data.Tags, internetService.InternetServiceId)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
 
-	data.InternetServiceId = to.String(internetService.InternetServiceId)
-	data.Id = to.String(internetService.InternetServiceId)
-
-	data, err = r.read(ctx, data)
+	stateData, err = r.read(ctx, timeout, data)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to set Internet Service state.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &stateData)...)
 }
 
 func (r *resourceInternetService) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -192,16 +202,18 @@ func (r *resourceInternetService) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	data, err := r.read(ctx, data)
+	timeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
+	if fwhelpers.CheckDiags(resp, diags) {
+		return
+	}
+
+	data, err := r.read(ctx, timeout, data)
 	if err != nil {
 		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(
-			"Unable to set Internet Service API response values.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -229,12 +241,9 @@ func (r *resourceInternetService) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
-	stateData, err := r.read(ctx, planData)
+	stateData, err := r.read(ctx, timeout, planData)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to set Internet Service state.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -249,7 +258,7 @@ func (r *resourceInternetService) Delete(ctx context.Context, req resource.Delet
 		return
 	}
 
-	deleteTimeout, diags := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
+	timeout, diags := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
@@ -258,16 +267,13 @@ func (r *resourceInternetService) Delete(ctx context.Context, req resource.Delet
 		InternetServiceId: data.InternetServiceId.ValueString(),
 	}
 
-	_, err := r.Client.DeleteInternetService(ctx, delReq, options.WithRetryTimeout(deleteTimeout))
+	_, err := r.Client.DeleteInternetService(ctx, delReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to delete Internet Service.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(internetServiceErrDelete, err.Error())
 	}
 }
 
-func (r *resourceInternetService) read(ctx context.Context, data InternetServiceModel) (InternetServiceModel, error) {
+func (r *resourceInternetService) read(ctx context.Context, timeout time.Duration, data InternetServiceModel) (InternetServiceModel, error) {
 	internetServiceFilters := osc.FiltersInternetService{
 		InternetServiceIds: &[]string{data.InternetServiceId.ValueString()},
 	}
@@ -275,12 +281,7 @@ func (r *resourceInternetService) read(ctx context.Context, data InternetService
 		Filters: &internetServiceFilters,
 	}
 
-	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
-	if diags.HasError() {
-		return data, fmt.Errorf("unable to parse 'internet service' read timeout value: %v", diags.Errors())
-	}
-
-	readResp, err := r.Client.ReadInternetServices(ctx, readReq, options.WithRetryTimeout(readTimeout))
+	readResp, err := r.Client.ReadInternetServices(ctx, readReq, options.WithRetryTimeout(timeout))
 	if err != nil {
 		return data, err
 	}
@@ -289,13 +290,17 @@ func (r *resourceInternetService) read(ctx context.Context, data InternetService
 	}
 
 	internetService := (*readResp.InternetServices)[0]
+	data.RequestId = to.String(readResp.ResponseContext.RequestId)
 
+	return r.flatten(ctx, data, internetService)
+}
+
+func (r *resourceInternetService) flatten(ctx context.Context, data InternetServiceModel, internetService osc.InternetService) (InternetServiceModel, error) {
 	tags, diag := flattenOAPITagsFW(ctx, internetService.Tags)
 	if diag.HasError() {
-		return data, fmt.Errorf("unable to flatten tags: %v", diags.Errors())
+		return data, from.Diag(diag)
 	}
 	data.Tags = tags
-	data.RequestId = to.String(readResp.ResponseContext.RequestId)
 	data.NetId = to.String(internetService.NetId)
 	data.State = to.String(internetService.State)
 	data.Id = to.String(internetService.InternetServiceId)

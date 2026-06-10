@@ -109,17 +109,41 @@ func TestAccOthers_User_Migration(t *testing.T) {
 	})
 }
 
+func TestAccOthers_User_CreatePolicyFailureKeepsState(t *testing.T) {
+	resourceName := "outscale_user.user_policy_failure"
+	userName := acctest.RandomWithPrefix("testacc-user")
+	invalidPolicyOrn := fmt.Sprintf("orn:ows:iam::000000000000:policy/%s", acctest.RandomWithPrefix("testacc-missing-policy"))
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
+		Steps: testacc.CreateFailureReplacementSteps(
+			resourceName,
+			testAccUserWithInvalidPolicy(userName, invalidPolicyOrn),
+			testAccUserBasicConfigWithResourceName("user_policy_failure", userName),
+			resource.ComposeTestCheckFunc(
+				resource.TestCheckResourceAttrSet(resourceName, "user_id"),
+				resource.TestCheckResourceAttr(resourceName, "user_name", userName),
+				resource.TestCheckResourceAttr(resourceName, "policy.#", "0"),
+			),
+		),
+	})
+}
+
 func testAccOutscaleUserBasicConfig(userName string) string {
+	return testAccUserBasicConfigWithResourceName("basic_user", userName)
+}
+
+func testAccUserBasicConfigWithResourceName(resourceName, userName string) string {
 	return fmt.Sprintf(`
-    resource "outscale_access_key" "access_key01" {
+	resource "outscale_access_key" "access_key01" {
 		state       = "ACTIVE"
-		user_name   = outscale_user.basic_user.user_name
-		depends_on  = [outscale_user.basic_user]
+		user_name   = outscale_user.%s.user_name
+		depends_on  = [outscale_user.%s]
 	}
-	resource "outscale_user" "basic_user" {
+	resource "outscale_user" %q {
 		user_name = "%s"
 		path = "/"
-	}`, userName)
+	}`, resourceName, resourceName, resourceName, userName)
 }
 
 func testAccOutscaleUserUpdatedConfig(name string) string {
@@ -173,4 +197,16 @@ func testAccUserWithPolicyVersionUpper(policyName, userName string) string {
 			}
 		}
 	`, policyName, userName)
+}
+
+func testAccUserWithInvalidPolicy(userName, policyOrn string) string {
+	return fmt.Sprintf(`
+		resource "outscale_user" "user_policy_failure" {
+			user_name = %q
+			path = "/"
+			policy {
+				policy_orn = %q
+			}
+		}
+	`, userName, policyOrn)
 }

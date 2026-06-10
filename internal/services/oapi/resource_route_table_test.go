@@ -3,6 +3,7 @@ package oapi_test
 import (
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -96,6 +97,31 @@ func TestAccNet_RouteTable_importBasic(t *testing.T) {
 			},
 			testacc.ImportStep(resourceName, testacc.DefaultIgnores()...),
 		},
+	})
+}
+
+func TestAccNet_RouteTable_CreateFailureKeepsState(t *testing.T) {
+	resourceName := "outscale_route_table.rtbTest"
+	invalidTagKey := strings.Repeat("a", 256)
+	tag := func(key string) string {
+		return fmt.Sprintf(`
+		tags {
+			key = %q
+			value = "Terraform-RT-3"
+		}`, key)
+	}
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
+		Steps: testacc.CreateFailureReplacementSteps(
+			resourceName,
+			testAccOAPIRouteTableConfigTags(tag(invalidTagKey)),
+			testAccOAPIRouteTableConfigTags(tag("name")),
+			resource.ComposeTestCheckFunc(
+				resource.TestCheckResourceAttrSet(resourceName, "route_table_id"),
+				resource.TestCheckResourceAttr(resourceName, "tags.0.value", "Terraform-RT-3"),
+			),
+		),
 	})
 }
 

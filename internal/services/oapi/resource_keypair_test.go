@@ -2,6 +2,7 @@ package oapi_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -78,6 +79,26 @@ func TestAccOthers_keypairUpdateTags(t *testing.T) {
 	})
 }
 
+func TestAccOthers_keypair_CreateFailureKeepsState(t *testing.T) {
+	resourceName := "outscale_keypair.update_keypair"
+	keypairName := acctest.RandomWithPrefix("basic-keypair")
+	invalidTagKey := strings.Repeat("a", 256)
+	tagValue := "testacc-keypair"
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
+		Steps: testacc.CreateFailureReplacementSteps(
+			resourceName,
+			testAcckeypairUpdateTagsWithKey(keypairName, invalidTagKey, tagValue),
+			testAcckeypairUpdateTags(keypairName, tagValue),
+			resource.ComposeTestCheckFunc(
+				resource.TestCheckResourceAttrSet(resourceName, "keypair_id"),
+				resource.TestCheckResourceAttr(resourceName, "tags.0.value", tagValue),
+			),
+		),
+	})
+}
+
 func testAcckeypairBasicConfig(keypair string) string {
 	return fmt.Sprintf(`
 			resource "outscale_keypair" "basic_keypair" {
@@ -87,13 +108,17 @@ func testAcckeypairBasicConfig(keypair string) string {
 }
 
 func testAcckeypairUpdateTags(keypairName, value string) string {
+	return testAcckeypairUpdateTagsWithKey(keypairName, "name", value)
+}
+
+func testAcckeypairUpdateTagsWithKey(keypairName, key, value string) string {
 	return fmt.Sprintf(`
 		resource "outscale_keypair" "update_keypair" {
 			keypair_name = "%[1]s"
 			tags {
-				key   = "name"
-				value = "%[2]s"
+				key   = "%[2]s"
+				value = "%[3]s"
 			}
 		}
-		`, keypairName, value)
+		`, keypairName, key, value)
 }

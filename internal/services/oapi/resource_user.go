@@ -35,6 +35,15 @@ var (
 	_ resource.ResourceWithImportState = &resourceUser{}
 )
 
+const (
+	userErrCreate  = "Unable to create User"
+	userErrUpdate  = "Unable to update User"
+	userErrDelete  = "Unable to delete User"
+	userErrUnlink  = "Unable to unlink policy from User"
+	userErrLink    = "Unable to link policy to User"
+	userErrDefault = "Unable to set default policy version for User policy"
+)
+
 type UserModel struct {
 	CreationDate         types.String   `tfsdk:"creation_date"`
 	LastModificationDate types.String   `tfsdk:"last_modification_date"`
@@ -177,7 +186,7 @@ func (r *resourceUser) Create(ctx context.Context, req resource.CreateRequest, r
 	var data UserModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
-	createTimeout, diag := data.Timeouts.Create(ctx, CreateDefaultTimeout)
+	timeout, diag := data.Timeouts.Create(ctx, CreateDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
@@ -191,33 +200,37 @@ func (r *resourceUser) Create(ctx context.Context, req resource.CreateRequest, r
 		createReq.UserEmail = data.UserEmail.ValueStringPointer()
 	}
 
-	createResp, err := r.Client.CreateUser(ctx, createReq, options.WithRetryTimeout(createTimeout))
+	createResp, err := r.Client.CreateUser(ctx, createReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to create User",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(userErrCreate, err.Error())
 		return
 	}
 	data.Id = to.String(createResp.User.UserId)
+
+	stateData, err := r.flatten(ctx, timeout, data, *createResp.User, nil)
+	if err != nil {
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
+		return
+	}
+	diag = resp.State.Set(ctx, &stateData)
+	if fwhelpers.CheckDiags(resp, diag) {
+		return
+	}
 
 	if fwhelpers.IsSet(data.Policies) {
 		policies, diag := to.Slice[UserPolicyModel](ctx, data.Policies)
 		if fwhelpers.CheckDiags(resp, diag) {
 			return
 		}
-		diag = r.linkPolicies(ctx, createTimeout, data.UserName.ValueString(), policies)
+		diag = r.linkPolicies(ctx, timeout, data.UserName.ValueString(), policies)
 		if fwhelpers.CheckDiags(resp, diag) {
 			return
 		}
 	}
 
-	stateData, err := r.read(ctx, createTimeout, data)
+	stateData, err = r.read(ctx, timeout, data)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to set User state",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -249,10 +262,7 @@ func (r *resourceUser) Read(ctx context.Context, req resource.ReadRequest, resp 
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(
-			"Unable to set User API response values",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -298,10 +308,7 @@ func (r *resourceUser) Update(ctx context.Context, req resource.UpdateRequest, r
 	if updateUser {
 		_, err := r.Client.UpdateUser(ctx, updateReq, options.WithRetryTimeout(timeout))
 		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable to update User",
-				err.Error(),
-			)
+			resp.Diagnostics.AddError(userErrUpdate, err.Error())
 		}
 	}
 
@@ -312,10 +319,7 @@ func (r *resourceUser) Update(ctx context.Context, req resource.UpdateRequest, r
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(
-			"Unable to set User API response values",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -356,10 +360,7 @@ func (r *resourceUser) unlinkPolicies(ctx context.Context, timeout time.Duration
 
 		_, err := r.Client.UnlinkPolicy(ctx, req, options.WithRetryTimeout(timeout))
 		if err != nil {
-			diags.AddError(
-				"Unable to unlink policy from User",
-				err.Error(),
-			)
+			diags.AddError(userErrUnlink, err.Error())
 			return diags
 		}
 	}
@@ -378,20 +379,14 @@ func (r *resourceUser) linkPolicies(ctx context.Context, timeout time.Duration, 
 
 		_, err := r.Client.LinkPolicy(ctx, req, options.WithRetryTimeout(timeout))
 		if err != nil {
-			diags.AddError(
-				"Unable to link policy to User",
-				err.Error(),
-			)
+			diags.AddError(userErrLink, err.Error())
 			return diags
 		}
 
 		if fwhelpers.IsSet(policy.DefaultVersionId) {
 			err := r.setDefaultPolicyVersion(ctx, timeout, policy.PolicyOrn.ValueString(), policy.DefaultVersionId.ValueString())
 			if err != nil {
-				diags.AddError(
-					"Unable to set default policy version for policy linked to User",
-					err.Error(),
-				)
+				diags.AddError(userErrDefault, err.Error())
 				return diags
 			}
 		}
@@ -427,10 +422,7 @@ func (r *resourceUser) Delete(ctx context.Context, req resource.DeleteRequest, r
 
 	_, err := r.Client.DeleteUser(ctx, deleteReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to delete User",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(userErrDelete, err.Error())
 	}
 }
 
@@ -458,14 +450,18 @@ func (r *resourceUser) read(ctx context.Context, timeout time.Duration, data Use
 		return data, err
 	}
 
-	policies, err := r.flattenPolicies(ctx, timeout, ptr.From(linkResp.Policies))
+	return r.flatten(ctx, timeout, data, user, ptr.From(linkResp.Policies))
+}
+
+func (r *resourceUser) flatten(ctx context.Context, timeout time.Duration, data UserModel, user osc.User, linkedPolicies []osc.LinkedPolicy) (UserModel, error) {
+	policies, err := r.flattenPolicies(ctx, timeout, linkedPolicies)
 	if err != nil {
 		return data, err
 	}
 
 	policiesSet, diag := to.SetObject(ctx, policies)
 	if diag.HasError() {
-		return data, fmt.Errorf("unable to convert policies to a set: %v", diag.Errors())
+		return data, from.Diag(diag)
 	}
 
 	data.Policies = policiesSet
@@ -496,6 +492,7 @@ func (r *UserCommon) flattenPolicies(ctx context.Context, timeout time.Duration,
 			LastModificationDate: to.String(from.ISO8601(policy.LastModificationDate)),
 		})
 	}
+
 	return flattenedPolicies, nil
 }
 

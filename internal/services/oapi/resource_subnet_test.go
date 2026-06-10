@@ -2,6 +2,7 @@ package oapi_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -37,7 +38,30 @@ func TestAccNet_WithSubNet_Basic_Migration(t *testing.T) {
 	})
 }
 
+func TestAccNet_Subnet_CreateFailureKeepsState(t *testing.T) {
+	resourceName := "outscale_subnet.subnet"
+	invalidTagKey := strings.Repeat("a", 256)
+	tagValue := "testacc-create-failure"
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
+		Steps: testacc.CreateFailureReplacementSteps(
+			resourceName,
+			testAccOutscaleSubnetConfigWithTag(utils.GetRegion(), false, invalidTagKey, tagValue),
+			testAccOutscaleSubnetConfigWithTag(utils.GetRegion(), false, "name", tagValue),
+			resource.ComposeTestCheckFunc(
+				resource.TestCheckResourceAttrSet(resourceName, "subnet_id"),
+				resource.TestCheckResourceAttr(resourceName, "tags.0.value", tagValue),
+			),
+		),
+	})
+}
+
 func testAccOutscaleSubnetConfig(region string, mapPublicIpOnLaunch bool) string {
+	return testAccOutscaleSubnetConfigWithTag(region, mapPublicIpOnLaunch, "name", "terraform-subnet")
+}
+
+func testAccOutscaleSubnetConfigWithTag(region string, mapPublicIpOnLaunch bool, tagKey, tagValue string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "net" {
 			ip_range = "10.0.0.0/16"
@@ -54,9 +78,9 @@ func testAccOutscaleSubnetConfig(region string, mapPublicIpOnLaunch bool) string
 			net_id         = outscale_net.net.id
 			map_public_ip_on_launch = %v
 			tags {
-				key   = "name"
-				value = "terraform-subnet"
+				key   = %q
+				value = %q
 			}
 		}
-	`, region, mapPublicIpOnLaunch)
+	`, region, mapPublicIpOnLaunch, tagKey, tagValue)
 }

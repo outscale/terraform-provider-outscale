@@ -2,6 +2,7 @@ package oapi_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -38,20 +39,40 @@ func TestAccOthers_VirtualGatewayChangeTags(t *testing.T) {
 		Providers: testacc.SDKProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIVirtualGatewayConfigChangeTags("ipsec.1", "test-VGW"),
+				Config: testAccOAPIVirtualGatewayConfigChangeTags("ipsec.1", "name", "test-VGW"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "tags.#"),
 					resource.TestCheckResourceAttr(resourceName, "tags.0.value", "test-VGW"),
 				),
 			},
 			{
-				Config: testAccOAPIVirtualGatewayConfigChangeTags("ipsec.1", "test-VGW2"),
+				Config: testAccOAPIVirtualGatewayConfigChangeTags("ipsec.1", "name", "test-VGW2"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "tags.#"),
 					resource.TestCheckResourceAttr(resourceName, "tags.0.value", "test-VGW2"),
 				),
 			},
 		},
+	})
+}
+
+func TestAccOthers_VirtualGateway_CreateFailureKeepsState(t *testing.T) {
+	resourceName := "outscale_virtual_gateway.outscale_virtual_gateway"
+	invalidTagKey := strings.Repeat("a", 256)
+	tagValue := "testacc-resource-virtual-gateway"
+
+	resource.ParallelTest(t, resource.TestCase{
+		Providers: testacc.SDKProviders,
+		Steps: testacc.CreateFailureReplacementSteps(
+			resourceName,
+			testAccOAPIVirtualGatewayConfigChangeTags("ipsec.1", invalidTagKey, tagValue),
+			testAccOAPIVirtualGatewayConfigChangeTags("ipsec.1", "name", tagValue),
+			resource.ComposeTestCheckFunc(
+				resource.TestCheckResourceAttrSet(resourceName, "virtual_gateway_id"),
+				resource.TestCheckResourceAttrSet(resourceName, "tags.#"),
+				resource.TestCheckResourceAttr(resourceName, "tags.0.value", tagValue),
+			),
+		),
 	})
 }
 
@@ -88,15 +109,15 @@ const testAccOAPIVirtualGatewayConfigChangeVPC = `
     }
 `
 
-func testAccOAPIVirtualGatewayConfigChangeTags(connectionType, name string) string {
+func testAccOAPIVirtualGatewayConfigChangeTags(connectionType, tagKey, tagValue string) string {
 	return fmt.Sprintf(`
 		resource "outscale_virtual_gateway" "outscale_virtual_gateway" {
 		 connection_type = "%s"
 		 tags {
-		  key = "name"
-		  value = "%s"
+		  key = %q
+		  value = %q
 		  }
 		}
 
-	`, connectionType, name)
+	`, connectionType, tagKey, tagValue)
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -28,6 +29,16 @@ var (
 	_ resource.ResourceWithConfigure   = &resourceVolumeLink{}
 	_ resource.ResourceWithModifyPlan  = &resourceVolumeLink{}
 	_ resource.ResourceWithImportState = &resourceVolumeLink{}
+)
+
+const (
+	volumeLinkErrVolumeState = "Invalid Volume state to be linked"
+	volumeLinkErrVmState     = "Invalid VM state to be linked"
+	volumeLinkErrCreate      = "Unable to link Volume"
+	volumeLinkErrWait        = "Unable to wait for Volume link state"
+	volumeLinkErrUpdate      = "Unable to set Volume link state after update"
+	volumeLinkErrDelete      = "Unable to unlink Volume"
+	volumeLinkErrUnlinkState = "Invalid unlinked Volume state"
 )
 
 type VolumeLinkModel struct {
@@ -163,7 +174,7 @@ func (r *resourceVolumeLink) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	createTimeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
+	timeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
@@ -171,12 +182,11 @@ func (r *resourceVolumeLink) Create(ctx context.Context, req resource.CreateRequ
 	volStateConf := &stateconf.StateChangeConf[osc.VolumeState]{
 		Pending: stateconf.States(osc.VolumeStateCreating),
 		Target:  stateconf.States(osc.VolumeStateAvailable),
-		Timeout: createTimeout,
+		Timeout: timeout,
 		Refresh: r.stateRefreshFunc(data.VolumeId.ValueString()),
 	}
 	if _, err := volStateConf.WaitForStateContext(ctx); err != nil {
-		resp.Diagnostics.AddError(
-			"Invalid volume state to be linked",
+		resp.Diagnostics.AddError(volumeLinkErrVolumeState,
 			fmt.Sprintf("Expected state 'available', got: '%s' ", err.Error()),
 		)
 		return
@@ -185,12 +195,11 @@ func (r *resourceVolumeLink) Create(ctx context.Context, req resource.CreateRequ
 	vmStateConf := &stateconf.StateChangeConf[osc.VmState]{
 		Pending: stateconf.States(osc.VmStatePending),
 		Target:  stateconf.States(osc.VmStateRunning, osc.VmStateStopped),
-		Timeout: createTimeout,
+		Timeout: timeout,
 		Refresh: r.vmStateRefreshFunc(data.VmId.ValueString()),
 	}
 	if _, err := vmStateConf.WaitForStateContext(ctx); err != nil {
-		resp.Diagnostics.AddError(
-			"Invalid vm state to be linked",
+		resp.Diagnostics.AddError(volumeLinkErrVmState,
 			fmt.Sprintf("Expected state 'running', got: '%s' ", err.Error()),
 		)
 		return
@@ -201,39 +210,43 @@ func (r *resourceVolumeLink) Create(ctx context.Context, req resource.CreateRequ
 		VmId:       data.VmId.ValueString(),
 		VolumeId:   data.VolumeId.ValueString(),
 	}
-	linkResp, err := r.Client.LinkVolume(ctx, createReq, options.WithRetryTimeout(createTimeout))
+	linkResp, err := r.Client.LinkVolume(ctx, createReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to Link volume resource",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(volumeLinkErrCreate, err.Error())
 		return
 	}
-	data.RequestId = to.String(*linkResp.ResponseContext.RequestId)
+	data.Id = to.String(data.VolumeId.ValueString())
+	data.RequestId = to.String(linkResp.ResponseContext.RequestId)
+
+	// LinkVolume response does not return the volume object, a read is required to store the initial state
+	stateData, err := r.read(ctx, timeout, data)
+	if err != nil {
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
+		return
+	}
+	diags = resp.State.Set(ctx, &stateData)
+	if fwhelpers.CheckDiags(resp, diags) {
+		return
+	}
 
 	linkedStateConf := &stateconf.StateChangeConf[osc.LinkedVolumeState]{
 		Pending: stateconf.States(osc.LinkedVolumeStateAttaching),
 		Target:  stateconf.States(osc.LinkedVolumeStateAttached),
-		Timeout: createTimeout,
-		Refresh: getvolumeAttachmentStateRefreshFunc(r.Client, data.VmId.ValueString(), data.VolumeId.ValueString()),
+		Timeout: timeout,
+		Refresh: r.refreshFunc(data.VmId.ValueString(), data.VolumeId.ValueString()),
 	}
-	if _, err = linkedStateConf.WaitForStateContext(ctx); err != nil {
-		resp.Diagnostics.AddError(
-			"Invalid linked volume state",
+	volumeAny, err := linkedStateConf.WaitForStateContext(ctx)
+	if err != nil {
+		resp.Diagnostics.AddError(volumeLinkErrWait,
 			fmt.Sprintf("Expected state 'attached', got: '%s' ", err.Error()),
 		)
 		return
 	}
+	// We set the last read response to the state
+	volume := volumeAny.(osc.LinkedVolume)
+	stateData = r.flatten(data, volume)
 
-	err = setLinkedVolumeState(ctx, r, &data)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to set volume state",
-			err.Error(),
-		)
-		return
-	}
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &stateData)...)
 }
 
 func (r *resourceVolumeLink) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -244,42 +257,46 @@ func (r *resourceVolumeLink) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	err := setLinkedVolumeState(ctx, r, &data)
+	timeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
+	if fwhelpers.CheckDiags(resp, diags) {
+		return
+	}
+
+	stateData, err := r.read(ctx, timeout, data)
 	if err != nil {
 		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(
-			"Unable to set volume API response values.",
-			"Error: "+err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &stateData)...)
 }
 
 func (r *resourceVolumeLink) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var dataPlan, dataState VolumeLinkModel
-
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &dataPlan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &dataState)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	dataState.ForceUnlink = dataPlan.ForceUnlink
 
-	dataState.Timeouts = dataPlan.Timeouts
-	err := setLinkedVolumeState(ctx, r, &dataState)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to set volume state after link volume updating.",
-			err.Error(),
-		)
+	timeout, diags := dataPlan.Timeouts.Update(ctx, UpdateDefaultTimeout)
+	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &dataState)...)
+	dataState.ForceUnlink = dataPlan.ForceUnlink
+	dataState.Timeouts = dataPlan.Timeouts
+
+	newData, err := r.read(ctx, timeout, dataState)
+	if err != nil {
+		resp.Diagnostics.AddError(volumeLinkErrUpdate, err.Error())
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &newData)...)
 }
 
 func (r *resourceVolumeLink) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -290,7 +307,7 @@ func (r *resourceVolumeLink) Delete(ctx context.Context, req resource.DeleteRequ
 		return
 	}
 
-	deleteTimeout, diags := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
+	timeout, diags := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
@@ -300,60 +317,62 @@ func (r *resourceVolumeLink) Delete(ctx context.Context, req resource.DeleteRequ
 		ForceUnlink: data.ForceUnlink.ValueBoolPointer(),
 	}
 
-	_, err := r.Client.UnlinkVolume(ctx, delReq, options.WithRetryTimeout(deleteTimeout))
+	_, err := r.Client.UnlinkVolume(ctx, delReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to unlink volume",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(volumeLinkErrDelete, err.Error())
 		return
 	}
 	unLinkedStateConf := &stateconf.StateChangeConf[osc.LinkedVolumeState]{
 		Pending: stateconf.States(osc.LinkedVolumeStateDetaching),
 		Target:  stateconf.States(osc.LinkedVolumeStateDetached),
-		Timeout: deleteTimeout,
-		Refresh: getvolumeAttachmentStateRefreshFunc(r.Client, data.VmId.ValueString(), data.VolumeId.ValueString()),
+		Timeout: timeout,
+		Refresh: r.refreshFunc(data.VmId.ValueString(), data.VolumeId.ValueString()),
 	}
 	if _, err = unLinkedStateConf.WaitForStateContext(ctx); err != nil {
+		if errors.Is(err, ErrResourceEmpty) {
+			return
+		}
 		resp.Diagnostics.AddError(
-			"Invalid unlinked volume state",
+			volumeLinkErrUnlinkState,
 			fmt.Sprintf("Expected state 'detached', got: '%s' ", err.Error()),
 		)
 		return
 	}
-	resp.State.RemoveResource(ctx)
 }
 
-func setLinkedVolumeState(ctx context.Context, r *resourceVolumeLink, data *VolumeLinkModel) error {
-	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
-	if diags.HasError() {
-		return fmt.Errorf("unable to parse 'volume_link' read timeout value: %v", diags.Errors())
-	}
-	ctxWithTimeout, cancel := context.WithTimeout(ctx, readTimeout)
+func (r *resourceVolumeLink) read(ctx context.Context, timeout time.Duration, data VolumeLinkModel) (VolumeLinkModel, error) {
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	vol, err := r.Batcher.Read(ctxWithTimeout, data.VolumeId.ValueString())
 	if err != nil {
 		if errors.Is(err, batch.ErrNotFound) {
-			return ErrResourceEmpty
+			return data, ErrResourceEmpty
 		}
-		return err
+		return data, err
+	}
+	if len(vol.LinkedVolumes) == 0 {
+		return data, ErrResourceEmpty
 	}
 
+	return r.flatten(data, vol.LinkedVolumes[0]), nil
+}
+
+func (r *resourceVolumeLink) flatten(data VolumeLinkModel, volume osc.LinkedVolume) VolumeLinkModel {
 	isForceUnlink := false
-	linkedVol := vol.LinkedVolumes[0]
+
 	if data.ForceUnlink.ValueBool() {
 		isForceUnlink = data.ForceUnlink.ValueBool()
 	}
 	data.ForceUnlink = to.Bool(isForceUnlink)
-	data.DeleteOnVmDeletion = to.Bool(linkedVol.DeleteOnVmDeletion)
-	data.VolumeId = to.String(linkedVol.VolumeId)
-	data.DeviceName = to.String(linkedVol.DeviceName)
-	data.State = to.String(linkedVol.State)
-	data.VmId = to.String(linkedVol.VmId)
-	data.Id = to.String(linkedVol.VolumeId)
+	data.DeleteOnVmDeletion = to.Bool(volume.DeleteOnVmDeletion)
+	data.VolumeId = to.String(volume.VolumeId)
+	data.DeviceName = to.String(volume.DeviceName)
+	data.State = to.String(volume.State)
+	data.VmId = to.String(volume.VmId)
+	data.Id = to.String(volume.VolumeId)
 
-	return nil
+	return data
 }
 
 func (r *resourceVolumeLink) vmStateRefreshFunc(vmId string) stateconf.StateRefreshFunc[osc.VmState] {
@@ -373,7 +392,7 @@ func (r *resourceVolumeLink) vmStateRefreshFunc(vmId string) stateconf.StateRefr
 	}
 }
 
-func getvolumeAttachmentStateRefreshFunc(client *osc.Client, vmId string, volumeId string) stateconf.StateRefreshFunc[osc.LinkedVolumeState] {
+func (r *resourceVolumeLink) refreshFunc(vmId string, volumeId string) stateconf.StateRefreshFunc[osc.LinkedVolumeState] {
 	return func(ctx context.Context) (any, osc.LinkedVolumeState, error) {
 		request := osc.ReadVolumesRequest{
 			Filters: &osc.FiltersVolume{
@@ -382,16 +401,15 @@ func getvolumeAttachmentStateRefreshFunc(client *osc.Client, vmId string, volume
 			},
 		}
 
-		resp, err := client.ReadVolumes(ctx, request)
+		resp, err := r.Client.ReadVolumes(ctx, request)
 		if err != nil {
 			return nil, "", err
 		}
-
-		if len(ptr.From(resp.Volumes)) > 0 && len((*resp.Volumes)[0].LinkedVolumes) > 0 {
-			linkedVolume := (*resp.Volumes)[0].LinkedVolumes[0]
-			return linkedVolume, linkedVolume.State, nil
+		if len(ptr.From(resp.Volumes)) == 0 || len((*resp.Volumes)[0].LinkedVolumes) == 0 {
+			return nil, "", ErrResourceEmpty
 		}
 
-		return resp.Volumes, osc.LinkedVolumeStateDetached, nil
+		volume := (*resp.Volumes)[0]
+		return volume.LinkedVolumes[0], volume.LinkedVolumes[0].State, nil
 	}
 }

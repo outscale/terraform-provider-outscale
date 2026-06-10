@@ -26,6 +26,11 @@ var (
 	_ resource.ResourceWithModifyPlan = &resourceMainRouteTableLink{}
 )
 
+const (
+	mainRouteTableLinkErrCreate = "Unable to update Main Route Table Link"
+	mainRouteTableLinkErrDelete = "Unable to unlink Main Route Table"
+)
+
 type MainRouteTableLinkModel struct {
 	RouteTableLinkCoreModel
 	DefaultRouteTableId types.String `tfsdk:"default_route_table_id"`
@@ -143,12 +148,12 @@ func (r *resourceMainRouteTableLink) Create(ctx context.Context, req resource.Cr
 		return
 	}
 
-	createTimeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
+	timeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
 
-	routeTableResp, err := r.GetAssociatedRouteTable(ctx, createTimeout, data)
+	routeTableResp, err := r.GetAssociatedRouteTable(ctx, timeout, data)
 	if err != nil {
 		return
 	}
@@ -161,27 +166,23 @@ func (r *resourceMainRouteTableLink) Create(ctx context.Context, req resource.Cr
 		LinkRouteTableId: oldLinkRouteTableId,
 	}
 
-	createResp, err := r.Client.UpdateRouteTableLink(ctx, createReq, options.WithRetryTimeout(createTimeout))
+	createResp, err := r.Client.UpdateRouteTableLink(ctx, createReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to set the Main Route Table.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(mainRouteTableLinkErrCreate, err.Error())
 		return
 	}
-	data.DefaultRouteTableId = to.String(defaultRouteTableId)
-
 	linkRouteTableId := ptr.From(createResp.LinkRouteTableId)
+
+	data.DefaultRouteTableId = to.String(defaultRouteTableId)
 	data.RequestId = to.String(createResp.ResponseContext.RequestId)
 	data.LinkRouteTableId = to.String(linkRouteTableId)
 	data.Id = to.String(linkRouteTableId)
+	// The API response does not contain enough information to set the state directly, which would cause an error.
+	// The next read will fill the state
 
-	data, err = r.read(ctx, createTimeout, data)
+	data, err = r.read(ctx, timeout, data)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to set Main Route Table Link state",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -206,10 +207,7 @@ func (r *resourceMainRouteTableLink) Read(ctx context.Context, req resource.Read
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(
-			"Unable to set Main Route Table Link API response values.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -226,7 +224,7 @@ func (r *resourceMainRouteTableLink) Delete(ctx context.Context, req resource.De
 		return
 	}
 
-	deleteTimeout, diags := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
+	timeout, diags := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
@@ -236,12 +234,9 @@ func (r *resourceMainRouteTableLink) Delete(ctx context.Context, req resource.De
 		RouteTableId:     data.DefaultRouteTableId.ValueString(),
 	}
 
-	_, err := r.Client.UpdateRouteTableLink(ctx, delReq, options.WithRetryTimeout(deleteTimeout))
+	_, err := r.Client.UpdateRouteTableLink(ctx, delReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to unlink the Main Route Table.",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(mainRouteTableLinkErrDelete, err.Error())
 	}
 }
 

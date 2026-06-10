@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -17,6 +18,7 @@ import (
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 )
 
@@ -24,6 +26,11 @@ var (
 	_ resource.Resource               = &resourceKeypair{}
 	_ resource.ResourceWithConfigure  = &resourceKeypair{}
 	_ resource.ResourceWithModifyPlan = &resourceKeypair{}
+)
+
+const (
+	keypairErrCreate = "Unable to create Keypair"
+	keypairErrDelete = "Unable to delete Keypair"
 )
 
 type KeypairModel struct {
@@ -39,8 +46,12 @@ type KeypairModel struct {
 	TagsModel
 }
 
-type resourceKeypair struct {
+type keypairCommon struct {
 	Client *osc.Client
+}
+
+type resourceKeypair struct {
+	keypairCommon
 }
 
 func NewResourceKeypair() resource.Resource {
@@ -158,7 +169,7 @@ func (r *resourceKeypair) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
-	createTimeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
+	timeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
@@ -170,12 +181,9 @@ func (r *resourceKeypair) Create(ctx context.Context, req resource.CreateRequest
 		createReq.PublicKey = data.PublicKey.ValueStringPointer()
 	}
 
-	createResp, err := r.Client.CreateKeypair(ctx, createReq, options.WithRetryTimeout(createTimeout))
+	createResp, err := r.Client.CreateKeypair(ctx, createReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to create keypair resource",
-			"Error: "+err.Error(),
-		)
+		resp.Diagnostics.AddError(keypairErrCreate, err.Error())
 		return
 	}
 	data.RequestId = to.String(createResp.ResponseContext.RequestId)
@@ -187,22 +195,25 @@ func (r *resourceKeypair) Create(ctx context.Context, req resource.CreateRequest
 		data.PublicKey = to.String(createReq.PublicKey)
 	}
 
-	diag := createOAPITagsFW(ctx, r.Client, createTimeout, data.Tags, *keypair.KeypairId)
+	stateData := r.flattenCreate(data, keypair)
+	diag := resp.State.Set(ctx, &stateData)
+	if fwhelpers.CheckDiags(resp, diag) {
+		return
+	}
+
+	diag = createOAPITagsFW(ctx, r.Client, timeout, data.Tags, *keypair.KeypairId)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
 
 	data.PrivateKey = to.String(ptr.From(keypair.PrivateKey))
 
-	err = setKeypairState(ctx, r, &data)
+	stateData, err = r.read(ctx, timeout, data)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to set keypair state",
-			"Error: "+err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &stateData)...)
 }
 
 func (r *resourceKeypair) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -213,19 +224,22 @@ func (r *resourceKeypair) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
-	err := setKeypairState(ctx, r, &data)
+	timeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
+	if fwhelpers.CheckDiags(resp, diags) {
+		return
+	}
+
+	stateData, err := r.read(ctx, timeout, data)
 	if err != nil {
 		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(
-			"Unable to set keypair API response values.",
-			"Error: "+err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &stateData)...)
 }
 
 func (r *resourceKeypair) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -247,12 +261,9 @@ func (r *resourceKeypair) Update(ctx context.Context, req resource.UpdateRequest
 	}
 
 	stateData.Timeouts = planData.Timeouts
-	err := setKeypairState(ctx, r, &stateData)
+	stateData, err := r.read(ctx, timeout, stateData)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to set keypair state after tags updating.",
-			"Error: "+err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -267,7 +278,7 @@ func (r *resourceKeypair) Delete(ctx context.Context, req resource.DeleteRequest
 		return
 	}
 
-	deleteTimeout, diags := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
+	timeout, diags := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
@@ -276,40 +287,32 @@ func (r *resourceKeypair) Delete(ctx context.Context, req resource.DeleteRequest
 		KeypairId: data.KeypairId.ValueStringPointer(),
 	}
 
-	_, err := r.Client.DeleteKeypair(ctx, delReq, options.WithRetryTimeout(deleteTimeout))
+	_, err := r.Client.DeleteKeypair(ctx, delReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to Delete keypair",
-			"Error: "+err.Error(),
-		)
+		resp.Diagnostics.AddError(keypairErrDelete, err.Error())
 	}
 }
 
-func setKeypairState(ctx context.Context, r *resourceKeypair, data *KeypairModel) error {
+func (r *keypairCommon) read(ctx context.Context, timeout time.Duration, data KeypairModel) (KeypairModel, error) {
 	keypairFilters := osc.FiltersKeypair{
 		KeypairNames: &[]string{data.KeypairName.ValueString()},
-	}
-
-	readTimeout, diags := data.Timeouts.Read(ctx, ReadDefaultTimeout)
-	if diags.HasError() {
-		return fmt.Errorf("unable to parse 'keypair' read timeout value: %v", diags.Errors())
 	}
 
 	readReq := osc.ReadKeypairsRequest{
 		Filters: &keypairFilters,
 	}
-	readResp, err := r.Client.ReadKeypairs(ctx, readReq, options.WithRetryTimeout(readTimeout))
+	readResp, err := r.Client.ReadKeypairs(ctx, readReq, options.WithRetryTimeout(timeout))
 	if err != nil {
-		return err
+		return data, err
 	}
 	if readResp.Keypairs == nil || len(*readResp.Keypairs) == 0 {
-		return ErrResourceEmpty
+		return data, ErrResourceEmpty
 	}
 
 	keypair := (*readResp.Keypairs)[0]
 	tags, diag := flattenOAPITagsFW(ctx, ptr.From(keypair.Tags))
 	if diag.HasError() {
-		return fmt.Errorf("unable to flatten tags: %v", diags.Errors())
+		return data, from.Diag(diag)
 	}
 	data.Tags = tags
 	data.KeypairFingerprint = to.String(ptr.From(keypair.KeypairFingerprint))
@@ -317,5 +320,15 @@ func setKeypairState(ctx context.Context, r *resourceKeypair, data *KeypairModel
 	data.KeypairType = to.String(ptr.From(keypair.KeypairType))
 	data.KeypairId = to.String(keypair.KeypairId)
 
-	return nil
+	return data, nil
+}
+
+func (r *keypairCommon) flattenCreate(data KeypairModel, keypair osc.KeypairCreated) KeypairModel {
+	data.KeypairFingerprint = to.String(ptr.From(keypair.KeypairFingerprint))
+	data.KeypairId = to.String(keypair.KeypairId)
+	data.KeypairName = to.String(ptr.From(keypair.KeypairName))
+	data.KeypairType = to.String(ptr.From(keypair.KeypairType))
+	data.PrivateKey = to.String(ptr.From(keypair.PrivateKey))
+
+	return data
 }

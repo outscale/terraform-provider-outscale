@@ -31,7 +31,6 @@ var (
 
 const (
 	vpnConnectionRouteErrCreate = "Unable to create VPN Connection Route"
-	vpnConnectionRouteErrRead   = "Unable to read VPN Connection Route"
 	vpnConnectionRouteErrDelete = "Unable to delete VPN Connection Route"
 	vpnConnectionRouteErrWait   = "Unable to wait for VPN Connection Route state"
 )
@@ -153,17 +152,23 @@ func (r *vpnConnectionRouteResource) Create(ctx context.Context, req resource.Cr
 		DestinationIpRange: data.DestinationIpRange.ValueString(),
 		VpnConnectionId:    data.VpnConnectionId.ValueString(),
 	}
-	_, err := r.Client.CreateVpnConnectionRoute(ctx, createReq, options.WithRetryTimeout(timeout))
+	createResp, err := r.Client.CreateVpnConnectionRoute(ctx, createReq, options.WithRetryTimeout(timeout))
 	if err != nil {
 		resp.Diagnostics.AddError(vpnConnectionRouteErrCreate, err.Error())
 		return
 	}
 
 	data.Id = to.String(fmt.Sprintf("%s:%s", ipRange, vpnId))
+	data.RequestId = to.String(createResp.ResponseContext.RequestId)
+
+	diags = resp.State.Set(ctx, &data)
+	if fwhelpers.CheckDiags(resp, diags) {
+		return
+	}
 
 	stateData, err := r.read(ctx, timeout, data)
 	if err != nil {
-		resp.Diagnostics.AddError(vpnConnectionRouteErrRead, err.Error())
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -188,7 +193,7 @@ func (r *vpnConnectionRouteResource) Read(ctx context.Context, req resource.Read
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(vpnConnectionRouteErrRead, err.Error())
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 

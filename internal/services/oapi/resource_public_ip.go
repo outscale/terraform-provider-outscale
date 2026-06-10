@@ -18,6 +18,7 @@ import (
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 )
 
@@ -29,10 +30,8 @@ var (
 
 const (
 	publicIpErrCreate = "Unable to create Public IP"
-	publicIpErrRead   = "Unable to read Public IP"
 	publicIpErrDelete = "Unable to delete Public IP"
 	publicIpErrUnlink = "Unable to unlink Public IP from VM or NIC"
-	publicIpErrState  = "Unable to set Public IP state"
 )
 
 type publicIpModel struct {
@@ -170,17 +169,28 @@ func (r *publicIpResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
+	data.RequestId = to.String(createResp.ResponseContext.RequestId)
 	data.Id = to.String(createResp.PublicIp.PublicIpId)
 	data.PublicIpId = to.String(createResp.PublicIp.PublicIpId)
+
+	stateData, err := r.flatten(ctx, data, *createResp.PublicIp)
+	if err != nil {
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
+		return
+	}
+	diags = resp.State.Set(ctx, &stateData)
+	if fwhelpers.CheckDiags(resp, diags) {
+		return
+	}
 
 	diag := createOAPITagsFW(ctx, r.Client, timeout, data.Tags, createResp.PublicIp.PublicIpId)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
 
-	stateData, err := r.read(ctx, timeout, data)
+	stateData, err = r.read(ctx, timeout, data)
 	if err != nil {
-		resp.Diagnostics.AddError(publicIpErrState, err.Error())
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -202,7 +212,7 @@ func (r *publicIpResource) Read(ctx context.Context, req resource.ReadRequest, r
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(publicIpErrRead, err.Error())
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -233,7 +243,7 @@ func (r *publicIpResource) Update(ctx context.Context, req resource.UpdateReques
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(publicIpErrState, err.Error())
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -258,7 +268,7 @@ func (r *publicIpResource) Delete(ctx context.Context, req resource.DeleteReques
 		if errors.Is(err, ErrResourceEmpty) {
 			return
 		}
-		resp.Diagnostics.AddError(publicIpErrRead, err.Error())
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -305,14 +315,18 @@ func (r *publicIpResource) read(ctx context.Context, timeout time.Duration, data
 	}
 
 	publicIp := (*resp.PublicIps)[0]
+	data.RequestId = to.String(resp.ResponseContext.RequestId)
 
+	return r.flatten(ctx, data, publicIp)
+}
+
+func (r *publicIpResource) flatten(ctx context.Context, data publicIpModel, publicIp osc.PublicIp) (publicIpModel, error) {
 	tags, diag := flattenOAPITagsFW(ctx, publicIp.Tags)
 	if diag.HasError() {
-		return data, fmt.Errorf("unable to flatten tags: %v", diag.Errors())
+		return data, from.Diag(diag)
 	}
 
 	data.Tags = tags
-	data.RequestId = to.String(resp.ResponseContext.RequestId)
 	data.Id = to.String(publicIp.PublicIpId)
 	data.PublicIpId = to.String(publicIp.PublicIpId)
 	data.PublicIp = to.String(publicIp.PublicIp)

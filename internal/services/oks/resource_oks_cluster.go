@@ -44,6 +44,14 @@ var (
 	_ resource.ResourceWithModifyPlan  = &oksClusterResource{}
 )
 
+const (
+	clusterErrCreate  = "Unable to create Cluster"
+	clusterErrUpdate  = "Unable to update Cluster"
+	clusterErrDelete  = "Unable to delete Cluster"
+	clusterErrWait    = "Unable to wait for Cluster state"
+	clusterErrUpgrade = "Unable to upgrade Cluster"
+)
+
 type ClusterModel struct {
 	AdminLbu              types.Bool     `tfsdk:"admin_lbu"`
 	AdminWhitelist        types.Set      `tfsdk:"admin_whitelist"`
@@ -574,21 +582,17 @@ func (r *oksClusterResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 	createResp, err := r.Client.CreateCluster(ctx, input, options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to Create Cluster",
-			"Error: "+err.Error(),
-		)
+		resp.Diagnostics.AddError(clusterErrCreate, err.Error())
 		return
 	}
 	plan.RequestId = to.String(createResp.ResponseContext.RequestId)
 	plan.Id = to.String(createResp.Cluster.Id)
+	// The API response does not contain enough information to set the state directly, which would cause an error.
+	// The next read will fill the state
 
 	data, err := r.read(ctx, plan, timeout)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to set Cluster state",
-			"Error: "+err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 	diag = resp.State.Set(ctx, &data)
@@ -612,10 +616,7 @@ func (r *oksClusterResource) Read(ctx context.Context, req resource.ReadRequest,
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(
-			"Unable to set Cluster state",
-			"Error: "+err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 	diag = resp.State.Set(ctx, &data)
@@ -645,10 +646,7 @@ func (r *oksClusterResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 	if statuses.Status.ValueString() == "deleting" {
-		resp.Diagnostics.AddError(
-			"Unable to Update Cluster",
-			"Cluster is currently being deleted and cannot be updated. The resource will be removed from the state once deleted.",
-		)
+		resp.Diagnostics.AddError(clusterErrUpdate, "Cluster is currently being deleted and cannot be updated. The resource will be removed from the state once deleted.")
 		return
 	}
 
@@ -757,10 +755,7 @@ func (r *oksClusterResource) Update(ctx context.Context, req resource.UpdateRequ
 	if updateReq != (oks.ClusterUpdate{}) {
 		updateResp, err := r.Client.UpdateCluster(ctx, state.Id.ValueString(), updateReq, options.WithRetryTimeout(timeout))
 		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable to Update Cluster",
-				"Error: "+err.Error(),
-			)
+			resp.Diagnostics.AddError(clusterErrUpdate, err.Error())
 			return
 		}
 		state.RequestId = to.String(updateResp.ResponseContext.RequestId)
@@ -769,9 +764,7 @@ func (r *oksClusterResource) Update(ctx context.Context, req resource.UpdateRequ
 	if doUpgrade {
 		_, err := r.waitForClusterState(ctx, state.Id.ValueString(), []string{"pending", "updating"}, []string{"ready"}, timeout)
 		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable to wait for Cluster to complete updating.", "Error: "+err.Error(),
-			)
+			resp.Diagnostics.AddError(clusterErrWait, err.Error())
 			return
 		}
 
@@ -784,10 +777,7 @@ func (r *oksClusterResource) Update(ctx context.Context, req resource.UpdateRequ
 
 		upgradeResp, err := r.Client.UpgradeCluster(ctx, state.Id.ValueString(), options.WithRetryTimeout(upgradeTimeout))
 		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable to Upgrade Cluster",
-				"Error: "+err.Error(),
-			)
+			resp.Diagnostics.AddError(clusterErrUpgrade, err.Error())
 			return
 		}
 		state.RequestId = to.String(upgradeResp.ResponseContext.RequestId)
@@ -796,10 +786,7 @@ func (r *oksClusterResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	data, err := r.read(ctx, state, timeout)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to set Cluster state",
-			"Error: "+err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 	diag = resp.State.Set(ctx, &data)
@@ -820,17 +807,14 @@ func (r *oksClusterResource) Delete(ctx context.Context, req resource.DeleteRequ
 
 	_, err := r.Client.DeleteCluster(ctx, data.Id.ValueString(), options.WithRetryTimeout(timeout))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to Delete Cluster",
-			"Error: "+err.Error(),
-		)
+		resp.Diagnostics.AddError(clusterErrDelete, err.Error())
 		return
 	}
 
 	_, err = r.waitForClusterState(ctx, data.Id.ValueString(), []string{"pending", "deleting"}, []string{}, timeout)
 	if err != nil {
 		if !oks.IsNotFound(err) {
-			resp.Diagnostics.AddError("Unable to wait for Cluster complete deletion.", "Error: "+err.Error())
+			resp.Diagnostics.AddError(clusterErrWait, err.Error())
 		}
 	}
 }
@@ -1025,23 +1009,23 @@ func (r *oksClusterResource) read(ctx context.Context, data ClusterModel, timeou
 
 	adminWhiteList, diags := types.SetValueFrom(ctx, types.StringType, cluster.AdminWhitelist)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to convert adminwhitelist into a set: %v", diags.Errors())
+		return data, from.Diag(diags)
 	}
 	cpSubregions, diags := types.SetValueFrom(ctx, types.StringType, cluster.CpSubregions)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to convert cpsubregions into a set: %v", diags.Errors())
+		return data, from.Diag(diags)
 	}
 	diags = r.setOKSAdmissionFlags(ctx, &data, &cluster.AdmissionFlags)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to convert admissionflags into the schema model: %v", diags.Errors())
+		return data, from.Diag(diags)
 	}
 	diags = r.setOKSAutoMaintenances(ctx, &data, ptr.From(cluster.AutoMaintenances))
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to convert automaintenances into the schema model: %v", diags.Errors())
+		return data, from.Diag(diags)
 	}
 	diags = r.setOKSStatuses(ctx, &data, cluster.Statuses)
 	if diags.HasError() {
-		return data, fmt.Errorf("unable to convert statuses into the schema model: %v", diags.Errors())
+		return data, from.Diag(diags)
 	}
 
 	data.AdminLbu = to.Bool(cluster.AdminLbu)
@@ -1075,7 +1059,7 @@ func (r *oksClusterResource) read(ctx context.Context, data ClusterModel, timeou
 
 	tags, diags := flattenOKSTags(ctx, cluster.Tags)
 	if diags.HasError() {
-		return data, fmt.Errorf("%v", diags.Errors())
+		return data, from.Diag(diags)
 	}
 	data.Tags = tags
 

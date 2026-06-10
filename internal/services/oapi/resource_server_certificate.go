@@ -33,10 +33,8 @@ var (
 
 const (
 	serverCertErrCreate = "Unable to create Server Certificate"
-	serverCertErrRead   = "Unable to read Server Certificate"
 	serverCertErrUpdate = "Unable to update Server Certificate"
 	serverCertErrDelete = "Unable to delete Server Certificate"
-	serverCertErrState  = "Unable to set Cerver Certificate state"
 )
 
 type serverCertificateModel struct {
@@ -207,12 +205,9 @@ func (r *serverCertificateResource) Create(ctx context.Context, req resource.Cre
 	}
 
 	data.Id = to.String(createResp.ServerCertificate.Id)
+	data.RequestId = to.String(createResp.ResponseContext.RequestId)
 
-	stateData, err := r.read(ctx, timeout, data)
-	if err != nil {
-		resp.Diagnostics.AddError(serverCertErrState, err.Error())
-		return
-	}
+	stateData := r.flatten(data, *createResp.ServerCertificate)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &stateData)...)
 }
@@ -232,7 +227,7 @@ func (r *serverCertificateResource) Read(ctx context.Context, req resource.ReadR
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(serverCertErrRead, err.Error())
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -271,7 +266,7 @@ func (r *serverCertificateResource) Update(ctx context.Context, req resource.Upd
 
 	newData, err := r.read(ctx, timeout, planData)
 	if err != nil {
-		resp.Diagnostics.AddError(serverCertErrState, err.Error())
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -315,13 +310,18 @@ func (r *serverCertificateResource) read(ctx context.Context, timeout time.Durat
 	if !ok {
 		return data, ErrResourceEmpty
 	}
+	data.RequestId = to.String(resp.ResponseContext.RequestId)
 
+	return r.flatten(data, server), nil
+}
+
+func (r *serverCertificateResource) flatten(data serverCertificateModel, server osc.ServerCertificate) serverCertificateModel {
+	data.Id = to.String(ptr.From(server.Id))
 	data.ExpirationDate = to.String(from.ISO8601(server.ExpirationDate))
 	data.Name = to.String(server.Name)
 	data.Orn = to.String(server.Orn)
 	data.Path = to.String(server.Path)
 	data.UploadDate = to.String(from.ISO8601(server.UploadDate))
-	data.RequestId = to.String(resp.ResponseContext.RequestId)
 
-	return data, nil
+	return data
 }

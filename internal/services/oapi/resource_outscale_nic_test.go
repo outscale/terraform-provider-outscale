@@ -2,6 +2,7 @@ package oapi_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
@@ -38,7 +39,42 @@ func TestAccNet_WithNic_basic(t *testing.T) {
 	})
 }
 
+func TestAccNet_WithNic_CreateFailureKeepsState(t *testing.T) {
+	subregion := utils.GetRegion()
+	resourceName := "outscale_nic.outscale_nic"
+	sgName := acctest.RandomWithPrefix("testacc-sg")
+	invalidTagKey := strings.Repeat("a", 256)
+	tagValue := "testacc-resource-nic"
+
+	resource.ParallelTest(t, resource.TestCase{
+		IDRefreshName:            resourceName,
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
+		Steps: testacc.CreateFailureReplacementSteps(
+			resourceName,
+			testAccOutscaleENIConfigWithTag(subregion, sgName, invalidTagKey, tagValue),
+			testAccOutscaleENIConfigWithTag(subregion, sgName, "name", tagValue),
+			resource.ComposeTestCheckFunc(
+				resource.TestCheckResourceAttrSet(resourceName, "nic_id"),
+				resource.TestCheckResourceAttr(resourceName, "tags.0.value", tagValue),
+			),
+		),
+	})
+}
+
 func testAccOutscaleENIConfig(subregion, sgName string) string {
+	return testAccOutscaleENIConfigWithTag(subregion, sgName, "", "")
+}
+
+func testAccOutscaleENIConfigWithTag(subregion, sgName, tagKey, tagValue string) string {
+	tags := ""
+	if tagKey != "" {
+		tags = fmt.Sprintf(`
+			tags {
+				key   = %q
+				value = %q
+			}
+		`, tagKey, tagValue)
+	}
 	return fmt.Sprintf(`
 		resource "outscale_net" "outscale_net" {
 			ip_range = "10.0.0.0/16"
@@ -73,8 +109,10 @@ func testAccOutscaleENIConfig(subregion, sgName string) string {
 				is_primary = false
 				private_ip = "10.0.0.46"
 			}
+
+			%s
 		}
-	`, subregion, sgName)
+	`, subregion, sgName, tags)
 }
 
 func testAccOutscaleENIConfigUpdate(subregion, sgName string) string {

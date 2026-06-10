@@ -21,6 +21,7 @@ import (
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 	"github.com/samber/lo"
 )
@@ -31,11 +32,10 @@ var (
 )
 
 const (
-	fgpuLinkCreateTimeout = 5 * time.Minute
+	fgpuLinktimeout = 5 * time.Minute
 
 	fgpuLinkErrLink             = "Unable to link fGPU"
 	fgpuLinkErrUnlink           = "Unable to unlink fGPU"
-	fgpuLinkErrState            = "Unable to set fGPU resource state"
 	fgpuLinkErrShutdownBehavior = "Unable to change VM shutdown behavior"
 )
 
@@ -142,7 +142,7 @@ func (r *fgpuLinkResource) Create(ctx context.Context, req resource.CreateReques
 	var data fgpuLinkModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
-	createTimeout, diag := data.Timeouts.Create(ctx, fgpuLinkCreateTimeout)
+	timeout, diag := data.Timeouts.Create(ctx, fgpuLinktimeout)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
@@ -158,7 +158,7 @@ func (r *fgpuLinkResource) Create(ctx context.Context, req resource.CreateReques
 			VmId:          data.VmId.ValueString(),
 		}
 
-		_, err := r.Client.LinkFlexibleGpu(ctx, createReq, options.WithRetryTimeout(createTimeout))
+		_, err := r.Client.LinkFlexibleGpu(ctx, createReq, options.WithRetryTimeout(timeout))
 		if err != nil {
 			resp.Diagnostics.AddError(
 				fgpuLinkErrLink,
@@ -166,11 +166,25 @@ func (r *fgpuLinkResource) Create(ctx context.Context, req resource.CreateReques
 			)
 			return
 		}
+		// The API response does not contain enough information to set the state directly, which would cause an error.
+		// The next read will fill the state
 	}
 
 	data.Id = to.String(id.UniqueId())
+	stateData, err := r.read(ctx, timeout, data)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			errSetTerraformState,
+			err.Error(),
+		)
+		return
+	}
+	diag = resp.State.Set(ctx, &stateData)
+	if fwhelpers.CheckDiags(resp, diag) {
+		return
+	}
 
-	err := r.changeShutdownBehavior(ctx, data.VmId.ValueString(), createTimeout)
+	err = r.changeShutdownBehavior(ctx, data.VmId.ValueString(), timeout)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			fgpuLinkErrShutdownBehavior,
@@ -178,38 +192,24 @@ func (r *fgpuLinkResource) Create(ctx context.Context, req resource.CreateReques
 		)
 		return
 	}
-
-	stateData, err := r.read(ctx, createTimeout, data)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			fgpuLinkErrState,
-			err.Error(),
-		)
-		return
-	}
-
-	resp.Diagnostics.Append(resp.State.Set(ctx, &stateData)...)
 }
 
 func (r *fgpuLinkResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data fgpuLinkModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
-	readTimeout, diag := data.Timeouts.Read(ctx, ReadDefaultTimeout)
+	timeout, diag := data.Timeouts.Read(ctx, ReadDefaultTimeout)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
 
-	stateData, err := r.read(ctx, readTimeout, data)
+	stateData, err := r.read(ctx, timeout, data)
 	if err != nil {
 		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(
-			fgpuLinkErrState,
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -278,10 +278,7 @@ func (r *fgpuLinkResource) Update(ctx context.Context, req resource.UpdateReques
 
 	data, err := r.read(ctx, timeout, planData)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			fgpuLinkErrState,
-			err.Error(),
-		)
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -347,7 +344,7 @@ func (r *fgpuLinkResource) read(ctx context.Context, timeout time.Duration, data
 	})
 	idsSet, diag := to.Set(ctx, gpuIds)
 	if diag.HasError() {
-		return data, fmt.Errorf("%v", diag.Errors())
+		return data, from.Diag(diag)
 	}
 
 	data.FlexibleGpuIds = idsSet

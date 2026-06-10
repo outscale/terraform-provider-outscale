@@ -19,6 +19,11 @@ var (
 	_ datasource.DataSourceWithConfigure = &oksKubeconfigDataSource{}
 )
 
+const (
+	kubeconfigErrRead  = "Unable to get OKS Kubeconfig"
+	kubeconfigErrParse = "Unable to parse OKS Kubeconfig attributes"
+)
+
 func NewDataSourceOKSKubeconfig() datasource.DataSource {
 	return &oksKubeconfigDataSource{}
 }
@@ -150,10 +155,7 @@ func (d *oksKubeconfigDataSource) Read(ctx context.Context, req datasource.ReadR
 	}
 
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to get OKS Kubeconfig",
-			"Error: "+err.Error(),
-		)
+		resp.Diagnostics.AddError(kubeconfigErrRead, err.Error())
 		return
 	}
 
@@ -161,7 +163,7 @@ func (d *oksKubeconfigDataSource) Read(ctx context.Context, req datasource.ReadR
 
 	kubeconfigAttr, err := parseKubeconfigAttr(ctx, kubeconfigResp.Cluster.Data.Kubeconfig)
 	if err != nil {
-		resp.Diagnostics.AddError("Unable to parse OKS Kubeconfig attributes", "Error: "+err.Error())
+		resp.Diagnostics.AddError(kubeconfigErrParse, err.Error())
 		return
 	}
 	data.KubeconfigAttr = kubeconfigAttr

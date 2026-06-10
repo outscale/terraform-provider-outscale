@@ -3,6 +3,7 @@ package oapi_test
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -41,7 +42,31 @@ func TestAccOthers_ClientGateway_Migration(t *testing.T) {
 	})
 }
 
+func TestAccOthers_ClientGateway_CreateFailureKeepsState(t *testing.T) {
+	resourceName := "outscale_client_gateway.foo"
+	rBgpAsn := oapihelpers.RandBgpAsn()
+	invalidTagKey := strings.Repeat("a", 256)
+	tagValue := "testacc-client-gateway"
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
+		Steps: testacc.CreateFailureReplacementSteps(
+			resourceName,
+			testAccClientGatewayConfigWithTag(rBgpAsn, invalidTagKey, tagValue),
+			testAccClientGatewayConfigWithTag(rBgpAsn, "Name", tagValue),
+			resource.ComposeTestCheckFunc(
+				resource.TestCheckResourceAttrSet(resourceName, "client_gateway_id"),
+				resource.TestCheckResourceAttr(resourceName, "tags.0.value", tagValue),
+			),
+		),
+	})
+}
+
 func testAccClientGatewayConfig(rBgpAsn int) string {
+	return testAccClientGatewayConfigWithTag(rBgpAsn, "Name", "testacc-client-gateway")
+}
+
+func testAccClientGatewayConfigWithTag(rBgpAsn int, tagKey, tagValue string) string {
 	return fmt.Sprintf(`
 		resource "outscale_client_gateway" "foo" {
 			bgp_asn         = %d
@@ -49,9 +74,9 @@ func testAccClientGatewayConfig(rBgpAsn int) string {
 			connection_type = "ipsec.1"
 
 			tags {
-				key = "Name"
-				value = "testacc-client-gateway"
+				key = %q
+				value = %q
 			}
 		}
-	`, rBgpAsn)
+	`, rBgpAsn, tagKey, tagValue)
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -42,6 +43,30 @@ func TestAccOthers_Image_basic(t *testing.T) {
 				),
 			},
 		},
+	})
+}
+
+func TestAccOthers_Image_CreateFailureKeepsState(t *testing.T) {
+	omi := os.Getenv("OUTSCALE_IMAGEID")
+	region := utils.GetRegion()
+	sgName := acctest.RandomWithPrefix("testacc-sg")
+	rInt := acctest.RandInt()
+	invalidTagKey := strings.Repeat("a", 256)
+	tagValue := "testacc-resource-image"
+	resourceName := "outscale_image.foo"
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
+		CheckDestroy:             testAccCheckOAPIImageDestroy,
+		Steps: testacc.CreateFailureReplacementSteps(
+			resourceName,
+			testAccOAPIImageConfigWithTag(omi, testAccVmType, region, rInt, sgName, invalidTagKey, tagValue),
+			testAccOAPIImageConfigWithTag(omi, testAccVmType, region, rInt, sgName, "Name", tagValue),
+			resource.ComposeTestCheckFunc(
+				resource.TestCheckResourceAttrSet(resourceName, "id"),
+				resource.TestCheckResourceAttr(resourceName, "tags.0.value", tagValue),
+			),
+		),
 	})
 }
 
@@ -94,13 +119,17 @@ func testAccCheckOAPIImageExists(ctx context.Context, n string, ami *osc.Image) 
 }
 
 func testAccOAPIImageConfigBasic(omi, vmType, region string, rInt int, sgName string) string {
+	return testAccOAPIImageConfigWithTag(omi, vmType, region, rInt, sgName, "Name", "tf-acc-test")
+}
+
+func testAccOAPIImageConfigWithTag(omi, vmType, region string, rInt int, sgName, tagKey, tagValue string) string {
 	return fmt.Sprintf(`
 		resource "outscale_security_group" "sg_img" {
 			security_group_name = "%[5]s"
 			description         = "Used in the terraform acceptance tests"
- 			tags {
-				key   = "Name"
-				value = "tf-acc-test"
+  			tags {
+				key   = "%[6]s"
+				value = "%[7]s"
 			}
 		}
 
@@ -124,6 +153,10 @@ func testAccOAPIImageConfigBasic(omi, vmType, region string, rInt int, sgName st
 			description = "terraform testing"
                         root_device_name="/dev/sda1"
                         architecture = "x86_64"
+			tags {
+				key   = "%[6]s"
+				value = "%[7]s"
+			}
                         block_device_mappings {
                           bsu  {
                             snapshot_id = outscale_snapshot.snap_image.snapshot_id
@@ -132,5 +165,5 @@ func testAccOAPIImageConfigBasic(omi, vmType, region string, rInt int, sgName st
                          device_name = "/dev/sda1"
                       }
 		}
-	`, omi, vmType, region, rInt, sgName)
+	`, omi, vmType, region, rInt, sgName, tagKey, tagValue)
 }

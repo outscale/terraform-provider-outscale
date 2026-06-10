@@ -34,9 +34,7 @@ var (
 
 const (
 	vpnConnectionErrCreate = "Unable to create VPN Connection"
-	vpnConnectionErrRead   = "Unable to read VPN Connection"
 	vpnConnectionErrDelete = "Unable to delete VPN Connection"
-	vpnConnectionErrState  = "Unable to set VPN Connection state"
 	vpnConnectionErrWait   = "Unable to wait for VPN Connection state"
 )
 
@@ -260,19 +258,29 @@ func (r *vpnConnectionResource) Create(ctx context.Context, req resource.CreateR
 		resp.Diagnostics.AddError(vpnConnectionErrCreate, err.Error())
 		return
 	}
+	vpn := createResp.VpnConnection
+	data.RequestId = to.String(createResp.ResponseContext.RequestId)
+	data.Id = to.String(vpn.VpnConnectionId)
+	data.VpnConnectionId = to.String(vpn.VpnConnectionId)
 
-	id := createResp.VpnConnection.VpnConnectionId
-	data.Id = to.String(id)
-	data.VpnConnectionId = to.String(id)
+	stateData, err := r.flatten(ctx, data, vpn)
+	if err != nil {
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
+		return
+	}
+	diags = resp.State.Set(ctx, &stateData)
+	if fwhelpers.CheckDiags(resp, diags) {
+		return
+	}
 
-	diag := createOAPITagsFW(ctx, r.Client, timeout, data.Tags, id)
+	diag := createOAPITagsFW(ctx, r.Client, timeout, data.Tags, vpn.VpnConnectionId)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
 
-	stateData, err := r.read(ctx, timeout, data)
+	stateData, err = r.read(ctx, timeout, data)
 	if err != nil {
-		resp.Diagnostics.AddError(vpnConnectionErrRead, err.Error())
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -294,7 +302,7 @@ func (r *vpnConnectionResource) Read(ctx context.Context, req resource.ReadReque
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(vpnConnectionErrRead, err.Error())
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -325,7 +333,7 @@ func (r *vpnConnectionResource) Update(ctx context.Context, req resource.UpdateR
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(vpnConnectionErrState, err.Error())
+		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
@@ -382,10 +390,18 @@ func (r *vpnConnectionResource) read(ctx context.Context, timeout time.Duration,
 	resp := respAny.(*osc.ReadVpnConnectionsResponse)
 	vpn := (*resp.VpnConnections)[0]
 
+	data.RequestId = to.String(resp.ResponseContext.RequestId)
+
 	if vpn.State == osc.VpnConnectionStateDeleted {
 		return data, ErrResourceEmpty
 	}
 
+	data.RequestId = to.String(resp.ResponseContext.RequestId)
+
+	return r.flatten(ctx, data, &vpn)
+}
+
+func (r *vpnConnectionResource) flatten(ctx context.Context, data vpnConnectionModel, vpn *osc.VpnConnection) (vpnConnectionModel, error) {
 	tags, diag := flattenOAPITagsFW(ctx, vpn.Tags)
 	if diag.HasError() {
 		return data, from.Diag(diag)
@@ -410,7 +426,6 @@ func (r *vpnConnectionResource) read(ctx context.Context, timeout time.Duration,
 	data.StaticRoutesOnly = to.Bool(vpn.StaticRoutesOnly)
 	data.VirtualGatewayId = to.String(vpn.VirtualGatewayId)
 	data.ConnectionType = to.String(vpn.ConnectionType)
-	data.RequestId = to.String(resp.ResponseContext.RequestId)
 	data.ClientGatewayId = to.String(vpn.ClientGatewayId)
 	data.Id = to.String(vpn.VpnConnectionId)
 
