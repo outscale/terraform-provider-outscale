@@ -45,6 +45,10 @@ resource "outscale_security_group_rule" "outscale_security_group_rule-3_2" {
 
 data "outscale_security_group" "filters-outbound" {
   filter {
+    name   = "security_group_ids"
+    values = [outscale_security_group.outscale_security_group.security_group_id]
+  }
+  filter {
     name   = "net_ids"
     values = [outscale_net.outscale_net.net_id]
   }

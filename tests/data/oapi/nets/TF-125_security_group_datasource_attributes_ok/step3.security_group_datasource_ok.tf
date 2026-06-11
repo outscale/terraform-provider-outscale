@@ -44,6 +44,10 @@ resource "outscale_security_group_rule" "outscale_security_group_rule-3" {
 
 data "outscale_security_group" "filters-inbound" {
   filter {
+    name   = "security_group_ids"
+    values = [outscale_security_group.outscale_security_group.security_group_id]
+  }
+  filter {
     name   = "inbound_rule_from_port_ranges"
     values = ["22"]
   }
