@@ -49,6 +49,10 @@ data "outscale_security_group" "outscale_security_groupd" {
 
 data "outscale_security_group" "filters-inbound" {
   filter {
+    name   = "security_group_ids"
+    values = [outscale_security_group.outscale_security_group.security_group_id]
+  }
+  filter {
     name   = "inbound_rule_from_port_ranges"
     values = [80]
   }
@@ -68,6 +72,10 @@ data "outscale_security_group" "filters-inbound" {
 }
 
 data "outscale_security_group" "filters-tags" {
+  filter {
+    name   = "security_group_ids"
+    values = [outscale_security_group.outscale_security_group.security_group_id]
+  }
   filter {
     name   = "tag_keys"
     values = ["Key:"]
