@@ -27,8 +27,9 @@ import (
 )
 
 var (
-	_ resource.Resource              = &fgpuLinkResource{}
-	_ resource.ResourceWithConfigure = &fgpuLinkResource{}
+	_ resource.Resource               = &fgpuLinkResource{}
+	_ resource.ResourceWithConfigure  = &fgpuLinkResource{}
+	_ resource.ResourceWithModifyPlan = &fgpuLinkResource{}
 )
 
 const (
@@ -99,6 +100,72 @@ func (r *fgpuLinkResource) ImportState(ctx context.Context, req resource.ImportS
 
 func (r *fgpuLinkResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_flexible_gpu_link"
+}
+
+func (r *fgpuLinkResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	// destroy: no-op
+	if req.Plan.Raw.IsNull() {
+		return
+	}
+
+	var planData fgpuLinkModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &planData)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if req.State.Raw.IsNull() {
+		// When vm_id comes from a resource being created in the same apply, the restart warning is not useful
+		if !fwhelpers.IsSet(planData.VmId) || planData.VmId.ValueString() == "" || !fwhelpers.IsSet(planData.Id) {
+			return
+		}
+
+		resp.Diagnostics.AddWarning(
+			"Flexible GPU link creation restarts the VM",
+			fmt.Sprintf("Creating this resource links the Flexible GPUs to VM %q and the provider will stop then restart the VM during apply.", planData.VmId.ValueString()),
+		)
+		return
+	}
+
+	var stateData, configData fgpuLinkModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &stateData)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	resp.Diagnostics.Append(req.Config.Get(ctx, &configData)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	duplicateMessage := "\n\n(This warning is expected to appear twice: during `terraform plan` and again after a successful `terraform apply`. The VMs should be running once apply completes.)"
+
+	if !planData.VmId.Equal(stateData.VmId) {
+		detail := "Replacing this resource unlinks the Flexible GPUs from the current VM and links them to the new VM. The provider will stop and then restart the affected VMs during apply."
+		if fwhelpers.IsSet(stateData.VmId) && fwhelpers.IsSet(planData.VmId) {
+			detail = fmt.Sprintf("Replacing this resource unlinks the Flexible GPUs from VM %q and links them to VM %q. The provider will stop and then restart the affected VMs during apply.", stateData.VmId.ValueString(), planData.VmId.ValueString())
+		}
+		detail += duplicateMessage
+
+		resp.Diagnostics.AddWarning(
+			"Flexible GPU link replacement restarts VMs",
+			detail,
+		)
+
+		return
+	}
+
+	if !planData.FlexibleGpuIds.Equal(stateData.FlexibleGpuIds) {
+		detail := "Updating this resource changes the Flexible GPUs linked to the VM, and the provider will stop and then restart the VM during apply."
+		if fwhelpers.IsSet(planData.VmId) {
+			detail = fmt.Sprintf("Updating this resource changes the Flexible GPUs linked to VM %q, and the provider will stop and then restart the VM during apply.", planData.VmId.ValueString())
+		}
+		detail += duplicateMessage
+
+		resp.Diagnostics.AddWarning(
+			"Flexible GPU link update restarts the VM",
+			detail,
+		)
+	}
 }
 
 func (r *fgpuLinkResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
