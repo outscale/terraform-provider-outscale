@@ -42,9 +42,6 @@ func ResourceOutscaleVM() *schema.Resource {
 			Delete: schema.DefaultTimeout(DeleteDefaultTimeout),
 		},
 		// Schema: //omitted for brevity
-		ValidateRawResourceConfigFuncs: []schema.ValidateRawResourceConfigFunc{
-			validation.PreferWriteOnlyAttribute(cty.GetAttrPath("keypair_name"), cty.GetAttrPath("keypair_name_wo")),
-		},
 		Schema: map[string]*schema.Schema{
 			"actions_on_next_boot": {
 				Type:     schema.TypeList,
@@ -761,11 +758,13 @@ func ResourceOutscaleVM() *schema.Resource {
 
 func resourceOAPIVMCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*client.OutscaleClient).OSC
+	var diags diag.Diagnostics
 
 	vmOpts, bsuMapsTags, err := buildCreateVmsRequest(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	diags = append(diags, keypairWriteOnlyWarning(d)...)
 	vState := d.Get("state").(string)
 	if vState != "stopped" && vState != "running" {
 		return diag.Errorf("error: state must be `stopped or running`")
@@ -853,7 +852,32 @@ func resourceOAPIVMCreate(ctx context.Context, d *schema.ResourceData, meta any)
 		}
 	}
 
-	return resourceOAPIVMRead(ctx, d, meta)
+	diags = append(diags, resourceOAPIVMRead(ctx, d, meta)...)
+	return diags
+}
+
+func keypairWriteOnlyWarning(d *schema.ResourceData) diag.Diagnostics {
+	keypairName, diags := d.GetRawConfigAt(cty.GetAttrPath("keypair_name"))
+	if diags.HasError() {
+		return nil
+	}
+	if keypairName.IsNull() || keypairName.AsString() == "" {
+		return nil
+	}
+
+	keypairNameWO, diags := d.GetRawConfigAt(cty.GetAttrPath("keypair_name_wo"))
+	if diags.HasError() {
+		return nil
+	}
+	if !keypairNameWO.IsNull() && keypairNameWO.AsString() != "" {
+		return nil
+	}
+
+	return diag.Diagnostics{{
+		Severity: diag.Warning,
+		Summary:  "Write-only Alternative Available",
+		Detail:   "The attribute keypair_name has a write-only alternative keypair_name_wo available. Use the write-only alternative when possible to avoid persisting the value in plan and state.",
+	}}
 }
 
 func createBsuTags(ctx context.Context, client *osc.Client, timeout time.Duration, vm osc.Vm, bsuMapsTags []map[string]any) error {
