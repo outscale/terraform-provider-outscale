@@ -1,6 +1,8 @@
 package client
 
 import (
+	"fmt"
+
 	"github.com/outscale/goutils/sdk/batch"
 	"github.com/outscale/osc-sdk-go/v3/pkg/oks"
 	"github.com/outscale/osc-sdk-go/v3/pkg/options"
@@ -35,35 +37,38 @@ type Config struct {
 	Profile      string
 }
 
-func NewOSCClient(cfg Config) (*osc.Client, error) {
-	profile, err := profile.NewFrom(cfg.Profile, cfg.ConfigFile)
-	if err != nil {
-		return nil, err
-	}
-
-	if cfg.AccessKey != "" {
+func (cfg Config) ToOSCOption() profile.Option {
+	return func(profile *profile.Profile) error {
 		profile.AccessKey = cfg.AccessKey
-	}
-	if cfg.SecretKey != "" {
 		profile.SecretKey = cfg.SecretKey
-	}
-	if cfg.Region != "" {
 		profile.Region = cfg.Region
-	}
-	if cfg.X509CertPath != "" {
 		profile.X509ClientCert = cfg.X509CertPath
-	}
-	if cfg.X509KeyPath != "" {
 		profile.X509ClientKey = cfg.X509KeyPath
-	}
-	if cfg.Insecure {
 		profile.TlsSkipVerify = cfg.Insecure
-	}
-	if cfg.APIEndpoint != "" {
 		profile.Endpoints.API = cfg.APIEndpoint
+		profile.Protocol = "https"
+
+		return nil
+	}
+}
+
+// NewProfile merges profile values in the following order:
+// provider config -> selected profile file -> environment values for any fields that are still unset
+func (cfg Config) NewProfile(configOption profile.Option) (*profile.Profile, error) {
+	opts := []profile.Option{configOption, profile.MergeWith(profile.FromEnv())}
+
+	if cfg.Profile != "" || cfg.ConfigFile != "" {
+		opts = []profile.Option{configOption, profile.MergeWith(profile.FromFile(cfg.Profile, cfg.ConfigFile)), profile.MergeWith(profile.FromEnv())}
 	}
 
-	profile.Protocol = "https"
+	return profile.New(opts...)
+}
+
+func NewOSCClient(cfg Config) (*osc.Client, error) {
+	profile, err := cfg.NewProfile(cfg.ToOSCOption())
+	if err != nil {
+		return nil, fmt.Errorf("new profile: %w", err)
+	}
 
 	logger := options.WithLogging(logging.NewTflogWrapper())
 	userAgent := options.WithUseragent(cfg.UserAgent)
@@ -71,29 +76,26 @@ func NewOSCClient(cfg Config) (*osc.Client, error) {
 	return osc.NewClient(profile, userAgent, logger)
 }
 
-func NewOKSClient(cfg Config) (*oks.Client, error) {
-	profile, err := profile.NewFrom(cfg.Profile, cfg.ConfigFile)
-	if err != nil {
-		return nil, err
-	}
-
-	if cfg.AccessKey != "" {
+func (cfg Config) ToOKSOption() profile.Option {
+	return func(profile *profile.Profile) error {
 		profile.AccessKey = cfg.AccessKey
-	}
-	if cfg.SecretKey != "" {
 		profile.SecretKey = cfg.SecretKey
-	}
-	if cfg.Region != "" {
 		profile.Region = cfg.Region
-	}
-	if cfg.OKSEndpoint != "" {
 		profile.Endpoints.OKS = cfg.OKSEndpoint
-	}
+		profile.TlsSkipVerify = false
+		profile.Protocol = "https"
+		profile.X509ClientCert = ""
+		profile.X509ClientKey = ""
 
-	profile.Protocol = "https"
-	profile.TlsSkipVerify = false
-	profile.X509ClientCert = ""
-	profile.X509ClientKey = ""
+		return nil
+	}
+}
+
+func NewOKSClient(cfg Config) (*oks.Client, error) {
+	profile, err := cfg.NewProfile(cfg.ToOKSOption())
+	if err != nil {
+		return nil, fmt.Errorf("new profile: %w", err)
+	}
 
 	logger := options.WithLogging(logging.NewTflogWrapper())
 	userAgent := options.WithUseragent(cfg.UserAgent)
