@@ -319,6 +319,7 @@ func (data *ProviderModel) newClient(ctx context.Context) (*client.OutscaleClien
 		return nil, fmt.Errorf("failed to build oks config: %v", diag.Errors())
 	}
 
+	// Attributes global to any service
 	if fwhelpers.IsSet(data.AccessKey) {
 		oscConfig.AccessKey = data.AccessKey.ValueString()
 		oksConfig.AccessKey = data.AccessKey.ValueString()
@@ -326,6 +327,14 @@ func (data *ProviderModel) newClient(ctx context.Context) (*client.OutscaleClien
 	if fwhelpers.IsSet(data.SecretKey) {
 		oscConfig.SecretKey = data.SecretKey.ValueString()
 		oksConfig.SecretKey = data.SecretKey.ValueString()
+	}
+	if fwhelpers.IsSet(data.Profile) {
+		oscConfig.Profile = data.Profile.ValueString()
+		oksConfig.Profile = data.Profile.ValueString()
+	}
+	if fwhelpers.IsSet(data.ConfigFile) {
+		oscConfig.ConfigFile = data.ConfigFile.ValueString()
+		oksConfig.ConfigFile = data.ConfigFile.ValueString()
 	}
 	oscConfig.UserAgent = UserAgent
 	oksConfig.UserAgent = UserAgent

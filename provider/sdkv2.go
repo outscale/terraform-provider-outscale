@@ -349,6 +349,7 @@ func providerConfigureClient(ctx context.Context, d *schema.ResourceData) (any, 
 	oscConfig := buildOSCConfig(d)
 	oksConfig := buildOKSConfig(d)
 
+	// Attributes global to any service
 	if v, ok := d.GetOk("access_key_id"); ok {
 		oscConfig.AccessKey = v.(string)
 		oksConfig.AccessKey = v.(string)
@@ -356,6 +357,14 @@ func providerConfigureClient(ctx context.Context, d *schema.ResourceData) (any, 
 	if v, ok := d.GetOk("secret_key_id"); ok {
 		oscConfig.SecretKey = v.(string)
 		oksConfig.SecretKey = v.(string)
+	}
+	if v, ok := d.GetOk("profile"); ok {
+		oscConfig.Profile = v.(string)
+		oksConfig.Profile = v.(string)
+	}
+	if v, ok := d.GetOk("config_file"); ok {
+		oscConfig.ConfigFile = v.(string)
+		oksConfig.ConfigFile = v.(string)
 	}
 	oscConfig.UserAgent = UserAgent
 	oksConfig.UserAgent = UserAgent
