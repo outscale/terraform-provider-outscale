@@ -208,3 +208,9 @@ func GetRegion() string {
 	}
 	return region
 }
+
+func ToEnums[T ~string](v []string) *[]T {
+	return new(lo.Map(v, func(v string, _ int) T {
+		return T(v)
+	}))
+}
