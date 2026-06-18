@@ -211,7 +211,7 @@ func vpnGatewayAttachStateRefreshFunc(ctx context.Context, client *osc.Client, i
 		}
 		vpnAttachment := oapiVpnGatewayGetLink(virtualGateway)
 
-		return virtualGateway, ptr.From(vpnAttachment.State), nil
+		return virtualGateway, string(ptr.From(vpnAttachment.State)), nil
 	}
 }
 
@@ -221,7 +221,7 @@ func oapiVpnGatewayGetLink(vgw osc.VirtualGateway) *osc.NetToVirtualGatewayLink 
 			return &v
 		}
 	}
-	return &osc.NetToVirtualGatewayLink{State: new("detached")}
+	return &osc.NetToVirtualGatewayLink{State: new(osc.NetToVirtualGatewayLinkStateDetached)}
 }
 
 func virtualGatewayStateRefreshFunc(ctx context.Context, client *osc.Client, instanceID, failState string, timeout time.Duration) retry.StateRefreshFunc {
@@ -243,10 +243,10 @@ func virtualGatewayStateRefreshFunc(ctx context.Context, client *osc.Client, ins
 		virtualGateway := (*resp.VirtualGateways)[0]
 		state := virtualGateway.State
 
-		if state == failState {
-			return virtualGateway, state, fmt.Errorf("failed to reach target state:: %v", virtualGateway.State)
+		if string(state) == failState {
+			return virtualGateway, string(state), fmt.Errorf("failed to reach target state:: %v", virtualGateway.State)
 		}
 
-		return virtualGateway, state, nil
+		return virtualGateway, string(state), nil
 	}
 }

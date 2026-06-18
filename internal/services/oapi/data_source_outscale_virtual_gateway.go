@@ -143,13 +143,13 @@ func buildOutscaleAPIVirtualGatewayFilters(set *schema.Set) (*osc.FiltersVirtual
 		case "tag_values":
 			filters.TagValues = &filterValues
 		case "states":
-			filters.States = &filterValues
+			filters.States = utils.ToEnums[osc.VirtualGatewayState](filterValues)
 		case "connection_types":
 			filters.ConnectionTypes = &filterValues
 		case "link_net_ids":
 			filters.LinkNetIds = &filterValues
 		case "link_states":
-			filters.LinkStates = &filterValues
+			filters.LinkStates = utils.ToEnums[osc.NetToVirtualGatewayLinkState](filterValues)
 		case "virtual_gateway_ids":
 			filters.VirtualGatewayIds = &filterValues
 		default:

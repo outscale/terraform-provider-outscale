@@ -25,7 +25,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/outscale/goutils/sdk/ptr"
 	"github.com/outscale/osc-sdk-go/v3/pkg/oks"
 	"github.com/outscale/osc-sdk-go/v3/pkg/options"
@@ -33,6 +32,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/stateconf"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/validators/validatorstring"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -762,7 +762,7 @@ func (r *oksClusterResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 
 	if doUpgrade {
-		_, err := r.waitForClusterState(ctx, state.Id.ValueString(), []string{"pending", "updating"}, []string{"ready"}, timeout)
+		_, err := r.waitForClusterState(ctx, state.Id.ValueString(), stateconf.States(oks.ClusterStatusPending, oks.ClusterStatusUpdating), stateconf.States(oks.ClusterStatusReady), timeout)
 		if err != nil {
 			resp.Diagnostics.AddError(clusterErrWait, err.Error())
 			return
@@ -811,7 +811,7 @@ func (r *oksClusterResource) Delete(ctx context.Context, req resource.DeleteRequ
 		return
 	}
 
-	_, err = r.waitForClusterState(ctx, data.Id.ValueString(), []string{"pending", "deleting"}, []string{}, timeout)
+	_, err = r.waitForClusterState(ctx, data.Id.ValueString(), stateconf.States(oks.ClusterStatusPending, oks.ClusterStatusDeleting), []oks.ClusterStatus{}, timeout)
 	if err != nil {
 		if !oks.IsNotFound(err) {
 			resp.Diagnostics.AddError(clusterErrWait, err.Error())
@@ -819,27 +819,26 @@ func (r *oksClusterResource) Delete(ctx context.Context, req resource.DeleteRequ
 	}
 }
 
-func (r *oksClusterResource) waitForClusterState(ctx context.Context, id string, pending []string, target []string, timeout time.Duration) (*oks.ClusterResponse, error) {
-	resp, err := fwhelpers.WaitForResource[oks.ClusterResponse](ctx, &retry.StateChangeConf{
+func (r *oksClusterResource) waitForClusterState(ctx context.Context, id string, pending []oks.ClusterStatus, target []oks.ClusterStatus, timeout time.Duration) (*oks.ClusterResponse, error) {
+	conf := stateconf.StateChangeConf[oks.ClusterStatus]{
 		Pending: pending,
 		Target:  target,
 		Timeout: timeout,
-		Refresh: func() (any, string, error) {
-			resp, err := r.Client.GetCluster(ctx, id, options.WithRetryTimeout(timeout))
+		Refresh: func(ctx context.Context) (any, oks.ClusterStatus, error) {
+			resp, err := r.Client.GetCluster(ctx, id)
 			if err != nil {
 				return resp, "", err
 			}
-			if resp.Cluster.Statuses.Status == nil {
-				return resp, "", nil
-			}
-			return resp, *resp.Cluster.Statuses.Status, nil
+
+			return resp, ptr.From(resp.Cluster.Statuses.Status), nil
 		},
-	})
+	}
+	respAny, err := conf.WaitForStateContext(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return resp, nil
+	return respAny.(*oks.ClusterResponse), nil
 }
 
 func (r *oksClusterResource) setOKSAdmissionFlags(ctx context.Context, data *ClusterModel, auto *oks.AdmissionFlags) diag.Diagnostics {
@@ -949,7 +948,7 @@ func (r *oksClusterResource) setOKSStatuses(ctx context.Context, data *ClusterMo
 	model.AvailableUpgrade = to.String(auto.AvailableUpgrade)
 	model.CreatedAt = to.RFC3339(auto.CreatedAt)
 	model.DeletedAt = to.RFC3339(auto.DeletedAt)
-	model.Status = to.String(auto.Status)
+	model.Status = to.String(ptr.From(auto.Status))
 	model.UpdatedAt = to.RFC3339(auto.UpdatedAt)
 
 	obj, diags := types.ObjectValueFrom(ctx, data.Statuses.AttributeTypes(ctx), model)
@@ -1001,7 +1000,7 @@ func parseKubeconfigAttr(ctx context.Context, kubeconfig string) (types.Object, 
 }
 
 func (r *oksClusterResource) read(ctx context.Context, data ClusterModel, timeout time.Duration) (ClusterModel, error) {
-	resp, err := r.waitForClusterState(ctx, data.Id.ValueString(), []string{"pending", "deploying", "updating", "upgrading"}, []string{"ready", "deleting"}, timeout)
+	resp, err := r.waitForClusterState(ctx, data.Id.ValueString(), stateconf.States(oks.ClusterStatusPending, oks.ClusterStatusDeploying, oks.ClusterStatusUpdating, oks.ClusterStatusUpgrading), stateconf.States(oks.ClusterStatusReady, oks.ClusterStatusDeleting), timeout)
 	if err != nil {
 		return data, err
 	}

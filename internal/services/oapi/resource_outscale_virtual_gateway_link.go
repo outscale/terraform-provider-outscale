@@ -229,6 +229,6 @@ func vpnGatewayLinkStateRefresh(ctx context.Context, client *osc.Client, vpcID, 
 		vga := oapiVpnGatewayGetLink(vgw)
 
 		log.Printf("[DEBUG] VPN Gateway %q attachment status: %s", vgwID, *vga.State)
-		return vgw, *vga.State, nil
+		return vgw, string(*vga.State), nil
 	}
 }
