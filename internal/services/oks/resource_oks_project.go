@@ -343,7 +343,7 @@ func (r *oksProjectResource) Delete(ctx context.Context, req resource.DeleteRequ
 		return
 	}
 
-	_, err = r.waitForProjectState(ctx, data.Id.ValueString(), stateconf.States(oks.ProjectStatusDeleting), []oks.ProjectStatus{}, timeout)
+	_, err = r.waitForProjectState(ctx, data.Id.ValueString(), stateconf.States(oks.ProjectStatusPending, oks.ProjectStatusDeleting), []oks.ProjectStatus{}, timeout)
 	if err != nil {
 		if !oks.IsNotFound(err) {
 			resp.Diagnostics.AddError(projectErrWait, err.Error())
@@ -373,7 +373,7 @@ func (r *oksProjectResource) waitForProjectState(ctx context.Context, id string,
 }
 
 func (r *oksProjectResource) read(ctx context.Context, data ProjectModel, timeout time.Duration) (ProjectModel, error) {
-	resp, err := r.waitForProjectState(ctx, data.Id.ValueString(), stateconf.States(oks.ProjectStatusPending, oks.ProjectStatusUpdating), stateconf.States(oks.ProjectStatusReady, oks.ProjectStatusDeleting), timeout)
+	resp, err := r.waitForProjectState(ctx, data.Id.ValueString(), stateconf.States(oks.ProjectStatusDeploying, oks.ProjectStatusPending, oks.ProjectStatusUpdating), stateconf.States(oks.ProjectStatusReady, oks.ProjectStatusDeleting), timeout)
 	if err != nil {
 		return data, err
 	}
