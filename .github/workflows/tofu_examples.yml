@@ -27,7 +27,7 @@ jobs:
         runs-on: [self-hosted, linux, eu-west-2, oapi]
         steps:
             - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-            - uses: outscale/frieza-github-actions/frieza-clean@master
+            - uses: outscale/frieza-github-actions/frieza-clean@68ffd39d7e181f3548369e332242b329b04a3182 # master
               with:
                   access_key: ${{ secrets.OSC_ACCESS_KEY }}
                   secret_key: ${{ secrets.OSC_SECRET_KEY }}
