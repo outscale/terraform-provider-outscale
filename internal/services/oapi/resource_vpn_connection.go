@@ -23,6 +23,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/stateconf"
+	"github.com/outscale/terraform-provider-outscale/internal/services/oapi/oapihelpers"
 	"github.com/samber/lo"
 )
 
@@ -36,6 +37,8 @@ const (
 	vpnConnectionErrCreate = "Unable to create VPN Connection"
 	vpnConnectionErrDelete = "Unable to delete VPN Connection"
 	vpnConnectionErrWait   = "Unable to wait for VPN Connection state"
+
+	vpnConnectionCreateTimeout = 15 * time.Minute
 )
 
 type vpnConnectionModel struct {
@@ -238,7 +241,7 @@ func (r *vpnConnectionResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	timeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
+	timeout, diags := data.Timeouts.Create(ctx, vpnConnectionCreateTimeout)
 	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
@@ -255,6 +258,11 @@ func (r *vpnConnectionResource) Create(ctx context.Context, req resource.CreateR
 
 	createResp, err := r.Client.CreateVpnConnection(ctx, createReq, options.WithRetryTimeout(timeout))
 	if err != nil {
+		oscErr := oapihelpers.GetError(err)
+		if oscErr.Code == "6008" {
+			resp.Diagnostics.AddError(vpnConnectionErrCreate, err.Error())
+			return
+		}
 		resp.Diagnostics.AddError(vpnConnectionErrCreate, err.Error())
 		return
 	}

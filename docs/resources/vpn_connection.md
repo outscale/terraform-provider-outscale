@@ -86,7 +86,7 @@ The following attributes are exported:
 
 The `timeouts` block enables you to configure [timeouts](https://developer.hashicorp.com/terraform/language/resources/configure#define-operation-timeouts) for certain actions:
 
-* `create` - Defaults to 10 minutes.
+* `create` - Defaults to 15 minutes.
 * `read` - Defaults to 5 minutes.
 * `update` - Defaults to 10 minutes.
 * `delete` - Defaults to 5 minutes.
