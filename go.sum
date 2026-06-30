@@ -183,6 +183,8 @@ github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 h1:C3w9PqII01/Oq
 github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822/go.mod h1:+n7T8mK8HuQTcFwEeznm/DIxMOiR9yIdICNftLE1DvQ=
 github.com/oapi-codegen/runtime v1.4.0 h1:KLOSFOp7UzkbS7Cs1ms6NBEKYr0WmH2wZG0KKbd2er4=
 github.com/oapi-codegen/runtime v1.4.0/go.mod h1:5sw5fxCDmnOzKNYmkVNF8d34kyUeejJEY8HNT2WaPec=
+github.com/oapi-codegen/runtime v1.4.2 h1:GMxFVYLzoYLua+/KvzgSphkyK1lLTReQI9Vf4hvATKE=
+github.com/oapi-codegen/runtime v1.4.2/go.mod h1:GwV7hC2hviaMzj+ITfHVRESK5J2W/GefVwIND/bMGvU=
 github.com/oklog/run v1.2.0 h1:O8x3yXwah4A73hJdlrwo/2X6J62gE5qTMusH0dvz60E=
 github.com/oklog/run v1.2.0/go.mod h1:mgDbKRSwPhJfesJ4PntqFUbKQRZ50NgmZTSPlFA0YFk=
 github.com/outscale/goutils/sdk v0.0.3 h1:LnMuNUhQW8YgKDFH9vHTtstND3igHDbHDHPsaFsKFZ0=
