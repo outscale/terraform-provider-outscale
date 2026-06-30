@@ -1,0 +1,22 @@
+name: Compliance
+
+on:
+  pull_request:
+    branches: [ master ]
+
+permissions:
+  contents: read
+
+jobs:
+  compliance:
+    runs-on: ubuntu-latest
+    steps:
+    - name: ⬇️ Checkout
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      with:
+        persist-credentials: false
+    - name: Plumber
+      uses: outscale/.github/pipeline-compliance@f4952618256a12ea89d93ba7105866b80bd62266 # v1.0.0
+      with:
+        plumber-threshold: 93
+        github-token: ${{ secrets.PLUMBER_TOKEN }}
