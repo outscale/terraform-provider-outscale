@@ -8,10 +8,8 @@ import (
 )
 
 func TestAccOthers_DataSourceVpnGateways_unattached(t *testing.T) {
-	// t.Skip()
-
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testacc.SDKProviders,
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceOutscaleVpnGatewaysUnattachedConfig(),

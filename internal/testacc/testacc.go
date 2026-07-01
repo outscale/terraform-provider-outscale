@@ -180,9 +180,11 @@ func importStep(resourceName string, importStateIdFunc resource.ImportStateIdFun
 }
 
 func DefaultIgnores() []string {
-	return []string{
-		"request_id",
-	}
+	return []string{"request_id"}
+}
+
+func DefaultIgnoresWith(withIgnores ...string) []string {
+	return append(DefaultIgnores(), withIgnores...)
 }
 
 // CreateFailureReplacementSteps verifies that a create operation failure leaves a tainted resource in state, which Terraform then plans to replace on the next apply

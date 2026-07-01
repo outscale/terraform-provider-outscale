@@ -49,7 +49,11 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `net_id` - The ID of the Net to which the virtual gateway is attached.
+* `net_to_virtual_gateway_links` - The Net to which the virtual gateway is attached.
+    * `net_id` - The ID of the Net to which the virtual gateway is attached.
+    * `state` - The state of the attachment (`attaching` \| `attached` \| `detaching` \| `detached`).
 * `state` - The state of the attachment (`attaching` \| `attached` \| `detaching` \| `detached`).
+* `virtual_gateway_id` - The ID of the virtual gateway.
 
 ## Timeouts
 

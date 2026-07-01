@@ -99,8 +99,7 @@
                         "virtual_gateway_id": "##id-4##"
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0,
-                    "private": "########"
+                    "identity_schema_version": 0
                 }
             ]
         },
@@ -113,7 +112,6 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "dry_run": null,
                         "id": "##id-4##",
                         "net_id": "##id-1##",
                         "net_to_virtual_gateway_links": [
@@ -128,7 +126,6 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "outscale_net.outscale_net",
                         "outscale_virtual_gateway.outscale_virtual_gateway2"
@@ -154,7 +151,6 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "outscale_net.outscale_net",
                         "outscale_route_table.outscale_route_table",
