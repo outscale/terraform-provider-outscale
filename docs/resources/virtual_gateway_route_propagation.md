@@ -70,4 +70,5 @@ The `timeouts` block enables you to configure [timeouts](https://developer.hashi
 
 * `create` - Defaults to 10 minutes.
 * `read` - Defaults to 5 minutes.
+* `update` - Defaults to 10 minutes.
 * `delete` - Defaults to 5 minutes.
