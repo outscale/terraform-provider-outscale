@@ -321,8 +321,7 @@
                         "virtual_gateway_id": "##id-2##"
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0,
-                    "private": "########"
+                    "identity_schema_version": 0
                 }
             ]
         },
