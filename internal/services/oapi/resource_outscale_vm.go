@@ -1357,6 +1357,11 @@ func buildCreateVmsRequest(d *schema.ResourceData) (osc.CreateVmsRequest, []map[
 		ImageId:            d.Get("image_id").(string),
 	}
 
+	primaryNics, nics := d.Get("primary_nic").(*schema.Set), d.Get("nics").(*schema.Set)
+	if primaryNics.Len() > 0 && nics.Len() > 0 {
+		return request, nil, errors.New("primary_nic and nics cannot be used together; use nics to define the full NIC layout at VM creation, or use primary_nic with outscale_nic_link to manage additional NICs separately")
+	}
+
 	placement, err := expandPlacement(d)
 	if err != nil {
 		return request, nil, err

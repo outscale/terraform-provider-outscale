@@ -1,0 +1,543 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "managed",
+            "type": "outscale_keypair",
+            "name": "keypair01",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "id": "##id-0##",
+                        "keypair_fingerprint": "########",
+                        "keypair_id": "##id-0##",
+                        "keypair_name": "########",
+                        "keypair_type": "ssh-rsa",
+                        "private_key": "########",
+                        "public_key": null,
+                        "request_id": "########",
+                        "tags": [],
+                        "timeouts": null
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_net",
+            "name": "net01",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "dhcp_options_set_id": "##id-1##",
+                        "id": "##id-2##",
+                        "ip_range": "10.0.0.0/16",
+                        "net_id": "##id-2##",
+                        "request_id": "########",
+                        "state": "available",
+                        "tags": [],
+                        "tenancy": "default",
+                        "timeouts": null
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_nic",
+            "name": "nic01",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-3##",
+                        "description": "",
+                        "id": "##id-4##",
+                        "is_source_dest_checked": true,
+                        "link_nic": [],
+                        "link_public_ip": [],
+                        "mac_address": "########",
+                        "net_id": "##id-2##",
+                        "nic_id": "##id-4##",
+                        "private_dns_name": "########",
+                        "private_ip": "########",
+                        "private_ips": [
+                            {
+                                "is_primary": true,
+                                "link_public_ip": [],
+                                "private_dns_name": "########",
+                                "private_ip": "########"
+                            }
+                        ],
+                        "request_id": "########",
+                        "requester_managed": null,
+                        "security_group_ids": [
+                            "##id-5##"
+                        ],
+                        "security_groups": [
+                            {
+                                "security_group_id": "##id-5##",
+                                "security_group_name": "########"
+                            }
+                        ],
+                        "state": "available",
+                        "subnet_id": "##id-6##",
+                        "subregion_name": "eu-west-2a",
+                        "tags": [],
+                        "timeouts": null
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0,
+                    "private": "########",
+                    "dependencies": [
+                        "outscale_net.net01",
+                        "outscale_subnet.subnet01"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_nic",
+            "name": "nic02",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-3##",
+                        "description": "",
+                        "id": "##id-7##",
+                        "is_source_dest_checked": true,
+                        "link_nic": [],
+                        "link_public_ip": [],
+                        "mac_address": "########",
+                        "net_id": "##id-2##",
+                        "nic_id": "##id-7##",
+                        "private_dns_name": "########",
+                        "private_ip": "########",
+                        "private_ips": [
+                            {
+                                "is_primary": true,
+                                "link_public_ip": [],
+                                "private_dns_name": "########",
+                                "private_ip": "########"
+                            }
+                        ],
+                        "request_id": "########",
+                        "requester_managed": null,
+                        "security_group_ids": [
+                            "##id-5##"
+                        ],
+                        "security_groups": [
+                            {
+                                "security_group_id": "##id-5##",
+                                "security_group_name": "########"
+                            }
+                        ],
+                        "state": "available",
+                        "subnet_id": "##id-8##",
+                        "subregion_name": "eu-west-2a",
+                        "tags": [],
+                        "timeouts": null
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0,
+                    "private": "########",
+                    "dependencies": [
+                        "outscale_net.net01",
+                        "outscale_subnet.subnet02"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_nic",
+            "name": "nic03",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-3##",
+                        "description": "",
+                        "id": "##id-9##",
+                        "is_source_dest_checked": true,
+                        "link_nic": [],
+                        "link_public_ip": [],
+                        "mac_address": "########",
+                        "net_id": "##id-2##",
+                        "nic_id": "##id-9##",
+                        "private_dns_name": "########",
+                        "private_ip": "########",
+                        "private_ips": [
+                            {
+                                "is_primary": true,
+                                "link_public_ip": [],
+                                "private_dns_name": "########",
+                                "private_ip": "########"
+                            }
+                        ],
+                        "request_id": "########",
+                        "requester_managed": null,
+                        "security_group_ids": [
+                            "##id-5##"
+                        ],
+                        "security_groups": [
+                            {
+                                "security_group_id": "##id-5##",
+                                "security_group_name": "########"
+                            }
+                        ],
+                        "state": "available",
+                        "subnet_id": "##id-8##",
+                        "subregion_name": "eu-west-2a",
+                        "tags": [],
+                        "timeouts": null
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0,
+                    "private": "########",
+                    "dependencies": [
+                        "outscale_net.net01",
+                        "outscale_subnet.subnet02"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_subnet",
+            "name": "subnet01",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "available_ips_count": "########",
+                        "id": "##id-6##",
+                        "ip_range": "10.0.0.0/24",
+                        "map_public_ip_on_launch": false,
+                        "net_id": "##id-2##",
+                        "request_id": "########",
+                        "state": "available",
+                        "subnet_id": "##id-6##",
+                        "subregion_name": "eu-west-2a",
+                        "tags": [],
+                        "timeouts": null
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "outscale_net.net01"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_subnet",
+            "name": "subnet02",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "available_ips_count": "########",
+                        "id": "##id-8##",
+                        "ip_range": "10.0.1.0/24",
+                        "map_public_ip_on_launch": false,
+                        "net_id": "##id-2##",
+                        "request_id": "########",
+                        "state": "available",
+                        "subnet_id": "##id-8##",
+                        "subregion_name": "eu-west-2a",
+                        "tags": [],
+                        "timeouts": null
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "outscale_net.net01"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_vm",
+            "name": "vm01",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "actions_on_next_boot": [
+                            {
+                                "secure_boot": ""
+                            }
+                        ],
+                        "admin_password": "",
+                        "architecture": "x86_64",
+                        "block_device_mappings": [],
+                        "block_device_mappings_created": [
+                            {
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "link_date": "########",
+                                        "state": "attached",
+                                        "tags": [],
+                                        "volume_id": "##id-10##"
+                                    }
+                                ],
+                                "device_name": "/dev/sda1"
+                            }
+                        ],
+                        "boot_mode": "legacy",
+                        "bsu_optimized": false,
+                        "client_token": "",
+                        "creation_date": "########",
+                        "deletion_protection": false,
+                        "get_admin_password": null,
+                        "hypervisor": "xen",
+                        "id": "##id-11##",
+                        "image_id": "##id-12##",
+                        "is_source_dest_checked": true,
+                        "keypair_name": "########",
+                        "keypair_name_wo": null,
+                        "launch_number": 0,
+                        "nested_virtualization": false,
+                        "net_id": "##id-2##",
+                        "nics": [
+                            {
+                                "account_id": "##id-3##",
+                                "delete_on_vm_deletion": false,
+                                "description": "",
+                                "device_number": 0,
+                                "is_source_dest_checked": true,
+                                "link_nic": [
+                                    {
+                                        "delete_on_vm_deletion": false,
+                                        "device_number": "0",
+                                        "link_nic_id": "##id-13##",
+                                        "state": "attached"
+                                    }
+                                ],
+                                "link_public_ip": [],
+                                "mac_address": "########",
+                                "net_id": "##id-2##",
+                                "nic_id": "##id-4##",
+                                "private_dns_name": "########",
+                                "private_ips": [
+                                    {
+                                        "is_primary": true,
+                                        "link_public_ip": [],
+                                        "private_dns_name": "########",
+                                        "private_ip": "########"
+                                    }
+                                ],
+                                "secondary_private_ip_count": 0,
+                                "security_group_ids": [
+                                    "##id-5##"
+                                ],
+                                "security_groups": [
+                                    {
+                                        "security_group_id": "##id-5##",
+                                        "security_group_name": "########"
+                                    }
+                                ],
+                                "state": "in-use",
+                                "subnet_id": "##id-6##"
+                            },
+                            {
+                                "account_id": "##id-3##",
+                                "delete_on_vm_deletion": false,
+                                "description": "",
+                                "device_number": 1,
+                                "is_source_dest_checked": true,
+                                "link_nic": [
+                                    {
+                                        "delete_on_vm_deletion": false,
+                                        "device_number": "1",
+                                        "link_nic_id": "##id-14##",
+                                        "state": "attached"
+                                    }
+                                ],
+                                "link_public_ip": [],
+                                "mac_address": "########",
+                                "net_id": "##id-2##",
+                                "nic_id": "##id-7##",
+                                "private_dns_name": "########",
+                                "private_ips": [
+                                    {
+                                        "is_primary": true,
+                                        "link_public_ip": [],
+                                        "private_dns_name": "########",
+                                        "private_ip": "########"
+                                    }
+                                ],
+                                "secondary_private_ip_count": 0,
+                                "security_group_ids": [
+                                    "##id-5##"
+                                ],
+                                "security_groups": [
+                                    {
+                                        "security_group_id": "##id-5##",
+                                        "security_group_name": "########"
+                                    }
+                                ],
+                                "state": "in-use",
+                                "subnet_id": "##id-8##"
+                            },
+                            {
+                                "account_id": "##id-3##",
+                                "delete_on_vm_deletion": false,
+                                "description": "",
+                                "device_number": 2,
+                                "is_source_dest_checked": true,
+                                "link_nic": [
+                                    {
+                                        "delete_on_vm_deletion": false,
+                                        "device_number": "2",
+                                        "link_nic_id": "##id-15##",
+                                        "state": "attached"
+                                    }
+                                ],
+                                "link_public_ip": [],
+                                "mac_address": "########",
+                                "net_id": "##id-2##",
+                                "nic_id": "##id-9##",
+                                "private_dns_name": "########",
+                                "private_ips": [
+                                    {
+                                        "is_primary": true,
+                                        "link_public_ip": [],
+                                        "private_dns_name": "########",
+                                        "private_ip": "########"
+                                    }
+                                ],
+                                "secondary_private_ip_count": 0,
+                                "security_group_ids": [
+                                    "##id-5##"
+                                ],
+                                "security_groups": [
+                                    {
+                                        "security_group_id": "##id-5##",
+                                        "security_group_name": "########"
+                                    }
+                                ],
+                                "state": "in-use",
+                                "subnet_id": "##id-8##"
+                            }
+                        ],
+                        "os_family": "",
+                        "performance": "high",
+                        "placement_subregion_name": "eu-west-2a",
+                        "placement_tenancy": "default",
+                        "primary_nic": [
+                            {
+                                "account_id": "##id-3##",
+                                "delete_on_vm_deletion": false,
+                                "description": "",
+                                "device_number": 0,
+                                "is_source_dest_checked": true,
+                                "link_nic": [
+                                    {
+                                        "delete_on_vm_deletion": false,
+                                        "device_number": "0",
+                                        "link_nic_id": "##id-13##",
+                                        "state": "attached"
+                                    }
+                                ],
+                                "link_public_ip": [],
+                                "mac_address": "########",
+                                "net_id": "##id-2##",
+                                "nic_id": "##id-4##",
+                                "private_dns_name": "########",
+                                "private_ips": [
+                                    {
+                                        "is_primary": true,
+                                        "link_public_ip": [],
+                                        "private_dns_name": "########",
+                                        "private_ip": "########"
+                                    }
+                                ],
+                                "secondary_private_ip_count": 0,
+                                "security_group_ids": [
+                                    "##id-5##"
+                                ],
+                                "security_groups": [
+                                    {
+                                        "security_group_id": "##id-5##",
+                                        "security_group_name": "########"
+                                    }
+                                ],
+                                "state": "in-use",
+                                "subnet_id": "##id-6##"
+                            }
+                        ],
+                        "private_dns_name": "########",
+                        "private_ip": "########",
+                        "private_ips": null,
+                        "product_codes": [
+                            "0001"
+                        ],
+                        "public_dns_name": "########",
+                        "public_ip": "########",
+                        "request_id": "########",
+                        "reservation_id": "##id-16##",
+                        "root_device_name": "/dev/sda1",
+                        "root_device_type": "ebs",
+                        "secure_boot_action": null,
+                        "security_group_ids": [],
+                        "security_group_names": "########",
+                        "security_groups": [
+                            {
+                                "security_group_id": "##id-5##",
+                                "security_group_name": "########"
+                            }
+                        ],
+                        "state": "########",
+                        "state_reason": "########",
+                        "subnet_id": "##id-6##",
+                        "tags": [],
+                        "timeouts": null,
+                        "tpm_enabled": false,
+                        "user_data": "",
+                        "vm_id": "##id-11##",
+                        "vm_initiated_shutdown_behavior": "stop",
+                        "vm_type": "tinav7.c1r1p2"
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0,
+                    "private": "########",
+                    "dependencies": [
+                        "outscale_keypair.keypair01",
+                        "outscale_net.net01",
+                        "outscale_nic.nic01",
+                        "outscale_nic.nic02",
+                        "outscale_nic.nic03",
+                        "outscale_subnet.subnet01",
+                        "outscale_subnet.subnet02"
+                    ]
+                }
+            ]
+        }
+    ],
+    "check_results": "########"
+}
