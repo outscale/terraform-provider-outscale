@@ -65,7 +65,9 @@ provider "outscale" {
 
 ### Environment variables
 
-You can provide your credentials with the `OUTSCALE_ACCESSKEYID` and `OUTSCALE_SECRETKEYID` environment variables:
+You can provide your credentials with the `OSC_ACCESS_KEY` and `OSC_SECRET_KEY` environment variables.
+
+Starting from version `v1.6.0`, the legacy `OUTSCALE_*` environment variables have been replaced by `OSC_*` variables.
 
 Example:
 
@@ -76,14 +78,25 @@ provider "outscale" {}
 Usage:
 
 ```console
-$ export OUTSCALE_ACCESSKEYID="myaccesskey"
-$ export OUTSCALE_SECRETKEYID="mysecretkey"
-$ export OUTSCALE_REGION="cloudgouv-eu-west-1"
-$ export OUTSCALE_X509CERT="~/certificate/certificate.crt"
-$ export OUTSCALE_X509KEY="~/certificate/certificate.key"
+$ export OSC_ACCESS_KEY="myaccesskey"
+$ export OSC_SECRET_KEY="mysecretkey"
+$ export OSC_REGION="cloudgouv-eu-west-1"
+$ export OSC_X509_CLIENT_CERT="~/certificate/certificate.crt"
+$ export OSC_X509_CLIENT_KEY="~/certificate/certificate.key"
 
 $ terraform plan
 ```
+
+Migration from the legacy provider environment variables to the SDK environment variables:
+
+| Legacy variable supported up to `v1.5.0` | Variable to use in `v1.6.0+` | Provider configuration |
+| --- | --- | --- |
+| `OUTSCALE_ACCESSKEYID` | `OSC_ACCESS_KEY` | `access_key_id` |
+| `OUTSCALE_SECRETKEYID` | `OSC_SECRET_KEY` | `secret_key_id` |
+| `OUTSCALE_REGION` | `OSC_REGION` | `api.region`, `oks.region` |
+| `OUTSCALE_X509CERT` | `OSC_X509_CLIENT_CERT` | `api.x509_cert_path` |
+| `OUTSCALE_X509KEY` | `OSC_X509_CLIENT_KEY` | `api.x509_key_path` |
+| `OUTSCALE_OAPI_URL` | `OSC_ENDPOINT_API` | `api.endpoint` |
 
 ## Configuration
 
@@ -124,23 +137,23 @@ In addition to [generic provider arguments](https://www.terraform.io/docs/config
 
 * `config_file` - (Optional) The path to an OSC config file. It can also be sourced from the `OSC_CONFIG_FILE` [environment variable](#set-a-profile-using-environment-variables).
 * `profile` - (Optional) The named profile you want to use in the OSC config file. It can also be sourced from the `OSC_PROFILE` [environment variable](#set-a-profile-using-environment-variables).
-* `access_key_id` - (Optional) The ID of the OUTSCALE access key. It must be provided, but it can also be sourced from the `OUTSCALE_ACCESSKEYID` [environment variable](#environment-variables).
-* `secret_key_id` - (Optional) The OUTSCALE secret key. It must be provided, but it can also be sourced from the `OUTSCALE_SECRETKEYID` [environment variable](#environment-variables).
+* `access_key_id` - (Optional) The ID of the OUTSCALE access key. It must be provided, but it can also be sourced from the `OSC_ACCESS_KEY` [environment variable](#environment-variables).
+* `secret_key_id` - (Optional) The OUTSCALE secret key. It must be provided, but it can also be sourced from the `OSC_SECRET_KEY` [environment variable](#environment-variables).
 * `api` - (Optional) Configuration elements for OUTSCALE API operations.
-    * `endpoint` - (Optional) The endpoint to use for OUTSCALE API operations. For more information on available endpoints, see [API Endpoints Reference > OUTSCALE API](https://docs.outscale.com/en/userguide/API-Endpoints-Reference.html#_outscale_api).
-    * `region` - (Optional) The Region to use for OUTSCALE API operations. It can also be sourced from the `OUTSCALE_REGION` [environment variable](#environment-variables). For more information on available Regions, see [About Regions and Subregions](https://docs.outscale.com/en/userguide/About-Regions-and-Subregions.html).
-    * `x509_cert_path` - (Optional) The path to the x509 Client Certificate. It can also be sourced from the `OUTSCALE_X509CERT` [environment variable](#environment-variables). For more information on the use of those certificates, see [About API Access Rules](https://docs.outscale.com/en/userguide/About-API-Access-Rules.html).
-    * `x509_key_path` - (Optional) The path to the private key of the x509 Client Certificate. It can also be sourced from the `OUTSCALE_X509KEY` [environment variable](#environment-variables). For more information on the use of those certificates, see [About API Access Rules](https://docs.outscale.com/en/userguide/About-API-Access-Rules.html).
+    * `endpoint` - (Optional) The endpoint to use for OUTSCALE API operations. It can also be sourced from the `OSC_ENDPOINT_API` [environment variable](#environment-variables). For more information on available endpoints, see [API Endpoints Reference > OUTSCALE API](https://docs.outscale.com/en/userguide/API-Endpoints-Reference.html#_outscale_api).
+    * `region` - (Optional) The Region to use for OUTSCALE API operations. It can also be sourced from the `OSC_REGION` [environment variable](#environment-variables). For more information on available Regions, see [About Regions and Subregions](https://docs.outscale.com/en/userguide/About-Regions-and-Subregions.html).
+    * `x509_cert_path` - (Optional) The path to the x509 Client Certificate. It can also be sourced from the `OSC_X509_CLIENT_CERT` [environment variable](#environment-variables). For more information on the use of those certificates, see [About API Access Rules](https://docs.outscale.com/en/userguide/About-API-Access-Rules.html).
+    * `x509_key_path` - (Optional) The path to the private key of the x509 Client Certificate. It can also be sourced from the `OSC_X509_CLIENT_KEY` [environment variable](#environment-variables). For more information on the use of those certificates, see [About API Access Rules](https://docs.outscale.com/en/userguide/About-API-Access-Rules.html).
     * `insecure` - (Optional) Enables TLS insecure connection.
 * `oks` - (Optional) Configuration elements for OKS API operations.
-    * `endpoint` - (Optional) The endpoint to use for OKS API operations. For more information on available endpoints, see [API Endpoints Reference > OUTSCALE Kubernetes as a Service (OKS)](https://docs.outscale.com/en/userguide/API-Endpoints-Reference.html#_outscale_kubernetes_as_a_service_oks).
-    * `region` - (Optional) The Region to use for OKS API operations. It can also be sourced from the `OUTSCALE_REGION` [environment variable](#environment-variables). For more information on available Regions, see [About Regions and Subregions](https://docs.outscale.com/en/userguide/About-Regions-and-Subregions.html).
+    * `endpoint` - (Optional) The endpoint to use for OKS API operations. It can also be sourced from the `OSC_ENDPOINT_OKS` [environment variable](#environment-variables). For more information on available endpoints, see [API Endpoints Reference > OUTSCALE Kubernetes as a Service (OKS)](https://docs.outscale.com/en/userguide/API-Endpoints-Reference.html#_outscale_kubernetes_as_a_service_oks).
+    * `region` - (Optional) The Region to use for OKS API operations. It can also be sourced from the `OSC_REGION` [environment variable](#environment-variables). For more information on available Regions, see [About Regions and Subregions](https://docs.outscale.com/en/userguide/About-Regions-and-Subregions.html).
 
 The following top-level arguments are deprecated but still supported as a fallback:
 * `endpoints` - (Optional, deprecated) The endpoints to use for OUTSCALE API and OKS API operations. For more information on available endpoints, see [Regions, Endpoints and Availability Zones Reference](https://docs.outscale.com/en/userguide/Regions-Endpoints-and-Availability-Zones-Reference.html).
     * `api` - (Optional, deprecated) For OUTSCALE API.
     * `oks` - (Optional, deprecated) For OKS API.
-* `region` - (Optional, deprecated) The Region to use for OUTSCALE API and OKS API operations. It can also be sourced from the `OUTSCALE_REGION` [environment variable](#environment-variables). For more information on available Regions, see [About Regions and Subregions](https://docs.outscale.com/en/userguide/About-Regions-and-Subregions.html).
-* `x509_cert_path` - (Optional, deprecated) The path to the x509 Client Certificate. It can also be sourced from the `OUTSCALE_X509CERT` [environment variable](#environment-variables). For more information on the use of those certificates, see [About API Access Rules](https://docs.outscale.com/en/userguide/About-API-Access-Rules.html).
-* `x509_key_path` - (Optional, deprecated) The path to the private key of the x509 Client Certificate. It can also be sourced from the `OUTSCALE_X509KEY` [environment variable](#environment-variables). For more information on the use of those certificates, see [About API Access Rules](https://docs.outscale.com/en/userguide/About-API-Access-Rules.html).
+* `region` - (Optional, deprecated) The Region to use for OUTSCALE API and OKS API operations. It can also be sourced from the `OSC_REGION` [environment variable](#environment-variables). For more information on available Regions, see [About Regions and Subregions](https://docs.outscale.com/en/userguide/About-Regions-and-Subregions.html).
+* `x509_cert_path` - (Optional, deprecated) The path to the x509 Client Certificate. It can also be sourced from the `OSC_X509_CLIENT_CERT` [environment variable](#environment-variables). For more information on the use of those certificates, see [About API Access Rules](https://docs.outscale.com/en/userguide/About-API-Access-Rules.html).
+* `x509_key_path` - (Optional, deprecated) The path to the private key of the x509 Client Certificate. It can also be sourced from the `OSC_X509_CLIENT_KEY` [environment variable](#environment-variables). For more information on the use of those certificates, see [About API Access Rules](https://docs.outscale.com/en/userguide/About-API-Access-Rules.html).
 * `insecure` - (Optional, deprecated) Enables TLS insecure connection.
