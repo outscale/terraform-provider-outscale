@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 name: PR Auto Tagging
+=======
+name: 🔖 PR autotagging
+>>>>>>> 3efdc9c2 (👷 ci: add PR autotagging workflow)
 
 on:
   pull_request:
@@ -6,11 +10,17 @@ on:
 
 permissions:
   contents: read
+<<<<<<< HEAD
   issues: write
   pull-requests: write
 
 jobs:
   tag_pr:
+=======
+
+jobs:
+  compliance:
+>>>>>>> 3efdc9c2 (👷 ci: add PR autotagging workflow)
     runs-on: ubuntu-latest
     steps:
     - name: ⬇️ Checkout
@@ -18,4 +28,8 @@ jobs:
       with:
         persist-credentials: false
     - name: 🔖 Tag PR
+<<<<<<< HEAD
       uses: outscale/.github/auto-tagging@20536b27d3cc42707118eb3411a4393e846ab8f3 # v1.0.1
+=======
+      uses: outscale/.github/pr-auto-tagging@72d3f887579efa95c60af430df7610b593a24f12 # main
+>>>>>>> 3efdc9c2 (👷 ci: add PR autotagging workflow)
