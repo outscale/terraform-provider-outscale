@@ -1,0 +1,21 @@
+name: PR Auto Tagging
+
+on:
+  pull_request:
+    branches: [ master ]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  tag_pr:
+    runs-on: ubuntu-latest
+    steps:
+    - name: ⬇️ Checkout
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      with:
+        persist-credentials: false
+    - name: 🔖 Tag PR
+      uses: outscale/.github/auto-tagging@20536b27d3cc42707118eb3411a4393e846ab8f3 # v1.0.1
