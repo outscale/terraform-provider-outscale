@@ -24,6 +24,18 @@ Before starting, **always back up your Terraform state and configuration files.*
   In versions **< v0.9.0**, creating an `access_key` **without an expiration date** is no longer supported.
   See [Issue #342](https://github.com/outscale/terraform-provider-outscale/issues/342) for more details.
 
+- **Provider environment variables:**
+  Starting from version **v1.6.0**, the legacy `OUTSCALE_*` environment variables have been replaced by `OSC_*` variables.
+
+| Legacy variable supported up to `v1.5.0` | Variable to use in `v1.6.0+` | Provider configuration |
+| --- | --- | --- |
+| `OUTSCALE_ACCESSKEYID` | `OSC_ACCESS_KEY` | `access_key_id` |
+| `OUTSCALE_SECRETKEYID` | `OSC_SECRET_KEY` | `secret_key_id` |
+| `OUTSCALE_REGION` | `OSC_REGION` | `api.region`, `oks.region` |
+| `OUTSCALE_X509CERT` | `OSC_X509_CLIENT_CERT` | `api.x509_cert_path` |
+| `OUTSCALE_X509KEY` | `OSC_X509_CLIENT_KEY` | `api.x509_key_path` |
+| `OUTSCALE_OAPI_URL` | `OSC_ENDPOINT_API` | `api.endpoint` |
+
 ---
 
 ## 📝 Migration Steps

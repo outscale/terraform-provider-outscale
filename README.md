@@ -94,6 +94,8 @@ terraform refresh
 There is a breaking change when creating an `access_key` without expiration date in versions `< v0.9.0`.
 See [Issue #342](https://github.com/outscale/terraform-provider-outscale/issues/342).
 
+Starting from version `v1.6.0`, the legacy `OUTSCALE_*` environment variables have been replaced by `OSC_*` variables documented in the [provider registry documentation](./docs/index.md#environment-variables).
+
 ---
 
 ## 🚀 Using the Provider
@@ -213,8 +215,8 @@ provider "outscale" {
 
 Or set environment variables:
 ```sh
-export OUTSCALE_X509CERT=/myrepository/certificate/client_ca.crt
-export OUTSCALE_X509KEY=/myrepository/certificate/client_ca.key
+export OSC_X509_CLIENT_CERT=/myrepository/certificate/client_ca.crt
+export OSC_X509_CLIENT_KEY=/myrepository/certificate/client_ca.key
 ```
 
 ---
