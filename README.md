@@ -157,7 +157,6 @@ provider "outscale" {
   secret_key_id = "your-secret-key"
   
   api {
-    endpoint       = "https://api.eu-west-2.outscale.com"
     region         = "eu-west-2"
     x509_cert_path = "/path/to/cert.pem"
     x509_key_path  = "/path/to/key.pem"
@@ -165,7 +164,6 @@ provider "outscale" {
   }
   
   oks {
-    endpoint = "https://api.eu-west-2.oks.outscale.com/api/v2"
     region   = "eu-west-2"
   }
 }

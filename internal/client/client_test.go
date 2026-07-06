@@ -5,8 +5,11 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/osc-sdk-go/v3/pkg/profile"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestOSCProfileConfigPriority(t *testing.T) {
@@ -29,17 +32,15 @@ func TestOSCProfileConfigPriority(t *testing.T) {
 	}
 
 	p, err := cfg.NewProfile(cfg.ToOSCOption())
-	if err != nil {
-		t.Fatalf("NewProfile: %v", err)
-	}
+	require.NoError(t, err)
 
-	assertEqual(t, "access key", p.AccessKey, "config-ak")
-	assertEqual(t, "secret key", p.SecretKey, "config-sk")
-	assertEqual(t, "region", p.Region, "config-region")
-	assertEqual(t, "api endpoint", p.Endpoints.API, "https://config.api")
-	assertEqual(t, "x509 cert", p.X509ClientCert, "/config/cert.pem")
-	assertEqual(t, "x509 key", p.X509ClientKey, "/config/key.pem")
-	assertEqual(t, "protocol", p.Protocol, "https")
+	assert.Equal(t, "config-ak", p.AccessKey, "access key")
+	assert.Equal(t, "config-sk", p.SecretKey, "secret key")
+	assert.Equal(t, "config-region", p.Region, "region")
+	assert.Equal(t, "https://config.api", p.Endpoints.API, "api endpoint")
+	assert.Equal(t, "/config/cert.pem", p.X509ClientCert, "x509 cert")
+	assert.Equal(t, "/config/key.pem", p.X509ClientKey, "x509 key")
+	assert.Equal(t, "https", p.Protocol, "protocol")
 }
 
 func TestOKSProfileConfigPriority(t *testing.T) {
@@ -63,17 +64,15 @@ func TestOKSProfileConfigPriority(t *testing.T) {
 	}
 
 	p, err := cfg.NewProfile(cfg.ToOKSOption())
-	if err != nil {
-		t.Fatalf("NewProfile: %v", err)
-	}
+	require.NoError(t, err)
 
-	assertEqual(t, "access key", p.AccessKey, "config-ak")
-	assertEqual(t, "secret key", p.SecretKey, "config-sk")
-	assertEqual(t, "region", p.Region, "config-region")
-	assertEqual(t, "oks endpoint", p.Endpoints.OKS, "https://config.oks")
-	assertEqual(t, "protocol", p.Protocol, "https")
-	assertEqual(t, "x509 cert", p.X509ClientCert, "/env/cert.pem")
-	assertEqual(t, "x509 key", p.X509ClientKey, "/env/key.pem")
+	assert.Equal(t, "config-ak", p.AccessKey, "access key")
+	assert.Equal(t, "config-sk", p.SecretKey, "secret key")
+	assert.Equal(t, "config-region", p.Region, "region")
+	assert.Equal(t, "https://config.oks", p.Endpoints.OKS, "oks endpoint")
+	assert.Equal(t, "https", p.Protocol, "protocol")
+	assert.Equal(t, "/env/cert.pem", p.X509ClientCert, "x509 cert")
+	assert.Equal(t, "/env/key.pem", p.X509ClientKey, "x509 key")
 }
 
 func TestProfileMerges(t *testing.T) {
@@ -104,9 +103,7 @@ func TestProfileMerges(t *testing.T) {
 			},
 		},
 	}
-	if err := configFile.Save(); err != nil {
-		t.Fatalf("save config: %v", err)
-	}
+	require.NoError(t, configFile.Save())
 
 	t.Setenv("OSC_ACCESS_KEY", "env-ak")
 	t.Setenv("OSC_SECRET_KEY", "env-sk")
@@ -122,17 +119,60 @@ func TestProfileMerges(t *testing.T) {
 	}
 
 	p, err := cfg.NewProfile(cfg.ToOSCOption())
-	if err != nil {
-		t.Fatalf("NewProfile: %v", err)
+	require.NoError(t, err)
+
+	assert.Equal(t, "config-ak", p.AccessKey, "access key")
+	assert.Equal(t, "env-sk", p.SecretKey, "secret key")
+	assert.Equal(t, "main-region", p.Region, "region")
+	assert.Equal(t, "https://main.api", p.Endpoints.API, "api endpoint")
+	assert.Equal(t, "/main/cert.pem", p.X509ClientCert, "x509 cert")
+	assert.Equal(t, "/main/key.pem", p.X509ClientKey, "x509 key")
+	assert.Equal(t, "https", p.Protocol, "protocol")
+}
+
+func TestOSCApiEndpoint(t *testing.T) {
+	clearProfileEnv(t)
+
+	newClient := func(endpoint string) *osc.Client {
+		cfg := client.Config{
+			Region:      "eu-west-2",
+			APIEndpoint: endpoint,
+		}
+
+		oscClient, err := client.NewOSCClient(cfg)
+		require.NoError(t, err)
+
+		return oscClient
 	}
 
-	assertEqual(t, "access key", p.AccessKey, "config-ak")
-	assertEqual(t, "secret key", p.SecretKey, "env-sk")
-	assertEqual(t, "region", p.Region, "main-region")
-	assertEqual(t, "api endpoint", p.Endpoints.API, "https://main.api")
-	assertEqual(t, "x509 cert", p.X509ClientCert, "/main/cert.pem")
-	assertEqual(t, "x509 key", p.X509ClientKey, "/main/key.pem")
-	assertEqual(t, "protocol", p.Protocol, "https")
+	t.Run("host as endpoint", func(t *testing.T) {
+		host := "api.eu-west-2.outscale.com"
+		client := newClient(host)
+
+		_, err := client.ReadRegions(t.Context(), osc.ReadRegionsRequest{})
+		require.NoError(t, err)
+	})
+	t.Run("https host as endpoint", func(t *testing.T) {
+		host := "https://api.eu-west-2.outscale.com"
+		client := newClient(host)
+
+		_, err := client.ReadRegions(t.Context(), osc.ReadRegionsRequest{})
+		require.NoError(t, err)
+	})
+	t.Run("full api endpoint", func(t *testing.T) {
+		endpoint := "https://api.eu-west-2.outscale.com/api/v1"
+		client := newClient(endpoint)
+
+		_, err := client.ReadRegions(t.Context(), osc.ReadRegionsRequest{})
+		require.NoError(t, err)
+	})
+	t.Run("https host as endpoint", func(t *testing.T) {
+		host := "https://api.eu-west-2.outscale.com"
+		client := newClient(host)
+
+		_, err := client.ReadRegions(t.Context(), osc.ReadRegionsRequest{})
+		require.NoError(t, err)
+	})
 }
 
 func clearProfileEnv(t *testing.T) {
@@ -164,16 +204,6 @@ func clearProfileEnv(t *testing.T) {
 	} {
 		t.Setenv(key, "")
 		err := os.Unsetenv(key)
-		if err != nil {
-			t.Fatalf("Unsetenv: %v", err)
-		}
-	}
-}
-
-func assertEqual(t *testing.T, field, got, want string) {
-	t.Helper()
-
-	if got != want {
-		t.Fatalf("expected %s %q, got %q", field, want, got)
+		require.NoError(t, err)
 	}
 }

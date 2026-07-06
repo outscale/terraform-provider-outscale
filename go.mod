@@ -18,6 +18,7 @@ require (
 	github.com/outscale/osc-sdk-go/v3 v3.0.0-rc.2.0.20260618150234-1b85cca0db88
 	github.com/samber/lo v1.53.0
 	github.com/spf13/cast v1.10.0
+	github.com/stretchr/testify v1.11.1
 	k8s.io/apimachinery v0.36.0
 	k8s.io/client-go v0.36.0
 	sigs.k8s.io/yaml v1.6.0
@@ -76,6 +77,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.3-0.20250322232337-35a7c28c31ee // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/oklog/run v1.2.0 // indirect
+	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/spf13/pflag v1.0.9 // indirect
 	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
 	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect
