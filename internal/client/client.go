@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+	"regexp"
 
 	"github.com/outscale/goutils/sdk/batch"
 	"github.com/outscale/osc-sdk-go/v3/pkg/oks"
@@ -64,10 +65,17 @@ func (cfg Config) NewProfile(configOption profile.Option) (*profile.Profile, err
 	return profile.New(opts...)
 }
 
+var hostRegex = regexp.MustCompile(`^(?:https://)?api\.[a-z0-9-]+\.outscale\.com$`)
+
 func NewOSCClient(cfg Config) (*osc.Client, error) {
 	profile, err := cfg.NewProfile(cfg.ToOSCOption())
 	if err != nil {
 		return nil, fmt.Errorf("new profile: %w", err)
+	}
+
+	// SDKv2 handled endpoint as the host of the client, so we normalize it to a full endpoint to be backward compatible
+	if hostRegex.MatchString(profile.Endpoints.API) {
+		profile.Endpoints.API = fmt.Sprintf("%s://api.%s.outscale.com/api/v1", profile.Protocol, profile.Region)
 	}
 
 	logger := options.WithLogging(logging.NewTflogWrapper())
