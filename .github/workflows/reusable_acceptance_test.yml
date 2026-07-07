@@ -29,7 +29,7 @@ jobs:
             - ${{ inputs.service }}
         steps:
             - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-            - uses: outscale/frieza-github-actions/frieza-clean@1d8b83bc64d2230a0c3bc9f018ba6c0c67df98e8 # v0.15.0-hotfix.0
+            - uses: outscale/frieza-github-actions/frieza-clean@373088e518c62c8fceb29e49bf6db4298da87113 # v0.15.0
               with:
                   access_key: ${{ secrets.OSC_ACCESS_KEY }}
                   secret_key: ${{ secrets.OSC_SECRET_KEY }}
