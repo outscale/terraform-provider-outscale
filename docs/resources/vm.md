@@ -11,8 +11,6 @@ description: |-
 
 Manages a virtual machine (VM).
 
-~> **Important** Consider using the `primary_nic` argument if you plan to use the `outscale_nic_link`resource.
-
 For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-VMs.html).  
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-vm).
 
@@ -159,111 +157,6 @@ resource "outscale_vm" "vm01" {
 }
 ```
 
-### Create a VM with a primary NIC
-
-~> **Note:** If you plan to use the `outscale_nic_link`resource, it is recommended to specify the `primary_nic` argument to define the primary network interface of a VM.
-
-```hcl
-resource "outscale_net" "net01" {
-    ip_range = "10.0.0.0/16"
-    tags {
-        key   = "name"
-        value = "terraform-net-for-vm-with-nic"
-    }
-}
-
-resource "outscale_subnet" "subnet01" {
-    net_id         = outscale_net.net01.net_id
-    ip_range       = "10.0.0.0/24"
-    subregion_name = "eu-west-2a"
-    tags {
-        key   = "name"
-        value = "terraform-subnet-for-vm-with-nic"
-    }
-}
-
-resource "outscale_nic" "nic01" {
-    subnet_id = outscale_subnet.subnet01.subnet_id
-}
-
-resource "outscale_keypair" "keypair01" {
-    keypair_name = "terraform-keypair-for-vm"
-}
-
-resource "outscale_vm" "vm01" {
-    image_id     = var.image_id
-    vm_type      = "tinav5.c1r1p2"
-    keypair_name = outscale_keypair.keypair01.keypair_name
-    primary_nic {
-        nic_id        = outscale_nic.nic01.nic_id
-        device_number = "0"
-    }
-}
-```
-
-### Create a VM with secondary NICs
-
-```hcl
-resource "outscale_net" "net01" {
-    ip_range = "10.0.0.0/16"
-    tags {
-        key   = "name"
-        value = "terraform-net-for-vm-with-nic"
-    }
-}
-
-resource "outscale_subnet" "subnet01" {
-    net_id         = outscale_net.net01.net_id
-    ip_range       = "10.0.0.0/24"
-    subregion_name = "eu-west-2a"
-    tags {
-        key   = "name"
-        value = "terraform-subnet"
-    }
-}
-resource "outscale_nic" "nic01" {
-    subnet_id = outscale_subnet.subnet01.subnet_id
-}
-
-resource "outscale_subnet" "subnet02" {
-    net_id         = outscale_net.net01.net_id
-    ip_range       = "10.0.1.0/24"
-    subregion_name = "eu-west-2a"
-    tags {
-        key   = "name"
-        value = "terraform-another-subnet"
-    }
-}
-resource "outscale_nic" "nic02" {
-    subnet_id = outscale_subnet.subnet02.subnet_id
-}
-resource "outscale_nic" "nic03" {
-    subnet_id = outscale_subnet.subnet02.subnet_id
-}
-
-resource "outscale_keypair" "keypair01" {
-    keypair_name = "terraform-keypair-for-vm"
-}
-
-resource "outscale_vm" "vm01" {
-    image_id     = var.image_id
-    vm_type      = "tinav5.c1r1p2"
-    keypair_name = outscale_keypair.keypair01.keypair_name
-    primary_nic {
-       nic_id        = outscale_nic.nic01.nic_id
-       device_number = "0"
-    }
-    nics {
-        nic_id        = outscale_nic.nic02.nic_id
-        device_number = "1"
-    }
-    nics {
-        nic_id        = outscale_nic.nic03.nic_id
-        device_number = "2"
-    }
-}
-```
-
 ### Create a VM with Secure Boot
 
 ~> **Important** Secure Boot is only available with VMs booting in Unified Extensible Firmware Interface (UEFI).
@@ -312,6 +205,10 @@ resource "outscale_vm" "vm01" {
 }
 ```
 
+### Create a VM with NICs
+
+See the [NIC Management](#nic-management) below.
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -334,7 +231,7 @@ The following arguments are supported:
 * `keypair_name_wo` - The name of the keypair. This write-only parameter is required to use the ephemeral keypair resource.
 * `keypair_name` - (Optional) The name of the keypair.
 * `nested_virtualization` - (Optional) (dedicated tenancy only) If true, nested virtualization is enabled. If false, it is disabled.
-* `nics` - (Optional) One or more NICs. If you specify this parameter, you must not specify the `subnet_id` and `subregion_name` parameters. To define a NIC as the primary network interface of the VM, use the `primary_nic` argument.
+* `nics` - (Optional) One or more NICs. If you specify this parameter, you must not specify the `subnet_id` and `subregion_name` parameters. For more information on handling NICs with VMs, see the [NIC Management](#nic-management) below.
     * `delete_on_vm_deletion` - (Optional) If true, the NIC is deleted when the VM is terminated. You can specify this parameter only for a new NIC. To modify this value for an existing NIC, see [UpdateNic](https://docs.outscale.com/api#updatenic).
     * `description` - (Optional) The description of the NIC, if you are creating a NIC when creating the VM.
     * `device_number` - (Optional) The index of the VM device for the NIC attachment (between `1` and `7`, both included). This parameter is required if you create a NIC when creating the VM.
@@ -349,7 +246,7 @@ The following arguments are supported:
 * `performance` - (Optional) The performance of the VM (`medium` | `high` | `highest`). Updating this parameter will trigger a stop/start of the VM.
 * `placement_subregion_name` - (Optional) The name of the Subregion where the VM is placed.
 * `placement_tenancy` - (Optional) The tenancy of the VM (`default` | `dedicated`).
-* `primary_nic` - (Optional) The primary network interface of the VM.
+* `primary_nic` - (Optional) The primary network interface of the VM. For more information on handling NICs with VMs, see the [NIC Management](#nic-management) below.
     * `delete_on_vm_deletion` - (Optional) If true, the NIC is deleted when the VM is terminated. You can specify this parameter only for a new NIC. To modify this value for an existing NIC, see [UpdateNic](https://docs.outscale.com/api#updatenic).
     * `description` - (Optional) The description of the NIC, if you are creating a NIC when creating the VM.
     * `device_number` - (Optional) The index of the VM device for the NIC attachment (must be `0`). This parameter is required if you create a NIC when creating the VM.
@@ -374,6 +271,171 @@ The following arguments are supported:
 * `user_data` - (Optional) Data or script used to add a specific configuration to the VM. It must be Base64-encoded, either directly or using the [base64encode](https://www.terraform.io/docs/configuration/functions/base64encode.html) Terraform function. For multiline strings, use [heredoc syntax](https://www.terraform.io/docs/configuration/expressions.html#string-literals). Updating this parameter will trigger a stop/start of the VM.
 * `vm_initiated_shutdown_behavior` - (Optional) The VM behavior when you stop it. By default or if set to `stop`, the VM stops. If set to `restart`, the VM stops then automatically restarts. If set to `terminate`, the VM stops and is terminated.
 * `vm_type` - (Optional) The type of VM (`t2.small` by default). Updating this parameter will trigger a stop/start of the VM.<br /> For more information, see [VM Types](https://docs.outscale.com/en/userguide/VM-Types.html).
+
+## NIC Management
+
+!> Warning: The `primary_nic` and `nics` blocks are mutually exclusive. They must not be used together in the same `outscale_vm` resource.
+
+The `outscale_vm` resource supports two NIC management methods:
+
+### Method 1: Define all NICs in `outscale_vm`
+
+Use the `nics` block if you want to define the full NIC layout when creating the VM.
+
+With this method:
+
+* The primary NIC is defined with `device_number = 0`
+* Secondary NICs are defined with `device_number = 1` to `7`
+* All NICs are managed directly in the `outscale_vm` resource
+* Changing the NIC layout requires replacing the VM
+
+Example with NICs created inline:
+
+```hcl
+resource "outscale_net" "net01" {
+  ip_range = "10.0.0.0/16"
+}
+
+resource "outscale_subnet" "subnet01" {
+  net_id         = outscale_net.net01.net_id
+  ip_range       = "10.0.0.0/24"
+  subregion_name = "eu-west-2a"
+}
+
+resource "outscale_subnet" "subnet02" {
+  net_id         = outscale_net.net01.net_id
+  ip_range       = "10.0.1.0/24"
+  subregion_name = "eu-west-2a"
+}
+
+resource "outscale_keypair" "keypair01" {
+  keypair_name = "terraform-keypair-for-vm"
+}
+
+resource "outscale_vm" "vm01" {
+  image_id     = var.image_id
+  vm_type      = "tinav7.c1r1p2"
+  keypair_name = outscale_keypair.keypair01.keypair_name
+
+  nics {
+    delete_on_vm_deletion = true
+    subnet_id             = outscale_subnet.subnet01.subnet_id
+    device_number         = "0"
+  }
+
+  nics {
+    delete_on_vm_deletion = true
+    subnet_id             = outscale_subnet.subnet02.subnet_id
+    device_number         = "1"
+  }
+}
+```
+
+Example with existing NICs attached at VM creation:
+
+```hcl
+resource "outscale_net" "net01" {
+  ip_range = "10.0.0.0/16"
+}
+
+resource "outscale_subnet" "subnet01" {
+  net_id         = outscale_net.net01.net_id
+  ip_range       = "10.0.0.0/24"
+  subregion_name = "eu-west-2a"
+}
+
+resource "outscale_subnet" "subnet02" {
+  net_id         = outscale_net.net01.net_id
+  ip_range       = "10.0.1.0/24"
+  subregion_name = "eu-west-2a"
+}
+
+resource "outscale_nic" "nic01" {
+  subnet_id = outscale_subnet.subnet01.subnet_id
+}
+
+resource "outscale_nic" "nic02" {
+  subnet_id = outscale_subnet.subnet02.subnet_id
+}
+
+resource "outscale_keypair" "keypair01" {
+  keypair_name = "terraform-keypair-for-vm"
+}
+
+resource "outscale_vm" "vm01" {
+  image_id     = var.image_id
+  vm_type      = "tinav7.c1r1p2"
+  keypair_name = outscale_keypair.keypair01.keypair_name
+
+  nics {
+    nic_id        = outscale_nic.nic01.nic_id
+    device_number = "0"
+  }
+  nics {
+    nic_id        = outscale_nic.nic02.nic_id
+    device_number = "1"
+  }
+}
+```
+
+### Method 2: Define the primary NIC and then attach secondary NICs separately
+
+Use the `primary_nic` block, together with distinct `outscale_nic_link` resources, if you want to define the primary NIC in `outscale_vm` but may want to attach additional NICs later.
+
+With this method:
+
+* The primary NIC is defined in `primary_nic`
+* Secondary NICs are managed with distinct `outscale_nic_link` resources
+* Secondary NICs can be added or removed without replacing the VM
+
+Example:
+
+```hcl
+resource "outscale_net" "net01" {
+  ip_range = "10.0.0.0/16"
+}
+
+resource "outscale_subnet" "subnet01" {
+  net_id         = outscale_net.net01.net_id
+  ip_range       = "10.0.0.0/24"
+  subregion_name = "eu-west-2a"
+}
+
+resource "outscale_subnet" "subnet02" {
+  net_id         = outscale_net.net01.net_id
+  ip_range       = "10.0.1.0/24"
+  subregion_name = "eu-west-2a"
+}
+
+resource "outscale_nic" "nic01" {
+  subnet_id = outscale_subnet.subnet01.subnet_id
+}
+
+resource "outscale_nic" "nic02" {
+  subnet_id = outscale_subnet.subnet02.subnet_id
+}
+
+resource "outscale_keypair" "keypair01" {
+  keypair_name = "terraform-keypair-for-vm"
+}
+
+resource "outscale_vm" "vm01" {
+  image_id     = var.image_id
+  vm_type      = "tinav7.c1r1p2"
+  keypair_name = outscale_keypair.keypair01.keypair_name
+
+  primary_nic {
+    nic_id        = outscale_nic.nic01.nic_id
+    device_number = "0"
+  }
+}
+
+resource "outscale_nic_link" "nic_link01" {
+  device_number = "1"
+  vm_id         = outscale_vm.vm01.vm_id
+  nic_id        = outscale_nic.nic02.nic_id
+}
+```
 
 ## Attribute Reference
 
