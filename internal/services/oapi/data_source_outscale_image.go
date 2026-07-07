@@ -28,6 +28,11 @@ func DataSourceOutscaleImage() *schema.Resource {
 				ForceNew: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
+			"most_recent": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				ForceNew: true,
+			},
 			"image_id": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -247,17 +252,28 @@ func DataSourceOutscaleImageRead(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	images := resp.Images
-
-	if images == nil || len(*images) < 1 {
+	images := ptr.From(resp.Images)
+	if len(images) < 1 {
 		return diag.FromErr(ErrNoResults)
 	}
-	if len(*images) > 1 {
+
+	mostRecent := d.Get("most_recent").(bool)
+	if mostRecent {
+		latest := lo.Reduce(images, func(acc, img osc.Image, _ int) osc.Image {
+			if img.CreationDate.After(acc.CreationDate.Time) {
+				return img
+			}
+			return acc
+		}, images[0])
+		images = []osc.Image{latest}
+	}
+
+	if len(images) > 1 {
 		return diag.FromErr(ErrMultipleResults)
 	}
 
 	return diag.FromErr(resourceDataAttrSetter(d, func(set AttributeSetter) error {
-		image := (*images)[0]
+		image := images[0]
 		d.SetId(image.ImageId)
 
 		if err := set("architecture", image.Architecture); err != nil {

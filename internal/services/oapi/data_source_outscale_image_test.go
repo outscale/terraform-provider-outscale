@@ -30,6 +30,22 @@ func TestAccVM_WithImageDataSource_basic(t *testing.T) {
 	})
 }
 
+func TestAccOthers_ImageDataSource_MostRecent(t *testing.T) {
+	resourceName := "data.outscale_image.omi"
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccMostRecentOMI,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "account_alias", "Outscale"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckOutscaleImageDataSourceID(n string) resource.TestCheckFunc {
 	// Wait for IAM role
 	return func(s *terraform.State) error {
@@ -44,6 +60,19 @@ func testAccCheckOutscaleImageDataSourceID(n string) resource.TestCheckFunc {
 		return nil
 	}
 }
+
+var testAccMostRecentOMI = `
+data "outscale_image" "omi" {
+	filter {
+		name   = "account_aliases"
+		values = ["Outscale"]
+	}
+	filter {
+		name   = "image_names"
+		values = ["Debian-12-*"]
+	}
+	most_recent = true
+}`
 
 func testAccCheckOutscaleImageDataSourceBasicConfig(omi, vmType, region, imageName, sgName string) string {
 	return fmt.Sprintf(`

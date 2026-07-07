@@ -44,6 +44,7 @@
                         "image_name": "########",
                         "image_type": "machine",
                         "is_public": null,
+                        "most_recent": null,
                         "permission": null,
                         "permissions_to_launch": [],
                         "product_codes": [
@@ -116,6 +117,7 @@
                         "image_name": "########",
                         "image_type": "machine",
                         "is_public": null,
+                        "most_recent": null,
                         "permission": null,
                         "permissions_to_launch": [],
                         "product_codes": [
@@ -188,6 +190,7 @@
                         "image_name": "########",
                         "image_type": "machine",
                         "is_public": null,
+                        "most_recent": null,
                         "permission": null,
                         "permissions_to_launch": [],
                         "product_codes": [
@@ -260,6 +263,7 @@
                         "image_name": "########",
                         "image_type": "machine",
                         "is_public": null,
+                        "most_recent": null,
                         "permission": null,
                         "permissions_to_launch": [],
                         "product_codes": [
@@ -332,6 +336,7 @@
                         "image_name": "########",
                         "image_type": "machine",
                         "is_public": null,
+                        "most_recent": null,
                         "permission": null,
                         "permissions_to_launch": [],
                         "product_codes": [
@@ -404,6 +409,7 @@
                         "image_name": "########",
                         "image_type": "machine",
                         "is_public": null,
+                        "most_recent": null,
                         "permission": null,
                         "permissions_to_launch": [],
                         "product_codes": [
@@ -476,6 +482,7 @@
                         "image_name": "########",
                         "image_type": "machine",
                         "is_public": null,
+                        "most_recent": null,
                         "permission": null,
                         "permissions_to_launch": [],
                         "product_codes": [
