@@ -24,6 +24,7 @@ Please describe the test strategy:
 
 - [ ] Manual testing
 - [ ] Unit tests
+- [ ] Acceptance tests
 - [ ] Integration tests
 - [ ] Not tested yet
 
