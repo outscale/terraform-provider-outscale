@@ -234,7 +234,7 @@ The following arguments are supported:
 * `nics` - (Optional) One or more NICs. If you specify this parameter, you must not specify the `subnet_id` and `subregion_name` parameters. For more information on handling NICs with VMs, see the [NIC Management](#nic-management) below.
     * `delete_on_vm_deletion` - (Optional) If true, the NIC is deleted when the VM is terminated. You can specify this parameter only for a new NIC. To modify this value for an existing NIC, see [UpdateNic](https://docs.outscale.com/api#updatenic).
     * `description` - (Optional) The description of the NIC, if you are creating a NIC when creating the VM.
-    * `device_number` - (Optional) The index of the VM device for the NIC attachment (between `1` and `7`, both included). This parameter is required if you create a NIC when creating the VM.
+    * `device_number` - (Optional) The index of the VM device for the NIC attachment (between `0` and `7`, both included). This parameter is required if you create a NIC when creating the VM.
     * `nic_id` - (Optional) The ID of the NIC, if you are attaching an existing NIC when creating a VM.
     * `private_ips` - (Optional) One or more private IPs to assign to the NIC, if you create a NIC when creating a VM. Only one private IP can be the primary private IP.
         * `is_primary` - (Optional) If true, the IP is the primary private IP of the NIC.
@@ -469,7 +469,7 @@ The following attributes are exported:
     * `is_source_dest_checked` - (Net only) If true, the source/destination check is enabled. If false, it is disabled.
     * `link_nic` - Information about the network interface card (NIC).
         * `delete_on_vm_deletion` - If true, the NIC is deleted when the VM is terminated.
-        * `device_number` - The device index for the NIC attachment (between `1` and `7`, both included).
+        * `device_number` - The device index for the NIC attachment (between `0` and `7`, both included).
         * `link_nic_id` - The ID of the NIC to attach.
         * `state` - The state of the attachment (`attaching` \| `attached` \| `detaching` \| `detached`).
     * `link_public_ip` - Information about the public IP associated with the NIC.
