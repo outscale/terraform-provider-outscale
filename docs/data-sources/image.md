@@ -16,12 +16,30 @@ For more information on this resource actions, see the [API documentation](https
 
 ## Example Usage
 
+### Get an image from its ID
+
 ```hcl
 data "outscale_image" "image01" {
     filter {
         name   = "image_ids"
         values = ["ami-12345678"]
     }
+}
+```
+
+### Get the most recent Debian 12 image provided by OUTSCALE
+
+```hcl
+data "outscale_image" "omi" {
+    filter {
+        name   = "account_aliases"
+        values = ["Outscale"]
+    }
+    filter {
+        name   = "image_names"
+        values = ["Debian-12-*"]
+    }
+    most_recent = true
 }
 ```
 
@@ -44,6 +62,7 @@ The following arguments are supported:
     * `hypervisors` - (Optional) The hypervisor type of the OMI (always `xen`).
     * `image_ids` - (Optional) The IDs of the OMIs.
     * `image_names` - (Optional) The names of the OMIs, provided when they were created.
+    * `most_recent` - (Optional) If true, retrieves the most recent OMI (creation date-wise) if the request returns more than one possible image. By default, false.
     * `permissions_to_launch_account_ids` - (Optional) The OUTSCALE account IDs which have launch permissions for the OMIs.
     * `permissions_to_launch_global_permission` - (Optional) If true, lists all public OMIs. If false, lists all private OMIs.
     * `product_code_names` - (Optional) The names of the product codes associated with the OMI.
