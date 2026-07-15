@@ -3,7 +3,7 @@ name: OKS - Acceptance Tests
 on:
     pull_request:
         branches:
-            - master
+            - main
         paths:
             - ".github/workflows/oks_testacc.yml"
             - ".github/workflows/reusable_acceptance_test.yml"

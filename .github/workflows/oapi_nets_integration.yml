@@ -3,7 +3,7 @@ name: OAPI - Nets Integration Tests
 on:
     pull_request:
         branches:
-            - master
+            - main
         paths:
             - ".github/workflows/oapi_nets_integration.yml"
             - ".github/workflows/reusable_integration_test.yml"
