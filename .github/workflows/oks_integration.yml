@@ -3,7 +3,7 @@ name: OKS - Integration Tests
 on:
     pull_request:
         branches:
-            - master
+            - main
         paths:
             - ".github/workflows/oks_integration.yml"
             - ".github/workflows/reusable_integration_test.yml"

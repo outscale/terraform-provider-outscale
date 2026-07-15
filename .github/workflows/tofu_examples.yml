@@ -3,7 +3,7 @@ name: Examples tofu tests
 on:
     pull_request:
         branches:
-            - master
+            - main
         paths:
             - "examples/**.tfvars"
             - "examples/**.tf"

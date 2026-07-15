@@ -3,7 +3,7 @@ name: OAPI - VMs Acceptance Tests
 on:
     pull_request:
         branches:
-            - master
+            - main
         paths:
             - ".github/workflows/oapi_vms_testacc.yml"
             - ".github/workflows/reusable_acceptance_test.yml"

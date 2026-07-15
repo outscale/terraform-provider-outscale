@@ -3,7 +3,7 @@ name: OAPI - Integration Tests
 on:
     pull_request:
         branches:
-            - master
+            - main
         paths:
             - ".github/workflows/oapi_integration.yml"
             - ".github/workflows/reusable_integration_test.yml"

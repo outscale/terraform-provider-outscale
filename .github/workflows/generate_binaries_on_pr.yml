@@ -3,7 +3,7 @@ name: Generate binaries on PR
 on:
     pull_request:
         branches:
-            - master
+            - main
         paths:
             - ".github/workflows/generate_binaries_on_pr.yml"
             - "**.go"

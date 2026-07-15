@@ -3,7 +3,7 @@ name: OAPI - Nets Acceptance Tests
 on:
     pull_request:
         branches:
-            - master
+            - main
         paths:
             - ".github/workflows/oapi_nets_testacc.yml"
             - ".github/workflows/reusable_acceptance_test.yml"
