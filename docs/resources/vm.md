@@ -207,7 +207,7 @@ resource "outscale_vm" "vm01" {
 
 ### Create a VM with NICs
 
-See the [NIC Management](#nic-management) below.
+See the [NIC Management](#nic-management) section below.
 
 ## Argument Reference
 
@@ -231,7 +231,7 @@ The following arguments are supported:
 * `keypair_name_wo` - The name of the keypair. This write-only parameter is required to use the ephemeral keypair resource.
 * `keypair_name` - (Optional) The name of the keypair.
 * `nested_virtualization` - (Optional) (dedicated tenancy only) If true, nested virtualization is enabled. If false, it is disabled.
-* `nics` - (Optional) One or more NICs. If you specify this parameter, you must not specify the `subnet_id` and `subregion_name` parameters. For more information on handling NICs with VMs, see the [NIC Management](#nic-management) below.
+* `nics` - (Optional) One or more NICs. If you specify this parameter, you must not specify the `subnet_id` and `subregion_name` parameters. For more information on handling NICs with VMs, see the [NIC Management](#nic-management) section below.
     * `delete_on_vm_deletion` - (Optional) If true, the NIC is deleted when the VM is terminated. You can specify this parameter only for a new NIC. To modify this value for an existing NIC, see [UpdateNic](https://docs.outscale.com/api#updatenic).
     * `description` - (Optional) The description of the NIC, if you are creating a NIC when creating the VM.
     * `device_number` - (Optional) The index of the VM device for the NIC attachment (between `0` and `7`, both included). This parameter is required if you create a NIC when creating the VM.
@@ -246,7 +246,7 @@ The following arguments are supported:
 * `performance` - (Optional) The performance of the VM (`medium` | `high` | `highest`). Updating this parameter will trigger a stop/start of the VM.
 * `placement_subregion_name` - (Optional) The name of the Subregion where the VM is placed.
 * `placement_tenancy` - (Optional) The tenancy of the VM (`default` | `dedicated`).
-* `primary_nic` - (Optional) The primary network interface of the VM. For more information on handling NICs with VMs, see the [NIC Management](#nic-management) below.
+* `primary_nic` - (Optional) The primary network interface of the VM. For more information on handling NICs with VMs, see the [NIC Management](#nic-management) section below.
     * `delete_on_vm_deletion` - (Optional) If true, the NIC is deleted when the VM is terminated. You can specify this parameter only for a new NIC. To modify this value for an existing NIC, see [UpdateNic](https://docs.outscale.com/api#updatenic).
     * `description` - (Optional) The description of the NIC, if you are creating a NIC when creating the VM.
     * `device_number` - (Optional) The index of the VM device for the NIC attachment (must be `0`). This parameter is required if you create a NIC when creating the VM.
@@ -284,10 +284,10 @@ Use the `nics` block if you want to define the full NIC layout when creating the
 
 With this method:
 
-* The primary NIC is defined with `device_number = 0`
-* Secondary NICs are defined with `device_number = 1` to `7`
-* All NICs are managed directly in the `outscale_vm` resource
-* Changing the NIC layout requires replacing the VM
+* The primary NIC is defined with `device_number = 0`.
+* Secondary NICs are defined with `device_number = 1` to `7`.
+* All NICs are managed directly in the `outscale_vm` resource.
+* Changing the NIC layout requires replacing the VM.
 
 Example with NICs created inline:
 
@@ -384,9 +384,9 @@ Use the `primary_nic` block, together with distinct `outscale_nic_link` resource
 
 With this method:
 
-* The primary NIC is defined in `primary_nic`
-* Secondary NICs are managed with distinct `outscale_nic_link` resources
-* Secondary NICs can be added or removed without replacing the VM
+* The primary NIC is defined in `primary_nic`.
+* Secondary NICs are managed with distinct `outscale_nic_link` resources.
+* Secondary NICs can be added or removed without replacing the VM.
 
 Example:
 
