@@ -38,6 +38,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### 🌱 Others
 - (nothing yet)
 
+## [1.7.0] - 2026-07-15
+
+### ✨ Added
+* ✨ feat(oks): oks_manifest resource, oks_crd_templates datasource and kubeconfig_attributes by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/746
+* ✨ feat(datasource_image): add most_recent parameter by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/793
+
+### 🛠️ Changed / Refactoring
+* 🔒 ci: fix plumber lint by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/758
+* 🚸 chore(fgpu_link): show warning about vm start/stop by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/773
+* 🔒 ci: replace compliance workflows by plumber by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/782
+* ♻️ refactor(virtual_gateway): migrate from SDKv2 to Plugin Framework by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/783
+
+### 📝 Documentation
+* 📝 docs: Add oks_manifest resource by @andrepasteur in https://github.com/outscale/terraform-provider-outscale/pull/755
+* 📝 docs: Document usage of Kubernetes provider in oks_cluster resource by @andrepasteur in https://github.com/outscale/terraform-provider-outscale/pull/756
+* 📝 docs: Add oks_crd_templates data source by @andrepasteur in https://github.com/outscale/terraform-provider-outscale/pull/753
+* 📝 docs: Add kubeconfig_attributes to oks_cluster and oks_kubeconfig by @andrepasteur in https://github.com/outscale/terraform-provider-outscale/pull/752
+* 📝 docs: document migration of legacy env variables by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/789
+* 📝 docs: Add most_recent argument in outscale_image data source by @andrepasteur in https://github.com/outscale/terraform-provider-outscale/pull/797
+* 📝 docs: Rework NIC documentation in outscale_vm resource by @andrepasteur in https://github.com/outscale/terraform-provider-outscale/pull/796
+
+### 🐛 Fixed
+* 🐛 fix: delete resources on create failure by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/769
+* 🐛 fix(client): profile loading from terraform configuration by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/775
+* 🐛 fix(oks_project): catch pending after delete call by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/776
+* 🐛 fix(vm): primary_nic & nics arguments conflicts by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/784
+* 🦖 fix: api.endpoint as a host or a server url by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/791
+
+### 📦 Dependency updates
+* ⬆️ deps(gomod): update module github.com/outscale/osc-sdk-go/v3 to v3.0.0-rc.3 by @Open-Source-Bot in https://github.com/outscale/terraform-provider-outscale/pull/798
+
 ## [1.6.0] - 2026-05-06
 
 ### 🐛 Fixed
