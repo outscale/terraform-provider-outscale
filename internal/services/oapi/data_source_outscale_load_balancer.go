@@ -394,3 +394,115 @@ func DataSourceOutscaleLoadBalancerRead(ctx context.Context, d *schema.ResourceD
 
 	return nil
 }
+
+// Legacy helper, will be removed once the datasource is migrated to the Plugin Framework
+func lb_listener_schema(withPolicyNames bool) map[string]*schema.Schema {
+	listenerSchema := map[string]*schema.Schema{
+		"backend_port": {
+			Type:     schema.TypeInt,
+			Computed: true,
+		},
+		"backend_protocol": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"load_balancer_port": {
+			Type:     schema.TypeInt,
+			Computed: true,
+		},
+		"load_balancer_protocol": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"server_certificate_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+	}
+	if withPolicyNames {
+		listenerSchema["policy_names"] = &schema.Schema{
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem:     &schema.Schema{Type: schema.TypeString},
+		}
+	}
+
+	return listenerSchema
+}
+
+func lb_sg_schema() *schema.Schema {
+	return &schema.Schema{
+		Type:     schema.TypeList,
+		Computed: true,
+		Elem: &schema.Resource{Schema: map[string]*schema.Schema{
+			"security_group_name": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"security_group_account_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+		}},
+	}
+}
+
+func flattenOAPIAccessLog(accessLog *osc.AccessLog) []map[string]any {
+	if accessLog == nil {
+		return nil
+	}
+
+	return []map[string]any{{
+		"is_enabled":           accessLog.IsEnabled,
+		"osu_bucket_name":      accessLog.OsuBucketName,
+		"osu_bucket_prefix":    accessLog.OsuBucketPrefix,
+		"publication_interval": accessLog.PublicationInterval,
+	}}
+}
+
+func flattenOAPIHealthCheck(healthCheck *osc.HealthCheck) []map[string]any {
+	if healthCheck == nil {
+		return nil
+	}
+
+	return []map[string]any{{
+		"healthy_threshold":   healthCheck.HealthyThreshold,
+		"unhealthy_threshold": healthCheck.UnhealthyThreshold,
+		"path":                healthCheck.Path,
+		"check_interval":      healthCheck.CheckInterval,
+		"port":                healthCheck.Port,
+		"protocol":            healthCheck.Protocol,
+		"timeout":             healthCheck.Timeout,
+	}}
+}
+
+func flattenOAPIListeners(listeners *[]osc.Listener) []map[string]any {
+	if listeners == nil {
+		return nil
+	}
+
+	flattened := make([]map[string]any, len(*listeners))
+	for i, listener := range *listeners {
+		flattened[i] = map[string]any{
+			"backend_port":           listener.BackendPort,
+			"backend_protocol":       listener.BackendProtocol,
+			"load_balancer_port":     listener.LoadBalancerPort,
+			"load_balancer_protocol": listener.LoadBalancerProtocol,
+			"server_certificate_id":  listener.ServerCertificateId,
+			"policy_names":           listener.PolicyNames,
+		}
+	}
+
+	return flattened
+}
+
+func flattenSource_sg(sourceSecurityGroup *osc.SourceSecurityGroup) []map[string]any {
+	if sourceSecurityGroup == nil {
+		return nil
+	}
+
+	return []map[string]any{{
+		"security_group_name":       sourceSecurityGroup.SecurityGroupName,
+		"security_group_account_id": sourceSecurityGroup.SecurityGroupAccountId,
+	}}
+}

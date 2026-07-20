@@ -6,8 +6,10 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	fwschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/outscale/osc-sdk-go/v3/pkg/options"
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 
@@ -34,10 +36,16 @@ type ResourceTag struct {
 
 func TagsSchemaFW() *fwschema.SetNestedBlock {
 	return &fwschema.SetNestedBlock{
+		Validators: []validator.Set{
+			uniqueTagValidator{},
+		},
 		NestedObject: fwschema.NestedBlockObject{
 			Attributes: map[string]fwschema.Attribute{
 				"key": fwschema.StringAttribute{
 					Required: true,
+					Validators: []validator.String{
+						stringvalidator.LengthAtLeast(1),
+					},
 				},
 				"value": fwschema.StringAttribute{
 					Optional: true,
@@ -97,6 +105,41 @@ func TagsSchemaComputedSDK() *schema.Schema {
 				},
 			},
 		},
+	}
+}
+
+type uniqueTagValidator struct{}
+
+func (v uniqueTagValidator) Description(context.Context) string {
+	return "Ensures Tag keys are unique"
+}
+
+func (v uniqueTagValidator) MarkdownDescription(ctx context.Context) string {
+	return v.Description(ctx)
+}
+
+func (v uniqueTagValidator) ValidateSet(ctx context.Context, req validator.SetRequest, resp *validator.SetResponse) {
+	if !fwhelpers.IsSet(req.ConfigValue) {
+		return
+	}
+
+	tags, diag := to.Slice[ResourceTag](ctx, req.ConfigValue)
+	resp.Diagnostics.Append(diag...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	keys := lo.Map(tags, func(tag ResourceTag, _ int) string {
+		return tag.Key.ValueString()
+	})
+	duplicates := lo.FindDuplicates(keys)
+
+	if len(duplicates) != 0 {
+		resp.Diagnostics.AddAttributeError(
+			req.Path,
+			"Duplicate Tag key",
+			fmt.Sprintf("Tag keys must be unique. The following keys are duplicates: %v", duplicates),
+		)
 	}
 }
 

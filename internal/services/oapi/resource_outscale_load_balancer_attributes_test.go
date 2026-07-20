@@ -20,9 +20,7 @@ func TestAccOthers_LBUAttr_basic(t *testing.T) {
 	)
 	suffix := utils.RandIntRange(MIN_LB_NAME_SUFFIX, MAX_LB_NAME_SUFFIX)
 
-	resource.ParallelTest(t, resource.TestCase{
-		IDRefreshName: "outscale_load_balancer_attributes.bar2",
-		Providers:     testacc.SDKProviders,
+	testacc.ParallelTest(t, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleLBUAttrConfig(utils.GetRegion(), suffix),

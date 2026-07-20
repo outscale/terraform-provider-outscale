@@ -13,8 +13,7 @@ func TestAccOthers_LBUs_basic(t *testing.T) {
 	region := fmt.Sprintf("%sa", utils.GetRegion())
 	numLbu := utils.RandIntRange(0, 50)
 
-	resource.ParallelTest(t, resource.TestCase{
-		Providers: testacc.SDKProviders,
+	testacc.ParallelTest(t, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDSOutscaleLBsUConfig(region, numLbu),

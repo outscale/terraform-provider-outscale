@@ -42,4 +42,5 @@ resource "outscale_load_balancer" "public_lbu2" {
 
 data "outscale_load_balancer_tags" "test-tags" {
   load_balancer_names = [outscale_load_balancer.public_lbu1.id, outscale_load_balancer.public_lbu2.id]
+  depends_on = [outscale_load_balancer.public_lbu1, outscale_load_balancer.public_lbu2]
 }
