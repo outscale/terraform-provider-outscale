@@ -14,6 +14,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -537,4 +538,47 @@ func ResourceOutscaleLoadBalancerAttributesDelete(ctx context.Context, d *schema
 
 	d.SetId("")
 	return nil
+}
+
+// Legacy SDKv2 helpers, will be removed once migrated to Plugin Framework
+func waitForLbuActive(ctx context.Context, client *osc.Client, lbuName string, timeout time.Duration) (*osc.LoadBalancer, error) {
+	stateConf := &retry.StateChangeConf{
+		Pending: []string{string(osc.LoadBalancerStateStarting), string(osc.LoadBalancerStateProvisioning), string(osc.LoadBalancerStateReloading), string(osc.LoadBalancerStateReconfiguring)},
+		Target:  []string{string(osc.LoadBalancerStateActive)},
+		Refresh: func() (any, string, error) {
+			lb, _, err := readResourceLb(ctx, client, lbuName, timeout)
+			if err != nil {
+				return nil, "", err
+			}
+			return lb, string(lb.State), nil
+		},
+		Timeout: timeout,
+	}
+	lbuAny, err := stateConf.WaitForStateContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return lbuAny.(*osc.LoadBalancer), nil
+}
+
+func readResourceLb(ctx context.Context, client *osc.Client, elbName string, timeout time.Duration) (*osc.LoadBalancer, *osc.ReadLoadBalancersResponse, error) {
+	filter := &osc.FiltersLoadBalancer{
+		LoadBalancerNames: &[]string{elbName},
+	}
+
+	req := osc.ReadLoadBalancersRequest{
+		Filters: filter,
+	}
+
+	resp, err := client.ReadLoadBalancers(ctx, req, options.WithRetryTimeout(timeout))
+	if err != nil {
+		return nil, nil, fmt.Errorf("error retrieving load balancer: %w", err)
+	}
+	if resp == nil || len(*resp.LoadBalancers) == 0 {
+		return nil, nil, ErrResourceEmpty
+	}
+
+	lb := (*resp.LoadBalancers)[0]
+	return &lb, resp, nil
 }

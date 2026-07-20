@@ -130,3 +130,58 @@ func GetSlicesFromTypesSetForUpdating(ctx context.Context, stateTypeSet, planTyp
 	toAdd, toRemove = lo.Difference(toAdd, toRemove)
 	return toAdd, toRemove, diags
 }
+
+func Difference[C types.List | types.Set](ctx context.Context, oldCollection, newCollection C) (C, C, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	var zero C
+
+	switch oldCollection := any(oldCollection).(type) {
+	case types.List:
+		newCollection := any(newCollection).(types.List)
+
+		if !oldCollection.ElementType(ctx).Equal(newCollection.ElementType(ctx)) {
+			return zero, zero, diags
+		}
+
+		toCreate, toRemove := diffValues(oldCollection.Elements(), newCollection.Elements())
+		createList, d := types.ListValue(newCollection.ElementType(ctx), toCreate)
+		diags.Append(d...)
+		removeList, d := types.ListValue(oldCollection.ElementType(ctx), toRemove)
+		diags.Append(d...)
+
+		return C(createList), C(removeList), diags
+	case types.Set:
+		newCollection := any(newCollection).(types.Set)
+		if !oldCollection.ElementType(ctx).Equal(newCollection.ElementType(ctx)) {
+			return zero, zero, diags
+		}
+
+		toCreate, toRemove := diffValues(oldCollection.Elements(), newCollection.Elements())
+		createSet, d := types.SetValue(newCollection.ElementType(ctx), toCreate)
+		diags.Append(d...)
+		removeSet, d := types.SetValue(oldCollection.ElementType(ctx), toRemove)
+		diags.Append(d...)
+
+		return C(createSet), C(removeSet), diags
+	default:
+		panic(fmt.Sprintf("unsupported type %T", oldCollection))
+	}
+}
+
+func diffValues(oldValues, newValues []attr.Value) ([]attr.Value, []attr.Value) {
+	contains := func(values []attr.Value, target attr.Value) bool {
+		return lo.ContainsBy(values, func(value attr.Value) bool {
+			return value.Equal(target)
+		})
+	}
+
+	toCreate := lo.Filter(newValues, func(newValue attr.Value, _ int) bool {
+		return !contains(oldValues, newValue)
+	})
+
+	toRemove := lo.Filter(oldValues, func(oldValue attr.Value, _ int) bool {
+		return !contains(newValues, oldValue)
+	})
+
+	return toCreate, toRemove
+}
