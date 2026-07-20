@@ -279,6 +279,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		oapi.NewResourceLoadBalancer,
 		oapi.NewResourceLBUVms,
 		oapi.NewResourceLoadBalancerPolicy,
+		oapi.NewResourceLoadBalancerAttributes,
 		oapi.NewResourceLoadBalancerListenerRule,
 		oapi.NewResourceSecurityGroup,
 		oapi.NewResourceSecurityGroupRule,
