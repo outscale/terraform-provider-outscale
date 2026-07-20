@@ -23,6 +23,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/stateconf"
 )
 
 var (
@@ -50,7 +51,7 @@ type lbuBackendVmsModel struct {
 }
 
 type resourceLbuVms struct {
-	Client *osc.Client
+	loadBalancerCommon
 }
 
 func NewResourceLBUVms() resource.Resource {
@@ -199,14 +200,23 @@ func (r *resourceLbuVms) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	lbu, err := waitForLbuActive(ctx, r.Client, lbuName, timeout)
+	stateConf := &stateconf.StateChangeConf[osc.LoadBalancerState]{
+		Pending: stateconf.States(osc.LoadBalancerStateStarting, osc.LoadBalancerStateProvisioning, osc.LoadBalancerStateReloading, osc.LoadBalancerStateReconfiguring),
+		Target:  stateconf.States(osc.LoadBalancerStateActive),
+		Timeout: timeout,
+		Refresh: r.refreshFunc(data.LoadBalancerName.ValueString()),
+	}
+	respAny, err := stateConf.WaitForStateContext(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(lbuVmsErrWait, err.Error())
 		return
 	}
 
+	waitResp := respAny.(*osc.ReadLoadBalancersResponse)
+	data.RequestId = to.String(waitResp.ResponseContext.RequestId)
+
 	// We set the last read response to the state
-	stateData, err = r.flatten(ctx, data, *lbu)
+	stateData, err = r.flatten(ctx, data, (*waitResp.LoadBalancers)[0])
 	if err != nil {
 		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 	}
@@ -275,14 +285,22 @@ func (r *resourceLbuVms) Update(ctx context.Context, req resource.UpdateRequest,
 		}
 		dataPlan.RequestId = to.String(respUpdate.ResponseContext.RequestId)
 	}
-	lbu, err := waitForLbuActive(ctx, r.Client, dataState.LoadBalancerName.ValueString(), timeout)
+
+	stateConf := &stateconf.StateChangeConf[osc.LoadBalancerState]{
+		Pending: stateconf.States(osc.LoadBalancerStateStarting, osc.LoadBalancerStateProvisioning, osc.LoadBalancerStateReloading, osc.LoadBalancerStateReconfiguring),
+		Target:  stateconf.States(osc.LoadBalancerStateActive),
+		Timeout: timeout,
+		Refresh: r.refreshFunc(dataPlan.LoadBalancerName.ValueString()),
+	}
+	respAny, err := stateConf.WaitForStateContext(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(lbuVmsErrWait, err.Error())
 		return
 	}
+	waitResp := respAny.(*osc.ReadLoadBalancersResponse)
 
 	// We set the last read response to the state
-	stateData, err := r.flatten(ctx, dataPlan, *lbu)
+	stateData, err := r.flatten(ctx, dataPlan, (*waitResp.LoadBalancers)[0])
 	if err != nil {
 		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
