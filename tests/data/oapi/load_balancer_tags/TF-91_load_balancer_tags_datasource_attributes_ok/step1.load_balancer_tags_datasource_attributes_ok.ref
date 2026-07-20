@@ -20,6 +20,11 @@
                         "request_id": "########",
                         "tags": [
                             {
+                                "key": "Platfotm",
+                                "load_balancer_name": "########",
+                                "value": "terraform"
+                            },
+                            {
                                 "key": "name",
                                 "load_balancer_name": "########",
                                 "value": "public_lbu2"
@@ -30,19 +35,14 @@
                                 "value": "terraform"
                             },
                             {
-                                "key": "name",
-                                "load_balancer_name": "########",
-                                "value": "public_lbu1"
-                            },
-                            {
                                 "key": "User",
                                 "load_balancer_name": "########",
                                 "value": "mzi"
                             },
                             {
-                                "key": "Platfotm",
+                                "key": "name",
                                 "load_balancer_name": "########",
-                                "value": "terraform"
+                                "value": "public_lbu1"
                             }
                         ]
                     },
@@ -131,7 +131,6 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "random_string.suffix"
                     ]
@@ -214,7 +213,6 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "random_string.suffix"
                     ]
