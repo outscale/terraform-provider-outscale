@@ -3,13 +3,16 @@ package testacc
 import (
 	"context"
 	"fmt"
+	"os"
 	"regexp"
+	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
 	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -31,6 +34,103 @@ var (
 
 	anyRegexp = regexp.MustCompile(`(?s).+`)
 )
+
+func ImageID() string {
+	imageID := os.Getenv("OUTSCALE_IMAGEID")
+	if imageID == "" {
+		imageID = os.Getenv("OSC_IMAGEID")
+	}
+	if imageID == "" {
+		panic("OUTSCALE_IMAGEID or OSC_IMAGEID must be set")
+	}
+
+	return imageID
+}
+
+func Region() string {
+	region := os.Getenv("OUTSCALE_REGION")
+	if region == "" {
+		region = os.Getenv("OSC_REGION")
+	}
+	if region == "" {
+		region = "eu-west-2"
+	}
+
+	return region
+}
+
+const (
+	VMType      = "tinav7.c2r2p1"
+	KeypairName = "terraform-basic"
+)
+
+// VarsDefinition declares the standard variables supplied by ConfigVariables
+const VarsDefinition = `
+variable "image_id" {
+ type = string
+}
+
+variable "vm_type" {
+ type = string
+}
+
+variable "keypair_name" {
+ type = string
+}
+
+variable "region" {
+ type = string
+}
+
+variable "subregion" {
+ type = string
+}
+`
+
+// Standard Terraform inputs used by acceptance tests
+var ConfigVariables = config.Variables{
+	"image_id":     config.StringVariable(ImageID()),
+	"vm_type":      config.StringVariable(VMType),
+	"keypair_name": config.StringVariable(KeypairName),
+	"region":       config.StringVariable(Region()),
+	"subregion":    config.StringVariable(Region() + "a"),
+}
+
+func ParallelTest(t *testing.T, testCase resource.TestCase) {
+	t.Helper()
+	resource.ParallelTest(t, withDefaults(testCase))
+}
+
+func Test(t *testing.T, testCase resource.TestCase) {
+	t.Helper()
+	resource.Test(t, withDefaults(testCase))
+}
+
+func MigrationTest(t *testing.T, sdkVersion string, configs ...string) {
+	t.Helper()
+	resource.Test(t, withConfigVars(resource.TestCase{
+		Steps: FrameworkMigrationTestSteps(sdkVersion, configs...),
+	}))
+}
+
+func withConfigVars(testCase resource.TestCase) resource.TestCase {
+	for i := range testCase.Steps {
+		step := &testCase.Steps[i]
+		if step.Config != "" {
+			step.Config = VarsDefinition + step.Config
+		}
+		step.ConfigVariables = ConfigVariables
+	}
+
+	return testCase
+}
+
+func withDefaults(testCase resource.TestCase) resource.TestCase {
+	testCase = withConfigVars(testCase)
+	testCase.ProtoV6ProviderFactories = ProtoV6ProviderFactories()
+
+	return testCase
+}
 
 // Returns a map of provider factories for testing with protocol v6
 // This includes both the SDK v2 provider (upgraded to v6) and the Framework provider
