@@ -2,55 +2,43 @@
 
 set -e
 
-project_dir=$(cd "$(dirname $0)" && pwd)
-project_root=$(cd $project_dir/.. && pwd)
+project_dir=$(cd "$(dirname "$0")" && pwd)
+project_root=$(cd "$project_dir/.." && pwd)
+build_dir="$project_root/tests/certs"
+certificate_file="$build_dir/certificate.pem"
+certificate_key_file="$build_dir/certificate.key"
+testdata="$project_root/internal/services/oapi/testdata"
 
-if [ ! -d "$project_root/tests/certs" ]; then
-    mkdir $project_root/tests/certs
-fi
-build_dir=$(cd $project_root/tests/certs && pwd)
-tf_file="gen-cert-test.tf"
+mkdir -p "$build_dir"
 
-cd $build_dir
-echo '
-terraform {
-  required_providers {
-    shell = {
-      source  = "scottwinkler/shell"
-      version = ">=1.7.10"
-    }
-  }
+needs_regeneration() {
+    if [ ! -f "$certificate_file" ] || [ ! -f "$certificate_key_file" ]; then
+        return 0
+    fi
+
+    if ! openssl x509 -checkend 0 -noout -in "$certificate_file" >/dev/null 2>&1; then
+        return 0
+    fi
+
+    return 1
 }
 
-resource "shell_script" "ca_gen" {
-  lifecycle_commands {
-    create = <<-EOF
-           openssl req -x509 -sha256 -nodes -newkey rsa:4096 -keyout certificate.key -days 2 -out certificate.pem -subj /CN=domain.com
-EOF
-    read   = <<-EOF
-           echo "{\"filename\":  \"certificate.pem\"}"
-EOF
-    delete = ""
-  }
-  working_directory = path.module
+generate_certificate() {
+    openssl req -x509 -sha256 -nodes -newkey rsa:4096 \
+        -keyout "$certificate_key_file" \
+        -days 1 \
+        -out "$certificate_file" \
+        -subj /CN=domain.com
 }
-' > "$build_dir/$tf_file"
 
-if [ ! -e "$build_dir/$tf_file" ]; then
-    echo "$tf_file doesn't exist"
-    exit 1
+echo "Ensuring certificates in $build_dir"
+
+if needs_regeneration; then
+    rm -f "$certificate_file" "$certificate_key_file"
+    generate_certificate
 fi
 
-echo "Generating certificates in $build_dir"
-terraform init || exit 1
-terraform apply -auto-approve || exit 1
-
-oapi_testdata="$project_root/internal/services/oapi/testdata"
-if [ ! -d "$oapi_testdata" ]; then
-    mkdir $oapi_testdata
-fi
-cp certificate.pem certificate.key $oapi_testdata/
-
-cd $project_root
+mkdir -p "$testdata"
+cp "$certificate_file" "$certificate_key_file" "$testdata/"
 
 exit 0
