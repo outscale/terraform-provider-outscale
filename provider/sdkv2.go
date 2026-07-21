@@ -242,7 +242,7 @@ func Provider() *schema.Provider {
 	}
 }
 
-var UserAgent = "terraform-provider-outscale/" + version.GetVersion()
+var UserAgent = "terraform-provider-outscale/" + version.Version
 
 func buildOSCConfig(d *schema.ResourceData) client.Config {
 	var config client.Config

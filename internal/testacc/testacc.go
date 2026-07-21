@@ -48,7 +48,7 @@ func ProtoV6ProviderFactories() map[string]func() (tfprotov6.ProviderServer, err
 			}
 
 			// Create Framework provider with configure callback to capture client
-			frameworkProvider := provider.NewWithConfigure(version.GetVersion(), func(c *client.OutscaleClient) {
+			frameworkProvider := provider.NewWithConfigure(version.Version, func(c *client.OutscaleClient) {
 				ConfiguredClient = c
 			})
 
