@@ -107,7 +107,6 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "random_string.suffix"
                     ]
@@ -149,7 +148,6 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "outscale_keypair.my_keypair",
                         "outscale_load_balancer.public_lbu2",
@@ -195,7 +193,6 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "outscale_keypair.my_keypair",
                         "outscale_load_balancer.public_lbu2",
@@ -241,7 +238,6 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "outscale_keypair.my_keypair",
                         "outscale_load_balancer.public_lbu2",

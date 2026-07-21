@@ -6,6 +6,34 @@
     "outputs": {},
     "resources": [
         {
+            "mode": "data",
+            "type": "outscale_load_balancer_listener_rule",
+            "name": "outscale_load_balancer_listener_rule",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "action": "forward",
+                        "filter": "########",
+                        "host_name_pattern": null,
+                        "id": "##id-0##",
+                        "listener_id": "##id-1##",
+                        "listener_rule_id": "##id-2##",
+                        "listener_rule_name": "########",
+                        "path_pattern": "*.abc.*.abc.*.com",
+                        "priority": 1,
+                        "request_id": "########",
+                        "vm_ids": [
+                            "##id-3##"
+                        ]
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
+                }
+            ]
+        },
+        {
             "mode": "managed",
             "type": "outscale_keypair",
             "name": "my_keypair",
@@ -14,9 +42,9 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "id": "##id-0##",
+                        "id": "##id-4##",
                         "keypair_fingerprint": "########",
-                        "keypair_id": "##id-0##",
+                        "keypair_id": "##id-4##",
                         "keypair_name": "########",
                         "keypair_type": "ssh-rsa",
                         "private_key": "########",
@@ -36,7 +64,7 @@
         {
             "mode": "managed",
             "type": "outscale_load_balancer",
-            "name": "public_lbu1",
+            "name": "public_lbu2",
             "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
@@ -53,8 +81,7 @@
                         "application_sticky_cookie_policies": [],
                         "backend_ips": "########",
                         "backend_vm_ids": [
-                            "##id-1##",
-                            "##id-2##"
+                            "##id-3##"
                         ],
                         "dns_name": "########",
                         "health_check": [
@@ -62,22 +89,14 @@
                                 "check_interval": 30,
                                 "healthy_threshold": 10,
                                 "path": "",
-                                "port": 8080,
+                                "port": 80,
                                 "protocol": "TCP",
                                 "timeout": 5,
                                 "unhealthy_threshold": 2
                             }
                         ],
-                        "id": "##id-3##",
+                        "id": "##id-5##",
                         "listeners": [
-                            {
-                                "backend_port": 8080,
-                                "backend_protocol": "HTTP",
-                                "load_balancer_port": 8080,
-                                "load_balancer_protocol": "HTTP",
-                                "policy_names": "########",
-                                "server_certificate_id": ""
-                            },
                             {
                                 "backend_port": 80,
                                 "backend_protocol": "TCP",
@@ -97,7 +116,7 @@
                         "security_groups": [],
                         "source_security_group": [
                             {
-                                "security_group_account_id": "##id-4##",
+                                "security_group_account_id": "##id-6##",
                                 "security_group_name": "########"
                             }
                         ],
@@ -109,7 +128,7 @@
                         "tags": [
                             {
                                 "key": "name",
-                                "value": "public_lbu1"
+                                "value": "listener-rule"
                             }
                         ],
                         "timeouts": null
@@ -117,6 +136,96 @@
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
                     "dependencies": [
+                        "random_string.suffix"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_load_balancer_listener_rule",
+            "name": "rule-1",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "id": "##id-7##",
+                        "listener": [
+                            {
+                                "load_balancer_name": "########",
+                                "load_balancer_port": 80
+                            }
+                        ],
+                        "listener_rule": [
+                            {
+                                "action": "forward",
+                                "host_name_pattern": "*.abc.-.abc.*.com",
+                                "listener_id": "##id-1##",
+                                "listener_rule_id": "##id-8##",
+                                "listener_rule_name": "########",
+                                "path_pattern": "",
+                                "priority": 10
+                            }
+                        ],
+                        "request_id": "########",
+                        "timeouts": null,
+                        "vm_ids": [
+                            "##id-3##"
+                        ]
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "outscale_keypair.my_keypair",
+                        "outscale_load_balancer.public_lbu2",
+                        "outscale_security_group.my_sgLbl",
+                        "outscale_vm.public_vm_1",
+                        "random_string.suffix"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_load_balancer_listener_rule",
+            "name": "rule-2",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "id": "##id-9##",
+                        "listener": [
+                            {
+                                "load_balancer_name": "########",
+                                "load_balancer_port": 80
+                            }
+                        ],
+                        "listener_rule": [
+                            {
+                                "action": "forward",
+                                "host_name_pattern": "",
+                                "listener_id": "##id-1##",
+                                "listener_rule_id": "##id-2##",
+                                "listener_rule_name": "########",
+                                "path_pattern": "*.abc.*.abc.*.com",
+                                "priority": 1
+                            }
+                        ],
+                        "request_id": "########",
+                        "timeouts": null,
+                        "vm_ids": [
+                            "##id-3##"
+                        ]
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "outscale_keypair.my_keypair",
+                        "outscale_load_balancer.public_lbu2",
+                        "outscale_security_group.my_sgLbl",
+                        "outscale_vm.public_vm_1",
                         "random_string.suffix"
                     ]
                 }
@@ -133,9 +242,9 @@
                     "attributes": {
                         "backend_ips": "########",
                         "backend_vm_ids": [
-                            "##id-2##"
+                            "##id-3##"
                         ],
-                        "id": "##id-3##",
+                        "id": "##id-5##",
                         "load_balancer_name": "########",
                         "request_id": "########",
                         "timeouts": null
@@ -144,9 +253,9 @@
                     "identity_schema_version": 0,
                     "dependencies": [
                         "outscale_keypair.my_keypair",
-                        "outscale_load_balancer.public_lbu1",
-                        "outscale_security_group.public_sglb",
-                        "outscale_vm.outscale_vms_lbu",
+                        "outscale_load_balancer.public_lbu2",
+                        "outscale_security_group.my_sgLbl",
+                        "outscale_vm.public_vm_1",
                         "random_string.suffix"
                     ]
                 }
@@ -155,21 +264,21 @@
         {
             "mode": "managed",
             "type": "outscale_security_group",
-            "name": "public_sglb",
+            "name": "my_sgLbl",
             "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "account_id": "##id-5##",
-                        "description": "test lbu vm health",
-                        "id": "##id-6##",
+                        "account_id": "##id-10##",
+                        "description": "test sg-group-lbu",
+                        "id": "##id-11##",
                         "inbound_rules": [],
                         "net_id": "",
                         "outbound_rules": [],
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
-                        "security_group_id": "##id-6##",
+                        "security_group_id": "##id-11##",
                         "security_group_name": "########",
                         "tags": [],
                         "timeouts": null
@@ -185,11 +294,10 @@
         {
             "mode": "managed",
             "type": "outscale_vm",
-            "name": "outscale_vms_lbu",
+            "name": "public_vm_1",
             "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
-                    "index_key": 0,
                     "schema_version": 0,
                     "attributes": {
                         "actions_on_next_boot": [
@@ -208,7 +316,7 @@
                                         "link_date": "########",
                                         "state": "attached",
                                         "tags": [],
-                                        "volume_id": "##id-7##"
+                                        "volume_id": "##id-12##"
                                     }
                                 ],
                                 "device_name": "/dev/sda1"
@@ -221,8 +329,8 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-2##",
-                        "image_id": "##id-8##",
+                        "id": "##id-3##",
+                        "image_id": "##id-13##",
                         "is_source_dest_checked": false,
                         "keypair_name": "########",
                         "keypair_name_wo": null,
@@ -244,33 +352,28 @@
                         "public_dns_name": "########",
                         "public_ip": "########",
                         "request_id": "########",
-                        "reservation_id": "##id-9##",
+                        "reservation_id": "##id-14##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
                         "secure_boot_action": null,
                         "security_group_ids": [
-                            "##id-6##"
+                            "##id-11##"
                         ],
                         "security_group_names": "########",
                         "security_groups": [
                             {
-                                "security_group_id": "##id-6##",
+                                "security_group_id": "##id-11##",
                                 "security_group_name": "########"
                             }
                         ],
                         "state": "########",
                         "state_reason": "########",
                         "subnet_id": "",
-                        "tags": [
-                            {
-                                "key": "Name",
-                                "value": "Backend-Vms-mzi"
-                            }
-                        ],
+                        "tags": [],
                         "timeouts": null,
                         "tpm_enabled": false,
-                        "user_data": "ICAgICAjIS9iaW4vYmFzaAogICAgcHVzaGQgL2hvbWUKICAgIG5vaHVwIHB5dGhvbiAtbSBTaW1wbGVIVFRQU2VydmVyIDgwODAK",
-                        "vm_id": "##id-2##",
+                        "user_data": "",
+                        "vm_id": "##id-3##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
@@ -279,102 +382,7 @@
                     "private": "########",
                     "dependencies": [
                         "outscale_keypair.my_keypair",
-                        "outscale_security_group.public_sglb",
-                        "random_string.suffix"
-                    ]
-                },
-                {
-                    "index_key": 1,
-                    "schema_version": 0,
-                    "attributes": {
-                        "actions_on_next_boot": [
-                            {
-                                "secure_boot": ""
-                            }
-                        ],
-                        "admin_password": "",
-                        "architecture": "x86_64",
-                        "block_device_mappings": [],
-                        "block_device_mappings_created": [
-                            {
-                                "bsu": [
-                                    {
-                                        "delete_on_vm_deletion": true,
-                                        "link_date": "########",
-                                        "state": "attached",
-                                        "tags": [],
-                                        "volume_id": "##id-10##"
-                                    }
-                                ],
-                                "device_name": "/dev/sda1"
-                            }
-                        ],
-                        "boot_mode": "legacy",
-                        "bsu_optimized": false,
-                        "client_token": "",
-                        "creation_date": "########",
-                        "deletion_protection": false,
-                        "get_admin_password": null,
-                        "hypervisor": "xen",
-                        "id": "##id-1##",
-                        "image_id": "##id-8##",
-                        "is_source_dest_checked": false,
-                        "keypair_name": "########",
-                        "keypair_name_wo": null,
-                        "launch_number": 0,
-                        "nested_virtualization": false,
-                        "net_id": "",
-                        "nics": [],
-                        "os_family": "",
-                        "performance": "highest",
-                        "placement_subregion_name": "eu-west-2a",
-                        "placement_tenancy": "default",
-                        "primary_nic": [],
-                        "private_dns_name": "########",
-                        "private_ip": "########",
-                        "private_ips": null,
-                        "product_codes": [
-                            "0001"
-                        ],
-                        "public_dns_name": "########",
-                        "public_ip": "########",
-                        "request_id": "########",
-                        "reservation_id": "##id-11##",
-                        "root_device_name": "/dev/sda1",
-                        "root_device_type": "ebs",
-                        "secure_boot_action": null,
-                        "security_group_ids": [
-                            "##id-6##"
-                        ],
-                        "security_group_names": "########",
-                        "security_groups": [
-                            {
-                                "security_group_id": "##id-6##",
-                                "security_group_name": "########"
-                            }
-                        ],
-                        "state": "########",
-                        "state_reason": "########",
-                        "subnet_id": "",
-                        "tags": [
-                            {
-                                "key": "Name",
-                                "value": "Backend-Vms-mzi"
-                            }
-                        ],
-                        "timeouts": null,
-                        "tpm_enabled": false,
-                        "user_data": "ICAgICAjIS9iaW4vYmFzaAogICAgcHVzaGQgL2hvbWUKICAgIG5vaHVwIHB5dGhvbiAtbSBTaW1wbGVIVFRQU2VydmVyIDgwODAK",
-                        "vm_id": "##id-1##",
-                        "vm_initiated_shutdown_behavior": "stop",
-                        "vm_type": "###vm_type###"
-                    },
-                    "sensitive_attributes": [],
-                    "identity_schema_version": 0,
-                    "private": "########",
-                    "dependencies": [
-                        "outscale_keypair.my_keypair",
-                        "outscale_security_group.public_sglb",
+                        "outscale_security_group.my_sgLbl",
                         "random_string.suffix"
                     ]
                 }

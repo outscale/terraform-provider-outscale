@@ -35,69 +35,6 @@
                                         "check_interval": 30,
                                         "healthy_threshold": 10,
                                         "path": "",
-                                        "port": 8080,
-                                        "protocol": "TCP",
-                                        "timeout": 5,
-                                        "unhealthy_threshold": 2
-                                    }
-                                ],
-                                "listeners": [
-                                    {
-                                        "backend_port": 8080,
-                                        "backend_protocol": "HTTP",
-                                        "load_balancer_port": 8080,
-                                        "load_balancer_protocol": "HTTP",
-                                        "policy_names": "########",
-                                        "server_certificate_id": ""
-                                    }
-                                ],
-                                "load_balancer_name": "########",
-                                "load_balancer_sticky_cookie_policies": [],
-                                "load_balancer_type": "internal",
-                                "net_id": "##id-1##",
-                                "public_ip": "########",
-                                "secured_cookies": false,
-                                "security_groups": [
-                                    "##id-2##"
-                                ],
-                                "source_security_group": [
-                                    {
-                                        "security_group_account_id": "##id-3##",
-                                        "security_group_name": "########"
-                                    }
-                                ],
-                                "state": "active",
-                                "subnet_id": [
-                                    "##id-4##"
-                                ],
-                                "subregion_names": [
-                                    "us-east-2a"
-                                ],
-                                "tags": [
-                                    {
-                                        "key": "name",
-                                        "value": "lbu-internal"
-                                    }
-                                ]
-                            },
-                            {
-                                "access_log": [
-                                    {
-                                        "is_enabled": false,
-                                        "osu_bucket_name": "",
-                                        "osu_bucket_prefix": "",
-                                        "publication_interval": 60
-                                    }
-                                ],
-                                "application_sticky_cookie_policies": [],
-                                "backend_ips": "########",
-                                "backend_vm_ids": [],
-                                "dns_name": "########",
-                                "health_check": [
-                                    {
-                                        "check_interval": 30,
-                                        "healthy_threshold": 10,
-                                        "path": "",
                                         "port": 80,
                                         "protocol": "TCP",
                                         "timeout": 5,
@@ -123,7 +60,7 @@
                                 "security_groups": [],
                                 "source_security_group": [
                                     {
-                                        "security_group_account_id": "##id-5##",
+                                        "security_group_account_id": "##id-1##",
                                         "security_group_name": "########"
                                     }
                                 ],
@@ -140,6 +77,69 @@
                                     {
                                         "key": "test-1",
                                         "value": "outscale_terraform_lbu"
+                                    }
+                                ]
+                            },
+                            {
+                                "access_log": [
+                                    {
+                                        "is_enabled": false,
+                                        "osu_bucket_name": "",
+                                        "osu_bucket_prefix": "",
+                                        "publication_interval": 60
+                                    }
+                                ],
+                                "application_sticky_cookie_policies": [],
+                                "backend_ips": "########",
+                                "backend_vm_ids": [],
+                                "dns_name": "########",
+                                "health_check": [
+                                    {
+                                        "check_interval": 30,
+                                        "healthy_threshold": 10,
+                                        "path": "",
+                                        "port": 8080,
+                                        "protocol": "TCP",
+                                        "timeout": 5,
+                                        "unhealthy_threshold": 2
+                                    }
+                                ],
+                                "listeners": [
+                                    {
+                                        "backend_port": 8080,
+                                        "backend_protocol": "HTTP",
+                                        "load_balancer_port": 8080,
+                                        "load_balancer_protocol": "HTTP",
+                                        "policy_names": "########",
+                                        "server_certificate_id": ""
+                                    }
+                                ],
+                                "load_balancer_name": "########",
+                                "load_balancer_sticky_cookie_policies": [],
+                                "load_balancer_type": "internal",
+                                "net_id": "##id-2##",
+                                "public_ip": "########",
+                                "secured_cookies": false,
+                                "security_groups": [
+                                    "##id-3##"
+                                ],
+                                "source_security_group": [
+                                    {
+                                        "security_group_account_id": "##id-4##",
+                                        "security_group_name": "########"
+                                    }
+                                ],
+                                "state": "active",
+                                "subnet_id": [
+                                    "##id-5##"
+                                ],
+                                "subregion_names": [
+                                    "us-east-2a"
+                                ],
+                                "tags": [
+                                    {
+                                        "key": "name",
+                                        "value": "lbu-internal"
                                     }
                                 ]
                             }
@@ -198,22 +198,22 @@
                         "load_balancer_name": "########",
                         "load_balancer_sticky_cookie_policies": [],
                         "load_balancer_type": "internal",
-                        "net_id": "##id-1##",
+                        "net_id": "##id-2##",
                         "public_ip": "########",
                         "request_id": "########",
                         "secured_cookies": false,
                         "security_groups": [
-                            "##id-2##"
+                            "##id-3##"
                         ],
                         "source_security_group": [
                             {
-                                "security_group_account_id": "##id-3##",
+                                "security_group_account_id": "##id-4##",
                                 "security_group_name": "########"
                             }
                         ],
                         "state": "active",
                         "subnets": [
-                            "##id-4##"
+                            "##id-5##"
                         ],
                         "subregion_names": [
                             "us-east-2a"
@@ -228,7 +228,6 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "outscale_net.outscale_net",
                         "outscale_security_group.outscale_security_group",
@@ -291,7 +290,7 @@
                         "security_groups": [],
                         "source_security_group": [
                             {
-                                "security_group_account_id": "##id-5##",
+                                "security_group_account_id": "##id-1##",
                                 "security_group_name": "########"
                             }
                         ],
@@ -314,7 +313,6 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "random_string.suffix"
                     ]
@@ -331,9 +329,9 @@
                     "schema_version": 0,
                     "attributes": {
                         "dhcp_options_set_id": "##id-8##",
-                        "id": "##id-1##",
+                        "id": "##id-2##",
                         "ip_range": "10.0.0.0/16",
-                        "net_id": "##id-1##",
+                        "net_id": "##id-2##",
                         "request_id": "########",
                         "state": "available",
                         "tags": [],
@@ -354,11 +352,11 @@
                 {
                     "schema_version": 0,
                     "attributes": {
-                        "account_id": "##id-3##",
+                        "account_id": "##id-4##",
                         "description": "test lbu-1",
-                        "id": "##id-2##",
+                        "id": "##id-3##",
                         "inbound_rules": [],
-                        "net_id": "##id-1##",
+                        "net_id": "##id-2##",
                         "outbound_rules": [
                             {
                                 "from_port_range": -1,
@@ -371,7 +369,7 @@
                         ],
                         "remove_default_outbound_rule": false,
                         "request_id": "########",
-                        "security_group_id": "##id-2##",
+                        "security_group_id": "##id-3##",
                         "security_group_name": "########",
                         "tags": [
                             {
@@ -400,13 +398,13 @@
                     "schema_version": 0,
                     "attributes": {
                         "available_ips_count": "########",
-                        "id": "##id-4##",
+                        "id": "##id-5##",
                         "ip_range": "10.0.0.0/24",
                         "map_public_ip_on_launch": false,
-                        "net_id": "##id-1##",
+                        "net_id": "##id-2##",
                         "request_id": "########",
                         "state": "available",
-                        "subnet_id": "##id-4##",
+                        "subnet_id": "##id-5##",
                         "subregion_name": "us-east-2a",
                         "tags": [
                             {

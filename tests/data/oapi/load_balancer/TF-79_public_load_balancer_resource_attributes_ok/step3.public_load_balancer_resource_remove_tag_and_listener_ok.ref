@@ -45,7 +45,7 @@
                                 "load_balancer_port": 80,
                                 "load_balancer_protocol": "HTTP",
                                 "policy_names": "########",
-                                "server_certificate_id": null
+                                "server_certificate_id": ""
                             }
                         ],
                         "load_balancer_name": "########",
@@ -72,7 +72,6 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "random_string.suffix"
                     ]
