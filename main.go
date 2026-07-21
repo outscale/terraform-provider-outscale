@@ -12,10 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
 
 	"github.com/outscale/terraform-provider-outscale/provider"
-	vers "github.com/outscale/terraform-provider-outscale/version"
+	"github.com/outscale/terraform-provider-outscale/version"
 )
-
-var version string = vers.GetVersion()
 
 func main() {
 	ctx := context.Background()
@@ -33,7 +31,7 @@ func main() {
 	}
 
 	providers := []func() tfprotov6.ProviderServer{
-		providerserver.NewProtocol6(provider.New(version)),
+		providerserver.NewProtocol6(provider.New(version.Version)),
 		func() tfprotov6.ProviderServer {
 			return upgradedSdkServer
 		},
