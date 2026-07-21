@@ -72,7 +72,6 @@
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,
-                    "private": "########",
                     "dependencies": [
                         "outscale_server_certificate.my_server_certificate",
                         "random_string.suffix"
