@@ -34,6 +34,10 @@ resource "outscale_load_balancer" "public_lbu2" {
     key   = "name"
     value = "public_lbu2"
   }
+  tags {
+      key   = "Platfotm"
+      value = "terraform"
+    }
 }
 
 data "outscale_load_balancer_tags" "test-tags" {

@@ -190,58 +190,47 @@ def compare_json_dicts(path, dict_out, dict_ref, ids):
         ):
             do_set = True
         if do_set:
-            compare_json_sets(
-                "{}.{}".format(path, key), dict_out[key], dict_ref[key], ids
+            compare_json_collections(
+                "{}.{}".format(path, key),
+                dict_out[key],
+                dict_ref[key],
+                ids,
+                "set",
             )
         else:
             compare_json("{}.{}".format(path, key), dict_out[key], dict_ref[key], ids)
 
 
-def compare_json_lists(path, list_out, list_ref, ids):
-    assert len(list_out) == len(list_ref)
+def compare_json_collections(path, out_values, ref_values, ids, collection_type):
+    out_elements = list(out_values)
+    ref_elements = list(ref_values)
+    assert len(out_elements) == len(ref_elements)
+
     current_ids = ids.copy()
-    found_elts = []
-    for out_elt in list_out:
+    found_indexes = set()
+    for out_element in out_elements:
         errors = []
-        for ref_elt in list_ref:
-            if ref_elt in found_elts:
+        for ref_index, ref_element in enumerate(ref_elements):
+            if ref_index in found_indexes:
                 continue
+            candidate_ids = current_ids.copy()
             try:
-                tmp_ids = current_ids.copy()
-                compare_json("{}".format(path), out_elt, ref_elt, tmp_ids)
-                found_elts.append(ref_elt)
-                current_ids = tmp_ids
-                errors = []
-                break
+                compare_json(
+                    "{}".format(path),
+                    out_element,
+                    ref_element,
+                    candidate_ids,
+                )
             except AssertionError as error:
                 errors.append(error)
-        if errors:
-            assert False, "Could not match list values for path {}, {}".format(
-                path, errors
-            )
-
-
-def compare_json_sets(path, set_out, set_ref, ids):
-    assert len(set_out) == len(set_ref)
-    current_ids = ids.copy()
-    found_elts = []
-    for out_elt in set_out:
-        errors = []
-        for ref_elt in set_ref:
-            if ref_elt in found_elts:
                 continue
-            try:
-                tmp_ids = current_ids.copy()
-                compare_json("{}".format(path), out_elt, ref_elt, tmp_ids)
-                found_elts.append(ref_elt)
-                current_ids = tmp_ids
-                errors = []
-                break
-            except AssertionError as error:
-                errors.append(error)
+            found_indexes.add(ref_index)
+            current_ids = candidate_ids
+            errors = []
+            break
         if errors:
-            assert False, "Could not match set values for path {}, {}".format(
-                path, errors
+            assert False, "Could not match {} values for path {}, {}".format(
+                collection_type, path, errors
             )
 
 
@@ -267,20 +256,6 @@ def compare_json_values(path, val_out, val_ref, ids):
         ids[val_out] = val_ref
         return
 
-    # accept string values that only differ by the last digit
-    if (
-        type(val_out) is str
-        and len(val_out) > 1
-        and len(val_ref) > 1
-        and val_out[:-1] == val_ref[:-1]
-    ):
-        try:
-            int(val_out[-1])
-            int(val_ref[-1])
-            return
-        except ValueError:
-            pass
-
     assert False, "Values {} and {} in path {} are different".format(
         val_out, val_ref, path
     )
@@ -297,7 +272,7 @@ def compare_json(path, out, ref, ids):
     if type(out) is dict:
         compare_json_dicts(path, out, ref, ids)
     elif type(out) is list:
-        compare_json_lists(path, out, ref, ids)
+        compare_json_collections(path, out, ref, ids, "list")
     elif type(out) is set:
         assert False, "Unexpected type set for path {}".format(path)
     elif type(out) is tuple:
@@ -319,7 +294,9 @@ def compare_json_files(output_file_name, ref_file_name, service_config):
     except Exception as e:
         assert False, "Error validating output file {}: {}".format(output_file_name, e)
 
-    if os.getenv("OSC_GENREF", False):
+    genref = os.getenv("OSC_GENREF", "false").strip().lower() == "true"
+
+    if genref:
         ref_exists = os.path.exists(ref_file_name)
         regenerate = True
 
@@ -577,8 +554,14 @@ Log: {}
                 self.exec_test_step(tf_file_path, out_file_path, is_first_step)
 
                 compare_json_files(out_file_path, ref_file_path, self.service_config)
-        except Exception as error:
+        except Exception:
             self.error = True
-            raise error
+            raise
         finally:
-            self.run_cmd("terraform destroy -auto-approve -no-color")
+            test_failed = self.error
+            try:
+                self.run_cmd("terraform destroy -auto-approve -no-color")
+            except Exception:
+                if not test_failed:
+                    raise
+                self.logger.exception("Terraform cleanup failed after test failure")

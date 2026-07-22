@@ -20,6 +20,11 @@
                         "request_id": "########",
                         "tags": [
                             {
+                                "key": "Platfotm",
+                                "load_balancer_name": "########",
+                                "value": "terraform"
+                            },
+                            {
                                 "key": "name",
                                 "load_balancer_name": "########",
                                 "value": "public_lbu2"
@@ -195,6 +200,10 @@
                             "eu-west-2a"
                         ],
                         "tags": [
+                            {
+                                "key": "Platfotm",
+                                "value": "terraform"
+                            },
                             {
                                 "key": "name",
                                 "value": "public_lbu2"
