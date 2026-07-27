@@ -28,6 +28,7 @@ func (t *tflogWrapper) RequestHttp(ctx context.Context, req *http.Request) {
 		bodyReader, err := req.GetBody()
 		if err == nil {
 			bodyBytes, _ := io.ReadAll(bodyReader)
+			_ = bodyReader.Close()
 			if len(bodyBytes) > 0 {
 				bodyStr := string(bodyBytes)
 				var jsonData any
