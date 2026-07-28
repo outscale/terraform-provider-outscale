@@ -1,8 +1,8 @@
-# -*- coding:utf-8 -*-
 # pylint: disable=missing-docstring
 
 import os
-from test_provider_base import create_provider_test_metaclass, BaseProviderTest
+
+from test_provider_base import BaseProviderTest, create_provider_test_metaclass
 from test_provider_oapi_config import OAPI_SERVICE_CONFIG
 
 ROOT_DIR = os.path.join(os.path.dirname(__file__), "data", "oapi")
@@ -14,7 +14,7 @@ def oapi_env_filter(resource):
         return resource == "nets"
     return True
 
-OapiMeta = create_provider_test_metaclass(ROOT_DIR, oapi_env_filter)
+OAPIMeta = create_provider_test_metaclass(ROOT_DIR, oapi_env_filter)
 
-class TestProviderOapi(BaseProviderTest, metaclass=OapiMeta):
+class TestProviderOAPI(BaseProviderTest, metaclass=OAPIMeta):
     service_config = OAPI_SERVICE_CONFIG

@@ -76,6 +76,10 @@ func HasChange(planValue, stateValue attr.Value) bool {
 }
 
 func GetAttrTypes(model any) map[string]attr.Type {
+	if provider, ok := model.(fwtypes.AttributeTypes); ok {
+		return provider.AttributeTypes()
+	}
+
 	attrTypes := make(map[string]attr.Type)
 
 	v := reflect.TypeOf(model)
