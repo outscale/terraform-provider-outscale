@@ -196,6 +196,16 @@ func formatXMLBody(body []byte) string {
 			return string(body)
 		}
 
+		// Remove "xmlns" namespace from XML elements for readability
+		switch element := token.(type) {
+		case xml.StartElement:
+			element.Name.Space = ""
+			token = element
+		case xml.EndElement:
+			element.Name.Space = ""
+			token = element
+		}
+
 		if err := encoder.EncodeToken(token); err != nil {
 			return string(body)
 		}

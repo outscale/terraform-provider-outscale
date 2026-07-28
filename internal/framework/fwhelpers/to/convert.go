@@ -320,3 +320,12 @@ func ObjType(attrTypes map[string]attr.Type) types.ObjectType {
 func Object[T any](ctx context.Context, model T) (types.Object, diag.Diagnostics) {
 	return types.ObjectValueFrom(ctx, fwhelpers.GetAttrTypes(model), model)
 }
+
+func ObjectNull[T any]() types.Object {
+	var model T
+	return types.ObjectNull(fwhelpers.GetAttrTypes(model))
+}
+
+func ObjectFromAttrType(ctx context.Context, model any, attrTypes map[string]attr.Type) (types.Object, diag.Diagnostics) {
+	return types.ObjectValueFrom(ctx, attrTypes, model)
+}
