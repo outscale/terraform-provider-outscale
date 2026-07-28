@@ -69,6 +69,10 @@ def validate_value_ref(path, parent, value, ids, service_config):
     replace_value = None
     replace = None
     id_prefixes = service_config.get("id_prefixes", [])
+    id_end_paths = TAG_END_PATHS + [
+        ".attributes.{}".format(attribute_path.lstrip("."))
+        for attribute_path in service_config.get("id_attribute_paths", [])
+    ]
 
     if type(value) is str:
         value_items = value.split("-")
@@ -79,7 +83,7 @@ def validate_value_ref(path, parent, value, ids, service_config):
         ):
             replace = value
 
-    for p in TAG_END_PATHS:
+    for p in id_end_paths:
         if path.endswith(p):
             replace = value
             break
