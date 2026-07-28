@@ -7,10 +7,12 @@ VERSION=$(shell git describe --exact-match 2> /dev/null || \
 TF_ACC_OAPI_PARALLEL=10
 TF_ACC_OAPI_NETS_PARALLEL=3
 TF_ACC_OKS_PARALLEL=1
+TF_ACC_OOS_PARALLEL=10
 
 PYTEST_OAPI_PARALLEL=10
 PYTEST_OAPI_NETS_PARALLEL=6
 PYTEST_OKS_PARALLEL=2
+PYTEST_OOS_PARALLEL=10
 
 # Integration test provider version
 TF_PROVIDER_VERSION=1.0.0-test
@@ -35,6 +37,7 @@ PLUGIN_DIR=tests/terraform.d/plugins/registry.terraform.io/outscale/outscale/$(T
 # Service paths
 OAPI_PKG=./internal/services/oapi
 OKS_PKG=./internal/services/oks
+OKS_PKG=./internal/services/oos
 PROVIDER_PKG=./provider
 
 .PHONY: default
@@ -81,6 +84,10 @@ testacc-oapi-others: fmtcheck test-gen-cert
 testacc-oks: fmtcheck
 	TF_ACC=1 go test $(OKS_PKG) -count 1 -v -parallel $(TF_ACC_OKS_PARALLEL) $(TESTARGS) -timeout 240m -cover
 
+.PHONY: testacc-oos
+testacc-oos: fmtcheck
+	TF_ACC=1 go test $(OOS_PKG) -count 1 -v -parallel $(TF_ACC_OOS_PARALLEL) $(TESTARGS) -timeout 240m -cover
+
 # Provider tests
 .PHONY: testacc-provider
 testacc-provider: fmtcheck
@@ -105,6 +112,10 @@ testacc-oapi-others-frieza:
 .PHONY: testacc-oks-frieza
 testacc-oks-frieza:
 	@"$(CURDIR)/scripts/frieza-wrap.sh" testacc-oks-snapshot testacc-oks
+
+.PHONY: testacc-oos-frieza
+testacc-oos-frieza:
+	@"$(CURDIR)/scripts/frieza-wrap.sh" testacc-oos-snapshot testacc-oos
 
 .PHONY: test-net
 test-net: testacc-oapi-net
@@ -171,7 +182,7 @@ define run-pytest
 endef
 
 .PHONY: test-integration
-test-integration: test-integration-oapi-nets test-integration-oapi test-integration-oks
+test-integration: test-integration-oapi-nets test-integration-oapi test-integration-oks test-integration-oos
 
 .PHONY: test-integration-oapi-nets
 test-integration-oapi-nets: install-test-provider test-gen-cert
@@ -185,6 +196,10 @@ test-integration-oapi: install-test-provider test-gen-cert
 test-integration-oks: install-test-provider test-gen-cert
 	$(call run-pytest,test_provider_oks.py,$(PYTEST_OKS_PARALLEL))
 
+.PHONY: test-integration-oos
+test-integration-oos: install-test-provider test-gen-cert
+	$(call run-pytest,test_provider_oos.py,$(PYTEST_OOS_PARALLEL))
+
 # Frieza-wrapped integration tests
 .PHONY: test-integration-oapi-nets-frieza
 test-integration-oapi-nets-frieza:
@@ -197,6 +212,10 @@ test-integration-oapi-frieza:
 .PHONY: test-integration-oks-frieza
 test-integration-oks-frieza:
 	@"$(CURDIR)/scripts/frieza-wrap.sh" integration-oks-snapshot test-integration-oks
+
+.PHONY: test-integration-oos-frieza
+test-integration-oos-frieza:
+	@"$(CURDIR)/scripts/frieza-wrap.sh" integration-oos-snapshot test-integration-oos
 
 .PHONY: test-integration-single-frieza
 test-integration-single-frieza:
@@ -212,7 +231,7 @@ test-integration-single: install-test-provider test-gen-cert
 		echo "Usage: make test-integration-single TEST=TF-10"; \
 		exit 1; \
 	fi
-	@cd tests && (TF_LOG=DEBUG python3 -m pytest -s -v test_provider_oapi.py -k "$(TEST)_" || TF_LOG=DEBUG python3 -m pytest -s -v test_provider_oks.py -k "$(TEST)_")
+	@cd tests && (TF_LOG=DEBUG python3 -m pytest -s -v test_provider_oapi.py -k "$(TEST)_" || TF_LOG=DEBUG python3 -m pytest -s -v test_provider_oks.py -k "$(TEST)_" || TF_LOG=DEBUG python3 -m pytest -s -v test_provider_oos.py -k "$(TEST)_")
 
 .PHONY: testacc-single-frieza
 testacc-single-frieza:

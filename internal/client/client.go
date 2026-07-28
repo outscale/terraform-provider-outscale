@@ -14,6 +14,7 @@ import (
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/osc-sdk-go/v3/pkg/profile"
 	"github.com/outscale/terraform-provider-outscale/internal/logging"
+	"k8s.io/utils/keymutex"
 )
 
 type OutscaleClient struct {
@@ -27,6 +28,8 @@ type OutscaleClient struct {
 	SecurityGroupBatcher *batch.BatcherByID[osc.SecurityGroup]
 	NetBatcher           *batch.BatcherByID[osc.Net]
 	SubnetBatcher        *batch.BatcherByID[osc.Subnet]
+
+	KeyMutex keymutex.KeyMutex
 }
 
 type Config struct {

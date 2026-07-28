@@ -23,6 +23,8 @@ import (
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 	"github.com/outscale/terraform-provider-outscale/internal/services/oapi"
 	"github.com/outscale/terraform-provider-outscale/internal/services/oks"
+	"github.com/outscale/terraform-provider-outscale/internal/services/oos"
+	"k8s.io/utils/keymutex"
 )
 
 var (
@@ -258,6 +260,8 @@ func (p *FrameworkProvider) Configure(ctx context.Context, req provider.Configur
 	client.SubnetBatcher = batch.NewSubnetBatcherByID(oapi.BatcherInterval, client.OSC)
 	go client.SubnetBatcher.Run(batcherCtx)
 
+	client.KeyMutex = keymutex.NewHashed(0)
+
 	resp.DataSourceData = *client
 	resp.ResourceData = *client
 	resp.EphemeralResourceData = *client
@@ -327,6 +331,8 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		oks.NewResourceProject,
 		oks.NewResourceCluster,
 		oks.NewResourceManifest,
+
+		oos.NewResourceBucket,
 	}
 }
 
