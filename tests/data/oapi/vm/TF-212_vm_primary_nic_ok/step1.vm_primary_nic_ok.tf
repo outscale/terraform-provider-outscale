@@ -27,7 +27,7 @@ resource "outscale_nic" "nic03" {
 }
 
 resource "outscale_keypair" "keypair01" {
-  keypair_name = "terraform-keypair-for-vm"
+  keypair_name = "test-keypair-${random_string.suffix[0].result}"
 }
 
 resource "outscale_vm" "vm01" {

@@ -26,7 +26,10 @@
                         "timeouts": null
                     },
                     "sensitive_attributes": [],
-                    "identity_schema_version": 0
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -249,7 +252,8 @@
                         "outscale_nic.nic02",
                         "outscale_subnet.subnet01",
                         "outscale_subnet.subnet02",
-                        "outscale_vm.vm01"
+                        "outscale_vm.vm01",
+                        "random_string.suffix"
                     ]
                 }
             ]
@@ -485,7 +489,8 @@
                         "outscale_keypair.keypair01",
                         "outscale_net.net01",
                         "outscale_nic.nic01",
-                        "outscale_subnet.subnet01"
+                        "outscale_subnet.subnet01",
+                        "random_string.suffix"
                     ]
                 }
             ]
