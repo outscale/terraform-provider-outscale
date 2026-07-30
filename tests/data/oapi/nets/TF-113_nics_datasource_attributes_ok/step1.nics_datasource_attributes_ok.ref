@@ -152,11 +152,49 @@
                                 "account_id": "##id-1##",
                                 "description": "",
                                 "is_source_dest_checked": true,
+                                "link_nic": [],
+                                "link_public_ip": [],
+                                "mac_address": "########",
+                                "net_id": "##id-4##",
+                                "nic_id": "##id-12##",
+                                "private_dns_name": "########",
+                                "private_ips": [
+                                    {
+                                        "is_primary": true,
+                                        "link_public_ip": [],
+                                        "private_dns_name": "########",
+                                        "private_ip": "########"
+                                    }
+                                ],
+                                "security_groups": [
+                                    {
+                                        "security_group_id": "##id-6##",
+                                        "security_group_name": "########"
+                                    }
+                                ],
+                                "state": "available",
+                                "subnet_id": "##id-13##",
+                                "subregion_name": "us-east-2b",
+                                "tags": [
+                                    {
+                                        "key": "Key:",
+                                        "value": ":value-tags"
+                                    },
+                                    {
+                                        "key": "Key-2",
+                                        "value": "value-tags-2"
+                                    }
+                                ]
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "",
+                                "is_source_dest_checked": true,
                                 "link_nic": [
                                     {
                                         "delete_on_vm_deletion": false,
                                         "device_number": 2,
-                                        "link_nic_id": "##id-12##",
+                                        "link_nic_id": "##id-14##",
                                         "state": "attached",
                                         "vm_account_id": "##id-1##",
                                         "vm_id": "##id-3##"
@@ -165,7 +203,7 @@
                                 "link_public_ip": [],
                                 "mac_address": "########",
                                 "net_id": "##id-4##",
-                                "nic_id": "##id-13##",
+                                "nic_id": "##id-15##",
                                 "private_dns_name": "########",
                                 "private_ips": [
                                     {
@@ -194,44 +232,6 @@
                                     {
                                         "key": "Name",
                                         "value": "Nic-2"
-                                    }
-                                ]
-                            },
-                            {
-                                "account_id": "##id-1##",
-                                "description": "",
-                                "is_source_dest_checked": true,
-                                "link_nic": [],
-                                "link_public_ip": [],
-                                "mac_address": "########",
-                                "net_id": "##id-4##",
-                                "nic_id": "##id-14##",
-                                "private_dns_name": "########",
-                                "private_ips": [
-                                    {
-                                        "is_primary": true,
-                                        "link_public_ip": [],
-                                        "private_dns_name": "########",
-                                        "private_ip": "########"
-                                    }
-                                ],
-                                "security_groups": [
-                                    {
-                                        "security_group_id": "##id-6##",
-                                        "security_group_name": "########"
-                                    }
-                                ],
-                                "state": "available",
-                                "subnet_id": "##id-15##",
-                                "subregion_name": "us-east-2b",
-                                "tags": [
-                                    {
-                                        "key": "Key:",
-                                        "value": ":value-tags"
-                                    },
-                                    {
-                                        "key": "Key-2",
-                                        "value": "value-tags-2"
                                     }
                                 ]
                             }
@@ -257,22 +257,13 @@
                         "nics": [
                             {
                                 "account_id": "##id-1##",
-                                "description": "Primary network interface",
+                                "description": "",
                                 "is_source_dest_checked": true,
-                                "link_nic": [
-                                    {
-                                        "delete_on_vm_deletion": true,
-                                        "device_number": 0,
-                                        "link_nic_id": "##id-9##",
-                                        "state": "attached",
-                                        "vm_account_id": "##id-1##",
-                                        "vm_id": "##id-3##"
-                                    }
-                                ],
+                                "link_nic": [],
                                 "link_public_ip": [],
                                 "mac_address": "########",
                                 "net_id": "##id-4##",
-                                "nic_id": "##id-10##",
+                                "nic_id": "##id-12##",
                                 "private_dns_name": "########",
                                 "private_ips": [
                                     {
@@ -288,10 +279,19 @@
                                         "security_group_name": "########"
                                     }
                                 ],
-                                "state": "in-use",
-                                "subnet_id": "##id-7##",
-                                "subregion_name": "us-east-2a",
-                                "tags": []
+                                "state": "available",
+                                "subnet_id": "##id-13##",
+                                "subregion_name": "us-east-2b",
+                                "tags": [
+                                    {
+                                        "key": "Key:",
+                                        "value": ":value-tags"
+                                    },
+                                    {
+                                        "key": "Key-2",
+                                        "value": "value-tags-2"
+                                    }
+                                ]
                             },
                             {
                                 "account_id": "##id-1##",
@@ -348,13 +348,13 @@
                             },
                             {
                                 "account_id": "##id-1##",
-                                "description": "",
+                                "description": "Primary network interface",
                                 "is_source_dest_checked": true,
                                 "link_nic": [
                                     {
-                                        "delete_on_vm_deletion": false,
-                                        "device_number": 2,
-                                        "link_nic_id": "##id-12##",
+                                        "delete_on_vm_deletion": true,
+                                        "device_number": 0,
+                                        "link_nic_id": "##id-9##",
                                         "state": "attached",
                                         "vm_account_id": "##id-1##",
                                         "vm_id": "##id-3##"
@@ -363,7 +363,45 @@
                                 "link_public_ip": [],
                                 "mac_address": "########",
                                 "net_id": "##id-4##",
-                                "nic_id": "##id-13##",
+                                "nic_id": "##id-10##",
+                                "private_dns_name": "########",
+                                "private_ips": [
+                                    {
+                                        "is_primary": true,
+                                        "link_public_ip": [],
+                                        "private_dns_name": "########",
+                                        "private_ip": "########"
+                                    }
+                                ],
+                                "security_groups": [
+                                    {
+                                        "security_group_id": "##id-6##",
+                                        "security_group_name": "########"
+                                    }
+                                ],
+                                "state": "in-use",
+                                "subnet_id": "##id-7##",
+                                "subregion_name": "us-east-2a",
+                                "tags": []
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "",
+                                "is_source_dest_checked": true,
+                                "link_nic": [
+                                    {
+                                        "delete_on_vm_deletion": false,
+                                        "device_number": 2,
+                                        "link_nic_id": "##id-14##",
+                                        "state": "attached",
+                                        "vm_account_id": "##id-1##",
+                                        "vm_id": "##id-3##"
+                                    }
+                                ],
+                                "link_public_ip": [],
+                                "mac_address": "########",
+                                "net_id": "##id-4##",
+                                "nic_id": "##id-15##",
                                 "private_dns_name": "########",
                                 "private_ips": [
                                     {
@@ -392,44 +430,6 @@
                                     {
                                         "key": "Name",
                                         "value": "Nic-2"
-                                    }
-                                ]
-                            },
-                            {
-                                "account_id": "##id-1##",
-                                "description": "",
-                                "is_source_dest_checked": true,
-                                "link_nic": [],
-                                "link_public_ip": [],
-                                "mac_address": "########",
-                                "net_id": "##id-4##",
-                                "nic_id": "##id-14##",
-                                "private_dns_name": "########",
-                                "private_ips": [
-                                    {
-                                        "is_primary": true,
-                                        "link_public_ip": [],
-                                        "private_dns_name": "########",
-                                        "private_ip": "########"
-                                    }
-                                ],
-                                "security_groups": [
-                                    {
-                                        "security_group_id": "##id-6##",
-                                        "security_group_name": "########"
-                                    }
-                                ],
-                                "state": "available",
-                                "subnet_id": "##id-15##",
-                                "subregion_name": "us-east-2b",
-                                "tags": [
-                                    {
-                                        "key": "Key:",
-                                        "value": ":value-tags"
-                                    },
-                                    {
-                                        "key": "Key-2",
-                                        "value": "value-tags-2"
                                     }
                                 ]
                             }
@@ -455,22 +455,13 @@
                         "nics": [
                             {
                                 "account_id": "##id-1##",
-                                "description": "Primary network interface",
+                                "description": "",
                                 "is_source_dest_checked": true,
-                                "link_nic": [
-                                    {
-                                        "delete_on_vm_deletion": true,
-                                        "device_number": 0,
-                                        "link_nic_id": "##id-9##",
-                                        "state": "attached",
-                                        "vm_account_id": "##id-1##",
-                                        "vm_id": "##id-3##"
-                                    }
-                                ],
+                                "link_nic": [],
                                 "link_public_ip": [],
                                 "mac_address": "########",
                                 "net_id": "##id-4##",
-                                "nic_id": "##id-10##",
+                                "nic_id": "##id-12##",
                                 "private_dns_name": "########",
                                 "private_ips": [
                                     {
@@ -486,10 +477,19 @@
                                         "security_group_name": "########"
                                     }
                                 ],
-                                "state": "in-use",
-                                "subnet_id": "##id-7##",
-                                "subregion_name": "us-east-2a",
-                                "tags": []
+                                "state": "available",
+                                "subnet_id": "##id-13##",
+                                "subregion_name": "us-east-2b",
+                                "tags": [
+                                    {
+                                        "key": "Key:",
+                                        "value": ":value-tags"
+                                    },
+                                    {
+                                        "key": "Key-2",
+                                        "value": "value-tags-2"
+                                    }
+                                ]
                             },
                             {
                                 "account_id": "##id-1##",
@@ -546,13 +546,13 @@
                             },
                             {
                                 "account_id": "##id-1##",
-                                "description": "",
+                                "description": "Primary network interface",
                                 "is_source_dest_checked": true,
                                 "link_nic": [
                                     {
-                                        "delete_on_vm_deletion": false,
-                                        "device_number": 2,
-                                        "link_nic_id": "##id-12##",
+                                        "delete_on_vm_deletion": true,
+                                        "device_number": 0,
+                                        "link_nic_id": "##id-9##",
                                         "state": "attached",
                                         "vm_account_id": "##id-1##",
                                         "vm_id": "##id-3##"
@@ -561,7 +561,45 @@
                                 "link_public_ip": [],
                                 "mac_address": "########",
                                 "net_id": "##id-4##",
-                                "nic_id": "##id-13##",
+                                "nic_id": "##id-10##",
+                                "private_dns_name": "########",
+                                "private_ips": [
+                                    {
+                                        "is_primary": true,
+                                        "link_public_ip": [],
+                                        "private_dns_name": "########",
+                                        "private_ip": "########"
+                                    }
+                                ],
+                                "security_groups": [
+                                    {
+                                        "security_group_id": "##id-6##",
+                                        "security_group_name": "########"
+                                    }
+                                ],
+                                "state": "in-use",
+                                "subnet_id": "##id-7##",
+                                "subregion_name": "us-east-2a",
+                                "tags": []
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "",
+                                "is_source_dest_checked": true,
+                                "link_nic": [
+                                    {
+                                        "delete_on_vm_deletion": false,
+                                        "device_number": 2,
+                                        "link_nic_id": "##id-14##",
+                                        "state": "attached",
+                                        "vm_account_id": "##id-1##",
+                                        "vm_id": "##id-3##"
+                                    }
+                                ],
+                                "link_public_ip": [],
+                                "mac_address": "########",
+                                "net_id": "##id-4##",
+                                "nic_id": "##id-15##",
                                 "private_dns_name": "########",
                                 "private_ips": [
                                     {
@@ -590,44 +628,6 @@
                                     {
                                         "key": "Name",
                                         "value": "Nic-2"
-                                    }
-                                ]
-                            },
-                            {
-                                "account_id": "##id-1##",
-                                "description": "",
-                                "is_source_dest_checked": true,
-                                "link_nic": [],
-                                "link_public_ip": [],
-                                "mac_address": "########",
-                                "net_id": "##id-4##",
-                                "nic_id": "##id-14##",
-                                "private_dns_name": "########",
-                                "private_ips": [
-                                    {
-                                        "is_primary": true,
-                                        "link_public_ip": [],
-                                        "private_dns_name": "########",
-                                        "private_ip": "########"
-                                    }
-                                ],
-                                "security_groups": [
-                                    {
-                                        "security_group_id": "##id-6##",
-                                        "security_group_name": "########"
-                                    }
-                                ],
-                                "state": "available",
-                                "subnet_id": "##id-15##",
-                                "subregion_name": "us-east-2b",
-                                "tags": [
-                                    {
-                                        "key": "Key:",
-                                        "value": ":value-tags"
-                                    },
-                                    {
-                                        "key": "Key-2",
-                                        "value": "value-tags-2"
                                     }
                                 ]
                             }
@@ -659,7 +659,7 @@
                                 "link_public_ip": [],
                                 "mac_address": "########",
                                 "net_id": "##id-4##",
-                                "nic_id": "##id-14##",
+                                "nic_id": "##id-12##",
                                 "private_dns_name": "########",
                                 "private_ips": [
                                     {
@@ -676,7 +676,7 @@
                                     }
                                 ],
                                 "state": "available",
-                                "subnet_id": "##id-15##",
+                                "subnet_id": "##id-13##",
                                 "subregion_name": "us-east-2b",
                                 "tags": [
                                     {
@@ -804,13 +804,13 @@
                     "attributes": {
                         "account_id": "##id-1##",
                         "description": "",
-                        "id": "##id-13##",
+                        "id": "##id-15##",
                         "is_source_dest_checked": true,
                         "link_nic": [],
                         "link_public_ip": [],
                         "mac_address": "########",
                         "net_id": "##id-4##",
-                        "nic_id": "##id-13##",
+                        "nic_id": "##id-15##",
                         "private_dns_name": "########",
                         "private_ip": "########",
                         "private_ips": [
@@ -872,13 +872,13 @@
                     "attributes": {
                         "account_id": "##id-1##",
                         "description": "",
-                        "id": "##id-14##",
+                        "id": "##id-12##",
                         "is_source_dest_checked": true,
                         "link_nic": [],
                         "link_public_ip": [],
                         "mac_address": "########",
                         "net_id": "##id-4##",
-                        "nic_id": "##id-14##",
+                        "nic_id": "##id-12##",
                         "private_dns_name": "########",
                         "private_ip": "########",
                         "private_ips": [
@@ -901,7 +901,7 @@
                             }
                         ],
                         "state": "available",
-                        "subnet_id": "##id-15##",
+                        "subnet_id": "##id-13##",
                         "subregion_name": "us-east-2b",
                         "tags": [
                             {
@@ -972,9 +972,9 @@
                     "attributes": {
                         "delete_on_vm_deletion": false,
                         "device_number": 2,
-                        "id": "##id-12##",
-                        "link_nic_id": "##id-12##",
-                        "nic_id": "##id-13##",
+                        "id": "##id-14##",
+                        "link_nic_id": "##id-14##",
+                        "nic_id": "##id-15##",
                         "request_id": "########",
                         "state": null,
                         "timeouts": null,
@@ -1074,13 +1074,13 @@
                     "schema_version": 0,
                     "attributes": {
                         "available_ips_count": "########",
-                        "id": "##id-15##",
+                        "id": "##id-13##",
                         "ip_range": "10.5.2.0/24",
                         "map_public_ip_on_launch": false,
                         "net_id": "##id-4##",
                         "request_id": "########",
                         "state": "available",
-                        "subnet_id": "##id-15##",
+                        "subnet_id": "##id-13##",
                         "subregion_name": "us-east-2b",
                         "tags": [],
                         "timeouts": null
@@ -1104,7 +1104,7 @@
                     "attributes": {
                         "actions_on_next_boot": [
                             {
-                                "secure_boot": ""
+                                "secure_boot": "none"
                             }
                         ],
                         "admin_password": "",
@@ -1124,7 +1124,7 @@
                                 "device_name": "/dev/sda1"
                             }
                         ],
-                        "boot_mode": "legacy",
+                        "boot_mode": "uefi",
                         "bsu_optimized": false,
                         "client_token": "",
                         "creation_date": "########",
