@@ -32,11 +32,12 @@ var (
 )
 
 const (
-	internetServiceLinkErrCreate    = "Unable to link Internet Service"
-	internetServiceLinkErrDelete    = "Unable to unlink Internet Service"
-	internetServiceLinkErrReadNics  = "Unable to read NICs linked to Internet Service net"
-	internetServiceLinkErrUnmapIPs  = "Unable to unlink Public IPs from Internet Service net NICs"
-	internetServiceLinkErrRetryLink = "Unable to unlink Internet Service after unmapping Public IPs"
+	internetServiceLinkErrCreate     = "Unable to link Internet Service"
+	internetServiceLinkErrDelete     = "Unable to unlink Internet Service"
+	internetServiceLinkErrDeleteNats = "Unable to unlink Internet Service. One or more active NATs are still dependent on the Internet Service net"
+	internetServiceLinkErrReadNics   = "Unable to read NICs linked to Internet Service net"
+	internetServiceLinkErrUnmapIPs   = "Unable to unlink Public IPs from Internet Service net NICs"
+	internetServiceLinkErrRetryLink  = "Unable to unlink Internet Service after unmapping Public IPs"
 )
 
 type InternetServiceLinkModel struct {
@@ -235,10 +236,10 @@ func (r *resourceInternetServiceLink) Delete(ctx context.Context, req resource.D
 		NetId:             data.NetId.ValueString(),
 	}
 
-	var hasIPs, hasLBU bool
-	_, err := r.Client.UnlinkInternetService(ctx, unlinkReq, options.WithRetryTimeout(timeout))
-	if err != nil {
-		oscErr := oapihelpers.GetError(err)
+	var hasIPs, hasLBU, hasNAT bool
+	_, unlinkErr := r.Client.UnlinkInternetService(ctx, unlinkReq, options.WithRetryTimeout(timeout))
+	if unlinkErr != nil {
+		oscErr := oapihelpers.GetError(unlinkErr)
 		switch oscErr.Code {
 		case "1004":
 			// 409 with code 1004 is returned when the Net of the Internet Service has mapped Public IPs
@@ -247,8 +248,11 @@ func (r *resourceInternetServiceLink) Delete(ctx context.Context, req resource.D
 		case "1005":
 			// 409 with code 1005 is returned when the Net of the Internet Service has a Load Balancer
 			hasLBU = true
+		case "1018":
+			// 409 with code 1018 is returned when the Net of the Internet Service has a NAT
+			hasNAT = true
 		default:
-			resp.Diagnostics.AddError(internetServiceLinkErrDelete, err.Error())
+			resp.Diagnostics.AddError(internetServiceLinkErrDelete, unlinkErr.Error())
 			return
 		}
 	}
@@ -298,13 +302,17 @@ func (r *resourceInternetServiceLink) Delete(ctx context.Context, req resource.D
 		}
 	}
 
-	if hasLBU {
+	if hasLBU || hasNAT {
 		// We retry on the 1005 error rather than reading the LBU state to decide.
 		// During a terraform destroy, resources are deleted in parallel, so the LBU on this Net
 		// can be in any transient state (reloading, reconfiguring, deleting, etc.).
 		// Checking only for specific states would miss cases like a concurrent
 		// backend vms unlink putting the LBU in "reloading" state (like in TF-2 integration test)
-		_, err := oapihelpers.RetryOnCodes(ctx, []string{"1005"}, func() (resp any, err error) {
+		//
+		// We also retry on the 1018 error, which is returned when NAT services are still dependent on the Internet Service net.
+		// Checking the linked NATs state is not sufficient, as it may still be in the process of being deleted.
+		// Order of deletion is not deterministic, and the Internet Service Link net may be deleted before the NAT service.
+		_, err := oapihelpers.RetryOnCodes(ctx, []string{"1005", "1018"}, func() (resp any, err error) {
 			return r.Client.UnlinkInternetService(ctx, unlinkReq, options.WithRetryTimeout(timeout))
 		}, timeout)
 		if err != nil {
