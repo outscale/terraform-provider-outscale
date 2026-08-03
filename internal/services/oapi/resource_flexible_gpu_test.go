@@ -11,8 +11,7 @@ import (
 
 func TestAccOthers_FlexibleGpu_Basic(t *testing.T) {
 	resourceName := "outscale_flexible_gpu.fGPU-1"
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
+	testacc.ParallelTest(t, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: testAccFlexibleGpuConfig(utils.GetRegion(), false),
@@ -29,6 +28,23 @@ func TestAccOthers_FlexibleGpu_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "model_name"),
 					resource.TestCheckResourceAttrSet(resourceName, "generation"),
 					resource.TestCheckResourceAttrSet(resourceName, "subregion_name"),
+					resource.TestCheckResourceAttr(resourceName, "delete_on_vm_deletion", "true"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccOthers_FlexibleGpu_AnyAZ(t *testing.T) {
+	resourceName := "outscale_flexible_gpu.fGPU-1"
+
+	testacc.ParallelTest(t, resource.TestCase{
+		Steps: []resource.TestStep{
+			{
+				Config: testAccFlexibleGpuConfigAnyAZ,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resourceName, "model_name"),
+					resource.TestCheckResourceAttrSet(resourceName, "generation"),
 					resource.TestCheckResourceAttr(resourceName, "delete_on_vm_deletion", "true"),
 				),
 			},
@@ -59,3 +75,18 @@ func testAccFlexibleGpuConfig(region string, deletion bool) string {
 		}
 	`, region, deletion)
 }
+
+var testAccFlexibleGpuConfigAnyAZ = `
+resource "outscale_flexible_gpu" "fGPU-1" {
+    model_name             =  "nvidia-p6"
+    generation             =  "v5"
+    delete_on_vm_deletion  =  true
+}
+
+data "outscale_flexible_gpu" "data_fGPU-1" {
+	filter {
+		name = "flexible_gpu_ids"
+		values = [outscale_flexible_gpu.fGPU-1.flexible_gpu_id]
+	}
+}
+`
