@@ -20,7 +20,7 @@
                         "id": "##id-0##",
                         "model_name": "nvidia-p6",
                         "state": "allocated",
-                        "subregion_name": "eu-west-2a",
+                        "subregion_name": "########",
                         "timeouts": null,
                         "vm_id": ""
                     },
