@@ -62,6 +62,7 @@ OAPI_IGNORE_TYPE_ELEMENTS = {
     "outscale_net_peering_acceptation": {"expiration_date"},
     "outscale_server_certificate": {"name"},
     "outscale_vm": {"state", "state_reason"},
+    "outscale_flexible_gpu": {"subregion_name"},
 }
 
 OAPI_ID_PREFIXES = [
