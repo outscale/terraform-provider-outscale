@@ -108,9 +108,11 @@ func (r *fgpuResource) Schema(ctx context.Context, _ resource.SchemaRequest, res
 		},
 		Attributes: map[string]schema.Attribute{
 			"subregion_name": schema.StringAttribute{
-				Required: true,
+				Computed: true,
+				Optional: true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"model_name": schema.StringAttribute{
@@ -161,8 +163,7 @@ func (r *fgpuResource) Create(ctx context.Context, req resource.CreateRequest, r
 	}
 
 	createReq := osc.CreateFlexibleGpuRequest{
-		ModelName:     data.ModelName.ValueString(),
-		SubregionName: data.SubregionName.ValueString(),
+		ModelName: data.ModelName.ValueString(),
 	}
 	if !data.DeleteOnVmDeletion.IsNull() {
 		createReq.DeleteOnVmDeletion = data.DeleteOnVmDeletion.ValueBoolPointer()
@@ -176,11 +177,49 @@ func (r *fgpuResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
-	createResp, err := r.Client.CreateFlexibleGpu(ctx, createReq, options.WithRetryTimeout(timeout))
-	if err != nil {
-		resp.Diagnostics.AddError(flexibleGpuErrCreate, err.Error())
-		return
+	var createResp *osc.CreateFlexibleGpuResponse
+	var err error
+	switch {
+	case fwhelpers.IsSet(data.SubregionName):
+		createReq.SubregionName = data.SubregionName.ValueString()
+		createResp, err = r.Client.CreateFlexibleGpu(ctx, createReq, options.WithRetryTimeout(timeout))
+		if err != nil {
+			resp.Diagnostics.AddError(flexibleGpuErrCreate, err.Error())
+			return
+		}
+	default:
+		subregionResp, err := r.Client.ReadSubregions(ctx, osc.ReadSubregionsRequest{})
+		if err != nil {
+			resp.Diagnostics.AddError(flexibleGpuErrCreate, err.Error())
+			return
+		}
+		azs := ptr.From(subregionResp.Subregions)
+
+		azsNames := make([]string, 0, len(azs))
+		var fgpuErr error
+		for _, az := range azs {
+			name := ptr.From(az.SubregionName)
+			azsNames = append(azsNames, name)
+			createReq.SubregionName = name
+
+			createResp, fgpuErr = r.Client.CreateFlexibleGpu(ctx, createReq, options.WithRetryTimeout(timeout))
+			// 409 with code '10001' means there's no capacity for the requested model in the AZ
+			// We return an error only if the error is not a capacity error
+			if fgpuErr != nil && !osc.HasErrorCode(fgpuErr, []string{"10001"}) {
+				resp.Diagnostics.AddError(flexibleGpuErrCreate, fgpuErr.Error())
+				return
+			}
+			// If no error, the GPU was successfully created
+			if fgpuErr == nil {
+				break
+			}
+		}
+		if fgpuErr != nil {
+			resp.Diagnostics.AddError(flexibleGpuErrCreate, fmt.Sprintf("The requested Flexible GPU model is not available in any of the following subregions: %v. API Error: %v", azsNames, fgpuErr))
+			return
+		}
 	}
+
 	fGpu := ptr.From(createResp.FlexibleGpu)
 
 	data.FlexibleGpuId = to.String(fGpu.FlexibleGpuId)
