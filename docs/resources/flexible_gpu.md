@@ -21,8 +21,7 @@ For more information on this resource actions, see the [API documentation](https
 ```hcl
 resource "outscale_flexible_gpu" "flexible_gpu01" {
     model_name             =  var.model_name
-    generation             =  "v4"
-    subregion_name         =  "${var.region}a"
+    generation             =  "v5"
     delete_on_vm_deletion  =  true
 }
 ```
@@ -34,7 +33,7 @@ The following arguments are supported:
 * `delete_on_vm_deletion` - (Optional) If true, the fGPU is deleted when the VM is terminated.
 * `generation` - (Optional) The processor generation that the fGPU must be compatible with. If not specified, the oldest possible processor generation is selected (as provided by [ReadFlexibleGpuCatalog](https://docs.outscale.com/api#readflexiblegpucatalog) for the specified model of fGPU).
 * `model_name` - (Required) The model of fGPU you want to allocate. For more information, see [About Flexible GPUs](https://docs.outscale.com/en/userguide/About-Flexible-GPUs.html).
-* `subregion_name` - (Required) The Subregion in which you want to create the fGPU.
+* `subregion_name` - (Optional) The Subregion in which you want to create the fGPU. If not specified, the provider tries to create the fGPU in each available Subregion (in alphabetical order) until one succeeds. If no Subregion has sufficient capacity, the resource creation fails with an appropriate error.
 
 ## Attribute Reference
 
