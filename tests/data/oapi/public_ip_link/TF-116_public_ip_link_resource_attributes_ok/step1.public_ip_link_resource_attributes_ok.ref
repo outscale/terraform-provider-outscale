@@ -144,7 +144,7 @@
                     "attributes": {
                         "actions_on_next_boot": [
                             {
-                                "secure_boot": ""
+                                "secure_boot": "none"
                             }
                         ],
                         "admin_password": "",
@@ -164,7 +164,7 @@
                                 "device_name": "/dev/sda1"
                             }
                         ],
-                        "boot_mode": "legacy",
+                        "boot_mode": "uefi",
                         "bsu_optimized": false,
                         "client_token": "",
                         "creation_date": "########",

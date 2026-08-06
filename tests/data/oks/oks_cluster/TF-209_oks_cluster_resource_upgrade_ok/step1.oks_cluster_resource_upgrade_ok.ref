@@ -50,7 +50,7 @@
                             "minor_upgrade_maintenance": null,
                             "minor_upgrade_maintenance_actual": {
                                 "duration_hours": 0,
-                                "enabled": true,
+                                "enabled": false,
                                 "start_hour": 12,
                                 "tz": "UTC",
                                 "week_day": "Tue"
@@ -58,7 +58,7 @@
                             "patch_upgrade_maintenance": null,
                             "patch_upgrade_maintenance_actual": {
                                 "duration_hours": 0,
-                                "enabled": true,
+                                "enabled": false,
                                 "start_hour": 12,
                                 "tz": "UTC",
                                 "week_day": "Tue"
