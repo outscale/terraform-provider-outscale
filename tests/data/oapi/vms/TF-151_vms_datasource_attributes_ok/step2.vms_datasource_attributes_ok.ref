@@ -21,7 +21,7 @@
                             {
                                 "actions_on_next_boot": [
                                     {
-                                        "secure_boot": ""
+                                        "secure_boot": "none"
                                     }
                                 ],
                                 "architecture": "x86_64",
@@ -39,7 +39,7 @@
                                         "device_name": "/dev/sda1"
                                     }
                                 ],
-                                "boot_mode": "legacy",
+                                "boot_mode": "uefi",
                                 "bsu_optimized": false,
                                 "client_token": "",
                                 "creation_date": "########",
@@ -90,7 +90,7 @@
                             {
                                 "actions_on_next_boot": [
                                     {
-                                        "secure_boot": ""
+                                        "secure_boot": "none"
                                     }
                                 ],
                                 "architecture": "x86_64",
@@ -108,7 +108,7 @@
                                         "device_name": "/dev/sda1"
                                     }
                                 ],
-                                "boot_mode": "legacy",
+                                "boot_mode": "uefi",
                                 "bsu_optimized": false,
                                 "client_token": "",
                                 "creation_date": "########",
@@ -179,7 +179,7 @@
                             {
                                 "actions_on_next_boot": [
                                     {
-                                        "secure_boot": ""
+                                        "secure_boot": "none"
                                     }
                                 ],
                                 "architecture": "x86_64",
@@ -197,7 +197,7 @@
                                         "device_name": "/dev/sda1"
                                     }
                                 ],
-                                "boot_mode": "legacy",
+                                "boot_mode": "uefi",
                                 "bsu_optimized": false,
                                 "client_token": "",
                                 "creation_date": "########",
@@ -277,7 +277,7 @@
                             {
                                 "actions_on_next_boot": [
                                     {
-                                        "secure_boot": ""
+                                        "secure_boot": "none"
                                     }
                                 ],
                                 "architecture": "x86_64",
@@ -295,7 +295,7 @@
                                         "device_name": "/dev/sda1"
                                     }
                                 ],
-                                "boot_mode": "legacy",
+                                "boot_mode": "uefi",
                                 "bsu_optimized": false,
                                 "client_token": "",
                                 "creation_date": "########",
@@ -375,7 +375,7 @@
                             {
                                 "actions_on_next_boot": [
                                     {
-                                        "secure_boot": ""
+                                        "secure_boot": "none"
                                     }
                                 ],
                                 "architecture": "x86_64",
@@ -393,7 +393,7 @@
                                         "device_name": "/dev/sda1"
                                     }
                                 ],
-                                "boot_mode": "legacy",
+                                "boot_mode": "uefi",
                                 "bsu_optimized": false,
                                 "client_token": "",
                                 "creation_date": "########",
@@ -527,97 +527,7 @@
                     "attributes": {
                         "actions_on_next_boot": [
                             {
-                                "secure_boot": ""
-                            }
-                        ],
-                        "admin_password": "",
-                        "architecture": "x86_64",
-                        "block_device_mappings": [],
-                        "block_device_mappings_created": [
-                            {
-                                "bsu": [
-                                    {
-                                        "delete_on_vm_deletion": true,
-                                        "link_date": "########",
-                                        "state": "attached",
-                                        "tags": [],
-                                        "volume_id": "##id-6##"
-                                    }
-                                ],
-                                "device_name": "/dev/sda1"
-                            }
-                        ],
-                        "boot_mode": "legacy",
-                        "bsu_optimized": false,
-                        "client_token": "",
-                        "creation_date": "########",
-                        "deletion_protection": false,
-                        "get_admin_password": null,
-                        "hypervisor": "xen",
-                        "id": "##id-8##",
-                        "image_id": "##id-2##",
-                        "is_source_dest_checked": false,
-                        "keypair_name": "########",
-                        "keypair_name_wo": null,
-                        "launch_number": 0,
-                        "nested_virtualization": false,
-                        "net_id": "",
-                        "nics": [],
-                        "os_family": "",
-                        "performance": "highest",
-                        "placement_subregion_name": "eu-west-2a",
-                        "placement_tenancy": "default",
-                        "primary_nic": [],
-                        "private_dns_name": "########",
-                        "private_ip": "########",
-                        "private_ips": null,
-                        "product_codes": [
-                            "0001"
-                        ],
-                        "public_dns_name": "########",
-                        "public_ip": "########",
-                        "request_id": "########",
-                        "reservation_id": "##id-7##",
-                        "root_device_name": "/dev/sda1",
-                        "root_device_type": "ebs",
-                        "secure_boot_action": null,
-                        "security_group_ids": [
-                            "##id-4##"
-                        ],
-                        "security_group_names": "########",
-                        "security_groups": [
-                            {
-                                "security_group_id": "##id-4##",
-                                "security_group_name": "########"
-                            }
-                        ],
-                        "state": "########",
-                        "state_reason": "########",
-                        "subnet_id": "",
-                        "tags": [],
-                        "timeouts": null,
-                        "tpm_enabled": false,
-                        "user_data": "",
-                        "vm_id": "##id-8##",
-                        "vm_initiated_shutdown_behavior": "stop",
-                        "vm_type": "###vm_type###"
-                    },
-                    "sensitive_attributes": [],
-                    "identity_schema_version": 0,
-                    "private": "########",
-                    "dependencies": [
-                        "outscale_keypair.my_keypair",
-                        "outscale_security_group.security_group_TF151",
-                        "random_string.suffix"
-                    ]
-                },
-                {
-                    "index_key": 1,
-                    "schema_version": 0,
-                    "attributes": {
-                        "actions_on_next_boot": [
-                            {
-                                "secure_boot": ""
+                                "secure_boot": "none"
                             }
                         ],
                         "admin_password": "",
@@ -637,7 +547,7 @@
                                 "device_name": "/dev/sda1"
                             }
                         ],
-                        "boot_mode": "legacy",
+                        "boot_mode": "uefi",
                         "bsu_optimized": false,
                         "client_token": "",
                         "creation_date": "########",
@@ -700,6 +610,96 @@
                         "outscale_security_group.security_group_TF151",
                         "random_string.suffix"
                     ]
+                },
+                {
+                    "index_key": 1,
+                    "schema_version": 0,
+                    "attributes": {
+                        "actions_on_next_boot": [
+                            {
+                                "secure_boot": "none"
+                            }
+                        ],
+                        "admin_password": "",
+                        "architecture": "x86_64",
+                        "block_device_mappings": [],
+                        "block_device_mappings_created": [
+                            {
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "link_date": "########",
+                                        "state": "attached",
+                                        "tags": [],
+                                        "volume_id": "##id-6##"
+                                    }
+                                ],
+                                "device_name": "/dev/sda1"
+                            }
+                        ],
+                        "boot_mode": "uefi",
+                        "bsu_optimized": false,
+                        "client_token": "",
+                        "creation_date": "########",
+                        "deletion_protection": false,
+                        "get_admin_password": null,
+                        "hypervisor": "xen",
+                        "id": "##id-8##",
+                        "image_id": "##id-2##",
+                        "is_source_dest_checked": false,
+                        "keypair_name": "########",
+                        "keypair_name_wo": null,
+                        "launch_number": 0,
+                        "nested_virtualization": false,
+                        "net_id": "",
+                        "nics": [],
+                        "os_family": "",
+                        "performance": "highest",
+                        "placement_subregion_name": "eu-west-2a",
+                        "placement_tenancy": "default",
+                        "primary_nic": [],
+                        "private_dns_name": "########",
+                        "private_ip": "########",
+                        "private_ips": null,
+                        "product_codes": [
+                            "0001"
+                        ],
+                        "public_dns_name": "########",
+                        "public_ip": "########",
+                        "request_id": "########",
+                        "reservation_id": "##id-7##",
+                        "root_device_name": "/dev/sda1",
+                        "root_device_type": "ebs",
+                        "secure_boot_action": null,
+                        "security_group_ids": [
+                            "##id-4##"
+                        ],
+                        "security_group_names": "########",
+                        "security_groups": [
+                            {
+                                "security_group_id": "##id-4##",
+                                "security_group_name": "########"
+                            }
+                        ],
+                        "state": "########",
+                        "state_reason": "########",
+                        "subnet_id": "",
+                        "tags": [],
+                        "timeouts": null,
+                        "tpm_enabled": false,
+                        "user_data": "",
+                        "vm_id": "##id-8##",
+                        "vm_initiated_shutdown_behavior": "stop",
+                        "vm_type": "###vm_type###"
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0,
+                    "private": "########",
+                    "dependencies": [
+                        "outscale_keypair.my_keypair",
+                        "outscale_security_group.security_group_TF151",
+                        "random_string.suffix"
+                    ]
                 }
             ]
         },
@@ -714,7 +714,7 @@
                     "attributes": {
                         "actions_on_next_boot": [
                             {
-                                "secure_boot": ""
+                                "secure_boot": "none"
                             }
                         ],
                         "admin_password": "",
@@ -734,7 +734,7 @@
                                 "device_name": "/dev/sda1"
                             }
                         ],
-                        "boot_mode": "legacy",
+                        "boot_mode": "uefi",
                         "bsu_optimized": false,
                         "client_token": "",
                         "creation_date": "########",
