@@ -209,10 +209,29 @@ func oapiVMDescriptionAttributes(set AttributeSetter, vm *osc.Vm) error {
 	if err := set("vm_initiated_shutdown_behavior", vm.VmInitiatedShutdownBehavior); err != nil {
 		return err
 	}
+	if err := set("shutdown_behavior_configuration", flattenShutdownBehaviorConfiguration(vm.ShutdownBehaviorConfiguration)); err != nil {
+		return err
+	}
 	if err := set("tags", FlattenOAPITagsSDK(vm.Tags)); err != nil {
 		return err
 	}
 	return set("vm_type", vm.VmType)
+}
+
+func flattenShutdownBehaviorConfiguration(vmConf *osc.ShutdownBehaviorConfiguration) []map[string]any {
+	if vmConf == nil {
+		return nil
+	}
+
+	conf := map[string]any{}
+	if vmConf.GuestAction != nil {
+		conf["guest_action"] = string(*vmConf.GuestAction)
+	}
+	if vmConf.HostAction != nil {
+		conf["host_action"] = string(*vmConf.HostAction)
+	}
+
+	return []map[string]any{conf}
 }
 
 func getOscAPIVMBlockDeviceMapping(busTagsMaps map[string]any, blockDeviceMappings []osc.BlockDeviceMappingCreated) (blockDeviceMapping []map[string]any) {
@@ -545,6 +564,22 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 			Type:     schema.TypeList,
 			Computed: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
+		},
+		"shutdown_behavior_configuration": {
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"guest_action": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"host_action": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+				},
+			},
 		},
 		"launch_number": {
 			Type:     schema.TypeInt,

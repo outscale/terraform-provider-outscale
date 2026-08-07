@@ -8,7 +8,7 @@
         {
             "mode": "managed",
             "type": "outscale_vm",
-            "name": "outscale_vm_TF206",
+            "name": "outscale_vm",
             "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
             "instances": [
                 {
@@ -53,7 +53,7 @@
                         "net_id": "",
                         "nics": [],
                         "os_family": "",
-                        "performance": "high",
+                        "performance": "highest",
                         "placement_subregion_name": "eu-west-2a",
                         "placement_tenancy": "default",
                         "primary_nic": [],
@@ -69,7 +69,7 @@
                         "reservation_id": "##id-3##",
                         "root_device_name": "/dev/sda1",
                         "root_device_type": "ebs",
-                        "secure_boot_action": "enable",
+                        "secure_boot_action": null,
                         "security_group_ids": [
                             "##id-4##"
                         ],
@@ -82,25 +82,20 @@
                         ],
                         "shutdown_behavior_configuration": [
                             {
-                                "guest_action": "stop",
-                                "host_action": "stop"
+                                "guest_action": "terminate",
+                                "host_action": "restart"
                             }
                         ],
                         "state": "########",
                         "state_reason": "########",
                         "subnet_id": "",
-                        "tags": [
-                            {
-                                "key": "name",
-                                "value": "VM_TF206"
-                            }
-                        ],
+                        "tags": [],
                         "timeouts": null,
                         "tpm_enabled": false,
                         "user_data": "",
                         "vm_id": "##id-1##",
-                        "vm_initiated_shutdown_behavior": "stop",
-                        "vm_type": "tinav5.c3r3"
+                        "vm_initiated_shutdown_behavior": "terminate",
+                        "vm_type": "###vm_type###"
                     },
                     "sensitive_attributes": [],
                     "identity_schema_version": 0,

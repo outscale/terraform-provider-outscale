@@ -311,16 +311,16 @@
                                 ],
                                 "secondary_private_ip_count": 0,
                                 "security_group_ids": [
-                                    "##id-2##",
-                                    "##id-12##"
+                                    "##id-12##",
+                                    "##id-2##"
                                 ],
                                 "security_groups": [
                                     {
-                                        "security_group_id": "##id-2##",
+                                        "security_group_id": "##id-12##",
                                         "security_group_name": "########"
                                     },
                                     {
-                                        "security_group_id": "##id-12##",
+                                        "security_group_id": "##id-2##",
                                         "security_group_name": "########"
                                     }
                                 ],
@@ -362,16 +362,16 @@
                                 ],
                                 "secondary_private_ip_count": 0,
                                 "security_group_ids": [
-                                    "##id-2##",
-                                    "##id-12##"
+                                    "##id-12##",
+                                    "##id-2##"
                                 ],
                                 "security_groups": [
                                     {
-                                        "security_group_id": "##id-2##",
+                                        "security_group_id": "##id-12##",
                                         "security_group_name": "########"
                                     },
                                     {
-                                        "security_group_id": "##id-12##",
+                                        "security_group_id": "##id-2##",
                                         "security_group_name": "########"
                                     }
                                 ],
@@ -400,6 +400,12 @@
                             {
                                 "security_group_id": "##id-2##",
                                 "security_group_name": "########"
+                            }
+                        ],
+                        "shutdown_behavior_configuration": [
+                            {
+                                "guest_action": "stop",
+                                "host_action": "stop"
                             }
                         ],
                         "state": "########",

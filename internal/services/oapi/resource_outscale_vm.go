@@ -730,9 +730,33 @@ func ResourceOutscaleVM() *schema.Resource {
 				Optional: true,
 			},
 			"vm_initiated_shutdown_behavior": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:       schema.TypeString,
+				Optional:   true,
+				Computed:   true,
+				Deprecated: "Configure `shutdown_behavior_configuration` instead. This attribute will be removed in the next major version of the provider.",
+			},
+			"shutdown_behavior_configuration": {
+				Type:          schema.TypeList,
+				Optional:      true,
+				Computed:      true,
+				MaxItems:      1,
+				ConflictsWith: []string{"vm_initiated_shutdown_behavior"},
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"guest_action": {
+							Type:         schema.TypeString,
+							ValidateFunc: validation.StringInSlice(osc.ShutdownBehaviorConfigurationGuestAction("").Values(), false),
+							Computed:     true,
+							Optional:     true,
+						},
+						"host_action": {
+							Type:         schema.TypeString,
+							ValidateFunc: validation.StringInSlice(osc.ShutdownBehaviorConfigurationHostAction("").Values(), false),
+							Computed:     true,
+							Optional:     true,
+						},
+					},
+				},
 			},
 			"vm_type": {
 				Type:     schema.TypeString,
@@ -1123,6 +1147,9 @@ func resourceOAPIVMUpdate(ctx context.Context, d *schema.ResourceData, meta any)
 	if d.HasChange("vm_initiated_shutdown_behavior") && !d.IsNewResource() {
 		updateRequest.VmInitiatedShutdownBehavior = new(d.Get("vm_initiated_shutdown_behavior").(string))
 	}
+	if d.HasChange("shutdown_behavior_configuration") && !d.IsNewResource() {
+		updateRequest.ShutdownBehaviorConfiguration = expandShutdownBehaviorConfiguration(d.Get("shutdown_behavior_configuration"))
+	}
 
 	if d.HasChange("is_source_dest_checked") && !d.IsNewResource() {
 		updateRequest.IsSourceDestChecked = new(d.Get("is_source_dest_checked").(bool))
@@ -1424,6 +1451,9 @@ func buildCreateVmsRequest(d *schema.ResourceData) (osc.CreateVmsRequest, []map[
 	if v, ok := d.GetOk("vm_initiated_shutdown_behavior"); ok && v != "" {
 		request.VmInitiatedShutdownBehavior = new(v.(string))
 	}
+	if v, ok := d.GetOk("shutdown_behavior_configuration"); ok {
+		request.ShutdownBehaviorConfiguration = expandShutdownBehaviorConfiguration(v)
+	}
 
 	if v := d.Get("performance").(string); v != "" {
 		request.Performance = new(osc.CreateVmsRequestPerformance(v))
@@ -1454,6 +1484,30 @@ func buildCreateVmsRequest(d *schema.ResourceData) (osc.CreateVmsRequest, []map[
 	}
 
 	return request, bsuMapsTags, nil
+}
+
+func expandShutdownBehaviorConfiguration(v any) *osc.ShutdownBehaviorConfiguration {
+	configurations, ok := v.([]any)
+	if !ok || len(configurations) == 0 {
+		return nil
+	}
+
+	configuration, ok := configurations[0].(map[string]any)
+	if !ok {
+		return nil
+	}
+
+	result := &osc.ShutdownBehaviorConfiguration{}
+	if action, ok := configuration["guest_action"].(string); ok && action != "" {
+		guestAction := osc.ShutdownBehaviorConfigurationGuestAction(action)
+		result.GuestAction = &guestAction
+	}
+	if action, ok := configuration["host_action"].(string); ok && action != "" {
+		hostAction := osc.ShutdownBehaviorConfigurationHostAction(action)
+		result.HostAction = &hostAction
+	}
+
+	return result
 }
 
 func expandBlockDeviceOApiMappings(d *schema.ResourceData) ([]osc.BlockDeviceMappingVmCreation, []map[string]any, error) {
