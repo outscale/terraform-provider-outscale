@@ -36,7 +36,7 @@ The following attributes are exported:
 
 * `backend_vm_health` - Information about the health of one or more backend VMs.
     * `description` - The description of the state of the backend VM.
-    * `state` - The state of the backend VM (`InService` \| `OutOfService` \| `Unknown`).
-    * `state_reason` - Information about the cause of `OutOfService` VMs.<br />
+    * `state` - The state of the backend VM (`UP` \| `DOWN` \| `UNKNOWN`).
+    * `state_reason` - Information about the cause of `DOWN` VMs.<br />
 Specifically, whether the cause is Elastic Load Balancing or the VM (`ELB` \| `Instance` \| `N/A`).
     * `vm_id` - The ID of the backend VM.

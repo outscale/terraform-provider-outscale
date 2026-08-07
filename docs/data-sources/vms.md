@@ -173,7 +173,7 @@ The following attributes are exported:
         * `security_group_id` - The ID of the security group.
         * `security_group_name` - The name of the security group.
     * `state` - The state of the VM (`pending` \| `running` \| `stopping` \| `stopped` \| `shutting-down` \| `terminated` \| `quarantine`).
-    * `state_reason` - The reason explaining the current state of the VM.
+    * `state_reason` - The reason explaining the current state of the VM. For more information, see [Creating VMs > VM State Reference](https://docs.outscale.com/en/userguide/Creating-VMs.html#_vm_state_reference_statereason_2).
     * `subnet_id` - The ID of the Subnet for the VM.
     * `tags` - One or more tags associated with the VM.
         * `key` - The key of the tag, between 1 and 255 characters.
