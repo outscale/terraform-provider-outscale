@@ -312,9 +312,9 @@
                         "backend_ips": "########",
                         "backend_vm_ids": [
                             "##id-2##",
-                            "##id-0##",
+                            "##id-1##",
                             "##id-3##",
-                            "##id-1##"
+                            "##id-0##"
                         ],
                         "id": "##id-4##",
                         "load_balancer_name": "########",
@@ -508,6 +508,12 @@
                                 "security_group_name": "########"
                             }
                         ],
+                        "shutdown_behavior_configuration": [
+                            {
+                                "guest_action": "stop",
+                                "host_action": "stop"
+                            }
+                        ],
                         "state": "########",
                         "state_reason": "########",
                         "subnet_id": "",
@@ -574,7 +580,7 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-1##",
+                        "id": "##id-2##",
                         "image_id": "##id-15##",
                         "is_source_dest_checked": false,
                         "keypair_name": "########",
@@ -611,6 +617,12 @@
                                 "security_group_name": "########"
                             }
                         ],
+                        "shutdown_behavior_configuration": [
+                            {
+                                "guest_action": "stop",
+                                "host_action": "stop"
+                            }
+                        ],
                         "state": "########",
                         "state_reason": "########",
                         "subnet_id": "",
@@ -623,7 +635,7 @@
                         "timeouts": null,
                         "tpm_enabled": false,
                         "user_data": "",
-                        "vm_id": "##id-1##",
+                        "vm_id": "##id-2##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
@@ -669,7 +681,7 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-0##",
+                        "id": "##id-3##",
                         "image_id": "##id-15##",
                         "is_source_dest_checked": false,
                         "keypair_name": "########",
@@ -706,6 +718,12 @@
                                 "security_group_name": "########"
                             }
                         ],
+                        "shutdown_behavior_configuration": [
+                            {
+                                "guest_action": "stop",
+                                "host_action": "stop"
+                            }
+                        ],
                         "state": "########",
                         "state_reason": "########",
                         "subnet_id": "",
@@ -718,7 +736,7 @@
                         "timeouts": null,
                         "tpm_enabled": false,
                         "user_data": "",
-                        "vm_id": "##id-0##",
+                        "vm_id": "##id-3##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
@@ -764,7 +782,7 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-2##",
+                        "id": "##id-0##",
                         "image_id": "##id-15##",
                         "is_source_dest_checked": false,
                         "keypair_name": "########",
@@ -801,6 +819,12 @@
                                 "security_group_name": "########"
                             }
                         ],
+                        "shutdown_behavior_configuration": [
+                            {
+                                "guest_action": "stop",
+                                "host_action": "stop"
+                            }
+                        ],
                         "state": "########",
                         "state_reason": "########",
                         "subnet_id": "",
@@ -813,7 +837,7 @@
                         "timeouts": null,
                         "tpm_enabled": false,
                         "user_data": "",
-                        "vm_id": "##id-2##",
+                        "vm_id": "##id-0##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
@@ -859,7 +883,7 @@
                         "deletion_protection": false,
                         "get_admin_password": null,
                         "hypervisor": "xen",
-                        "id": "##id-3##",
+                        "id": "##id-1##",
                         "image_id": "##id-15##",
                         "is_source_dest_checked": false,
                         "keypair_name": "########",
@@ -896,6 +920,12 @@
                                 "security_group_name": "########"
                             }
                         ],
+                        "shutdown_behavior_configuration": [
+                            {
+                                "guest_action": "stop",
+                                "host_action": "stop"
+                            }
+                        ],
                         "state": "########",
                         "state_reason": "########",
                         "subnet_id": "",
@@ -908,7 +938,7 @@
                         "timeouts": null,
                         "tpm_enabled": false,
                         "user_data": "",
-                        "vm_id": "##id-3##",
+                        "vm_id": "##id-1##",
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },

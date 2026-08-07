@@ -195,6 +195,32 @@ func TestAccVM_Behavior_Basic(t *testing.T) {
 	})
 }
 
+func TestAccVM_ShutdownBehaviorConfiguration(t *testing.T) {
+	resourceName := "outscale_vm.shutdown_behavior"
+	sgName := acctest.RandomWithPrefix("testacc-sg")
+
+	testacc.ParallelTest(t, resource.TestCase{
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckOutscaleVMShutdownBehaviorConfiguration("stop", "stop", sgName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "shutdown_behavior_configuration.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "shutdown_behavior_configuration.0.guest_action", "stop"),
+					resource.TestCheckResourceAttr(resourceName, "shutdown_behavior_configuration.0.host_action", "stop"),
+				),
+			},
+			{
+				Config: testAccCheckOutscaleVMShutdownBehaviorConfiguration("terminate", "restart", sgName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "shutdown_behavior_configuration.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "shutdown_behavior_configuration.0.guest_action", "terminate"),
+					resource.TestCheckResourceAttr(resourceName, "shutdown_behavior_configuration.0.host_action", "restart"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccVM_importBasic(t *testing.T) {
 	var (
 		server       osc.Vm
@@ -1087,4 +1113,28 @@ func testAccCheckOutscaleVMBehaviorConfigBasic(omi, vmType, region, keypair, per
 
 			lifecycle { ignore_changes = [state] }
 			}`, omi, vmType, region, keypair, performance, vmBehavior, sgName)
+}
+
+func testAccCheckOutscaleVMShutdownBehaviorConfiguration(guestAction, hostAction, sgName string) string {
+	return fmt.Sprintf(`
+		resource "outscale_security_group" "sg_shutdown_behavior_vm" {
+			description         = "testacc-shutdown-behavior-configuration"
+			security_group_name = %q
+		}
+
+		resource "outscale_vm" "shutdown_behavior" {
+			image_id                 = var.image_id
+			vm_type                  = var.vm_type
+			keypair_name              = var.keypair_name
+			placement_subregion_name  = "${var.region}a"
+			performance               = "highest"
+			security_group_ids        = [outscale_security_group.sg_shutdown_behavior_vm.id]
+
+			shutdown_behavior_configuration {
+				guest_action = %q
+				host_action  = %q
+			}
+
+			lifecycle { ignore_changes = [state] }
+		}`, sgName, guestAction, hostAction)
 }

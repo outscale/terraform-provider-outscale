@@ -489,6 +489,12 @@
                                 "security_group_name": "########"
                             }
                         ],
+                        "shutdown_behavior_configuration": [
+                            {
+                                "guest_action": "stop",
+                                "host_action": "stop"
+                            }
+                        ],
                         "state": "########",
                         "state_reason": "########",
                         "subnet_id": "",
@@ -589,6 +595,12 @@
                             {
                                 "security_group_id": "##id-15##",
                                 "security_group_name": "########"
+                            }
+                        ],
+                        "shutdown_behavior_configuration": [
+                            {
+                                "guest_action": "stop",
+                                "host_action": "stop"
                             }
                         ],
                         "state": "########",
@@ -773,6 +785,12 @@
                             {
                                 "security_group_id": "##id-14##",
                                 "security_group_name": "########"
+                            }
+                        ],
+                        "shutdown_behavior_configuration": [
+                            {
+                                "guest_action": "stop",
+                                "host_action": "stop"
                             }
                         ],
                         "state": "########",
