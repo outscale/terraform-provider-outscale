@@ -167,6 +167,9 @@ The following attributes are exported:
 * `security_groups` - One or more security groups associated with the VM.
     * `security_group_id` - The ID of the security group.
     * `security_group_name` - The name of the security group.
+* `shutdown_behavior_configuration` - Information about the actions performed by the orchestrator when the VM shuts down.
+    * `guest_action` - The action performed by the orchestrator when the VM is shut down from the guest operating system. Possible values: `stop` | `terminate`.
+    * `host_action` - The action performed by the orchestrator when the VM is shut down due to a host infrastructure failure. Possible values: `restart` | `stop`.
 * `state_reason` - The reason explaining the current state of the VM. For more information, see [Creating VMs > VM State Reference](https://docs.outscale.com/en/userguide/Creating-VMs.html#_vm_state_reference_statereason_2).
 * `state` - The state of the VM (`pending` \| `running` \| `stopping` \| `stopped` \| `shutting-down` \| `terminated` \| `quarantine`).
 * `subnet_id` - The ID of the Subnet for the VM.
@@ -176,5 +179,5 @@ The following attributes are exported:
 * `tpm_enabled` - If true, a virtual Trusted Platform Module (vTPM) is enabled on the VM. If false, it is not.<br />The default behavior for `tpm_enabled` varies depending on the source OMI of the VM.<br />If the `tpm_mandatory` attribute of the source OMI is true, a vTPM has to be attached to the VM and it will be created by default. Setting `tpm_enabled` to false will cause the creation request to fail.<br />If the `tpm_mandatory` attribute of the source OMI is false, only setting `tpm_enabled` to true will create and attach a vTPM to the VM.
 * `user_data` - The Base64-encoded MIME user data.
 * `vm_id` - The ID of the VM.
-* `vm_initiated_shutdown_behavior` - The VM behavior when you stop it. If set to `stop`, the VM stops. If set to `restart`, the VM stops then automatically restarts. If set to `terminate`, the VM stops and is deleted.
+* `vm_initiated_shutdown_behavior` - The VM behavior when you stop it. If set to `stop`, the VM stops. If set to `restart`, the VM stops then automatically restarts. If set to `terminate`, the VM stops and is deleted. Important: This attribute is deprecated in favor of `shutdown_behavior_configuration` and will be removed in the next major version of the provider.
 * `vm_type` - The type of VM. For more information, see [VM Types](https://docs.outscale.com/en/userguide/VM-Types.html).
