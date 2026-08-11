@@ -33,7 +33,6 @@ func Provider() *schema.Provider {
 			"region": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Deprecated:  deprecatedMsg("region"),
 				Description: "The Region for API operations.",
 			},
 			"endpoints": {
