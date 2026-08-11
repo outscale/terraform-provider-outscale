@@ -162,9 +162,8 @@ func (p *FrameworkProvider) Schema(ctx context.Context, req provider.SchemaReque
 				Description: "The Secret Key ID for API operations.",
 			},
 			"region": schema.StringAttribute{
-				Optional:           true,
-				DeprecationMessage: deprecatedMsg("region"),
-				Description:        "The Region for API operations.",
+				Optional:    true,
+				Description: "The Region for API operations.",
 			},
 			"config_file": schema.StringAttribute{
 				Optional:    true,
@@ -391,6 +390,8 @@ func (data *ProviderModel) buildOSCConfig(ctx context.Context) (config client.Co
 	if fwhelpers.IsSet(data.Insecure) {
 		config.Insecure = data.Insecure.ValueBool()
 	}
+
+	// fallback to global attributes
 	if config.Region == "" && fwhelpers.IsSet(data.Region) {
 		config.Region = data.Region.ValueString()
 	}
@@ -415,6 +416,8 @@ func (data *ProviderModel) buildOKSConfig(ctx context.Context) (config client.Co
 	if config.OKSEndpoint == "" && len(data.Endpoints) > 0 && fwhelpers.IsSet(data.Endpoints[0].OKS) {
 		config.OKSEndpoint = data.Endpoints[0].OKS.ValueString()
 	}
+
+	// fallback to global attributes
 	if config.Region == "" && fwhelpers.IsSet(data.Region) {
 		config.Region = data.Region.ValueString()
 	}
