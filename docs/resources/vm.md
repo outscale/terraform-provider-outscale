@@ -262,6 +262,9 @@ The following arguments are supported:
 * `secure_boot_action` - (Optional) One action to perform on the next boot of the VM (`enable` | `disable` | `setup-mode` |`none`).<br /> For more information, see [About Secure Boot](https://docs.outscale.com/en/userguide/About-Secure-Boot.html#_secure_boot_actions).
 * `security_group_ids` - (Optional) One or more IDs of security group for the VMs. You must specify at least one of the following parameters: `security_group_ids` or `security_group_names`.
 * `security_group_names` - (Optional) One or more names of security groups for the VMs. You must specify at least one of the following parameters: `security_group_ids` or `security_group_names`.
+* `shutdown_behavior_configuration` - (Optional) Information about the actions performed by the orchestrator when the VM shuts down.
+    * `guest_action` - (Optional) The action performed by the orchestrator when the VM is shut down from the guest operating system. By default, `stop`. Possible values: `stop` | `terminate`.
+    * `host_action` - (Optional) The action performed by the orchestrator when the VM is shut down due to a host infrastructure failure. By default, `restart`. Possible values: `restart` | `stop`.
 * `state` - The state of the VM (`running` | `stopped`). If set to `stopped`, the VM is stopped regardless of the value of the `vm_initiated_shutdown_behavior` argument.
 * `subnet_id` - (Optional) The ID of the Subnet in which you want to create the VM.
 * `tags` - (Optional) A tag to add to this resource. You can specify this argument several times.
@@ -269,7 +272,7 @@ The following arguments are supported:
     * `value` - (Required) The value of the tag, between 0 and 255 characters.
 * `tpm_enabled` - (Optional) If true, a virtual Trusted Platform Module (vTPM) is enabled on the VM. If false, it is not.<br />The default behavior for `tpm_enabled` varies depending on the source OMI of the VM.<br />If the `tpm_mandatory` attribute of the source OMI is true, a vTPM has to be attached to the VM and it will be created by default. Setting `tpm_enabled` to false will cause the creation request to fail.<br />If the `tpm_mandatory` attribute of the source OMI is false, only setting `tpm_enabled` to true will create and attach a vTPM to the VM.
 * `user_data` - (Optional) Data or script used to add a specific configuration to the VM. It must be Base64-encoded, either directly or using the [base64encode](https://www.terraform.io/docs/configuration/functions/base64encode.html) Terraform function. For multiline strings, use [heredoc syntax](https://www.terraform.io/docs/configuration/expressions.html#string-literals). Updating this parameter will trigger a stop/start of the VM.
-* `vm_initiated_shutdown_behavior` - (Optional) The VM behavior when you stop it. By default or if set to `stop`, the VM stops. If set to `restart`, the VM stops then automatically restarts. If set to `terminate`, the VM stops and is terminated.
+* `vm_initiated_shutdown_behavior` - (Optional) The VM behavior when you stop it. By default or if set to `stop`, the VM stops. If set to `restart`, the VM stops then automatically restarts. If set to `terminate`, the VM stops and is terminated. Important: This argument is deprecated in favor of `shutdown_behavior_configuration` and will be removed in the next major version of the provider.
 * `vm_type` - (Optional) The type of VM (`t2.small` by default). Updating this parameter will trigger a stop/start of the VM.<br /> For more information, see [VM Types](https://docs.outscale.com/en/userguide/VM-Types.html).
 
 ## NIC Management
@@ -509,6 +512,9 @@ The following attributes are exported:
 * `security_groups` - One or more security groups associated with the VM.
     * `security_group_id` - The ID of the security group.
     * `security_group_name` - The name of the security group.
+* `shutdown_behavior_configuration` - Information about the actions performed by the orchestrator when the VM shuts down.
+    * `guest_action` - The action performed by the orchestrator when the VM is shut down from the guest operating system. Possible values: `stop` | `terminate`.
+    * `host_action` - The action performed by the orchestrator when the VM is shut down due to a host infrastructure failure. Possible values: `restart` | `stop`.
 * `state_reason` - The reason explaining the current state of the VM. For more information, see [Creating VMs > VM State Reference](https://docs.outscale.com/en/userguide/Creating-VMs.html#_vm_state_reference_statereason_2).
 * `state` - The state of the VM (`pending` \| `running` \| `stopping` \| `stopped` \| `shutting-down` \| `terminated` \| `quarantine`).
 * `subnet_id` - The ID of the Subnet for the VM.
@@ -518,7 +524,7 @@ The following attributes are exported:
 * `tpm_enabled` - If true, a virtual Trusted Platform Module (vTPM) is enabled on the VM. If false, it is not.<br />The default behavior for `tpm_enabled` varies depending on the source OMI of the VM.<br />If the `tpm_mandatory` attribute of the source OMI is true, a vTPM has to be attached to the VM and it will be created by default. Setting `tpm_enabled` to false will cause the creation request to fail.<br />If the `tpm_mandatory` attribute of the source OMI is false, only setting `tpm_enabled` to true will create and attach a vTPM to the VM.
 * `user_data` - The Base64-encoded MIME user data.
 * `vm_id` - The ID of the VM.
-* `vm_initiated_shutdown_behavior` - The VM behavior when you stop it. If set to `stop`, the VM stops. If set to `restart`, the VM stops then automatically restarts. If set to `terminate`, the VM stops and is deleted.
+* `vm_initiated_shutdown_behavior` - The VM behavior when you stop it. If set to `stop`, the VM stops. If set to `restart`, the VM stops then automatically restarts. If set to `terminate`, the VM stops and is deleted. Important: This attribute is deprecated in favor of `shutdown_behavior_configuration` and will be removed in the next major version of the provider.
 * `vm_type` - The type of VM. For more information, see [VM Types](https://docs.outscale.com/en/userguide/VM-Types.html).
 
 ## Timeouts
