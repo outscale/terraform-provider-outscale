@@ -56,11 +56,7 @@ func (cfg Config) ToOSCOption() profile.Option {
 // NewProfile merges profile values in the following order:
 // provider config -> selected profile file -> environment values for any fields that are still unset
 func (cfg Config) NewProfile(configOption profile.Option) (*profile.Profile, error) {
-	opts := []profile.Option{configOption, profile.MergeWith(profile.FromEnv())}
-
-	if cfg.Profile != "" || cfg.ConfigFile != "" {
-		opts = []profile.Option{configOption, profile.MergeWith(profile.FromFile(cfg.Profile, cfg.ConfigFile)), profile.MergeWith(profile.FromEnv())}
-	}
+	opts := []profile.Option{configOption, profile.MergeWith(profile.FromFile(cfg.Profile, cfg.ConfigFile)), profile.MergeWith(profile.FromEnv())}
 
 	return profile.New(opts...)
 }

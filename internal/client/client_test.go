@@ -175,6 +175,97 @@ func TestOSCApiEndpoint(t *testing.T) {
 	})
 }
 
+func TestProfileEnvSet(t *testing.T) {
+	clearProfileEnv(t)
+
+	configPath := filepath.Join(t.TempDir(), "config.json")
+	configFile := profile.ConfigFile{
+		Path: configPath,
+		Profiles: map[string]profile.Profile{
+			"default": {
+				AccessKey:      "default-ak",
+				SecretKey:      "default-sk",
+				Region:         "default-region",
+				X509ClientCert: "/default/cert.pem",
+				X509ClientKey:  "/default/key.pem",
+				Endpoints: profile.Endpoint{
+					API: "https://default.api",
+				},
+			},
+			"main": {
+				AccessKey: "main-ak",
+				SecretKey: "main-sk",
+				Region:    "main-region",
+				Endpoints: profile.Endpoint{
+					API: "https://main.api",
+				},
+			},
+		},
+	}
+	require.NoError(t, configFile.Save())
+
+	t.Setenv("OSC_ACCESS_KEY", "env-ak")
+	t.Setenv("OSC_SECRET_KEY", "env-sk")
+	t.Setenv("OSC_REGION", "env-region")
+	t.Setenv("OSC_ENDPOINT_API", "https://env.api")
+	t.Setenv("OSC_PROFILE", "main")
+	t.Setenv("OSC_CONFIG_FILE", configPath)
+
+	cfg := client.Config{
+		AccessKey: "config-ak",
+	}
+
+	p, err := cfg.NewProfile(cfg.ToOSCOption())
+	require.NoError(t, err)
+
+	assert.Equal(t, "config-ak", p.AccessKey, "access key")
+	assert.Equal(t, "main-sk", p.SecretKey, "secret key")
+	assert.Equal(t, "main-region", p.Region, "region")
+	assert.Equal(t, "https://main.api", p.Endpoints.API, "api endpoint")
+	assert.Equal(t, "https", p.Protocol, "protocol")
+}
+
+func TestProfileEnvUnset(t *testing.T) {
+	clearProfileEnv(t)
+
+	configPath := filepath.Join(t.TempDir(), "config.json")
+	configFile := profile.ConfigFile{
+		Path: configPath,
+		Profiles: map[string]profile.Profile{
+			"default": {
+				AccessKey:      "default-ak",
+				SecretKey:      "default-sk",
+				Region:         "default-region",
+				X509ClientCert: "/default/cert.pem",
+				X509ClientKey:  "/default/key.pem",
+				Endpoints: profile.Endpoint{
+					API: "https://default.api",
+				},
+			},
+		},
+	}
+	require.NoError(t, configFile.Save())
+
+	t.Setenv("OSC_ACCESS_KEY", "env-ak")
+	t.Setenv("OSC_SECRET_KEY", "env-sk")
+	t.Setenv("OSC_REGION", "env-region")
+	t.Setenv("OSC_ENDPOINT_API", "https://env.api")
+	t.Setenv("OSC_CONFIG_FILE", configPath)
+
+	cfg := client.Config{
+		AccessKey: "config-ak",
+	}
+
+	p, err := cfg.NewProfile(cfg.ToOSCOption())
+	require.NoError(t, err)
+
+	assert.Equal(t, "config-ak", p.AccessKey, "access key")
+	assert.Equal(t, "default-sk", p.SecretKey, "secret key")
+	assert.Equal(t, "default-region", p.Region, "region")
+	assert.Equal(t, "https://default.api", p.Endpoints.API, "api endpoint")
+	assert.Equal(t, "https", p.Protocol, "protocol")
+}
+
 func clearProfileEnv(t *testing.T) {
 	t.Helper()
 
