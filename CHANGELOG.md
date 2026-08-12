@@ -38,6 +38,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### 🌱 Others
 - (nothing yet)
 
+## [1.8.0] - 2026-08-12
+
+### ✨ Added
+* ✨ feat(flexible_gpu): find first available AZ at creation by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/809
+* ✨ feat(vm): shutdown_behavior_configuration attribute by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/812
+
+### 🛠️ Changed / Refactoring
+* ♻️  refactor(load_balancer): migrate from SDKv2 to Plugin Framework by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/802
+
+### 📝 Documentation
+* 📝 docs: Update fGPU subregion_name behavior by @andrepasteur in https://github.com/outscale/terraform-provider-outscale/pull/813
+* 📝 docs: Update some attribute descriptions following oAPI 1.42.0 upgrade by @andrepasteur in https://github.com/outscale/terraform-provider-outscale/pull/814
+* 📝 docs: Add shutdown_behavior_configuration-to-vm by @andrepasteur in https://github.com/outscale/terraform-provider-outscale/pull/815
+
+### 🐛 Fixed
+* 🐛 fix(goreleaser): get correct version from pkg version by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/803
+* 🐛 fix(internet_service_link): retry on conflict when NATs are still "linked" by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/807
+* 🐛 fix(config): profile/config_file env values were ignored by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/816
+* 🐛 fix(config): remove global region deprecation by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/817
+
 ## [1.7.0] - 2026-07-15
 
 ### ✨ Added
