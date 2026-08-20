@@ -329,3 +329,31 @@ func ObjectNull[T any]() types.Object {
 func ObjectFromAttrType(ctx context.Context, model any, attrTypes map[string]attr.Type) (types.Object, diag.Diagnostics) {
 	return types.ObjectValueFrom(ctx, attrTypes, model)
 }
+
+func MapFromAttrType[T any](ctx context.Context, m map[string]T, attrType attr.Type, asEmpty ...bool) (types.Map, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if len(m) == 0 {
+		if len(asEmpty) > 0 && asEmpty[0] {
+			return types.MapValueMust(attrType, map[string]attr.Value{}), diags
+		}
+
+		return types.MapNull(attrType), diags
+	}
+
+	mapVal, d := types.MapValueFrom(ctx, attrType, m)
+	diags.Append(d...)
+
+	return mapVal, diags
+}
+
+func MapObject[T any](ctx context.Context, m map[string]T, asEmpty ...bool) (types.Map, diag.Diagnostics) {
+	var zeroVal T
+	attrTypes := fwhelpers.GetAttrTypes(zeroVal)
+
+	return MapFromAttrType(ctx, m, ObjType(attrTypes), asEmpty...)
+}
+
+func Map[T any](ctx context.Context, m map[string]T, asEmpty ...bool) (types.Map, diag.Diagnostics) {
+	return MapFromAttrType(ctx, m, attrType[T](), asEmpty...)
+}
