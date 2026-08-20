@@ -337,6 +337,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		oos.NewResourceBucketEncryption,
 		oos.NewResourceBucketPolicy,
 		oos.NewResourceBucketCors,
+		oos.NewResourceBucketLifecycle,
 	}
 }
 
