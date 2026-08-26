@@ -29,12 +29,13 @@ jobs:
             - ${{ inputs.service }}
         steps:
             - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-            - uses: outscale/frieza-github-actions/frieza-clean@1d8b83bc64d2230a0c3bc9f018ba6c0c67df98e8 # v0.15.0-hotfix.0
+            - uses: outscale/frieza-github-actions/frieza-clean@1a8eba5199913da60ae6d92d6050e17410186a38 # v0.16.1
               with:
                   access_key: ${{ secrets.OSC_ACCESS_KEY }}
                   secret_key: ${{ secrets.OSC_SECRET_KEY }}
                   region: ${{ secrets.OSC_REGION }}
                   providers: ${{ inputs.providers }}
+                  bypass_deletion_protection: true
             - name: Set up Go
               uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
               with:
