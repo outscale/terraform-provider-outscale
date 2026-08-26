@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"reflect"
 	"time"
 
 	"github.com/outscale/goutils/sdk/ptr"
@@ -109,15 +108,18 @@ func ResourceOutscaleNetworkInterfaceAttachmentRead(ctx context.Context, d *sche
 
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{"attaching", "detaching"},
-		Target:  []string{"attached", "detached", "failed"},
+		Target:  []string{"attached", "detached"},
 		Timeout: timeout,
 		Refresh: nicLinkRefreshFunc(ctx, client, nicID, timeout),
 	}
 
 	resp, err := stateConf.WaitForStateContext(ctx)
 	if err != nil {
-		return diag.Errorf(
-			"error waiting for nic to attach to Instance: %s, error: %s", nicID, err)
+		if errors.Is(err, ErrResourceEmpty) {
+			d.SetId("")
+			return nil
+		}
+		return diag.Errorf("error waiting for nic (%s) to be attached: %v", nicID, err)
 	}
 
 	r := resp.(*osc.ReadNicsResponse)
@@ -160,18 +162,21 @@ func ResourceOutscaleNetworkInterfaceAttachmentDelete(ctx context.Context, d *sc
 
 	nicID := d.Get("nic_id").(string)
 
-	// log.Printf("[DEBUG] Waiting for ENI (%s) to become dettached", interfaceID)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{"detaching"},
-		Target:  []string{"detached", "failed"},
+		Target:  []string{"detached"},
 		Timeout: timeout,
 		Refresh: nicLinkRefreshFunc(ctx, client, nicID, timeout),
 	}
 
 	_, err = stateConf.WaitForStateContext(ctx)
 	if err != nil {
+		if errors.Is(err, ErrResourceEmpty) {
+			return nil
+		}
 		return diag.Errorf(
-			"error waiting for volume to dettached from instance: %s, error: %s", nicID, err)
+			"error waiting for nic (%s) to detached: %v", nicID, err,
+		)
 	}
 
 	return nil
@@ -226,17 +231,13 @@ func nicLinkRefreshFunc(ctx context.Context, client *osc.Client, nicID string, t
 
 		resp, err := client.ReadNics(ctx, req, options.WithRetryTimeout(timeout))
 		if err != nil {
-			return nil, "failed", err
+			return nil, "", err
 		}
-		if resp.Nics == nil || len(*resp.Nics) < 1 {
-			return nil, "failed", fmt.Errorf("error to find the nic(%s): %#v", nicID, resp.Nics)
-		}
-
-		linkNic := ptr.From((*resp.Nics)[0].LinkNic)
-		if reflect.DeepEqual(linkNic, osc.LinkNic{}) {
-			return resp, "detached", nil
+		nic := ptr.From(resp.Nics)
+		if len(nic) < 1 || nic[0].LinkNic == nil || nic[0].LinkNic.State == osc.LinkNicStateDetached {
+			return nil, "", ErrResourceEmpty
 		}
 
-		return resp, string(linkNic.State), nil
+		return resp, string(nic[0].LinkNic.State), nil
 	}
 }
