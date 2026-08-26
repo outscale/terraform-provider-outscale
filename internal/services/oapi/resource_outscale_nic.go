@@ -2,9 +2,8 @@ package oapi
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"log"
-	"reflect"
 	"strconv"
 	"time"
 
@@ -390,33 +389,29 @@ func ResourceOutscaleNicDetach(ctx context.Context, meta any, nicID string, time
 
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{"attaching", "detaching"},
-		Target:  []string{"attached", "detached", "failed"},
+		Target:  []string{"attached", "detached"},
 		Timeout: timeout,
 		Refresh: nicLinkRefreshFunc(ctx, client, nicID, timeout),
 	}
 	resp, err := stateConf.WaitForStateContext(ctx)
 	if err != nil {
-		return fmt.Errorf(
-			"error waiting for eni (%s) to become dettached: %w", nicID, err)
+		if errors.Is(err, ErrResourceEmpty) {
+			return nil
+		}
+		return fmt.Errorf("error waiting for eni (%s) to be detached: %w", nicID, err)
 	}
+
 	r := resp.(*osc.ReadNicsResponse)
-	if r == nil || r.Nics == nil {
-		return fmt.Errorf("nic (%s) not found", nicID)
+	link := ptr.From((*r.Nics)[0].LinkNic)
+	req := osc.UnlinkNicRequest{
+		LinkNicId: link.LinkNicId,
 	}
 
-	linkNic := ptr.From((*r.Nics)[0].LinkNic)
-
-	if !reflect.DeepEqual(linkNic, osc.LinkNic{}) {
-		log.Printf("[DEBUG] Waiting for ENI (%s) to become dettached", nicID)
-
-		req := osc.UnlinkNicRequest{
-			LinkNicId: linkNic.LinkNicId,
-		}
-		_, err := client.UnlinkNic(ctx, req, options.WithRetryTimeout(timeout))
-		if err != nil {
-			return err
-		}
+	_, err = client.UnlinkNic(ctx, req, options.WithRetryTimeout(timeout))
+	if err != nil {
+		return err
 	}
+
 	return nil
 }
 
