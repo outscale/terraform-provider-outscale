@@ -36,6 +36,8 @@ const (
 	vpnConnectionErrCreate = "Unable to create VPN Connection"
 	vpnConnectionErrDelete = "Unable to delete VPN Connection"
 	vpnConnectionErrWait   = "Unable to wait for VPN Connection state"
+
+	vpnConnectionCreateTimeout = 15 * time.Minute
 )
 
 type vpnConnectionModel struct {
@@ -238,7 +240,7 @@ func (r *vpnConnectionResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	timeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
+	timeout, diags := data.Timeouts.Create(ctx, vpnConnectionCreateTimeout)
 	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
