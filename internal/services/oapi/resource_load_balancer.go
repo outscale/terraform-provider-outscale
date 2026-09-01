@@ -42,6 +42,8 @@ const (
 	loadBalancerErrUpdateListeners = "Unable to update Load Balancer listeners"
 	loadBalancerErrDelete          = "Unable to delete Load Balancer"
 	loadBalancerErrWait            = "Unable to wait for Load Balancer state"
+
+	loadBalancerCreateTimeout = 15 * time.Minute
 )
 
 type loadBalancerModel struct {
@@ -447,7 +449,7 @@ func (r *loadBalancerResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
-	timeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
+	timeout, diags := data.Timeouts.Create(ctx, loadBalancerCreateTimeout)
 	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
