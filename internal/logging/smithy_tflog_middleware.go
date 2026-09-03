@@ -84,15 +84,20 @@ func (m *smithyTFLogMiddleware) HandleDeserialize(ctx context.Context, in middle
 func (*smithyTFLogMiddleware) logRequest(ctx context.Context, request *http.Request) error {
 	var body []byte
 	if request.Body != nil && request.Body != http.NoBody {
-		var err error
-		body, err = io.ReadAll(request.Body)
-		if err != nil {
-			return err
-		}
-		_ = request.Body.Close()
+		switch middleware.GetOperationName(ctx) {
+		case "PutObject", "UploadPart":
+			body = redactedBody(request.ContentLength, request.Header.Get("Content-Type"))
+		default:
+			var err error
+			body, err = io.ReadAll(request.Body)
+			if err != nil {
+				return err
+			}
+			_ = request.Body.Close()
 
-		request.Body = &readSeekCloser{
-			Reader: bytes.NewReader(body),
+			request.Body = &readSeekCloser{
+				Reader: bytes.NewReader(body),
+			}
 		}
 	}
 
@@ -113,14 +118,19 @@ func (*smithyTFLogMiddleware) logRequest(ctx context.Context, request *http.Requ
 func (*smithyTFLogMiddleware) logResponse(ctx context.Context, response *http.Response, duration time.Duration) error {
 	var body []byte
 	if response.Body != nil && response.Body != http.NoBody {
-		var err error
-		body, err = io.ReadAll(response.Body)
-		if err != nil {
-			return err
-		}
-		_ = response.Body.Close()
+		switch middleware.GetOperationName(ctx) {
+		case "GetObject":
+			body = redactedBody(response.ContentLength, response.Header.Get("Content-Type"))
+		default:
+			var err error
+			body, err = io.ReadAll(response.Body)
+			if err != nil {
+				return err
+			}
+			_ = response.Body.Close()
 
-		response.Body = io.NopCloser(bytes.NewReader(body))
+			response.Body = io.NopCloser(bytes.NewReader(body))
+		}
 	}
 
 	headers := response.Header.Clone()

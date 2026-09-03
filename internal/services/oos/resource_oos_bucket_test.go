@@ -168,6 +168,55 @@ func TestAccOOS_Bucket_ObjectLockUpdate(t *testing.T) {
 	})
 }
 
+func TestAccOOS_Bucket_ForceDelete(t *testing.T) {
+	resourceName := "outscale_oos_bucket.bucket"
+	bucketName := acctest.RandomWithPrefix("testacc-oos-bucket-force-delete")
+
+	testacc.ParallelTest(t, resource.TestCase{
+		Steps: []resource.TestStep{
+			{
+				Config: testAccBucketForceDeleteConfig(bucketName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "force_delete", "true"),
+				),
+			},
+			{
+				Config: testAccBucketForceDeleteObjectConfig(bucketName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "force_delete", "true"),
+					resource.TestCheckResourceAttr("outscale_oos_object.object", "bucket", bucketName),
+				),
+			},
+		},
+	})
+}
+
+func testAccBucketForceDeleteConfig(name string) string {
+	return fmt.Sprintf(`
+resource "outscale_oos_bucket" "bucket" {
+  name         = %q
+  force_delete = true
+}
+`, name)
+}
+
+func testAccBucketForceDeleteObjectConfig(name string) string {
+	return fmt.Sprintf(`
+resource "outscale_oos_object" "object" {
+  bucket  = %q
+  key     = "object.txt"
+  content = "object content"
+}
+
+resource "outscale_oos_bucket" "bucket" {
+  name         = %q
+  force_delete = true
+
+  depends_on = [outscale_oos_object.object]
+}
+`, name, name)
+}
+
 func testAccOOSBucketConfig(name string) string {
 	return fmt.Sprintf(`
 resource "outscale_oos_bucket" "bucket" {
