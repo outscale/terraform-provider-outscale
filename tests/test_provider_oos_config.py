@@ -5,7 +5,10 @@ OOS_IGNORE_END_ELEMENTS = [
     "display_name",
     "email_address",
     "email_addresses",
-    "ids"
+    "ids",
+    "last_modified",
+    "policy",
+    "etag",
 ]
 
 OOS_IGNORE_TYPE_ELEMENTS = {}
