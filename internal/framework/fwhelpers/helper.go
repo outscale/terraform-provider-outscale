@@ -33,7 +33,7 @@ func WaitForResource[T any](ctx context.Context, conf *retry.StateChangeConf) (*
 	return resp, nil
 }
 
-func CheckDiags[T *resource.CreateResponse | *resource.UpdateResponse | *resource.DeleteResponse | *resource.ReadResponse | *resource.ModifyPlanResponse | *resource.ImportStateResponse | *datasource.ReadResponse | *resource.ValidateConfigResponse | *ephemeral.OpenResponse | *provider.ConfigureResponse](resp T, diags diag.Diagnostics) bool {
+func CheckDiags[T *resource.CreateResponse | *resource.UpdateResponse | *resource.DeleteResponse | *resource.ReadResponse | *resource.ModifyPlanResponse | *resource.ImportStateResponse | *resource.ValidateConfigResponse | *datasource.ReadResponse | *datasource.ValidateConfigResponse | *ephemeral.OpenResponse | *provider.ConfigureResponse](resp T, diags diag.Diagnostics) bool {
 	switch r := any(resp).(type) {
 	case *resource.DeleteResponse:
 		r.Diagnostics.Append(diags...)
@@ -53,10 +53,16 @@ func CheckDiags[T *resource.CreateResponse | *resource.UpdateResponse | *resourc
 	case *resource.ImportStateResponse:
 		r.Diagnostics.Append(diags...)
 		return r.Diagnostics.HasError()
+	case *resource.ValidateConfigResponse:
+		r.Diagnostics.Append(diags...)
+		return r.Diagnostics.HasError()
 	case *datasource.ReadResponse:
 		r.Diagnostics.Append(diags...)
 		return r.Diagnostics.HasError()
 	case *datasource.ValidateConfigResponse:
+		r.Diagnostics.Append(diags...)
+		return r.Diagnostics.HasError()
+	case *ephemeral.OpenResponse:
 		r.Diagnostics.Append(diags...)
 		return r.Diagnostics.HasError()
 	case *provider.ConfigureResponse:

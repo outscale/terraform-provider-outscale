@@ -13,13 +13,13 @@ require (
 	github.com/hashicorp/terraform-plugin-framework-timetypes v0.5.0
 	github.com/hashicorp/terraform-plugin-framework-validators v0.19.0
 	github.com/hashicorp/terraform-plugin-go v0.31.0
-	github.com/hashicorp/terraform-plugin-log v0.10.0
+	github.com/hashicorp/terraform-plugin-log v0.11.0
 	github.com/hashicorp/terraform-plugin-mux v0.23.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.40.0
 	github.com/hashicorp/terraform-plugin-testing v1.15.0
 	github.com/oapi-codegen/runtime v1.6.0
 	github.com/outscale/goutils/sdk v0.0.5
-	github.com/outscale/osc-sdk-go/v3 v3.0.0-rc.4
+	github.com/outscale/osc-sdk-go/v3 v3.0.0-rc.4.0.20260827123654-7af0564831df
 	github.com/samber/lo v1.53.0
 	github.com/spf13/cast v1.10.0
 	github.com/stretchr/testify v1.11.1
@@ -39,6 +39,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.7 // indirect
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.52 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.23 // indirect
+	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.17.49 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.27 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.27 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.6 // indirect

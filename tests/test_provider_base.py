@@ -21,6 +21,7 @@ NO_TEST_VALUE = "########"
 IGNORE_RESOURCE_TYPES = [
     "random_string",
     "random_integer",
+    "terraform_data",
 ]
 IGNORE_END_PATHS = []
 VARIABLES_FILE_NAME = ["resources.auto.tfvars"]
@@ -148,7 +149,7 @@ def validate_ref(path, parent, value, ids, service_config):
             )
         ]
 
-    if path_end == "type" and value in ignore_type_elements:
+    if path_end == "type" and isinstance(value, str) and value in ignore_type_elements:
         ignored_keys = ignore_type_elements[value]
 
         if parent and "instances" in parent:
@@ -168,6 +169,22 @@ def validate_ref(path, parent, value, ids, service_config):
         validate_value_ref(path, parent, value, ids, service_config)
     return value
 
+def is_set_collection(key, out_value, ref_value):
+    # Some fields have multiple JSON representations. For example, tags use set
+    # semantics only when represented as json arrays (python lists), tag maps use
+    # normal dictionary comparison
+    if type(out_value) is not list or type(ref_value) is not list:
+        return False
+
+    if key in SET_KEY_VALUES:
+        return True
+
+    return (
+        key.endswith("s")
+        and out_value
+        and type(out_value[0]) is dict
+        and "{}_id".format(key[:-1]) in out_value[0]
+    )
 
 def compare_json_dicts(path, dict_out, dict_ref, ids):
     keys_out = sorted(set(dict_out.keys()))
@@ -182,18 +199,7 @@ def compare_json_dicts(path, dict_out, dict_ref, ids):
             path, key
         )
     for key in keys_out:
-        do_set = False
-        if key in SET_KEY_VALUES:
-            do_set = True
-        elif (
-            key.endswith("s")
-            and type(dict_out[key]) is list
-            and dict_out[key]
-            and type(dict_out[key][0]) is dict
-            and "{}_id".format(key[:-1]) in dict_out[key][0]
-        ):
-            do_set = True
-        if do_set:
+        if is_set_collection(key, dict_out[key], dict_ref[key]):
             compare_json_collections(
                 "{}.{}".format(path, key),
                 dict_out[key],
