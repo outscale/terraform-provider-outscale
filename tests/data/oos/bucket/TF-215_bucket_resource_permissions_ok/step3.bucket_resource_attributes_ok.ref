@@ -1,0 +1,78 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "managed",
+            "type": "outscale_oos_bucket",
+            "name": "bucket",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "acl": "public-read-write",
+                        "creation_date": "########",
+                        "force_delete": true,
+                        "grant": null,
+                        "id": "##id-0##",
+                        "location_name": null,
+                        "name": "##id-0##",
+                        "object_lock": {
+                            "default_retention": null,
+                            "enabled": false
+                        },
+                        "permissions": {
+                            "grants": [
+                                {
+                                    "grantee": {
+                                        "display_name": "########",
+                                        "email_address": "########",
+                                        "id": "##id-1##",
+                                        "type": "CanonicalUser",
+                                        "uri": null
+                                    },
+                                    "permission": "FULL_CONTROL"
+                                },
+                                {
+                                    "grantee": {
+                                        "display_name": "########",
+                                        "email_address": "########",
+                                        "id": null,
+                                        "type": "Group",
+                                        "uri": "http://acs.amazonaws.com/groups/global/AllUsers"
+                                    },
+                                    "permission": "READ"
+                                },
+                                {
+                                    "grantee": {
+                                        "display_name": "########",
+                                        "email_address": "########",
+                                        "id": null,
+                                        "type": "Group",
+                                        "uri": "http://acs.amazonaws.com/groups/global/AllUsers"
+                                    },
+                                    "permission": "WRITE"
+                                }
+                            ],
+                            "owner": {
+                                "display_name": "########",
+                                "id": "##id-1##"
+                            }
+                        },
+                        "timeouts": null
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
+                }
+            ]
+        }
+    ],
+    "check_results": "########"
+}

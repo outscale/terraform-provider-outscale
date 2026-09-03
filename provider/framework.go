@@ -23,6 +23,8 @@ import (
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 	"github.com/outscale/terraform-provider-outscale/internal/services/oapi"
 	"github.com/outscale/terraform-provider-outscale/internal/services/oks"
+	"github.com/outscale/terraform-provider-outscale/internal/services/oos"
+	"k8s.io/utils/keymutex"
 )
 
 var (
@@ -54,6 +56,7 @@ type ProviderModel struct {
 	Region     types.String `tfsdk:"region"`
 	API        types.List   `tfsdk:"api"`
 	OKS        types.List   `tfsdk:"oks"`
+	OOS        types.List   `tfsdk:"oos"`
 	ConfigFile types.String `tfsdk:"config_file"`
 	Profile    types.String `tfsdk:"profile"`
 
@@ -77,9 +80,15 @@ type OKSModel struct {
 	Region   types.String `tfsdk:"region"`
 }
 
+type OOSModel struct {
+	Endpoint types.String `tfsdk:"endpoint"`
+	Region   types.String `tfsdk:"region"`
+}
+
 type Endpoints struct {
 	API types.String `tfsdk:"api"`
 	OKS types.String `tfsdk:"oks"`
+	OOS types.String `tfsdk:"oos"`
 }
 
 func (p *FrameworkProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -136,6 +145,21 @@ func (p *FrameworkProvider) Schema(ctx context.Context, req provider.SchemaReque
 				},
 			},
 			"oks": schema.ListNestedBlock{
+				Validators: []validator.List{
+					listvalidator.SizeAtMost(1),
+				},
+				NestedObject: schema.NestedBlockObject{
+					Attributes: map[string]schema.Attribute{
+						"endpoint": schema.StringAttribute{
+							Optional: true,
+						},
+						"region": schema.StringAttribute{
+							Optional: true,
+						},
+					},
+				},
+			},
+			"oos": schema.ListNestedBlock{
 				Validators: []validator.List{
 					listvalidator.SizeAtMost(1),
 				},
@@ -236,6 +260,8 @@ func (p *FrameworkProvider) Configure(ctx context.Context, req provider.Configur
 	client.SubnetBatcher = batch.NewSubnetBatcherByID(oapi.BatcherInterval, client.OSC)
 	go client.SubnetBatcher.Run(batcherCtx)
 
+	client.KeyMutex = keymutex.NewHashed(0)
+
 	resp.DataSourceData = *client
 	resp.ResourceData = *client
 	resp.EphemeralResourceData = *client
@@ -305,6 +331,15 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		oks.NewResourceProject,
 		oks.NewResourceCluster,
 		oks.NewResourceManifest,
+
+		oos.NewResourceBucket,
+		oos.NewResourceObject,
+		oos.NewResourceBucketVersioning,
+		oos.NewResourceBucketEncryption,
+		oos.NewResourceBucketPolicy,
+		oos.NewResourceBucketCors,
+		oos.NewResourceBucketLifecycle,
+		oos.NewResourcePresignedURL,
 	}
 }
 
@@ -323,26 +358,35 @@ func (data *ProviderModel) newClient(ctx context.Context) (*client.OutscaleClien
 	if diag.HasError() {
 		return nil, fmt.Errorf("failed to build oks config: %v", diag.Errors())
 	}
+	oosConfig, diag := data.buildOOSConfig(ctx)
+	if diag.HasError() {
+		return nil, fmt.Errorf("failed to build oks config: %v", diag.Errors())
+	}
 
 	// Attributes global to any service
 	if fwhelpers.IsSet(data.AccessKey) {
 		oscConfig.AccessKey = data.AccessKey.ValueString()
 		oksConfig.AccessKey = data.AccessKey.ValueString()
+		oosConfig.AccessKey = data.AccessKey.ValueString()
 	}
 	if fwhelpers.IsSet(data.SecretKey) {
 		oscConfig.SecretKey = data.SecretKey.ValueString()
 		oksConfig.SecretKey = data.SecretKey.ValueString()
+		oosConfig.SecretKey = data.SecretKey.ValueString()
 	}
 	if fwhelpers.IsSet(data.Profile) {
 		oscConfig.Profile = data.Profile.ValueString()
 		oksConfig.Profile = data.Profile.ValueString()
+		oosConfig.Profile = data.Profile.ValueString()
 	}
 	if fwhelpers.IsSet(data.ConfigFile) {
 		oscConfig.ConfigFile = data.ConfigFile.ValueString()
 		oksConfig.ConfigFile = data.ConfigFile.ValueString()
+		oosConfig.ConfigFile = data.ConfigFile.ValueString()
 	}
 	oscConfig.UserAgent = UserAgent
 	oksConfig.UserAgent = UserAgent
+	oosConfig.UserAgent = UserAgent
 
 	osc, err := client.NewOSCClient(oscConfig)
 	if err != nil {
@@ -352,10 +396,15 @@ func (data *ProviderModel) newClient(ctx context.Context) (*client.OutscaleClien
 	if err != nil {
 		return nil, err
 	}
+	oos, err := client.NewOOSClient(ctx, oosConfig)
+	if err != nil {
+		return nil, err
+	}
 
 	client := &client.OutscaleClient{
 		OKS: oks,
 		OSC: osc,
+		OOS: oos,
 	}
 
 	return client, nil
@@ -418,6 +467,30 @@ func (data *ProviderModel) buildOKSConfig(ctx context.Context) (config client.Co
 	}
 
 	// fallback to global attributes
+	if config.Region == "" && fwhelpers.IsSet(data.Region) {
+		config.Region = data.Region.ValueString()
+	}
+
+	return
+}
+
+func (data *ProviderModel) buildOOSConfig(ctx context.Context) (config client.Config, diags diag.Diagnostics) {
+	if fwhelpers.IsSet(data.OOS) {
+		oosModel, diag := to.Slice[OOSModel](ctx, data.OOS)
+		diags.Append(diag...)
+		if diags.HasError() {
+			return
+		}
+
+		if len(oosModel) > 0 {
+			config.OOSEndpoint = oosModel[0].Endpoint.ValueString()
+			config.Region = oosModel[0].Region.ValueString()
+		}
+	}
+	// fallback to deprecated configuration
+	if config.OOSEndpoint == "" && len(data.Endpoints) > 0 && fwhelpers.IsSet(data.Endpoints[0].OOS) {
+		config.OOSEndpoint = data.Endpoints[0].OOS.ValueString()
+	}
 	if config.Region == "" && fwhelpers.IsSet(data.Region) {
 		config.Region = data.Region.ValueString()
 	}

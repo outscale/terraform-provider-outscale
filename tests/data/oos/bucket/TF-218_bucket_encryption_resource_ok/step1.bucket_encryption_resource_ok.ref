@@ -1,0 +1,78 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "managed",
+            "type": "outscale_oos_bucket",
+            "name": "bucket",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "acl": null,
+                        "creation_date": "########",
+                        "force_delete": false,
+                        "grant": null,
+                        "id": "##id-0##",
+                        "location_name": null,
+                        "name": "##id-0##",
+                        "object_lock": {
+                            "default_retention": null,
+                            "enabled": false
+                        },
+                        "permissions": {
+                            "grants": [
+                                {
+                                    "grantee": {
+                                        "display_name": "########",
+                                        "email_address": "########",
+                                        "id": "##id-1##",
+                                        "type": "CanonicalUser",
+                                        "uri": null
+                                    },
+                                    "permission": "FULL_CONTROL"
+                                }
+                            ],
+                            "owner": {
+                                "display_name": "########",
+                                "id": "##id-1##"
+                            }
+                        },
+                        "timeouts": null
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_oos_bucket_encryption",
+            "name": "encryption",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "bucket": "##id-0##",
+                        "bucket_key_enabled": false,
+                        "encryption_type": "AES256",
+                        "id": "##id-0##",
+                        "timeouts": null
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "outscale_oos_bucket.bucket"
+                    ]
+                }
+            ]
+        }
+    ],
+    "check_results": "########"
+}
