@@ -27,6 +27,14 @@ func String[T ~string | *string](v T) types.String {
 	return types.StringValue(reflect.Indirect(rv).String())
 }
 
+func StringEnum[T ~string](v T) types.String {
+	// When a "go enum" is not defined, the value is the default string value, which we want to treat as a null terraform value
+	if v == "" {
+		return types.StringNull()
+	}
+	return types.StringValue(string(v))
+}
+
 func ISO8601[T string | *string | time.Time | *time.Time](v T) (iso8601.Time, error) {
 	switch v := any(v).(type) {
 	case string:
