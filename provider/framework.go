@@ -348,6 +348,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		oos.NewResourceBucketPolicy,
 		oos.NewResourceBucketCors,
 		oos.NewResourceBucketLifecycle,
+		oos.NewResourcePresignedURL,
 	}
 }
 
