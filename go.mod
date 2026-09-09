@@ -1,6 +1,6 @@
 module github.com/outscale/terraform-provider-outscale
 
-go 1.26.0
+go 1.27.0
 
 require (
 	github.com/hashicorp/go-cty v1.5.0
@@ -13,12 +13,12 @@ require (
 	github.com/hashicorp/terraform-plugin-mux v0.23.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.40.0
 	github.com/hashicorp/terraform-plugin-testing v1.15.0
-	github.com/oapi-codegen/runtime v1.6.0
-	github.com/outscale/goutils/sdk v0.0.5
-	github.com/outscale/osc-sdk-go/v3 v3.0.0-rc.4
+	github.com/oapi-codegen/runtime v1.7.0
+	github.com/outscale/goutils/sdk v0.0.9
+	github.com/outscale/osc-sdk-go/v3 v3.0.0-rc.5
 	github.com/samber/lo v1.53.0
 	github.com/spf13/cast v1.10.0
-	github.com/stretchr/testify v1.11.1
+	github.com/stretchr/testify v1.12.0
 	k8s.io/apimachinery v0.36.0
 	k8s.io/client-go v0.36.0
 	sigs.k8s.io/yaml v1.6.0
@@ -30,7 +30,7 @@ require (
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
-	github.com/aws/smithy-go/aws-http-auth v1.1.2 // indirect
+	github.com/aws/smithy-go/aws-http-auth v1.2.1 // indirect
 	github.com/benbjohnson/clock v1.3.0 // indirect
 	github.com/cloudflare/circl v1.6.1 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
@@ -90,16 +90,16 @@ require (
 	go.uber.org/ratelimit v0.3.1 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
-	golang.org/x/crypto v0.54.0 // indirect
-	golang.org/x/mod v0.38.0 // indirect
-	golang.org/x/net v0.57.0 // indirect
+	golang.org/x/crypto v0.55.0 // indirect
+	golang.org/x/mod v0.39.0 // indirect
+	golang.org/x/net v0.58.0 // indirect
 	golang.org/x/oauth2 v0.34.0 // indirect
 	golang.org/x/sync v0.22.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
 	golang.org/x/term v0.45.0 // indirect
-	golang.org/x/text v0.40.0 // indirect
+	golang.org/x/text v0.41.0 // indirect
 	golang.org/x/time v0.14.0 // indirect
-	golang.org/x/tools v0.48.0 // indirect
+	golang.org/x/tools v0.49.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20251202230838-ff82c1b0f217 // indirect
 	google.golang.org/grpc v1.79.2 // indirect
