@@ -2,7 +2,6 @@ package oapi_test
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 	"testing"
 
@@ -79,7 +78,6 @@ func TestAccNet_Route_changeTarget(t *testing.T) {
 }
 
 func TestAccNet_Route_onlyOneTarget(t *testing.T) {
-	regex := regexp.MustCompile(".*")
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 
@@ -113,55 +111,55 @@ func TestAccNet_Route_onlyOneTarget(t *testing.T) {
 			{
 				Config:      computeConfigTestChangeTarget([]string{"net_peering_id", "nat_service_id"}),
 				PlanOnly:    true,
-				ExpectError: regex,
+				ExpectError: testacc.AnyError,
 			},
 			{
 				Config:      computeConfigTestChangeTarget([]string{"net_peering_id", "gateway_id"}),
 				PlanOnly:    true,
-				ExpectError: regex,
+				ExpectError: testacc.AnyError,
 			},
 			{
 				Config:      computeConfigTestChangeTarget([]string{"net_peering_id", "vm_id"}),
 				PlanOnly:    true,
-				ExpectError: regex,
+				ExpectError: testacc.AnyError,
 			},
 			{
 				Config:      computeConfigTestChangeTarget([]string{"net_peering_id", "nic_id"}),
 				PlanOnly:    true,
-				ExpectError: regex,
+				ExpectError: testacc.AnyError,
 			},
 			// nat_service_id with other
 			{
 				Config:      computeConfigTestChangeTarget([]string{"nat_service_id", "gateway_id"}),
 				PlanOnly:    true,
-				ExpectError: regex,
+				ExpectError: testacc.AnyError,
 			},
 			{
 				Config:      computeConfigTestChangeTarget([]string{"nat_service_id", "vm_id"}),
 				PlanOnly:    true,
-				ExpectError: regex,
+				ExpectError: testacc.AnyError,
 			},
 			{
 				Config:      computeConfigTestChangeTarget([]string{"nat_service_id", "nic_id"}),
 				PlanOnly:    true,
-				ExpectError: regex,
+				ExpectError: testacc.AnyError,
 			},
 			// gateway_id with other
 			{
 				Config:      computeConfigTestChangeTarget([]string{"gateway_id", "vm_id"}),
 				PlanOnly:    true,
-				ExpectError: regex,
+				ExpectError: testacc.AnyError,
 			},
 			// vm_id with other
 			{
 				Config:      computeConfigTestChangeTarget([]string{"vm_id", "nic_id"}),
 				PlanOnly:    true,
-				ExpectError: regex,
+				ExpectError: testacc.AnyError,
 			},
 			{
 				Config:      computeConfigTestChangeTarget([]string{"gateway_id", "nic_id"}),
 				PlanOnly:    true,
-				ExpectError: regex,
+				ExpectError: testacc.AnyError,
 			},
 		},
 	})
