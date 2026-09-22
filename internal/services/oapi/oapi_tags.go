@@ -129,8 +129,12 @@ func (v uniqueTagValidator) ValidateSet(ctx context.Context, req validator.SetRe
 		return
 	}
 
-	keys := lo.Map(tags, func(tag ResourceTag, _ int) string {
-		return tag.Key.ValueString()
+	keys := lo.FilterMap(tags, func(tag ResourceTag, _ int) (string, bool) {
+		// When using a terraform variable to define the key value, the value of the key is not known during all validation phases.
+		// We filter them out in the current phase, as they will be validated later
+		key := tag.Key.ValueString()
+
+		return key, key != ""
 	})
 	duplicates := lo.FindDuplicates(keys)
 

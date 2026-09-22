@@ -32,7 +32,8 @@ var (
 		"outscale": SDKProvider,
 	}
 
-	anyRegexp = regexp.MustCompile(`(?s).+`)
+	// AnyError matches any non-empty error message.
+	AnyError = regexp.MustCompile(`(?s).+`)
 )
 
 func ImageID() string {
@@ -292,7 +293,7 @@ func CreateFailureReplacementSteps(resourceName, failingConfig string, workingCo
 	return []resource.TestStep{
 		{
 			Config:      failingConfig,
-			ExpectError: anyRegexp, // expect any error during the failing create
+			ExpectError: AnyError, // expect any error during the failing create
 		},
 		{
 			RefreshState:       true,
