@@ -46,8 +46,8 @@ const (
 	volumeErrDelete   = "Unable to delete Volume"
 	volumeErrWait     = "Unable to wait for Volume state"
 	volumeErrTask     = "Unable to wait for Volume update task"
-	volumeErrSnapshot = "Unable to create snapshot during Volume deletion"
-	volumeErrTags     = "Unable to create snapshot tags during Volume deletion"
+	volumeErrSnapshot = "Unable to create Snapshot during Volume deletion"
+	volumeErrTags     = "Unable to create Snapshot tags during Volume deletion"
 )
 
 type VolumeModel struct {
@@ -327,7 +327,8 @@ func (r *resourceVolume) Create(ctx context.Context, req resource.CreateRequest,
 	}
 	volumeAny, err := stateConf.WaitForStateContext(ctx)
 	if err != nil {
-		resp.Diagnostics.AddError(volumeErrWait,
+		resp.Diagnostics.AddError(
+			volumeErrWait,
 			fmt.Sprintf("Unexpected volume (%s) state: '%s' ", volumeId, err.Error()),
 		)
 		return
@@ -491,15 +492,13 @@ func (r *resourceVolume) Delete(ctx context.Context, req resource.DeleteRequest,
 	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
-	volumeId := data.VolumeId.ValueString()
-	if !data.TerminationSnapshotName.IsNull() {
-		description := "created before volume deletion"
-		var snapshotId string
+
+	if fwhelpers.IsSet(data.TerminationSnapshotName) {
 		request := osc.CreateSnapshotRequest{
-			Description: &description,
-			VolumeId:    &volumeId,
+			Description: new("Snapshot created by Terraform before deletion of Volume: " + data.VolumeId.ValueString()),
+			VolumeId:    data.VolumeId.ValueStringPointer(),
 		}
-		_, err := r.Client.CreateSnapshot(ctx, request, options.WithRetryTimeout(timeout))
+		snap, err := r.Client.CreateSnapshot(ctx, request, options.WithRetryTimeout(timeout))
 		if err != nil {
 			resp.Diagnostics.AddError(volumeErrSnapshot, err.Error())
 			return
@@ -509,7 +508,7 @@ func (r *resourceVolume) Delete(ctx context.Context, req resource.DeleteRequest,
 			Key:   "Name",
 			Value: data.TerminationSnapshotName.String(),
 		}
-		err = createOAPITags(ctx, r.Client, timeout, []osc.ResourceTag{tags}, snapshotId)
+		err = createOAPITags(ctx, r.Client, timeout, []osc.ResourceTag{tags}, snap.Snapshot.SnapshotId)
 		if err != nil {
 			resp.Diagnostics.AddError(volumeErrTags, err.Error())
 			return

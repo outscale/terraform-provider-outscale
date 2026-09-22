@@ -122,7 +122,8 @@ func TestAccOthers_Volume_Type_Change(t *testing.T) {
 func TestAccOthers_Volume_Migration(t *testing.T) {
 	region := utils.GetRegion()
 	resource.Test(t, resource.TestCase{
-		Steps: testacc.FrameworkMigrationTestSteps("1.1.3",
+		Steps: testacc.FrameworkMigrationTestSteps(
+			"1.1.3",
 			testAccOutscaleVolumeConfig(utils.GetRegion()),
 			test_IO1VolumeTypeConfig(region),
 		),
@@ -147,6 +148,25 @@ func TestAccOthers_Volume_CreateFailureKeepsState(t *testing.T) {
 		),
 	})
 }
+
+func TestAccOthers_Volume_WithTerminationSnapshot(t *testing.T) {
+	testacc.ParallelTest(t, resource.TestCase{
+		Steps: []resource.TestStep{
+			{
+				Config: testAccVolumeConfigWithTerminationSnapshot,
+			},
+		},
+	})
+}
+
+var testAccVolumeConfigWithTerminationSnapshot = `
+resource "outscale_volume" "volume" {
+	subregion_name = var.subregion
+	volume_type    = "standard"
+	size           = 1
+	termination_snapshot_name = "test-termination-snapshot"
+}
+`
 
 func testAccOutscaleVolumeConfig(region string) string {
 	return fmt.Sprintf(`
