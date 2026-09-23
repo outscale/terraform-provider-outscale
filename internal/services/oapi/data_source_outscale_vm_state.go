@@ -6,13 +6,13 @@ import (
 	"maps"
 	"time"
 
-	"github.com/oapi-codegen/runtime/types"
 	"github.com/outscale/goutils/sdk/ptr"
 	"github.com/outscale/osc-sdk-go/v3/pkg/iso8601"
 	"github.com/outscale/osc-sdk-go/v3/pkg/options"
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 	"github.com/samber/lo"
 
@@ -189,23 +189,19 @@ func buildOutscaleDataSourceVMStateFilters(set *schema.Set) (*osc.FiltersVmsStat
 		case "maintenance_event_descriptions":
 			filters.MaintenanceEventDescriptions = &filterValues
 		case "maintenance_events_not_after":
-			var events []types.Date
-			for _, s := range filterValues {
-				t, err := iso8601.ParseString(s)
-				if err != nil {
-					return nil, err
-				}
-				events = append(events, types.Date{Time: t.Time})
+			events, err := lo.MapErr(filterValues, func(date string, _ int) (iso8601.Time, error) {
+				return to.ISO8601(date)
+			})
+			if err != nil {
+				return nil, err
 			}
 			filters.MaintenanceEventsNotAfter = &events
 		case "maintenance_events_not_before":
-			var events []types.Date
-			for _, s := range filterValues {
-				t, err := iso8601.ParseString(s)
-				if err != nil {
-					return nil, err
-				}
-				events = append(events, types.Date{Time: t.Time})
+			events, err := lo.MapErr(filterValues, func(date string, _ int) (iso8601.Time, error) {
+				return to.ISO8601(date)
+			})
+			if err != nil {
+				return nil, err
 			}
 			filters.MaintenanceEventsNotBefore = &events
 		case "subregion_names":

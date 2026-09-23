@@ -4,16 +4,16 @@ import (
 	"context"
 	"log"
 	"maps"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/oapi-codegen/runtime/types"
 	"github.com/outscale/goutils/sdk/ptr"
+	"github.com/outscale/osc-sdk-go/v3/pkg/iso8601"
 	"github.com/outscale/osc-sdk-go/v3/pkg/options"
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 	"github.com/outscale/terraform-provider-outscale/internal/services/oapi/oapihelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 	"github.com/samber/lo"
@@ -90,7 +90,8 @@ func DataSourceOutscaleVMRead(ctx context.Context, d *schema.ResourceData, meta 
 			return errTags
 		}
 		if err := d.Set("block_device_mappings_created", getOscAPIVMBlockDeviceMapping(
-			booTags, vm.BlockDeviceMappings)); err != nil {
+			booTags, vm.BlockDeviceMappings,
+		)); err != nil {
 			return err
 		}
 
@@ -317,25 +318,27 @@ func buildOutscaleDataSourceVMFilters(set *schema.Set) (*osc.FiltersVm, error) {
 		case "block_device_mapping_states":
 			filters.BlockDeviceMappingStates = &filterValues
 		case "block_device_mapping_link_dates":
-			linkDates, err := utils.StringSliceToTimeSlice(
-				filterValues, "block_device_mapping_link_dates")
+			dates, err := lo.MapErr(filterValues, func(date string, _ int) (iso8601.Time, error) {
+				return to.ISO8601(date)
+			})
 			if err != nil {
 				return filters, err
 			}
-			filters.BlockDeviceMappingLinkDates = new(lo.Map(linkDates, func(t time.Time, _ int) types.Date { return types.Date{Time: t} }))
+			filters.BlockDeviceMappingLinkDates = &dates
 		case "block_device_mapping_volume_ids":
 			filters.BlockDeviceMappingVolumeIds = &filterValues
 		case "boot_modes":
-			filters.BootModes = new(lo.Map(filterValues, func(s string, _ int) osc.BootMode { return (osc.BootMode)(s) }))
+			filters.BootModes = new(lo.Map(filterValues, func(s string, _ int) osc.BootMode { return osc.BootMode(s) }))
 		case "ClientTokens":
 			filters.ClientTokens = &filterValues
 		case "creation_dates":
-			creationDates, err := utils.StringSliceToTimeSlice(
-				filterValues, "creation_dates")
+			dates, err := lo.MapErr(filterValues, func(date string, _ int) (iso8601.Time, error) {
+				return to.ISO8601(date)
+			})
 			if err != nil {
 				return filters, err
 			}
-			filters.CreationDates = new(lo.Map(creationDates, func(t time.Time, _ int) types.Date { return types.Date{Time: t} }))
+			filters.CreationDates = &dates
 		case "image_ids":
 			filters.ImageIds = &filterValues
 		case "is_source_dest_checked":
@@ -359,12 +362,13 @@ func buildOutscaleDataSourceVMFilters(set *schema.Set) (*osc.FiltersVm, error) {
 		case "nic_link_nic_device_numbers":
 			filters.NicLinkNicDeviceNumbers = new(utils.StringSliceToIntSlice(filterValues))
 		case "nic_link_nic_link_nic_dates":
-			linkDates, err := utils.StringSliceToTimeSlice(
-				filterValues, "nic_link_nic_link_nic_dates")
+			dates, err := lo.MapErr(filterValues, func(date string, _ int) (iso8601.Time, error) {
+				return to.ISO8601(date)
+			})
 			if err != nil {
 				return filters, err
 			}
-			filters.NicLinkNicLinkNicDates = new(lo.Map(linkDates, func(t time.Time, _ int) types.Date { return types.Date{Time: t} }))
+			filters.NicLinkNicLinkNicDates = &dates
 		case "nic_link_nic_link_nic_ids":
 			filters.NicLinkNicLinkNicIds = &filterValues
 		case "nic_link_nic_states":
