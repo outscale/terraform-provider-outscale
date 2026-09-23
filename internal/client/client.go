@@ -36,6 +36,7 @@ type Config struct {
 	UserAgent    string
 	ConfigFile   string
 	Profile      string
+	Sanitize     bool
 }
 
 func (cfg Config) ToOSCOption() profile.Option {
@@ -74,7 +75,7 @@ func NewOSCClient(cfg Config) (*osc.Client, error) {
 		profile.Endpoints.API = fmt.Sprintf("%s://api.%s.outscale.com/api/v1", profile.Protocol, profile.Region)
 	}
 
-	logger := options.WithLogging(logging.NewTflogWrapper())
+	logger := options.WithLogging(logging.NewTflogWrapper(cfg.Sanitize))
 	userAgent := options.WithUseragent(cfg.UserAgent)
 
 	return osc.NewClient(profile, userAgent, logger)
@@ -101,7 +102,7 @@ func NewOKSClient(cfg Config) (*oks.Client, error) {
 		return nil, fmt.Errorf("new profile: %w", err)
 	}
 
-	logger := options.WithLogging(logging.NewTflogWrapper())
+	logger := options.WithLogging(logging.NewTflogWrapper(cfg.Sanitize))
 	userAgent := options.WithUseragent(cfg.UserAgent)
 
 	return oks.NewClient(profile, userAgent, logger)

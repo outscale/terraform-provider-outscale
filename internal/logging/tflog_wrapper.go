@@ -6,29 +6,40 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
-	"regexp"
-	"slices"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/outscale/goutils/sdk/sanitize"
 )
 
-type tflogWrapper struct{}
+type tflogWrapper struct {
+	sanitize bool
+}
 
-func NewTflogWrapper() *tflogWrapper {
-	return &tflogWrapper{}
+func NewTflogWrapper(sanitize bool) *tflogWrapper {
+	return &tflogWrapper{
+		sanitize: sanitize,
+	}
 }
 
 func (t *tflogWrapper) RequestHttp(ctx context.Context, req *http.Request) {
 	reqStr := req.Method + " " + req.URL.String()
 
 	if req.GetBody != nil {
-		bodyReader, err := req.GetBody()
-		if err == nil {
-			bodyBytes, _ := io.ReadAll(bodyReader)
-			if len(bodyBytes) > 0 {
+		var bodyReader io.ReadCloser
+		var err error
+		if t.sanitize {
+			req = sanitize.HTTPRequest(req)
+			// req is already cloned, we can take the body directly
+			bodyReader = req.Body
+		} else {
+			bodyReader, err = req.GetBody()
+		}
+		if err == nil && bodyReader != nil {
+			bodyBytes, readErr := io.ReadAll(bodyReader)
+			_ = bodyReader.Close()
+			if readErr == nil && len(bodyBytes) > 0 {
 				bodyStr := string(bodyBytes)
 				var jsonData any
 				if json.Unmarshal(bodyBytes, &jsonData) == nil {
@@ -45,6 +56,9 @@ func (t *tflogWrapper) RequestHttp(ctx context.Context, req *http.Request) {
 }
 
 func (t *tflogWrapper) ResponseHttp(ctx context.Context, resp *http.Response, d time.Duration) {
+	if t.sanitize {
+		resp = sanitize.HTTPResponse(resp)
+	}
 	bodyBytes, _ := io.ReadAll(resp.Body)
 	resp.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 
@@ -55,7 +69,6 @@ func (t *tflogWrapper) ResponseHttp(ctx context.Context, resp *http.Response, d 
 		bodyStr := string(bodyBytes)
 		var jsonData any
 		if json.Unmarshal(bodyBytes, &jsonData) == nil {
-			jsonData = maskSensitiveValues(jsonData)
 			if prettyJSON, err := json.MarshalIndent(jsonData, "", "  "); err == nil {
 				bodyStr = string(prettyJSON)
 			}
@@ -72,17 +85,23 @@ func (t *tflogWrapper) ResponseHttp(ctx context.Context, resp *http.Response, d 
 }
 
 func (t *tflogWrapper) Request(ctx context.Context, req any) {
+	if t.sanitize {
+		req = sanitize.Sanitize(req)
+	}
 	tflog.Trace(ctx, "SDK request", map[string]any{
 		"body": req,
 	})
 }
 
 func (t *tflogWrapper) Response(ctx context.Context, resp any) {
+	if t.sanitize {
+		resp = sanitize.Sanitize(resp)
+	}
 	if jsonBytes, err := json.Marshal(resp); err == nil {
 		var jsonData any
 		if json.Unmarshal(jsonBytes, &jsonData) == nil {
 			tflog.Trace(ctx, "SDK response", map[string]any{
-				"body": maskSensitiveValues(jsonData),
+				"body": jsonData,
 			})
 			return
 		}
@@ -94,58 +113,12 @@ func (t *tflogWrapper) Response(ctx context.Context, resp any) {
 }
 
 func (t *tflogWrapper) Error(ctx context.Context, err error) {
+	errMsg := err.Error()
+	if t.sanitize {
+		errMsg = sanitize.String(errMsg)
+	}
+
 	tflog.Error(ctx, "SDK error", map[string]any{
-		"error": err.Error(),
+		"error": errMsg,
 	})
-}
-
-// Masks values of sensitive keys of JSON data.
-// It supports masking the values based on the key name,
-// and subvalues stored in a string (kubeconfig case).
-func maskSensitiveValues(data any) any {
-	mask := "(sensitive)"
-	sensitiveKeys := []string{
-		"client-certificate-data",
-		"client-key-data",
-		"certificate-authority-data",
-		"token",
-	}
-
-	sensitiveValueRegexes := make([]*regexp.Regexp, len(sensitiveKeys))
-	for i, key := range sensitiveKeys {
-		pattern := regexp.QuoteMeta(key) + `:\s*\S+`
-		sensitiveValueRegexes[i] = regexp.MustCompile(pattern)
-	}
-
-	switch v := data.(type) {
-	case map[string]any:
-		result := make(map[string]any)
-		for key, value := range v {
-			if slices.Contains(sensitiveKeys, key) {
-				result[key] = mask
-			} else if str, ok := value.(string); ok {
-				maskedStr := str
-				for _, regex := range sensitiveValueRegexes {
-					maskedStr = regex.ReplaceAllStringFunc(maskedStr, func(match string) string {
-						parts := strings.SplitN(match, ":", 2)
-						if len(parts) == 2 {
-							return parts[0] + ": " + mask
-						}
-						return mask
-					})
-				}
-				result[key] = maskedStr
-			} else {
-				result[key] = maskSensitiveValues(value)
-			}
-		}
-		return result
-	case []any:
-		for i, item := range v {
-			v[i] = maskSensitiveValues(item)
-		}
-		return v
-	default:
-		return v
-	}
 }
