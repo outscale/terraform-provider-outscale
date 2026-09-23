@@ -125,6 +125,11 @@ func Provider() *schema.Provider {
 				Optional:    true,
 				Description: "Name of your profile in which you define your credencial",
 			},
+			"sanitize": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Sanitize sensitive data in the logs. Defaults to true.",
+			},
 			"insecure": {
 				Type:        schema.TypeBool,
 				Optional:    true,
