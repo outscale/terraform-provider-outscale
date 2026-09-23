@@ -68,21 +68,21 @@
                         "flexible_gpus": [
                             {
                                 "delete_on_vm_deletion": true,
-                                "flexible_gpu_id": "##id-0##",
-                                "generation": "v5",
-                                "model_name": "nvidia-p6",
-                                "state": "attached",
-                                "subregion_name": "eu-west-2a",
-                                "vm_id": "##id-1##"
-                            },
-                            {
-                                "delete_on_vm_deletion": true,
                                 "flexible_gpu_id": "##id-2##",
                                 "generation": "v5",
                                 "model_name": "nvidia-p6",
                                 "state": "allocated",
-                                "subregion_name": "eu-west-2a",
+                                "subregion_name": "eu-west-2b",
                                 "vm_id": ""
+                            },
+                            {
+                                "delete_on_vm_deletion": true,
+                                "flexible_gpu_id": "##id-0##",
+                                "generation": "v5",
+                                "model_name": "nvidia-p6",
+                                "state": "attached",
+                                "subregion_name": "eu-west-2b",
+                                "vm_id": "##id-1##"
                             }
                         ],
                         "id": "##id-3##",
@@ -277,7 +277,7 @@
                         "nics": [],
                         "os_family": "",
                         "performance": "highest",
-                        "placement_subregion_name": "eu-west-2a",
+                        "placement_subregion_name": "########",
                         "placement_tenancy": "default",
                         "primary_nic": [],
                         "private_dns_name": "########",
@@ -324,6 +324,7 @@
                     "identity_schema_version": 0,
                     "private": "########",
                     "dependencies": [
+                        "outscale_flexible_gpu.fGPU-1",
                         "outscale_keypair.my_keypair",
                         "outscale_security_group.my_sgfgs",
                         "random_string.suffix"
