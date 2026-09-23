@@ -75,7 +75,7 @@ func (r *fgpuResource) ImportState(ctx context.Context, req resource.ImportState
 	if flexible_gpu_id == "" {
 		resp.Diagnostics.AddError(
 			"Unexpected Import Identifier",
-			fmt.Sprintf("Expected import net_resource identifier Got: %v", req.ID),
+			fmt.Sprintf("Expected import flexible_gpu identifier Got: %v", req.ID),
 		)
 		return
 	}

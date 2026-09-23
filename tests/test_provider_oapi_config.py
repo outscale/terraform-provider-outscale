@@ -40,6 +40,7 @@ OAPI_IGNORE_END_ELEMENTS = [
     "kubeconfig",
     "expiration_date",
     "private",
+    "placement_subregion_name",
     # Randomized values
     "bgp_asn",
     "load_balancer_name",

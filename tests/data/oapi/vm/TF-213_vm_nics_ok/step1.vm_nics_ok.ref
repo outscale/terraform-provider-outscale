@@ -282,7 +282,7 @@
                         ],
                         "os_family": "",
                         "performance": "high",
-                        "placement_subregion_name": "eu-west-2a",
+                        "placement_subregion_name": "########",
                         "placement_tenancy": "default",
                         "primary_nic": [
                             {

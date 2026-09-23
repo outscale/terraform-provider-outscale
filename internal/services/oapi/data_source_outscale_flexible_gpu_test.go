@@ -1,12 +1,10 @@
 package oapi_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
-	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
 
 func TestAccOthers_DataSourceFlexibleGpu_basic(t *testing.T) {
@@ -15,7 +13,7 @@ func TestAccOthers_DataSourceFlexibleGpu_basic(t *testing.T) {
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleFlexibleGpuConfig(utils.GetRegion()),
+				Config: testAccDataSourceOutscaleFlexibleGpuConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(datasourceName, "model_name"),
 					resource.TestCheckResourceAttrSet(datasourceName, "generation"),
@@ -27,12 +25,11 @@ func TestAccOthers_DataSourceFlexibleGpu_basic(t *testing.T) {
 	})
 }
 
-func testAccDataSourceOutscaleFlexibleGpuConfig(region string) string {
-	return fmt.Sprintf(`
+func testAccDataSourceOutscaleFlexibleGpuConfig() string {
+	return `
                 resource "outscale_flexible_gpu" "dataGPU" {
                         model_name             =  "nvidia-p6"
                         generation             =  "v5"
-                        subregion_name         =  "%sa"
                         delete_on_vm_deletion  =   true
                 }
 
@@ -57,10 +54,6 @@ func testAccDataSourceOutscaleFlexibleGpuConfig(region string) string {
                                 name = "model_names"
                                 values = ["nvidia-p6"]
                         }
-	                filter {
-                                name = "subregion_names"
-                                values = ["%[1]sa"]
-                        }
 		}
-	`, region)
+	`
 }

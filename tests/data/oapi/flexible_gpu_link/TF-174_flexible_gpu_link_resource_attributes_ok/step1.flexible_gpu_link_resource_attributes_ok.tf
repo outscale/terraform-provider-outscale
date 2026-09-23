@@ -12,7 +12,7 @@ resource "outscale_vm" "MaVM" {
   vm_type                        = var.fgpu_vm_type
   keypair_name                   = outscale_keypair.my_keypair.keypair_name
   security_group_ids             = [outscale_security_group.my_sgfg_link.security_group_id]
-  placement_subregion_name       = "${var.region}a"
+  placement_subregion_name       = outscale_flexible_gpu.fGPU-1.subregion_name
   vm_initiated_shutdown_behavior = "restart"
 }
 

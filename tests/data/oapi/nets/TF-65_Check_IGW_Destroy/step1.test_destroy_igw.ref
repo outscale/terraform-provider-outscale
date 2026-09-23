@@ -958,7 +958,7 @@
                         ],
                         "os_family": "",
                         "performance": "highest",
-                        "placement_subregion_name": "us-east-2a",
+                        "placement_subregion_name": "########",
                         "placement_tenancy": "default",
                         "primary_nic": [
                             {
@@ -1142,7 +1142,7 @@
                         ],
                         "os_family": "",
                         "performance": "highest",
-                        "placement_subregion_name": "us-east-2a",
+                        "placement_subregion_name": "########",
                         "placement_tenancy": "default",
                         "primary_nic": [
                             {
@@ -1326,7 +1326,7 @@
                         ],
                         "os_family": "",
                         "performance": "highest",
-                        "placement_subregion_name": "us-east-2a",
+                        "placement_subregion_name": "########",
                         "placement_tenancy": "default",
                         "primary_nic": [
                             {
@@ -1518,7 +1518,7 @@
                         ],
                         "os_family": "",
                         "performance": "highest",
-                        "placement_subregion_name": "us-east-2a",
+                        "placement_subregion_name": "########",
                         "placement_tenancy": "default",
                         "primary_nic": [
                             {
@@ -1702,7 +1702,7 @@
                         ],
                         "os_family": "",
                         "performance": "highest",
-                        "placement_subregion_name": "us-east-2a",
+                        "placement_subregion_name": "########",
                         "placement_tenancy": "default",
                         "primary_nic": [
                             {
@@ -1886,7 +1886,7 @@
                         ],
                         "os_family": "",
                         "performance": "highest",
-                        "placement_subregion_name": "us-east-2a",
+                        "placement_subregion_name": "########",
                         "placement_tenancy": "default",
                         "primary_nic": [
                             {
