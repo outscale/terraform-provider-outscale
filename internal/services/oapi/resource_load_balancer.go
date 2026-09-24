@@ -42,6 +42,9 @@ const (
 	loadBalancerErrUpdateListeners = "Unable to update Load Balancer listeners"
 	loadBalancerErrDelete          = "Unable to delete Load Balancer"
 	loadBalancerErrWait            = "Unable to wait for Load Balancer state"
+
+	loadBalancerCreateTimeout = 15 * time.Minute
+	loadBalancerDeleteTimeout = 10 * time.Minute
 )
 
 type loadBalancerModel struct {
@@ -447,7 +450,7 @@ func (r *loadBalancerResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
-	timeout, diags := data.Timeouts.Create(ctx, CreateDefaultTimeout)
+	timeout, diags := data.Timeouts.Create(ctx, loadBalancerCreateTimeout)
 	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
@@ -690,7 +693,7 @@ func (r *loadBalancerResource) Delete(ctx context.Context, req resource.DeleteRe
 		return
 	}
 
-	timeout, diags := data.Timeouts.Delete(ctx, DeleteDefaultTimeout)
+	timeout, diags := data.Timeouts.Delete(ctx, loadBalancerDeleteTimeout)
 	if fwhelpers.CheckDiags(resp, diags) {
 		return
 	}
