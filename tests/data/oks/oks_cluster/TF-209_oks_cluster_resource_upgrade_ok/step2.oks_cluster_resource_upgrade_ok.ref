@@ -28,6 +28,7 @@
                                 "DefaultStorageClass",
                                 "DefaultTolerationSeconds",
                                 "LimitRanger",
+                                "MutatingAdmissionPolicy",
                                 "MutatingAdmissionWebhook",
                                 "NamespaceLifecycle",
                                 "PersistentVolumeClaimResize",

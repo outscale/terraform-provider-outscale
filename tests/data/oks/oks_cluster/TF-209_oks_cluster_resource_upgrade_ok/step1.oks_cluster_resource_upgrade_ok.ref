@@ -28,7 +28,6 @@
                                 "DefaultStorageClass",
                                 "DefaultTolerationSeconds",
                                 "LimitRanger",
-                                "MutatingAdmissionWebhook",
                                 "NamespaceLifecycle",
                                 "PersistentVolumeClaimResize",
                                 "PodSecurity",
