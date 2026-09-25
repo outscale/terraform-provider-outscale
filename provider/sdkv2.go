@@ -103,6 +103,23 @@ func Provider() *schema.Provider {
 					},
 				},
 			},
+			"oos": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"endpoint": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"region": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+					},
+				},
+			},
 			"x509_cert_path": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -301,78 +318,30 @@ func buildOSCConfig(d *schema.ResourceData) client.Config {
 	return config
 }
 
-func buildOKSConfig(d *schema.ResourceData) client.Config {
-	var config client.Config
-
-	if oksList, ok := d.GetOk("oks"); ok {
-		oksSlice, ok := oksList.([]any)
-		if ok && len(oksSlice) > 0 {
-			if oksBlock, ok := oksSlice[0].(map[string]any); ok {
-				if v, ok := oksBlock["endpoint"].(string); ok {
-					config.OKSEndpoint = v
-				}
-				if v, ok := oksBlock["region"].(string); ok {
-					config.Region = v
-				}
-			}
-		}
-	}
-
-	// fallback to deprecated configuration
-	if config.OKSEndpoint == "" {
-		endpointsSet := d.Get("endpoints").(*schema.Set)
-		for _, endpointsSetI := range endpointsSet.List() {
-			if endpoints, ok := endpointsSetI.(map[string]any); ok {
-				if v, ok := endpoints["oks"].(string); ok && v != "" {
-					config.OKSEndpoint = v
-				}
-			}
-		}
-	}
-	if config.Region == "" {
-		if v, ok := d.GetOk("region"); ok {
-			config.Region = v.(string)
-		}
-	}
-
-	return config
-}
-
 func providerConfigureClient(ctx context.Context, d *schema.ResourceData) (any, diag.Diagnostics) {
 	oscConfig := buildOSCConfig(d)
-	oksConfig := buildOKSConfig(d)
 
 	// Attributes global to any service
 	if v, ok := d.GetOk("access_key_id"); ok {
 		oscConfig.AccessKey = v.(string)
-		oksConfig.AccessKey = v.(string)
 	}
 	if v, ok := d.GetOk("secret_key_id"); ok {
 		oscConfig.SecretKey = v.(string)
-		oksConfig.SecretKey = v.(string)
 	}
 	if v, ok := d.GetOk("profile"); ok {
 		oscConfig.Profile = v.(string)
-		oksConfig.Profile = v.(string)
 	}
 	if v, ok := d.GetOk("config_file"); ok {
 		oscConfig.ConfigFile = v.(string)
-		oksConfig.ConfigFile = v.(string)
 	}
 	oscConfig.UserAgent = UserAgent
-	oksConfig.UserAgent = UserAgent
 
 	oscClient, err := client.NewOSCClient(oscConfig)
 	if err != nil {
 		return nil, diag.FromErr(err)
 	}
-	oksClient, err := client.NewOKSClient(oksConfig)
-	if err != nil {
-		return nil, diag.FromErr(err)
-	}
 	outscaleClient := &client.OutscaleClient{
 		OSC: oscClient,
-		OKS: oksClient,
 	}
 
 	// Create a long-lived context for batchers with tflog subsystem configured
