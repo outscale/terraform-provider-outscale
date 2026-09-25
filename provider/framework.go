@@ -56,6 +56,7 @@ type ProviderModel struct {
 	OKS        types.List   `tfsdk:"oks"`
 	ConfigFile types.String `tfsdk:"config_file"`
 	Profile    types.String `tfsdk:"profile"`
+	Sanitize   types.Bool   `tfsdk:"sanitize"`
 
 	// Deprecated
 	X509KeyPath  types.String `tfsdk:"x509_key_path"`
@@ -173,6 +174,10 @@ func (p *FrameworkProvider) Schema(ctx context.Context, req provider.SchemaReque
 				Optional:    true,
 				Description: "Name of your profile in which you define your credencial",
 			},
+			"sanitize": schema.BoolAttribute{
+				Optional:    true,
+				Description: "Sanitize sensitive data in the logs. Defaults to true.",
+			},
 			// Deprecated attributes
 			"x509_cert_path": schema.StringAttribute{
 				Optional:           true,
@@ -207,6 +212,10 @@ func (p *FrameworkProvider) Configure(ctx context.Context, req provider.Configur
 	diag := req.Config.Get(ctx, &config)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
+	}
+
+	if !fwhelpers.IsSet(config.Sanitize) {
+		config.Sanitize = types.BoolValue(true)
 	}
 
 	client, err := config.newClient(ctx)
@@ -341,6 +350,8 @@ func (data *ProviderModel) newClient(ctx context.Context) (*client.OutscaleClien
 		oscConfig.ConfigFile = data.ConfigFile.ValueString()
 		oksConfig.ConfigFile = data.ConfigFile.ValueString()
 	}
+	oscConfig.Sanitize = data.Sanitize.ValueBool()
+	oksConfig.Sanitize = data.Sanitize.ValueBool()
 	oscConfig.UserAgent = UserAgent
 	oksConfig.UserAgent = UserAgent
 
