@@ -1,0 +1,39 @@
+name: OOS - Acceptance Tests
+
+on:
+    pull_request:
+        branches:
+            - main
+        paths:
+            - ".github/workflows/oos_testacc.yml"
+            - ".github/workflows/reusable_acceptance_test.yml"
+            - "internal/services/oos/**"
+            - "internal/client/**"
+            - "internal/testacc/**"
+            - "internal/fwhelpers/**"
+            - "internal/fwmodifyplan/**"
+            - "internal/fwvalidators/**"
+            - "internal/utils/**"
+            - "provider/**"
+            - "go.sum"
+            - "go.mod"
+            - "GNUmakefile"
+    workflow_dispatch:
+
+permissions:
+    contents: read
+    id-token: write
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    oos-tests:
+        uses: ./.github/workflows/reusable_acceptance_test.yml
+        with:
+            test-command: testacc-oos
+            region: eu-west-2
+            service: oos
+            providers: outscale_oos
+        secrets: inherit
