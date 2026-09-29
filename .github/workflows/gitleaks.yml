@@ -1,0 +1,24 @@
+name: Gitleaks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: outscale/.github/gitleaks@2d75eac744aeab89dc784a17c9c99e9881c6e30d
+        with:
+          gitleaks-license: ${{ secrets.GITLEAKS_LICENSE }}
