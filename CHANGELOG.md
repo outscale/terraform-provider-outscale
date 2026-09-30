@@ -38,6 +38,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### 🌱 Others
 - (nothing yet)
 
+## [1.8.1] - 2026-09-30
+
+### 🛠️ Changed / Refactoring
+* 👽 refactor: increase load_balancer default create/delete timeouts by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/826
+
+### 🐛 Fixed
+* 🐛 fix(nic_link): remove from state when deleted/detached by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/823
+* 🐛 fix(oapi_tags): validation error with unknown keys by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/837
+* 🐛 fix(volume): snapshot tag could not be created on volume deletion by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/838
+
 ## [1.8.0] - 2026-08-12
 
 ### ✨ Added
