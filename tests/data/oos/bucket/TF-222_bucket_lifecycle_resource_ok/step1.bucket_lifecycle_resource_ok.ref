@@ -1,0 +1,144 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "managed",
+            "type": "outscale_oos_bucket",
+            "name": "bucket",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "acl": null,
+                        "creation_date": "########",
+                        "force_delete": false,
+                        "grant": null,
+                        "id": "##id-0##",
+                        "location_name": null,
+                        "name": "##id-0##",
+                        "object_lock": {
+                            "default_retention": null,
+                            "enabled": false
+                        },
+                        "permissions": {
+                            "grants": [
+                                {
+                                    "grantee": {
+                                        "display_name": "########",
+                                        "email_address": "########",
+                                        "id": "##id-1##",
+                                        "type": "CanonicalUser",
+                                        "uri": null
+                                    },
+                                    "permission": "FULL_CONTROL"
+                                }
+                            ],
+                            "owner": {
+                                "display_name": "########",
+                                "id": "##id-1##"
+                            }
+                        },
+                        "timeouts": null
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_oos_bucket_lifecycle",
+            "name": "lifecycle",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "bucket": "##id-0##",
+                        "id": "##id-0##",
+                        "rule": [
+                            {
+                                "abort_incomplete_multipart_upload": {
+                                    "days_after_initiation": 7
+                                },
+                                "expiration": null,
+                                "filter": {
+                                    "and": null,
+                                    "prefix": "uploads/"
+                                },
+                                "id": "##id-2##",
+                                "noncurrent_version_expiration": null,
+                                "status": "Enabled"
+                            },
+                            {
+                                "abort_incomplete_multipart_upload": null,
+                                "expiration": {
+                                    "date": "2050-01-01T00:00:00Z",
+                                    "days": null,
+                                    "expired_object_delete_marker": null
+                                },
+                                "filter": {
+                                    "and": null,
+                                    "prefix": "docs/"
+                                },
+                                "id": "##id-3##",
+                                "noncurrent_version_expiration": null,
+                                "status": "Enabled"
+                            },
+                            {
+                                "abort_incomplete_multipart_upload": null,
+                                "expiration": {
+                                    "date": null,
+                                    "days": 30,
+                                    "expired_object_delete_marker": null
+                                },
+                                "filter": {
+                                    "and": {
+                                        "prefix": "dir/",
+                                        "tags": {
+                                            "category": "test",
+                                            "owner": "user"
+                                        }
+                                    },
+                                    "prefix": null
+                                },
+                                "id": "##id-4##",
+                                "noncurrent_version_expiration": {
+                                    "noncurrent_days": 45
+                                },
+                                "status": "Disabled"
+                            },
+                            {
+                                "abort_incomplete_multipart_upload": null,
+                                "expiration": {
+                                    "date": null,
+                                    "days": null,
+                                    "expired_object_delete_marker": true
+                                },
+                                "filter": {
+                                    "and": null,
+                                    "prefix": null
+                                },
+                                "id": "##id-5##",
+                                "noncurrent_version_expiration": null,
+                                "status": "Enabled"
+                            }
+                        ],
+                        "timeouts": null
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "outscale_oos_bucket.bucket"
+                    ]
+                }
+            ]
+        }
+    ],
+    "check_results": "########"
+}

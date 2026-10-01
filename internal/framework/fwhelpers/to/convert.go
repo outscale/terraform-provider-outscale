@@ -27,6 +27,14 @@ func String[T ~string | *string](v T) types.String {
 	return types.StringValue(reflect.Indirect(rv).String())
 }
 
+func StringEnum[T ~string](v T) types.String {
+	// When a "go enum" is not defined, the value is the default string value, which we want to treat as a null terraform value
+	if v == "" {
+		return types.StringNull()
+	}
+	return types.StringValue(string(v))
+}
+
 func ISO8601[T string | *string | time.Time | *time.Time](v T) (iso8601.Time, error) {
 	switch v := any(v).(type) {
 	case string:
@@ -319,4 +327,41 @@ func ObjType(attrTypes map[string]attr.Type) types.ObjectType {
 
 func Object[T any](ctx context.Context, model T) (types.Object, diag.Diagnostics) {
 	return types.ObjectValueFrom(ctx, fwhelpers.GetAttrTypes(model), model)
+}
+
+func ObjectNull[T any]() types.Object {
+	var model T
+	return types.ObjectNull(fwhelpers.GetAttrTypes(model))
+}
+
+func ObjectFromAttrType(ctx context.Context, model any, attrTypes map[string]attr.Type) (types.Object, diag.Diagnostics) {
+	return types.ObjectValueFrom(ctx, attrTypes, model)
+}
+
+func MapFromAttrType[T any](ctx context.Context, m map[string]T, attrType attr.Type, asEmpty ...bool) (types.Map, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if len(m) == 0 {
+		if len(asEmpty) > 0 && asEmpty[0] {
+			return types.MapValueMust(attrType, map[string]attr.Value{}), diags
+		}
+
+		return types.MapNull(attrType), diags
+	}
+
+	mapVal, d := types.MapValueFrom(ctx, attrType, m)
+	diags.Append(d...)
+
+	return mapVal, diags
+}
+
+func MapObject[T any](ctx context.Context, m map[string]T, asEmpty ...bool) (types.Map, diag.Diagnostics) {
+	var zeroVal T
+	attrTypes := fwhelpers.GetAttrTypes(zeroVal)
+
+	return MapFromAttrType(ctx, m, ObjType(attrTypes), asEmpty...)
+}
+
+func Map[T any](ctx context.Context, m map[string]T, asEmpty ...bool) (types.Map, diag.Diagnostics) {
+	return MapFromAttrType(ctx, m, attrType[T](), asEmpty...)
 }

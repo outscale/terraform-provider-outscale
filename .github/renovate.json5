@@ -8,6 +8,10 @@
             "matchSourceUrls": ["https://github.com/hashicorp/**"],
             "groupName": "terraform monorepo",
             "matchUpdateTypes": ["digest", "patch", "minor", "major"]
+        },
+        {
+        // let osc-sdk-go manage its own direct dependencies
+            "ignoreDeps": ["github.com/oapi-codegen/runtime", "github.com/aws/aws-sdk-go-v2", "github.com/aws/aws-sdk-go-v2/config", "github.com/aws/aws-sdk-go-v2/service/s3"]
         }
     ]
 }
