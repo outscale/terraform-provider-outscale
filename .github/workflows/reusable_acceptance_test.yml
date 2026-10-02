@@ -15,27 +15,32 @@ on:
             providers:
                 required: true
                 type: string
+            account:
+                required: true
+                type: string
 
 permissions:
     contents: read
+    id-token: write
 
 jobs:
     acceptance-test:
         environment: test-${{ inputs.region }}
         runs-on:
-            - self-hosted
-            - linux
+            - authenticated
             - ${{ inputs.region }}
             - ${{ inputs.service }}
         steps:
-            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-            - uses: outscale/frieza-github-actions/frieza-clean@1a8eba5199913da60ae6d92d6050e17410186a38 # v0.16.1
+            - name: 🔒🧹 Setup Vault & Frieza
+              id: secrets
+              uses: outscale/.github/vault-frieza-clean@ab8cd066d869881a717e417a3187c222bdd71db1
               with:
-                  access_key: ${{ secrets.OSC_ACCESS_KEY }}
-                  secret_key: ${{ secrets.OSC_SECRET_KEY }}
-                  region: ${{ secrets.OSC_REGION }}
-                  providers: ${{ inputs.providers }}
-                  bypass_deletion_protection: true
+                vault_role: outscale-terraform-provider-outscale
+                osc_account: ${{ inputs.account }}
+                providers: ${{ inputs.providers }}
+                bypass_deletion_protection: true
+                exclude_resource_types: access_key
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
             - name: Set up Go
               uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
               with:
@@ -48,22 +53,10 @@ jobs:
             - name: Build go test
               run: make test
               env:
-                  OUTSCALE_ACCESSKEYID: ${{ secrets.OSC_ACCESS_KEY }}
-                  OUTSCALE_SECRETKEYID: ${{ secrets.OSC_SECRET_KEY }}
-                  OUTSCALE_REGION: ${{ secrets.OSC_REGION }}
                   OUTSCALE_ACCOUNT: ${{ secrets.OSC_ACCOUNT_ID }}
                   OUTSCALE_IMAGEID: ${{ secrets.OUTSCALE_IMAGEID }}
-                  OSC_ACCESS_KEY: ${{ secrets.OSC_ACCESS_KEY }}
-                  OSC_SECRET_KEY: ${{ secrets.OSC_SECRET_KEY }}
-                  OSC_REGION: ${{ secrets.OSC_REGION }}
             - name: Run acceptance tests
               run: make ${{ inputs.test-command }}
               env:
-                  OUTSCALE_ACCESSKEYID: ${{ secrets.OSC_ACCESS_KEY }}
-                  OUTSCALE_SECRETKEYID: ${{ secrets.OSC_SECRET_KEY }}
-                  OUTSCALE_REGION: ${{ secrets.OSC_REGION }}
                   OUTSCALE_ACCOUNT: ${{ secrets.OSC_ACCOUNT_ID }}
                   OUTSCALE_IMAGEID: ${{ secrets.OUTSCALE_IMAGEID }}
-                  OSC_ACCESS_KEY: ${{ secrets.OSC_ACCESS_KEY }}
-                  OSC_SECRET_KEY: ${{ secrets.OSC_SECRET_KEY }}
-                  OSC_REGION: ${{ secrets.OSC_REGION }}
