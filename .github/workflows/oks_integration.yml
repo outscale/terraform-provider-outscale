@@ -28,6 +28,7 @@ on:
 
 permissions:
     contents: read
+    id-token: write
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
@@ -40,5 +41,6 @@ jobs:
             test-command: test-integration-oks
             region: eu-west-2
             service: oks
+            account: maple
             providers: outscale_oks
         secrets: inherit

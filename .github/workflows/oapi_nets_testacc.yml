@@ -22,6 +22,7 @@ on:
 
 permissions:
     contents: read
+    id-token: write
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
@@ -34,5 +35,6 @@ jobs:
             test-command: testacc-oapi-net
             region: us-east-2
             service: oapi
+            account: pine
             providers: outscale_oapi,outscale_oos
         secrets: inherit
