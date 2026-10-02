@@ -15,19 +15,30 @@ on:
             providers:
                 required: true
                 type: string
+            account:
+                required: true
+                type: string
 
 permissions:
     contents: read
+    id-token: write
 
 jobs:
     acceptance-test:
         environment: test-${{ inputs.region }}
         runs-on:
-            - self-hosted
-            - linux
+            - authenticated
             - ${{ inputs.region }}
             - ${{ inputs.service }}
         steps:
+            - name: 🔒🧹 Setup Vault & Frieza
+              id: secrets
+              uses: outscale/.github/vault-frieza-clean@eb7bd1e0360703d0ad355bce46029ae8d49bac04
+              with:
+                vault_role: outscale-terraform-provider-outscale
+                osc_account: ${{ inputs.account }}
+                providers: ${{ inputs.providers }}
+                # bypass_deletion_protection: true
             - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
             - uses: outscale/frieza-github-actions/frieza-clean@1a8eba5199913da60ae6d92d6050e17410186a38 # v0.16.1
               with:

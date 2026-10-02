@@ -8,6 +8,7 @@ on:
 
 permissions:
     contents: read
+    id-token: write
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
@@ -20,6 +21,7 @@ jobs:
             test-command: testacc-oapi-net
             region: us-east-2
             service: oapi
+            account: pine
             providers: outscale_oapi,outscale_oos
         secrets: inherit
 
@@ -29,6 +31,7 @@ jobs:
             test-command: testacc-oapi-vm
             region: eu-west-2
             service: oapi
+            account: maple
             providers: outscale_oapi,outscale_oos
         secrets: inherit
 
@@ -38,6 +41,7 @@ jobs:
             test-command: testacc-oapi-others
             region: eu-west-2
             service: oapi
+            account: maple
             providers: outscale_oapi,outscale_oos
         secrets: inherit
 
@@ -47,6 +51,7 @@ jobs:
             test-command: testacc-oks
             region: eu-west-2
             service: oks
+            account: maple
             providers: outscale_oks
         secrets: inherit
 
@@ -56,5 +61,6 @@ jobs:
             test-command: testacc-provider
             region: eu-west-2
             service: oapi
+            account: maple
             providers: outscale_oapi
         secrets: inherit
