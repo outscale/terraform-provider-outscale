@@ -1,0 +1,46 @@
+name: OOS - Integration Tests
+
+on:
+    pull_request:
+        branches:
+            - main
+        paths:
+            - ".github/workflows/oos_integration.yml"
+            - ".github/workflows/reusable_integration_test.yml"
+            - "internal/services/oos/**"
+            - "internal/client/**"
+            - "internal/testacc/**"
+            - "internal/fwhelpers/**"
+            - "internal/fwmodifyplan/**"
+            - "internal/fwvalidators/**"
+            - "internal/utils/**"
+            - "provider/**"
+            - "tests/data/oos/**"
+            - "tests/test_provider_oos.py"
+            - "tests/test_provider_base.py"
+            - "tests/test_provider_oos_config.py"
+            - "scripts/test-integration.sh"
+            - "scripts/test-integration-common.sh"
+            - "go.sum"
+            - "go.mod"
+            - "GNUmakefile"
+    workflow_dispatch:
+
+permissions:
+    contents: read
+    id-token: write
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    oos-integration-tests:
+        uses: ./.github/workflows/reusable_integration_test.yml
+        with:
+            test-command: test-integration-oos
+            region: eu-west-2
+            service: oos
+            account: maple
+            providers: outscale_oos
+        secrets: inherit

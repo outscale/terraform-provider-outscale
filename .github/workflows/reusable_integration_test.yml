@@ -33,7 +33,7 @@ jobs:
         steps:
             - name: 🔒🧹 Setup Vault & Frieza
               id: secrets
-              uses: outscale/.github/vault-frieza-clean@ab8cd066d869881a717e417a3187c222bdd71db1
+              uses: outscale/.github/vault-frieza-clean@a49bd74a4b54c0550bd19d4dc939be09ae951148
               with:
                 vault_role: outscale-terraform-provider-outscale
                 osc_account: ${{ inputs.account }}
