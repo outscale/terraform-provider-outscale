@@ -145,6 +145,7 @@ func Provider() *schema.Provider {
 			"sanitize": {
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Default:     true,
 				Description: "Sanitize sensitive data in the logs. Defaults to true.",
 			},
 			"insecure": {
@@ -340,6 +341,7 @@ func providerConfigureClient(ctx context.Context, d *schema.ResourceData) (any, 
 		oscConfig.ConfigFile = v.(string)
 	}
 	oscConfig.UserAgent = UserAgent
+	oscConfig.Sanitize = d.Get("sanitize").(bool)
 
 	oscClient, err := client.NewOSCClient(oscConfig)
 	if err != nil {
