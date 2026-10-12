@@ -238,6 +238,8 @@ func (p *FrameworkProvider) Configure(ctx context.Context, req provider.Configur
 		return
 	}
 
+	// Framework Schema does not handles default values.
+	// If not set during Configure, we set them
 	if !fwhelpers.IsSet(config.Sanitize) {
 		config.Sanitize = types.BoolValue(true)
 	}
