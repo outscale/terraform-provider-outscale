@@ -38,6 +38,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### 🌱 Others
 - (nothing yet)
 
+## [1.9.0-beta.1] - 2026-10-12
+
+### ✨ Added
+* 🔊 feat: add sanitizer option by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/839
+* ✨ feat: oos resources by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/828
+
+### 📝 Documentation
+* 📝 docs(oos): categorize resources by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/847
+* 📝 docs: add provider attributes  by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/850
+
+### 🐛 Fixed
+* 🐛 fix(provider): sanitize not set on sdkv2 resources by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/851
+
 ## [1.8.1] - 2026-09-30
 
 ### 🛠️ Changed / Refactoring
