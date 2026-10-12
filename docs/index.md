@@ -57,9 +57,7 @@ Example:
 provider "outscale" {
   access_key_id = "myaccesskey"
   secret_key_id = "mysecretkey"
-  api {
-    region = "eu-west-2"
-  }
+  region = "eu-west-2"
 }
 ```
 
@@ -139,6 +137,7 @@ In addition to [generic provider arguments](https://www.terraform.io/docs/config
 * `profile` - (Optional) The named profile you want to use in the OSC config file. It can also be sourced from the `OSC_PROFILE` [environment variable](#set-a-profile-using-environment-variables).
 * `access_key_id` - (Optional) The ID of the OUTSCALE access key. It must be provided, but it can also be sourced from the `OSC_ACCESS_KEY` [environment variable](#environment-variables).
 * `secret_key_id` - (Optional) The OUTSCALE secret key. It must be provided, but it can also be sourced from the `OSC_SECRET_KEY` [environment variable](#environment-variables).
+* `region` - (Optional) The Region to use for OUTSCALE API, OKS API and OOS API operations. It can also be sourced from the `OSC_REGION` [environment variable](#environment-variables). For more information on available Regions, see [About Regions and Subregions](https://docs.outscale.com/en/userguide/About-Regions-and-Subregions.html).
 * `api` - (Optional) Configuration elements for OUTSCALE API operations.
     * `endpoint` - (Optional) The server endpoint to use for OUTSCALE API operations. The underlying HTTP client expects a server URL with scheme, and it may include a path prefix. Example: `https://api.eu-west-2.outscale.com/api/v1`. For backward compatibility, the provider also accepts `api.<region>.outscale.com` and `https://api.<region>.outscale.com` and normalizes them to the default `/api/v1` endpoint. It can also be sourced from the `OSC_ENDPOINT_API` [environment variable](#environment-variables). For more information on available endpoints, see [API Endpoints Reference > OUTSCALE API](https://docs.outscale.com/en/userguide/API-Endpoints-Reference.html#_outscale_api).
     * `region` - (Optional) The Region to use for OUTSCALE API operations. It can also be sourced from the `OSC_REGION` [environment variable](#environment-variables). For more information on available Regions, see [About Regions and Subregions](https://docs.outscale.com/en/userguide/About-Regions-and-Subregions.html).
@@ -153,7 +152,6 @@ The following top-level arguments are deprecated but still supported as a fallba
 * `endpoints` - (Optional, deprecated) The endpoints to use for OUTSCALE API and OKS API operations. For more information on available endpoints, see [Regions, Endpoints and Availability Zones Reference](https://docs.outscale.com/en/userguide/Regions-Endpoints-and-Availability-Zones-Reference.html).
     * `api` - (Optional, deprecated) For OUTSCALE API.
     * `oks` - (Optional, deprecated) For OKS API.
-* `region` - (Optional, deprecated) The Region to use for OUTSCALE API and OKS API operations. It can also be sourced from the `OSC_REGION` [environment variable](#environment-variables). For more information on available Regions, see [About Regions and Subregions](https://docs.outscale.com/en/userguide/About-Regions-and-Subregions.html).
 * `x509_cert_path` - (Optional, deprecated) The path to the x509 Client Certificate. It can also be sourced from the `OSC_X509_CLIENT_CERT` [environment variable](#environment-variables). For more information on the use of those certificates, see [About API Access Rules](https://docs.outscale.com/en/userguide/About-API-Access-Rules.html).
 * `x509_key_path` - (Optional, deprecated) The path to the private key of the x509 Client Certificate. It can also be sourced from the `OSC_X509_CLIENT_KEY` [environment variable](#environment-variables). For more information on the use of those certificates, see [About API Access Rules](https://docs.outscale.com/en/userguide/About-API-Access-Rules.html).
 * `insecure` - (Optional, deprecated) Enables TLS insecure connection.
