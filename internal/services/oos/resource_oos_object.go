@@ -53,12 +53,9 @@ const (
 	objectErrPutTags     = "Unable to put tags on Object"
 )
 
-type objectModel struct {
+type objectCommonModel struct {
 	Bucket             types.String      `tfsdk:"bucket"`
 	Key                types.String      `tfsdk:"key"`
-	Content            types.String      `tfsdk:"content"`
-	ContentB64         types.String      `tfsdk:"content_base64"`
-	Source             types.String      `tfsdk:"source"`
 	ACL                types.String      `tfsdk:"acl"`
 	Grant              types.Object      `tfsdk:"grant"`
 	Permissions        types.Object      `tfsdk:"permissions"`
@@ -82,8 +79,21 @@ type objectModel struct {
 	Timeouts           timeouts.Value    `tfsdk:"timeouts"`
 }
 
-type objectResource struct {
+type objectModel struct {
+	objectCommonModel
+	Content    types.String `tfsdk:"content"`
+	ContentB64 types.String `tfsdk:"content_base64"`
+	Source     types.String `tfsdk:"source"`
+}
+
+type objectCommon struct {
+	// Struct used to share oos_common.go funcs
 	resourceCommon
+}
+
+type objectResource struct {
+	// Struct used to share oos_object.go funcs
+	objectCommon
 }
 
 func NewResourceObject() resource.Resource {
@@ -112,6 +122,10 @@ func (r *objectResource) Metadata(_ context.Context, req resource.MetadataReques
 }
 
 func (r *objectResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	r.modifyPlan(ctx, req, resp)
+}
+
+func (r *objectCommon) modifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	if !req.State.Raw.IsNull() || req.Plan.Raw.IsNull() || r.Client == nil {
 		return
 	}
@@ -144,7 +158,7 @@ func (r *objectResource) ModifyPlan(ctx context.Context, req resource.ModifyPlan
 		path.Root("key"),
 		"Existing Object Will Be Overwritten",
 		fmt.Sprintf(
-			"Object %q already exists in bucket %q, where versioning is not enabled. Applying this plan will overwrite the existing object with PutObject, and its current contents may not be recoverable. You may enable bucket versioning or use a different key before applying.",
+			"Object %q already exists in bucket %q, where versioning is not enabled. Applying this plan will overwrite the existing object, and its current contents may not be recoverable. You may enable bucket versioning or use a different key before applying.",
 			key.ValueString(),
 			bucket.ValueString(),
 		),
@@ -251,9 +265,10 @@ func (r *objectResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 				},
 			},
 			"content_language": schema.StringAttribute{
+				Computed: true,
 				Optional: true,
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.RequiresReplaceIfConfigured(),
 				},
 			},
 			"content_type": schema.StringAttribute{
@@ -386,19 +401,14 @@ func (r *objectResource) Create(ctx context.Context, req resource.CreateRequest,
 
 	bucket := data.Bucket.ValueString()
 	input := &s3.PutObjectInput{
-		Body:   body,
-		Bucket: data.Bucket.ValueStringPointer(),
-		Key:    data.Key.ValueStringPointer(),
+		Body:               body,
+		Bucket:             data.Bucket.ValueStringPointer(),
+		Key:                data.Key.ValueStringPointer(),
+		CacheControl:       data.CacheControl.ValueStringPointer(),
+		ContentDisposition: data.ContentDisposition.ValueStringPointer(),
+		ContentEncoding:    data.ContentEncoding.ValueStringPointer(),
 	}
-	if fwhelpers.IsSet(data.CacheControl) {
-		input.CacheControl = data.CacheControl.ValueStringPointer()
-	}
-	if fwhelpers.IsSet(data.ContentDisposition) {
-		input.ContentDisposition = data.ContentDisposition.ValueStringPointer()
-	}
-	if fwhelpers.IsSet(data.ContentEncoding) {
-		input.ContentEncoding = data.ContentEncoding.ValueStringPointer()
-	}
+
 	if fwhelpers.IsSet(data.ContentLanguage) {
 		input.ContentLanguage = data.ContentLanguage.ValueStringPointer()
 	}
@@ -406,14 +416,12 @@ func (r *objectResource) Create(ctx context.Context, req resource.CreateRequest,
 		input.ContentType = data.ContentType.ValueStringPointer()
 	}
 
-	if fwhelpers.IsSet(data.Expires) {
-		expires, err := time.Parse(time.RFC3339, data.Expires.ValueString())
-		if err != nil {
-			resp.Diagnostics.AddError(objectErrCreate, err.Error())
-		}
-
-		input.Expires = &expires
+	expires, err := from.RFC3339(data.Expires)
+	if err != nil {
+		resp.Diagnostics.AddError(objectErrCreate, err.Error())
 	}
+	input.Expires = expires
+
 	if fwhelpers.IsSet(data.Metadata) {
 		diag := data.Metadata.ElementsAs(ctx, &input.Metadata, false)
 		resp.Diagnostics.Append(diag...)
@@ -445,7 +453,7 @@ func (r *objectResource) Create(ctx context.Context, req resource.CreateRequest,
 
 	// PutObjectInput does not have the same parameters as PutObjectAcl, so we need to make two separate calls...
 	if fwhelpers.IsSet(data.Grant) || fwhelpers.IsSet(data.ACL) {
-		input, diag := r.expandGrant(ctx, data)
+		input, diag := r.expandGrant(ctx, data.objectCommonModel)
 		if fwhelpers.CheckDiags(resp, diag) {
 			return
 		}
@@ -458,7 +466,7 @@ func (r *objectResource) Create(ctx context.Context, req resource.CreateRequest,
 	}
 
 	if fwhelpers.IsSet(data.Tags) {
-		diag := r.putTags(ctx, timeout, data)
+		diag := r.putTags(ctx, timeout, data.objectCommonModel)
 		if fwhelpers.CheckDiags(resp, diag) {
 			return
 		}
@@ -466,13 +474,14 @@ func (r *objectResource) Create(ctx context.Context, req resource.CreateRequest,
 
 	data.Id = to.String(data.Key.ValueString())
 
-	stateData, err := r.read(ctx, timeout, data)
+	stateData, err := r.read(ctx, timeout, data.objectCommonModel)
 	if err != nil {
 		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &stateData)...)
+	data.objectCommonModel = stateData
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *objectResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -487,7 +496,7 @@ func (r *objectResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	stateData, err := r.read(ctx, timeout, data)
+	stateData, err := r.read(ctx, timeout, data.objectCommonModel)
 	switch {
 	case IsNotFound(err), errors.Is(err, ErrResourceNotFound):
 		resp.State.RemoveResource(ctx)
@@ -497,7 +506,8 @@ func (r *objectResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &stateData)...)
+	data.objectCommonModel = stateData
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *objectResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -518,7 +528,7 @@ func (r *objectResource) Update(ctx context.Context, req resource.UpdateRequest,
 	defer r.mu.UnlockKey(bucket) //nolint: errcheck
 
 	if !plan.ACL.Equal(state.ACL) || !plan.Grant.Equal(state.Grant) {
-		input, diag := r.expandGrant(ctx, plan)
+		input, diag := r.expandGrant(ctx, plan.objectCommonModel)
 		if fwhelpers.CheckDiags(resp, diag) {
 			return
 		}
@@ -531,19 +541,20 @@ func (r *objectResource) Update(ctx context.Context, req resource.UpdateRequest,
 	}
 
 	if !plan.Tags.Equal(state.Tags) {
-		diag := r.putTags(ctx, timeout, plan)
+		diag := r.putTags(ctx, timeout, plan.objectCommonModel)
 		if fwhelpers.CheckDiags(resp, diag) {
 			return
 		}
 	}
 
-	newData, err := r.read(ctx, timeout, plan)
+	newData, err := r.read(ctx, timeout, plan.objectCommonModel)
 	if err != nil {
 		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &newData)...)
+	plan.objectCommonModel = newData
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *objectResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -581,7 +592,7 @@ func (r *objectResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	}
 }
 
-func (r *objectResource) putTags(ctx context.Context, timeout time.Duration, data objectModel) diag.Diagnostics {
+func (r *objectCommon) putTags(ctx context.Context, timeout time.Duration, data objectCommonModel) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	tags, diag := from.Map[string](ctx, data.Tags)
@@ -627,7 +638,7 @@ func (r *objectResource) putTags(ctx context.Context, timeout time.Duration, dat
 	return diags
 }
 
-func (r *objectResource) expandGrant(ctx context.Context, data objectModel) (s3.PutObjectAclInput, diag.Diagnostics) {
+func (r *objectCommon) expandGrant(ctx context.Context, data objectCommonModel) (s3.PutObjectAclInput, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	input := s3.PutObjectAclInput{
 		Bucket:    data.Bucket.ValueStringPointer(),
@@ -654,7 +665,7 @@ func (r *objectResource) expandGrant(ctx context.Context, data objectModel) (s3.
 	return input, diags
 }
 
-func (r *objectResource) read(ctx context.Context, timeout time.Duration, data objectModel) (objectModel, error) {
+func (r *objectCommon) read(ctx context.Context, timeout time.Duration, data objectCommonModel) (objectCommonModel, error) {
 	input := s3.HeadObjectInput{
 		Bucket:    data.Bucket.ValueStringPointer(),
 		Key:       data.Key.ValueStringPointer(),
@@ -685,9 +696,13 @@ func (r *objectResource) read(ctx context.Context, timeout time.Duration, data o
 	data.Id = to.String(data.Key.ValueString())
 	data.Expiration = to.String(output.Expiration)
 	data.EncryptionType = to.StringEnum(output.ServerSideEncryption)
+
 	// OOS API does not return the value of ContentLanguage, in case it does, we set it so Terraform can detect changes
-	if output.ContentLanguage != nil {
+	switch {
+	case output.ContentLanguage != nil:
 		data.ContentLanguage = to.String(output.ContentLanguage)
+	case !fwhelpers.IsSet(data.ContentLanguage):
+		data.ContentLanguage = types.StringNull()
 	}
 
 	inputAcl := s3.GetObjectAclInput{

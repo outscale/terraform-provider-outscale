@@ -15,6 +15,7 @@ OOS_IGNORE_TYPE_ELEMENTS = {}
 
 OOS_ID_ATTRIBUTE_PATHS = [
     "bucket",
+    "copy_source.path",
     "name",
 ]
 

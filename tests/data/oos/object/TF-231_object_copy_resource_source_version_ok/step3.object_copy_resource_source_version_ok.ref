@@ -1,0 +1,280 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "managed",
+            "type": "outscale_oos_bucket",
+            "name": "bucket",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "acl": null,
+                        "creation_date": "########",
+                        "force_delete": false,
+                        "grant": null,
+                        "id": "##id-0##",
+                        "location_name": null,
+                        "name": "##id-0##",
+                        "object_lock": {
+                            "default_retention": null,
+                            "enabled": false
+                        },
+                        "permissions": {
+                            "grants": [
+                                {
+                                    "grantee": {
+                                        "display_name": "########",
+                                        "email_address": "########",
+                                        "id": "##id-1##",
+                                        "type": "CanonicalUser",
+                                        "uri": null
+                                    },
+                                    "permission": "FULL_CONTROL"
+                                }
+                            ],
+                            "owner": {
+                                "display_name": "########",
+                                "id": "##id-1##"
+                            }
+                        },
+                        "timeouts": null
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_oos_bucket_versioning",
+            "name": "versioning",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "bucket": "##id-0##",
+                        "id": "##id-0##",
+                        "status": "Enabled",
+                        "timeouts": null
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "outscale_oos_bucket.bucket",
+                        "random_string.suffix"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_oos_object",
+            "name": "source1",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "acl": null,
+                        "bucket": "##id-0##",
+                        "cache_control": null,
+                        "content": "v1",
+                        "content_base64": null,
+                        "content_disposition": null,
+                        "content_encoding": null,
+                        "content_language": null,
+                        "content_length": 2,
+                        "content_type": "application/octet-stream",
+                        "encryption_type": null,
+                        "etag": "########",
+                        "expiration": null,
+                        "expires": null,
+                        "force_delete": false,
+                        "grant": null,
+                        "id": "##id-2##",
+                        "is_latest": false,
+                        "key": "source",
+                        "last_modified": "########",
+                        "metadata": null,
+                        "permissions": {
+                            "grants": [
+                                {
+                                    "grantee": {
+                                        "display_name": "########",
+                                        "email_address": "########",
+                                        "id": "##id-1##",
+                                        "type": "CanonicalUser",
+                                        "uri": null
+                                    },
+                                    "permission": "FULL_CONTROL"
+                                }
+                            ],
+                            "owner": {
+                                "display_name": "########",
+                                "id": "##id-1##"
+                            }
+                        },
+                        "source": null,
+                        "tags": null,
+                        "timeouts": null,
+                        "version_id": "##id-3##"
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "outscale_oos_bucket.bucket",
+                        "outscale_oos_bucket_versioning.versioning",
+                        "random_string.suffix"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_oos_object",
+            "name": "source2",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "acl": null,
+                        "bucket": "##id-0##",
+                        "cache_control": null,
+                        "content": "version2",
+                        "content_base64": null,
+                        "content_disposition": null,
+                        "content_encoding": null,
+                        "content_language": null,
+                        "content_length": 8,
+                        "content_type": "application/octet-stream",
+                        "encryption_type": null,
+                        "etag": "########",
+                        "expiration": null,
+                        "expires": null,
+                        "force_delete": false,
+                        "grant": null,
+                        "id": "##id-2##",
+                        "is_latest": true,
+                        "key": "source",
+                        "last_modified": "########",
+                        "metadata": null,
+                        "permissions": {
+                            "grants": [
+                                {
+                                    "grantee": {
+                                        "display_name": "########",
+                                        "email_address": "########",
+                                        "id": "##id-1##",
+                                        "type": "CanonicalUser",
+                                        "uri": null
+                                    },
+                                    "permission": "FULL_CONTROL"
+                                }
+                            ],
+                            "owner": {
+                                "display_name": "########",
+                                "id": "##id-1##"
+                            }
+                        },
+                        "source": null,
+                        "tags": null,
+                        "timeouts": null,
+                        "version_id": "##id-4##"
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "outscale_oos_bucket.bucket",
+                        "outscale_oos_bucket_versioning.versioning",
+                        "outscale_oos_object.source1",
+                        "random_string.suffix"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_oos_object_copy",
+            "name": "copy",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "acl": null,
+                        "bucket": "##id-0##",
+                        "cache_control": null,
+                        "content_disposition": null,
+                        "content_encoding": null,
+                        "content_language": null,
+                        "content_length": 8,
+                        "content_type": "application/octet-stream",
+                        "copy_source": {
+                            "if_match": null,
+                            "if_modified_since": null,
+                            "if_none_match": null,
+                            "if_unmodified_since": null,
+                            "path": "##id-5##",
+                            "version_id": null
+                        },
+                        "encryption_type": null,
+                        "etag": "########",
+                        "expiration": null,
+                        "expires": null,
+                        "force_delete": false,
+                        "grant": null,
+                        "id": "##id-6##",
+                        "is_latest": true,
+                        "key": "destination",
+                        "last_modified": "########",
+                        "metadata": null,
+                        "metadata_directive": null,
+                        "permissions": {
+                            "grants": [
+                                {
+                                    "grantee": {
+                                        "display_name": "########",
+                                        "email_address": "########",
+                                        "id": "##id-1##",
+                                        "type": "CanonicalUser",
+                                        "uri": null
+                                    },
+                                    "permission": "FULL_CONTROL"
+                                }
+                            ],
+                            "owner": {
+                                "display_name": "########",
+                                "id": "##id-1##"
+                            }
+                        },
+                        "tagging_directive": null,
+                        "tags": null,
+                        "timeouts": null,
+                        "version_id": "##id-7##"
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "outscale_oos_bucket.bucket",
+                        "outscale_oos_bucket_versioning.versioning",
+                        "outscale_oos_object.source1",
+                        "outscale_oos_object.source2",
+                        "random_string.suffix"
+                    ]
+                }
+            ]
+        }
+    ],
+    "check_results": "########"
+}

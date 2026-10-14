@@ -345,6 +345,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 
 		oos.NewResourceBucket,
 		oos.NewResourceObject,
+		oos.NewResourceObjectCopy,
 		oos.NewResourceBucketVersioning,
 		oos.NewResourceBucketEncryption,
 		oos.NewResourceBucketPolicy,
