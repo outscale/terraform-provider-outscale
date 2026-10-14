@@ -155,6 +155,16 @@
                                     "grantee": {
                                         "display_name": "########",
                                         "email_address": "########",
+                                        "id": "##id-4##",
+                                        "type": "CanonicalUser",
+                                        "uri": null
+                                    },
+                                    "permission": "READ"
+                                },
+                                {
+                                    "grantee": {
+                                        "display_name": "########",
+                                        "email_address": "########",
                                         "id": "##id-1##",
                                         "type": "CanonicalUser",
                                         "uri": null

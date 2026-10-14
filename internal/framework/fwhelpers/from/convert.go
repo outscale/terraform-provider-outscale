@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/outscale/osc-sdk-go/v3/pkg/iso8601"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
 	"github.com/samber/lo"
 )
 
@@ -31,6 +32,18 @@ func ISO8601[T iso8601.Time | *iso8601.Time | time.Time | *time.Time](v T) strin
 	default:
 		panic(fmt.Sprintf("unsupported type %T", v))
 	}
+}
+
+func RFC3339(v types.String) (*time.Time, error) {
+	if !fwhelpers.IsSet(v) {
+		return nil, nil
+	}
+	expires, err := time.Parse(time.RFC3339, v.ValueString())
+	if err != nil {
+		return nil, err
+	}
+
+	return &expires, nil
 }
 
 func Map[T any](ctx context.Context, v types.Map) (map[string]T, diag.Diagnostics) {

@@ -1,0 +1,208 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "managed",
+            "type": "outscale_oos_bucket",
+            "name": "bucket",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "acl": null,
+                        "creation_date": "########",
+                        "force_delete": false,
+                        "grant": null,
+                        "id": "##id-0##",
+                        "location_name": null,
+                        "name": "##id-0##",
+                        "object_lock": {
+                            "default_retention": null,
+                            "enabled": false
+                        },
+                        "permissions": {
+                            "grants": [
+                                {
+                                    "grantee": {
+                                        "display_name": "########",
+                                        "email_address": "########",
+                                        "id": "##id-1##",
+                                        "type": "CanonicalUser",
+                                        "uri": null
+                                    },
+                                    "permission": "FULL_CONTROL"
+                                }
+                            ],
+                            "owner": {
+                                "display_name": "########",
+                                "id": "##id-1##"
+                            }
+                        },
+                        "timeouts": null
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "random_string.suffix"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_oos_object",
+            "name": "source",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "acl": null,
+                        "bucket": "##id-0##",
+                        "cache_control": null,
+                        "content": "content",
+                        "content_base64": null,
+                        "content_disposition": null,
+                        "content_encoding": null,
+                        "content_language": null,
+                        "content_length": 7,
+                        "content_type": "text/plain",
+                        "encryption_type": null,
+                        "etag": "########",
+                        "expiration": null,
+                        "expires": null,
+                        "force_delete": false,
+                        "grant": null,
+                        "id": "##id-2##",
+                        "is_latest": true,
+                        "key": "source",
+                        "last_modified": "########",
+                        "metadata": {
+                            "key": "source"
+                        },
+                        "permissions": {
+                            "grants": [
+                                {
+                                    "grantee": {
+                                        "display_name": "########",
+                                        "email_address": "########",
+                                        "id": "##id-1##",
+                                        "type": "CanonicalUser",
+                                        "uri": null
+                                    },
+                                    "permission": "FULL_CONTROL"
+                                }
+                            ],
+                            "owner": {
+                                "display_name": "########",
+                                "id": "##id-1##"
+                            }
+                        },
+                        "source": null,
+                        "tags": {
+                            "key": "source"
+                        },
+                        "timeouts": null,
+                        "version_id": null
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "outscale_oos_bucket.bucket",
+                        "random_string.suffix"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_oos_object_copy",
+            "name": "copy",
+            "provider": "provider[\"registry.terraform.io/outscale/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "acl": "public-read",
+                        "bucket": "##id-0##",
+                        "cache_control": "no-transform",
+                        "content_disposition": "attachment",
+                        "content_encoding": "br",
+                        "content_language": "de",
+                        "content_length": 7,
+                        "content_type": "application/json",
+                        "copy_source": {
+                            "if_match": null,
+                            "if_modified_since": null,
+                            "if_none_match": null,
+                            "if_unmodified_since": null,
+                            "path": "##id-3##",
+                            "version_id": null
+                        },
+                        "encryption_type": "AES256",
+                        "etag": "########",
+                        "expiration": null,
+                        "expires": "2036-06-07T08:09:10Z",
+                        "force_delete": false,
+                        "grant": null,
+                        "id": "##id-4##",
+                        "is_latest": true,
+                        "key": "destination",
+                        "last_modified": "########",
+                        "metadata": {
+                            "key": "destination"
+                        },
+                        "metadata_directive": "REPLACE",
+                        "permissions": {
+                            "grants": [
+                                {
+                                    "grantee": {
+                                        "display_name": "########",
+                                        "email_address": "########",
+                                        "id": "##id-1##",
+                                        "type": "CanonicalUser",
+                                        "uri": null
+                                    },
+                                    "permission": "FULL_CONTROL"
+                                },
+                                {
+                                    "grantee": {
+                                        "display_name": "########",
+                                        "email_address": "########",
+                                        "id": null,
+                                        "type": "Group",
+                                        "uri": "http://acs.amazonaws.com/groups/global/AllUsers"
+                                    },
+                                    "permission": "READ"
+                                }
+                            ],
+                            "owner": {
+                                "display_name": "########",
+                                "id": "##id-1##"
+                            }
+                        },
+                        "tagging_directive": "REPLACE",
+                        "tags": {
+                            "key": "value2"
+                        },
+                        "timeouts": null,
+                        "version_id": null
+                    },
+                    "sensitive_attributes": [],
+                    "identity_schema_version": 0,
+                    "dependencies": [
+                        "outscale_oos_bucket.bucket",
+                        "outscale_oos_object.source",
+                        "random_string.suffix"
+                    ]
+                }
+            ]
+        }
+    ],
+    "check_results": "########"
+}
