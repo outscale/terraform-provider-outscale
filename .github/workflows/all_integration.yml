@@ -22,7 +22,7 @@ jobs:
             region: us-east-2
             service: oapi
             account: pine
-            providers: outscale_oapi,outscale_oos
+            providers: outscale_oapi
         secrets: inherit
 
     oapi-integration-tests:
@@ -32,7 +32,7 @@ jobs:
             region: eu-west-2
             service: oapi
             account: maple
-            providers: outscale_oapi,outscale_oos
+            providers: outscale_oapi
         secrets: inherit
 
     oks-integration-tests:
@@ -43,4 +43,14 @@ jobs:
             service: oks
             account: maple
             providers: outscale_oks
+        secrets: inherit
+
+    oos-integration-tests:
+        uses: ./.github/workflows/reusable_integration_test.yml
+        with:
+            test-command: test-integration-oos
+            region: eu-west-2
+            service: oos
+            account: maple
+            providers: outscale_oos
         secrets: inherit

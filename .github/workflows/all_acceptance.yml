@@ -22,7 +22,7 @@ jobs:
             region: us-east-2
             service: oapi
             account: pine
-            providers: outscale_oapi,outscale_oos
+            providers: outscale_oapi
         secrets: inherit
 
     oapi-vms-tests:
@@ -32,7 +32,7 @@ jobs:
             region: eu-west-2
             service: oapi
             account: maple
-            providers: outscale_oapi,outscale_oos
+            providers: outscale_oapi
         secrets: inherit
 
     oapi-others-tests:
@@ -42,7 +42,7 @@ jobs:
             region: eu-west-2
             service: oapi
             account: maple
-            providers: outscale_oapi,outscale_oos
+            providers: outscale_oapi
         secrets: inherit
 
     oks-tests:
@@ -53,6 +53,16 @@ jobs:
             service: oks
             account: maple
             providers: outscale_oks
+        secrets: inherit
+
+    oos-tests:
+        uses: ./.github/workflows/reusable_acceptance_test.yml
+        with:
+            test-command: testacc-oos
+            region: eu-west-2
+            service: oos
+            account: maple
+            providers: outscale_oos
         secrets: inherit
 
     provider-tests:
