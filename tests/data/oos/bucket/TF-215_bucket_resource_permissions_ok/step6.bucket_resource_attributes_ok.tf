@@ -3,7 +3,7 @@ resource "outscale_oos_bucket" "bucket" {
   grant = {
     read = {
       ids             = [outscale_oos_bucket.owner.permissions.owner.id]
-      email_addresses = ["customer-tooling@outscale.com"]
+      email_addresses = ["opensource+ci@outscale.com"]
     }
     full_control = {
       ids = [outscale_oos_bucket.owner.permissions.owner.id]
