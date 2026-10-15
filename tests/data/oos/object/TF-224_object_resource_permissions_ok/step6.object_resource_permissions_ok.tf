@@ -14,7 +14,7 @@ resource "outscale_oos_object" "object" {
     }
     read = {
       ids             = [outscale_oos_bucket.owner.permissions.owner.id]
-      email_addresses = ["customer-tooling@outscale.com"]
+      email_addresses = ["opensource+ci@outscale.com"]
     }
     read_acp = {
       ids = [outscale_oos_bucket.owner.permissions.owner.id]
