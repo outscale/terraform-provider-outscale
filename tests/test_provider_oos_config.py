@@ -9,6 +9,7 @@ OOS_IGNORE_END_ELEMENTS = [
     "last_modified",
     "policy",
     "etag",
+    "retain_until_date",
 ]
 
 OOS_IGNORE_TYPE_ELEMENTS = {}
