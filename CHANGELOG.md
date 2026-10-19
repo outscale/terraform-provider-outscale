@@ -38,6 +38,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### 🌱 Others
 - (nothing yet)
 
+## [1.9.0-beta.2] - 2026-10-19
+
+### ✨ Added
+* ✨ feat(oos): resource_object_copy by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/853
+* ✨ feat(oos): resource_object_retention by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/854
+
 ## [1.9.0-beta.1] - 2026-10-12
 
 ### ✨ Added
