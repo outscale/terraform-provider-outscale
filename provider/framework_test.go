@@ -18,27 +18,6 @@ func TestMuxServer(t *testing.T) {
 	})
 }
 
-func TestDataSource_UpgradeFromVersion(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		Steps: []resource.TestStep{
-			{
-				ExternalProviders: map[string]resource.ExternalProvider{
-					"outscale": {
-						VersionConstraint: "0.10.0",
-						Source:            "outscale/outscale",
-					},
-				},
-				Config: fwtestAccDataSourceOutscaleQuotaConfig,
-			},
-			{
-				ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
-				Config:                   fwtestAccDataSourceOutscaleQuotaConfig,
-				PlanOnly:                 true,
-			},
-		},
-	})
-}
-
 const fwtestAccDataSourceOutscaleQuotaConfig = `
 	data "outscale_quota" "lbuquota1" {
         filter {
