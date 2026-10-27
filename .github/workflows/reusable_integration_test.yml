@@ -33,7 +33,7 @@ jobs:
         steps:
             - name: 🔒🧹 Setup Vault & Frieza
               id: secrets
-              uses: outscale/.github/vault-frieza-clean@a49bd74a4b54c0550bd19d4dc939be09ae951148
+              uses: outscale/.github/vault-frieza-clean@2806dfed40e08ccd51bee7edcac524fd02a67f06 # v1.3.0
               with:
                 vault_role: outscale-terraform-provider-outscale
                 osc_account: ${{ inputs.account }}
@@ -62,5 +62,5 @@ jobs:
               run: make ${{ inputs.test-command }}
               env:
                   TF_VAR_image_id: ${{ secrets.OUTSCALE_IMAGEID }}
-                  TF_VAR_account_id: ${{ secrets.OSC_ACCOUNT_ID }}
+                  TF_VAR_account_id: ${{ steps.secrets.outputs.account_id }}
                   TF_VAR_region: ${{ steps.secrets.outputs.region }}
