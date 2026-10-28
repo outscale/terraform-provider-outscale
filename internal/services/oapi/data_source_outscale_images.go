@@ -314,7 +314,7 @@ func buildOutscaleDataSourceImagesFilters(set *schema.Set) (*osc.FiltersImage, e
 		case "architectures":
 			filters.Architectures = &filterValues
 		case "boot_modes":
-			filters.BootModes = new(lo.Map(filterValues, func(s string, _ int) osc.BootMode { return (osc.BootMode)(s) }))
+			filters.BootModes = new(lo.Map(filterValues, func(s string, _ int) osc.BootMode { return osc.BootMode(s) }))
 		case "secure_boot":
 			filters.SecureBoot = new(cast.ToBool(filterValues[0]))
 		case "block_device_mapping_delete_on_vm_deletion":
@@ -326,7 +326,7 @@ func buildOutscaleDataSourceImagesFilters(set *schema.Set) (*osc.FiltersImage, e
 		case "block_device_mapping_volume_sizes":
 			filters.BlockDeviceMappingVolumeSizes = new(utils.StringSliceToIntSlice(filterValues))
 		case "block_device_mapping_volume_types":
-			filters.BlockDeviceMappingVolumeTypes = new(lo.Map(filterValues, func(s string, _ int) osc.VolumeType { return (osc.VolumeType)(s) }))
+			filters.BlockDeviceMappingVolumeTypes = new(lo.Map(filterValues, func(s string, _ int) osc.VolumeType { return osc.VolumeType(s) }))
 		case "descriptions":
 			filters.Descriptions = &filterValues
 		case "file_locations":
@@ -350,7 +350,7 @@ func buildOutscaleDataSourceImagesFilters(set *schema.Set) (*osc.FiltersImage, e
 		case "root_device_types":
 			filters.RootDeviceTypes = &filterValues
 		case "states":
-			filters.States = new(lo.Map(filterValues, func(s string, _ int) osc.ImageState { return (osc.ImageState)(s) }))
+			filters.States = new(lo.Map(filterValues, func(s string, _ int) osc.ImageState { return osc.ImageState(s) }))
 		case "tag_keys":
 			filters.TagKeys = &filterValues
 		case "tag_values":

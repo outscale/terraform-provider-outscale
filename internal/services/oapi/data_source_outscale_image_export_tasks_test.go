@@ -16,8 +16,7 @@ func TestAccVM_withImageExportTasksDataSource_basic(t *testing.T) {
 	imageName := acctest.RandomWithPrefix("test-image-name")
 
 	if os.Getenv("TEST_QUOTA") == "true" {
-		resource.ParallelTest(t, resource.TestCase{
-			Providers: testacc.SDKProviders,
+		testacc.ParallelTest(t, resource.TestCase{
 			Steps: []resource.TestStep{
 				{
 					Config: testAccOutscaleImageExportTasksDataSourceConfig(omi, testAccVmType, utils.GetRegion(), imageName),

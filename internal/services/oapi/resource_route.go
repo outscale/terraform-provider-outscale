@@ -494,7 +494,7 @@ func (r *resourceRoute) read(ctx context.Context, timeout time.Duration, data Ro
 	}
 	data.RequestId = to.String(readResp.ResponseContext.RequestId)
 
-	routeTable := (ptr.From(readResp.RouteTables))[0]
+	routeTable := ptr.From(readResp.RouteTables)[0]
 
 	return r.flatten(data, routeTable)
 }

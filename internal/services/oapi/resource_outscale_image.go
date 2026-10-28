@@ -292,7 +292,7 @@ func resourceOAPIImageCreate(ctx context.Context, d *schema.ResourceData, meta a
 	if v, ok := d.GetOk("boot_modes"); ok {
 		modes := utils.SetToStringSlice(v.(*schema.Set))
 		if lo.EveryBy(modes, func(s string) bool { return slices.Contains([]string{"uefi", "legacy"}, s) }) {
-			imageRequest.BootModes = new(lo.Map(modes, func(s string, _ int) osc.BootMode { return (osc.BootMode)(s) }))
+			imageRequest.BootModes = new(lo.Map(modes, func(s string, _ int) osc.BootMode { return osc.BootMode(s) }))
 		} else {
 			return diag.Errorf("the boot modes compatible with the omi are: uefi, legacy - provided: %v", modes)
 		}

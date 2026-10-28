@@ -7,7 +7,6 @@ import (
 
 	"github.com/outscale/osc-sdk-go/v3/pkg/options"
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
-	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
@@ -53,7 +52,7 @@ func testAccCheckOutscaleLBUExists(n string, res *osc.LoadBalancer) resource.Tes
 			return fmt.Errorf("no lbu id is set")
 		}
 
-		client := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSC
+		client := testacc.ConfiguredClient.OSC
 
 		var err error
 

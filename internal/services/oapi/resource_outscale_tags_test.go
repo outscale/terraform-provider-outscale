@@ -12,7 +12,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 )
@@ -22,8 +21,7 @@ func TestAccVM_tags(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 
 	if os.Getenv("TEST_QUOTA") == "true" {
-		resource.ParallelTest(t, resource.TestCase{
-			Providers:    testacc.SDKProviders,
+		testacc.ParallelTest(t, resource.TestCase{
 			CheckDestroy: testAccCheckOutscaleVMDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -62,7 +60,7 @@ func oapiTestAccCheckOutscaleVMExists(ctx context.Context, n string, i *osc.Vm) 
 			return fmt.Errorf("no id is set")
 		}
 
-		client := testacc.SDKProvider.Meta().(*client.OutscaleClient).OSC
+		client := testacc.ConfiguredClient.OSC
 		resp, err := client.ReadVms(ctx, osc.ReadVmsRequest{
 			Filters: &osc.FiltersVm{
 				VmIds: &[]string{rs.Primary.ID},

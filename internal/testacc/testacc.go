@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
 	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -25,12 +24,6 @@ import (
 var (
 	// ConfiguredClient is the client configured during provider setup in tests
 	ConfiguredClient *client.OutscaleClient
-
-	// SDKProvider is the SDK v2 provider instance for tests
-	SDKProvider  = provider.Provider()
-	SDKProviders = map[string]*schema.Provider{
-		"outscale": SDKProvider,
-	}
 
 	// AnyError matches any non-empty error message.
 	AnyError = regexp.MustCompile(`(?s).+`)
