@@ -54,9 +54,9 @@ jobs:
               run: make test
               env:
                   OUTSCALE_ACCOUNT: ${{ steps.secrets.outputs.account_id }}
-                  OUTSCALE_IMAGEID: ${{ secrets.OUTSCALE_IMAGEID }}
+                  OUTSCALE_IMAGEID: ${{ vars.OUTSCALE_IMAGEID }}
             - name: Run acceptance tests
               run: make ${{ inputs.test-command }}
               env:
                   OUTSCALE_ACCOUNT: ${{ steps.secrets.outputs.account_id }}
-                  OUTSCALE_IMAGEID: ${{ secrets.OUTSCALE_IMAGEID }}
+                  OUTSCALE_IMAGEID: ${{ vars.OUTSCALE_IMAGEID }}
