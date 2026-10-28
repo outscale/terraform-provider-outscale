@@ -14,8 +14,7 @@ import (
 func TestAccOutscaleDSLoadBalancerTags_basic(t *testing.T) {
 	r := acctest.RandString(4)
 
-	resource.ParallelTest(t, resource.TestCase{
-		Providers: testacc.SDKProviders,
+	testacc.ParallelTest(t, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: getTestAccDSODSutscaleOAPILBUDSTagsConfig(r, utils.GetRegion()),

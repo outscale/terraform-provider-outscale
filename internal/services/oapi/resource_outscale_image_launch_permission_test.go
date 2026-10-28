@@ -126,24 +126,6 @@ func testAccOutscaleImageLaunchPermissionDestroyed(accountID string, imageID *st
 	}
 }
 
-func testCheckResourceGetAttr(name, key string, value *string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		ms := s.RootModule()
-		rs, ok := ms.Resources[name]
-		if !ok {
-			return fmt.Errorf("not found: %s", name)
-		}
-
-		is := rs.Primary
-		if is == nil {
-			return fmt.Errorf("no primary instance: %s", name)
-		}
-
-		*value = is.Attributes[key]
-		return nil
-	}
-}
-
 func testAccOutscaleImageLaunchPermissionConfig(omi, vmType, region, accountID, keypair string, includeLaunchPermission bool, r int, sgName string) string {
 	base := fmt.Sprintf(`
 		resource "outscale_security_group" "sg_perm" {

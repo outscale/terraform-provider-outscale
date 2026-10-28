@@ -8,8 +8,7 @@ import (
 )
 
 func TestAccFwOthers_DataSourceQuota(t *testing.T) {
-	resource.ParallelTest(t, resource.TestCase{
-		Providers: testacc.SDKProviders,
+	testacc.ParallelTest(t, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: testAccFwDataSourceOutscaleQuotaConfig,

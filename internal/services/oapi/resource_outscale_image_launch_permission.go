@@ -11,7 +11,6 @@ import (
 	"github.com/outscale/osc-sdk-go/v3/pkg/options"
 	"github.com/outscale/osc-sdk-go/v3/pkg/osc"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
-	"github.com/outscale/terraform-provider-outscale/internal/services/oapi/oapihelpers"
 	"github.com/outscale/terraform-provider-outscale/internal/utils"
 
 	"github.com/spf13/cast"
@@ -22,7 +21,6 @@ import (
 
 func ResourceOutscaleImageLaunchPermission() *schema.Resource {
 	return &schema.Resource{
-		Exists:        ResourceOutscaleImageLaunchPermissionExists,
 		CreateContext: ResourceOutscaleImageLaunchPermissionCreate,
 		ReadContext:   ResourceOutscaleImageLaunchPermissionRead,
 		DeleteContext: ResourceOutscaleImageLaunchPermissionDelete,
@@ -112,13 +110,6 @@ func ResourceOutscaleImageLaunchPermission() *schema.Resource {
 			},
 		},
 	}
-}
-
-func ResourceOutscaleImageLaunchPermissionExists(d *schema.ResourceData, meta any) (bool, error) {
-	client := meta.(*client.OutscaleClient).OSC
-
-	imageID := d.Get("image_id").(string)
-	return oapihelpers.ImageHasLaunchPermission(context.Background(), client, ReadDefaultTimeout, imageID)
 }
 
 func expandOAPIImagePermission(permissionType any) (res osc.PermissionsOnResource) {

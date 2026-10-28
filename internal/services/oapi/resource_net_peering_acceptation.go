@@ -198,7 +198,7 @@ func (r *resourceNetPeeringAcceptation) Create(ctx context.Context, req resource
 	data.NetPeeringId = to.String(netPeering.NetPeeringId)
 	data.Id = to.String(netPeering.NetPeeringId)
 
-	// AcceptNetPeering reponse object seems incoherent with ReadNetPeering response.
+	// AcceptNetPeering response object seems incoherent with ReadNetPeering response.
 	// A read call is necessary to get the right object
 	stateData, err := r.read(ctx, timeout, data)
 	if err != nil {

@@ -54,11 +54,6 @@ type snapshotAttributesPermModel struct {
 	GlobalPermission types.Bool `tfsdk:"global_permission"`
 }
 
-var snapshotAttributesPermAttrTypes = types.ObjectType{AttrTypes: map[string]attr.Type{
-	"account_ids":       types.ListType{ElemType: types.StringType},
-	"global_permission": types.BoolType,
-}}
-
 type snapshotAttributesResource struct {
 	Client *osc.Client
 }

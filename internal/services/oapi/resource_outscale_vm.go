@@ -1022,7 +1022,8 @@ To get a running VM, you can:
 		}
 
 		if err := d.Set("block_device_mappings_created", getOscAPIVMBlockDeviceMapping(
-			bsuTagsMaps, vm.BlockDeviceMappings)); err != nil {
+			bsuTagsMaps, vm.BlockDeviceMappings,
+		)); err != nil {
 			return err
 		}
 
@@ -1369,7 +1370,8 @@ func resourceOAPIVMDelete(ctx context.Context, d *schema.ResourceData, meta any)
 	_, err = stateConf.WaitForStateContext(ctx)
 	if err != nil {
 		return diag.Errorf(
-			"error waiting for instance (%s) to terminate: %s", id, err)
+			"error waiting for instance (%s) to terminate: %s", id, err,
+		)
 	}
 
 	return nil
@@ -1460,11 +1462,11 @@ func buildCreateVmsRequest(d *schema.ResourceData) (osc.CreateVmsRequest, []map[
 	}
 
 	if v := d.Get("boot_mode").(string); v != "" {
-		action := (osc.BootMode)(d.Get("boot_mode").(string))
+		action := osc.BootMode(d.Get("boot_mode").(string))
 		request.BootMode = &action
 	}
 	if v := d.Get("secure_boot_action").(string); v != "" {
-		action := (osc.SecureBootAction)(d.Get("secure_boot_action").(string))
+		action := osc.SecureBootAction(d.Get("secure_boot_action").(string))
 		request.ActionsOnNextBoot = &osc.ActionsOnNextBoot{SecureBoot: &action}
 	}
 	tpmEnabled := d.GetRawConfig().GetAttr("tpm_enabled")
