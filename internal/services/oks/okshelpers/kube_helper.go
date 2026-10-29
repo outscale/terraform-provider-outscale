@@ -97,14 +97,20 @@ func getResourceInterface(ctx context.Context, oksClient *oks.Client, clusterID 
 
 	resourceClient := dynamicClient.Resource(mapping.Resource)
 	if mapping.Scope.Name() == meta.RESTScopeNameNamespace {
-		namespace := obj.GetNamespace()
-		if namespace == "" {
-			namespace = metav1.NamespaceDefault
-			obj.SetNamespace(namespace)
-		}
+		namespace := NamespaceOrDefault(obj.GetNamespace())
+		obj.SetNamespace(namespace)
 
 		return resourceClient.Namespace(namespace), nil
 	}
 
 	return resourceClient, nil
+}
+
+// NamespaceOrDefault returns the namespace a namespaced object is applied to: its own, or "default" when the manifest has none.
+func NamespaceOrDefault(namespace string) string {
+	if namespace == "" {
+		return metav1.NamespaceDefault
+	}
+
+	return namespace
 }
