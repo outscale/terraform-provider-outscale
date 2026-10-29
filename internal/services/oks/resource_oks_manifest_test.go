@@ -7,6 +7,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 )
 
@@ -77,6 +79,27 @@ func TestAccOKSManifest_Basic(t *testing.T) {
 					}),
 				),
 			},
+			// the imported state keeps only apiVersion, kind and metadata in manifest, and the defaults of the optional arguments
+			testacc.ImportStepWithStateIdFunc(resourceName, manifestImportStateIdFunc(resourceName, "oks.dev/v1beta2", "NodePool", "pool-2"), "manifest", "object", "skip_delete", "wait", "wait_for"),
+			{
+				// adopting the object with an import block plans an in-place update of the manifest, not a replacement
+				ResourceName:       resourceName,
+				ImportState:        true,
+				ImportStateKind:    resource.ImportBlockWithID,
+				ImportStateIdFunc:  manifestImportStateIdFunc(resourceName, "oks.dev/v1beta2", "NodePool", "pool-2"),
+				ExpectNonEmptyPlan: true,
+				ImportPlanChecks: resource.ImportPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
+					},
+				},
+			},
+			{
+				ResourceName:  resourceName,
+				ImportState:   true,
+				ImportStateId: "pool-2",
+				ExpectError:   regexp.MustCompile("Invalid import ID"),
+			},
 			{
 				Config: clusterConfig(projectName, clusterName) +
 					manifestConfigWithLifecycle("nodepool", "pool-2") +
@@ -93,9 +116,18 @@ func TestAccOKSManifest_Basic(t *testing.T) {
 				Config:  clusterConfig(projectName, clusterName) + manifestConfigWithLifecycle("nodepool", "pool-2"),
 				Destroy: true,
 			},
-			// testacc.ImportStep(resourceName, "kubeconfig", "request_id"),
 		},
 	})
+}
+
+func manifestImportStateIdFunc(resourceName, apiVersion, kind, name string) resource.ImportStateIdFunc {
+	return func(s *terraform.State) (string, error) {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return "", fmt.Errorf("not found: %s", resourceName)
+		}
+		return fmt.Sprintf("cluster_id=%s,apiVersion=%s,kind=%s,name=%s", rs.Primary.Attributes["cluster_id"], apiVersion, kind, name), nil
+	}
 }
 
 func clusterConfig(projectName, clusterName string) string {
