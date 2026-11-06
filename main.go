@@ -5,11 +5,8 @@ import (
 	"flag"
 	"log"
 
-	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6/tf6server"
-	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
-	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
 
 	"github.com/outscale/terraform-provider-outscale/provider"
 	"github.com/outscale/terraform-provider-outscale/version"
@@ -22,23 +19,7 @@ func main() {
 	flag.BoolVar(&debug, "debug", false, "set to true to run the provider with support for debuggers like delve")
 	flag.Parse()
 
-	upgradedSdkServer, err := tf5to6server.UpgradeServer(
-		ctx,
-		provider.Provider().GRPCProvider,
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	providers := []func() tfprotov6.ProviderServer{
-		providerserver.NewProtocol6(provider.New(version.Version)),
-		func() tfprotov6.ProviderServer {
-			return upgradedSdkServer
-		},
-	}
-
-	// using muxer
-	muxServer, err := tf6muxserver.NewMuxServer(ctx, providers...)
+	server, err := provider.NewProtocol6Server(ctx, version.Version)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -51,7 +32,7 @@ func main() {
 
 	err = tf6server.Serve(
 		"registry.terraform.io/outscale/outscale",
-		muxServer.ProviderServer,
+		func() tfprotov6.ProviderServer { return server },
 		serveOpts...,
 	)
 	if err != nil {
