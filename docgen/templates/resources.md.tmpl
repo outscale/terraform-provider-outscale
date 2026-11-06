@@ -1,0 +1,79 @@
+{{- define "description" -}}
+{{- $description := or (trimspace .Description) "TODO" -}}
+{{- $deprecationMessage := trimspace .DeprecationMessage -}}
+{{- if and .Deprecated $deprecationMessage -}}
+{{- $description = printf "%s %s" $description $deprecationMessage -}}
+{{- end -}}
+{{- replace $description "\n" (printf "\n%s%s" (indent .Depth) (indent 1)) -}}
+{{- end -}}
+{{- define "arguments" -}}
+{{- range . -}}
+{{- if .IsArgument -}}
+{{ indent .Depth }}* `{{ .Name }}` - {{ if .Required }}(Required{{ if .Computed }}, Computed{{ end }}) {{ else if .Optional }}(Optional{{ if .Computed }}, Computed{{ end }}) {{ else if .Computed }}(Computed) {{ end }}{{ if .Sensitive }}(Sensitive value) {{ end }}{{ if .Deprecated }}(Deprecated) {{ end }}{{ template "description" . }}
+{{ template "arguments" .NestedFields -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{- define "attributes" -}}
+{{- range . -}}
+{{- if .IsAttribute -}}
+{{ indent .Depth }}* `{{ .Name }}` - {{ if .Sensitive }}(Sensitive value) {{ end }}{{ if .Deprecated }}(Deprecated) {{ end }}{{ template "description" . }}
+{{ template "attributes" .NestedFields -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+---
+layout: "outscale"
+page_title: "OUTSCALE: {{ .Name }}"
+subcategory: "{{ .API }} API"
+sidebar_current: "{{ replace .Name "_" "-" }}"
+description: |-
+  [TODO]
+---
+
+# {{ .Name }} Resource
+
+<!-- Generated template; complete TODOs. -->
+
+TODO
+
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/TODO).
+For more information on this resource actions, see the [API documentation](https://docs.outscale.com/TODO).
+
+## Example Usage
+
+```hcl
+TODO
+```
+
+## Argument Reference
+
+The following arguments are supported:
+
+{{ template "arguments" .Fields }}
+## Attribute Reference
+
+The following attributes are exported:
+
+{{ template "attributes" .Fields }}
+{{ if or .Timeouts.Create .Timeouts.Read .Timeouts.Update .Timeouts.Delete -}}
+## Timeouts
+
+The `timeouts` block enables you to configure [timeouts](https://developer.hashicorp.com/terraform/language/resources/configure#define-operation-timeouts) for certain actions:
+
+{{ if .Timeouts.Create }}* `create` - Defaults to TODO minutes.
+{{ end -}}
+{{ if .Timeouts.Read }}* `read` - Defaults to TODO minutes.
+{{ end -}}
+{{ if .Timeouts.Update }}* `update` - Defaults to TODO minutes.
+{{ end -}}
+{{ if .Timeouts.Delete }}* `delete` - Defaults to TODO minutes.
+{{ end -}}
+{{ end }}
+## Import
+
+TODO
+
+```console
+# TODO: Add the import command for {{ .Name }}.
+```
