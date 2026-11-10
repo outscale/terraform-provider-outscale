@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 )
 
@@ -96,6 +97,75 @@ func TestAccOKSManifest_Basic(t *testing.T) {
 			// testacc.ImportStep(resourceName, "kubeconfig", "request_id"),
 		},
 	})
+}
+
+func TestAccOKSManifest_ConfigMapNamespace(t *testing.T) {
+	projectName := acctest.RandomWithPrefix("test-acc-project")
+	clusterName := acctest.RandomWithPrefix("test-acc-cluster")
+	configMapName := acctest.RandomWithPrefix("test-acc-configmap")
+	namespaceName := acctest.RandomWithPrefix("test-acc-namespace")
+	resourceName := "outscale_oks_manifest.configmap"
+	cluster := clusterConfig(projectName, clusterName)
+
+	testacc.ParallelTest(t, resource.TestCase{
+		Steps: []resource.TestStep{
+			{
+				Config: cluster + configMapManifestConfig(configMapName, namespaceName, ""),
+				Check:  resource.TestCheckResourceAttrSet(resourceName, "object"),
+			},
+			{
+				// Adding an explicit default namespace must not replace the resource
+				Config: cluster + configMapManifestConfig(configMapName, namespaceName, "default"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: resource.TestCheckResourceAttrSet(resourceName, "object"),
+			},
+			{
+				// Changing to another namespace must replace the resource
+				Config: cluster + configMapManifestConfig(configMapName, namespaceName, namespaceName),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionReplace),
+					},
+				},
+				Check: resource.TestCheckResourceAttrSet(resourceName, "object"),
+			},
+		},
+	})
+}
+
+func configMapManifestConfig(name, namespaceName, namespace string) string {
+	namespaceField := ""
+	if namespace != "" {
+		namespaceField = "  namespace: " + namespace + "\n"
+	}
+	return fmt.Sprintf(`
+resource "outscale_oks_manifest" "configmap_namespace" {
+  cluster_id = outscale_oks_cluster.cluster.id
+  manifest = <<-YAML
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: %s
+YAML
+}
+
+resource "outscale_oks_manifest" "configmap" {
+  cluster_id = outscale_oks_cluster.cluster.id
+  depends_on = [outscale_oks_manifest.configmap_namespace]
+  manifest = <<-YAML
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: %s
+%sdata:
+  key: value
+YAML
+}
+`, namespaceName, name, namespaceField)
 }
 
 func clusterConfig(projectName, clusterName string) string {
