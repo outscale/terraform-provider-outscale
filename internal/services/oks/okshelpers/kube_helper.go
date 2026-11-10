@@ -22,6 +22,12 @@ import (
 
 var decoder = yamlSerializer.NewDecodingSerializer(unstructured.UnstructuredJSONScheme)
 
+type KubernetesResource struct {
+	Object  *unstructured.Unstructured
+	DRI     dynamic.ResourceInterface
+	Mapping *meta.RESTMapping
+}
+
 func FromYAML(manifest string) (*unstructured.Unstructured, error) {
 	obj := &unstructured.Unstructured{}
 	_, _, err := decoder.Decode([]byte(manifest), nil, obj)
@@ -32,18 +38,22 @@ func FromYAML(manifest string) (*unstructured.Unstructured, error) {
 	return obj, nil
 }
 
-func GetResourceInterfaceFromManifest(ctx context.Context, oksClient *oks.Client, clusterID string, manifest string, timeout time.Duration) (*unstructured.Unstructured, dynamic.ResourceInterface, error) {
+func GetKubernetesResourceFromManifest(ctx context.Context, oksClient *oks.Client, clusterID string, manifest string, timeout time.Duration) (*KubernetesResource, error) {
 	obj, err := FromYAML(manifest)
 	if err != nil {
-		return nil, nil, fmt.Errorf("invalid manifest: %w", err)
+		return nil, fmt.Errorf("invalid manifest: %w", err)
 	}
 
-	dri, err := getResourceInterface(ctx, oksClient, clusterID, obj, timeout)
+	dri, mapping, err := getResourceInterface(ctx, oksClient, clusterID, obj, timeout)
 	if err != nil {
-		return nil, nil, fmt.Errorf("get resource interface: %w", err)
+		return nil, fmt.Errorf("get resource interface: %w", err)
 	}
 
-	return obj, dri, nil
+	return &KubernetesResource{
+		Object:  obj,
+		DRI:     dri,
+		Mapping: mapping,
+	}, nil
 }
 
 func ToYAML(obj map[string]any) (string, error) {
@@ -54,7 +64,7 @@ func ToYAML(obj map[string]any) (string, error) {
 	return string(bytes), nil
 }
 
-func BuildK8sClient(ctx context.Context, oksClient *oks.Client, clusterID string, timeout time.Duration) (dynamic.Interface, meta.RESTMapper, error) {
+func buildK8sClient(ctx context.Context, oksClient *oks.Client, clusterID string, timeout time.Duration) (dynamic.Interface, meta.RESTMapper, error) {
 	resp, err := oksClient.GetKubeconfig(ctx, clusterID, nil, options.WithRetryTimeout(timeout))
 	if err != nil {
 		return nil, nil, err
@@ -82,17 +92,17 @@ func BuildK8sClient(ctx context.Context, oksClient *oks.Client, clusterID string
 	return client, mapper, nil
 }
 
-func getResourceInterface(ctx context.Context, oksClient *oks.Client, clusterID string, obj *unstructured.Unstructured, timeout time.Duration) (dynamic.ResourceInterface, error) {
-	dynamicClient, mapper, err := BuildK8sClient(ctx, oksClient, clusterID, timeout)
+func getResourceInterface(ctx context.Context, oksClient *oks.Client, clusterID string, obj *unstructured.Unstructured, timeout time.Duration) (dynamic.ResourceInterface, *meta.RESTMapping, error) {
+	dynamicClient, mapper, err := buildK8sClient(ctx, oksClient, clusterID, timeout)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	gvk := obj.GroupVersionKind()
 
 	mapping, err := mapper.RESTMapping(gvk.GroupKind(), gvk.Version)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	resourceClient := dynamicClient.Resource(mapping.Resource)
@@ -100,11 +110,10 @@ func getResourceInterface(ctx context.Context, oksClient *oks.Client, clusterID 
 		namespace := obj.GetNamespace()
 		if namespace == "" {
 			namespace = metav1.NamespaceDefault
-			obj.SetNamespace(namespace)
 		}
 
-		return resourceClient.Namespace(namespace), nil
+		return resourceClient.Namespace(namespace), mapping, nil
 	}
 
-	return resourceClient, nil
+	return resourceClient, mapping, nil
 }
