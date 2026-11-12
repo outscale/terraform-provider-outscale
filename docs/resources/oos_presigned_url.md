@@ -4,17 +4,15 @@ page_title: "OUTSCALE: outscale_oos_presigned_url"
 subcategory: "OOS API"
 sidebar_current: "outscale-oos-presigned-url"
 description: |-
-  [TODO]
+  Manages a pre-signed URL.
 ---
 
 # outscale_oos_presigned_url Resource
 
-<!-- Generated template; complete TODOs. -->
+Manages a pre-signed URL.
 
-TODO
-
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/TODO).
-For more information on this resource actions, see the [API documentation](https://docs.outscale.com/TODO).
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/Introduction-to-OOS.html).  
+For more information on this resource actions, see this [User Guide's section](https://docs.outscale.com/en/userguide/Creating-a-Pre-Signed-URL.html).
 
 ## Example Usage
 
@@ -46,7 +44,7 @@ output "download_url" {
 
 The following arguments are supported:
 
-* `bucket` - (Required) TODO
+* `bucket` - (Required) The bucket for which the URL applies.
 * `expiration` - (Optional, Computed) (Default: `15m`) How long the generated URL remains valid, expressed as a Go duration string such as `"15m"` or `"1h"`.
 * `key` - (Optional) The object key for the signed request. Required when `method` is `GET` or `PUT`.
 * `method` - (Optional, Computed) (Default: `GET`) The HTTP method authorized by the URL: `GET`, `PUT`, `HEAD`, or `DELETE`.

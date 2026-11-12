@@ -4,17 +4,15 @@ page_title: "OUTSCALE: outscale_oos_bucket_cors"
 subcategory: "OOS API"
 sidebar_current: "outscale-oos-bucket-cors"
 description: |-
-  [TODO]
+  [Manages a bucket CORS configuration.]
 ---
 
 # outscale_oos_bucket_cors Resource
 
-<!-- Generated template; complete TODOs. -->
+Manages a bucket CORS (cross-origin resource sharing) configuration.
 
-TODO
-
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/TODO).
-For more information on this resource actions, see the [API documentation](https://docs.outscale.com/TODO).
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/Introduction-to-OOS.html).  
+For more information on this resource actions, see this [User Guide's section](https://docs.outscale.com/en/userguide/Managing-CORS-on-Your-Buckets.html).
 
 ## Example Usage
 
@@ -47,13 +45,13 @@ resource "outscale_oos_bucket_cors" "cors01" {
 
 The following arguments are supported:
 
-* `bucket` - (Required) TODO
-* `rule` - (Required) TODO
-    * `allowed_headers` - (Required) TODO
-    * `allowed_methods` - (Required) TODO
-    * `allowed_origins` - (Required) TODO
-    * `expose_headers` - (Optional) TODO
-    * `max_age_seconds` - (Required) TODO
+* `bucket` - (Required) The name of the bucket to which you want to apply the CORS configuration.
+* `rule` - (Required) A rule in the CORS configuration.
+    * `allowed_headers` - (Required) The headers specified in the Access-Control-Request-Headers header. These headers are allowed in preflight OPTIONS requests. In response to preflight OPTIONS requests, allowed requested headers are returned.
+    * `allowed_methods` - (Required) One or more HTTP methods (`GET` | `PUT` | `HEAD` | `POST` | `DELETE`) that you allow the origin to execute.
+    * `allowed_origins` - (Required) One or more origins you want to be able to access the bucket from.
+    * `expose_headers` - (Optional) One or more headers in the response that you want to make accessible.
+    * `max_age_seconds` - (Required) The duration in seconds that the preflight response for the specified source can be cached.
 
 ## Attribute Reference
 
