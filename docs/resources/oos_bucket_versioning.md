@@ -4,17 +4,17 @@ page_title: "OUTSCALE: outscale_oos_bucket_versioning"
 subcategory: "OOS API"
 sidebar_current: "outscale-oos-bucket-versioning"
 description: |-
-  [TODO]
+  Manages a bucket versioning configuration.
 ---
 
 # outscale_oos_bucket_versioning Resource
 
-<!-- Generated template; complete TODOs. -->
+Manages a bucket versioning configuration.
 
-TODO
+!> **Warning** Versioning and encryption settings operate independently and are not retroactive. If a bucket contains multiple versions of the same object, any versions uploaded before encryption was enabled will not be encrypted automatically. Encryption only applies to objects or versions uploaded after encryption is enabled.<br /><br />To encrypt older versions, you must re-upload them or apply encryption manually.
 
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/TODO).
-For more information on this resource actions, see the [API documentation](https://docs.outscale.com/TODO).
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/Introduction-to-OOS.html).  
+For more information on this resource actions, see this [User Guide's section](https://docs.outscale.com/en/userguide/Using-Bucket-Versioning.html).
 
 ## Example Usage
 
@@ -33,8 +33,8 @@ resource "outscale_oos_bucket_versioning" "versioning01" {
 
 The following arguments are supported:
 
-* `bucket` - (Required) TODO
-* `status` - (Required) TODO
+* `bucket` - (Required) The name of the bucket for which you want to enable or disable the versioning.
+* `status` - (Required) The versioning state you want to apply to your bucket (`Enabled` | `Suspended`).
 
 ## Attribute Reference
 
