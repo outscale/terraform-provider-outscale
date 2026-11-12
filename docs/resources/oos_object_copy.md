@@ -113,7 +113,7 @@ The following arguments are supported:
 * `key` - (Required) The name you want to give to your object in the bucket.
 * `metadata` - (Optional) A map of additional metadata entries you can freely specify.
 * `metadata_directive` - (Optional) Whether you want the metadata to be copied from the source objects or replaced with the metadata provided in the `metadata` argument (`COPY` or `REPLACE`).
-* `tagging_directive` - (Optional) Whether you want the tag set the to be copied from the source object or replaced with the tag-set provided in the `tags` argument (`COPY` or `REPLACE`).
+* `tagging_directive` - (Optional) Whether you want the tag set to be copied from the source object or replaced with the tag-set provided in the `tags` argument (`COPY` or `REPLACE`).
 * `tags` - (Optional) Tags you want to have on the object.
 
 ## Attribute Reference
