@@ -4,17 +4,15 @@ page_title: "OUTSCALE: outscale_oos_object_retention"
 subcategory: "OOS API"
 sidebar_current: "outscale-oos-object-retention"
 description: |-
-  [TODO]
+  Manages an object retention configuration.
 ---
 
 # outscale_oos_object_retention Resource
 
-<!-- Generated template; complete TODOs. -->
+Manages an object retention configuration (also known as specific object lock).
 
-TODO
-
-For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/TODO).
-For more information on this resource actions, see the [API documentation](https://docs.outscale.com/TODO).
+For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/Introduction-to-OOS.html).  
+For more information on this resource actions, see this [User Guide's section](https://docs.outscale.com/en/userguide/Configuring-a-Specific-Object-Lock-on-an-Object.html).
 
 ## Example Usage
 
@@ -46,11 +44,11 @@ resource "outscale_oos_object_retention" "retention01" {
 
 The following arguments are supported:
 
-* `bucket` - (Required) TODO
-* `key` - (Required) TODO
-* `mode` - (Optional, Computed) (Default: `COMPLIANCE`) TODO
-* `retain_until_date` - (Required) TODO
-* `version_id` - (Optional) TODO
+* `bucket` - (Required) The name of the bucket you want to apply retention to. The bucket must have object lock enabled.
+* `key` - (Required) The name of the object you want to lock.
+* `mode` - (Optional, Computed) (Default: `COMPLIANCE`) The retention mode for the object. If set to `COMPLIANCE`, this prevents any user, including the root user, from overwriting or deleting the object until the retention period expires. OOS currently does not support `GOVERNANCE` mode.
+* `retain_until_date` - (Required) The date, in ISO 8601 format, until which the object will be locked. For example, if set to `2050-01-01T00:00:00Z`, the object will remain locked until the very start of January 1, 2050, at midnight UTC.<br />Keep in mind that in COMPLIANCE mode:<br />- You cannot bypass the retention period until its expiration. This means you will be billed for the entire retention period you set.<br />- The retention period cannot be earlier than the default object lock of the bucket.
+* `version_id` - (Optional) The version ID of the object.
 
 ## Attribute Reference
 
