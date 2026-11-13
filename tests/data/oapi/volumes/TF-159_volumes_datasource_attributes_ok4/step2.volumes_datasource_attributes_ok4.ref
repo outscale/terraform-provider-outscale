@@ -197,7 +197,7 @@
                         "creation_date": "########",
                         "deletion_protection": false,
                         "get_admin_password": null,
-                        "hypervisor": "xen",
+                        "hypervisor": "kvm",
                         "id": "##id-2##",
                         "image_id": "##id-9##",
                         "is_source_dest_checked": false,
