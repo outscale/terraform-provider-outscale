@@ -174,7 +174,7 @@
                         "creation_date": "########",
                         "deletion_protection": false,
                         "get_admin_password": null,
-                        "hypervisor": "xen",
+                        "hypervisor": "kvm",
                         "id": "##id-7##",
                         "image_id": "##id-8##",
                         "is_source_dest_checked": false,
@@ -203,17 +203,17 @@
                         "root_device_type": "ebs",
                         "secure_boot_action": null,
                         "security_group_ids": [
-                            "##id-3##",
-                            "##id-4##"
+                            "##id-4##",
+                            "##id-3##"
                         ],
                         "security_group_names": "########",
                         "security_groups": [
                             {
-                                "security_group_id": "##id-3##",
+                                "security_group_id": "##id-4##",
                                 "security_group_name": "########"
                             },
                             {
-                                "security_group_id": "##id-4##",
+                                "security_group_id": "##id-3##",
                                 "security_group_name": "########"
                             }
                         ],
