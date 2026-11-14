@@ -30,6 +30,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/internal/services/oks/okshelpers"
 
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	k8stypes "k8s.io/apimachinery/pkg/types"
@@ -149,7 +150,7 @@ func (r *manifestResource) ModifyPlan(ctx context.Context, req resource.ModifyPl
 		return
 	}
 
-	planObj, dri, err := okshelpers.GetResourceInterfaceFromManifest(ctx, r.Client, plan.ClusterId.ValueString(), plan.Manifest.ValueString(), timeout)
+	planManifest, err := okshelpers.GetKubernetesResourceFromManifest(ctx, r.Client, plan.ClusterId.ValueString(), plan.Manifest.ValueString(), timeout)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid manifest", err.Error())
 		return
@@ -172,13 +173,26 @@ func (r *manifestResource) ModifyPlan(ctx context.Context, req resource.ModifyPl
 			return
 		}
 
-		if planObj.GetKind() != stateObj.GetKind() || planObj.GetName() != stateObj.GetName() || planObj.GetNamespace() != stateObj.GetNamespace() {
+		namespaceChange := false
+		// if the resource can have a namespace we compare them
+		if planManifest.Mapping.Scope.Name() == meta.RESTScopeNameNamespace {
+			isDefault := func(ns string) bool {
+				return ns == metav1.NamespaceDefault || ns == metav1.NamespaceNone
+			}
+			planNS := planManifest.Object.GetNamespace()
+			stateNS := stateObj.GetNamespace()
+
+			// we need to allow a change from "" -> "default" (and the inverse) as they're both the default namespace value
+			namespaceChange = planNS != stateNS && !(isDefault(planNS) && isDefault(stateNS))
+		}
+
+		if planManifest.Object.GetKind() != stateObj.GetKind() || planManifest.Object.GetName() != stateObj.GetName() || namespaceChange {
 			resp.RequiresReplace = append(resp.RequiresReplace, path.Root("manifest"))
 			resp.Diagnostics.AddWarning("Manifest resource replacement may require 'create_before_destroy'", manifestReplaceWarning)
 		}
 	}
 
-	jsonBytes, err := planObj.MarshalJSON()
+	jsonBytes, err := planManifest.Object.MarshalJSON()
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid manifest", err.Error())
 		return
@@ -189,7 +203,7 @@ func (r *manifestResource) ModifyPlan(ctx context.Context, req resource.ModifyPl
 		FieldManager: manifestFieldManager,
 		DryRun:       []string{metav1.DryRunAll},
 	}
-	_, err = dri.Patch(ctx, planObj.GetName(), k8stypes.ApplyPatchType, jsonBytes, patchOptions)
+	_, err = planManifest.DRI.Patch(ctx, planManifest.Object.GetName(), k8stypes.ApplyPatchType, jsonBytes, patchOptions)
 	if err != nil {
 		resp.Diagnostics.AddError("Dry-run validation failed", err.Error())
 		return
@@ -273,13 +287,13 @@ func (r *manifestResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
-	obj, dri, err := okshelpers.GetResourceInterfaceFromManifest(ctx, r.Client, data.ClusterId.ValueString(), data.Manifest.ValueString(), timeout)
+	manifest, err := okshelpers.GetKubernetesResourceFromManifest(ctx, r.Client, data.ClusterId.ValueString(), data.Manifest.ValueString(), timeout)
 	if err != nil {
 		resp.Diagnostics.AddError(manifestErrCreate, err.Error())
 		return
 	}
 
-	objResp, err := dri.Get(ctx, obj.GetName(), metav1.GetOptions{})
+	objResp, err := manifest.DRI.Get(ctx, manifest.Object.GetName(), metav1.GetOptions{})
 	if err != nil && !k8serrors.IsNotFound(err) {
 		resp.Diagnostics.AddError(manifestErrCreate, err.Error())
 		return
@@ -289,7 +303,7 @@ func (r *manifestResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
-	respObj, err := r.applyManifest(ctx, &data, obj, dri)
+	respObj, err := r.applyManifest(ctx, &data, manifest.Object, manifest.DRI)
 	if err != nil {
 		resp.Diagnostics.AddError(manifestErrCreate, err.Error())
 		return
@@ -305,12 +319,12 @@ func (r *manifestResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
-	diag = r.waitForFields(ctx, data, obj, dri, timeout)
+	diag = r.waitForFields(ctx, data, manifest.Object, manifest.DRI, timeout)
 	if fwhelpers.CheckDiags(resp, diag) {
 		return
 	}
 
-	stateData, err = r.read(ctx, data, obj, dri)
+	stateData, err = r.read(ctx, data, manifest.Object, manifest.DRI)
 	if err != nil {
 		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
@@ -331,13 +345,13 @@ func (r *manifestResource) Read(ctx context.Context, req resource.ReadRequest, r
 		return
 	}
 
-	obj, dri, err := okshelpers.GetResourceInterfaceFromManifest(ctx, r.Client, data.ClusterId.ValueString(), data.Manifest.ValueString(), timeout)
+	manifest, err := okshelpers.GetKubernetesResourceFromManifest(ctx, r.Client, data.ClusterId.ValueString(), data.Manifest.ValueString(), timeout)
 	if err != nil {
 		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
 	}
 
-	stateData, err := r.read(ctx, data, obj, dri)
+	stateData, err := r.read(ctx, data, manifest.Object, manifest.DRI)
 	if err != nil {
 		if errors.Is(err, ErrResourceEmpty) {
 			resp.State.RemoveResource(ctx)
@@ -363,26 +377,26 @@ func (r *manifestResource) Update(ctx context.Context, req resource.UpdateReques
 		return
 	}
 
-	obj, dri, err := okshelpers.GetResourceInterfaceFromManifest(ctx, r.Client, plan.ClusterId.ValueString(), plan.Manifest.ValueString(), timeout)
+	resource, err := okshelpers.GetKubernetesResourceFromManifest(ctx, r.Client, plan.ClusterId.ValueString(), plan.Manifest.ValueString(), timeout)
 	if err != nil {
 		resp.Diagnostics.AddError(manifestErrUpdate, err.Error())
 		return
 	}
 
 	if fwhelpers.HasChange(plan.Manifest, state.Manifest) {
-		_, err := r.applyManifest(ctx, &plan, obj, dri)
+		_, err := r.applyManifest(ctx, &plan, resource.Object, resource.DRI)
 		if err != nil {
 			resp.Diagnostics.AddError(manifestErrUpdate, err.Error())
 			return
 		}
 
-		diag := r.waitForFields(ctx, plan, obj, dri, timeout)
+		diag := r.waitForFields(ctx, plan, resource.Object, resource.DRI, timeout)
 		if fwhelpers.CheckDiags(resp, diag) {
 			return
 		}
 	}
 
-	stateData, err := r.read(ctx, plan, obj, dri)
+	stateData, err := r.read(ctx, plan, resource.Object, resource.DRI)
 	if err != nil {
 		resp.Diagnostics.AddError(errSetTerraformState, err.Error())
 		return
@@ -402,13 +416,13 @@ func (r *manifestResource) Delete(ctx context.Context, req resource.DeleteReques
 		return
 	}
 
-	obj, dri, err := okshelpers.GetResourceInterfaceFromManifest(ctx, r.Client, data.ClusterId.ValueString(), data.Manifest.ValueString(), timeout)
+	resource, err := okshelpers.GetKubernetesResourceFromManifest(ctx, r.Client, data.ClusterId.ValueString(), data.Manifest.ValueString(), timeout)
 	if err != nil {
 		resp.Diagnostics.AddError(manifestErrDelete, err.Error())
 		return
 	}
 
-	err = dri.Delete(ctx, obj.GetName(), metav1.DeleteOptions{})
+	err = resource.DRI.Delete(ctx, resource.Object.GetName(), metav1.DeleteOptions{})
 
 	resourceGone := k8serrors.IsGone(err) || k8serrors.IsNotFound(err)
 	if err != nil && !resourceGone {
@@ -422,7 +436,7 @@ func (r *manifestResource) Delete(ctx context.Context, req resource.DeleteReques
 
 	if fwhelpers.IsSet(data.Wait) && data.Wait.ValueBool() {
 		err = wait.PollUntilContextTimeout(ctx, 5*time.Second, timeout, true, func(ctx context.Context) (bool, error) {
-			_, err := dri.Get(ctx, obj.GetName(), metav1.GetOptions{})
+			_, err := resource.DRI.Get(ctx, resource.Object.GetName(), metav1.GetOptions{})
 			if k8serrors.IsNotFound(err) || k8serrors.IsGone(err) {
 				return true, nil
 			}
