@@ -83,6 +83,7 @@ The following arguments are supported:
 
 * `cluster_id` - (Required) The ID of the cluster on which you want to apply the manifest.
 * `manifest` - (Required) The Kubernetes YAML manifest.
+* `force_conflicts` - (Optional) If set to true, server-side apply takes ownership of the fields that another field manager (for example `kubectl`, another Terraform provider or a controller) owns with a different value, instead of failing with a conflict. This also applies to the dry-run validation during plan. By default, false.
 * `skip_delete` - (Optional) If set to true, Terraform removes only the manifest resource from the state during delete, without deleting the Kubernetes object from the cluster. By default, false.
 * `wait` - (Optional): If set to true, Terraform waits for the Kubernetes object to be deleted during destroy. By default, false.
 * `wait_for` - (Optional) Wait until the fields in the Kubernetes object match the expected values after apply:
@@ -105,3 +106,25 @@ The `timeouts` block enables you to configure [timeouts](https://developer.hashi
 * `read` - Defaults to 2 minutes.
 * `update` - Defaults to 10 minutes.
 * `delete` - Defaults to 10 minutes.
+
+## Import
+
+A Kubernetes object that already exists on an OKS cluster can be imported using an ID made of the cluster ID and the `apiVersion`, `kind` and `name` of the object, plus its `namespace` for a namespaced object. A namespaced object imported without a namespace is looked up in the `default` namespace, and the namespace of a cluster-scoped object is ignored. For example:
+
+```console
+
+$ terraform import outscale_oks_manifest.nodepool cluster_id=cluster_id,apiVersion=oks.dev/v1beta2,kind=NodePool,name=pool-1
+$ terraform import outscale_oks_manifest.config cluster_id=cluster_id,apiVersion=v1,kind=ConfigMap,namespace=kube-system,name=example
+
+```
+
+With an `import` block:
+
+```hcl
+import {
+  to = outscale_oks_manifest.nodepool
+  id = "cluster_id=${outscale_oks_cluster.cluster.id},apiVersion=oks.dev/v1beta2,kind=NodePool,name=pool-1"
+}
+```
+
+The imported `manifest` holds only the `apiVersion`, `kind` and `metadata` of the object, so the next apply updates the manifest in place, and server-side apply takes ownership of the configured fields. If another field manager owns some of these fields with a different value, the plan fails with a conflict unless `force_conflicts` is set to true. Once that apply is done, `force_conflicts` can be removed, so that a later conflict, with a controller for example, is reported instead of overridden.

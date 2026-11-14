@@ -39,19 +39,27 @@ import (
 )
 
 var (
-	_ resource.Resource               = &manifestResource{}
-	_ resource.ResourceWithConfigure  = &manifestResource{}
-	_ resource.ResourceWithModifyPlan = &manifestResource{}
+	_ resource.Resource                = &manifestResource{}
+	_ resource.ResourceWithConfigure   = &manifestResource{}
+	_ resource.ResourceWithImportState = &manifestResource{}
+	_ resource.ResourceWithModifyPlan  = &manifestResource{}
 )
 
 const (
 	manifestErrCreate  = "Unable to create manifest resource"
 	manifestErrUpdate  = "Unable to update manifest resource"
 	manifestErrDelete  = "Unable to delete manifest resource"
+	manifestErrImport  = "Unable to import manifest resource"
 	manifestErrWait    = "Unable to wait for resource deletion"
 	manifestErrWaitFor = "Unable to wait for resource wait_for condition to be met"
 
 	manifestFieldManager = "terraform-provider-outscale"
+
+	manifestImportIDFormat = "cluster_id=<cluster_id>,apiVersion=<api_version>,kind=<kind>,name=<name>[,namespace=<namespace>]"
+
+	manifestImportWarning = `The imported manifest holds only the apiVersion, kind and metadata of the Kubernetes object, so the next plan updates 'manifest' in place. That apply takes ownership of the configured fields with server-side apply.
+
+If another field manager (kubectl, another Terraform provider, a controller) owns some of these fields with a different value, the plan fails with a conflict during its dry-run validation. Set 'force_conflicts = true' to take ownership of them.`
 
 	manifestDeleteBlockedWarning = `Terraform is planning to delete this Kubernetes object. The Kubernetes API may reject the deletion if the object is still required by the cluster, for example when deleting the last remaining NodePool.
 
@@ -75,14 +83,23 @@ type manifestResource struct {
 }
 
 type manifestModel struct {
-	ClusterId  types.String   `tfsdk:"cluster_id"`
-	Manifest   types.String   `tfsdk:"manifest"`
-	Object     types.String   `tfsdk:"object"`
-	SkipDelete types.Bool     `tfsdk:"skip_delete"`
-	Wait       types.Bool     `tfsdk:"wait"`
-	WaitFor    types.Object   `tfsdk:"wait_for"`
-	Id         types.String   `tfsdk:"id"`
-	Timeouts   timeouts.Value `tfsdk:"timeouts"`
+	ClusterId      types.String   `tfsdk:"cluster_id"`
+	Manifest       types.String   `tfsdk:"manifest"`
+	Object         types.String   `tfsdk:"object"`
+	ForceConflicts types.Bool     `tfsdk:"force_conflicts"`
+	SkipDelete     types.Bool     `tfsdk:"skip_delete"`
+	Wait           types.Bool     `tfsdk:"wait"`
+	WaitFor        types.Object   `tfsdk:"wait_for"`
+	Id             types.String   `tfsdk:"id"`
+	Timeouts       timeouts.Value `tfsdk:"timeouts"`
+}
+
+type manifestImportID struct {
+	ClusterId  string
+	APIVersion string
+	Kind       string
+	Name       string
+	Namespace  string
 }
 
 type manifestWaitForModel struct {
@@ -113,6 +130,96 @@ func (r *manifestResource) Configure(_ context.Context, req resource.ConfigureRe
 
 func (r *manifestResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_oks_manifest"
+}
+
+func (r *manifestResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	importID, err := parseManifestImportID(req.ID)
+	if err != nil {
+		resp.Diagnostics.AddError("Invalid import ID", err.Error())
+		return
+	}
+
+	idObj := &unstructured.Unstructured{}
+	idObj.SetAPIVersion(importID.APIVersion)
+	idObj.SetKind(importID.Kind)
+	idObj.SetName(importID.Name)
+	idObj.SetNamespace(importID.Namespace)
+
+	idManifest, err := okshelpers.ToYAML(idObj.Object)
+	if err != nil {
+		resp.Diagnostics.AddError("Invalid import ID", err.Error())
+		return
+	}
+
+	obj, dri, err := okshelpers.GetResourceInterfaceFromManifest(ctx, r.Client, importID.ClusterId, idManifest, ReadDefaultTimeout)
+	if err != nil {
+		resp.Diagnostics.AddError(manifestErrImport, err.Error())
+		return
+	}
+
+	liveObj, err := dri.Get(ctx, obj.GetName(), metav1.GetOptions{})
+	if err != nil {
+		resp.Diagnostics.AddError(manifestErrImport, fmt.Sprintf("get %s %q: %s", obj.GetKind(), obj.GetName(), err))
+		return
+	}
+
+	// build the manifest from the live object: its namespace is empty for a cluster-scoped kind,
+	// even if the import ID has one, so the next plan does not see a namespace change and replace it
+	importObj := &unstructured.Unstructured{}
+	importObj.SetAPIVersion(liveObj.GetAPIVersion())
+	importObj.SetKind(liveObj.GetKind())
+	importObj.SetName(liveObj.GetName())
+	importObj.SetNamespace(liveObj.GetNamespace())
+
+	manifest, err := okshelpers.ToYAML(importObj.Object)
+	if err != nil {
+		resp.Diagnostics.AddError(manifestErrImport, err.Error())
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("cluster_id"), importID.ClusterId)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("manifest"), manifest)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("skip_delete"), false)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("wait"), false)...)
+	resp.Diagnostics.AddWarning("Resource needs an apply", manifestImportWarning)
+}
+
+// parseManifestImportID reads an import ID in the manifestImportIDFormat format. The keys use
+// key=value pairs because the apiVersion of a grouped resource contains a "/".
+func parseManifestImportID(id string) (manifestImportID, error) {
+	var importID manifestImportID
+	fields := map[string]*string{
+		"cluster_id": &importID.ClusterId,
+		"apiVersion": &importID.APIVersion,
+		"kind":       &importID.Kind,
+		"name":       &importID.Name,
+		"namespace":  &importID.Namespace,
+	}
+	seen := map[string]bool{}
+
+	for part := range strings.SplitSeq(id, ",") {
+		key, value, ok := strings.Cut(part, "=")
+		if !ok || value == "" {
+			return importID, fmt.Errorf("expected %s, got %q: %q is not a key=value pair", manifestImportIDFormat, id, part)
+		}
+		field, known := fields[key]
+		if !known {
+			return importID, fmt.Errorf("expected %s, got %q: unknown key %q", manifestImportIDFormat, id, key)
+		}
+		if seen[key] {
+			return importID, fmt.Errorf("expected %s, got %q: duplicate key %q", manifestImportIDFormat, id, key)
+		}
+		seen[key] = true
+		*field = value
+	}
+
+	for _, key := range []string{"cluster_id", "apiVersion", "kind", "name"} {
+		if !seen[key] {
+			return importID, fmt.Errorf("expected %s, got %q: missing key %q", manifestImportIDFormat, id, key)
+		}
+	}
+
+	return importID, nil
 }
 
 func (r *manifestResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
@@ -184,11 +291,14 @@ func (r *manifestResource) ModifyPlan(ctx context.Context, req resource.ModifyPl
 		return
 	}
 
-	// validate the manifest using a dry-run patch apply
-	patchOptions := metav1.PatchOptions{
-		FieldManager: manifestFieldManager,
-		DryRun:       []string{metav1.DryRunAll},
+	// the dry-run cannot tell whether the apply will force conflicts
+	if plan.ForceConflicts.IsUnknown() {
+		return
 	}
+
+	// validate the manifest using a dry-run patch apply
+	patchOptions := manifestPatchOptions(plan.ForceConflicts)
+	patchOptions.DryRun = []string{metav1.DryRunAll}
 	_, err = dri.Patch(ctx, planObj.GetName(), k8stypes.ApplyPatchType, jsonBytes, patchOptions)
 	if err != nil {
 		resp.Diagnostics.AddError("Dry-run validation failed", err.Error())
@@ -218,6 +328,9 @@ func (r *manifestResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 			},
 			"object": schema.StringAttribute{
 				Computed: true,
+			},
+			"force_conflicts": schema.BoolAttribute{
+				Optional: true,
 			},
 			"skip_delete": schema.BoolAttribute{
 				Computed: true,
@@ -465,8 +578,7 @@ func (r *manifestResource) applyManifest(ctx context.Context, data *manifestMode
 		return nil, err
 	}
 
-	patchOptions := metav1.PatchOptions{FieldManager: manifestFieldManager}
-	resp, err := dri.Patch(ctx, obj.GetName(), k8stypes.ApplyPatchType, jsonBytes, patchOptions)
+	resp, err := dri.Patch(ctx, obj.GetName(), k8stypes.ApplyPatchType, jsonBytes, manifestPatchOptions(data.ForceConflicts))
 	if err != nil {
 		return nil, fmt.Errorf("apply manifest: %w", err)
 	}
@@ -474,6 +586,18 @@ func (r *manifestResource) applyManifest(ctx context.Context, data *manifestMode
 	data.Id = to.String(resp.GetUID())
 
 	return resp, nil
+}
+
+// manifestPatchOptions returns the server-side apply options. With force_conflicts, the apply
+// takes ownership of the fields another field manager owns instead of failing with a conflict.
+func manifestPatchOptions(forceConflicts types.Bool) metav1.PatchOptions {
+	patchOptions := metav1.PatchOptions{FieldManager: manifestFieldManager}
+	if forceConflicts.ValueBool() {
+		force := true
+		patchOptions.Force = &force
+	}
+
+	return patchOptions
 }
 
 type fieldMatcher struct {
