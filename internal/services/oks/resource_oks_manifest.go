@@ -172,7 +172,7 @@ func (r *manifestResource) ModifyPlan(ctx context.Context, req resource.ModifyPl
 			return
 		}
 
-		if planObj.GetKind() != stateObj.GetKind() || planObj.GetName() != stateObj.GetName() || planObj.GetNamespace() != stateObj.GetNamespace() {
+		if manifestRequiresReplace(planObj, stateObj) {
 			resp.RequiresReplace = append(resp.RequiresReplace, path.Root("manifest"))
 			resp.Diagnostics.AddWarning("Manifest resource replacement may require 'create_before_destroy'", manifestReplaceWarning)
 		}
@@ -194,6 +194,15 @@ func (r *manifestResource) ModifyPlan(ctx context.Context, req resource.ModifyPl
 		resp.Diagnostics.AddError("Dry-run validation failed", err.Error())
 		return
 	}
+}
+
+// manifestRequiresReplace reports whether the planned manifest targets another object than the one in state.
+// The planned object went through GetResourceInterfaceFromManifest, which sets "default" on a namespaced object without namespace,
+// while the state keeps the manifest as written.
+func manifestRequiresReplace(planObj, stateObj *unstructured.Unstructured) bool {
+	return planObj.GetKind() != stateObj.GetKind() ||
+		planObj.GetName() != stateObj.GetName() ||
+		okshelpers.NamespaceOrDefault(planObj.GetNamespace()) != okshelpers.NamespaceOrDefault(stateObj.GetNamespace())
 }
 
 func (r *manifestResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
