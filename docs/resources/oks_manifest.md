@@ -83,6 +83,9 @@ The following arguments are supported:
 
 * `cluster_id` - (Required) The ID of the cluster on which you want to apply the manifest.
 * `manifest` - (Required) The Kubernetes YAML manifest.
+* `field_manager` - (Optional) Server-side apply field manager options:
+    * `name` - (Optional, Computed) (Default: `terraform-provider-outscale`) The name identifying the manager that applies the manifest.
+    * `force_conflicts` - (Optional, Computed) (Default: `false`) Allow server-side apply to change fields owned by another field manager, taking ownership of conflicting fields.
 * `skip_delete` - (Optional) If set to true, Terraform removes only the manifest resource from the state during delete, without deleting the Kubernetes object from the cluster. By default, false.
 * `wait` - (Optional): If set to true, Terraform waits for the Kubernetes object to be deleted during destroy. By default, false.
 * `wait_for` - (Optional) Wait until the fields in the Kubernetes object match the expected values after apply:
