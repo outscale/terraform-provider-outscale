@@ -137,6 +137,59 @@ func TestAccOKSManifest_ConfigMapNamespace(t *testing.T) {
 	})
 }
 
+func TestAccOKSManifest_FieldManager(t *testing.T) {
+	projectName := acctest.RandomWithPrefix("test-acc-project")
+	clusterName := acctest.RandomWithPrefix("test-acc-cluster")
+	configMapName := acctest.RandomWithPrefix("test-acc-field-manager")
+	resourceName := "outscale_oks_manifest.field_manager"
+	manager := "test-acc-field-manager"
+	managerConfig := fmt.Sprintf("field_manager = { name = %q }", manager)
+	forceConfig := fmt.Sprintf("field_manager = {\n name = %q\n force_conflicts = true\n}", manager)
+	cluster := clusterConfig(projectName, clusterName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config: cluster + fieldManagerManifestConfig(configMapName, "initial", ""),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resourceName, "object"),
+				),
+			},
+			{
+				Config: cluster + fieldManagerManifestConfig(configMapName, "initial", managerConfig),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr(resourceName, "object", regexp.MustCompile("manager: "+manager)),
+				),
+			},
+			{
+				Config: cluster + fieldManagerManifestConfig(configMapName, "updated", forceConfig),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "field_manager.force_conflicts", "true"),
+				),
+			},
+		},
+	})
+}
+
+func fieldManagerManifestConfig(name, value, fieldManager string) string {
+	return fmt.Sprintf(`
+resource "outscale_oks_manifest" "field_manager" {
+  cluster_id = outscale_oks_cluster.cluster.id
+  %s
+  manifest = <<-YAML
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: %s
+  namespace: default
+data:
+  key: %s
+YAML
+}
+`, fieldManager, name, value)
+}
+
 func configMapManifestConfig(name, namespaceName, namespace string) string {
 	namespaceField := ""
 	if namespace != "" {
