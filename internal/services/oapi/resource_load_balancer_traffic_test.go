@@ -4,7 +4,10 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
+	"net/url"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -20,12 +23,20 @@ import (
 
 const (
 	lbTrafficHTTPPort     = 80
-	lbTrafficBackendCount = 2
+	lbTrafficBackendCount = 3
 	lbTrafficRequestCount = 30
 
 	lbTrafficHealthTimeout = 10 * time.Minute
 	lbTrafficHTTPRetry     = 2 * time.Minute
 )
+
+var lbTrafficHTTPClient = &http.Client{
+	Timeout: 30 * time.Second,
+	Transport: &http.Transport{
+		DisableKeepAlives: true,
+		Proxy:             http.ProxyFromEnvironment,
+	},
+}
 
 func TestAccVM_LoadBalancer_HTTPBackends(t *testing.T) {
 	lbName := acctest.RandomWithPrefix("testacc-lbt")
@@ -43,6 +54,7 @@ func TestAccVM_LoadBalancer_HTTPBackends(t *testing.T) {
 }
 
 func testAccCheckLoadBalancerTraffic(t *testing.T) resource.TestCheckFunc {
+	t.Helper()
 	return func(s *terraform.State) error {
 		lbRS := s.RootModule().Resources["outscale_load_balancer.lbu_traffic"]
 		if lbRS == nil {
@@ -59,25 +71,26 @@ func testAccCheckLoadBalancerTraffic(t *testing.T) resource.TestCheckFunc {
 			return err
 		}
 
-		lbURL := fmt.Sprintf("http://%s:%d/", dnsName, lbTrafficHTTPPort)
-		return checkLBTraffic(t, s, lbURL, lbTrafficBackendCount)
+		return checkLBTraffic(t, s, dnsName, lbTrafficHTTPPort, lbTrafficBackendCount)
 	}
 }
 
 func waitForHealthyBackends(t *testing.T, lbName string, want int) error {
+	t.Helper()
 	client := testacc.ConfiguredClient.OSC
 	if client == nil {
 		return fmt.Errorf("configured API client is nil")
 	}
 
-	ctx := context.Background()
+	ctx := t.Context()
 	start := time.Now()
 	attempt := 0
 	var lastLog time.Time
 
 	return retry.RetryContext(ctx, lbTrafficHealthTimeout, func() *retry.RetryError {
 		attempt++
-		resp, err := client.ReadVmsHealth(ctx, osc.ReadVmsHealthRequest{LoadBalancerName: lbName})
+		resp, err := client.ReadVmsHealth(ctx, osc.ReadVmsHealthRequest{LoadBalancerName: lbName},
+			options.WithRetryTimeout(DefaultTimeout))
 		if err != nil {
 			return retry.RetryableError(err)
 		}
@@ -112,11 +125,14 @@ func waitForHealthyBackends(t *testing.T, lbName string, want int) error {
 }
 
 // checkLBTraffic hits the load balancer, then each VM directly when session affinity hides backends.
-func checkLBTraffic(t *testing.T, s *terraform.State, lbURL string, backendCount int) error {
+func checkLBTraffic(t *testing.T, s *terraform.State, lbHost string, lbPort, backendCount int) error {
+	t.Helper()
+	ctx := t.Context()
 	seen := map[string]int{}
 
-	for i := 0; i < lbTrafficRequestCount; i++ {
-		body, err := httpGetRetry(fmt.Sprintf("%s?n=%d", lbURL, i))
+	for i := range lbTrafficRequestCount {
+		reqURL := lbTrafficHTTPURL(lbHost, lbPort, fmt.Sprintf("n=%d", i))
+		body, err := httpGetRetry(ctx, reqURL)
 		if err != nil {
 			return fmt.Errorf("LB request %d/%d: %w", i+1, lbTrafficRequestCount, err)
 		}
@@ -132,7 +148,7 @@ func checkLBTraffic(t *testing.T, s *terraform.State, lbURL string, backendCount
 	}
 
 	t.Logf("LB saw %d backend(s) from this client (%v); checking VMs directly", len(seen), seen)
-	for i := 0; i < backendCount; i++ {
+	for i := range backendCount {
 		vmRS := s.RootModule().Resources[fmt.Sprintf("outscale_vm.lb_traffic_backend.%d", i)]
 		if vmRS == nil {
 			return fmt.Errorf("not found: outscale_vm.lb_traffic_backend.%d", i)
@@ -142,7 +158,7 @@ func checkLBTraffic(t *testing.T, s *terraform.State, lbURL string, backendCount
 			return fmt.Errorf("outscale_vm.lb_traffic_backend.%d: public_ip is empty", i)
 		}
 		want := fmt.Sprintf("backend-%d", i)
-		got, err := httpGetRetry(fmt.Sprintf("http://%s:%d/", ip, lbTrafficHTTPPort))
+		got, err := httpGetRetry(ctx, lbTrafficHTTPURL(ip, lbPort, ""))
 		if err != nil {
 			return fmt.Errorf("direct check %s: %w", ip, err)
 		}
@@ -155,6 +171,18 @@ func checkLBTraffic(t *testing.T, s *terraform.State, lbURL string, backendCount
 	return nil
 }
 
+func lbTrafficHTTPURL(host string, port int, query string) string {
+	u := url.URL{
+		Scheme: "http",
+		Host:   net.JoinHostPort(host, strconv.Itoa(port)),
+		Path:   "/",
+	}
+	if query != "" {
+		u.RawQuery = query
+	}
+	return u.String()
+}
+
 func backendHealthy(state string) bool {
 	switch strings.ToUpper(strings.ReplaceAll(state, "_", "")) {
 	case "UP", "INSERVICE", "OK":
@@ -164,22 +192,19 @@ func backendHealthy(state string) bool {
 	}
 }
 
-func httpGetRetry(url string) (string, error) {
-	client := &http.Client{
-		Timeout: 30 * time.Second,
-		Transport: &http.Transport{
-			DisableKeepAlives: true,
-			Proxy:             http.ProxyFromEnvironment,
-		},
-	}
-
+func httpGetRetry(ctx context.Context, rawURL string) (string, error) {
 	var body string
-	err := retry.Retry(lbTrafficHTTPRetry, func() *retry.RetryError {
-		resp, err := client.Get(url)
+	err := retry.RetryContext(ctx, lbTrafficHTTPRetry, func() *retry.RetryError {
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, rawURL, nil)
+		if err != nil {
+			return retry.NonRetryableError(err)
+		}
+
+		resp, err := lbTrafficHTTPClient.Do(req)
 		if err != nil {
 			return retry.RetryableError(err)
 		}
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 
 		raw, err := io.ReadAll(resp.Body)
 		if err != nil {
@@ -273,13 +298,17 @@ resource "outscale_vm" "lb_traffic_backend" {
 #!/bin/bash
 set -euo pipefail
 ID="backend-${count.index}"
-PORT=%[3]d
 mkdir -p /var/www/html
 echo "$ID" > /var/www/html/index.html
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -y
-apt-get install -y lighttpd
+apt-get install -y lighttpd curl
 systemctl enable --now lighttpd
+for i in $(seq 1 30); do
+  curl -sf "http://127.0.0.1:%[3]d/" | grep -qx "$ID" && exit 0
+  sleep 2
+done
+exit 1
 EOT
   )
 
