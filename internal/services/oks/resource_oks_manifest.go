@@ -31,6 +31,7 @@ import (
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/validators/validatorstring"
 	"github.com/outscale/terraform-provider-outscale/internal/services/oks/okshelpers"
+	"github.com/samber/lo"
 
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -43,9 +44,10 @@ import (
 )
 
 var (
-	_ resource.Resource               = &manifestResource{}
-	_ resource.ResourceWithConfigure  = &manifestResource{}
-	_ resource.ResourceWithModifyPlan = &manifestResource{}
+	_ resource.Resource                = &manifestResource{}
+	_ resource.ResourceWithConfigure   = &manifestResource{}
+	_ resource.ResourceWithModifyPlan  = &manifestResource{}
+	_ resource.ResourceWithImportState = &manifestResource{}
 )
 
 const (
@@ -119,6 +121,47 @@ func (r *manifestResource) Configure(_ context.Context, req resource.ConfigureRe
 	}
 
 	r.Client = client.OKS
+}
+
+func (r *manifestResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	ids := strings.Split(req.ID, ",")
+	if len(ids) < 4 || len(ids) > 5 {
+		resp.Diagnostics.AddError(
+			"Unexpected Import Identifier",
+			fmt.Sprintf("Expected identifier in the format <cluster_id>,<api_version>,<kind>,<name>[,<namespace>]. Got: %q", req.ID),
+		)
+		return
+	}
+	ids = lo.Map(ids, func(id string, _ int) string {
+		new := strings.TrimSpace(id)
+		if new == "" {
+			resp.Diagnostics.AddError("Unexpected Import Identifier", "The import identifier values must not be empty.")
+		}
+
+		return new
+	})
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	idObj := &unstructured.Unstructured{}
+	idObj.SetAPIVersion(ids[1])
+	idObj.SetKind(ids[2])
+	idObj.SetName(ids[3])
+	if len(ids) == 5 {
+		idObj.SetNamespace(ids[4])
+	}
+
+	manifest, err := okshelpers.ToYAML(idObj.Object)
+	if err != nil {
+		resp.Diagnostics.AddError("Invalid import ID", err.Error())
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("cluster_id"), ids[0])...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("manifest"), manifest)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("skip_delete"), false)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("wait"), false)...)
 }
 
 func (r *manifestResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
