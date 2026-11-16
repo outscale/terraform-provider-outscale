@@ -108,3 +108,21 @@ The `timeouts` block enables you to configure [timeouts](https://developer.hashi
 * `read` - Defaults to 2 minutes.
 * `update` - Defaults to 10 minutes.
 * `delete` - Defaults to 10 minutes.
+
+## Import
+
+A Kubernetes manifest can be imported using the cluster ID, API version, kind, name, and optionally the namespace, in the format `<cluster_id>,<api_version>,<kind>,<name>[,<namespace>]`. For example:
+
+```console
+
+$ terraform import outscale_oks_manifest.nodepool cluster-id,oks.dev/v1beta2,NodePool,pool-1
+
+```
+
+or
+
+```console
+
+$ terraform import outscale_oks_manifest.configmap cluster-id,v1,ConfigMap,example,default
+
+```
